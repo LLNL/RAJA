@@ -15,16 +15,18 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_vector_vectorimpl_HPP
-#define RAJA_pattern_vector_vectorimpl_HPP
+#ifndef RAJA_pattern_vector_vectorbase_HPP
+#define RAJA_pattern_vector_vectorbase_HPP
 
 #include "RAJA/config.hpp"
-
 #include "RAJA/util/macros.hpp"
+#include "RAJA/pattern/vector/internal/stats.hpp"
 #include "RAJA/pattern/vector/internal/VectorProductRef.hpp"
 #include "RAJA/pattern/vector/internal/VectorRef.hpp"
 
+
 #include <array>
+#include <type_traits>
 
 namespace RAJA
 {
@@ -39,86 +41,7 @@ namespace RAJA
   namespace internal
   {
 
-
-    template<camp::idx_t DEFAULT, bool IS_STATIC>
-    class SemiStaticValue;
-
-    template<camp::idx_t DEFAULT>
-    class SemiStaticValue<DEFAULT, false>
-    {
-      private:
-        camp::idx_t m_value;
-
-      public:
-        using self_type = SemiStaticValue<DEFAULT, false>;
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        constexpr
-        SemiStaticValue() : m_value(DEFAULT) {}
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        constexpr
-        SemiStaticValue(self_type const &c) : m_value(c.m_value) {}
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        constexpr camp::idx_t get() const{
-          return m_value;
-        }
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        void set(camp::idx_t new_value){
-          m_value = new_value;
-        }
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        void min(self_type const &a, self_type const &b){
-          m_value = a.m_value < b.m_value ?
-                    a.m_value : b.m_value;
-        }
-    };
-
-    template<camp::idx_t DEFAULT>
-    class SemiStaticValue<DEFAULT, true>
-    {
-      public:
-        using self_type = SemiStaticValue<DEFAULT, true>;
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        constexpr
-        SemiStaticValue(){}
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        constexpr
-        SemiStaticValue(self_type const &){}
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        SemiStaticValue& operator=(self_type const &) = default;
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        constexpr camp::idx_t get() const{
-          return DEFAULT;
-        }
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        void set(camp::idx_t ){
-          // NOP
-        }
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        void min(self_type const &, self_type const &){
-        }
-    };
+    struct InitSizeOnlyTag{};
 
 
     template<typename TYPE_LIST>
@@ -153,14 +76,24 @@ namespace RAJA
       static constexpr camp::idx_t s_num_full_registers =
         VEC_NUM_ELEM / register_type::s_num_elem;
 
+      static constexpr camp::idx_t s_num_partial_elem =
+          s_num_full_registers*register_type::s_num_elem - VEC_NUM_ELEM;
+
       static constexpr camp::idx_t s_num_registers =
-          s_num_full_registers + (( (VEC_NUM_ELEM % register_type::s_num_elem) > 0) ? 1 : 0);
+          s_num_full_registers + (( s_num_partial_elem > 0) ? 1 : 0);
 
+      using reg_seq = camp::make_idx_seq_t<s_num_full_registers>;
 
+      using part_reg_seq = typename
+          std::conditional<s_num_partial_elem == 0,
+                          camp::idx_seq<>,
+                          camp::idx_seq<s_num_full_registers> >::type;
     };
 
 
-
+    // Forward Declaration
+    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, typename PART_REG_SEQ, camp::idx_t NUM_ELEM>
+    class VectorImpl;
 
 
     /**
@@ -175,24 +108,28 @@ namespace RAJA
      *   - Any subsetting (dynamic or static) is implemented on derived types
      *   - Derived type must be passed in through SELF_TYPE parameter
      */
-    template<typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
+    //template<typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
+    template<typename VECTOR_TYPE>
     class VectorBase;
 
-    template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... REG_SEQ, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
-    class VectorBase<REGISTER_POLICY, ELEMENT_TYPE, camp::idx_seq<REG_SEQ...>, NUM_ELEM, VECTOR_TYPE>
+    template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... REG_SEQ, camp::idx_t ... PART_REG_SEQ, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
+    class VectorBase<VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, camp::idx_seq<REG_SEQ...>, camp::idx_seq<PART_REG_SEQ...>, NUM_ELEM>>
     {
       public:
-        //using self_type = VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>;
-        using self_type = VectorBase<REGISTER_POLICY, ELEMENT_TYPE, camp::idx_seq<REG_SEQ...>, NUM_ELEM, VECTOR_TYPE>;
-        using register_policy = REGISTER_POLICY;
+        using self_type = VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, camp::idx_seq<REG_SEQ...>, camp::idx_seq<PART_REG_SEQ...>, NUM_ELEM>;
+        using vector_base_type = VectorBase<self_type>;
         using element_type = ELEMENT_TYPE;
         using register_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
 
         static constexpr camp::idx_t s_num_elem = NUM_ELEM;
         static constexpr camp::idx_t s_num_reg_elem = register_type::s_num_elem;
-        static constexpr camp::idx_t s_num_registers = sizeof...(REG_SEQ);
+        static constexpr camp::idx_t s_num_full_registers = sizeof...(REG_SEQ);
+        static constexpr camp::idx_t s_num_part_registers = sizeof...(PART_REG_SEQ);
+        static constexpr camp::idx_t s_num_registers = sizeof...(REG_SEQ) + sizeof...(PART_REG_SEQ);
+        static constexpr camp::idx_t s_num_partial_elem = s_num_reg_elem -
+            (s_num_registers*register_type::s_num_elem - NUM_ELEM);
         static constexpr bool s_is_fixed = VECTOR_TYPE==VECTOR_FIXED;
-      private:
+      protected:
 
 
         RAJA_HOST_DEVICE
@@ -209,23 +146,18 @@ namespace RAJA
         }
 
 
-      private:
-
-        register_type m_registers[sizeof...(REG_SEQ)];
-
-        SemiStaticValue<NUM_ELEM, VECTOR_TYPE==VECTOR_FIXED> m_length;
-
-
-
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        constexpr
-        camp::idx_t regNumElem(camp::idx_t reg) const {
-          // How many elements of this register are there?
-          return (1+reg)*s_num_reg_elem < m_length.get()
-            ? s_num_reg_elem                       // Full register
-            : m_length.get()-reg*s_num_reg_elem;  // Partial register
+        self_type &copy(self_type const &c){
+          camp::sink( (m_registers[REG_SEQ] = c.m_registers[REG_SEQ])...);
+          camp::sink( (m_registers[PART_REG_SEQ] = c.m_registers[PART_REG_SEQ])...);
+          return *getThis();
         }
+
+
+        register_type m_registers[s_num_registers];
+
+
 
       public:
 
@@ -235,16 +167,15 @@ namespace RAJA
          */
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        VectorBase() : m_length(){}
+        VectorBase(){}
 
         /*!
          * @brief Copy constructor
          */
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        VectorBase(self_type const &c) :
-          m_registers{c.m_registers[REG_SEQ]...},
-          m_length(c.m_length)
+        VectorBase(VectorBase const &c) :
+          m_registers{c.m_registers[REG_SEQ]..., c.m_registers[PART_REG_SEQ]...}
         {
         }
 
@@ -254,11 +185,13 @@ namespace RAJA
         RAJA_HOST_DEVICE
         RAJA_INLINE
         VectorBase(element_type const &c) :
-          m_registers{to_first(register_type(c), REG_SEQ)...},
-          m_length()
+          m_registers{to_first(register_type(c), REG_SEQ)..., to_first(register_type(c), PART_REG_SEQ)...}
         {
         }
 
+        /*!
+         * @brief Are we this vector's root thread of execution?
+         */
         RAJA_HOST_DEVICE
         RAJA_INLINE
         static
@@ -267,30 +200,292 @@ namespace RAJA
           return register_type::is_root();
         }
 
-        RAJA_HOST_DEVICE
         RAJA_INLINE
-        element_type get(camp::idx_t i) const
-        {
-          return m_registers[i/s_num_reg_elem].get(i%s_num_reg_elem);
+        std::string toString() const {
+          std::string s = "[";
+          for(int i = 0;i < s_num_registers;++ i){
+            s += " " + m_registers[i].toString();
+          }
+
+          return s + " ]";
         }
 
-
-
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        self_type& set(camp::idx_t i, element_type value)
-        {
-          m_registers[i/s_num_reg_elem].set(i%s_num_reg_elem, value);
+        self_type& load_packed(element_type const *ptr){
+
+
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_load_packed ++;
+#endif
+
+          // load full registers
+          camp::sink(
+              m_registers[REG_SEQ].load_packed(
+                  ptr + REG_SEQ*s_num_reg_elem) ...);
+
+          // load partial register
+          camp::sink(
+              m_registers[PART_REG_SEQ].load_packed_n(
+                  ptr + PART_REG_SEQ*s_num_reg_elem,
+                  s_num_partial_elem) ...);
+
           return *getThis();
         }
 
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        constexpr
-        camp::idx_t size() const
-        {
-          return m_length.get();
+        self_type& load_packed_n(element_type const *ptr, camp::idx_t N){
+
+          if(N == NUM_ELEM){
+            return load_packed(ptr);
+          }
+
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_load_packed_n ++;
+#endif
+
+          // load full packed registers
+          int elem = 0;
+          int reg = 0;
+          for(;reg < s_num_full_registers && elem+s_num_reg_elem <= N;reg ++){
+            m_registers[reg].load_packed(ptr+elem);
+            elem += s_num_reg_elem;
+          }
+
+          // load partial register for remaining elements
+          if(elem < N){
+            m_registers[reg].load_packed_n(ptr+elem, N - elem);
+            ++reg;
+          }
+
+          // zero fill remaining registers
+          while(reg < s_num_registers){
+            m_registers[reg].broadcast(element_type(0));
+            ++ reg;
+          }
+
+          return *getThis();
         }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        self_type& load_strided(element_type const *ptr, camp::idx_t stride){
+          if(stride == 1){
+            return load_packed(ptr);
+          }
+
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_load_strided ++;
+#endif
+
+          // load full registers
+          camp::sink(
+              m_registers[REG_SEQ].load_strided(
+                  ptr + REG_SEQ*s_num_reg_elem*stride,
+                  stride) ...);
+
+          // load partial register
+          camp::sink(
+              m_registers[PART_REG_SEQ].load_strided_n(
+                  ptr + PART_REG_SEQ*s_num_reg_elem*stride,
+                  stride,
+                  s_num_partial_elem) ...);
+
+          return *getThis();
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        self_type& load_strided_n(element_type const *ptr, camp::idx_t stride, camp::idx_t N){
+
+          if(N == NUM_ELEM){
+            return load_strided(ptr, stride);
+          }
+
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_load_strided_n ++;
+#endif
+
+          // load full packed registers
+          int elem = 0;
+          int reg = 0;
+          for(;reg < s_num_full_registers && elem+s_num_reg_elem <= N;reg ++){
+            m_registers[reg].load_strided(ptr+elem*stride, stride);
+            elem += s_num_reg_elem;
+          }
+
+          // load partial register for remaining elements
+          if(elem < N){
+            m_registers[reg].load_strided_n(ptr+elem*stride, stride, N - elem);
+            ++reg;
+          }
+
+          // zero fill remaining registers
+          while(reg < s_num_registers){
+            m_registers[reg].broadcast(element_type(0));
+            ++ reg;
+          }
+
+          return *getThis();
+
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        self_type const& store_packed(element_type *ptr) const {
+
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_store_packed ++;
+#endif
+
+          // store full registers
+          camp::sink(
+              m_registers[REG_SEQ].store_packed(
+                  ptr + REG_SEQ*s_num_reg_elem) ...);
+
+          // store partial register
+          camp::sink(
+              m_registers[PART_REG_SEQ].store_packed_n(
+                  ptr + PART_REG_SEQ*s_num_reg_elem,
+                  s_num_partial_elem) ...);
+
+          return *getThis();
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        self_type const & store_packed_n(element_type *ptr, camp::idx_t N) const {
+
+          if(N == NUM_ELEM){
+            return store_packed(ptr);
+          }
+
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_store_packed_n ++;
+#endif
+
+          // store full packed registers
+          int elem = 0;
+          int reg = 0;
+          for(;reg < s_num_full_registers && elem+s_num_reg_elem <= N;reg ++){
+            m_registers[reg].store_packed(ptr+elem);
+            elem += s_num_reg_elem;
+          }
+
+          // store partial register for remaining elements
+          if(elem < N){
+            m_registers[reg].store_packed_n(ptr+elem, N - elem);
+            ++reg;
+          }
+
+          return *getThis();
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        self_type const& store_strided(element_type *ptr, camp::idx_t stride) const {
+
+          if(stride == 1){
+            return store_packed(ptr);
+          }
+
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_store_strided ++;
+#endif
+
+          // store full registers
+          camp::sink(
+              m_registers[REG_SEQ].store_strided(
+                  ptr + REG_SEQ*s_num_reg_elem*stride,
+                  stride) ...);
+
+          // store partial register
+          camp::sink(
+              m_registers[PART_REG_SEQ].store_strided_n(
+                  ptr + PART_REG_SEQ*s_num_reg_elem*stride,
+                  stride,
+                  s_num_partial_elem) ...);
+
+          return *getThis();
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        self_type const & store_strided_n(element_type *ptr, camp::idx_t stride, camp::idx_t N) const {
+
+          if(N == NUM_ELEM){
+            return store_strided(ptr, stride);
+          }
+
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_store_strided_n ++;
+#endif
+
+          // store full packed registers
+          int elem = 0;
+          int reg = 0;
+          for(;reg < s_num_full_registers && elem+s_num_reg_elem <= N;reg ++){
+            m_registers[reg].store_strided(ptr+elem*stride, stride);
+            elem += s_num_reg_elem;
+          }
+
+          // store partial register for remaining elements
+          if(elem < N){
+            m_registers[reg].store_strided_n(ptr+elem*stride, stride, N - elem);
+            ++reg;
+          }
+
+          return *getThis();
+        }
+
+
+        /*!
+         * @brief Set all vector elements to value
+         */
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        self_type &broadcast(element_type const &value){
+
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_broadcast ++;
+#endif
+          camp::sink(m_registers[REG_SEQ].broadcast(value)...);
+          camp::sink(m_registers[PART_REG_SEQ].broadcast_n(value, s_num_partial_elem)...);
+
+          return *this;
+        }
+
+        /*!
+         * @brief Get i'th value of vector by value
+         */
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        element_type get(camp::idx_t i) const
+        {
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_get ++;
+#endif
+
+          return m_registers[i/s_num_reg_elem].get(i%s_num_reg_elem);
+        }
+
+
+        /*!
+         * @brief Set i'th value of vector
+         */
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        self_type& set(camp::idx_t i, element_type value)
+        {
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_set ++;
+#endif
+          m_registers[i/s_num_reg_elem].set(i%s_num_reg_elem, value);
+          return *getThis();
+        }
+
+
 
         /*!
          * Gets the current size of matrix along specified dimension
@@ -298,7 +493,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         RAJA_INLINE
         constexpr camp::idx_t dim_elem(camp::idx_t dim) const {
-          return (dim==0) ? m_length.get() : 0;
+          return (dim==0) ? getThis()->size() : 0;
         }
 
         /*!
@@ -328,72 +523,6 @@ namespace RAJA
 
 
 
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        self_type& load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t length = NUM_ELEM){
-
-          m_length.set(length);
-//          printf("load(n=%d)\n", (int)length);
-
-          camp::sink(
-              m_registers[REG_SEQ].load(
-                  ptr + REG_SEQ*s_num_reg_elem*stride,
-                  stride,
-                  regNumElem(REG_SEQ)) ...);
-
-
-          return *getThis();
-        }
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        self_type const& store(element_type *ptr, camp::idx_t stride = 1) const {
-
-//          printf("store: length=%d  ", (int)m_length.get());
-//
-//          camp::sink(printf("REG[%d].store(n=%d) ", (int)REG_SEQ, (int)regNumElem(REG_SEQ))...);
-
-          camp::sink(
-              m_registers[REG_SEQ].store(
-                  ptr + REG_SEQ*s_num_reg_elem*stride,
-                  stride,
-                  regNumElem(REG_SEQ)) ...);
-
-//          printf("\n");
-
-          return *getThis();
-        }
-
-
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        void broadcast(element_type const &value){
-
-          m_length.set(NUM_ELEM);
-
-          camp::sink(m_registers[REG_SEQ].broadcast(value)...);
-
-        }
-
-
-        /*!
-         * @brief Copy values of another vector
-         * @param x The other vector to copy
-         */
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        self_type  &copy(self_type const &x){
-
-          camp::sink( (m_registers[REG_SEQ] = x.m_registers[REG_SEQ])...);
-
-          m_length.set(x.m_length.get());
-
-          return *getThis();
-        }
-
-
-
         /*!
          * @brief Element-wise addition of two vectors
          */
@@ -401,11 +530,14 @@ namespace RAJA
         RAJA_INLINE
         self_type add(self_type const &b) const {
 
-          self_type result;
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_add ++;
+#endif
 
-          result.m_length.min(m_length, b.m_length);
+          self_type result(b, InitSizeOnlyTag{});
 
           camp::sink( (result.m_registers[REG_SEQ] = m_registers[REG_SEQ].add(b.m_registers[REG_SEQ]))...);
+          camp::sink( (result.m_registers[PART_REG_SEQ] = m_registers[PART_REG_SEQ].add(b.m_registers[PART_REG_SEQ]))...);
 
           return result;
         }
@@ -417,11 +549,14 @@ namespace RAJA
         RAJA_INLINE
         self_type subtract(self_type const &b) const {
 
-          self_type result;
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_subtract ++;
+#endif
 
-          result.m_length.min(m_length, b.m_length);
+          self_type result(b, InitSizeOnlyTag{});
 
           camp::sink( (result.m_registers[REG_SEQ] = m_registers[REG_SEQ].subtract(b.m_registers[REG_SEQ]))...);
+          camp::sink( (result.m_registers[PART_REG_SEQ] = m_registers[PART_REG_SEQ].subtract(b.m_registers[PART_REG_SEQ]))...);
 
           return result;
         }
@@ -433,41 +568,34 @@ namespace RAJA
         RAJA_INLINE
         self_type multiply(self_type const &b) const {
 
-          self_type result;
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_multiply ++;
+#endif
 
-          result.m_length.min(m_length, b.m_length);
+          self_type result(b, InitSizeOnlyTag{});
 
           camp::sink( (result.m_registers[REG_SEQ] = m_registers[REG_SEQ].multiply(b.m_registers[REG_SEQ]))...);
+          camp::sink( (result.m_registers[PART_REG_SEQ] = m_registers[PART_REG_SEQ].multiply(b.m_registers[PART_REG_SEQ]))...);
 
           return result;
         }
 
-        /*!
-         * @brief Element-wise division of two vectors
-         */
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        self_type divide(self_type const &b) const {
 
-          self_type result;
-
-          result.m_length.min(m_length, b.m_length);
-
-          camp::sink( (result.m_registers[REG_SEQ] = m_registers[REG_SEQ].divide(b.m_registers[REG_SEQ], regNumElem(REG_SEQ)))...);
-
-          return result;
-        }
 
 
         RAJA_HOST_DEVICE
         RAJA_INLINE
         self_type fused_multiply_add(self_type const &b, self_type const &c) const {
 
-          self_type result;
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_fma ++;
+#endif
 
-          result.m_length.min(m_length, b.m_length);
+          self_type result(b, InitSizeOnlyTag{});
 
           camp::sink( (result.m_registers[REG_SEQ] = m_registers[REG_SEQ].fused_multiply_add(b.m_registers[REG_SEQ], c.m_registers[REG_SEQ]))...);
+          camp::sink( (result.m_registers[PART_REG_SEQ] = m_registers[PART_REG_SEQ].fused_multiply_add(b.m_registers[PART_REG_SEQ], c.m_registers[PART_REG_SEQ]))...);
+
 
           return result;
         }
@@ -476,25 +604,68 @@ namespace RAJA
         RAJA_INLINE
         self_type fused_multiply_subtract(self_type const &b, self_type const &c) const {
 
-          self_type result;
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_fms ++;
+#endif
 
-          result.m_length.min(m_length, b.m_length);
+          self_type result(b, InitSizeOnlyTag{});
 
           camp::sink( (result.m_registers[REG_SEQ] = m_registers[REG_SEQ].fused_multiply_subtract(b.m_registers[REG_SEQ], c.m_registers[REG_SEQ]))...);
+          camp::sink( (result.m_registers[PART_REG_SEQ] = m_registers[PART_REG_SEQ].fused_multiply_subtract(b.m_registers[PART_REG_SEQ], c.m_registers[PART_REG_SEQ]))...);
 
           return result;
+        }
+
+
+        /*!
+         * @brief Returns the sum of all elements in the vector
+         */
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        element_type sum(camp::idx_t = NUM_ELEM) const {
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_sum ++;
+#endif
+          return foldl_sum<element_type>(m_registers[REG_SEQ].sum(s_num_reg_elem)..., m_registers[PART_REG_SEQ].sum(s_num_partial_elem)...);
+        }
+
+        /*!
+         * @brief Returns the maximum value of all elements in the vector
+         */
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        element_type max(camp::idx_t = NUM_ELEM) const {
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_max ++;
+#endif
+          return foldl_max<element_type>(m_registers[REG_SEQ].max(s_num_reg_elem)..., m_registers[PART_REG_SEQ].max(s_num_partial_elem)...);
+        }
+
+
+        /*!
+         * @brief Returns the minimum value of all elements in the vector
+         */
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        element_type min(camp::idx_t = NUM_ELEM) const {
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_min ++;
+#endif
+          return foldl_min<element_type>(m_registers[REG_SEQ].min(s_num_reg_elem)..., m_registers[PART_REG_SEQ].min(s_num_partial_elem)...);
         }
 
 
         RAJA_HOST_DEVICE
         RAJA_INLINE
         self_type vmin(self_type const &b) const {
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_vmin ++;
+#endif
 
-          self_type result;
-
-          result.m_length.min(m_length, b.m_length);
+          self_type result(b, InitSizeOnlyTag{});
 
           camp::sink( (result.m_registers[REG_SEQ] = m_registers[REG_SEQ].vmin(b.m_registers[REG_SEQ]))...);
+          camp::sink( (result.m_registers[PART_REG_SEQ] = m_registers[PART_REG_SEQ].vmin(b.m_registers[PART_REG_SEQ]))...);
 
           return result;
         }
@@ -505,11 +676,14 @@ namespace RAJA
         RAJA_INLINE
         self_type vmax(self_type const &b) const {
 
-          self_type result;
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_vmax ++;
+#endif
 
-          result.m_length.min(m_length, b.m_length);
+          self_type result(b, InitSizeOnlyTag{});
 
           camp::sink( (result.m_registers[REG_SEQ] = m_registers[REG_SEQ].vmax(b.m_registers[REG_SEQ]))...);
+          camp::sink( (result.m_registers[PART_REG_SEQ] = m_registers[PART_REG_SEQ].vmax(b.m_registers[PART_REG_SEQ]))...);
 
           return result;
         }
@@ -525,28 +699,12 @@ namespace RAJA
         RAJA_INLINE
         element_type dot(self_type const &x) const
         {
-          return multiply(x).sum();
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_dot ++;
+#endif
+          return getThis()->multiply(x).sum();
         }
 
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        element_type sum(camp::idx_t = NUM_ELEM) const {
-          return foldl_sum<element_type>(m_registers[REG_SEQ].sum(regNumElem(REG_SEQ))...);
-        }
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        element_type max(camp::idx_t = NUM_ELEM) const {
-          return foldl_max<element_type>(m_registers[REG_SEQ].max(regNumElem(REG_SEQ))...);
-        }
-
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        element_type min(camp::idx_t = NUM_ELEM) const {
-          return foldl_min<element_type>(m_registers[REG_SEQ].min(regNumElem(REG_SEQ))...);
-        }
 
 
 
@@ -559,7 +717,7 @@ namespace RAJA
         RAJA_INLINE
         self_type &operator=(element_type value)
         {
-          broadcast(value);
+          getThis()->broadcast(value);
           return *getThis();
         }
 
@@ -572,7 +730,7 @@ namespace RAJA
         RAJA_INLINE
         self_type &operator=(self_type const &x)
         {
-          copy(x);
+          getThis()->copy(x);
 
           return *getThis();
         }
@@ -587,7 +745,7 @@ namespace RAJA
         RAJA_INLINE
         self_type operator+(self_type const &x) const
         {
-          return add(x);
+          return getThis()->add(x);
         }
 
         /*!
@@ -599,7 +757,7 @@ namespace RAJA
         RAJA_INLINE
         self_type &operator+=(self_type const &x)
         {
-          *this = add(x);
+          *getThis() = getThis()->add(x);
           return *getThis();
         }
 
@@ -612,7 +770,7 @@ namespace RAJA
         RAJA_INLINE
         self_type operator-(self_type const &x) const
         {
-          return subtract(x);
+          return getThis()->subtract(x);
         }
 
         /*!
@@ -624,7 +782,7 @@ namespace RAJA
         RAJA_INLINE
         self_type &operator-=(self_type const &x)
         {
-          *getThis() = subtract(x);
+          *getThis() = getThis()->subtract(x);
           return *getThis();
         }
 
@@ -649,7 +807,7 @@ namespace RAJA
         RAJA_INLINE
         self_type &operator*=(self_type const &x)
         {
-          *getThis() = multiply(x);
+          *getThis() = getThis()->multiply(x);
           return *getThis();
         }
 
@@ -662,7 +820,7 @@ namespace RAJA
         RAJA_INLINE
         self_type operator/(self_type const &x) const
         {
-          return divide(x);
+          return getThis()->divide(x);
         }
 
         /*!
@@ -674,7 +832,7 @@ namespace RAJA
         RAJA_INLINE
         self_type &operator/=(self_type const &x)
         {
-          *getThis() = divide(x);
+          *getThis() = getThis()->divide(x);
           return *getThis();
         }
 
@@ -682,87 +840,85 @@ namespace RAJA
 
 
 
-    template<typename REGISTER_POLICY, typename T, typename REG_SEQ, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
+
+
+
+
+
+
+
+
+
+    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, typename PART_REG_SEQ, camp::idx_t NUM_ELEM>
     RAJA_HOST_DEVICE
     RAJA_INLINE
-    VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>
-    operator+(typename VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>::element_type x, VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE> const &y){
-      return VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>(x) + y;
+    VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>
+    operator+(typename VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>::element_type x, VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM> const &y){
+      return VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>(x) + y;
     }
 
-    template<typename REGISTER_POLICY, typename T, typename REG_SEQ, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
+    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, typename PART_REG_SEQ, camp::idx_t NUM_ELEM>
     RAJA_HOST_DEVICE
     RAJA_INLINE
-    VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>
-    operator-(typename VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>::element_type x, VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE> const &y){
-      return VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>(x) - y;
+    VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>
+    operator-(typename VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>::element_type x, VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM> const &y){
+      return VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>(x) - y;
     }
 
-    template<typename REGISTER_POLICY, typename T, typename REG_SEQ, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
+    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, typename PART_REG_SEQ, camp::idx_t NUM_ELEM>
     RAJA_HOST_DEVICE
     RAJA_INLINE
-    VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>
-    operator*(typename VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>::element_type x, VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE> const &y){
-      return VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>(x) * y;
+    VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>
+    operator*(typename VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>::element_type x, VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM> const &y){
+      return VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>(x) * y;
     }
 
-    template<typename REGISTER_POLICY, typename T, typename REG_SEQ, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
+    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, typename PART_REG_SEQ, camp::idx_t NUM_ELEM>
     RAJA_HOST_DEVICE
     RAJA_INLINE
-    VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>
-    operator/(typename VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>::element_type x, VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE> const &y){
-      return VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>(x) / y;
+    VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>
+    operator/(typename VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>::element_type x, VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM> const &y){
+      return VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>(x) / y;
     }
 
 
 
-
-  template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
-  using makeVectorBase = VectorBase<REGISTER_POLICY,
-                                    ELEMENT_TYPE,
-                                    camp::make_idx_seq_t<internal::VectorTypeHelper<REGISTER_POLICY, ELEMENT_TYPE, NUM_ELEM, VECTOR_TYPE>::s_num_registers>,
-                                    NUM_ELEM,
-                                    VECTOR_TYPE>;
-
-
-
-  } // namespace internal
+    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t NUM_ELEM>
+    using makeVectorImpl = VectorImpl<VECTOR_TYPE,
+                                      REGISTER_POLICY,
+                                      ELEMENT_TYPE,
+                                      typename internal::VectorTypeHelper<REGISTER_POLICY, ELEMENT_TYPE, NUM_ELEM, VECTOR_TYPE>::reg_seq,
+                                      typename internal::VectorTypeHelper<REGISTER_POLICY, ELEMENT_TYPE, NUM_ELEM, VECTOR_TYPE>::part_reg_seq,
+                                      NUM_ELEM>;
 
 
+    /*
+     * Helper that computes a similar vector to the one provided, but of a
+     * different length
+     */
+    template<typename VECTOR, camp::idx_t NEW_LENGTH>
+    struct VectorNewLengthHelper;
 
+    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename T, typename REG_SEQ, typename PART_REG_SEQ, camp::idx_t NUM_ELEM, camp::idx_t NEW_LENGTH>
+    struct VectorNewLengthHelper<VectorImpl<VECTOR_TYPE, REGISTER_POLICY, T, REG_SEQ, PART_REG_SEQ, NUM_ELEM>, NEW_LENGTH> {
 
-  namespace internal
-  {
+        using type = internal::makeVectorImpl<VECTOR_TYPE,
+                                 REGISTER_POLICY,
+                                 T,
+                                 NEW_LENGTH>;
 
-
-  /*
-   * Helper that computes a similar vector to the one provided, but of a
-   * different length
-   */
-  template<typename VECTOR_TYPE, camp::idx_t NEW_LENGTH>
-  struct VectorNewLengthHelper;
-
-  template<typename REGISTER_POLICY, typename T, typename REG_SEQ, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE, camp::idx_t NEW_LENGTH>
-  struct VectorNewLengthHelper<VectorBase<REGISTER_POLICY, T, REG_SEQ, NUM_ELEM, VECTOR_TYPE>, NEW_LENGTH> {
-
-      using type = internal::makeVectorBase<REGISTER_POLICY,
-                               T,
-                               NEW_LENGTH,
-                               VECTOR_TYPE>;
-
-  };
+    };
 
 
 
 
 
   } //namespace internal
-
-
-
-
-
 }  // namespace RAJA
+
+
+#include "RAJA/pattern/vector/internal/FixedVector.hpp"
+#include "RAJA/pattern/vector/internal/StreamVector.hpp"
 
 
 #endif

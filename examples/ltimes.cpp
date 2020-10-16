@@ -5,6 +5,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+// Place the following line before including RAJA to enable
+// statistics on the Vector abstractions
+#define RAJA_ENABLE_VECTOR_STATS
+
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -59,8 +63,9 @@
 #define VARIANT_RAJA_SEQ_ARGS        0
 #define VARIANT_RAJA_VECTOR          0
 #define VARIANT_RAJA_MATRIX          1
-#define VARIANT_RAJA_SEQ_SHMEM       1
+#define VARIANT_RAJA_SEQ_SHMEM       0
 #define VARIANT_RAJA_MATRIX_SHMEM    1
+#define VARIANT_RAJA_OPENMP          0
 
 using namespace RAJA;
 
@@ -99,24 +104,23 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const long num_m = 32 + (rand()/RAND_MAX);
   const long num_g = 36 + (rand()/RAND_MAX);
   const long num_d = 64 + (rand()/RAND_MAX);
-  const long num_z = 64*1024 + (rand()/RAND_MAX);
 
 #ifdef DEBUG_LTIMES
   const long num_iter = 1;
+  // use a decreased number of zones since this will take a lot longer
+  // and we're not really measuring performance here
+  const long num_z = 128 + (rand()/RAND_MAX);
 #else
-  const long num_iter = 150 ;
+  const long num_iter = 15 ;
+  const long num_z = 64*1024 + (rand()/RAND_MAX);
 #endif
 
   double total_flops = num_g*num_z*(2*num_d)*num_m;
-  double min_bytes_load  = 8*(num_m*num_d + num_d*num_g*num_z);
-  double min_bytes_store = 8*(num_m*num_g*num_z);
-  double min_bytes_io = min_bytes_load + min_bytes_store;
 
   std::cout << "num_m = " << num_m << ", num_g = " << num_g <<
                ", num_d = " << num_d << ", num_z = " << num_z << "\n\n";
 
   std::cout << "total flops:  " << (long)total_flops << "\n";
-  std::cout << "min bytes IO: " << (long)min_bytes_io << "\n\n";
 
   const long L_size   = num_m * num_d;
   const long psi_size = num_d * num_g * num_z;
@@ -430,7 +434,9 @@ if(VARIANT_RAJA_VECTOR){
      >;
 
 
-
+#ifdef RAJA_ENABLE_VECTOR_STATS
+  RAJA::vector_stats::resetVectorStats();
+#endif
 
 
   auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
@@ -454,17 +460,19 @@ if(VARIANT_RAJA_VECTOR){
   std::cout << "  RAJA vectorized version of LTimes run time (sec.): "
             << t <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
+#ifdef RAJA_ENABLE_VECTOR_STATS
+  RAJA::vector_stats::printVectorStats();
+#endif
 
 #if defined(DEBUG_LTIMES)
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
 #endif
 }
 
-
 //----------------------------------------------------------------------------//
 
 if(VARIANT_RAJA_MATRIX){
-  std::cout << "\n Running RAJA matrix version of LTimes...\n";
+  std::cout << "\n Running RAJA row-major matrix version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
 
@@ -488,21 +496,21 @@ if(VARIANT_RAJA_MATRIX){
   LView L(L_data,
           RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
 
-  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
+  std::array<RAJA::idx_t, 3> psi_perm {{1, 0, 2}};
   PsiView psi_orig(psi_data,
               RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
 
   PsiView psi(thr_psi_data,
               RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
 
-  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
+  std::array<RAJA::idx_t, 3> phi_perm {{1, 0, 2}};
   PhiView phi_orig(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
   PhiView phi(thr_phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  using matrix_t = RAJA::FixedMatrix<double,8,8>;
+  using matrix_t = RAJA::FixedMatrix<double,4,4, MATRIX_ROW_MAJOR>;
 
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
@@ -511,21 +519,26 @@ if(VARIANT_RAJA_MATRIX){
 
   using EXECPOL =
     RAJA::KernelPolicy<
-    statement::For<2, omp_parallel_for_exec,  // g
-      statement::Tile<3, tile_fixed<128>, loop_exec,
-       statement::For<0, matrix_row_exec<matrix_t>,  // m
-         statement::For<1, matrix_col_exec<matrix_t>,  // d
-         statement::Tile<3, tile_fixed<16>, loop_exec,
-             statement::For<3, matrix_col_exec<matrix_t>,  // z
-               statement::Lambda<0>
-             >
-           >
+    statement::For<2, loop_exec,  // g
+      statement::For<1, matrix_col_exec<matrix_t>,  // d
+        statement::For<0, matrix_row_exec<matrix_t>,  // m
+          statement::For<3, matrix_col_exec<matrix_t>,  // z
+
+           statement::Lambda<0>
          >
-       > > >
+
+       >
+     > >
      >;
 
 
-// rzgenies: 36 cores at 2.1GHz, 2FMAs/cycle=16ops/cycle = 1.152TF peak
+#ifdef RAJA_ENABLE_VECTOR_STATS
+  RAJA::vector_stats::resetVectorStats();
+#endif
+
+// rzgenies: 1  cores at 2.1GHz, 2FMAs/cycle=16ops/cycle = 33.6 GF peak
+// rzgenies: 36 cores at 2.1GHz, 2FMAs/cycle=16ops/cycle =  1.2 TF peak
+
 
 
   auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
@@ -551,27 +564,158 @@ if(VARIANT_RAJA_MATRIX){
   RAJA::Timer timer;
   timer.start();
 
-  for (int iter = 0;iter < num_iter;++ iter)
-  RAJA::kernel<EXECPOL>( segments,
-    [=] (RowM m, ColD d, IG g, ColZ z) {
-
-      phi(m, g, z) = L(m, d) * psi(toRowIndex(d), g, z) + phi(m, g, z);
-    }
-  );
+  for (int iter = 0;iter < num_iter;++ iter){
+		RAJA::kernel<EXECPOL>( segments,
+			[=] (RowM m, ColD d, IG g, ColZ z) {
+				phi(m, g, z) = L(m, d) * psi(toRowIndex(d), g, z) + phi(m, g, z);
+			}
+		);
+  }
 
   timer.stop();
   double t = timer.elapsed();
   double gflop_rate = total_flops * num_iter / t / 1.0e9;
-  double bw_rate = min_bytes_io * num_iter/ t / 1.0e9;
-  std::cout << "  RAJA matrix version of LTimes run time (sec.): "
-            << t <<", GFLOPS/sec: " << gflop_rate << ", GB/sec: " << bw_rate << std::endl;
+  std::cout << "  RAJA row-major matrix version of LTimes run time (sec.): "
+            << t <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
-  delete[] thr_psi_data;
-  delete[] thr_phi_data;
+#ifdef RAJA_ENABLE_VECTOR_STATS
+  RAJA::vector_stats::printVectorStats();
+#endif
 
 #if defined(DEBUG_LTIMES)
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
 #endif
+
+  delete[] thr_psi_data;
+  delete[] thr_phi_data;
+
+
+}
+
+
+//----------------------------------------------------------------------------//
+
+if(VARIANT_RAJA_MATRIX){
+  std::cout << "\n Running RAJA column-major matrix version of LTimes...\n";
+
+  std::memset(phi_data, 0, phi_size * sizeof(double));
+
+  //
+  // View types and Views/Layouts for indexing into arrays
+  //
+  // L(m, d) : 1 -> d is stride-1 dimension
+  using LView = TypedView<double, Layout<2, int, 0>, IM, ID>;
+
+  // psi(d, g, z) : 2 -> z is stride-1 dimension
+  using PsiView = TypedView<double, Layout<3, int, 0>, ID, IG, IZ>;
+
+  // phi(m, g, z) : 2 -> z is stride-1 dimension
+  using PhiView = TypedView<double, Layout<3, int, 0>, IM, IG, IZ>;
+
+  // create new data arrays and initialize them with threaded first-touch
+  double *thr_psi_data = new double[num_d*num_g*num_z];
+  double *thr_phi_data = new double[num_m*num_g*num_z];
+
+  std::array<RAJA::idx_t, 2> L_perm {{1, 0}};
+  LView L(L_data,
+          RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
+
+  std::array<RAJA::idx_t, 3> psi_perm {{2, 1, 0}};
+  PsiView psi_orig(psi_data,
+              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
+
+  PsiView psi(thr_psi_data,
+              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
+
+  std::array<RAJA::idx_t, 3> phi_perm {{2, 1, 0}};
+  PhiView phi_orig(phi_data,
+              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
+
+  PhiView phi(thr_phi_data,
+              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
+
+  using matrix_t = RAJA::FixedMatrix<double,8,4, MATRIX_COL_MAJOR>;
+
+
+  using RowM = RAJA::RowIndex<IM, matrix_t>;
+  using ColD = RAJA::ColIndex<ID, matrix_t>;
+  using ColZ = RAJA::ColIndex<IZ, matrix_t>;
+
+  using EXECPOL =
+    RAJA::KernelPolicy<
+    statement::For<2, loop_exec,  // g
+    statement::For<3, matrix_col_exec<matrix_t>,  // z
+     statement::For<0, matrix_row_exec<matrix_t>,  // m
+       statement::For<1, matrix_col_exec<matrix_t>,  // d
+
+           statement::Lambda<0>
+         >
+
+       >
+     > >
+     >;
+
+
+#ifdef RAJA_ENABLE_VECTOR_STATS
+  RAJA::vector_stats::resetVectorStats();
+#endif
+
+
+// rzgenies: 1  cores at 2.1GHz, 2FMAs/cycle=16ops/cycle = 33.6 GF peak
+// rzgenies: 36 cores at 2.1GHz, 2FMAs/cycle=16ops/cycle =  1.2 TF peak
+
+
+
+  auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
+                                   RAJA::TypedRangeSegment<ID>(0, num_d),
+                                   RAJA::TypedRangeSegment<IG>(0, num_g),
+                                   RAJA::TypedRangeSegment<IZ>(0, num_z));
+
+#pragma omp for
+  for(int ig = 0;ig < num_g;++ ig){
+    IG g(ig);
+    for(ID d(0);d < num_d;++ d){
+      for(IZ z(0);z < num_z;++ z){
+        psi(d,g,z) = psi_orig(d,g,z);
+      }
+    }
+    for(IM m(0);m < num_m;++ m){
+      for(IZ z(0);z < num_z;++ z){
+        phi(m,g,z) = phi_orig(m,g,z);
+      }
+    }
+  }
+
+  RAJA::Timer timer;
+  timer.start();
+
+  for (int iter = 0;iter < num_iter;++ iter){
+		RAJA::kernel<EXECPOL>( segments,
+			[=] (RowM m, ColD d, IG g, ColZ z) {
+				phi(m, g, z) = L(m, d) * psi(toRowIndex(d), g, z) + phi(m, g, z);
+			}
+		);
+  }
+
+  timer.stop();
+  double t = timer.elapsed();
+  double gflop_rate = total_flops * num_iter / t / 1.0e9;
+  std::cout << "  RAJA column-major matrix version of LTimes run time (sec.): "
+            << t <<", GFLOPS/sec: " << gflop_rate << std::endl;
+
+#ifdef RAJA_ENABLE_VECTOR_STATS
+  RAJA::vector_stats::printVectorStats();
+#endif
+
+#if defined(DEBUG_LTIMES)
+  checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
+#endif
+
+
+  delete[] thr_psi_data;
+  delete[] thr_phi_data;
+
+
 }
 
 //----------------------------------------------------------------------------//
@@ -789,23 +933,23 @@ if(VARIANT_RAJA_MATRIX_SHMEM){
   // View types and Views/Layouts for indexing into arrays
   //
   // L(m, d) : 1 -> d is stride-1 dimension
-  using LView = TypedView<double, Layout<2, int, 1>, IM, ID>;
+  using LView = TypedView<double, Layout<2, int, 0>, IM, ID>;
 
   // psi(d, g, z) : 2 -> z is stride-1 dimension
-  using PsiView = TypedView<double, Layout<3, int, 2>, ID, IG, IZ>;
+  using PsiView = TypedView<double, Layout<3, int, 0>, ID, IG, IZ>;
 
   // phi(m, g, z) : 2 -> z is stride-1 dimension
-  using PhiView = TypedView<double, Layout<3, int, 2>, IM, IG, IZ>;
+  using PhiView = TypedView<double, Layout<3, int, 0>, IM, IG, IZ>;
 
-  std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
+  std::array<RAJA::idx_t, 2> L_perm {{1, 0}};
   LView L(L_data,
           RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
 
-  std::array<RAJA::idx_t, 3> psi_perm {{1, 0, 2}};
+  std::array<RAJA::idx_t, 3> psi_perm {{1, 2, 0}};
   PsiView psi(psi_data,
               RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
 
-  std::array<RAJA::idx_t, 3> phi_perm {{1, 0, 2}};
+  std::array<RAJA::idx_t, 3> phi_perm {{1, 2, 0}};
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
@@ -814,7 +958,7 @@ if(VARIANT_RAJA_MATRIX_SHMEM){
   constexpr size_t tile_z = 16;
   constexpr size_t tile_g = 0;
 
-  using matrix_t = RAJA::FixedMatrix<double,4,4>;
+  using matrix_t = RAJA::FixedMatrix<double,4,4, RAJA::MATRIX_COL_MAJOR>;
 
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
@@ -907,7 +1051,7 @@ if(VARIANT_RAJA_MATRIX_SHMEM){
   //
 
   using shmem_L_t = RAJA::TypedLocalArray<double,
-                        RAJA::PERM_IJ,
+                        RAJA::PERM_JI,
                         RAJA::SizeList<tile_m, tile_d>,
                         IM, ID>;
   shmem_L_t shmem_L;
@@ -926,6 +1070,9 @@ if(VARIANT_RAJA_MATRIX_SHMEM){
                         IM, IG, IZ>;
   shmem_phi_t shmem_phi;
 
+#ifdef RAJA_ENABLE_VECTOR_STATS
+  RAJA::vector_stats::resetVectorStats();
+#endif
 
   RAJA::Timer timer;
   timer.start();
@@ -991,6 +1138,10 @@ if(VARIANT_RAJA_MATRIX_SHMEM){
   std::cout << "  RAJA matrix shmem version of LTimes run time (sec.): "
             << timer.elapsed() <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
+#ifdef RAJA_ENABLE_VECTOR_STATS
+  RAJA::vector_stats::printVectorStats();
+#endif
+
 #if defined(DEBUG_LTIMES)
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
 #endif
@@ -998,7 +1149,7 @@ if(VARIANT_RAJA_MATRIX_SHMEM){
 
 //----------------------------------------------------------------------------//
 
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP) && (VARIANT_RAJA_OPENMP)
 if(1){
   std::cout << "\n Running RAJA OpenMP version of LTimes...\n";
 

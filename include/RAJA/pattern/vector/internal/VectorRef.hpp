@@ -94,6 +94,11 @@ namespace RAJA
           {}
 
 
+      RAJA_INLINE
+      std::string toString() const {
+        return load().toString();
+      }
+
       RAJA_HOST_DEVICE
       RAJA_INLINE
       static
@@ -119,10 +124,21 @@ namespace RAJA
       void store(vector_type value) const
       {
         if(STRIDE_ONE){
-          value.store(m_data+m_linear_index);
+          if(vector_type::s_is_fixed){
+            value.store_packed(m_data+m_linear_index);
+          }
+          else
+          {
+            value.store_packed_n(m_data+m_linear_index, m_length);
+          }
         }
         else{
-          value.store(m_data+m_linear_index, m_stride);
+          if(vector_type::s_is_fixed){
+            value.store_strided(m_data+m_linear_index, m_stride);
+          }
+          else{
+            value.store_strided_n(m_data+m_linear_index, m_stride, m_length);
+          }
         }
       }
 
@@ -136,10 +152,20 @@ namespace RAJA
       {
         vector_type value;
         if(STRIDE_ONE){
-          value.load(m_data+m_linear_index, 1, m_length);
+          if(vector_type::s_is_fixed){
+            value.load_packed(m_data+m_linear_index);
+          }
+          else{
+            value.load_packed_n(m_data+m_linear_index, m_length);
+          }
         }
         else{
-          value.load(m_data+m_linear_index, m_stride, m_length);
+          if(vector_type::s_is_fixed){
+            value.load_strided(m_data+m_linear_index, m_stride);
+          }
+          else{
+            value.load_strided_n(m_data+m_linear_index, m_stride, m_length);
+          }
         }
         return value;
       }

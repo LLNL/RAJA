@@ -42,13 +42,13 @@ using RegisterTestTypes = ::testing::Types<
 
 //    // Test automatically wrapped types to make things easier for users
     RAJA::StreamVector<int>,
-    RAJA::StreamVector<int, 2>,
-    RAJA::StreamVector<long>,
-    RAJA::StreamVector<long, 2>,
-    RAJA::StreamVector<float>,
-    RAJA::StreamVector<float, 2>,
-    RAJA::StreamVector<double>,
-    RAJA::StreamVector<double, 2>,
+//    RAJA::StreamVector<int, 2>,
+//    RAJA::StreamVector<long>,
+//    RAJA::StreamVector<long, 2>,
+//    RAJA::StreamVector<float>,
+//    RAJA::StreamVector<float, 2>,
+//    RAJA::StreamVector<double>,
+//    RAJA::StreamVector<double, 2>,
     RAJA::FixedVector<double, 1>,
     RAJA::FixedVector<double, 2>,
     RAJA::FixedVector<double, 3>,
@@ -165,7 +165,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterLoad)
 
   // load stride-1 from pointer
   register_t x;
-  x.load(A);
+  x.load_packed(A);
 
   for(size_t i = 0;i < num_elem; ++ i){
     ASSERT_DOUBLE_EQ(x[i], A[i]);
@@ -173,7 +173,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterLoad)
 
   // load stride-2from pointer
   register_t y;
-  y.load(A, 2);
+  y.load_strided(A, 2);
 
   for(size_t i = 0;i < num_elem; ++ i){
     ASSERT_DOUBLE_EQ(y[i], A[i*2]);

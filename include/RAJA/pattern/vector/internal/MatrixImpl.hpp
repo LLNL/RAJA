@@ -307,7 +307,8 @@ namespace internal {
     private:
 
       vector_type m_rows[sizeof...(IDX_ROW)];
-      SemiStaticValue<sizeof...(IDX_ROW), SIZE_TYPE == MATRIX_FIXED> m_num_rows;
+      //SemiStaticValue<sizeof...(IDX_ROW), SIZE_TYPE == MATRIX_FIXED> m_num_rows;
+      camp::idx_t m_num_rows;
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -326,12 +327,15 @@ namespace internal {
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixImpl(){}
+      MatrixImpl():
+      m_num_rows(sizeof...(IDX_ROW))
+      {}
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       MatrixImpl(element_type c) :
-        m_rows{(IDX_ROW >= 0) ? vector_type(c) : vector_type(c)...}
+        m_rows{(IDX_ROW >= 0) ? vector_type(c) : vector_type(c)...},
+        m_num_rows(sizeof...(IDX_ROW))
       {}
 
       RAJA_HOST_DEVICE
@@ -345,7 +349,8 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       MatrixImpl(ROWS const &... rows) :
-        m_rows{rows...}
+        m_rows{rows...},
+        m_num_rows(sizeof...(ROWS))
       {
         static_assert(sizeof...(ROWS) == base_type::s_num_rows,
             "Incompatible number of row vectors");
@@ -359,7 +364,7 @@ namespace internal {
       RAJA_INLINE
       self_type &copy(self_type const &v){
         camp::sink((m_rows[IDX_ROW] = v.m_rows[IDX_ROW])...);
-        m_num_rows.set(v.m_num_rows.get());
+        m_num_rows = v.m_num_rows;
         return *getThis();
       }
 
@@ -370,7 +375,7 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr camp::idx_t dim_elem(camp::idx_t dim) const{
-        return (dim==0) ? m_num_rows.get() : m_rows[0].size();
+        return (dim==0) ? m_num_rows : m_rows[0].size();
       }
 
       /*!
@@ -387,10 +392,10 @@ namespace internal {
         camp::sink(
             // only load num_rows rows
             (IDX_ROW < num_rows
-            ?  m_rows[IDX_ROW].load(ptr+IDX_ROW*row_stride, col_stride, num_cols) // LOAD
+            ?  m_rows[IDX_ROW].load_strided_n(ptr+IDX_ROW*row_stride, col_stride, num_cols) // LOAD
             :  m_rows[IDX_ROW])... // NOP, but has same as above type
         );
-        m_num_rows.set(num_rows);
+        m_num_rows = num_rows;
 
         return *getThis();
       }
@@ -407,8 +412,8 @@ namespace internal {
       {
         camp::sink(
             // only store rows that are active
-            (IDX_ROW < m_num_rows.get()
-            ?  m_rows[IDX_ROW].store(ptr+IDX_ROW*row_stride, col_stride) // Store
+            (IDX_ROW < m_num_rows
+            ?  m_rows[IDX_ROW].store_strided(ptr+IDX_ROW*row_stride, col_stride) // Store
             :  m_rows[IDX_ROW])... // NOP, but has same as above type
         );
 
@@ -529,7 +534,7 @@ namespace internal {
     private:
 
       vector_type m_cols[sizeof...(IDX_COL)];
-      SemiStaticValue<sizeof...(IDX_COL), SIZE_TYPE == MATRIX_FIXED> m_num_cols;
+      camp::idx_t m_num_cols;
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -548,12 +553,15 @@ namespace internal {
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixImpl(){}
+      MatrixImpl() :
+      m_num_cols(sizeof...(IDX_COL))
+      {}
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       MatrixImpl(element_type c) :
-        m_cols{(IDX_COL >= 0) ? vector_type(c) : vector_type(c)...}
+        m_cols{(IDX_COL >= 0) ? vector_type(c) : vector_type(c)...},
+        m_num_cols(sizeof...(IDX_COL))
       {}
 
       RAJA_HOST_DEVICE
@@ -567,7 +575,8 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       MatrixImpl(COLS const &... cols) :
-      m_cols{cols...}
+      m_cols{cols...},
+      m_num_cols(sizeof...(COLS))
       {
         static_assert(sizeof...(COLS) == base_type::s_num_cols,
             "Incompatible number of column vectors");
@@ -581,7 +590,7 @@ namespace internal {
       RAJA_INLINE
       self_type &copy(self_type const &v){
         camp::sink((m_cols[IDX_COL] = v.m_cols[IDX_COL])...);
-        m_num_cols.set(v.m_num_cols.get());
+        m_num_cols = v.m_num_cols;
         return *getThis();
       }
 
@@ -591,7 +600,7 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr camp::idx_t dim_elem(camp::idx_t dim) const{
-        return (dim==0) ? m_cols[0].size() : m_num_cols.get();
+        return (dim==0) ? m_cols[0].size() : m_num_cols;
       }
 
       /*!
@@ -608,10 +617,10 @@ namespace internal {
         camp::sink(
             // only load num_rows rows
             (IDX_COL < num_cols
-            ?  m_cols[IDX_COL].load(ptr+IDX_COL*col_stride, row_stride, num_rows) // LOAD
+            ?  m_cols[IDX_COL].load_strided_n(ptr+IDX_COL*col_stride, row_stride, num_rows) // LOAD
             :  m_cols[IDX_COL])... // NOP, but has same as above type
         );
-        m_num_cols.set(num_cols);
+        m_num_cols = num_cols;
 
         return *getThis();
       }
@@ -628,8 +637,8 @@ namespace internal {
       {
         camp::sink(
             // only store rows that are active
-            (IDX_COL < m_num_cols.get()
-            ?  m_cols[IDX_COL].store(ptr+IDX_COL*col_stride, row_stride) // Store
+            (IDX_COL < m_num_cols
+            ?  m_cols[IDX_COL].store_strided(ptr+IDX_COL*col_stride, row_stride) // Store
             :  m_cols[IDX_COL])... // NOP, but has same as above type
         );
 

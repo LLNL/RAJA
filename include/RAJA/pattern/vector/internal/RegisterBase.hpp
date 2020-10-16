@@ -80,6 +80,20 @@ namespace RAJA
         return false;
       }
 
+      RAJA_INLINE
+      std::string toString() const {
+        std::string s = "[";
+
+        for(int i = 0;i < self_type::s_num_elem;++ i){
+          if(i){
+            s += ", ";
+          }
+          s += std::to_string(getThis()->get(i));
+        }
+
+        return s + " ]";
+      }
+
       /*!
        * @brief Load a full register from a stride-one memory location
        *
@@ -87,7 +101,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &load_packed(element_type const *ptr){
         getThis()->load(ptr);
-        return *this;
+        return *getThis();
       }
 
       /*!
@@ -142,6 +156,54 @@ namespace RAJA
       }
 
 
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      self_type const &store_packed(element_type *ptr) const{
+        return getThis()->store(ptr);
+      }
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      self_type const &store_packed_n(element_type *ptr, camp::idx_t N) const{
+        return getThis()->store(ptr, 1, N);
+      }
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      self_type const &store_strided(element_type *ptr, camp::idx_t stride) const{
+        return getThis()->store(ptr, stride);
+      }
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      self_type const &store_strided_n(element_type *ptr, camp::idx_t stride, camp::idx_t N) const{
+        return getThis()->store(ptr, stride, N);
+      }
+
+      /*!
+       * @brief Broadcast scalar value to first N register elements
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &broadcast_n(element_type const &value, camp::idx_t N){
+        for(camp::idx_t i = 0;i < N;++ i){
+          getThis()->set(i, value);
+        }
+        return *getThis();
+      }
+
 
       /*!
        * @brief Set entire vector to a single scalar value
@@ -152,7 +214,7 @@ namespace RAJA
       self_type &operator=(element_type value)
       {
         getThis()->broadcast(value);
-        return *this;
+        return *getThis();
       }
 
       /*!
@@ -292,6 +354,22 @@ namespace RAJA
         return *getThis();
       }
 
+
+      /*!
+       * @brief Divide n elements of this vector by another vector
+       * @param x Vector to divide by
+       * @param n Number of elements to divide
+       * @return Value of (*this)+x
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type divide_n(self_type const &b, camp::idx_t n) const {
+        self_type q(*getThis());
+        for(camp::idx_t i = 0;i < n;++i){
+          q.set(i, getThis()->get(i) / b.get(i));
+        }
+        return q;
+      }
 
       /*!
        * @brief Dot product of two vectors

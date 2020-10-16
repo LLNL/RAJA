@@ -71,7 +71,7 @@ TYPED_TEST_P(VectorTest, GetSet)
 
     // load array A as vector
     vector_t vec;
-    vec.load(&A[0], 1, N);
+    vec.load_packed_n(&A[0], N);
 
     // check get operations
     for(camp::idx_t i = 0;i < N;++ i){
@@ -111,7 +111,7 @@ TYPED_TEST_P(VectorTest, MinMaxSumDot)
 
     // load array A as vector
     vector_t vec;
-    vec.load(&A[0], 1, N);
+    vec.load_packed_n(&A[0], N);
 
     // check min
     ASSERT_DOUBLE_EQ(vec.min(N), (element_t)0);
@@ -162,16 +162,17 @@ TYPED_TEST_P(VectorTest, FmaFms)
 
     // load arrays as vectors
     vector_t vec_A;
-    vec_A.load(&A[0], 1, N);
+    vec_A.load_packed_n(&A[0], N);
 
     vector_t vec_B;
-    vec_B.load(&B[0], 1, N);
+    vec_B.load_packed_n(&B[0], N);
 
     vector_t vec_C;
-    vec_C.load(&C[0], 1, N);
+    vec_C.load_packed_n(&C[0], N);
 
 
     // check FMA (A*B+C)
+
     vector_t fma = vec_A.fused_multiply_add(vec_B, vec_C);
     for(camp::idx_t i = 0;i < N;++ i){
       ASSERT_DOUBLE_EQ(fma[i], A[i]*B[i]+C[i]);
@@ -214,12 +215,12 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
   RAJA::View<double, RAJA::Layout<1>> Y(B, N);
   RAJA::View<double, RAJA::Layout<1>> Z(C, N);
 
-
   RAJA::forall<RAJA::vector_exec<vector_t>>(RAJA::TypedRangeSegment<int>(0, N),
       [=](RAJA::VectorIndex<int, vector_t> i)
   {
     Z[i] = 3+(X[i]*(5/Y[i]))+9;
   });
+
 
   for(size_t i = 0;i < N;i ++){
     ASSERT_DOUBLE_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
