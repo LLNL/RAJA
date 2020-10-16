@@ -7,7 +7,7 @@
 
 // Place the following line before including RAJA to enable
 // statistics on the Vector abstractions
-#define RAJA_ENABLE_VECTOR_STATS
+//#define RAJA_ENABLE_VECTOR_STATS
 
 #include <cstdlib>
 #include <cstring>
@@ -57,15 +57,15 @@
 //#define DEBUG_LTIMES
 
 
-#define VARIANT_C                    0
-#define VARIANT_C_VIEWS              0
-#define VARIANT_RAJA_SEQ             0
-#define VARIANT_RAJA_SEQ_ARGS        0
-#define VARIANT_RAJA_VECTOR          0
+#define VARIANT_C                    1
+#define VARIANT_C_VIEWS              1
+#define VARIANT_RAJA_SEQ             1
+#define VARIANT_RAJA_SEQ_ARGS        1
+#define VARIANT_RAJA_VECTOR          1
 #define VARIANT_RAJA_MATRIX          1
-#define VARIANT_RAJA_SEQ_SHMEM       0
+#define VARIANT_RAJA_SEQ_SHMEM       1
 #define VARIANT_RAJA_MATRIX_SHMEM    1
-#define VARIANT_RAJA_OPENMP          0
+#define VARIANT_RAJA_OPENMP          1
 
 using namespace RAJA;
 
@@ -925,7 +925,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
 //----------------------------------------------------------------------------//
 
 if(VARIANT_RAJA_MATRIX_SHMEM){
-  std::cout << "\n Running RAJA matrix shmem version of LTimes...\n";
+  std::cout << "\n Running RAJA column-major matrix shmem version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
 
@@ -945,20 +945,20 @@ if(VARIANT_RAJA_MATRIX_SHMEM){
   LView L(L_data,
           RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
 
-  std::array<RAJA::idx_t, 3> psi_perm {{1, 2, 0}};
+  std::array<RAJA::idx_t, 3> psi_perm {{2, 1, 0}};
   PsiView psi(psi_data,
               RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
 
-  std::array<RAJA::idx_t, 3> phi_perm {{1, 2, 0}};
+  std::array<RAJA::idx_t, 3> phi_perm {{2, 1, 0}};
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  constexpr size_t tile_m = 8;
-  constexpr size_t tile_d = 8;
+  constexpr size_t tile_m = 16;
+  constexpr size_t tile_d = 16;
   constexpr size_t tile_z = 16;
   constexpr size_t tile_g = 0;
 
-  using matrix_t = RAJA::FixedMatrix<double,4,4, RAJA::MATRIX_COL_MAJOR>;
+  using matrix_t = RAJA::FixedMatrix<double,8,4, RAJA::MATRIX_COL_MAJOR>;
 
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
@@ -1058,14 +1058,14 @@ if(VARIANT_RAJA_MATRIX_SHMEM){
 
 
   using shmem_psi_t = RAJA::TypedLocalArray<double,
-                        RAJA::PERM_JIK,
+                        RAJA::PERM_JKI,
                         RAJA::SizeList<tile_d, tile_g, tile_z>,
                         ID, IG, IZ>;
   shmem_psi_t shmem_psi;
 
 
   using shmem_phi_t = RAJA::TypedLocalArray<double,
-                        RAJA::PERM_JIK,
+                        RAJA::PERM_JKI,
                         RAJA::SizeList<tile_m, tile_g, tile_z>,
                         IM, IG, IZ>;
   shmem_phi_t shmem_phi;
