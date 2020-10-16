@@ -149,6 +149,9 @@ namespace RAJA
         RAJA_HOST_DEVICE
         RAJA_INLINE
         self_type &copy(self_type const &c){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_copy ++;
+#endif
           camp::sink( (m_registers[REG_SEQ] = c.m_registers[REG_SEQ])...);
           camp::sink( (m_registers[PART_REG_SEQ] = c.m_registers[PART_REG_SEQ])...);
           return *getThis();
@@ -177,6 +180,9 @@ namespace RAJA
         VectorBase(VectorBase const &c) :
           m_registers{c.m_registers[REG_SEQ]..., c.m_registers[PART_REG_SEQ]...}
         {
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_copy_ctor ++;
+#endif
         }
 
         /*!
@@ -187,6 +193,9 @@ namespace RAJA
         VectorBase(element_type const &c) :
           m_registers{to_first(register_type(c), REG_SEQ)..., to_first(register_type(c), PART_REG_SEQ)...}
         {
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_vector_broadcast_ctor ++;
+#endif
         }
 
         /*!
@@ -466,8 +475,17 @@ namespace RAJA
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_vector_get ++;
 #endif
-
-          return m_registers[i/s_num_reg_elem].get(i%s_num_reg_elem);
+          camp::idx_t reg = 0;
+          camp::idx_t elem = i;
+          while(elem >= 0){
+            if(elem < s_num_reg_elem){
+              return m_registers[reg].get(elem);
+            }
+            ++ reg;
+            elem -= s_num_reg_elem;
+          }
+          return 0;
+          //return m_registers[i/s_num_reg_elem].get(i%s_num_reg_elem);
         }
 
 
@@ -481,7 +499,19 @@ namespace RAJA
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_vector_set ++;
 #endif
-          m_registers[i/s_num_reg_elem].set(i%s_num_reg_elem, value);
+//          m_registers[i/s_num_reg_elem].set(i%s_num_reg_elem, value);
+
+          camp::idx_t reg = 0;
+          camp::idx_t elem = i;
+          while(elem >= 0){
+            if(elem < s_num_reg_elem){
+              m_registers[reg].set(elem, value);
+              return *getThis();
+            }
+            ++ reg;
+            elem -= s_num_reg_elem;
+          }
+
           return *getThis();
         }
 

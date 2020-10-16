@@ -8,6 +8,10 @@
 #include "RAJA/pattern/vector/internal/stats.hpp"
 #include <stdio.h>
 
+camp::idx_t RAJA::vector_stats::num_vector_copy = 0;
+camp::idx_t RAJA::vector_stats::num_vector_copy_ctor = 0;
+camp::idx_t RAJA::vector_stats::num_vector_broadcast_ctor = 0;
+
 camp::idx_t RAJA::vector_stats::num_vector_load_packed = 0;
 camp::idx_t RAJA::vector_stats::num_vector_load_packed_n = 0;
 camp::idx_t RAJA::vector_stats::num_vector_load_strided = 0;
@@ -38,9 +42,16 @@ camp::idx_t RAJA::vector_stats::num_vector_vmax = 0;
 camp::idx_t RAJA::vector_stats::num_vector_vmin = 0;
 camp::idx_t RAJA::vector_stats::num_vector_dot = 0;
 
-
+camp::idx_t RAJA::vector_stats::num_matrix_mm_mult_row_row = 0;
+camp::idx_t RAJA::vector_stats::num_matrix_mm_multacc_row_row = 0;
+camp::idx_t RAJA::vector_stats::num_matrix_mm_mult_col_col = 0;
+camp::idx_t RAJA::vector_stats::num_matrix_mm_multacc_col_col = 0;
 
 void RAJA::vector_stats::resetVectorStats(){
+  num_vector_copy = 0;
+  num_vector_copy_ctor = 0;
+  num_vector_broadcast_ctor = 0;
+
   num_vector_load_packed = 0;
   num_vector_load_packed_n = 0;
   num_vector_load_strided = 0;
@@ -68,6 +79,11 @@ void RAJA::vector_stats::resetVectorStats(){
   num_vector_vmax = 0;
   num_vector_vmin = 0;
   num_vector_dot = 0;
+
+  num_matrix_mm_mult_row_row = 0;
+  num_matrix_mm_multacc_row_row = 0;
+  num_matrix_mm_mult_col_col = 0;
+  num_matrix_mm_multacc_col_col = 0;
 }
 
 #define PRINT_STAT(STAT) if(STAT){printf("  %-32s   %ld\n", #STAT, STAT);}
@@ -75,6 +91,11 @@ void RAJA::vector_stats::resetVectorStats(){
 void RAJA::vector_stats::printVectorStats(){
 
   printf("RAJA Vector Statistics:\n");
+
+  PRINT_STAT(num_vector_copy);
+  PRINT_STAT(num_vector_copy_ctor);
+  PRINT_STAT(num_vector_broadcast_ctor);
+
   PRINT_STAT(num_vector_load_packed);
   PRINT_STAT(num_vector_load_packed_n);
   PRINT_STAT(num_vector_load_strided);
@@ -102,5 +123,9 @@ void RAJA::vector_stats::printVectorStats(){
   PRINT_STAT(num_vector_vmin);
   PRINT_STAT(num_vector_dot);
 
+  PRINT_STAT(num_matrix_mm_mult_row_row);
+  PRINT_STAT(num_matrix_mm_multacc_row_row);
+  PRINT_STAT(num_matrix_mm_mult_col_col);
+  PRINT_STAT(num_matrix_mm_multacc_col_col);
 
 }

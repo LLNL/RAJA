@@ -155,6 +155,9 @@ namespace internal {
       static
       RAJA_INLINE
       result_type multiply(A_type const &A, B_type const &B){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_matrix_mm_mult_row_row ++;
+#endif
         return result_type(calc_row_product(B_VECTOR_TYPE(0), A.row(A_IDX_ROW), B)...);
       }
 
@@ -162,6 +165,9 @@ namespace internal {
       static
       RAJA_INLINE
       result_type multiply_accumulate(A_type const &A, B_type const &B, result_type const &C){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_matrix_mm_multacc_row_row ++;
+#endif
         return result_type(calc_row_product(C.row(A_IDX_ROW), A.row(A_IDX_ROW), B)...);
       }
 
@@ -215,6 +221,9 @@ namespace internal {
       static
       RAJA_INLINE
       result_type multiply(A_type const &A, B_type const &B){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_matrix_mm_mult_col_col ++;
+#endif
         return result_type(calc_row_product(result_vector(), B.col(B_IDX_COL), A)...);
       }
 
@@ -222,6 +231,9 @@ namespace internal {
       static
       RAJA_INLINE
       result_type multiply_accumulate(A_type const &A, B_type const &B, result_type const &C){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_matrix_mm_multacc_col_col ++;
+#endif
         return result_type(calc_row_product(C.col(B_IDX_COL), B.col(B_IDX_COL), A)...);
       }
 

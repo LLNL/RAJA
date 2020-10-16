@@ -33,6 +33,10 @@ namespace RAJA
 struct vector_stats
 {
 
+  static camp::idx_t num_vector_copy;
+  static camp::idx_t num_vector_copy_ctor;
+  static camp::idx_t num_vector_broadcast_ctor;
+
   static camp::idx_t num_vector_load_packed;
   static camp::idx_t num_vector_load_packed_n;
   static camp::idx_t num_vector_load_strided;
@@ -63,6 +67,11 @@ struct vector_stats
   static camp::idx_t num_vector_vmin;
   static camp::idx_t num_vector_dot;
 
+
+  static camp::idx_t num_matrix_mm_mult_row_row;
+  static camp::idx_t num_matrix_mm_multacc_row_row;
+  static camp::idx_t num_matrix_mm_mult_col_col;
+  static camp::idx_t num_matrix_mm_multacc_col_col;
 
   static void resetVectorStats();
   static void printVectorStats();
