@@ -61,8 +61,10 @@
 #define VARIANT_C_VIEWS              1
 #define VARIANT_RAJA_SEQ             1
 #define VARIANT_RAJA_SEQ_ARGS        1
+#define VARIANT_RAJA_TEAMS_SEQ       1
 #define VARIANT_RAJA_VECTOR          1
 #define VARIANT_RAJA_MATRIX          1
+#define VARIANT_RAJA_TEAMS_MATRIX    1
 #define VARIANT_RAJA_SEQ_SHMEM       1
 #define VARIANT_RAJA_MATRIX_SHMEM    1
 #define VARIANT_RAJA_OPENMP          1
@@ -384,6 +386,80 @@ if(VARIANT_RAJA_SEQ_ARGS){
 #if defined(DEBUG_LTIMES)
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
 #endif
+}
+
+//----------------------------------------------------------------------------//
+
+if(VARIANT_RAJA_TEAMS_SEQ){
+  std::cout << "\n Running RAJA Teams sequential version of LTimes...\n";
+
+  std::memset(phi_data, 0, phi_size * sizeof(double));
+
+  //
+  // View types and Views/Layouts for indexing into arrays
+  //
+  // L(m, d) : 1 -> d is stride-1 dimension
+  using LView = TypedView<double, Layout<2, int, 0>, IM, ID>;
+
+  // psi(d, g, z) : 2 -> z is stride-1 dimension
+  using PsiView = TypedView<double, Layout<3, int, 0>, ID, IG, IZ>;
+
+  // phi(m, g, z) : 2 -> z is stride-1 dimension
+  using PhiView = TypedView<double, Layout<3, int, 0>, IM, IG, IZ>;
+
+
+  std::array<RAJA::idx_t, 2> L_perm {{1, 0}};
+  LView L(L_data,
+          RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
+
+  std::array<RAJA::idx_t, 3> psi_perm {{2, 1, 0}};
+  PsiView psi(psi_data,
+              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
+
+  std::array<RAJA::idx_t, 3> phi_perm {{2, 1, 0}};
+  PhiView phi(phi_data,
+              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
+
+
+  using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
+  using pol_g = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
+  using pol_z = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
+  using pol_m = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
+  using pol_d = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
+
+
+
+  RAJA::Timer timer;
+  timer.start();
+
+  for (int iter = 0;iter < num_iter;++ iter){
+    RAJA::expt::launch<pol_launch>(RAJA::expt::HOST, RAJA::expt::Resources(), [=](RAJA::expt::LaunchContext ctx){
+
+      RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
+        RAJA::expt::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](IZ z){
+          RAJA::expt::loop<pol_m>(ctx, RAJA::TypedRangeSegment<IM>(0, num_m), [&](IM m){
+            RAJA::expt::loop<pol_d>(ctx, RAJA::TypedRangeSegment<ID>(0, num_d), [&](ID d){
+              phi(m, g, z) += L(m, d) * psi(d, g, z);
+            });
+          });
+        });
+      });
+
+    }); // laucnch
+  } // iter
+
+  timer.stop();
+  double t = timer.elapsed();
+  double gflop_rate = total_flops * num_iter / t / 1.0e9;
+  std::cout << "  RAJA Teams sequential version of LTimes run time (sec.): "
+            << t <<", GFLOPS/sec: " << gflop_rate << std::endl;
+
+
+#if defined(DEBUG_LTIMES)
+  checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
+#endif
+
+
 }
 
 //----------------------------------------------------------------------------//
@@ -717,6 +793,101 @@ if(VARIANT_RAJA_MATRIX){
 
 
 }
+
+
+//----------------------------------------------------------------------------//
+
+if(VARIANT_RAJA_TEAMS_MATRIX){
+  std::cout << "\n Running RAJA Teams column-major matrix version of LTimes...\n";
+
+  std::memset(phi_data, 0, phi_size * sizeof(double));
+
+  //
+  // View types and Views/Layouts for indexing into arrays
+  //
+  // L(m, d) : 1 -> d is stride-1 dimension
+  using LView = TypedView<double, Layout<2, int, 0>, IM, ID>;
+
+  // psi(d, g, z) : 2 -> z is stride-1 dimension
+  using PsiView = TypedView<double, Layout<3, int, 0>, ID, IG, IZ>;
+
+  // phi(m, g, z) : 2 -> z is stride-1 dimension
+  using PhiView = TypedView<double, Layout<3, int, 0>, IM, IG, IZ>;
+
+  std::array<RAJA::idx_t, 2> L_perm {{1, 0}};
+  LView L(L_data,
+          RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
+
+  std::array<RAJA::idx_t, 3> psi_perm {{2, 1, 0}};
+  PsiView psi(psi_data,
+              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
+
+  std::array<RAJA::idx_t, 3> phi_perm {{2, 1, 0}};
+  PhiView phi(phi_data,
+              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
+
+  using matrix_t = RAJA::FixedMatrix<double,8,4, MATRIX_COL_MAJOR>;
+
+
+  using RowM = RAJA::RowIndex<IM, matrix_t>;
+  using ColD = RAJA::ColIndex<ID, matrix_t>;
+  using ColZ = RAJA::ColIndex<IZ, matrix_t>;
+
+  using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
+  using pol_g = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
+  using pol_z = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>>;
+  using pol_m = RAJA::expt::LoopPolicy<matrix_row_exec<matrix_t>>;
+  using pol_d = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>>;
+
+
+
+#ifdef RAJA_ENABLE_VECTOR_STATS
+  RAJA::vector_stats::resetVectorStats();
+#endif
+
+
+  RAJA::Timer timer;
+  timer.start();
+
+
+  for (int iter = 0;iter < num_iter;++ iter){
+    RAJA::expt::launch<pol_launch>(RAJA::expt::HOST, RAJA::expt::Resources(), [=](RAJA::expt::LaunchContext ctx){
+
+      RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
+        RAJA::expt::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](ColZ z){
+          RAJA::expt::loop<pol_m>(ctx, RAJA::TypedRangeSegment<IM>(0, num_m), [&](RowM m){
+
+            matrix_t acc = phi(m, g, z);
+
+            RAJA::expt::loop<pol_d>(ctx, RAJA::TypedRangeSegment<ID>(0, num_d), [&](ColD d){
+              acc = L(m, d) * psi(toRowIndex(d), g, z) + acc;
+            });
+
+            phi(m,g,z) = acc;
+          });
+        });
+      });
+
+    });
+  }
+
+  timer.stop();
+  double t = timer.elapsed();
+  double gflop_rate = total_flops * num_iter / t / 1.0e9;
+  std::cout << "  RAJA Teams column-major matrix version of LTimes run time (sec.): "
+            << t <<", GFLOPS/sec: " << gflop_rate << std::endl;
+
+#ifdef RAJA_ENABLE_VECTOR_STATS
+  RAJA::vector_stats::printVectorStats();
+#endif
+
+#if defined(DEBUG_LTIMES)
+  checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
+#endif
+
+
+}
+
 
 //----------------------------------------------------------------------------//
 if(VARIANT_RAJA_SEQ_SHMEM){
