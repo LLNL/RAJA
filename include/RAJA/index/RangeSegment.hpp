@@ -102,13 +102,13 @@ struct TypedRangeSegment {
   RAJA_HOST_DEVICE TypedRangeSegment() = delete;
 
   //! move constructor
-  constexpr TypedRangeSegment(TypedRangeSegment&& o) = default;
+  constexpr TypedRangeSegment(TypedRangeSegment&&) = default;
 
   //! copy constructor
-  constexpr TypedRangeSegment(TypedRangeSegment const& o) = default;
+  constexpr TypedRangeSegment(TypedRangeSegment const&) = default;
 
   //! copy assignment
-  RAJA_INLINE TypedRangeSegment& operator=(TypedRangeSegment const& o) = default;
+  RAJA_INLINE TypedRangeSegment& operator=(TypedRangeSegment const&) = default;
 
   //! destructor
   RAJA_INLINE ~TypedRangeSegment() = default;
@@ -292,13 +292,13 @@ struct TypedRangeStrideSegment {
   TypedRangeStrideSegment() = delete;
 
   //! move constructor
-  TypedRangeStrideSegment(TypedRangeStrideSegment&& o) = default;
+  TypedRangeStrideSegment(TypedRangeStrideSegment&&) = default;
 
   //! copy constructor
-  TypedRangeStrideSegment(TypedRangeStrideSegment const& o) = default;
+  TypedRangeStrideSegment(TypedRangeStrideSegment const&) = default;
 
   //! copy assignment
-  TypedRangeStrideSegment& operator=(TypedRangeStrideSegment const& o) = default;
+  TypedRangeStrideSegment& operator=(TypedRangeStrideSegment const&) = default;
 
   //! destructor
   ~TypedRangeStrideSegment() = default;

@@ -76,10 +76,10 @@ struct View {
   }
 
   constexpr View() = delete;
-  RAJA_INLINE constexpr View(View const &V) = default;
-  RAJA_INLINE constexpr View(View &&V) = default;
-  RAJA_INLINE View& operator=(View const &V) = default;
-  RAJA_INLINE View& operator=(View &&V) = default;
+  RAJA_INLINE constexpr View(View const &) = default;
+  RAJA_INLINE constexpr View(View &&) = default;
+  RAJA_INLINE View& operator=(View const &) = default;
+  RAJA_INLINE View& operator=(View &&) = default;
 
   template <bool IsConstView = std::is_const<value_type>::value>
   RAJA_INLINE constexpr View(
@@ -222,10 +222,10 @@ struct MultiView {
   {
   }
 
-  RAJA_INLINE constexpr MultiView(MultiView const &V) = default;
-  RAJA_INLINE constexpr MultiView(MultiView &&V) = default;
-  RAJA_INLINE MultiView& operator=(MultiView const &V) = default;
-  RAJA_INLINE MultiView& operator=(MultiView &&V) = default;
+  RAJA_INLINE constexpr MultiView(MultiView const &) = default;
+  RAJA_INLINE constexpr MultiView(MultiView &&) = default;
+  RAJA_INLINE MultiView& operator=(MultiView const &) = default;
+  RAJA_INLINE MultiView& operator=(MultiView &&) = default;
 
   template <bool IsConstView = std::is_const<value_type>::value>
   RAJA_INLINE constexpr MultiView(
