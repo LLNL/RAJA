@@ -24,7 +24,7 @@ void ForallReduceMaxMultipleTestImpl(IDX_TYPE first,
 
   IDX_TYPE index_len = last - first;
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
   DATA_TYPE* working_array;
   DATA_TYPE* check_array;
   DATA_TYPE* test_array;
@@ -50,7 +50,9 @@ void ForallReduceMaxMultipleTestImpl(IDX_TYPE first,
 
   DATA_TYPE current_max = default_val;
 
-  RAJA::ReduceMax<REDUCE_POLICY, DATA_TYPE> max0;
+  // Workaround for broken omp-target reduction interface.
+  // This should be `max0;` not `max0(0);`
+  RAJA::ReduceMax<REDUCE_POLICY, DATA_TYPE> max0(0);
   max0.reset(default_val);
   RAJA::ReduceMax<REDUCE_POLICY, DATA_TYPE> max1(default_val);
   RAJA::ReduceMax<REDUCE_POLICY, DATA_TYPE> max2(big_val);

@@ -14,8 +14,8 @@ endif()
 
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 11)
-set(RAJA_VERSION_PATCHLEVEL 0)
+set(RAJA_VERSION_MINOR 12)
+set(RAJA_VERSION_PATCHLEVEL 1)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
   message(FATAL_ERROR "You are mixing RAJA versions. Loaded is ${RAJA_LOADED}, expected ${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
@@ -51,7 +51,6 @@ set(ENABLE_GTEST_DEATH_TESTS On CACHE BOOL "Enable tests asserting failure.")
 set(RAJA_CXX_STANDARD_FLAG "default" CACHE STRING "Specific c++ standard flag to use, default attempts to autodetect the highest available")
 
 option(ENABLE_TBB "Build TBB support" Off)
-option(ENABLE_CHAI "Build CHAI support" Off)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
 option(ENABLE_EXTERNAL_CUB "Use an external cub for scans" Off)
@@ -69,6 +68,7 @@ option(ENABLE_BENCHMARKS "Build benchmarks" Off)
 option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 option(RAJA_ENABLE_BOUNDS_CHECK "Enable bounds checking in RAJA::Views/Layouts" Off)
 option(RAJA_TEST_EXHAUSTIVE "Build RAJA exhaustive tests" Off)
+option(RAJA_ENABLE_RUNTIME_PLUGINS "Enable support for loading plugins at runtime" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
@@ -164,6 +164,13 @@ set (raja_sources
   src/MemUtils_HIP.cpp
   src/PluginStrategy.cpp)
 
+if (RAJA_ENABLE_RUNTIME_PLUGINS)
+  set (raja_sources
+    ${raja_sources}
+    src/RuntimePluginLoader.cpp
+    src/KokkosPluginLoader.cpp)
+endif ()
+
 set (raja_depends)
 
 if (ENABLE_OPENMP)
@@ -187,7 +194,7 @@ if (ENABLE_CUDA)
     if (CUB_FOUND)
       blt_register_library(
         NAME cub
-        INCLUDES ${CUB_INCLUDE_DIRS})
+        INCLUDES $<BUILD_INTERFACE:${CUB_INCLUDE_DIRS}>)
       set(raja_depends
         ${raja_depends}
         cub)
@@ -221,12 +228,6 @@ if (ENABLE_HIP)
   endif ()
 endif ()
 
-if (ENABLE_CHAI)
-  set (raja_depends
-    ${raja_depends}
-    chai)
-endif ()
-
 if (ENABLE_TBB)
   set(raja_depends
     ${raja_depends}
@@ -254,7 +255,7 @@ endif (NOT TARGET camp)
 blt_add_library(
   NAME RAJA
   SOURCES ${raja_sources}
-  DEPENDS_ON ${raja_depends} camp)
+  DEPENDS_ON ${raja_depends} camp ${CMAKE_DL_LIBS})
 
 install(TARGETS RAJA
   EXPORT RAJA

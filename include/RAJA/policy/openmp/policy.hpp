@@ -66,9 +66,6 @@ namespace internal
 struct Parallel {
 };
 
-struct Collapse {
-};
-
 struct For {
 };
 

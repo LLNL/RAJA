@@ -33,7 +33,7 @@ void ForallListSegmentViewTestImpl(INDEX_TYPE N)
 
   size_t idxlen = idx_array.size();
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   RAJA::TypedListSegment<INDEX_TYPE> lseg(&idx_array[0], idxlen, 
                                           working_res);
@@ -95,7 +95,7 @@ void ForallListSegmentOffsetViewTestImpl(INDEX_TYPE N, INDEX_TYPE offset)
 
   size_t idxlen = idx_array.size();
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   RAJA::TypedListSegment<INDEX_TYPE> lseg(&idx_array[0], idxlen, 
                                           working_res);

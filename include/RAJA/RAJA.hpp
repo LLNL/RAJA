@@ -43,6 +43,7 @@
 //
 #include "RAJA/pattern/forall.hpp"
 #include "RAJA/pattern/kernel.hpp"
+#include "RAJA/pattern/teams.hpp"
 
 
 //
@@ -169,8 +170,13 @@
 //
 
 #include "RAJA/index/IndexSetUtils.hpp"
+#include "RAJA/index/IndexSetBuilders.hpp"
 
 #include "RAJA/pattern/scan.hpp"
+
+#if defined(RAJA_ENABLE_RUNTIME_PLUGINS)
+#include "RAJA/util/PluginLinker.hpp"
+#endif
 
 #include "RAJA/pattern/sort.hpp"
 

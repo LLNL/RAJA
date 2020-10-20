@@ -1,0 +1,14 @@
+##############################################################################
+# Copyright (c) 2016-2020, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+##############################################################################
+
+####
+# All lassen build jobs
+nvcc_10_clang_8_0_1 (build and test on lassen):
+  variables:
+    SPEC: "%clang@8.0.1+cuda"
+  extends: .build_and_test_on_lassen
+  allow_failure: True

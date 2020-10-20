@@ -8,7 +8,7 @@
 #
 # List of indexset test types for generating test files.
 #
-set(INDEXSETTESTTYPES ForallIndexSetView ForallIcountIndexSetView)
+set(INDEXSETTESTTYPES IndexSetView IcountIndexSetView)
 
 
 #
@@ -19,11 +19,11 @@ set(INDEXSETTESTTYPES ForallIndexSetView ForallIcountIndexSetView)
 foreach( BACKEND ${FORALL_BACKENDS} )
   foreach( INDEXSETTESTTYPE ${INDEXSETTESTTYPES} )
     configure_file( test-forall-indexset-view.cpp.in
-                    test-${INDEXSETTESTTYPE}-${BACKEND}.cpp )
-    raja_add_test( NAME test-${INDEXSETTESTTYPE}-${BACKEND}
-                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-${INDEXSETTESTTYPE}-${BACKEND}.cpp )
+                    test-forall-${INDEXSETTESTTYPE}-${BACKEND}.cpp )
+    raja_add_test( NAME test-forall-${INDEXSETTESTTYPE}-${BACKEND}
+                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-${INDEXSETTESTTYPE}-${BACKEND}.cpp )
 
-    target_include_directories(test-${INDEXSETTESTTYPE}-${BACKEND}.exe
+    target_include_directories(test-forall-${INDEXSETTESTTYPE}-${BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
   endforeach()
 endforeach()

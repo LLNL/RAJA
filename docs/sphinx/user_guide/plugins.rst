@@ -29,7 +29,7 @@ that kernel executes, CHAI will make the data available.
 
 To build CHAI with RAJA integration, you need to download and install CHAI with
 the ``ENABLE_RAJA_PLUGIN`` option turned on.  Please see the `CHAI project
-<https://github.com/LLNL/CHAI>` for details
+<https://github.com/LLNL/CHAI>`_ for details
 
 After CHAI has been build with RAJA support enabled, applications can use CHAI
 ``ManangedArray`` objects to access data inside a RAJA kernel; for example,::

@@ -24,7 +24,7 @@ void ForallReduceMinMultipleTestImpl(IDX_TYPE first,
 
   IDX_TYPE index_len = last - first;
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
   DATA_TYPE* working_array;
   DATA_TYPE* check_array;
   DATA_TYPE* test_array;
@@ -50,7 +50,9 @@ void ForallReduceMinMultipleTestImpl(IDX_TYPE first,
 
   DATA_TYPE current_min = default_val;
 
-  RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> min0;
+  // Workaround for broken omp-target reduction interface.
+  // This should be `min0;` not `min0(0);`
+  RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> min0(0);
   min0.reset(default_val);
   RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> min1(default_val);
   RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> min2(big_val);

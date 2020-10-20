@@ -7,14 +7,12 @@ Developer Guide
 Generating RAJA host-config files
 ===================================
 
-.. note::
-  This is optional if you are on LC machines, since some host-config files have already been generated (at least for Quartz and Lassen) and can be found in the ``host-configs`` repository directory.
-
-RAJA only directly depends on CMake. However, this mechanism will generate a cmake configuration file that reproduces the configuration `Spack <https://github.com/spack/spack>` would have generated in the same context. It contains all the information necessary to build RAJA with the described toolchain.
+This mechanism will generate a cmake configuration file that reproduces the configuration `Spack <https://github.com/spack/spack>` would have generated in the same context. It contains all the information necessary to build RAJA with the described toolchain.
 
 In particular, the host config file will setup:
 * flags corresponding with the target required (Release, Debug).
 * compilers path, and other toolkits (cuda if required), etc.
+* paths to installed dependencies. However, RAJA only directly depends on CMake.
 
 This provides an easy way to build RAJA based on `Spack <https://github.com/spack/spack>` and encapsulated in `Uberenv <https://github.com/LLNL/uberenv>`_.
 
@@ -50,25 +48,32 @@ Some examples uberenv options:
 * ``--spec=%clang@8.0.1+cuda``
 * ``--prefix=<Path to uberenv build directory (defaults to ./uberenv_libs)>``
 
-Building dependencies can take a long time. If you already have a spack instance you would like to reuse (in supplement of the local one managed by Uberenv), you can do so changing the uberenv command as follow:
+It is also possible to use the CI script outside of CI:
 
 .. code-block:: bash
 
-   $ python scripts/uberenv/uberenv.py --upstream=</path/to/my/spack>/opt/spack
+  $ SPEC="%clang@9.0.0 +cuda" scripts/gitlab/build_and_test.sh --deps-only
+
+Building dependencies can take a long time. If you already have a Spack instance you would like to reuse (in supplement of the local one managed by Uberenv), you can do so changing the uberenv command as follow:
+
+.. code-block:: bash
+
+  $ python scripts/uberenv/uberenv.py --upstream=<path_to_my_spack>/opt/spack
 
 Using host-config files to build RAJA
 -------------------------------------
 
 When a host-config file exists for the desired machine and toolchain, it can easily be used in the CMake build process:
 
-If I need to build RAJA with _clang_ and _cuda_ on _lassen_, I can see there is already a host-config file named `lassen-blueos_3_ppc64le_ib_p9-clang@8.0.1-cuda.cmake`. To use it (on lassen):
-
 .. code-block:: bash
 
   $ mkdir build && cd build
-  $ cmake -C ../host-configs/lassen-blueos_3_ppc64le_ib_p9-clang@8.0.1-cuda.cmake ..
+  $ cmake -C  <path_to>/<host-config>.cmake ..
   $ cmake --build -j .
   $ ctest --output-on-failure -T test
 
-.. note::
-  This will build the default configuration. Not all parameters are embedded into the host-config file. For example, producing shared/static libraries, using OppenMP, enabling tests, is to be configured on command line.
+It is also possible to use the CI script outside of CI:
+
+.. code-block:: bash
+
+  $ HOST_CONFIG=<path_to>/<host-config>.cmake scripts/gitlab/build_and_test.sh

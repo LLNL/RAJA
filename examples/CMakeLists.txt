@@ -6,6 +6,10 @@
 ###############################################################################
 
 raja_add_executable(
+  NAME resource-forall
+  SOURCES resource-forall.cpp)
+
+raja_add_executable(
   NAME tut_daxpy
   SOURCES tut_daxpy.cpp)
 
@@ -74,6 +78,10 @@ raja_add_executable(
   SOURCES pi-reduce_vs_atomic.cpp)
 
 raja_add_executable(
+  NAME raja-teams
+  SOURCES raja-teams.cpp)
+
+raja_add_executable(
   NAME jacobi
   SOURCES jacobi.cpp)
 
@@ -89,14 +97,22 @@ raja_add_executable(
   NAME ltimes
   SOURCES ltimes.cpp)
 
-if(ENABLE_TARGET_OPENMP)
-  raja_add_executable(
-    NAME target-kernel
-    SOURCES omp-target-kernel.cpp)
+raja_add_executable(
+  NAME multiview
+  SOURCES multiview.cpp)
 
-  raja_add_executable(
-    NAME omp-target-ltimes
-    SOURCES omp-target-ltimes.cpp)
+if(ENABLE_TARGET_OPENMP)
+  #  raja_add_executable(
+  #    NAME target-kernel
+  #    SOURCES omp-target-kernel.cpp)
+  #
+  #  raja_add_executable(
+  #    NAME omp-target-ltimes
+  #    SOURCES omp-target-ltimes.cpp)
 endif()
+
+raja_add_executable(
+  NAME kernel-dynamic-tile
+  SOURCES kernel-dynamic-tile.cpp)
 
 add_subdirectory(plugin)
