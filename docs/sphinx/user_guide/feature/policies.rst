@@ -121,9 +121,9 @@ caveats.
                                         scan
  ====================================== ============= ==========================
 
-.. note:: RAJA policies for GPU execution using CUDA or HIP are essentially
-          identical. The only difference is that CUDA policies have the prefix
-          ``cuda_`` and HIP policies have the prefix ``hip_``.
+RAJA policies for GPU execution using CUDA or HIP are essentially identical. 
+The only difference is that CUDA policies have the prefix ``cuda_`` and HIP 
+policies have the prefix ``hip_``.
 
  ======================================== ============= ========================
  CUDA/HIP Execution Policies              Works with    Brief description
@@ -135,7 +135,7 @@ caveats.
                                                         given, the default
                                                         of 256 threads/block is 
                                                         used. 
- cuda_/hip_thread_x_direct                kernel (For)  Map loop iterates
+ cuda/hip_thread_x_direct                kernel (For)  Map loop iterates
                                                         directly to GPU threads
                                                         in x-dimension, one
                                                         iterate per thread
