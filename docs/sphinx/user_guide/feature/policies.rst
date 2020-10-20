@@ -24,6 +24,9 @@ As RAJA functionality is expanded, new policies will be added and some may
 be redefined and to work in new ways.
 
 .. note:: * All RAJA policies are in the namespace ``RAJA``.
+          * All RAJA policies have a prefix indicating the back-end 
+            implementation that they use; e.g., ``omp_`` for OpenMP, ``cuda_``
+            for CUDA, etc.
 
 -----------------------------------------------------
 RAJA Loop/Kernel Execution Policies
@@ -116,10 +119,14 @@ caveats.
                                         scan
  ====================================== ============= ==========================
 
+.. note:: RAJA policies for GPU execution using CUDA or HIP are essentially
+          identical. The only difference is that CUDA policies have the prefix
+          ``cuda_`` and HIP policies have the prefix ``hip_``.
+
  ====================================== ============= ==========================
- CUDA Execution Policies                Works with    Brief description
+ CUDA/HIP Execution Policies            Works with    Brief description
  ====================================== ============= ==========================
- cuda_exec<BLOCK_SIZE>                  forall,       Execute loop iterations
+ cuda/hip_exec<BLOCK_SIZE>              forall,       Execute loop iterations
                                         scan,         in a CUDA kernel launched
                                         sort          with given thread-block
                                                       size. If block size not
@@ -301,7 +308,7 @@ The following notes provide additional information about policy usage.
 
           This allows changing number of workers at runtime.
 
-Several notable constraints apply to RAJA CUDA *thread-direct* policies.
+Several notable constraints apply to RAJA CUDA/HIP *thread-direct* policies.
 
 .. note:: * Repeating thread direct policies with the same thread dimension
             in perfectly nested loops is not recommended. Your code may do
@@ -310,27 +317,27 @@ Several notable constraints apply to RAJA CUDA *thread-direct* policies.
             different thread dimensions), the product of sizes of the
             corresponding iteration spaces cannot be greater than the
             maximum allowable threads per block. Typically, this is
-            equ:math:`\leq` 1024; i.e., attempting to launch a CUDA kernel
+            equ:math:`\leq` 1024; e.g., attempting to launch a CUDA kernel
             with more than 1024 threads per block will cause the CUDA runtime
             to complain about *illegal launch parameters.*
           * **Thread-direct policies are recommended only for certain loop
             patterns, such as tiling.**
 
-Several notes regarding CUDA thread and block *loop* policies are also good to
-know.
+Several notes regarding CUDA/HIP thread and block *loop* policies are also 
+good to know.
 
 .. note:: * There is no constraint on the product of sizes of the associated
             loop iteration space.
           * These polices allow having a larger number of iterates than
             threads in the x, y, or z thread dimension.
-          * **Cuda thread and block loop policies are recommended for most
+          * **CUDA/HIP thread and block loop policies are recommended for most
             loop patterns.**
 
 Finally
 
-.. note:: CUDA block-direct policies may be preferable to block-loop policies
-          in situations where block load balancing may be an issue as the
-          block-direct policies may yield better performance.
+.. note:: CUDA/HIP block-direct policies may be preferable to block-loop 
+          policies in situations where block load balancing may be an issue 
+          as the block-direct policies may yield better performance.
 
 
 .. _indexsetpolicy-label:
