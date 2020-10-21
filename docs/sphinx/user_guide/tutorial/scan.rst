@@ -170,5 +170,7 @@ Lastly, we show a parallel inclusive in-place prefix-sum operation using CUDA:
    :end-before: _scan_exclusive_inplace_omp_plus_end
    :language: C++
 
+RAJA scans using the HIP back-end are similar.
+
 The file ``RAJA/examples/tut_scan.cpp`` contains the complete 
 working example code.

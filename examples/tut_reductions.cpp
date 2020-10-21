@@ -211,8 +211,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int* d_a = memoryManager::allocate_gpu<int>(N);
   hipErrchk(hipMemcpy( d_a, a, N * sizeof(int), hipMemcpyHostToDevice ));
 
+  // _reductions_raja_hippolicy_start
   using EXEC_POL3   = RAJA::hip_exec<HIP_BLOCK_SIZE>;
   using REDUCE_POL3 = RAJA::hip_reduce;
+  // _reductions_raja_hippolicy_end
 
   RAJA::ReduceSum<REDUCE_POL3, int> hip_sum(0);
   RAJA::ReduceMin<REDUCE_POL3, int> hip_min(std::numeric_limits<int>::max());

@@ -84,7 +84,7 @@ To run the kernel with OpenMP multithreaded parallelism on a CPU, we use the
 This will distribute the loop iterations across CPU threads and run the 
 loop over threads in parallel.
 
-Finally, to run the kernel on a CUDA GPU device, we use the ``RAJA::cuda_exec``
+To run the kernel on a CUDA GPU device, we use the ``RAJA::cuda_exec``
 policy:
 
 .. literalinclude:: ../../../../examples/tut_add-vectors.cpp
@@ -101,6 +101,14 @@ provides a default of 256, which is a reasonable choice for most cases.
 Since the lambda defining the loop body will be passed to a device kernel, 
 it must be decorated with the ``__device__`` attribute when it is defined. 
 This can be done directly or by using the ``RAJA_DEVICE`` macro.
+
+Similarly, to run the kernel on a GPU using the RAJA HIP back-end, 
+we use the ``RAJA::hip_exec`` policy:
+
+.. literalinclude:: ../../../../examples/tut_add-vectors.cpp
+   :start-after: _rajahip_vector_add_start
+   :end-before: _rajahip_vector_add_end
+   :language: C++
 
 The file ``RAJA/examples/tut_add-vectors.cpp`` contains the complete 
 working example code.
