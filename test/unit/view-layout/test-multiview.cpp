@@ -65,6 +65,20 @@ TYPED_TEST(MultiViewUnitTest, Constructors)
 
   // construct a const MultiView from a const MultiView
   RAJA::MultiView<TypeParam const, layout, 1> const_view1p2(const_view1p);
+
+
+  // non-default construction of MultiView with array-of-pointers index moved to 1st position
+  // and non-const pointer type specification (used in CHAI)
+  RAJA::MultiView<TypeParam, layout, 1, TypeParam **> view1pnc(data, layout(10));
+
+  // construct a non-const MultiView from a non-const MultiView
+  RAJA::MultiView<TypeParam, layout, 1, TypeParam **> view1pnc2(view1pnc);
+
+  // construct a const MultiView from a non-const MultiView
+  RAJA::MultiView<TypeParam const, layout, 1, TypeParam **> const_view1pnc(view1pnc);
+
+  // construct a const MultiView from a const MultiView
+  RAJA::MultiView<TypeParam const, layout, 1, TypeParam **> const_view1pnc2(const_view1pnc);
 }
 
 TYPED_TEST(MultiViewUnitTest, Accessor)
