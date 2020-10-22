@@ -85,11 +85,19 @@ access array entries with stride N :subscript:`n` * N :subscript:`(n-1)` * ... *
 MultiView
 ^^^^^^^^^^^^^^^^
 
+Dealing with numerous arrays of the same size, which each need a View,
+can be cumbersome. The developer needs to tediously instantiate a View for
+each array, and when passing these arrays into functions, they can bloat the
+function signature. ``RAJA::MultiView`` can solve these problems by providing a
+way to create many Views of the same Layout in one instantiation, and operates on
+an array-of-pointers that can be used to succinctly pass around data. 
+
 A ``RAJA::MultiView`` object wraps an array-of-pointers,
 or a pointer-to-pointers, whereas a ``RAJA::View`` wraps a single
 pointer or array. This allows a single ``RAJA::Layout`` to be applied to
 multiple arrays internal to the MultiView, allowing multiple arrays to share indexing
 arithmetic when their access patterns are the same.
+
 
 The instantiation of a MultiView works exactly like a standard View,
 except that it takes an array-of-pointers. In the following example, a MultiView
