@@ -200,5 +200,7 @@ Lastly, we show a parallel unstable sort pairs operation using CUDA:
    :end-before: _sort_pairs_cuda_greater_end
    :language: C++
 
+.. note:: RAJA sorts for the HIP back-end are similar to those for CUDA.
+
 The file ``RAJA/examples/tut_sort.cpp`` contains the complete
 working example code.
