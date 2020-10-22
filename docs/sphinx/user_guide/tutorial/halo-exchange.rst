@@ -226,5 +226,5 @@ Note that the synchronization after unpacking is done to ensure that
 finished executing.
 
 
-The file ``RAJA/examples/tut_halo-exchange.cpp`` contains the complete
-working example code.
+The file ``RAJA/examples/tut_halo-exchange.cpp`` contains a complete
+working example code, with OpenMP, CUDA, and HIP variants.
