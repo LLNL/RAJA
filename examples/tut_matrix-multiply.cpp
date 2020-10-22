@@ -575,8 +575,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL5 =
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
-        RAJA::statement::Tile<1, RAJA::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_x_loop,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<HIP_BLOCK_SIZE>, 
+                                 RAJA::hip_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<HIP_BLOCK_SIZE>, 
+                                   RAJA::hip_block_x_loop,
             RAJA::statement::For<1, RAJA::hip_thread_y_loop,
               RAJA::statement::For<0, RAJA::hip_thread_x_loop,
                 RAJA::statement::Lambda<0>
@@ -966,7 +968,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
   hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
 
-  // _matmult_3lambdakernel_cuda_start
+  // _matmult_3lambdakernel_hip_start
   using EXEC_POL8 =
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
@@ -982,7 +984,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         >
       >
     >;
-  // _matmult_3lambdakernel_cuda_end
+  // _matmult_3lambdakernel_hip_end
 
   RAJA::kernel_param<EXEC_POL8>(
     RAJA::make_tuple(col_range, row_range, dot_range),
