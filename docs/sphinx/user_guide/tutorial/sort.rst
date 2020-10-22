@@ -42,7 +42,7 @@ This generates the following sequence of values in the ``in`` array::
 
    6 7 2 1 0 9 4 8 5 3 4 9 6 3 7 0 1 8 2 5
 
-This generates the following sequence of values in the ``in`` and ``in_vals``
+and the following sequence of (key, value) pairs in the ``in`` and ``in_vals``
 arrays::
 
    (6,0) (7,0) (2,0) (1,0) (0,0) (9,0) (4,0) (8,0) (5,0) (3,0)
@@ -183,7 +183,7 @@ operation using OpenMP is accomplished by:
 
 .. literalinclude:: ../../../../examples/tut_sort.cpp
    :start-after: _sort_stable_pairs_omp_greater_start
-   :end-before: _sort_stable_pairs_omp_greater_start
+   :end-before: _sort_stable_pairs_omp_greater_end
    :language: C++
 
 This generates the following sequence in the output array (as we saw earlier)::
@@ -197,8 +197,10 @@ Lastly, we show a parallel unstable sort pairs operation using CUDA:
 
 .. literalinclude:: ../../../../examples/tut_sort.cpp
    :start-after: _sort_pairs_cuda_greater_start
-   :end-before: _sort_pairs_cuda_greater_start
+   :end-before: _sort_pairs_cuda_greater_end
    :language: C++
+
+.. note:: RAJA sorts for the HIP back-end are similar to those for CUDA.
 
 The file ``RAJA/examples/tut_sort.cpp`` contains the complete
 working example code.
