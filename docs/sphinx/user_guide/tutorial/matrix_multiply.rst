@@ -276,10 +276,11 @@ here '1, 0' indicates the column loop is the inner loop and the row loop is
 the outer). For this transformation there are no ``statement::For`` types
 and policies for the individual loop levels inside the OpenMP collapse region. 
 
-Lastly, we show how to use ``RAJA::statement::CudaKernel`` types to 
-generate a CUDA kernel launched with a particular thread-block decomposition.
-We reiterate that although the policies are different, the kernels themselves 
-are identical to the sequential and OpenMP variants above.
+Lastly, we show how to use ``RAJA::statement::CudaKernel`` and 
+``RAJA::statement::HipKernel`` types to generate GPU kernels launched with
+a particular thread-block decomposition.  We reiterate that although the 
+policies are different, the kernels themselves are identical to the sequential 
+and OpenMP variants above.
 
 Here is a policy that will distribute the row indices across CUDA thread 
 blocks and column indices across threads in the x dimension of each block:
@@ -297,6 +298,14 @@ it and defining row and column indices as::
 
 and launching the kernel with appropriate CUDA grid and thread-block dimensions.
 
+The HIP execution policy is similar:
+
+.. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
+   :start-after: _matmult_3lambdakernel_hip_start
+   :end-before: _matmult_3lambdakernel_hip_end
+   :language: C++
+
+
 The following policy will tile row and col indices across two-dimensional
 CUDA thread blocks with 'x' and 'y' dimensions defined by a 'CUDA_BLOCK_SIZE'
 parameter that can be set at compile time. Within each tile, the kernel 
@@ -310,6 +319,13 @@ iterates are executed by CUDA threads.
 Note that the tiling mechanism requires a ``RAJA::statement::Tile`` type, 
 with a tile size and a tiling execution policy, plus a ``RAJA::statement::For``
 type with an execution execution policy for each tile dimension.
+
+The analogous HIP policy is:
+
+.. literalinclude:: ../../../../examples/tut_matrix-multiply.cpp
+   :start-after: _matmult_3lambdakernel_hiptiled_start
+   :end-before: _matmult_3lambdakernel_hiptiled_end
+   :language: C++
 
 In :ref:`tiledmatrixtranspose-label` and :ref:`matrixtransposelocalarray-label`,
 we will discuss loop tiling in more detail including how it can be used to 
