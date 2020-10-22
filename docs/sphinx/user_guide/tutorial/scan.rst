@@ -166,8 +166,8 @@ and the only difference is the execution policy template parameter.
 Lastly, we show a parallel inclusive in-place prefix-sum operation using CUDA:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
-   :start-after: _scan_exclusive_inplace_omp_plus_start
-   :end-before: _scan_exclusive_inplace_omp_plus_end
+   :start-after: _scan_exclusive_inplace_cuda_plus_start
+   :end-before: _scan_exclusive_inplace_cuda_plus_end
    :language: C++
 
 RAJA scans using the HIP back-end are similar.
