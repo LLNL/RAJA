@@ -25,10 +25,6 @@ cmake \
   -DENABLE_TARGET_OPENMP=On \
   -DOpenMP_CXX_FLAGS="-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda" \
   -DENABLE_ALL_WARNINGS=Off \
-  -DENABLE_TESTS=Off \
-  -DENABLE_EXAMPLES=Off \
-  -DENABLE_EXERCISES=Off \
-  -DENABLE_REPRODUCERS=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
