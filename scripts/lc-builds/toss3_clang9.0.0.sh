@@ -19,10 +19,6 @@ cmake \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/clang/clang-9.0.0/bin/clang++ \
   -C ../host-configs/lc-builds/toss3/clang_X.cmake \
   -DENABLE_OPENMP=On \
-  -DENABLE_TESTS=Off \
-  -DENABLE_EXAMPLES=Off \
-  -DENABLE_EXERCISES=Off \
-  -DENABLE_REPRODUCERS=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   .. 

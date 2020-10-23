@@ -20,10 +20,6 @@ cmake \
   -C ../host-configs/lc-builds/blueos/xl_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_TARGET_OPENMP=On \
-  -DENABLE_TESTS=Off \
-  -DENABLE_EXAMPLES=Off \
-  -DENABLE_EXERCISES=Off \
-  -DENABLE_REPRODUCERS=On \
   -DOpenMP_CXX_FLAGS="-qoffload;-qsmp=omp;-qnoeh;-qalias=noansi" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
