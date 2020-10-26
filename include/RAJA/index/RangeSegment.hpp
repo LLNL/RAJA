@@ -102,28 +102,16 @@ struct TypedRangeSegment {
   RAJA_HOST_DEVICE TypedRangeSegment() = delete;
 
   //! move constructor
-  RAJA_HOST_DEVICE constexpr TypedRangeSegment(TypedRangeSegment&& o)
-      : m_begin(std::move(o.m_begin)), m_end(std::move(o.m_end))
-  {
-  }
+  constexpr TypedRangeSegment(TypedRangeSegment&&) = default;
 
   //! copy constructor
-  RAJA_HOST_DEVICE constexpr TypedRangeSegment(TypedRangeSegment const& o)
-      : m_begin(o.m_begin), m_end(o.m_end)
-  {
-  }
+  constexpr TypedRangeSegment(TypedRangeSegment const&) = default;
 
   //! copy assignment
-  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment& operator=(
-      TypedRangeSegment const& o)
-  {
-    m_begin = o.m_begin;
-    m_end = o.m_end;
-    return *this;
-  }
+  RAJA_INLINE TypedRangeSegment& operator=(TypedRangeSegment const&) = default;
 
   //! destructor
-  RAJA_HOST_DEVICE RAJA_INLINE ~TypedRangeSegment() {}
+  RAJA_INLINE ~TypedRangeSegment() = default;
 
   //! swap one TypedRangeSegment with another
   /*!
@@ -301,34 +289,19 @@ struct TypedRangeStrideSegment {
   }
 
   //! disable compiler generated constructor
-  RAJA_HOST_DEVICE TypedRangeStrideSegment() = delete;
+  TypedRangeStrideSegment() = delete;
 
   //! move constructor
-  RAJA_HOST_DEVICE TypedRangeStrideSegment(TypedRangeStrideSegment&& o)
-      : m_begin(std::move(o.m_begin)),
-        m_end(std::move(o.m_end)),
-        m_size(std::move(o.m_size))
-  {
-  }
+  TypedRangeStrideSegment(TypedRangeStrideSegment&&) = default;
 
   //! copy constructor
-  RAJA_HOST_DEVICE TypedRangeStrideSegment(TypedRangeStrideSegment const& o)
-      : m_begin(o.m_begin), m_end(o.m_end), m_size(o.m_size)
-  {
-  }
+  TypedRangeStrideSegment(TypedRangeStrideSegment const&) = default;
 
   //! copy assignment
-  RAJA_HOST_DEVICE TypedRangeStrideSegment& operator=(
-      TypedRangeStrideSegment const& o)
-  {
-    m_begin = o.m_begin;
-    m_end = o.m_end;
-    m_size = o.m_size;
-    return *this;
-  }
+  TypedRangeStrideSegment& operator=(TypedRangeStrideSegment const&) = default;
 
   //! destructor
-  RAJA_HOST_DEVICE ~TypedRangeStrideSegment() {}
+  ~TypedRangeStrideSegment() = default;
 
   //! swap one TypedRangeStrideSegment with another
   /*!

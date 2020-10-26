@@ -65,7 +65,6 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &
     auto body = thread_privatize(loop_body);
     forall_impl(host_res, InnerPolicy{}, iter, body.get_priv());
   });
-
   return resources::EventProxy<resources::Host>(&host_res);
 }
 
