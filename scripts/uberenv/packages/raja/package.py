@@ -56,7 +56,9 @@ class Raja(CMakePackage, CudaPackage):
     git      = "https://github.com/LLNL/RAJA.git"
 
     version('develop', branch='develop', submodules='True')
-    version('master',  branch='main',  submodules='True')
+    version('main',  branch='main',  submodules='True')
+    version('0.12.1', tag='v0.12.1', submodules="True")
+    version('0.12.0', tag='v0.12.0', submodules="True")
     version('0.11.0', tag='v0.11.0', submodules="True")
     version('0.10.1', tag='v0.10.1', submodules="True")
     version('0.10.0', tag='v0.10.0', submodules="True")
@@ -235,8 +237,7 @@ class Raja(CMakePackage, CudaPackage):
 
             if not spec.satisfies('cuda_arch=none'):
                 cuda_arch = spec.variants['cuda_arch'].value
-                flag = '-arch sm_{0}'.format(cuda_arch[0])
-                cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS", flag))
+                options.append('-DCUDA_ARCH=sm_{0}'.format(cuda_arch[0]))
 
         else:
             cfg.write(cmake_cache_option("ENABLE_CUDA", False))
@@ -264,7 +265,7 @@ class Raja(CMakePackage, CudaPackage):
                 print("MSG: no testing supported on %clang target=ppc64le:")
         else:
             cfg.write(cmake_cache_option("ENABLE_BENCHMARKS", 'tests=benchmarks' in spec))
-            cfg.write(cmake_cache_option("ENABLE_TESTS", not 'tests=none' in spec))
+            cfg.write(cmake_cache_option("ENABLE_TESTS", not 'tests=none' in spec or self.run_tests))
 
         #######################
         # Close and save
