@@ -7,6 +7,11 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
+#
+## NOTE: After building code, you need to load the cuda 11 module to run
+##       your code or RAJA tests
+#
+
 BUILD_SUFFIX=lc_blueos-nvcc11-gcc8.3.1
 
 rm -rf build_${BUILD_SUFFIX} >/dev/null
@@ -25,8 +30,7 @@ cmake \
   -DCUDA_ARCH=sm_70 \
   -DCMAKE_CUDA_STANDARD="14" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=On \
-  -DCMAKE_VERBOSE_MAKEFILE=On \
-  -DENABLE_TESTS=On \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=Off \
+  -DCMAKE_VERBOSE_MAKEFILE=Off \
   "$@" \
   ..

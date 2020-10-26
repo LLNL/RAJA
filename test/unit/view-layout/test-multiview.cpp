@@ -8,10 +8,8 @@
 #include "RAJA_test-base.hpp"
 #include "RAJA_unit-test-types.hpp"
 
-RAJA_INDEX_VALUE(TX, "TX");
-// ISSUE: https://github.com/LLNL/RAJA/issues/881
-//RAJA_INDEX_VALUE(TIX, "TIX");
-//RAJA_INDEX_VALUE(TIL, "TIL");
+RAJA_INDEX_VALUE(TIX, "TIX");
+RAJA_INDEX_VALUE(TIL, "TIL");
 
 template<typename T>
 class MultiViewUnitTest : public ::testing::Test {};
@@ -67,6 +65,20 @@ TYPED_TEST(MultiViewUnitTest, Constructors)
 
   // construct a const MultiView from a const MultiView
   RAJA::MultiView<TypeParam const, layout, 1> const_view1p2(const_view1p);
+
+
+  // non-default construction of MultiView with array-of-pointers index moved to 1st position
+  // and non-const pointer type specification (used in CHAI)
+  RAJA::MultiView<TypeParam, layout, 1, TypeParam **> view1pnc(data, layout(10));
+
+  // construct a non-const MultiView from a non-const MultiView
+  RAJA::MultiView<TypeParam, layout, 1, TypeParam **> view1pnc2(view1pnc);
+
+  // construct a const MultiView from a non-const MultiView
+  RAJA::MultiView<TypeParam const, layout, 1, TypeParam **> const_view1pnc(view1pnc);
+
+  // construct a const MultiView from a const MultiView
+  RAJA::MultiView<TypeParam const, layout, 1, TypeParam **> const_view1pnc2(const_view1pnc);
 }
 
 TYPED_TEST(MultiViewUnitTest, Accessor)
@@ -219,20 +231,19 @@ TYPED_TEST(MultiViewUnitTest, Shift1D)
   }
 
 
-  // ISSUE: https://github.com/LLNL/RAJA/issues/881
   //Create a shifted view from a view with a typed layout
-  //using TLayout = RAJA::TypedLayout<TIL, RAJA::tuple<TIX>>;
-  //using TOffsetLayout = RAJA::TypedOffsetLayout<TIL, RAJA::tuple<TIX>>;
+  using TLayout = RAJA::TypedLayout<TIL, RAJA::tuple<TIX>>;
+  using TOffsetLayout = RAJA::TypedOffsetLayout<TIL, RAJA::tuple<TIX>>;
 
-  //TLayout myLayout(10);
+  TLayout myLayout(10);
 
-  //RAJA::MultiView<TypeParam, TLayout> D(a, myLayout);
-  //RAJA::MultiView<TypeParam, TOffsetLayout> Dshift = D.shift({{N}});
+  RAJA::MultiView<TypeParam, TLayout> D(a, myLayout);
+  RAJA::MultiView<TypeParam, TOffsetLayout> Dshift = D.shift({{N}});
 
-  //for(TIX i=TIX{N}; i<TIX{2*N}; ++i)
-  //{
-  //  ASSERT_EQ(Dshift(0,i),D(0,i-N));
-  //};
+  for(TIX i=TIX{N}; i<TIX{2*N}; ++i)
+  {
+    ASSERT_EQ(Dshift(0,i),D(0,i-N));
+  };
 
   delete[] reala;
   delete[] realb;

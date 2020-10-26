@@ -1,0 +1,93 @@
+###############################################################################
+# Copyright (c) 2016-2020, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+###############################################################################
+
+###############################################################################
+# General GitLab pipelines configurations for supercomputers and Linux clusters
+# at Lawrence Livermore National Laboratory (LLNL).
+#
+# This entire pipeline is LLNL-specific
+# #############################################################################
+
+# We define the following GitLab pipeline variables:
+#
+# GIT_SUBMODULE_STRATEGY:
+# Tells Gitlab to recursively update the submodules when cloning umpire
+#
+# ALLOC_NAME:
+# On LLNL's quartz, this pipeline creates only one allocation shared among jobs
+# in order to save time and resources. This allocation has to be uniquely named
+# so that we are sure to retrieve it.
+#
+# BUILD_ROOT:
+# The path to the shared resources between all jobs. The BUILD_ROOT is unique to
+# the pipeline, preventing any form of concurrency with other pipelines. This
+# also means that the BUILD_ROOT directory will never be cleaned.
+# TODO: add a clean-up mechanism
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  ALLOC_NAME: ${CI_PROJECT_NAME}_ci_${CI_PIPELINE_ID}
+  BUILD_ROOT: ${CI_PROJECT_DIR}
+
+# Normally, stages are blocking in Gitlab. However, using the keyword "needs" we
+# can express dependencies between job that break the ordering of stages, in
+# favor of a DAG.
+# In practice q_*, l_* and b_* stages are independently run and start immediately.
+
+stages:
+  - q_allocate_resources
+  - q_build_and_test
+  - q_release_resources
+  - l_build_and_test
+  - b_build_and_test
+  - multi_project
+
+# This is the rules that drives the activation of "advanced" jobs. All advanced
+# jobs will share this through a template mechanism.
+.advanced_pipeline:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop" || $ALL_TARGETS == "ON"' #run only if ...
+
+# These are also templates (.name) that define project specific build commands.
+# If an allocation exist with the name defined in this pipeline, the job will
+# use it (slurm specific).
+.build_toss_3_x86_64_ib_script:
+  script:
+    - echo ${ALLOC_NAME}
+    - export JOBID=$(squeue -h --name=${ALLOC_NAME} --format=%A)
+    - echo ${JOBID}
+    - srun $( [[ -n "${JOBID}" ]] && echo "--jobid=${JOBID}" ) -t 15 -N 1 scripts/gitlab/build_and_test.sh
+
+# Lassen and Butte use a different job scheduler (spectrum lsf) that does not
+# allow pre-allocation the same way slurm does.
+.build_blueos_3_ppc64le_ib_script:
+  script:
+    - lalloc 1 -W 15 scripts/gitlab/build_and_test.sh
+
+.build_blueos_3_ppc64le_ib_p9_script:
+  extends: .build_blueos_3_ppc64le_ib_script
+
+# If testing develop branch, trigger CHAI pipeline with this version of RAJA.
+# TODO: Once spack allows to clone a specific commit on demand, then point to the exact commit.
+#       This will prevent from sticking to a branch (here develop).
+trigger-chai:
+  stage: multi_project
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop" || $MULTI_PROJECT == "ON"' #run only if ...
+  variables:
+    UPDATE_RAJA: develop
+  trigger:
+    project: radiuss/chai
+    branch: develop
+    strategy: depend
+
+# This is where jobs are included.
+include:
+  - local: .gitlab/quartz-templates.yml
+  - local: .gitlab/quartz-jobs.yml
+  - local: .gitlab/lassen-templates.yml
+  - local: .gitlab/lassen-jobs.yml

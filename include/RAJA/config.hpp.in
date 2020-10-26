@@ -89,7 +89,7 @@
 /*!
  ******************************************************************************
  *
- * \brief Programming model back-ends, plus CHAI enable/disable.
+ * \brief Programming model back-ends.
  *
  ******************************************************************************
  */
@@ -113,6 +113,15 @@
 #cmakedefine RAJA_USE_GETTIME
 #cmakedefine RAJA_USE_CLOCK
 #cmakedefine RAJA_USE_CYCLE
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Runtime plugins.
+ *
+ ******************************************************************************
+ */
+#cmakedefine RAJA_ENABLE_RUNTIME_PLUGINS
 
 /*!
  ******************************************************************************
@@ -155,12 +164,14 @@ namespace RAJA {
 #endif // _OPENMP
 #endif // RAJA_ENABLE_OPENMP
 
-#if defined(RAJA_ENABLE_CUDA)
-#if not defined(__CUDACC__)
-#error RAJA configured with ENABLE_CUDA, but CUDA not supported by current compiler 
-#endif // 
-#endif // RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA) && defined(__CUDACC__)
+#define RAJA_CUDA_ACTIVE
+#endif // RAJA_ENABLE_CUDA && __CUDACC__
 
+#if defined(RAJA_CUDA_ACTIVE) || \
+  defined(RAJA_ENABLE_HIP)
+#define RAJA_DEVICE_ACTIVE
+#endif
 
 /*!
  ******************************************************************************

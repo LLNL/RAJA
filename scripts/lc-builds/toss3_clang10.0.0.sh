@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-BUILD_SUFFIX=lc_blueos-xl_2019.04.19_omptarget
+BUILD_SUFFIX=lc_toss3-clang-10.0.0
 
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
@@ -16,11 +16,9 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/xl/xl-2019.04.19/bin/xlc++_r \
-  -C ../host-configs/lc-builds/blueos/xl_2019_X.cmake \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/clang/clang-10.0.0/bin/clang++ \
+  -C ../host-configs/lc-builds/toss3/clang_X.cmake \
   -DENABLE_OPENMP=On \
-  -DENABLE_TARGET_OPENMP=On \
-  -DOpenMP_CXX_FLAGS="-qoffload;-qsmp=omp;-qnoeh;-qalias=noansi" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
-  ..
+  .. 
