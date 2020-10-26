@@ -139,7 +139,7 @@ position.
    :end-before: _multiview_example_2Daopindex_end
    :language: C++
 
-.. note:: ``RAJA::MultiView`` has not yet been tested with atomic accesses. 
+.. note:: ``RAJA::MultiView`` should work with atomic accesses, but we have not yet developed comprehensive tests for this.
 
 ------------
 RAJA Layouts
