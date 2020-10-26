@@ -67,26 +67,6 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &
   });
   return resources::EventProxy<resources::Host>(&host_res);
 }
-//template <typename Iterable, typename Func, typename InnerPolicy>
-//RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
-//                                                    const omp_parallel_exec<InnerPolicy>& exec,
-//                                                    Iterable&& iter,
-//                                                    Func&& loop_body)
-//{
-//  forall_impl(exec, iter, loop_body);
-//  return resources::EventProxy<resources::Host>(&host_res);
-//}
-//template <typename Iterable, typename Func, typename InnerPolicy>
-//RAJA_INLINE void forall_impl(const omp_parallel_exec<InnerPolicy>&,
-//                             Iterable&& iter,
-//                             Func&& loop_body)
-//{
-//  RAJA::region<RAJA::omp_parallel_region>([&]() {
-//    using RAJA::internal::thread_privatize;
-//    auto body = thread_privatize(loop_body);
-//    forall_impl(InnerPolicy{}, iter, body.get_priv());
-//  });
-//}
 
 
 ///
@@ -207,7 +187,6 @@ namespace internal
 } // end namespace internal
 
 template <typename Schedule, typename Iterable, typename Func>
-//RAJA_INLINE void forall_impl(const omp_for_schedule_exec<Schedule>&,
 RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host& host_res,
                                                                const omp_for_schedule_exec<Schedule>&,
                                                                Iterable&& iter,
@@ -218,7 +197,6 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host& 
 }
 
 template <typename Schedule, typename Iterable, typename Func>
-//RAJA_INLINE void forall_impl(const omp_for_nowait_schedule_exec<Schedule>&,
 RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host& host_res,
                                                                const omp_for_nowait_schedule_exec<Schedule>&,
                                                                Iterable&& iter,
