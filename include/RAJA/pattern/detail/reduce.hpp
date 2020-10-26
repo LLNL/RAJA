@@ -135,8 +135,8 @@ public:
   ValueLoc &operator=(ValueLoc const &other) { val = other.val; loc = other.loc; return *this;}
 #else
   constexpr ValueLoc() = default;
-  constexpr ValueLoc(ValueLoc const &other) = default;
-  ValueLoc &operator=(ValueLoc const &other) = default;
+  constexpr ValueLoc(ValueLoc const &) = default;
+  ValueLoc &operator=(ValueLoc const &) = default;
 #endif
 
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val_) : val{val_}, loc{DefaultLoc<IndexType>().value()} {}

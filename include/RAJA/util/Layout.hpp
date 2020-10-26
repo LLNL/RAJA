@@ -106,21 +106,22 @@ public:
   static constexpr IdxLin limit = RAJA::operators::limits<IdxLin>::max();
   static constexpr ptrdiff_t stride1_dim = StrideOneDim;
 
-  // const char *index_types[sizeof...(RangeInts)];
-
-  IdxLin sizes[n_dims];
-  IdxLin strides[n_dims];
-  IdxLin inv_strides[n_dims];
-  IdxLin inv_mods[n_dims];
+  IdxLin sizes[n_dims] = {0};
+  IdxLin strides[n_dims] = {0};
+  IdxLin inv_strides[n_dims] = {0};
+  IdxLin inv_mods[n_dims] = {0};
 
 
   /*!
    * Default constructor with zero sizes and strides.
    */
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr LayoutBase_impl()
-      : sizes{0}, strides{0}, inv_strides{0}, inv_mods{0}
-  {
-  }
+  constexpr RAJA_INLINE LayoutBase_impl() = default;
+  constexpr RAJA_INLINE LayoutBase_impl(LayoutBase_impl const &) = default;
+  constexpr RAJA_INLINE LayoutBase_impl(LayoutBase_impl &&) = default;
+  RAJA_INLINE LayoutBase_impl &operator=(LayoutBase_impl const &) =
+      default;
+  RAJA_INLINE LayoutBase_impl &operator=(LayoutBase_impl &&) =
+      default;
 
   /*!
    * Construct a layout given the size of each dimension.
@@ -139,7 +140,7 @@ public:
   }
 
   /*!
-   *  Copy ctor.
+   *  Templated copy ctor from simillar layout.
    */
   template <typename CIdxLin, ptrdiff_t CStrideOneDim>
   constexpr RAJA_INLINE RAJA_HOST_DEVICE LayoutBase_impl(
