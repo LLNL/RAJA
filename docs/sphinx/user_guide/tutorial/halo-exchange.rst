@@ -21,7 +21,7 @@ Key RAJA features shown in this example:
   * RAJA workgroup policies
 
 In this example, we show how to use the RAJA workgroup constructs to implement
-buffer packing and unpacking for data halo exchange on a computational mesh,
+buffer packing and unpacking for data halo exchange on a computational grid,
 a common MPI communication operation. This may not provide a performance gain
 on a CPU system, but it can significantly speedup halo exchange on a GPU 
 system compared to using ``RAJA::forall`` to run individual packing/unpacking
@@ -34,7 +34,7 @@ kernels.
 
 We start by setting the parameters for the halo exchange by using default
 values or values provided via command line input. These parameters determine 
-the size of the mesh, the width of the halo, the number of field variables 
+the size of the grid, the width of the halo, the number of grid variables 
 and the number of cycles.
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
@@ -60,7 +60,7 @@ unpack:
    :end-before: _halo_exchange_index_list_generate_end
    :language: C++
 
-All the code examples presented below copy the data packed from the mesh 
+All the code examples presented below copy the data packed from the grid 
 interior: 
 
   +---+---+---+---+---+
@@ -120,14 +120,14 @@ A sequential RAJA example uses this execution policy type:
    :end-before: _halo_exchange_loop_forall_policies_end
    :language: C++
 
-to pack the mesh field data into a buffer:
+to pack the grid variable data into a buffer:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
    :start-after: _halo_exchange_loop_forall_packing_start
    :end-before: _halo_exchange_loop_forall_packing_end
    :language: C++
 
-and unpack the buffer data into the mesh field array:
+and unpack the buffer data into the grid variable array:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
    :start-after: _halo_exchange_loop_forall_unpacking_start
