@@ -28,26 +28,33 @@ TYPED_TEST_SUITE(TypedIntegralViewUnitTest, UnitIntFloatTypes);
 
 TYPED_TEST(TypedViewUnitTest, Constructors)
 {
-
   using layout = RAJA::Layout<1>;
 
+  const TypeParam val = 2;
+
   TypeParam data[10];
+  data[0] = val;
+
   RAJA::View<TypeParam, layout> view(data, layout(10));
+  ASSERT_EQ(val, view(0));
 
   /*
    * Should be able to construct a non-const View from a non-const View
    */
   RAJA::View<TypeParam, layout> view2(view);
+  ASSERT_EQ(val, view2(0));
 
   /*
    * Should be able to construct a const View from a non-const View
    */
   RAJA::View<TypeParam const, layout> const_view(view);
+  ASSERT_EQ(val, const_view(0));
 
   /*
    * Should be able to construct a const View from a const View
    */
   RAJA::View<TypeParam const, layout> const_view2(const_view);
+  ASSERT_EQ(val, const_view2(0));
 }
 
 TYPED_TEST(TypedViewUnitTest, Accessor)
