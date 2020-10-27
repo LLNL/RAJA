@@ -24,7 +24,7 @@ void ForallAtomicMultiViewTestImpl( IdxType N )
   // Functionally similar to ForallAtomicViewTestImpl
 
   int sqrside = (int)(sqrt(N/2)); // dest[] dimension
-  int doublesqrside = (int)(sqrt(N/2)*2); // source[] dimension
+  int doublesqrside = sqrside*2; // source[] dimension
 
   RAJA::TypedRangeSegment<IdxType> seg(0, N);
   RAJA::TypedRangeSegment<IdxType> seg_sqr(0, sqrside);
