@@ -23,12 +23,11 @@ void ForallAtomicMultiViewTestImpl( IdxType N )
 {
   // Functionally similar to ForallAtomicViewTestImpl
 
-  int halfsqr = (int)(sqrt(N/2)); // dest[] dimension
-  int doublehalfsqr = (int)(sqrt(N/2)*2); // source[] dimension
+  int sqrside = (int)(sqrt(N/2)); // dest[] dimension
+  int doublesqrside = (int)(sqrt(N/2)*2); // source[] dimension
 
   RAJA::TypedRangeSegment<IdxType> seg(0, N);
-  RAJA::TypedRangeSegment<IdxType> seg_hundred(0, halfsqr);
-  RAJA::TypedRangeSegment<IdxType> seg_twohundred(0, doublehalfsqr);
+  RAJA::TypedRangeSegment<IdxType> seg_sqr(0, sqrside);
 
   camp::resources::Resource work_res{WORKINGRES()};
   camp::resources::Resource host_res{camp::resources::Host()};
@@ -38,17 +37,17 @@ void ForallAtomicMultiViewTestImpl( IdxType N )
   T * check_array = host_res.allocate<T>(N/2);
 
   // assumes each source[] will be 2x size of each dest[]
-  T ** source = new T * [doublehalfsqr];
-  for ( int ii = 0; ii < doublehalfsqr; ++ii )
+  T ** source = new T * [doublesqrside];
+  for ( int ii = 0; ii < doublesqrside; ++ii )
   {
-    source[ii] = actualsource+(ii*halfsqr);
+    source[ii] = actualsource+(ii*sqrside);
   }
 
   // assumes each dest[] will be a square matrix
-  T ** dest = new T * [halfsqr];
-  for ( int ii = 0; ii < halfsqr; ++ii )
+  T ** dest = new T * [sqrside];
+  for ( int ii = 0; ii < sqrside; ++ii )
   {
-    dest[ii] = actualdest+(ii*halfsqr);
+    dest[ii] = actualdest+(ii*sqrside);
   }
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -72,16 +71,16 @@ void ForallAtomicMultiViewTestImpl( IdxType N )
 
 
   // Zero out dest using atomic MultiView
-  RAJA::forall<ExecPolicy>(seg_hundred, [=] RAJA_HOST_DEVICE(IdxType i) {
-    for ( int aopidx = 0; aopidx < halfsqr; ++aopidx )
+  RAJA::forall<ExecPolicy>(seg_sqr, [=] RAJA_HOST_DEVICE(IdxType i) {
+    for ( int aopidx = 0; aopidx < sqrside; ++aopidx )
     {
       sum_atomic_view(i,aopidx) = (T)0;
     }
   });
 
   // Assign values to dest using atomic MultiView
-  RAJA::forall<ExecPolicy>(seg_hundred, [=] RAJA_HOST_DEVICE(IdxType i) {
-    for ( int aopidx = 0; aopidx < doublehalfsqr; ++aopidx )
+  RAJA::forall<ExecPolicy>(seg_sqr, [=] RAJA_HOST_DEVICE(IdxType i) {
+    for ( int aopidx = 0; aopidx < doublesqrside; ++aopidx )
     {
       sum_atomic_view(i, aopidx/2) += vec_view(aopidx,i);
     }
