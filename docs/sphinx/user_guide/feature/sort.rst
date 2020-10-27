@@ -86,7 +86,7 @@ For example, sorting an array with this sequence of values::
 
    6 7 2 1 0 9 4 8 5 3 4 9 6 3 7 0 1 8 2 5
 
-with an sequential unstable sort operation:
+with a sequential unstable sort operation:
 
 .. literalinclude:: ../../../../examples/tut_sort.cpp
    :start-after: _sort_seq_start

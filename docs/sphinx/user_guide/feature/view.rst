@@ -86,7 +86,7 @@ access array entries with stride N :subscript:`n` * N :subscript:`(n-1)` * ... *
 MultiView
 ^^^^^^^^^^^^^^^^
 
-When using numerous arrays with the same size and Layout, where each needs 
+Using numerous arrays with the same size and Layout, where each needs 
 a View, can be cumbersome. Developers need to create a View object for
 each array, and when using the Views in a kernel, they require redundant
 pointer offset calculations. ``RAJA::MultiView`` solves these problems by 
@@ -139,7 +139,6 @@ position.
    :end-before: _multiview_example_2Daopindex_end
    :language: C++
 
-.. note:: ``RAJA::MultiView`` should work with atomic accesses, but we have not yet developed comprehensive tests for this.
 
 ------------
 RAJA Layouts
