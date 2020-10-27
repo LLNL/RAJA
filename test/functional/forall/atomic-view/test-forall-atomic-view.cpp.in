@@ -23,7 +23,7 @@
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-forall-atomic-view.hpp"
+#include "test-forall-@TEST@.hpp"
 
 //
 // These tests exercise only one index type. We parameterize here to
@@ -35,7 +35,7 @@ using TestIdxTypeList = camp::list< RAJA::Index_type >;
 //
 // Cartesian product of types used in parameterized tests
 //
-using @ATOMIC_BACKEND@ForallAtomicViewTypes =
+using @ATOMIC_BACKEND@Forall@TEST@Types =
   Test< camp::cartesian_product<@ATOMIC_BACKEND@ForallAtomicExecPols,
                                 @ATOMIC_BACKEND@AtomicPols,
                                 @ATOMIC_BACKEND@ResourceList,
@@ -46,5 +46,5 @@ using @ATOMIC_BACKEND@ForallAtomicViewTypes =
 // Instantiate parameterized test
 //
 INSTANTIATE_TYPED_TEST_SUITE_P(@ATOMIC_BACKEND@,
-                               ForallAtomicViewTest,
-                               @ATOMIC_BACKEND@ForallAtomicViewTypes);
+                               Forall@TEST@Test,
+                               @ATOMIC_BACKEND@Forall@TEST@Types);
