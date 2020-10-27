@@ -317,7 +317,7 @@ int main(int argc, char **argv)
       }
       // _halo_exchange_sequential_cstyle_packing_end
 
-      // _halo_exchange_sequential_cstyle_packing_start
+      // _halo_exchange_sequential_cstyle_unpacking_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         // recv single message

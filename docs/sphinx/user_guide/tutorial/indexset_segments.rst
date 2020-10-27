@@ -186,13 +186,20 @@ following policy:
    :language: C++ 
 
 Finally, to iterate over the segments sequentially and execute each segment in
-parallel on a GPU by launching a CUDA kernel, we would define this policy:
+parallel on a GPU using either CUDA or HIP kernel, we would use a policy,
+such as:
  
 .. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
    :start-after: _raja_indexset_cudapolicy_daxpy_start
    :end-before: _raja_indexset_cudapolicy_daxpy_end
    :language: C++
-                    :lines: 312-313
+
+or:
+
+.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
+   :start-after: _raja_indexset_hippolicy_daxpy_start
+   :end-before: _raja_indexset_hippolicy_daxpy_end
+   :language: C++
 
 The file ``RAJA/examples/tut_indexset-segments.cpp`` contains working code
 for these examples.
