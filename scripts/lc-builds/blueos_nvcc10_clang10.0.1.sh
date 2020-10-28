@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-BUILD_SUFFIX=lc_blueos-nvcc10-clang10.0.0
+BUILD_SUFFIX=lc_blueos-nvcc10-clang10.0.1
 
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
@@ -16,7 +16,7 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/clang/clang-10.0.0/bin/clang++ \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/clang/clang-10.0.1/bin/clang++ \
   -C ../host-configs/lc-builds/blueos/nvcc_clang_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
