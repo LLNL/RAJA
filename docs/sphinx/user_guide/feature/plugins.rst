@@ -146,6 +146,7 @@ about the plugin, not necessarily of the project using it.
 
 2. **The plugin must be compiled to be a shared object with a .so extension.** 
    A simple example containing required flags would be: ``g++ plugin.cpp -lRAJA -fopenmp -fPIC -shared -o plugin.so``. 
+
    At the moment, RAJA will only attempt to load files with .so extensions. 
    It's worth noting why these flags (or their equivalents) are important. 
 
