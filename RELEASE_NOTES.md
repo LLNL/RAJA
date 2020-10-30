@@ -24,6 +24,7 @@ Notable changes include:
       * Strongly-typed indices now work with Multiview.
 
   * Build changes/improvements:
+      * Update BLT to latest develop branch (SHA-1: cbe99c93d)
       * Added option to enable/disable runtime plugin loading. This is now 
         off by default. Previously, it was always enabled and there was no
         way to disable it.
