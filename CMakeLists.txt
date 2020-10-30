@@ -14,8 +14,8 @@ endif()
 
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 12)
-set(RAJA_VERSION_PATCHLEVEL 1)
+set(RAJA_VERSION_MINOR 13)
+set(RAJA_VERSION_PATCHLEVEL 0)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
   message(FATAL_ERROR "You are mixing RAJA versions. Loaded is ${RAJA_LOADED}, expected ${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
@@ -68,6 +68,7 @@ option(ENABLE_BENCHMARKS "Build benchmarks" Off)
 option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 option(RAJA_ENABLE_BOUNDS_CHECK "Enable bounds checking in RAJA::Views/Layouts" Off)
 option(RAJA_TEST_EXHAUSTIVE "Build RAJA exhaustive tests" Off)
+option(RAJA_ENABLE_RUNTIME_PLUGINS "Enable support for loading plugins at runtime" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
@@ -161,9 +162,14 @@ set (raja_sources
   src/LockFreeIndexSetBuilders.cpp
   src/MemUtils_CUDA.cpp
   src/MemUtils_HIP.cpp
-  src/PluginStrategy.cpp
-  src/RuntimePluginLoader.cpp
-  src/KokkosPluginLoader.cpp)
+  src/PluginStrategy.cpp)
+
+if (RAJA_ENABLE_RUNTIME_PLUGINS)
+  set (raja_sources
+    ${raja_sources}
+    src/RuntimePluginLoader.cpp
+    src/KokkosPluginLoader.cpp)
+endif ()
 
 set (raja_depends)
 

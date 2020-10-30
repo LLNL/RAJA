@@ -10,3 +10,6 @@
 [submodule "tpl/rocPRIM"]
 	path = tpl/rocPRIM
 	url = https://github.com/ROCmSoftwarePlatform/rocPRIM.git
+[submodule "scripts/radiuss-spack-configs"]
+	path = scripts/radiuss-spack-configs
+	url = https://github.com/LLNL/radiuss-spack-configs

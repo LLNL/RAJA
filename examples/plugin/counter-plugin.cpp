@@ -15,10 +15,14 @@ class CounterPlugin :
 {
   public:
   void preCapture(const RAJA::util::PluginContext& p) override {
-    if (p.platform == RAJA::Platform::host)
+    if (p.platform == RAJA::Platform::host) 
+    {
       std::cout << " [CounterPlugin]: Capturing host kernel for the " << ++host_capture_counter << " time!" << std::endl;
+    }
     else
+    {
       std::cout << " [CounterPlugin]: Capturing device kernel for the " << ++device_capture_counter << " time!" << std::endl;
+    }
   }
 
   void preLaunch(const RAJA::util::PluginContext& p) override {

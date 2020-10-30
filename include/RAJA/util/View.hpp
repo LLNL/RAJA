@@ -75,14 +75,11 @@ struct View {
   {
   }
 
-  // We found the compiler-generated copy constructor does not actually
-  // copy-construct the object on the device in certain nvcc versions. By
-  // explicitly defining the copy constructor we are able ensure proper
-  // behavior. Git-hub pull request link https://github.com/LLNL/RAJA/pull/477
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr View(View const &V)
-      : layout(V.layout), data(V.data)
-  {
-  }
+  constexpr View() = delete;
+  RAJA_INLINE constexpr View(View const &) = default;
+  RAJA_INLINE constexpr View(View &&) = default;
+  RAJA_INLINE View& operator=(View const &) = default;
+  RAJA_INLINE View& operator=(View &&) = default;
 
   template <bool IsConstView = std::is_const<value_type>::value>
   RAJA_INLINE constexpr View(
@@ -120,7 +117,12 @@ struct View {
 // returns linear index of layout(ar...)
 template <typename Lay, typename Tup, camp::idx_t... Idxs>
 RAJA_HOST_DEVICE RAJA_INLINE 
-RAJA::Index_type selecttuple( Lay lyout, Tup&& tup, camp::idx_seq<Idxs...> )
+auto selecttuple( Lay lyout, Tup&& tup, camp::idx_seq<Idxs...> ) ->
+  decltype(
+            lyout(
+              camp::get<Idxs>(std::forward<Tup>(tup))...
+            )
+          )
 { 
   return lyout(
                 camp::get<Idxs>(std::forward<Tup>(tup))...
@@ -193,22 +195,24 @@ RAJA_HOST_DEVICE RAJA_INLINE auto removenth( Lay lyout, Tup&& tup ) ->
 template <typename ValueType,
           typename LayoutType,
           RAJA::Index_type P2Pidx = 0,
-          typename PointerType = ValueType **>
+          typename PointerType = ValueType **,
+          typename NonConstPointerType =
+              camp::type::ptr::add< // adds *
+                camp::type::ptr::add<
+                  camp::type::cv::rem<  // removes cv
+                    camp::type::ptr::rem<
+                      camp::type::ptr::rem<PointerType>  // removes *
+                    >
+                  >
+                >
+              >
+          >
 struct MultiView {
   using value_type = ValueType;
   using pointer_type = PointerType;
   using layout_type = LayoutType;
   using nc_value_type = camp::decay<value_type>;
-  using nc_pointer_type =  
-    camp::type::ptr::add< // adds *
-      camp::type::ptr::add<
-        camp::type::cv::rem<  // removes cv
-          camp::type::ptr::rem<
-            camp::type::ptr::rem<pointer_type>  // removes *
-          >
-        >
-      >
-    >;
+  using nc_pointer_type = NonConstPointerType;
   using NonConstView = MultiView<nc_value_type, layout_type, P2Pidx, nc_pointer_type>;
 
   layout_type const layout;
@@ -225,14 +229,10 @@ struct MultiView {
   {
   }
 
-  // We found the compiler-generated copy constructor does not actually
-  // copy-construct the object on the device in certain nvcc versions. By
-  // explicitly defining the copy constructor we are able ensure proper
-  // behavior. Git-hub pull request link https://github.com/LLNL/RAJA/pull/477
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr MultiView(MultiView const &V)
-      : layout(V.layout), data(V.data)
-  {
-  }
+  RAJA_INLINE constexpr MultiView(MultiView const &) = default;
+  RAJA_INLINE constexpr MultiView(MultiView &&) = default;
+  RAJA_INLINE MultiView& operator=(MultiView const &) = default;
+  RAJA_INLINE MultiView& operator=(MultiView &&) = default;
 
   template <bool IsConstView = std::is_const<value_type>::value>
   RAJA_INLINE constexpr MultiView(

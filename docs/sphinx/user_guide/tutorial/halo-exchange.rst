@@ -21,28 +21,30 @@ Key RAJA features shown in this example:
   * RAJA workgroup policies
 
 In this example, we show how to use the RAJA workgroup constructs to implement
-halo exchange packing and unpacking. This may not be speedup halo exchange on
-CPUs but can significantly speedup halo exchange on GPUs compared to using
-``RAJA::forall`` to run individual kernels.
+buffer packing and unpacking for data halo exchange on a computational grid,
+a common MPI communication operation. This may not provide a performance gain
+on a CPU system, but it can significantly speedup halo exchange on a GPU 
+system compared to using ``RAJA::forall`` to run individual packing/unpacking
+kernels.
 
 .. note:: Using an abstraction layer over RAJA can make it easy to switch
           between using individual ``RAJA::forall`` loops or the RAJA workgroup
           constructs to implement halo exchange packing and unpacking at
           compile time or run time.
 
-We start by setting the parameters for the halo exchange by using the default
-values or parsing the command line input. These parameters determine the size
-of the mesh, the width of the halo, the number of variables and the number of
-cycles.
+We start by setting the parameters for the halo exchange by using default
+values or values provided via command line input. These parameters determine 
+the size of the grid, the width of the halo, the number of grid variables 
+and the number of cycles.
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
    :start-after: _halo_exchange_input_params_start
    :end-before: _halo_exchange_input_params_end
    :language: C++
 
-Next we allocate the variables array (the memory manager in
+Next, we allocate the variables array (the memory manager in
 the example uses CUDA Unified Memory if CUDA is enabled). These grid variables
-will be reset each cycle to allow checking the results of the packing and
+are reset each cycle to allow checking the results of the packing and
 unpacking.
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
@@ -58,8 +60,8 @@ unpack:
    :end-before: _halo_exchange_index_list_generate_end
    :language: C++
 
-All the code examples presented below copy the data packed from just inside
-the mesh variable:
+All the code examples presented below copy the data packed from the grid 
+interior: 
 
   +---+---+---+---+---+
   | 0 | 0 | 0 | 0 | 0 |
@@ -73,7 +75,7 @@ the mesh variable:
   | 0 | 0 | 0 | 0 | 0 |
   +---+---+---+---+---+
 
-into the adjacent halo:
+into the adjacent halo cells:
 
   +---+---+---+---+---+
   | 1 | 1 | 2 | 3 | 3 |
@@ -111,21 +113,21 @@ and unpacking:
 RAJA Variants using forall
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A sequential RAJA example using these policies and types:
+A sequential RAJA example uses this execution policy type:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
    :start-after: _halo_exchange_loop_forall_policies_start
    :end-before: _halo_exchange_loop_forall_policies_end
    :language: C++
 
-of packing:
+to pack the grid variable data into a buffer:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
    :start-after: _halo_exchange_loop_forall_packing_start
    :end-before: _halo_exchange_loop_forall_packing_end
    :language: C++
 
-and unpacking:
+and unpack the buffer data into the grid variable array:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
    :start-after: _halo_exchange_loop_forall_unpacking_start
@@ -141,7 +143,8 @@ by replacing the execution policy with:
    :end-before: _halo_exchange_openmp_forall_policies_end
    :language: C++
 
-Similarly, to run the loops in parallel on a CUDA GPU use this policies:
+Similarly, to run the loops in parallel on a CUDA GPU, we would use this 
+policy:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
    :start-after: _halo_exchange_cuda_forall_policies_start
@@ -170,8 +173,8 @@ run on the workgroup:
    :end-before: _halo_exchange_loop_workgroup_packing_end
    :language: C++
 
-Similarly in the unpacking we wait to receive all of the messages before
-unpacking is done:
+Similarly, in the unpacking we wait to receive all of the messages before
+unpacking the data:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
    :start-after: _halo_exchange_loop_workgroup_unpacking_start
@@ -191,7 +194,7 @@ can be run by replacing the policies and types with:
 
 Similarly, to run the loops in parallel on a CUDA GPU use these policies and
 types, taking note of the unordered work ordering policy that allows the
-enqueued loops to all be run using a single cuda kernel:
+enqueued loops to all be run using a single CUDA kernel:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
    :start-after: _halo_exchange_cuda_workgroup_policies_start
@@ -200,11 +203,11 @@ enqueued loops to all be run using a single cuda kernel:
 
 The packing is the same as the previous workgroup packing examples with the
 exception of added synchronization after calling run and before sending the
-messages. The previous cuda example used forall to launch
-``num_neighbors * num_vars`` cuda kernels and performed ``num_neighbors``
-synchronizations to send each message in turn. Here the reorganization to pack
-all messages before sending lets us use an unordered cuda work ordering policy
-in the workgroup constructs that reduces the number of cuda kernel launches to
+messages. The previous CUDA example used forall to launch
+``num_neighbors * num_vars`` CUDA kernels and performed ``num_neighbors``
+synchronizations to send each message in turn. Here, the reorganization to pack
+all messages before sending lets us use an unordered CUDA work ordering policy
+in the workgroup constructs that reduces the number of CUDA kernel launches to
 one. It also allows us to synchronize once before sending all of the messages:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
@@ -213,7 +216,7 @@ one. It also allows us to synchronize once before sending all of the messages:
    :language: C++
 
 After waiting to receive all of the messages we use workgroup constructs using
-a cuda unordered work ordering policy to unpack all of the messages using a
+a CUDA unordered work ordering policy to unpack all of the messages using a
 single kernel launch:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
@@ -226,5 +229,5 @@ Note that the synchronization after unpacking is done to ensure that
 finished executing.
 
 
-The file ``RAJA/examples/tut_halo-exchange.cpp`` contains the complete
-working example code.
+The file ``RAJA/examples/tut_halo-exchange.cpp`` contains a complete
+working example code, with OpenMP, CUDA, and HIP variants.

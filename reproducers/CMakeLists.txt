@@ -8,3 +8,5 @@
 if(ENABLE_CLANG_CUDA)
   add_subdirectory(clangcuda)
 endif(ENABLE_CLANG_CUDA)
+
+add_subdirectory(openmp-target)

@@ -14,6 +14,7 @@
 #include <ctime>
 #include <algorithm>
 #include <numeric>
+#include <type_traits>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallListSegmentViewTestImpl(INDEX_TYPE N)
@@ -56,7 +57,20 @@ void ForallListSegmentViewTestImpl(INDEX_TYPE N)
     test_array[ idx_array[i] ] = idx_array[i];
   }
 
-  using view_type = RAJA::View< INDEX_TYPE, RAJA::Layout<1, INDEX_TYPE, 0> >;
+  using layout_type = RAJA::Layout<1, INDEX_TYPE, 0>;
+  using view_type = RAJA::View< INDEX_TYPE, layout_type >;
+#if (!(defined(_GLIBCXX_RELEASE) || defined(RAJA_COMPILER_INTEL) || defined(RAJA_COMPILER_MSVC)))\
+    || _GLIBCXX_RELEASE >= 20150716
+  #if (__GNUG__ && __GNUC__ < 5)
+  #define IS_TRIVIALLY_COPYABLE(T) __has_trivial_copy(T)
+  #else
+  #define IS_TRIVIALLY_COPYABLE(T) std::is_trivially_copyable<T>::value
+  #endif
+  static_assert(IS_TRIVIALLY_COPYABLE(layout_type),
+                "These layouts should always be triviallly copyable");
+  static_assert(IS_TRIVIALLY_COPYABLE(view_type),
+                "These views should always be triviallly copyable");
+#endif
   
   RAJA::Layout<1> layout(N);
   view_type work_view(working_array, layout);
@@ -118,7 +132,8 @@ void ForallListSegmentOffsetViewTestImpl(INDEX_TYPE N, INDEX_TYPE offset)
     test_array[ idx_array[i]-offset ] = idx_array[i];
   }
 
-  using view_type = RAJA::View< INDEX_TYPE, RAJA::OffsetLayout<1, INDEX_TYPE> >;
+  using layout_type = RAJA::OffsetLayout<1, INDEX_TYPE>;
+  using view_type = RAJA::View< INDEX_TYPE, layout_type >;
 
   INDEX_TYPE N_offset = N + offset;
   view_type work_view(working_array, 
