@@ -79,11 +79,18 @@ by replacing the execution and reduction policies with:
    :language: C++
 
 Similarly, the kernel containing the reductions can be run in parallel
-on a CUDA GPU using these policies:
+on a GPU using CUDA policies:
 
 .. literalinclude:: ../../../../examples/tut_reductions.cpp
    :start-after: _reductions_raja_cudapolicy_start
    :end-before: _reductions_raja_cudapolicy_end
+   :language: C++
+
+or HIP policies:
+
+.. literalinclude:: ../../../../examples/tut_reductions.cpp
+   :start-after: _reductions_raja_hippolicy_start
+   :end-before: _reductions_raja_hippolicy_end
    :language: C++
 
 .. note:: Each RAJA reduction type requires a reduction policy that must 

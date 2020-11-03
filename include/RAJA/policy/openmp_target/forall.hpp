@@ -61,13 +61,13 @@ RAJA_INLINE resources::EventProxy<resources::Omp> forall_impl(resources::Omp &om
 
 // thread_limit(tperteam) unused due to XL seg fault (when tperteam != distance)
   auto i = distance_it;
+
 #pragma omp target teams distribute parallel for num_teams(numteams) \
-    schedule(static, 1) firstprivate(body,begin_it)
+    schedule(static, 1) map(to : body,begin_it)
   for (i = 0; i < distance_it; ++i) {
     Body ib = body;
     ib(begin_it[i]);
   }
-
   return resources::EventProxy<resources::Omp>(&omp_res);
 }
 

@@ -75,14 +75,11 @@ struct View {
   {
   }
 
-  // We found the compiler-generated copy constructor does not actually
-  // copy-construct the object on the device in certain nvcc versions. By
-  // explicitly defining the copy constructor we are able ensure proper
-  // behavior. Git-hub pull request link https://github.com/LLNL/RAJA/pull/477
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr View(View const &V)
-      : layout(V.layout), data(V.data)
-  {
-  }
+  constexpr View() = delete;
+  RAJA_INLINE constexpr View(View const &) = default;
+  RAJA_INLINE constexpr View(View &&) = default;
+  RAJA_INLINE View& operator=(View const &) = default;
+  RAJA_INLINE View& operator=(View &&) = default;
 
   template <bool IsConstView = std::is_const<value_type>::value>
   RAJA_INLINE constexpr View(
@@ -232,14 +229,10 @@ struct MultiView {
   {
   }
 
-  // We found the compiler-generated copy constructor does not actually
-  // copy-construct the object on the device in certain nvcc versions. By
-  // explicitly defining the copy constructor we are able ensure proper
-  // behavior. Git-hub pull request link https://github.com/LLNL/RAJA/pull/477
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr MultiView(MultiView const &V)
-      : layout(V.layout), data(V.data)
-  {
-  }
+  RAJA_INLINE constexpr MultiView(MultiView const &) = default;
+  RAJA_INLINE constexpr MultiView(MultiView &&) = default;
+  RAJA_INLINE MultiView& operator=(MultiView const &) = default;
+  RAJA_INLINE MultiView& operator=(MultiView &&) = default;
 
   template <bool IsConstView = std::is_const<value_type>::value>
   RAJA_INLINE constexpr MultiView(
