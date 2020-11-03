@@ -79,41 +79,121 @@ namespace RAJA
       /*!
        * @brief Copy assignment constructor
        */
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &operator=(self_type const &c){
         m_value = c.m_value;
         return *this;
       }
 
+
       /*!
-       * @brief Strided load constructor, when scalars are located in memory
-       * locations ptr, ptr+stride, ptr+2*stride, etc.
+       * @brief Load a full register from a stride-one memory location
        *
-       *
-       * Note: this could be done with "gather" instructions if they are
-       * available. (like in avx2, but not in avx)
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &load(element_type const *ptr, camp::idx_t = 1, camp::idx_t = 1){
+      self_type &load_packed(element_type const *ptr){
         m_value = ptr[0];
         return *this;
       }
 
       /*!
-       * @brief Strided store operation, where scalars are stored in memory
-       * locations ptr, ptr+stride, ptr+2*stride, etc.
+       * @brief Partially load a register from a stride-one memory location given
+       *        a run-time number of elements.
        *
-       *
-       * Note: this could be done with "scatter" instructions if they are
-       * available.
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &store(element_type *ptr, camp::idx_t = 1, camp::idx_t = 1) const{
+      self_type &load_packed_n(element_type const *ptr, camp::idx_t N){
+        if(N > 0){
+          m_value = ptr[0];
+        }
+        else{
+          m_value = element_type(0);
+        }
+        return *this;
+      }
+
+      /*!
+       * @brief Gather a full register from a strided memory location
+       *
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &load_strided(element_type const *ptr, camp::idx_t ){
+        m_value = ptr[0];
+        return *this;
+      }
+
+
+      /*!
+       * @brief Partially load a register from a stride-one memory location given
+       *        a run-time number of elements.
+       *
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &load_strided_n(element_type const *ptr, camp::idx_t , camp::idx_t N){
+        if(N > 0){
+          m_value = ptr[0];
+        }
+        else{
+          m_value = element_type(0);
+        }
+        return *this;
+      }
+
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type const &store_packed(element_type *ptr) const{
         ptr[0] = m_value;
         return *this;
       }
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type const &store_packed_n(element_type *ptr, camp::idx_t N) const{
+        if(N > 0){
+          ptr[0] = m_value;
+        }
+        return *this;
+      }
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type const &store_strided(element_type *ptr, camp::idx_t ) const{
+        ptr[0] = m_value;
+        return *this;
+      }
+
+
+      /*!
+       * @brief Store partial register to consecutive memory locations
+       *
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type const &store_strided_n(element_type *ptr, camp::idx_t , camp::idx_t N) const{
+        if(N > 0){
+          ptr[0] = m_value;
+        }
+        return *this;
+      }
+
 
 
       /*!

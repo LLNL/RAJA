@@ -116,101 +116,103 @@ namespace RAJA
             m_value(_mm256_set_pd(c0, c1, c2, c3)) {}
 
 
+
       /*!
-       * @brief Strided load constructor, when scalars are located in memory
-       * locations ptr, ptr+stride, ptr+2*stride, etc.
+       * @brief Load a full register from a stride-one memory location
        *
-       *
-       * Note: this could be done with "gather" instructions if they are
-       * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t N = 4){
-        // no elements
-        if(N <= 0){
-          m_value = _mm256_setzero_pd();
+      self_type &load_packed(element_type const *ptr){
+        m_value = m_value = _mm256_loadu_pd(ptr);
+        return *this;
+      }
+
+      /*!
+       * @brief Partially load a register from a stride-one memory location given
+       *        a run-time number of elements.
+       *
+       */
+      RAJA_INLINE
+      self_type &load_packed_n(element_type const *ptr, camp::idx_t N){
+        m_value = _mm256_maskload_pd(ptr, createMask(N));
+        return *this;
+      }
+
+      /*!
+       * @brief Gather a full register from a strided memory location
+       *
+       */
+      RAJA_INLINE
+      self_type &load_strided(element_type const *ptr, camp::idx_t stride){
+        for(camp::idx_t i = 0;i < 4;++ i){
+          m_value[i] = ptr[i*stride];
         }
-        // Packed Load?
-        if(stride == 1){
-          // Full vector width uses regular load
-          if(N == 4){
-            m_value = _mm256_loadu_pd(ptr);
-          }
+        return *this;
+      }
 
-          // Do a masked load
-          else{
-            m_value = _mm256_maskload_pd(ptr, createMask(N));
-          }
+
+      /*!
+       * @brief Partially load a register from a stride-one memory location given
+       *        a run-time number of elements.
+       *
+       */
+      RAJA_INLINE
+      self_type &load_strided_n(element_type const *ptr, camp::idx_t stride, camp::idx_t N){
+        m_value = _mm256_setzero_pd();
+        for(camp::idx_t i = 0;i < N;++ i){
+          m_value[i] = ptr[i*stride];
+        };
+        return *this;
+      }
+
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      self_type const &store_packed(element_type *ptr) const{
+        _mm256_storeu_pd(ptr, m_value);
+        return *this;
+      }
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      self_type const &store_packed_n(element_type *ptr, camp::idx_t N) const{
+        _mm256_maskstore_pd(ptr, createMask(N), m_value);
+        return *this;
+      }
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      self_type const &store_strided(element_type *ptr, camp::idx_t stride) const{
+        for(camp::idx_t i = 0;i < 4;++ i){
+          ptr[i*stride] = m_value[i];
         }
+        return *this;
+      }
 
-        // AVX has no gather instruction, so do it manually
-        else{
-          switch(N){
-            case 1:
-              m_value =_mm256_set_pd(0,
-                                  0,
-                                  0,
-                                  ptr[0]);
-              break;
 
-            case 2:
-              m_value =_mm256_set_pd(0,
-                                  0,
-                                  ptr[stride],
-                                  ptr[0]);
-              break;
-
-            case 3:
-              m_value =_mm256_set_pd(0,
-                                  ptr[2*stride],
-                                  ptr[stride],
-                                  ptr[0]);
-              break;
-
-            case 4:
-              m_value =_mm256_set_pd(ptr[3*stride],
-                                  ptr[2*stride],
-                                  ptr[stride],
-                                  ptr[0]);
-              break;
-          }
+      /*!
+       * @brief Store partial register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      self_type const &store_strided_n(element_type *ptr, camp::idx_t stride, camp::idx_t N) const{
+        for(camp::idx_t i = 0;i < N;++ i){
+          ptr[i*stride] = m_value[i];
         }
         return *this;
       }
 
 
 
-      /*!
-       * @brief Strided store operation, where scalars are stored in memory
-       * locations ptr, ptr+stride, ptr+2*stride, etc.
-       *
-       *
-       * Note: this could be done with "scatter" instructions if they are
-       * available.
-       */
-      RAJA_INLINE
-      self_type const &store(element_type *ptr, camp::idx_t stride = 1, camp::idx_t N = 4) const{
-        // Is this a packed store?
-        if(stride == 1){
-          // Is it full-width?
-          if(N == 4){
-            _mm256_storeu_pd(ptr, m_value);
-          }
-          // Need to do a masked store
-          else{
-            _mm256_maskstore_pd(ptr, createMask(N), m_value);
-          }
-
-        }
-
-        // Scatter operation:  AVX2 doesn't have a scatter, so it's manual
-        else{
-          for(camp::idx_t i = 0;i < N;++ i){
-            ptr[i*stride] = m_value[i];
-          }
-        }
-        return *this;
-      }
 
       /*!
        * @brief Get scalar value from vector register

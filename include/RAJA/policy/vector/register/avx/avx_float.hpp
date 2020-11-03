@@ -105,72 +105,100 @@ namespace RAJA
 
 
       /*!
-       * @brief Strided load constructor, when scalars are located in memory
-       * locations ptr, ptr+stride, ptr+2*stride, etc.
+       * @brief Load a full register from a stride-one memory location
        *
-       *
-       * Note: this could be done with "gather" instructions if they are
-       * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t N = 8){
-        // no elements
-        if(N <= 0){
-          m_value = _mm256_setzero_ps();
-        }
-        // Packed data is either a full, or masked load
-        if(stride == 1){
-          if(N == 8)
-          {
-            m_value = _mm256_loadu_ps(ptr);
-          }
-          else {
-            m_value = _mm256_maskload_ps(ptr, createMask(N));
-          }
-        }
-        // AVX has no gather instruction, so do it manually
-        else{
-          for(camp::idx_t i = 0;i < N;++ i){
-            m_value[i] = ptr[i*stride];
-          }
-        }
-
+      self_type &load_packed(element_type const *ptr){
+        m_value = _mm256_loadu_ps(ptr);
         return *this;
       }
 
+      /*!
+       * @brief Partially load a register from a stride-one memory location given
+       *        a run-time number of elements.
+       *
+       */
+      RAJA_INLINE
+      self_type &load_packed_n(element_type const *ptr, camp::idx_t N){
+        m_value = _mm256_maskload_ps(ptr, createMask(N));
+        return *this;
+      }
+
+      /*!
+       * @brief Gather a full register from a strided memory location
+       *
+       */
+      RAJA_INLINE
+      self_type &load_strided(element_type const *ptr, camp::idx_t stride){
+        for(camp::idx_t i = 0;i < 8;++ i){
+          m_value[i] = ptr[i*stride];
+        }
+        return *this;
+      }
 
 
       /*!
-       * @brief Strided store operation, where scalars are stored in memory
-       * locations ptr, ptr+stride, ptr+2*stride, etc.
+       * @brief Partially load a register from a stride-one memory location given
+       *        a run-time number of elements.
        *
-       *
-       * Note: this could be done with "scatter" instructions if they are
-       * available.
        */
       RAJA_INLINE
-      self_type const &store(element_type *ptr, camp::idx_t stride = 1, camp::idx_t N = 8) const{
-        // Is this a packed store?
-        if(stride == 1){
-          // Is it full-width?
-          if(N == 8){
-            _mm256_storeu_ps(ptr, m_value);
-          }
-          // Need to do a masked store
-          else{
-            _mm256_maskstore_ps(ptr, createMask(N), m_value);
-          }
-
-        }
-
-        // Scatter operation:  AVX2 doesn't have a scatter, so it's manual
-        else{
-          for(camp::idx_t i = 0;i < N;++ i){
-            ptr[i*stride] = m_value[i];
-          }
+      self_type &load_strided_n(element_type const *ptr, camp::idx_t stride, camp::idx_t N){
+        m_value = _mm256_setzero_ps();
+        for(camp::idx_t i = 0;i < N;++ i){
+          m_value[i] = ptr[i*stride];
         }
         return *this;
       }
+
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      self_type const &store_packed(element_type *ptr) const{
+        _mm256_storeu_ps(ptr, m_value);
+        return *this;
+      }
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      self_type const &store_packed_n(element_type *ptr, camp::idx_t N) const{
+        _mm256_maskstore_ps(ptr, createMask(N), m_value);
+        return *this;
+      }
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      self_type const &store_strided(element_type *ptr, camp::idx_t stride) const{
+        for(camp::idx_t i = 0;i < 8;++ i){
+          ptr[i*stride] = m_value[i];
+        }
+        return *this;
+      }
+
+
+      /*!
+       * @brief Store partial register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      self_type const &store_strided_n(element_type *ptr, camp::idx_t stride, camp::idx_t N) const{
+        for(camp::idx_t i = 0;i < N;++ i){
+          ptr[i*stride] = m_value[i];
+        }
+        return *this;
+      }
+
+
 
       /*!
        * @brief Get scalar value from vector register

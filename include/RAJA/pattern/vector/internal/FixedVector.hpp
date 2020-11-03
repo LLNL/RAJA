@@ -42,6 +42,8 @@ namespace RAJA
 
         using element_type = ELEMENT_TYPE;
 
+        using vector_type = self_type;
+        using register_type = typename base_type::register_type;
 
       private:
         RAJA_HOST_DEVICE
@@ -124,7 +126,12 @@ namespace RAJA
         }
 
 
-
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        self_type &resize(camp::idx_t )
+        {
+          return *this;
+        }
 
 
         /*!

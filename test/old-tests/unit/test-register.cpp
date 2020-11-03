@@ -13,12 +13,12 @@
 #include "RAJA_gtest.hpp"
 
 using RegisterTestTypes = ::testing::Types<
-#ifdef RAJA_ALTIVEC
-    RAJA::Register<RAJA::altivec_register, double>,
-    RAJA::Register<RAJA::altivec_register, float>,
-    RAJA::Register<RAJA::altivec_register, int>,
-    RAJA::Register<RAJA::altivec_register, long>,
-#endif
+//#ifdef RAJA_ALTIVEC
+//    RAJA::Register<RAJA::altivec_register, double>,
+//    RAJA::Register<RAJA::altivec_register, float>,
+//    RAJA::Register<RAJA::altivec_register, int>,
+//    RAJA::Register<RAJA::altivec_register, long>,
+//#endif
 
 #ifdef __AVX__
     RAJA::Register<RAJA::avx_register, double>,
@@ -40,26 +40,20 @@ using RegisterTestTypes = ::testing::Types<
     RAJA::Register<RAJA::scalar_register, float>,
     RAJA::Register<RAJA::scalar_register, double>,
 
-//    // Test automatically wrapped types to make things easier for users
+    // Test register-like operators of vector classes
     RAJA::StreamVector<int>,
-//    RAJA::StreamVector<int, 2>,
-//    RAJA::StreamVector<long>,
-//    RAJA::StreamVector<long, 2>,
-//    RAJA::StreamVector<float>,
-//    RAJA::StreamVector<float, 2>,
-//    RAJA::StreamVector<double>,
-//    RAJA::StreamVector<double, 2>,
-    RAJA::FixedVector<double, 1>,
-    RAJA::FixedVector<double, 2>,
-    RAJA::FixedVector<double, 3>,
-    RAJA::FixedVector<double, 4>,
-    RAJA::FixedVector<double, 5>,
-    RAJA::FixedVector<long, 1>,
-    RAJA::FixedVector<long, 2>,
+    RAJA::StreamVector<int, 2>,
+    RAJA::StreamVector<long>,
+    RAJA::StreamVector<float>,
+    RAJA::StreamVector<double>,
+    RAJA::FixedVector<int, 3>,
+    RAJA::FixedVector<int, 8>,
     RAJA::FixedVector<long, 3>,
-    RAJA::FixedVector<long, 4>,
-    RAJA::FixedVector<long, 5>
-
+    RAJA::FixedVector<long, 8>,
+    RAJA::FixedVector<float, 3>,
+    RAJA::FixedVector<float, 8>,
+    RAJA::FixedVector<double, 3>,
+    RAJA::FixedVector<double, 8>
   >;
 
 
@@ -171,12 +165,39 @@ TYPED_TEST_P(RegisterTest, VectorRegisterLoad)
     ASSERT_DOUBLE_EQ(x[i], A[i]);
   }
 
-  // load stride-2from pointer
+
+  // load n stride-1 from pointer
+  if(num_elem > 1){
+    x.load_packed_n(A, num_elem-1);
+
+    // check first n-1 values
+    for(size_t i = 0;i+1 < num_elem; ++ i){
+      ASSERT_DOUBLE_EQ(x[i], A[i]);
+    }
+
+    // last value should be cleared to zero
+    ASSERT_DOUBLE_EQ(x[num_elem-1], 0);
+  }
+
+  // load stride-2 from pointer
   register_t y;
   y.load_strided(A, 2);
 
   for(size_t i = 0;i < num_elem; ++ i){
     ASSERT_DOUBLE_EQ(y[i], A[i*2]);
+  }
+
+  // load n stride-2 from pointer
+  if(num_elem > 1){
+    y.load_strided_n(A, 2, num_elem-1);
+
+    // check first n-1 values
+    for(size_t i = 0;i+1 < num_elem; ++ i){
+      ASSERT_DOUBLE_EQ(y[i], A[i*2]);
+    }
+
+    // last value should be cleared to zero
+    ASSERT_DOUBLE_EQ(y[num_elem-1], 0);
   }
 }
 
@@ -368,20 +389,20 @@ TYPED_TEST_P(RegisterTest, VectorRegisterDivide)
   // operator /
   register_t op_div = x/y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_DOUBLE_EQ(op_div[i], A[i] / B[i]);
+    ASSERT_SCALAR_EQ(op_div[i], A[i] / B[i]);
   }
 
   // operator /=
   register_t op_diveq = x;
   op_diveq /= y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_DOUBLE_EQ(op_diveq[i], A[i] / B[i]);
+    ASSERT_SCALAR_EQ(op_diveq[i], A[i] / B[i]);
   }
 
   // function divide
   register_t func_div = x.divide(y);
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_DOUBLE_EQ(func_div[i], A[i] / B[i]);
+    ASSERT_SCALAR_EQ(func_div[i], A[i] / B[i]);
   }
 
 
@@ -389,15 +410,15 @@ TYPED_TEST_P(RegisterTest, VectorRegisterDivide)
   register_t op_div_s1 = x / element_t(2);
   register_t op_div_s2 = element_t(2) / x;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_DOUBLE_EQ(op_div_s1[i], A[i] / element_t(2));
-    ASSERT_DOUBLE_EQ(op_div_s2[i], element_t(2) / A[i]);
+    ASSERT_SCALAR_EQ(op_div_s1[i], A[i] / element_t(2));
+    ASSERT_SCALAR_EQ(op_div_s2[i], element_t(2) / A[i]);
   }
 
   // operator /= scalar
   register_t op_diveq_s = x;
   op_diveq_s /= element_t(2);
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_DOUBLE_EQ(op_diveq_s[i], A[i] / element_t(2));
+    ASSERT_SCALAR_EQ(op_diveq_s[i], A[i] / element_t(2));
   }
 }
 
@@ -708,7 +729,7 @@ GPU_TEST(RegisterTestCuda, CudaWarp16)
       [=] __device__(int i0){
         int i = (i0>>4)<<4;
         register_t value;
-        value.load(data + i);
+        value.load_packed(data + i);
         element_t s = value.sum();
         if(register_t::is_root()){
            result[i0>>4] = s;

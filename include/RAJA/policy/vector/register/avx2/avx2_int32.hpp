@@ -142,89 +142,103 @@ namespace RAJA
       Register(element_type const &c) : m_value(_mm256_set1_epi32(c)) {}
 
 
+
       /*!
-       * @brief Strided load constructor, when scalars are located in memory
-       * locations ptr, ptr+stride, ptr+2*stride, etc.
+       * @brief Load a full register from a stride-one memory location
        *
-       *
-       * Note: this could be done with "gather" instructions if they are
-       * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
-      self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t N = 8){
-        // no elements
-        if(N <= 0){
-          m_value = _mm256_setzero_si256();
-        }
-        // Full vector width uses regular load/gather instruction
-        if(N == 8){
+      self_type &load_packed(element_type const *ptr){
+        m_value = _mm256_loadu_si256((__m256i const *)ptr);
+        return *this;
+      }
 
-          // Packed Load
-          if(stride == 1){
-            m_value = _mm256_loadu_si256((__m256i const *)ptr);
-          }
+      /*!
+       * @brief Partially load a register from a stride-one memory location given
+       *        a run-time number of elements.
+       *
+       */
+      RAJA_INLINE
+      self_type &load_packed_n(element_type const *ptr, camp::idx_t N){
+        m_value = _mm256_maskload_epi32(ptr, createMask(N));
+        return *this;
+      }
 
-          // Gather
-          else{
-            m_value = _mm256_i32gather_epi32(ptr,
-                                          createStridedOffsets(stride),
-                                          sizeof(element_type));
-          }
-        }
+      /*!
+       * @brief Gather a full register from a strided memory location
+       *
+       */
+      RAJA_INLINE
+      self_type &load_strided(element_type const *ptr, camp::idx_t stride){
+        m_value = _mm256_i32gather_epi32(ptr,
+                                      createStridedOffsets(stride),
+                                      sizeof(element_type));
+        return *this;
+      }
 
-        // Not-full vector (1,2 or 3 doubles) uses a masked load/gather
-        else {
 
-          // Masked Packed Load
-          if(stride == 1){
-            m_value = _mm256_maskload_epi32(ptr, createMask(N));
-          }
+      /*!
+       * @brief Partially load a register from a stride-one memory location given
+       *        a run-time number of elements.
+       *
+       */
+      RAJA_INLINE
+      self_type &load_strided_n(element_type const *ptr, camp::idx_t stride, camp::idx_t N){
+        m_value = _mm256_mask_i32gather_epi32(_mm256_setzero_si256(),
+                                      ptr,
+                                      createStridedOffsets(stride),
+                                      createMask(N),
+                                      sizeof(element_type));
+        return *this;
+      }
 
-          // Masked Gather
-          else{
-            m_value = _mm256_mask_i32gather_epi32(_mm256_setzero_si256(),
-                                          ptr,
-                                          createStridedOffsets(stride),
-                                          createMask(N),
-                                          sizeof(element_type));
-          }
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      self_type const &store_packed(element_type *ptr) const{
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(ptr), m_value);
+        return *this;
+      }
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      self_type const &store_packed_n(element_type *ptr, camp::idx_t N) const{
+        _mm256_maskstore_epi32(ptr, createMask(N), m_value);
+        return *this;
+      }
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      self_type const &store_strided(element_type *ptr, camp::idx_t stride) const{
+        for(camp::idx_t i = 0;i < 8;++ i){
+          ptr[i*stride] = m_value[i];
         }
         return *this;
       }
 
 
-
       /*!
-       * @brief Strided store operation, where scalars are stored in memory
-       * locations ptr, ptr+stride, ptr+2*stride, etc.
+       * @brief Store partial register to consecutive memory locations
        *
-       *
-       * Note: this could be done with "scatter" instructions if they are
-       * available.
        */
       RAJA_INLINE
-      self_type const &store(element_type *ptr, camp::idx_t stride = 1, camp::idx_t N=8) const{
-        // Is this a packed store?
-        if(stride == 1){
-          // Is it full-width?
-          if(N == 8){
-            _mm256_storeu_si256(reinterpret_cast<__m256i*>(ptr), m_value);
-          }
-          // Need to do a masked store
-          else{
-            _mm256_maskstore_epi32(ptr, createMask(N), m_value);
-          }
-
-        }
-
-        // Scatter operation:  AVX2 doesn't have a scatter, so it's manual
-        else{
-          for(camp::idx_t i = 0;i < N;++ i){
-            ptr[i*stride] = get(i);
-          }
+      self_type const &store_strided_n(element_type *ptr, camp::idx_t stride, camp::idx_t N) const{
+        for(camp::idx_t i = 0;i < N;++ i){
+          ptr[i*stride] = m_value[i];
         }
         return *this;
       }
+
+
 
       /*!
        * @brief Get scalar value from vector register

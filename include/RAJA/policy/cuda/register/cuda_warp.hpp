@@ -88,6 +88,16 @@ namespace RAJA {
 
 
       /*!
+       * @brief Copy assignment operator
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type &operator=(self_type const &c){
+        m_value = c.m_value;
+        return *this;
+      }
+
+      /*!
        * @brief Gets our lane after our bitmask has been applied
        */
       RAJA_INLINE
@@ -111,43 +121,137 @@ namespace RAJA {
       }
 
 
+
       /*!
-       * @brief Strided load constructor, when scalars are located in memory
-       * locations ptr, ptr+stride, ptr+2*stride, etc.
+       * @brief Load a full register from a stride-one memory location
        *
-       *
-       * Note: this could be done with "gather" instructions if they are
-       * available. (like in avx2, but not in avx)
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type &load(element_type const *ptr, camp::idx_t stride = 1, camp::idx_t N = s_num_elem){
+      self_type &load_packed(element_type const *ptr){
+        auto lane = get_lane();
+        if(lane < s_num_elem){
+          m_value = ptr[lane];
+        }
+        else{
+          m_value = element_type(0);
+        }
+        return *this;
+      }
+
+      /*!
+       * @brief Partially load a register from a stride-one memory location given
+       *        a run-time number of elements.
+       *
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type &load_packed_n(element_type const *ptr, camp::idx_t N){
+        auto lane = get_lane();
+        if(lane < N){
+          m_value = ptr[lane];
+        }
+        else{
+          m_value = element_type(0);
+        }
+        return *this;
+      }
+
+      /*!
+       * @brief Gather a full register from a strided memory location
+       *
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type &load_strided(element_type const *ptr, camp::idx_t stride){
         auto lane = get_lane();
         if(lane < s_num_elem){
           m_value = ptr[stride*lane];
         }
-        return *this;
-      }
-
-
-
-      /*!
-       * @brief Strided store operation, where scalars are stored in memory
-       * locations ptr, ptr+stride, ptr+2*stride, etc.
-       *
-       *
-       * Note: this could be done with "scatter" instructions if they are
-       * available.
-       */
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      self_type const &store(element_type *ptr, camp::idx_t stride = 1, camp::idx_t N = s_num_elem) const{
-        auto lane = get_lane();
-        if(lane < s_num_elem){
-          ptr[stride*lane] = m_value;
+        else{
+          m_value = element_type(0);
         }
         return *this;
       }
+
+
+      /*!
+       * @brief Partially load a register from a stride-one memory location given
+       *        a run-time number of elements.
+       *
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type &load_strided_n(element_type const *ptr, camp::idx_t stride, camp::idx_t N){
+        auto lane = get_lane();
+        if(lane < N){
+          m_value = ptr[stride*lane];
+        }
+        else{
+          m_value = element_type(0);
+        }
+        return *this;
+      }
+
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type const &store_packed(element_type *ptr) const{
+        auto lane = get_lane();
+        if(lane < s_num_elem){
+          ptr[lane] = m_value;
+        }
+        return *this;
+      }
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type const &store_packed_n(element_type *ptr, camp::idx_t N) const{
+        auto lane = get_lane();
+        if(lane < N){
+          ptr[lane] = m_value;
+        }
+        return *this;
+      }
+
+      /*!
+       * @brief Store entire register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type const &store_strided(element_type *ptr, camp::idx_t stride) const{
+        auto lane = get_lane();
+        if(lane < s_num_elem){
+          ptr[lane*stride] = m_value;
+        }
+        return *this;
+      }
+
+
+      /*!
+       * @brief Store partial register to consecutive memory locations
+       *
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type const &store_strided_n(element_type *ptr, camp::idx_t stride, camp::idx_t N) const{
+        auto lane = get_lane();
+        if(lane < N){
+          ptr[lane*stride] = m_value;
+        }
+        return *this;
+      }
+
+
 
       /*!
        * @brief Get scalar value from vector register

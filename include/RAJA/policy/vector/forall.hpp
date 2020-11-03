@@ -49,7 +49,7 @@ namespace vector
 
 template <typename TENSOR_TYPE, camp::idx_t DIM, typename Iterable, typename Func>
 RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
-const tensor_exec<TENSOR_TYPE, DIM>&,
+const tensor_exec<seq_exec, TENSOR_TYPE, DIM>&,
                              Iterable &&iter,
                              Func &&loop_body)
 {
@@ -85,8 +85,9 @@ const tensor_exec<TENSOR_TYPE, DIM>&,
 
 namespace expt {
   template <typename TENSOR_TYPE, camp::idx_t DIM, typename Iterable>
-  struct LoopExecute<RAJA::policy::vector::tensor_exec<TENSOR_TYPE, DIM>, Iterable> {
+  struct LoopExecute<RAJA::policy::vector::tensor_exec<seq_exec, TENSOR_TYPE, DIM>, Iterable> {
 
+    RAJA_SUPPRESS_HD_WARN
     template <typename BODY>
     static RAJA_INLINE RAJA_HOST_DEVICE void exec(
         LaunchContext const RAJA_UNUSED_ARG(&ctx),

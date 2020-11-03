@@ -33,6 +33,20 @@ namespace RAJA
   using CudaWarpFixedVector = FixedVector<
       T, NUM_ELEM, cuda_warp_register<LANE_BITS>>;
 
+
+
+
+  template<typename VECTOR_TYPE>
+  using cuda_warp_vector_loop = policy::vector::tensor_exec<cuda_warp_loop, VECTOR_TYPE, 0>;
+
+  template<typename MATRIX_TYPE>
+  using cuda_warp_matrix_row_loop = policy::vector::tensor_exec<cuda_warp_loop, MATRIX_TYPE, 0>;
+
+  template<typename MATRIX_TYPE>
+  using cuda_warp_matrix_col_loop = policy::vector::tensor_exec<cuda_warp_loop, MATRIX_TYPE, 1>;
+
+  template<typename MATRIX_TYPE>
+  using cuda_thread_y_matrix_col_loop = policy::vector::tensor_exec<cuda_thread_y_loop, MATRIX_TYPE, 1>;
 }
 
 #endif

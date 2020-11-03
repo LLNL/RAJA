@@ -127,6 +127,8 @@ namespace internal {
 
       using result_type = Matrix<ELEMENT_TYPE, A_ROWS, B_COLS, MATRIX_ROW_MAJOR, REGISTER_POLICY, SIZE_TYPE>;
 
+      static constexpr bool s_is_fixed = SIZE_TYPE == MATRIX_FIXED;
+
       static_assert(A_COLS == B_ROWS, "Matrices are incompatible for multiplication");
 
       RAJA_HOST_DEVICE
@@ -136,19 +138,15 @@ namespace internal {
 
         // Note: A_IDX_COL == B_IDX_ROW
 
-        // Keep one partial sum for each FMA unit so we can get better ILP
-        // TODO Generalize to N number of FMA units
-        B_VECTOR_TYPE psum[2] = {sum, B_VECTOR_TYPE()};
-
         camp::sink(
-                (psum[B_IDX_ROW%2] =
+                (sum =
                     B.row(B_IDX_ROW).fused_multiply_add(
                         B_VECTOR_TYPE(a_row[A_IDX_COL]),
-                        psum[B_IDX_ROW%2]))...
+                        sum))...
                 );
 
-        // Final sum of partials
-        return RAJA::foldl_sum<B_VECTOR_TYPE>(psum[0], psum[1]);
+        return sum;
+
       }
 
       RAJA_HOST_DEVICE
@@ -158,7 +156,9 @@ namespace internal {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_mult_row_row ++;
 #endif
-        return result_type(calc_row_product(B_VECTOR_TYPE(0), A.row(A_IDX_ROW), B)...);
+        result_type res(calc_row_product(B_VECTOR_TYPE(0), A.row(A_IDX_ROW), B)...);
+        res.resize(A.dim_elem(0), B.dim_elem(1));
+        return res;
       }
 
       RAJA_HOST_DEVICE
@@ -168,7 +168,9 @@ namespace internal {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_multacc_row_row ++;
 #endif
-        return result_type(calc_row_product(C.row(A_IDX_ROW), A.row(A_IDX_ROW), B)...);
+        result_type res(calc_row_product(C.row(A_IDX_ROW), A.row(A_IDX_ROW), B)...);
+        res.resize(A.dim_elem(0), B.dim_elem(1));
+        return res;
       }
 
   };
@@ -189,6 +191,8 @@ namespace internal {
       using A_VECTOR_TYPE = typename A_type::vector_type;
       using B_VECTOR_TYPE = typename B_type::vector_type;
 
+      static constexpr bool s_is_fixed = SIZE_TYPE == MATRIX_FIXED;
+
       using result_vector = changeVectorLength<B_VECTOR_TYPE, sizeof...(A_IDX_ROW)>;
 
       using result_type = Matrix<ELEMENT_TYPE, A_ROWS, B_COLS, MATRIX_COL_MAJOR, REGISTER_POLICY, SIZE_TYPE>;
@@ -201,20 +205,15 @@ namespace internal {
       result_vector calc_row_product(result_vector sum, B_VECTOR_TYPE const &b_col, A_type const &A){
 
         // Note: A_IDX_COL == B_IDX_ROW
-
-        // Keep one partial sum for each FMA unit so we can get better ILP
-        // TODO Generalize to N number of FMA units
-        result_vector psum[2] = {sum, result_vector()};
-
         camp::sink(
-                (psum[A_IDX_COL%2] =
+                (sum =
                     A.col(A_IDX_COL).fused_multiply_add(
                         A_VECTOR_TYPE(b_col[B_IDX_ROW]),
-                        psum[A_IDX_COL%2]))...
+                        sum))...
                 );
 
-        // Final sum of partials
-        return RAJA::foldl_sum<result_vector>(psum[0], psum[1]);
+        return sum;
+
       }
 
       RAJA_HOST_DEVICE
@@ -224,7 +223,9 @@ namespace internal {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_mult_col_col ++;
 #endif
-        return result_type(calc_row_product(result_vector(), B.col(B_IDX_COL), A)...);
+        result_type res(calc_row_product(result_vector(), B.col(B_IDX_COL), A)...);
+        res.resize(A.dim_elem(0), B.dim_elem(1));
+        return res;
       }
 
       RAJA_HOST_DEVICE
@@ -234,7 +235,9 @@ namespace internal {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_multacc_col_col ++;
 #endif
-        return result_type(calc_row_product(C.col(B_IDX_COL), B.col(B_IDX_COL), A)...);
+        result_type res(calc_row_product(C.col(B_IDX_COL), B.col(B_IDX_COL), A)...);
+        res.resize(A.dim_elem(0), B.dim_elem(1));
+        return res;
       }
 
   };
@@ -312,14 +315,16 @@ namespace internal {
       using col_vector_type = typename base_type::col_vector_type;
       using vector_type = row_vector_type;
 
+      using register_type = typename vector_type::register_type;
+
       using element_type = ELEMENT_TYPE;
 
+      static constexpr bool s_is_fixed = SIZE_TYPE == MATRIX_FIXED;
 
 
     private:
 
       vector_type m_rows[sizeof...(IDX_ROW)];
-      //SemiStaticValue<sizeof...(IDX_ROW), SIZE_TYPE == MATRIX_FIXED> m_num_rows;
       camp::idx_t m_num_rows;
 
       RAJA_HOST_DEVICE
@@ -368,6 +373,12 @@ namespace internal {
             "Incompatible number of row vectors");
       }
 
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      MatrixImpl &operator=(self_type const &c){
+        return copy(c);
+      }
+
 
       /*!
        * Copy contents of another matrix operator
@@ -379,6 +390,41 @@ namespace internal {
         m_num_rows = v.m_num_rows;
         return *getThis();
       }
+
+
+      /*!
+       * Resizes matrix to specified size, and sets all elements to zero
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &resize(camp::idx_t num_rows, camp::idx_t num_cols){
+        camp::sink(
+            m_rows[IDX_ROW].resize(num_cols)...
+        );
+
+        m_num_rows = num_rows;
+
+
+        return *getThis();
+      }
+
+      /*!
+       * Resizes matrix to specified size, and sets all elements to zero
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &clear(){
+        auto num_cols = m_rows[0].size();
+        camp::sink(
+            m_rows[IDX_ROW].broadcast(0)...
+        );
+        camp::sink(
+            m_rows[IDX_ROW].resize(num_cols)...
+        );
+
+        return *getThis();
+      }
+
 
 
       /*!
@@ -401,13 +447,48 @@ namespace internal {
                       camp::idx_t num_rows = sizeof...(IDX_ROW),
                       camp::idx_t num_cols = sizeof...(IDX_COL))
       {
-        camp::sink(
-            // only load num_rows rows
-            (IDX_ROW < num_rows
-            ?  m_rows[IDX_ROW].load_strided_n(ptr+IDX_ROW*row_stride, col_stride, num_cols) // LOAD
-            :  m_rows[IDX_ROW])... // NOP, but has same as above type
-        );
+
         m_num_rows = num_rows;
+
+
+        if(SIZE_TYPE == MATRIX_FIXED){ // constexpr
+          if(col_stride == 1){
+            // load all rows as packed data
+            camp::sink(
+                m_rows[IDX_ROW].load_packed(ptr+IDX_ROW*row_stride)...
+            );
+          }
+          else{
+            // load all rows width a stride
+            camp::sink(
+                m_rows[IDX_ROW].load_strided(ptr+IDX_ROW*row_stride, col_stride)...
+            );
+          }
+
+        }
+        // SIZE_TYPE == MATRIX_STREAM
+        else {
+          if(col_stride == 1){
+            // only load num_rows rows with packed data
+            camp::sink(
+                (IDX_ROW < m_num_rows
+                ?  m_rows[IDX_ROW].load_packed_n(ptr+IDX_ROW*row_stride, num_cols)
+                :  m_rows[IDX_ROW].broadcast_n(0, num_cols))... // clear to len N
+            );
+          }
+          else{
+            // only load num_rows rows with strided data
+            camp::sink(
+                (IDX_ROW < m_num_rows
+                ?  m_rows[IDX_ROW].load_strided_n(ptr+IDX_ROW*row_stride, col_stride, num_cols)
+                :  m_rows[IDX_ROW].broadcast_n(0, num_cols))... // clear to len N
+            );
+          }
+
+
+
+        }
+
 
         return *getThis();
       }
@@ -422,12 +503,43 @@ namespace internal {
                       camp::idx_t row_stride = sizeof...(IDX_COL),
                       camp::idx_t col_stride = 1) const
       {
-        camp::sink(
-            // only store rows that are active
-            (IDX_ROW < m_num_rows
-            ?  m_rows[IDX_ROW].store_strided(ptr+IDX_ROW*row_stride, col_stride) // Store
-            :  m_rows[IDX_ROW])... // NOP, but has same as above type
-        );
+
+
+        if(SIZE_TYPE == MATRIX_FIXED){ // constexpr
+          if(col_stride == 1){
+            // store all rows as packed data
+            camp::sink(
+                m_rows[IDX_ROW].store_packed(ptr+IDX_ROW*row_stride)...
+            );
+          }
+          else{
+            // load all rows width a stride
+            camp::sink(
+                m_rows[IDX_ROW].store_strided(ptr+IDX_ROW*row_stride, col_stride)...
+            );
+          }
+
+        }
+        // SIZE_TYPE == MATRIX_STREAM
+        else {
+          auto num_cols = m_rows[0].size();
+          if(col_stride == 1){
+            // only store num_rows rows with packed data
+            camp::sink(
+                (IDX_ROW < m_num_rows
+                ?  m_rows[IDX_ROW].store_packed_n(ptr+IDX_ROW*row_stride, num_cols)
+                :  m_rows[IDX_ROW])... // NOP, but has same as above type
+            );
+          }
+          else{
+            // only store num_rows rows with strided data
+            camp::sink(
+                (IDX_ROW < m_num_rows
+                ?  m_rows[IDX_ROW].store_strided_n(ptr+IDX_ROW*row_stride, col_stride, num_cols)
+                :  m_rows[IDX_ROW])... // NOP, but has same as above type
+            );
+          }
+        }
 
         return *getThis();
       }
@@ -504,7 +616,7 @@ namespace internal {
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      element_type get(camp::idx_t row, camp::idx_t col){
+      element_type get(camp::idx_t row, camp::idx_t col) const {
         return m_rows[row].get(col);
       }
 
@@ -539,8 +651,11 @@ namespace internal {
       using row_vector_type = typename base_type::row_vector_type;
       using col_vector_type = typename base_type::col_vector_type;
       using vector_type = col_vector_type;
+      using register_type = typename vector_type::register_type;
 
       using element_type = ELEMENT_TYPE;
+
+      static constexpr bool s_is_fixed = SIZE_TYPE == MATRIX_FIXED;
 
 
     private:
@@ -595,6 +710,12 @@ namespace internal {
       }
 
 
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      MatrixImpl &operator=(self_type const &c){
+        return copy(c);
+      }
+
       /*!
        * Copy contents of another matrix operator
        */
@@ -603,6 +724,39 @@ namespace internal {
       self_type &copy(self_type const &v){
         camp::sink((m_cols[IDX_COL] = v.m_cols[IDX_COL])...);
         m_num_cols = v.m_num_cols;
+        return *getThis();
+      }
+
+      /*!
+       * Resizes matrix to specified size, and sets all elements to zero
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &resize(camp::idx_t num_rows, camp::idx_t num_cols){
+        camp::sink(
+            m_cols[IDX_COL].resize(num_rows)...
+        );
+
+        m_num_cols = num_cols;
+
+
+        return *getThis();
+      }
+
+      /*!
+       * Resizes matrix to specified size, and sets all elements to zero
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &clear(){
+        auto num_rows = m_cols[0].size();
+        camp::sink(
+            m_cols[IDX_COL].broadcast(0)...
+        );
+        camp::sink(
+            m_cols[IDX_COL].resize(num_rows)...
+        );
+
         return *getThis();
       }
 
@@ -626,13 +780,42 @@ namespace internal {
                       camp::idx_t num_rows = sizeof...(IDX_ROW),
                       camp::idx_t num_cols = sizeof...(IDX_COL))
       {
-        camp::sink(
-            // only load num_rows rows
-            (IDX_COL < num_cols
-            ?  m_cols[IDX_COL].load_strided_n(ptr+IDX_COL*col_stride, row_stride, num_rows) // LOAD
-            :  m_cols[IDX_COL])... // NOP, but has same as above type
-        );
         m_num_cols = num_cols;
+
+        if(SIZE_TYPE == MATRIX_FIXED){ // constexpr
+          if(row_stride == 1){
+            // load all rows as packed data
+            camp::sink(
+                m_cols[IDX_COL].load_packed(ptr+IDX_COL*col_stride)...
+            );
+          }
+          else{
+            // load all rows width a stride
+            camp::sink(
+                m_cols[IDX_COL].load_strided(ptr+IDX_COL*col_stride, row_stride)...
+            );
+          }
+
+        }
+        // SIZE_TYPE == MATRIX_STREAM
+        else {
+          if(row_stride == 1){
+            // only load num_rows rows with packed data
+            camp::sink(
+                (IDX_COL < m_num_cols
+                ?  m_cols[IDX_COL].load_packed_n(ptr+IDX_COL*col_stride, num_rows)
+                :  m_cols[IDX_COL].broadcast_n(0, num_rows))... // NOP, but has same as above type
+            );
+          }
+          else{
+            // only load num_rows rows with strided data
+            camp::sink(
+                (IDX_COL < m_num_cols
+                ?   m_cols[IDX_COL].load_strided_n(ptr+IDX_COL*col_stride, row_stride, num_rows)
+                :  m_cols[IDX_COL].broadcast_n(0, num_rows))... // NOP, but has same as above type
+            );
+          }
+        }
 
         return *getThis();
       }
@@ -647,12 +830,47 @@ namespace internal {
                       camp::idx_t row_stride = 1,
                       camp::idx_t col_stride = sizeof...(IDX_ROW)) const
       {
-        camp::sink(
-            // only store rows that are active
-            (IDX_COL < m_num_cols
-            ?  m_cols[IDX_COL].store_strided(ptr+IDX_COL*col_stride, row_stride) // Store
-            :  m_cols[IDX_COL])... // NOP, but has same as above type
-        );
+
+
+        if(SIZE_TYPE == MATRIX_FIXED){ // constexpr
+          if(row_stride == 1){
+            // store all rows as packed data
+            camp::sink(
+                m_cols[IDX_COL].store_packed(ptr+IDX_COL*col_stride)...
+            );
+          }
+          else{
+            // store all rows width a stride
+            camp::sink(
+                // only store rows that are active
+                (IDX_COL < m_num_cols
+                ?  m_cols[IDX_COL].store_strided(ptr+IDX_COL*col_stride, row_stride)
+                :  m_cols[IDX_COL])... // NOP, but has same as above type
+            );
+          }
+
+        }
+        // SIZE_TYPE == MATRIX_STREAM
+        else {
+          auto num_rows = m_cols[0].size();
+          if(row_stride == 1){
+            // only store num_rows rows with packed data
+            camp::sink(
+                (IDX_COL < m_num_cols
+                ?  m_cols[IDX_COL].store_packed_n(ptr+IDX_COL*col_stride, num_rows)
+                :  m_cols[IDX_COL])... // NOP, but has same as above type
+            );
+          }
+          else{
+            // only store num_rows rows with strided data
+            camp::sink(
+                (IDX_COL < m_num_cols
+                ?   m_cols[IDX_COL].store_strided_n(ptr+IDX_COL*col_stride, row_stride, num_rows)
+                :  m_cols[IDX_COL])... // NOP, but has same as above type
+            );
+          }
+        }
+
 
         return *getThis();
       }
@@ -725,7 +943,7 @@ namespace internal {
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      element_type get(camp::idx_t row, camp::idx_t col){
+      element_type get(camp::idx_t row, camp::idx_t col) const {
         return m_cols[col].get(row);
       }
 

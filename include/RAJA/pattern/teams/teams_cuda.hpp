@@ -62,7 +62,7 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
 };
 
 
-template <typename BODY, int num_threads>
+template <int num_threads, typename BODY>
 __launch_bounds__(num_threads, 1) __global__
     void launch_global_fcn_fixed(LaunchContext ctx, BODY body)
 {
@@ -534,6 +534,13 @@ struct LoopExecute<cuda_thread_xyz_nested_loop, SEGMENT> {
     }
   }
 };
+
+
+
+
+
+
+
 
 }  // namespace expt
 

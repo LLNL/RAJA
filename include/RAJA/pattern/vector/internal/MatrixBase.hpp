@@ -74,6 +74,56 @@ namespace RAJA
       }
 
       /*!
+       * @brief Converts to matrix to a string
+       *
+       *
+       */
+      RAJA_INLINE
+      std::string toString(bool one_line=false) const {
+        std::string s = "Matrix(" + std::to_string(getThis()->dim_elem(0)) +
+            "x" + std::to_string(getThis()->dim_elem(1));
+        if(SIZE_TYPE == MATRIX_FIXED){
+          s += ", FIXED)";
+        }
+        else
+        {
+          s += ", STREAM, MAX=" + std::to_string(getThis()->s_dim_elem(0)) +
+              "x" + std::to_string(getThis()->s_dim_elem(1));
+          s += ")";
+        }
+        if(!one_line){
+          s +="\n";
+        }
+
+
+        s += "[ ";
+
+        //
+        for(camp::idx_t r = 0;r < getThis()->dim_elem(0); ++ r){
+          if(r > 0){
+            s += ", ";
+            if(!one_line){
+              s+= "\n  ";
+            }
+          }
+          s += "[";
+          for(camp::idx_t c = 0;c < getThis()->dim_elem(1); ++ c){
+            if(c > 0){
+              s += ", ";
+            }
+            s += std::to_string(getThis()->get(r,c));
+          }
+          s += "]";
+        }
+
+        s += " ]";
+        if(!one_line){
+          s+="\n";
+        }
+        return s;
+      }
+
+      /*!
        * Gets the maximum size of matrix along specified dimension
        */
       RAJA_HOST_DEVICE

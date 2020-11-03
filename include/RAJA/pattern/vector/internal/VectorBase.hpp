@@ -246,9 +246,9 @@ namespace RAJA
         RAJA_INLINE
         self_type& load_packed_n(element_type const *ptr, camp::idx_t N){
 
-          if(N == NUM_ELEM){
-            return load_packed(ptr);
-          }
+//          if(N == NUM_ELEM){
+//            return load_packed(ptr);
+//          }
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_vector_load_packed_n ++;
@@ -280,9 +280,9 @@ namespace RAJA
         RAJA_HOST_DEVICE
         RAJA_INLINE
         self_type& load_strided(element_type const *ptr, camp::idx_t stride){
-          if(stride == 1){
-            return load_packed(ptr);
-          }
+//          if(stride == 1){
+//            return load_packed(ptr);
+//          }
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_vector_load_strided ++;
@@ -308,9 +308,9 @@ namespace RAJA
         RAJA_INLINE
         self_type& load_strided_n(element_type const *ptr, camp::idx_t stride, camp::idx_t N){
 
-          if(N == NUM_ELEM){
-            return load_strided(ptr, stride);
-          }
+//          if(N == NUM_ELEM){
+//            return load_strided(ptr, stride);
+//          }
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_vector_load_strided_n ++;
@@ -366,9 +366,9 @@ namespace RAJA
         RAJA_INLINE
         self_type const & store_packed_n(element_type *ptr, camp::idx_t N) const {
 
-          if(N == NUM_ELEM){
-            return store_packed(ptr);
-          }
+//          if(N == NUM_ELEM){
+//            return store_packed(ptr);
+//          }
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_vector_store_packed_n ++;
@@ -395,9 +395,9 @@ namespace RAJA
         RAJA_INLINE
         self_type const& store_strided(element_type *ptr, camp::idx_t stride) const {
 
-          if(stride == 1){
-            return store_packed(ptr);
-          }
+//          if(stride == 1){
+//            return store_packed(ptr);
+//          }
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_vector_store_strided ++;
@@ -423,9 +423,9 @@ namespace RAJA
         RAJA_INLINE
         self_type const & store_strided_n(element_type *ptr, camp::idx_t stride, camp::idx_t N) const {
 
-          if(N == NUM_ELEM){
-            return store_strided(ptr, stride);
-          }
+//          if(N == NUM_ELEM){
+//            return store_strided(ptr, stride);
+//          }
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_vector_store_strided_n ++;
@@ -463,6 +463,17 @@ namespace RAJA
           camp::sink(m_registers[PART_REG_SEQ].broadcast_n(value, s_num_partial_elem)...);
 
           return *getThis();
+        }
+
+        /*!
+         * @brief Set all vector elements to value, for a vector of length N
+         *
+         * All values past N are set to zero
+         */
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        self_type &broadcast_n(element_type const &value, camp::idx_t){
+          return broadcast(value);
         }
 
         /*!

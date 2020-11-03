@@ -44,6 +44,8 @@ namespace RAJA
 
         using element_type = ELEMENT_TYPE;
 
+        using vector_type = self_type;
+        using register_type = typename base_type::register_type;
 
       private:
         camp::idx_t m_length;
@@ -194,6 +196,18 @@ namespace RAJA
           return m_length;
         }
 
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        self_type &resize(camp::idx_t N)
+        {
+          m_length = N;
+          return *this;
+        }
+
+        /*!
+         * @brief Set all vector elements to value
+         */
         RAJA_HOST_DEVICE
         RAJA_INLINE
         self_type &broadcast(element_type const &value){
@@ -201,6 +215,29 @@ namespace RAJA
           m_length = NUM_ELEM;
 
           return base_type::broadcast(value);
+        }
+
+
+        /*!
+         * @brief Set all vector elements to value, for a vector of length N
+         *
+         * All values past N are set to zero
+         */
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        self_type &broadcast_n(element_type const &value, camp::idx_t N){
+
+          // broadcast all elements to value
+          base_type::broadcast(value);
+
+          m_length = N;
+
+          // zero pad past N
+          for(camp::idx_t i = N;i < NUM_ELEM;++ i){
+            (*this).set(i, 0);
+          }
+
+          return *this;
         }
 
 

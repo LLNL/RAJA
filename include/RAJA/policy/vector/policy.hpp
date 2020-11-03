@@ -42,11 +42,9 @@ namespace policy
 namespace vector
 {
 
-template<typename TENSOR_TYPE, camp::idx_t DIM>
-struct tensor_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
-                                                         Pattern::forall,
-                                                         Launch::undefined,
-                                                         Platform::host> {
+template<typename EXEC_POLICY, typename TENSOR_TYPE, camp::idx_t DIM>
+struct tensor_exec : public EXEC_POLICY {
+  using exec_policy = EXEC_POLICY;
   using tensor_type = TENSOR_TYPE;
 
   static constexpr camp::idx_t s_tensor_dim = DIM;
@@ -59,13 +57,13 @@ struct tensor_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
 }  // end of namespace policy
 
 template<typename VECTOR_TYPE>
-using vector_exec = policy::vector::tensor_exec<VECTOR_TYPE, 0>;
+using vector_exec = policy::vector::tensor_exec<seq_exec, VECTOR_TYPE, 0>;
 
 template<typename MATRIX_TYPE>
-using matrix_row_exec = policy::vector::tensor_exec<MATRIX_TYPE, 0>;
+using matrix_row_exec = policy::vector::tensor_exec<seq_exec, MATRIX_TYPE, 0>;
 
 template<typename MATRIX_TYPE>
-using matrix_col_exec = policy::vector::tensor_exec<MATRIX_TYPE, 1>;
+using matrix_col_exec = policy::vector::tensor_exec<seq_exec, MATRIX_TYPE, 1>;
 
 
 

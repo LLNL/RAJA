@@ -25,7 +25,11 @@ using MatrixTestTypes = ::testing::Types<
     RAJA::FixedMatrix<double, 4, 8, RAJA::MATRIX_COL_MAJOR>,
     RAJA::FixedMatrix<double, 8, 4, RAJA::MATRIX_COL_MAJOR>,
     RAJA::FixedMatrix<double, 1, 7, RAJA::MATRIX_COL_MAJOR>,
-    RAJA::FixedMatrix<double, 7, 1, RAJA::MATRIX_COL_MAJOR>
+    RAJA::FixedMatrix<double, 7, 1, RAJA::MATRIX_COL_MAJOR>,
+
+    RAJA::StreamMatrix<double, 4, 4, RAJA::MATRIX_COL_MAJOR>,
+    RAJA::StreamMatrix<double, 4, 8, RAJA::MATRIX_COL_MAJOR>,
+    RAJA::StreamMatrix<double, 8, 4, RAJA::MATRIX_COL_MAJOR>
   >;
 
 
@@ -351,38 +355,70 @@ TYPED_TEST_P(MatrixTest, MatrixMatrix)
   using B_t = RAJA::TransposeMatrix<A_t>;
   using element_t = typename A_t::element_type;
 
-  // initialize two matrices
-  A_t A;
-  for(camp::idx_t j = 0;j < A_t::s_num_cols; ++ j){
-    for(camp::idx_t i = 0;i < A_t::s_num_rows; ++ i){
-      A.set(i,j, element_t(NO_OPT_ZERO + i+j*j));
-    }
+  camp::idx_t size_a0 = 1;
+  camp::idx_t size_b0 = 1;
+  if(A_t::s_is_fixed){
+    // For the MATRIX_FIXED, we only use the full matrix size
+    size_a0 = A_t::s_num_rows;
+    size_b0 = A_t::s_num_cols;
   }
 
-  B_t B;
-  for(camp::idx_t j = 0;j < B_t::s_num_cols; ++ j){
-    for(camp::idx_t i = 0;i < B_t::s_num_rows; ++ i){
-      B.set(i,j, element_t(NO_OPT_ZERO + i*i+j*j));
-    }
-  }
+  // Loop over different sizes of matrices A and B
+  //
+  // A = size_a x size_b
+  // B = size_b x size_a
+  // C = size_a x size_a
+  for(camp::idx_t size_a = size_a0;size_a <= A_t::s_num_rows;size_a ++){
+    for(camp::idx_t size_b = size_b0;size_b <= A_t::s_num_cols;size_b ++){
 
-  // matrix matrix product
-  auto C = A*B;
+      // initialize two matrices
+      A_t A;
+      A.resize(size_a, size_b);
+      A.clear();
 
-  // check result
-  for(camp::idx_t i = 0;i < A_t::s_num_rows; ++ i){
-
-    for(camp::idx_t j = 0;j < B_t::s_num_cols; ++ j){
-
-      // do dot product to compute C(i,j)
-      element_t expected(0);
-      for(camp::idx_t k = 0;k < A_t::s_num_cols; ++ k){
-        expected += A.get(i, k) * B(k,j);
+      for(camp::idx_t j = 0;j < size_b; ++ j){
+        for(camp::idx_t i = 0;i < size_a; ++ i){
+          A.set(i,j, element_t(NO_OPT_ZERO + i+j*j));
+        }
       }
 
-      ASSERT_FLOAT_EQ(C.get(i,j), expected);
+      B_t B;
+      B.resize(size_b, size_a);
+      B.clear();
+      for(camp::idx_t j = 0;j < size_a; ++ j){
+        for(camp::idx_t i = 0;i < size_b; ++ i){
+          B.set(i,j, element_t(NO_OPT_ZERO + i*i+j*j));
+        }
+      }
+
+
+      // matrix matrix product
+      auto C = A*B;
+
+      // make sure result is correct size
+      ASSERT_EQ(C.dim_elem(0), size_a);
+      ASSERT_EQ(C.dim_elem(1), size_a);
+
+      // check result
+      for(camp::idx_t i = 0;i < size_a; ++ i){
+
+        for(camp::idx_t j = 0;j < size_a; ++ j){
+
+          // do dot product to compute C(i,j)
+          element_t expected(0);
+          for(camp::idx_t k = 0;k < size_b; ++ k){
+            expected += A.get(i, k) * B(k,j);
+          }
+
+          ASSERT_FLOAT_EQ(C.get(i,j), expected);
+        }
+      }
+
+
     }
   }
+
+
 
 }
 

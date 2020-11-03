@@ -47,7 +47,7 @@ template <camp::idx_t ArgumentId,
           typename... EnclosedStmts,
           typename Types>
 struct StatementExecutor<
-    statement::For<ArgumentId, RAJA::policy::vector::tensor_exec<TENSOR_TYPE, DIM>, EnclosedStmts...>,
+    statement::For<ArgumentId, RAJA::policy::vector::tensor_exec<seq_exec, TENSOR_TYPE, DIM>, EnclosedStmts...>,
     Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;

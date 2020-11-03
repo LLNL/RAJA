@@ -49,12 +49,12 @@
 
 
 
-#ifdef RAJA_ALTIVEC
-#include<RAJA/policy/vector/register/altivec.hpp>
-#ifndef RAJA_VECTOR_REGISTER_TYPE
-#define RAJA_VECTOR_REGISTER_TYPE RAJA::altivec_register
-#endif
-#endif
+//#ifdef RAJA_ALTIVEC
+//#include<RAJA/policy/vector/register/altivec.hpp>
+//#ifndef RAJA_VECTOR_REGISTER_TYPE
+//#define RAJA_VECTOR_REGISTER_TYPE RAJA::altivec_register
+//#endif
+//#endif
 
 
 // The scalar register is always supported (doesn't require any SIMD/SIMT)

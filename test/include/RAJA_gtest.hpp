@@ -116,4 +116,54 @@
 // to not compile-out constant values
 #define NO_OPT_RAND (1.0+(double)rand()/RAND_MAX)
 
+
+/*
+ * A gtest assertion that automatically selects between 3 gtest macros:
+ *   ASSERT_EQ
+ *   ASSERT_FLOAT
+ *   ASSERT_DOUBLE
+ *
+ *  This is useful for templated unit tests, where you're not sure what type
+ *  your comparing... is it a float, double, int, long, etc?!?!
+ *
+ */
+#define ASSERT_SCALAR_EQ(X,Y) { \
+  int value_type = RAJA::gtest::getScalarType(X); \
+  switch(value_type){ \
+    case 1: {ASSERT_FLOAT_EQ(X,Y);} break; \
+    case 2: {ASSERT_DOUBLE_EQ(X,Y);} break; \
+    default: {ASSERT_EQ(X,Y);} \
+  }; }
+
+// Traits use by the above maco
+namespace RAJA
+{
+  namespace gtest
+  {
+    template<typename T>
+    struct AssertScalarTraits{
+        static constexpr int value = 0;
+    };
+
+    template<>
+    struct AssertScalarTraits<float>{
+        static constexpr int value = 1;
+    };
+
+    template<>
+    struct AssertScalarTraits<double>{
+        static constexpr int value = 2;
+    };
+
+    template<typename T>
+    inline
+    constexpr
+    int getScalarType(T const &){
+      return AssertScalarTraits<T>::value;
+    }
+
+
+  }
+}
+
 #endif  // closing endif for header file include guard
