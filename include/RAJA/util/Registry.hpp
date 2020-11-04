@@ -25,7 +25,7 @@ namespace util {
 
     const std::string& getName() const { return Name; }
     const std::string& getDesc() const { return Desc; }
-    T * get() const { return object.get(); }
+    std::shared_ptr<T> & get() const { return object; }
   };
 
   /// A global registry used in conjunction with static constructors to make
