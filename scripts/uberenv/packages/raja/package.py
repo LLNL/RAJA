@@ -256,10 +256,11 @@ class Raja(CMakePackage, CudaPackage):
         cfg.write(cmake_cache_option("BUILD_SHARED_LIBS","+shared" in spec))
         cfg.write(cmake_cache_option("ENABLE_OPENMP","+openmp" in spec))
 
-        # Note 1: Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS which
-        # is used by the spack compiler wrapper.  This can go away when BLT
-        # removes -Werror from GTest flags
-        # Note 2: Test are either built if variant is set, or if run-tests option is on
+        # Note 1: Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS
+        # which is used by the spack compiler wrapper.  This can go away when
+        # BLT removes -Werror from GTest flags
+        # Note 2: Tests are either built if variant is set, or if run-tests
+        # option is passed.
         if self.spec.satisfies('%clang target=ppc64le:'):
             cfg.write(cmake_cache_option("ENABLE_TESTS",False))
             if 'tests=benchmarks' in spec or not 'tests=none' in spec:
