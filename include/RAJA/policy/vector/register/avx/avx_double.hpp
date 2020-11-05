@@ -123,7 +123,7 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type &load_packed(element_type const *ptr){
-        m_value = m_value = _mm256_loadu_pd(ptr);
+        m_value = _mm256_loadu_pd(ptr);
         return *this;
       }
 

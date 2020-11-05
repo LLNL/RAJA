@@ -410,7 +410,7 @@ TYPED_TEST_P(MatrixTest, MatrixMatrix)
             expected += A.get(i, k) * B(k,j);
           }
 
-          ASSERT_FLOAT_EQ(C.get(i,j), expected);
+          ASSERT_SCALAR_EQ(C.get(i,j), expected);
         }
       }
 

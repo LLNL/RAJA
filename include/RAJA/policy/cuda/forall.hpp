@@ -281,31 +281,31 @@ namespace expt {
     {
 
 
-
-      using value_type = typename Iterable::value_type;
-      using tensor_type = TENSOR_TYPE;
-      using register_type = typename TENSOR_TYPE::register_type;
-      using tensor_index_type = TensorIndex<value_type, tensor_type, TENSOR_DIM>;
-
-
-      auto begin = std::begin(iter); // + lane;
-      auto end = std::end(iter);
-      auto distance = std::distance(begin, end);
-      using diff_t = decltype(distance);
-
-
-      diff_t distance_simd = distance - (distance%tensor_type::s_dim_elem(TENSOR_DIM));
-      diff_t distance_remainder = distance - distance_simd;
-
-      // Streaming loop for complete vector widths
-      for (diff_t i = 0; i < distance_simd; i+=tensor_type::s_dim_elem(TENSOR_DIM)) {
-        loop_body(tensor_index_type(*(begin + i)));
-      }
-
-      // Postamble for reamining elements
-      if(distance_remainder > 0){
-        loop_body(tensor_index_type(*(begin + distance_simd), distance_remainder));
-      }
+//
+//      using value_type = typename Iterable::value_type;
+//      using tensor_type = TENSOR_TYPE;
+//      using register_type = typename TENSOR_TYPE::register_type;
+//      using tensor_index_type = TensorIndex<value_type, tensor_type, TENSOR_DIM>;
+//
+//
+//      auto begin = std::begin(iter); // + lane;
+//      auto end = std::end(iter);
+//      auto distance = std::distance(begin, end);
+//      using diff_t = decltype(distance);
+//
+//
+//      diff_t distance_simd = distance - (distance%tensor_type::s_dim_elem(TENSOR_DIM));
+//      diff_t distance_remainder = distance - distance_simd;
+//
+//      // Streaming loop for complete vector widths
+//      for (diff_t i = 0; i < distance_simd; i+=tensor_type::s_dim_elem(TENSOR_DIM)) {
+//        loop_body(tensor_index_type(*(begin + i)));
+//      }
+//
+//      // Postamble for reamining elements
+//      if(distance_remainder > 0){
+//        loop_body(tensor_index_type(*(begin + distance_simd), distance_remainder));
+//      }
 
 
     }
@@ -322,32 +322,37 @@ namespace expt {
         BODY const &loop_body)
     {
 
+      printf("meow\n");
 
-
-      using value_type = typename Iterable::value_type;
-      using tensor_type = TENSOR_TYPE;
-      using register_type = typename TENSOR_TYPE::register_type;
-      using tensor_index_type = TensorIndex<value_type, tensor_type, TENSOR_DIM>;
-
-
-      auto begin = std::begin(iter);
-      auto end = std::end(iter);
-      auto distance = std::distance(begin, end);
-      using diff_t = decltype(distance);
-
-
-      diff_t distance_simd = distance - (distance%tensor_type::s_dim_elem(TENSOR_DIM));
-      diff_t distance_remainder = distance - distance_simd;
-
-      // Streaming loop for complete vector widths
-      for (diff_t i = 0; i < distance_simd; i+=tensor_type::s_dim_elem(TENSOR_DIM)) {
-        loop_body(tensor_index_type(*(begin + i)));
-      }
-
-      // Postamble for reamining elements
-      if(distance_remainder > 0){
-        loop_body(tensor_index_type(*(begin + distance_simd), distance_remainder));
-      }
+//      using value_type = typename Iterable::value_type;
+//      using tensor_type = TENSOR_TYPE;
+//      using register_type = typename TENSOR_TYPE::register_type;
+//      using tensor_index_type = TensorIndex<value_type, tensor_type, TENSOR_DIM>;
+//
+//
+//      auto begin = std::begin(iter);
+//      auto end = std::end(iter);
+//      auto distance = std::distance(begin, end);
+//      using diff_t = decltype(distance);
+//
+//
+//      diff_t distance_simd = distance - (distance%tensor_type::s_dim_elem(TENSOR_DIM));
+//      diff_t distance_remainder = distance - distance_simd;
+//
+//      printf("begin=%d, end=%d, distance=%d, rem=%d\n", (int)*begin, (int)*end, (int)distance, (int)distance_remainder);
+//
+//
+////      // Streaming loop for complete vector widths
+////
+////      for (diff_t i = 0; i < distance_simd; i+=tensor_type::s_dim_elem(TENSOR_DIM)) {
+////        loop_body(tensor_index_type(*(begin + i)));
+////      }
+////
+////      //printf("distance_remainder=%d\n", (int)distance_remainder);
+////      // Postamble for reamining elements
+////      if(distance_remainder > 0){
+////        loop_body(tensor_index_type(*(begin + distance_simd), distance_remainder));
+////      }
 
     }
   };

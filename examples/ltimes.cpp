@@ -10,7 +10,7 @@
 //#define RAJA_ENABLE_VECTOR_STATS
 
 // Un-comment the following line to run correctness checks on each variant
-#define DEBUG_LTIMES
+//#define DEBUG_LTIMES
 
 #define VARIANT_C                    0
 #define VARIANT_C_VIEWS              0
@@ -1500,6 +1500,7 @@ if(1){
   using pol_z = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>, cuda_thread_y_matrix_col_loop<matrix_t> >;
   using pol_m = RAJA::expt::LoopPolicy<matrix_row_exec<matrix_t>, cuda_warp_matrix_row_loop<matrix_t> >;
   using pol_d = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>, matrix_col_exec<matrix_t>>;
+//  using pol_d = RAJA::expt::LoopPolicy<loop_exec, loop_exec>;
 
 
   //
@@ -1539,8 +1540,8 @@ if(1){
         [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
     {
       RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
-        RAJA::expt::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](ColZ z){
-          RAJA::expt::loop<pol_m>(ctx, RAJA::TypedRangeSegment<IM>(0, num_m), [&](RowM m){
+//        RAJA::expt::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](ColZ z){
+//          RAJA::expt::loop<pol_m>(ctx, RAJA::TypedRangeSegment<IM>(0, num_m), [&](RowM m){
 
 //            matrix_t acc = phi(m, g, z);
 
@@ -1549,35 +1550,35 @@ if(1){
 //                  blockIdx.x, threadIdx.x, threadIdx.y,
 //                  (int)*g, (int)**z, (int)**m, (int)**d);
 //              acc = L(m, d) * psi(toRowIndex(d), g, z) + acc;
-#ifdef RAJA_DEVICE_CODE0
-              if(threadIdx.x==0 && threadIdx.y==0){
-                printf("m: size=%d, dim=%d\n", (int)m.size(), (int)m.dim());
-                printf("d: size=%d, dim=%d\n", (int)d.size(), (int)d.dim());
-                printf("z: size=%d, dim=%d\n", (int)z.size(), (int)z.dim());
-                auto LL = phi(m,g,z).load();
-                printf("LL size=%d x %d\n", (int)LL.dim_elem(0), (int)LL.dim_elem(1));
-                printf("LL Matrix:\n");
-                for(int i = 0;i < 16;++ i){
-                  for(int j = 0;j < 16;++ j){
-                    printf("%.3e ", LL.get(i,j));
-                  }
-                  printf("\n");
-                }
-                printf("L View:\n");
-                for(int i = 0;i < 16;++ i){
-                  for(int j = 0;j < 16;++ j){
-                    printf("%.3e ", phi(IM(i),g,IZ(j)));
-                  }
-                  printf("\n");
-                }
+//#ifdef RAJA_DEVICE_CODE0
+//              if(threadIdx.x==0 && threadIdx.y==0){
+//                printf("m: size=%d, dim=%d\n", (int)m.size(), (int)m.dim());
+//                printf("d: size=%d, dim=%d\n", (int)d.size(), (int)d.dim());
+//                printf("z: size=%d, dim=%d\n", (int)z.size(), (int)z.dim());
+//                auto LL = phi(m,g,z).load();
+//                printf("LL size=%d x %d\n", (int)LL.dim_elem(0), (int)LL.dim_elem(1));
+//                printf("LL Matrix:\n");
+//                for(int i = 0;i < 16;++ i){
+//                  for(int j = 0;j < 16;++ j){
+//                    printf("%.3e ", LL.get(i,j));
+//                  }
+//                  printf("\n");
+//                }
+//                printf("L View:\n");
+//                for(int i = 0;i < 16;++ i){
+//                  for(int j = 0;j < 16;++ j){
+//                    printf("%.3e ", phi(IM(i),g,IZ(j)));
+//                  }
+//                  printf("\n");
+//                }
+//
+//              }
+//#endif
 
-              }
-#endif
-
-            });
+//            });
 
 //            phi(m,g,z) = acc;
-          });
+//          });
         });
       });
 
