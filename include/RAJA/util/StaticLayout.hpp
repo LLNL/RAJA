@@ -32,6 +32,7 @@
 #include "RAJA/util/Permutations.hpp"
 
 
+
 namespace RAJA
 {
 
@@ -55,6 +56,12 @@ struct StaticLayoutBase_impl<IdxLin,
   using IndexLinear = IdxLin;
   using sizes = camp::int_seq<IdxLin, Sizes...>;
   using strides = camp::int_seq<IdxLin, Strides...>;
+
+  static constexpr camp::idx_t stride_one_dim =
+      RAJA::max<camp::idx_t>(
+          (camp::seq_at<RangeInts, strides>::value == 1 ? RangeInts : -1)...);
+
+  static constexpr size_t n_dims = sizeof...(Sizes);
 
   /*!
    * Default constructor.
@@ -82,7 +89,7 @@ struct StaticLayoutBase_impl<IdxLin,
       Indices... indices) const
   {
     // dot product of strides and indices
-    return sum<IdxLin>((IdxLin(indices * Strides))...);
+    return RAJA::sum<IdxLin>((IdxLin(indices * Strides))...);
   }
 
 
@@ -90,10 +97,12 @@ struct StaticLayoutBase_impl<IdxLin,
   static RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin s_oper(Indices... indices)
   {
     // dot product of strides and indices
-    return sum<IdxLin>((IdxLin(indices * Strides))...);
+    return RAJA::sum<IdxLin>((IdxLin(indices * Strides))...);
   }
 
 
+  // Multiply together all of the sizes,
+  // replacing 1 for any zero-sized dimensions
   static constexpr IdxLin s_size =
       RAJA::product<IdxLin>((Sizes == IdxLin(0) ? IdxLin(1) : Sizes)...);
 
@@ -112,6 +121,14 @@ struct StaticLayoutBase_impl<IdxLin,
     return s_size;
   }
 
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_stride() const {
+    return camp::seq_at<DIM, strides>::value;
+  }
 
 
 };
@@ -168,6 +185,12 @@ template <typename Layout, typename... DimTypes>
 struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
 
   using IndexLinear = typename Layout::IndexLinear;
+
+  static
+  constexpr
+  camp::idx_t stride_one_dim = Layout::stride_one_dim;
+
+  static constexpr IndexLinear n_dims = sizeof...(DimTypes);
   /*!
    * Computes a linear space index from specified indices.
    * This is formed by the dot product of the indices and the layout strides.
@@ -187,6 +210,14 @@ struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
   RAJA_INLINE RAJA_HOST_DEVICE constexpr static IndexLinear size()
   {
     return s_size;
+  }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_stride() const {
+    return Layout{}.get_dim_stride();
   }
 
   RAJA_INLINE
