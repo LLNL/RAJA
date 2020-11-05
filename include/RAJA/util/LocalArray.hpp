@@ -58,8 +58,8 @@ namespace internal {
   template<typename Perm, typename Sizes>
   struct StaticLayoutHelper;
 
-  template<camp::idx_t ... Perm, camp::idx_t ...Sizes>
-  struct StaticLayoutHelper<camp::idx_seq<Perm...>, camp::idx_seq<Sizes...>>{
+  template<camp::idx_t ... Perm, Index_type ...Sizes>
+  struct StaticLayoutHelper<camp::idx_seq<Perm...>, SizeList<Sizes...>>{
       using type =  StaticLayout<camp::idx_seq<Perm...>, Sizes...>;
   };
 
@@ -90,7 +90,7 @@ struct AtomicTypedLocalArray {
 };
 
 template<typename AtomicPolicy, typename DataType, camp::idx_t ... Perm,
-         camp::idx_t ... Sizes, typename ... IndexTypes>
+          Index_type ... Sizes, typename ... IndexTypes>
 struct AtomicTypedLocalArray<AtomicPolicy, DataType, camp::idx_seq<Perm ...>,
                              RAJA::SizeList<Sizes ...>, IndexTypes ...>{
   DataType *m_arrayPtr = nullptr;
