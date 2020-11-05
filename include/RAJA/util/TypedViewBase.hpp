@@ -82,7 +82,7 @@ namespace internal
     RAJA_INLINE
     RAJA_HOST_DEVICE
     static constexpr camp::idx_t get_tensor_arg_idx_expanded(camp::list<ARGS...> const &, camp::idx_seq<IDX...> const &){
-      return RAJA::foldl_max<camp::idx_t>(
+      return RAJA::max<camp::idx_t>(
           (isTensorIndex<ARGS>()&&getTensorDim<ARGS>()==DIM ? IDX : -1) ...);
     }
 
@@ -99,7 +99,7 @@ namespace internal
   RAJA_INLINE
   RAJA_HOST_DEVICE
   static constexpr camp::idx_t count_num_tensor_args(){
-    return RAJA::foldl_sum<camp::idx_t>(
+    return RAJA::sum<camp::idx_t>(
         (isTensorIndex<ARGS>() ? 1 : 0) ...);
   }
 
@@ -122,7 +122,7 @@ namespace internal
   RAJA_INLINE
   RAJA_HOST_DEVICE
   static constexpr camp::idx_t get_tensor_args_size(ARGS ... args){
-    return RAJA::foldl_max<camp::idx_t>(
+    return RAJA::max<camp::idx_t>(
         getTensorDim<ARGS>()==DIM
         ? getTensorSize<ARGS>(args)
         : 0 ...);
@@ -130,6 +130,14 @@ namespace internal
 
   namespace detail {
 
+  /*!
+   * Provides conversion of view data to a return type.
+   *
+   * For scalars, this just returns the scalar.
+   *
+   * In the future development, this may return SIMD vectors or matrices using
+   * class specializations.
+   */
   template<camp::idx_t NumVectors, typename Args, typename ElementType, typename PointerType, typename LinIdx, camp::idx_t StrideOneDim>
   struct ViewReturnHelper
   {
@@ -262,7 +270,7 @@ namespace internal
   {
 
   /**
-   * This class will help strip strongly typed
+   * This class will help strip strongly typed indices
    *
    * This default implementation static_asserts that Expected==Arg, otherwise
    * it's an error.  This enforces types for the TypedView.

@@ -183,7 +183,7 @@ public:
     BoundsCheck<0>(indices...);
 #endif
     // dot product of strides and indices
-    return foldl_sum<IdxLin>(
+    return sum<IdxLin>(
       (RangeInts==stride_one_dim ?   // Is this dimension stride-one?
          indices :  // it's stride one, so dont bother with multiple
          strides[RangeInts]*indices // it's not stride one
@@ -399,8 +399,6 @@ RAJA_INLINE TypedLayout<IdxLin, IdxTuple, s1_dim> make_stride_one(
   // Use non-typed layout to initialize new typed layout
   return TypedLayout<IdxLin, IdxTuple, s1_dim>(b);
 }
-
-
 
 
 }  // namespace RAJA

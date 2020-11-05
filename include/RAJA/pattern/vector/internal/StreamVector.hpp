@@ -258,7 +258,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         RAJA_INLINE
         element_type sum(camp::idx_t = NUM_ELEM) const {
-          return foldl_sum<element_type>(base_type::m_registers[REG_SEQ].sum(regNumElem(REG_SEQ))...);
+          return RAJA::sum<element_type>(base_type::m_registers[REG_SEQ].sum(regNumElem(REG_SEQ))...);
         }
 
         /*!
@@ -267,7 +267,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         RAJA_INLINE
         element_type max(camp::idx_t = NUM_ELEM) const {
-          return foldl_max<element_type>(base_type::m_registers[REG_SEQ].max(regNumElem(REG_SEQ))...);
+          return RAJA::max<element_type>(base_type::m_registers[REG_SEQ].max(regNumElem(REG_SEQ))...);
         }
 
 
@@ -277,7 +277,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         RAJA_INLINE
         element_type min(camp::idx_t = NUM_ELEM) const {
-          return foldl_min<element_type>(base_type::m_registers[REG_SEQ].min(regNumElem(REG_SEQ))...);
+          return RAJA::min<element_type>(base_type::m_registers[REG_SEQ].min(regNumElem(REG_SEQ))...);
         }
 
 

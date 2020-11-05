@@ -892,7 +892,7 @@ namespace internal {
       RAJA_INLINE
       col_vector_type right_multiply_vector(row_vector_type v) const {
         return
-        foldl_sum<col_vector_type>(( m_cols[IDX_COL] * v.get(IDX_COL))...);
+        RAJA::sum<col_vector_type>(( m_cols[IDX_COL] * v.get(IDX_COL))...);
       }
 
 

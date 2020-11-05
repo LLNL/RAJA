@@ -58,7 +58,7 @@ struct StaticLayoutBase_impl<IdxLin,
   using strides = camp::int_seq<IdxLin, Strides...>;
 
   static constexpr camp::idx_t stride_one_dim =
-      foldl_max<camp::idx_t>(
+      RAJA::max<camp::idx_t>(
           (camp::seq_at<RangeInts, strides>::value == 1 ? RangeInts : -1)...);
 
   static constexpr size_t n_dims = sizeof...(Sizes);
@@ -89,7 +89,7 @@ struct StaticLayoutBase_impl<IdxLin,
       Indices... indices) const
   {
     // dot product of strides and indices
-    return foldl_sum<IdxLin>((IdxLin(indices * Strides))...);
+    return RAJA::sum<IdxLin>((IdxLin(indices * Strides))...);
   }
 
 
@@ -97,14 +97,14 @@ struct StaticLayoutBase_impl<IdxLin,
   static RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin s_oper(Indices... indices)
   {
     // dot product of strides and indices
-    return foldl_sum<IdxLin>((IdxLin(indices * Strides))...);
+    return RAJA::sum<IdxLin>((IdxLin(indices * Strides))...);
   }
 
 
   // Multiply together all of the sizes,
   // replacing 1 for any zero-sized dimensions
   static constexpr IdxLin s_size =
-      RAJA::foldl_product<IdxLin>((Sizes == IdxLin(0) ? IdxLin(1) : Sizes)...);
+      RAJA::product<IdxLin>((Sizes == IdxLin(0) ? IdxLin(1) : Sizes)...);
 
   /*!
    * Computes a total size of the layout's space.

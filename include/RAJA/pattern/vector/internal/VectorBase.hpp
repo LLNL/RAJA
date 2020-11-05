@@ -667,7 +667,7 @@ namespace RAJA
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_vector_sum ++;
 #endif
-          return foldl_sum<element_type>(m_registers[REG_SEQ].sum(s_num_reg_elem)..., m_registers[PART_REG_SEQ].sum(s_num_partial_elem)...);
+          return RAJA::sum<element_type>(m_registers[REG_SEQ].sum(s_num_reg_elem)..., m_registers[PART_REG_SEQ].sum(s_num_partial_elem)...);
         }
 
         /*!
@@ -679,7 +679,7 @@ namespace RAJA
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_vector_max ++;
 #endif
-          return foldl_max<element_type>(m_registers[REG_SEQ].max(s_num_reg_elem)..., m_registers[PART_REG_SEQ].max(s_num_partial_elem)...);
+          return RAJA::max<element_type>(m_registers[REG_SEQ].max(s_num_reg_elem)..., m_registers[PART_REG_SEQ].max(s_num_partial_elem)...);
         }
 
 
@@ -692,7 +692,7 @@ namespace RAJA
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_vector_min ++;
 #endif
-          return foldl_min<element_type>(m_registers[REG_SEQ].min(s_num_reg_elem)..., m_registers[PART_REG_SEQ].min(s_num_partial_elem)...);
+          return RAJA::min<element_type>(m_registers[REG_SEQ].min(s_num_reg_elem)..., m_registers[PART_REG_SEQ].min(s_num_partial_elem)...);
         }
 
 
