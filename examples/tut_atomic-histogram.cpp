@@ -155,14 +155,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( d_array, array, N * sizeof(int), hipMemcpyHostToDevice ));
   hipErrchk(hipMemcpy( d_bins, bins, M * sizeof(int), hipMemcpyHostToDevice ));
 
-  using EXEC_POL4 = RAJA::hip_exec<HIP_BLOCK_SIZE>;
-  using ATOMIC_POL4 = RAJA::hip_atomic;
+  // _rajahip_atomic_histogram_start 
+  RAJA::forall< RAJA::hip_exec<HIP_BLOCK_SIZE> >(array_range, 
+    [=] RAJA_DEVICE(int i) {
 
-  RAJA::forall<EXEC_POL4>(array_range, [=] RAJA_DEVICE(int i) {
-
-    RAJA::atomicAdd<ATOMIC_POL4>(&d_bins[d_array[i]], 1);
+    RAJA::atomicAdd<RAJA::hip_atomic>(&d_bins[d_array[i]], 1);
 
   });
+  // _rajahip_atomic_histogram_end
 
   hipErrchk(hipMemcpy( bins, d_bins, M * sizeof(int), hipMemcpyDeviceToHost ));
 
@@ -174,13 +174,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(bins, 0, M * sizeof(int));
   hipErrchk(hipMemcpy( d_bins, bins, M * sizeof(int), hipMemcpyHostToDevice ));
 
-  using ATOMIC_POL5 = RAJA::auto_atomic;
+  // _rajahip_atomicauto_histogram_start
+  RAJA::forall< RAJA::hip_exec<HIP_BLOCK_SIZE> >(array_range, 
+    [=] RAJA_DEVICE(int i) {
 
-  RAJA::forall<EXEC_POL4>(array_range, [=] RAJA_DEVICE(int i) {
-
-    RAJA::atomicAdd<ATOMIC_POL5>(&d_bins[d_array[i]], 1);
+    RAJA::atomicAdd<RAJA::auto_atomic>(&d_bins[d_array[i]], 1);
 
   });
+  // _rajahip_atomicauto_histogram_end
 
   hipErrchk(hipMemcpy( bins, d_bins, M * sizeof(int), hipMemcpyDeviceToHost ));
 

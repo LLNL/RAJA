@@ -45,7 +45,7 @@ dependencies as Git *submodules*. Current RAJA dependencies are:
 - `BLT build system <https://github.com/LLNL/blt>`_
 - `Camp compiler agnostic metaprogramming library  <https://github.com/LLNL/camp>`_
 - `CUB CUDA utilities library <https://github.com/NVlabs/cub>`_
-- `rocPRIM Hip parallel primitives library <https://github.com/ROCmSoftwarePlatform/rocPRIM.git>`_
+- `rocPRIM HIP parallel primitives library <https://github.com/ROCmSoftwarePlatform/rocPRIM.git>`_
 
 You probably don't need to know much about these other projects to start
 using RAJA. But, if you want to know more about them, click on the links above.
@@ -201,14 +201,14 @@ provide the following options to CMake:
           RAJA with CUDA enabled and want to also enable RAJA tests, you
           must use CUDA version 9.2.x or newer.
 
-Hip
+HIP
 ^^^^
 
-To run RAJA code on AMD GPUs, one typically uses the Hip compiler and tool 
+To run RAJA code on AMD GPUs, one typically uses the HIP compiler and tool 
 chain (which can also be used to compile code for NVIDIA GPUs).
 
 .. note:: RAJA requires version 3.5 or newer of the rocm software stack to 
-          use the RAJA Hip back-end.
+          use the RAJA HIP back-end.
 
 OpenMP
 ^^^^^^^

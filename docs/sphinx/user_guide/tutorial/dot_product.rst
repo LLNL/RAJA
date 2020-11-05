@@ -75,8 +75,8 @@ The OpenMP multithreaded variant of the loop is implemented similarly:
 Here, we use the ``RAJA::omp_reduce`` reduce policy to match the OpenMP
 loop execution policy.
 
-Finally, the RAJA CUDA variant is achieved by using appropriate loop
-execution and reduction policies:
+The RAJA CUDA variant is achieved by using appropriate loop execution and 
+reduction policies:
 
 .. literalinclude:: ../../../../examples/tut_dot-product.cpp
    :start-after: _rajacuda_dotprod_start
@@ -87,6 +87,13 @@ Here, the CUDA reduce policy ``RAJA::cuda_reduce`` matches the CUDA
 loop execution policy. Note that the CUDA thread block size is not 
 specified in the reduce policy as it will use the same value as the
 loop execution policy.
+
+Similarly, for the RAJA HIP variant:
+
+.. literalinclude:: ../../../../examples/tut_dot-product.cpp
+   :start-after: _rajahip_dotprod_start
+   :end-before: _rajahip_dotprod_end
+   :language: C++
 
 It is worth noting how similar the code looks for each of these variants.
 The loop body is identical for each and only the loop execution policy

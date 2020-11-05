@@ -55,23 +55,30 @@ with that slot is encountered. Note that the ``RAJA::atomicAdd``
 operation uses an OpenMP atomic policy, which is compatible with the OpenMP 
 loop execution policy.
 
-The CUDA version is similar:
+The CUDA and HIP versions are similar:
 
 .. literalinclude:: ../../../../examples/tut_atomic-histogram.cpp
    :start-after: _rajacuda_atomic_histogram_start
    :end-before: _rajacuda_atomic_histogram_end
    :language: C++
 
-Here, the atomic add operation uses a CUDA atomic policy, which is compatible 
-with the CUDA loop execution policy.
+and:
+
+.. literalinclude:: ../../../../examples/tut_atomic-histogram.cpp
+   :start-after: _rajahip_atomic_histogram_start
+   :end-before: _rajahip_atomic_histogram_end
+   :language: C++
+
+Here, the atomic add operations uses CUDA and HIP atomic policies, which are 
+compatible with the CUDA and HIP loop execution policies.
 
 Note that RAJA provides an ``auto_atomic`` policy for easier usage and 
 improved portability. This policy will do the right thing in most 
-circumstances. Specifically, if it is encountered in a CUDA execution
-context, the CUDA atomic policy will be applied. If OpenMP is enabled, the 
-OpenMP atomic policy will be used, which should be correct in a sequential
-execution context as well. Otherwise, the sequential atomic policy will be 
-applied. 
+circumstances. If OpenMP is enabled, the OpenMP atomic policy will be used, 
+which is correct in a sequential execution context as well. Otherwise, the 
+sequential atomic policy will be applied. Similarly, if it is encountered in 
+a CUDA or HIP execution context, the corresponding GPU back-end atomic policy 
+will be applied. 
 
 For example, here is the CUDA version that uses the 'auto' atomic policy:
 
@@ -80,7 +87,15 @@ For example, here is the CUDA version that uses the 'auto' atomic policy:
    :end-before: _rajacuda_atomicauto_histogram_end
    :language: C++
 
-The same CUDA loop execution policy as in the previous example is used.
+and the HIP version:
+
+.. literalinclude:: ../../../../examples/tut_atomic-histogram.cpp
+   :start-after: _rajahip_atomicauto_histogram_start
+   :end-before: _rajahip_atomicauto_histogram_end
+   :language: C++
+
+The same CUDA and HIP loop execution policies as in the previous examples 
+are used.
 
 The file ``RAJA/examples/tut_atomic-histogram.cpp`` contains the complete 
 working example code.

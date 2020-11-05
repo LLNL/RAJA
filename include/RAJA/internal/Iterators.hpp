@@ -113,25 +113,12 @@ public:
   using reference = value_type&;
   using iterator_category = std::random_access_iterator_tag;
 
-  RAJA_HOST_DEVICE constexpr numeric_iterator() {}
-  RAJA_HOST_DEVICE constexpr numeric_iterator(const numeric_iterator& rhs)
-      : val(rhs.val)
-  {
-  }
-  RAJA_HOST_DEVICE constexpr numeric_iterator(numeric_iterator&& rhs)
-      : val(rhs.val)
-  {
-  }
-  RAJA_HOST_DEVICE numeric_iterator& operator=(const numeric_iterator& rhs)
-  {
-    val = rhs.val;
-    return *this;
-  }
-  RAJA_HOST_DEVICE numeric_iterator& operator=(numeric_iterator&& rhs)
-  {
-    val = rhs.val;
-    return *this;
-  }
+  constexpr numeric_iterator() noexcept = default;
+  constexpr numeric_iterator(const numeric_iterator&) noexcept = default;
+  constexpr numeric_iterator(numeric_iterator&&) noexcept = default;
+  numeric_iterator& operator=(const numeric_iterator&) noexcept = default;
+  numeric_iterator& operator=(numeric_iterator&&) noexcept = default;
+
   RAJA_HOST_DEVICE constexpr numeric_iterator(const stripped_value_type& rhs)
       : val(rhs)
   {
@@ -299,30 +286,11 @@ public:
   using reference = DifferenceType&;
   using iterator_category = std::random_access_iterator_tag;
 
-  RAJA_HOST_DEVICE constexpr strided_numeric_iterator() {}
-  RAJA_HOST_DEVICE constexpr strided_numeric_iterator(
-      const strided_numeric_iterator& rhs)
-      : val(rhs.val), stride(rhs.stride)
-  {
-  }
-  RAJA_HOST_DEVICE constexpr strided_numeric_iterator(strided_numeric_iterator&& rhs)
-      : val(rhs.val), stride(rhs.stride)
-  {
-  }
-  RAJA_HOST_DEVICE strided_numeric_iterator& operator=(
-      const strided_numeric_iterator& rhs)
-  {
-    val = rhs.val;
-    stride = rhs.stride;
-    return *this;
-  }
-  RAJA_HOST_DEVICE strided_numeric_iterator& operator=(
-      strided_numeric_iterator&& rhs)
-  {
-    val = rhs.val;
-    stride = rhs.stride;
-    return *this;
-  }
+  constexpr strided_numeric_iterator() noexcept = default;
+  constexpr strided_numeric_iterator(const strided_numeric_iterator&) noexcept = default;
+  constexpr strided_numeric_iterator(strided_numeric_iterator&&) noexcept = default;
+  strided_numeric_iterator& operator=(const strided_numeric_iterator&) noexcept = default;
+  strided_numeric_iterator& operator=(strided_numeric_iterator&&) noexcept = default;
 
   RAJA_HOST_DEVICE constexpr strided_numeric_iterator(
       stripped_value_type rhs,

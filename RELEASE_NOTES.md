@@ -10,13 +10,41 @@
 Version vxx.yy.zz -- Release date 20yy-mm-dd
 ============================================
 
+Version v0.13.0 -- Release date 2020-10-30
+============================================
+
+This release contains new features, bug fixes, and build improvements. Please 
+see the RAJA user guide for more information about items in this release.
+
+Notable changes include:
+
+  * New features:
+      * Execution policies for the RAJA HIP back-end and examples have been
+        added to the RAJA User Guide and Tutorial.
+      * Strongly-typed indices now work with Multiview.
+
+  * Build changes/improvements:
+      * Update BLT to latest develop branch (SHA-1: cbe99c93d)
+      * Added option to enable/disable runtime plugin loading. This is now 
+        off by default. Previously, it was always enabled and there was no
+        way to disable it.
+
+  * Bug fixes/improvements:
+      * Issues have been addressed so that the OpenMP target back-end is
+        now working properly for all supported features. This has been
+        verified with multiple clang compilers, including clang 10, and the
+        XL compiler.
+      * Various data structures have been made trivially copyable to 
+        ensure they are mapped properly to device memory with OpenMP 
+        target execution.
+      * Numerous improvements and fixes (formatting, typos, etc.) in User Guide.
+
 Version v0.12.1 -- Release date 2020-09-09
 ============================================
 
 This release contains fixes for errors when using a CUDA build with a
 non-CUDA compiler and compiler warnings, plus some other bug fixes related
 to OpenMP target compilation.
-
 
 Version v0.12.0 -- Release date 2020-09-03
 ============================================

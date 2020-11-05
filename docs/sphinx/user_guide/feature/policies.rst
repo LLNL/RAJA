@@ -24,6 +24,9 @@ As RAJA functionality is expanded, new policies will be added and some may
 be redefined and to work in new ways.
 
 .. note:: * All RAJA policies are in the namespace ``RAJA``.
+          * All RAJA policies have a prefix indicating the back-end 
+            implementation that they use; e.g., ``omp_`` for OpenMP, ``cuda_``
+            for CUDA, etc.
 
 -----------------------------------------------------
 RAJA Loop/Kernel Execution Policies
@@ -37,13 +40,13 @@ caveats.
  Sequential/SIMD Execution Policies     Works with    Brief description
  ====================================== ============= ==========================
  seq_exec                               forall,       Strictly sequential
-                                        kernel (For), execution
+                                        kernel (For), execution.
                                         scan,
                                         sort
  simd_exec                              forall,       Try to force generation of
                                         kernel (For), SIMD instructions via
                                         scan          compiler hints in RAJA
-                                                      internal implementation
+                                                      internal implementation.
  loop_exec                              forall,       Allow compiler to generate
                                         kernel (For), any optimizations, such as
                                         scan,         SIMD, that may be
@@ -51,7 +54,7 @@ caveats.
                                                       its heuristics;
                                                       i.e., no loop decorations
                                                       (pragmas or intrinsics) in
-                                                      RAJA implementation
+                                                      RAJA implementation.
  ====================================== ============= ==========================
 
  ====================================== ============= ==========================
@@ -61,13 +64,13 @@ caveats.
                                         kernel (For), region and execute with
                                         scan,         CPU multithreading inside
                                         sort          it; i.e., apply ``omp
-                                                      parallel for`` pragma
+                                                      parallel for`` pragma.
  omp_for_exec                           forall,       Parallel execution with
                                         kernel (For), OpenMP CPU multithreading
                                         scan          inside an *existing* 
                                                       parallel region (see 
                                                       comments below); i.e., 
-                                                      apply ``omp for`` pragma 
+                                                      apply ``omp for`` pragma. 
  omp_for_static<CHUNK_SIZE>             forall,       Execute loop with OpenMP
                                         kernel (For), CPU multithreading using
                                         scan          static schedule and given
@@ -75,7 +78,7 @@ caveats.
                                                       *existing* parallel 
                                                       region (see comments 
                                                       below); i.e., apply ``omp                                                       for schedule(static, 
-                                                      CHUNK_SIZE)`` pragma
+                                                      CHUNK_SIZE)`` pragma.
  omp_for_nowait_exec                    forall,       Parallel execution with
                                         kernel (For), OpenMP CPU multithreading
                                         scan          inside an *existing* 
@@ -83,132 +86,139 @@ caveats.
                                                       comments below) without
                                                       synchronization after 
                                                       loop; i.e., apply
-                                                      ``omp for nowait`` pragma
+                                                      ``omp for nowait`` pragma.
  omp_for_schedule_exec<Sched>           forall,       Parallel execution with
                                         kernel (For)  OpenMP CPU multithreading
                                                       inside an *existing* 
                                                       parallel region (see 
                                                       comments below) with a
-                                                      specified schedule (*Sched*)
+                                                      specified schedule 
+                                                      (*Sched*).
  omp_for_nowait_schedule_exec<Sched>    forall,       Parallel execution with
                                         kernel (For)  OpenMP CPU multithreading
                                                       inside an *existing* 
                                                       parallel region (see 
                                                       comments below) with a
-                                                      specified schedule (*Sched*)
-                                                      and without synchronization
-                                                      after loop; e.g., append
-                                                      ``nowait`` to pragma
+                                                      specified schedule 
+                                                      (*Sched*) and without 
+                                                      synchronization after 
+                                                      loop; e.g., apply
+                                                      ``nowait`` to pragma.
  ====================================== ============= ==========================
 
  ====================================== ============= ==========================
  Threading Building Blocks Policies     Works with    Brief description
  ====================================== ============= ==========================
- tbb_for_exec                           forall,       Execute loop iterations
+ tbb_for_exec                           forall,       Execute loop iterations.
                                         kernel (For), as tasks in parallel using
                                         scan          TBB ``parallel_for``
-                                                      method
- tbb_for_static<CHUNK_SIZE>             forall,       Same as above, but use
+                                                      method.
+ tbb_for_static<CHUNK_SIZE>             forall,       Same as above, but use.
                                         kernel (For), a static scheduler with
-                                        scan          given chunk size
+                                        scan          given chunk size.
  tbb_for_dynamic                        forall,       Same as above, but use
-                                        kernel (For), a dynamic scheduler
+                                        kernel (For), a dynamic scheduler.
                                         scan
  ====================================== ============= ==========================
 
- ====================================== ============= ==========================
- CUDA Execution Policies                Works with    Brief description
- ====================================== ============= ==========================
- cuda_exec<BLOCK_SIZE>                  forall,       Execute loop iterations
-                                        scan,         in a CUDA kernel launched
-                                        sort          with given thread-block
-                                                      size. If block size not
-                                                      given, the default value 
-                                                      of 256 threads/block is 
-                                                      used. 
- cuda_thread_x_direct                   kernel (For)  Map loop iterates
-                                                      directly to CUDA threads
-                                                      in x-dimension, one
-                                                      iterate per thread
-                                                      (see note below about
-                                                      limitations)
- cuda_thread_y_direct                   kernel (For)  Same as above, but map
-                                                      to threads in y-dimension
- cuda_thread_z_direct                   kernel (For)  Same as above, but map
-                                                      to threads in z-dimension
- cuda_thread_x_loop                     kernel (For)  Similar to thread-x-direct
-                                                      policy, but use a
-                                                      block-stride loop which
-                                                      doesn't limit number of
-                                                      loop iterates
- cuda_thread_y_loop                     kernel (For)  Same as above, but for
-                                                      threads in y-dimension
- cuda_thread_z_loop                     kernel (For)  Same as above, but for
-                                                      threads in z-dimension
- cuda_block_x_direct                    kernel (For)  Map loop iterates
-                                                      directly to CUDA thread
-                                                      blocks in x-dimension,
-                                                      one iterate per block
- cuda_block_y_direct                    kernel (For)  Same as above, but map
-                                                      to blocks in y-dimension
- cuda_block_z_direct                    kernel (For)  Same as above, but map
-                                                      to blocks in z-dimension
- cuda_block_x_loop                      kernel (For)  Similar to block-x-direct
-                                                      policy, but use a
-                                                      grid-stride loop.
-						      Intended for occupancy
-						      based cuda launcher
- cuda_block_y_loop                      kernel (For)  Same as above, but use
-                                                      blocks in y-dimension
- cuda_block_z_loop                      kernel (For)  Same as above, but use
-                                                      blocks in z-dimension
- cuda_warp_direct                       kernel (For)  Map work to threads
-                                                      in a warp directly.
-                                                      Cannot be used in
-                                                      conjunction with
-                                                      cuda_thread_x_* policies.
-                                                      Multiple warps can be
-                                                      created by using
-                                                      cuda_thread_y/z_*
-                                                      policies.
- cuda_warp_loop                         kernel (For)  Policy to map work to
-                                                      threads in a warp
-                                                      using a warp-stride loop.
-                                                      Cannot be used in
-                                                      conjunction with
-                                                      cuda_thread_x_* policies.
-                                                      Multiple warps can be
-                                                      created by using
-                                                      cuda_thread_y/z_*
-                                                      policies.
- cuda_warp_mask_direct<BitMask<..>>     kernel (For)  Policy to map work
-                                                      directly to threads in a
-                                                      warp using a bit mask.
-                                                      Cannot be used in
-                                                      conjunction with
-                                                      cuda_thread_x_* policies.
-                                                      Multiple warps can
-                                                      be created by using
-                                                      cuda_thread_y/z_*
-                                                      policies.
- cuda_warp_mask_loop<BitMask<..>>       kernel (For)  Policy to map work to
-                                                      threads in a warp
-                                                      using a bit mask and
-                                                      a warp-stride loop.
-                                                      Cannot be used in
-                                                      conjunction with
-                                                      cuda_thread_x_* policies.
-                                                      Multiple warps can
-                                                      be created by using
-                                                      cuda_thread_y/z_*
-                                                      policies.
- cuda_block_reduce                      kernel        Perform a reduction
-                                        (Reduce)      across a single CUDA
-                                                      thread block.
- cuda_warp_reduce                       kernel        Perform a reduction
-                                        (Reduce)      across a single CUDA
-                                                      thread warp.
- ====================================== ============= ==========================
+RAJA policies for GPU execution using CUDA or HIP are essentially identical. 
+The only difference is that CUDA policies have the prefix ``cuda_`` and HIP 
+policies have the prefix ``hip_``.
+
+ ======================================== ============= ========================
+ CUDA/HIP Execution Policies              Works with    Brief description
+ ======================================== ============= ========================
+ cuda/hip_exec<BLOCK_SIZE>                forall,       Execute loop iterations
+                                          scan,         in a GPU kernel launched
+                                          sort          with given thread-block
+                                                        size. If block size not
+                                                        given, the default
+                                                        of 256 threads/block is 
+                                                        used. 
+ cuda/hip_thread_x_direct                kernel (For)  Map loop iterates
+                                                        directly to GPU threads
+                                                        in x-dimension, one
+                                                        iterate per thread
+                                                        (see note below about
+                                                        limitations)
+ cuda/hip_thread_y_direct                 kernel (For)  Same as above, but map
+                                                        to threads in y-dim
+ cuda/hip_thread_z_direct                 kernel (For)  Same as above, but map
+                                                        to threads in z-dim
+ cuda/hip_thread_x_loop                   kernel (For)  Similar to 
+                                                        thread-x-direct
+                                                        policy, but use a
+                                                        block-stride loop which
+                                                        doesn't limit number of
+                                                        loop iterates
+ cuda/hip_thread_y_loop                   kernel (For)  Same as above, but for
+                                                        threads in y-dimension
+ cuda/hip_thread_z_loop                   kernel (For)  Same as above, but for
+                                                        threads in z-dimension
+ cuda/hip_block_x_direct                  kernel (For)  Map loop iterates
+                                                        directly to GPU thread
+                                                        blocks in x-dimension,
+                                                        one iterate per block
+ cuda/hip_block_y_direct                  kernel (For)  Same as above, but map
+                                                        to blocks in y-dimension
+ cuda/hip_block_z_direct                  kernel (For)  Same as above, but map
+                                                        to blocks in z-dimension
+ cuda/hip_block_x_loop                    kernel (For)  Similar to 
+                                                        block-x-direct policy, 
+                                                        but use a grid-stride 
+                                                        loop.
+ cuda/hip_block_y_loop                    kernel (For)  Same as above, but use
+                                                        blocks in y-dimension
+ cuda/hip_block_z_loop                    kernel (For)  Same as above, but use
+                                                        blocks in z-dimension
+ cuda/hip_warp_direct                     kernel (For)  Map work to threads
+                                                        in a warp directly.
+                                                        Cannot be used in
+                                                        conjunction with
+                                                        cuda/hip_thread_x_* 
+                                                        policies.
+                                                        Multiple warps can be
+                                                        created by using
+                                                        cuda/hip_thread_y/z_*
+                                                        policies.
+ cuda/hip_warp_loop                       kernel (For)  Policy to map work to
+                                                        threads in a warp using
+                                                        a warp-stride loop.
+                                                        Cannot be used in
+                                                        conjunction with
+                                                        cuda/hip_thread_x_* 
+                                                        policies.
+                                                        Multiple warps can be
+                                                        created by using
+                                                        cuda/hip_thread_y/z_*
+                                                        policies.
+ cuda/hip_warp_masked_direct<BitMask<..>> kernel (For)  Policy to map work
+                                                        directly to threads in a
+                                                        warp using a bit mask.
+                                                        Cannot be used in
+                                                        conjunction with
+                                                        cuda/hip_thread_x_* 
+                                                        policies.
+                                                        Multiple warps can
+                                                        be created by using
+                                                        cuda/hip_thread_y/z_*
+                                                        policies.
+ cuda/hip_warp_masked_loop<BitMask<..>>   kernel (For)  Policy to map work to
+                                                        threads in a warp using
+                                                        a bit mask and a 
+                                                        warp-stride loop. Cannot
+                                                        be used in conjunction 
+                                                        with cuda/hip_thread_x_*
+                                                        policies. Multiple warps                                                        can be created by using
+                                                        cuda/hip_thread_y/z_*
+                                                        policies.
+ cuda/hip_block_reduce                    kernel        Perform a reduction
+                                          (Reduce)      across a single GPU
+                                                        thread block.
+ cuda/_warp_reduce                        kernel        Perform a reduction
+                                          (Reduce)      across a single GPU
+                                                        thread warp.
+ ======================================== ============= ========================
 
  ====================================== ============= ==========================
  OpenMP Target Execution Policies       Works with    Brief description
@@ -301,7 +311,7 @@ The following notes provide additional information about policy usage.
 
           This allows changing number of workers at runtime.
 
-Several notable constraints apply to RAJA CUDA *thread-direct* policies.
+Several notable constraints apply to RAJA CUDA/HIP *thread-direct* policies.
 
 .. note:: * Repeating thread direct policies with the same thread dimension
             in perfectly nested loops is not recommended. Your code may do
@@ -310,27 +320,27 @@ Several notable constraints apply to RAJA CUDA *thread-direct* policies.
             different thread dimensions), the product of sizes of the
             corresponding iteration spaces cannot be greater than the
             maximum allowable threads per block. Typically, this is
-            equ:math:`\leq` 1024; i.e., attempting to launch a CUDA kernel
+            equ:math:`\leq` 1024; e.g., attempting to launch a CUDA kernel
             with more than 1024 threads per block will cause the CUDA runtime
             to complain about *illegal launch parameters.*
           * **Thread-direct policies are recommended only for certain loop
             patterns, such as tiling.**
 
-Several notes regarding CUDA thread and block *loop* policies are also good to
-know.
+Several notes regarding CUDA/HIP thread and block *loop* policies are also 
+good to know.
 
 .. note:: * There is no constraint on the product of sizes of the associated
             loop iteration space.
           * These polices allow having a larger number of iterates than
             threads in the x, y, or z thread dimension.
-          * **Cuda thread and block loop policies are recommended for most
+          * **CUDA/HIP thread and block loop policies are recommended for most
             loop patterns.**
 
 Finally
 
-.. note:: CUDA block-direct policies may be preferable to block-loop policies
-          in situations where block load balancing may be an issue as the
-          block-direct policies may yield better performance.
+.. note:: CUDA/HIP block-direct policies may be preferable to block-loop 
+          policies in situations where block load balancing may be an issue 
+          as the block-direct policies may yield better performance.
 
 
 .. _indexsetpolicy-label:
@@ -352,25 +362,25 @@ See :ref:`indexsets-label` for more information.
 
 In general, any policy that can be used with a ``RAJA::forall`` method
 can be used as the segment execution policy. The following policies are
-available to use for the segment iteration policy:
+available to use for the outer segment iteration policy:
 
 ====================================== =========================================
 Execution Policy                       Brief description
 ====================================== =========================================
 **Serial**
 seq_segit                              Iterate over index set segments
-                                       sequentially
+                                       sequentially.
 
 **OpenMP CPU multithreading**
 omp_parallel_segit                     Create OpenMP parallel region and
                                        iterate over segments in parallel inside                                        it; i.e., apply ``omp parallel for``
-                                       pragma on loop over segments
-omp_parallel_for_segit                 Same as above
+                                       pragma on loop over segments.
+omp_parallel_for_segit                 Same as above.
 
 **Intel Threading Building Blocks**
 tbb_segit                              Iterate over index set segments in
                                        parallel using a TBB 'parallel_for'
-                                       method
+                                       method.
 ====================================== =========================================
 
 -------------------------
@@ -424,26 +434,26 @@ It is important to note the following constraints about RAJA reduction usage:
 
 The following table summarizes RAJA reduction policy types:
 
-===================== ============= ===========================================
-Reduction Policy      Loop Policies Brief description
-                      to Use With
-===================== ============= ===========================================
-seq_reduce            seq_exec,     Non-parallel (sequential) reduction
-                      loop_exec
-omp_reduce            any OpenMP    OpenMP parallel reduction
-                      policy
-omp_reduce_ordered    any OpenMP    OpenMP parallel reduction with result
-                      policy        guaranteed to be reproducible
-omp_target_reduce     any OpenMP    OpenMP parallel target offload reduction
-                      target policy
-tbb_reduce            any TBB       TBB parallel reduction
-                      policy
-cuda_reduce           any CUDA      Parallel reduction in a CUDA kernel
-                      policy        (device synchronization will occur when
-                                    reduction value is finalized)
-cuda_reduce_atomic    any CUDA      Same as above, but reduction may use CUDA
-                      policy        atomic operations
-===================== ============= ===========================================
+======================= ============= ==========================================
+Reduction Policy        Loop Policies Brief description
+                        to Use With
+======================= ============= ==========================================
+seq_reduce              seq_exec,     Non-parallel (sequential) reduction.
+                        loop_exec
+omp_reduce              any OpenMP    OpenMP parallel reduction.
+                        policy
+omp_reduce_ordered      any OpenMP    OpenMP parallel reduction with result
+                        policy        guaranteed to be reproducible.
+omp_target_reduce       any OpenMP    OpenMP parallel target offload reduction.
+                        target policy
+tbb_reduce              any TBB       TBB parallel reduction.
+                        policy
+cuda/hip_reduce         any CUDA/HIP  Parallel reduction in a CUDA/HIP kernel
+                        policy        (device synchronization will occur when
+                                      reduction value is finalized).
+cuda/hip_reduce_atomic  any CUDA/HIP  Same as above, but reduction may use CUDA
+                        policy        atomic operations.
+======================= ============= ===========================================
 
 .. note:: RAJA reductions used with SIMD execution policies are not
           guaranteed to generate correct results at present.
@@ -466,13 +476,13 @@ Atomic Policy         Loop Policies Brief description
                       to Use With
 ===================== ============= ===========================================
 seq_atomic            seq_exec,     Atomic operation performed in a non-parallel
-                      loop_exec     (sequential) kernel
-omp_atomic            any OpenMP    Atomic operation performed in an OpenMP
+                      loop_exec     (sequential) kernel.
+omp_atomic            any OpenMP    Atomic operation performed in an OpenMP.
                       policy        multithreading or target kernel; i.e.,
-                                    apply ``omp atomic`` pragma
-cuda_atomic           any CUDA      Atomic operation performed in a CUDA kernel
-                      policy
-builtin_atomic        seq_exec,     Compiler *builtin* atomic operation
+                                    apply ``omp atomic`` pragma.
+cuda/hip_atomic       any CUDA/HIP  Atomic operation performed in a CUDA/HIP 
+                                    kernel.
+builtin_atomic        seq_exec,     Compiler *builtin* atomic operation.
                       loop_exec,
                       any OpenMP
                       policy
@@ -480,7 +490,7 @@ auto_atomic           seq_exec,     Atomic operation *compatible* with loop
                       loop_exec,    execution policy. See example below.
                       any OpenMP
                       policy,
-                      any CUDA
+                      any CUDA/HIP
                       policy
 ===================== ============= ===========================================
 

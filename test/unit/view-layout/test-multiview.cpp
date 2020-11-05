@@ -36,49 +36,65 @@ TYPED_TEST(MultiViewUnitTest, Constructors)
   data[0] = a1;
   data[1] = a2;
 
+  constexpr int val = 8;
+  a1[0] = val;
+  a2[0] = val;
+
   RAJA::MultiView<TypeParam, layout> view(data, layout(10));
+  ASSERT_EQ( val, view(0,0) );
 
   /*
    * Should be able to construct a non-const MultiView from a non-const MultiView
    */
   RAJA::MultiView<TypeParam, layout> view2(view);
+  ASSERT_EQ( val, view2(0,0) );
 
   /*
    * Should be able to construct a const MultiView from a non-const MultiView
    */
   RAJA::MultiView<TypeParam const, layout> const_view(view);
+  ASSERT_EQ( val, const_view(0,0) );
 
   /*
    * Should be able to construct a const MultiView from a const MultiView
    */
   RAJA::MultiView<TypeParam const, layout> const_view2(const_view);
+  ASSERT_EQ( val, const_view2(0,0) );
 
 
   // non-default construction of MultiView with array-of-pointers index moved to 1st position
   RAJA::MultiView<TypeParam, layout, 1> view1p(data, layout(10));
+  ASSERT_EQ( val, view1p(0,0) );
 
   // construct a non-const MultiView from a non-const MultiView
   RAJA::MultiView<TypeParam, layout, 1> view1p2(view1p);
+  ASSERT_EQ( val, view1p2(0,0) );
 
   // construct a const MultiView from a non-const MultiView
   RAJA::MultiView<TypeParam const, layout, 1> const_view1p(view1p);
+  ASSERT_EQ( val, const_view1p(0,0) );
 
   // construct a const MultiView from a const MultiView
   RAJA::MultiView<TypeParam const, layout, 1> const_view1p2(const_view1p);
+  ASSERT_EQ( val, const_view1p2(0,0) );
 
 
   // non-default construction of MultiView with array-of-pointers index moved to 1st position
   // and non-const pointer type specification (used in CHAI)
   RAJA::MultiView<TypeParam, layout, 1, TypeParam **> view1pnc(data, layout(10));
+  ASSERT_EQ( val, view1pnc(0,0) );
 
   // construct a non-const MultiView from a non-const MultiView
   RAJA::MultiView<TypeParam, layout, 1, TypeParam **> view1pnc2(view1pnc);
+  ASSERT_EQ( val, view1pnc2(0,0) );
 
   // construct a const MultiView from a non-const MultiView
   RAJA::MultiView<TypeParam const, layout, 1, TypeParam **> const_view1pnc(view1pnc);
+  ASSERT_EQ( val, const_view1pnc(0,0) );
 
   // construct a const MultiView from a const MultiView
   RAJA::MultiView<TypeParam const, layout, 1, TypeParam **> const_view1pnc2(const_view1pnc);
+  ASSERT_EQ( val, const_view1pnc2(0,0) );
 }
 
 TYPED_TEST(MultiViewUnitTest, Accessor)

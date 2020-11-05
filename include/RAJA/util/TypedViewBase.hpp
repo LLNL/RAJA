@@ -343,24 +343,19 @@ class ViewBase {
     using shifted_layout_type = typename add_offset<layout_type>::type;
     using ShiftedView = ViewBase<value_type, pointer_type, shifted_layout_type>;
 
-    static constexpr size_t n_dims = layout_type::n_dims;
-
   protected:
     pointer_type m_data;
     layout_type const m_layout;
 
   public:
-    RAJA_HOST_DEVICE
-    constexpr
-    RAJA_INLINE ViewBase() {}
 
-    RAJA_HOST_DEVICE
-    RAJA_INLINE
-    explicit
-    constexpr
-    ViewBase(pointer_type data) : m_data(data)
-    {
-    }
+    constexpr ViewBase() = default;
+    RAJA_INLINE constexpr ViewBase(ViewBase const &) = default;
+    RAJA_INLINE constexpr ViewBase(ViewBase &&) = default;
+    RAJA_INLINE ViewBase& operator=(ViewBase const &) = default;
+    RAJA_INLINE ViewBase& operator=(ViewBase &&) = default;
+
+
 
     RAJA_HOST_DEVICE
     RAJA_INLINE
@@ -450,16 +445,16 @@ class ViewBase {
 
 
 
-    template <size_t N = n_dims, typename IdxLin = linear_index_type>
+    template <size_t n_dims = layout_type::n_dims, typename IdxLin = linear_index_type>
     RAJA_INLINE
-    ShiftedView shift(const std::array<IdxLin, N>& shift)
+    ShiftedView shift(const std::array<IdxLin, n_dims>& shift)
     {
       static_assert(n_dims==layout_type::n_dims, "Dimension mismatch in view shift");
 
-      shifted_layout_type shift_layout(get_layout());
+      shifted_layout_type shift_layout(m_layout);
       shift_layout.shift(shift);
 
-      return ShiftedView(get_data(), shift_layout);
+      return ShiftedView(m_data, shift_layout);
     }
 
 };
