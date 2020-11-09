@@ -48,8 +48,17 @@ namespace RAJA
     template<typename T>
     RAJA_HOST_DEVICE
     static constexpr T maskValue(T input) {
-      return( (input>>((T) Shift)) & (T) ((1<<(Width))-1));
+      return( (input>>( static_cast<T>(Shift) )) & static_cast<T>((1<<(Width))-1) );
     }
+
+
+    template<typename T>
+    RAJA_HOST_DEVICE
+    static constexpr T maskOuter(T input) {
+      return(  (input>>(static_cast<T>(Shift))) >> Width );
+    }
+
+
   };
 
 }  // namespace RAJA

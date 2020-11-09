@@ -95,6 +95,7 @@ namespace RAJA
   template<typename IDX, typename MATRIX_TYPE>
   RAJA_HOST_DEVICE
   RAJA_INLINE
+  constexpr
   ColIndex<IDX, TransposeMatrix<MATRIX_TYPE>> toColIndex(RowIndex<IDX, MATRIX_TYPE> const &r){
     return ColIndex<IDX, TransposeMatrix<MATRIX_TYPE>>(*r, r.size());
   }
@@ -105,6 +106,7 @@ namespace RAJA
   template<typename IDX, typename MATRIX_TYPE>
   RAJA_HOST_DEVICE
   RAJA_INLINE
+  constexpr
   RowIndex<IDX, TransposeMatrix<MATRIX_TYPE>> toRowIndex(ColIndex<IDX, MATRIX_TYPE> const &c){
     return RowIndex<IDX, TransposeMatrix<MATRIX_TYPE>>(*c, c.size());
   }

@@ -53,6 +53,12 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
     threads.x = ctx.threads.value[0];
     threads.y = ctx.threads.value[1];
     threads.z = ctx.threads.value[2];
+
+    printf("Launch0:%d,%d,%d blocks, %d,%d,%d threads, nthreads=%d\n",
+        blocks.x, blocks.y, blocks.z,
+        threads.x, threads.y, threads.z,
+        (int)0);
+
     launch_global_fcn<<<blocks, threads>>>(ctx, body);
 
     if (!async) {
@@ -85,6 +91,10 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, nthreads>> {
     threads.x = ctx.threads.value[0];
     threads.y = ctx.threads.value[1];
     threads.z = ctx.threads.value[2];
+    printf("Launch:%d,%d,%d blocks, %d,%d,%d threads, nthreads=%d\n",
+        blocks.x, blocks.y, blocks.z,
+        threads.x, threads.y, threads.z,
+        (int)nthreads);
     launch_global_fcn_fixed<nthreads><<<blocks, threads>>>(ctx, body);
 
     if (!async) {

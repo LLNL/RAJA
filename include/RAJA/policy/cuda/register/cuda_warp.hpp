@@ -263,7 +263,7 @@ namespace RAJA {
       RAJA_DEVICE
       element_type get(camp::idx_t i) const
 			{
-				return __shfl_sync(0xffffffff, m_value, i);
+				return __shfl_sync(0xffffffff, m_value, i + threadIdx.x-bitmask_t::maskValue(threadIdx.x));
 			}
 
       /*!

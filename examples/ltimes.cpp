@@ -10,7 +10,7 @@
 //#define RAJA_ENABLE_VECTOR_STATS
 
 // Un-comment the following line to run correctness checks on each variant
-//#define DEBUG_LTIMES
+#define DEBUG_LTIMES
 
 #define VARIANT_C                    0
 #define VARIANT_C_VIEWS              0
@@ -106,15 +106,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Define array dimensions, allocate arrays, define Layouts and Views, etc.
   // Note: rand()/RAND_MAX is always zero, but forces the compiler to not
   // optimize out these values as compile time constants
-  const long num_m = 32 + (rand()/RAND_MAX);
-  const long num_g = 160 + (rand()/RAND_MAX);
-  const long num_d = 64 + (rand()/RAND_MAX);
+//  const long num_m = 32 + (rand()/RAND_MAX);
+//  const long num_g = 160 + (rand()/RAND_MAX);
+//  const long num_d = 64 + (rand()/RAND_MAX);
+  const long num_m = 8 + (rand()/RAND_MAX);
+    const long num_g = 1 + (rand()/RAND_MAX);
+    const long num_d = 4 + (rand()/RAND_MAX);
 
 #ifdef DEBUG_LTIMES
   const long num_iter = 1 + (rand()/RAND_MAX);;
   // use a decreased number of zones since this will take a lot longer
   // and we're not really measuring performance here
-  const long num_z = 128 + (rand()/RAND_MAX);
+  //const long num_z = 128 + (rand()/RAND_MAX);
+  const long num_z = 1 + (rand()/RAND_MAX);
 #else
   const long num_iter = 1 + (rand()/RAND_MAX);
   const long num_z = 64*1024 + (rand()/RAND_MAX);
@@ -803,7 +807,7 @@ if(VARIANT_RAJA_TEAMS_MATRIX){
 
 
   for (int iter = 0;iter < num_iter;++ iter){
-    RAJA::expt::launch<pol_launch>(RAJA::expt::HOST, RAJA::expt::Resources(), [=](RAJA::expt::LaunchContext ctx){
+    RAJA::expt::launch<pol_launch>(RAJA::expt::HOST, RAJA::expt::Resources(), [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx){
 
       RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
         RAJA::expt::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](ColZ z){
@@ -1362,7 +1366,7 @@ if(1){
 
 //----------------------------------------------------------------------------//
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA0)
 {
   std::cout << "\n Running RAJA CUDA version of LTimes...\n";
 
@@ -1488,19 +1492,18 @@ if(1){
                           cudaMemcpyHostToDevice ) );
 
 
-  using matrix_t = RAJA::FixedMatrix<double,16,16, RAJA::MATRIX_ROW_MAJOR, RAJA::cuda_warp_register<4>>;
-
+  using matrix_t = RAJA::FixedMatrix<double,4,4, RAJA::MATRIX_COL_MAJOR, RAJA::cuda_warp_register<2>>;
+  using bitmask_t = RAJA::BitMask<2,0>;
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
   using ColD = RAJA::ColIndex<ID, matrix_t>;
   using ColZ = RAJA::ColIndex<IZ, matrix_t>;
 
-  using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t, RAJA::expt::cuda_launch_t<false,0> >;
+  using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t, RAJA::expt::cuda_launch_t<true ,512> >;
   using pol_g = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_block_x_loop>;
   using pol_z = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>, cuda_thread_y_matrix_col_loop<matrix_t> >;
   using pol_m = RAJA::expt::LoopPolicy<matrix_row_exec<matrix_t>, cuda_warp_matrix_row_loop<matrix_t> >;
   using pol_d = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>, matrix_col_exec<matrix_t>>;
-//  using pol_d = RAJA::expt::LoopPolicy<loop_exec, loop_exec>;
 
 
   //
@@ -1532,60 +1535,74 @@ if(1){
   cudaErrchk( cudaDeviceSynchronize() );
   timer.start();
 
+  {
+    LView L_host(L_data,
+            RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
+
+    printf("L matrix:\n");
+    for(IM m(0);m < num_m;++m){
+      for(ID d(0);d < num_d;++d){
+        printf("%e ", L_host(m,d));
+      }
+      printf("\n");
+    }
+  }
+
   for (int iter = 0;iter < num_iter;++ iter){
     RAJA::expt::launch<pol_launch>(
         RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(1), //num_g),
-                              RAJA::expt::Threads(16, 1 )), //std::min<int>(32, num_z))),
+                              RAJA::expt::Threads(8)), //, 16, 1)), //std::min<int>(32, num_z))),
         [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
     {
       RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
-//        RAJA::expt::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](ColZ z){
-//          RAJA::expt::loop<pol_m>(ctx, RAJA::TypedRangeSegment<IM>(0, num_m), [&](RowM m){
+        RAJA::expt::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](ColZ z){
+          RAJA::expt::loop<pol_m>(ctx, RAJA::TypedRangeSegment<IM>(0, num_m), [&](RowM m){
 
-//            matrix_t acc = phi(m, g, z);
+            //matrix_t acc = phi(m, g, z);
 
             RAJA::expt::loop<pol_d>(ctx, RAJA::TypedRangeSegment<ID>(0, num_d), [&](ColD d){
-//              printf("block=%d, thread=x:%d,y:%d,     g=%d, z=%d, m=%d, d=%d\n",
-//                  blockIdx.x, threadIdx.x, threadIdx.y,
-//                  (int)*g, (int)**z, (int)**m, (int)**d);
-//              acc = L(m, d) * psi(toRowIndex(d), g, z) + acc;
-//#ifdef RAJA_DEVICE_CODE0
-//              if(threadIdx.x==0 && threadIdx.y==0){
-//                printf("m: size=%d, dim=%d\n", (int)m.size(), (int)m.dim());
-//                printf("d: size=%d, dim=%d\n", (int)d.size(), (int)d.dim());
-//                printf("z: size=%d, dim=%d\n", (int)z.size(), (int)z.dim());
-//                auto LL = phi(m,g,z).load();
-//                printf("LL size=%d x %d\n", (int)LL.dim_elem(0), (int)LL.dim_elem(1));
-//                printf("LL Matrix:\n");
-//                for(int i = 0;i < 16;++ i){
-//                  for(int j = 0;j < 16;++ j){
-//                    printf("%.3e ", LL.get(i,j));
-//                  }
-//                  printf("\n");
-//                }
-//                printf("L View:\n");
-//                for(int i = 0;i < 16;++ i){
-//                  for(int j = 0;j < 16;++ j){
-//                    printf("%.3e ", phi(IM(i),g,IZ(j)));
-//                  }
-//                  printf("\n");
-//                }
-//
-//              }
+
+              //acc = L(m, d) * psi(toRowIndex(d), g, z) + acc;
+//#ifdef __CUDA_ARCH__
+
+
+              auto Lmd = L(m,d).load();
+
+              bool th0 = threadIdx.x==4;
+              for(int i = 0;i < 4;++ i){
+                if(th0){
+                  printf("Th%d (m=%d, d=%d): ", threadIdx.x, (int)**m, (int)**d);
+                }
+                for(int j = 0;j < 4;++ j){
+                  double val = Lmd.get(i+4,j);
+                  if(th0){
+                    printf("%e[%d] ", val, threadIdx.x-bitmask_t::maskValue(threadIdx.x));
+                  }
+                }
+                if(th0){
+                  printf("\n");
+                }
+              }
+              if(th0){
+                printf("\n");
+              }
+
 //#endif
+              phi(m,g,z) += L(m, d) * psi(toRowIndex(d), g, z);
 
-//            });
+            });
 
-//            phi(m,g,z) = acc;
-//          });
+            //phi(m,g,z) = acc;
+          });
         });
       });
 
     });
-  }
 
+  }
   cudaErrchk( cudaDeviceSynchronize() );
+
   timer.stop();
   double t = timer.elapsed();
   double gflop_rate = total_flops / t / 1.0e9;
@@ -1615,7 +1632,7 @@ if(1){
 
 //----------------------------------------------------------------------------//
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA0)
 {
   std::cout << "\n Running RAJA CUDA + shmem version of LTimes...\n";
 
@@ -2226,6 +2243,8 @@ void checkResult(PHIVIEW_T& phi, LVIEW_T& L, PSIVIEW_T& psi,
           total += val;
         }
         if (std::abs(total-phi(m, g, z)) > 1e-9) {
+          printf("ERR: g=%d, z=%d, m=%d, val=%e, expected=%e\n",
+              (int)*g, (int)*z, (int)*m, total, phi(m,g,z));
           ++nerrors;
         }
         total_error += std::abs(total-phi(m, g, z));
