@@ -168,6 +168,14 @@ RAJA_INLINE __device__ T hip_atomic_CAS_oper(T volatile *acc, OPER &&oper)
  * These are atomic in hip device code and non-atomic otherwise
  */
 template <typename T>
+RAJA_INLINE __host__ T hip_atomicAdd(T volatile *acc, T value)
+{
+  T old = *acc;
+  *acc = old + value;
+  return old;
+}
+///
+template <typename T>
 RAJA_INLINE __device__ T hip_atomicAdd(T volatile *acc, T value)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T a) {
@@ -217,6 +225,14 @@ RAJA_INLINE __device__ float hip_atomicAdd<float>(float volatile *acc,
 #endif
 
 template <typename T>
+RAJA_INLINE __host__ T hip_atomicSub(T volatile *acc, T value)
+{
+  T old = *acc;
+  *acc = old - value;
+  return old;
+}
+///
+template <typename T>
 RAJA_INLINE __device__ T hip_atomicSub(T volatile *acc, T value)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T a) {
@@ -242,6 +258,14 @@ RAJA_INLINE __device__ unsigned hip_atomicSub<unsigned>(unsigned volatile *acc,
 }
 #endif
 
+template <typename T>
+RAJA_INLINE __host__ T hip_atomicMin(T volatile *acc, T value)
+{
+  T old = *acc;
+  if (value < old) *acc = value;
+  return old;
+}
+///
 template <typename T>
 RAJA_INLINE __device__ T hip_atomicMin(T volatile *acc, T value)
 {
@@ -280,6 +304,14 @@ RAJA_INLINE __device__ unsigned long long hip_atomicMin<unsigned long long>(
 #endif
 
 template <typename T>
+RAJA_INLINE __host__ T hip_atomicMax(T volatile *acc, T value)
+{
+  T old = *acc;
+  if (value > old) *acc = value;
+  return old;
+}
+///
+template <typename T>
 RAJA_INLINE __device__ T hip_atomicMax(T volatile *acc, T value)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T a) {
@@ -317,6 +349,14 @@ RAJA_INLINE __device__ unsigned long long hip_atomicMax<unsigned long long>(
 #endif
 
 template <typename T>
+RAJA_INLINE __host__ T hip_atomicInc(T volatile *acc, T val)
+{
+  T old = *acc;
+  *acc = ((old >= val) ? 0 : (old + 1));
+  return old;
+}
+///
+template <typename T>
 RAJA_INLINE __device__ T hip_atomicInc(T volatile *acc, T val)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T old) {
@@ -335,6 +375,14 @@ RAJA_INLINE __device__ unsigned hip_atomicInc<unsigned>(unsigned volatile *acc,
 #endif
 
 template <typename T>
+RAJA_INLINE __host__ T hip_atomicInc(T volatile *acc)
+{
+  T old = *acc;
+  *acc = old + 1;
+  return old;
+}
+///
+template <typename T>
 RAJA_INLINE __device__ T hip_atomicInc(T volatile *acc)
 {
   return hip_atomic_CAS_oper(acc,
@@ -342,6 +390,16 @@ RAJA_INLINE __device__ T hip_atomicInc(T volatile *acc)
 }
 
 
+template <typename T>
+RAJA_INLINE __host__ T hip_atomicDec(T volatile *acc, T val)
+{
+  // See:
+  // http://docs.nvidia.com/hip/hip-c-programming-guide/index.html#atomicdec
+  T old = *acc;
+  *acc = (((old == 0) | (old > val)) ? val : (old - 1));
+  return old;
+}
+///
 template <typename T>
 RAJA_INLINE __device__ T hip_atomicDec(T volatile *acc, T val)
 {
@@ -363,6 +421,14 @@ RAJA_INLINE __device__ unsigned hip_atomicDec<unsigned>(unsigned volatile *acc,
 #endif
 
 template <typename T>
+RAJA_INLINE __host__ T hip_atomicDec(T volatile *acc)
+{
+  T old = *acc;
+  *acc = old - 1;
+  return old;
+}
+///
+template <typename T>
 RAJA_INLINE __device__ T hip_atomicDec(T volatile *acc)
 {
   return hip_atomic_CAS_oper(acc,
@@ -370,6 +436,14 @@ RAJA_INLINE __device__ T hip_atomicDec(T volatile *acc)
 }
 
 
+template <typename T>
+RAJA_INLINE __host__ T hip_atomicAnd(T volatile *acc, T value)
+{
+  T old = *acc;
+  *acc = old & value;
+  return old;
+}
+///
 template <typename T>
 RAJA_INLINE __device__ T hip_atomicAnd(T volatile *acc, T value)
 {
@@ -409,6 +483,14 @@ RAJA_INLINE __device__ unsigned long long hip_atomicAnd<unsigned long long>(
 #endif
 
 template <typename T>
+RAJA_INLINE __host__ T hip_atomicOr(T volatile *acc, T value)
+{
+  T old = *acc;
+  *acc = old | value;
+  return old;
+}
+///
+template <typename T>
 RAJA_INLINE __device__ T hip_atomicOr(T volatile *acc, T value)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T a) {
@@ -447,6 +529,14 @@ RAJA_INLINE __device__ unsigned long long hip_atomicOr<unsigned long long>(
 #endif
 
 template <typename T>
+RAJA_INLINE __host__ T hip_atomicXor(T volatile *acc, T value)
+{
+  T old = *acc;
+  *acc = old ^ value;
+  return old;
+}
+///
+template <typename T>
 RAJA_INLINE __device__ T hip_atomicXor(T volatile *acc, T value)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T a) {
@@ -484,6 +574,14 @@ RAJA_INLINE __device__ unsigned long long hip_atomicXor<unsigned long long>(
 }
 #endif
 
+template <typename T>
+RAJA_INLINE __host__ T hip_atomicExchange(T volatile *acc, T value)
+{
+  T old = *acc;
+  *acc = value;
+  return old;
+}
+///
 template <typename T>
 RAJA_INLINE __device__ T hip_atomicExchange(T volatile *acc, T value)
 {
@@ -527,6 +625,14 @@ RAJA_INLINE __device__ float hip_atomicExchange<float>(
 }
 #endif
 
+template <typename T>
+RAJA_INLINE __host__ T hip_atomicCAS(T volatile *acc, T compare, T value)
+{
+  T old = *acc;
+  if (old == compare) *acc = value;
+  return old;
+}
+///
 template <typename T>
 RAJA_INLINE __device__ T hip_atomicCAS(T volatile *acc, T compare, T value)
 {
