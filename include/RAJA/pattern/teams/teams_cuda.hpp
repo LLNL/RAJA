@@ -535,6 +535,57 @@ struct LoopExecute<cuda_thread_xyz_nested_loop, SEGMENT> {
   }
 };
 
+
+
+template <typename SEGMENT, int DIM>
+struct TileExecute<cuda_thread_xyz_loop<DIM>, SEGMENT> {
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    for (int tx = internal::get_cuda_dim<DIM>(threadIdx) * tile_size;
+
+         tx < len;
+
+         tx += internal::get_cuda_dim<DIM>(blockDim) * tile_size)
+    {
+      body(segment.slice(tx, tile_size));
+    }
+  }
+};
+
+template <typename SEGMENT, int DIM>
+struct TileExecute<cuda_block_xyz_loop<DIM>, SEGMENT> {
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    for (int tx = internal::get_cuda_dim<DIM>(blockIdx) * tile_size;
+
+         tx < len;
+
+         tx += internal::get_cuda_dim<DIM>(gridDim) * tile_size)
+    {
+      body(segment.slice(tx, tile_size));
+    }
+  }
+};
+
+
 }  // namespace expt
 
 }  // namespace RAJA
