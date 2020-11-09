@@ -97,8 +97,8 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
   HIP thread loops with block strides
 */
 
-template <typename SEGMENT>
-struct LoopExecute<hip_thread_x_loop, SEGMENT> {
+template <typename SEGMENT, int DIM>
+struct LoopExecute<hip_thread_xyz_loop<DIM>, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -109,54 +109,23 @@ struct LoopExecute<hip_thread_x_loop, SEGMENT> {
 
     const int len = segment.end() - segment.begin();
 
-    for (int tx = threadIdx.x; tx < len; tx += blockDim.x) {
+    for (int tx = internal::get_hip_dim<DIM>(threadIdx);
+         tx < len;
+         tx += internal::get_hip_dim<DIM>(blockDim) )
+    {
       body(*(segment.begin() + tx));
     }
   }
 };
 
-template <typename SEGMENT>
-struct LoopExecute<hip_thread_y_loop, SEGMENT> {
 
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const &segment,
-      BODY const &body)
-  {
-
-    const int len = segment.end() - segment.begin();
-
-    for (int ty = threadIdx.y; ty < len; ty += blockDim.y) {
-      body(*(segment.begin() + ty));
-    }
-  }
-};
-
-template <typename SEGMENT>
-struct LoopExecute<hip_thread_z_loop, SEGMENT> {
-
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const &segment,
-      BODY const &body)
-  {
-
-    const int len = segment.end() - segment.begin();
-
-    for (int tz = threadIdx.z; tz < len; tz += blockDim.z) {
-      body(*(segment.begin() + tz));
-    }
-  }
-};
 
 /*
   HIP thread direct mappings
 */
 
-template <typename SEGMENT>
-struct LoopExecute<hip_thread_x_direct, SEGMENT> {
+template <typename SEGMENT, int DIM>
+struct LoopExecute<hip_thread_xyz_direct<DIM>, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -167,53 +136,18 @@ struct LoopExecute<hip_thread_x_direct, SEGMENT> {
 
     const int len = segment.end() - segment.begin();
     {
-      const int tx = threadIdx.x;
+      const int tx = internal::get_hip_dim<DIM>(threadIdx);
       if (tx < len) body(*(segment.begin() + tx));
     }
   }
 };
 
-template <typename SEGMENT>
-struct LoopExecute<hip_thread_y_direct, SEGMENT> {
-
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const &segment,
-      BODY const &body)
-  {
-
-    const int len = segment.end() - segment.begin();
-    {
-      const int ty = threadIdx.y;
-      if (ty < len) body(*(segment.begin() + ty));
-    }
-  }
-};
-
-template <typename SEGMENT>
-struct LoopExecute<hip_thread_z_direct, SEGMENT> {
-
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const &segment,
-      BODY const &body)
-  {
-
-    const int len = segment.end() - segment.begin();
-    {
-      const int tz = threadIdx.z;
-      if (tz < len) body(*(segment.begin() + tz));
-    }
-  }
-};
 
 /*
   HIP block loops with grid strides
 */
-template <typename SEGMENT>
-struct LoopExecute<hip_block_x_loop, SEGMENT> {
+template <typename SEGMENT, int DIM>
+struct LoopExecute<hip_block_xyz_loop<DIM>, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -224,54 +158,22 @@ struct LoopExecute<hip_block_x_loop, SEGMENT> {
 
     const int len = segment.end() - segment.begin();
 
-    for (int bx = blockIdx.x; bx < len; bx += gridDim.x) {
+    for (int bx = internal::get_hip_dim<DIM>(blockIdx);
+         bx < len;
+         bx += internal::get_hip_dim<DIM>(gridDim) ) {
       body(*(segment.begin() + bx));
     }
   }
 };
 
-template <typename SEGMENT>
-struct LoopExecute<hip_block_y_loop, SEGMENT> {
 
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const &segment,
-      BODY const &body)
-  {
-
-    const int len = segment.end() - segment.begin();
-
-    for (int by = blockIdx.y; by < len; by += gridDim.y) {
-      body(*(segment.begin() + by));
-    }
-  }
-};
-
-template <typename SEGMENT>
-struct LoopExecute<hip_block_z_loop, SEGMENT> {
-
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const &segment,
-      BODY const &body)
-  {
-
-    const int len = segment.end() - segment.begin();
-
-    for (int bz = blockIdx.z; bz < len; bz += gridDim.z) {
-      body(*(segment.begin() + bz));
-    }
-  }
-};
 
 /*
   HIP block direct mappings
 */
 
-template <typename SEGMENT>
-struct LoopExecute<hip_block_x_direct, SEGMENT> {
+template <typename SEGMENT, int DIM>
+struct LoopExecute<hip_block_xyz_direct<DIM>, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -282,80 +184,35 @@ struct LoopExecute<hip_block_x_direct, SEGMENT> {
 
     const int len = segment.end() - segment.begin();
     {
-      const int bx = blockIdx.x;
+      const int bx = internal::get_hip_dim<DIM>(blockIdx);
       if (bx < len) body(*(segment.begin() + bx));
     }
   }
 };
 
-template <typename SEGMENT>
-struct LoopExecute<hip_block_y_direct, SEGMENT> {
 
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const &segment,
-      BODY const &body)
-  {
-
-    const int len = segment.end() - segment.begin();
-    {
-      const int by = blockIdx.y;
-      if (by < len) body(*(segment.begin() + by));
-    }
-  }
-};
-
-template <typename SEGMENT>
-struct LoopExecute<hip_block_z_direct, SEGMENT> {
-
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const &segment,
-      BODY const &body)
-  {
-
-    const int len = segment.end() - segment.begin();
-    {
-      const int bz = blockIdx.z;
-      if (bz < len) body(*(segment.begin() + bz));
-    }
-  }
-};
 
 
 // perfectly nested hip direct policies
-struct hip_block_xy_nested_direct;
-struct hip_block_xyz_nested_direct;
+using hip_block_xy_nested_direct = hip_block_xyz_direct<0,1>;
+using hip_block_xz_nested_direct = hip_block_xyz_direct<0,2>;
+using hip_block_yx_nested_direct = hip_block_xyz_direct<1,0>;
+using hip_block_yz_nested_direct = hip_block_xyz_direct<1,2>;
+using hip_block_zx_nested_direct = hip_block_xyz_direct<2,0>;
+using hip_block_zy_nested_direct = hip_block_xyz_direct<2,1>;
 
-struct hip_thread_xy_nested_direct;
-struct hip_thread_xyz_nested_direct;
+using hip_block_xyz_nested_direct = hip_block_xyz_direct<0,1,2>;
+using hip_block_xzy_nested_direct = hip_block_xyz_direct<0,2,1>;
+using hip_block_yxz_nested_direct = hip_block_xyz_direct<1,0,2>;
+using hip_block_yzx_nested_direct = hip_block_xyz_direct<1,2,0>;
+using hip_block_zxy_nested_direct = hip_block_xyz_direct<2,0,1>;
+using hip_block_zyx_nested_direct = hip_block_xyz_direct<2,1,0>;
 
 
-template <typename SEGMENT>
-struct LoopExecute<hip_block_xy_nested_direct, SEGMENT> {
 
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const &segment0,
-      SEGMENT const &segment1,
-      BODY const &body)
-  {
-    const int len1 = segment1.end() - segment1.begin();
-    const int len0 = segment0.end() - segment0.begin();
-    {
-      const int tx = blockIdx.x;
-      const int ty = blockIdx.y;
-      if (tx < len0 && ty < len1)
-        body(*(segment0.begin() + tx), *(segment1.begin() + ty));
-    }
-  }
-};
 
-template <typename SEGMENT>
-struct LoopExecute<hip_thread_xy_nested_direct, SEGMENT> {
+template <typename SEGMENT, int DIM0, int DIM1>
+struct LoopExecute<hip_block_xyz_direct<DIM0, DIM1>, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -367,8 +224,8 @@ struct LoopExecute<hip_thread_xy_nested_direct, SEGMENT> {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
     {
-      const int tx = threadIdx.x;
-      const int ty = threadIdx.y;
+      const int tx = internal::get_hip_dim<DIM0>(blockIdx);
+      const int ty = internal::get_hip_dim<DIM1>(blockIdx);
       if (tx < len0 && ty < len1)
         body(*(segment0.begin() + tx), *(segment1.begin() + ty));
     }
@@ -376,8 +233,9 @@ struct LoopExecute<hip_thread_xy_nested_direct, SEGMENT> {
 };
 
 
-template <typename SEGMENT>
-struct LoopExecute<hip_block_xyz_nested_direct, SEGMENT> {
+
+template <typename SEGMENT, int DIM0, int DIM1, int DIM2>
+struct LoopExecute<hip_block_xyz_direct<DIM0, DIM1, DIM2>, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -391,9 +249,9 @@ struct LoopExecute<hip_block_xyz_nested_direct, SEGMENT> {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
     {
-      const int tx = blockIdx.x;
-      const int ty = blockIdx.y;
-      const int tz = blockIdx.z;
+      const int tx = internal::get_hip_dim<DIM0>(blockIdx);
+      const int ty = internal::get_hip_dim<DIM1>(blockIdx);
+      const int tz = internal::get_hip_dim<DIM2>(blockIdx);
       if (tx < len0 && ty < len1 && tz < len2)
         body(*(segment0.begin() + tx),
              *(segment1.begin() + ty),
@@ -402,41 +260,24 @@ struct LoopExecute<hip_block_xyz_nested_direct, SEGMENT> {
   }
 };
 
-template <typename SEGMENT>
-struct LoopExecute<hip_thread_xyz_nested_direct, SEGMENT> {
-
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const &segment0,
-      SEGMENT const &segment1,
-      SEGMENT const &segment2,
-      BODY const &body)
-  {
-    const int len2 = segment2.end() - segment2.begin();
-    const int len1 = segment1.end() - segment1.begin();
-    const int len0 = segment0.end() - segment0.begin();
-    {
-      const int tx = threadIdx.x;
-      const int ty = threadIdx.y;
-      const int tz = threadIdx.z;
-      if (tx < len0 && ty < len1 && tz < len2)
-        body(*(segment0.begin() + tx),
-             *(segment1.begin() + ty),
-             *(segment2.begin() + tz));
-    }
-  }
-};
 
 // perfectly nested hip loop policies
-struct hip_block_xy_nested_loop;
-struct hip_block_xyz_nested_loop;
+using hip_block_xy_nested_loop = hip_block_xyz_loop<0,1>;
+using hip_block_xz_nested_loop = hip_block_xyz_loop<0,2>;
+using hip_block_yx_nested_loop = hip_block_xyz_loop<1,0>;
+using hip_block_yz_nested_loop = hip_block_xyz_loop<1,2>;
+using hip_block_zx_nested_loop = hip_block_xyz_loop<2,0>;
+using hip_block_zy_nested_loop = hip_block_xyz_loop<2,1>;
 
-struct hip_thread_xy_nested_loop;
-struct hip_thread_xyz_nested_loop;
+using hip_block_xyz_nested_loop = hip_block_xyz_loop<0,1,2>;
+using hip_block_xzy_nested_loop = hip_block_xyz_loop<0,2,1>;
+using hip_block_yxz_nested_loop = hip_block_xyz_loop<1,0,2>;
+using hip_block_yzx_nested_loop = hip_block_xyz_loop<1,2,0>;
+using hip_block_zxy_nested_loop = hip_block_xyz_loop<2,0,1>;
+using hip_block_zyx_nested_loop = hip_block_xyz_loop<2,1,0>;
 
-template <typename SEGMENT>
-struct LoopExecute<hip_block_xy_nested_loop, SEGMENT> {
+template <typename SEGMENT, int DIM0, int DIM1>
+struct LoopExecute<hip_block_xyz_loop<DIM0, DIM1>, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -448,8 +289,16 @@ struct LoopExecute<hip_block_xy_nested_loop, SEGMENT> {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
     {
-      for (int by = blockIdx.y; by < len1; by += gridDim.y) {
-        for (int bx = blockIdx.x; bx < len0; bx += gridDim.x) {
+
+      for (int bx = internal::get_hip_dim<DIM0>(blockIdx);
+           bx < len0;
+           bx += internal::get_hip_dim<DIM0>(gridDim))
+      {
+        for (int by = internal::get_hip_dim<DIM1>(blockIdx);
+             by < len1;
+             by += internal::get_hip_dim<DIM1>(gridDim))
+        {
+
           body(*(segment0.begin() + bx), *(segment1.begin() + by));
         }
       }
@@ -457,47 +306,38 @@ struct LoopExecute<hip_block_xy_nested_loop, SEGMENT> {
   }
 };
 
-template <typename SEGMENT>
-struct LoopExecute<hip_thread_xy_nested_loop, SEGMENT> {
+
+
+template <typename SEGMENT, int DIM0, int DIM1, int DIM2>
+struct LoopExecute<hip_block_xyz_loop<DIM0, DIM1, DIM2>, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
       LaunchContext const RAJA_UNUSED_ARG(&ctx),
       SEGMENT const &segment0,
       SEGMENT const &segment1,
+      SEGMENT const &segment2,
       BODY const &body)
   {
+    const int len2 = segment2.end() - segment2.begin();
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
+
+    for (int bx = internal::get_hip_dim<DIM0>(blockIdx);
+         bx < len0;
+         bx += internal::get_hip_dim<DIM0>(gridDim))
     {
-      for (int ty = threadIdx.y; ty < len1; ty += blockDim.y) {
-        for (int tx = threadIdx.x; tx < len0; tx += blockDim.x) {
-          body(*(segment0.begin() + tx), *(segment1.begin() + ty));
-        }
-      }
-    }
-  }
-};
 
+      for (int by = internal::get_hip_dim<DIM1>(blockIdx);
+           by < len1;
+           by += internal::get_hip_dim<DIM1>(gridDim))
+      {
 
-template <typename SEGMENT>
-struct LoopExecute<hip_block_xyz_nested_loop, SEGMENT> {
+        for (int bz = internal::get_hip_dim<DIM2>(blockIdx);
+             bz < len2;
+             bz += internal::get_hip_dim<DIM2>(gridDim))
+        {
 
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const &segment0,
-      SEGMENT const &segment1,
-      SEGMENT const &segment2,
-      BODY const &body)
-  {
-    const int len2 = segment2.end() - segment2.begin();
-    const int len1 = segment1.end() - segment1.begin();
-    const int len0 = segment0.end() - segment0.begin();
-
-    for (int bz = blockIdx.z; bz < len2; bz += gridDim.z) {
-      for (int by = blockIdx.y; by < len1; by += gridDim.y) {
-        for (int bx = blockIdx.x; bx < len0; bx += gridDim.x) {
           body(*(segment0.begin() + bx),
                *(segment1.begin() + by),
                *(segment2.begin() + bz));
@@ -508,29 +348,94 @@ struct LoopExecute<hip_block_xyz_nested_loop, SEGMENT> {
 };
 
 
-template <typename SEGMENT>
-struct LoopExecute<hip_thread_xyz_nested_loop, SEGMENT> {
 
-  template <typename BODY>
+
+
+template <typename SEGMENT, int DIM>
+struct TileExecute<hip_thread_xyz_loop<DIM>, SEGMENT> {
+
+  template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
       LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const &segment0,
-      SEGMENT const &segment1,
-      SEGMENT const &segment2,
+      TILE_T tile_size,
+      SEGMENT const &segment,
       BODY const &body)
   {
-    const int len2 = segment2.end() - segment2.begin();
-    const int len1 = segment1.end() - segment1.begin();
-    const int len0 = segment0.end() - segment0.begin();
 
-    for (int bz = threadIdx.z; bz < len2; bz += blockDim.z) {
-      for (int by = threadIdx.y; by < len1; by += blockDim.y) {
-        for (int bx = threadIdx.x; bx < len0; bx += blockDim.x) {
-          body(*(segment0.begin() + bx),
-               *(segment1.begin() + by),
-               *(segment2.begin() + bz));
-        }
-      }
+    const int len = segment.end() - segment.begin();
+
+    for (int tx = internal::get_hip_dim<DIM>(threadIdx) * tile_size;
+         tx < len;
+         tx += internal::get_hip_dim<DIM>(blockDim) * tile_size)
+    {
+      body(segment.slice(tx, tile_size));
+    }
+  }
+};
+
+template <typename SEGMENT, int DIM>
+struct TileExecute<hip_thread_xyz_direct<DIM>, SEGMENT> {
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    int tx = internal::get_hip_dim<DIM>(threadIdx) * tile_size;
+    if(tx < len)
+    {
+      body(segment.slice(tx, tile_size));
+    }
+  }
+};
+
+
+template <typename SEGMENT, int DIM>
+struct TileExecute<hip_block_xyz_loop<DIM>, SEGMENT> {
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    for (int tx = internal::get_hip_dim<DIM>(blockIdx) * tile_size;
+
+         tx < len;
+
+         tx += internal::get_hip_dim<DIM>(gridDim) * tile_size)
+    {
+      body(segment.slice(tx, tile_size));
+    }
+  }
+};
+
+
+template <typename SEGMENT, int DIM>
+struct TileExecute<hip_block_xyz_direct<DIM>, SEGMENT> {
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    int tx = internal::get_hip_dim<DIM>(blockIdx) * tile_size;
+    if(tx < len){
+      body(segment.slice(tx, tile_size));
     }
   }
 };
