@@ -69,6 +69,17 @@ using teams_x = RAJA::expt::LoopPolicy<
                                        RAJA::hip_block_x_direct
 #endif
                                        >;
+
+using loop_t = RAJA::expt::LoopPolicy<RAJA::loop_exec
+#if defined(RAJA_ENABLE_CUDA)
+                                       ,
+                                       RAJA::loop_exec
+#endif
+#if defined(RAJA_ENABLE_HIP)
+                                       ,
+                                       RAJA::loop_exec
+#endif
+                                       >;
 /*
  * Define thread policies.
  * Up to 3 dimension are supported: x,y,z
@@ -157,23 +168,26 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
        RAJA::expt::Resources(RAJA::expt::Teams(N_tri), RAJA::expt::Threads(N_tri)),
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-         RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {
+         RAJA::expt::tile<teams_x>(ctx, 4, RAJA::RangeSegment(0, N_tri), [&](RAJA::RangeSegment const &r_tile) {
 
-           // Array shared within threads of the same team
-           RAJA_TEAM_SHARED int s_A[1];
+           RAJA::expt::loop<loop_t>(ctx, r_tile, [&](int r) {
 
-           RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
-              s_A[c] = r;
-           });  // loop c
+             // Array shared within threads of the same team
+             RAJA_TEAM_SHARED int s_A[1];
 
-           ctx.teamSync();
+             RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
+                s_A[c] = r;
+             });  // loop c
 
-           RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
-               D(r, c) = r * N_tri + c;
-               printf("r=%d, c=%d : D=%d : s_A = %d \n", r, c, D(r, c), s_A[0]);
-           });  // loop c
+             ctx.teamSync();
 
-         });  // loop r
+             RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
+                 D(r, c) = r * N_tri + c;
+                 printf("r=%d, c=%d : D=%d : s_A = %d \n", r, c, D(r, c), s_A[0]);
+             });  // loop c
+
+           }); // loop r
+         });  // tile r
        });  // outer lambda
 
     if (select_cpu_or_gpu == RAJA::expt::HOST) {
