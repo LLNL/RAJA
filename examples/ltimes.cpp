@@ -1492,7 +1492,7 @@ if(1){
                           cudaMemcpyHostToDevice ) );
 
 
-  using matrix_t = RAJA::FixedMatrix<double,4,4, RAJA::MATRIX_COL_MAJOR, RAJA::cuda_warp_register<2>>;
+  using matrix_t = RAJA::FixedMatrix<double,4,4, RAJA::MATRIX_ROW_MAJOR, RAJA::cuda_warp_register<2>>;
   using bitmask_t = RAJA::BitMask<2,0>;
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
@@ -1567,15 +1567,16 @@ if(1){
 //#ifdef __CUDA_ARCH__
 
 
-              auto Lmd = L(m,d).load();
+              //auto Lmd = L(m,d).load();
+              auto Lmd = L(toColIndex(m),toRowIndex(d)).load();
 
               bool th0 = threadIdx.x==4;
               for(int i = 0;i < 4;++ i){
                 if(th0){
-                  printf("Th%d (m=%d, d=%d): ", threadIdx.x, (int)**m, (int)**d);
+                  printf("Th%d (m=%d, d=%d, z=%d[%d]): ", threadIdx.x, (int)**m, (int)**d, (int)**z, (int)z.size());
                 }
                 for(int j = 0;j < 4;++ j){
-                  double val = Lmd.get(i+4,j);
+                  double val = Lmd.get(i,j);
                   if(th0){
                     printf("%e[%d] ", val, threadIdx.x-bitmask_t::maskValue(threadIdx.x));
                   }
