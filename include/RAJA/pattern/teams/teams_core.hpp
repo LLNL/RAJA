@@ -267,6 +267,38 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
 #endif
 }
 
+
+
+
+template <typename POLICY, typename SEGMENT>
+struct TileExecute;
+
+
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename TILE_T,
+          typename SEGMENT,
+          typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const &ctx,
+                                       TILE_T tile_size,
+                                       SEGMENT const &segment,
+                                       BODY const &body)
+{
+#if defined(RAJA_DEVICE_CODE)
+  TileExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(ctx,
+                                                                    tile_size,
+                                                                    segment,
+                                                                    body);
+#else
+  TileExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(ctx,
+                                                                  tile_size,
+                                                                  segment,
+                                                                  body);
+#endif
+}
+
+
+
 }  // namespace expt
 
 }  // namespace RAJA

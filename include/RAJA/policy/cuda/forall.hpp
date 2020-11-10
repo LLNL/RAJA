@@ -279,7 +279,6 @@ namespace expt {
         Iterable const &iter,
         BODY const &loop_body)
     {
-
 //      printf("woof\n");
 
 
@@ -333,8 +332,8 @@ namespace expt {
     }
   };
 
-  template <int CUDA_DIM, int MIN_THREADS, typename TENSOR_TYPE, camp::idx_t TENSOR_DIM, typename Iterable>
-  struct LoopExecute<RAJA::policy::vector::tensor_exec<cuda_thread_xyz_loop<CUDA_DIM, MIN_THREADS>, TENSOR_TYPE, TENSOR_DIM>, Iterable> {
+  template <int CUDA_DIM, typename TENSOR_TYPE, camp::idx_t TENSOR_DIM, typename Iterable>
+  struct LoopExecute<RAJA::policy::vector::tensor_exec<cuda_thread_xyz_loop<CUDA_DIM>, TENSOR_TYPE, TENSOR_DIM>, Iterable> {
 
     //RAJA_SUPPRESS_HD_WARN
     template <typename BODY>

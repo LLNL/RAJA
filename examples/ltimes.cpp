@@ -19,7 +19,7 @@
 #define VARIANT_RAJA_TEAMS_SEQ       0
 #define VARIANT_RAJA_VECTOR          0
 #define VARIANT_RAJA_MATRIX          0
-#define VARIANT_RAJA_TEAMS_MATRIX    0
+#define VARIANT_RAJA_TEAMS_MATRIX    1
 #define VARIANT_RAJA_SEQ_SHMEM       0
 #define VARIANT_RAJA_MATRIX_SHMEM    0
 #define VARIANT_RAJA_OPENMP          0
@@ -98,6 +98,7 @@ void checkResult(PHIVIEW_T& phi, LVIEW_T& L, PSIVIEW_T& psi,
                  const int num_z);
 
 
+
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
   std::cout << "\n\nRAJA LTIMES example...\n\n";
@@ -110,7 +111,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //  const long num_g = 160 + (rand()/RAND_MAX);
 //  const long num_d = 64 + (rand()/RAND_MAX);
   const long num_m = 8 + (rand()/RAND_MAX);
-    const long num_g = 1 + (rand()/RAND_MAX);
+    const long num_g = 4 + (rand()/RAND_MAX);
     const long num_d = 4 + (rand()/RAND_MAX);
 
 #ifdef DEBUG_LTIMES
@@ -118,7 +119,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // use a decreased number of zones since this will take a lot longer
   // and we're not really measuring performance here
   //const long num_z = 128 + (rand()/RAND_MAX);
-  const long num_z = 1 + (rand()/RAND_MAX);
+  const long num_z = 4 + (rand()/RAND_MAX);
 #else
   const long num_iter = 1 + (rand()/RAND_MAX);
   const long num_z = 64*1024 + (rand()/RAND_MAX);
@@ -1492,7 +1493,7 @@ if(1){
                           cudaMemcpyHostToDevice ) );
 
 
-  using matrix_t = RAJA::FixedMatrix<double,4,4, RAJA::MATRIX_ROW_MAJOR, RAJA::cuda_warp_register<2>>;
+  using matrix_t = RAJA::StreamMatrix<double,4,4, RAJA::MATRIX_ROW_MAJOR, RAJA::cuda_warp_register<2>>;
   using bitmask_t = RAJA::BitMask<2,0>;
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
