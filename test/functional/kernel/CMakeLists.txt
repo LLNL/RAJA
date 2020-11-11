@@ -6,3 +6,5 @@
 ###############################################################################
 
 add_subdirectory(region)
+
+add_subdirectory(reduce-basic)
