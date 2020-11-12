@@ -33,23 +33,11 @@ void ForallAtomicMultiViewTestImpl( IdxType N )
   camp::resources::Resource work_res{WORKINGRES()};
   camp::resources::Resource host_res{camp::resources::Host()};
 
-  T * actualsource = work_res.allocate<T>(N);
-  T * actualdest = work_res.allocate<T>(N/2);
-  T * check_array = host_res.allocate<T>(N/2);
-
-  // assumes each source[] will be 2x size of each dest[], src_side x dst_side
-  T ** source = work_res.allocate<T*>(src_side);
-  RAJA::forall<ExecPolicy>(seg_srcside, [=] RAJA_HOST_DEVICE(IdxType ii)
-  {
-    source[ii] = actualsource+(ii*dst_side);
-  });
-
-  // assumes each dest[] will be a square matrix, dst_side x dst_side
-  T ** dest = work_res.allocate<T*>(dst_side);
-  RAJA::forall<ExecPolicy>(seg_dstside, [=] RAJA_HOST_DEVICE(IdxType ii)
-  {
-    dest[ii] = actualdest+(ii*dst_side);
-  });
+  T *  actualsource = work_res.allocate<T> (N);
+  T ** source       = work_res.allocate<T*>(src_side);
+  T *  actualdest   = work_res.allocate<T> (N/2);
+  T ** dest         = work_res.allocate<T*>(dst_side);
+  T *  check_array  = host_res.allocate<T> (N/2);
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
@@ -58,6 +46,18 @@ void ForallAtomicMultiViewTestImpl( IdxType N )
 #if defined(RAJA_ENABLE_HIP)
   hipErrchk(hipDeviceSynchronize());
 #endif
+
+  // assumes each source[] will be 2x size of each dest[], src_side x dst_side
+  RAJA::forall<ExecPolicy>(seg_srcside, [=] RAJA_HOST_DEVICE(IdxType ii)
+  {
+    source[ii] = actualsource+(ii*dst_side);
+  });
+
+  // assumes each dest[] will be a square matrix, dst_side x dst_side
+  RAJA::forall<ExecPolicy>(seg_dstside, [=] RAJA_HOST_DEVICE(IdxType ii)
+  {
+    dest[ii] = actualdest+(ii*dst_side);
+  });
 
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
     actualsource[i] = (T)1;
@@ -103,10 +103,10 @@ void ForallAtomicMultiViewTestImpl( IdxType N )
   }
 
   work_res.deallocate( actualsource );
-  work_res.deallocate( actualdest );
-  host_res.deallocate( check_array );
   work_res.deallocate( source );
+  work_res.deallocate( actualdest );
   work_res.deallocate( dest );
+  host_res.deallocate( check_array );
 }
 
 TYPED_TEST_SUITE_P(ForallAtomicMultiViewTest);
