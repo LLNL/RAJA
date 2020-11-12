@@ -38,18 +38,18 @@ void ForallAtomicMultiViewTestImpl( IdxType N )
   T * check_array = host_res.allocate<T>(N/2);
 
   // assumes each source[] will be 2x size of each dest[], src_side x dst_side
-  T ** source = new T * [src_side];
-  for ( int ii = 0; ii < src_side; ++ii )
+  T ** source = work_res.allocate<T*>(src_side);
+  RAJA::forall<ExecPolicy>(seg_srcside, [=] RAJA_HOST_DEVICE(IdxType ii)
   {
     source[ii] = actualsource+(ii*dst_side);
-  }
+  });
 
   // assumes each dest[] will be a square matrix, dst_side x dst_side
-  T ** dest = new T * [dst_side];
-  for ( int ii = 0; ii < dst_side; ++ii )
+  T ** dest = work_res.allocate<T*>(dst_side);
+  RAJA::forall<ExecPolicy>(seg_dstside, [=] RAJA_HOST_DEVICE(IdxType ii)
   {
     dest[ii] = actualdest+(ii*dst_side);
-  }
+  });
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
@@ -59,8 +59,9 @@ void ForallAtomicMultiViewTestImpl( IdxType N )
   hipErrchk(hipDeviceSynchronize());
 #endif
 
-  RAJA::forall<RAJA::seq_exec>(seg,
-                               [=](IdxType i) { actualsource[i] = (T)1; });
+  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
+    actualsource[i] = (T)1;
+  });
 
   // use atomic add to reduce the array
   // 1D defaut MultiView
@@ -104,6 +105,8 @@ void ForallAtomicMultiViewTestImpl( IdxType N )
   work_res.deallocate( actualsource );
   work_res.deallocate( actualdest );
   host_res.deallocate( check_array );
+  work_res.deallocate( source );
+  work_res.deallocate( dest );
 }
 
 TYPED_TEST_SUITE_P(ForallAtomicMultiViewTest);
