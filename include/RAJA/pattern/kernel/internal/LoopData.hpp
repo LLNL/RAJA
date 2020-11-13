@@ -98,10 +98,11 @@ using index_tuple_from_segments =
 
 template <typename SegmentTuple,
           typename ParamTuple,
+          typename ResourceTuple,
           typename... Bodies>
 struct LoopData {
 
-  using Self = LoopData<SegmentTuple, ParamTuple, Bodies...>;
+  using Self = LoopData<SegmentTuple, ParamTuple, ResourceTuple, Bodies...>;
 
   using offset_tuple_t =
       difftype_tuple_from_segments<typename SegmentTuple::TList>;
@@ -115,13 +116,16 @@ struct LoopData {
   using param_tuple_t = ParamTuple;
   ParamTuple param_tuple;
 
+  using resource_tuple_t = ResourceTuple;
+  ResourceTuple resource_tuple;
+
   using BodiesTuple = camp::tuple<Bodies...>;
   const BodiesTuple bodies;
   offset_tuple_t offset_tuple;
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr
-  LoopData(SegmentTuple const &s, ParamTuple const &p, Bodies const &... b)
-      : segment_tuple(s), param_tuple(p), bodies(b...)
+  LoopData(SegmentTuple const &s, ParamTuple const &p, ResourceTuple const &r, Bodies const &... b)
+      : segment_tuple(s), param_tuple(p), resource_tuple(r), bodies(b...)
   {
     //assign_begin_all();
   }
@@ -147,6 +151,21 @@ struct LoopData {
     camp::at_v<typename param_tuple_t::TList, ParamId::param_idx>
   {
     return camp::get<ParamId::param_idx>(param_tuple);
+  }
+
+  template <typename ResourceId, typename IndexT>
+  RAJA_HOST_DEVICE RAJA_INLINE void assign_resource(IndexT const &i)
+  {
+    using resource_t = camp::at_v<typename resource_tuple_t::TList, ResourceId::resource_idx>;
+    camp::get<ResourceId::resource_idx>(resource_tuple) = resource_t(i);
+  }
+
+  template <typename ResourceId>
+  RAJA_HOST_DEVICE RAJA_INLINE
+  auto get_resource() ->
+    camp::at_v<typename resource_tuple_t::TList, ResourceId::resource_idx>
+  {
+    return camp::get<ResourceId::resource_idx>(resource_tuple);
   }
 
 
