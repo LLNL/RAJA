@@ -37,13 +37,13 @@ namespace RAJA
    *
    *
    */
-  template<size_t Width, size_t Shift>
+  template<int Width, int Shift>
   struct BitMask {
-    static constexpr size_t shift = Shift;
-    static constexpr size_t width = Width;
-    static constexpr size_t max_input_size = 1<<(Shift+Width);
-    static constexpr size_t max_masked_size = 1<<Width;
-    static constexpr size_t max_shifted_size = 1<<Shift;
+    static constexpr int shift = Shift;
+    static constexpr int width = Width;
+    static constexpr int max_input_size = 1<<(Shift+Width);
+    static constexpr int max_masked_size = 1<<Width;
+    static constexpr int max_shifted_size = 1<<Shift;
 
     template<typename T>
     RAJA_HOST_DEVICE
@@ -54,10 +54,15 @@ namespace RAJA
 
     template<typename T>
     RAJA_HOST_DEVICE
-    static constexpr T maskOuter(T input) {
+    static constexpr T getOuter(T input) {
       return(  (input>>(static_cast<T>(Shift))) >> Width );
     }
 
+    template<typename T>
+    RAJA_HOST_DEVICE
+    static constexpr T maskOuter(T input) {
+      return( input & (static_cast<T>(-1) << (Width+Shift) )  );
+    }
 
   };
 

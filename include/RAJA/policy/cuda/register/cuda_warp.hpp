@@ -33,14 +33,14 @@ namespace RAJA {
   /*!
    * A warp distributed vector.
    */
-	template<camp::idx_t LANE_BITS>
+	template<int LANE_BITS>
   struct cuda_warp_register {
 	    static_assert(LANE_BITS >= 1 && LANE_BITS <= 5, "Invalid number of lanes");
 	};
 
 
 
-  template<camp::idx_t LANE_BITS, typename ELEMENT_TYPE>
+  template<int LANE_BITS, typename ELEMENT_TYPE>
   class Register<cuda_warp_register<LANE_BITS>, ELEMENT_TYPE> :
     public internal::RegisterBase<Register<cuda_warp_register<LANE_BITS>, ELEMENT_TYPE>>
   {
@@ -58,7 +58,7 @@ namespace RAJA {
 
 		public:
 
-      static constexpr camp::idx_t s_num_elem = 1<<(LANE_BITS);
+      static constexpr int s_num_elem = 1<<(LANE_BITS);
 
       /*!
        * @brief Default constructor, zeros register contents
@@ -102,15 +102,20 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      static
       constexpr
+      static
       int get_lane() {
 #ifdef __CUDA_ARCH__
         return bitmask_t::maskValue(threadIdx.x);
+//        int lane;
+//        //asm volatile ("mov.s32 %0, %laneid;" : "=r"(lane));
+//        asm ("mov.s32 %0, %laneid;" : "=r"(lane));
+//        return bitmask_t::maskValue(lane);
 #else
         return 0;
 #endif
       }
+
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -146,7 +151,7 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type &load_packed_n(element_type const *ptr, camp::idx_t N){
+      self_type &load_packed_n(element_type const *ptr, int N){
         auto lane = get_lane();
         if(lane < N){
           m_value = ptr[lane];
@@ -163,7 +168,7 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type &load_strided(element_type const *ptr, camp::idx_t stride){
+      self_type &load_strided(element_type const *ptr, int stride){
         auto lane = get_lane();
         if(lane < s_num_elem){
           m_value = ptr[stride*lane];
@@ -182,7 +187,7 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type &load_strided_n(element_type const *ptr, camp::idx_t stride, camp::idx_t N){
+      self_type &load_strided_n(element_type const *ptr, int stride, int N){
         auto lane = get_lane();
         if(lane < N){
           m_value = ptr[stride*lane];
@@ -214,7 +219,7 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type const &store_packed_n(element_type *ptr, camp::idx_t N) const{
+      self_type const &store_packed_n(element_type *ptr, int N) const{
         auto lane = get_lane();
         if(lane < N){
           ptr[lane] = m_value;
@@ -228,7 +233,7 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type const &store_strided(element_type *ptr, camp::idx_t stride) const{
+      self_type const &store_strided(element_type *ptr, int stride) const{
         auto lane = get_lane();
         if(lane < s_num_elem){
           ptr[lane*stride] = m_value;
@@ -243,7 +248,7 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type const &store_strided_n(element_type *ptr, camp::idx_t stride, camp::idx_t N) const{
+      self_type const &store_strided_n(element_type *ptr, int stride, int N) const{
         auto lane = get_lane();
         if(lane < N){
           ptr[lane*stride] = m_value;
@@ -261,9 +266,10 @@ namespace RAJA {
       constexpr
       RAJA_INLINE
       RAJA_DEVICE
-      element_type get(camp::idx_t i) const
+      element_type get(int i) const
 			{
-				return __shfl_sync(0xffffffff, m_value, i + threadIdx.x-bitmask_t::maskValue(threadIdx.x));
+        //return  __shfl_sync(0xffffffff, m_value, i + threadIdx.x - bitmask_t::maskValue(threadIdx.x));
+        return  __shfl_sync(0xffffffff, m_value, i + bitmask_t::maskOuter(threadIdx.x));
 			}
 
       /*!
@@ -273,7 +279,7 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_DEVICE
-      self_type &set(camp::idx_t i, element_type value)
+      self_type &set(int i, element_type value)
 			{
 				auto lane = get_lane();
       	if(lane == i){
@@ -317,7 +323,7 @@ namespace RAJA {
 
       RAJA_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b, camp::idx_t N = s_num_elem) const {
+      self_type divide(self_type const &b, int N = s_num_elem) const {
         return get_lane() < N ? self_type(m_value / b.m_value) : self_type(element_type(0));
       }
 
@@ -342,7 +348,7 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_DEVICE
-      element_type sum(camp::idx_t N = s_num_elem) const
+      element_type sum(int N = s_num_elem) const
       {
 				// Allreduce sum
 				using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::plus>;
@@ -361,7 +367,7 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_DEVICE
-      element_type max(camp::idx_t N = s_num_elem) const
+      element_type max(int N = s_num_elem) const
       {
         // Allreduce maximum
         using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::maximum>;
@@ -389,7 +395,7 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_DEVICE
-      element_type min(camp::idx_t N = s_num_elem) const
+      element_type min(int N = s_num_elem) const
       {
         // Allreduce minimum
         using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::minimum>;

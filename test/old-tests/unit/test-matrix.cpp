@@ -14,22 +14,19 @@
 
 using MatrixTestTypes = ::testing::Types<
 
-    // Test automatically wrapped types to make things easier for users
-    RAJA::FixedMatrix<double, 4, 4, RAJA::MATRIX_ROW_MAJOR>,
-    RAJA::FixedMatrix<double, 4, 8, RAJA::MATRIX_ROW_MAJOR>,
-    RAJA::FixedMatrix<double, 8, 4, RAJA::MATRIX_ROW_MAJOR>,
-    RAJA::FixedMatrix<double, 1, 7, RAJA::MATRIX_ROW_MAJOR>,
-    RAJA::FixedMatrix<double, 7, 1, RAJA::MATRIX_ROW_MAJOR>,
 
-    RAJA::FixedMatrix<double, 4, 4, RAJA::MATRIX_COL_MAJOR>,
-    RAJA::FixedMatrix<double, 4, 8, RAJA::MATRIX_COL_MAJOR>,
-    RAJA::FixedMatrix<double, 8, 4, RAJA::MATRIX_COL_MAJOR>,
-    RAJA::FixedMatrix<double, 1, 7, RAJA::MATRIX_COL_MAJOR>,
-    RAJA::FixedMatrix<double, 7, 1, RAJA::MATRIX_COL_MAJOR>,
+#ifdef __AVX__
+    RAJA::Matrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::avx_register>,
+    RAJA::Matrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::avx_register>,
+#endif
 
-    RAJA::StreamMatrix<double, 4, 4, RAJA::MATRIX_COL_MAJOR>,
-    RAJA::StreamMatrix<double, 4, 8, RAJA::MATRIX_COL_MAJOR>,
-    RAJA::StreamMatrix<double, 8, 4, RAJA::MATRIX_COL_MAJOR>
+#ifdef __AVX2__
+    RAJA::Matrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::avx2_register>,
+    RAJA::Matrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::avx2_register>,
+#endif
+    RAJA::Matrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::scalar_register>,
+    RAJA::Matrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::scalar_register>
+
   >;
 
 
@@ -120,12 +117,17 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
 
   // Load data
   matrix_t m1;
-  m1.load(&data1[0][0], matrix_t::s_num_cols, 1);
+  if(matrix_t::s_layout == RAJA::MATRIX_ROW_MAJOR){
+    m1.load_packed(&data1[0][0], matrix_t::s_num_cols, 1);
+  }
+  else{
+    m1.load_strided(&data1[0][0], matrix_t::s_num_cols, 1);
+  }
 
   // Check contents
   for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
-      ASSERT_FLOAT_EQ(m1.get(i,j), data1[i][j]);
+      ASSERT_SCALAR_EQ(m1.get(i,j), data1[i][j]);
     }
   }
 
@@ -143,12 +145,17 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
 
   // Load data
   matrix_t m2;
-  m2.load(&data2[0][0], 1, matrix_t::s_num_rows);
+  if(matrix_t::s_layout == RAJA::MATRIX_COL_MAJOR){
+    m2.load_packed(&data2[0][0], 1, matrix_t::s_num_rows);
+  }
+  else{
+    m2.load_strided(&data2[0][0], 1, matrix_t::s_num_rows);
+  }
 
   // Check contents
   for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
-      ASSERT_FLOAT_EQ(m2.get(i,j), data2[j][i]);
+      ASSERT_SCALAR_EQ(m2.get(i,j), data2[j][i]);
     }
   }
 
@@ -176,8 +183,12 @@ TYPED_TEST_P(MatrixTest, MatrixStore)
 
   // Store to a Row-Major data buffer
   element_t data1[matrix_t::s_num_rows][matrix_t::s_num_cols];
-  m.store(&data1[0][0], matrix_t::s_num_cols, 1);
-
+  if(matrix_t::s_layout == RAJA::MATRIX_ROW_MAJOR){
+    m.store_packed(&data1[0][0], matrix_t::s_num_cols, 1);
+  }
+  else{
+    m.store_strided(&data1[0][0], matrix_t::s_num_cols, 1);
+  }
 
   // Check contents
   for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
@@ -188,7 +199,13 @@ TYPED_TEST_P(MatrixTest, MatrixStore)
 
   // Store to a Column-Major data buffer
   element_t data2[matrix_t::s_num_cols][matrix_t::s_num_rows];
-  m.store(&data2[0][0], 1, matrix_t::s_num_rows);
+
+  if(matrix_t::s_layout == RAJA::MATRIX_COL_MAJOR){
+    m.store_packed(&data2[0][0], 1, matrix_t::s_num_rows);
+  }
+  else{
+    m.store_strided(&data2[0][0], 1, matrix_t::s_num_rows);
+  }
 
   // Check contents
   for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
@@ -319,11 +336,11 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
 
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
-  using row_vector_t = typename matrix_t::row_vector_type;
+  using vector_t = typename matrix_t::vector_type;
 
   // initialize a matrix and vector
   matrix_t m;
-  row_vector_t v;
+  vector_t v;
   for(camp::idx_t j = 0;j < matrix_t::s_num_cols; ++ j){
     for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
       m.set(i,j, element_t(NO_OPT_ZERO + i+j*j));
@@ -352,16 +369,12 @@ TYPED_TEST_P(MatrixTest, MatrixMatrix)
 {
 
   using A_t = TypeParam;
-  using B_t = RAJA::TransposeMatrix<A_t>;
+  using B_t = TypeParam;
   using element_t = typename A_t::element_type;
 
   camp::idx_t size_a0 = 1;
   camp::idx_t size_b0 = 1;
-  if(A_t::s_is_fixed){
-    // For the MATRIX_FIXED, we only use the full matrix size
-    size_a0 = A_t::s_num_rows;
-    size_b0 = A_t::s_num_cols;
-  }
+
 
   // Loop over different sizes of matrices A and B
   //
@@ -373,7 +386,6 @@ TYPED_TEST_P(MatrixTest, MatrixMatrix)
 
       // initialize two matrices
       A_t A;
-      A.resize(size_a, size_b);
       A.clear();
 
       for(camp::idx_t j = 0;j < size_b; ++ j){
@@ -383,7 +395,6 @@ TYPED_TEST_P(MatrixTest, MatrixMatrix)
       }
 
       B_t B;
-      B.resize(size_b, size_a);
       B.clear();
       for(camp::idx_t j = 0;j < size_a; ++ j){
         for(camp::idx_t i = 0;i < size_b; ++ i){
@@ -395,9 +406,6 @@ TYPED_TEST_P(MatrixTest, MatrixMatrix)
       // matrix matrix product
       auto C = A*B;
 
-      // make sure result is correct size
-      ASSERT_EQ(C.dim_elem(0), size_a);
-      ASSERT_EQ(C.dim_elem(1), size_a);
 
       // check result
       for(camp::idx_t i = 0;i < size_a; ++ i){
@@ -426,7 +434,7 @@ TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
 {
 
   using A_t = TypeParam;
-  using B_t = RAJA::TransposeMatrix<A_t>;
+  using B_t = TypeParam;
   using element_t = typename A_t::element_type;
 
   // initialize two matrices

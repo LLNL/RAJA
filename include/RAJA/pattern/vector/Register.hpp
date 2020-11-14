@@ -31,36 +31,36 @@ namespace RAJA
   class Register;
 
 
-  template<typename ST, typename REGISTER_POLICY, typename RT>
+  template<typename REGISTER_POLICY, typename RT>
   RAJA_HOST_DEVICE
   RAJA_INLINE
   Register<REGISTER_POLICY, RT>
-  operator+(ST x, Register<REGISTER_POLICY, RT> const &y){
+  operator+(RT x, Register<REGISTER_POLICY, RT> const &y){
     using register_t = Register<REGISTER_POLICY, RT>;
     return register_t(x).add(y);
   }
 
-  template<typename ST, typename REGISTER_POLICY, typename RT>
+  template<typename REGISTER_POLICY, typename RT>
   RAJA_HOST_DEVICE
   RAJA_INLINE
   Register<REGISTER_POLICY, RT>
-  operator-(ST x, Register<REGISTER_POLICY, RT> const &y){
+  operator-(RT x, Register<REGISTER_POLICY, RT> const &y){
     using register_t = Register<REGISTER_POLICY, RT>;
     return register_t(x).subtract(y);
   }
 
-  template<typename ST, typename REGISTER_POLICY, typename RT>
+  template<typename REGISTER_POLICY, typename RT>
   Register<REGISTER_POLICY, RT>
-  operator*(ST x, Register<REGISTER_POLICY, RT> const &y){
+  operator*(RT x, Register<REGISTER_POLICY, RT> const &y){
     using register_t = Register<REGISTER_POLICY, RT>;
     return register_t(x).multiply(y);
   }
 
-  template<typename ST, typename REGISTER_POLICY, typename RT>
+  template<typename REGISTER_POLICY, typename RT>
   RAJA_HOST_DEVICE
   RAJA_INLINE
   Register<REGISTER_POLICY, RT>
-  operator/(ST x, Register<REGISTER_POLICY, RT> const &y){
+  operator/(RT x, Register<REGISTER_POLICY, RT> const &y){
     using register_t = Register<REGISTER_POLICY, RT>;
     return register_t(x).divide(y);
   }

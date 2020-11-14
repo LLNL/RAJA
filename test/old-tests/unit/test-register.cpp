@@ -13,12 +13,6 @@
 #include "RAJA_gtest.hpp"
 
 using RegisterTestTypes = ::testing::Types<
-//#ifdef RAJA_ALTIVEC
-//    RAJA::Register<RAJA::altivec_register, double>,
-//    RAJA::Register<RAJA::altivec_register, float>,
-//    RAJA::Register<RAJA::altivec_register, int>,
-//    RAJA::Register<RAJA::altivec_register, long>,
-//#endif
 
 #ifdef __AVX__
     RAJA::Register<RAJA::avx_register, double>,

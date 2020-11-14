@@ -29,12 +29,7 @@ namespace RAJA
 
 namespace internal
 {
-/*!
- * \file
- * Vector operation functions in the namespace RAJA
 
- *
- */
 
   template<typename MATRIX_TYPE, typename INDEX_TYPE,
            typename POINTER_TYPE, bool ROW_STRIDE_ONE, bool COL_STRIDE_ONE>
@@ -130,6 +125,23 @@ namespace internal
         return &m_data[m_linear_index];
       }
 
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      bool is_full() const {
+        return m_row_length == MATRIX_TYPE::s_num_rows &&
+               m_col_length == MATRIX_TYPE::s_num_cols;
+      }
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static
+      constexpr
+      bool is_packed() {
+        return (ROW_STRIDE_ONE && MATRIX_TYPE::s_layout == MATRIX_COL_MAJOR) ||
+               (COL_STRIDE_ONE && MATRIX_TYPE::s_layout == MATRIX_ROW_MAJOR);
+      }
+
       /*!
        * @brief Set entire vector to a single scalar value
        * @param value Value to set all vector elements to
@@ -138,7 +150,28 @@ namespace internal
       RAJA_INLINE
       void store(matrix_type value) const
       {
-        value.store(m_data+m_linear_index, m_row_stride, m_col_stride);
+        if(is_packed()){
+          if(is_full()){
+            value.store_packed(m_data+m_linear_index,
+                               m_row_stride, m_col_stride);
+          }
+          else{
+            value.store_packed_nm(m_data+m_linear_index,
+                       m_row_stride, m_col_stride,
+                       m_row_length, m_col_length);
+          }
+        }
+        else{
+          if(is_full()){
+            value.store_strided(m_data+m_linear_index,
+                       m_row_stride, m_col_stride);
+          }
+          else{
+            value.store_strided_nm(m_data+m_linear_index,
+                       m_row_stride, m_col_stride,
+                       m_row_length, m_col_length);
+          }
+        }
       }
 
       /*!
@@ -151,9 +184,28 @@ namespace internal
       {
         matrix_type value;
 
-        value.load(m_data+m_linear_index,
-                   m_row_stride, m_col_stride,
-                   m_row_length, m_col_length);
+        if(is_packed()){
+          if(is_full()){
+            value.load_packed(m_data+m_linear_index,
+                       m_row_stride, m_col_stride);
+          }
+          else{
+            value.load_packed_nm(m_data+m_linear_index,
+                       m_row_stride, m_col_stride,
+                       m_row_length, m_col_length);
+          }
+        }
+        else{
+          if(is_full()){
+            value.load_strided(m_data+m_linear_index,
+                       m_row_stride, m_col_stride);
+          }
+          else{
+            value.load_strided_nm(m_data+m_linear_index,
+                       m_row_stride, m_col_stride,
+                       m_row_length, m_col_length);
+          }
+        }
 
         return value;
       }
@@ -226,18 +278,22 @@ namespace internal
         return *this;
       }
 
-//      /*!
-//       * @brief Add a product of two vectors, resulting in an FMA
-//       * @param x Vector to add to this register
-//       * @return Value of (*this)+x
-//       */
-//      RAJA_HOST_DEVICE
-//      RAJA_INLINE
-//      self_type &operator+=(MatrixProductRef<matrix_type> const &x)
-//      {
-//        store(load() + x);
-//        return *this;
-//      }
+      /*!
+       * @brief Add a product of two vectors, resulting in an FMA
+       * @param x Vector to add to this register
+       * @return Value of (*this)+x
+       */
+      template<typename matrix_type_right>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator+=(MatrixProductRef<matrix_type, matrix_type_right> const &x)
+      {
+        using helper_t = MatrixMatrixProductHelper<matrix_type, matrix_type_right>;
+
+        store(helper_t::multiply_accumulate(x.get_left(), x.get_right(), load()));
+
+        return *this;
+      }
 
       /*!
        * @brief Subtract two vector registers
@@ -270,13 +326,13 @@ namespace internal
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
        */
-      template<camp::idx_t ROWS, camp::idx_t COLS>
+      template<typename MT>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixProductRef<matrix_type, Matrix<element_type, ROWS, COLS, MATRIX_TYPE::s_layout, register_policy, MATRIX_TYPE::s_size_type> >
-      operator*(Matrix<element_type, ROWS, COLS, MATRIX_TYPE::s_layout, register_policy, MATRIX_TYPE::s_size_type> const &x) const
+      MatrixProductRef<matrix_type, MT>
+      operator*(MT const &x) const
       {
-        return MatrixProductRef<matrix_type, Matrix<element_type, ROWS, COLS, MATRIX_TYPE::s_layout, register_policy, MATRIX_TYPE::s_size_type> >(load(), x);
+        return MatrixProductRef<matrix_type, MT >(load(), x);
       }
 
       /*!
@@ -310,24 +366,6 @@ namespace internal
   };
 
 
-
-//  template<typename MATRIX_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
-//  MATRIX_TYPE
-//  operator+(typename MATRIX_TYPE::element_type x, MatrixRef<MATRIX_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
-//    return MATRIX_TYPE(x) + y.load();
-//  }
-//
-//  template<typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
-//  VECTOR_TYPE
-//  operator-(typename VECTOR_TYPE::element_type x, MatrixRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
-//    return MATRIX_TYPE(x) - y.load();
-//  }
-//
-//  template<typename VECTOR_TYPE, typename INDEX_TYPE, typename POINTER_TYPE, bool STRIDE_ONE>
-//  VectorProductRef<VECTOR_TYPE>
-//  operator*(typename VECTOR_TYPE::element_type x, MatrixRef<VECTOR_TYPE, INDEX_TYPE, POINTER_TYPE, STRIDE_ONE> const &y){
-//    return VectorProductRef<VECTOR_TYPE>(VECTOR_TYPE(x), y.load());
-//  }
 
 
 

@@ -26,7 +26,7 @@ namespace RAJA
   {
 
     // Fixed Length Vector Implementation
-    template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... REG_SEQ, camp::idx_t ... PART_REG_SEQ, camp::idx_t NUM_ELEM>
+    template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... REG_SEQ, camp::idx_t ... PART_REG_SEQ, int NUM_ELEM>
     class VectorImpl<VECTOR_FIXED, REGISTER_POLICY, ELEMENT_TYPE, camp::idx_seq<REG_SEQ...>, camp::idx_seq<PART_REG_SEQ...>, NUM_ELEM> :
       public VectorBase<VectorImpl<VECTOR_FIXED, REGISTER_POLICY, ELEMENT_TYPE, camp::idx_seq<REG_SEQ...>, camp::idx_seq<PART_REG_SEQ...>, NUM_ELEM>>
     {
@@ -45,16 +45,7 @@ namespace RAJA
         using vector_type = self_type;
         using register_type = typename base_type::register_type;
 
-      private:
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        constexpr
-        camp::idx_t regNumElem(camp::idx_t reg) const {
-          // How many elements of this register are there?
-          return (1+reg)*s_num_reg_elem < NUM_ELEM
-            ? s_num_reg_elem                       // Full register
-            : NUM_ELEM-reg*s_num_reg_elem;  // Partial register
-        }
+
 
       public:
 
@@ -120,7 +111,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         RAJA_INLINE
         constexpr
-        camp::idx_t size() const
+        int size() const
         {
           return NUM_ELEM;
         }
@@ -128,7 +119,7 @@ namespace RAJA
 
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        self_type &resize(camp::idx_t )
+        self_type &resize(int )
         {
           return *this;
         }

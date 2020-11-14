@@ -27,7 +27,7 @@ namespace RAJA
   {
 
     // Variable Length Vector Implementation
-    template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... REG_SEQ, camp::idx_t ... PART_REG_SEQ, camp::idx_t NUM_ELEM>
+    template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... REG_SEQ, camp::idx_t ... PART_REG_SEQ, int NUM_ELEM>
     class VectorImpl<VECTOR_STREAM, REGISTER_POLICY, ELEMENT_TYPE, camp::idx_seq<REG_SEQ...>, camp::idx_seq<PART_REG_SEQ...>, NUM_ELEM> :
       public VectorBase<VectorImpl<VECTOR_STREAM, REGISTER_POLICY, ELEMENT_TYPE, camp::idx_seq<REG_SEQ...>, camp::idx_seq<PART_REG_SEQ...>, NUM_ELEM>>
     {

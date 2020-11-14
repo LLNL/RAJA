@@ -26,13 +26,8 @@ namespace RAJA
     MATRIX_COL_MAJOR
   };
 
-  enum MatrixSizeType
-  {
-    MATRIX_STREAM,
-    MATRIX_FIXED
-  };
 
-  template<typename T, camp::idx_t ROWS, camp::idx_t COLS, MatrixLayout LAYOUT, typename REGISTER_POLICY, MatrixSizeType SIZE_TYPE>
+  template<typename T, MatrixLayout LAYOUT, typename REGISTER_POLICY>
   class Matrix;
 
 }//namespace RAJA
@@ -45,12 +40,19 @@ namespace RAJA
   /*!
    * Wrapping class for internal::MatrixImpl that hides all of the long camp::idx_seq<...> template stuff from the user.
    */
-  template<typename T, camp::idx_t ROWS, camp::idx_t COLS, MatrixLayout LAYOUT, typename REGISTER_POLICY, MatrixSizeType SIZE_TYPE>
-  class Matrix : public internal::MatrixImpl<Matrix<T, ROWS, COLS, LAYOUT, REGISTER_POLICY, SIZE_TYPE>, REGISTER_POLICY, T, LAYOUT, camp::make_idx_seq_t<ROWS>, camp::make_idx_seq_t<COLS>, SIZE_TYPE>
+  template<typename T, MatrixLayout LAYOUT, typename REGISTER_POLICY = RAJA::policy::register_default>
+  class Matrix : public internal::MatrixImpl<
+    Matrix<T, LAYOUT, REGISTER_POLICY>,
+    REGISTER_POLICY,
+    T,
+    LAYOUT,
+    camp::make_idx_seq_t<Register<REGISTER_POLICY, T>::s_num_elem>>
   {
     public:
-      using self_type = Matrix<T, ROWS, COLS, LAYOUT, REGISTER_POLICY, SIZE_TYPE>;
-      using base_type = internal::MatrixImpl<self_type, REGISTER_POLICY, T, LAYOUT, camp::make_idx_seq_t<ROWS>, camp::make_idx_seq_t<COLS>, SIZE_TYPE>;
+      using self_type = Matrix<T, LAYOUT, REGISTER_POLICY>;
+      using base_type = internal::MatrixImpl<self_type, REGISTER_POLICY, T,
+          LAYOUT,
+          camp::make_idx_seq_t<Register<REGISTER_POLICY, T>::s_num_elem>>;
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -77,16 +79,6 @@ namespace RAJA
 
   };
 
-  template<typename T, camp::idx_t ROWS, camp::idx_t COLS, MatrixLayout LAYOUT = MATRIX_ROW_MAJOR, typename REGISTER_POLICY = policy::register_default>
-  using FixedMatrix =
-      Matrix<T, ROWS, COLS, LAYOUT, REGISTER_POLICY, MATRIX_FIXED>;
-
-  template<typename T, camp::idx_t ROWS, camp::idx_t COLS, MatrixLayout LAYOUT = MATRIX_ROW_MAJOR, typename REGISTER_POLICY = policy::register_default>
-  using StreamMatrix =
-      Matrix<T, ROWS, COLS, LAYOUT, REGISTER_POLICY, MATRIX_STREAM>;
-
-  template<typename MATRIX_TYPE>
-  using TransposeMatrix = typename internal::MatrixReshapeHelper<MATRIX_TYPE>::similar_transpose_t;
 
 
   /*!
@@ -96,8 +88,8 @@ namespace RAJA
   RAJA_HOST_DEVICE
   RAJA_INLINE
   constexpr
-  ColIndex<IDX, TransposeMatrix<MATRIX_TYPE>> toColIndex(RowIndex<IDX, MATRIX_TYPE> const &r){
-    return ColIndex<IDX, TransposeMatrix<MATRIX_TYPE>>(*r, r.size());
+  ColIndex<IDX, MATRIX_TYPE> toColIndex(RowIndex<IDX, MATRIX_TYPE> const &r){
+    return ColIndex<IDX, MATRIX_TYPE>(*r, r.size());
   }
 
   /*!
@@ -107,8 +99,8 @@ namespace RAJA
   RAJA_HOST_DEVICE
   RAJA_INLINE
   constexpr
-  RowIndex<IDX, TransposeMatrix<MATRIX_TYPE>> toRowIndex(ColIndex<IDX, MATRIX_TYPE> const &c){
-    return RowIndex<IDX, TransposeMatrix<MATRIX_TYPE>>(*c, c.size());
+  RowIndex<IDX, MATRIX_TYPE> toRowIndex(ColIndex<IDX, MATRIX_TYPE> const &c){
+    return RowIndex<IDX, MATRIX_TYPE>(*c, c.size());
   }
 
 }  // namespace RAJA

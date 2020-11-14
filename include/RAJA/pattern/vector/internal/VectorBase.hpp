@@ -64,6 +64,142 @@ namespace RAJA
       return value;
     }
 
+    template<int N>
+    struct RegisterMaskHelper{
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        constexpr
+        static int getRegister(int i){
+          return i/N;
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        constexpr
+        static int getElement(int i){
+          return i%N;
+        }
+    };
+
+    template<>
+    struct RegisterMaskHelper<1>{
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        constexpr
+        static int getRegister(int ){
+          return 0;
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        constexpr
+        static int getElement(int ){
+          return 0;
+        }
+    };
+
+    template<>
+    struct RegisterMaskHelper<2>{
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        constexpr
+        static int getRegister(int i){
+          return i>>1;
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        constexpr
+        static int getElement(int i){
+          return i & 0x1;
+        }
+    };
+
+    template<>
+    struct RegisterMaskHelper<4>{
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        constexpr
+        static int getRegister(int i){
+          return i>>2;
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        constexpr
+        static int getElement(int i){
+          return i & 0x3;
+        }
+    };
+
+    template<>
+    struct RegisterMaskHelper<8>{
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        constexpr
+        static int getRegister(int i){
+          return i>>3;
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        constexpr
+        static int getElement(int i){
+          return i & 0x7;
+        }
+    };
+
+    template<>
+    struct RegisterMaskHelper<16>{
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        constexpr
+        static int getRegister(int i){
+          return i>>4;
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        constexpr
+        static int getElement(int i){
+          return i & 0xF;
+        }
+    };
+
+    template<>
+    struct RegisterMaskHelper<32>{
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        constexpr
+        static int getRegister(int i){
+          return i>>5;
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        constexpr
+        static int getElement(int i){
+          return i & 0x1F;
+        }
+    };
+
+    template<>
+    struct RegisterMaskHelper<64>{
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        constexpr
+        static int getRegister(int i){
+          return i>>6;
+        }
+
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        constexpr
+        static int getElement(int i){
+          return i & 0x3F;
+        }
+    };
+
 
     /*
      * Helper that compute template arguments to VectorImpl
@@ -73,13 +209,13 @@ namespace RAJA
 
       using register_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
 
-      static constexpr camp::idx_t s_num_full_registers =
+      static constexpr int s_num_full_registers =
         VEC_NUM_ELEM / register_type::s_num_elem;
 
-      static constexpr camp::idx_t s_num_partial_elem =
+      static constexpr int s_num_partial_elem =
           s_num_full_registers*register_type::s_num_elem - VEC_NUM_ELEM;
 
-      static constexpr camp::idx_t s_num_registers =
+      static constexpr int s_num_registers =
           s_num_full_registers + (( s_num_partial_elem > 0) ? 1 : 0);
 
       using reg_seq = camp::make_idx_seq_t<s_num_full_registers>;
@@ -92,7 +228,7 @@ namespace RAJA
 
 
     // Forward Declaration
-    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, typename PART_REG_SEQ, camp::idx_t NUM_ELEM>
+    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, typename PART_REG_SEQ, int NUM_ELEM>
     class VectorImpl;
 
 
@@ -112,7 +248,7 @@ namespace RAJA
     template<typename VECTOR_TYPE>
     class VectorBase;
 
-    template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... REG_SEQ, camp::idx_t ... PART_REG_SEQ, camp::idx_t NUM_ELEM, VectorSizeType VECTOR_TYPE>
+    template<typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... REG_SEQ, camp::idx_t ... PART_REG_SEQ, int NUM_ELEM, VectorSizeType VECTOR_TYPE>
     class VectorBase<VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, camp::idx_seq<REG_SEQ...>, camp::idx_seq<PART_REG_SEQ...>, NUM_ELEM>>
     {
       public:
@@ -121,12 +257,12 @@ namespace RAJA
         using element_type = ELEMENT_TYPE;
         using register_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
 
-        static constexpr camp::idx_t s_num_elem = NUM_ELEM;
-        static constexpr camp::idx_t s_num_reg_elem = register_type::s_num_elem;
-        static constexpr camp::idx_t s_num_full_registers = sizeof...(REG_SEQ);
-        static constexpr camp::idx_t s_num_part_registers = sizeof...(PART_REG_SEQ);
-        static constexpr camp::idx_t s_num_registers = sizeof...(REG_SEQ) + sizeof...(PART_REG_SEQ);
-        static constexpr camp::idx_t s_num_partial_elem = s_num_reg_elem -
+        static constexpr int s_num_elem = NUM_ELEM;
+        static constexpr int s_num_reg_elem = register_type::s_num_elem;
+        static constexpr int s_num_full_registers = sizeof...(REG_SEQ);
+        static constexpr int s_num_part_registers = sizeof...(PART_REG_SEQ);
+        static constexpr int s_num_registers = sizeof...(REG_SEQ) + sizeof...(PART_REG_SEQ);
+        static constexpr int s_num_partial_elem = s_num_reg_elem -
             (s_num_registers*register_type::s_num_elem - NUM_ELEM);
         static constexpr bool s_is_fixed = VECTOR_TYPE==VECTOR_FIXED;
       protected:
@@ -244,7 +380,7 @@ namespace RAJA
 
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        self_type& load_packed_n(element_type const *ptr, camp::idx_t N){
+        self_type& load_packed_n(element_type const *ptr, int N){
 
 //          if(N == NUM_ELEM){
 //            return load_packed(ptr);
@@ -279,7 +415,7 @@ namespace RAJA
 
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        self_type& load_strided(element_type const *ptr, camp::idx_t stride){
+        self_type& load_strided(element_type const *ptr, int stride){
 //          if(stride == 1){
 //            return load_packed(ptr);
 //          }
@@ -306,7 +442,7 @@ namespace RAJA
 
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        self_type& load_strided_n(element_type const *ptr, camp::idx_t stride, camp::idx_t N){
+        self_type& load_strided_n(element_type const *ptr, int stride, int N){
 
 //          if(N == NUM_ELEM){
 //            return load_strided(ptr, stride);
@@ -364,7 +500,7 @@ namespace RAJA
 
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        self_type const & store_packed_n(element_type *ptr, camp::idx_t N) const {
+        self_type const & store_packed_n(element_type *ptr, int N) const {
 
 //          if(N == NUM_ELEM){
 //            return store_packed(ptr);
@@ -393,7 +529,7 @@ namespace RAJA
 
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        self_type const& store_strided(element_type *ptr, camp::idx_t stride) const {
+        self_type const& store_strided(element_type *ptr, int stride) const {
 
 //          if(stride == 1){
 //            return store_packed(ptr);
@@ -421,7 +557,7 @@ namespace RAJA
 
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        self_type const & store_strided_n(element_type *ptr, camp::idx_t stride, camp::idx_t N) const {
+        self_type const & store_strided_n(element_type *ptr, int stride, int N) const {
 
 //          if(N == NUM_ELEM){
 //            return store_strided(ptr, stride);
@@ -472,7 +608,7 @@ namespace RAJA
          */
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        self_type &broadcast_n(element_type const &value, camp::idx_t){
+        self_type &broadcast_n(element_type const &value, int){
           return broadcast(value);
         }
 
@@ -481,22 +617,14 @@ namespace RAJA
          */
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        element_type get(camp::idx_t i) const
+        constexpr
+        element_type get(int i) const
         {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_vector_get ++;
 #endif
-          camp::idx_t reg = 0;
-          camp::idx_t elem = i;
-          while(elem >= 0){
-            if(elem < s_num_reg_elem){
-              return m_registers[reg].get(elem);
-            }
-            ++ reg;
-            elem -= s_num_reg_elem;
-          }
-          return 0;
-          //return m_registers[i/s_num_reg_elem].get(i%s_num_reg_elem);
+          using helper = internal::RegisterMaskHelper<s_num_reg_elem>;
+          return m_registers[helper::getRegister(i)].get(helper::getElement(i));
         }
 
 
@@ -505,23 +633,15 @@ namespace RAJA
          */
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        self_type& set(camp::idx_t i, element_type value)
+        self_type& set(int i, element_type value)
         {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_vector_set ++;
 #endif
 //          m_registers[i/s_num_reg_elem].set(i%s_num_reg_elem, value);
 
-          camp::idx_t reg = 0;
-          camp::idx_t elem = i;
-          while(elem >= 0){
-            if(elem < s_num_reg_elem){
-              m_registers[reg].set(elem, value);
-              return *getThis();
-            }
-            ++ reg;
-            elem -= s_num_reg_elem;
-          }
+          using helper = internal::RegisterMaskHelper<s_num_reg_elem>;
+          m_registers[helper::getRegister(i)].set(helper::getElement(i), value);
 
           return *getThis();
         }
@@ -533,7 +653,7 @@ namespace RAJA
          */
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        constexpr camp::idx_t dim_elem(camp::idx_t dim) const {
+        constexpr int dim_elem(int dim) const {
           return (dim==0) ? getThis()->size() : 0;
         }
 
@@ -543,7 +663,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         RAJA_INLINE
         static
-        constexpr camp::idx_t s_dim_elem(camp::idx_t dim){
+        constexpr int s_dim_elem(int dim){
           return (dim==0) ? NUM_ELEM : 0;
         }
 
@@ -555,7 +675,7 @@ namespace RAJA
          */
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        element_type operator[](camp::idx_t i) const
+        element_type operator[](int i) const
         {
           return get(i);
         }
@@ -663,7 +783,7 @@ namespace RAJA
          */
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        element_type sum(camp::idx_t = NUM_ELEM) const {
+        element_type sum(int = NUM_ELEM) const {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_vector_sum ++;
 #endif
@@ -675,7 +795,7 @@ namespace RAJA
          */
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        element_type max(camp::idx_t = NUM_ELEM) const {
+        element_type max(int = NUM_ELEM) const {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_vector_max ++;
 #endif
@@ -688,7 +808,7 @@ namespace RAJA
          */
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        element_type min(camp::idx_t = NUM_ELEM) const {
+        element_type min(int = NUM_ELEM) const {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_vector_min ++;
 #endif
@@ -884,41 +1004,35 @@ namespace RAJA
 
 
 
-
-
-
-
-
-
-    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, typename PART_REG_SEQ, camp::idx_t NUM_ELEM>
+    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, typename PART_REG_SEQ, int NUM_ELEM>
     RAJA_HOST_DEVICE
     RAJA_INLINE
     VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>
-    operator+(typename VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>::element_type x, VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM> const &y){
+    operator+(ELEMENT_TYPE x, VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM> const &y){
       return VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>(x) + y;
     }
 
-    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, typename PART_REG_SEQ, camp::idx_t NUM_ELEM>
+    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, typename PART_REG_SEQ, int NUM_ELEM>
     RAJA_HOST_DEVICE
     RAJA_INLINE
     VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>
-    operator-(typename VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>::element_type x, VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM> const &y){
+    operator-(ELEMENT_TYPE x, VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM> const &y){
       return VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>(x) - y;
     }
 
-    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, typename PART_REG_SEQ, camp::idx_t NUM_ELEM>
+    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, typename PART_REG_SEQ, int NUM_ELEM>
     RAJA_HOST_DEVICE
     RAJA_INLINE
     VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>
-    operator*(typename VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>::element_type x, VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM> const &y){
+    operator*(ELEMENT_TYPE x, VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM> const &y){
       return VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>(x) * y;
     }
 
-    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, typename PART_REG_SEQ, camp::idx_t NUM_ELEM>
+    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, typename REG_SEQ, typename PART_REG_SEQ, int NUM_ELEM>
     RAJA_HOST_DEVICE
     RAJA_INLINE
     VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>
-    operator/(typename VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>::element_type x, VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM> const &y){
+    operator/(ELEMENT_TYPE x, VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM> const &y){
       return VectorImpl<VECTOR_TYPE, REGISTER_POLICY, ELEMENT_TYPE, REG_SEQ, PART_REG_SEQ, NUM_ELEM>(x) / y;
     }
 
@@ -937,10 +1051,10 @@ namespace RAJA
      * Helper that computes a similar vector to the one provided, but of a
      * different length
      */
-    template<typename VECTOR, camp::idx_t NEW_LENGTH>
+    template<typename VECTOR, int NEW_LENGTH>
     struct VectorNewLengthHelper;
 
-    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename T, typename REG_SEQ, typename PART_REG_SEQ, camp::idx_t NUM_ELEM, camp::idx_t NEW_LENGTH>
+    template<VectorSizeType VECTOR_TYPE, typename REGISTER_POLICY, typename T, typename REG_SEQ, typename PART_REG_SEQ, int NUM_ELEM, int NEW_LENGTH>
     struct VectorNewLengthHelper<VectorImpl<VECTOR_TYPE, REGISTER_POLICY, T, REG_SEQ, PART_REG_SEQ, NUM_ELEM>, NEW_LENGTH> {
 
         using type = internal::makeVectorImpl<VECTOR_TYPE,

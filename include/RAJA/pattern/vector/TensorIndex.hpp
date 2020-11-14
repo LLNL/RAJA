@@ -55,7 +55,7 @@ namespace RAJA
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      TensorIndex(index_type value, camp::idx_t length) : m_index(value), m_length(length) {}
+      TensorIndex(index_type value, value_type length) : m_index(value), m_length(length) {}
 
       template<typename T, camp::idx_t D>
       RAJA_INLINE
@@ -74,20 +74,20 @@ namespace RAJA
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      camp::idx_t size() const {
+      value_type size() const {
         return m_length;
       }
 
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      camp::idx_t dim() const {
+      value_type dim() const {
         return DIM;
       }
 
     private:
       index_type m_index;
-      camp::idx_t m_length;
+      value_type m_length;
   };
 
 
@@ -129,6 +129,7 @@ namespace RAJA
     template<typename ARG>
     struct TensorIndexTraits {
         using arg_type = ARG;
+        using value_type = strip_index_type_t<ARG>;
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
@@ -150,7 +151,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         constexpr
-        camp::idx_t size(arg_type const &){
+        value_type size(arg_type const &){
           return 1;
         }
 
@@ -158,7 +159,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         constexpr
-        camp::idx_t dim(){
+        value_type dim(){
           return 0;
         }
 
@@ -166,7 +167,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         constexpr
-        camp::idx_t num_elem(){
+        value_type num_elem(){
           return 1;
         }
     };
@@ -175,6 +176,7 @@ namespace RAJA
     struct TensorIndexTraits<TensorIndex<IDX, TENSOR_TYPE, DIM>> {
         using index_type = TensorIndex<IDX, TENSOR_TYPE, DIM>;
         using arg_type = IDX;
+        using value_type = strip_index_type_t<IDX>;
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
@@ -196,7 +198,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         constexpr
-        camp::idx_t size(index_type const &arg){
+        value_type size(index_type const &arg){
           return arg.size();
         }
 
@@ -204,7 +206,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         constexpr
-        camp::idx_t dim(){
+        value_type dim(){
           return DIM;
         }
 
@@ -212,7 +214,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         constexpr
-        camp::idx_t num_elem(){
+        value_type num_elem(){
           return TENSOR_TYPE::s_dim_elem(DIM);
         }
     };
@@ -254,7 +256,8 @@ namespace RAJA
     RAJA_INLINE
     RAJA_HOST_DEVICE
     constexpr
-    camp::idx_t getTensorSize(ARG const &arg)
+    auto getTensorSize(ARG const &arg) ->
+      decltype(TensorIndexTraits<ARG>::size(arg))
     {
       return TensorIndexTraits<ARG>::size(arg);
     }
@@ -275,7 +278,8 @@ namespace RAJA
     RAJA_INLINE
     RAJA_HOST_DEVICE
     constexpr
-    camp::idx_t getTensorDim()
+    auto getTensorDim() ->
+      decltype(TensorIndexTraits<ARG>::dim())
     {
       return TensorIndexTraits<ARG>::dim();
     }

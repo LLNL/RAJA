@@ -32,116 +32,39 @@ namespace RAJA
 namespace internal {
 
 
-  template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, MatrixLayout LAYOUT, typename IDX_ROW, typename IDX_COL, MatrixSizeType SIZE_TYPE>
+  template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, MatrixLayout LAYOUT, typename IDX_SEQ>
   class MatrixImpl;
 
 
 
-  /*
-   * Matrix Shape transformation helper
-   *
-   * Given a starting matrix, this provides 4 aliases for compatible matrices
-   *
-   *    Row Major
-   *    Column Major
-   *    Row Major transposed
-   *    Column Major transposed
-   */
-
-  template<typename MATRIX>
-  struct MatrixReshapeHelper;
-
-  template<typename T, camp::idx_t ROWS, camp::idx_t COLS, typename REGISTER_POLICY, MatrixSizeType SIZE_TYPE>
-  struct MatrixReshapeHelper<
-    Matrix<T, ROWS, COLS, MATRIX_ROW_MAJOR, REGISTER_POLICY, SIZE_TYPE> >
-  {
-
-    using row_major_t = Matrix<T, ROWS, COLS, MATRIX_ROW_MAJOR, REGISTER_POLICY, SIZE_TYPE>;
-
-    using col_major_t = Matrix<T, ROWS, COLS, MATRIX_COL_MAJOR, REGISTER_POLICY, SIZE_TYPE>;
-
-    using row_major_transpose_t = Matrix<T, COLS, ROWS, MATRIX_ROW_MAJOR, REGISTER_POLICY, SIZE_TYPE>;
-
-    using col_major_transpose_t = Matrix<T, COLS, ROWS, MATRIX_COL_MAJOR, REGISTER_POLICY, SIZE_TYPE>;
-
-    // Original matrix
-    using orig_matrix_t = row_major_t;
-
-    // Original matrix with row/col major flipped
-    using flip_matrix_t = col_major_t;
-
-    // transpose of original matrix keeping original row/col major
-    using similar_transpose_t = row_major_transpose_t;
-
-    // transpose of original matrix flipping original row/col major
-    using flip_transpose_t = col_major_transpose_t;
-  };
-
-
-  template<typename T, camp::idx_t ROWS, camp::idx_t COLS, typename REGISTER_POLICY, MatrixSizeType SIZE_TYPE>
-  struct MatrixReshapeHelper<
-    Matrix<T, ROWS, COLS, MATRIX_COL_MAJOR, REGISTER_POLICY, SIZE_TYPE> >
-  {
-
-      using row_major_t = Matrix<T, ROWS, COLS, MATRIX_ROW_MAJOR, REGISTER_POLICY, SIZE_TYPE>;
-
-      using col_major_t = Matrix<T, ROWS, COLS, MATRIX_COL_MAJOR, REGISTER_POLICY, SIZE_TYPE>;
-
-      using row_major_transpose_t = Matrix<T, COLS, ROWS, MATRIX_ROW_MAJOR, REGISTER_POLICY, SIZE_TYPE>;
-
-      using col_major_transpose_t = Matrix<T, COLS, ROWS, MATRIX_COL_MAJOR, REGISTER_POLICY, SIZE_TYPE>;
-
-      // Original matrix
-      using orig_matrix_t = col_major_t;
-
-      // Original matrix with row/col major flipped
-      using flip_matrix_t = row_major_t;
-
-      // transpose of original matrix keeping original row/col major
-      using similar_transpose_t = col_major_transpose_t;
-
-      // transpose of original matrix flipping original row/col major
-      using flip_transpose_t = row_major_transpose_t;
-  };
-
-
-
-  template<typename MATA, typename MATB, typename A_IDX_ROW, typename A_IDX_COL, typename B_IDX_ROW, typename B_IDX_COL>
+  template<typename MATA, typename MATB, typename IDX_SEQ>
   struct MatrixMatrixProductHelperExpanded;
 
 
-
-  template<typename ELEMENT_TYPE, camp::idx_t A_ROWS, camp::idx_t A_COLS, typename REGISTER_POLICY, MatrixSizeType SIZE_TYPE,
-  camp::idx_t B_ROWS, camp::idx_t B_COLS,
-  camp::idx_t ... A_IDX_ROW, camp::idx_t ... A_IDX_COL, camp::idx_t ... B_IDX_ROW, camp::idx_t ... B_IDX_COL>
+  template<typename ELEMENT_TYPE, typename REGISTER_POLICY, camp::idx_t ... IDX>
   struct MatrixMatrixProductHelperExpanded<
-    Matrix<ELEMENT_TYPE, A_ROWS, A_COLS, MATRIX_ROW_MAJOR, REGISTER_POLICY, SIZE_TYPE>,
-    Matrix<ELEMENT_TYPE, B_ROWS, B_COLS, MATRIX_ROW_MAJOR, REGISTER_POLICY, SIZE_TYPE>,
-    camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<A_IDX_COL...>, camp::idx_seq<B_IDX_ROW...>, camp::idx_seq<B_IDX_COL...>>
+    Matrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>,
+    Matrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>,
+    camp::idx_seq<IDX...>>
   {
-      using A_type = Matrix<ELEMENT_TYPE, A_ROWS, A_COLS, MATRIX_ROW_MAJOR, REGISTER_POLICY, SIZE_TYPE>;
-      using B_type = Matrix<ELEMENT_TYPE, B_ROWS, B_COLS, MATRIX_ROW_MAJOR, REGISTER_POLICY, SIZE_TYPE>;
+      using A_type = Matrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>;
+      using B_type = Matrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>;
 
-      using A_VECTOR_TYPE = typename A_type::vector_type;
-      using B_VECTOR_TYPE = typename B_type::vector_type;
+      using vector_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
 
-      using result_type = Matrix<ELEMENT_TYPE, A_ROWS, B_COLS, MATRIX_ROW_MAJOR, REGISTER_POLICY, SIZE_TYPE>;
-
-      static constexpr bool s_is_fixed = SIZE_TYPE == MATRIX_FIXED;
-
-      static_assert(A_COLS == B_ROWS, "Matrices are incompatible for multiplication");
+      using result_type = Matrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>;
 
       RAJA_HOST_DEVICE
       static
       RAJA_INLINE
-      B_VECTOR_TYPE calc_row_product(B_VECTOR_TYPE sum, A_VECTOR_TYPE const &a_row, B_type const &B){
+      vector_type calc_row_product(vector_type sum, vector_type const &a_row, B_type const &B){
 
         // Note: A_IDX_COL == B_IDX_ROW
 
         camp::sink(
                 (sum =
-                    B.row(B_IDX_ROW).fused_multiply_add(
-                        B_VECTOR_TYPE(a_row[A_IDX_COL]),
+                    B.row(IDX).fused_multiply_add(
+                        vector_type(a_row[IDX]),
                         sum))...
                 );
 
@@ -156,9 +79,7 @@ namespace internal {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_mult_row_row ++;
 #endif
-        result_type res(calc_row_product(B_VECTOR_TYPE(0), A.row(A_IDX_ROW), B)...);
-        res.resize(A.dim_elem(0), B.dim_elem(1));
-        return res;
+        return result_type(calc_row_product(vector_type(0), A.row(IDX), B)...);
       }
 
       RAJA_HOST_DEVICE
@@ -168,47 +89,37 @@ namespace internal {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_multacc_row_row ++;
 #endif
-        result_type res(calc_row_product(C.row(A_IDX_ROW), A.row(A_IDX_ROW), B)...);
-        res.resize(A.dim_elem(0), B.dim_elem(1));
-        return res;
+        return result_type(calc_row_product(C.row(IDX), A.row(IDX), B)...);
       }
 
   };
 
 
 
-  template<typename ELEMENT_TYPE, camp::idx_t A_ROWS, camp::idx_t A_COLS, typename REGISTER_POLICY, MatrixSizeType SIZE_TYPE,
-  camp::idx_t B_ROWS, camp::idx_t B_COLS,
-  camp::idx_t ... A_IDX_ROW, camp::idx_t ... A_IDX_COL, camp::idx_t ... B_IDX_ROW, camp::idx_t ... B_IDX_COL>
+  template<typename ELEMENT_TYPE, typename REGISTER_POLICY, camp::idx_t ... IDX>
   struct MatrixMatrixProductHelperExpanded<
-    Matrix<ELEMENT_TYPE, A_ROWS, A_COLS, MATRIX_COL_MAJOR, REGISTER_POLICY, SIZE_TYPE>,
-    Matrix<ELEMENT_TYPE, B_ROWS, B_COLS, MATRIX_COL_MAJOR, REGISTER_POLICY, SIZE_TYPE>,
-    camp::idx_seq<A_IDX_ROW...>, camp::idx_seq<A_IDX_COL...>, camp::idx_seq<B_IDX_ROW...>, camp::idx_seq<B_IDX_COL...>>
+    Matrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>,
+    Matrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>,
+    camp::idx_seq<IDX...>>
   {
-      using A_type = Matrix<ELEMENT_TYPE, A_ROWS, A_COLS, MATRIX_COL_MAJOR, REGISTER_POLICY, SIZE_TYPE>;
-      using B_type = Matrix<ELEMENT_TYPE, B_ROWS, B_COLS, MATRIX_COL_MAJOR, REGISTER_POLICY, SIZE_TYPE>;
+      using A_type = Matrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>;
+      using B_type = Matrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>;
 
-      using A_VECTOR_TYPE = typename A_type::vector_type;
-      using B_VECTOR_TYPE = typename B_type::vector_type;
+      using vector_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
 
-      static constexpr bool s_is_fixed = SIZE_TYPE == MATRIX_FIXED;
+      using result_type = Matrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>;
 
-      using result_vector = changeVectorLength<B_VECTOR_TYPE, sizeof...(A_IDX_ROW)>;
-
-      using result_type = Matrix<ELEMENT_TYPE, A_ROWS, B_COLS, MATRIX_COL_MAJOR, REGISTER_POLICY, SIZE_TYPE>;
-
-      static_assert(A_COLS == B_ROWS, "Matrices are incompatible for multiplication");
 
       RAJA_HOST_DEVICE
       static
       RAJA_INLINE
-      result_vector calc_row_product(result_vector sum, B_VECTOR_TYPE const &b_col, A_type const &A){
+      vector_type calc_row_product(vector_type sum, vector_type const &b_col, A_type const &A){
 
         // Note: A_IDX_COL == B_IDX_ROW
         camp::sink(
                 (sum =
-                    A.col(A_IDX_COL).fused_multiply_add(
-                        A_VECTOR_TYPE(b_col[B_IDX_ROW]),
+                    A.col(IDX).fused_multiply_add(
+                        vector_type(b_col[IDX]),
                         sum))...
                 );
 
@@ -223,9 +134,7 @@ namespace internal {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_mult_col_col ++;
 #endif
-        result_type res(calc_row_product(result_vector(), B.col(B_IDX_COL), A)...);
-        res.resize(A.dim_elem(0), B.dim_elem(1));
-        return res;
+        return result_type(calc_row_product(vector_type(0), B.col(IDX), A)...);
       }
 
       RAJA_HOST_DEVICE
@@ -235,9 +144,7 @@ namespace internal {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_multacc_col_col ++;
 #endif
-        result_type res(calc_row_product(C.col(B_IDX_COL), B.col(B_IDX_COL), A)...);
-        res.resize(A.dim_elem(0), B.dim_elem(1));
-        return res;
+        return result_type(calc_row_product(C.col(IDX), B.col(IDX), A)...);
       }
 
   };
@@ -248,39 +155,18 @@ namespace internal {
   template<typename MATA, typename MATB>
   struct MatrixMatrixProductHelper;
 
-  template<typename ELEMENT_TYPE, camp::idx_t A_ROWS, camp::idx_t A_COLS, MatrixLayout LAYOUT, typename REGISTER_POLICY, MatrixSizeType SIZE_TYPE,
-    camp::idx_t B_ROWS, camp::idx_t B_COLS>
+  template<typename ELEMENT_TYPE, MatrixLayout LAYOUT, typename REGISTER_POLICY>
   struct MatrixMatrixProductHelper<
-    Matrix<ELEMENT_TYPE, A_ROWS, A_COLS, LAYOUT, REGISTER_POLICY, SIZE_TYPE>,
-    Matrix<ELEMENT_TYPE, B_ROWS, B_COLS, LAYOUT, REGISTER_POLICY, SIZE_TYPE>> :
+    Matrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
+    Matrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>> :
   public
-      MatrixMatrixProductHelperExpanded<Matrix<ELEMENT_TYPE, A_ROWS, A_COLS, LAYOUT, REGISTER_POLICY, SIZE_TYPE>,
-                                        Matrix<ELEMENT_TYPE, B_ROWS, B_COLS, LAYOUT, REGISTER_POLICY, SIZE_TYPE>,
-                                        camp::make_idx_seq_t<A_ROWS>,
-                                        camp::make_idx_seq_t<A_COLS>,
-                                        camp::make_idx_seq_t<B_ROWS>,
-                                        camp::make_idx_seq_t<B_COLS>>
+      MatrixMatrixProductHelperExpanded<Matrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
+                                        Matrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
+                                        camp::make_idx_seq_t<Register<REGISTER_POLICY, ELEMENT_TYPE>::s_num_elem>>
     {};
 
 
 
-  /**
-   * Combines two matrix types into a single type for View access.
-   *
-   * In this case you have a RowIndex and a ColIndex, both with matrix types.
-   * This combines them in a "good" way to make a single matrix type.
-   *
-   * It ueses the row size from the row index, and column size form the column
-   * index.  All other values are taken from the row type.
-   */
-  template<typename ROW_MATRIX, typename COL_MATRIX>
-  using MatrixViewCombiner =
-      Matrix<typename ROW_MATRIX::element_type,
-             ROW_MATRIX::s_num_rows,
-             COL_MATRIX::s_num_cols,
-             ROW_MATRIX::s_layout,
-             typename ROW_MATRIX::register_policy,
-             ROW_MATRIX::s_size_type>;
 
 } // namespace internal
 } // namespace RAJA
@@ -303,29 +189,22 @@ namespace internal {
   /*
    * Row-Major implementation of MatrixImpl
    */
-  template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL, MatrixSizeType SIZE_TYPE>
-  class MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...>, SIZE_TYPE > :
-   public MatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...>, SIZE_TYPE >>
+  template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... IDX>
+  class MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...>> :
+   public MatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...>>>
   {
     public:
       using self_type = MATRIX_TYPE;
-      using base_type = MatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...>, SIZE_TYPE >>;
+      using base_type = MatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...> >>;
 
-      using row_vector_type = typename base_type::row_vector_type;
-      using col_vector_type = typename base_type::col_vector_type;
-      using vector_type = row_vector_type;
-
+      using vector_type = typename base_type::vector_type;
       using register_type = typename vector_type::register_type;
-
       using element_type = ELEMENT_TYPE;
-
-      static constexpr bool s_is_fixed = SIZE_TYPE == MATRIX_FIXED;
 
 
     private:
 
-      vector_type m_rows[sizeof...(IDX_ROW)];
-      camp::idx_t m_num_rows;
+      vector_type m_rows[sizeof...(IDX)];
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -340,34 +219,34 @@ namespace internal {
         return static_cast<self_type const *>(this);
       }
 
+
     public:
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixImpl():
-      m_num_rows(sizeof...(IDX_ROW))
+      MatrixImpl(): base_type()
       {}
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       MatrixImpl(element_type c) :
-        m_rows{(IDX_ROW >= 0) ? vector_type(c) : vector_type(c)...},
-        m_num_rows(sizeof...(IDX_ROW))
+        base_type(),
+        m_rows{(IDX >= 0) ? vector_type(c) : vector_type(c)...}
       {}
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       MatrixImpl(self_type const &c) :
-        m_rows{c.m_rows[IDX_ROW]...},
-        m_num_rows(c.m_num_rows)
+        base_type(c),
+        m_rows{c.m_rows[IDX]...}
       {}
 
       template<typename ... ROWS>
       RAJA_HOST_DEVICE
       RAJA_INLINE
       MatrixImpl(ROWS const &... rows) :
-        m_rows{rows...},
-        m_num_rows(sizeof...(ROWS))
+        base_type(),
+        m_rows{rows...}
       {
         static_assert(sizeof...(ROWS) == base_type::s_num_rows,
             "Incompatible number of row vectors");
@@ -386,27 +265,13 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &copy(self_type const &v){
-        camp::sink((m_rows[IDX_ROW] = v.m_rows[IDX_ROW])...);
-        m_num_rows = v.m_num_rows;
+        camp::sink((m_rows[IDX] = v.m_rows[IDX])...);
+        base_type::copy(v);
         return *getThis();
       }
 
 
-      /*!
-       * Resizes matrix to specified size, and sets all elements to zero
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &resize(camp::idx_t num_rows, camp::idx_t num_cols){
-        camp::sink(
-            m_rows[IDX_ROW].resize(num_cols)...
-        );
 
-        m_num_rows = num_rows;
-
-
-        return *getThis();
-      }
 
       /*!
        * Resizes matrix to specified size, and sets all elements to zero
@@ -414,135 +279,161 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &clear(){
-        auto num_cols = m_rows[0].size();
         camp::sink(
-            m_rows[IDX_ROW].broadcast(0)...
-        );
-        camp::sink(
-            m_rows[IDX_ROW].resize(num_cols)...
+            m_rows[IDX].broadcast(0)...
         );
 
         return *getThis();
       }
 
-
-
       /*!
-       * Gets size of matrix along specified dimension
+       * Loads a dense full matrix from memory.
+       *
+       * Column entries must be stride-1, rows may be any striding
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      constexpr camp::idx_t dim_elem(camp::idx_t dim) const{
-        return (dim==0) ? m_num_rows : m_rows[0].size();
+      self_type &load_packed(element_type const *ptr,
+          int row_stride, int)
+      {
+        // load all rows as packed data
+        camp::sink(
+            m_rows[IDX].load_packed(ptr+IDX*row_stride)...
+        );
+
+        return *getThis();
       }
 
       /*!
-       * Loads a matrix from memory
+       * Loads a strided full matrix from memory
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &load(element_type const *ptr,
-                      camp::idx_t row_stride = sizeof...(IDX_COL),
-                      camp::idx_t col_stride = 1,
-                      camp::idx_t num_rows = sizeof...(IDX_ROW),
-                      camp::idx_t num_cols = sizeof...(IDX_COL))
+      self_type &load_strided(element_type const *ptr,
+          int row_stride, int col_stride)
       {
+        // load all rows width a stride
+        camp::sink(
+            m_rows[IDX].load_strided(ptr+IDX*row_stride, col_stride)...
+        );
 
-        m_num_rows = num_rows;
+        return *getThis();
+      }
 
+      /*!
+       * Loads a dense partial matrix from memory
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &load_packed_nm(element_type const *ptr,
+          int row_stride, int,
+          int num_rows, int num_cols)
+      {
+        // only load num_rows rows with packed data
+        camp::sink(
+            (IDX < num_rows
+            ?  m_rows[IDX].load_packed_n(ptr+IDX*row_stride, num_cols)
+            :  m_rows[IDX].broadcast(0))... // clear to len N
+        );
 
-        if(SIZE_TYPE == MATRIX_FIXED){ // constexpr
-          if(col_stride == 1){
-            // load all rows as packed data
-            camp::sink(
-                m_rows[IDX_ROW].load_packed(ptr+IDX_ROW*row_stride)...
-            );
-          }
-          else{
-            // load all rows width a stride
-            camp::sink(
-                m_rows[IDX_ROW].load_strided(ptr+IDX_ROW*row_stride, col_stride)...
-            );
-          }
+        return *getThis();
+      }
 
-        }
-        // SIZE_TYPE == MATRIX_STREAM
-        else {
-          if(col_stride == 1){
-            // only load num_rows rows with packed data
-            camp::sink(
-                (IDX_ROW < m_num_rows
-                ?  m_rows[IDX_ROW].load_packed_n(ptr+IDX_ROW*row_stride, num_cols)
-                :  m_rows[IDX_ROW].broadcast_n(0, num_cols))... // clear to len N
-            );
-          }
-          else{
-            // only load num_rows rows with strided data
-            camp::sink(
-                (IDX_ROW < m_num_rows
-                ?  m_rows[IDX_ROW].load_strided_n(ptr+IDX_ROW*row_stride, col_stride, num_cols)
-                :  m_rows[IDX_ROW].broadcast_n(0, num_cols))... // clear to len N
-            );
-          }
-
-
-
-        }
-
+      /*!
+       * Loads a strided partial matrix from memory
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &load_strided_nm(element_type const *ptr,
+          int row_stride, int col_stride,
+          int num_rows, int num_cols)
+      {
+        // only load num_rows rows with strided data
+        camp::sink(
+            (IDX < num_rows
+            ?  m_rows[IDX].load_strided_n(ptr+IDX*row_stride, col_stride, num_cols)
+            :  m_rows[IDX].broadcast(0))... // clear to len N
+        );
 
         return *getThis();
       }
 
 
+
       /*!
-       * Stores a matrix to memory
+       * Store a dense full matrix to memory.
+       *
+       * Column entries must be stride-1, rows may be any striding
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &store(element_type *ptr,
-                      camp::idx_t row_stride = sizeof...(IDX_COL),
-                      camp::idx_t col_stride = 1) const
+      self_type &store_packed(element_type *ptr,
+          int row_stride, int)
       {
-
-
-        if(SIZE_TYPE == MATRIX_FIXED){ // constexpr
-          if(col_stride == 1){
-            // store all rows as packed data
-            camp::sink(
-                m_rows[IDX_ROW].store_packed(ptr+IDX_ROW*row_stride)...
-            );
-          }
-          else{
-            // load all rows width a stride
-            camp::sink(
-                m_rows[IDX_ROW].store_strided(ptr+IDX_ROW*row_stride, col_stride)...
-            );
-          }
-
-        }
-        // SIZE_TYPE == MATRIX_STREAM
-        else {
-          auto num_cols = m_rows[0].size();
-          if(col_stride == 1){
-            // only store num_rows rows with packed data
-            camp::sink(
-                (IDX_ROW < m_num_rows
-                ?  m_rows[IDX_ROW].store_packed_n(ptr+IDX_ROW*row_stride, num_cols)
-                :  m_rows[IDX_ROW])... // NOP, but has same as above type
-            );
-          }
-          else{
-            // only store num_rows rows with strided data
-            camp::sink(
-                (IDX_ROW < m_num_rows
-                ?  m_rows[IDX_ROW].store_strided_n(ptr+IDX_ROW*row_stride, col_stride, num_cols)
-                :  m_rows[IDX_ROW])... // NOP, but has same as above type
-            );
-          }
-        }
+        // store all rows as packed data
+        camp::sink(
+            m_rows[IDX].store_packed(ptr+IDX*row_stride)...
+        );
 
         return *getThis();
       }
+
+      /*!
+       * Store a strided full matrix to memory
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &store_strided(element_type *ptr,
+          int row_stride, int col_stride)
+      {
+        // store all rows width a column stride
+        camp::sink(
+            m_rows[IDX].store_strided(ptr+IDX*row_stride, col_stride)...
+        );
+
+        return *getThis();
+      }
+
+      /*!
+       * Store a dense partial matrix to memory
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &store_packed_nm(element_type *ptr,
+          int row_stride, int ,
+          int num_rows, int num_cols)
+      {
+        // only store num_rows rows with packed data
+        camp::sink(
+            (IDX < num_rows
+            ?  m_rows[IDX].store_packed_n(ptr+IDX*row_stride, num_cols)
+            :  m_rows[IDX])... // NOP, but has same as above type
+        );
+
+        return *getThis();
+      }
+
+      /*!
+       * Store a strided partial matrix to memory
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &store_strided_nm(element_type *ptr,
+          int row_stride, int col_stride,
+          int num_rows, int num_cols)
+      {
+        // only store num_rows rows with strided data
+        camp::sink(
+            (IDX < num_rows
+            ?  m_rows[IDX].store_strided_n(ptr+IDX*row_stride, col_stride, num_cols)
+            :  m_rows[IDX])... // NOP, but has same as above type
+        );
+
+        return *getThis();
+      }
+
+
+
 
       /*!
        * Copy contents of another matrix operator
@@ -550,7 +441,7 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &broadcast(element_type v){
-        camp::sink((m_rows[IDX_ROW].broadcast(v))...);
+        camp::sink((m_rows[IDX].broadcast(v))...);
         return *getThis();
       }
 
@@ -559,11 +450,10 @@ namespace internal {
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      col_vector_type right_multiply_vector(row_vector_type v) const {
-        //return vector_type(v.dot(m_rows[IDX_ROW])...);
-        col_vector_type result;
+      vector_type right_multiply_vector(vector_type v) const {
+        vector_type result;
         camp::sink(
-            result.set(IDX_ROW, v.dot(m_rows[IDX_ROW]))...
+            result.set(IDX, v.dot(m_rows[IDX]))...
             );
         return result;
       }
@@ -595,7 +485,7 @@ namespace internal {
       RAJA_INLINE
       self_type add(self_type mat) const {
         return self_type(
-            (m_rows[IDX_ROW])+(mat.m_rows[IDX_ROW]) ...
+            (m_rows[IDX])+(mat.m_rows[IDX]) ...
         );
       }
 
@@ -603,32 +493,32 @@ namespace internal {
       RAJA_INLINE
       self_type subtract(self_type mat) const {
         return self_type(
-            (m_rows[IDX_ROW])-(mat.m_rows[IDX_ROW]) ...
+            (m_rows[IDX])-(mat.m_rows[IDX]) ...
         );
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &set(camp::idx_t row, camp::idx_t col, element_type val){
+      self_type &set(int row, int col, element_type val){
         m_rows[row].set(col, val);
         return *getThis();
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      element_type get(camp::idx_t row, camp::idx_t col) const {
+      element_type get(int row, int col) const {
         return m_rows[row].get(col);
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      vector_type &row(camp::idx_t row){
+      vector_type &row(int row){
         return m_rows[row];
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      vector_type const &row(camp::idx_t row) const{
+      vector_type const &row(int row) const{
         return m_rows[row];
       }
 
@@ -640,28 +530,22 @@ namespace internal {
   /*
    * Column-Major implementation of MatrixImpl
    */
-  template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL, MatrixSizeType SIZE_TYPE>
-  class MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...>, SIZE_TYPE > :
-   public MatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...>, SIZE_TYPE >>
+  template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... IDX>
+  class MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...>> :
+   public MatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...> >>
   {
     public:
       using self_type = MATRIX_TYPE;
-      using base_type = MatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...>, SIZE_TYPE >>;
+      using base_type = MatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...> >>;
 
-      using row_vector_type = typename base_type::row_vector_type;
-      using col_vector_type = typename base_type::col_vector_type;
-      using vector_type = col_vector_type;
+      using vector_type = typename base_type::vector_type;
       using register_type = typename vector_type::register_type;
-
       using element_type = ELEMENT_TYPE;
-
-      static constexpr bool s_is_fixed = SIZE_TYPE == MATRIX_FIXED;
 
 
     private:
 
-      vector_type m_cols[sizeof...(IDX_COL)];
-      camp::idx_t m_num_cols;
+      vector_type m_cols[sizeof...(IDX)];
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -676,34 +560,35 @@ namespace internal {
         return static_cast<self_type const *>(this);
       }
 
+
     public:
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       MatrixImpl() :
-      m_num_cols(sizeof...(IDX_COL))
+        base_type()
       {}
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       MatrixImpl(element_type c) :
-        m_cols{(IDX_COL >= 0) ? vector_type(c) : vector_type(c)...},
-        m_num_cols(sizeof...(IDX_COL))
+        base_type(),
+        m_cols{(IDX >= 0) ? vector_type(c) : vector_type(c)...}
       {}
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       MatrixImpl(self_type const &c) :
-        m_cols{c.m_cols[IDX_COL]...},
-        m_num_cols(c.m_num_cols)
+        base_type(c),
+        m_cols{c.m_cols[IDX]...}
       {}
 
       template<typename ... COLS>
       RAJA_HOST_DEVICE
       RAJA_INLINE
       MatrixImpl(COLS const &... cols) :
-      m_cols{cols...},
-      m_num_cols(sizeof...(COLS))
+      base_type(),
+      m_cols{cols...}
       {
         static_assert(sizeof...(COLS) == base_type::s_num_cols,
             "Incompatible number of column vectors");
@@ -722,26 +607,11 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &copy(self_type const &v){
-        camp::sink((m_cols[IDX_COL] = v.m_cols[IDX_COL])...);
-        m_num_cols = v.m_num_cols;
+        camp::sink((m_cols[IDX] = v.m_cols[IDX])...);
+        base_type::copy(v);
         return *getThis();
       }
 
-      /*!
-       * Resizes matrix to specified size, and sets all elements to zero
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &resize(camp::idx_t num_rows, camp::idx_t num_cols){
-        camp::sink(
-            m_cols[IDX_COL].resize(num_rows)...
-        );
-
-        m_num_cols = num_cols;
-
-
-        return *getThis();
-      }
 
       /*!
        * Resizes matrix to specified size, and sets all elements to zero
@@ -749,131 +619,164 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &clear(){
-        auto num_rows = m_cols[0].size();
+
         camp::sink(
-            m_cols[IDX_COL].broadcast(0)...
-        );
-        camp::sink(
-            m_cols[IDX_COL].resize(num_rows)...
+            m_cols[IDX].broadcast(0)...
         );
 
         return *getThis();
       }
 
+
+
+
       /*!
-       * Gets size of matrix along specified dimension
+       * Loads a dense full matrix from memory.
+       *
+       * Column entries must be stride-1, rows may be any striding
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      constexpr camp::idx_t dim_elem(camp::idx_t dim) const{
-        return (dim==0) ? m_cols[0].size() : m_num_cols;
+      self_type &load_packed(element_type const *ptr,
+          int, int col_stride)
+      {
+        // load all rows as packed data
+        camp::sink(
+            m_cols[IDX].load_packed(ptr+IDX*col_stride)...
+        );
+
+        return *getThis();
       }
 
       /*!
-       * Loads a matrix from memory
+       * Loads a strided full matrix from memory
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &load(element_type const *ptr,
-                      camp::idx_t row_stride = 1,
-                      camp::idx_t col_stride = sizeof...(IDX_ROW),
-                      camp::idx_t num_rows = sizeof...(IDX_ROW),
-                      camp::idx_t num_cols = sizeof...(IDX_COL))
+      self_type &load_strided(element_type const *ptr,
+          int row_stride, int col_stride)
       {
-        m_num_cols = num_cols;
+        // load all rows width a stride
+        camp::sink(
+            m_cols[IDX].load_strided(ptr+IDX*col_stride, row_stride)...
+        );
 
-        if(SIZE_TYPE == MATRIX_FIXED){ // constexpr
-          if(row_stride == 1){
-            // load all rows as packed data
-            camp::sink(
-                m_cols[IDX_COL].load_packed(ptr+IDX_COL*col_stride)...
-            );
-          }
-          else{
-            // load all rows width a stride
-            camp::sink(
-                m_cols[IDX_COL].load_strided(ptr+IDX_COL*col_stride, row_stride)...
-            );
-          }
+        return *getThis();
+      }
 
-        }
-        // SIZE_TYPE == MATRIX_STREAM
-        else {
-          if(row_stride == 1){
-            // only load num_rows rows with packed data
-            camp::sink(
-                (IDX_COL < m_num_cols
-                ?  m_cols[IDX_COL].load_packed_n(ptr+IDX_COL*col_stride, num_rows)
-                :  m_cols[IDX_COL].broadcast_n(0, num_rows))... // NOP, but has same as above type
-            );
-          }
-          else{
-            // only load num_rows rows with strided data
-            camp::sink(
-                (IDX_COL < m_num_cols
-                ?   m_cols[IDX_COL].load_strided_n(ptr+IDX_COL*col_stride, row_stride, num_rows)
-                :  m_cols[IDX_COL].broadcast_n(0, num_rows))... // NOP, but has same as above type
-            );
-          }
-        }
+      /*!
+       * Loads a dense partial matrix from memory
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &load_packed_nm(element_type const *ptr,
+          int, int col_stride,
+          int num_rows, int num_cols)
+      {
+        // only load num_rows rows with packed data
+        camp::sink(
+            (IDX < num_cols
+            ?  m_cols[IDX].load_packed_n(ptr+IDX*col_stride, num_rows)
+            :  m_cols[IDX].broadcast(0))... // NOP, but has same as above type
+        );
+
+        return *getThis();
+      }
+
+      /*!
+       * Loads a strided partial matrix from memory
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &load_strided_nm(element_type const *ptr,
+          int row_stride, int col_stride,
+          int num_rows, int num_cols)
+      {
+        // only load num_rows rows with strided data
+        camp::sink(
+            (IDX < num_cols
+            ?   m_cols[IDX].load_strided_n(ptr+IDX*col_stride, row_stride, num_rows)
+            :  m_cols[IDX].broadcast(0))... // NOP, but has same as above type
+        );
 
         return *getThis();
       }
 
 
+
       /*!
-       * Stores a matrix to memory
+       * Store a dense full matrix to memory.
+       *
+       * Column entries must be stride-1, rows may be any striding
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &store(element_type *ptr,
-                      camp::idx_t row_stride = 1,
-                      camp::idx_t col_stride = sizeof...(IDX_ROW)) const
+      self_type &store_packed(element_type *ptr,
+          int, int col_stride)
       {
-
-
-        if(SIZE_TYPE == MATRIX_FIXED){ // constexpr
-          if(row_stride == 1){
-            // store all rows as packed data
-            camp::sink(
-                m_cols[IDX_COL].store_packed(ptr+IDX_COL*col_stride)...
-            );
-          }
-          else{
-            // store all rows width a stride
-            camp::sink(
-                // only store rows that are active
-                (IDX_COL < m_num_cols
-                ?  m_cols[IDX_COL].store_strided(ptr+IDX_COL*col_stride, row_stride)
-                :  m_cols[IDX_COL])... // NOP, but has same as above type
-            );
-          }
-
-        }
-        // SIZE_TYPE == MATRIX_STREAM
-        else {
-          auto num_rows = m_cols[0].size();
-          if(row_stride == 1){
-            // only store num_rows rows with packed data
-            camp::sink(
-                (IDX_COL < m_num_cols
-                ?  m_cols[IDX_COL].store_packed_n(ptr+IDX_COL*col_stride, num_rows)
-                :  m_cols[IDX_COL])... // NOP, but has same as above type
-            );
-          }
-          else{
-            // only store num_rows rows with strided data
-            camp::sink(
-                (IDX_COL < m_num_cols
-                ?   m_cols[IDX_COL].store_strided_n(ptr+IDX_COL*col_stride, row_stride, num_rows)
-                :  m_cols[IDX_COL])... // NOP, but has same as above type
-            );
-          }
-        }
-
+        // store all rows as packed data
+        camp::sink(
+            m_cols[IDX].store_packed(ptr+IDX*col_stride)...
+        );
 
         return *getThis();
       }
+
+      /*!
+       * Store a strided full matrix to memory
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &store_strided(element_type *ptr,
+          int row_stride, int col_stride)
+      {
+        // store all rows width a column stride
+        camp::sink(
+            m_cols[IDX].store_strided(ptr+IDX*col_stride, row_stride)...
+        );
+
+        return *getThis();
+      }
+
+      /*!
+       * Store a dense partial matrix to memory
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &store_packed_nm(element_type *ptr,
+          int, int col_stride,
+          int num_rows, int num_cols)
+      {
+        // only store num_rows rows with packed data
+        camp::sink(
+            (IDX < num_cols
+            ?  m_cols[IDX].store_packed_n(ptr+IDX*col_stride, num_rows)
+            :  m_cols[IDX])... // NOP, but has same as above type
+        );
+
+        return *getThis();
+      }
+
+      /*!
+       * Store a strided partial matrix to memory
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &store_strided_nm(element_type *ptr,
+          int row_stride, int col_stride,
+          int num_rows, int num_cols)
+      {
+        // only store num_rows rows with strided data
+        camp::sink(
+            (IDX < num_cols
+            ?  m_cols[IDX].store_strided_n(ptr+IDX*col_stride, row_stride, num_rows)
+            :  m_cols[IDX])... // NOP, but has same as above type
+        );
+
+        return *getThis();
+      }
+
+
 
       /*!
        * Copy contents of another matrix operator
@@ -881,7 +784,7 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &broadcast(element_type v){
-        camp::sink((m_cols[IDX_COL].broadcast(v))...);
+        camp::sink((m_cols[IDX].broadcast(v))...);
         return *getThis();
       }
 
@@ -890,9 +793,9 @@ namespace internal {
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      col_vector_type right_multiply_vector(row_vector_type v) const {
+      vector_type right_multiply_vector(vector_type v) const {
         return
-        RAJA::sum<col_vector_type>(( m_cols[IDX_COL] * v.get(IDX_COL))...);
+        RAJA::sum<vector_type>(( m_cols[IDX] * v.get(IDX))...);
       }
 
 
@@ -922,7 +825,7 @@ namespace internal {
       RAJA_INLINE
       self_type add(self_type mat) const {
         return self_type(
-            (m_cols[IDX_COL])+(mat.m_cols[IDX_COL]) ...
+            (m_cols[IDX])+(mat.m_cols[IDX]) ...
         );
       }
 
@@ -930,32 +833,32 @@ namespace internal {
       RAJA_INLINE
       self_type subtract(self_type mat) const {
         return self_type(
-            (m_cols[IDX_COL])-(mat.m_cols[IDX_COL]) ...
+            (m_cols[IDX])-(mat.m_cols[IDX]) ...
         );
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &set(camp::idx_t row, camp::idx_t col, element_type val){
+      self_type &set(int row, int col, element_type val){
         m_cols[col].set(row, val);
         return *getThis();
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      element_type get(camp::idx_t row, camp::idx_t col) const {
+      element_type get(int row, int col) const {
         return m_cols[col].get(row);
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      vector_type &col(camp::idx_t c){
+      vector_type &col(int c){
         return m_cols[c];
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      vector_type const &col(camp::idx_t c) const{
+      vector_type const &col(int c) const{
         return m_cols[c];
       }
 

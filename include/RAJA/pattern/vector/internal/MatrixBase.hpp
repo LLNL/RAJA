@@ -29,25 +29,20 @@ namespace RAJA
   template<typename Derived>
   class MatrixBase;
 
-  template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, MatrixLayout LAYOUT, camp::idx_t ... IDX_ROW, camp::idx_t ... IDX_COL, MatrixSizeType SIZE_TYPE>
-  class MatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, LAYOUT, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...>, SIZE_TYPE >>
+  template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, MatrixLayout LAYOUT, camp::idx_t ... IDX>
+  class MatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, LAYOUT, camp::idx_seq<IDX...> >>
   {
     public:
-      //using self_type = MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, LAYOUT, camp::idx_seq<IDX_ROW...>, camp::idx_seq<IDX_COL...>, SIZE_TYPE >;
       using self_type = MATRIX_TYPE;
 
-      static constexpr VectorSizeType s_vector_size_type = (SIZE_TYPE==MATRIX_FIXED) ? VECTOR_FIXED : VECTOR_STREAM;
-
-      using row_vector_type = makeVectorImpl<s_vector_size_type, REGISTER_POLICY, ELEMENT_TYPE, sizeof...(IDX_COL)>;
-      using col_vector_type = makeVectorImpl<s_vector_size_type, REGISTER_POLICY, ELEMENT_TYPE, sizeof...(IDX_ROW)>;
+      using vector_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
 
       using element_type = ELEMENT_TYPE;
       using register_policy = REGISTER_POLICY;
 
       static constexpr MatrixLayout s_layout = LAYOUT;
-      static constexpr MatrixSizeType s_size_type = SIZE_TYPE;
-      static constexpr camp::idx_t s_num_rows = sizeof...(IDX_ROW);
-      static constexpr camp::idx_t s_num_cols = sizeof...(IDX_COL);
+      static constexpr camp::idx_t s_num_rows = sizeof...(IDX);
+      static constexpr camp::idx_t s_num_cols = sizeof...(IDX);
 
     private:
       RAJA_HOST_DEVICE
@@ -63,14 +58,18 @@ namespace RAJA
         return static_cast<self_type const *>(this);
       }
 
+
+
     public:
+
+
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       static
       constexpr
       bool is_root() {
-        return row_vector_type::is_root();
+        return vector_type::is_root();
       }
 
       /*!
@@ -80,17 +79,8 @@ namespace RAJA
        */
       RAJA_INLINE
       std::string toString(bool one_line=false) const {
-        std::string s = "Matrix(" + std::to_string(getThis()->dim_elem(0)) +
-            "x" + std::to_string(getThis()->dim_elem(1));
-        if(SIZE_TYPE == MATRIX_FIXED){
-          s += ", FIXED)";
-        }
-        else
-        {
-          s += ", STREAM, MAX=" + std::to_string(getThis()->s_dim_elem(0)) +
-              "x" + std::to_string(getThis()->s_dim_elem(1));
-          s += ")";
-        }
+        std::string s = "Matrix(" + std::to_string(s_num_rows) +
+            "x" + std::to_string(s_num_cols);
         if(!one_line){
           s +="\n";
         }
@@ -99,7 +89,7 @@ namespace RAJA
         s += "[ ";
 
         //
-        for(camp::idx_t r = 0;r < getThis()->dim_elem(0); ++ r){
+        for(camp::idx_t r = 0;r < s_num_rows; ++ r){
           if(r > 0){
             s += ", ";
             if(!one_line){
@@ -107,7 +97,7 @@ namespace RAJA
             }
           }
           s += "[";
-          for(camp::idx_t c = 0;c < getThis()->dim_elem(1); ++ c){
+          for(camp::idx_t c = 0;c < s_num_cols; ++ c){
             if(c > 0){
               s += ", ";
             }
@@ -132,6 +122,7 @@ namespace RAJA
       constexpr camp::idx_t s_dim_elem(camp::idx_t dim){
         return (dim==0) ? s_num_rows : s_num_cols;
       }
+
 
 
       /*!
@@ -235,7 +226,7 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      col_vector_type operator*(row_vector_type v) const {
+      vector_type operator*(vector_type v) const {
         return getThis()->right_multiply_vector(v);
       }
 
@@ -244,12 +235,10 @@ namespace RAJA
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
        */
-
-      template<camp::idx_t ROWS, camp::idx_t COLS>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      typename MatrixMatrixProductHelper<self_type, Matrix<ELEMENT_TYPE, ROWS, COLS, LAYOUT, REGISTER_POLICY, SIZE_TYPE>>::result_type
-      operator*(Matrix<ELEMENT_TYPE, ROWS, COLS, LAYOUT, REGISTER_POLICY, SIZE_TYPE> const &mat) const {
+      typename MatrixMatrixProductHelper<self_type, Matrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>>::result_type
+      operator*(Matrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY> const &mat) const {
         return getThis()->multiply(mat);
       }
 

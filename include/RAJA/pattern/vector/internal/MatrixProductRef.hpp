@@ -55,19 +55,12 @@ namespace internal
       using register_policy = typename A_MATRIX_TYPE::register_policy;
 
     private:
-      A_MATRIX_TYPE m_matrix_a;
-      B_MATRIX_TYPE m_matrix_b;
+      A_MATRIX_TYPE const &m_matrix_a;
+      B_MATRIX_TYPE const &m_matrix_b;
 
     public:
 
 
-      /*!
-       * @brief Default constructor, zeros register contents
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      constexpr
-      MatrixProductRef() {};
 
       /*!
        * @brief Constructor
@@ -189,13 +182,12 @@ namespace internal
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
        */
-      template<camp::idx_t ROWS, camp::idx_t COLS>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixProductRef<result_type, Matrix<element_type, ROWS, COLS, A_MATRIX_TYPE::s_layout, register_policy, A_MATRIX_TYPE::s_size_type> >
-      operator*(Matrix<element_type, ROWS, COLS, A_MATRIX_TYPE::s_layout, register_policy, A_MATRIX_TYPE::s_size_type> const &x) const
+      MatrixProductRef<result_type, Matrix<element_type, A_MATRIX_TYPE::s_layout, register_policy> >
+      operator*(Matrix<element_type, A_MATRIX_TYPE::s_layout, register_policy> const &x) const
       {
-        return MatrixProductRef<result_type, Matrix<element_type, ROWS, COLS, A_MATRIX_TYPE::s_layout, register_policy, A_MATRIX_TYPE::s_size_type> >(get_result(), x);
+        return MatrixProductRef<result_type, Matrix<element_type, A_MATRIX_TYPE::s_layout, register_policy> >(get_result(), x);
       }
 
       /*!
@@ -216,37 +208,6 @@ namespace internal
 
 
 
-//  template<typename ST, typename VECTOR_TYPE>
-//  RAJA_HOST_DEVICE
-//  RAJA_INLINE
-//  VECTOR_TYPE
-//  operator+(ST x, MatrixProductRef<VECTOR_TYPE> const &y){
-//    return y.get_left().fused_multiply_add(y.get_right(), x);
-//  }
-//
-//  template<typename ST, typename VECTOR_TYPE>
-//  RAJA_HOST_DEVICE
-//  RAJA_INLINE
-//  VECTOR_TYPE
-//  operator-(ST x, MatrixProductRef<VECTOR_TYPE> const &y){
-//    y.get_left().fused_multiply_subtract(y.get_right(), x);
-//  }
-//
-//  template<typename ST, typename VECTOR_TYPE>
-//  RAJA_HOST_DEVICE
-//  RAJA_INLINE
-//  MatrixProductRef<VECTOR_TYPE>
-//  operator*(ST x, MatrixProductRef<VECTOR_TYPE> const &y){
-//    return MatrixProductRef<VECTOR_TYPE>(VECTOR_TYPE(x), y.get_result());
-//  }
-//
-//  template<typename ST, typename VECTOR_TYPE>
-//  RAJA_HOST_DEVICE
-//  RAJA_INLINE
-//  VECTOR_TYPE
-//  operator/(ST x, MatrixProductRef<VECTOR_TYPE> const &y){
-//    return VECTOR_TYPE(x) / y.get_result();
-//  }
 
 }  // namespace internal
 }  // namespace RAJA
