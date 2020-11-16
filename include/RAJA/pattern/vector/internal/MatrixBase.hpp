@@ -237,8 +237,8 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      typename MatrixMatrixProductHelper<self_type, Matrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>>::result_type
-      operator*(Matrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY> const &mat) const {
+      typename MatrixMatrixProductHelper<self_type, RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>>::result_type
+      operator*(RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY> const &mat) const {
         return getThis()->multiply(mat);
       }
 

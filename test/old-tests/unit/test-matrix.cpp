@@ -16,16 +16,16 @@ using MatrixTestTypes = ::testing::Types<
 
 
 #ifdef __AVX__
-    RAJA::Matrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::avx_register>,
-    RAJA::Matrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::avx_register>,
+    RAJA::RegisterMatrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::avx_register>,
+    RAJA::RegisterMatrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::avx_register>,
 #endif
 
 #ifdef __AVX2__
-    RAJA::Matrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::avx2_register>,
-    RAJA::Matrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::avx2_register>,
+    RAJA::RegisterMatrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::avx2_register>,
+    RAJA::RegisterMatrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::avx2_register>,
 #endif
-    RAJA::Matrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::scalar_register>,
-    RAJA::Matrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::scalar_register>
+    RAJA::RegisterMatrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::scalar_register>,
+    RAJA::RegisterMatrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::scalar_register>
 
   >;
 

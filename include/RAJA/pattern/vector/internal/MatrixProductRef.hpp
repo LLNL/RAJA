@@ -184,10 +184,10 @@ namespace internal
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixProductRef<result_type, Matrix<element_type, A_MATRIX_TYPE::s_layout, register_policy> >
-      operator*(Matrix<element_type, A_MATRIX_TYPE::s_layout, register_policy> const &x) const
+      MatrixProductRef<result_type, RegisterMatrix<element_type, A_MATRIX_TYPE::s_layout, register_policy> >
+      operator*(RegisterMatrix<element_type, A_MATRIX_TYPE::s_layout, register_policy> const &x) const
       {
-        return MatrixProductRef<result_type, Matrix<element_type, A_MATRIX_TYPE::s_layout, register_policy> >(get_result(), x);
+        return MatrixProductRef<result_type, RegisterMatrix<element_type, A_MATRIX_TYPE::s_layout, register_policy> >(get_result(), x);
       }
 
       /*!

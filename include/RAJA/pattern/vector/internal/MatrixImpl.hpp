@@ -43,16 +43,16 @@ namespace internal {
 
   template<typename ELEMENT_TYPE, typename REGISTER_POLICY, camp::idx_t ... IDX>
   struct MatrixMatrixProductHelperExpanded<
-    Matrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>,
-    Matrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>,
+    RegisterMatrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>,
+    RegisterMatrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>,
     camp::idx_seq<IDX...>>
   {
-      using A_type = Matrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>;
-      using B_type = Matrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>;
+      using A_type = RegisterMatrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>;
+      using B_type = RegisterMatrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>;
 
       using vector_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
 
-      using result_type = Matrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>;
+      using result_type = RegisterMatrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>;
 
       RAJA_HOST_DEVICE
       static
@@ -98,16 +98,16 @@ namespace internal {
 
   template<typename ELEMENT_TYPE, typename REGISTER_POLICY, camp::idx_t ... IDX>
   struct MatrixMatrixProductHelperExpanded<
-    Matrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>,
-    Matrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>,
+    RegisterMatrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>,
+    RegisterMatrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>,
     camp::idx_seq<IDX...>>
   {
-      using A_type = Matrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>;
-      using B_type = Matrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>;
+      using A_type = RegisterMatrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>;
+      using B_type = RegisterMatrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>;
 
       using vector_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
 
-      using result_type = Matrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>;
+      using result_type = RegisterMatrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>;
 
 
       RAJA_HOST_DEVICE
@@ -157,11 +157,11 @@ namespace internal {
 
   template<typename ELEMENT_TYPE, MatrixLayout LAYOUT, typename REGISTER_POLICY>
   struct MatrixMatrixProductHelper<
-    Matrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
-    Matrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>> :
+    RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
+    RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>> :
   public
-      MatrixMatrixProductHelperExpanded<Matrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
-                                        Matrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
+      MatrixMatrixProductHelperExpanded<RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
+                                        RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
                                         camp::make_idx_seq_t<Register<REGISTER_POLICY, ELEMENT_TYPE>::s_num_elem>>
     {};
 

@@ -586,7 +586,7 @@ if(VARIANT_RAJA_VECTOR){
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  using matrix_t = RAJA::Matrix<double, MATRIX_ROW_MAJOR>;
+  using matrix_t = RAJA::RegisterMatrix<double, MATRIX_ROW_MAJOR>;
 
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
@@ -684,7 +684,7 @@ if(VARIANT_RAJA_VECTOR){
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  using matrix_t = RAJA::Matrix<double, MATRIX_COL_MAJOR>;
+  using matrix_t = RAJA::RegisterMatrix<double, MATRIX_COL_MAJOR>;
 
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
@@ -783,7 +783,7 @@ if(VARIANT_RAJA_VECTOR){
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  using matrix_t = RAJA::Matrix<double, MATRIX_COL_MAJOR, RAJA::policy::register_default>;
+  using matrix_t = RAJA::RegisterMatrix<double, MATRIX_COL_MAJOR, RAJA::policy::register_default>;
 
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
@@ -1087,7 +1087,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
   constexpr size_t tile_z = 16;
   constexpr size_t tile_g = 0;
 
-  using matrix_t = RAJA::Matrix<double, RAJA::MATRIX_COL_MAJOR>;
+  using matrix_t = RAJA::RegisterMatrix<double, RAJA::MATRIX_COL_MAJOR>;
 
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
@@ -1612,7 +1612,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
                           cudaMemcpyHostToDevice ) );
 
 
-  using matrix_t = RAJA::Matrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::cuda_warp_register<3>>;
+  using matrix_t = RAJA::RegisterMatrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::cuda_warp_register<3>>;
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
   using ColD = RAJA::ColIndex<ID, matrix_t>;
