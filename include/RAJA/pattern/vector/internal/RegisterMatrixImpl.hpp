@@ -33,7 +33,7 @@ namespace internal {
 
 
   template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, MatrixLayout LAYOUT, typename IDX_SEQ>
-  class MatrixImpl;
+  class RegisterMatrixImpl;
 
 
 
@@ -172,7 +172,7 @@ namespace internal {
 } // namespace RAJA
 
 
-#include "RAJA/pattern/vector/internal/MatrixBase.hpp"
+#include "RegisterMatrixBase.hpp"
 #include "RAJA/pattern/vector/internal/MatrixProductRef.hpp"
 #include "RAJA/pattern/vector/internal/MatrixRef.hpp"
 
@@ -190,12 +190,12 @@ namespace internal {
    * Row-Major implementation of MatrixImpl
    */
   template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... IDX>
-  class MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...>> :
-   public RegisterMatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...>>>
+  class RegisterMatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...>> :
+   public RegisterMatrixBase<RegisterMatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...>>>
   {
     public:
       using self_type = MATRIX_TYPE;
-      using base_type = RegisterMatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...> >>;
+      using base_type = RegisterMatrixBase<RegisterMatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...> >>;
 
       using vector_type = typename base_type::vector_type;
       using register_type = typename vector_type::register_type;
@@ -224,19 +224,19 @@ namespace internal {
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixImpl(): base_type()
+      RegisterMatrixImpl(): base_type()
       {}
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixImpl(element_type c) :
+      RegisterMatrixImpl(element_type c) :
         base_type(),
         m_rows{(IDX >= 0) ? vector_type(c) : vector_type(c)...}
       {}
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixImpl(self_type const &c) :
+      RegisterMatrixImpl(self_type const &c) :
         base_type(c),
         m_rows{c.m_rows[IDX]...}
       {}
@@ -244,7 +244,7 @@ namespace internal {
       template<typename ... ROWS>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixImpl(ROWS const &... rows) :
+      RegisterMatrixImpl(ROWS const &... rows) :
         base_type(),
         m_rows{rows...}
       {
@@ -254,7 +254,7 @@ namespace internal {
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixImpl &operator=(self_type const &c){
+      RegisterMatrixImpl &operator=(self_type const &c){
         return copy(c);
       }
 
@@ -531,12 +531,12 @@ namespace internal {
    * Column-Major implementation of MatrixImpl
    */
   template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... IDX>
-  class MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...>> :
-   public RegisterMatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...> >>
+  class RegisterMatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...>> :
+   public RegisterMatrixBase<RegisterMatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...> >>
   {
     public:
       using self_type = MATRIX_TYPE;
-      using base_type = RegisterMatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...> >>;
+      using base_type = RegisterMatrixBase<RegisterMatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...> >>;
 
       using vector_type = typename base_type::vector_type;
       using register_type = typename vector_type::register_type;
@@ -565,20 +565,20 @@ namespace internal {
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixImpl() :
+      RegisterMatrixImpl() :
         base_type()
       {}
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixImpl(element_type c) :
+      RegisterMatrixImpl(element_type c) :
         base_type(),
         m_cols{(IDX >= 0) ? vector_type(c) : vector_type(c)...}
       {}
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixImpl(self_type const &c) :
+      RegisterMatrixImpl(self_type const &c) :
         base_type(c),
         m_cols{c.m_cols[IDX]...}
       {}
@@ -586,7 +586,7 @@ namespace internal {
       template<typename ... COLS>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixImpl(COLS const &... cols) :
+      RegisterMatrixImpl(COLS const &... cols) :
       base_type(),
       m_cols{cols...}
       {
@@ -597,7 +597,7 @@ namespace internal {
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      MatrixImpl &operator=(self_type const &c){
+      RegisterMatrixImpl &operator=(self_type const &c){
         return copy(c);
       }
 

@@ -32,7 +32,7 @@ namespace RAJA
 
 }//namespace RAJA
 
-#include "RAJA/pattern/vector/internal/MatrixImpl.hpp"
+#include "internal/RegisterMatrixImpl.hpp"
 
 namespace RAJA
 {
@@ -41,7 +41,7 @@ namespace RAJA
    * Wrapping class for internal::MatrixImpl that hides all of the long camp::idx_seq<...> template stuff from the user.
    */
   template<typename T, MatrixLayout LAYOUT, typename REGISTER_POLICY = RAJA::policy::register_default>
-  class RegisterMatrix : public internal::MatrixImpl<
+  class RegisterMatrix : public internal::RegisterMatrixImpl<
     RegisterMatrix<T, LAYOUT, REGISTER_POLICY>,
     REGISTER_POLICY,
     T,
@@ -50,7 +50,7 @@ namespace RAJA
   {
     public:
       using self_type = RegisterMatrix<T, LAYOUT, REGISTER_POLICY>;
-      using base_type = internal::MatrixImpl<self_type, REGISTER_POLICY, T,
+      using base_type = internal::RegisterMatrixImpl<self_type, REGISTER_POLICY, T,
           LAYOUT,
           camp::make_idx_seq_t<Register<REGISTER_POLICY, T>::s_num_elem>>;
 

@@ -30,7 +30,7 @@ namespace RAJA
   class RegisterMatrixBase;
 
   template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, MatrixLayout LAYOUT, camp::idx_t ... IDX>
-  class RegisterMatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, LAYOUT, camp::idx_seq<IDX...> >>
+  class RegisterMatrixBase<RegisterMatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, LAYOUT, camp::idx_seq<IDX...> >>
   {
     public:
       using self_type = MATRIX_TYPE;
