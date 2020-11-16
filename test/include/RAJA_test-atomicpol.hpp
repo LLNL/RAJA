@@ -22,7 +22,6 @@ using SequentialAtomicPols =
               RAJA::cuda_atomic_explicit<RAJA::seq_atomic>,
 #if defined(RAJA_TEST_EXHAUSTIVE)
               RAJA::cuda_atomic_explicit<RAJA::loop_atomic>,
-              RAJA::cuda_atomic_explicit<RAJA::auto_atomic>,
               RAJA::cuda_atomic_explicit<RAJA::builtin_atomic>,
 #endif
 #endif
@@ -30,7 +29,6 @@ using SequentialAtomicPols =
               RAJA::hip_atomic_explicit<RAJA::seq_atomic>,
 #if defined(RAJA_TEST_EXHAUSTIVE)
               RAJA::hip_atomic_explicit<RAJA::loop_atomic>,
-              RAJA::hip_atomic_explicit<RAJA::auto_atomic>,
               RAJA::hip_atomic_explicit<RAJA::builtin_atomic>,
 #endif
 #endif
@@ -45,16 +43,14 @@ using OpenMPAtomicPols =
               RAJA::builtin_atomic,
 #endif
 #if defined(RAJA_ENABLE_CUDA)
-              RAJA::cuda_atomic_explicit<RAJA::auto_atomic>,
-#if defined(RAJA_TEST_EXHAUSTIVE)
               RAJA::cuda_atomic_explicit<RAJA::omp_atomic>,
+#if defined(RAJA_TEST_EXHAUSTIVE)
               RAJA::cuda_atomic_explicit<RAJA::builtin_atomic>,
 #endif
 #endif
 #if defined(RAJA_ENABLE_HIP)
-              RAJA::hip_atomic_explicit<RAJA::auto_atomic>,
-#if defined(RAJA_TEST_EXHAUSTIVE)
               RAJA::hip_atomic_explicit<RAJA::omp_atomic>,
+#if defined(RAJA_TEST_EXHAUSTIVE)
               RAJA::hip_atomic_explicit<RAJA::builtin_atomic>,
 #endif
 #endif
@@ -82,7 +78,6 @@ using CudaAtomicPols =
               RAJA::auto_atomic,
               RAJA::cuda_atomic_explicit<RAJA::seq_atomic>,
               RAJA::cuda_atomic_explicit<RAJA::loop_atomic>,
-              RAJA::cuda_atomic_explicit<RAJA::auto_atomic>,
               RAJA::cuda_atomic_explicit<RAJA::builtin_atomic>,
 #if defined(RAJA_ENABLE_OPENMP)
               RAJA::cuda_atomic_explicit<RAJA::omp_atomic>,
@@ -99,7 +94,6 @@ using HipAtomicPols =
                RAJA::auto_atomic,
                RAJA::hip_atomic_explicit<RAJA::seq_atomic>,
                RAJA::hip_atomic_explicit<RAJA::loop_atomic>,
-               RAJA::hip_atomic_explicit<RAJA::auto_atomic>,
                RAJA::hip_atomic_explicit<RAJA::builtin_atomic>,
 #if defined(RAJA_ENABLE_OPENMP)
                RAJA::hip_atomic_explicit<RAJA::omp_atomic>,
