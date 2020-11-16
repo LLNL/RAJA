@@ -191,11 +191,11 @@ namespace internal {
    */
   template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... IDX>
   class MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...>> :
-   public MatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...>>>
+   public RegisterMatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...>>>
   {
     public:
       using self_type = MATRIX_TYPE;
-      using base_type = MatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...> >>;
+      using base_type = RegisterMatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...> >>;
 
       using vector_type = typename base_type::vector_type;
       using register_type = typename vector_type::register_type;
@@ -532,11 +532,11 @@ namespace internal {
    */
   template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... IDX>
   class MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...>> :
-   public MatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...> >>
+   public RegisterMatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...> >>
   {
     public:
       using self_type = MATRIX_TYPE;
-      using base_type = MatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...> >>;
+      using base_type = RegisterMatrixBase<MatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...> >>;
 
       using vector_type = typename base_type::vector_type;
       using register_type = typename vector_type::register_type;
