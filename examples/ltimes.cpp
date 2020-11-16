@@ -119,7 +119,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const long num_z = 17 + (rand()/RAND_MAX);
 #else
   const int num_iter = 10 + (rand()/RAND_MAX);
-  const int num_z = 32*1024 + (rand()/RAND_MAX);
+  const int num_z = 8*1024 + (rand()/RAND_MAX);
 #endif
 
 
@@ -1370,7 +1370,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
 
 //----------------------------------------------------------------------------//
 
-#if defined(RAJA_ENABLE_CUDA0)
+#if defined(RAJA_ENABLE_CUDA)
 {
   std::cout << "\n Running RAJA CUDA version of LTimes...\n";
 
@@ -1475,7 +1475,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
 
 //----------------------------------------------------------------------------//
 
-#if 0 && defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 {
   std::cout << "\n Running RAJA CUDA Teams version of LTimes...\n";
 
@@ -1496,7 +1496,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
                           cudaMemcpyHostToDevice ) );
 
 
-  using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t, RAJA::expt::cuda_launch_t<true ,0> >;
+  using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t, RAJA::expt::cuda_launch_t<true, 512> >;
   using pol_g = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_block_x_loop>;
   using pol_z = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_thread_y_loop>;
   using pol_m = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_thread_x_loop>;
@@ -1533,35 +1533,27 @@ if(VARIANT_RAJA_SEQ_SHMEM){
   timer.start();
 
 
-
-  using matrix_t = RAJA::StreamMatrix<double,2,2, RAJA::MATRIX_ROW_MAJOR, RAJA::cuda_warp_register<1>>;
-
-  using RowM = RAJA::RowIndex<IM, matrix_t>;
-  using ColD = RAJA::ColIndex<ID, matrix_t>;
-  using ColZ = RAJA::ColIndex<IZ, matrix_t>;
-
   for (int iter = 0;iter < num_iter;++ iter){
     RAJA::expt::launch<pol_launch>(
         RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(160, 1, 1),
-                              RAJA::expt::Threads(4, 16, 1)),
+                              RAJA::expt::Threads(8, 64, 1)),
         [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
     {
       RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
         RAJA::expt::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](IZ z){
           RAJA::expt::loop<pol_m>(ctx, RAJA::TypedRangeSegment<IM>(0, num_m), [&](IM m){
 
-            //matrix_t acc = phi(m, g, z);
+            double acc = phi(m, g, z);
 
             RAJA::expt::loop<pol_d>(ctx, RAJA::TypedRangeSegment<ID>(0, num_d), [&](ID d){
 
-              //acc = L(m, d) * psi(toRowIndex(d), g, z) + acc;
+              acc += L(m, d) * psi(d, g, z) + acc;
 
-              phi(RowM(m),g,ColZ(z)) += L(RowM(m), ColD(d)) * psi(toRowIndex(ColD(d)), g, ColZ(z));
 
             });
 
-            //phi(m,g,z) = acc;
+            phi(m,g,z) = acc;
           });
         });
       });
@@ -1599,7 +1591,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
 
 //----------------------------------------------------------------------------//
 
-#if 1 && defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 {
   std::cout << "\n Running RAJA CUDA Teams+Matrix version of LTimes...\n";
 
@@ -1722,7 +1714,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
 
 //----------------------------------------------------------------------------//
 
-#if defined(RAJA_ENABLE_CUDA0)
+#if defined(RAJA_ENABLE_CUDA)
 {
   std::cout << "\n Running RAJA CUDA + shmem version of LTimes...\n";
 
