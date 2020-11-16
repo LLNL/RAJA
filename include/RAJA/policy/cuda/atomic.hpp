@@ -609,7 +609,7 @@ atomicAdd(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicAdd(acc, value);
 #else
-  return atomicAdd(host_policy{}, acc, value);
+  return RAJA::atomicAdd(host_policy{}, acc, value);
 #endif
 }
 
@@ -621,7 +621,7 @@ atomicSub(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicSub(acc, value);
 #else
-  return atomicSub(host_policy{}, acc, value);
+  return RAJA::atomicSub(host_policy{}, acc, value);
 #endif
 }
 
@@ -633,7 +633,7 @@ atomicMin(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicMin(acc, value);
 #else
-  return atomicMin(host_policy{}, acc, value);
+  return RAJA::atomicMin(host_policy{}, acc, value);
 #endif
 }
 
@@ -645,7 +645,7 @@ atomicMax(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicMax(acc, value);
 #else
-  return atomicMax(host_policy{}, acc, value);
+  return RAJA::atomicMax(host_policy{}, acc, value);
 #endif
 }
 
@@ -659,7 +659,7 @@ atomicInc(cuda_atomic_explicit<host_policy>, T volatile *acc, T val)
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicinc
   return detail::cuda_atomicInc(acc, val);
 #else
-  return atomicInc(host_policy{}, acc, val);
+  return RAJA::atomicInc(host_policy{}, acc, val);
 #endif
 }
 
@@ -671,7 +671,7 @@ atomicInc(cuda_atomic_explicit<host_policy>, T volatile *acc)
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicInc(acc);
 #else
-  return atomicInc(host_policy{}, acc);
+  return RAJA::atomicInc(host_policy{}, acc);
 #endif
 }
 
@@ -685,7 +685,7 @@ atomicDec(cuda_atomic_explicit<host_policy>, T volatile *acc, T val)
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicdec
   return detail::cuda_atomicDec(acc, val);
 #else
-  return atomicDec(host_policy{}, acc, val);
+  return RAJA::atomicDec(host_policy{}, acc, val);
 #endif
 }
 
@@ -697,7 +697,7 @@ atomicDec(cuda_atomic_explicit<host_policy>, T volatile *acc)
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicDec(acc);
 #else
-  return atomicDec(host_policy{}, acc);
+  return RAJA::atomicDec(host_policy{}, acc);
 #endif
 }
 
@@ -709,7 +709,7 @@ atomicAnd(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicAnd(acc, value);
 #else
-  return atomicAnd(host_policy{}, acc, value);
+  return RAJA::atomicAnd(host_policy{}, acc, value);
 #endif
 }
 
@@ -721,7 +721,7 @@ atomicOr(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicOr(acc, value);
 #else
-  return atomicOr(host_policy{}, acc, value);
+  return RAJA::atomicOr(host_policy{}, acc, value);
 #endif
 }
 
@@ -733,7 +733,7 @@ atomicXor(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicXor(acc, value);
 #else
-  return atomicXor(host_policy{}, acc, value);
+  return RAJA::atomicXor(host_policy{}, acc, value);
 #endif
 }
 
@@ -745,7 +745,7 @@ atomicExchange(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicExchange(acc, value);
 #else
-  return atomicExchange(host_policy{}, acc, value);
+  return RAJA::atomicExchange(host_policy{}, acc, value);
 #endif
 }
 
@@ -757,7 +757,7 @@ atomicCAS(cuda_atomic_explicit<host_policy>, T volatile *acc, T compare, T value
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicCAS(acc, compare, value);
 #else
-  return atomicCAS(host_policy{}, acc, compare, value);
+  return RAJA::atomicCAS(host_policy{}, acc, compare, value);
 #endif
 }
 

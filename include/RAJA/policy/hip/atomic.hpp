@@ -591,7 +591,7 @@ atomicAdd(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicAdd(acc, value);
 #else
-  return atomicAdd(host_policy{}, acc, value);
+  return RAJA::atomicAdd(host_policy{}, acc, value);
 #endif
 }
 
@@ -603,7 +603,7 @@ atomicSub(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicSub(acc, value);
 #else
-  return atomicSub(host_policy{}, acc, value);
+  return RAJA::atomicSub(host_policy{}, acc, value);
 #endif
 }
 
@@ -615,7 +615,7 @@ atomicMin(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicMin(acc, value);
 #else
-  return atomicMin(host_policy{}, acc, value);
+  return RAJA::atomicMin(host_policy{}, acc, value);
 #endif
 }
 
@@ -627,7 +627,7 @@ atomicMax(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicMax(acc, value);
 #else
-  return atomicMax(host_policy{}, acc, value);
+  return RAJA::atomicMax(host_policy{}, acc, value);
 #endif
 }
 
@@ -639,7 +639,7 @@ atomicInc(hip_atomic_explicit<host_policy>, T volatile *acc, T val)
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicInc(acc, val);
 #else
-  return atomicInc(host_policy{}, acc, val);
+  return RAJA::atomicInc(host_policy{}, acc, val);
 #endif
 }
 
@@ -651,7 +651,7 @@ atomicInc(hip_atomic_explicit<host_policy>, T volatile *acc)
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicInc(acc);
 #else
-  return atomicInc(host_policy{}, acc);
+  return RAJA::atomicInc(host_policy{}, acc);
 #endif
 }
 
@@ -663,7 +663,7 @@ atomicDec(hip_atomic_explicit<host_policy>, T volatile *acc, T val)
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicDec(acc, val);
 #else
-  return atomicDec(host_policy{}, acc, val);
+  return RAJA::atomicDec(host_policy{}, acc, val);
 #endif
 }
 
@@ -675,7 +675,7 @@ atomicDec(hip_atomic_explicit<host_policy>, T volatile *acc)
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicDec(acc);
 #else
-  return atomicDec(host_policy{}, acc);
+  return RAJA::atomicDec(host_policy{}, acc);
 #endif
 }
 
@@ -687,7 +687,7 @@ atomicAnd(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicAnd(acc, value);
 #else
-  return atomicAnd(host_policy{}, acc, value);
+  return RAJA::atomicAnd(host_policy{}, acc, value);
 #endif
 }
 
@@ -699,7 +699,7 @@ atomicOr(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicOr(acc, value);
 #else
-  return atomicOr(host_policy{}, acc, value);
+  return RAJA::atomicOr(host_policy{}, acc, value);
 #endif
 }
 
@@ -711,7 +711,7 @@ atomicXor(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicXor(acc, value);
 #else
-  return atomicXor(host_policy{}, acc, value);
+  return RAJA::atomicXor(host_policy{}, acc, value);
 #endif
 }
 
@@ -723,7 +723,7 @@ atomicExchange(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicExchange(acc, value);
 #else
-  return atomicExchange(host_policy{}, acc, value);
+  return RAJA::atomicExchange(host_policy{}, acc, value);
 #endif
 }
 
@@ -735,7 +735,7 @@ atomicCAS(hip_atomic_explicit<host_policy>, T volatile *acc, T compare, T value)
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicCAS(acc, compare, value);
 #else
-  return atomicCAS(host_policy{}, acc, compare, value);
+  return RAJA::atomicCAS(host_policy{}, acc, compare, value);
 #endif
 }
 
