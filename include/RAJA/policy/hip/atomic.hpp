@@ -27,6 +27,14 @@
 #include "hip/hip_runtime.h"
 
 #include "RAJA/policy/loop/atomic.hpp"
+#include "RAJA/policy/sequential/atomic.hpp"
+#include "RAJA/policy/atomic_builtin.hpp"
+#if defined(RAJA_ENABLE_OPENMP)
+#include "RAJA/policy/openmp/atomic.hpp"
+#endif
+#if defined(RAJA_ENABLE_TBB)
+#include "RAJA/policy/tbb/atomic.hpp"
+#endif
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/TypeConvert.hpp"
