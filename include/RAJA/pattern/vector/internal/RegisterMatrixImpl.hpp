@@ -23,6 +23,9 @@
 #include "RAJA/pattern/vector/Vector.hpp"
 
 #include "camp/camp.hpp"
+
+//#define DEBUG_MATRIX_LOAD_STORE
+
 namespace RAJA
 {
 
@@ -296,6 +299,10 @@ namespace internal {
       self_type &load_packed(element_type const *ptr,
           int row_stride, int)
       {
+#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
+        printf("th%d,%d: RM load_packed, stride=%d,%d\n",
+            threadIdx.x, threadIdx.y, row_stride, 1);
+#endif
         // load all rows as packed data
         camp::sink(
             m_rows[IDX].load_packed(ptr+IDX*row_stride)...
@@ -312,6 +319,10 @@ namespace internal {
       self_type &load_strided(element_type const *ptr,
           int row_stride, int col_stride)
       {
+#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
+        printf("th%d,%d: RM load_strided, stride=%d,%d\n",
+            threadIdx.x, threadIdx.y, row_stride, col_stride);
+#endif
         // load all rows width a stride
         camp::sink(
             m_rows[IDX].load_strided(ptr+IDX*row_stride, col_stride)...
@@ -329,6 +340,10 @@ namespace internal {
           int row_stride, int,
           int num_rows, int num_cols)
       {
+#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
+        printf("th%d,%d: RM load_packed_nm, stride=%d,%d, nm=%d,%d\n",
+            threadIdx.x, threadIdx.y, row_stride, 1, num_rows, num_cols);
+#endif
         // only load num_rows rows with packed data
         camp::sink(
             (IDX < num_rows
@@ -348,6 +363,10 @@ namespace internal {
           int row_stride, int col_stride,
           int num_rows, int num_cols)
       {
+#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
+        printf("th%d,%d: RM load_strided_nm, stride=%d,%d, nm=%d,%d\n",
+            threadIdx.x, threadIdx.y, row_stride, col_stride, num_rows, num_cols);
+#endif
         // only load num_rows rows with strided data
         camp::sink(
             (IDX < num_rows
@@ -370,6 +389,10 @@ namespace internal {
       self_type &store_packed(element_type *ptr,
           int row_stride, int)
       {
+#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
+        printf("th%d,%d: RM store_packed, stride=%d,%d\n",
+            threadIdx.x, threadIdx.y, row_stride, 1);
+#endif
         // store all rows as packed data
         camp::sink(
             m_rows[IDX].store_packed(ptr+IDX*row_stride)...
@@ -386,6 +409,10 @@ namespace internal {
       self_type &store_strided(element_type *ptr,
           int row_stride, int col_stride)
       {
+#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
+        printf("th%d,%d: RM store_strided, stride=%d,%d\n",
+            threadIdx.x, threadIdx.y, row_stride, col_stride);
+#endif
         // store all rows width a column stride
         camp::sink(
             m_rows[IDX].store_strided(ptr+IDX*row_stride, col_stride)...
@@ -403,6 +430,10 @@ namespace internal {
           int row_stride, int ,
           int num_rows, int num_cols)
       {
+#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
+        printf("th%d,%d: RM store_packed_nm, stride=%d,%d, nm=%d,%d\n",
+            threadIdx.x, threadIdx.y, row_stride, 1, num_rows, num_cols);
+#endif
         // only store num_rows rows with packed data
         camp::sink(
             (IDX < num_rows
@@ -422,6 +453,10 @@ namespace internal {
           int row_stride, int col_stride,
           int num_rows, int num_cols)
       {
+#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
+        printf("th%d,%d: RM store_strided_nm, stride=%d,%d, nm=%d,%d\n",
+            threadIdx.x, threadIdx.y, row_stride, col_stride, num_rows, num_cols);
+#endif
         // only store num_rows rows with strided data
         camp::sink(
             (IDX < num_rows
@@ -640,6 +675,10 @@ namespace internal {
       self_type &load_packed(element_type const *ptr,
           int, int col_stride)
       {
+#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
+        printf("th%d,%d: CM load_packed, stride=%d,%d\n",
+            threadIdx.x, threadIdx.y, 1, col_stride);
+#endif
         // load all rows as packed data
         camp::sink(
             m_cols[IDX].load_packed(ptr+IDX*col_stride)...
@@ -656,6 +695,10 @@ namespace internal {
       self_type &load_strided(element_type const *ptr,
           int row_stride, int col_stride)
       {
+#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
+        printf("th%d,%d: CM load_strided, stride=%d,%d\n",
+            threadIdx.x, threadIdx.y, row_stride, col_stride);
+#endif
         // load all rows width a stride
         camp::sink(
             m_cols[IDX].load_strided(ptr+IDX*col_stride, row_stride)...
@@ -673,11 +716,15 @@ namespace internal {
           int, int col_stride,
           int num_rows, int num_cols)
       {
+#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
+        printf("th%d,%d: CM load_packed_nm, stride=%d,%d, nm=%d,%d\n",
+            threadIdx.x, threadIdx.y, 1, col_stride, num_rows, num_cols);
+#endif
         // only load num_rows rows with packed data
         camp::sink(
             (IDX < num_cols
             ?  m_cols[IDX].load_packed_n(ptr+IDX*col_stride, num_rows)
-            :  m_cols[IDX].broadcast(0))... // NOP, but has same as above type
+            :  m_cols[IDX].broadcast(0))...
         );
 
         return *getThis();
@@ -692,11 +739,15 @@ namespace internal {
           int row_stride, int col_stride,
           int num_rows, int num_cols)
       {
+#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
+        printf("th%d,%d: CM load_strided_nm, stride=%d,%d, nm=%d,%d\n",
+            threadIdx.x, threadIdx.y, row_stride, col_stride, num_rows, num_cols);
+#endif
         // only load num_rows rows with strided data
         camp::sink(
             (IDX < num_cols
             ?   m_cols[IDX].load_strided_n(ptr+IDX*col_stride, row_stride, num_rows)
-            :  m_cols[IDX].broadcast(0))... // NOP, but has same as above type
+            :  m_cols[IDX].broadcast(0))...
         );
 
         return *getThis();
@@ -714,6 +765,10 @@ namespace internal {
       self_type &store_packed(element_type *ptr,
           int, int col_stride)
       {
+#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
+        printf("th%d,%d: CM store_packed, stride=%d,%d\n",
+            threadIdx.x, threadIdx.y, 1, col_stride);
+#endif
         // store all rows as packed data
         camp::sink(
             m_cols[IDX].store_packed(ptr+IDX*col_stride)...
@@ -730,6 +785,10 @@ namespace internal {
       self_type &store_strided(element_type *ptr,
           int row_stride, int col_stride)
       {
+#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
+        printf("th%d,%d: CM store_strided, stride=%d,%d\n",
+            threadIdx.x, threadIdx.y, row_stride, col_stride);
+#endif
         // store all rows width a column stride
         camp::sink(
             m_cols[IDX].store_strided(ptr+IDX*col_stride, row_stride)...
@@ -747,6 +806,10 @@ namespace internal {
           int, int col_stride,
           int num_rows, int num_cols)
       {
+#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
+        printf("th%d,%d: CM store_packed_nm, stride=%d,%d, nm=%d,%d\n",
+            threadIdx.x, threadIdx.y, 1, col_stride, num_rows, num_cols);
+#endif
         // only store num_rows rows with packed data
         camp::sink(
             (IDX < num_cols
@@ -766,6 +829,10 @@ namespace internal {
           int row_stride, int col_stride,
           int num_rows, int num_cols)
       {
+#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
+        printf("th%d,%d: CM store_strided_nm, stride=%d,%d, nm=%d,%d\n",
+            threadIdx.x, threadIdx.y, row_stride, col_stride, num_rows, num_cols);
+#endif
         // only store num_rows rows with strided data
         camp::sink(
             (IDX < num_cols

@@ -12,17 +12,35 @@
 // Un-comment the following line to run correctness checks on each variant
 //#define DEBUG_LTIMES
 
-#define VARIANT_C                    1
-#define VARIANT_C_VIEWS              1
-#define VARIANT_RAJA_SEQ             1
-#define VARIANT_RAJA_SEQ_ARGS        1
-#define VARIANT_RAJA_TEAMS_SEQ       1
-#define VARIANT_RAJA_VECTOR          1
-#define VARIANT_RAJA_MATRIX          1
-#define VARIANT_RAJA_TEAMS_MATRIX    1
-#define VARIANT_RAJA_SEQ_SHMEM       1
-#define VARIANT_RAJA_MATRIX_SHMEM    1
-#define VARIANT_RAJA_OPENMP          1
+#include "RAJA/config.hpp"
+
+#define VARIANT_C                    0
+#define VARIANT_C_VIEWS              0
+#define VARIANT_RAJA_SEQ             0
+#define VARIANT_RAJA_SEQ_ARGS        0
+#define VARIANT_RAJA_TEAMS_SEQ       0
+#define VARIANT_RAJA_VECTOR          0
+#define VARIANT_RAJA_MATRIX          0
+#define VARIANT_RAJA_TEAMS_MATRIX    0
+#define VARIANT_RAJA_SEQ_SHMEM       0
+#define VARIANT_RAJA_MATRIX_SHMEM    0
+
+#if defined(RAJA_ENABLE_OPENMP)
+#define VARIANT_RAJA_OPENMP          0
+#endif
+
+#if defined(RAJA_ENABLE_CUDA)
+#define VARIANT_CUDA_KERNEL          0
+#define VARIANT_CUDA_TEAMS           0
+#define VARIANT_CUDA_TEAMS_MATRIX    1
+#define VARIANT_CUDA_KERNEL_SHMEM    0
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+#define RAJA_HIP_KERNEL              0
+#define RAJA_HIP_KERNEL_SHMEM        0
+#endif
+
 
 
 #include <cstdlib>
@@ -107,8 +125,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Define array dimensions, allocate arrays, define Layouts and Views, etc.
   // Note: rand()/RAND_MAX is always zero, but forces the compiler to not
   // optimize out these values as compile time constants
-  const int num_m = 24 + (rand()/RAND_MAX);
-  const int num_g = 64 + (rand()/RAND_MAX);
+  const int num_m = 32 + (rand()/RAND_MAX);
+  const int num_g = 160 + (rand()/RAND_MAX);
   const int num_d = 80 + (rand()/RAND_MAX);
 
 
@@ -119,7 +137,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const long num_z = 17 + (rand()/RAND_MAX);
 #else
   const int num_iter = 10 + (rand()/RAND_MAX);
-  const int num_z = 8*1024 + (rand()/RAND_MAX);
+  const int num_z = 64*1024 + (rand()/RAND_MAX);
 #endif
 
 
@@ -156,7 +174,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-if(VARIANT_C){
+#if VARIANT_C
+{
   std::cout << "\n Running baseline C-version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -194,10 +213,12 @@ if(VARIANT_C){
             << t <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
 }
+#endif
 
 //----------------------------------------------------------------------------//
 
-if(VARIANT_C_VIEWS){
+#if VARIANT_C_VIEWS
+{
   std::cout << "\n Running C-version of LTimes (with Views)...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -252,10 +273,12 @@ if(VARIANT_C_VIEWS){
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
 #endif
 }
+#endif
 
 //----------------------------------------------------------------------------//
 
-if(VARIANT_RAJA_SEQ){
+#if VARIANT_RAJA_SEQ
+{
   std::cout << "\n Running RAJA sequential version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -323,10 +346,12 @@ if(VARIANT_RAJA_SEQ){
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
 #endif
 }
+#endif
 
 //----------------------------------------------------------------------------//
 
-if(VARIANT_RAJA_SEQ_ARGS){
+#if VARIANT_RAJA_SEQ_ARGS
+{
   std::cout << "\n Running RAJA sequential ARGS version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -394,10 +419,12 @@ if(VARIANT_RAJA_SEQ_ARGS){
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
 #endif
 }
+#endif
 
 //----------------------------------------------------------------------------//
 
-if(VARIANT_RAJA_TEAMS_SEQ){
+#if VARIANT_RAJA_TEAMS_SEQ
+{
   std::cout << "\n Running RAJA Teams sequential version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -468,10 +495,12 @@ if(VARIANT_RAJA_TEAMS_SEQ){
 
 
 }
+#endif
 
 //----------------------------------------------------------------------------//
 
-if(VARIANT_RAJA_VECTOR){
+#if VARIANT_RAJA_VECTOR
+{
   std::cout << "\n Running RAJA vectorized version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -552,6 +581,7 @@ if(VARIANT_RAJA_VECTOR){
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
 #endif
 }
+#endif
 
 //----------------------------------------------------------------------------//
 
@@ -847,7 +877,8 @@ if(VARIANT_RAJA_VECTOR){
 #endif
 
 //----------------------------------------------------------------------------//
-if(VARIANT_RAJA_SEQ_SHMEM){
+#if VARIANT_RAJA_SEQ_SHMEM
+{
   std::cout << "\n Running RAJA sequential shmem version of LTimes...\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
@@ -1049,6 +1080,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
 #endif
 }
+#endif
 
 //----------------------------------------------------------------------------//
 
@@ -1370,7 +1402,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
 
 //----------------------------------------------------------------------------//
 
-#if defined(RAJA_ENABLE_CUDA)
+#if VARIANT_CUDA_KERNEL
 {
   std::cout << "\n Running RAJA CUDA version of LTimes...\n";
 
@@ -1475,7 +1507,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
 
 //----------------------------------------------------------------------------//
 
-#if defined(RAJA_ENABLE_CUDA)
+#if VARIANT_CUDA_TEAMS
 {
   std::cout << "\n Running RAJA CUDA Teams version of LTimes...\n";
 
@@ -1548,7 +1580,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
 
             RAJA::expt::loop<pol_d>(ctx, RAJA::TypedRangeSegment<ID>(0, num_d), [&](ID d){
 
-              acc += L(m, d) * psi(d, g, z) + acc;
+              acc += L(m, d) * psi(d, g, z);
 
 
             });
@@ -1591,7 +1623,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
 
 //----------------------------------------------------------------------------//
 
-#if defined(RAJA_ENABLE_CUDA)
+#if VARIANT_CUDA_TEAMS_MATRIX
 {
   std::cout << "\n Running RAJA CUDA Teams+Matrix version of LTimes...\n";
 
@@ -1612,7 +1644,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
                           cudaMemcpyHostToDevice ) );
 
 
-  using matrix_t = RAJA::RegisterMatrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::cuda_warp_register<3>>;
+  using matrix_t = RAJA::RegisterMatrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::cuda_warp_register<4>>;
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
   using ColD = RAJA::ColIndex<ID, matrix_t>;
@@ -1659,20 +1691,22 @@ if(VARIANT_RAJA_SEQ_SHMEM){
     RAJA::expt::launch<pol_launch>(
         RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(num_g, 1, 1),
-                              RAJA::expt::Threads(8, 64, 1)),
+                              RAJA::expt::Threads(16, 32, 1)),
         [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
     {
       RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
         RAJA::expt::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](ColZ z){
+
+
           RAJA::expt::loop<pol_m>(ctx, RAJA::TypedRangeSegment<IM>(0, num_m), [&](RowM m){
 
             matrix_t acc = phi(m, g, z);
 
             RAJA::expt::loop<pol_d>(ctx, RAJA::TypedRangeSegment<ID>(0, num_d), [&](ColD d){
 
-              acc = L(m, d) * psi(toRowIndex(d), g, z) + acc;
 
-//              phi(m,g,z) += L(m, d) * psi(toRowIndex(d), g, z);
+              acc += L(m, d) * psi(toRowIndex(d), g, z);
+
 
             });
 
@@ -1714,7 +1748,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
 
 //----------------------------------------------------------------------------//
 
-#if defined(RAJA_ENABLE_CUDA)
+#if VARIANT_CUDA_KERNEL_SHMEM
 {
   std::cout << "\n Running RAJA CUDA + shmem version of LTimes...\n";
 
@@ -1955,7 +1989,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
 
 //----------------------------------------------------------------------------//
 
-#if defined(RAJA_ENABLE_HIP)
+#if RAJA_HIP_KERNEL
 {
   std::cout << "\n Running RAJA HIP version of LTimes...\n";
 
@@ -2057,7 +2091,7 @@ if(VARIANT_RAJA_SEQ_SHMEM){
 
 //----------------------------------------------------------------------------//
 
-#if defined(RAJA_ENABLE_HIP)
+#if RAJA_HIP_KERNEL_SHMEM
 {
   std::cout << "\n Running RAJA HIP + shmem version of LTimes...\n";
 

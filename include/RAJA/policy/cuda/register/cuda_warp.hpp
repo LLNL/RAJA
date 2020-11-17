@@ -268,8 +268,7 @@ namespace RAJA {
       RAJA_DEVICE
       element_type get(int i) const
 			{
-        //return  __shfl_sync(0xffffffff, m_value, i + threadIdx.x - bitmask_t::maskValue(threadIdx.x));
-        return  __shfl_sync(0xffffffff, m_value, i + bitmask_t::maskOuter(threadIdx.x));
+        return  __shfl_sync(0xffffffff, m_value, i, 1 << LANE_BITS);
 			}
 
       /*!
