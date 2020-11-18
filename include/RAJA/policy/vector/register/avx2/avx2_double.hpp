@@ -32,13 +32,13 @@
 namespace RAJA
 {
 
-  template<>
-  class Register<avx2_register, double> :
-    public internal::RegisterBase<Register<avx2_register, double>>
+  template<int SKEW>
+  class Register<avx2_register, double, SKEW> :
+    public internal::RegisterBase<Register<avx2_register, double, SKEW>>
   {
     public:
       using register_policy = avx2_register;
-      using self_type = Register<avx2_register, double>;
+      using self_type = Register<avx2_register, double, SKEW>;
       using element_type = double;
       using register_type = __m256d;
 

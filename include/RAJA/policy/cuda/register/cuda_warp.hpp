@@ -40,13 +40,13 @@ namespace RAJA {
 
 
 
-  template<int LANE_BITS, typename ELEMENT_TYPE>
-  class Register<cuda_warp_register<LANE_BITS>, ELEMENT_TYPE> :
-    public internal::RegisterBase<Register<cuda_warp_register<LANE_BITS>, ELEMENT_TYPE>>
+  template<int LANE_BITS, typename ELEMENT_TYPE, int SKEW>
+  class Register<cuda_warp_register<LANE_BITS>, ELEMENT_TYPE, SKEW> :
+    public internal::RegisterBase<Register<cuda_warp_register<LANE_BITS>, ELEMENT_TYPE, SKEW>>
   {
     public:
       using register_policy = cuda_warp_register<LANE_BITS>;
-      using self_type = Register<cuda_warp_register<LANE_BITS>, ELEMENT_TYPE>;
+      using self_type = Register<cuda_warp_register<LANE_BITS>, ELEMENT_TYPE, SKEW>;
       using element_type = ELEMENT_TYPE;
       using register_type = element_type;
 

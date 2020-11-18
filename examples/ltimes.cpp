@@ -14,31 +14,31 @@
 
 #include "RAJA/config.hpp"
 
-#define VARIANT_C                    1
-#define VARIANT_C_VIEWS              1
-#define VARIANT_RAJA_SEQ             1
-#define VARIANT_RAJA_SEQ_ARGS        1
-#define VARIANT_RAJA_TEAMS_SEQ       1
-#define VARIANT_RAJA_VECTOR          1
-#define VARIANT_RAJA_MATRIX          1
-#define VARIANT_RAJA_TEAMS_MATRIX    1
-#define VARIANT_RAJA_SEQ_SHMEM       1
-#define VARIANT_RAJA_MATRIX_SHMEM    1
+#define VARIANT_C                    0
+#define VARIANT_C_VIEWS              0
+#define VARIANT_RAJA_SEQ             0
+#define VARIANT_RAJA_SEQ_ARGS        0
+#define VARIANT_RAJA_TEAMS_SEQ       0
+#define VARIANT_RAJA_VECTOR          0
+#define VARIANT_RAJA_MATRIX          0
+#define VARIANT_RAJA_TEAMS_MATRIX    0
+#define VARIANT_RAJA_SEQ_SHMEM       0
+#define VARIANT_RAJA_MATRIX_SHMEM    0
 
 #if defined(RAJA_ENABLE_OPENMP)
-#define VARIANT_RAJA_OPENMP          1
+#define VARIANT_RAJA_OPENMP          0
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-#define VARIANT_CUDA_KERNEL          1
-#define VARIANT_CUDA_TEAMS           1
+#define VARIANT_CUDA_KERNEL          0
+#define VARIANT_CUDA_TEAMS           0
 #define VARIANT_CUDA_TEAMS_MATRIX    1
-#define VARIANT_CUDA_KERNEL_SHMEM    1
+#define VARIANT_CUDA_KERNEL_SHMEM    0
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-#define RAJA_HIP_KERNEL              1
-#define RAJA_HIP_KERNEL_SHMEM        1
+#define RAJA_HIP_KERNEL              0
+#define RAJA_HIP_KERNEL_SHMEM        0
 #endif
 
 
@@ -125,9 +125,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Define array dimensions, allocate arrays, define Layouts and Views, etc.
   // Note: rand()/RAND_MAX is always zero, but forces the compiler to not
   // optimize out these values as compile time constants
-  const int num_m = 25 + (rand()/RAND_MAX);
-  const int num_g = 160 + (rand()/RAND_MAX);
-  const int num_d = 80 + (rand()/RAND_MAX);
+  const int num_m = 64 + (rand()/RAND_MAX);
+  const int num_g = 80*2 + (rand()/RAND_MAX);
+  const int num_d = 64 + (rand()/RAND_MAX);
 
 
 #ifdef DEBUG_LTIMES
@@ -1644,7 +1644,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                           cudaMemcpyHostToDevice ) );
 
 
-  using matrix_t = RAJA::RegisterMatrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::cuda_warp_register<4>>;
+  using matrix_t = RAJA::RegisterMatrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::cuda_warp_register<3>>;
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
   using ColD = RAJA::ColIndex<ID, matrix_t>;
@@ -1686,25 +1686,29 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk( cudaDeviceSynchronize() );
   timer.start();
 
+  auto seg_g = RAJA::TypedRangeSegment<IG>(0, num_g);
+  auto seg_z = RAJA::TypedRangeSegment<IZ>(0, num_z);
+  auto seg_m = RAJA::TypedRangeSegment<IM>(0, num_m);
+  auto seg_d = RAJA::TypedRangeSegment<ID>(0, num_d);
 
   for (int iter = 0;iter < num_iter;++ iter){
     RAJA::expt::launch<pol_launch>(
         RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(num_g, 1, 1),
-                              RAJA::expt::Threads(16, 32, 1)),
+                              RAJA::expt::Threads(8, 64, 1)),
         [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
     {
-      RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
-        RAJA::expt::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](ColZ z){
+      RAJA::expt::loop<pol_g>(ctx, seg_g, [&](IG g){
+        RAJA::expt::loop<pol_z>(ctx, seg_z, [&](ColZ z){
 
 
-          RAJA::expt::loop<pol_m>(ctx, RAJA::TypedRangeSegment<IM>(0, num_m), [&](RowM m){
+          RAJA::expt::loop<pol_m>(ctx, seg_m, [&](RowM m){
 
             matrix_t acc = phi(m, g, z);
 
-            RAJA::expt::loop<pol_d>(ctx, RAJA::TypedRangeSegment<ID>(0, num_d), [&](ColD d){
+            RAJA::expt::loop<pol_d>(ctx, seg_d, [&](ColD d){
 
-
+//              phi(m,g,z) += L(m, d) * psi(toRowIndex(d), g, z);
               acc += L(m, d) * psi(toRowIndex(d), g, z);
 
 

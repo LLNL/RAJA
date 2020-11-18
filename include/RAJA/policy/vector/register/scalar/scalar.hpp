@@ -30,13 +30,13 @@ namespace RAJA
    * We will implement this as a scalar value, and let the compiler use
    * whatever registers it deems appropriate.
    */
-  template<typename T>
-  class Register<scalar_register, T> :
-      public internal::RegisterBase<Register<scalar_register, T>>
+  template<typename T, int SKEW>
+  class Register<scalar_register, T, SKEW> :
+      public internal::RegisterBase<Register<scalar_register, T, SKEW>>
   {
     public:
       using register_policy = scalar_register;
-      using self_type = Register<scalar_register, T>;
+      using self_type = Register<scalar_register, T, SKEW>;
       using element_type = T;
       using register_type = T;
 

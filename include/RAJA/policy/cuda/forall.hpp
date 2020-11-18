@@ -286,7 +286,6 @@ namespace expt {
       auto begin = iter.begin();
       auto end = iter.end();
       int distance = end-begin;
-      //      using diff_t = decltype(end-begin);
 
 
       int i = 0;
@@ -295,7 +294,7 @@ namespace expt {
         loop_body(tensor_index_type(*(begin + i)));
       }
 
-      // Postamble for reamining elements
+      // Postamble for remaining elements
       if(i < distance){
         loop_body(tensor_index_type(*(begin + i), distance-i));
       }
@@ -312,7 +311,7 @@ namespace expt {
     static RAJA_INLINE RAJA_HOST_DEVICE void exec(
         LaunchContext const RAJA_UNUSED_ARG(&ctx),
         Iterable const &iter,
-        BODY const &loop_body)
+        BODY && loop_body)
     {
 
       using value_type = typename Iterable::value_type;
@@ -320,11 +319,7 @@ namespace expt {
       using tensor_index_type = TensorIndex<value_type, tensor_type, TENSOR_DIM>;
 
 
-      auto begin = iter.begin();
-      auto end = iter.end();
-      int distance = end-begin;
-//      using diff_t = decltype(end-begin);
-
+      int distance = (iter.end() - iter.begin());
 
 
       int i = tensor_type::s_dim_elem(TENSOR_DIM)*
@@ -333,13 +328,20 @@ namespace expt {
              i += tensor_type::s_dim_elem(TENSOR_DIM)*
                   internal::get_cuda_dim<CUDA_DIM>(blockDim) )
       {
-        loop_body(tensor_index_type(*(begin + i)));
+        loop_body(tensor_index_type(*(iter.begin() + i)));
       }
 
-      // Postamble for reamining elements
+      // Postamble for remaining elements
       if(i < distance &&  distance < i+tensor_type::s_dim_elem(TENSOR_DIM)){
-        loop_body(tensor_index_type(*(begin + i), distance-i));
+        loop_body(tensor_index_type(*(iter.begin() + i), distance-i));
       }
+
+//      for(int i = 0;i < 120;++ i){
+//        loop_body(tensor_index_type(value_type(0), 10));
+//      }
+//      if(threadIdx.x == 0){
+//        loop_body(tensor_index_type(value_type(0), 10));
+//      }
 
     }
   };

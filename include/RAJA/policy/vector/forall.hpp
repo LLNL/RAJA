@@ -70,7 +70,7 @@ const tensor_exec<seq_exec, TENSOR_TYPE, DIM>&,
     loop_body(tensor_index_type(*(begin + i)));
   }
 
-  // Postamble for reamining elements
+  // Postamble for remaining elements
   if(distance_remainder > 0){
     loop_body(tensor_index_type(*(begin + distance_simd), distance_remainder));
   }
@@ -98,7 +98,6 @@ namespace expt {
       auto begin = iter.begin();
       auto end = iter.end();
       auto distance = end-begin;
-//      using diff_t = decltype(distance);
 
       using value_type = typename Iterable::value_type;
       using tensor_type = TENSOR_TYPE;
@@ -111,7 +110,7 @@ namespace expt {
         loop_body(tensor_index_type(*(begin + i)));
       }
 
-      // Postamble for reamining elements
+      // Postamble for remaining elements
       if(i < distance){
         loop_body(tensor_index_type(*(begin + i), distance-i));
       }

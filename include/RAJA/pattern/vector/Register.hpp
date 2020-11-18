@@ -27,41 +27,42 @@ namespace RAJA
 
 
   template<typename REGISTER_POLICY,
-           typename T>
+           typename T,
+           int SKEW = 0>
   class Register;
 
 
-  template<typename REGISTER_POLICY, typename RT>
+  template<typename REGISTER_POLICY, typename RT, int SKEW>
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  Register<REGISTER_POLICY, RT>
-  operator+(RT x, Register<REGISTER_POLICY, RT> const &y){
-    using register_t = Register<REGISTER_POLICY, RT>;
+  Register<REGISTER_POLICY, RT, SKEW>
+  operator+(RT x, Register<REGISTER_POLICY, RT, SKEW> const &y){
+    using register_t = Register<REGISTER_POLICY, RT, SKEW>;
     return register_t(x).add(y);
   }
 
-  template<typename REGISTER_POLICY, typename RT>
+  template<typename REGISTER_POLICY, typename RT, int SKEW>
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  Register<REGISTER_POLICY, RT>
-  operator-(RT x, Register<REGISTER_POLICY, RT> const &y){
-    using register_t = Register<REGISTER_POLICY, RT>;
+  Register<REGISTER_POLICY, RT, SKEW>
+  operator-(RT x, Register<REGISTER_POLICY, RT, SKEW> const &y){
+    using register_t = Register<REGISTER_POLICY, RT, SKEW>;
     return register_t(x).subtract(y);
   }
 
-  template<typename REGISTER_POLICY, typename RT>
-  Register<REGISTER_POLICY, RT>
-  operator*(RT x, Register<REGISTER_POLICY, RT> const &y){
-    using register_t = Register<REGISTER_POLICY, RT>;
+  template<typename REGISTER_POLICY, typename RT, int SKEW>
+  Register<REGISTER_POLICY, RT, SKEW>
+  operator*(RT x, Register<REGISTER_POLICY, RT, SKEW> const &y){
+    using register_t = Register<REGISTER_POLICY, RT, SKEW>;
     return register_t(x).multiply(y);
   }
 
-  template<typename REGISTER_POLICY, typename RT>
+  template<typename REGISTER_POLICY, typename RT, int SKEW>
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  Register<REGISTER_POLICY, RT>
-  operator/(RT x, Register<REGISTER_POLICY, RT> const &y){
-    using register_t = Register<REGISTER_POLICY, RT>;
+  Register<REGISTER_POLICY, RT, SKEW>
+  operator/(RT x, Register<REGISTER_POLICY, RT, SKEW> const &y){
+    using register_t = Register<REGISTER_POLICY, RT, SKEW>;
     return register_t(x).divide(y);
   }
 

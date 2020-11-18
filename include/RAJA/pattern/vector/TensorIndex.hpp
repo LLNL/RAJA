@@ -42,14 +42,22 @@ namespace RAJA
 
       RAJA_INLINE
       RAJA_HOST_DEVICE
+      static
       constexpr
-      TensorIndex() : m_index(index_type(0)), m_length(tensor_traits::num_elem()) {}
+      value_type num_elem(){
+        return tensor_traits::num_elem();
+      }
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      constexpr
+      TensorIndex() : m_index(index_type(0)), m_length(num_elem()) {}
 
 
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      explicit TensorIndex(index_type value) : m_index(value), m_length(tensor_traits::num_elem()) {}
+      explicit TensorIndex(index_type value) : m_index(value), m_length(num_elem()) {}
 
 
       RAJA_INLINE
