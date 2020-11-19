@@ -135,7 +135,7 @@ policies have the prefix ``hip_``.
                                                         given, the default
                                                         of 256 threads/block is 
                                                         used. 
- cuda/hip_thread_x_direct                kernel (For)  Map loop iterates
+ cuda/hip_thread_x_direct                 kernel (For)  Map loop iterates
                                                         directly to GPU threads
                                                         in x-dimension, one
                                                         iterate per thread
