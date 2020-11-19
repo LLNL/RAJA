@@ -35,7 +35,7 @@ namespace RAJA
 namespace internal {
 
 
-  template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, MatrixLayout LAYOUT, typename IDX_SEQ>
+  template<typename REGISTER_POLICY, typename ELEMENT_TYPE, typename LAYOUT, typename IDX_SEQ>
   class RegisterMatrixImpl;
 
 
@@ -44,113 +44,74 @@ namespace internal {
   struct MatrixMatrixProductHelperExpanded;
 
 
-  template<typename ELEMENT_TYPE, typename REGISTER_POLICY, camp::idx_t ... IDX>
+  template<typename ELEMENT_TYPE, typename LAYOUT, typename REGISTER_POLICY, camp::idx_t ... REG_IDX>
   struct MatrixMatrixProductHelperExpanded<
-    RegisterMatrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>,
-    RegisterMatrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>,
-    camp::idx_seq<IDX...>>
+    RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
+    RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
+    camp::idx_seq<REG_IDX...>>
   {
-      using A_type = RegisterMatrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>;
-      using B_type = RegisterMatrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>;
-
+      using matrix_type = RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>;
       using vector_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
-
-      using result_type = RegisterMatrix<ELEMENT_TYPE, MATRIX_ROW_MAJOR, REGISTER_POLICY>;
+      using result_type = matrix_type;
 
       RAJA_HOST_DEVICE
       static
       RAJA_INLINE
-      vector_type calc_row_product(vector_type sum, vector_type const &a_row, B_type const &B){
-
-        // Note: A_IDX_COL == B_IDX_ROW
+      int calc_vec_product(vector_type &sum, vector_type const &a_vec, matrix_type const &B){
 
         camp::sink(
                 (sum =
-                    B.row(IDX).fused_multiply_add(
-                        vector_type(a_row[IDX]),
+                    B.vec(REG_IDX).fused_multiply_add(
+                        a_vec.get_and_broadcast(REG_IDX),
                         sum))...
                 );
 
-        return sum;
-
+        return 0;
       }
 
       RAJA_HOST_DEVICE
       static
       RAJA_INLINE
-      result_type multiply(A_type const &A, B_type const &B){
+      matrix_type multiply(matrix_type const &A, matrix_type const &B){
+        matrix_type sum(0);
+
+        if(LAYOUT::is_row_major()){
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_mult_row_row ++;
 #endif
-        return result_type(calc_row_product(vector_type(0), A.row(IDX), B)...);
-      }
-
-      RAJA_HOST_DEVICE
-      static
-      RAJA_INLINE
-      result_type multiply_accumulate(A_type const &A, B_type const &B, result_type const &C){
-#ifdef RAJA_ENABLE_VECTOR_STATS
-          RAJA::vector_stats::num_matrix_mm_multacc_row_row ++;
-#endif
-        return result_type(calc_row_product(C.row(IDX), A.row(IDX), B)...);
-      }
-
-  };
-
-
-
-  template<typename ELEMENT_TYPE, typename REGISTER_POLICY, camp::idx_t ... IDX>
-  struct MatrixMatrixProductHelperExpanded<
-    RegisterMatrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>,
-    RegisterMatrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>,
-    camp::idx_seq<IDX...>>
-  {
-      using A_type = RegisterMatrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>;
-      using B_type = RegisterMatrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>;
-
-      using vector_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
-
-      using result_type = RegisterMatrix<ELEMENT_TYPE, MATRIX_COL_MAJOR, REGISTER_POLICY>;
-
-
-      RAJA_HOST_DEVICE
-      static
-      RAJA_INLINE
-      vector_type calc_row_product(vector_type sum, vector_type const &b_col, A_type const &A){
-
-        // Note: A_IDX_COL == B_IDX_ROW
-        camp::sink(
-                (sum =
-                    A.col(IDX).fused_multiply_add(
-                        vector_type(b_col[IDX]),
-                        sum))...
-                );
-
-        return sum;
-
-      }
-
-      RAJA_HOST_DEVICE
-      static
-      RAJA_INLINE
-      result_type multiply(A_type const &A, B_type const &B){
+          camp::sink(calc_vec_product(sum.vec(REG_IDX), A.vec(REG_IDX), B)...);
+        }
+        else{
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_mult_col_col ++;
 #endif
-        return result_type(calc_row_product(vector_type(0), B.col(IDX), A)...);
+          camp::sink(calc_vec_product(sum.vec(REG_IDX), B.vec(REG_IDX), A)...);
+        }
+        return sum;
       }
 
       RAJA_HOST_DEVICE
       static
       RAJA_INLINE
-      result_type multiply_accumulate(A_type const &A, B_type const &B, result_type const &C){
+      matrix_type multiply_accumulate(matrix_type const &A, matrix_type const &B, matrix_type C){
+        if(LAYOUT::is_row_major()){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::vector_stats::num_matrix_mm_multacc_row_row ++;
+#endif
+          camp::sink(calc_vec_product(C.vec(REG_IDX), A.vec(REG_IDX), B)...);
+        }
+        else{
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_multacc_col_col ++;
 #endif
-        return result_type(calc_row_product(C.col(IDX), B.col(IDX), A)...);
+          camp::sink(calc_vec_product(C.vec(REG_IDX), B.vec(REG_IDX), A)...);
+        }
+        return C;
       }
 
   };
+
+
 
 
 
@@ -158,7 +119,7 @@ namespace internal {
   template<typename MATA, typename MATB>
   struct MatrixMatrixProductHelper;
 
-  template<typename ELEMENT_TYPE, MatrixLayout LAYOUT, typename REGISTER_POLICY>
+  template<typename ELEMENT_TYPE, typename LAYOUT, typename REGISTER_POLICY>
   struct MatrixMatrixProductHelper<
     RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
     RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>> :
@@ -175,7 +136,6 @@ namespace internal {
 } // namespace RAJA
 
 
-#include "RegisterMatrixBase.hpp"
 #include "RAJA/pattern/vector/internal/MatrixProductRef.hpp"
 #include "RAJA/pattern/vector/internal/MatrixRef.hpp"
 
@@ -192,22 +152,22 @@ namespace internal {
   /*
    * Row-Major implementation of MatrixImpl
    */
-  template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... IDX>
-  class RegisterMatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...>> :
-   public RegisterMatrixBase<RegisterMatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...>>>
+  template<typename REGISTER_POLICY, typename ELEMENT_TYPE, typename LAYOUT, camp::idx_t ... REG_IDX>
+  class RegisterMatrixImpl<REGISTER_POLICY, ELEMENT_TYPE, LAYOUT, camp::idx_seq<REG_IDX...>>
   {
     public:
-      using self_type = MATRIX_TYPE;
-      using base_type = RegisterMatrixBase<RegisterMatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_ROW_MAJOR, camp::idx_seq<IDX...> >>;
+      using self_type = RegisterMatrixImpl<REGISTER_POLICY, ELEMENT_TYPE, LAYOUT, camp::idx_seq<REG_IDX...>>;
 
-      using vector_type = typename base_type::vector_type;
-      using register_type = typename vector_type::register_type;
+      using vector_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
+      using register_policy = REGISTER_POLICY;
       using element_type = ELEMENT_TYPE;
+
+      using layout_type = LAYOUT;
 
 
     private:
 
-      vector_type m_rows[sizeof...(IDX)];
+      vector_type m_registers[sizeof...(REG_IDX)];
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -225,41 +185,60 @@ namespace internal {
 
     public:
 
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      RegisterMatrixImpl(): base_type()
-      {}
+      RegisterMatrixImpl() = default;
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       RegisterMatrixImpl(element_type c) :
-        base_type(),
-        m_rows{(IDX >= 0) ? vector_type(c) : vector_type(c)...}
+        m_registers{(REG_IDX >= 0) ? vector_type(c) : vector_type(c)...}
       {}
 
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      RegisterMatrixImpl(self_type const &c) :
-        base_type(c),
-        m_rows{c.m_rows[IDX]...}
-      {}
+      RegisterMatrixImpl(self_type const &c) = default;
+      RegisterMatrixImpl(self_type && c) = default;
 
-      template<typename ... ROWS>
+
+      template<typename ... REGS>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      RegisterMatrixImpl(ROWS const &... rows) :
-        base_type(),
-        m_rows{rows...}
+      RegisterMatrixImpl(vector_type reg0, REGS const &... regs) :
+        m_registers{reg0, regs...}
       {
-        static_assert(sizeof...(ROWS) == base_type::s_num_rows,
-            "Incompatible number of row vectors");
+        static_assert(1+sizeof...(REGS) == sizeof...(REG_IDX),
+            "Incompatible number of registers");
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      RegisterMatrixImpl &operator=(self_type const &c){
-        return copy(c);
+      static
+      constexpr
+      bool is_root() {
+        return vector_type::is_root();
       }
+
+      /*!
+       * Gets the maximum size of matrix along specified dimension
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static
+      constexpr camp::idx_t s_dim_elem(camp::idx_t ){
+        return vector_type::s_num_elem;
+      }
+
+      /*!
+       * @brief Set entire vector to a single scalar value
+       * @param value Value to set all vector elements to
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator=(element_type value)
+      {
+        broadcast(value);
+        return *this;
+      }
+
+
+      RegisterMatrixImpl &operator=(self_type const &c) = default;
 
 
       /*!
@@ -268,8 +247,7 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &copy(self_type const &v){
-        camp::sink((m_rows[IDX] = v.m_rows[IDX])...);
-        base_type::copy(v);
+        camp::sink((m_registers[REG_IDX] = v.m_registers[REG_IDX])...);
         return *getThis();
       }
 
@@ -283,7 +261,7 @@ namespace internal {
       RAJA_INLINE
       self_type &clear(){
         camp::sink(
-            m_rows[IDX].broadcast(0)...
+            m_registers[REG_IDX].broadcast(0)...
         );
 
         return *getThis();
@@ -297,16 +275,22 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &load_packed(element_type const *ptr,
-          int row_stride, int)
+          int row_stride, int col_stride)
       {
 #if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: RM load_packed, stride=%d,%d\n",
-            threadIdx.x, threadIdx.y, row_stride, 1);
+        printf("th%d,%d: load_packed, stride=%d,%d\n",
+            threadIdx.x, threadIdx.y, row_stride, col_stride);
 #endif
-        // load all rows as packed data
-        camp::sink(
-            m_rows[IDX].load_packed(ptr+IDX*row_stride)...
-        );
+        if(LAYOUT::is_row_major()){
+          camp::sink(
+              m_registers[REG_IDX].load_packed(ptr+REG_IDX*row_stride)...
+          );
+        }
+        else{
+          camp::sink(
+              m_registers[REG_IDX].load_packed(ptr+REG_IDX*col_stride)...
+          );
+        }
 
         return *getThis();
       }
@@ -320,13 +304,19 @@ namespace internal {
           int row_stride, int col_stride)
       {
 #if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: RM load_strided, stride=%d,%d\n",
+        printf("th%d,%d: load_strided, stride=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, col_stride);
 #endif
-        // load all rows width a stride
-        camp::sink(
-            m_rows[IDX].load_strided(ptr+IDX*row_stride, col_stride)...
-        );
+        if(LAYOUT::is_row_major()){
+          camp::sink(
+              m_registers[REG_IDX].load_strided(ptr+REG_IDX*row_stride, col_stride)...
+          );
+        }
+        else{
+          camp::sink(
+              m_registers[REG_IDX].load_strided(ptr+REG_IDX*col_stride, row_stride)...
+          );
+        }
 
         return *getThis();
       }
@@ -337,19 +327,28 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &load_packed_nm(element_type const *ptr,
-          int row_stride, int,
+          int row_stride, int col_stride,
           int num_rows, int num_cols)
       {
 #if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: RM load_packed_nm, stride=%d,%d, nm=%d,%d\n",
+        printf("th%d,%d: load_packed_nm, stride=%d,%d, nm=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, 1, num_rows, num_cols);
 #endif
-        // only load num_rows rows with packed data
-        camp::sink(
-            (IDX < num_rows
-            ?  m_rows[IDX].load_packed_n(ptr+IDX*row_stride, num_cols)
-            :  m_rows[IDX].broadcast(0))... // clear to len N
-        );
+
+        if(LAYOUT::is_row_major()){
+          camp::sink(
+              (REG_IDX < num_rows
+              ?  m_registers[REG_IDX].load_packed_n(ptr+REG_IDX*row_stride, num_cols)
+              :  m_registers[REG_IDX].broadcast(0))... // clear to len N
+          );
+        }
+        else{
+          camp::sink(
+              (REG_IDX < num_cols
+              ?  m_registers[REG_IDX].load_packed_n(ptr+REG_IDX*col_stride, num_rows)
+              :  m_registers[REG_IDX].broadcast(0))... // clear to len N
+          );
+        }
 
         return *getThis();
       }
@@ -364,15 +363,23 @@ namespace internal {
           int num_rows, int num_cols)
       {
 #if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: RM load_strided_nm, stride=%d,%d, nm=%d,%d\n",
+        printf("th%d,%d: load_strided_nm, stride=%d,%d, nm=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, col_stride, num_rows, num_cols);
 #endif
-        // only load num_rows rows with strided data
-        camp::sink(
-            (IDX < num_rows
-            ?  m_rows[IDX].load_strided_n(ptr+IDX*row_stride, col_stride, num_cols)
-            :  m_rows[IDX].broadcast(0))... // clear to len N
-        );
+        if(LAYOUT::is_row_major()){
+          camp::sink(
+              (REG_IDX < num_rows
+              ?  m_registers[REG_IDX].load_strided_n(ptr+REG_IDX*row_stride, col_stride, num_cols)
+              :  m_registers[REG_IDX].broadcast(0))... // clear to len N
+          );
+        }
+        else{
+          camp::sink(
+              (REG_IDX < num_cols
+              ?  m_registers[REG_IDX].load_strided_n(ptr+REG_IDX*col_stride, row_stride, num_rows)
+              :  m_registers[REG_IDX].broadcast(0))... // clear to len N
+          );
+        }
 
         return *getThis();
       }
@@ -387,16 +394,22 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &store_packed(element_type *ptr,
-          int row_stride, int)
+          int row_stride, int col_stride)
       {
 #if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: RM store_packed, stride=%d,%d\n",
+        printf("th%d,%d: store_packed, stride=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, 1);
 #endif
-        // store all rows as packed data
-        camp::sink(
-            m_rows[IDX].store_packed(ptr+IDX*row_stride)...
-        );
+        if(LAYOUT::is_row_major()){
+          camp::sink(
+              m_registers[REG_IDX].store_packed(ptr+REG_IDX*row_stride)...
+          );
+        }
+        else{
+          camp::sink(
+              m_registers[REG_IDX].store_packed(ptr+REG_IDX*col_stride)...
+          );
+        }
 
         return *getThis();
       }
@@ -410,13 +423,22 @@ namespace internal {
           int row_stride, int col_stride)
       {
 #if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: RM store_strided, stride=%d,%d\n",
+        printf("th%d,%d: store_strided, stride=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, col_stride);
 #endif
-        // store all rows width a column stride
-        camp::sink(
-            m_rows[IDX].store_strided(ptr+IDX*row_stride, col_stride)...
-        );
+        if(LAYOUT::is_row_major()){
+          // store all rows width a column stride
+          camp::sink(
+              m_registers[REG_IDX].store_strided(ptr+REG_IDX*row_stride, col_stride)...
+          );
+        }
+        else{
+          // store all rows width a column stride
+          camp::sink(
+              m_registers[REG_IDX].store_strided(ptr+REG_IDX*col_stride, row_stride)...
+          );
+        }
+
 
         return *getThis();
       }
@@ -427,19 +449,27 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &store_packed_nm(element_type *ptr,
-          int row_stride, int ,
+          int row_stride, int col_stride,
           int num_rows, int num_cols)
       {
 #if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
         printf("th%d,%d: RM store_packed_nm, stride=%d,%d, nm=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, 1, num_rows, num_cols);
 #endif
-        // only store num_rows rows with packed data
-        camp::sink(
-            (IDX < num_rows
-            ?  m_rows[IDX].store_packed_n(ptr+IDX*row_stride, num_cols)
-            :  m_rows[IDX])... // NOP, but has same as above type
-        );
+        if(LAYOUT::is_row_major()){
+          camp::sink(
+              (REG_IDX < num_rows
+              ?  m_registers[REG_IDX].store_packed_n(ptr+REG_IDX*row_stride, num_cols)
+              :  m_registers[REG_IDX])... // NOP, but has same as above type
+          );
+        }
+        else {
+          camp::sink(
+              (REG_IDX < num_cols
+              ?  m_registers[REG_IDX].store_packed_n(ptr+REG_IDX*col_stride, num_rows)
+              :  m_registers[REG_IDX])... // NOP, but has same as above type
+          );
+        }
 
         return *getThis();
       }
@@ -457,12 +487,20 @@ namespace internal {
         printf("th%d,%d: RM store_strided_nm, stride=%d,%d, nm=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, col_stride, num_rows, num_cols);
 #endif
-        // only store num_rows rows with strided data
-        camp::sink(
-            (IDX < num_rows
-            ?  m_rows[IDX].store_strided_n(ptr+IDX*row_stride, col_stride, num_cols)
-            :  m_rows[IDX])... // NOP, but has same as above type
-        );
+        if(LAYOUT::is_row_major()){
+          camp::sink(
+              (REG_IDX < num_rows
+              ?  m_registers[REG_IDX].store_strided_n(ptr+REG_IDX*row_stride, col_stride, num_cols)
+              :  m_registers[REG_IDX])... // NOP, but has same as above type
+          );
+        }
+        else {
+          camp::sink(
+              (REG_IDX < num_cols
+              ?  m_registers[REG_IDX].store_strided_n(ptr+REG_IDX*col_stride, row_stride, num_rows)
+              :  m_registers[REG_IDX])... // NOP, but has same as above type
+          );
+        }
 
         return *getThis();
       }
@@ -476,7 +514,7 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &broadcast(element_type v){
-        camp::sink((m_rows[IDX].broadcast(v))...);
+        camp::sink((m_registers[REG_IDX].broadcast(v))...);
         return *getThis();
       }
 
@@ -486,11 +524,18 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       vector_type right_multiply_vector(vector_type v) const {
-        vector_type result;
-        camp::sink(
-            result.set(IDX, v.dot(m_rows[IDX]))...
-            );
-        return result;
+        if(LAYOUT::is_row_major()){
+          vector_type result;
+          camp::sink(
+              result.set(REG_IDX, v.dot(m_registers[REG_IDX]))...
+              );
+
+          return result;
+        }
+        else{
+          return
+                RAJA::sum<vector_type>(( m_registers[REG_IDX] * v.get(REG_IDX))...);
+        }
       }
 
 
@@ -520,7 +565,7 @@ namespace internal {
       RAJA_INLINE
       self_type add(self_type mat) const {
         return self_type(
-            (m_rows[IDX])+(mat.m_rows[IDX]) ...
+            (m_registers[REG_IDX])+(mat.m_registers[REG_IDX]) ...
         );
       }
 
@@ -528,408 +573,193 @@ namespace internal {
       RAJA_INLINE
       self_type subtract(self_type mat) const {
         return self_type(
-            (m_rows[IDX])-(mat.m_rows[IDX]) ...
+            (m_registers[REG_IDX])-(mat.m_registers[REG_IDX]) ...
         );
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &set(int row, int col, element_type val){
-        m_rows[row].set(col, val);
+        if(LAYOUT::is_row_major()){
+          m_registers[row].set(col, val);
+        }
+        else{
+          m_registers[col].set(row, val);
+        }
         return *getThis();
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       element_type get(int row, int col) const {
-        return m_rows[row].get(col);
+        return LAYOUT::is_row_major() ?
+             m_registers[row].get(col) :
+             m_registers[col].get(row);
+      }
+
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      vector_type &vec(int i){
+        return m_registers[i];
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      vector_type &row(int row){
-        return m_rows[row];
+      vector_type const &vec(int i) const{
+        return m_registers[i];
       }
 
+
+      template<typename IDX_I, typename IDX_J>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      vector_type const &row(int row) const{
-        return m_rows[row];
+      element_type operator()(IDX_I row, IDX_J col){
+        return getThis()->get(row, col);
+      }
+
+
+
+      /*!
+       * @brief Add two vector registers
+       * @param x Vector to add to this register
+       * @return Value of (*this)+x
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type operator+(self_type const &x) const
+      {
+        return getThis()->add(x);
+      }
+
+
+      /*!
+       * @brief Add a vector to this vector
+       * @param x Vector to add to this register
+       * @return Value of (*this)+x
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator+=(self_type const &x)
+      {
+        *getThis() = getThis()->add(x);
+        return *getThis();
+      }
+
+      /*!
+       * @brief Negate the value of this vector
+       * @return Value of -(*this)
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type operator-() const
+      {
+        return self_type(0).subtract(*getThis());
+      }
+
+      /*!
+       * @brief Subtract two vector registers
+       * @param x Vector to subctract from this register
+       * @return Value of (*this)+x
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type operator-(self_type const &x) const
+      {
+        return getThis()->subtract(x);
+      }
+
+      /*!
+       * @brief Subtract a vector from this vector
+       * @param x Vector to subtract from this register
+       * @return Value of (*this)+x
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator-=(self_type const &x)
+      {
+        *getThis() = getThis()->subtract(x);
+        return *getThis();
+      }
+
+      /*!
+       * Matrix vector product
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      vector_type operator*(vector_type v) const {
+        return getThis()->right_multiply_vector(v);
+      }
+
+      /*!
+       * @brief Multiply two vector registers, element wise
+       * @param x Vector to subctract from this register
+       * @return Value of (*this)+x
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      typename MatrixMatrixProductHelper<self_type, self_type>::result_type
+      operator*(self_type const &mat) const {
+        return getThis()->multiply(mat);
+      }
+
+
+      /*!
+       * @brief Multiply a vector with this vector
+       * @param x Vector to multiple with this register
+       * @return Value of (*this)+x
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator*=(self_type const &x)
+      {
+        *getThis() = getThis()->multiply(x);
+        return *getThis();
+      }
+
+      /*!
+       * @brief Converts to matrix to a string
+       *
+       *
+       */
+      RAJA_INLINE
+      std::string toString(bool one_line=false) const {
+        std::string s = "Matrix(" + std::to_string(vector_type::s_num_elem) +
+            "x" + std::to_string(vector_type::s_num_elem);
+        if(!one_line){
+          s +=")\n";
+        }
+
+
+        s += "[ ";
+
+        //
+        for(camp::idx_t r = 0;r < vector_type::s_num_elem; ++ r){
+          if(r > 0){
+            s += ", ";
+            if(!one_line){
+              s+= "\n  ";
+            }
+          }
+          s += "[";
+          for(camp::idx_t c = 0;c < vector_type::s_num_elem; ++ c){
+            if(c > 0){
+              s += ", ";
+            }
+            s += std::to_string(getThis()->get(r,c));
+          }
+          s += "]";
+        }
+
+        s += " ]";
+        if(!one_line){
+          s+="\n";
+        }
+        return s;
       }
 
   }; // MatrixImpl - ROW MAJOR
 
-
-
-
-  /*
-   * Column-Major implementation of MatrixImpl
-   */
-  template<typename MATRIX_TYPE, typename REGISTER_POLICY, typename ELEMENT_TYPE, camp::idx_t ... IDX>
-  class RegisterMatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...>> :
-   public RegisterMatrixBase<RegisterMatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...> >>
-  {
-    public:
-      using self_type = MATRIX_TYPE;
-      using base_type = RegisterMatrixBase<RegisterMatrixImpl<MATRIX_TYPE, REGISTER_POLICY, ELEMENT_TYPE, MATRIX_COL_MAJOR, camp::idx_seq<IDX...> >>;
-
-      using vector_type = typename base_type::vector_type;
-      using register_type = typename vector_type::register_type;
-      using element_type = ELEMENT_TYPE;
-
-
-    private:
-
-      vector_type m_cols[sizeof...(IDX)];
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type *getThis(){
-        return static_cast<self_type *>(this);
-      }
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      constexpr
-      self_type const *getThis() const{
-        return static_cast<self_type const *>(this);
-      }
-
-
-    public:
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      RegisterMatrixImpl() :
-        base_type()
-      {}
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      RegisterMatrixImpl(element_type c) :
-        base_type(),
-        m_cols{(IDX >= 0) ? vector_type(c) : vector_type(c)...}
-      {}
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      RegisterMatrixImpl(self_type const &c) :
-        base_type(c),
-        m_cols{c.m_cols[IDX]...}
-      {}
-
-      template<typename ... COLS>
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      RegisterMatrixImpl(COLS const &... cols) :
-      base_type(),
-      m_cols{cols...}
-      {
-        static_assert(sizeof...(COLS) == base_type::s_num_cols,
-            "Incompatible number of column vectors");
-      }
-
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      RegisterMatrixImpl &operator=(self_type const &c){
-        return copy(c);
-      }
-
-      /*!
-       * Copy contents of another matrix operator
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &copy(self_type const &v){
-        camp::sink((m_cols[IDX] = v.m_cols[IDX])...);
-        base_type::copy(v);
-        return *getThis();
-      }
-
-
-      /*!
-       * Resizes matrix to specified size, and sets all elements to zero
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &clear(){
-
-        camp::sink(
-            m_cols[IDX].broadcast(0)...
-        );
-
-        return *getThis();
-      }
-
-
-
-
-      /*!
-       * Loads a dense full matrix from memory.
-       *
-       * Column entries must be stride-1, rows may be any striding
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &load_packed(element_type const *ptr,
-          int, int col_stride)
-      {
-#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: CM load_packed, stride=%d,%d\n",
-            threadIdx.x, threadIdx.y, 1, col_stride);
-#endif
-        // load all rows as packed data
-        camp::sink(
-            m_cols[IDX].load_packed(ptr+IDX*col_stride)...
-        );
-
-        return *getThis();
-      }
-
-      /*!
-       * Loads a strided full matrix from memory
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &load_strided(element_type const *ptr,
-          int row_stride, int col_stride)
-      {
-#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: CM load_strided, stride=%d,%d\n",
-            threadIdx.x, threadIdx.y, row_stride, col_stride);
-#endif
-        // load all rows width a stride
-        camp::sink(
-            m_cols[IDX].load_strided(ptr+IDX*col_stride, row_stride)...
-        );
-
-        return *getThis();
-      }
-
-      /*!
-       * Loads a dense partial matrix from memory
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &load_packed_nm(element_type const *ptr,
-          int, int col_stride,
-          int num_rows, int num_cols)
-      {
-#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: CM load_packed_nm, stride=%d,%d, nm=%d,%d\n",
-            threadIdx.x, threadIdx.y, 1, col_stride, num_rows, num_cols);
-#endif
-        // only load num_rows rows with packed data
-        camp::sink(
-            (IDX < num_cols
-            ?  m_cols[IDX].load_packed_n(ptr+IDX*col_stride, num_rows)
-            :  m_cols[IDX].broadcast(0))...
-        );
-
-        return *getThis();
-      }
-
-      /*!
-       * Loads a strided partial matrix from memory
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &load_strided_nm(element_type const *ptr,
-          int row_stride, int col_stride,
-          int num_rows, int num_cols)
-      {
-#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: CM load_strided_nm, stride=%d,%d, nm=%d,%d\n",
-            threadIdx.x, threadIdx.y, row_stride, col_stride, num_rows, num_cols);
-#endif
-        // only load num_rows rows with strided data
-        camp::sink(
-            (IDX < num_cols
-            ?   m_cols[IDX].load_strided_n(ptr+IDX*col_stride, row_stride, num_rows)
-            :  m_cols[IDX].broadcast(0))...
-        );
-
-        return *getThis();
-      }
-
-
-
-      /*!
-       * Store a dense full matrix to memory.
-       *
-       * Column entries must be stride-1, rows may be any striding
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &store_packed(element_type *ptr,
-          int, int col_stride)
-      {
-#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: CM store_packed, stride=%d,%d\n",
-            threadIdx.x, threadIdx.y, 1, col_stride);
-#endif
-        // store all rows as packed data
-        camp::sink(
-            m_cols[IDX].store_packed(ptr+IDX*col_stride)...
-        );
-
-        return *getThis();
-      }
-
-      /*!
-       * Store a strided full matrix to memory
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &store_strided(element_type *ptr,
-          int row_stride, int col_stride)
-      {
-#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: CM store_strided, stride=%d,%d\n",
-            threadIdx.x, threadIdx.y, row_stride, col_stride);
-#endif
-        // store all rows width a column stride
-        camp::sink(
-            m_cols[IDX].store_strided(ptr+IDX*col_stride, row_stride)...
-        );
-
-        return *getThis();
-      }
-
-      /*!
-       * Store a dense partial matrix to memory
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &store_packed_nm(element_type *ptr,
-          int, int col_stride,
-          int num_rows, int num_cols)
-      {
-#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: CM store_packed_nm, stride=%d,%d, nm=%d,%d\n",
-            threadIdx.x, threadIdx.y, 1, col_stride, num_rows, num_cols);
-#endif
-        // only store num_rows rows with packed data
-        camp::sink(
-            (IDX < num_cols
-            ?  m_cols[IDX].store_packed_n(ptr+IDX*col_stride, num_rows)
-            :  m_cols[IDX])... // NOP, but has same as above type
-        );
-
-        return *getThis();
-      }
-
-      /*!
-       * Store a strided partial matrix to memory
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &store_strided_nm(element_type *ptr,
-          int row_stride, int col_stride,
-          int num_rows, int num_cols)
-      {
-#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: CM store_strided_nm, stride=%d,%d, nm=%d,%d\n",
-            threadIdx.x, threadIdx.y, row_stride, col_stride, num_rows, num_cols);
-#endif
-        // only store num_rows rows with strided data
-        camp::sink(
-            (IDX < num_cols
-            ?  m_cols[IDX].store_strided_n(ptr+IDX*col_stride, row_stride, num_rows)
-            :  m_cols[IDX])... // NOP, but has same as above type
-        );
-
-        return *getThis();
-      }
-
-
-
-      /*!
-       * Copy contents of another matrix operator
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &broadcast(element_type v){
-        camp::sink((m_cols[IDX].broadcast(v))...);
-        return *getThis();
-      }
-
-      /*!
-       * Matrix vector product
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      vector_type right_multiply_vector(vector_type v) const {
-        return
-        RAJA::sum<vector_type>(( m_cols[IDX] * v.get(IDX))...);
-      }
-
-
-      /*!
-       * Matrix-Matrix product
-       */
-      template<typename RMAT>
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      typename MatrixMatrixProductHelper<self_type, RMAT>::result_type
-      multiply(RMAT const &mat) const {
-        return MatrixMatrixProductHelper<self_type,RMAT>::multiply(*getThis(), mat);
-      }
-
-      /*!
-       * Matrix-Matrix multiply accumulate
-       */
-      template<typename RMAT>
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      typename MatrixMatrixProductHelper<self_type, RMAT>::result_type
-      multiply_accumulate(RMAT const &B, typename MatrixMatrixProductHelper<self_type, RMAT>::result_type const &C) const {
-        return MatrixMatrixProductHelper<self_type,RMAT>::multiply_accumulate(*getThis(), B, C);
-      }
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type add(self_type mat) const {
-        return self_type(
-            (m_cols[IDX])+(mat.m_cols[IDX]) ...
-        );
-      }
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type subtract(self_type mat) const {
-        return self_type(
-            (m_cols[IDX])-(mat.m_cols[IDX]) ...
-        );
-      }
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &set(int row, int col, element_type val){
-        m_cols[col].set(row, val);
-        return *getThis();
-      }
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      element_type get(int row, int col) const {
-        return m_cols[col].get(row);
-      }
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      vector_type &col(int c){
-        return m_cols[c];
-      }
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      vector_type const &col(int c) const{
-        return m_cols[c];
-      }
-
-  }; // MatrixImpl - COLUMN MAJOR
 
 
 

@@ -107,6 +107,16 @@ namespace RAJA
         return *getThis();
       }
 
+      /*!
+       * @brief Extracts a scalar value and broadcasts to a new register
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type get_and_broadcast(int i) const {
+        self_type x;
+        x.broadcast(getThis()->get(i));
+        return x;
+      }
 
       /*!
        * @brief Set entire vector to a single scalar value

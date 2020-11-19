@@ -129,8 +129,8 @@ namespace internal
       RAJA_INLINE
       constexpr
       bool is_full() const {
-        return m_row_length == MATRIX_TYPE::s_num_rows &&
-               m_col_length == MATRIX_TYPE::s_num_cols;
+        return m_row_length == MATRIX_TYPE::vector_type::s_num_elem &&
+               m_col_length == MATRIX_TYPE::vector_type::s_num_elem;
       }
 
       RAJA_HOST_DEVICE
@@ -138,8 +138,8 @@ namespace internal
       static
       constexpr
       bool is_packed() {
-        return (ROW_STRIDE_ONE && MATRIX_TYPE::s_layout == MATRIX_COL_MAJOR) ||
-               (COL_STRIDE_ONE && MATRIX_TYPE::s_layout == MATRIX_ROW_MAJOR);
+        return (ROW_STRIDE_ONE && MATRIX_TYPE::layout_type::is_column_major()) ||
+               (COL_STRIDE_ONE && MATRIX_TYPE::layout_type::is_row_major());
       }
 
       /*!

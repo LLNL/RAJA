@@ -336,12 +336,7 @@ namespace expt {
         loop_body(tensor_index_type(*(iter.begin() + i), distance-i));
       }
 
-//      for(int i = 0;i < 120;++ i){
-//        loop_body(tensor_index_type(value_type(0), 10));
-//      }
-//      if(threadIdx.x == 0){
-//        loop_body(tensor_index_type(value_type(0), 10));
-//      }
+
 
     }
   };

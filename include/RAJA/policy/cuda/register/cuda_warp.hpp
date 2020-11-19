@@ -295,6 +295,17 @@ namespace RAJA {
         return *this;
       }
 
+      /*!
+       * @brief Extracts a scalar value and broadcasts to a new register
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type get_and_broadcast(int i) const {
+        self_type x;
+        x.m_value = __shfl_sync(0xffffffff, m_value, i, 1 << LANE_BITS);
+        return x;
+      }
+
       RAJA_DEVICE
       RAJA_INLINE
       self_type &copy(self_type const &src){

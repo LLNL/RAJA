@@ -21,14 +21,43 @@
 namespace RAJA
 {
 
-  enum MatrixLayout {
-    MATRIX_ROW_MAJOR,
-    MATRIX_COL_MAJOR
+  template<camp::idx_t ROW, camp::idx_t COL>
+  struct MatrixLayout : public camp::idx_seq<ROW, COL>{
+    static_assert(ROW == 0 || COL == 0, "invalid template arguments");
+    static_assert(ROW == 1 || COL == 1, "invalid template arguments");
+    static_assert(ROW+COL == 1, "invalid template arguments");
+
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    static
+    constexpr
+    bool is_column_major(){
+      return COL == 1;
+    }
+
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    static
+    constexpr
+    bool is_row_major(){
+      return ROW == 1;
+    }
   };
 
 
-  template<typename T, MatrixLayout LAYOUT, typename REGISTER_POLICY>
-  class RegisterMatrix;
+  using MATRIX_ROW_MAJOR = MatrixLayout<1, 0>;
+  using MATRIX_COL_MAJOR = MatrixLayout<0, 1>;
+
+  namespace internal{
+    template<typename REGISTER_POLICY, typename ELEMENT_TYPE, typename LAYOUT, typename IDX_SEQ>
+    class RegisterMatrixImpl;
+  }
+
+  template<typename T, typename LAYOUT, typename REGISTER_POLICY = RAJA::policy::register_default>
+  using RegisterMatrix = internal::RegisterMatrixImpl<
+      REGISTER_POLICY, T, LAYOUT, camp::make_idx_seq_t<Register<REGISTER_POLICY, T>::s_num_elem> >;
+
+
 
 }//namespace RAJA
 
@@ -36,49 +65,6 @@ namespace RAJA
 
 namespace RAJA
 {
-
-  /*!
-   * Wrapping class for internal::MatrixImpl that hides all of the long camp::idx_seq<...> template stuff from the user.
-   */
-  template<typename T, MatrixLayout LAYOUT, typename REGISTER_POLICY = RAJA::policy::register_default>
-  class RegisterMatrix : public internal::RegisterMatrixImpl<
-    RegisterMatrix<T, LAYOUT, REGISTER_POLICY>,
-    REGISTER_POLICY,
-    T,
-    LAYOUT,
-    camp::make_idx_seq_t<Register<REGISTER_POLICY, T>::s_num_elem>>
-  {
-    public:
-      using self_type = RegisterMatrix<T, LAYOUT, REGISTER_POLICY>;
-      using base_type = internal::RegisterMatrixImpl<self_type, REGISTER_POLICY, T,
-          LAYOUT,
-          camp::make_idx_seq_t<Register<REGISTER_POLICY, T>::s_num_elem>>;
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      RegisterMatrix(){}
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      RegisterMatrix(T c) : base_type(c){}
-
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      RegisterMatrix(self_type const &c) : base_type(c){}
-
-
-      self_type &operator=(self_type const &c) = default;
-
-      template<typename ... RR>
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      RegisterMatrix(RR const &... rows) : base_type(rows...){}
-
-
-
-  };
-
 
 
   /*!

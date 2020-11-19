@@ -125,16 +125,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Define array dimensions, allocate arrays, define Layouts and Views, etc.
   // Note: rand()/RAND_MAX is always zero, but forces the compiler to not
   // optimize out these values as compile time constants
-  const int num_m = 64 + (rand()/RAND_MAX);
+  const int num_m = 25 + (rand()/RAND_MAX);
   const int num_g = 80*2 + (rand()/RAND_MAX);
-  const int num_d = 64 + (rand()/RAND_MAX);
+  const int num_d = 80 + (rand()/RAND_MAX);
 
 
 #ifdef DEBUG_LTIMES
   const int num_iter = 1 + (rand()/RAND_MAX);;
   // use a decreased number of zones since this will take a lot longer
   // and we're not really measuring performance here
-  const long num_z = 17 + (rand()/RAND_MAX);
+  const long num_z = 127 + (rand()/RAND_MAX);
 #else
   const int num_iter = 10 + (rand()/RAND_MAX);
   const int num_z = 64*1024 + (rand()/RAND_MAX);
@@ -1644,7 +1644,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                           cudaMemcpyHostToDevice ) );
 
 
-  using matrix_t = RAJA::RegisterMatrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::cuda_warp_register<3>>;
+  using matrix_t = RAJA::RegisterMatrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::cuda_warp_register<4>>;
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
   using ColD = RAJA::ColIndex<ID, matrix_t>;
@@ -1695,7 +1695,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::launch<pol_launch>(
         RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(num_g, 1, 1),
-                              RAJA::expt::Threads(8, 64, 1)),
+                              RAJA::expt::Threads(16, 32, 1)),
         [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
     {
       RAJA::expt::loop<pol_g>(ctx, seg_g, [&](IG g){
@@ -1710,6 +1710,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //              phi(m,g,z) += L(m, d) * psi(toRowIndex(d), g, z);
               acc += L(m, d) * psi(toRowIndex(d), g, z);
+//              L(m, d).load().multiply_accumulate(psi(toRowIndex(d), g, z).load(), acc);
 
 
             });

@@ -21,7 +21,7 @@
 #include "RAJA/pattern/vector/TensorIndex.hpp"
 #include "RAJA/pattern/vector/Register.hpp"
 #include "RAJA/pattern/vector/Vector.hpp"
-#include "vector/RegisterMatrix.hpp"
+#include "RAJA/pattern/vector/RegisterMatrix.hpp"
 
 
 #endif
