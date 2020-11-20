@@ -75,6 +75,7 @@ class Raja(CMakePackage, CudaPackage):
 
     variant('openmp', default=True, description='Build OpenMP backend')
     variant('shared', default=True, description='Build Shared Libs')
+    variant('libcpp', default=False, description='Uses libc++ instead of libstdc++')
     variant('tests', default='basic', values=('none', 'basic', 'benchmarks'),
             multi=False, description='Tests to run')
 
@@ -94,6 +95,8 @@ class Raja(CMakePackage, CudaPackage):
         var=''
         if '+cuda' in spec:
             var= '-'.join([var,'cuda'])
+        if '+libcpp' in spec:
+            var='-'.join([var,'libcpp'])
 
         host_config_path = "hc-%s-%s-%s%s-%s.cmake" % (socket.gethostname().rstrip('1234567890'),
                                                self._get_sys_type(spec),
@@ -185,10 +188,14 @@ class Raja(CMakePackage, CudaPackage):
 
         # use global spack compiler flags
         cflags = ' '.join(spec.compiler_flags['cflags'])
+        if "+libcpp" in spec:
+            cflags += ' '.join([cflags,"-DGTEST_HAS_CXXABI_H_=0"])
         if cflags:
             cfg.write(cmake_cache_entry("CMAKE_C_FLAGS", cflags))
 
         cxxflags = ' '.join(spec.compiler_flags['cxxflags'])
+        if "+libcpp" in spec:
+            cxxflags += ' '.join([cxxflags,"-stdlib=libc++ -DGTEST_HAS_CXXABI_H_=0"])
         if cxxflags:
             cfg.write(cmake_cache_entry("CMAKE_CXX_FLAGS", cxxflags))
 
