@@ -614,6 +614,7 @@ DefineTypeTraitFromConcept(is_binary_function, RAJA::concepts::BinaryFunction);
 DefineTypeTraitFromConcept(is_unary_function, RAJA::concepts::UnaryFunction);
 }  // namespace type_traits
 
+
 }  // namespace RAJA
 
 #endif  // closing endif for header file include guard
