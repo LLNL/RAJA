@@ -58,7 +58,9 @@ class Raja(CMakePackage, CudaPackage):
     git      = "https://github.com/LLNL/RAJA.git"
 
     version('develop', branch='develop', submodules='True')
-    version('master',  branch='main',  submodules='True')
+    version('main',  branch='main',  submodules='True')
+    version('0.12.1', tag='v0.12.1', submodules="True")
+    version('0.12.0', tag='v0.12.0', submodules="True")
     version('0.11.0', tag='v0.11.0', submodules="True")
     version('0.10.1', tag='v0.10.1', submodules="True")
     version('0.10.0', tag='v0.10.0', submodules="True")
@@ -255,8 +257,7 @@ class Raja(CMakePackage, CudaPackage):
 
             if not spec.satisfies('cuda_arch=none'):
                 cuda_arch = spec.variants['cuda_arch'].value
-                flag = '-arch sm_{0}'.format(cuda_arch[0])
-                cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS", flag))
+                options.append('-DCUDA_ARCH=sm_{0}'.format(cuda_arch[0]))
 
         else:
             cfg.write(cmake_cache_option("ENABLE_CUDA", False))
@@ -275,16 +276,18 @@ class Raja(CMakePackage, CudaPackage):
         cfg.write(cmake_cache_option("BUILD_SHARED_LIBS","+shared" in spec))
         cfg.write(cmake_cache_option("ENABLE_OPENMP","+openmp" in spec))
 
-        # Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS which
-        # is used by the spack compiler wrapper.  This can go away when BLT
-        # removes -Werror from GTest flags
+        # Note 1: Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS
+        # which is used by the spack compiler wrapper.  This can go away when
+        # BLT removes -Werror from GTest flags
+        # Note 2: Tests are either built if variant is set, or if run-tests
+        # option is passed.
         if self.spec.satisfies('%clang target=ppc64le:'):
             cfg.write(cmake_cache_option("ENABLE_TESTS",False))
             if 'tests=benchmarks' in spec or not 'tests=none' in spec:
                 print("MSG: no testing supported on %clang target=ppc64le:")
         else:
             cfg.write(cmake_cache_option("ENABLE_BENCHMARKS", 'tests=benchmarks' in spec))
-            cfg.write(cmake_cache_option("ENABLE_TESTS", not 'tests=none' in spec))
+            cfg.write(cmake_cache_option("ENABLE_TESTS", not 'tests=none' in spec or self.run_tests))
 
         #######################
         # Close and save
