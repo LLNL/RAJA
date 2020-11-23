@@ -5,7 +5,9 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ##############################################################################
 
+##########
 # CPU ONLY
+##########
 
 ibm_clang_9:
   variables:
@@ -47,7 +49,9 @@ xl_16_1_1_7_gcc_8_3_1:
     SPEC: "%xl@16.1.1.7 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
   extends: .build_and_test_on_lassen
 
+##########
 # CUDA
+##########
 
 ibm_clang_9_cuda:
   variables:
@@ -93,7 +97,9 @@ xl_16_1_1_7_gcc_8_3_1_cuda_11:
   allow_failure: true
   extends: .build_and_test_on_lassen
 
+##########
 # EXTRAS
+##########
 
 clang_9_0_0_libcpp (build and test on lassen):
   variables:
