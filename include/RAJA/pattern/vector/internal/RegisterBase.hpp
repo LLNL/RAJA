@@ -69,6 +69,17 @@ namespace RAJA
       }
 
       /*!
+       * Gets the size of the tensor
+       * Since this is a vector, just the length of the vector in dim 0
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static
+      constexpr int s_dim_elem(int dim){
+        return (dim==0) ? self_type::s_num_elem : 0;
+      }
+
+      /*!
        * @brief convenience routine to allow Vector classes to use
        * camp::sink() across a variety of register types, and use things like
        * ternary operators
