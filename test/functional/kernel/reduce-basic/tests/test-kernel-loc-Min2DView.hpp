@@ -5,11 +5,11 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_LOC_MIN2D_HPP__
-#define __TEST_KERNEL_LOC_MIN2D_HPP__
+#ifndef __TEST_KERNEL_LOC_MIN2DVIEW_HPP__
+#define __TEST_KERNEL_LOC_MIN2DVIEW_HPP__
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename FORALL_POLICY, typename EXEC_POLICY, typename REDUCE_POLICY>
-void KernelLocMin2DTestImpl(const int xdim, const int ydim)
+void KernelLocMin2DViewTestImpl(const int xdim, const int ydim)
 {
   camp::resources::Resource work_res{WORKING_RES::get_default()};
 
@@ -65,11 +65,13 @@ void KernelLocMin2DTestImpl(const int xdim, const int ydim)
   RAJA::TypedRangeSegment<INDEX_TYPE> colrange(0, xdim);
   RAJA::TypedRangeSegment<INDEX_TYPE> rowrange(0, ydim);
 
+  RAJA::View<DATA_TYPE, RAJA::Layout<2>> ArrView(work_array, xdim, ydim);
+
   RAJA::ReduceMinLoc<REDUCE_POLICY, DATA_TYPE, Index2D> minloc_reducer((DATA_TYPE)1024, Index2D(0, 0));
 
   RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(colrange, rowrange),
                            [=] RAJA_HOST_DEVICE (int c, int r) {
-                             minloc_reducer.minloc(workarr2D[r][c], Index2D(c, r));
+                             minloc_reducer.minloc(ArrView(r, c), Index2D(c, r));
                            });
 
   // CPU answer
@@ -105,13 +107,13 @@ void KernelLocMin2DTestImpl(const int xdim, const int ydim)
 }
 
 
-TYPED_TEST_SUITE_P(KernelLocMin2DTest);
+TYPED_TEST_SUITE_P(KernelLocMin2DViewTest);
 template <typename T>
-class KernelLocMin2DTest : public ::testing::Test
+class KernelLocMin2DViewTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(KernelLocMin2DTest, LocMin2DKernel)
+TYPED_TEST_P(KernelLocMin2DViewTest, LocMin2DViewKernel)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using DATA_TYPE  = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -120,12 +122,12 @@ TYPED_TEST_P(KernelLocMin2DTest, LocMin2DKernel)
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<5>>::type;
 
-  KernelLocMin2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(10, 10);
-  KernelLocMin2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(1053, 1053);
-  KernelLocMin2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(20101, 20101);
+  KernelLocMin2DViewTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(10, 10);
+  KernelLocMin2DViewTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(1053, 1053);
+  KernelLocMin2DViewTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(20101, 20101);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelLocMin2DTest,
-                            LocMin2DKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelLocMin2DViewTest,
+                            LocMin2DViewKernel);
 
-#endif  // __TEST_KERNEL_LOC_MIN2D_HPP__
+#endif  // __TEST_KERNEL_LOC_MIN2DVIEW_HPP__

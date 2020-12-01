@@ -14,14 +14,20 @@
 
 // for data types
 #include "RAJA_test-reduce-types.hpp"
+#include "RAJA_test-reduceloc-types.hpp"
+#include "RAJA_test-reduceloc-data.hpp"
 
 //
 // Header for tests in ./tests directory
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-//#include "test-kernel-region-data.hpp"
 #include "test-kernel-loc-Min2D.hpp"
+#include "test-kernel-loc-Max2D.hpp"
+#include "test-kernel-loc-Min2DView.hpp"
+#include "test-kernel-loc-Max2DView.hpp"
+#include "test-kernel-loc-Min2DViewTuple.hpp"
+#include "test-kernel-loc-Max2DViewTuple.hpp"
 
 
 //
@@ -49,44 +55,128 @@ using SequentialKernelLocExecPols =
 
   >;
 
+using SequentialKernelLocReducePols =
+  camp::list<
+    RAJA::seq_reduce
+  >;
+
+using SequentialKernelLocForallPols =
+  camp::list<
+    RAJA::seq_exec
+  >;
+
 #if defined(RAJA_ENABLE_OPENMP)
 
-/*
 using OpenMPKernelLocExecPols =
   camp::list<
 
     RAJA::KernelPolicy<
-      RAJA::statement::Region<RAJA::omp_parallel_region,
-        RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
+      RAJA::statement::For<1, RAJA::omp_parallel_for_exec,  // row
+        RAJA::statement::For<0, RAJA::omp_parallel_for_exec,  // col
           RAJA::statement::Lambda<0>
-        >,
-        RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
-          RAJA::statement::Lambda<1>
-        >,
-        RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
-          RAJA::statement::Lambda<2>
-        >
-      >
-    >,
-
-    RAJA::KernelPolicy<
-      RAJA::statement::Region<RAJA::omp_parallel_region,
-        RAJA::statement::For<0, RAJA::omp_for_exec,
-          RAJA::statement::Lambda<0>
-        >,
-        RAJA::statement::For<0, RAJA::omp_for_exec,
-          RAJA::statement::Lambda<1>
-        >,
-        RAJA::statement::For<0, RAJA::omp_for_exec,
-          RAJA::statement::Lambda<2>
         >
       >
     >
 
   >;
-*/
+
+using OpenMPKernelLocReducePols =
+  camp::list<
+    RAJA::omp_reduce
+    //, RAJA::omp_reduce_ordered
+  >;
+
+using OpenMPKernelLocForallPols =
+  camp::list<
+    RAJA::omp_parallel_for_exec
+  >;
 
 #endif  // RAJA_ENABLE_OPENMP
+
+#if defined(RAJA_ENABLE_TBB)
+
+using TBBKernelLocExecPols =
+  camp::list<
+
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::tbb_for_exec,  // row
+        RAJA::statement::For<0, RAJA::tbb_for_exec,  // col
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >
+
+  >;
+
+using TBBKernelLocReducePols =
+  camp::list<
+    RAJA::tbb_reduce
+  >;
+
+using TBBKernelLocForallPols =
+  camp::list<
+    RAJA::tbb_for_exec
+  >;
+
+#endif  // RAJA_ENABLE_TBB
+
+#if defined(RAJA_ENABLE_CUDA)
+
+using CudaKernelLocExecPols =
+  camp::list<
+
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+      RAJA::statement::For<1, RAJA::cuda_thread_x_loop,  // row
+        RAJA::statement::For<0, RAJA::cuda_thread_y_loop,  // col
+          RAJA::statement::Lambda<0>
+        >
+      >
+      > // end CudaKernel
+    >
+
+  >;
+
+using CudaKernelLocReducePols =
+  camp::list<
+    RAJA::cuda_reduce
+  >;
+
+using CudaKernelLocForallPols =
+  camp::list<
+    RAJA::cuda_exec<1024, true>
+  >;
+
+#endif  // RAJA_ENABLE_CUDA
+
+#if defined(RAJA_ENABLE_HIP)
+
+using HipKernelLocExecPols =
+  camp::list<
+
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+      RAJA::statement::For<1, RAJA::hip_thread_x_loop,  // row
+        RAJA::statement::For<0, RAJA::hip_thread_y_loop,  // col
+          RAJA::statement::Lambda<0>
+        >
+      >
+      > // end HipKernel
+    >
+
+  >;
+
+using HipKernelLocReducePols =
+  camp::list<
+    RAJA::hip_reduce
+  >;
+
+using HipKernelLocForallPols =
+  camp::list<
+    RAJA::hip_exec<1024, true>
+  >;
+
+#endif  // RAJA_ENABLE_HIP
 
 //
 // Cartesian product of types used in parameterized tests
@@ -95,7 +185,9 @@ using @LOC_BACKEND@KernelLocTypes =
   Test< camp::cartesian_product<IdxTypeList,
                                 ReduceDataTypeList,
                                 @LOC_BACKEND@ResourceList,
-                                @LOC_BACKEND@KernelLocExecPols>>::Types;
+                                @LOC_BACKEND@KernelLocForallPols,
+                                @LOC_BACKEND@KernelLocExecPols,
+                                @LOC_BACKEND@KernelLocReducePols>>::Types;
 
 //
 // Instantiate parameterized test

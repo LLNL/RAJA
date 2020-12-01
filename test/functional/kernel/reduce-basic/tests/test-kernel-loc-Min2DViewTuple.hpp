@@ -5,11 +5,11 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_LOC_MIN2D_HPP__
-#define __TEST_KERNEL_LOC_MIN2D_HPP__
+#ifndef __TEST_KERNEL_LOC_MIN2DVIEWTUPLE_HPP__
+#define __TEST_KERNEL_LOC_MIN2DVIEWTUPLE_HPP__
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename FORALL_POLICY, typename EXEC_POLICY, typename REDUCE_POLICY>
-void KernelLocMin2DTestImpl(const int xdim, const int ydim)
+void KernelLocMin2DViewTupleTestImpl(const int xdim, const int ydim)
 {
   camp::resources::Resource work_res{WORKING_RES::get_default()};
 
@@ -65,11 +65,15 @@ void KernelLocMin2DTestImpl(const int xdim, const int ydim)
   RAJA::TypedRangeSegment<INDEX_TYPE> colrange(0, xdim);
   RAJA::TypedRangeSegment<INDEX_TYPE> rowrange(0, ydim);
 
-  RAJA::ReduceMinLoc<REDUCE_POLICY, DATA_TYPE, Index2D> minloc_reducer((DATA_TYPE)1024, Index2D(0, 0));
+  RAJA::View<DATA_TYPE, RAJA::Layout<2>> ArrView(work_array, xdim, ydim);
+
+  RAJA::tuple<DATA_TYPE, DATA_TYPE> LocTup(0, 0);
+
+  RAJA::ReduceMinLoc<REDUCE_POLICY, DATA_TYPE, RAJA::tuple<DATA_TYPE, DATA_TYPE>> minloc_reducer((DATA_TYPE)1024, LocTup);
 
   RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(colrange, rowrange),
                            [=] RAJA_HOST_DEVICE (int c, int r) {
-                             minloc_reducer.minloc(workarr2D[r][c], Index2D(c, r));
+                             minloc_reducer.minloc(ArrView(r, c), RAJA::make_tuple((DATA_TYPE)c, (DATA_TYPE)r));
                            });
 
   // CPU answer
@@ -88,12 +92,12 @@ void KernelLocMin2DTestImpl(const int xdim, const int ydim)
     }
   }
 
-  Index2D raja_loc = minloc_reducer.getLoc();
+  RAJA::tuple<DATA_TYPE, DATA_TYPE> raja_loc = minloc_reducer.getLoc();
   DATA_TYPE raja_min = (DATA_TYPE)minloc_reducer.get();
 
   ASSERT_DOUBLE_EQ((DATA_TYPE)min, (DATA_TYPE)raja_min);
-  ASSERT_EQ(minlocx, raja_loc.idx);
-  ASSERT_EQ(minlocy, raja_loc.idy);
+  ASSERT_EQ(minlocx, RAJA::get<0>(raja_loc));
+  ASSERT_EQ(minlocy, RAJA::get<1>(raja_loc));
 
   deallocateReduceLocTestData<DATA_TYPE>( work_res,
                                           work_array,
@@ -105,13 +109,13 @@ void KernelLocMin2DTestImpl(const int xdim, const int ydim)
 }
 
 
-TYPED_TEST_SUITE_P(KernelLocMin2DTest);
+TYPED_TEST_SUITE_P(KernelLocMin2DViewTupleTest);
 template <typename T>
-class KernelLocMin2DTest : public ::testing::Test
+class KernelLocMin2DViewTupleTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(KernelLocMin2DTest, LocMin2DKernel)
+TYPED_TEST_P(KernelLocMin2DViewTupleTest, LocMin2DViewTupleKernel)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using DATA_TYPE  = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -120,12 +124,12 @@ TYPED_TEST_P(KernelLocMin2DTest, LocMin2DKernel)
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<5>>::type;
 
-  KernelLocMin2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(10, 10);
-  KernelLocMin2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(1053, 1053);
-  KernelLocMin2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(20101, 20101);
+  KernelLocMin2DViewTupleTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(10, 10);
+  KernelLocMin2DViewTupleTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(1053, 1053);
+  KernelLocMin2DViewTupleTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(20101, 20101);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelLocMin2DTest,
-                            LocMin2DKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelLocMin2DViewTupleTest,
+                            LocMin2DViewTupleKernel);
 
-#endif  // __TEST_KERNEL_LOC_MIN2D_HPP__
+#endif  // __TEST_KERNEL_LOC_MIN2DVIEWTUPLE_HPP__
