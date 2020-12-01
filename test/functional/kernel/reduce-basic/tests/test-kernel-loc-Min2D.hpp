@@ -15,10 +15,8 @@ void KernelLocMin2DTestImpl(const int xdim, const int ydim)
 
   DATA_TYPE ** workarr2D;
   DATA_TYPE ** checkarr2D;
-  DATA_TYPE ** testarr2D;
   DATA_TYPE * work_array;
   DATA_TYPE * check_array;
-  DATA_TYPE * test_array;
 
   DATA_TYPE min;
   DATA_TYPE sum = (DATA_TYPE)0;
