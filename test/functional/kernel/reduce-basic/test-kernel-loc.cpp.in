@@ -78,7 +78,6 @@ using OpenMPKernelLocExecPols =
 using OpenMPKernelLocReducePols =
   camp::list<
     RAJA::omp_reduce
-    //, RAJA::omp_reduce_ordered
   >;
 
 using OpenMPKernelLocForallPols =
