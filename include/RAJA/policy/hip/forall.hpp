@@ -207,12 +207,11 @@ RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip &hi
       //
       // Launch the kernels
       //
-      hipLaunchKernelGGL(func,
+      RAJA::hip::launch(func,
                          dim3(gridSize), dim3(BlockSize), shmem, stream,
                          body,
                          std::move(begin),
                          len);
-      RAJA::hip::launch(stream);
     }
 
     if (!Async) { RAJA::hip::synchronize(stream); }

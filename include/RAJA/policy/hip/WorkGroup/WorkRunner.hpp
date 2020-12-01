@@ -326,11 +326,10 @@ struct WorkRunner<
         //
         // Launch the kernel
         //
-        hipLaunchKernelGGL(func,
-                           dim3(gridSize), dim3(blockSize), shmem, stream,
-                           std::move(begin),
-                           std::forward<Args>(args)...);
-        RAJA::hip::launch(stream);
+        RAJA::hip::launch(func,
+                          dim3(gridSize), dim3(blockSize), shmem, stream,
+                          std::move(begin),
+                          std::forward<Args>(args)...);
       }
 
       if (!Async) { RAJA::hip::synchronize(stream); }
