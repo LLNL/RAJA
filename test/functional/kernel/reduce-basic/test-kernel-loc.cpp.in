@@ -22,12 +22,7 @@
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-kernel-loc-Min2D.hpp"
-#include "test-kernel-loc-Max2D.hpp"
-#include "test-kernel-loc-Min2DView.hpp"
-#include "test-kernel-loc-Max2DView.hpp"
-#include "test-kernel-loc-Min2DViewTuple.hpp"
-#include "test-kernel-loc-Max2DViewTuple.hpp"
+#include "test-kernel-loc-@LOC_TYPE@.hpp"
 
 
 //
