@@ -87,6 +87,33 @@ using OpenMPKernelLocForallPols =
 
 #endif  // RAJA_ENABLE_OPENMP
 
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+
+using OpenMPTargetKernelLocExecPols =
+  camp::list<
+
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::seq_exec,  // row
+        RAJA::statement::For<0, RAJA::omp_target_parallel_for_exec<16>,  // col
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >
+
+  >;
+
+using OpenMPTargetKernelLocReducePols =
+  camp::list<
+    RAJA::omp_target_reduce
+  >;
+
+using OpenMPTargetKernelLocForallPols =
+  camp::list<
+    RAJA::omp_target_parallel_for_exec<16>
+  >;
+
+#endif  // RAJA_ENABLE_TARGET_OPENMP
+
 #if defined(RAJA_ENABLE_TBB)
 
 using TBBKernelLocExecPols =

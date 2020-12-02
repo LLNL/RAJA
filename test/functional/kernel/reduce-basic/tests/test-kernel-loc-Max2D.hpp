@@ -43,13 +43,13 @@ void KernelLocMax2DTestImpl(const int xdim, const int ydim)
     workarr2D[zz] = work_array + zz * ydim;
   });
 
-  RAJA::forall<FORALL_POLICY>(seg, [=] (INDEX_TYPE zz)
+  RAJA::forall<RAJA::seq_exec>(seg, [=] (INDEX_TYPE zz)
   {
     checkarr2D[zz] = check_array + zz * ydim;
   });
 
   // initializing  values
-  RAJA::forall<FORALL_POLICY>(seg, [=] (INDEX_TYPE zz)
+  RAJA::forall<RAJA::seq_exec>(seg, [=] (INDEX_TYPE zz)
   {
     for ( int xx = 0; xx < xdim; ++xx )
     {
