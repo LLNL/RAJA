@@ -15,21 +15,27 @@ void KernelLocMax2DViewTupleTestImpl(const int xdim, const int ydim)
 
   DATA_TYPE ** workarr2D;
   DATA_TYPE ** checkarr2D;
+  DATA_TYPE ** testarr2D;
   DATA_TYPE * work_array;
   DATA_TYPE * check_array;
+  DATA_TYPE * test_array;
 
   // square 2D array, xdim x ydim
   INDEX_TYPE array_length = xdim * ydim;
 
-  allocateReduceLocTestData<DATA_TYPE>( array_length,
-                                        work_res,
-                                        &work_array,
-                                        &check_array);
+  allocateForallTestData<DATA_TYPE> ( array_length,
+                                      work_res,
+                                      &work_array,
+                                      &check_array,
+                                      &test_array
+                                    );
 
-  allocateReduceLocTestData<DATA_TYPE *>( ydim,
-                                          work_res,
-                                          &workarr2D,
-                                          &checkarr2D);
+  allocateForallTestData<DATA_TYPE *> ( ydim,
+                                        work_res,
+                                        &workarr2D,
+                                        &checkarr2D,
+                                        &testarr2D
+                                      );
 
   // set rows to point to check and work _arrays
   RAJA::TypedRangeSegment<INDEX_TYPE> seg(0,ydim);
@@ -88,13 +94,17 @@ void KernelLocMax2DViewTupleTestImpl(const int xdim, const int ydim)
   ASSERT_EQ(checkraja_loc.idx, RAJA::get<0>(raja_loc));
   ASSERT_EQ(checkraja_loc.idy, RAJA::get<1>(raja_loc));
 
-  deallocateReduceLocTestData<DATA_TYPE>( work_res,
-                                          work_array,
-                                          check_array);
+  deallocateForallTestData<DATA_TYPE> ( work_res,
+                                        work_array,
+                                        check_array,
+                                        test_array
+                                      );
 
-  deallocateReduceLocTestData<DATA_TYPE *>( work_res,
-                                            workarr2D,
-                                            checkarr2D);
+  deallocateForallTestData<DATA_TYPE *> ( work_res,
+                                          workarr2D,
+                                          checkarr2D,
+                                          testarr2D
+                                        );
 }
 
 

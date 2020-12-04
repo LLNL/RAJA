@@ -15,7 +15,7 @@
 #include "camp/resource.hpp"
 
 template<typename T>
-void allocateForallTestData(T N,
+void allocateForallTestData(camp::type::ptr::rem<T> N,
                             camp::resources::Resource& work_res,
                             T** work_array,
                             T** check_array,
