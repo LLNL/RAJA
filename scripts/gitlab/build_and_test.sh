@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 
 ##############################################################################
-# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC and Umpire
-# project contributors. See the COPYRIGHT file for details.
+# Copyright (c) 2016-2020, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
-# SPDX-License-Identifier: (MIT)
+# SPDX-License-Identifier: (BSD-3-Clause)
 ##############################################################################
-
 
 set -o errexit
 set -o nounset
