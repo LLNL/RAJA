@@ -18,11 +18,6 @@ void KernelLocMax2DTestImpl(const int xdim, const int ydim)
   DATA_TYPE * work_array;
   DATA_TYPE * check_array;
 
-  DATA_TYPE max;
-  DATA_TYPE sum = (DATA_TYPE)0;
-  INDEX_TYPE maxlocx = (INDEX_TYPE)(-1);
-  INDEX_TYPE maxlocy = (INDEX_TYPE)(-1);
-
   // square 2D array, xdim x ydim
   INDEX_TYPE array_length = xdim * ydim;
 
@@ -71,27 +66,23 @@ void KernelLocMax2DTestImpl(const int xdim, const int ydim)
                            });
 
   // CPU answer
-  max = -2;
-  for (int y = 0; y < ydim; ++y) {
-    for ( int x = 0; x < xdim; ++x ) {
-      DATA_TYPE val = checkarr2D[y][x];
+  RAJA::ReduceMaxLoc<RAJA::seq_reduce, DATA_TYPE, Index2D> checkmaxloc_reducer((DATA_TYPE)0, Index2D(0, 0));
 
-      sum += val;
-
-      if (val > max) {
-        max = val;
-        maxlocx = x;
-        maxlocy = y;
-      }
+  RAJA::forall<RAJA::seq_exec>(colrange, [=] (INDEX_TYPE c) {
+    for( int r = 0; r < ydim; ++r)
+    {
+      checkmaxloc_reducer.maxloc(checkarr2D[r][c], Index2D(c, r));
     }
-  }
+  });
 
   Index2D raja_loc = maxloc_reducer.getLoc();
   DATA_TYPE raja_max = (DATA_TYPE)maxloc_reducer.get();
+  Index2D checkraja_loc = checkmaxloc_reducer.getLoc();
+  DATA_TYPE checkraja_max = (DATA_TYPE)checkmaxloc_reducer.get();
 
-  ASSERT_DOUBLE_EQ((DATA_TYPE)max, (DATA_TYPE)raja_max);
-  ASSERT_EQ(maxlocx, raja_loc.idx);
-  ASSERT_EQ(maxlocy, raja_loc.idy);
+  ASSERT_DOUBLE_EQ((DATA_TYPE)checkraja_max, (DATA_TYPE)raja_max);
+  ASSERT_EQ(checkraja_loc.idx, raja_loc.idx);
+  ASSERT_EQ(checkraja_loc.idy, raja_loc.idy);
 
   deallocateReduceLocTestData<DATA_TYPE>( work_res,
                                           work_array,

@@ -18,11 +18,6 @@ void KernelLocMin2DViewTupleTestImpl(const int xdim, const int ydim)
   DATA_TYPE * work_array;
   DATA_TYPE * check_array;
 
-  DATA_TYPE min;
-  DATA_TYPE sum = (DATA_TYPE)0;
-  INDEX_TYPE minlocx = (INDEX_TYPE)(-1);
-  INDEX_TYPE minlocy = (INDEX_TYPE)(-1);
-
   // square 2D array, xdim x ydim
   INDEX_TYPE array_length = xdim * ydim;
 
@@ -75,27 +70,23 @@ void KernelLocMin2DViewTupleTestImpl(const int xdim, const int ydim)
                            });
 
   // CPU answer
-  min = array_length * 2;
-  for (int y = 0; y < ydim; ++y) {
-    for ( int x = 0; x < xdim; ++x ) {
-      DATA_TYPE val = checkarr2D[y][x];
+  RAJA::ReduceMinLoc<RAJA::seq_reduce, DATA_TYPE, Index2D> checkminloc_reducer((DATA_TYPE)0, Index2D(0, 0));
 
-      sum += val;
-
-      if (val < min) {
-        min = val;
-        minlocx = x;
-        minlocy = y;
-      }
+  RAJA::forall<RAJA::seq_exec>(colrange, [=] (INDEX_TYPE c) {
+    for( int r = 0; r < ydim; ++r)
+    {
+      checkminloc_reducer.minloc(checkarr2D[r][c], Index2D(c, r));
     }
-  }
+  });
 
   RAJA::tuple<DATA_TYPE, DATA_TYPE> raja_loc = minloc_reducer.getLoc();
   DATA_TYPE raja_min = (DATA_TYPE)minloc_reducer.get();
+  Index2D checkraja_loc = checkminloc_reducer.getLoc();
+  DATA_TYPE checkraja_min = (DATA_TYPE)checkminloc_reducer.get();
 
-  ASSERT_DOUBLE_EQ((DATA_TYPE)min, (DATA_TYPE)raja_min);
-  ASSERT_EQ(minlocx, RAJA::get<0>(raja_loc));
-  ASSERT_EQ(minlocy, RAJA::get<1>(raja_loc));
+  ASSERT_DOUBLE_EQ((DATA_TYPE)checkraja_min, (DATA_TYPE)raja_min);
+  ASSERT_EQ(checkraja_loc.idx, RAJA::get<0>(raja_loc));
+  ASSERT_EQ(checkraja_loc.idy, RAJA::get<1>(raja_loc));
 
   deallocateReduceLocTestData<DATA_TYPE>( work_res,
                                           work_array,
