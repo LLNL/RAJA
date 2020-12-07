@@ -121,7 +121,7 @@ template <typename SEGMENT>
 struct TileExecute<loop_exec, SEGMENT> {
 
   template <typename TILE_T, typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
+  static RAJA_INLINE void exec(
       LaunchContext const RAJA_UNUSED_ARG(&ctx),
       TILE_T tile_size,
       SEGMENT const &segment,

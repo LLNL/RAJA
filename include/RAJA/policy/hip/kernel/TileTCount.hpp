@@ -330,21 +330,20 @@ template <typename Data,
           typename ParamId,
           camp::idx_t chunk_size,
           int ThreadDim,
-          int MinThreads,
           typename ... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<
   Data,
   statement::TileTCount<ArgumentId, ParamId,
                         RAJA::tile_fixed<chunk_size>,
-                        hip_thread_xyz_loop<ThreadDim, MinThreads>,
+                        hip_thread_xyz_loop<ThreadDim>,
                         EnclosedStmts ...>,
                         Types>
   : public HipStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
                     RAJA::tile_fixed<chunk_size>,
-                    hip_thread_xyz_loop<ThreadDim, MinThreads>,
+                    hip_thread_xyz_loop<ThreadDim>,
                     EnclosedStmts ...>,
                     Types> {
 
@@ -352,7 +351,7 @@ struct HipStatementExecutor<
           Data,
           statement::Tile<ArgumentId,
                           RAJA::tile_fixed<chunk_size>,
-                          hip_thread_xyz_loop<ThreadDim, MinThreads>,
+                          hip_thread_xyz_loop<ThreadDim>,
                           EnclosedStmts ...>,
                           Types>;
 
