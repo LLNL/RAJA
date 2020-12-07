@@ -55,7 +55,8 @@ endif()
 
 if(RAJA_ENABLE_TBB)
 # TBB atomics are not available in RAJA currently
-#  list(APPEND FORALL_BACKENDS TBB)
+# so built-in atomics are used
+  list(APPEND FORALL_ATOMIC_BACKENDS TBB)
 endif()
 
 if(RAJA_ENABLE_CUDA)
