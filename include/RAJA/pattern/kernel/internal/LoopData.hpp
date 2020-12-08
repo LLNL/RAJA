@@ -160,12 +160,12 @@ struct LoopData {
     camp::get<ResourceId::resource_idx>(resource_tuple) = resource_t(i);
   }
 
-  template <typename ResourceId>
+  template <camp::idx_t IDX>
   RAJA_HOST_DEVICE RAJA_INLINE
   auto get_resource() ->
-    camp::at_v<typename resource_tuple_t::TList, ResourceId::resource_idx>
+    camp::at_v<typename resource_tuple_t::TList, IDX>
   {
-    return camp::get<ResourceId::resource_idx>(resource_tuple);
+    return camp::get<IDX>(resource_tuple);
   }
 
 

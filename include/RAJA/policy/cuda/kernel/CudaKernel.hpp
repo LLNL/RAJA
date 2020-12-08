@@ -23,6 +23,7 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 
+#include <iostream>
 #include <cassert>
 #include <climits>
 
@@ -466,6 +467,9 @@ struct StatementExecutor<
     using launch_t = CudaLaunchHelper<LaunchConfig, stmt_list_t, data_t, Types>;
 
 
+    RAJA::resources::Cuda res = data.template get_resource<0>();
+
+
     //
     // Compute the requested kernel dimensions
     //
@@ -481,7 +485,8 @@ struct StatementExecutor<
       // Setup shared memory buffers
       //
       int shmem = 0;
-      cudaStream_t stream = 0;
+      cudaStream_t stream = res.get_stream();
+      std::cout<< " Hazza a function of quality... " << stream <<"\n";
 
 
       //
