@@ -36,7 +36,7 @@ struct VtableVoidPtrWrapper
   void* ptr;
   VtableVoidPtrWrapper() = default;
   // implicit constructor from void*
-  RAJA_DEVICE VtableVoidPtrWrapper(void* p) : ptr(p) { }
+  RAJA_HOST_DEVICE VtableVoidPtrWrapper(void* p) : ptr(p) { }
 };
 
 template < typename >
@@ -45,7 +45,7 @@ struct VtableVoidConstPtrWrapper
   const void* ptr;
   VtableVoidConstPtrWrapper() = default;
   // implicit constructor from const void*
-  RAJA_DEVICE VtableVoidConstPtrWrapper(const void* p) : ptr(p) { }
+  RAJA_HOST_DEVICE VtableVoidConstPtrWrapper(const void* p) : ptr(p) { }
 };
 
 /*!
