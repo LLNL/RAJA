@@ -73,11 +73,11 @@ using teams_x = RAJA::expt::LoopPolicy<
 using loop_t = RAJA::expt::LoopPolicy<RAJA::loop_exec
 #if defined(RAJA_ENABLE_CUDA)
                                        ,
-                                       RAJA::loop_exec
+                                       RAJA::cuda_thread_x_loop
 #endif
 #if defined(RAJA_ENABLE_HIP)
                                        ,
-                                       RAJA::hip_thread_x_direct
+                                       RAJA::hip_thread_y_loop
 #endif
                                        >;
 /*
@@ -128,7 +128,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     // auto select_cpu_or_gpu = RAJA::DEVICE;
 
     // Allocate memory for either host or device
-    int N_tri = 20;
+    int N_tri = 10;
 
     int* Ddat = nullptr;
     if (select_cpu_or_gpu == RAJA::expt::HOST) {
@@ -168,11 +168,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
        RAJA::expt::Resources(RAJA::expt::Teams(N_tri), RAJA::expt::Threads(N_tri)),
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-         RAJA::expt::tile<teams_x>(ctx, 4, RAJA::RangeSegment(0, N_tri), [&](RAJA::RangeSegment const &r_tile) {
+        const int TILE_SZ = 4;
+         RAJA::expt::tile<teams_x>(ctx, TILE_SZ, RAJA::RangeSegment(0, N_tri), [&](RAJA::RangeSegment const &r_tile) {
 
            RAJA::expt::loop<loop_t>(ctx, r_tile, [&](int r) {
-               printf("r %d \n", r);
-               
+               int loc_id = r -  r_tile.begin()[0];
+               printf("r %d loc_id %d \n", r, loc_id);
+
              }); // loop r
          });  // tile r
        });  // outer lambda
