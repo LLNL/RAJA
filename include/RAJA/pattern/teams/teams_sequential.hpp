@@ -1,4 +1,3 @@
-
 /*!
  ******************************************************************************
  *
@@ -197,6 +196,26 @@ struct TileExecute<loop_exec, SEGMENT> {
     for (int tx = 0; tx < len; tx += tile_size)
     {
       body(segment.slice(tx, tile_size));
+    }
+  }
+};
+
+template <typename SEGMENT>
+struct TileIdxExecute<loop_exec, SEGMENT> {
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    for (int tx = 0; tx < len; tx += tile_size)
+    {
+      body(segment.slice(tx, tile_size), tx);
     }
   }
 };

@@ -269,7 +269,7 @@ template <typename POLICY_LIST,
           typename CONTEXT,
           typename SEGMENT,
           typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
+RAJA_HOST_DEVICE RAJA_INLINE void loop_idx(CONTEXT const &ctx,
                                        SEGMENT const &segment0,
                                        SEGMENT const &segment1,
                                        SEGMENT const &segment2,
@@ -277,10 +277,10 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
 {
 
 #if defined(RAJA_DEVICE_CODE)
-  LoopExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(
+  LoopIdxExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(
       ctx, segment0, segment1, segment2, body);
 #else
-  LoopExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(
+  LoopIdxExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(
       ctx, segment0, segment1, segment2, body);
 #endif
 }
@@ -291,6 +291,8 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
 template <typename POLICY, typename SEGMENT>
 struct TileExecute;
 
+template <typename POLICY, typename SEGMENT>
+struct TileIdxExecute;
 
 template <typename POLICY_LIST,
           typename CONTEXT,
@@ -315,11 +317,27 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const &ctx,
 #endif
 }
 
-//Get local tile index
-template<typename idxType, typename SEGMENT>
-RAJA_HOST_DEVICE RAJA_INLINE idxType get_loc_tile_indx(idxType globalIdx, SEGMENT const &segment)
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename TILE_T,
+          typename SEGMENT,
+          typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void tile_idx(CONTEXT const &ctx,
+                                       TILE_T tile_size,
+                                       SEGMENT const &segment,
+                                       BODY const &body)
 {
-  return globalIdx - segment.begin()[0];
+#if defined(RAJA_DEVICE_CODE)
+  TileIdxExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(ctx,
+                                                                    tile_size,
+                                                                    segment,
+                                                                    body);
+#else
+  TileIdxExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(ctx,
+                                                                  tile_size,
+                                                                  segment,
+                                                                  body);
+#endif
 }
 
 

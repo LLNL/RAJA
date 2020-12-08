@@ -298,6 +298,26 @@ struct TileExecute<omp_parallel_for_exec, SEGMENT> {
   }
 };
 
+template <typename SEGMENT>
+struct TileIdxExecute<omp_parallel_for_exec, SEGMENT> {
+
+  template <typename BODY, typename TILE_T>
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    int len = segment.end() - segment.begin();
+#pragma omp parallel for
+    for (int i = 0; i < len; i+= tile_size) {
+
+      body(segment.slice(i, tile_size), i);
+    }
+  }
+};
+
 }  // namespace expt
 
 }  // namespace RAJA
