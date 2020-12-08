@@ -154,6 +154,20 @@ RAJA_INLINE void kernel_param_resource(SegmentTuple &&segments,
 
 template <typename PolicyType,
           typename SegmentTuple,
+          typename ResourceTuple,
+          typename... Bodies>
+RAJA_INLINE void kernel_resources(SegmentTuple &&segments,
+                                  ResourceTuple &&resources,
+                                  Bodies &&... bodies)
+{
+  RAJA::kernel_param_resource<PolicyType>(std::forward<SegmentTuple>(segments),
+                                          RAJA::make_tuple(),
+                                          std::forward<ResourceTuple>(resources),
+                                          std::forward<Bodies>(bodies)...);
+}
+
+template <typename PolicyType,
+          typename SegmentTuple,
           typename ParamTuple,
           typename... Bodies>
 RAJA_INLINE void kernel_param(SegmentTuple &&segments,
@@ -187,6 +201,7 @@ RAJA_INLINE void kernel(SegmentTuple &&segments, Bodies &&... bodies)
 #include "RAJA/pattern/kernel/InitLocalMem.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
 #include "RAJA/pattern/kernel/Param.hpp"
+#include "RAJA/pattern/kernel/Resource.hpp"
 #include "RAJA/pattern/kernel/Reduce.hpp"
 #include "RAJA/pattern/kernel/Region.hpp"
 #include "RAJA/pattern/kernel/Tile.hpp"
