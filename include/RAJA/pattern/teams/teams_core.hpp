@@ -294,6 +294,12 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const &ctx,
 #endif
 }
 
+//Get local tile index
+template<typename idxType, typename SEGMENT>
+RAJA_HOST_DEVICE RAJA_INLINE idxType get_loc_tile_indx(idxType globalIdx, SEGMENT const &segment)
+{
+  return globalIdx - segment.begin()[0];
+}
 
 
 }  // namespace expt

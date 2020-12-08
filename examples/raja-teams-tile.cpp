@@ -172,7 +172,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
          RAJA::expt::tile<teams_x>(ctx, TILE_SZ, RAJA::RangeSegment(0, N_tri), [&](RAJA::RangeSegment const &r_tile) {
 
            RAJA::expt::loop<loop_t>(ctx, r_tile, [&](int r) {
-               int loc_id = r -  r_tile.begin()[0];
+
+               //Method to extract local tile index
+               int loc_id = RAJA::expt::get_loc_tile_indx(r, r_tile);
+
                printf("r %d loc_id %d \n", r, loc_id);
 
              }); // loop r
