@@ -202,6 +202,8 @@ void launch(ExecPlace place, Resources const &team_resources, BODY const &body)
 template <typename POLICY, typename SEGMENT>
 struct LoopExecute;
 
+template <typename POLICY, typename SEGMENT>
+struct LoopIdxExecute;
 
 template <typename POLICY_LIST,
           typename CONTEXT,
@@ -217,6 +219,25 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
                                                                     body);
 #else
   LoopExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(ctx,
+                                                                  segment,
+                                                                  body);
+#endif
+}
+
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename SEGMENT,
+          typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void loop_idx(CONTEXT const &ctx,
+                                          SEGMENT const &segment,
+                                          BODY const &body)
+{
+#if defined(RAJA_DEVICE_CODE)
+  LoopIdxExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(ctx,
+                                                                    segment,
+                                                                    body);
+#else
+  LoopIdxExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(ctx,
                                                                   segment,
                                                                   body);
 #endif
