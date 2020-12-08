@@ -326,10 +326,8 @@ struct WorkRunner<
         //
         // Launch the kernel
         //
-        RAJA::hip::launch(func,
-                          dim3(gridSize), dim3(blockSize), shmem, stream,
-                          std::move(begin),
-                          std::forward<Args>(args)...);
+        void* func_args[] = { (void*)&begin, (void*)&args... };
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, func_args, shmem, stream);
       }
 
       if (!Async) { RAJA::hip::synchronize(stream); }
