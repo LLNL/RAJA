@@ -671,7 +671,7 @@ struct TileIdxExecute<cuda_thread_xyz_loop<DIM>, SEGMENT> {
          tx < len;
          tx += internal::get_cuda_dim<DIM>(blockDim) * tile_size)
     {
-      body(segment.slice(tx, tile_size), tx);
+      body(segment.slice(tx, tile_size), tx/tile_size);
     }
   }
 };
@@ -692,7 +692,7 @@ struct TileIdxExecute<cuda_thread_xyz_direct<DIM>, SEGMENT> {
     int tx = internal::get_cuda_dim<DIM>(threadIdx) * tile_size;
     if(tx < len)
     {
-      body(segment.slice(tx, tile_size), tx);
+      body(segment.slice(tx, tile_size), tx/tile_size);
     }
   }
 };
@@ -717,7 +717,7 @@ struct TileIdxExecute<cuda_block_xyz_loop<DIM>, SEGMENT> {
 
          bx += internal::get_cuda_dim<DIM>(gridDim) * tile_size)
     {
-      body(segment.slice(bx, tile_size), bx);
+      body(segment.slice(bx, tile_size), bx/tile_size);
     }
   }
 };
@@ -738,7 +738,7 @@ struct TileIdxExecute<cuda_block_xyz_direct<DIM>, SEGMENT> {
 
     int bx = internal::get_cuda_dim<DIM>(blockIdx) * tile_size;
     if(bx < len){
-      body(segment.slice(bx, tile_size), bx);
+      body(segment.slice(bx, tile_size), bx/tile_size);
     }
   }
 };

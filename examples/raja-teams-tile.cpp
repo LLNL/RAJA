@@ -56,7 +56,7 @@ using launch_policy = RAJA::expt::LaunchPolicy<
  */
 using teams_x = RAJA::expt::LoopPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
-                                       RAJA::omp_parallel_for_exec
+                                      RAJA::omp_parallel_for_exec
 #else
                                        RAJA::loop_exec
 #endif
@@ -169,11 +169,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
         const int TILE_SZ = 4;
-         RAJA::expt::tile<teams_x>(ctx, TILE_SZ, RAJA::RangeSegment(0, N_tri), [&](RAJA::RangeSegment const &r_tile) {
+        RAJA::expt::tile_idx<teams_x>(ctx, TILE_SZ, RAJA::RangeSegment(0, N_tri), [&](RAJA::RangeSegment const &r_tile, int tile_id) {
 
              RAJA::expt::loop_idx<loop_t>(ctx, r_tile, [&](int r, int loc_id) {
 
-               printf("r %d loc_id %d \n", r, loc_id);
+                 printf("r %d loc_id %d tile_id %d \n", r, loc_id, tile_id);
 
              }); // loop r
          });  // tile r

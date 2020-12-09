@@ -201,55 +201,6 @@ struct TileExecute<loop_exec, SEGMENT> {
     }
   }
 
-  template <typename TILE_T, typename BODY>
-  static RAJA_INLINE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      TILE_T tile_size0,
-      TILE_T tile_size1,
-      SEGMENT const &segment0,
-      SEGMENT const &segment1,
-      BODY const &body)
-  {
-
-    const int len0 = segment0.end() - segment0.begin();
-    const int len1 = segment1.end() - segment1.begin();
-
-    for (int ty = 0; ty < len1; ty += tile_size1) {
-      for (int tx = 0; tx < len0; tx += tile_size0) {
-        body(segment0.slice(tx, tile_size0), segment1.slice(ty,tile_size1));
-      }
-    }
-
-  }
-
-  template <typename TILE_T, typename BODY>
-  static RAJA_INLINE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      TILE_T tile_size0,
-      TILE_T tile_size1,
-      TILE_T tile_size2,
-      SEGMENT const &segment0,
-      SEGMENT const &segment1,
-      SEGMENT const &segment2,
-      BODY const &body)
-  {
-
-    const int len0 = segment0.end() - segment0.begin();
-    const int len1 = segment1.end() - segment1.begin();
-    const int len2 = segment2.end() - segment2.begin();
-
-    for (int tz = 0; tz < len2; tz += tile_size2) {
-      for (int ty = 0; ty < len1; ty += tile_size1) {
-        for (int tx = 0; tx < len0; tx += tile_size0) {
-        body(segment0.slice(tx, tile_size0),
-             segment1.slice(ty,tile_size1),
-             segment1.slice(ty,tile_size2));
-        }
-      }
-    }
-
-  }
-
 };
 
 template <typename SEGMENT>
@@ -265,60 +216,10 @@ struct TileIdxExecute<loop_exec, SEGMENT> {
 
     const int len = segment.end() - segment.begin();
 
-    for (int tx = 0; tx < len; tx += tile_size)
+    for (int tx = 0, bx=0; tx < len; tx += tile_size, bx++)
     {
-      body(segment.slice(tx, tile_size), tx);
+      body(segment.slice(tx, tile_size), bx);
     }
-  }
-
-  template <typename TILE_T, typename BODY>
-  static RAJA_INLINE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      TILE_T tile_size0,
-      TILE_T tile_size1,
-      SEGMENT const &segment0,
-      SEGMENT const &segment1,
-      BODY const &body)
-  {
-
-    const int len0 = segment0.end() - segment0.begin();
-    const int len1 = segment1.end() - segment1.begin();
-
-    for (int ty = 0; ty < len1; ty += tile_size1) {
-      for (int tx = 0; tx < len0; tx += tile_size0) {
-        body(segment0.slice(tx, tile_size0), segment1.slice(ty,tile_size1), tx, ty);
-      }
-    }
-
-  }
-
-
-  template <typename TILE_T, typename BODY>
-  static RAJA_INLINE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      TILE_T tile_size0,
-      TILE_T tile_size1,
-      TILE_T tile_size2,
-      SEGMENT const &segment0,
-      SEGMENT const &segment1,
-      SEGMENT const &segment2,
-      BODY const &body)
-  {
-
-    const int len0 = segment0.end() - segment0.begin();
-    const int len1 = segment1.end() - segment1.begin();
-    const int len2 = segment2.end() - segment2.begin();
-
-    for (int tz = 0; tz < len2; tz += tile_size2) {
-      for (int ty = 0; ty < len1; ty += tile_size1) {
-        for (int tx = 0; tx < len0; tx += tile_size0) {
-        body(segment0.slice(tx, tile_size0),
-             segment1.slice(ty,tile_size1),
-             segment1.slice(ty,tile_size2), tx, ty ,tz);
-        }
-      }
-    }
-
   }
 
 };
