@@ -340,6 +340,134 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile_idx(CONTEXT const &ctx,
 #endif
 }
 
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename TILE_T,
+          typename SEGMENT,
+          typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const &ctx,
+                                       TILE_T tile_size0,
+                                       TILE_T tile_size1,
+                                       SEGMENT const &segment0,
+                                       SEGMENT const &segment1,
+                                       BODY const &body)
+{
+#if defined(RAJA_DEVICE_CODE)
+  TileExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(ctx,
+                                                                    tile_size0,
+                                                                    tile_size1,
+                                                                    segment0,
+                                                                    segment1,
+                                                                    body);
+#else
+  TileExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(ctx,
+                                                                  tile_size0,
+                                                                  tile_size1,
+                                                                  segment0,
+                                                                  segment1,
+                                                                  body);
+#endif
+}
+
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename TILE_T,
+          typename SEGMENT,
+          typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void tile_idx(CONTEXT const &ctx,
+                                       TILE_T tile_size0,
+                                       TILE_T tile_size1,
+                                       SEGMENT const &segment0,
+                                       SEGMENT const &segment1,
+                                       BODY const &body)
+{
+#if defined(RAJA_DEVICE_CODE)
+  TileIdxExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(ctx,
+                                                                    tile_size0,
+                                                                    tile_size1,
+                                                                    segment0,
+                                                                    segment1,
+                                                                    body);
+#else
+  TileIdxExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(ctx,
+                                                                  tile_size0,
+                                                                  tile_size1,
+                                                                  segment0,
+                                                                  segment1,
+                                                                  body);
+#endif
+}
+
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename TILE_T,
+          typename SEGMENT,
+          typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const &ctx,
+                                       TILE_T tile_size0,
+                                       TILE_T tile_size1,
+                                       TILE_T tile_size2,
+                                       SEGMENT const &segment0,
+                                       SEGMENT const &segment1,
+                                       SEGMENT const &segment2,
+                                       BODY const &body)
+{
+#if defined(RAJA_DEVICE_CODE)
+  TileExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(ctx,
+                                                                    tile_size0,
+                                                                    tile_size1,
+                                                                    tile_size2,
+                                                                    segment0,
+                                                                    segment1,
+                                                                    segment2,
+                                                                    body);
+#else
+  TileExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(ctx,
+                                                                  tile_size0,
+                                                                  tile_size1,
+                                                                  tile_size2,
+                                                                  segment0,
+                                                                  segment1,
+                                                                  segment2,
+                                                                  body);
+#endif
+}
+
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename TILE_T,
+          typename SEGMENT,
+          typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void tile_idx(CONTEXT const &ctx,
+                                       TILE_T tile_size0,
+                                       TILE_T tile_size1,
+                                       TILE_T tile_size2,
+                                       SEGMENT const &segment0,
+                                       SEGMENT const &segment1,
+                                       SEGMENT const &segment2,
+                                       BODY const &body)
+{
+#if defined(RAJA_DEVICE_CODE)
+  TileIdxExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(ctx,
+                                                                    tile_size0,
+                                                                    tile_size1,
+                                                                    tile_size2,
+                                                                    segment0,
+                                                                    segment1,
+                                                                    segment2,
+                                                                    body);
+#else
+  TileIdxExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(ctx,
+                                                                  tile_size0,
+                                                                  tile_size1,
+                                                                  tile_size2,
+                                                                  segment0,
+                                                                  segment1,
+                                                                  segment2,
+                                                                  body);
+#endif
+}
+
 
 }  // namespace expt
 
