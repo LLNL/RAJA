@@ -37,7 +37,6 @@ __global__ void launch_global_fcn(LaunchContext ctx, BODY body)
   body(ctx);
 }
 
-
 template <bool async>
 struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
   template <typename BODY>
@@ -60,7 +59,6 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
     }
   }
 };
-
 
 template <typename BODY, int num_threads>
 __launch_bounds__(num_threads, 1) __global__
@@ -96,7 +94,6 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, nthreads>> {
 /*
   CUDA thread loops with block strides
 */
-
 template <typename SEGMENT, int DIM>
 struct LoopExecute<cuda_thread_xyz_loop<DIM>, SEGMENT> {
 
@@ -121,7 +118,6 @@ struct LoopExecute<cuda_thread_xyz_loop<DIM>, SEGMENT> {
 /*
   CUDA thread direct mappings
 */
-
 template <typename SEGMENT, int DIM>
 struct LoopExecute<cuda_thread_xyz_direct<DIM>, SEGMENT> {
 
@@ -164,12 +160,9 @@ struct LoopExecute<cuda_block_xyz_loop<DIM>, SEGMENT> {
   }
 };
 
-
-
 /*
   CUDA block direct mappings
 */
-
 template <typename SEGMENT, int DIM>
 struct LoopExecute<cuda_block_xyz_direct<DIM>, SEGMENT> {
 
@@ -191,7 +184,6 @@ struct LoopExecute<cuda_block_xyz_direct<DIM>, SEGMENT> {
 /*
   CUDA thread loops with block strides + Return Index
 */
-
 template <typename SEGMENT, int DIM>
 struct LoopIdxExecute<cuda_thread_xyz_loop<DIM>, SEGMENT> {
 
@@ -216,7 +208,6 @@ struct LoopIdxExecute<cuda_thread_xyz_loop<DIM>, SEGMENT> {
 /*
   CUDA thread direct mappings
 */
-
 template <typename SEGMENT, int DIM>
 struct LoopIdxExecute<cuda_thread_xyz_direct<DIM>, SEGMENT> {
 
@@ -234,7 +225,6 @@ struct LoopIdxExecute<cuda_thread_xyz_direct<DIM>, SEGMENT> {
     }
   }
 };
-
 
 /*
   CUDA block loops with grid strides
@@ -259,12 +249,9 @@ struct LoopIdxExecute<cuda_block_xyz_loop<DIM>, SEGMENT> {
   }
 };
 
-
-
 /*
   CUDA block direct mappings
 */
-
 template <typename SEGMENT, int DIM>
 struct LoopIdxExecute<cuda_block_xyz_direct<DIM>, SEGMENT> {
 
@@ -298,7 +285,6 @@ using cuda_block_yzx_nested_direct = cuda_block_xyz_direct<1,2,0>;
 using cuda_block_zxy_nested_direct = cuda_block_xyz_direct<2,0,1>;
 using cuda_block_zyx_nested_direct = cuda_block_xyz_direct<2,1,0>;
 
-
 template <typename SEGMENT, int DIM0, int DIM1>
 struct LoopExecute<cuda_block_xyz_direct<DIM0, DIM1>, SEGMENT> {
 
@@ -319,8 +305,6 @@ struct LoopExecute<cuda_block_xyz_direct<DIM0, DIM1>, SEGMENT> {
     }
   }
 };
-
-
 
 template <typename SEGMENT, int DIM0, int DIM1, int DIM2>
 struct LoopExecute<cuda_block_xyz_direct<DIM0, DIM1, DIM2>, SEGMENT> {
@@ -348,11 +332,10 @@ struct LoopExecute<cuda_block_xyz_direct<DIM0, DIM1, DIM2>, SEGMENT> {
   }
 };
 
-  /*
-  // perfectly nested cuda direct policies
-     Return local index
-  */
-
+/*
+  Perfectly nested cuda direct policies
+  Return local index
+*/
 template <typename SEGMENT, int DIM0, int DIM1>
 struct LoopIdxExecute<cuda_block_xyz_direct<DIM0, DIM1>, SEGMENT> {
 
@@ -374,8 +357,6 @@ struct LoopIdxExecute<cuda_block_xyz_direct<DIM0, DIM1>, SEGMENT> {
     }
   }
 };
-
-
 
 template <typename SEGMENT, int DIM0, int DIM1, int DIM2>
 struct LoopIdxExecute<cuda_block_xyz_direct<DIM0, DIM1, DIM2>, SEGMENT> {
@@ -402,7 +383,6 @@ struct LoopIdxExecute<cuda_block_xyz_direct<DIM0, DIM1, DIM2>, SEGMENT> {
     }
   }
 };
-
 
 // perfectly nested cuda loop policies
 using cuda_block_xy_nested_loop = cuda_block_xyz_loop<0,1>;
@@ -449,8 +429,6 @@ struct LoopExecute<cuda_block_xyz_loop<DIM0, DIM1>, SEGMENT> {
   }
 };
 
-
-
 template <typename SEGMENT, int DIM0, int DIM1, int DIM2>
 struct LoopExecute<cuda_block_xyz_loop<DIM0, DIM1, DIM2>, SEGMENT> {
 
@@ -490,9 +468,9 @@ struct LoopExecute<cuda_block_xyz_loop<DIM0, DIM1, DIM2>, SEGMENT> {
   }
 };
 
-  /*
-  // perfectly nested cuda loop policies + returns local index
-  */
+/*
+  perfectly nested cuda loop policies + returns local index
+*/
 template <typename SEGMENT, int DIM0, int DIM1>
 struct LoopIdxExecute<cuda_block_xyz_loop<DIM0, DIM1>, SEGMENT> {
 
@@ -563,6 +541,7 @@ struct LoopIdxExecute<cuda_block_xyz_loop<DIM0, DIM1, DIM2>, SEGMENT> {
   }
 };
 
+
 template <typename SEGMENT, int DIM>
 struct TileExecute<cuda_thread_xyz_loop<DIM>, SEGMENT> {
 
@@ -584,6 +563,7 @@ struct TileExecute<cuda_thread_xyz_loop<DIM>, SEGMENT> {
     }
   }
 };
+
 
 template <typename SEGMENT, int DIM>
 struct TileExecute<cuda_thread_xyz_direct<DIM>, SEGMENT> {
@@ -652,8 +632,7 @@ struct TileExecute<cuda_block_xyz_direct<DIM>, SEGMENT> {
   }
 };
 
-  //Tile execute + return index
-
+//Tile execute + return index
 template <typename SEGMENT, int DIM>
 struct TileIdxExecute<cuda_thread_xyz_loop<DIM>, SEGMENT> {
 
@@ -675,6 +654,7 @@ struct TileIdxExecute<cuda_thread_xyz_loop<DIM>, SEGMENT> {
     }
   }
 };
+
 
 template <typename SEGMENT, int DIM>
 struct TileIdxExecute<cuda_thread_xyz_direct<DIM>, SEGMENT> {
