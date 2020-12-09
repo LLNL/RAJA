@@ -77,7 +77,7 @@ using loop_t = RAJA::expt::LoopPolicy<RAJA::loop_exec
 #endif
 #if defined(RAJA_ENABLE_HIP)
                                        ,
-                                       RAJA::hip_thread_y_loop
+                                       RAJA::hip_thread_x_loop
 #endif
                                        >;
 /*
