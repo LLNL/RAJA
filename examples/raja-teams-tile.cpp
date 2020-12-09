@@ -15,19 +15,7 @@
 
 
 /*
- * RAJA Teams Example: Upper Triangular Pattern + Shared Memory
- *
- * Teams introduces hierarchal parallelism through the concept of
- * teams and threads.  Computation is executed in a pre-defined grid
- * composed of threads and grouped into teams. The teams model enables
- * developers to express parallelism through loops over teams, and inner loops
- * over threads. Team loops are executed in parallel and
- * threads within a team should be treated as sub-parallel regions.
- *
- * Team shared memory is allocated between team and thread loops.
- * Memory allocated within thread loops are thread private.
- * The example below demonstrates composing an upper triangular
- * loop pattern, and using shared memory.
+ * RAJA Teams Example: Tiling with RAJA teams
  *
  */
 
@@ -175,8 +163,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
                  printf("global_id %d loc_id %d tile_id %d \n", global_id, loc_id, tile_id);
 
-             }); // loop r
-         });  // tile r
+             }); // loop_idx
+         });  // tile_idx
        });  // outer lambda
 
     if (select_cpu_or_gpu == RAJA::expt::HOST) {
