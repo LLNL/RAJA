@@ -307,7 +307,7 @@ namespace RAJA
       RAJA_INLINE
       element_type sum(camp::idx_t N = 8) const
       {
-				return _m512_mask_reduce_add_pd(createMask(N), m_value);
+				return _mm512_mask_reduce_add_pd(createMask(N), m_value);
       }
 
 
@@ -318,7 +318,7 @@ namespace RAJA
       RAJA_INLINE
       element_type max(camp::idx_t N = 8) const
       {
-				return _m512_mask_reduce_max_pd(createMask(N), m_value);
+				return _mm512_mask_reduce_max_pd(createMask(N), m_value);
       }
 
       /*!
@@ -338,7 +338,7 @@ namespace RAJA
       RAJA_INLINE
       element_type min(camp::idx_t N = 8) const
       {
-				return _m512_mask_reduce_min_pd(createMask(N), m_value);
+				return _mm512_mask_reduce_min_pd(createMask(N), m_value);
       }
 
       /*!

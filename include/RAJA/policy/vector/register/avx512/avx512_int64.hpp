@@ -80,7 +80,7 @@ namespace RAJA
        */
 			// AVX512F
       RAJA_INLINE
-      Register() : m_value(_mm512_setzero_epi64()) {
+      Register() : m_value(_mm512_setzero_epi32()) {
       }
 
       /*!
@@ -135,7 +135,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &load_packed_n(element_type const *ptr, camp::idx_t N){
 			  // AVX512F
-        m_value = _mm512_mask_loadu_epi64(_mm512_setzero_epi64(), createMask(N), ptr);
+        m_value = _mm512_mask_loadu_epi64(_mm512_setzero_epi32(), createMask(N), ptr);
         return *this;
       }
 
@@ -161,7 +161,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &load_strided_n(element_type const *ptr, camp::idx_t stride, camp::idx_t N){
 				// AVX512F
-        m_value = _mm512_mask_i64gather_epi64(_mm512_setzero_epi64(),
+        m_value = _mm512_mask_i64gather_epi64(_mm512_setzero_epi32(),
                                       createMask(N),
                                       createStridedOffsets(stride),
                                       ptr,
@@ -274,7 +274,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type multiply(self_type const &b) const {
-        return self_type(_mm512_mul_epi64(m_value, b.m_value));
+        return self_type(_mm512_mullo_epi64(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
@@ -285,7 +285,7 @@ namespace RAJA
             N >= 8 ? get(7)/b.get(7) : 0,
             N >= 7 ? get(6)/b.get(6) : 0,
             N >= 6 ? get(5)/b.get(5) : 0,
-            N >= 5 ? get(4)/b.get(4) : 0
+            N >= 5 ? get(4)/b.get(4) : 0,
             N >= 4 ? get(3)/b.get(3) : 0,
             N >= 3 ? get(2)/b.get(2) : 0,
             N >= 2 ? get(1)/b.get(1) : 0,
@@ -301,7 +301,7 @@ namespace RAJA
       RAJA_INLINE
       element_type sum(camp::idx_t N = 8) const
       {
-				return _m512_mask_reduce_add_epi64(createMask(N), m_value);
+				return _mm512_mask_reduce_add_epi64(createMask(N), m_value);
       }
 
 
@@ -312,7 +312,7 @@ namespace RAJA
       RAJA_INLINE
       element_type max(camp::idx_t N = 8) const
       {
-				return _m512_mask_reduce_max_epi64(createMask(N), m_value);
+				return _mm512_mask_reduce_max_epi64(createMask(N), m_value);
       }
 
       /*!
@@ -332,7 +332,7 @@ namespace RAJA
       RAJA_INLINE
       element_type min(camp::idx_t N = 8) const
       {
-				return _m512_mask_reduce_min_epi64(createMask(N), m_value);
+				return _mm512_mask_reduce_min_epi64(createMask(N), m_value);
       }
 
       /*!

@@ -237,7 +237,27 @@ namespace RAJA
        */
       RAJA_INLINE
       element_type get(camp::idx_t i) const
-      {return m_value[i];}
+      {
+				switch(i){	
+					case 0: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 0));
+					case 1: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 1));
+					case 2: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 2));
+					case 3: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 3));
+					case 4: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 4));
+					case 5: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 5));
+					case 6: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 6));
+					case 7: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 7));
+					case 8: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 8));
+					case 9: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 9));
+					case 10: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 10));
+					case 11: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 11));
+					case 12: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 12));
+					case 13: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 13));
+					case 14: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 14));
+					case 15: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 15));
+				}
+				return 0;
+			}
 
 
       /*!
@@ -248,7 +268,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &set(camp::idx_t i, element_type value)
       {
-        m_value[i] = value;
+				m_value = _mm512_mask_set1_epi32(m_value, 1 << i, value);
         return *this;
       }
 
@@ -282,7 +302,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type multiply(self_type const &b) const {
-        return self_type(_mm512_mul_epi32(m_value, b.m_value));
+        return self_type(_mm512_mullo_epi32(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
@@ -293,15 +313,15 @@ namespace RAJA
             N >= 16 ? get(15)/b.get(15) : 0,
             N >= 15 ? get(14)/b.get(14) : 0,
             N >= 14 ? get(13)/b.get(13) : 0,
-            N >= 13 ? get(12)/b.get(12) : 0
+            N >= 13 ? get(12)/b.get(12) : 0,
             N >= 12 ? get(11)/b.get(11) : 0,
             N >= 11 ? get(10)/b.get(10) : 0,
             N >= 10 ? get(9)/b.get(9) : 0,
-            N >= 9 ? get(8)/b.get(8) : 0
+            N >= 9 ? get(8)/b.get(8) : 0,
             N >= 8 ? get(7)/b.get(7) : 0,
             N >= 7 ? get(6)/b.get(6) : 0,
             N >= 6 ? get(5)/b.get(5) : 0,
-            N >= 5 ? get(4)/b.get(4) : 0
+            N >= 5 ? get(4)/b.get(4) : 0,
             N >= 4 ? get(3)/b.get(3) : 0,
             N >= 3 ? get(2)/b.get(2) : 0,
             N >= 2 ? get(1)/b.get(1) : 0,
@@ -317,7 +337,7 @@ namespace RAJA
       RAJA_INLINE
       element_type sum(camp::idx_t N = 16) const
       {
-				return _m512_mask_reduce_add_epi32(createMask(N), m_value);
+				return _mm512_mask_reduce_add_epi32(createMask(N), m_value);
       }
 
 
@@ -328,7 +348,7 @@ namespace RAJA
       RAJA_INLINE
       element_type max(camp::idx_t N = 16) const
       {
-				return _m512_mask_reduce_max_epi32(createMask(N), m_value);
+				return _mm512_mask_reduce_max_epi32(createMask(N), m_value);
       }
 
       /*!
@@ -348,7 +368,7 @@ namespace RAJA
       RAJA_INLINE
       element_type min(camp::idx_t N = 16) const
       {
-				return _m512_mask_reduce_min_epi32(createMask(N), m_value);
+				return _mm512_mask_reduce_min_epi32(createMask(N), m_value);
       }
 
       /*!
