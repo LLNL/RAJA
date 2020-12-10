@@ -279,8 +279,8 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b, camp::idx_t = 4) const {
-        return self_type(_mm512_div_pd(m_value, b.m_value));
+      self_type divide(self_type const &b, camp::idx_t N = 8) const {
+        return self_type(_mm512_maskz_div_pd(createMask(N), m_value, b.m_value));
       }
 
 // only use FMA's if the compiler has them turned on
@@ -336,7 +336,7 @@ namespace RAJA
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type min(camp::idx_t N = 4) const
+      element_type min(camp::idx_t N = 8) const
       {
 				return _m512_mask_reduce_min_pd(createMask(N), m_value);
       }
