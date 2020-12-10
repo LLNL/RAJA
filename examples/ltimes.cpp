@@ -14,13 +14,13 @@
 
 #include "RAJA/config.hpp"
 
-#define VARIANT_C                    0
+#define VARIANT_C                    0 
 #define VARIANT_C_VIEWS              0
 #define VARIANT_RAJA_SEQ             0
 #define VARIANT_RAJA_SEQ_ARGS        0
 #define VARIANT_RAJA_TEAMS_SEQ       0
 #define VARIANT_RAJA_VECTOR          0
-#define VARIANT_RAJA_MATRIX          0
+#define VARIANT_RAJA_MATRIX          1
 #define VARIANT_RAJA_TEAMS_MATRIX    0
 #define VARIANT_RAJA_SEQ_SHMEM       0
 #define VARIANT_RAJA_MATRIX_SHMEM    0
@@ -618,6 +618,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using matrix_t = RAJA::RegisterMatrix<double, MATRIX_ROW_MAJOR>;
 
+	std::cout << "vector width: " << matrix_t::s_dim_elem(0) << std::endl;
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
   using ColD = RAJA::ColIndex<ID, matrix_t>;

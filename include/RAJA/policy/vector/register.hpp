@@ -29,7 +29,12 @@
 //////////////////////////////////////////////////////////////////////
 //
 
-
+#ifdef __AVX512F__
+#include<RAJA/policy/vector/register/avx512.hpp>
+#ifndef RAJA_VECTOR_REGISTER_TYPE
+#define RAJA_VECTOR_REGISTER_TYPE RAJA::avx512_register
+#endif
+#endif
 
 
 #ifdef __AVX2__
