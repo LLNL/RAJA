@@ -126,7 +126,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Note: rand()/RAND_MAX is always zero, but forces the compiler to not
   // optimize out these values as compile time constants
   const int num_m = 25 + (rand()/RAND_MAX);
-  const int num_g = 80*2 + (rand()/RAND_MAX);
+  const int num_g = 32 + (rand()/RAND_MAX);
   const int num_d = 80 + (rand()/RAND_MAX);
 
 
@@ -137,7 +137,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const long num_z = 127 + (rand()/RAND_MAX);
 #else
   const int num_iter = 10 + (rand()/RAND_MAX);
-  const int num_z = 64*1024 + (rand()/RAND_MAX);
+  const int num_z = 32*1024 + (rand()/RAND_MAX);
 #endif
 
 
@@ -2365,7 +2365,7 @@ void checkResult(PHIVIEW_T& phi, LVIEW_T& L, PSIVIEW_T& psi,
           total += val;
         }
         if (std::abs(total-phi(m, g, z)) > 1e-9) {
-          printf("ERR: g=%d, z=%d, m=%d, val=%e, expected=%e\n",
+          printf("ERR: g=%d, z=%d, m=%d, val=%.12e, expected=%.12e\n",
               (int)*g, (int)*z, (int)*m, phi(m,g,z), total);
           ++nerrors;
         }

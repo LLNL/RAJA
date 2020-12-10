@@ -69,6 +69,22 @@ namespace internal {
         return 0;
       }
 
+      template<camp::idx_t J>
+      RAJA_HOST_DEVICE
+      static
+      RAJA_INLINE
+      int calc_vec_product2(matrix_type &sum, matrix_type const &A, matrix_type const &B){
+
+        camp::sink(
+                (sum.vec(REG_IDX) =
+                    B.vec(J).fused_multiply_add(
+                        A.vec(REG_IDX).get_and_broadcast(J),
+                        sum.vec(REG_IDX)))...
+                );
+
+        return 0;
+      }
+
       RAJA_HOST_DEVICE
       static
       RAJA_INLINE
@@ -79,13 +95,15 @@ namespace internal {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_mult_row_row ++;
 #endif
-          camp::sink(calc_vec_product(sum.vec(REG_IDX), A.vec(REG_IDX), B)...);
+//          camp::sink(calc_vec_product(sum.vec(REG_IDX), A.vec(REG_IDX), B)...);
+          camp::sink(calc_vec_product2<REG_IDX>(sum, A, B)...);
         }
         else{
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_mult_col_col ++;
 #endif
-          camp::sink(calc_vec_product(sum.vec(REG_IDX), B.vec(REG_IDX), A)...);
+//          camp::sink(calc_vec_product(sum.vec(REG_IDX), B.vec(REG_IDX), A)...);
+          camp::sink(calc_vec_product2<REG_IDX>(sum, B, A)...);
         }
         return sum;
       }

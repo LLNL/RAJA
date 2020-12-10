@@ -18,14 +18,44 @@ using MatrixTestTypes = ::testing::Types<
 #ifdef __AVX__
     RAJA::RegisterMatrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::avx_register>,
     RAJA::RegisterMatrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::avx_register>,
+    RAJA::RegisterMatrix<float, RAJA::MATRIX_COL_MAJOR, RAJA::avx_register>,
+    RAJA::RegisterMatrix<float, RAJA::MATRIX_ROW_MAJOR, RAJA::avx_register>,
+    RAJA::RegisterMatrix<long, RAJA::MATRIX_COL_MAJOR, RAJA::avx_register>,
+    RAJA::RegisterMatrix<long, RAJA::MATRIX_ROW_MAJOR, RAJA::avx_register>,
+    RAJA::RegisterMatrix<int, RAJA::MATRIX_COL_MAJOR, RAJA::avx_register>,
+    RAJA::RegisterMatrix<int, RAJA::MATRIX_ROW_MAJOR, RAJA::avx_register>,
 #endif
 
 #ifdef __AVX2__
     RAJA::RegisterMatrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::avx2_register>,
     RAJA::RegisterMatrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::avx2_register>,
+    RAJA::RegisterMatrix<float, RAJA::MATRIX_COL_MAJOR, RAJA::avx2_register>,
+    RAJA::RegisterMatrix<float, RAJA::MATRIX_ROW_MAJOR, RAJA::avx2_register>,
+    RAJA::RegisterMatrix<long, RAJA::MATRIX_COL_MAJOR, RAJA::avx2_register>,
+    RAJA::RegisterMatrix<long, RAJA::MATRIX_ROW_MAJOR, RAJA::avx2_register>,
+    RAJA::RegisterMatrix<int, RAJA::MATRIX_COL_MAJOR, RAJA::avx2_register>,
+    RAJA::RegisterMatrix<int, RAJA::MATRIX_ROW_MAJOR, RAJA::avx2_register>,
 #endif
+
+#ifdef __AVX512__
+    RAJA::RegisterMatrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::avx512_register>,
+    RAJA::RegisterMatrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::avx512_register>,
+    RAJA::RegisterMatrix<float, RAJA::MATRIX_COL_MAJOR, RAJA::avx512_register>,
+    RAJA::RegisterMatrix<float, RAJA::MATRIX_ROW_MAJOR, RAJA::avx512_register>,
+    RAJA::RegisterMatrix<long, RAJA::MATRIX_COL_MAJOR, RAJA::avx512_register>,
+    RAJA::RegisterMatrix<long, RAJA::MATRIX_ROW_MAJOR, RAJA::avx512_register>,
+    RAJA::RegisterMatrix<int, RAJA::MATRIX_COL_MAJOR, RAJA::avx512_register>,
+    RAJA::RegisterMatrix<int, RAJA::MATRIX_ROW_MAJOR, RAJA::avx512_register>,
+#endif
+
     RAJA::RegisterMatrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::scalar_register>,
-    RAJA::RegisterMatrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::scalar_register>
+    RAJA::RegisterMatrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::scalar_register>,
+    RAJA::RegisterMatrix<float, RAJA::MATRIX_COL_MAJOR, RAJA::scalar_register>,
+    RAJA::RegisterMatrix<float, RAJA::MATRIX_ROW_MAJOR, RAJA::scalar_register>,
+    RAJA::RegisterMatrix<long, RAJA::MATRIX_COL_MAJOR, RAJA::scalar_register>,
+    RAJA::RegisterMatrix<long, RAJA::MATRIX_ROW_MAJOR, RAJA::scalar_register>,
+    RAJA::RegisterMatrix<int, RAJA::MATRIX_COL_MAJOR, RAJA::scalar_register>,
+    RAJA::RegisterMatrix<int, RAJA::MATRIX_ROW_MAJOR, RAJA::scalar_register>
 
   >;
 
@@ -61,13 +91,13 @@ TYPED_TEST_P(MatrixTest, MatrixCtor)
   using element_t = typename matrix_t::element_type;
 
   matrix_t m_empty;
-  ASSERT_FLOAT_EQ(m_empty.get(0,0), 0);
+  ASSERT_SCALAR_EQ(m_empty.get(0,0), element_t(0));
 
   matrix_t m_bcast(element_t(1));
-  ASSERT_FLOAT_EQ(m_bcast.get(0,0), 1);
+  ASSERT_SCALAR_EQ(m_bcast.get(0,0), element_t(1));
 
   matrix_t m_copy(m_bcast);
-  ASSERT_FLOAT_EQ(m_copy.get(0,0), 1);
+  ASSERT_SCALAR_EQ(m_copy.get(0,0), element_t(1));
 
 
 }
@@ -82,7 +112,7 @@ TYPED_TEST_P(MatrixTest, MatrixGetSet)
   for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
       m.set(i,j, element_t(NO_OPT_ZERO + i+j*j));
-      ASSERT_FLOAT_EQ(m.get(i,j), element_t(i+j*j));
+      ASSERT_SCALAR_EQ(m.get(i,j), element_t(i+j*j));
     }
   }
 
@@ -93,7 +123,7 @@ TYPED_TEST_P(MatrixTest, MatrixGetSet)
   // Check values are same as m
   for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
-      ASSERT_FLOAT_EQ(m2.get(i,j), element_t(i+j*j));
+      ASSERT_SCALAR_EQ(m2.get(i,j), element_t(i+j*j));
     }
   }
 
@@ -193,7 +223,7 @@ TYPED_TEST_P(MatrixTest, MatrixStore)
   // Check contents
   for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
-      ASSERT_FLOAT_EQ(m.get(i,j), data1[i][j]);
+      ASSERT_SCALAR_EQ(m.get(i,j), data1[i][j]);
     }
   }
 
@@ -210,7 +240,7 @@ TYPED_TEST_P(MatrixTest, MatrixStore)
   // Check contents
   for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
-      ASSERT_FLOAT_EQ(m.get(i,j), data2[j][i]);
+      ASSERT_SCALAR_EQ(m.get(i,j), data2[j][i]);
     }
   }
 
@@ -235,7 +265,7 @@ TYPED_TEST_P(MatrixTest, MatrixViewLoad)
   }
 
   // Create a view of the data
-  RAJA::View<double, RAJA::Layout<2, int>> view1(&data1[0][0], matrix_t::vector_type::s_num_elem, matrix_t::vector_type::s_num_elem);
+  RAJA::View<element_t, RAJA::Layout<2, int>> view1(&data1[0][0], matrix_t::vector_type::s_num_elem, matrix_t::vector_type::s_num_elem);
 
   // Load data
   matrix_t m1 = view1(RAJA::RowIndex<int, matrix_t>(0), RAJA::ColIndex<int, matrix_t>(0));
@@ -243,7 +273,7 @@ TYPED_TEST_P(MatrixTest, MatrixViewLoad)
   // Check contents
   for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
-      ASSERT_FLOAT_EQ(m1.get(i,j), data1[i][j]);
+      ASSERT_SCALAR_EQ(m1.get(i,j), data1[i][j]);
     }
   }
 
@@ -259,7 +289,7 @@ TYPED_TEST_P(MatrixTest, MatrixViewLoad)
   }
 
   // Create a view of the data
-  RAJA::View<double, RAJA::Layout<2, int>> view2(
+  RAJA::View<element_t, RAJA::Layout<2, int>> view2(
       &data2[0][0], RAJA::make_permuted_layout<2, int>({{matrix_t::vector_type::s_num_elem, matrix_t::vector_type::s_num_elem}}, {{1,0}}));
 
   // Load data
@@ -268,7 +298,7 @@ TYPED_TEST_P(MatrixTest, MatrixViewLoad)
   // Check contents
   for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
-      ASSERT_FLOAT_EQ(m2.get(i,j), data2[j][i]);
+      ASSERT_SCALAR_EQ(m2.get(i,j), data2[j][i]);
     }
   }
 
@@ -295,7 +325,7 @@ TYPED_TEST_P(MatrixTest, MatrixViewStore)
   element_t data1[matrix_t::vector_type::s_num_elem][matrix_t::vector_type::s_num_elem];
 
   // Create a view of the data
-  RAJA::View<double, RAJA::Layout<2, int>> view1(&data1[0][0], matrix_t::vector_type::s_num_elem, matrix_t::vector_type::s_num_elem);
+  RAJA::View<element_t, RAJA::Layout<2, int>> view1(&data1[0][0], matrix_t::vector_type::s_num_elem, matrix_t::vector_type::s_num_elem);
 
   // Store using view
   view1(RAJA::RowIndex<int, matrix_t>(0), RAJA::ColIndex<int, matrix_t>(0)) = m;
@@ -303,7 +333,7 @@ TYPED_TEST_P(MatrixTest, MatrixViewStore)
   // Check contents
   for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
-      ASSERT_FLOAT_EQ(m.get(i,j), data1[i][j]);
+      ASSERT_SCALAR_EQ(m.get(i,j), data1[i][j]);
     }
   }
 
@@ -314,7 +344,7 @@ TYPED_TEST_P(MatrixTest, MatrixViewStore)
   element_t data2[matrix_t::vector_type::s_num_elem][matrix_t::vector_type::s_num_elem];
 
   // Create a view of the data
-  RAJA::View<double, RAJA::Layout<2, int>> view2(
+  RAJA::View<element_t, RAJA::Layout<2, int>> view2(
       &data2[0][0], RAJA::make_permuted_layout<2, int>({{matrix_t::vector_type::s_num_elem, matrix_t::vector_type::s_num_elem}}, {{1,0}}));
 
   // Store using view
@@ -323,7 +353,7 @@ TYPED_TEST_P(MatrixTest, MatrixViewStore)
   // Check contents
   for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
-      ASSERT_FLOAT_EQ(m.get(i,j), data2[j][i]);
+      ASSERT_SCALAR_EQ(m.get(i,j), data2[j][i]);
     }
   }
 
@@ -360,7 +390,7 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
       expected += m.get(i,j)*v[j];
     }
 
-    ASSERT_FLOAT_EQ(mv[i], expected);
+    ASSERT_SCALAR_EQ(mv[i], expected);
   }
 
 }
@@ -511,8 +541,8 @@ TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
         expected += A.get(i, k) * B(k,j);
       }
 
-      ASSERT_FLOAT_EQ(Z1.get(i,j), expected);
-      ASSERT_FLOAT_EQ(Z2.get(i,j), expected);
+      ASSERT_SCALAR_EQ(Z1.get(i,j), expected);
+      ASSERT_SCALAR_EQ(Z2.get(i,j), expected);
     }
   }
 

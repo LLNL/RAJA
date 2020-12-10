@@ -220,7 +220,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &store_strided(element_type *ptr, camp::idx_t stride) const{
         for(camp::idx_t i = 0;i < 8;++ i){
-          ptr[i*stride] = m_value[i];
+          ptr[i*stride] = get(i);
         }
         return *this;
       }
@@ -233,7 +233,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &store_strided_n(element_type *ptr, camp::idx_t stride, camp::idx_t N) const{
         for(camp::idx_t i = 0;i < N;++ i){
-          ptr[i*stride] = m_value[i];
+          ptr[i*stride] = get(i);
         }
         return *this;
       }

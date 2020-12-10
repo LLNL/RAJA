@@ -229,6 +229,21 @@ namespace RAJA
         return *this;
       }
 
+      /*!
+       * @brief Extracts a scalar value and broadcasts to a new register
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type get_and_broadcast(int i) const {
+        switch(i){
+          case 0: return self_type(_mm256_permute4x64_pd (m_value, 0x00));
+          case 1: return self_type(_mm256_permute4x64_pd (m_value, 0x55));
+          case 2: return self_type(_mm256_permute4x64_pd (m_value, 0xAA));
+          case 3: return self_type(_mm256_permute4x64_pd (m_value, 0xFF));
+        }
+        return *this;
+      }
+
 
       RAJA_HOST_DEVICE
       RAJA_INLINE

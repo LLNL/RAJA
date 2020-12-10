@@ -28,6 +28,13 @@ using RegisterTestTypes = ::testing::Types<
     RAJA::Register<RAJA::avx2_register, long>,
 #endif
 
+#ifdef __AVX512__
+    RAJA::Register<RAJA::avx512_register, double>,
+    RAJA::Register<RAJA::avx512_register, float>,
+    RAJA::Register<RAJA::avx512_register, int>,
+    RAJA::Register<RAJA::avx512_register, long>,
+#endif
+
     // scalar_register is supported on all platforms
     RAJA::Register<RAJA::scalar_register, int>,
     RAJA::Register<RAJA::scalar_register, long>,
