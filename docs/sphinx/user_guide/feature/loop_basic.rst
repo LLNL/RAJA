@@ -245,3 +245,38 @@ describing nested loop reordering.
 Finally, a discussion of how to construct ``RAJA::KernelPolicy`` types and 
 available ``RAJA::statement`` types can be found in 
 :ref:`loop_elements-kernelpol-label`.
+
+--------------------------------------
+RAJA Teams (RAJA::launch)
+--------------------------------------
+
+The *RAJA Teams* framework aims to unify thread/block based
+programming models such as CUDA/HIP/SYCL while maintaining portability on
+host backends, OpenMP, sequential. Additionally, RAJA
+teams enables run-time host-device selectable policies. The main application of
+RAJA Teams is imperfectly nested loops, using the ``RAJA::launch method``
+developers are provided with a kernel like environment to express algorithms in
+terms of nested loops, loops may then be mapped to either teams or threads::
+
+  RAJA::launch<launch_policy>(CPU_or_GPU_ENUM)
+  RAJA::Resources(RAJA::Teams(NE), RAJA::Threads(Q1D, Q1D)),
+  [=] RAJA_HOST_DEVICE (RAJA::Launch ctx) {
+
+    RAJA::loop<team_x> (ctx, RAJA::RangeSegment(0, teamRange), [&] (int bx) {
+
+      RAJA_TEAM_SHARED double s_A[]
+      RAJA::loop<thread_x> (ctx, RAJA::RangeSegment(0, threadRange), [&] (int tx) {
+         s_A[] = tx.
+      });
+
+      ctx.teamSync();
+
+    )};
+
+  });
+
+The RAJA launch method holds a number of teams and threads, following the CUDA
+nomenclature these are akin to threadblocks and threads. The underlying idea here
+is that development is done using a collection of threads, threads are then
+grouped into teams. The macro ``RAJA_TEAM_SHARED`` allocates an array accessible
+to threads in the same team.
