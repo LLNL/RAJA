@@ -20,8 +20,8 @@
 #define VARIANT_RAJA_SEQ_ARGS        0
 #define VARIANT_RAJA_TEAMS_SEQ       0
 #define VARIANT_RAJA_VECTOR          0
-#define VARIANT_RAJA_MATRIX          1
-#define VARIANT_RAJA_TEAMS_MATRIX    0
+#define VARIANT_RAJA_MATRIX          0
+#define VARIANT_RAJA_TEAMS_MATRIX    1
 #define VARIANT_RAJA_SEQ_SHMEM       0
 #define VARIANT_RAJA_MATRIX_SHMEM    0
 

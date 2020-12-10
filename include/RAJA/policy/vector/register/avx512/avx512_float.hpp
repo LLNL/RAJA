@@ -154,7 +154,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &load_strided(element_type const *ptr, camp::idx_t stride){
 			  // AVX512F
-        m_value = _mm512_i64gather_ps(createStridedOffsets(stride),
+        m_value = _mm512_i32gather_ps(createStridedOffsets(stride),
 				                              ptr,
                                       sizeof(element_type));
         return *this;
@@ -169,7 +169,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &load_strided_n(element_type const *ptr, camp::idx_t stride, camp::idx_t N){
 				// AVX512F
-        m_value = _mm512_mask_i64gather_ps(_mm512_setzero_ps(),
+        m_value = _mm512_mask_i32gather_ps(_mm512_setzero_ps(),
                                       createMask(N),
                                       createStridedOffsets(stride),
                                       ptr,
@@ -287,7 +287,7 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b, camp::idx_t = 16) const {
+      self_type divide(self_type const &b, camp::idx_t N = 16) const {
         return self_type(_mm512_maskz_div_ps(createMask(N), m_value, b.m_value));
       }
 

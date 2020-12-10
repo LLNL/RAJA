@@ -31,7 +31,7 @@ namespace RAJA {
 
 //#include<RAJA/policy/vector/register/avx512/avx512_int32.hpp>
 //#include<RAJA/policy/vector/register/avx512/avx512_int64.hpp>
-//#include<RAJA/policy/vector/register/avx512/avx512_float.hpp>
+#include<RAJA/policy/vector/register/avx512/avx512_float.hpp>
 #include<RAJA/policy/vector/register/avx512/avx512_double.hpp>
 
 
