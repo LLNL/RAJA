@@ -134,12 +134,29 @@ using TBBKernelLocExecPols =
   camp::list<
 
     RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::seq_exec,  // row
+      RAJA::statement::For<1, RAJA::tbb_for_exec,  // row
         RAJA::statement::For<0, RAJA::tbb_for_exec,  // col
           RAJA::statement::Lambda<0>
         >
       >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::tbb_for_exec,  // row
+        RAJA::statement::For<0, RAJA::seq_exec,  // col
+          RAJA::statement::Lambda<0>
+        >
+      >
     >
+
+    // RCC: This produces inaccurate loc reductions for gcc 6 and 4.9.3.
+    //RAJA::KernelPolicy<
+    //  RAJA::statement::For<1, RAJA::seq_exec,  // row
+    //    RAJA::statement::For<0, RAJA::tbb_for_exec,  // col
+    //      RAJA::statement::Lambda<0>
+    //    >
+    //  >
+    //>
 
   >;
 
