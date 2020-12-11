@@ -215,7 +215,7 @@ struct WorkRunner<
   using Allocator = ALLOCATOR_T;
   using index_type = INDEX_T;
 
-  using vtable_type = Vtable<Args...>;
+  using vtable_type = Vtable<RAJA::hip_work<BLOCK_SIZE, true>, Args...>;
 
   WorkRunner() = default;
 
