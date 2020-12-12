@@ -814,10 +814,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  using matrix_t = RAJA::RegisterMatrix<double, MATRIX_COL_MAJOR, RAJA::policy::register_default>;
+  using matrix_t = RAJA::RegisterMatrix<double, MATRIX_COL_MAJOR>;
 
 
-  using RowM = RAJA::RowIndex<IM, matrix_t>;
+  //using RowM = RAJA::RowIndex<IM, matrix_t>;
+  using RowM = RAJA::TensorViewDimToken<matrix_t, ROW, IG>;
+
   using ColD = RAJA::ColIndex<ID, matrix_t>;
   using ColZ = RAJA::ColIndex<IZ, matrix_t>;
 
@@ -826,6 +828,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using pol_z = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>>;
   using pol_m = RAJA::expt::LoopPolicy<matrix_row_exec<matrix_t>>;
   using pol_d = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>>;
+
 
 
 
@@ -842,6 +845,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::launch<pol_launch>(RAJA::expt::HOST, RAJA::expt::Resources(), [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx){
 
       RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
+#if 1
+
+        phi(rowM, g, colZ) += L(rowM, colD) * psi(toRow(colD), g, colZ);
+
+#else
         RAJA::expt::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](ColZ z){
           RAJA::expt::loop<pol_m>(ctx, RAJA::TypedRangeSegment<IM>(0, num_m), [&](RowM m){
 
@@ -854,6 +862,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             phi(m,g,z) = acc;
           });
         });
+#endif
       });
 
     });

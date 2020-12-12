@@ -233,6 +233,22 @@ namespace internal {
         return vector_type::is_root();
       }
 
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static
+      constexpr
+      bool is_column_major() {
+        return LAYOUT::is_column_major();
+      }
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static
+      constexpr
+      bool is_row_major() {
+        return LAYOUT::is_row_major();
+      }
+
       /*!
        * Gets the maximum size of matrix along specified dimension
        */

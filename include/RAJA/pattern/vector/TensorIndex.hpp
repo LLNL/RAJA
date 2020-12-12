@@ -120,6 +120,10 @@ namespace RAJA
 
 
 
+
+
+
+
   namespace internal{
 
 
@@ -336,6 +340,212 @@ namespace RAJA
 
   } // namespace internal
 
+
+
+  template<typename IDX, typename MATRIX_TYPE, camp::idx_t DIM>
+  struct TensorDim {
+  };
+
+  template<typename IDX, typename MATRIX_TYPE>
+  using RowDim = TensorDim<IDX, MATRIX_TYPE, 0>;
+
+  template<typename IDX, typename MATRIX_TYPE>
+  using ColDim = TensorDim<IDX, MATRIX_TYPE, 1>;
+
+
+  namespace ET
+  {
+
+    template<typename POINTER_TYPE, typename INDEX_TYPE, camp::idx_t NUM_DIMS>
+    struct TensorRef
+    {
+        using pointer_type = POINTER_TYPE;
+        using index_type = INDEX_TYPE;
+        static constexpr camp::idx_t s_num_dims = NUM_DIMS;
+
+        pointer_type m_pointer;
+        index_type m_stride[NUM_DIMS];
+        index_type m_size[NUM_DIMS];
+    };
+
+    template<typename INDEX_TYPE, camp::idx_t NUM_DIMS>
+    struct TensorTile
+    {
+        using index_type = INDEX_TYPE;
+        static constexpr camp::idx_t s_num_dims = NUM_DIMS;
+
+        index_type m_begin[NUM_DIMS];
+        index_type m_size[NUM_DIMS];
+    };
+
+    template<typename REG_MATRIX_TYPE>
+    class MatrixLoad{
+      public:
+        using self_type = MatrixLoad<REG_MATRIX_TYPE>;
+        using tensor_type = REG_MATRIX_TYPE;
+        using element_type = typename REG_MATRIX_TYPE::element_type;
+        using index_type = camp::idx_t;
+        using ref_type = TensorRef<element_type *, index_type, 2>;
+        using tile_type = TensorTile<index_type, 2>;
+        using result_type = REG_MATRIX_TYPE;
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        constexpr
+        MatrixLoad(ref_type const &ref) : m_ref(ref)
+        {}
+
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        void eval_full(tile_type const &tile,
+                              result_type &x) const {
+          auto ptr = m_ref.m_pointer +
+                     tile.m_begin[0]*m_ref.m_stride[0] +
+                     tile.m_begin[1]*m_ref.m_stride[1];
+          x.load_strided(ptr,
+                         m_ref.m_stride[0],
+                         m_ref.m_stride[1]);
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        void eval_partial(tile_type const &tile,
+                          result_type &x){
+          auto ptr = m_ref.m_pointer +
+                     tile.m_begin[0]*m_ref.m_stride[0] +
+                     tile.m_begin[1]*m_ref.m_stride[1];
+
+          x.load_strided_nm(ptr,
+                            tile.m_size[0],
+                            tile.m_size[0],
+                            m_ref.m_stride[0],
+                            m_ref.m_stride[1]);
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        constexpr
+        index_type getDimSize(index_type dim) const {
+          return m_ref.m_size[dim];
+        }
+
+      private:
+        ref_type m_ref;
+    };
+
+
+    template<typename REG_MATRIX_TYPE, typename RHS_TYPE>
+    class MatrixStore : public MatrixLoad<REG_MATRIX_TYPE> {
+      public:
+        using self_type = MatrixStore<REG_MATRIX_TYPE, RHS_TYPE>;
+        using base_type = MatrixLoad<REG_MATRIX_TYPE>;
+        using tensor_type = REG_MATRIX_TYPE;
+        using element_type = typename REG_MATRIX_TYPE::element_type;
+        using index_type = camp::idx_t;
+        using ref_type = TensorRef<element_type *, index_type, 2>;
+        using tile_type = TensorTile<index_type, 2>;
+        using result_type = REG_MATRIX_TYPE;
+
+        using lhs_type = ref_type;
+        using rhs_type = RHS_TYPE;
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        constexpr
+        MatrixStore(ref_type const &lhs, rhs_type const &rhs) :
+          base_type(lhs)
+        {
+          // get tile size from matrix type
+          index_type row_tile_size = tensor_type::s_dim_elem(0);
+          index_type col_tile_size = tensor_type::s_dim_elem(1);
+
+          // tile over full rows and columns
+          tile_type tile{{0,0},{row_tile_size, col_tile_size}};
+          for(tile.m_begin[0] = 0;tile.m_begin[0] < lhs.m_size[0]; tile.m_begin[0] += row_tile_size){
+            for(tile.m_begin[1] = 0; tile.m_begin[1] < lhs.m_size[1];tile.m_begin[1] += col_tile_size){
+              // Call rhs to evaluate this tile
+              result_type x;
+              rhs.eval_full(tile, x);
+
+              // Store tile result
+              auto ptr = lhs.m_pointer +
+                         tile.m_begin[0]*lhs.m_stride[0] +
+                         tile.m_begin[1]*lhs.m_stride[1];
+              x.store_strided(ptr,
+                              lhs.m_stride[0],
+                              lhs.m_stride[1]);
+            }
+          }
+        }
+
+    };
+
+
+    template<typename LHS_TYPE, typename RHS_TYPE>
+    class MatrixMatrixMultiply{
+      public:
+        using self_type = MatrixMatrixMultiply<LHS_TYPE, RHS_TYPE>;
+        using lhs_type = LHS_TYPE;
+        using rhs_type = RHS_TYPE;
+        using element_type = typename LHS_TYPE::element_type;
+        using index_type = typename LHS_TYPE::index_type;
+        using tile_type = TensorTile<index_type, 2>;
+        using result_type = typename LHS_TYPE::result_type;
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        MatrixMatrixMultiply(lhs_type const &lhs, rhs_type const &rhs) :
+        m_lhs(lhs), m_rhs(rhs)
+        {}
+
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        void eval_full(tile_type const &tile,
+                              result_type &x) const {
+
+          // get tile size from matrix type
+          index_type tile_size = result_type::s_dim_elem(0);
+          index_type k_size = m_lhs.getDimSize(0);
+          // TODO: check that lhs and rhs are compatible
+          // m_lhs.getDimSize(0) == m_rhs.getDimSize(1)
+          // how do we provide checking for this kind of error?
+
+          // tile over row of lhs and column of rhs
+          tile_type lhs_tile = tile;
+          tile_type rhs_tile = tile;
+
+          for(index_type k = 0;k < k_size; k+= tile_size){
+
+            // evaluate both sides of operatoor
+            result_type lhs;
+            lhs_tile.m_begin[1] = k;
+
+            m_lhs.eval_full(lhs_tile, lhs);
+
+            result_type rhs;
+            rhs_tile.m_begin[0] = k;
+            m_rhs.eval_full(rhs_tile, rhs);
+
+            // compute product into x
+            x = lhs.multiply_accumulate(rhs, x);
+          }
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        void eval_partial(tile_type const &tile,
+                          result_type &x){
+          eval_full(tile, x);
+        }
+
+      private:
+        lhs_type m_lhs;
+        rhs_type m_rhs;
+    };
+
+  } // namespace ET
 
 
 }  // namespace RAJA

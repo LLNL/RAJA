@@ -549,8 +549,100 @@ TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
 }
 
 
+TYPED_TEST_P(MatrixTest, ETLoadStore)
+{
+  using matrix_t = TypeParam;
+  using element_t = typename matrix_t::element_type;
 
-REGISTER_TYPED_TEST_SUITE_P(MatrixTest, MatrixCtor,
+  static const int N = matrix_t::vector_type::s_num_elem * 16;
+
+  // Create a row-major data buffer
+  element_t data1[N][N];
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      data1[i][j] = i*j*j;
+    }
+  }
+
+  // Create an empty data bufffer
+  element_t data2[N][N];
+
+  // Perform a copy using ET's:   data2 = data1
+  using ref_type = typename RAJA::ET::MatrixLoad<matrix_t> ::ref_type;
+
+  // this delays until called by MatrixStore below
+  ref_type ref_data1{&data1[0][0], {N, 1}, {N, N}};
+  RAJA::ET::MatrixLoad<matrix_t> et_load_data1(ref_data1);
+
+  // this executes in ctor
+  ref_type ref_data2{&data2[0][0], {N, 1}, {N, N}};
+  RAJA::ET::MatrixStore<matrix_t, decltype(et_load_data1)> et_store_data2(ref_data2, et_load_data1);
+
+
+  // Check that data1==data2
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      ASSERT_SCALAR_EQ(data1[i][j], data2[i][j]);
+    }
+  }
+
+}
+
+TYPED_TEST_P(MatrixTest, ETLoadMultiplyStore)
+{
+  using matrix_t = TypeParam;
+  using element_t = typename matrix_t::element_type;
+
+  static const int N = matrix_t::vector_type::s_num_elem * 16;
+
+  // Create a row-major data buffer
+  element_t data1[N][N], data2[N][N];
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      data1[i][j] = i*j*j;
+      data2[i][j] = i+2*j;
+    }
+  }
+
+  // Create an empty result bufffer
+  element_t data3[N][N];
+
+  // Perform a copy using ET's:   data2 = data1
+  using ref_type = typename RAJA::ET::MatrixLoad<matrix_t> ::ref_type;
+
+  // load matrix 1
+  ref_type ref_data1{&data1[0][0], {N, 1}, {N, N}};
+  RAJA::ET::MatrixLoad<matrix_t> et_load_data1(ref_data1);
+
+  // load matrix 2
+  ref_type ref_data2{&data2[0][0], {N, 1}, {N, N}};
+  RAJA::ET::MatrixLoad<matrix_t> et_load_data2(ref_data2);
+
+  // multiply matrix 1 with matrix 2
+  RAJA::ET::MatrixMatrixMultiply<decltype(et_load_data1), decltype(et_load_data2)> et_multiply(ref_data1, ref_data2);
+
+  // this executes in ctor
+  ref_type ref_data3{&data3[0][0], {N, 1}, {N, N}};
+  RAJA::ET::MatrixStore<matrix_t, decltype(et_multiply)> et_store_data3(ref_data3, et_multiply);
+
+
+  // Check that data1==data2
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      element_t result = 0;
+
+      for(camp::idx_t k = 0;k < N; ++ k){
+        result += data1[i][k] * data2[k][j];
+      }
+      ASSERT_SCALAR_EQ(data3[i][j], result);
+    }
+  }
+
+}
+
+
+REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
+    MatrixCtor,
                                         MatrixGetSet,
                                         MatrixLoad,
                                         MatrixStore,
@@ -558,9 +650,13 @@ REGISTER_TYPED_TEST_SUITE_P(MatrixTest, MatrixCtor,
                                         MatrixViewStore,
                                         MatrixVector,
                                         MatrixMatrix,
-                                        MatrixMatrixAccumulate);
+                                        MatrixMatrixAccumulate,
+                                        ETLoadStore,
+                                        ETLoadMultiplyStore);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, MatrixTest, MatrixTestTypes);
+
+
 
 
 
