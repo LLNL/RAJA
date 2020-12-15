@@ -86,6 +86,10 @@ raja_add_executable(
   SOURCES raja-teams-tile.cpp)
 
 raja_add_executable(
+  NAME teams_matrix-multiply
+  SOURCES teams_matrix-multiply.cpp)
+
+raja_add_executable(
   NAME jacobi
   SOURCES jacobi.cpp)
 

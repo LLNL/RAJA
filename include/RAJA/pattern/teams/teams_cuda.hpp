@@ -92,6 +92,36 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, nthreads>> {
 };
 
 /*
+   CUDA global thread mapping
+*/
+template<int DIM>
+struct cuda_global_thread_xyz;
+
+using cuda_global_thread_x = cuda_global_thread_xyz<0>;
+using cuda_global_thread_y = cuda_global_thread_xyz<1>;
+using cuda_global_thread_z = cuda_global_thread_xyz<2>;
+
+template <typename SEGMENT, int DIM>
+struct LoopExecute<cuda_global_thread_xyz<DIM>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+    {
+      const int tx = internal::get_cuda_dim<DIM>(threadIdx) +
+        internal::get_cuda_dim<DIM>(blockDim)*internal::get_cuda_dim<DIM>(blockIdx);
+
+      if (tx < len) body(*(segment.begin() + tx));
+    }
+  }
+};
+
+/*
   CUDA thread loops with block strides
 */
 template <typename SEGMENT, int DIM>

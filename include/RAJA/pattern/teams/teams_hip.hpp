@@ -94,6 +94,36 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
 };
 
 /*
+   HIP global thread mapping
+*/
+template<int DIM>
+struct hip_global_thread_xyz;
+
+using hip_global_thread_x = hip_global_thread_xyz<0>;
+using hip_global_thread_y = hip_global_thread_xyz<1>;
+using hip_global_thread_z = hip_global_thread_xyz<2>;
+
+template <typename SEGMENT, int DIM>
+struct LoopExecute<hip_global_thread_xyz<DIM>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+    {
+      const int tx = internal::get_hip_dim<DIM>(threadIdx) +
+        internal::get_hip_dim<DIM>(blockDim)*internal::get_hip_dim<DIM>(blockIdx);
+
+      if (tx < len) body(*(segment.begin() + tx));
+    }
+  }
+};
+
+/*
   HIP thread loops with block strides
 */
 template <typename SEGMENT, int DIM>

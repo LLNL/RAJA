@@ -57,17 +57,6 @@ using teams_x = RAJA::expt::LoopPolicy<
                                        RAJA::hip_block_x_direct
 #endif
                                        >;
-
-using loop_t = RAJA::expt::LoopPolicy<RAJA::loop_exec
-#if defined(RAJA_ENABLE_CUDA)
-                                       ,
-                                       RAJA::cuda_thread_x_loop
-#endif
-#if defined(RAJA_ENABLE_HIP)
-                                       ,
-                                       RAJA::hip_thread_x_loop
-#endif
-                                       >;
 /*
  * Define thread policies.
  * Up to 3 dimension are supported: x,y,z
@@ -160,7 +149,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         RAJA::expt::tile_icount<teams_x>(ctx, TILE_SZ, RAJA::RangeSegment(0, N_tri),
                                          [&](RAJA::RangeSegment const &r_tile, int tile_id) {
 
-             RAJA::expt::loop_icount<loop_t>(ctx, r_tile, [&](int global_id, int loc_id) {
+             RAJA::expt::loop_icount<threads_x>(ctx, r_tile, [&](int global_id, int loc_id) {
 
                  printf("global_id %d loc_id %d tile_id %d \n", global_id, loc_id, tile_id);
 
