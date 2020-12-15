@@ -211,7 +211,7 @@ template <typename POLICY, typename SEGMENT>
 struct LoopExecute;
 
 template <typename POLICY, typename SEGMENT>
-struct LoopIdxExecute;
+struct LoopICountExecute;
 
 template <typename POLICY_LIST,
           typename CONTEXT,
@@ -231,12 +231,12 @@ template <typename POLICY_LIST,
           typename CONTEXT,
           typename SEGMENT,
           typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void loop_idx(CONTEXT const &ctx,
+RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const &ctx,
                                           SEGMENT const &segment,
                                           BODY const &body)
 {
 
-  LoopIdxExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+  LoopICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
                                                           segment,
                                                           body);
 }
@@ -261,14 +261,14 @@ template <typename POLICY_LIST,
           typename CONTEXT,
           typename SEGMENT,
           typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void loop_idx(CONTEXT const &ctx,
+RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const &ctx,
                                        SEGMENT const &segment0,
                                        SEGMENT const &segment1,
                                        SEGMENT const &segment2,
                                        BODY const &body)
 {
 
-  LoopIdxExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+  LoopICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
                            segment0, segment1, segment2, body);
 }
 
@@ -279,7 +279,7 @@ template <typename POLICY, typename SEGMENT>
 struct TileExecute;
 
 template <typename POLICY, typename SEGMENT>
-struct TileIdxExecute;
+struct TileICountExecute;
 
 template <typename POLICY_LIST,
           typename CONTEXT,
@@ -303,12 +303,12 @@ template <typename POLICY_LIST,
           typename TILE_T,
           typename SEGMENT,
           typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void tile_idx(CONTEXT const &ctx,
+RAJA_HOST_DEVICE RAJA_INLINE void tile_icount(CONTEXT const &ctx,
                                        TILE_T tile_size,
                                        SEGMENT const &segment,
                                        BODY const &body)
 {
-  TileIdxExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+  TileICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
                                                           tile_size,
                                                           segment,
                                                           body);
@@ -340,7 +340,7 @@ template <typename POLICY_LIST,
           typename TILE_T,
           typename SEGMENT,
           typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void tile_idx(CONTEXT const &ctx,
+RAJA_HOST_DEVICE RAJA_INLINE void tile_icount(CONTEXT const &ctx,
                                        TILE_T tile_size0,
                                        TILE_T tile_size1,
                                        SEGMENT const &segment0,
@@ -348,7 +348,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile_idx(CONTEXT const &ctx,
                                        BODY const &body)
 {
 
-  TileIdxExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+  TileICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
                                                           tile_size0,
                                                           tile_size1,
                                                           segment0,

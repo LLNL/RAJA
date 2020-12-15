@@ -108,7 +108,7 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
   // Return local index
   //
 template <typename SEGMENT>
-struct LoopIdxExecute<omp_parallel_for_exec, SEGMENT> {
+struct LoopICountExecute<omp_parallel_for_exec, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(
@@ -228,7 +228,7 @@ struct LoopExecute<omp_parallel_nested_for_exec, SEGMENT> {
 
 //Return local index
 template <typename SEGMENT>
-struct LoopIdxExecute<omp_parallel_nested_for_exec, SEGMENT> {
+struct LoopICountExecute<omp_parallel_nested_for_exec, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(
@@ -301,7 +301,7 @@ struct TileExecute<omp_parallel_for_exec, SEGMENT> {
 };
 
 template <typename SEGMENT>
-struct TileIdxExecute<omp_parallel_for_exec, SEGMENT> {
+struct TileICountExecute<omp_parallel_for_exec, SEGMENT> {
 
   template <typename BODY, typename TILE_T>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(

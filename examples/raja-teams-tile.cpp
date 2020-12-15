@@ -157,9 +157,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
         const int TILE_SZ = 4;
-        RAJA::expt::tile_idx<teams_x>(ctx, TILE_SZ, RAJA::RangeSegment(0, N_tri), [&](RAJA::RangeSegment const &r_tile, int tile_id) {
+        RAJA::expt::tile_icount<teams_x>(ctx, TILE_SZ, RAJA::RangeSegment(0, N_tri),
+                                         [&](RAJA::RangeSegment const &r_tile, int tile_id) {
 
-             RAJA::expt::loop_idx<loop_t>(ctx, r_tile, [&](int global_id, int loc_id) {
+             RAJA::expt::loop_icount<loop_t>(ctx, r_tile, [&](int global_id, int loc_id) {
 
                  printf("global_id %d loc_id %d tile_id %d \n", global_id, loc_id, tile_id);
 
