@@ -29,11 +29,10 @@
  */
 
 /*
-  Define number of threads in x and y dimensions of a CUDA thread block
+  Define number of threads in x and y dimensions of a RAJA team or 
+  in a CUDA/HIP thread block
 */
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-#define GPU_TB_SZ 16
-#endif
+#define TEAM_SZ 16
 
 /*
  * Define host/device launch policies
@@ -64,6 +63,7 @@ using gpu_thread_x_policy = RAJA::cuda_thread_x_loop;
 using gpu_thread_y_policy = RAJA::cuda_thread_y_loop;
 using gpu_global_thread_x_policy = RAJA::expt::cuda_global_thread_x;
 using gpu_global_thread_y_policy = RAJA::expt::cuda_global_thread_y;
+using gpu_global_thread_xy_policy = RAJA::expt::cuda_global_thread_xy;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
@@ -73,6 +73,7 @@ using gpu_thread_x_policy = RAJA::hip_thread_x_loop;
 using gpu_thread_y_policy = RAJA::hip_thread_y_loop;
 using gpu_global_thread_x_policy = RAJA::expt::hip_global_thread_x;
 using gpu_global_thread_y_policy = RAJA::expt::hip_global_thread_y;
+using gpu_global_thread_xy_policy = RAJA::expt::hip_global_thread_xy;
 #endif
 
 /*
@@ -156,30 +157,30 @@ __global__ void matMultKernel(int N, double* C, double* A, double* B)
 __global__ void sharedMatMultKernel(int N, double* C, double* A, double* B)
 {
 
-  int Row = blockIdx.y*GPU_TB_SZ + threadIdx.y;
-  int Col = blockIdx.x*GPU_TB_SZ + threadIdx.x;
+  int Row = blockIdx.y*TEAM_SZ + threadIdx.y;
+  int Col = blockIdx.x*TEAM_SZ + threadIdx.x;
 
-  __shared__ float As[GPU_TB_SZ][GPU_TB_SZ];
-  __shared__ float Bs[GPU_TB_SZ][GPU_TB_SZ];
-  __shared__ float Cs[GPU_TB_SZ][GPU_TB_SZ];
+  __shared__ float As[TEAM_SZ][TEAM_SZ];
+  __shared__ float Bs[TEAM_SZ][TEAM_SZ];
+  __shared__ float Cs[TEAM_SZ][TEAM_SZ];
 
-  for (int k = 0; k < (GPU_TB_SZ + N - 1)/GPU_TB_SZ; k++) {
+  Cs[threadIdx.y][threadIdx.x] = 0.0;
 
-    Cs[threadIdx.y][threadIdx.x] = 0.0;
+  for (int k = 0; k < (TEAM_SZ + N - 1)/TEAM_SZ; k++) {
 
-    if (k*GPU_TB_SZ + threadIdx.x < N && Row < N)
-      As[threadIdx.y][threadIdx.x] = A[Row*N + k*GPU_TB_SZ + threadIdx.x];
+    if (k*TEAM_SZ + threadIdx.x < N && Row < N)
+      As[threadIdx.y][threadIdx.x] = A[Row*N + k*TEAM_SZ + threadIdx.x];
     else
       As[threadIdx.y][threadIdx.x] = 0.0;
 
-    if (k*GPU_TB_SZ + threadIdx.y < N && Col < N)
-      Bs[threadIdx.y][threadIdx.x] = B[(k*GPU_TB_SZ + threadIdx.y)*N + Col];
+    if (k*TEAM_SZ + threadIdx.y < N && Col < N)
+      Bs[threadIdx.y][threadIdx.x] = B[(k*TEAM_SZ + threadIdx.y)*N + Col];
     else
       Bs[threadIdx.y][threadIdx.x] = 0.0;
 
     __syncthreads();
 
-    for (int n = 0; n < GPU_TB_SZ; ++n)
+    for (int n = 0; n < TEAM_SZ; ++n)
       Cs[threadIdx.y][threadIdx.x] += As[threadIdx.y][n] * Bs[n][threadIdx.x];
 
     __syncthreads();
@@ -219,7 +220,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Define num rows/cols in matrix
 //
   const int N = 1000;
-  const int NTeams = (N - 1)/GPU_TB_SZ + 1;
+  const int NTeams = (N - 1)/TEAM_SZ + 1;
 
 //
 // Allocate and initialize matrix data.
@@ -381,7 +382,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _matmult_basickernel_start
   RAJA::expt::launch<launch_policy>(RAJA::expt::HOST,
    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
-                         RAJA::expt::Threads(GPU_TB_SZ,GPU_TB_SZ)),
+                         RAJA::expt::Threads(TEAM_SZ,TEAM_SZ)),
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
    RAJA::expt::loop<global_thread_y>(ctx, col_range, [&] (int col) {
@@ -424,7 +425,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::expt::launch<launch_policy>(RAJA::expt::HOST,
    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
-                         RAJA::expt::Threads(GPU_TB_SZ,GPU_TB_SZ)),
+                         RAJA::expt::Threads(TEAM_SZ,TEAM_SZ)),
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
    RAJA::expt::loop<omp_col_policy0>(ctx, col_range, [&] (int col) {
@@ -454,12 +455,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This is the same as using an OpenMP 'parallel for' directive on the
   // outer loop with a 'collapse(2) clause.
   //
-  using global_thread_xy = RAJA::expt::LoopPolicy<RAJA::expt::omp_parallel_nested_for_exec,
-                                                  RAJA::expt::cuda_global_thread_xy>;
+  using global_thread_xy = RAJA::expt::LoopPolicy<RAJA::expt::omp_parallel_nested_for_exec
+#if defined(RAJA_DEVICE_ACTIVE)
+                                                  ,
+                                                  gpu_global_thread_xy_policy
+#endif
+                                                  >;
 
    RAJA::expt::launch<launch_policy>(RAJA::expt::HOST,
     RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
-                          RAJA::expt::Threads(GPU_TB_SZ,GPU_TB_SZ)),
+                          RAJA::expt::Threads(TEAM_SZ,TEAM_SZ)),
    [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
      RAJA::expt::loop<global_thread_xy>(ctx, col_range, row_range, [&] (int col, int row) {
@@ -526,21 +531,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // This policy collapses the col and row loops into a single CUDA kernel
   // using two-dimensional CUDA thread blocks with x and y dimensions defined
-  // by GPU_TB_SZ arguments.
+  // by TEAM_SZ arguments.
   //
-  // When the matrix dimension N is an integer multiple of GPU_TB_SZ,
+  // When the matrix dimension N is an integer multiple of TEAM_SZ,
   // the CUDA grid and thread dimension kernel launch parameters will be the
   // same as in this kernel and the one above.
   //
    RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
     RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
-                          RAJA::expt::Threads(GPU_TB_SZ,GPU_TB_SZ)),
+                          RAJA::expt::Threads(TEAM_SZ,TEAM_SZ)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
         RAJA::expt::tile<teams_y>
-          (ctx, GPU_TB_SZ, row_range, [&] (RAJA::RangeSegment const &row_tile) {
+          (ctx, TEAM_SZ, row_range, [&] (RAJA::RangeSegment const &row_tile) {
             RAJA::expt::tile<teams_x>
-              (ctx, GPU_TB_SZ, col_range, [&] (RAJA::RangeSegment const &col_tile) {
+              (ctx, TEAM_SZ, col_range, [&] (RAJA::RangeSegment const &col_tile) {
 
                 RAJA::expt::loop<threads_y>(ctx, row_tile, [&] (int col) {
                     RAJA::expt::loop<threads_x>(ctx, col_tile, [&] (int row) {
@@ -635,13 +640,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
     RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
-                          RAJA::expt::Threads(GPU_TB_SZ,GPU_TB_SZ)),
+                          RAJA::expt::Threads(TEAM_SZ,TEAM_SZ)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
         RAJA::expt::tile<teams_y>
-          (ctx, GPU_TB_SZ, row_range, [&] (RAJA::RangeSegment const &x_tile) {
+          (ctx, TEAM_SZ, row_range, [&] (RAJA::RangeSegment const &x_tile) {
             RAJA::expt::tile<teams_x>
-              (ctx, GPU_TB_SZ, col_range, [&] (RAJA::RangeSegment const &y_tile) {
+              (ctx, TEAM_SZ, col_range, [&] (RAJA::RangeSegment const &y_tile) {
 
                 RAJA::expt::loop<threads_y>(ctx, y_tile, [&] (int col) {
                     RAJA::expt::loop<threads_x>(ctx, x_tile, [&] (int row) {
@@ -675,30 +680,30 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
     RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
-                          RAJA::expt::Threads(GPU_TB_SZ,GPU_TB_SZ)),
+                          RAJA::expt::Threads(TEAM_SZ,TEAM_SZ)),
      [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
    //
    // Loop over teams
    //
    RAJA::expt::tile<teams_y>
-     (ctx, GPU_TB_SZ, row_range, [&] (RAJA::RangeSegment const &y_tile) {
+     (ctx, TEAM_SZ, row_range, [&] (RAJA::RangeSegment const &y_tile) {
      RAJA::expt::tile<teams_x>
-       (ctx, GPU_TB_SZ, col_range, [&] (RAJA::RangeSegment const &x_tile) {
+       (ctx, TEAM_SZ, col_range, [&] (RAJA::RangeSegment const &x_tile) {
 
-         RAJA_TEAM_SHARED double As[GPU_TB_SZ][GPU_TB_SZ];
-         RAJA_TEAM_SHARED double Bs[GPU_TB_SZ][GPU_TB_SZ];
-         RAJA_TEAM_SHARED double Cs[GPU_TB_SZ][GPU_TB_SZ];
+         RAJA_TEAM_SHARED double As[TEAM_SZ][TEAM_SZ];
+         RAJA_TEAM_SHARED double Bs[TEAM_SZ][TEAM_SZ];
+         RAJA_TEAM_SHARED double Cs[TEAM_SZ][TEAM_SZ];
 
          // Team parallel loop
          RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
              RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
-                 Cs[ty][tx] = 0.0;
-               });
-           });
+               Cs[ty][tx] = 0.0;
+             });
+         });
 
          // Slide across matrix
          RAJA::expt::tile<seq_loop>
-           (ctx, GPU_TB_SZ, dot_range, [&] (RAJA::RangeSegment const &k_tile) {
+           (ctx, TEAM_SZ, dot_range, [&] (RAJA::RangeSegment const &k_tile) {
 
            RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
                RAJA::expt::loop_icount<threads_x>(ctx, k_tile, [&](int k_id, int tx) {
@@ -747,7 +752,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
 
   // Define thread block dimensions
-  dim3 blockdim(GPU_TB_SZ, GPU_TB_SZ);
+  dim3 blockdim(TEAM_SZ, TEAM_SZ);
   // Define grid dimensions to match the RAJA version above
   dim3 griddim(RAJA_DIVIDE_CEILING_INT(N,blockdim.x),
                RAJA_DIVIDE_CEILING_INT(N,blockdim.y));
