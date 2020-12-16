@@ -1,4 +1,3 @@
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
@@ -24,9 +23,7 @@
  *  RAJA features shown:
  *    - Index range segment
  *    - View abstraction
- *    - Basic usage of 'RAJA::kernel' abstractions for nested loops
- *    - Collapsing loops under OpenMP and CUDA policies
- *    - Specifying lambda arguments through statements
+ *    - Basic usage of 'RAJA Teams' abstractions for nested loops
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
@@ -223,7 +220,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
   const int N = 1000;
   const int NTeams = (N - 1)/GPU_TB_SZ + 1;
-//const int N = GPU_TB_SZ * GPU_TB_SZ;
 
 //
 // Allocate and initialize matrix data.
@@ -371,30 +367,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 //
-// Next, we use a RAJA::kernel method to execute the kernel. These examples,
-// illustrate the basic kernel interface and mechanics. The execution policies
-// express the outer row and col loops using the RAJA kernel interface. Later,
-// in this file we show some more complex policy examples where we express all
-// three loops using the kernel interface and use additional kernel features.
+// Next, we use a RAJA::launch method to execute the kernel. These examples,
+// illustrate the basic interface and mechanics.
 //
 // This is different than RAJA::forall and so a few points of exmplanation
 // are in order:
-//
-// 1) A range and lambda index argument are required for each level in
-//    the loop nest. Here, we have two of each since we have a doubly-nested
-//    loop.
-// 2) A range for each loop nest level is specified in a RAJA tuple object.
-//    The order of ranges in the tuple must match the order of args to the
-//    lambda for this to be correct, in general. RAJA provides strongly-typed
-//    indices to help with this. However, this example does not use them.
-// 3) An execution policy is required for each level in the loop nest. These
-//    are specified in the 'RAJA::statement::For' templates in the
-//    'RAJA::KernelPolicy type.
-// 4) The loop nest ordering is specified in the nested execution policy --
-//    the first 'For' policy is the outermost loop, the second 'For' policy
-//    is the loop nested inside the outermost loop, and so on.
-// 5) The integer values that are the first template arguments to the policies
-//    indicate which range/lambda argument, the policy applies to.
 //
 
   std::cout << "\n Running sequential mat-mult (RAJA-nested)...\n";
@@ -504,7 +481,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_CUDA)
 
-  std::cout << "\n Running CUDA mat-mult (RAJA-nested - POL4)...\n";
+  std::cout << "\n Running CUDA mat-mult (RAJA-nested)...\n";
 
   std::memset(C, 0, N*N * sizeof(double));
 
@@ -542,7 +519,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running CUDA tiled mat-mult (RAJA-POL5)...\n";
+  std::cout << "\n Running CUDA tiled mat-mult ...\n";
 
   std::memset(C, 0, N*N * sizeof(double));
 
@@ -715,26 +692,23 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
          // Team parallel loop
          RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
              RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
-                 As[ty][tx] = 0.0;
-                 Bs[ty][tx] = 0.0;
                  Cs[ty][tx] = 0.0;
                });
            });
 
          // Slide across matrix
-         RAJA::expt::tile_icount<seq_loop>
-           (ctx, GPU_TB_SZ, dot_range, [&] (RAJA::RangeSegment const &k_tile, int m) {
+         RAJA::expt::tile<seq_loop>
+           (ctx, GPU_TB_SZ, dot_range, [&] (RAJA::RangeSegment const &k_tile) {
 
            RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
                RAJA::expt::loop_icount<threads_x>(ctx, k_tile, [&](int k_id, int tx) {
-                   As[ty][tx] = A[row * N + k_id];
+                   As[ty][tx] = Aview(row,k_id);
                  });
              });
 
            RAJA::expt::loop_icount<threads_y>(ctx, k_tile, [&](int k_id, int ty) {
                RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
-
-                   Bs[ty][tx] = B[k_id * N + col];
+                   Bs[ty][tx] = Bview(k_id,col);
                });
              });
 
@@ -755,7 +729,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
                RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
-                   C[col + N * row] = Cs[ty][tx];
+                   Cview(col,row) = Cs[ty][tx];
                });
            });
        });
