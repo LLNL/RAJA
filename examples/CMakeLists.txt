@@ -30,6 +30,10 @@ raja_add_executable(
   SOURCES tut_matrix-multiply.cpp)
 
 raja_add_executable(
+  NAME kernel_matrix-multiply
+  SOURCES kernel_matrix-multiply.cpp)
+
+raja_add_executable(
   NAME tut_nested-loop-reorder
   SOURCES tut_nested-loop-reorder.cpp)
 
