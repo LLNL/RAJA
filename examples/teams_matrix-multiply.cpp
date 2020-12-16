@@ -82,7 +82,7 @@ using gpu_global_thread_y_policy = RAJA::expt::hip_global_thread_y;
   Define RAJA Team policies
 */
 using teams_x = RAJA::expt::LoopPolicy<loop_policy
-#if defined(RAJA_DEVICE_ACTIVE)        
+#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
                                        gpu_block_x_policy
 #endif
@@ -154,6 +154,43 @@ __global__ void matMultKernel(int N, double* C, double* A, double* B)
 
     C(row, col) = dot;
   }
+}
+
+__global__ void sharedMatMultKernel(int N, double* C, double* A, double* B)
+{
+
+  int Row = blockIdx.y*GPU_TB_SZ + threadIdx.y;
+  int Col = blockIdx.x*GPU_TB_SZ + threadIdx.x;
+
+  __shared__ float As[GPU_TB_SZ][GPU_TB_SZ];
+  __shared__ float Bs[GPU_TB_SZ][GPU_TB_SZ];
+  __shared__ float Cs[GPU_TB_SZ][GPU_TB_SZ];
+
+  for (int k = 0; k < (GPU_TB_SZ + N - 1)/GPU_TB_SZ; k++) {
+
+    Cs[threadIdx.y][threadIdx.x] = 0.0;
+
+    if (k*GPU_TB_SZ + threadIdx.x < N && Row < N)
+      As[threadIdx.y][threadIdx.x] = A[Row*N + k*GPU_TB_SZ + threadIdx.x];
+    else
+      As[threadIdx.y][threadIdx.x] = 0.0;
+
+    if (k*GPU_TB_SZ + threadIdx.y < N && Col < N)
+      Bs[threadIdx.y][threadIdx.x] = B[(k*GPU_TB_SZ + threadIdx.y)*N + Col];
+    else
+      Bs[threadIdx.y][threadIdx.x] = 0.0;
+
+    __syncthreads();
+
+    for (int n = 0; n < GPU_TB_SZ; ++n)
+      Cs[threadIdx.y][threadIdx.x] += As[threadIdx.y][n] * Bs[n][threadIdx.x];
+
+    __syncthreads();
+  }
+
+  if (Row < N && Col < N)
+    C[((blockIdx.y * blockDim.y + threadIdx.y)*N) +
+      (blockIdx.x * blockDim.x)+ threadIdx.x] = Cs[threadIdx.y][threadIdx.x];
 }
 #endif
 
@@ -398,15 +435,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using omp_col_policy0 = RAJA::expt::LoopPolicy<RAJA::omp_parallel_for_exec
 #if defined(RAJA_DEVICE_ACTIVE)
                                                  ,gpu_global_thread_y_policy
-#endif                                                 
+#endif
     >;
 
   using omp_row_policy0 = RAJA::expt::LoopPolicy<loop_policy
 #if defined(RAJA_DEVICE_ACTIVE)
                                                  ,gpu_global_thread_x_policy
-#endif                                                 
+#endif
     >;
-                                                 
+
 
   RAJA::expt::launch<launch_policy>(RAJA::expt::HOST,
    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
@@ -650,7 +687,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printResult<double>(Cview, N);
 #endif // if RAJA_ENABLE_HIP
 
-//----------------------------------------------------------------------------//  
+//----------------------------------------------------------------------------//
 #if defined(RAJA_ENABLE_CUDA)
 
   std::cout << "\n Running CUDA tiled mat-mult with shared memory ...\n";
@@ -670,14 +707,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      (ctx, GPU_TB_SZ, row_range, [&] (RAJA::RangeSegment const &y_tile) {
      RAJA::expt::tile<teams_x>
        (ctx, GPU_TB_SZ, col_range, [&] (RAJA::RangeSegment const &x_tile) {
-         
+
          RAJA_TEAM_SHARED double As[GPU_TB_SZ][GPU_TB_SZ];
          RAJA_TEAM_SHARED double Bs[GPU_TB_SZ][GPU_TB_SZ];
          RAJA_TEAM_SHARED double Cs[GPU_TB_SZ][GPU_TB_SZ];
-             
+
          // Team parallel loop
          RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
-             RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {                
+             RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
                  As[ty][tx] = 0.0;
                  Bs[ty][tx] = 0.0;
                  Cs[ty][tx] = 0.0;
@@ -693,7 +730,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                    As[ty][tx] = A[row * N + k_id];
                  });
              });
-           
+
            RAJA::expt::loop_icount<threads_y>(ctx, k_tile, [&](int k_id, int ty) {
                RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
 
@@ -702,10 +739,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
              });
 
            ctx.teamSync();
-           
+
            RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
                RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
-                   
+
                    RAJA::expt::loop_icount<seq_loop>(ctx, k_tile, [&] (int gid, int e) {
                        Cs[ty][tx] += As[ty][e] * Bs[e][tx];
                      });
@@ -715,9 +752,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
            ctx.teamSync();
 
          });  // slide across matrix
-         
+
           RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
-               RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {         
+               RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
                    C[col + N * row] = Cs[ty][tx];
                });
            });
@@ -749,6 +786,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaDeviceSynchronize();
 
   checkResult<double>(Cview, N);
+
+  std::cout << "\n Running CUDA tiled mat-mult with shared memory (no RAJA)...\n";
+
+  std::memset(C, 0, N*N * sizeof(double));
+
+  matMultKernel<<<griddim, blockdim>>>(N, C, A, B);
+
+  cudaDeviceSynchronize();
+
+  checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
 #endif // if RAJA_ENABLE_CUDA
@@ -759,9 +806,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running HIP tiled mat-mult (no RAJA)...\n";
 
-  std::memset(C, 0, N*N * sizeof(double));
-  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
-
   // Define thread block dimensions
   dim3 blockdim(HIP_BLOCK_SIZE, HIP_BLOCK_SIZE);
   // Define grid dimensions to match the RAJA version above
@@ -770,8 +814,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //printf("griddim = (%d,%d), blockdim = (%d,%d)\n", (int)griddim.x, (int)griddim.y, (int)blockdim.x, (int)blockdim.y);
 
+  std::memset(C, 0, N*N * sizeof(double));
+  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
+
   // Launch HIP kernel defined near the top of this file.
   hipLaunchKernelGGL((matMultKernel), dim3(griddim), dim3(blockdim), 0, 0, N, d_C, d_A, d_B);
+
+  hipDeviceSynchronize();
+
+  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
+  checkResult<double>(Cview, N);
+//printResult<double>(Cview, N);
+
+  std::cout << "\n Running HIP tiled mat-mult with shared memory (no RAJA)...\n";
+
+  std::memset(C, 0, N*N * sizeof(double));
+  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
+
+  // Launch HIP kernel defined near the top of this file.
+  hipLaunchKernelGGL((sharedMatMultKernel), dim3(griddim), dim3(blockdim), 0, 0, N, d_C, d_A, d_B);
 
   hipDeviceSynchronize();
 
