@@ -66,7 +66,7 @@ void testWorkGroupWorkStorageConstructor()
 {
   bool success = true;
 
-  using Vtable_type = RAJA::detail::Vtable<void*, bool*, bool*>;
+  using Vtable_type = RAJA::detail::Vtable<void, void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,
@@ -113,7 +113,7 @@ void testWorkGroupWorkStorageIterator()
 {
   bool success = true;
 
-  using Vtable_type = RAJA::detail::Vtable<void*, bool*, bool*>;
+  using Vtable_type = RAJA::detail::Vtable<void, void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,
@@ -176,7 +176,7 @@ void testWorkGroupWorkStorageInsertCall()
 {
   bool success = true;
 
-  using Vtable_type = RAJA::detail::Vtable<void*, bool*, bool*>;
+  using Vtable_type = RAJA::detail::Vtable<void, void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,
@@ -297,7 +297,7 @@ void testWorkGroupWorkStorageMultiple(
 {
   bool success = true;
 
-  using Vtable_type = RAJA::detail::Vtable<void*, bool*, bool*>;
+  using Vtable_type = RAJA::detail::Vtable<void, void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,
