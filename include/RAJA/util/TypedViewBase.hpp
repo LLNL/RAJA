@@ -118,13 +118,13 @@ namespace internal
   /*
    * Returns the number of elements in the vector argument
    */
-  template<camp::idx_t DIM, typename ... ARGS>
+  template<camp::idx_t DIM, typename LAYOUT, typename ... ARGS>
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  static constexpr camp::idx_t get_tensor_args_size(ARGS ... args){
+  static constexpr camp::idx_t get_tensor_args_size(LAYOUT const &layout, ARGS ... args){
     return RAJA::max<camp::idx_t>(
         getTensorDim<ARGS>()==DIM
-        ? getTensorSize<ARGS>(args)
+        ? getTensorSize<ARGS>(args, layout.template get_dim_size<DIM>())
         : 0 ...);
   }
 
@@ -179,7 +179,7 @@ namespace internal
       constexpr
       return_type make_return(LayoutType const &layout, PointerType const &data, Args const &... args){
         return return_type(stripIndexType(layout(stripTensorIndex(args)...)),
-                           get_tensor_args_size<0>(args...),
+                           get_tensor_args_size<0>(layout, args...),
                            data,
                            layout.template get_dim_stride<get_tensor_arg_idx<0, Args...>()>());
       }
@@ -191,18 +191,10 @@ namespace internal
   template<typename ... Args, typename ElementType, typename PointerType, typename LinIdx, camp::idx_t StrideOneDim>
   struct ViewReturnHelper<2, camp::list<Args...>, ElementType, PointerType, LinIdx, StrideOneDim>
   {
-      using row_matrix_type = typename camp::at_v<camp::list<Args...>, get_tensor_arg_idx<0, Args...>()>::tensor_type;
-      using col_matrix_type = typename camp::at_v<camp::list<Args...>, get_tensor_arg_idx<1, Args...>()>::tensor_type;
+      using tensor_reg_type = typename camp::at_v<camp::list<Args...>, get_tensor_arg_idx<0, Args...>()>::tensor_type;
 
-      // compute a matrix type using features from the row and col
-      using matrix_type = row_matrix_type; //MatrixViewCombiner<row_matrix_type, col_matrix_type>;
-
-      using return_type = internal::MatrixRef<matrix_type,
-                                              LinIdx,
-                                              PointerType,
-                                              StrideOneDim == get_tensor_arg_idx<0, Args...>(),
-                                              StrideOneDim == get_tensor_arg_idx<1, Args...>()>;
-
+      using ref_type = internal::ET::TensorRef<tensor_reg_type, ElementType*, int, 2, -1>;
+      using return_type = internal::ET::TensorLoadStore<tensor_reg_type, ref_type>;
 
       template<typename LayoutType>
       RAJA_INLINE
@@ -210,12 +202,28 @@ namespace internal
       static
       constexpr
       return_type make_return(LayoutType const &layout, PointerType const &data, Args const &... args){
-        return return_type(stripIndexType(layout(stripTensorIndex(args)...)),
-                           get_tensor_args_size<0>(args...),
-                           get_tensor_args_size<1>(args...),
-                           data,
-                           layout.template get_dim_stride<get_tensor_arg_idx<0, Args...>()>(),
-                           layout.template get_dim_stride<get_tensor_arg_idx<1, Args...>()>());
+        return return_type(ref_type{
+          // data pointer
+          &data[0],
+          // strides
+          {(LinIdx)layout.template get_dim_stride<get_tensor_arg_idx<0, Args...>()>(),
+           (LinIdx)layout.template get_dim_stride<get_tensor_arg_idx<1, Args...>()>()},
+          // tile
+          {
+              // begin
+              {0,0},
+
+              // size
+              {(LinIdx)get_tensor_args_size<0>(layout, args...),
+               (LinIdx)get_tensor_args_size<1>(layout, args...)}
+          }
+        });
+//        return return_type(stripIndexType(layout(stripTensorIndex(args)...)),
+//                           get_tensor_args_size<0>(args...),
+//                           get_tensor_args_size<1>(args...),
+//                           data,
+//                           layout.template get_dim_stride<get_tensor_arg_idx<0, Args...>()>(),
+//                           layout.template get_dim_stride<get_tensor_arg_idx<1, Args...>()>());
       }
   };
 
@@ -417,9 +425,19 @@ class ViewBase {
     RAJA_HOST_DEVICE
     RAJA_INLINE
     constexpr
-    camp::idx_t size() const
+    linear_index_type size() const
     {
       return m_layout.size();
+    }
+
+
+    template<camp::idx_t DIM>
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    constexpr
+    linear_index_type get_dim_size() const
+    {
+      return m_layout.template get_dim_size<DIM>();
     }
 
 

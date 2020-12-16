@@ -14,7 +14,7 @@
 
 using MatrixTestTypes = ::testing::Types<
 
-
+/*
 #ifdef __AVX__
     RAJA::RegisterMatrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::avx_register>,
     RAJA::RegisterMatrix<double, RAJA::MATRIX_ROW_MAJOR, RAJA::avx_register>,
@@ -54,7 +54,7 @@ using MatrixTestTypes = ::testing::Types<
     RAJA::RegisterMatrix<float, RAJA::MATRIX_ROW_MAJOR, RAJA::scalar_register>,
     RAJA::RegisterMatrix<long, RAJA::MATRIX_COL_MAJOR, RAJA::scalar_register>,
     RAJA::RegisterMatrix<long, RAJA::MATRIX_ROW_MAJOR, RAJA::scalar_register>,
-    RAJA::RegisterMatrix<int, RAJA::MATRIX_COL_MAJOR, RAJA::scalar_register>,
+    RAJA::RegisterMatrix<int, RAJA::MATRIX_COL_MAJOR, RAJA::scalar_register>, */
     RAJA::RegisterMatrix<int, RAJA::MATRIX_ROW_MAJOR, RAJA::scalar_register>
 
   >;
@@ -78,7 +78,7 @@ protected:
 };
 TYPED_TEST_SUITE_P(MatrixTest);
 
-
+#if 0
 /*
  * We are using ((double)rand()/RAND_MAX) for input values so the compiler cannot do fancy
  * things, like constexpr out all of the intrinsics.
@@ -547,9 +547,9 @@ TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
   }
 
 }
+#endif
 
-
-TYPED_TEST_P(MatrixTest, ETLoadStore)
+TYPED_TEST_P(MatrixTest, AllLoadStore)
 {
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
@@ -567,16 +567,21 @@ TYPED_TEST_P(MatrixTest, ETLoadStore)
   // Create an empty data bufffer
   element_t data2[N][N];
 
-  // Perform a copy using ET's:   data2 = data1
-  using ref_type = typename RAJA::ET::MatrixLoad<matrix_t> ::ref_type;
+  //  Create views
+  RAJA::View<element_t, RAJA::Layout<2, int>> view1(
+      &data1[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{1,0}}));
 
-  // this delays until called by MatrixStore below
-  ref_type ref_data1{&data1[0][0], {N, 1}, {N, N}};
-  RAJA::ET::MatrixLoad<matrix_t> et_load_data1(ref_data1);
 
-  // this executes in ctor
-  ref_type ref_data2{&data2[0][0], {N, 1}, {N, N}};
-  RAJA::ET::MatrixStore<matrix_t, decltype(et_load_data1)> et_store_data2(ref_data2, et_load_data1);
+  RAJA::View<element_t, RAJA::Layout<2, int>> view2(
+      &data2[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{1,0}}));
+
+
+  using Row = RAJA::RowIndex<int, matrix_t>;
+  using Col = RAJA::ColIndex<int, matrix_t>;
+
+
+  // Perform copy of view1 into view2
+  view2(Row::all(), Col::all()) = view1(Row::all(), Col::all());
 
 
   // Check that data1==data2
@@ -586,14 +591,34 @@ TYPED_TEST_P(MatrixTest, ETLoadStore)
     }
   }
 
+  // Perform transpose view1 into view2 by switching col and row for view1
+  view2(Row::all(), Col::all()) = view1(Col::all(), Row::all());
+
+  // Check that data1==transpose(data2)
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      ASSERT_SCALAR_EQ(data1[i][j], data2[j][i]);
+    }
+  }
+
+  // Perform transpose view1 into view2 by switching col and row for view2
+  view2(Col::all(), Row::all()) = view1(Row::all(), Col::all());
+
+  // Check that data1==transpose(data2)
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      ASSERT_SCALAR_EQ(data1[i][j], data2[j][i]);
+    }
+  }
+
 }
 
-TYPED_TEST_P(MatrixTest, ETLoadMultiplyStore)
+TYPED_TEST_P(MatrixTest, AllAdd)
 {
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
 
-  static const int N = matrix_t::vector_type::s_num_elem * 16;
+  static const int N = matrix_t::vector_type::s_num_elem * 4;
 
   // Create a row-major data buffer
   element_t data1[N][N], data2[N][N];
@@ -607,23 +632,81 @@ TYPED_TEST_P(MatrixTest, ETLoadMultiplyStore)
   // Create an empty result bufffer
   element_t data3[N][N];
 
-  // Perform a copy using ET's:   data2 = data1
-  using ref_type = typename RAJA::ET::MatrixLoad<matrix_t> ::ref_type;
+  //  Create views
+  RAJA::View<element_t, RAJA::Layout<2, int>> view1(
+      &data1[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
 
-  // load matrix 1
-  ref_type ref_data1{&data1[0][0], {N, 1}, {N, N}};
-  RAJA::ET::MatrixLoad<matrix_t> et_load_data1(ref_data1);
 
-  // load matrix 2
-  ref_type ref_data2{&data2[0][0], {N, 1}, {N, N}};
-  RAJA::ET::MatrixLoad<matrix_t> et_load_data2(ref_data2);
+  RAJA::View<element_t, RAJA::Layout<2, int>> view2(
+      &data2[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
 
-  // multiply matrix 1 with matrix 2
-  RAJA::ET::MatrixMatrixMultiply<decltype(et_load_data1), decltype(et_load_data2)> et_multiply(ref_data1, ref_data2);
+  RAJA::View<element_t, RAJA::Layout<2, int>> view3(
+      &data3[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
 
-  // this executes in ctor
-  ref_type ref_data3{&data3[0][0], {N, 1}, {N, N}};
-  RAJA::ET::MatrixStore<matrix_t, decltype(et_multiply)> et_store_data3(ref_data3, et_multiply);
+
+  using Row = RAJA::RowIndex<int, matrix_t>;
+  using Col = RAJA::ColIndex<int, matrix_t>;
+
+
+  // Perform copy of view1 into view2
+  view3(Row::all(), Col::all()) = view1(Row::all(), Col::all()) +
+                                  view2(Row::all(), Col::all());
+
+
+
+  // Check that data1==data2
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      element_t result = data1[i][j] + data2[i][j];
+
+      ASSERT_SCALAR_EQ(data3[i][j], result);
+
+      //printf("(%d,%d): val=%e, exp=%e\n",(int)i, (int)j, (double)data3[i][j], (double)result);
+    }
+  }
+
+}
+
+
+TYPED_TEST_P(MatrixTest, AllMultiply)
+{
+  using matrix_t = TypeParam;
+  using element_t = typename matrix_t::element_type;
+
+  static const int N = matrix_t::vector_type::s_num_elem * 4;
+
+  // Create a row-major data buffer
+  element_t data1[N][N], data2[N][N];
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      data1[i][j] = i*j*j;
+      data2[i][j] = i+2*j;
+    }
+  }
+
+  // Create an empty result bufffer
+  element_t data3[N][N];
+
+  //  Create views
+  RAJA::View<element_t, RAJA::Layout<2, int>> view1(
+      &data1[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
+
+
+  RAJA::View<element_t, RAJA::Layout<2, int>> view2(
+      &data2[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
+
+  RAJA::View<element_t, RAJA::Layout<2, int>> view3(
+      &data3[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
+
+
+  using Row = RAJA::RowIndex<int, matrix_t>;
+  using Col = RAJA::ColIndex<int, matrix_t>;
+
+
+  // Perform copy of view1 into view2
+  view3(Row::all(), Col::all()) = view1(Row::all(), Col::all()) *
+                                  view2(Row::all(), Col::all());
+
 
 
   // Check that data1==data2
@@ -635,6 +718,105 @@ TYPED_TEST_P(MatrixTest, ETLoadMultiplyStore)
         result += data1[i][k] * data2[k][j];
       }
       ASSERT_SCALAR_EQ(data3[i][j], result);
+      //printf("(%d,%d): val=%e, exp=%e\n",(int)i, (int)j, (double)data3[i][j], (double)result);
+    }
+  }
+
+}
+
+TYPED_TEST_P(MatrixTest, AllMultiplyAdd)
+{
+  using matrix_t = TypeParam;
+  using element_t = typename matrix_t::element_type;
+
+  static const int N = matrix_t::vector_type::s_num_elem * 4;
+
+  // Create a row-major data buffer
+  element_t data1[N][N], data2[N][N];
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      data1[i][j] = i*j*j;
+      data2[i][j] = i+2*j;
+    }
+  }
+
+  // Create an empty result bufffer
+  element_t data3[N][N];
+
+  //  Create views
+  RAJA::View<element_t, RAJA::Layout<2, int>> view1(
+      &data1[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
+
+
+  RAJA::View<element_t, RAJA::Layout<2, int>> view2(
+      &data2[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
+
+  RAJA::View<element_t, RAJA::Layout<2, int>> view3(
+      &data3[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
+
+
+  using Row = RAJA::RowIndex<int, matrix_t>;
+  using Col = RAJA::ColIndex<int, matrix_t>;
+
+
+  // Perform view3 = view1 * view2 + view1;
+  view3(Row::all(), Col::all()) = view1(Row::all(), Col::all()) *
+                                  view2(Row::all(), Col::all()) +
+                                  view1(Row::all(), Col::all());
+
+
+
+  // Check that data1==data2
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      element_t result = data1[i][j];
+
+      for(camp::idx_t k = 0;k < N; ++ k){
+        result += data1[i][k] * data2[k][j];
+      }
+      ASSERT_SCALAR_EQ(data3[i][j], result);
+      //printf("(%d,%d): val=%e, exp=%e\n",(int)i, (int)j, (double)data3[i][j], (double)result);
+    }
+  }
+
+  // Perform view3 = view1 + view2 * view1;
+  view3(Row::all(), Col::all()) = view1(Row::all(), Col::all()) +
+                                  view2(Row::all(), Col::all()) *
+                                  view1(Row::all(), Col::all());
+
+
+
+  // Check that data1==data2
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      element_t result = data1[i][j];
+
+      for(camp::idx_t k = 0;k < N; ++ k){
+        result += data2[i][k] * data1[k][j];
+      }
+      ASSERT_SCALAR_EQ(data3[i][j], result);
+      //printf("(%d,%d): val=%e, exp=%e\n",(int)i, (int)j, (double)data3[i][j], (double)result);
+    }
+  }
+
+  // Perform view3 = view1,
+  //  and    view1 += view2 * view1;
+  view3(Row::all(), Col::all()) = view1(Row::all(), Col::all());
+  view3(Row::all(), Col::all()) += view2(Row::all(), Col::all()) *
+                                   view1(Row::all(), Col::all());
+
+
+
+  // Check that data1==data2
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      element_t result = data1[i][j];
+
+      for(camp::idx_t k = 0;k < N; ++ k){
+        result += data2[i][k] * data1[k][j];
+      }
+      ASSERT_SCALAR_EQ(data3[i][j], result);
+      //printf("(%d,%d): val=%e, exp=%e\n",(int)i, (int)j, (double)data3[i][j], (double)result);
     }
   }
 
@@ -642,17 +824,19 @@ TYPED_TEST_P(MatrixTest, ETLoadMultiplyStore)
 
 
 REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
-    MatrixCtor,
-                                        MatrixGetSet,
-                                        MatrixLoad,
-                                        MatrixStore,
-                                        MatrixViewLoad,
-                                        MatrixViewStore,
-                                        MatrixVector,
-                                        MatrixMatrix,
-                                        MatrixMatrixAccumulate,
-                                        ETLoadStore,
-                                        ETLoadMultiplyStore);
+//    MatrixCtor,
+//                                        MatrixGetSet,
+//                                        MatrixLoad,
+//                                        MatrixStore,
+//                                        MatrixViewLoad,
+//                                        MatrixViewStore,
+//                                        MatrixVector,
+//                                        MatrixMatrix,
+//                                        MatrixMatrixAccumulate,
+                                          AllLoadStore,
+                                          AllAdd,
+                                          AllMultiply,
+                                          AllMultiplyAdd);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, MatrixTest, MatrixTestTypes);
 

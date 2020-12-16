@@ -241,6 +241,14 @@ public:
   IndexLinear get_dim_stride() const {
     return strides[DIM];
   }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_size() const {
+    return sizes[DIM];
+  }
 };
 
 template <camp::idx_t... RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
