@@ -1,4 +1,4 @@
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+1;95;0c//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
@@ -947,16 +947,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     using tiling_sharedMem_policy =
         RAJA::KernelPolicy<
+        RAJA::statement::CudaKernelFixed<CUDA_BLOCK_SIZE*CUDA_BLOCK_SIZE,
           //Initalize thread private value
-          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2,1,0>,
+          RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2,1,0>,
 
             // Tile of N and P (the result matrix C)
-            RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::loop_exec,
-              RAJA::statement::Tile<2, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::loop_exec,
+            RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
+              RAJA::statement::Tile<2, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_direct,
 
                // zero out shmem tile of C
-               RAJA::statement::For<2, RAJA::loop_exec,
-                  RAJA::statement::For<0, RAJA::loop_exec,
+               RAJA::statement::For<2, RAJA::cuda_thread_y_direct,
+                  RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                   shmem_Lambda0 > >,
 
                 // Slide window across matrix: Tile in M
@@ -964,22 +965,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
                    // Load tile of A into shmem
                    RAJA::statement::For<1, RAJA::loop_exec,
-                     RAJA::statement::For<0, RAJA::loop_exec,
+                     RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                      shmem_Lambda1
                     >
                    >,
 
                    // Load tile of B into shmem
-                   RAJA::statement::For<2, RAJA::loop_exec,
+                   RAJA::statement::For<2, RAJA::cuda_thread_y_direct,
                      RAJA::statement::For<1, RAJA::loop_exec,
                      shmem_Lambda2
                     >
                    >,
 
                    //Partial multiplication
-                   RAJA::statement::For<2, RAJA::loop_exec,
+                   RAJA::statement::For<2, RAJA::cuda_thread_y_direct,
                      RAJA::statement::For<1, RAJA::loop_exec,
-                       RAJA::statement::For<0, RAJA::loop_exec,
+                       RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                        shmem_Lambda3
                        >
                      >
@@ -987,13 +988,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                 >, //sliding window
 
                 //Write memory out to global matrix
-                RAJA::statement::For<2, RAJA::loop_exec,
-                  RAJA::statement::For<0, RAJA::loop_exec,
+                RAJA::statement::For<2, RAJA::cuda_thread_y_direct,
+                  RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                   shmem_Lambda4 > >
              >
             >
            > //Create shared memory
-          >;
+         >//Cuda kernel
+        >;
 
   Shmem aShared, bShared, cShared;
 
