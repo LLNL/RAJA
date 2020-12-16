@@ -160,9 +160,9 @@ __global__ void sharedMatMultKernel(int N, double* C, double* A, double* B)
   int Row = blockIdx.y*TEAM_SZ + threadIdx.y;
   int Col = blockIdx.x*TEAM_SZ + threadIdx.x;
 
-  __shared__ float As[TEAM_SZ][TEAM_SZ];
-  __shared__ float Bs[TEAM_SZ][TEAM_SZ];
-  __shared__ float Cs[TEAM_SZ][TEAM_SZ];
+  __shared__ double As[TEAM_SZ][TEAM_SZ];
+  __shared__ double Bs[TEAM_SZ][TEAM_SZ];
+  __shared__ double Cs[TEAM_SZ][TEAM_SZ];
 
   Cs[threadIdx.y][threadIdx.x] = 0.0;
 
@@ -770,7 +770,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
-  matMultKernel<<<griddim, blockdim>>>(N, C, A, B);
+  sharedMatMultKernel<<<griddim, blockdim>>>(N, C, A, B);
 
   cudaDeviceSynchronize();
 
