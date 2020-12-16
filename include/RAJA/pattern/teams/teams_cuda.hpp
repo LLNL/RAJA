@@ -94,15 +94,15 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, nthreads>> {
 /*
    CUDA global thread mapping
 */
-template<int DIM>
-struct cuda_global_thread_xyz;
+template<int ... DIM>
+struct cuda_global_thread;
 
-using cuda_global_thread_x = cuda_global_thread_xyz<0>;
-using cuda_global_thread_y = cuda_global_thread_xyz<1>;
-using cuda_global_thread_z = cuda_global_thread_xyz<2>;
+using cuda_global_thread_x = cuda_global_thread<0>;
+using cuda_global_thread_y = cuda_global_thread<1>;
+using cuda_global_thread_z = cuda_global_thread<2>;
 
 template <typename SEGMENT, int DIM>
-struct LoopExecute<cuda_global_thread_xyz<DIM>, SEGMENT> {
+struct LoopExecute<cuda_global_thread<DIM>, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -117,6 +117,77 @@ struct LoopExecute<cuda_global_thread_xyz<DIM>, SEGMENT> {
         internal::get_cuda_dim<DIM>(blockDim)*internal::get_cuda_dim<DIM>(blockIdx);
 
       if (tx < len) body(*(segment.begin() + tx));
+    }
+  }
+};
+
+using cuda_global_thread_xy = cuda_global_thread<0,1>;
+using cuda_global_thread_xz = cuda_global_thread<0,2>;
+using cuda_global_thread_yx = cuda_global_thread<1,0>;
+using cuda_global_thread_yz = cuda_global_thread<1,2>;
+using cuda_global_thread_zx = cuda_global_thread<2,0>;
+using cuda_global_thread_zy = cuda_global_thread<2,1>;
+
+template <typename SEGMENT, int DIM0, int DIM1>
+struct LoopExecute<cuda_global_thread<DIM0, DIM1>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      BODY const &body)
+  {
+    const int len1 = segment1.end() - segment1.begin();
+    const int len0 = segment0.end() - segment0.begin();
+    {
+      const int tx = internal::get_cuda_dim<DIM0>(threadIdx) +
+        internal::get_cuda_dim<DIM0>(blockDim)*internal::get_cuda_dim<DIM0>(blockIdx);
+
+      const int ty = internal::get_cuda_dim<DIM1>(threadIdx) +
+        internal::get_cuda_dim<DIM1>(blockDim)*internal::get_cuda_dim<DIM1>(blockIdx);
+
+      if (tx < len0 && ty < len1)
+        body(*(segment0.begin() + tx), *(segment1.begin() + ty));
+    }
+  }
+};
+
+using cuda_global_thread_xyz = cuda_global_thread<0,1,2>;
+using cuda_global_thread_xzy = cuda_global_thread<0,2,1>;
+using cuda_global_thread_yxz = cuda_global_thread<1,0,2>;
+using cuda_global_thread_yzx = cuda_global_thread<1,2,0>;
+using cuda_global_thread_zxy = cuda_global_thread<2,0,1>;
+using cuda_global_thread_zyx = cuda_global_thread<2,1,0>;
+
+template <typename SEGMENT, int DIM0, int DIM1, int DIM2>
+struct LoopExecute<cuda_global_thread<DIM0, DIM1, DIM2>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      SEGMENT const &segment2,
+      BODY const &body)
+  {
+    const int len2 = segment2.end() - segment2.begin();
+    const int len1 = segment1.end() - segment1.begin();
+    const int len0 = segment0.end() - segment0.begin();
+    {
+      const int tx = internal::get_cuda_dim<DIM0>(threadIdx) +
+        internal::get_cuda_dim<DIM0>(blockDim)*internal::get_cuda_dim<DIM0>(blockIdx);
+
+      const int ty = internal::get_cuda_dim<DIM1>(threadIdx) +
+        internal::get_cuda_dim<DIM1>(blockDim)*internal::get_cuda_dim<DIM1>(blockIdx);
+
+      const int tz = internal::get_cuda_dim<DIM2>(threadIdx) +
+        internal::get_cuda_dim<DIM2>(blockDim)*internal::get_cuda_dim<DIM2>(blockIdx);
+
+      if (tx < len0 && ty < len1 && tz < len2)
+        body(*(segment0.begin() + tx),
+             *(segment1.begin() + ty),
+             *(segment1.begin() + ty));
     }
   }
 };

@@ -1,3 +1,4 @@
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
@@ -15,7 +16,7 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Matrix Multiplication Example
+ *  Matrix Multiplication Examples using RAJA Teams
  *
  *  Example computes the product of two square matrices and introduces
  *  RAJA nested loop capabilities via a sequence of implementations.
@@ -56,94 +57,69 @@ using launch_policy = RAJA::expt::LaunchPolicy<
 #endif
     >;
 
+
+using loop_policy = RAJA::loop_exec;
+
+#if defined(RAJA_ENABLE_CUDA)
+using gpu_block_x_policy = RAJA::cuda_block_x_direct;
+using gpu_block_y_policy = RAJA::cuda_block_y_direct;
+using gpu_thread_x_policy = RAJA::cuda_thread_x_loop;
+using gpu_thread_y_policy = RAJA::cuda_thread_y_loop;
+using gpu_global_thread_x_policy = RAJA::expt::cuda_global_thread_x;
+using gpu_global_thread_y_policy = RAJA::expt::cuda_global_thread_y;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+using gpu_block_x_policy = RAJA::hip_block_x_direct;
+using gpu_block_y_policy = RAJA::hip_block_y_direct;
+using gpu_thread_x_policy = RAJA::hip_thread_x_loop;
+using gpu_thread_y_policy = RAJA::hip_thread_y_loop;
+using gpu_global_thread_x_policy = RAJA::expt::hip_global_thread_x;
+using gpu_global_thread_y_policy = RAJA::expt::hip_global_thread_y;
+#endif
+
 /*
   Define RAJA Team policies
 */
-using teams_x = RAJA::expt::LoopPolicy<
-#if defined(RAJA_ENABLE_OPENMP)
-                                      RAJA::omp_parallel_for_exec
-#else
-                                       RAJA::loop_exec
-#endif
-#if defined(RAJA_ENABLE_CUDA)
+using teams_x = RAJA::expt::LoopPolicy<loop_policy
+#if defined(RAJA_DEVICE_ACTIVE)        
                                        ,
-                                       RAJA::cuda_block_x_direct
-#endif
-#if defined(RAJA_ENABLE_HIP)
-                                       ,
-                                       RAJA::hip_block_x_direct
+                                       gpu_block_x_policy
 #endif
                                        >;
 
-using teams_y = RAJA::expt::LoopPolicy<
-#if defined(RAJA_ENABLE_OPENMP)
-                                      RAJA::omp_parallel_for_exec
-#else
-                                       RAJA::loop_exec
-#endif
-#if defined(RAJA_ENABLE_CUDA)
+using teams_y = RAJA::expt::LoopPolicy<loop_policy
+#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
-                                       RAJA::cuda_block_y_direct
-#endif
-#if defined(RAJA_ENABLE_HIP)
-                                       ,
-                                       RAJA::hip_block_y_direct
+                                       gpu_block_y_policy
 #endif
                                        >;
 
-using threads_x = RAJA::expt::LoopPolicy<
-#if defined(RAJA_ENABLE_OPENMP)
-                                      RAJA::omp_parallel_for_exec
-#else
-                                       RAJA::loop_exec
-#endif
-#if defined(RAJA_ENABLE_CUDA)
+using threads_x = RAJA::expt::LoopPolicy<loop_policy
+#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
-                                       RAJA::cuda_thread_x_loop
-#endif
-#if defined(RAJA_ENABLE_HIP)
-                                       ,
-                                       RAJA::hip_block_x_loop
+                                       gpu_thread_x_policy
 #endif
                                        >;
 
-using threads_y = RAJA::expt::LoopPolicy<
-#if defined(RAJA_ENABLE_OPENMP)
-                                      RAJA::omp_parallel_for_exec
-#else
-                                       RAJA::loop_exec
-#endif
-#if defined(RAJA_ENABLE_CUDA)
+using threads_y = RAJA::expt::LoopPolicy<loop_policy
+#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
-                                       RAJA::cuda_thread_y_loop
-#endif
-#if defined(RAJA_ENABLE_HIP)
-                                       ,
-                                       RAJA::hip_block_y_loop
+                                       gpu_thread_y_policy
 #endif
                                        >;
 
-using global_thread_x = RAJA::expt::LoopPolicy<
-                                       RAJA::loop_exec
-#if defined(RAJA_ENABLE_CUDA)
+using global_thread_x = RAJA::expt::LoopPolicy<loop_policy
+#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
-                                       RAJA::expt::cuda_global_thread_x
-#endif
-#if defined(RAJA_ENABLE_HIP)
-                                       ,
-                                       RAJA::expt::hip_global_thread_x
+                                       gpu_global_thread_x_policy
 #endif
                                        >;
 
-using global_thread_y = RAJA::expt::LoopPolicy<
-                                       RAJA::loop_exec
-#if defined(RAJA_ENABLE_CUDA)
+using global_thread_y = RAJA::expt::LoopPolicy<loop_policy
+#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
-                                       RAJA::expt::cuda_global_thread_y
-#endif
-#if defined(RAJA_ENABLE_HIP)
-                                       ,
-                                       RAJA::expt::hip_global_thread_y
+                                       gpu_global_thread_y_policy
 #endif
                                        >;
 
@@ -209,8 +185,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Define num rows/cols in matrix
 //
   const int N = 1000;
-  const int NTeams = (N-1)/GPU_TB_SZ + 1;
-
+  const int NTeams = (N - 1)/GPU_TB_SZ + 1;
 //const int N = GPU_TB_SZ * GPU_TB_SZ;
 
 //
@@ -420,63 +395,34 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
-  // _matmult_ompkernel_start
-  using EXEC_POL1 =
-    RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::omp_parallel_for_exec,  // row
-        RAJA::statement::For<0, RAJA::loop_exec,            // col
-          RAJA::statement::Lambda<0>
-        >
-      >
+  using omp_col_policy0 = RAJA::expt::LoopPolicy<RAJA::omp_parallel_for_exec
+#if defined(RAJA_DEVICE_ACTIVE)
+                                                 ,gpu_global_thread_y_policy
+#endif                                                 
     >;
-  // _matmult_ompkernel_end
 
-  RAJA::kernel<EXEC_POL1>(RAJA::make_tuple(col_range, row_range),
-    [=](int col, int row) {
-
-    double dot = 0.0;
-    for (int k = 0; k < N; ++k) {
-      dot += Aview(row, k) * Bview(k, col);
-    }
-    Cview(row, col) = dot;
-
-  });
-
-  checkResult<double>(Cview, N);
-//printResult<double>(Cview, N);
-
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n Running OpenMP mat-mult (RAJA-nested - omp inner)...\n";
-
-  std::memset(C, 0, N*N * sizeof(double));
-
-  //
-  // Swapping the template arguments in this nested policy swaps the loop
-  // nest ordering so the col loop is on the outside and the row loop is
-  // nested within it. The execution policies on each loop remain the same
-  // as the previous implementation; i.e., col (outer) iterations run
-  // sequentially, while row (inner) iterations execute in parallel.
-  //
-  // _matmult_ompkernel_swap_start
-  using EXEC_POL2 =
-    RAJA::KernelPolicy<
-      RAJA::statement::For<0, RAJA::loop_exec,                  // col
-        RAJA::statement::For<1, RAJA::omp_parallel_for_exec,    // row
-          RAJA::statement::Lambda<0>
-        >
-      >
+  using omp_row_policy0 = RAJA::expt::LoopPolicy<loop_policy
+#if defined(RAJA_DEVICE_ACTIVE)
+                                                 ,gpu_global_thread_x_policy
+#endif                                                 
     >;
-  // _matmult_ompkernel_swap_end
+                                                 
 
-  RAJA::kernel<EXEC_POL2>( RAJA::make_tuple(col_range, row_range),
-    [=](int col, int row) {
+  RAJA::expt::launch<launch_policy>(RAJA::expt::HOST,
+   RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
+                         RAJA::expt::Threads(GPU_TB_SZ,GPU_TB_SZ)),
+       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-    double dot = 0.0;
-    for (int k = 0; k < N; ++k) {
-      dot += Aview(row, k) * Bview(k, col);
-    }
-    Cview(row, col) = dot;
+   RAJA::expt::loop<omp_col_policy0>(ctx, col_range, [&] (int col) {
+       RAJA::expt::loop<omp_row_policy0>(ctx, row_range, [&] (int row) {
+
+          double dot = 0.0;
+          for (int k = 0; k < N; ++k) {
+            dot += Aview(row, k) * Bview(k, col);
+          }
+          Cview(row, col) = dot;
+      });
+    });
 
   });
 
@@ -494,24 +440,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This is the same as using an OpenMP 'parallel for' directive on the
   // outer loop with a 'collapse(2) clause.
   //
-  using EXEC_POL3 =
-    RAJA::KernelPolicy<
-      RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                                RAJA::ArgList<1, 0>,   // row, col
-        RAJA::statement::Lambda<0>
-      >
-    >;
+  using global_thread_xy = RAJA::expt::LoopPolicy<RAJA::expt::omp_parallel_nested_for_exec,
+                                                  RAJA::expt::cuda_global_thread_xy>;
 
-  RAJA::kernel<EXEC_POL3>(RAJA::make_tuple(col_range, row_range),
-    [=](int col, int row) {
+   RAJA::expt::launch<launch_policy>(RAJA::expt::HOST,
+    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
+                          RAJA::expt::Threads(GPU_TB_SZ,GPU_TB_SZ)),
+   [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-    double dot = 0.0;
-    for (int k = 0; k < N; ++k) {
-      dot += Aview(row, k) * Bview(k, col);
-    }
-    Cview(row, col) = dot;
+     RAJA::expt::loop<global_thread_xy>(ctx, col_range, row_range, [&] (int col, int row) {
 
-  });
+           double dot = 0.0;
+           for (int k = 0; k < N; ++k) {
+             dot += Aview(row, k) * Bview(k, col);
+           }
+           Cview(row, col) = dot;
+
+     });
+
+   });
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 #endif // if RAJA_ENABLE_OPENMP
@@ -535,27 +482,23 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // and col = threadIdx.x in the kernel.
   //
   //
-  using EXEC_POL4 =
-    RAJA::KernelPolicy<
-      RAJA::statement::CudaKernel<
-        RAJA::statement::For<1, RAJA::cuda_block_x_loop,
-          RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
-            RAJA::statement::Lambda<0>
-          >
-        >
-      >
-    >;
+   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
+    RAJA::expt::Resources(RAJA::expt::Teams(N),
+                          RAJA::expt::Threads(N)),
+        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-  RAJA::kernel<EXEC_POL4>(RAJA::make_tuple(col_range, row_range),
-    [=] RAJA_DEVICE (int col, int row) {
+    RAJA::expt::loop<teams_x>(ctx, col_range, [&] (int col) {
+        RAJA::expt::loop<threads_x>(ctx, row_range, [&] (int row) {
 
-    double dot = 0.0;
-    for (int k = 0; k < N; ++k) {
-      dot += Aview(row, k) * Bview(k, col);
-    }
-    Cview(row, col) = dot;
+           double dot = 0.0;
+           for (int k = 0; k < N; ++k) {
+             dot += Aview(row, k) * Bview(k, col);
+           }
+           Cview(row, col) = dot;
+       });
+     });
 
-  });
+   });
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -575,31 +518,32 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // the CUDA grid and thread dimension kernel launch parameters will be the
   // same as in this kernel and the one above.
   //
-  using EXEC_POL5 =
-    RAJA::KernelPolicy<
-      RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::tile_fixed<GPU_TB_SZ>, RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::tile_fixed<GPU_TB_SZ>, RAJA::cuda_block_x_loop,
-            RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
-              RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
-                RAJA::statement::Lambda<0>
-              >
-            >
-          >
-        >
-      >
-    >;
+   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
+    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
+                          RAJA::expt::Threads(GPU_TB_SZ,GPU_TB_SZ)),
+        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-  RAJA::kernel<EXEC_POL5>(RAJA::make_tuple(col_range, row_range),
-    [=] RAJA_DEVICE (int col, int row) {
+        RAJA::expt::tile<teams_y>
+          (ctx, GPU_TB_SZ, row_range, [&] (RAJA::RangeSegment const &row_tile) {
+            RAJA::expt::tile<teams_x>
+              (ctx, GPU_TB_SZ, col_range, [&] (RAJA::RangeSegment const &col_tile) {
 
-    double dot = 0.0;
-    for (int k = 0; k < N; ++k) {
-      dot += Aview(row, k) * Bview(k, col);
-    }
-    Cview(row, col) = dot;
+                RAJA::expt::loop<threads_y>(ctx, row_tile, [&] (int col) {
+                    RAJA::expt::loop<threads_x>(ctx, col_tile, [&] (int row) {
 
-  });
+                        double dot = 0.0;
+                        for (int k = 0; k < N; ++k) {
+                          dot += Aview(row, k) * Bview(k, col);
+                        }
+                        Cview(row, col) = dot;
+
+                      });
+                 });
+
+            });
+       });
+
+   });
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -635,28 +579,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // and blocksize N; i.e., kernel<<<N, N>>> and defining row = blockIdx.x
   // and col = threadIdx.x in the kernel.
   //
-  using EXEC_POL4 =
-    RAJA::KernelPolicy<
-      RAJA::statement::HipKernel<
-        RAJA::statement::For<1, RAJA::hip_block_x_loop,
-          RAJA::statement::For<0, RAJA::hip_thread_x_loop,
-            RAJA::statement::Lambda<0>
-          >
-        >
-      >
-    >;
+   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
+    RAJA::expt::Resources(RAJA::expt::Teams(N),
+                          RAJA::expt::Threads(N)),
+        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-  RAJA::kernel<EXEC_POL4>(RAJA::make_tuple(col_range, row_range),
-    [=] RAJA_DEVICE (int col, int row) {
+     RAJA::expt::loop<teams_x>(ctx, col_range, [&] (int col) {
+       RAJA::expt::loop<threads_x>(ctx, row_range, [&] (int row) {
 
-    double dot = 0.0;
-    for (int k = 0; k < N; ++k) {
-      dot += d_Aview(row, k) * d_Bview(k, col);
-    }
+            double dot = 0.0;
+            for (int k = 0; k < N; ++k) {
+              dot += d_Aview(row, k) * d_Bview(k, col);
+            }
 
-    d_Cview(row, col) = dot;
+            d_Cview(row, col) = dot;
 
+        });
+     });
   });
+
   hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
@@ -672,375 +613,122 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // This policy collapses the col and row loops into a single HIP kernel
   // using two-dimensional HIP thread blocks with x and y dimensions defined
-  // by GPU_TB_SZ arguments.
+  // by HIP_BLOCK_SIZE arguments.
   //
-  // When the matrix dimension N is an integer multiple of GPU_TB_SZ,
+  // When the matrix dimension N is an integer multiple of HIP_BLOCK_SIZE,
   // the HIP grid and thread dimension kernel launch parameters will be the
   // same as in this kernel and the one above.
   //
-  using EXEC_POL5 =
-    RAJA::KernelPolicy<
-      RAJA::statement::HipKernel<
-        RAJA::statement::Tile<1, RAJA::tile_fixed<GPU_TB_SZ>,
-                                 RAJA::hip_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::tile_fixed<GPU_TB_SZ>,
-                                   RAJA::hip_block_x_loop,
-            RAJA::statement::For<1, RAJA::hip_thread_y_loop,
-              RAJA::statement::For<0, RAJA::hip_thread_x_loop,
-                RAJA::statement::Lambda<0>
-              >
-            >
-          >
-        >
-      >
-    >;
+  RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
+    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
+                          RAJA::expt::Threads(GPU_TB_SZ,GPU_TB_SZ)),
+        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-  RAJA::kernel<EXEC_POL5>(RAJA::make_tuple(col_range, row_range),
-    [=] RAJA_DEVICE (int col, int row) {
+        RAJA::expt::tile<teams_y>
+          (ctx, GPU_TB_SZ, row_range, [&] (RAJA::RangeSegment const &x_tile) {
+            RAJA::expt::tile<teams_x>
+              (ctx, GPU_TB_SZ, col_range, [&] (RAJA::RangeSegment const &y_tile) {
 
-    double dot = 0.0;
-    for (int k = 0; k < N; ++k) {
-      dot += d_Aview(row, k) * d_Bview(k, col);
-    }
+                RAJA::expt::loop<threads_y>(ctx, y_tile, [&] (int col) {
+                    RAJA::expt::loop<threads_x>(ctx, x_tile, [&] (int row) {
 
-    d_Cview(row, col) = dot;
+                        double dot = 0.0;
+                        for (int k = 0; k < N; ++k) {
+                          dot += d_Aview(row, k) * d_Bview(k, col);
+                        }
 
-  });
+                        d_Cview(row, col) = dot;
+                      });
+                 });
+
+            });
+       });
+
+   });
   hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 #endif // if RAJA_ENABLE_HIP
 
-//----------------------------------------------------------------------------//
-
-//
-// The following examples use execution policies to express the outer row and
-// col loops as well as the inner dot product loop using the RAJA kernel
-// interface. They show some more complex policy examples and use additional
-// kernel features.
-//
-
-  std::cout << "\n Running sequential mat-mult with multiple lambdas (RAJA-POL6a)...\n";
-
-  std::memset(C, 0, N*N * sizeof(double));
-
-  //
-  // This policy executes the col, row and k (inner dot product) loops
-  // sequentially using a triply-nested loop execution policy and three
-  // lambda expressions that
-  //    -- initialize the dot product variable,
-  //    -- define the 'k' inner loop row-col dot product body, and
-  //    -- store the computed row-col dot product in the proper location
-  //       in the result matrix.
-  //
-  // Note that we also pass the scalar dot product variable into each lambda
-  // via a single value tuple parameter. This enables the same variable to be
-  // by all three lambdas.
-  //
-  // _matmult_3lambdakernel_seq_start
-  using EXEC_POL6a =
-    RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::loop_exec,
-        RAJA::statement::For<0, RAJA::loop_exec,
-          RAJA::statement::Lambda<0, RAJA::Params<0>>,  // dot = 0.0
-          RAJA::statement::For<2, RAJA::loop_exec,
-            RAJA::statement::Lambda<1> // inner loop: dot += ...
-          >,
-          RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C(row, col) = dot
-        >
-      >
-    >;
-
-  RAJA::kernel_param<EXEC_POL6a>(
-    RAJA::make_tuple(col_range, row_range, dot_range),
-
-    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
-
-    // lambda 0
-    [=] (double& dot) {
-       dot = 0.0;
-    },
-
-    // lambda 1
-    [=] (int col, int row, int k, double& dot) {
-       dot += Aview(row, k) * Bview(k, col);
-    },
-
-    // lambda 2
-    [=] (int col, int row, double& dot) {
-       Cview(row, col) = dot;
-    }
-
-  );
-  // _matmult_3lambdakernel_seq_end
-
-  checkResult<double>(Cview, N);
-  //printResult<double>(Cview, N);
-
-//----------------------------------------------------------------------------//
-
-  std::memset(C, 0, N*N * sizeof(double));
-
-//
-// The following examples uses an extension of the lambda statement
-// to specify lambda arguments. By specifying arguments within statements
-// we remove the requirement that lambdas require all of the tuple contents.
-//
-
-  std::cout << "\n Running sequential mat-mult with multiple lambdas - lambda args in statements (RAJA-POL6b)...\n";
-
-  // _matmult_3lambdakernel_args_seq_start
-  // Alias for convenience
-  using RAJA::Segs;
-  using RAJA::Params;
-
-  using EXEC_POL6b =
-    RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::loop_exec,
-        RAJA::statement::For<0, RAJA::loop_exec,
-          RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
-          RAJA::statement::For<2, RAJA::loop_exec,
-            RAJA::statement::Lambda<1, Segs<0,1,2>, Params<0>> // dot += ...
-          >,
-          RAJA::statement::Lambda<2, Segs<0,1>, Params<0>>  // C(row, col) = dot
-        >
-      >
-    >;
-
-  RAJA::kernel_param<EXEC_POL6b>(
-    RAJA::make_tuple(col_range, row_range, dot_range),
-
-    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
-
-    // lambda 0
-    [=] (double& dot) {
-       dot = 0.0;
-    },
-
-    // lambda 1
-    [=] (int col, int row, int k, double& dot) {
-       dot += Aview(row, k) * Bview(k, col);
-    },
-
-    // lambda 2
-    [=] (int col, int row, double& dot) {
-       Cview(row, col) = dot;
-    }
-
-  );
-  // _matmult_3lambdakernel_args_seq_end
-
-  checkResult<double>(Cview, N);
-  //printResult<double>(Cview, N);
-
-//----------------------------------------------------------------------------//
-
-#if defined(RAJA_ENABLE_OPENMP)
-
-  std::cout << "\n Running OpenMP mat-mult with multiple lambdas and loop collapse (RAJA-POL7)...\n";
-
-  std::memset(C, 0, N*N * sizeof(double));
-
-  // _matmult_3lambdakernel_ompcollapse_start
-  using EXEC_POL7 =
-    RAJA::KernelPolicy<
-      RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                                RAJA::ArgList<1, 0>,   // row, col
-        RAJA::statement::Lambda<0, RAJA::Params<0>>,  // dot = 0.0
-        RAJA::statement::For<2, RAJA::loop_exec,
-          RAJA::statement::Lambda<1> // inner loop: dot += ...
-        >,
-        RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C(row, col) = dot
-      >
-    >;
-  // _matmult_3lambdakernel_ompcollapse_end
-
-  RAJA::kernel_param<EXEC_POL7>(
-    RAJA::make_tuple(col_range, row_range, dot_range),
-
-    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
-
-    // lambda 0
-    [=] (double& dot) {
-       dot = 0.0;
-    },
-
-    // lambda 1
-    [=] (int col, int row, int k, double& dot) {
-       dot += Aview(row, k) * Bview(k, col);
-    },
-
-    // lambda 2
-    [=] (int col, int row, double& dot) {
-       Cview(row, col) = dot;
-    }
-
-  );
-
-  checkResult<double>(Cview, N);
-//printResult<double>(Cview, N);
-#endif // if RAJA_ENABLE_OPENMP
-
-//----------------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------//  
 #if defined(RAJA_ENABLE_CUDA)
 
-  std::cout << "\n Running CUDA mat-mult with multiple lambdas (RAJA-POL8)...\n";
+  std::cout << "\n Running CUDA tiled mat-mult with shared memory ...\n";
 
   std::memset(C, 0, N*N * sizeof(double));
 
-  // _matmult_3lambdakernel_cuda_start
-  using EXEC_POL8 =
-    RAJA::KernelPolicy<
-      RAJA::statement::CudaKernel<
-        RAJA::statement::For<1, RAJA::cuda_block_x_loop,    // row
-          RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
-            RAJA::statement::Lambda<0, RAJA::Params<0>>,    // dot = 0.0
-            RAJA::statement::For<2, RAJA::seq_exec,
-                RAJA::statement::Lambda<1>                  // dot += ...
-            >,
-            RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C = ...
-          >
-        >
-      >
-    >;
-  // _matmult_3lambdakernel_cuda_end
+  using seq_loop =  RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
 
-  RAJA::kernel_param<EXEC_POL8>(
-    RAJA::make_tuple(col_range, row_range, dot_range),
+  RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
+    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
+                          RAJA::expt::Threads(GPU_TB_SZ,GPU_TB_SZ)),
+     [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+   //
+   // Loop over teams
+   //
+   RAJA::expt::tile<teams_y>
+     (ctx, GPU_TB_SZ, row_range, [&] (RAJA::RangeSegment const &y_tile) {
+     RAJA::expt::tile<teams_x>
+       (ctx, GPU_TB_SZ, col_range, [&] (RAJA::RangeSegment const &x_tile) {
+         
+         RAJA_TEAM_SHARED double As[GPU_TB_SZ][GPU_TB_SZ];
+         RAJA_TEAM_SHARED double Bs[GPU_TB_SZ][GPU_TB_SZ];
+         RAJA_TEAM_SHARED double Cs[GPU_TB_SZ][GPU_TB_SZ];
+             
+         // Team parallel loop
+         RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
+             RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {                
+                 As[ty][tx] = 0.0;
+                 Bs[ty][tx] = 0.0;
+                 Cs[ty][tx] = 0.0;
+               });
+           });
 
-    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
+         // Slide across matrix
+         RAJA::expt::tile_icount<seq_loop>
+           (ctx, GPU_TB_SZ, dot_range, [&] (RAJA::RangeSegment const &k_tile, int m) {
 
-    // lambda 0
-    [=] RAJA_DEVICE (double& dot) {
-       dot = 0.0;
-    },
+           RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
+               RAJA::expt::loop_icount<threads_x>(ctx, k_tile, [&](int k_id, int tx) {
+                   As[ty][tx] = A[row * N + k_id];
+                 });
+             });
+           
+           RAJA::expt::loop_icount<threads_y>(ctx, k_tile, [&](int k_id, int ty) {
+               RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
 
-    // lambda 1
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
-       dot += Aview(row, k) * Bview(k, col);
-    },
+                   Bs[ty][tx] = B[k_id * N + col];
+               });
+             });
 
-    // lambda 2
-    [=] RAJA_DEVICE (int col, int row, double& dot) {
-       Cview(row, col) = dot;
-    }
+           ctx.teamSync();
+           
+           RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
+               RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
+                   
+                   RAJA::expt::loop_icount<seq_loop>(ctx, k_tile, [&] (int gid, int e) {
+                       Cs[ty][tx] += As[ty][e] * Bs[e][tx];
+                     });
 
-  );
+                 });
+             });
+           ctx.teamSync();
 
-  checkResult<double>(Cview, N);
-//printResult<double>(Cview, N);
-
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n Running CUDA mat-mult with multiple lambdas (RAJA-POL9a)...\n";
-
-  std::memset(C, 0, N*N * sizeof(double));
-
-  // _matmult_3lambdakernel_cudatiled_start
-  using EXEC_POL9a =
-    RAJA::KernelPolicy<
-      RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::tile_fixed<GPU_TB_SZ>,
-                                 RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::tile_fixed<GPU_TB_SZ>,
-                                   RAJA::cuda_block_x_loop,
-            RAJA::statement::For<1, RAJA::cuda_thread_y_loop,   // row
-              RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
-                RAJA::statement::Lambda<0, RAJA::Params<0>>,    // dot = 0.0
-                RAJA::statement::For<2, RAJA::seq_exec,
-                    RAJA::statement::Lambda<1>                 // dot += ...
-                >,
-                RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C = ...
-              >
-            >
-          >
-        >
-      >
-    >;
-  // _matmult_3lambdakernel_cudatiled_end
-
-  RAJA::kernel_param<EXEC_POL9a>(
-    RAJA::make_tuple(col_range, row_range, dot_range),
-
-    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
-
-    // lambda 0
-    [=] RAJA_DEVICE (double& dot) {
-       dot = 0.0;
-    },
-
-    // lambda 1
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
-       dot += Aview(row, k) * Bview(k, col);
-    },
-
-    // lambda 2
-    [=] RAJA_DEVICE (int col, int row,  double& dot) {
-       Cview(row, col) = dot;
-    }
-
-  );
+         });  // slide across matrix
+         
+          RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
+               RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {         
+                   C[col + N * row] = Cs[ty][tx];
+               });
+           });
+       });
+     });
+  });  // kernel
 
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
-
+#endif
 //----------------------------------------------------------------------------//
-
-  std::cout << "\n Running CUDA mat-mult with multiple lambdas - lambda args in statements (RAJA-POL9b)...\n";
-
-  std::memset(C, 0, N*N * sizeof(double));
-
-  using EXEC_POL9b =
-    RAJA::KernelPolicy<
-      RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::tile_fixed<GPU_TB_SZ>,
-                                 RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::tile_fixed<GPU_TB_SZ>,
-                                   RAJA::cuda_block_x_loop,
-            RAJA::statement::For<1, RAJA::cuda_thread_y_loop, // row
-              RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
-                RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
-                RAJA::statement::For<2, RAJA::seq_exec,
-                  RAJA::statement::Lambda<1, Segs<0,1,2>, Params<0>> // dot += ...
-                >,
-                  RAJA::statement::Lambda<2, Segs<0,1>, Params<0>>   // set C = ...
-              >
-            >
-          >
-        >
-      >
-    >;
-
-  RAJA::kernel_param<EXEC_POL9b>(
-    RAJA::make_tuple(col_range, row_range, dot_range),
-
-    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
-
-    // lambda 0
-    [=] RAJA_DEVICE (double& dot) {
-       dot = 0.0;
-    },
-
-    // lambda 1
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
-       dot += Aview(row, k) * Bview(k, col);
-    },
-
-    // lambda 2
-    [=] RAJA_DEVICE (int col, int row, double& dot) {
-       Cview(row, col) = dot;
-    }
-
-  );
-
-  checkResult<double>(Cview, N);
-//printResult<double>(Cview, N);
-#endif // if RAJA_ENABLE_CUDA
-
-//----------------------------------------------------------------------------//
-//----------------------------------------------------------------------------//
-
 #if defined(RAJA_ENABLE_CUDA)
 
   std::cout << "\n Running CUDA tiled mat-mult (no RAJA)...\n";
@@ -1069,121 +757,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_HIP)
 
-  std::cout << "\n Running HIP mat-mult with multiple lambdas (RAJA-POL8)...\n";
-
-  std::memset(C, 0, N*N * sizeof(double));
-  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
-
-  // _matmult_3lambdakernel_hip_start
-  using EXEC_POL8 =
-    RAJA::KernelPolicy<
-      RAJA::statement::HipKernel<
-        RAJA::statement::For<1, RAJA::hip_block_x_loop,    // row
-          RAJA::statement::For<0, RAJA::hip_thread_x_loop, // col
-            RAJA::statement::Lambda<0, RAJA::Params<0>>,   // dot = 0.0
-            RAJA::statement::For<2, RAJA::seq_exec,
-                RAJA::statement::Lambda<1>                 // dot += ...
-            >,
-            RAJA::statement::Lambda<2,
-              RAJA::Segs<0,1>, RAJA::Params<0>>            // set C = ...
-          >
-        >
-      >
-    >;
-  // _matmult_3lambdakernel_hip_end
-
-  RAJA::kernel_param<EXEC_POL8>(
-    RAJA::make_tuple(col_range, row_range, dot_range),
-
-    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
-
-    // lambda 0
-    [=] RAJA_DEVICE (double& dot) {
-       dot = 0.0;
-    },
-
-    // lambda 1
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
-       dot += d_Aview(row, k) * d_Bview(k, col);
-    },
-
-    // lambda 2
-    [=] RAJA_DEVICE (int col, int row, double& dot) {
-       d_Cview(row, col) = dot;
-    }
-
-  );
-
-  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
-  checkResult<double>(Cview, N);
-//printResult<double>(Cview, N);
-
-
-  //----------------------------------------------------------------------------//
-
-  std::cout << "\n Running HIP mat-mult with multiple lambdas - lambda args in statements (RAJA-POL9)...\n";
-
-  std::memset(C, 0, N*N * sizeof(double));
-  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
-
-  // _matmult_3lambdakernel_hiptiled_start
-  using EXEC_POL9b =
-    RAJA::KernelPolicy<
-      RAJA::statement::HipKernel<
-        RAJA::statement::Tile<1, RAJA::tile_fixed<GPU_TB_SZ>,
-                                 RAJA::hip_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::tile_fixed<GPU_TB_SZ>,
-                                   RAJA::hip_block_x_loop,
-            RAJA::statement::For<1, RAJA::hip_thread_y_loop,    // row
-              RAJA::statement::For<0, RAJA::hip_thread_x_loop,  // col
-                RAJA::statement::Lambda<0, Params<0>>,          // dot = 0.0
-                RAJA::statement::For<2, RAJA::seq_exec,
-                  RAJA::statement::Lambda<1, Segs<0,1,2>, Params<0>> // dot += ...
-                >,
-                  RAJA::statement::Lambda<2, Segs<0,1>, Params<0>>   // set C = ...
-              >
-            >
-          >
-        >
-      >
-    >;
- // _matmult_3lambdakernel_hiptiled_end
-
-  RAJA::kernel_param<EXEC_POL9b>(
-    RAJA::make_tuple(col_range, row_range, dot_range),
-
-    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
-
-    // lambda 0
-    [=] RAJA_DEVICE (double& dot) {
-       dot = 0.0;
-    },
-
-    // lambda 1
-    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
-       dot += d_Aview(row, k) * d_Bview(k, col);
-    },
-
-    // lambda 2
-    [=] RAJA_DEVICE (int col, int row, double& dot) {
-       d_Cview(row, col) = dot;
-    }
-
-  );
-
-  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
-  checkResult<double>(Cview, N);
-//printResult<double>(Cview, N);
-
-//----------------------------------------------------------------------------//
-
   std::cout << "\n Running HIP tiled mat-mult (no RAJA)...\n";
 
   std::memset(C, 0, N*N * sizeof(double));
   hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
 
   // Define thread block dimensions
-  dim3 blockdim(GPU_TB_SZ, GPU_TB_SZ);
+  dim3 blockdim(HIP_BLOCK_SIZE, HIP_BLOCK_SIZE);
   // Define grid dimensions to match the RAJA version above
   dim3 griddim(RAJA_DIVIDE_CEILING_INT(N,blockdim.x),
                RAJA_DIVIDE_CEILING_INT(N,blockdim.y));
