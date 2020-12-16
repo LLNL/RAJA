@@ -104,7 +104,11 @@ RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl 
   Iterator end = std::end(iter);
   IndexType len = std::distance(begin, end);
 
-std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+//  std::cout << "loop_body ptr: " << &loop_body << std::endl;
+//  using return_type = typename std::remove_reference<LOOP_BODY>::type;
+//  auto func = loop_body;
+
+//std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 
   // Only launch kernel if we have something to iterate over
   if (len > 0 && BlockSize > 0) {
@@ -116,7 +120,11 @@ std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
     sycl_dim_t gridSize = impl::getGridDim(static_cast<size_t>(len), BlockSize);
 
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
-    std::cout << "RAJA launch qu ptr = " << q << std::endl;
+  //  cl::sycl::device D = q->get_device();
+    //cl::sycl::context C = q->get_context();
+//    cl::sycl::program P(C);
+//    auto FptrStorage = cl::sycl::ONEAPI::get_device_func_ptr(&loop_body, "", P, D);
+//    std::cout << "RAJA launch qu ptr = " << q << std::endl;
 
     q->submit([&](cl::sycl::handler& h) {
 
@@ -124,7 +132,7 @@ std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
                       [=]  (cl::sycl::nd_item<1> it) {
 
         size_t ii = it.get_global_id(0);
-
+//        auto Fptr = cl::sycl::ONEAPI::to_device_func_ptr<decltype(loop_body)>(FptrStorage);
         if (ii < len) {
           loop_body(begin[ii]);
         }
@@ -133,10 +141,10 @@ std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 
     if (!Async) { q->wait(); }
   }
-std::chrono::steady_clock::time_point stop = std::chrono::steady_clock::now();
+//std::chrono::steady_clock::time_point stop = std::chrono::steady_clock::now();
 
-std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() << "[µs]" << std::endl;
-std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds> (stop - start).count() << "[ns]" << std::endl;
+//std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() << "[µs]" << std::endl;
+//std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds> (stop - start).count() << "[ns]" << std::endl;
 
   return resources::EventProxy<resources::Sycl>(&sycl_res);
 }

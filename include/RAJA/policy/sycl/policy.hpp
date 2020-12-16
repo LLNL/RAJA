@@ -111,7 +111,7 @@ using sycl_group_1_loop = sycl_group_123_loop<0>;
 using sycl_group_2_loop = sycl_group_123_loop<1>;
 using sycl_group_3_loop = sycl_group_123_loop<2>;
 
-/*!
+*//*!
  * Maps segment indices to SYCL threads.
  * This is the lowest overhead mapping, but requires that there are enough
  * physical threads to fit all of the direct map requests.
@@ -125,7 +125,7 @@ using sycl_local_1_loop = sycl_local_123_loop<0>;
 using sycl_local_2_loop = sycl_local_123_loop<1>;
 using sycl_local_3_loop = sycl_local_123_loop<2>;
 
-/*!
+*//*!
  * Maps segment indices to SYCL threads.
  * This is the lowest overhead mapping, but requires that there are enough
  * physical threads to fit all of the direct map requests.
@@ -139,7 +139,7 @@ using sycl_group_1_direct = sycl_group_123_direct<0>;
 using sycl_group_2_direct = sycl_group_123_direct<1>;
 using sycl_group_3_direct = sycl_group_123_direct<2>;
 
-/*!
+*//*!
  * Maps segment indices to SYCL threads.
  * This is the lowest overhead mapping, but requires that there are enough
  * physical threads to fit all of the direct map requests.
