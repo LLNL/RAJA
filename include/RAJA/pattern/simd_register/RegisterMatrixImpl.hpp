@@ -49,7 +49,7 @@ namespace internal {
     camp::idx_seq<REG_IDX...>>
   {
       using matrix_type = RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>;
-      using vector_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
+      using vector_type = VectorRegister<REGISTER_POLICY, ELEMENT_TYPE>;
       using result_type = matrix_type;
 
       RAJA_HOST_DEVICE
@@ -142,7 +142,7 @@ namespace internal {
   public
       MatrixMatrixProductHelperExpanded<RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
                                         RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
-                                        camp::make_idx_seq_t<Register<REGISTER_POLICY, ELEMENT_TYPE>::s_num_elem>>
+                                        camp::make_idx_seq_t<VectorRegister<REGISTER_POLICY, ELEMENT_TYPE>::s_num_elem>>
     {};
 
 
@@ -172,7 +172,8 @@ namespace internal {
     public:
       using self_type = RegisterMatrixImpl<REGISTER_POLICY, ELEMENT_TYPE, LAYOUT, camp::idx_seq<REG_IDX...>>;
 
-      using vector_type = Register<REGISTER_POLICY, ELEMENT_TYPE>;
+      //using vector_type = TensorRegister<REGISTER_POLICY, ELEMENT_TYPE, VectorLayout, camp::idx_seq<4>, 0>;
+      using vector_type = VectorRegister<REGISTER_POLICY, ELEMENT_TYPE>;
       using register_policy = REGISTER_POLICY;
       using element_type = ELEMENT_TYPE;
 

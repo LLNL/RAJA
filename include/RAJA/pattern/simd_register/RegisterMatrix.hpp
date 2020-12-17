@@ -18,6 +18,8 @@
 #ifndef RAJA_pattern_simd_register_matrix_HPP
 #define RAJA_pattern_simd_register_matrix_HPP
 
+#include "RAJA/policy/tensor/arch.hpp"
+
 namespace RAJA
 {
 
@@ -55,9 +57,10 @@ namespace RAJA
     class RegisterMatrixImpl;
   }
 
-  template<typename T, typename LAYOUT, typename REGISTER_POLICY = RAJA::policy::register_default>
+  template<typename T, typename LAYOUT, typename REGISTER_POLICY = RAJA::default_register>
   using RegisterMatrix = internal::RegisterMatrixImpl<
-      REGISTER_POLICY, T, LAYOUT, camp::make_idx_seq_t<Register<REGISTER_POLICY, T>::s_num_elem> >;
+      REGISTER_POLICY, T, LAYOUT,
+      camp::make_idx_seq_t<RegisterTraits<REGISTER_POLICY, T>::s_num_elem> >;
 
 
 

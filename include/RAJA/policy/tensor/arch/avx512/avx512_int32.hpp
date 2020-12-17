@@ -17,12 +17,12 @@
 
 #ifdef __AVX512F__
 
-#ifndef RAJA_policy_vector_register_avx512_float_HPP
-#define RAJA_policy_vector_register_avx512_float_HPP
+#ifndef RAJA_policy_vector_register_avx512_int32_HPP
+#define RAJA_policy_vector_register_avx512_int32_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/pattern/simd_register/Register.hpp"
+#include "RAJA/pattern/tensor/TensorRegister.hpp"
 
 // Include SIMD intrinsics header file
 #include <immintrin.h>
@@ -32,15 +32,15 @@
 namespace RAJA
 {
 
-  template<int SKEW>
-  class Register<avx512_register, float, SKEW> :
-    public internal::RegisterBase<Register<avx512_register, float, SKEW>>
+  template<camp::idx_t SKEW>
+  class TensorRegister<avx512_register, int, VectorLayout, camp::idx_seq<16>, SKEW> :
+    public internal::TensorRegisterBase<TensorRegister<avx512_register, int, VectorLayout, camp::idx_seq<16>, SKEW>>
   {
     public:
       using register_policy = avx512_register;
-      using self_type = Register<avx512_register, float, SKEW>;
-      using element_type = float;
-      using register_type = __m512;
+      using self_type = TensorRegister<avx512_register, int, VectorLayout, camp::idx_seq<16>, SKEW>;
+      using element_type = int;
+      using register_type = __m512i;
 
 
     private:
@@ -88,7 +88,7 @@ namespace RAJA
        */
 			// AVX512F
       RAJA_INLINE
-      Register() : m_value(_mm512_setzero_ps()) {
+      TensorRegister() : m_value(_mm512_setzero_epi32()) {
       }
 
       /*!
@@ -96,7 +96,7 @@ namespace RAJA
        */
       RAJA_INLINE
       constexpr
-      explicit Register(register_type const &c) : m_value(c) {}
+      explicit TensorRegister(register_type const &c) : m_value(c) {}
 
 
       /*!
@@ -104,7 +104,7 @@ namespace RAJA
        */
       RAJA_INLINE
       constexpr
-      Register(self_type const &c) : m_value(c.m_value) {}
+      TensorRegister(self_type const &c) : m_value(c.m_value) {}
 
       /*!
        * @brief Copy assignment constructor
@@ -121,7 +121,7 @@ namespace RAJA
        */
 			// AVX512F
       RAJA_INLINE
-      Register(element_type const &c) : m_value(_mm512_set1_ps(c)) {}
+      TensorRegister(element_type const &c) : m_value(_mm512_set1_epi32(c)) {}
 
 
       /*!
@@ -131,7 +131,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &load_packed(element_type const *ptr){
 			  // AVX512F
-        m_value = _mm512_loadu_ps(ptr);
+        m_value = _mm512_loadu_epi32(ptr);
         return *this;
       }
 
@@ -143,7 +143,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &load_packed_n(element_type const *ptr, camp::idx_t N){
 			  // AVX512F
-        m_value = _mm512_mask_loadu_ps(_mm512_setzero_ps(), createMask(N), ptr);
+        m_value = _mm512_mask_loadu_epi32(_mm512_setzero_epi32(), createMask(N), ptr);
         return *this;
       }
 
@@ -154,7 +154,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &load_strided(element_type const *ptr, camp::idx_t stride){
 			  // AVX512F
-        m_value = _mm512_i32gather_ps(createStridedOffsets(stride),
+        m_value = _mm512_i32gather_epi32(createStridedOffsets(stride),
 				                              ptr,
                                       sizeof(element_type));
         return *this;
@@ -169,7 +169,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &load_strided_n(element_type const *ptr, camp::idx_t stride, camp::idx_t N){
 				// AVX512F
-        m_value = _mm512_mask_i32gather_ps(_mm512_setzero_ps(),
+        m_value = _mm512_mask_i32gather_epi32(_mm512_setzero_epi32(),
                                       createMask(N),
                                       createStridedOffsets(stride),
                                       ptr,
@@ -185,7 +185,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &store_packed(element_type *ptr) const{
 				// AVX512F
-        _mm512_storeu_ps(ptr, m_value);
+        _mm512_storeu_epi32(ptr, m_value);
         return *this;
       }
 
@@ -196,7 +196,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &store_packed_n(element_type *ptr, camp::idx_t N) const{
 				// AVX512F
-        _mm512_mask_storeu_ps(ptr, createMask(N), m_value);
+        _mm512_mask_storeu_epi32(ptr, createMask(N), m_value);
         return *this;
       }
 
@@ -207,7 +207,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &store_strided(element_type *ptr, camp::idx_t stride) const{
 				// AVX512F
-				_mm512_i64scatter_ps(ptr,
+				_mm512_i64scatter_epi32(ptr,
 				                     createStridedOffsets(stride),
 														 m_value,
 														 sizeof(element_type));
@@ -222,7 +222,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &store_strided_n(element_type *ptr, camp::idx_t stride, camp::idx_t N) const{
 				// AVX512F
-				_mm512_mask_i64scatter_ps(ptr,
+				_mm512_mask_i64scatter_epi32(ptr,
                            				createMask(N),
 				                          createStridedOffsets(stride),
 																	m_value,
@@ -237,7 +237,27 @@ namespace RAJA
        */
       RAJA_INLINE
       element_type get(camp::idx_t i) const
-      {return m_value[i];}
+      {
+				switch(i){	
+					case 0: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 0));
+					case 1: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 1));
+					case 2: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 2));
+					case 3: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 3));
+					case 4: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 4));
+					case 5: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 5));
+					case 6: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 6));
+					case 7: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 7));
+					case 8: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 8));
+					case 9: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 9));
+					case 10: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 10));
+					case 11: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 11));
+					case 12: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 12));
+					case 13: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 13));
+					case 14: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 14));
+					case 15: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 15));
+				}
+				return 0;
+			}
 
 
       /*!
@@ -248,14 +268,14 @@ namespace RAJA
       RAJA_INLINE
       self_type &set(camp::idx_t i, element_type value)
       {
-        m_value[i] = value;
+				m_value = _mm512_mask_set1_epi32(m_value, 1 << i, value);
         return *this;
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &broadcast(element_type const &value){
-        m_value =  _mm512_set1_ps(value);
+        m_value =  _mm512_set1_epi32(value);
         return *this;
       }
 
@@ -270,43 +290,45 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type add(self_type const &b) const {
-        return self_type(_mm512_add_ps(m_value, b.m_value));
+        return self_type(_mm512_add_epi32(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type subtract(self_type const &b) const {
-        return self_type(_mm512_sub_ps(m_value, b.m_value));
+        return self_type(_mm512_sub_epi32(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type multiply(self_type const &b) const {
-        return self_type(_mm512_mul_ps(m_value, b.m_value));
+        return self_type(_mm512_mullo_epi32(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type divide(self_type const &b, camp::idx_t N = 16) const {
-        return self_type(_mm512_maskz_div_ps(createMask(N), m_value, b.m_value));
+        // AVX512 does not supply an integer divide, so do it manually
+        return self_type(_mm512_set_epi32(
+            N >= 16 ? get(15)/b.get(15) : 0,
+            N >= 15 ? get(14)/b.get(14) : 0,
+            N >= 14 ? get(13)/b.get(13) : 0,
+            N >= 13 ? get(12)/b.get(12) : 0,
+            N >= 12 ? get(11)/b.get(11) : 0,
+            N >= 11 ? get(10)/b.get(10) : 0,
+            N >= 10 ? get(9)/b.get(9) : 0,
+            N >= 9 ? get(8)/b.get(8) : 0,
+            N >= 8 ? get(7)/b.get(7) : 0,
+            N >= 7 ? get(6)/b.get(6) : 0,
+            N >= 6 ? get(5)/b.get(5) : 0,
+            N >= 5 ? get(4)/b.get(4) : 0,
+            N >= 4 ? get(3)/b.get(3) : 0,
+            N >= 3 ? get(2)/b.get(2) : 0,
+            N >= 2 ? get(1)/b.get(1) : 0,
+            N >= 1 ? get(0)/b.get(0) : 0
+            ));
       }
 
-// only use FMA's if the compiler has them turned on
-#ifdef __FMA__
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      self_type fused_multiply_add(self_type const &b, self_type const &c) const
-      {
-        return self_type(_mm512_fmadd_ps(m_value, b.m_value, c.m_value));
-      }
-
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
-      {
-        return self_type(_mm512_fmsub_ps(m_value, b.m_value, c.m_value));
-      }
-#endif
 
       /*!
        * @brief Sum the elements of this vector
@@ -315,7 +337,7 @@ namespace RAJA
       RAJA_INLINE
       element_type sum(camp::idx_t N = 16) const
       {
-				return _mm512_mask_reduce_add_ps(createMask(N), m_value);
+				return _mm512_mask_reduce_add_epi32(createMask(N), m_value);
       }
 
 
@@ -326,7 +348,7 @@ namespace RAJA
       RAJA_INLINE
       element_type max(camp::idx_t N = 16) const
       {
-				return _mm512_mask_reduce_max_ps(createMask(N), m_value);
+				return _mm512_mask_reduce_max_epi32(createMask(N), m_value);
       }
 
       /*!
@@ -336,7 +358,7 @@ namespace RAJA
       RAJA_INLINE
       self_type vmax(self_type a) const
       {
-        return self_type(_mm512_max_ps(m_value, a.m_value));
+        return self_type(_mm512_max_epi32(m_value, a.m_value));
       }
 
       /*!
@@ -346,7 +368,7 @@ namespace RAJA
       RAJA_INLINE
       element_type min(camp::idx_t N = 16) const
       {
-				return _mm512_mask_reduce_min_ps(createMask(N), m_value);
+				return _mm512_mask_reduce_min_epi32(createMask(N), m_value);
       }
 
       /*!
@@ -356,7 +378,7 @@ namespace RAJA
       RAJA_INLINE
       self_type vmin(self_type a) const
       {
-        return self_type(_mm512_min_ps(m_value, a.m_value));
+        return self_type(_mm512_min_epi32(m_value, a.m_value));
       }
   };
 

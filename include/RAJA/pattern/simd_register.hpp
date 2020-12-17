@@ -18,7 +18,7 @@
 #ifndef RAJA_pattern_simd_register_HPP
 #define RAJA_pattern_simd_register_HPP
 
-#include "RAJA/pattern/simd_register/Register.hpp"
+#include "RAJA/pattern/tensor/TensorRegister.hpp"
 #include "RAJA/pattern/simd_register/RegisterMatrix.hpp"
 
 

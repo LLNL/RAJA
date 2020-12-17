@@ -17,10 +17,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_policy_simd_register_HPP
-#define RAJA_policy_simd_register_HPP
+#ifndef RAJA_policy_tensor_HPP
+#define RAJA_policy_tensor_HPP
 
-#include "RAJA/policy/simd_register/arch.hpp"
+#include "RAJA/policy/tensor/arch.hpp"
 //#include "RAJA/policy/simd_register/forall.hpp"
 //#include "RAJA/policy/simd_register/policy.hpp"
 //#include "RAJA/policy/simd_register/kernel/For.hpp"

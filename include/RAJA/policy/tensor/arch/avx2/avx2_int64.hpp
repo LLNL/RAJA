@@ -17,12 +17,12 @@
 
 #ifdef __AVX2__
 
-#ifndef RAJA_policy_vector_register_avx2_double_HPP
-#define RAJA_policy_vector_register_avx2_double_HPP
+#ifndef RAJA_policy_vector_register_avx2_int64_HPP
+#define RAJA_policy_vector_register_avx2_int64_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/pattern/simd_register/Register.hpp"
+#include "RAJA/pattern/tensor/TensorRegister.hpp"
 
 // Include SIMD intrinsics header file
 #include <immintrin.h>
@@ -32,15 +32,15 @@
 namespace RAJA
 {
 
-  template<int SKEW>
-  class Register<avx2_register, double, SKEW> :
-    public internal::RegisterBase<Register<avx2_register, double, SKEW>>
+  template<camp::idx_t SKEW>
+  class TensorRegister<avx2_register, long, VectorLayout, camp::idx_seq<4>, SKEW> :
+    public internal::TensorRegisterBase<TensorRegister<avx2_register, long, VectorLayout, camp::idx_seq<4>, SKEW>>
   {
     public:
       using register_policy = avx2_register;
-      using self_type = Register<avx2_register, double, SKEW>;
-      using element_type = double;
-      using register_type = __m256d;
+      using self_type = TensorRegister<avx2_register, long, VectorLayout, camp::idx_seq<4>, SKEW>;
+      using element_type = long;
+      using register_type = __m256i;
 
 
     private:
@@ -62,15 +62,29 @@ namespace RAJA
         return  _mm256_set_epi64x(3*stride, 2*stride, stride, 0);
       }
 
+      /*
+       * Use the packed-double permute function because there isn't one
+       * specifically for int64
+       *
+       * Just adds a bunch of casting, should be same cost
+       */
+      template<int perm>
+      RAJA_INLINE
+      __m256i permute(__m256i x) const {
+        return _mm256_castpd_si256(
+            _mm256_permute_pd(_mm256_castsi256_pd(x), perm));
+      }
+
     public:
 
       static constexpr camp::idx_t s_num_elem = 4;
+
 
       /*!
        * @brief Default constructor, zeros register contents
        */
       RAJA_INLINE
-      Register() : m_value(_mm256_setzero_pd()) {
+      TensorRegister() : m_value(_mm256_setzero_si256()) {
       }
 
       /*!
@@ -78,7 +92,7 @@ namespace RAJA
        */
       RAJA_INLINE
       constexpr
-      explicit Register(register_type const &c) : m_value(c) {}
+      explicit TensorRegister(register_type const &c) : m_value(c) {}
 
 
       /*!
@@ -86,7 +100,7 @@ namespace RAJA
        */
       RAJA_INLINE
       constexpr
-      Register(self_type const &c) : m_value(c.m_value) {}
+      TensorRegister(self_type const &c) : m_value(c.m_value) {}
 
       /*!
        * @brief Copy assignment constructor
@@ -97,12 +111,14 @@ namespace RAJA
         return *this;
       }
 
+
       /*!
        * @brief Construct from scalar.
        * Sets all elements to same value (broadcast).
        */
       RAJA_INLINE
-      Register(element_type const &c) : m_value(_mm256_set1_pd(c)) {}
+      TensorRegister(element_type const &c) : m_value(_mm256_set1_epi64x(c)) {}
+
 
 
       /*!
@@ -111,7 +127,7 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type &load_packed(element_type const *ptr){
-        m_value = _mm256_loadu_pd(ptr);
+        m_value = _mm256_loadu_si256(reinterpret_cast<__m256i const *>(ptr));
         return *this;
       }
 
@@ -122,7 +138,9 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type &load_packed_n(element_type const *ptr, camp::idx_t N){
-        m_value = _mm256_maskload_pd(ptr, createMask(N));
+        m_value = _mm256_castpd_si256(
+            _mm256_maskload_pd(reinterpret_cast<double const *>(ptr), createMask(N))
+        );
         return *this;
       }
 
@@ -132,7 +150,7 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type &load_strided(element_type const *ptr, camp::idx_t stride){
-        m_value = _mm256_i64gather_pd(ptr,
+        m_value = _mm256_i64gather_epi64(reinterpret_cast<long long const *>(ptr),
                                       createStridedOffsets(stride),
                                       sizeof(element_type));
         return *this;
@@ -146,10 +164,10 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type &load_strided_n(element_type const *ptr, camp::idx_t stride, camp::idx_t N){
-        m_value = _mm256_mask_i64gather_pd(_mm256_setzero_pd(),
-                                      ptr,
+        m_value = _mm256_mask_i64gather_epi64(_mm256_set1_epi64x(0),
+                                      reinterpret_cast<long long const *>(ptr),
                                       createStridedOffsets(stride),
-                                      _mm256_castsi256_pd(createMask(N)),
+                                      createMask(N),
                                       sizeof(element_type));
         return *this;
       }
@@ -161,7 +179,7 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type const &store_packed(element_type *ptr) const{
-        _mm256_storeu_pd(ptr, m_value);
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(ptr), m_value);
         return *this;
       }
 
@@ -171,7 +189,7 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type const &store_packed_n(element_type *ptr, camp::idx_t N) const{
-        _mm256_maskstore_pd(ptr, createMask(N), m_value);
+        _mm256_maskstore_epi64(reinterpret_cast<long long*>(ptr), createMask(N), m_value);
         return *this;
       }
 
@@ -200,6 +218,8 @@ namespace RAJA
         return *this;
       }
 
+
+
       /*!
        * @brief Get scalar value from vector register
        * @param i Offset of scalar to get
@@ -207,7 +227,16 @@ namespace RAJA
        */
       RAJA_INLINE
       element_type get(camp::idx_t i) const
-      {return m_value[i];}
+      {
+        // got to be a nicer way to do this!?!?
+        switch(i){
+          case 0: return _mm256_extract_epi64(m_value, 0);
+          case 1: return _mm256_extract_epi64(m_value, 1);
+          case 2: return _mm256_extract_epi64(m_value, 2);
+          case 3: return _mm256_extract_epi64(m_value, 3);
+        }
+        return 0;
+      }
 
 
       /*!
@@ -218,29 +247,21 @@ namespace RAJA
       RAJA_INLINE
       self_type &set(camp::idx_t i, element_type value)
       {
-        m_value[i] = value;
+        // got to be a nicer way to do this!?!?
+        switch(i){
+          case 0: m_value = _mm256_insert_epi64(m_value, value, 0); break;
+          case 1: m_value = _mm256_insert_epi64(m_value, value, 1); break;
+          case 2: m_value = _mm256_insert_epi64(m_value, value, 2); break;
+          case 3: m_value = _mm256_insert_epi64(m_value, value, 3); break;
+        }
+
         return *this;
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &broadcast(element_type const &value){
-        m_value =  _mm256_set1_pd(value);
-        return *this;
-      }
-
-      /*!
-       * @brief Extracts a scalar value and broadcasts to a new register
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type get_and_broadcast(int i) const {
-        switch(i){
-          case 0: return self_type(_mm256_permute4x64_pd (m_value, 0x00));
-          case 1: return self_type(_mm256_permute4x64_pd (m_value, 0x55));
-          case 2: return self_type(_mm256_permute4x64_pd (m_value, 0xAA));
-          case 3: return self_type(_mm256_permute4x64_pd (m_value, 0xFF));
-        }
+        m_value =  _mm256_set1_epi64x(value);
         return *this;
       }
 
@@ -255,54 +276,57 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type add(self_type const &b) const {
-        return self_type(_mm256_add_pd(m_value, b.m_value));
+        return self_type(_mm256_add_epi64(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type subtract(self_type const &b) const {
-        return self_type(_mm256_sub_pd(m_value, b.m_value));
+        return self_type(_mm256_sub_epi64(m_value, b.m_value));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type multiply(self_type const &b) const {
-        return self_type(_mm256_mul_pd(m_value, b.m_value));
+        // AVX2 does not supply an long multiply, so do it manually
+        return self_type(_mm256_set_epi64x(
+            get(3)*b.get(3),
+            get(2)*b.get(2),
+            get(1)*b.get(1),
+            get(0)*b.get(0)
+            ));
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b, camp::idx_t = 4) const {
-        return self_type(_mm256_div_pd(m_value, b.m_value));
+      self_type divide(self_type const &b, camp::idx_t N = 4) const {
+        // AVX2 does not supply an integer divide, so do it manually
+        return self_type(_mm256_set_epi64x(
+            N >= 4 ? get(3)/b.get(3) : 0,
+            N >= 3 ? get(2)/b.get(2) : 0,
+            N >= 2 ? get(1)/b.get(1) : 0,
+            N >= 1 ? get(0)/b.get(0) : 0
+            ));
       }
 
-// only use FMA's if the compiler has them turned on
-#ifdef __FMA__
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      self_type fused_multiply_add(self_type const &b, self_type const &c) const
-      {
-        return self_type(_mm256_fmadd_pd(m_value, b.m_value, c.m_value));
-      }
 
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
-      {
-        return self_type(_mm256_fmsub_pd(m_value, b.m_value, c.m_value));
-      }
-#endif
 
       /*!
        * @brief Sum the elements of this vector
        * @return Sum of the values of the vectors scalar elements
        */
       RAJA_INLINE
-      element_type sum(camp::idx_t = 4) const
+      element_type sum(camp::idx_t N = 4) const
       {
-        auto sh1 = _mm256_permute_pd(m_value, 0x5);
-        auto red1 = _mm256_add_pd(m_value, sh1);
-        return red1[0]+red1[2];
+        if(N <= 0){
+          return element_type(0);
+        }
+        // swap pairs and add
+        auto sh1 = permute<0x5>(m_value);
+        auto red1 = _mm256_add_epi64(m_value, sh1);
+
+        // add lower and upper
+        return _mm256_extract_epi64(red1, 0) + _mm256_extract_epi64(red1, 2);
       }
 
 
@@ -313,45 +337,27 @@ namespace RAJA
       RAJA_INLINE
       element_type max(camp::idx_t N = 4) const
       {
-        if(N == 4){
-          // permute the first two and last two lanes of the register
-          // A = { v[1], v[0], v[3], v[2] }
-          register_type a = _mm256_shuffle_pd(m_value, m_value, 0x5);
-
-          // take the maximum value of each lane
-          // B = { max{v[0], v[1]},
-          //       max{v[0], v[1]},
-          //       max{v[2], v[3]},
-          //       max{v[2], v[3]} }
-          register_type b = _mm256_max_pd(m_value, a);
-
-          // now take the maximum of a lower and upper halves
-          return RAJA::max<element_type>(b[0], b[2]);
+        if(N <= 0 || N > 4){
+          return RAJA::operators::limits<long>::min();
         }
-        else if(N == 3){
-          // permute the first two and last two lanes of the register
-          // use the third element TWICE, so we effectively remove the 4th
-          // lane
-          // A = { v[1], v[0], v[2], v[2] }
-          register_type a = _mm256_shuffle_pd(m_value, m_value, 0xD);
 
-          // take the maximum value of each lane
-          // B = { max{v[0], v[1]},
-          //       max{v[0], v[1]},
-          //       max{v[2], v[2]},   <-- just v[2]
-          //       max{v[2], v[3]} }
-          register_type b = _mm256_max_pd(m_value, a);
+        // AVX2 does not supply an 64bit integer max?!?
+        auto red = get(0);
 
-          // now take the maximum of a lower and upper lane
-          return RAJA::max<element_type>(b[0], b[2]);
+        if(N > 1){
+          auto v1 = get(1);
+          red = red < v1 ? v1 : red;
         }
-        else if(N == 2){
-          return RAJA::max<element_type>(m_value[0], m_value[1]);
+        if(N > 2){
+          auto v2 = get(2);
+          red = red < v2 ? v2 : red;
         }
-        else if(N == 1){
-          return m_value[0];
+        if(N > 3){
+          auto v3 = get(3);
+          red = red < v3 ? v3 : red;
         }
-        return RAJA::operators::limits<double>::min();
+
+        return red;
       }
 
       /*!
@@ -361,7 +367,12 @@ namespace RAJA
       RAJA_INLINE
       self_type vmax(self_type a) const
       {
-        return self_type(_mm256_max_pd(m_value, a.m_value));
+          return self_type(_mm256_set_epi64x(
+              get(3) > a.get(3) ? get(3) : a.get(3),
+              get(2) > a.get(2) ? get(2) : a.get(2),
+              get(1) > a.get(1) ? get(1) : a.get(1),
+              get(0) > a.get(0) ? get(0) : a.get(0) ));
+        
       }
 
       /*!
@@ -371,45 +382,27 @@ namespace RAJA
       RAJA_INLINE
       element_type min(camp::idx_t N = 4) const
       {
-        if(N == 4){
-          // permute the first two and last two lanes of the register
-          // A = { v[1], v[0], v[3], v[2] }
-          register_type a = _mm256_shuffle_pd(m_value, m_value, 0x5);
-
-          // take the minimum value of each lane
-          // B = { min{v[0], v[1]},
-          //       min{v[0], v[1]},
-          //       min{v[2], v[3]},
-          //       min{v[2], v[3]} }
-          register_type b = _mm256_min_pd(m_value, a);
-
-          // now take the minimum of a lower and upper halves
-          return std::min<element_type>(b[0], b[2]);
+        if(N <= 0 || N > 4){
+          return RAJA::operators::limits<long>::max();
         }
-        else if(N == 3){
-          // permute the first two and last two lanes of the register
-          // use the third element TWICE, so we effectively remove the 4th
-          // lane
-          // A = { v[1], v[0], v[2], v[2] }
-          register_type a = _mm256_shuffle_pd(m_value, m_value, 0x3);
 
-          // take the minimum value of each lane
-          // B = { min{v[0], v[1]},
-          //       min{v[0], v[1]},
-          //       min{v[2], v[2]},   <-- just v[2]
-          //       min{v[2], v[3]} }
-          register_type b = _mm256_min_pd(m_value, a);
+        // AVX2 does not supply an 64bit integer max?!?
+        auto red = get(0);
 
-          // now take the minimum of a lower and upper lane
-          return std::min<element_type>(b[0], b[2]);
+        if(N > 1){
+          auto v1 = get(1);
+          red = red > v1 ? v1 : red;
         }
-        else if(N == 2){
-          return std::min<element_type>(m_value[0], m_value[1]);
+        if(N > 2){
+          auto v2 = get(2);
+          red = red > v2 ? v2 : red;
         }
-        else if(N == 1){
-          return m_value[0];
+        if(N > 3){
+          auto v3 = get(3);
+          red = red > v3 ? v3 : red;
         }
-        return RAJA::operators::limits<double>::max();
+
+        return red;
       }
 
       /*!
@@ -419,7 +412,12 @@ namespace RAJA
       RAJA_INLINE
       self_type vmin(self_type a) const
       {
-        return self_type(_mm256_min_pd(m_value, a.m_value));
+          return self_type(_mm256_set_epi64x(
+              get(3) < a.get(3) ? get(3) : a.get(3),
+              get(2) < a.get(2) ? get(2) : a.get(2),
+              get(1) < a.get(1) ? get(1) : a.get(1),
+              get(0) < a.get(0) ? get(0) : a.get(0) ));
+        
       }
   };
 

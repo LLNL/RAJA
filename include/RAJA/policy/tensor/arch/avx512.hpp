@@ -23,14 +23,22 @@
 
 namespace RAJA {
   struct avx512_register {};
+
+  template<typename T>
+  struct RegisterTraits<avx512_register, T>{
+      using element_type = T;
+      using register_policy = avx512_register;
+      static constexpr camp::idx_t s_num_bits = 512;
+      static constexpr camp::idx_t s_num_elem = s_num_bits / 8 / sizeof(T);
+  };
 }
 
 #endif // guard
 
-#include<RAJA/policy/simd_register/arch/avx512/avx512_int32.hpp>
-#include<RAJA/policy/simd_register/arch/avx512/avx512_int64.hpp>
-#include<RAJA/policy/simd_register/arch/avx512/avx512_float.hpp>
-#include<RAJA/policy/simd_register/arch/avx512/avx512_double.hpp>
+#include<RAJA/policy/tensor/arch/avx512/avx512_int32.hpp>
+#include<RAJA/policy/tensor/arch/avx512/avx512_int64.hpp>
+#include<RAJA/policy/tensor/arch/avx512/avx512_float.hpp>
+#include<RAJA/policy/tensor/arch/avx512/avx512_double.hpp>
 
 
 #endif // __AVX512F__

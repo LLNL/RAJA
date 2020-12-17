@@ -22,6 +22,8 @@
 
 #include "RAJA/util/macros.hpp"
 
+#include "camp/camp.hpp"
+
 namespace RAJA
 {
   template<typename REGISTER_POLICY,
@@ -31,6 +33,7 @@ namespace RAJA
            camp::idx_t SKEW>
   class TensorRegister;
 
+  struct VectorLayout;
 
   template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, camp::idx_t SKEW>
   RAJA_HOST_DEVICE
@@ -366,7 +369,7 @@ namespace internal {
 
 // Bring in the register policy file so we get the default register type
 // and all of the register traits setup
-#include "RAJA/policy/simd_register/arch.hpp"
+#include "RAJA/policy/tensor/arch.hpp"
 
 
 #endif

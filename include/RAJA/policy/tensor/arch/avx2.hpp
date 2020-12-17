@@ -22,14 +22,22 @@
 
 namespace RAJA {
   struct avx2_register {};
+
+  template<typename T>
+  struct RegisterTraits<avx2_register, T>{
+      using element_type = T;
+      using register_policy = avx2_register;
+      static constexpr camp::idx_t s_num_bits = 256;
+      static constexpr camp::idx_t s_num_elem = s_num_bits / 8 / sizeof(T);
+  };
 }
 
 #endif // guard
 
-#include<RAJA/policy/simd_register/arch/avx2/avx2_int32.hpp>
-#include<RAJA/policy/simd_register/arch/avx2/avx2_int64.hpp>
-#include<RAJA/policy/simd_register/arch/avx2/avx2_float.hpp>
-#include<RAJA/policy/simd_register/arch/avx2/avx2_double.hpp>
+#include<RAJA/policy/tensor/arch/avx2/avx2_int32.hpp>
+#include<RAJA/policy/tensor/arch/avx2/avx2_int64.hpp>
+#include<RAJA/policy/tensor/arch/avx2/avx2_float.hpp>
+#include<RAJA/policy/tensor/arch/avx2/avx2_double.hpp>
 
 
 #endif // __AVX2__

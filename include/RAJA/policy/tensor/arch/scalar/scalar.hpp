@@ -18,25 +18,33 @@
 #ifndef RAJA_policy_vector_register_scalar_HPP
 #define RAJA_policy_vector_register_scalar_HPP
 
-#include "RAJA/pattern/simd_register/Register.hpp"
+#include "RAJA/pattern/tensor/TensorRegister.hpp"
 
 namespace RAJA
 {
 
   struct scalar_register {};
 
+  template<typename T>
+  struct RegisterTraits<scalar_register, T>{
+      using element_type = T;
+      using register_policy = scalar_register;
+      static constexpr camp::idx_t s_num_bits = sizeof(T)*8;
+      static constexpr camp::idx_t s_num_elem = 1;
+  };
+
   /**
    * A specialization for a single element register.
    * We will implement this as a scalar value, and let the compiler use
    * whatever registers it deems appropriate.
    */
-  template<typename T, int SKEW>
-  class Register<scalar_register, T, SKEW> :
-      public internal::RegisterBase<Register<scalar_register, T, SKEW>>
+  template<typename T, camp::idx_t SKEW>
+  class TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>, SKEW> :
+      public internal::TensorRegisterBase<TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>, SKEW>>
   {
     public:
       using register_policy = scalar_register;
-      using self_type = Register<scalar_register, T, SKEW>;
+      using self_type = TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>, SKEW>;
       using element_type = T;
       using register_type = T;
 
@@ -55,7 +63,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
-      Register() : m_value(0) {
+      TensorRegister() : m_value(0) {
       }
 
       /*!
@@ -64,7 +72,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
-      Register(element_type const &c) : m_value(c) {}
+      TensorRegister(element_type const &c) : m_value(c) {}
 
 
       /*!
@@ -73,7 +81,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
-      Register(self_type const &c) : m_value(c.m_value) {}
+      TensorRegister(self_type const &c) : m_value(c.m_value) {}
 
 
       /*!

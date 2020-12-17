@@ -22,7 +22,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/pattern/simd_register/Register.hpp"
+#include "RAJA/pattern/tensor/TensorRegister.hpp"
 
 // Include SIMD intrinsics header file
 #include <immintrin.h>
@@ -32,14 +32,13 @@
 namespace RAJA
 {
 
-
-  template<int SKEW>
-  class Register<avx_register, int, SKEW> :
-    public internal::RegisterBase<Register<avx_register, int, SKEW>>
+  template<camp::idx_t SKEW>
+  class TensorRegister<avx_register, int, VectorLayout, camp::idx_seq<8>, SKEW> :
+    public internal::TensorRegisterBase<TensorRegister<avx_register, int, VectorLayout, camp::idx_seq<8>, SKEW>>
   {
     public:
       using register_policy = avx_register;
-      using self_type = Register<avx_register, int, SKEW>;
+      using self_type = TensorRegister<avx_register, int, VectorLayout, camp::idx_seq<8>, SKEW>;
       using element_type = int;
       using register_type = __m256i;
 
@@ -106,7 +105,7 @@ namespace RAJA
        * @brief Default constructor, zeros register contents
        */
       RAJA_INLINE
-      Register() : m_value(_mm256_setzero_si256()) {
+      TensorRegister() : m_value(_mm256_setzero_si256()) {
       }
 
       /*!
@@ -114,7 +113,7 @@ namespace RAJA
        */
       RAJA_INLINE
       constexpr
-      explicit Register(register_type const &c) : m_value(c) {}
+      explicit TensorRegister(register_type const &c) : m_value(c) {}
 
 
       /*!
@@ -122,7 +121,7 @@ namespace RAJA
        */
       RAJA_INLINE
       constexpr
-      Register(self_type const &c) : m_value(c.m_value) {}
+      TensorRegister(self_type const &c) : m_value(c.m_value) {}
 
       /*!
        * @brief Copy assignment constructor
@@ -139,7 +138,7 @@ namespace RAJA
        * Sets all elements to same value (broadcast).
        */
       RAJA_INLINE
-      Register(element_type const &c) : m_value(_mm256_set1_epi32(c)) {}
+      TensorRegister(element_type const &c) : m_value(_mm256_set1_epi32(c)) {}
 
 
 
