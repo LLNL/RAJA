@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/pattern/simd_register/stats.hpp"
+#include "RAJA/pattern/tensor/stats.hpp"
 #include <stdio.h>
 
 camp::idx_t RAJA::simd_register_stats::num_vector_copy = 0;

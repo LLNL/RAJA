@@ -163,7 +163,7 @@ set (raja_sources
   src/MemUtils_CUDA.cpp
   src/MemUtils_HIP.cpp
   src/PluginStrategy.cpp
-  src/VectorStats.cpp)
+  src/TensorStats.cpp)
 
 if (RAJA_ENABLE_RUNTIME_PLUGINS)
   set (raja_sources

@@ -48,7 +48,6 @@
 //
 // Generic templates to describe SIMD/SIMT registers and vectors
 //
-#include "RAJA/pattern/simd_register.hpp"
 #include "RAJA/pattern/tensor.hpp"
 
 //
