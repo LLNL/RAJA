@@ -22,6 +22,8 @@
 
 #include "RAJA/util/macros.hpp"
 
+#include "RAJA/pattern/tensor/TensorRef.hpp"
+
 
 namespace RAJA
 {
@@ -32,80 +34,8 @@ namespace RAJA
   namespace ET
   {
 
-
-
-
-    template<typename INDEX_TYPE, camp::idx_t NUM_DIMS>
-    struct TensorTile
-    {
-        using index_type = INDEX_TYPE;
-        index_type m_begin[NUM_DIMS];
-        index_type m_size[NUM_DIMS];
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        void print() const {
-          printf("TensorTile: dims=%d, m_begin=[",  (int)NUM_DIMS);
-
-          for(camp::idx_t i = 0;i < NUM_DIMS;++ i){
-            printf("%ld ", (long)m_begin[i]);
-          }
-
-          printf("], m_size=[");
-
-          for(camp::idx_t i = 0;i < NUM_DIMS;++ i){
-            printf("%ld ", (long)m_size[i]);
-          }
-
-          printf("]\n");
-        }
-    };
-
-
-
-    template<typename REG_MATRIX_TYPE, typename REF_TYPE>
+    template<typename TENSOR_REGISTER_TYPE, typename REF_TYPE>
     class TensorLoadStore;
-
-
-    template<typename TENSOR_REG_TYPE, typename POINTER_TYPE, typename INDEX_TYPE, camp::idx_t NUM_DIMS, camp::idx_t STRIDE_ONE_DIM = -1>
-    struct TensorRef;
-
-
-
-
-
-
-    template<typename TENSOR_REG_TYPE, typename POINTER_TYPE, typename INDEX_TYPE, camp::idx_t NUM_DIMS, camp::idx_t STRIDE_ONE_DIM>
-    struct TensorRef
-    {
-        using self_type = TensorRef<TENSOR_REG_TYPE, POINTER_TYPE, INDEX_TYPE, NUM_DIMS, STRIDE_ONE_DIM>;
-        using tile_type = TensorTile<INDEX_TYPE, NUM_DIMS>;
-
-        using tensor_type = TENSOR_REG_TYPE;
-        using pointer_type = POINTER_TYPE;
-        using index_type = INDEX_TYPE;
-        static constexpr camp::idx_t s_stride_one_dim = STRIDE_ONE_DIM;
-
-        pointer_type m_pointer;
-        index_type m_stride[NUM_DIMS];
-        tile_type m_tile;
-
-        RAJA_HOST_DEVICE
-        RAJA_INLINE
-        void print() const {
-          printf("TensorRef: dims=%d, m_pointer=%p, m_stride=[", (int)NUM_DIMS, m_pointer);
-
-          for(camp::idx_t i = 0;i < NUM_DIMS;++ i){
-            printf("%ld ", (long)m_stride[i]);
-          }
-
-          printf("]\n");
-
-          m_tile.print();
-        }
-
-    };
-
 
     template<typename LHS_TYPE, typename RHS_TYPE>
     class TensorMultiply;
@@ -117,7 +47,7 @@ namespace RAJA
     class TensorSubtract;
 
     template<typename DERIVED_TYPE>
-    class TensorOpBase  {
+    class TensorExpressionBase  {
       public:
         using self_type = DERIVED_TYPE;
 
@@ -165,16 +95,16 @@ namespace RAJA
 
 
 
-    template<typename REG_MATRIX_TYPE, typename REF_TYPE>
-    class TensorLoadStore : public TensorOpBase<TensorLoadStore<REG_MATRIX_TYPE, REF_TYPE>> {
+    template<typename TENSOR_REGISTER_TYPE, typename REF_TYPE>
+    class TensorLoadStore : public TensorExpressionBase<TensorLoadStore<TENSOR_REGISTER_TYPE, REF_TYPE>> {
       public:
-        using self_type = TensorLoadStore<REG_MATRIX_TYPE, REF_TYPE>;
-        using tensor_type = REG_MATRIX_TYPE;
-        using element_type = typename REG_MATRIX_TYPE::element_type;
-        using index_type = camp::idx_t;
+        using self_type = TensorLoadStore<TENSOR_REGISTER_TYPE, REF_TYPE>;
+        using tensor_register_type = TENSOR_REGISTER_TYPE;
+        using element_type = typename TENSOR_REGISTER_TYPE::element_type;
+        using index_type = typename REF_TYPE::index_type;
         using ref_type = REF_TYPE;
-        using tile_type = TensorTile<index_type, 2>;
-        using result_type = REG_MATRIX_TYPE;
+        using tile_type = typename REF_TYPE::tile_type;
+        using result_type = TENSOR_REGISTER_TYPE;
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
@@ -234,30 +164,20 @@ namespace RAJA
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        void eval_full(tile_type const &tile,
-                              result_type &x) const {
+        result_type eval_full(tile_type const &tile) const {
           auto ptr = m_ref.m_pointer +
                      tile.m_begin[0]*m_ref.m_stride[0] +
                      tile.m_begin[1]*m_ref.m_stride[1];
+
+          result_type x;
           x.load_strided(ptr,
                          m_ref.m_stride[0],
                          m_ref.m_stride[1]);
+
+          return x;
         }
 
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        void eval_partial(tile_type const &tile,
-                          result_type &x){
-          auto ptr = m_ref.m_pointer +
-                     tile.m_begin[0]*m_ref.m_stride[0] +
-                     tile.m_begin[1]*m_ref.m_stride[1];
 
-          x.load_strided_nm(ptr,
-                            tile.m_size[0],
-                            tile.m_size[0],
-                            m_ref.m_stride[0],
-                            m_ref.m_stride[1]);
-        }
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
@@ -272,8 +192,8 @@ namespace RAJA
         void store(RHS const &rhs)
         {
           // get tile size from matrix type
-          index_type row_tile_size = tensor_type::s_dim_elem(0);
-          index_type col_tile_size = tensor_type::s_dim_elem(1);
+          index_type row_tile_size = tensor_register_type::s_dim_elem(0);
+          index_type col_tile_size = tensor_register_type::s_dim_elem(1);
 
 
           // tile over full rows and columns
@@ -281,8 +201,7 @@ namespace RAJA
           for(tile.m_begin[0] = 0;tile.m_begin[0] < m_ref.m_tile.m_size[0]; tile.m_begin[0] += row_tile_size){
             for(tile.m_begin[1] = 0; tile.m_begin[1] < m_ref.m_tile.m_size[1];tile.m_begin[1] += col_tile_size){
               // Call rhs to evaluate this tile
-              result_type x;
-              rhs.eval_full(tile, x);
+              result_type x = rhs.eval_full(tile);
 
               // Store tile result
               auto ptr = m_ref.m_pointer +
@@ -304,14 +223,14 @@ namespace RAJA
 
 
     template<typename LHS_TYPE, typename RHS_TYPE>
-    class TensorMultiply : public TensorOpBase<TensorMultiply<LHS_TYPE, RHS_TYPE>> {
+    class TensorMultiply : public TensorExpressionBase<TensorMultiply<LHS_TYPE, RHS_TYPE>> {
       public:
         using self_type = TensorMultiply<LHS_TYPE, RHS_TYPE>;
         using lhs_type = LHS_TYPE;
         using rhs_type = RHS_TYPE;
         using element_type = typename LHS_TYPE::element_type;
         using index_type = typename LHS_TYPE::index_type;
-        using tile_type = TensorTile<index_type, 2>;
+        using tile_type = typename LHS_TYPE::tile_type;
         using result_type = typename LHS_TYPE::result_type;
 
         RAJA_INLINE
@@ -323,8 +242,7 @@ namespace RAJA
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        void eval_full(tile_type const &tile,
-                              result_type &x) const {
+        result_type eval_full(tile_type const &tile) const {
 
 //          printf("MMMult: "); tile.print();
 
@@ -339,29 +257,25 @@ namespace RAJA
           tile_type lhs_tile = tile;
           tile_type rhs_tile = tile;
 
+          result_type x(element_type(0));
+
           for(index_type k = 0;k < k_size; k+= tile_size){
 
             // evaluate both sides of operator
-            result_type lhs;
             lhs_tile.m_begin[1] = k;
+            result_type lhs = m_lhs.eval_full(lhs_tile);
 
-            m_lhs.eval_full(lhs_tile, lhs);
-
-            result_type rhs;
             rhs_tile.m_begin[0] = k;
-            m_rhs.eval_full(rhs_tile, rhs);
+            result_type rhs = m_rhs.eval_full(rhs_tile);
 
             // compute product into x
             x = lhs.multiply_accumulate(rhs, x);
           }
+
+          return x;
         }
 
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        void eval_partial(tile_type const &tile,
-                          result_type &x){
-          eval_full(tile, x);
-        }
+
 
       private:
         lhs_type m_lhs;
@@ -370,14 +284,14 @@ namespace RAJA
 
 
     template<typename LHS_TYPE, typename RHS_TYPE>
-    class TensorAdd :  public TensorOpBase<TensorAdd<LHS_TYPE, RHS_TYPE>> {
+    class TensorAdd :  public TensorExpressionBase<TensorAdd<LHS_TYPE, RHS_TYPE>> {
       public:
         using self_type = TensorAdd<LHS_TYPE, RHS_TYPE>;
         using lhs_type = LHS_TYPE;
         using rhs_type = RHS_TYPE;
         using element_type = typename LHS_TYPE::element_type;
         using index_type = typename LHS_TYPE::index_type;
-        using tile_type = TensorTile<index_type, 2>;
+        using tile_type = typename LHS_TYPE::tile_type;
         using result_type = typename LHS_TYPE::result_type;
 
         RAJA_INLINE
@@ -389,23 +303,15 @@ namespace RAJA
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        void eval_full(tile_type const &tile,
-                              result_type &x) const {
+        result_type eval_full(tile_type const &tile) const {
 
-          m_lhs.eval_full(tile, x);
+          result_type x = m_lhs.eval_full(tile);
+          result_type y = m_rhs.eval_full(tile);
 
-          result_type y;
-          m_rhs.eval_full(tile, y);
-
-          x = x.add(y);
+          return x.add(y);
         }
 
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        void eval_partial(tile_type const &tile,
-                          result_type &x){
-          eval_full(tile, x);
-        }
+
 
       private:
         lhs_type m_lhs;
@@ -413,14 +319,14 @@ namespace RAJA
     };
 
     template<typename LHS_TYPE, typename RHS_TYPE>
-    class TensorSubtract :  public TensorOpBase<TensorAdd<LHS_TYPE, RHS_TYPE>> {
+    class TensorSubtract :  public TensorExpressionBase<TensorAdd<LHS_TYPE, RHS_TYPE>> {
       public:
         using self_type = TensorSubtract<LHS_TYPE, RHS_TYPE>;
         using lhs_type = LHS_TYPE;
         using rhs_type = RHS_TYPE;
         using element_type = typename LHS_TYPE::element_type;
         using index_type = typename LHS_TYPE::index_type;
-        using tile_type = TensorTile<index_type, 2>;
+        using tile_type = typename LHS_TYPE::tile_type;
         using result_type = typename LHS_TYPE::result_type;
 
         RAJA_INLINE
@@ -432,22 +338,12 @@ namespace RAJA
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        void eval_full(tile_type const &tile,
-                              result_type &x) const {
+        result_type eval_full(tile_type const &tile) const {
 
-          m_lhs.eval_full(tile, x);
+          result_type x = m_lhs.eval_full(tile);
+          result_type y = m_rhs.eval_full(tile);
 
-          result_type y;
-          m_rhs.eval_full(tile, y);
-
-          x = x.subtract(y);
-        }
-
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        void eval_partial(tile_type const &tile,
-                          result_type &x){
-          eval_full(tile, x);
+          return x.subtract(y);
         }
 
       private:
