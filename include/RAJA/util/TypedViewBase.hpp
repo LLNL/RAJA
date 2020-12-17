@@ -23,7 +23,7 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/pattern/atomic.hpp"
-#include "RAJA/pattern/vector.hpp"
+#include "RAJA/pattern/tensor.hpp"
 
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
@@ -166,6 +166,7 @@ namespace internal
   /*
    * Specialization for Vector return types
    */
+  /*
   template<typename ... Args, typename ElementType, typename PointerType, typename LinIdx, camp::idx_t StrideOneDim>
   struct ViewReturnHelper<1, camp::list<Args...>, ElementType, PointerType, LinIdx, StrideOneDim>
   {
@@ -183,7 +184,7 @@ namespace internal
                            data,
                            layout.template get_dim_stride<get_tensor_arg_idx<0, Args...>()>());
       }
-  };
+  };*/
 
   /*
    * Specialization for Matrix return types
@@ -218,12 +219,6 @@ namespace internal
                (LinIdx)get_tensor_args_size<1>(layout, args...)}
           }
         });
-//        return return_type(stripIndexType(layout(stripTensorIndex(args)...)),
-//                           get_tensor_args_size<0>(args...),
-//                           get_tensor_args_size<1>(args...),
-//                           data,
-//                           layout.template get_dim_stride<get_tensor_arg_idx<0, Args...>()>(),
-//                           layout.template get_dim_stride<get_tensor_arg_idx<1, Args...>()>());
       }
   };
 

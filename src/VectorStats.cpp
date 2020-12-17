@@ -5,49 +5,49 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/pattern/vector/internal/stats.hpp"
+#include "RAJA/pattern/simd_register/stats.hpp"
 #include <stdio.h>
 
-camp::idx_t RAJA::vector_stats::num_vector_copy = 0;
-camp::idx_t RAJA::vector_stats::num_vector_copy_ctor = 0;
-camp::idx_t RAJA::vector_stats::num_vector_broadcast_ctor = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_copy = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_copy_ctor = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_broadcast_ctor = 0;
 
-camp::idx_t RAJA::vector_stats::num_vector_load_packed = 0;
-camp::idx_t RAJA::vector_stats::num_vector_load_packed_n = 0;
-camp::idx_t RAJA::vector_stats::num_vector_load_strided = 0;
-camp::idx_t RAJA::vector_stats::num_vector_load_strided_n = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_load_packed = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_load_packed_n = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_load_strided = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_load_strided_n = 0;
 
-camp::idx_t RAJA::vector_stats::num_vector_store_packed = 0;
-camp::idx_t RAJA::vector_stats::num_vector_store_packed_n = 0;
-camp::idx_t RAJA::vector_stats::num_vector_store_strided = 0;
-camp::idx_t RAJA::vector_stats::num_vector_store_strided_n = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_store_packed = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_store_packed_n = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_store_strided = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_store_strided_n = 0;
 
-camp::idx_t RAJA::vector_stats::num_vector_broadcast = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_broadcast = 0;
 
-camp::idx_t RAJA::vector_stats::num_vector_get = 0;
-camp::idx_t RAJA::vector_stats::num_vector_set = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_get = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_set = 0;
 
-camp::idx_t RAJA::vector_stats::num_vector_add = 0;
-camp::idx_t RAJA::vector_stats::num_vector_subtract = 0;
-camp::idx_t RAJA::vector_stats::num_vector_multiply = 0;
-camp::idx_t RAJA::vector_stats::num_vector_divide = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_add = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_subtract = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_multiply = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_divide = 0;
 
-camp::idx_t RAJA::vector_stats::num_vector_fma = 0;
-camp::idx_t RAJA::vector_stats::num_vector_fms = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_fma = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_fms = 0;
 
-camp::idx_t RAJA::vector_stats::num_vector_sum = 0;
-camp::idx_t RAJA::vector_stats::num_vector_max = 0;
-camp::idx_t RAJA::vector_stats::num_vector_min = 0;
-camp::idx_t RAJA::vector_stats::num_vector_vmax = 0;
-camp::idx_t RAJA::vector_stats::num_vector_vmin = 0;
-camp::idx_t RAJA::vector_stats::num_vector_dot = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_sum = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_max = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_min = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_vmax = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_vmin = 0;
+camp::idx_t RAJA::simd_register_stats::num_vector_dot = 0;
 
-camp::idx_t RAJA::vector_stats::num_matrix_mm_mult_row_row = 0;
-camp::idx_t RAJA::vector_stats::num_matrix_mm_multacc_row_row = 0;
-camp::idx_t RAJA::vector_stats::num_matrix_mm_mult_col_col = 0;
-camp::idx_t RAJA::vector_stats::num_matrix_mm_multacc_col_col = 0;
+camp::idx_t RAJA::simd_register_stats::num_matrix_mm_mult_row_row = 0;
+camp::idx_t RAJA::simd_register_stats::num_matrix_mm_multacc_row_row = 0;
+camp::idx_t RAJA::simd_register_stats::num_matrix_mm_mult_col_col = 0;
+camp::idx_t RAJA::simd_register_stats::num_matrix_mm_multacc_col_col = 0;
 
-void RAJA::vector_stats::resetVectorStats(){
+void RAJA::simd_register_stats::resetVectorStats(){
   num_vector_copy = 0;
   num_vector_copy_ctor = 0;
   num_vector_broadcast_ctor = 0;
@@ -88,9 +88,9 @@ void RAJA::vector_stats::resetVectorStats(){
 
 #define PRINT_STAT(STAT) if(STAT){printf("  %-32s   %ld\n", #STAT, STAT);}
 
-void RAJA::vector_stats::printVectorStats(){
+void RAJA::simd_register_stats::printVectorStats(){
 
-  printf("RAJA Vector Statistics:\n");
+  printf("RAJA SIMD Register Statistics:\n");
 
   PRINT_STAT(num_vector_copy);
   PRINT_STAT(num_vector_copy_ctor);

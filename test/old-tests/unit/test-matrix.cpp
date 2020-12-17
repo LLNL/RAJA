@@ -13,6 +13,7 @@
 #include "RAJA_gtest.hpp"
 
 using MatrixTestTypes = ::testing::Types<
+    RAJA::RegisterMatrix<double, RAJA::MATRIX_COL_MAJOR, RAJA::avx2_register>//,
 
 /*
 #ifdef __AVX__
@@ -55,7 +56,7 @@ using MatrixTestTypes = ::testing::Types<
     RAJA::RegisterMatrix<long, RAJA::MATRIX_COL_MAJOR, RAJA::scalar_register>,
     RAJA::RegisterMatrix<long, RAJA::MATRIX_ROW_MAJOR, RAJA::scalar_register>,
     RAJA::RegisterMatrix<int, RAJA::MATRIX_COL_MAJOR, RAJA::scalar_register>, */
-    RAJA::RegisterMatrix<int, RAJA::MATRIX_ROW_MAJOR, RAJA::scalar_register>
+    //RAJA::RegisterMatrix<int, RAJA::MATRIX_ROW_MAJOR, RAJA::scalar_register>
 
   >;
 
@@ -459,7 +460,7 @@ TYPED_TEST_P(MatrixTest, MatrixMatrix)
 
 
 }
-
+#endif
 TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
 {
 
@@ -547,7 +548,7 @@ TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
   }
 
 }
-#endif
+
 
 TYPED_TEST_P(MatrixTest, AllLoadStore)
 {
@@ -832,7 +833,8 @@ REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
 //                                        MatrixViewStore,
 //                                        MatrixVector,
 //                                        MatrixMatrix,
-//                                        MatrixMatrixAccumulate,
+                                        MatrixMatrixAccumulate,
+
                                           AllLoadStore,
                                           AllAdd,
                                           AllMultiply,

@@ -23,7 +23,6 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/pattern/atomic.hpp"
-#include "RAJA/pattern/vector.hpp"
 
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
