@@ -30,42 +30,94 @@ namespace RAJA
            typename T,
            typename LAYOUT,
            typename SIZES,
+           typename VAL_SEQ,
            camp::idx_t SKEW>
   class TensorRegister;
 
-  struct VectorLayout;
+  template<camp::idx_t ... DIM_SEQ>
+  struct TensorLayout : public camp::idx_seq<DIM_SEQ...>
+  {
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      constexpr
+      bool is_column_major(){
+        return false;
+      }
 
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, camp::idx_t SKEW>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      constexpr
+      bool is_row_major(){
+        return false;
+      }
+
+  };
+
+
+  // specialization for Matrix layouts, where column vs row major matters
+  template<camp::idx_t ROW, camp::idx_t COL>
+  struct TensorLayout<ROW, COL> : public camp::idx_seq<ROW, COL>
+  {
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      constexpr
+      bool is_column_major(){
+        return COL == 1;
+      }
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      constexpr
+      bool is_row_major(){
+        return ROW == 1;
+      }
+  };
+
+
+
+  // 1d tensor layout
+  using VectorLayout = TensorLayout<0>;
+
+  // 2d tensor (matrix) layouts
+  using MatrixRowMajor = TensorLayout<1, 0>;
+  using MatrixColMajor = TensorLayout<0, 1>;
+
+
+  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ, camp::idx_t SKEW>
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, SKEW>
-  operator+(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, SKEW> const &y){
-    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, SKEW>;
+  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>
+  operator+(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW> const &y){
+    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>;
     return register_t(x).add(y);
   }
 
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, camp::idx_t SKEW>
+  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ, camp::idx_t SKEW>
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, SKEW>
-  operator-(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, SKEW> const &y){
-    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, SKEW>;
+  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>
+  operator-(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW> const &y){
+    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>;
     return register_t(x).subtract(y);
   }
 
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, camp::idx_t SKEW>
-  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, SKEW>
-  operator*(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, SKEW> const &y){
-    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, SKEW>;
+  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ, camp::idx_t SKEW>
+  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>
+  operator*(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW> const &y){
+    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>;
     return register_t(x).multiply(y);
   }
 
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, camp::idx_t SKEW>
+  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ, camp::idx_t SKEW>
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, SKEW>
-  operator/(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, SKEW> const &y){
-    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, SKEW>;
+  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>
+  operator/(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW> const &y){
+    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>;
     return register_t(x).divide(y);
   }
 
@@ -81,10 +133,10 @@ namespace internal {
   template<typename Derived>
   class TensorRegisterBase;
 
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, camp::idx_t SKEW>
-  class TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, SKEW>>{
+  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ, camp::idx_t SKEW>
+  class TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>>{
     public:
-      using self_type = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, SKEW>;
+      using self_type = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>;
       using element_type = camp::decay<T>;
 
 

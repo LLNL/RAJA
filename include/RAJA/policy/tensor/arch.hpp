@@ -80,10 +80,6 @@ namespace RAJA
   // This sets the default SIMD register that will be used
   using default_register = RAJA_TENSOR_REGISTER_TYPE;
 
-  // Convenience to describe VectorTensors
-  template<typename REGISTER_POLICY, typename T>
-  using VectorRegister = TensorRegister<avx_register, double, VectorLayout, camp::idx_seq<RegisterTraits<REGISTER_POLICY,T>::s_num_elem>, 0>;
-
 } // namespace RAJA
 
 

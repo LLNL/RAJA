@@ -33,12 +33,12 @@ namespace RAJA
 {
 
   template<camp::idx_t SKEW>
-  class TensorRegister<avx512_register, long, VectorLayout, camp::idx_seq<8>, SKEW> :
-    public internal::TensorRegisterBase<TensorRegister<avx512_register, long, VectorLayout, camp::idx_seq<8>, SKEW>>
+  class TensorRegister<avx512_register, long, VectorLayout, camp::idx_seq<8>, camp::idx_seq<0,1,2,3,4,5,6,7>, SKEW> :
+    public internal::TensorRegisterBase<TensorRegister<avx512_register, long, VectorLayout, camp::idx_seq<8>, camp::idx_seq<0,1,2,3,4,5,6,7>, SKEW>>
   {
     public:
       using register_policy = avx512_register;
-      using self_type = TensorRegister<avx512_register, long, VectorLayout, camp::idx_seq<8>, SKEW>;
+      using self_type = TensorRegister<avx512_register, long, VectorLayout, camp::idx_seq<8>, camp::idx_seq<0,1,2,3,4,5,6,7>, SKEW>;
       using element_type = long;
       using register_type = __m512i;
 

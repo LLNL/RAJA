@@ -29,53 +29,21 @@
 namespace RAJA
 {
 
-  template<camp::idx_t ROW, camp::idx_t COL>
-  struct MatrixLayout : public camp::idx_seq<ROW, COL>{
-    static_assert(ROW == 0 || COL == 0, "invalid template arguments");
-    static_assert(ROW == 1 || COL == 1, "invalid template arguments");
-    static_assert(ROW+COL == 1, "invalid template arguments");
 
-    RAJA_INLINE
-    RAJA_HOST_DEVICE
-    static
-    constexpr
-    bool is_column_major(){
-      return COL == 1;
-    }
-
-    RAJA_INLINE
-    RAJA_HOST_DEVICE
-    static
-    constexpr
-    bool is_row_major(){
-      return ROW == 1;
-    }
-  };
-
-
-  using MATRIX_ROW_MAJOR = MatrixLayout<1, 0>;
-  using MATRIX_COL_MAJOR = MatrixLayout<0, 1>;
-
-  struct VectorLayout{};
-
-
-  namespace internal{
-    template<typename REGISTER_POLICY, typename ELEMENT_TYPE, typename LAYOUT, typename IDX_SEQ>
-    class RegisterMatrixImpl;
-  }
 
   template<typename T, typename LAYOUT, typename REGISTER_POLICY = RAJA::default_register>
-  using RegisterMatrix = internal::RegisterMatrixImpl<
-      REGISTER_POLICY, T, LAYOUT,
-      camp::make_idx_seq_t<RegisterTraits<REGISTER_POLICY, T>::s_num_elem> >;
+  using MatrixRegister =
+      TensorRegister<REGISTER_POLICY,
+                     T,
+                     LAYOUT,
+                     camp::idx_seq<RegisterTraits<REGISTER_POLICY,T>::s_num_elem,
+                                   RegisterTraits<REGISTER_POLICY,T>::s_num_elem>,
+                     camp::make_idx_seq_t<RegisterTraits<REGISTER_POLICY,T>::s_num_elem>,
+                     0>;
 
 
 
 namespace internal {
-
-
-  template<typename REGISTER_POLICY, typename ELEMENT_TYPE, typename LAYOUT, typename IDX_SEQ>
-  class RegisterMatrixImpl;
 
 
 
@@ -83,42 +51,27 @@ namespace internal {
   struct MatrixMatrixProductHelperExpanded;
 
 
-  template<typename ELEMENT_TYPE, typename LAYOUT, typename REGISTER_POLICY, camp::idx_t ... REG_IDX>
+  template<typename T, typename LAYOUT, typename REGISTER_POLICY, camp::idx_t ... VAL_SEQ>
   struct MatrixMatrixProductHelperExpanded<
-    RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
-    RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
-    camp::idx_seq<REG_IDX...>>
+    MatrixRegister<T, LAYOUT, REGISTER_POLICY>,
+    MatrixRegister<T, LAYOUT, REGISTER_POLICY>,
+    camp::idx_seq<VAL_SEQ...>>
   {
-      using matrix_type = RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>;
-      using vector_type = VectorRegister<REGISTER_POLICY, ELEMENT_TYPE>;
+      using matrix_type = MatrixRegister<T, LAYOUT, REGISTER_POLICY>;
+      using vector_type = VectorRegister<T, REGISTER_POLICY>;
       using result_type = matrix_type;
-
-      RAJA_HOST_DEVICE
-      static
-      RAJA_INLINE
-      int calc_vec_product(vector_type &sum, vector_type const &a_vec, matrix_type const &B){
-
-        camp::sink(
-                (sum =
-                    B.vec(REG_IDX).fused_multiply_add(
-                        a_vec.get_and_broadcast(REG_IDX),
-                        sum))...
-                );
-
-        return 0;
-      }
 
       template<camp::idx_t J>
       RAJA_HOST_DEVICE
       static
       RAJA_INLINE
-      int calc_vec_product2(matrix_type &sum, matrix_type const &A, matrix_type const &B){
+      int calc_vec_product(matrix_type &sum, matrix_type const &A, matrix_type const &B){
 
         camp::sink(
-                (sum.vec(REG_IDX) =
+                (sum.vec(VAL_SEQ) =
                     B.vec(J).fused_multiply_add(
-                        A.vec(REG_IDX).get_and_broadcast(J),
-                        sum.vec(REG_IDX)))...
+                        A.vec(VAL_SEQ).get_and_broadcast(J),
+                        sum.vec(VAL_SEQ)))...
                 );
 
         return 0;
@@ -134,15 +87,13 @@ namespace internal {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_mult_row_row ++;
 #endif
-//          camp::sink(calc_vec_product(sum.vec(REG_IDX), A.vec(REG_IDX), B)...);
-          camp::sink(calc_vec_product2<REG_IDX>(sum, A, B)...);
+          camp::sink(calc_vec_product<VAL_SEQ>(sum, A, B)...);
         }
         else{
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_mult_col_col ++;
 #endif
-//          camp::sink(calc_vec_product(sum.vec(REG_IDX), B.vec(REG_IDX), A)...);
-          camp::sink(calc_vec_product2<REG_IDX>(sum, B, A)...);
+          camp::sink(calc_vec_product<VAL_SEQ>(sum, B, A)...);
         }
         return sum;
       }
@@ -155,13 +106,13 @@ namespace internal {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_multacc_row_row ++;
 #endif
-          camp::sink(calc_vec_product(C.vec(REG_IDX), A.vec(REG_IDX), B)...);
+          camp::sink(calc_vec_product<VAL_SEQ>(C, A, B)...);
         }
         else{
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::vector_stats::num_matrix_mm_multacc_col_col ++;
 #endif
-          camp::sink(calc_vec_product(C.vec(REG_IDX), B.vec(REG_IDX), A)...);
+          camp::sink(calc_vec_product<VAL_SEQ>(C, B, A)...);
         }
         return C;
       }
@@ -176,14 +127,14 @@ namespace internal {
   template<typename MATA, typename MATB>
   struct MatrixMatrixProductHelper;
 
-  template<typename ELEMENT_TYPE, typename LAYOUT, typename REGISTER_POLICY>
+  template<typename T, typename LAYOUT, typename REGISTER_POLICY>
   struct MatrixMatrixProductHelper<
-    RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
-    RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>> :
+    MatrixRegister<T, LAYOUT, REGISTER_POLICY>,
+    MatrixRegister<T, LAYOUT, REGISTER_POLICY>> :
   public
-      MatrixMatrixProductHelperExpanded<RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
-                                        RegisterMatrix<ELEMENT_TYPE, LAYOUT, REGISTER_POLICY>,
-                                        camp::make_idx_seq_t<VectorRegister<REGISTER_POLICY, ELEMENT_TYPE>::s_num_elem>>
+      MatrixMatrixProductHelperExpanded<MatrixRegister<T, LAYOUT, REGISTER_POLICY>,
+                                        MatrixRegister<T, LAYOUT, REGISTER_POLICY>,
+                                        camp::make_idx_seq_t<VectorRegister<T, REGISTER_POLICY>::s_num_elem>>
     {};
 
 
@@ -196,70 +147,48 @@ namespace internal {
 
 namespace RAJA
 {
-namespace internal {
-
-
-
-
-
 
 
   /*
-   * Row-Major implementation of MatrixImpl
+   * 2D (Matrix) specialization of TensorRegister
    */
-  template<typename REGISTER_POLICY, typename ELEMENT_TYPE, typename LAYOUT, camp::idx_t ... REG_IDX>
-  class RegisterMatrixImpl<REGISTER_POLICY, ELEMENT_TYPE, LAYOUT, camp::idx_seq<REG_IDX...>>
+  template<typename REGISTER_POLICY, typename T, camp::idx_t ROW_ORD, camp::idx_t COL_ORD, camp::idx_t ROW_SIZE, camp::idx_t COL_SIZE, camp::idx_t ... VAL_SEQ, camp::idx_t SKEW>
+  class TensorRegister<REGISTER_POLICY, T, TensorLayout<ROW_ORD, COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>, camp::idx_seq<VAL_SEQ... >, SKEW> :
+    public internal::TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, TensorLayout<ROW_ORD, COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>, camp::idx_seq<VAL_SEQ... >, SKEW>>
   {
     public:
-      using self_type = RegisterMatrixImpl<REGISTER_POLICY, ELEMENT_TYPE, LAYOUT, camp::idx_seq<REG_IDX...>>;
-
-      //using vector_type = TensorRegister<REGISTER_POLICY, ELEMENT_TYPE, VectorLayout, camp::idx_seq<4>, 0>;
-      using vector_type = VectorRegister<REGISTER_POLICY, ELEMENT_TYPE>;
+      using self_type = TensorRegister<REGISTER_POLICY, T, TensorLayout<ROW_ORD, COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>, camp::idx_seq<VAL_SEQ... >, SKEW>;
+      using vector_type = VectorRegister<T, REGISTER_POLICY>;
       using register_policy = REGISTER_POLICY;
-      using element_type = ELEMENT_TYPE;
-
-      using layout_type = LAYOUT;
-
+      using element_type = T;
+      using layout_type = TensorLayout<ROW_ORD, COL_ORD>;
 
     private:
 
-      vector_type m_registers[sizeof...(REG_IDX)];
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type *getThis(){
-        return static_cast<self_type *>(this);
-      }
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      constexpr
-      self_type const *getThis() const{
-        return static_cast<self_type const *>(this);
-      }
+      vector_type m_values[sizeof...(VAL_SEQ)];
 
 
     public:
 
-      RegisterMatrixImpl() = default;
+      TensorRegister() = default;
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      RegisterMatrixImpl(element_type c) :
-        m_registers{(REG_IDX >= 0) ? vector_type(c) : vector_type(c)...}
+      TensorRegister(element_type c) :
+        m_values{(VAL_SEQ >= 0) ? vector_type(c) : vector_type(c)...}
       {}
 
-      RegisterMatrixImpl(self_type const &c) = default;
-      RegisterMatrixImpl(self_type && c) = default;
+      TensorRegister(self_type const &c) = default;
+      TensorRegister(self_type && c) = default;
 
 
       template<typename ... REGS>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      RegisterMatrixImpl(vector_type reg0, REGS const &... regs) :
-        m_registers{reg0, regs...}
+      TensorRegister(vector_type reg0, REGS const &... regs) :
+        m_values{reg0, regs...}
       {
-        static_assert(1+sizeof...(REGS) == sizeof...(REG_IDX),
+        static_assert(1+sizeof...(REGS) == sizeof...(VAL_SEQ),
             "Incompatible number of registers");
       }
 
@@ -271,21 +200,7 @@ namespace internal {
         return vector_type::is_root();
       }
 
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      static
-      constexpr
-      bool is_column_major() {
-        return LAYOUT::is_column_major();
-      }
 
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      static
-      constexpr
-      bool is_row_major() {
-        return LAYOUT::is_row_major();
-      }
 
       /*!
        * Gets the maximum size of matrix along specified dimension
@@ -310,7 +225,7 @@ namespace internal {
       }
 
 
-      RegisterMatrixImpl &operator=(self_type const &c) = default;
+      TensorRegister &operator=(self_type const &c) = default;
 
 
       /*!
@@ -319,8 +234,8 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &copy(self_type const &v){
-        camp::sink((m_registers[REG_IDX] = v.m_registers[REG_IDX])...);
-        return *getThis();
+        camp::sink((m_values[VAL_SEQ] = v.m_values[VAL_SEQ])...);
+        return *this;
       }
 
 
@@ -333,10 +248,10 @@ namespace internal {
       RAJA_INLINE
       self_type &clear(){
         camp::sink(
-            m_registers[REG_IDX].broadcast(0)...
+            m_values[VAL_SEQ].broadcast(0)...
         );
 
-        return *getThis();
+        return *this;
       }
 
       /*!
@@ -353,18 +268,18 @@ namespace internal {
         printf("th%d,%d: load_packed, stride=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, col_stride);
 #endif
-        if(LAYOUT::is_row_major()){
+        if(layout_type::is_row_major()){
           camp::sink(
-              m_registers[REG_IDX].load_packed(ptr+REG_IDX*row_stride)...
+              m_values[VAL_SEQ].load_packed(ptr+VAL_SEQ*row_stride)...
           );
         }
         else{
           camp::sink(
-              m_registers[REG_IDX].load_packed(ptr+REG_IDX*col_stride)...
+              m_values[VAL_SEQ].load_packed(ptr+VAL_SEQ*col_stride)...
           );
         }
 
-        return *getThis();
+        return *this;
       }
 
       /*!
@@ -379,18 +294,18 @@ namespace internal {
         printf("th%d,%d: load_strided, stride=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, col_stride);
 #endif
-        if(LAYOUT::is_row_major()){
+        if(layout_type::is_row_major()){
           camp::sink(
-              m_registers[REG_IDX].load_strided(ptr+REG_IDX*row_stride, col_stride)...
+              m_values[VAL_SEQ].load_strided(ptr+VAL_SEQ*row_stride, col_stride)...
           );
         }
         else{
           camp::sink(
-              m_registers[REG_IDX].load_strided(ptr+REG_IDX*col_stride, row_stride)...
+              m_values[VAL_SEQ].load_strided(ptr+VAL_SEQ*col_stride, row_stride)...
           );
         }
 
-        return *getThis();
+        return *this;
       }
 
       /*!
@@ -407,22 +322,22 @@ namespace internal {
             threadIdx.x, threadIdx.y, row_stride, 1, num_rows, num_cols);
 #endif
 
-        if(LAYOUT::is_row_major()){
+        if(layout_type::is_row_major()){
           camp::sink(
-              (REG_IDX < num_rows
-              ?  m_registers[REG_IDX].load_packed_n(ptr+REG_IDX*row_stride, num_cols)
-              :  m_registers[REG_IDX].broadcast(0))... // clear to len N
+              (VAL_SEQ < num_rows
+              ?  m_values[VAL_SEQ].load_packed_n(ptr+VAL_SEQ*row_stride, num_cols)
+              :  m_values[VAL_SEQ].broadcast(0))... // clear to len N
           );
         }
         else{
           camp::sink(
-              (REG_IDX < num_cols
-              ?  m_registers[REG_IDX].load_packed_n(ptr+REG_IDX*col_stride, num_rows)
-              :  m_registers[REG_IDX].broadcast(0))... // clear to len N
+              (VAL_SEQ < num_cols
+              ?  m_values[VAL_SEQ].load_packed_n(ptr+VAL_SEQ*col_stride, num_rows)
+              :  m_values[VAL_SEQ].broadcast(0))... // clear to len N
           );
         }
 
-        return *getThis();
+        return *this;
       }
 
       /*!
@@ -438,22 +353,22 @@ namespace internal {
         printf("th%d,%d: load_strided_nm, stride=%d,%d, nm=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, col_stride, num_rows, num_cols);
 #endif
-        if(LAYOUT::is_row_major()){
+        if(layout_type::is_row_major()){
           camp::sink(
-              (REG_IDX < num_rows
-              ?  m_registers[REG_IDX].load_strided_n(ptr+REG_IDX*row_stride, col_stride, num_cols)
-              :  m_registers[REG_IDX].broadcast(0))... // clear to len N
+              (VAL_SEQ < num_rows
+              ?  m_values[VAL_SEQ].load_strided_n(ptr+VAL_SEQ*row_stride, col_stride, num_cols)
+              :  m_values[VAL_SEQ].broadcast(0))... // clear to len N
           );
         }
         else{
           camp::sink(
-              (REG_IDX < num_cols
-              ?  m_registers[REG_IDX].load_strided_n(ptr+REG_IDX*col_stride, row_stride, num_rows)
-              :  m_registers[REG_IDX].broadcast(0))... // clear to len N
+              (VAL_SEQ < num_cols
+              ?  m_values[VAL_SEQ].load_strided_n(ptr+VAL_SEQ*col_stride, row_stride, num_rows)
+              :  m_values[VAL_SEQ].broadcast(0))... // clear to len N
           );
         }
 
-        return *getThis();
+        return *this;
       }
 
 
@@ -472,18 +387,18 @@ namespace internal {
         printf("th%d,%d: store_packed, stride=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, 1);
 #endif
-        if(LAYOUT::is_row_major()){
+        if(layout_type::is_row_major()){
           camp::sink(
-              m_registers[REG_IDX].store_packed(ptr+REG_IDX*row_stride)...
+              m_values[VAL_SEQ].store_packed(ptr+VAL_SEQ*row_stride)...
           );
         }
         else{
           camp::sink(
-              m_registers[REG_IDX].store_packed(ptr+REG_IDX*col_stride)...
+              m_values[VAL_SEQ].store_packed(ptr+VAL_SEQ*col_stride)...
           );
         }
 
-        return *getThis();
+        return *this;
       }
 
       /*!
@@ -498,21 +413,21 @@ namespace internal {
         printf("th%d,%d: store_strided, stride=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, col_stride);
 #endif
-        if(LAYOUT::is_row_major()){
+        if(layout_type::is_row_major()){
           // store all rows width a column stride
           camp::sink(
-              m_registers[REG_IDX].store_strided(ptr+REG_IDX*row_stride, col_stride)...
+              m_values[VAL_SEQ].store_strided(ptr+VAL_SEQ*row_stride, col_stride)...
           );
         }
         else{
           // store all rows width a column stride
           camp::sink(
-              m_registers[REG_IDX].store_strided(ptr+REG_IDX*col_stride, row_stride)...
+              m_values[VAL_SEQ].store_strided(ptr+VAL_SEQ*col_stride, row_stride)...
           );
         }
 
 
-        return *getThis();
+        return *this;
       }
 
       /*!
@@ -528,22 +443,22 @@ namespace internal {
         printf("th%d,%d: RM store_packed_nm, stride=%d,%d, nm=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, 1, num_rows, num_cols);
 #endif
-        if(LAYOUT::is_row_major()){
+        if(layout_type::is_row_major()){
           camp::sink(
-              (REG_IDX < num_rows
-              ?  m_registers[REG_IDX].store_packed_n(ptr+REG_IDX*row_stride, num_cols)
-              :  m_registers[REG_IDX])... // NOP, but has same as above type
+              (VAL_SEQ < num_rows
+              ?  m_values[VAL_SEQ].store_packed_n(ptr+VAL_SEQ*row_stride, num_cols)
+              :  m_values[VAL_SEQ])... // NOP, but has same as above type
           );
         }
         else {
           camp::sink(
-              (REG_IDX < num_cols
-              ?  m_registers[REG_IDX].store_packed_n(ptr+REG_IDX*col_stride, num_rows)
-              :  m_registers[REG_IDX])... // NOP, but has same as above type
+              (VAL_SEQ < num_cols
+              ?  m_values[VAL_SEQ].store_packed_n(ptr+VAL_SEQ*col_stride, num_rows)
+              :  m_values[VAL_SEQ])... // NOP, but has same as above type
           );
         }
 
-        return *getThis();
+        return *this;
       }
 
       /*!
@@ -559,22 +474,22 @@ namespace internal {
         printf("th%d,%d: RM store_strided_nm, stride=%d,%d, nm=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, col_stride, num_rows, num_cols);
 #endif
-        if(LAYOUT::is_row_major()){
+        if(layout_type::is_row_major()){
           camp::sink(
-              (REG_IDX < num_rows
-              ?  m_registers[REG_IDX].store_strided_n(ptr+REG_IDX*row_stride, col_stride, num_cols)
-              :  m_registers[REG_IDX])... // NOP, but has same as above type
+              (VAL_SEQ < num_rows
+              ?  m_values[VAL_SEQ].store_strided_n(ptr+VAL_SEQ*row_stride, col_stride, num_cols)
+              :  m_values[VAL_SEQ])... // NOP, but has same as above type
           );
         }
         else {
           camp::sink(
-              (REG_IDX < num_cols
-              ?  m_registers[REG_IDX].store_strided_n(ptr+REG_IDX*col_stride, row_stride, num_rows)
-              :  m_registers[REG_IDX])... // NOP, but has same as above type
+              (VAL_SEQ < num_cols
+              ?  m_values[VAL_SEQ].store_strided_n(ptr+VAL_SEQ*col_stride, row_stride, num_rows)
+              :  m_values[VAL_SEQ])... // NOP, but has same as above type
           );
         }
 
-        return *getThis();
+        return *this;
       }
 
 
@@ -586,8 +501,8 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &broadcast(element_type v){
-        camp::sink((m_registers[REG_IDX].broadcast(v))...);
-        return *getThis();
+        camp::sink((m_values[VAL_SEQ].broadcast(v))...);
+        return *this;
       }
 
       /*!
@@ -596,17 +511,17 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       vector_type right_multiply_vector(vector_type v) const {
-        if(LAYOUT::is_row_major()){
+        if(layout_type::is_row_major()){
           vector_type result;
           camp::sink(
-              result.set(REG_IDX, v.dot(m_registers[REG_IDX]))...
+              result.set(VAL_SEQ, v.dot(m_values[VAL_SEQ]))...
               );
 
           return result;
         }
         else{
           return
-                RAJA::sum<vector_type>(( m_registers[REG_IDX] * v.get(REG_IDX))...);
+                RAJA::sum<vector_type>(( m_values[VAL_SEQ] * v.get(VAL_SEQ))...);
         }
       }
 
@@ -617,9 +532,9 @@ namespace internal {
       template<typename RMAT>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      typename MatrixMatrixProductHelper<self_type, RMAT>::result_type
+      typename internal::MatrixMatrixProductHelper<self_type, RMAT>::result_type
       multiply(RMAT const &mat) const {
-        return MatrixMatrixProductHelper<self_type,RMAT>::multiply(*getThis(), mat);
+        return internal::MatrixMatrixProductHelper<self_type,RMAT>::multiply(*this, mat);
       }
 
       /*!
@@ -628,16 +543,16 @@ namespace internal {
       template<typename RMAT>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      typename MatrixMatrixProductHelper<self_type, RMAT>::result_type
-      multiply_accumulate(RMAT const &B, typename MatrixMatrixProductHelper<self_type, RMAT>::result_type const &C) const {
-        return MatrixMatrixProductHelper<self_type,RMAT>::multiply_accumulate(*getThis(), B, C);
+      typename internal::MatrixMatrixProductHelper<self_type, RMAT>::result_type
+      multiply_accumulate(RMAT const &B, typename internal::MatrixMatrixProductHelper<self_type, RMAT>::result_type const &C) const {
+        return internal::MatrixMatrixProductHelper<self_type,RMAT>::multiply_accumulate(*this, B, C);
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type add(self_type mat) const {
         return self_type(
-            (m_registers[REG_IDX])+(mat.m_registers[REG_IDX]) ...
+            (m_values[VAL_SEQ])+(mat.m_values[VAL_SEQ]) ...
         );
       }
 
@@ -645,41 +560,41 @@ namespace internal {
       RAJA_INLINE
       self_type subtract(self_type mat) const {
         return self_type(
-            (m_registers[REG_IDX])-(mat.m_registers[REG_IDX]) ...
+            (m_values[VAL_SEQ])-(mat.m_values[VAL_SEQ]) ...
         );
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &set(int row, int col, element_type val){
-        if(LAYOUT::is_row_major()){
-          m_registers[row].set(col, val);
+        if(layout_type::is_row_major()){
+          m_values[row].set(col, val);
         }
         else{
-          m_registers[col].set(row, val);
+          m_values[col].set(row, val);
         }
-        return *getThis();
+        return *this;
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       element_type get(int row, int col) const {
-        return LAYOUT::is_row_major() ?
-             m_registers[row].get(col) :
-             m_registers[col].get(row);
+        return layout_type::is_row_major() ?
+             m_values[row].get(col) :
+             m_values[col].get(row);
       }
 
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       vector_type &vec(int i){
-        return m_registers[i];
+        return m_values[i];
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       vector_type const &vec(int i) const{
-        return m_registers[i];
+        return m_values[i];
       }
 
 
@@ -687,107 +602,12 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       element_type operator()(IDX_I row, IDX_J col){
-        return getThis()->get(row, col);
+        return this->get(row, col);
       }
 
 
 
-      /*!
-       * @brief Add two vector registers
-       * @param x Vector to add to this register
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type operator+(self_type const &x) const
-      {
-        return getThis()->add(x);
-      }
 
-
-      /*!
-       * @brief Add a vector to this vector
-       * @param x Vector to add to this register
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &operator+=(self_type const &x)
-      {
-        *getThis() = getThis()->add(x);
-        return *getThis();
-      }
-
-      /*!
-       * @brief Negate the value of this vector
-       * @return Value of -(*this)
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type operator-() const
-      {
-        return self_type(0).subtract(*getThis());
-      }
-
-      /*!
-       * @brief Subtract two vector registers
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type operator-(self_type const &x) const
-      {
-        return getThis()->subtract(x);
-      }
-
-      /*!
-       * @brief Subtract a vector from this vector
-       * @param x Vector to subtract from this register
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &operator-=(self_type const &x)
-      {
-        *getThis() = getThis()->subtract(x);
-        return *getThis();
-      }
-
-      /*!
-       * Matrix vector product
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      vector_type operator*(vector_type v) const {
-        return getThis()->right_multiply_vector(v);
-      }
-
-      /*!
-       * @brief Multiply two vector registers, element wise
-       * @param x Vector to subctract from this register
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      typename MatrixMatrixProductHelper<self_type, self_type>::result_type
-      operator*(self_type const &mat) const {
-        return getThis()->multiply(mat);
-      }
-
-
-      /*!
-       * @brief Multiply a vector with this vector
-       * @param x Vector to multiple with this register
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type &operator*=(self_type const &x)
-      {
-        *getThis() = getThis()->multiply(x);
-        return *getThis();
-      }
 
       /*!
        * @brief Converts to matrix to a string
@@ -818,7 +638,7 @@ namespace internal {
             if(c > 0){
               s += ", ";
             }
-            s += std::to_string(getThis()->get(r,c));
+            s += std::to_string(this->get(r,c));
           }
           s += "]";
         }
@@ -835,7 +655,6 @@ namespace internal {
 
 
 
-}  // namespace internal
 
 
 
