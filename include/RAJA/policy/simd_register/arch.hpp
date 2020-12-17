@@ -19,7 +19,7 @@
 #define RAJA_policy_register_arch_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/pattern/simd_register/Register.hpp"
+#include "RAJA/pattern/tensor/TensorRegister.hpp"
 
 //
 //////////////////////////////////////////////////////////////////////

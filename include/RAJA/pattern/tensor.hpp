@@ -20,6 +20,7 @@
 
 #include "RAJA/pattern/tensor/TensorIndex.hpp"
 #include "RAJA/pattern/tensor/ExpressionTemplate.hpp"
+#include "RAJA/pattern/tensor/TensorRegister.hpp"
 
 
 #endif

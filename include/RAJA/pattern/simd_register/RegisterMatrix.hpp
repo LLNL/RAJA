@@ -48,6 +48,8 @@ namespace RAJA
   using MATRIX_ROW_MAJOR = MatrixLayout<1, 0>;
   using MATRIX_COL_MAJOR = MatrixLayout<0, 1>;
 
+  struct VectorLayout{};
+
   namespace internal{
     template<typename REGISTER_POLICY, typename ELEMENT_TYPE, typename LAYOUT, typename IDX_SEQ>
     class RegisterMatrixImpl;
