@@ -27,16 +27,19 @@ gcc_8_3_1:
 pgi_19_10:
   variables:
     SPEC: "%pgi@19.10"
+  allow_failure: true
   extends: .build_and_test_on_lassen
 
 pgi_19_10_gcc_8_3_1:
   variables:
     SPEC: "%pgi@19.10 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
+  allow_failure: true
   extends: .build_and_test_on_lassen
 
 pgi_20_4_gcc_8_3_1:
   variables:
     SPEC: "%pgi@20.4 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
+  allow_failure: true
   extends: .build_and_test_on_lassen
 
 xl_16_1_1_7:
@@ -71,6 +74,7 @@ gcc_8_3_1_cuda:
 pgi_19_10_cuda:
   variables:
     SPEC: "+cuda %pgi@19.10 cxxflags=-I/usr/tce/packages/gcc/gcc-4.9.3/include/c++/4.9.3 ^cuda@10.1.168"
+  allow_failure: true
   extends: .build_and_test_on_lassen
 
 pgi_19_10_gcc_8_3_1_cuda:
@@ -88,6 +92,7 @@ pgi_20_4_gcc_8_3_1_cuda_11:
 xl_16_1_1_7_cuda:
   variables:
     SPEC: "+cuda %xl@16.1.1.7 ^cuda@10.1.168 cxxflags=-w cflags=-w"
+  allow_failure: true
   extends: .build_and_test_on_lassen
 
 xl_16_1_1_7_gcc_8_3_1_cuda_11:
