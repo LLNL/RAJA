@@ -22,7 +22,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/pattern/tensor/TensorRegister.hpp"
+#include "RAJA/pattern/tensor/VectorRegisterBase.hpp"
 
 // Include SIMD intrinsics header file
 #include <immintrin.h>
@@ -34,7 +34,7 @@ namespace RAJA
 
   template<camp::idx_t SKEW>
   class TensorRegister<avx2_register, double, VectorLayout, camp::idx_seq<4>, camp::idx_seq<0,1,2,3>, SKEW> :
-    public internal::TensorRegisterBase<TensorRegister<avx2_register, double, VectorLayout, camp::idx_seq<4>, camp::idx_seq<0,1,2,3>, SKEW>>
+    public internal::VectiorRegisterBase<TensorRegister<avx2_register, double, VectorLayout, camp::idx_seq<4>, camp::idx_seq<0,1,2,3>, SKEW>>
   {
     public:
       using register_policy = avx2_register;
@@ -103,6 +103,10 @@ namespace RAJA
        */
       RAJA_INLINE
       TensorRegister(element_type const &c) : m_value(_mm256_set1_pd(c)) {}
+
+
+
+
 
 
       /*!

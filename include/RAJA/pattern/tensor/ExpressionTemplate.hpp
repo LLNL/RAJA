@@ -85,7 +85,7 @@ namespace RAJA
         template<typename RHS>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        TensorAdd<self_type, RHS> operator-(RHS const &rhs) const {
+        TensorSubtract<self_type, RHS> operator-(RHS const &rhs) const {
           return TensorSubtract<self_type, RHS>(*getThis(), rhs);
         }
 
@@ -162,17 +162,14 @@ namespace RAJA
         }
 
 
+        template<typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        result_type eval_full(tile_type const &tile) const {
-          auto ptr = m_ref.m_pointer +
-                     tile.m_begin[0]*m_ref.m_stride[0] +
-                     tile.m_begin[1]*m_ref.m_stride[1];
+        result_type eval(TILE_TYPE const &tile) const {
 
           result_type x;
-          x.load_strided(ptr,
-                         m_ref.m_stride[0],
-                         m_ref.m_stride[1]);
+
+          x.load_ref(merge_ref_tile(m_ref, tile));
 
           return x;
         }
@@ -191,27 +188,54 @@ namespace RAJA
         RAJA_HOST_DEVICE
         void store(RHS const &rhs)
         {
-          // get tile size from matrix type
-          index_type row_tile_size = tensor_register_type::s_dim_elem(0);
-          index_type col_tile_size = tensor_register_type::s_dim_elem(1);
+          store_expanded(rhs, camp::make_idx_seq_t<tensor_register_type::s_num_dims>{});
+        }
 
-
+        template<typename RHS, camp::idx_t ... DIM_SEQ>
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        void store_expanded(RHS const &rhs, camp::idx_seq<DIM_SEQ...> const &)
+        {
           // tile over full rows and columns
-          tile_type tile{{0,0},{row_tile_size, col_tile_size}};
-          for(tile.m_begin[0] = 0;tile.m_begin[0] < m_ref.m_tile.m_size[0]; tile.m_begin[0] += row_tile_size){
-            for(tile.m_begin[1] = 0; tile.m_begin[1] < m_ref.m_tile.m_size[1];tile.m_begin[1] += col_tile_size){
-              // Call rhs to evaluate this tile
-              result_type x = rhs.eval_full(tile);
+          //tile_type tile{{0,0},{row_tile_size, col_tile_size}};
+          tile_type tile {
+            {m_ref.m_tile.m_begin[DIM_SEQ]...},
+            {tensor_register_type::s_dim_elem(DIM_SEQ)...},
+          };
 
-              // Store tile result
-              auto ptr = m_ref.m_pointer +
-                         tile.m_begin[0]*m_ref.m_stride[0] +
-                         tile.m_begin[1]*m_ref.m_stride[1];
-              x.store_strided(ptr,
-                              m_ref.m_stride[0],
-                              m_ref.m_stride[1]);
-            }
+
+          // Do all of the tiling loops
+          store_tile_loop(rhs, tile, camp::idx_seq<DIM_SEQ...>{});
+
+        }
+
+        template<typename RHS, camp::idx_t DIM0, camp::idx_t ... DIM_REST>
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        void store_tile_loop(RHS const &rhs, tile_type &tile, camp::idx_seq<DIM0, DIM_REST...> const &)
+        {
+          for(tile.m_begin[DIM0] = m_ref.m_tile.m_begin[DIM0];
+              tile.m_begin[DIM0] < m_ref.m_tile.m_size[DIM0];
+              tile.m_begin[DIM0] += tensor_register_type::s_dim_elem(DIM0)){
+
+            // Do the next inner tiling loop
+            store_tile_loop(rhs, tile, camp::idx_seq<DIM_REST...>{});
+
           }
+
+        }
+
+        template<typename RHS>
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        void store_tile_loop(RHS const &rhs, tile_type &tile, camp::idx_seq<> const &)
+        {
+
+          // Call rhs to evaluate this tile
+          result_type x = rhs.eval(tile);
+
+          // Store result
+          x.store_ref(merge_ref_tile(m_ref, tile));
         }
 
 
@@ -240,9 +264,10 @@ namespace RAJA
         {}
 
 
+        template<typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        result_type eval_full(tile_type const &tile) const {
+        result_type eval(TILE_TYPE const &tile) const {
 
 //          printf("MMMult: "); tile.print();
 
@@ -263,10 +288,10 @@ namespace RAJA
 
             // evaluate both sides of operator
             lhs_tile.m_begin[1] = k;
-            result_type lhs = m_lhs.eval_full(lhs_tile);
+            result_type lhs = m_lhs.eval(lhs_tile);
 
             rhs_tile.m_begin[0] = k;
-            result_type rhs = m_rhs.eval_full(rhs_tile);
+            result_type rhs = m_rhs.eval(rhs_tile);
 
             // compute product into x
             x = lhs.multiply_accumulate(rhs, x);
@@ -291,7 +316,6 @@ namespace RAJA
         using rhs_type = RHS_TYPE;
         using element_type = typename LHS_TYPE::element_type;
         using index_type = typename LHS_TYPE::index_type;
-        using tile_type = typename LHS_TYPE::tile_type;
         using result_type = typename LHS_TYPE::result_type;
 
         RAJA_INLINE
@@ -301,12 +325,13 @@ namespace RAJA
         {}
 
 
+        template<typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        result_type eval_full(tile_type const &tile) const {
+        result_type eval(TILE_TYPE const &tile) const {
 
-          result_type x = m_lhs.eval_full(tile);
-          result_type y = m_rhs.eval_full(tile);
+          result_type x = m_lhs.eval(tile);
+          result_type y = m_rhs.eval(tile);
 
           return x.add(y);
         }
@@ -326,7 +351,6 @@ namespace RAJA
         using rhs_type = RHS_TYPE;
         using element_type = typename LHS_TYPE::element_type;
         using index_type = typename LHS_TYPE::index_type;
-        using tile_type = typename LHS_TYPE::tile_type;
         using result_type = typename LHS_TYPE::result_type;
 
         RAJA_INLINE
@@ -336,12 +360,13 @@ namespace RAJA
         {}
 
 
+        template<typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        result_type eval_full(tile_type const &tile) const {
+        result_type eval(TILE_TYPE const &tile) const {
 
-          result_type x = m_lhs.eval_full(tile);
-          result_type y = m_rhs.eval_full(tile);
+          result_type x = m_lhs.eval(tile);
+          result_type y = m_rhs.eval(tile);
 
           return x.subtract(y);
         }

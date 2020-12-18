@@ -23,6 +23,7 @@
 #include "RAJA/util/macros.hpp"
 
 #include "camp/camp.hpp"
+#include "RAJA/pattern/tensor/TensorRef.hpp"
 
 namespace RAJA
 {
@@ -133,12 +134,13 @@ namespace internal {
   template<typename Derived>
   class TensorRegisterBase;
 
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ, camp::idx_t SKEW>
-  class TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>>{
+  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename camp::idx_t ... SIZES, camp::idx_t ... VAL_SEQ, camp::idx_t SKEW>
+  class TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, LAYOUT, camp::idx_seq<SIZES...>, camp::idx_seq<VAL_SEQ...>, SKEW>>{
     public:
-      using self_type = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>;
+      using self_type = TensorRegister<REGISTER_POLICY, T, LAYOUT, camp::idx_seq<SIZES...>, camp::idx_seq<VAL_SEQ...>, SKEW>;
       using element_type = camp::decay<T>;
 
+      static constexpr camp::idx_t s_num_dims = sizeof...(SIZES);
 
     private:
 

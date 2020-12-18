@@ -127,6 +127,7 @@ namespace internal
         : 0 ...);
   }
 
+
   namespace detail {
 
   /*!
@@ -179,13 +180,13 @@ namespace internal
       return_type make_return(LayoutType const &layout, PointerType const &data, Args const &... args){
         return return_type(ref_type{
           // data pointer
-          &data[0],
+          &data[0] + layout(isTensorIndex<Args>() ? LinIdx{0} : (LinIdx)stripIndexType(stripTensorIndex(args))...),
           // strides
           {(LinIdx)layout.template get_dim_stride<get_tensor_arg_idx<VecSeq, Args...>()>()...},
           // tile
           {
               // begin
-              {0,0},
+              {(LinIdx)(0*get_tensor_args_size<VecSeq>(layout, args...))...},
 
               // size
               {(LinIdx)get_tensor_args_size<VecSeq>(layout, args...)...}

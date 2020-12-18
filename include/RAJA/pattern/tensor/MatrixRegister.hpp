@@ -254,6 +254,90 @@ namespace RAJA
         return *this;
       }
 
+
+
+      /*!
+       * @brief Performs load specified by TensorRef object.
+       */
+      template<typename POINTER_TYPE, typename INDEX_TYPE, internal::ET::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
+      RAJA_INLINE
+      self_type &load_ref(internal::ET::TensorRef<self_type, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 2, STRIDE_ONE_DIM> const &ref){
+
+        auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0] +
+                                   ref.m_tile.m_begin[1]*ref.m_stride[1];
+
+        // check for packed data
+        if(STRIDE_ONE_DIM == 0){
+          // full vector?
+          if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
+            load_packed(ptr, ref.m_stride[0], ref.m_stride[1]);
+          }
+          // partial
+          else{
+            load_packed_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                                ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
+          }
+
+        }
+        // strided data
+        else
+        {
+          // full vector?
+          if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
+            load_strided(ptr, ref.m_stride[0], ref.m_stride[1]);
+          }
+          // partial
+          else{
+            load_strided_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                                ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
+          }
+        }
+        return *this;
+      }
+
+
+      /*!
+       * @brief Performs load specified by TensorRef object.
+       */
+      template<typename POINTER_TYPE, typename INDEX_TYPE, internal::ET::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
+      RAJA_INLINE
+      self_type const &store_ref(internal::ET::TensorRef<self_type, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE,2, STRIDE_ONE_DIM> const &ref) const {
+
+        auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0] +
+                                   ref.m_tile.m_begin[1]*ref.m_stride[1];
+
+        // check for packed data
+        if(STRIDE_ONE_DIM == 0){
+          // full vector?
+          if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
+            store_packed(ptr, ref.m_stride[0], ref.m_stride[1]);
+          }
+          // partial
+          else{
+            store_packed_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                                ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
+          }
+
+        }
+        // strided data
+        else
+        {
+          // full vector?
+          if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
+            store_strided(ptr, ref.m_stride[0], ref.m_stride[1]);
+          }
+          // partial
+          else{
+            store_strided_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                                ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
+          }
+        }
+        return *this;
+        return *this;
+      }
+
+
+
       /*!
        * Loads a dense full matrix from memory.
        *
@@ -380,8 +464,8 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &store_packed(element_type *ptr,
-          int row_stride, int col_stride)
+      self_type const &store_packed(element_type *ptr,
+          int row_stride, int col_stride) const
       {
 #if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
         printf("th%d,%d: store_packed, stride=%d,%d\n",
@@ -406,8 +490,8 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &store_strided(element_type *ptr,
-          int row_stride, int col_stride)
+      self_type const &store_strided(element_type *ptr,
+          int row_stride, int col_stride) const
       {
 #if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
         printf("th%d,%d: store_strided, stride=%d,%d\n",
@@ -435,9 +519,9 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &store_packed_nm(element_type *ptr,
+      self_type const &store_packed_nm(element_type *ptr,
           int row_stride, int col_stride,
-          int num_rows, int num_cols)
+          int num_rows, int num_cols) const
       {
 #if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
         printf("th%d,%d: RM store_packed_nm, stride=%d,%d, nm=%d,%d\n",
@@ -466,9 +550,9 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &store_strided_nm(element_type *ptr,
+      self_type const &store_strided_nm(element_type *ptr,
           int row_stride, int col_stride,
-          int num_rows, int num_cols)
+          int num_rows, int num_cols) const
       {
 #if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
         printf("th%d,%d: RM store_strided_nm, stride=%d,%d, nm=%d,%d\n",

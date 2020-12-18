@@ -22,6 +22,6 @@
 #include "RAJA/pattern/tensor/ExpressionTemplate.hpp"
 #include "RAJA/pattern/tensor/TensorRegister.hpp"
 #include "RAJA/pattern/tensor/VectorRegister.hpp"
-#include "RAJA/pattern/tensor/RegisterMatrixImpl.hpp"
+#include "RAJA/pattern/tensor/MatrixRegister.hpp"
 
 #endif

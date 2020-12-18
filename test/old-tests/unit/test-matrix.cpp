@@ -668,6 +668,115 @@ TYPED_TEST_P(MatrixTest, AllAdd)
 
 }
 
+TYPED_TEST_P(MatrixTest, AllSubtract)
+{
+  using matrix_t = TypeParam;
+  using element_t = typename matrix_t::element_type;
+
+  static const int N = matrix_t::vector_type::s_num_elem * 4;
+
+  // Create a row-major data buffer
+  element_t data1[N][N], data2[N][N];
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      data1[i][j] = i*j*j;
+      data2[i][j] = i+2*j;
+    }
+  }
+
+  // Create an empty result bufffer
+  element_t data3[N][N];
+
+  //  Create views
+  RAJA::View<element_t, RAJA::Layout<2, int>> view1(
+      &data1[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
+
+
+  RAJA::View<element_t, RAJA::Layout<2, int>> view2(
+      &data2[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
+
+  RAJA::View<element_t, RAJA::Layout<2, int>> view3(
+      &data3[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
+
+
+
+  using Row = RAJA::RowIndex<int, matrix_t>;
+  using Col = RAJA::ColIndex<int, matrix_t>;
+
+
+  // Perform subtraction of view2 from  view1
+  view3(Row::all(), Col::all()) = view1(Row::all(), Col::all()) -
+                                  view2(Row::all(), Col::all());
+
+
+
+  // Check that data1==data2
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      element_t result = data1[i][j] - data2[i][j];
+
+      ASSERT_SCALAR_EQ(data3[i][j], result);
+
+      //printf("(%d,%d): val=%e, exp=%e\n",(int)i, (int)j, (double)data3[i][j], (double)result);
+    }
+  }
+
+  using vector_t = typename matrix_t::vector_type;
+  using Vec = RAJA::VectorIndex<int, vector_t>;
+
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      view3(i,j) = 0;
+    }
+  }
+
+  // Perform subtraction of view1 from  view2
+  // but do it row-by-row
+  for(camp::idx_t i = 0;i < N; ++ i){
+    view3(i, Vec::all()) = view2(i, Vec::all()) - view1(i, Vec::all());
+  }
+
+
+
+  // Check that data1==data2
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      element_t result = data2[i][j] - data1[i][j];
+
+      ASSERT_SCALAR_EQ(data3[i][j], result);
+
+//      printf("(%d,%d): val=%e, exp=%e\n",(int)i, (int)j, (double)data3[i][j], (double)result);
+    }
+  }
+
+
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      view3(i,j) = 0;
+    }
+  }
+
+  // Perform subtraction of view1 from  view2
+  // but do it column-by-column
+  for(camp::idx_t i = 0;i < N; ++ i){
+    view3(Vec::all(),i) = view2(Vec::all(),i) - view1(Vec::all(), i);
+  }
+
+
+
+  // Check that data1==data2
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      element_t result = data2[i][j] - data1[i][j];
+
+      ASSERT_SCALAR_EQ(data3[i][j], result);
+
+//      printf("(%d,%d): val=%e, exp=%e\n",(int)i, (int)j, (double)data3[i][j], (double)result);
+    }
+  }
+
+}
+
 
 TYPED_TEST_P(MatrixTest, AllMultiply)
 {
@@ -837,6 +946,7 @@ REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
 
                                           AllLoadStore,
                                           AllAdd,
+                                          AllSubtract,
                                           AllMultiply,
                                           AllMultiplyAdd);
 

@@ -45,6 +45,7 @@ namespace RAJA
         index_type m_begin[NUM_DIMS];
         index_type m_size[NUM_DIMS];
 
+        static constexpr camp::idx_t s_num_dims = NUM_DIMS;
         static constexpr TensorTileSize s_tensor_size = TENSOR_SIZE;
 
 
@@ -69,13 +70,13 @@ namespace RAJA
 
 
 
-    template<typename TENSOR_REG_TYPE, typename POINTER_TYPE, typename INDEX_TYPE, TensorTileSize TENSOR_SIZE, camp::idx_t NUM_DIMS, camp::idx_t STRIDE_ONE_DIM = -1>
+    template<typename TENSOR_TYPE, typename POINTER_TYPE, typename INDEX_TYPE, TensorTileSize TENSOR_SIZE, camp::idx_t NUM_DIMS, camp::idx_t STRIDE_ONE_DIM = -1>
     struct TensorRef
     {
-        using self_type = TensorRef<TENSOR_REG_TYPE, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>;
+        using self_type = TensorRef<TENSOR_TYPE, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>;
         using tile_type = TensorTile<INDEX_TYPE, TENSOR_SIZE, NUM_DIMS>;
 
-        using tensor_type = TENSOR_REG_TYPE;
+        using tensor_type = TENSOR_TYPE;
         using pointer_type = POINTER_TYPE;
         using index_type = INDEX_TYPE;
         static constexpr camp::idx_t s_stride_one_dim = STRIDE_ONE_DIM;
@@ -99,6 +100,42 @@ namespace RAJA
         }
 
     };
+
+
+    template<typename REF_TYPE, typename TILE_TYPE, typename DIM_SEQ>
+    struct MergeRefTile;
+
+
+    template<typename TENSOR_TYPE, typename POINTER_TYPE, typename INDEX_TYPE, TensorTileSize RTENSOR_SIZE, camp::idx_t NUM_DIMS, camp::idx_t STRIDE_ONE_DIM, TensorTileSize TENSOR_SIZE, camp::idx_t ... DIM_SEQ>
+    struct MergeRefTile<TensorRef<TENSOR_TYPE, POINTER_TYPE, INDEX_TYPE, RTENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>, TensorTile<INDEX_TYPE, TENSOR_SIZE, NUM_DIMS>, camp::idx_seq<DIM_SEQ...>> {
+
+        using ref_type = TensorRef<TENSOR_TYPE, POINTER_TYPE, INDEX_TYPE, RTENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>;
+        using tile_type = TensorTile<INDEX_TYPE, TENSOR_SIZE, NUM_DIMS>;
+
+        using result_type = TensorRef<TENSOR_TYPE, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>;
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static constexpr
+        result_type merge(ref_type const &ref, tile_type const &tile){
+          return result_type{
+            ref.m_pointer,
+            {ref.m_stride[DIM_SEQ]...},
+            tile
+          };
+        }
+
+
+    };
+
+
+
+    template<typename REF_TYPE, typename TILE_TYPE>
+    auto merge_ref_tile(REF_TYPE const &ref, TILE_TYPE const &tile) ->
+      typename MergeRefTile<REF_TYPE, TILE_TYPE, camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::result_type
+    {
+      return MergeRefTile<REF_TYPE, TILE_TYPE, camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::merge(ref, tile);
+    }
 
 
 
