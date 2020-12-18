@@ -13,8 +13,6 @@
 #include "RAJA_gtest.hpp"
 
 using MatrixTestTypes = ::testing::Types<
-    RAJA::MatrixRegister<double, RAJA::MatrixColMajor, RAJA::avx2_register>//,
-
 /*
 #ifdef __AVX__
     RAJA::MatrixRegister<double, RAJA::MatrixColMajor, RAJA::avx_register>,
@@ -55,8 +53,8 @@ using MatrixTestTypes = ::testing::Types<
     RAJA::MatrixRegister<float, RAJA::MatrixRowMajor, RAJA::scalar_register>,
     RAJA::MatrixRegister<long, RAJA::MatrixColMajor, RAJA::scalar_register>,
     RAJA::MatrixRegister<long, RAJA::MatrixRowMajor, RAJA::scalar_register>,
-    RAJA::MatrixRegister<int, RAJA::MatrixColMajor, RAJA::scalar_register>, */
-    //RAJA::MatrixRegister<int, RAJA::MatrixRowMajor, RAJA::scalar_register>
+    RAJA::MatrixRegister<int, RAJA::MatrixColMajor, RAJA::scalar_register>,*/
+    RAJA::MatrixRegister<int, RAJA::MatrixRowMajor, RAJA::scalar_register>
 
   >;
 
@@ -79,7 +77,7 @@ protected:
 };
 TYPED_TEST_SUITE_P(MatrixTest);
 
-#if 0
+#if 1
 /*
  * We are using ((double)rand()/RAND_MAX) for input values so the compiler cannot do fancy
  * things, like constexpr out all of the intrinsics.
@@ -251,7 +249,7 @@ TYPED_TEST_P(MatrixTest, MatrixStore)
 
 TYPED_TEST_P(MatrixTest, MatrixViewLoad)
 {
-
+/*
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
 
@@ -301,7 +299,7 @@ TYPED_TEST_P(MatrixTest, MatrixViewLoad)
     for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
       ASSERT_SCALAR_EQ(m2.get(i,j), data2[j][i]);
     }
-  }
+  }*/
 
 }
 
@@ -361,7 +359,7 @@ TYPED_TEST_P(MatrixTest, MatrixViewStore)
 
 }
 
-
+/*
 TYPED_TEST_P(MatrixTest, MatrixVector)
 {
 
@@ -388,13 +386,13 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
     element_t expected(0);
 
     for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
-      expected += m.get(i,j)*v[j];
+      expected += m.get(i,j)*v.get(j);
     }
 
-    ASSERT_SCALAR_EQ(mv[i], expected);
+    ASSERT_SCALAR_EQ(mv.get(i), expected);
   }
 
-}
+}*/
 
 TYPED_TEST_P(MatrixTest, MatrixMatrix)
 {
@@ -934,14 +932,14 @@ TYPED_TEST_P(MatrixTest, AllMultiplyAdd)
 
 
 REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
-//    MatrixCtor,
-//                                        MatrixGetSet,
-//                                        MatrixLoad,
-//                                        MatrixStore,
-//                                        MatrixViewLoad,
-//                                        MatrixViewStore,
+                                        MatrixCtor,
+                                        MatrixGetSet,
+                                        MatrixLoad,
+                                        MatrixStore,
+                                        MatrixViewLoad,
+                                        MatrixViewStore,
 //                                        MatrixVector,
-//                                        MatrixMatrix,
+                                        MatrixMatrix,
                                         MatrixMatrixAccumulate,
 
                                           AllLoadStore,

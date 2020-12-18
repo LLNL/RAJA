@@ -31,8 +31,46 @@ namespace RAJA
   namespace internal
   {
 
+    class TensorRegisterConcreteBase;
+
   namespace ET
   {
+    class TensorExpressionConcreteBase{};
+
+    template<typename RHS, typename enable = void>
+    struct NormalizeRhsHelper;
+
+
+    /*
+     * For TensorExpression nodes, we just return them as-is.
+     */
+    template<typename RHS>
+    struct NormalizeRhsHelper<RHS,
+    typename std::enable_if<std::is_base_of<TensorExpressionConcreteBase, RHS>::value>::type>
+    {
+        using return_type = RHS;
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        return_type normalize(RHS const &rhs){
+          return rhs;
+        }
+    };
+
+
+
+
+
+    template<typename RHS>
+    RAJA_INLINE
+    auto normalizeRHS(RHS const &rhs) ->
+    typename NormalizeRhsHelper<RHS>::return_type
+    {
+      return NormalizeRhsHelper<RHS>::normalize(rhs);
+    }
+
 
     template<typename TENSOR_REGISTER_TYPE, typename REF_TYPE>
     class TensorLoadStore;
@@ -46,8 +84,9 @@ namespace RAJA
     template<typename LHS_TYPE, typename RHS_TYPE>
     class TensorSubtract;
 
+
     template<typename DERIVED_TYPE>
-    class TensorExpressionBase  {
+    class TensorExpressionBase :public TensorExpressionConcreteBase {
       public:
         using self_type = DERIVED_TYPE;
 
@@ -108,6 +147,7 @@ namespace RAJA
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
+        explicit
         constexpr
         TensorLoadStore(ref_type const &ref) : m_ref(ref)
         {
@@ -129,7 +169,9 @@ namespace RAJA
         RAJA_INLINE
         self_type &operator=(RHS const &rhs)
         {
-          store(rhs);
+
+          store(normalizeRHS(rhs));
+
           return *this;
         }
 
@@ -305,6 +347,54 @@ namespace RAJA
       private:
         lhs_type m_lhs;
         rhs_type m_rhs;
+    };
+
+
+    template<typename TENSOR_TYPE>
+    class TensorConstant :  public TensorExpressionBase<TensorConstant<TENSOR_TYPE>> {
+      public:
+        using self_type = TensorConstant<TENSOR_TYPE>;
+        using tensor_type = TENSOR_TYPE;
+        using element_type = typename TENSOR_TYPE::element_type;
+        using result_type = tensor_type;
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        explicit
+        TensorConstant(tensor_type const &value) :
+        m_value(value)
+        {}
+
+
+        template<typename TILE_TYPE>
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        result_type eval(TILE_TYPE const &) const {
+          return m_value;
+        }
+
+      private:
+        tensor_type m_value;
+    };
+
+
+
+    /*
+     * For TensorRegister nodes, we need to wrap this in a constant value ET node
+     */
+    template<typename RHS>
+    struct NormalizeRhsHelper<RHS,
+    typename std::enable_if<std::is_base_of<RAJA::internal::TensorRegisterConcreteBase, RHS>::value>::type>
+    {
+        using return_type = TensorConstant<RHS>;
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        return_type normalize(RHS const &rhs){
+          return return_type(rhs);
+        }
     };
 
 

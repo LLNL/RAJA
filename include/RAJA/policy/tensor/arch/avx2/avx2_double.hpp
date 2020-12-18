@@ -34,7 +34,7 @@ namespace RAJA
 
   template<camp::idx_t SKEW>
   class TensorRegister<avx2_register, double, VectorLayout, camp::idx_seq<4>, camp::idx_seq<0,1,2,3>, SKEW> :
-    public internal::VectiorRegisterBase<TensorRegister<avx2_register, double, VectorLayout, camp::idx_seq<4>, camp::idx_seq<0,1,2,3>, SKEW>>
+    public internal::VectorRegisterBase<TensorRegister<avx2_register, double, VectorLayout, camp::idx_seq<4>, camp::idx_seq<0,1,2,3>, SKEW>>
   {
     public:
       using register_policy = avx2_register;

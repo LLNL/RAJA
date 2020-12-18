@@ -125,6 +125,8 @@ namespace RAJA
 
 namespace internal {
 
+  class TensorRegisterConcreteBase {};
+
   /*!
    * TensorRegister base class that provides some default behaviors and simplifies
    * the implementation of new register types.
@@ -135,7 +137,9 @@ namespace internal {
   class TensorRegisterBase;
 
   template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename camp::idx_t ... SIZES, camp::idx_t ... VAL_SEQ, camp::idx_t SKEW>
-  class TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, LAYOUT, camp::idx_seq<SIZES...>, camp::idx_seq<VAL_SEQ...>, SKEW>>{
+  class TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, LAYOUT, camp::idx_seq<SIZES...>, camp::idx_seq<VAL_SEQ...>, SKEW>> :
+    public TensorRegisterConcreteBase
+  {
     public:
       using self_type = TensorRegister<REGISTER_POLICY, T, LAYOUT, camp::idx_seq<SIZES...>, camp::idx_seq<VAL_SEQ...>, SKEW>;
       using element_type = camp::decay<T>;

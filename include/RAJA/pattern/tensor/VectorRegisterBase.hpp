@@ -34,10 +34,10 @@ namespace internal {
    * This provides common functionality that is special to 1D (Vector) Tensors
    */
   template<typename Derived>
-  class VectiorRegisterBase;
+  class VectorRegisterBase;
 
   template<typename REGISTER_POLICY, typename T, camp::idx_t SIZE, camp::idx_t ... VAL_SEQ, camp::idx_t SKEW>
-  class VectiorRegisterBase<TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>, camp::idx_seq<VAL_SEQ...>, SKEW>> :
+  class VectorRegisterBase<TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>, camp::idx_seq<VAL_SEQ...>, SKEW>> :
     public TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>, camp::idx_seq<VAL_SEQ...>, SKEW>>
   {
     public:

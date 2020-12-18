@@ -18,7 +18,7 @@
 #ifndef RAJA_policy_vector_register_scalar_HPP
 #define RAJA_policy_vector_register_scalar_HPP
 
-#include "RAJA/pattern/tensor/TensorRegister.hpp"
+#include "RAJA/pattern/tensor/VectorRegisterBase.hpp"
 
 namespace RAJA
 {
@@ -40,7 +40,7 @@ namespace RAJA
    */
   template<typename T, camp::idx_t SKEW>
   class TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>, camp::idx_seq<0>, SKEW> :
-      public internal::TensorRegisterBase<TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>, camp::idx_seq<0>, SKEW>>
+      public internal::VectorRegisterBase<TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>, camp::idx_seq<0>, SKEW>>
   {
     public:
       using register_policy = scalar_register;
