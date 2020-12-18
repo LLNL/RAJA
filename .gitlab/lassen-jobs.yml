@@ -91,7 +91,7 @@ pgi_20_4_gcc_8_3_1_cuda_11:
 
 xl_16_1_1_7_cuda:
   variables:
-    SPEC: "+cuda %xl@16.1.1.7 ^cuda@10.1.168 cxxflags=-w cflags=-w"
+    SPEC: "+cuda %xl@16.1.1.7 ^cuda@10.1.168 cxxflags='-w -std=c++11'"
   allow_failure: true
   extends: .build_and_test_on_lassen
 
