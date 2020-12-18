@@ -14,6 +14,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 #ifndef RAJA_pattern_teams_hip_HPP
 #define RAJA_pattern_teams_hip_HPP
 
@@ -30,13 +31,11 @@ template <bool async, int num_threads = 0>
 struct hip_launch_t {
 };
 
-
 template <typename BODY>
 __global__ void launch_global_fcn(LaunchContext ctx, BODY body)
 {
   body(ctx);
 }
-
 
 template <bool async>
 struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
@@ -60,7 +59,6 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
     }
   }
 };
-
 
 template <typename BODY, int num_threads>
 __launch_bounds__(num_threads, 1) __global__
@@ -96,15 +94,15 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
 /*
    HIP global thread mapping
 */
-template<int DIM>
-struct hip_global_thread_xyz;
+template<int ... DIM>
+struct hip_global_thread;
 
-using hip_global_thread_x = hip_global_thread_xyz<0>;
-using hip_global_thread_y = hip_global_thread_xyz<1>;
-using hip_global_thread_z = hip_global_thread_xyz<2>;
+using hip_global_thread_x = hip_global_thread<0>;
+using hip_global_thread_y = hip_global_thread<1>;
+using hip_global_thread_z = hip_global_thread<2>;
 
 template <typename SEGMENT, int DIM>
-struct LoopExecute<hip_global_thread_xyz<DIM>, SEGMENT> {
+struct LoopExecute<hip_global_thread<DIM>, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -119,6 +117,77 @@ struct LoopExecute<hip_global_thread_xyz<DIM>, SEGMENT> {
         internal::get_hip_dim<DIM>(blockDim)*internal::get_hip_dim<DIM>(blockIdx);
 
       if (tx < len) body(*(segment.begin() + tx));
+    }
+  }
+};
+
+using hip_global_thread_xy = hip_global_thread<0,1>;
+using hip_global_thread_xz = hip_global_thread<0,2>;
+using hip_global_thread_yx = hip_global_thread<1,0>;
+using hip_global_thread_yz = hip_global_thread<1,2>;
+using hip_global_thread_zx = hip_global_thread<2,0>;
+using hip_global_thread_zy = hip_global_thread<2,1>;
+
+template <typename SEGMENT, int DIM0, int DIM1>
+struct LoopExecute<hip_global_thread<DIM0, DIM1>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      BODY const &body)
+  {
+    const int len1 = segment1.end() - segment1.begin();
+    const int len0 = segment0.end() - segment0.begin();
+    {
+      const int tx = internal::get_hip_dim<DIM0>(threadIdx) +
+        internal::get_hip_dim<DIM0>(blockDim)*internal::get_hip_dim<DIM0>(blockIdx);
+
+      const int ty = internal::get_hip_dim<DIM1>(threadIdx) +
+        internal::get_hip_dim<DIM1>(blockDim)*internal::get_hip_dim<DIM1>(blockIdx);
+
+      if (tx < len0 && ty < len1)
+        body(*(segment0.begin() + tx), *(segment1.begin() + ty));
+    }
+  }
+};
+
+using hip_global_thread_xyz = hip_global_thread<0,1,2>;
+using hip_global_thread_xzy = hip_global_thread<0,2,1>;
+using hip_global_thread_yxz = hip_global_thread<1,0,2>;
+using hip_global_thread_yzx = hip_global_thread<1,2,0>;
+using hip_global_thread_zxy = hip_global_thread<2,0,1>;
+using hip_global_thread_zyx = hip_global_thread<2,1,0>;
+
+template <typename SEGMENT, int DIM0, int DIM1, int DIM2>
+struct LoopExecute<hip_global_thread<DIM0, DIM1, DIM2>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      SEGMENT const &segment2,
+      BODY const &body)
+  {
+    const int len2 = segment2.end() - segment2.begin();
+    const int len1 = segment1.end() - segment1.begin();
+    const int len0 = segment0.end() - segment0.begin();
+    {
+      const int tx = internal::get_hip_dim<DIM0>(threadIdx) +
+        internal::get_hip_dim<DIM0>(blockDim)*internal::get_hip_dim<DIM0>(blockIdx);
+
+      const int ty = internal::get_hip_dim<DIM1>(threadIdx) +
+        internal::get_hip_dim<DIM1>(blockDim)*internal::get_hip_dim<DIM1>(blockIdx);
+
+      const int tz = internal::get_hip_dim<DIM2>(threadIdx) +
+        internal::get_hip_dim<DIM2>(blockDim)*internal::get_hip_dim<DIM2>(blockIdx);
+
+      if (tx < len0 && ty < len1 && tz < len2)
+        body(*(segment0.begin() + tx),
+             *(segment1.begin() + ty),
+             *(segment1.begin() + ty));
     }
   }
 };
@@ -167,6 +236,7 @@ struct LoopExecute<hip_thread_xyz_direct<DIM>, SEGMENT> {
     }
   }
 };
+
 
 /*
   HIP block loops with grid strides
@@ -280,7 +350,6 @@ struct LoopICountExecute<hip_block_xyz_loop<DIM>, SEGMENT> {
   }
 };
 
-
 /*
   HIP block direct mappings
 */
@@ -317,7 +386,6 @@ using hip_block_yzx_nested_direct = hip_block_xyz_direct<1,2,0>;
 using hip_block_zxy_nested_direct = hip_block_xyz_direct<2,0,1>;
 using hip_block_zyx_nested_direct = hip_block_xyz_direct<2,1,0>;
 
-
 template <typename SEGMENT, int DIM0, int DIM1>
 struct LoopExecute<hip_block_xyz_direct<DIM0, DIM1>, SEGMENT> {
 
@@ -338,7 +406,6 @@ struct LoopExecute<hip_block_xyz_direct<DIM0, DIM1>, SEGMENT> {
     }
   }
 };
-
 
 template <typename SEGMENT, int DIM0, int DIM1, int DIM2>
 struct LoopExecute<hip_block_xyz_direct<DIM0, DIM1, DIM2>, SEGMENT> {
@@ -367,8 +434,8 @@ struct LoopExecute<hip_block_xyz_direct<DIM0, DIM1, DIM2>, SEGMENT> {
 };
 
 /*
-   Perfectly nested hip direct policies
-   Return local index
+  Perfectly nested hip direct policies
+  Return local index
 */
 template <typename SEGMENT, int DIM0, int DIM1>
 struct LoopICountExecute<hip_block_xyz_direct<DIM0, DIM1>, SEGMENT> {
@@ -391,7 +458,6 @@ struct LoopICountExecute<hip_block_xyz_direct<DIM0, DIM1>, SEGMENT> {
     }
   }
 };
-
 
 template <typename SEGMENT, int DIM0, int DIM1, int DIM2>
 struct LoopICountExecute<hip_block_xyz_direct<DIM0, DIM1, DIM2>, SEGMENT> {
@@ -464,7 +530,6 @@ struct LoopExecute<hip_block_xyz_loop<DIM0, DIM1>, SEGMENT> {
   }
 };
 
-
 template <typename SEGMENT, int DIM0, int DIM1, int DIM2>
 struct LoopExecute<hip_block_xyz_loop<DIM0, DIM1, DIM2>, SEGMENT> {
 
@@ -505,7 +570,7 @@ struct LoopExecute<hip_block_xyz_loop<DIM0, DIM1, DIM2>, SEGMENT> {
 };
 
 /*
-   Perfectly nested hip loop policies + returns local index
+  perfectly nested hip loop policies + returns local index
 */
 template <typename SEGMENT, int DIM0, int DIM1>
 struct LoopICountExecute<hip_block_xyz_loop<DIM0, DIM1>, SEGMENT> {
