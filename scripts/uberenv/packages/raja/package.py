@@ -233,13 +233,13 @@ class Raja(CMakePackage, CudaPackage):
 #            debug_flags = "-O0 -g"
 #            cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG", debug_flags))
 
-        if "blueos_3_ppc64le_ib" in sys_type:
-            release_flags = "-Ofast -finline-functions -finline-limit=20000"
-            cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELEASE", release_flags))
-            reldebinf_flags = "-Ofast -g -finline-functions -finline-limit=20000"
-            cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELWITHDEBINFO", reldebinf_flags))
-            debug_flags = "-O0 -g"
-            cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG", debug_flags))
+#        if "blueos_3_ppc64le_ib" in sys_type:
+#            release_flags = "-Ofast -finline-functions -finline-limit=20000"
+#            cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELEASE", release_flags))
+#            reldebinf_flags = "-Ofast -g -finline-functions -finline-limit=20000"
+#            cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELWITHDEBINFO", reldebinf_flags))
+#            debug_flags = "-O0 -g"
+#            cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG", debug_flags))
 
         if "+cuda" in spec:
             cfg.write("#------------------{0}\n".format("-" * 60))
