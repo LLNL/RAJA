@@ -13,7 +13,7 @@
 #include "RAJA_gtest.hpp"
 
 using MatrixTestTypes = ::testing::Types<
-/*
+
 #ifdef __AVX__
     RAJA::MatrixRegister<double, RAJA::MatrixColMajor, RAJA::avx_register>,
     RAJA::MatrixRegister<double, RAJA::MatrixRowMajor, RAJA::avx_register>,
@@ -53,7 +53,7 @@ using MatrixTestTypes = ::testing::Types<
     RAJA::MatrixRegister<float, RAJA::MatrixRowMajor, RAJA::scalar_register>,
     RAJA::MatrixRegister<long, RAJA::MatrixColMajor, RAJA::scalar_register>,
     RAJA::MatrixRegister<long, RAJA::MatrixRowMajor, RAJA::scalar_register>,
-    RAJA::MatrixRegister<int, RAJA::MatrixColMajor, RAJA::scalar_register>,*/
+    RAJA::MatrixRegister<int, RAJA::MatrixColMajor, RAJA::scalar_register>,
     RAJA::MatrixRegister<int, RAJA::MatrixRowMajor, RAJA::scalar_register>
 
   >;

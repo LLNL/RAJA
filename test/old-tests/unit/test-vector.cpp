@@ -17,17 +17,9 @@ using VectorTestTypes = ::testing::Types<
 
   // Test automatically wrapped types, since the specific register
   // implementations are tested elsewhere
-  RAJA::StreamVector<double>,
-  RAJA::StreamVector<double, 2>,
-  RAJA::StreamVector<double, 3>,
-  RAJA::StreamVector<double, 4>,
-  RAJA::FixedVector<double, 1>,
-  RAJA::FixedVector<double, 2>,
-  RAJA::FixedVector<double, 3>,
-  RAJA::FixedVector<double, 4>,
-  RAJA::FixedVector<double, 8>,
-  RAJA::FixedVector<double, 16>,
-  RAJA::FixedVector<double, 32>>;
+  //RAJA::VectorRegister<double>,
+  RAJA::VectorRegister<double>
+  >;
 
 
 template <typename Policy>
@@ -63,11 +55,7 @@ TYPED_TEST_P(VectorTest, GetSet)
 
   // For Fixed vectors, only try with fixed length
   // For Stream vectors, try all lengths
-  camp::idx_t Nstart = 1;
-  if(vector_t::s_is_fixed){
-    Nstart = vector_t::s_num_elem;
-  }
-  for(camp::idx_t N = Nstart; N <= vector_t::s_num_elem; ++ N){
+  for(camp::idx_t N = 1; N <= vector_t::s_num_elem; ++ N){
 
     // load array A as vector
     vector_t vec;
@@ -75,8 +63,7 @@ TYPED_TEST_P(VectorTest, GetSet)
 
     // check get operations
     for(camp::idx_t i = 0;i < N;++ i){
-      ASSERT_DOUBLE_EQ(vec[i], (element_t)(i*2));
-      ASSERT_DOUBLE_EQ(vec.get(i), (element_t)(i*2));
+      ASSERT_SCALAR_EQ(vec.get(i), (element_t)(i*2));
     }
 
     // check set operations
@@ -84,7 +71,7 @@ TYPED_TEST_P(VectorTest, GetSet)
       vec.set(i, (element_t)(i+1));
     }
     for(camp::idx_t i = 0;i < N;++ i){
-      ASSERT_DOUBLE_EQ(vec[i], (element_t)(i+1));
+      ASSERT_SCALAR_EQ(vec.get(i), (element_t)(i+1));
     }
 
   }
@@ -103,21 +90,17 @@ TYPED_TEST_P(VectorTest, MinMaxSumDot)
 
   // For Fixed vectors, only try with fixed length
   // For Stream vectors, try all lengths
-  camp::idx_t Nstart = 1;
-  if(vector_t::s_is_fixed){
-    Nstart = vector_t::s_num_elem;
-  }
-  for(camp::idx_t N = Nstart; N <= vector_t::s_num_elem; ++ N){
+  for(camp::idx_t N = 1; N <= vector_t::s_num_elem; ++ N){
 
     // load array A as vector
     vector_t vec;
     vec.load_packed_n(&A[0], N);
 
     // check min
-    ASSERT_DOUBLE_EQ(vec.min(N), (element_t)0);
+    ASSERT_SCALAR_EQ(vec.min(N), (element_t)0);
 
     // check max
-    ASSERT_DOUBLE_EQ(vec.max(N), (element_t)(N-1));
+    ASSERT_SCALAR_EQ(vec.max(N), (element_t)(N-1));
 
     // compute expected values
     element_t ex_sum(0);
@@ -128,10 +111,10 @@ TYPED_TEST_P(VectorTest, MinMaxSumDot)
     }
 
     // check sum
-    ASSERT_DOUBLE_EQ(vec.sum(), ex_sum);
+    ASSERT_SCALAR_EQ(vec.sum(), ex_sum);
 
     // check dot
-    ASSERT_DOUBLE_EQ(vec.dot(vec), ex_dot);
+    ASSERT_SCALAR_EQ(vec.dot(vec), ex_dot);
 
   }
 }
@@ -154,11 +137,7 @@ TYPED_TEST_P(VectorTest, FmaFms)
 
   // For Fixed vectors, only try with fixed length
   // For Stream vectors, try all lengths
-  camp::idx_t Nstart = 1;
-  if(vector_t::s_is_fixed){
-    Nstart = vector_t::s_num_elem;
-  }
-  for(camp::idx_t N = Nstart; N <= vector_t::s_num_elem; ++ N){
+  for(camp::idx_t N = 1; N <= vector_t::s_num_elem; ++ N){
 
     // load arrays as vectors
     vector_t vec_A;
@@ -175,13 +154,13 @@ TYPED_TEST_P(VectorTest, FmaFms)
 
     vector_t fma = vec_A.fused_multiply_add(vec_B, vec_C);
     for(camp::idx_t i = 0;i < N;++ i){
-      ASSERT_DOUBLE_EQ(fma[i], A[i]*B[i]+C[i]);
+      ASSERT_SCALAR_EQ(fma.get(i), A[i]*B[i]+C[i]);
     }
 
     // check FMS (A*B-C)
     vector_t fms = vec_A.fused_multiply_subtract(vec_B, vec_C);
     for(camp::idx_t i = 0;i < N;++ i){
-      ASSERT_DOUBLE_EQ(fms[i], A[i]*B[i]-C[i]);
+      ASSERT_SCALAR_EQ(fms.get(i), A[i]*B[i]-C[i]);
     }
 
   }
@@ -198,9 +177,8 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
   size_t N = 10*vector_t::s_num_elem;
   // If we are not using fixed vectors, add some random number of elements
   // to the array to test some postamble code generation.
-  if(!vector_t::s_is_fixed){
     N += (size_t)(100*NO_OPT_RAND);
-  }
+
 
   element_t *A = new element_t[N];
   element_t *B = new element_t[N];
@@ -215,15 +193,20 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
   RAJA::View<double, RAJA::Layout<1>> Y(B, N);
   RAJA::View<double, RAJA::Layout<1>> Z(C, N);
 
+
+  auto all = RAJA::VectorIndex<int, vector_t>::all();
+
+  Z[all] = 3 + (X[all]*(5/Y[all])) + 9;
+  /*
   RAJA::forall<RAJA::vector_exec<vector_t>>(RAJA::TypedRangeSegment<int>(0, N),
       [=](RAJA::VectorIndex<int, vector_t> i)
   {
     Z[i] = 3+(X[i]*(5/Y[i]))+9;
-  });
+  });*/
 
 
   for(size_t i = 0;i < N;i ++){
-    ASSERT_DOUBLE_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
+    ASSERT_SCALAR_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
   }
 
   delete[] A;
@@ -274,65 +257,45 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
   using policy_t =
       RAJA::KernelPolicy<
         RAJA::statement::For<0, RAJA::loop_exec,
-          RAJA::statement::For<1, RAJA::vector_exec<vector_t>,
             RAJA::statement::Lambda<0>
-          >
         >
       >;
 
 
-  RAJA::kernel<policy_t>(
-      RAJA::make_tuple(RAJA::TypedRangeSegment<index_t>(0, N),
-                      RAJA::TypedRangeSegment<index_t>(0, M)),
+  auto all = RAJA::VectorIndex<index_t, vector_t>::all();
 
-      [=](index_t i, RAJA::VectorIndex<index_t, vector_t> j)
+  RAJA::kernel<policy_t>(
+      RAJA::make_tuple(RAJA::TypedRangeSegment<index_t>(0, N)),
+
+      [=](index_t i)
   {
-    Z(i,j) = 3+(X(i,j)*(5/Y(i,j)))+9;
+    Z(i,all) = 3+(X(i,all)*(5/Y(i,all)))+9;
   });
 
   for(index_t i = 0;i < N*M;i ++){
-    ASSERT_DOUBLE_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
+    ASSERT_SCALAR_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
   }
 
 
   //
-  // Test inner loop SIMD
+  // Test with forall
   //
 
   RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<index_t>(0, N),
       [=](index_t i){
 
-    RAJA::forall<RAJA::vector_exec<vector_t>>(RAJA::TypedRangeSegment<index_t>(0, M),
-        [=](RAJA::VectorIndex<index_t, vector_t> j){
 
-      Z(i,j) = 3+(X(i,j)*(5/Y(i,j)))+9;
-    });
+    Z(i,all) = 3+(X(i,all)*(5/Y(i,all)))+9;
+
 
   });
 
   for(index_t i = 0;i < N*M;i ++){
-    ASSERT_DOUBLE_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
+    ASSERT_SCALAR_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
   }
 
 
 
-  //
-  // Test outer loop SIMD
-  //
-  RAJA::forall<RAJA::vector_exec<vector_t>>(RAJA::TypedRangeSegment<index_t>(0, N),
-      [=](RAJA::VectorIndex<index_t, vector_t> i){
-
-    RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<index_t>(0, M),
-        [=](index_t j){
-
-      Z(i,j) = 3+(X(i,j)*(5/Y(i,j)))+9;
-    });
-
-  });
-
-  for(index_t i = 0;i < N*M;i ++){
-    ASSERT_DOUBLE_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
-  }
 
 
   delete[] A;

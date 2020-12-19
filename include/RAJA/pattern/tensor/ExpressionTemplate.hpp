@@ -38,14 +38,14 @@ namespace RAJA
     class TensorExpressionConcreteBase{};
 
     template<typename RHS, typename enable = void>
-    struct NormalizeRhsHelper;
+    struct NormalizeOperandHelper;
 
 
     /*
      * For TensorExpression nodes, we just return them as-is.
      */
     template<typename RHS>
-    struct NormalizeRhsHelper<RHS,
+    struct NormalizeOperandHelper<RHS,
     typename std::enable_if<std::is_base_of<TensorExpressionConcreteBase, RHS>::value>::type>
     {
         using return_type = RHS;
@@ -65,10 +65,10 @@ namespace RAJA
 
     template<typename RHS>
     RAJA_INLINE
-    auto normalizeRHS(RHS const &rhs) ->
-    typename NormalizeRhsHelper<RHS>::return_type
+    auto normalizeOperand(RHS const &rhs) ->
+    typename NormalizeOperandHelper<RHS>::return_type
     {
-      return NormalizeRhsHelper<RHS>::normalize(rhs);
+      return NormalizeOperandHelper<RHS>::normalize(rhs);
     }
 
 
@@ -170,7 +170,7 @@ namespace RAJA
         self_type &operator=(RHS const &rhs)
         {
 
-          store(normalizeRHS(rhs));
+          store(normalizeOperand(rhs));
 
           return *this;
         }
@@ -383,7 +383,7 @@ namespace RAJA
      * For TensorRegister nodes, we need to wrap this in a constant value ET node
      */
     template<typename RHS>
-    struct NormalizeRhsHelper<RHS,
+    struct NormalizeOperandHelper<RHS,
     typename std::enable_if<std::is_base_of<RAJA::internal::TensorRegisterConcreteBase, RHS>::value>::type>
     {
         using return_type = TensorConstant<RHS>;
@@ -396,6 +396,24 @@ namespace RAJA
           return return_type(rhs);
         }
     };
+
+    /*
+     * For aritmetic values, we need to wrap in a constant value ET node
+     */
+//    template<typename RHS>
+//    struct NormalizeOperandHelper<RHS,
+//    typename std::enable_if<std::is_arithmetic<RHS>::value>::type>
+//    {
+//        using return_type = TensorConstant<RHS>;
+//
+//        RAJA_INLINE
+//        RAJA_HOST_DEVICE
+//        static
+//        constexpr
+//        return_type normalize(RHS const &rhs){
+//          return return_type(rhs);
+//        }
+//    };
 
 
     template<typename LHS_TYPE, typename RHS_TYPE>
