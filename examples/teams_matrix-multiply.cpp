@@ -29,8 +29,8 @@
  */
 
 /*
-  Define number of threads in x and y dimensions of a RAJA team or 
-  in a CUDA/HIP thread block
+ *  Define number of threads in x and y dimensions of a RAJA team or
+ *  in a CUDA/HIP thread block
 */
 #define THREAD_SZ 16
 
@@ -52,7 +52,6 @@ using launch_policy = RAJA::expt::LaunchPolicy<
     RAJA::expt::hip_launch_t<false>
 #endif
     >;
-
 
 using loop_policy = RAJA::loop_exec;
 
@@ -77,7 +76,8 @@ using gpu_global_thread_xy_policy = RAJA::expt::hip_global_thread_xy;
 #endif
 
 /*
-  Define RAJA Team policies
+  Define RAJA Team/Thread policies, if a device is available add
+  a device policy.
 */
 using teams_x = RAJA::expt::LoopPolicy<loop_policy
 #if defined(RAJA_DEVICE_ACTIVE)
@@ -136,7 +136,7 @@ const int DIM = 2;
 // _matmult_macros_end
 
 /*
-  Define CUDA matrix multiplication kernel for comparison to RAJA version
+  Define CUDA/HIP matrix multiplication kernel for comparison to RAJA version
 */
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 __global__ void matMultKernel(int N, double* C, double* A, double* B)
@@ -217,7 +217,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n\nRAJA matrix multiplication example...\n";
 
 //
-// Define num rows/cols in matrix
+// Define num rows/cols in matrix and number of teams based on
+// number of threads in a dimension.
 //
   const int N = 1000;
   const int NTeams = (N - 1)/THREAD_SZ + 1;
@@ -287,97 +288,38 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _matmult_views_end
 
 //----------------------------------------------------------------------------//
-
 //
-// In the next few examples, we show ways that we can use RAJA::forall
-// statements for the matrix multiplication kernel. This usage is not
-// recommended for performance reasons. Specifically, it limits the amount
-// of parallelism that can be exposed to less than is possible. We show
-// this usage here, to make this point clear. Later in this file, we
-// introduce RAJA nested loop abstractions and show that we can extract all
-// available parallelism.
-//
-//
-// In the first RAJA implementation, we replace the outer 'row' loop
-// with a RAJA::forall statement. The lambda expression contains the
-// inner loops.
-//
-
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n Running sequential mat-mult (RAJA-row)...\n";
-
-  std::memset(C, 0, N*N * sizeof(double));
-
-  // _matmult_outerforall_start
-  RAJA::forall<RAJA::loop_exec>( row_range, [=](int row) {
-
-    for (int col = 0; col < N; ++col) {
-
-      double dot = 0.0;
-      for (int k = 0; k < N; ++k) {
-        dot += Aview(row, k) * Bview(k, col);
-      }
-      Cview(row, col) = dot;
-
-    }
-
-  });
-  // _matmult_outerforall_end
-
-  checkResult<double>(Cview, N);
-//printResult<double>(Cview, N);
-
-
-//----------------------------------------------------------------------------//
-
-//
-// Next, we replace the outer 'row' loop and the inner 'col' loop
-// with RAJA::forall statements. This will also work with parallel
-// execution policies, such as OpenMP and CUDA, with caveats and
-// restrictions.
-//
-// However, nesting RAJA::forall calls like this is not recommended as
-// it limits the ability to expose parallelism and flexibility for
-// implementation alternatives.
-//
-
-  std::cout << "\n Running sequential mat-mult (RAJA-row, RAJA-col)...\n";
-
-  std::memset(C, 0, N*N * sizeof(double));
-
-  // _matmult_nestedforall_start
-  RAJA::forall<RAJA::loop_exec>( row_range, [=](int row) {
-
-    RAJA::forall<RAJA::loop_exec>( col_range, [=](int col) {
-
-      double dot = 0.0;
-      for (int k = 0; k < N; ++k) {
-        dot += Aview(row, k) * Bview(k, col);
-      }
-      Cview(row, col) = dot;
-
-    });
-
-  });
-  // _matmult_nestedforall_end
-
-  checkResult<double>(Cview, N);
-//printResult<double>(Cview, N);
-
-//----------------------------------------------------------------------------//
-
-//
-// Next, we use a RAJA::launch method to execute the kernel. These examples,
-// illustrate the basic interface and mechanics.
+// RAJA Team loops uses a RAJA::launch method to execute the kernel.
+// These examples, illustrate the basic interface and mechanics.
 //
 // This is different than RAJA::forall and so a few points of exmplanation
 // are in order:
+//
+// 1) RAJA Team loops execute inside a RAJA execution space (RAJA::launch)
+//    execution is chosen at run time and we support running on the host
+//    or device.
+//
+// 2) RAJA Team loops follows the thread/block programming models of CUDA/HIP
+//    and considers programming using a group of threads in which we group into
+//    teams. Number of threads and teams are defined inside the Resources struct.
+//
+// 3) Launch context is used synchronize threads within a team, an example of this
+//    is presented further below.
+//
+// 4) Parallism is expressed through RAJA loops. Hierachial parallism can be
+//    expressed by mapping outer loops (up to 3) to gpu blocks (teams) and inner
+//    loops to threads in a block (team).
 //
 
   std::cout << "\n Running sequential mat-mult (RAJA-nested)...\n";
 
   std::memset(C, 0, N*N * sizeof(double));
+
+  //As a starting point we demonstrate assigning each dot product
+  //to a thread on a two dimensional compute grid. Rows are mapped
+  //to threads in the x dimension, while Cols are mapped to threads
+  //in the y dimension. On the host this mapping simplifies to executing
+  //two for loops.
 
   // _matmult_basickernel_start
   RAJA::expt::launch<launch_policy>(RAJA::expt::HOST,
@@ -410,6 +352,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
+  //RAJA Team loops only support one host and device policy at a time.
+  //Switching between a sequential and Openmp launch space requires
+  //recompiling execution policies
+
   using omp_col_policy0 = RAJA::expt::LoopPolicy<RAJA::omp_parallel_for_exec
 #if defined(RAJA_DEVICE_ACTIVE)
                                                  ,gpu_global_thread_y_policy
@@ -421,7 +367,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                                  ,gpu_global_thread_x_policy
 #endif
     >;
-
 
   RAJA::expt::launch<launch_policy>(RAJA::expt::HOST,
    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
@@ -451,7 +396,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
 
   //
-  // This policy collapses the row and col loops in an OpenMP parallel region.
+  // This example collapses the row and col loops in an OpenMP parallel region.
   // This is the same as using an OpenMP 'parallel for' directive on the
   // outer loop with a 'collapse(2) clause.
   //
@@ -491,10 +436,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
 
   //
-  // This policy replaces the loop nest with a single CUDA kernel launch
-  // (kernel body is the lambda loop body) where the row indices are
-  // assigned to thread blocks and the col indices are assigned to
-  // threads within each block.
+  // This example maps row indicies to RAJA teams (CUDA
+  // thread blocks) and col indices are assigned to a threads within
+  // each team.
   //
   // This is equivalent to launching a CUDA kernel with grid dimension N
   // and blocksize N; i.e., kernel<<<N, N>>> and defining row = blockIdx.x
@@ -521,7 +465,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
-
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running CUDA tiled mat-mult ...\n";
@@ -529,39 +472,37 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
 
   //
-  // This policy collapses the col and row loops into a single CUDA kernel
-  // using two-dimensional CUDA thread blocks with x and y dimensions defined
-  // by THREAD_SZ arguments.
+  // This example takes the extend of the col and row loops and breaks
+  // them down into `tiles`. Tile loops are used to generate RangeSegments of
+  // fixed size, THREAD_SZ in this case. RAJA loops are then used to iterate
+  // across the work within each tile. On the device tiles are typically assigned
+  // to teams, while RAJA loops are mapped to threads.
   //
-  // When the matrix dimension N is an integer multiple of THREAD_SZ,
-  // the CUDA grid and thread dimension kernel launch parameters will be the
-  // same as in this kernel and the one above.
+  // The tiling capabilities in RAJA will also mask out of bounds iterations.
   //
-   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
+  RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
     RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
                           RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
-        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+      [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-        RAJA::expt::tile<teams_y>
-          (ctx, THREAD_SZ, row_range, [&] (RAJA::RangeSegment const &row_tile) {
-            RAJA::expt::tile<teams_x>
-              (ctx, THREAD_SZ, col_range, [&] (RAJA::RangeSegment const &col_tile) {
+      RAJA::expt::tile<teams_y>
+        (ctx, THREAD_SZ, row_range, [&] (RAJA::RangeSegment const &row_tile) {
+          RAJA::expt::tile<teams_x>
+            (ctx, THREAD_SZ, col_range, [&] (RAJA::RangeSegment const &col_tile) {
 
-                RAJA::expt::loop<threads_y>(ctx, row_tile, [&] (int col) {
-                    RAJA::expt::loop<threads_x>(ctx, col_tile, [&] (int row) {
+              RAJA::expt::loop<threads_y>(ctx, row_tile, [&] (int col) {
+                RAJA::expt::loop<threads_x>(ctx, col_tile, [&] (int row) {
 
-                        double dot = 0.0;
-                        for (int k = 0; k < N; ++k) {
-                          dot += Aview(row, k) * Bview(k, col);
-                        }
-                        Cview(row, col) = dot;
+                    double dot = 0.0;
+                    for (int k = 0; k < N; ++k) {
+                      dot += Aview(row, k) * Bview(k, col);
+                    }
+                    Cview(row, col) = dot;
 
-                      });
-                 });
-
+                  });
+                });
             });
-       });
-
+        });
    });
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
@@ -589,14 +530,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<double, RAJA::Layout<DIM>> d_Cview(d_C, N, N);
 
   //
-  // This policy replaces the loop nest with a single HIP kernel launch
-  // (kernel body is the lambda loop body) where the row indices are
-  // assigned to thread blocks and the col indices are assigned to
-  // threads within each block.
+  // This example maps row indicies to RAJA teams (HIP
+  // thread blocks) and col indices are assigned to a threads within
+  // each team.
   //
   // This is equivalent to launching a HIP kernel with grid dimension N
   // and blocksize N; i.e., kernel<<<N, N>>> and defining row = blockIdx.x
   // and col = threadIdx.x in the kernel.
+  //
   //
    RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
     RAJA::expt::Resources(RAJA::expt::Teams(N),
@@ -624,45 +565,43 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running HIP tiled mat-mult (RAJA-POL5)...\n";
+  std::cout << "\n Running HIP tiled mat-mult ...\n";
 
   std::memset(C, 0, N*N * sizeof(double));
   hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
 
   //
-  // This policy collapses the col and row loops into a single HIP kernel
-  // using two-dimensional HIP thread blocks with x and y dimensions defined
-  // by THREAD_SZ arguments.
+  // This example takes the extend of the col and row loops and breaks
+  // them down into `tiles`. Tile loops are used to generate RangeSegments of
+  // fixed size, THREAD_SZ in this case. RAJA loops are then used to iterate
+  // across the work within each tile. On the device tiles are typically assigned
+  // to teams, while RAJA loops are mapped to threads.
   //
-  // When the matrix dimension N is an integer multiple of THREAD_SZ,
-  // the HIP grid and thread dimension kernel launch parameters will be the
-  // same as in this kernel and the one above.
+  // The tiling capabilities in RAJA will also mask out of bounds iterations.
   //
   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
     RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
                           RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
-        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+      [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-        RAJA::expt::tile<teams_y>
-          (ctx, THREAD_SZ, row_range, [&] (RAJA::RangeSegment const &x_tile) {
-            RAJA::expt::tile<teams_x>
-              (ctx, THREAD_SZ, col_range, [&] (RAJA::RangeSegment const &y_tile) {
+      RAJA::expt::tile<teams_y>
+        (ctx, THREAD_SZ, row_range, [&] (RAJA::RangeSegment const &row_tile) {
+          RAJA::expt::tile<teams_x>
+            (ctx, THREAD_SZ, col_range, [&] (RAJA::RangeSegment const &col_tile) {
 
-                RAJA::expt::loop<threads_y>(ctx, y_tile, [&] (int col) {
-                    RAJA::expt::loop<threads_x>(ctx, x_tile, [&] (int row) {
+              RAJA::expt::loop<threads_y>(ctx, row_tile, [&] (int col) {
+                RAJA::expt::loop<threads_x>(ctx, col_tile, [&] (int row) {
 
-                        double dot = 0.0;
-                        for (int k = 0; k < N; ++k) {
-                          dot += d_Aview(row, k) * d_Bview(k, col);
-                        }
+                    double dot = 0.0;
+                    for (int k = 0; k < N; ++k) {
+                      dot += Aview(row, k) * Bview(k, col);
+                    }
+                    Cview(row, col) = dot;
 
-                        d_Cview(row, col) = dot;
-                      });
-                 });
-
+                  });
+                });
             });
-       });
-
+        });
    });
   hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
   checkResult<double>(Cview, N);
@@ -678,6 +617,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using seq_loop =  RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
 
+  //
+  // This example builds on the RAJA tiling capabilies presented earlier
+  // and introduced RAJA_TEAM_SHARED memory. Team shared memory is made
+  // accessible to all threads within a given thread team.
+  //
+  // In this example tiles of the global matrix are loaded into shared
+  // memory, and the solution is accumulated in a third tile.
+  // This example also uses the teamSync() method in the launch context
+  // to add a barrier ensuring all threads have loaded/read from shared memory
+  //
   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
     RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
                           RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
@@ -694,14 +643,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
          RAJA_TEAM_SHARED double Bs[THREAD_SZ][THREAD_SZ];
          RAJA_TEAM_SHARED double Cs[THREAD_SZ][THREAD_SZ];
 
-         // Team parallel loop
          RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
              RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
                Cs[ty][tx] = 0.0;
              });
          });
 
-         // Slide across matrix
          RAJA::expt::tile<seq_loop>
            (ctx, THREAD_SZ, dot_range, [&] (RAJA::RangeSegment const &k_tile) {
 
