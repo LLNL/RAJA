@@ -69,7 +69,6 @@ struct LoopExecute<loop_exec, SEGMENT> {
     }
   }
 
-
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(
       LaunchContext const RAJA_UNUSED_ARG(&ctx),
