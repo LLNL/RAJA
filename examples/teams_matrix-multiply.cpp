@@ -675,6 +675,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
                  });
              });
+
            ctx.teamSync();
 
          });  // slide across matrix
