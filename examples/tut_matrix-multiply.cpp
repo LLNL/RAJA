@@ -997,7 +997,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                     >
                   >,
 
-                  RAJA::statement::CudaSyncThreads,
+                  RAJA::statement::CudaSyncThreads
                 >, //sliding window
 
                //Write memory out to global matrix
