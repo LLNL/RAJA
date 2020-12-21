@@ -18,19 +18,19 @@
  *  Matrix Multiplication Examples using RAJA Teams
  *
  *  Example computes the product of two square matrices and introduces
- *  RAJA nested loop capabilities via a sequence of implementations.
+ *  RAJA Teams loop capabilities via a sequence of implementations.
  *
  *  RAJA features shown:
  *    - Index range segment
  *    - View abstraction
  *    - Basic usage of 'RAJA Teams' abstractions for nested loops
  *
- * If CUDA is enabled, CUDA unified memory is used.
+ *  If CUDA is enabled, CUDA unified memory is used.
  */
 
 /*
- *  Define number of threads in x and y dimensions of a RAJA team or
- *  in a CUDA/HIP thread block
+ *  Define number of threads in x and y dimensions in a RAJA thread team
+ *  or in a CUDA/HIP thread blocks
 */
 #define THREAD_SZ 16
 
@@ -38,11 +38,7 @@
  * Define host/device launch policies
  */
 using launch_policy = RAJA::expt::LaunchPolicy<
-#if defined(RAJA_ENABLE_OPENMP)
-    RAJA::expt::omp_launch_t
-#else
     RAJA::expt::seq_launch_t
-#endif
 #if defined(RAJA_ENABLE_CUDA)
     ,
     RAJA::expt::cuda_launch_t<false>
@@ -353,8 +349,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
 
   //RAJA Team loops only support one host and device policy at a time.
-  //Switching between a sequential and Openmp launch space requires
+  //Switching between a sequential and OpenMP launch space requires
   //recompiling execution policies
+  using omp_launch_policy = RAJA::expt::LaunchPolicy<
+                              RAJA::expt::omp_launch_t
+#if defined(RAJA_ENABLE_CUDA)
+                              ,
+                              RAJA::expt::cuda_launch_t<false>
+#endif
+#if defined(RAJA_ENABLE_HIP)
+                              ,
+                              RAJA::expt::hip_launch_t<false>
+#endif
+                              >;
 
   using omp_col_policy0 = RAJA::expt::LoopPolicy<RAJA::omp_parallel_for_exec
 #if defined(RAJA_DEVICE_ACTIVE)
@@ -368,7 +375,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
     >;
 
-  RAJA::expt::launch<launch_policy>(RAJA::expt::HOST,
+  RAJA::expt::launch<omp_launch_policy>(RAJA::expt::HOST,
    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
                          RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
@@ -407,7 +414,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
                                                   >;
 
-   RAJA::expt::launch<launch_policy>(RAJA::expt::HOST,
+   RAJA::expt::launch<omp_launch_policy>(RAJA::expt::HOST,
     RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
                           RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
    [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
@@ -423,6 +430,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      });
 
    });
+
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 #endif // if RAJA_ENABLE_OPENMP
@@ -462,6 +470,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      });
 
    });
+
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -475,7 +484,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This example takes the extend of the col and row loops and breaks
   // them down into `tiles`. Tile loops are used to generate RangeSegments of
   // fixed size, THREAD_SZ in this case. RAJA loops are then used to iterate
-  // across the work within each tile. On the device tiles are typically assigned
+  // across the work within each tile. On the device, tiles are typically assigned
   // to teams, while RAJA loops are mapped to threads.
   //
   // The tiling capabilities in RAJA will also mask out of bounds iterations.
@@ -504,6 +513,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             });
         });
    });
+
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -603,6 +613,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             });
         });
    });
+
   hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
