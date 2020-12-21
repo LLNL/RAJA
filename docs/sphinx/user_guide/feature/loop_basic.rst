@@ -267,22 +267,21 @@ Team based loops (RAJA::launch)
 The *RAJA Teams* framework aims to unify thread/block based
 programming models such as CUDA/HIP/SYCL while maintaining portability on
 host backends (OpenMP, sequential). Additionally, *RAJA Teams* introduces
-run-time host-device selectable policies, and allows nesting
-of ``RAJA:loop`` methods. The main application of *RAJA Teams* is imperfectly
-nested loops, using the ``RAJA::launch method`` developers are provided with an
+run-time host or device selectable kernel execution and allows nesting
+of ``RAJA::expt::loop`` methods. The main application of *RAJA Teams* is imperfectly
+nested loops. Using the ``RAJA::expt::launch method`` developers are provided with an
 execution space enabling them to express algorithms in terms of nested
-``RAJA::loops``. The loops are then executed by teams or threads enabling
-hierarchical parallelism.::
+``RAJA::expt::loops``.::
 
-  RAJA::launch<launch_policy>(select_CPU_or_GPU)
-  RAJA::Resources(RAJA::Teams(NE), RAJA::Threads(Q1D)),
-  [=] RAJA_HOST_DEVICE (RAJA::Launch ctx) {
+  RAJA::expt::launch<launch_policy>(select_CPU_or_GPU)
+  RAJA::expt::Resources(RAJA::expt::Teams(NE), RAJA::expt::Threads(Q1D)),
+  [=] RAJA_HOST_DEVICE (RAJA::expt::Launch ctx) {
 
-    RAJA::loop<team_x> (ctx, RAJA::RangeSegment(0, teamRange), [&] (int bx) {
+    RAJA::expt::loop<team_x> (ctx, RAJA::RangeSegment(0, teamRange), [&] (int bx) {
 
       RAJA_TEAM_SHARED double s_A[];
 
-      RAJA::loop<thread_x> (ctx, RAJA::RangeSegment(0, threadRange), [&] (int tx) {
+      RAJA::expt::loop<thread_x> (ctx, RAJA::RangeSegment(0, threadRange), [&] (int tx) {
         s_A[] = tx;
       });
 
@@ -295,22 +294,22 @@ hierarchical parallelism.::
 The underlying idea of *RAJA Teams* is to enable developers to express nested
 parallelism in terms of teams and threads. Similar to the CUDA programming model,
 development is done using a collection of threads, threads are grouped into teams.
-Using the ``RAJA::loop`` methods iterations of the loop may be executed by threads
-or teams (depending on the execution policy). Control flow of the kernel is facilitated
-by the launch context, for example it is used to synchronize threads within a team.
-The *RAJA Teams* abstraction consist of three main concepts.
+Using the ``RAJA::expt::loop`` methods iterations of the loop may be executed by threads
+or teams (depending on the execution policy). The launch context serves to synchronize
+threads within the same team. The *RAJA Teams* abstraction consist of three main concepts.
 
   * *Launch Method*: creates an execution space in which developers may express 
-    their algorithm in terms of nested ``RAJA::loops``. The loops are then executed
-    by threads or thread-teams. The method is templated on both a host and device 
-    execution space and enables run-time selection.
+    their algorithm in terms of nested ``RAJA::expt::loops``. The loops are then
+    executed by threads or thread-teams. The method is templated on both a host
+    and device execution space and enables run-time selection.
 
   * *Resources*: holds a number of teams and threads (akin to CUDA blocks/threads).
 
   * *Loops*: are used to express hierarchical parallelism. Execution of the
-    work in a loop are mapped to either teams or threads. Team shared memory
+    work within a loop are mapped to either teams or threads. Team shared memory
     is available through the ``RAJA_TEAM_SHARED`` macro, enabling threads to share
     data.
     
-The teams interface combines concepts form ``RAJA::forall`` and ``RAJA::kernel``
-and various policies from kernel are applicable to the ``RAJA Teams`` framework.
+The teams interface combines concepts form ``RAJA::forall`` and ``RAJA::kernel``.
+Various policies from ``RAJA::kernel`` are compatible with the ``RAJA Teams``
+framework.
