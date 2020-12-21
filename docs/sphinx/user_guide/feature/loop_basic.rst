@@ -13,15 +13,17 @@ Elements of Loop Execution
 ==============================================
 
 In this section, we describe the basic elements of RAJA loop kernel execution.
-``RAJA::forall``, ``RAJA::kernel``, and ``RAJA::launch`` (*RAJA Teams*) template methods comprise the
+``RAJA::forall``, ``RAJA::kernel``, and ``RAJA::expt::launch`` (*RAJA Teams*) template methods comprise the
 RAJA interface for loop execution. ``RAJA::forall`` methods execute simple
 loops (e.g., non-nested loops), ``RAJA::kernel`` methods support nested
-loops and other complex loop kernels and transformations, and ``RAJA::launch``
+loops and other complex loop kernels and transformations, and ``RAJA::expt::launch``
 creates an execution space in which algorithms are expressed in terms of
 nested loops using the ``RAJA::loop`` method.
 
-.. note:: * All ``forall`` , ``kernel``, and ``launch`` methods are in the
-            namespace ``RAJA``.
+.. note:: * The ``forall`` , and ``kernel`` methods are in the
+            namespace ``RAJA``, while ``launch`` is found under
+            the RAJA namespace for experimental features ``RAJA::expt``.
+
           * A ``RAJA::forall`` loop execution method is a template on an
             *execution policy* type. A ``RAJA::forall`` method takes two 
             arguments:
@@ -35,14 +37,15 @@ nested loops using the ``RAJA::loop`` method.
               * a *tuple* of iteration space objects, and
               * one or more lambda expressions representing portions of
                 the loop kernel body.
-          * The ``RAJA::launch`` space is templated on both a host and device policy
-            to create an execution space for host or device kernels.
-            Choosing to run on the host or device may be specified at run-time
-            using ``RAJA::launch`` function arguments. Algorithms are expressed
-            inside the launch space as nested loops using ``RAJA::loop`` methods.
-              * Hierarchical parallelism can be expressed using thread and team
-                policies with ``RAJA::loop`` methods, these constructs follow a
-                threading model as found in CUDA/HIP.
+          * The ``RAJA::expt::launch`` method is templated on both a host and
+            device launch policy to create an execution space for kernels.
+            By templating on both host and device policy, the launch method
+            enables run-time selection of running on the host or device.
+            Algorithms are expressed inside the execution space as nested loops
+            using ``RAJA::loop`` methods.
+              * Hierarchical parallelism can be expressed using the thread and
+                thread-team model with ``RAJA::loop`` methods as found in
+                programming models such as CUDA/HIP.
 
 Various examples showing how to use ``RAJA::forall``, ``RAJA::kernel``, ``RAJA::launch``
 methods may be found in the :ref:`tutorial-label`.
