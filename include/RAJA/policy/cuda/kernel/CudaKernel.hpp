@@ -467,7 +467,7 @@ struct StatementExecutor<
     using launch_t = CudaLaunchHelper<LaunchConfig, stmt_list_t, data_t, Types>;
 
 
-    RAJA::resources::Cuda res = data.template get_resource<0>();
+    RAJA::resources::Cuda res = data.get_resource();
 
 
     //
