@@ -282,7 +282,7 @@ execution space enabling them to express algorithms in terms of nested
       RAJA_TEAM_SHARED double s_A[];
 
       RAJA::expt::loop<thread_x> (ctx, RAJA::RangeSegment(0, threadRange), [&] (int tx) {
-        s_A[] = tx;
+        s_A[tx] = tx;
       });
 
         ctx.teamSync();
@@ -307,9 +307,13 @@ threads within the same team. The *RAJA Teams* abstraction consist of three main
 
   * *Loops*: are used to express hierarchical parallelism. Execution of the
     work within a loop are mapped to either teams or threads. Team shared memory
-    is available through the ``RAJA_TEAM_SHARED`` macro, enabling threads to share
-    data.
+    is available by using ``RAJA_TEAM_SHARED`` macro. Team shared memory enables
+    threads in a given team to share data. In practice team policies are typically
+    an alias for GPU block policies in the x,y,z dimensions (for example cuda_block_direct),
+    while thread policies are an alias for GPU thread policies (for example cuda_thread_direct)
+    x,y,z dimensions. On the host, teams and threads may be mapped to sequential
+    loop execution or OpenMP threaded regions.
     
-The teams interface combines concepts form ``RAJA::forall`` and ``RAJA::kernel``.
+The team loop interface combines concepts form ``RAJA::forall`` and ``RAJA::kernel``.
 Various policies from ``RAJA::kernel`` are compatible with the ``RAJA Teams``
 framework.
