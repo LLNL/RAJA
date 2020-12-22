@@ -134,7 +134,7 @@ RAJA_INLINE void kernel_param_resource(SegmentTuple &&segments,
   loop_data_t loop_data(make_wrapped_tuple(
                             std::forward<SegmentTuple>(segments)),
                         std::forward<ParamTuple>(params),
-                        std::forward<Resource>(resources),
+                        std::forward<Resource>(resource),
                         std::forward<Bodies>(bodies)...);
 
   util::callPostCapturePlugins(context);
