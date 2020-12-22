@@ -13,12 +13,12 @@ Elements of Loop Execution
 ==============================================
 
 In this section, we describe the basic elements of RAJA loop kernel execution.
-``RAJA::forall``, ``RAJA::kernel``, and ``RAJA::expt::launch`` (*RAJA Teams*) template methods comprise the
-RAJA interface for loop execution. ``RAJA::forall`` methods execute simple
-loops (e.g., non-nested loops), ``RAJA::kernel`` methods support nested
-loops and other complex loop kernels and transformations, and ``RAJA::expt::launch``
-creates an execution space in which algorithms are expressed in terms of
-nested loops using the ``RAJA::loop`` method.
+``RAJA::forall``, ``RAJA::kernel``, and ``RAJA::expt::launch`` (*RAJA Teams*)
+template methods comprise the RAJA interface for loop execution. ``RAJA::forall``
+methods execute simple loops (e.g., non-nested loops), ``RAJA::kernel`` methods
+support nested loops and other complex loop kernels and transformations, and
+``RAJA::expt::launch`` creates an execution space in which algorithms are expressed
+in terms of nested loops using the ``RAJA::expt::loop`` method.
 
 .. note:: * The ``forall`` , and ``kernel`` methods are in the
             namespace ``RAJA``, while ``launch`` is found under
@@ -44,7 +44,7 @@ nested loops using the ``RAJA::loop`` method.
             Algorithms are expressed inside the execution space as nested loops
             using ``RAJA::loop`` methods.
               * Hierarchical parallelism can be expressed using the thread and
-                thread-team model with ``RAJA::loop`` methods as found in
+                thread-team model with ``RAJA::expt::loop`` methods as found in
                 programming models such as CUDA/HIP.
 
 Various examples showing how to use ``RAJA::forall``, ``RAJA::kernel``, ``RAJA::launch``
@@ -279,7 +279,7 @@ execution space enabling them to express algorithms in terms of nested
 
     RAJA::expt::loop<team_x> (ctx, RAJA::RangeSegment(0, teamRange), [&] (int bx) {
 
-      RAJA_TEAM_SHARED double s_A[];
+      RAJA_TEAM_SHARED double s_A[SHARE_MEM_SIZE];
 
       RAJA::expt::loop<thread_x> (ctx, RAJA::RangeSegment(0, threadRange), [&] (int tx) {
         s_A[tx] = tx;
