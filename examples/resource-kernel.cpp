@@ -122,6 +122,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::resources::Cuda cuda_res;
   std::cout << " Cuda Resource Stream : " << cuda_res.get_stream() << "\n";
+  std::cout << " Cuda Resource Default Stream : " << resources::Cuda::get_default().get_stream() << "\n";
 
   std::memset(phi_data, 0, phi_size * sizeof(double));
 
@@ -171,25 +172,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             statement::For<3, cuda_thread_x_loop,  // z
               statement::For<1, seq_exec,  // d
                 statement::Lambda<0>
-              >
-            >
-          >
-        >
-      >         
-    >;          
+              > // For seq_exec
+            > // For thread x
+          > // For block y
+        > // For block x
+      > // CudaKernelAsync       
+    >; // KernelPolicy 
                  
   auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
                                    RAJA::TypedRangeSegment<ID>(0, num_d),
                                    RAJA::TypedRangeSegment<IG>(0, num_g),
                                    RAJA::TypedRangeSegment<IZ>(0, num_z));
 
-  auto resources = RAJA::make_tuple(cuda_res);
-
   RAJA::Timer timer;
   cudaErrchk( cudaDeviceSynchronize() );
   timer.start();
 
-  RAJA::kernel_resources<EXECPOL>( segments, resources,
+  //RAJA::kernel_resources<EXECPOL>( segments, cuda_res,
+  RAJA::kernel<EXECPOL>( segments,
     [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z) {
        phi(m, g, z) += L(m, d) * psi(d, g, z);
     }
