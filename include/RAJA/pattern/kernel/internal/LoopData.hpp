@@ -116,8 +116,6 @@ struct LoopData {
   using param_tuple_t = ParamTuple;
   ParamTuple param_tuple;
 
-  //using resource_tuple_t = ResourceTuple;
-  //ResourceTuple resource_tuple;
   Resource res;
 
   using BodiesTuple = camp::tuple<Bodies...>;
@@ -154,14 +152,6 @@ struct LoopData {
     return camp::get<ParamId::param_idx>(param_tuple);
   }
 
-  //template <typename ResourceId, typename IndexT>
-  //RAJA_HOST_DEVICE RAJA_INLINE void assign_resource(IndexT const &i)
-  //{
-  //  using resource_t = camp::at_v<typename resource_tuple_t::TList, ResourceId::resource_idx>;
-  //  camp::get<ResourceId::resource_idx>(resource_tuple) = resource_t(i);
-  //}
-
-  //template <camp::idx_t IDX>
   RAJA_HOST_DEVICE RAJA_INLINE
   Resource get_resource()
   {
