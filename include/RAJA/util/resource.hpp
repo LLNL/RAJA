@@ -40,12 +40,22 @@ namespace RAJA
     using type = camp::resources::Host;
   };
 
+  template<Platform>
+  struct get_resource_from_platform{
+    using type = camp::resources::Host;
+  };
+
   template<typename ExecPol>
-  constexpr auto get_default_resource() -> typename get_resource<ExecPol>::type {
-    return get_resource<ExecPol>::type::get_default();
+  constexpr auto get_default_resource() -> typename get_resource_from_platform<detail::get_platform<ExecPol>::value>::type {
+    return get_resource_from_platform<detail::get_platform<ExecPol>::value>::type::get_default();
   }
 
 #if defined(RAJA_CUDA_ACTIVE)
+  template<>
+  struct get_resource_from_platform<Platform::cuda>{
+    using type = camp::resources::Cuda;
+  };
+
   template<size_t BlockSize, bool Async>
   struct get_resource<cuda_exec<BlockSize, Async>>{
     using type = camp::resources::Cuda;
