@@ -234,11 +234,11 @@ class Raja(CMakePackage, CudaPackage):
 #            cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG", debug_flags))
 
         if "blueos_3_ppc64le_ib" in sys_type:
-            release_flags = "-Ofast -fopenmp -finline-functions -finline-limit=20000"
+            release_flags = "-Ofast -finline-functions -finline-limit=20000"
             cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELEASE", release_flags))
-            reldebinf_flags = "-g -Ofast -fopenmp -finline-functions -finline-limit=20000"
+            reldebinf_flags = "-g -O0 -finline-functions -finline-limit=20000"
             cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELWITHDEBINFO", reldebinf_flags))
-            debug_flags = "-g -O0 -fopenmp -finline-functions -finline-limit=20000"
+            debug_flags = "-g -O0 -finline-functions -finline-limit=20000"
             cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG", debug_flags))
 
         if "+cuda" in spec:
@@ -255,11 +255,11 @@ class Raja(CMakePackage, CudaPackage):
             cfg.write(cmake_cache_entry("CMAKE_CUDA_COMPILER",
                                         cudacompiler))
 
-            cuda_release_flags = "-O3 -Xcompiler -Ofast -Xcompiler -fopenmp -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
+            cuda_release_flags = "-O3 -Xcompiler -Ofast -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
             cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_RELEASE", cuda_release_flags))
-            cuda_reldebinf_flags = "-g -G -O3 -Xcompiler -Ofast -Xcompiler -fopenmp -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
+            cuda_reldebinf_flags = "-g -G -O0 -Xcompiler -O0 -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
             cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_RELWITHDEBINFO", cuda_reldebinf_flags))
-            cuda_debug_flags = "-g -G -O0 -Xcompiler -O0 -Xcompiler -fopenmp -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
+            cuda_debug_flags = "-g -G -O0 -Xcompiler -O0 -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
             cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_DEBUG", cuda_debug_flags))
 
             if not spec.satisfies('cuda_arch=none'):
