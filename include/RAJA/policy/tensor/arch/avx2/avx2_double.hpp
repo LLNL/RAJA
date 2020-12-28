@@ -115,6 +115,9 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type &load_packed(element_type const *ptr){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_packed ++;
+#endif
         m_value = _mm256_loadu_pd(ptr);
         return *this;
       }
@@ -126,6 +129,9 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type &load_packed_n(element_type const *ptr, camp::idx_t N){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_packed_n ++;
+#endif
         m_value = _mm256_maskload_pd(ptr, createMask(N));
         return *this;
       }
@@ -136,6 +142,9 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type &load_strided(element_type const *ptr, camp::idx_t stride){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_strided ++;
+#endif
         m_value = _mm256_i64gather_pd(ptr,
                                       createStridedOffsets(stride),
                                       sizeof(element_type));
@@ -150,6 +159,9 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type &load_strided_n(element_type const *ptr, camp::idx_t stride, camp::idx_t N){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_strided_n ++;
+#endif
         m_value = _mm256_mask_i64gather_pd(_mm256_setzero_pd(),
                                       ptr,
                                       createStridedOffsets(stride),
@@ -165,6 +177,9 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type const &store_packed(element_type *ptr) const{
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_store_packed ++;
+#endif
         _mm256_storeu_pd(ptr, m_value);
         return *this;
       }
@@ -175,6 +190,9 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type const &store_packed_n(element_type *ptr, camp::idx_t N) const{
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_store_packed_n ++;
+#endif
         _mm256_maskstore_pd(ptr, createMask(N), m_value);
         return *this;
       }
@@ -185,6 +203,9 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type const &store_strided(element_type *ptr, camp::idx_t stride) const{
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_store_strided ++;
+#endif
         for(camp::idx_t i = 0;i < 4;++ i){
           ptr[i*stride] = m_value[i];
         }
@@ -198,6 +219,9 @@ namespace RAJA
        */
       RAJA_INLINE
       self_type const &store_strided_n(element_type *ptr, camp::idx_t stride, camp::idx_t N) const{
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_store_strided_n ++;
+#endif
         for(camp::idx_t i = 0;i < N;++ i){
           ptr[i*stride] = m_value[i];
         }

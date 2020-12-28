@@ -45,7 +45,7 @@ namespace RAJA
       static
       constexpr
       self_type all(){
-        return self_type(-1, -1);
+        return self_type(index_type(-1), value_type(-1));
       }
 
       RAJA_INLINE

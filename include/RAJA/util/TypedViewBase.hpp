@@ -78,13 +78,16 @@ namespace internal
      *
      * returns -1 if none of the arguments are VectorIndexs
      */
+    template<camp::idx_t DIM, typename ARGS, typename IDX_SEQ>
+    struct GetTensorArgIdxExpanded;
+
     template<camp::idx_t DIM, typename ... ARGS, camp::idx_t ... IDX>
-    RAJA_INLINE
-    RAJA_HOST_DEVICE
-    static constexpr camp::idx_t get_tensor_arg_idx_expanded(camp::list<ARGS...> const &, camp::idx_seq<IDX...> const &){
-      return RAJA::max<camp::idx_t>(
-          (isTensorIndex<ARGS>()&&getTensorDim<ARGS>()==DIM ? IDX : -1) ...);
-    }
+    struct GetTensorArgIdxExpanded<DIM, camp::list<ARGS...>, camp::idx_seq<IDX...>> {
+
+        static constexpr camp::idx_t value =
+            RAJA::max<camp::idx_t>(
+                (isTensorIndex<ARGS>()&&getTensorDim<ARGS>()==DIM ? IDX : -1) ...);
+    };
 
 
 
@@ -106,13 +109,10 @@ namespace internal
    * Returns which argument has a vector index
    */
   template<camp::idx_t DIM, typename ... ARGS>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  static constexpr camp::idx_t get_tensor_arg_idx(){
-    return detail::get_tensor_arg_idx_expanded<DIM>(
-        camp::list<ARGS...>{},
-        camp::make_idx_seq_t<sizeof...(ARGS)>{});
-  }
+  struct GetTesorArgIdx{
+      static constexpr camp::idx_t value =
+          detail::GetTensorArgIdxExpanded<DIM, camp::list<ARGS...>, camp::make_idx_seq_t<sizeof...(ARGS)> >:: value;
+  };
 
   /*
    * Returns the number of elements in the vector argument
@@ -123,7 +123,7 @@ namespace internal
   static constexpr camp::idx_t get_tensor_args_size(LAYOUT const &layout, ARGS ... args){
     return RAJA::max<camp::idx_t>(
         getTensorDim<ARGS>()==DIM
-        ? getTensorSize<ARGS>(args, layout.template get_dim_size<DIM>())
+        ? getTensorSize<ARGS>(args, layout.template get_dim_size<GetTesorArgIdx<DIM, ARGS...>::value>())
         : 0 ...);
   }
 
@@ -168,8 +168,21 @@ namespace internal
   struct ViewReturnHelper<camp::idx_seq<VecSeq...>, camp::list<Args...>, ElementType, PointerType, LinIdx, StrideOneDim>
   {
       static constexpr camp::idx_t s_num_dims = sizeof...(VecSeq);
-      using tensor_reg_type = typename camp::at_v<camp::list<Args...>, get_tensor_arg_idx<0, Args...>()>::tensor_type;
-      using ref_type = internal::ET::TensorRef<tensor_reg_type, ElementType*, LinIdx, internal::ET::TENSOR_MULTIPLE, s_num_dims, -1>;
+
+      // This is the stride-one dimensions w.r.t. the tensor not the View
+      // For example:
+      //  For a vector, s_stride_one_dim is either 0 (packed) or -1 (strided)
+      //  For a matrix, s_stride_one_dim is either:
+      //                 -1 neither row nor column are packed
+      //                 0 rows are stride-one
+      //                 1 columns are stride-one
+      static constexpr camp::idx_t s_stride_one_dim =
+          RAJA::max<camp::idx_t>((GetTesorArgIdx<VecSeq, Args...>::value == StrideOneDim ?
+                    VecSeq : -1)...);
+
+
+      using tensor_reg_type = typename camp::at_v<camp::list<Args...>, GetTesorArgIdx<0, Args...>::value>::tensor_type;
+      using ref_type = internal::ET::TensorRef<tensor_reg_type, ElementType*, LinIdx, internal::ET::TENSOR_MULTIPLE, s_num_dims, s_stride_one_dim>;
       using return_type = internal::ET::TensorLoadStore<tensor_reg_type, ref_type>;
 
       template<typename LayoutType>
@@ -178,11 +191,19 @@ namespace internal
       static
       constexpr
       return_type make_return(LayoutType const &layout, PointerType const &data, Args const &... args){
+//        printf("TypedViewBase:  view_s1=%d, tensor_s1=%d\n",
+//            (int)StrideOneDim, (int)s_stride_one_dim);
+//        camp::sink(
+//            printf("DIM%d, arg=%d, size=%d\n", (int)VecSeq, (int)GetTesorArgIdx<VecSeq, Args...>::value,
+//                (int)get_tensor_args_size<VecSeq>(layout, args...))...
+//            );
+//        printf("\n");
+
         return return_type(ref_type{
           // data pointer
           &data[0] + layout(isTensorIndex<Args>() ? LinIdx{0} : (LinIdx)stripIndexType(stripTensorIndex(args))...),
           // strides
-          {(LinIdx)layout.template get_dim_stride<get_tensor_arg_idx<VecSeq, Args...>()>()...},
+          {(LinIdx)layout.template get_dim_stride<GetTesorArgIdx<VecSeq, Args...>::value>()...},
           // tile
           {
               // begin

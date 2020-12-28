@@ -30,7 +30,7 @@
 
 namespace RAJA
 {
-struct simd_register_stats
+struct tensor_stats
 {
 
   static camp::idx_t num_vector_copy;

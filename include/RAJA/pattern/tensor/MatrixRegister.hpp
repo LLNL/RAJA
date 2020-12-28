@@ -21,7 +21,7 @@
 #include "camp/camp.hpp"
 #include "RAJA/config.hpp"
 #include "RAJA/policy/tensor/arch.hpp"
-
+#include "RAJA/pattern/tensor/stats.hpp"
 
 //#define DEBUG_MATRIX_LOAD_STORE
 
@@ -85,13 +85,13 @@ namespace internal {
 
         if(LAYOUT::is_row_major()){
 #ifdef RAJA_ENABLE_VECTOR_STATS
-          RAJA::vector_stats::num_matrix_mm_mult_row_row ++;
+          RAJA::tensor_stats::num_matrix_mm_mult_row_row ++;
 #endif
           camp::sink(calc_vec_product<VAL_SEQ>(sum, A, B)...);
         }
         else{
 #ifdef RAJA_ENABLE_VECTOR_STATS
-          RAJA::vector_stats::num_matrix_mm_mult_col_col ++;
+          RAJA::tensor_stats::num_matrix_mm_mult_col_col ++;
 #endif
           camp::sink(calc_vec_product<VAL_SEQ>(sum, B, A)...);
         }
@@ -104,13 +104,13 @@ namespace internal {
       matrix_type multiply_accumulate(matrix_type const &A, matrix_type const &B, matrix_type C){
         if(LAYOUT::is_row_major()){
 #ifdef RAJA_ENABLE_VECTOR_STATS
-          RAJA::vector_stats::num_matrix_mm_multacc_row_row ++;
+          RAJA::tensor_stats::num_matrix_mm_multacc_row_row ++;
 #endif
           camp::sink(calc_vec_product<VAL_SEQ>(C, A, B)...);
         }
         else{
 #ifdef RAJA_ENABLE_VECTOR_STATS
-          RAJA::vector_stats::num_matrix_mm_multacc_col_col ++;
+          RAJA::tensor_stats::num_matrix_mm_multacc_col_col ++;
 #endif
           camp::sink(calc_vec_product<VAL_SEQ>(C, B, A)...);
         }
@@ -201,6 +201,22 @@ namespace RAJA
       }
 
 
+      /*!
+       * Returns true if the underlying data packed for a given tensor ref
+       *
+       * This is true if either:
+       *   It's column major and the rows are stride one
+       *   It's row major and the columns are stride one
+       */
+      template<camp::idx_t STRIDE_ONE_DIM>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static
+      constexpr
+      bool is_ref_packed() {
+        return (STRIDE_ONE_DIM == 0 && layout_type::is_column_major()) ||
+            (STRIDE_ONE_DIM == 1 && layout_type::is_row_major());
+      }
 
       /*!
        * Gets the maximum size of matrix along specified dimension
@@ -267,7 +283,7 @@ namespace RAJA
                                    ref.m_tile.m_begin[1]*ref.m_stride[1];
 
         // check for packed data
-        if(STRIDE_ONE_DIM == 0){
+        if(is_ref_packed<STRIDE_ONE_DIM>()){
           // full vector?
           if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
             load_packed(ptr, ref.m_stride[0], ref.m_stride[1]);
@@ -307,7 +323,8 @@ namespace RAJA
                                    ref.m_tile.m_begin[1]*ref.m_stride[1];
 
         // check for packed data
-        if(STRIDE_ONE_DIM == 0){
+        if(is_ref_packed<STRIDE_ONE_DIM>())
+        {
           // full vector?
           if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
             store_packed(ptr, ref.m_stride[0], ref.m_stride[1]);

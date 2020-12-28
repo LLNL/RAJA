@@ -20,8 +20,8 @@
 #define VARIANT_RAJA_SEQ_ARGS        0
 #define VARIANT_RAJA_TEAMS_SEQ       0
 #define VARIANT_RAJA_VECTOR          0
-#define VARIANT_RAJA_MATRIX          0
-#define VARIANT_RAJA_TEAMS_MATRIX    1
+#define VARIANT_RAJA_MATRIX          1
+#define VARIANT_RAJA_TEAMS_MATRIX    0
 #define VARIANT_RAJA_SEQ_SHMEM       0
 #define VARIANT_RAJA_MATRIX_SHMEM    0
 
@@ -126,18 +126,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Note: rand()/RAND_MAX is always zero, but forces the compiler to not
   // optimize out these values as compile time constants
   const int num_m = 25 + (rand()/RAND_MAX);
-  const int num_g = 32 + (rand()/RAND_MAX);
-  const int num_d = 80 + (rand()/RAND_MAX);
+  const int num_g = 128 + (rand()/RAND_MAX);
+  const int num_d = 120 + (rand()/RAND_MAX);
 
 
 #ifdef DEBUG_LTIMES
   const int num_iter = 1 + (rand()/RAND_MAX);;
   // use a decreased number of zones since this will take a lot longer
   // and we're not really measuring performance here
-  const long num_z = 127 + (rand()/RAND_MAX);
+  const long num_z = 128 + (rand()/RAND_MAX);
 #else
   const int num_iter = 10 + (rand()/RAND_MAX);
-  const int num_z = 32*1024 + (rand()/RAND_MAX);
+  const int num_z = 1280 + (rand()/RAND_MAX);
 #endif
 
 
@@ -548,7 +548,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
-  RAJA::vector_stats::resetVectorStats();
+  RAJA::tensor_stats::resetVectorStats();
 #endif
 
 
@@ -574,7 +574,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << t <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
-  RAJA::vector_stats::printVectorStats();
+  RAJA::tensor_stats::printVectorStats();
 #endif
 
 #if defined(DEBUG_LTIMES)
@@ -616,7 +616,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  using matrix_t = RAJA::RegisterMatrix<double, MATRIX_ROW_MAJOR>;
+  using matrix_t = RAJA::MatrixRegister<double, MatrixRowMajor>;
 
 	std::cout << "vector width: " << matrix_t::s_dim_elem(0) << std::endl;
 
@@ -624,22 +624,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using ColD = RAJA::ColIndex<ID, matrix_t>;
   using ColZ = RAJA::ColIndex<IZ, matrix_t>;
 
-  using EXECPOL =
-    RAJA::KernelPolicy<
-    statement::For<2, loop_exec,  // g
-      statement::For<3, matrix_col_exec<matrix_t>,  // z
-        statement::For<1, matrix_col_exec<matrix_t>,  // d
-          statement::For<0, matrix_row_exec<matrix_t>,  // m
-           statement::Lambda<0>
-         >
-
-       >
-     > >
-     >;
-
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
-  RAJA::vector_stats::resetVectorStats();
+  RAJA::tensor_stats::resetVectorStats();
 #endif
 
 // rzgenies: 1  cores at 2.1GHz, 2FMAs/cycle=16ops/cycle = 33.6 GF peak
@@ -647,22 +634,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 
-  auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
-                                   RAJA::TypedRangeSegment<ID>(0, num_d),
-                                   RAJA::TypedRangeSegment<IG>(0, num_g),
-                                   RAJA::TypedRangeSegment<IZ>(0, num_z));
-
-
-
   RAJA::Timer timer;
   timer.start();
 
   for (int iter = 0;iter < num_iter;++ iter){
-		RAJA::kernel<EXECPOL>( segments,
-			[=] (RowM m, ColD d, IG g, ColZ z) {
-				phi(m, g, z) = L(m, d) * psi(toRowIndex(d), g, z) + phi(m, g, z);
-			}
-		);
+
+    for(IG g : RAJA::TypedRangeSegment<IG>(0, num_g)){
+
+        phi(RowM::all(), g, ColZ::all()) +=
+            L(RowM::all(), ColD::all()) *
+            psi(toRowIndex(ColD::all()), g, ColZ::all());
+
+    }
+
+
+
   }
 
   timer.stop();
@@ -672,7 +658,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << t <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
-  RAJA::vector_stats::printVectorStats();
+  RAJA::tensor_stats::printVectorStats();
 #endif
 
 #if defined(DEBUG_LTIMES)
@@ -685,7 +671,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-#if VARIANT_RAJA_MATRIX
+#if VARIANT_RAJA_MATRIX0
 {
   std::cout << "\n Running RAJA column-major matrix version of LTimes...\n";
 
@@ -738,7 +724,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
-  RAJA::vector_stats::resetVectorStats();
+  RAJA::tensor_stats::resetVectorStats();
 #endif
 
 
@@ -771,7 +757,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << t <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
-  RAJA::vector_stats::printVectorStats();
+  RAJA::tensor_stats::printVectorStats();
 #endif
 
 #if defined(DEBUG_LTIMES)
@@ -833,7 +819,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
-  RAJA::vector_stats::resetVectorStats();
+  RAJA::tensor_stats::resetVectorStats();
 #endif
 
 
@@ -875,7 +861,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << t <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
-  RAJA::vector_stats::printVectorStats();
+  RAJA::tensor_stats::printVectorStats();
 #endif
 
 #if defined(DEBUG_LTIMES)
@@ -1242,7 +1228,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   shmem_phi_t shmem_phi;
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
-  RAJA::vector_stats::resetVectorStats();
+  RAJA::tensor_stats::resetVectorStats();
 #endif
 
   RAJA::Timer timer;
@@ -1310,7 +1296,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << timer.elapsed() <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
-  RAJA::vector_stats::printVectorStats();
+  RAJA::tensor_stats::printVectorStats();
 #endif
 
 #if defined(DEBUG_LTIMES)

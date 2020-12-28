@@ -79,6 +79,9 @@ namespace RAJA
   };
 
 
+  // 0d tensor (scalar)
+  using ScalarLayout = TensorLayout<>;
+  struct scalar_register;
 
   // 1d tensor layout
   using VectorLayout = TensorLayout<0>;
@@ -227,6 +230,19 @@ namespace internal {
       self_type &operator=(element_type value)
       {
         getThis()->broadcast(value);
+        return *getThis();
+      }
+
+      /*!
+       * @brief Set entire vector to a single scalar value
+       * @param value Value to set all vector elements to
+       */
+      template<typename T2>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator=(TensorRegister<scalar_register, T2, ScalarLayout, camp::idx_seq<>, camp::idx_seq<>, 0> const &value)
+      {
+        getThis()->broadcast(value.get(0));
         return *getThis();
       }
 

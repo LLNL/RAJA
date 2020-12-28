@@ -131,11 +131,39 @@ namespace RAJA
 
 
     template<typename REF_TYPE, typename TILE_TYPE>
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    constexpr
     auto merge_ref_tile(REF_TYPE const &ref, TILE_TYPE const &tile) ->
       typename MergeRefTile<REF_TYPE, TILE_TYPE, camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::result_type
     {
       return MergeRefTile<REF_TYPE, TILE_TYPE, camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::merge(ref, tile);
     }
+
+    /*!
+     * Changes TensorTile size type to FULL
+     */
+    template<typename INDEX_TYPE, TensorTileSize RTENSOR_SIZE, camp::idx_t NUM_DIMS>
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    constexpr
+    TensorTile<INDEX_TYPE, TENSOR_FULL, NUM_DIMS> &
+    make_tensor_tile_full(TensorTile<INDEX_TYPE, RTENSOR_SIZE, NUM_DIMS> &tile){
+      return reinterpret_cast<TensorTile<INDEX_TYPE, TENSOR_FULL, NUM_DIMS> &>(tile);
+    }
+
+    /*!
+     * Changes TensorTile size type to PARTIAL
+     */
+    template<typename INDEX_TYPE, TensorTileSize RTENSOR_SIZE, camp::idx_t NUM_DIMS>
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    constexpr
+    TensorTile<INDEX_TYPE, TENSOR_PARTIAL, NUM_DIMS> &
+    make_tensor_tile_partial(TensorTile<INDEX_TYPE, RTENSOR_SIZE, NUM_DIMS> &tile){
+      return reinterpret_cast<TensorTile<INDEX_TYPE, TENSOR_PARTIAL, NUM_DIMS> &>(tile);
+    }
+
 
 
 

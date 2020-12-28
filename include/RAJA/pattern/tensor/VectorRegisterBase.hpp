@@ -24,6 +24,8 @@
 
 #include "camp/camp.hpp"
 #include "RAJA/pattern/tensor/TensorRegister.hpp"
+#include "RAJA/pattern/tensor/stats.hpp"
+
 
 namespace RAJA
 {
@@ -75,10 +77,16 @@ namespace internal {
         if(STRIDE_ONE_DIM == 0){
           // full vector?
           if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_packed ++;
+#endif
             getThis()->load_packed(ptr);
           }
           // partial
           else{
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_packed_n ++;
+#endif
             getThis()->load_packed_n(ptr, ref.m_tile.m_size[0]);
           }
 
@@ -88,10 +96,16 @@ namespace internal {
         {
           // full vector?
           if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_strided ++;
+#endif
             getThis()->load_strided(ptr, ref.m_stride[0]);
           }
           // partial
           else{
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_strided_n ++;
+#endif
             getThis()->load_strided_n(ptr, ref.m_stride[0], ref.m_tile.m_size[0]);
           }
         }
@@ -112,10 +126,16 @@ namespace internal {
         if(STRIDE_ONE_DIM == 0){
           // full vector?
           if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_store_packed ++;
+#endif
             getThis()->store_packed(ptr);
           }
           // partial
           else{
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_store_packed_n ++;
+#endif
             getThis()->store_packed_n(ptr, ref.m_tile.m_size[0]);
           }
 
@@ -125,10 +145,16 @@ namespace internal {
         {
           // full vector?
           if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_store_strided ++;
+#endif
             getThis()->store_strided(ptr, ref.m_stride[0]);
           }
           // partial
           else{
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_store_strided_n ++;
+#endif
             getThis()->store_strided_n(ptr, ref.m_stride[0], ref.m_tile.m_size[0]);
           }
         }
