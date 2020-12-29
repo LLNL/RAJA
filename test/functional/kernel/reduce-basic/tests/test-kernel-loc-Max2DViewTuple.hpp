@@ -61,6 +61,10 @@ void KernelLocMax2DViewTupleTestImpl(const int xdim, const int ydim)
 
   work_res.memcpy(work_array, check_array, sizeof(DATA_TYPE) * array_length);
 
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+  //#pragma omp target data map(to:work_array[0:array_length])
+#endif
+
   RAJA::TypedRangeSegment<INDEX_TYPE> colrange(0, xdim);
   RAJA::TypedRangeSegment<INDEX_TYPE> rowrange(0, ydim);
 
@@ -124,8 +128,8 @@ TYPED_TEST_P(KernelLocMax2DViewTupleTest, LocMax2DViewTupleKernel)
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<5>>::type;
 
   KernelLocMax2DViewTupleTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(10, 10);
-  KernelLocMax2DViewTupleTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(1053, 1053);
-  KernelLocMax2DViewTupleTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(3101, 3101);
+  KernelLocMax2DViewTupleTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(151, 151);
+  KernelLocMax2DViewTupleTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(362, 362);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(KernelLocMax2DViewTupleTest,

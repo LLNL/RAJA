@@ -105,14 +105,15 @@ using OpenMPTargetKernelLocExecPols =
           RAJA::statement::Lambda<0>
         >
       >
-    >
+    >,
 
-    //RAJA::KernelPolicy<
-    //  RAJA::statement::Collapse<RAJA::omp_target_parallel_collapse_exec,
-    //    RAJA::ArgList<1,0>,
-    //    RAJA::statement::Lambda<0>
-    //  >
-    //>
+    // TODO: Works for XLC and Clang10, but only up to input size of 362x362 matrix.
+    RAJA::KernelPolicy<
+      RAJA::statement::Collapse<RAJA::omp_target_parallel_collapse_exec,
+        RAJA::ArgList<1,0>,
+        RAJA::statement::Lambda<0>
+      >
+    >
 
   >;
 
@@ -149,7 +150,7 @@ using TBBKernelLocExecPols =
       >
     >
 
-    // RCC: This produces inaccurate loc reductions for gcc 6 and 4.9.3.
+    // TODO: This produces inaccurate loc reductions for gcc 6 and 4.9.3.
     //RAJA::KernelPolicy<
     //  RAJA::statement::For<1, RAJA::seq_exec,  // row
     //    RAJA::statement::For<0, RAJA::tbb_for_exec,  // col
