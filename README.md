@@ -65,7 +65,7 @@ commands in the top-level RAJA directory (in-source builds are not allowed!):
     make
 
 More details about RAJA configuration options are located in the 
-[User Documentation]((http://raja.readthedocs.io/en/main/).
+[User Documentation](http://raja.readthedocs.io/en/main/).
 
 We also maintain a [**RAJA Template Project**](https://github.com/LLNL/RAJA-project-template) that shows how to use RAJA in a CMake project, either as a Git
 submodule or as an installed library.
@@ -175,5 +175,5 @@ PackageHomePage: https://github.com/NVlabs/cub
 PackageLicenseDeclared: BSD-3-Clause
 
 PackageName: rocPRIM   
-PackageHomePage: https://github.com/ROCmSoftwarePlatform/rocPRIM.git
+PackageHomePage: https://github.com/ROCmSoftwarePlatform/rocPRIM.git  
 PackageLicenseDeclared: MIT License
