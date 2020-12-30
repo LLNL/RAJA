@@ -21,7 +21,7 @@ cmake \
   -DENABLE_OPENMP=On \
 	-DENABLE_BLAS=On \
 	-DBLA_VENDOR=Intel10_64lp_seq \
-	-Dcblas_DIR=/usr/gapps/bdiv/toss_3_x86_64_ib/clang-10-mvapich2-2.3/lapack/3.9.0/lib64/cmake/cblas-3.9.0 \
+	-DBLAS_PATH=/usr/tce/packages/mkl/mkl-2020.0/lib \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   .. 
