@@ -235,6 +235,12 @@ if (ENABLE_TBB)
     tbb)
 endif ()
 
+if (ENABLE_BLAS)
+  set(raja_depends
+	  ${raja_depends}
+		blas)
+endif ()
+
 if (NOT TARGET camp)
   set(EXTERNAL_CAMP_SOURCE_DIR "" CACHE FILEPATH "build with a specific external
 camp source repository")

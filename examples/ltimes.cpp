@@ -42,6 +42,12 @@
 #endif
 
 
+extern "C" {
+  void dgemm_(char * transa, char * transb, int * m, int * n, int * k,
+              double * alpha, double * A, int * lda,
+              double * B, int * ldb, double * beta,
+              double *, int * ldc);
+}
 
 #include <cstdlib>
 #include <cstring>
@@ -137,7 +143,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const long num_z = 128 + (rand()/RAND_MAX);
 #else
   const int num_iter = 10 + (rand()/RAND_MAX);
-  const int num_z = 1280 + (rand()/RAND_MAX);
+  const int num_z = 16*1024 + (rand()/RAND_MAX);
 #endif
 
 
@@ -595,28 +601,28 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // View types and Views/Layouts for indexing into arrays
   //
   // L(m, d) : 1 -> d is stride-1 dimension
-  using LView = TypedView<double, Layout<2, int, 1>, IM, ID>;
+  using LView = TypedView<double, Layout<2, int, 0>, IM, ID>;
 
   // psi(d, g, z) : 2 -> z is stride-1 dimension
-  using PsiView = TypedView<double, Layout<3, int, 2>, ID, IG, IZ>;
+  using PsiView = TypedView<double, Layout<3, int, 0>, ID, IG, IZ>;
 
   // phi(m, g, z) : 2 -> z is stride-1 dimension
-  using PhiView = TypedView<double, Layout<3, int, 2>, IM, IG, IZ>;
+  using PhiView = TypedView<double, Layout<3, int, 0>, IM, IG, IZ>;
 
 
-  std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
+  std::array<RAJA::idx_t, 2> L_perm {{1, 0}};
   LView L(L_data,
           RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
 
-  std::array<RAJA::idx_t, 3> psi_perm {{1, 0, 2}};
+  std::array<RAJA::idx_t, 3> psi_perm {{1, 2, 0}};
   PsiView psi(psi_data,
               RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
 
-  std::array<RAJA::idx_t, 3> phi_perm {{1, 0, 2}};
+  std::array<RAJA::idx_t, 3> phi_perm {{1, 2, 0}};
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  using matrix_t = RAJA::MatrixRegister<double, MatrixRowMajor>;
+  using matrix_t = RAJA::MatrixRegister<double, MatrixColMajor>;
 
 	std::cout << "vector width: " << matrix_t::s_dim_elem(0) << std::endl;
 
@@ -641,10 +647,38 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     for(IG g : RAJA::TypedRangeSegment<IG>(0, num_g)){
 
+#if 0
         phi(RowM::all(), g, ColZ::all()) +=
             L(RowM::all(), ColD::all()) *
             psi(toRowIndex(ColD::all()), g, ColZ::all());
 
+#else
+        // try using BLAS DGEMM for comparison
+//        void dgemm_(char * transa, char * transb, int * m, int * n, int * k,
+//                    double * alpha, double * A, int * lda,
+//                    double * B, int * ldb, double * beta,
+//                    double *, int * ldc);
+        char transa = 'n';
+        char transb = 'n';
+        int m = num_m;
+        int n = num_z;
+        int k = num_d;
+        double alpha = 1.0;
+        double beta = 1.0;
+        double *Aptr = &L(IM(0), ID(0));
+        double *Bptr = &psi(ID(0), g, IZ(0));
+        double *Cptr = &phi(IM(0), g, IZ(0));
+        int lda = m;
+        int ldb = k;
+        int ldc = m;
+        dgemm_(&transa, &transb, &m, &n, &k,
+               &alpha,
+               Aptr, &lda,
+               Bptr, &ldb,
+               &beta,
+               Cptr, &ldc);
+
+#endif
     }
 
 
