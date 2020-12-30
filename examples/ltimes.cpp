@@ -647,7 +647,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     for(IG g : RAJA::TypedRangeSegment<IG>(0, num_g)){
 
-#if 0
+#if 1
         phi(RowM::all(), g, ColZ::all()) +=
             L(RowM::all(), ColD::all()) *
             psi(toRowIndex(ColD::all()), g, ColZ::all());

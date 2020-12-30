@@ -380,13 +380,9 @@ namespace RAJA
 
           // tile over row of lhs and column of rhs
           TILE_TYPE lhs_tile = tile;
-//          lhs_tile.m_begin[0] = tile.m_begin[0];
-//          lhs_tile.m_size[0] = tile.m_size[0];
           lhs_tile.m_size[1] = tile_size;
 
           TILE_TYPE rhs_tile = tile;
-//          rhs_tile.m_begin[1] = tile.m_begin[1];
-//          rhs_tile.m_size[1] = tile.m_size[1];
           rhs_tile.m_size[0] = tile_size;
 
           result_type x(element_type(0));

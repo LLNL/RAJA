@@ -52,20 +52,15 @@ namespace RAJA
       RAJA_HOST_DEVICE
       static
       constexpr
-      value_type num_elem(){
-        return tensor_traits::num_elem();
+      self_type range(index_type begin, index_type end){
+        return self_type(begin, value_type(end-begin));
       }
 
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      constexpr
-      TensorIndex() : m_index(index_type(0)), m_length(num_elem()) {}
-
 
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      explicit TensorIndex(index_type value) : m_index(value), m_length(num_elem()) {}
+      TensorIndex() : m_index(index_type(0)), m_length(0) {}
 
 
       RAJA_INLINE

@@ -309,11 +309,12 @@ TYPED_TEST_P(MatrixTest, MatrixViewStore)
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
 
+  static constexpr camp::idx_t num_elem = matrix_t::vector_type::s_num_elem;
 
   // Fill data
   matrix_t m;
-  for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t j = 0;j < num_elem; ++ j){
       m.set(i,j, i*j*j);
     }
   }
@@ -321,13 +322,15 @@ TYPED_TEST_P(MatrixTest, MatrixViewStore)
 
 
   // Create a Row-Major data buffer
-  element_t data1[matrix_t::vector_type::s_num_elem][matrix_t::vector_type::s_num_elem];
+  element_t data1[num_elem][num_elem];
 
   // Create a view of the data
-  RAJA::View<element_t, RAJA::Layout<2, int>> view1(&data1[0][0], matrix_t::vector_type::s_num_elem, matrix_t::vector_type::s_num_elem);
+  RAJA::View<element_t, RAJA::Layout<2, int>> view1(&data1[0][0], num_elem, num_elem);
 
   // Store using view
-  view1(RAJA::RowIndex<int, matrix_t>(0), RAJA::ColIndex<int, matrix_t>(0)) = m;
+  RAJA::RowIndex<int, matrix_t> rows(0, num_elem);
+  RAJA::ColIndex<int, matrix_t> cols(0, num_elem);
+  view1(rows, cols) = m;
 
   // Check contents
   for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
@@ -347,7 +350,7 @@ TYPED_TEST_P(MatrixTest, MatrixViewStore)
       &data2[0][0], RAJA::make_permuted_layout<2, int>({{matrix_t::vector_type::s_num_elem, matrix_t::vector_type::s_num_elem}}, {{1,0}}));
 
   // Store using view
-  view2(RAJA::RowIndex<int, matrix_t>(0), RAJA::ColIndex<int, matrix_t>(0)) = m;
+  view2(rows, cols) = m;
 
   // Check contents
   for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
@@ -837,10 +840,18 @@ TYPED_TEST_P(MatrixTest, AllMultiplyAdd)
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
 
-  static const int N = matrix_t::vector_type::s_num_elem * 4;
+  static const int Nmax = matrix_t::vector_type::s_num_elem * 4;
+
+  static const int N = Nmax;
 
   // Create a row-major data buffer
-  element_t data1[N][N], data2[N][N];
+  element_t data1[Nmax][Nmax], data2[Nmax][Nmax];
+
+  // Create an empty result bufffer
+  element_t data3[Nmax][Nmax];
+
+
+
   for(camp::idx_t i = 0;i < N; ++ i){
     for(camp::idx_t j = 0;j < N; ++ j){
       data1[i][j] = i*j*j;
@@ -848,19 +859,18 @@ TYPED_TEST_P(MatrixTest, AllMultiplyAdd)
     }
   }
 
-  // Create an empty result bufffer
-  element_t data3[N][N];
+
 
   //  Create views
   RAJA::View<element_t, RAJA::Layout<2, int>> view1(
-      &data1[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
+      &data1[0][0], RAJA::make_permuted_layout<2, int>({{Nmax, Nmax}}, {{0,1}}));
 
 
   RAJA::View<element_t, RAJA::Layout<2, int>> view2(
-      &data2[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
+      &data2[0][0], RAJA::make_permuted_layout<2, int>({{Nmax, Nmax}}, {{0,1}}));
 
   RAJA::View<element_t, RAJA::Layout<2, int>> view3(
-      &data3[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
+      &data3[0][0], RAJA::make_permuted_layout<2, int>({{Nmax, Nmax}}, {{0,1}}));
 
 
   using Row = RAJA::RowIndex<int, matrix_t>;
@@ -868,10 +878,9 @@ TYPED_TEST_P(MatrixTest, AllMultiplyAdd)
 
 
   // Perform view3 = view1 * view2 + view1;
-  view3(Row::all(), Col::all()) = view1(Row::all(), Col::all()) *
-                                  view2(Row::all(), Col::all()) +
-                                  view1(Row::all(), Col::all());
-
+  auto rows = Row::range(0,N);
+  auto cols = Col::range(0,N);
+  view3(rows, cols) = view1(rows, cols) * view2(rows, cols) + view1(rows, cols);
 
 
   // Check that data1==data2
