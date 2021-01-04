@@ -26,7 +26,7 @@ RAJA offers portable, parallel loop execution by providing building blocks
 that extend the generally-accepted parallel for idiom. RAJA relies on standard 
 C++11 features, such as lambda expressions.
 
-RAJA's desing is rooted in decades of experience working on 
+RAJA's design is rooted in decades of experience working on 
 production mesh-based multiphysics applications. Based on the diversity of
 algorithms and software engineering styles used in such applications, RAJA 
 is designed to enable application developers to adapt RAJA concepts and 
@@ -37,7 +37,7 @@ other C++ portability abstraction approaches, such as
 [Kokkos](https://github.com/kokkos/kokkos)
 and [Thrust](https://developer.nvidia.com/thrust). 
 However, it includes concepts and capabilities that are absent in other models 
-and which are fundamental to applications we work with.
+that are fundamental to applications we work with.
 
 It is important to note that, although RAJA is used in a diversity of 
 production applications, it is very much a work-in-progress. The community 
