@@ -14,7 +14,7 @@
 [![Coverage](https://img.shields.io/codecov/c/github/LLNL/RAJA/develop.svg)](https://codecov.io/gh/LLNL/RAJA)
 
 RAJA is a library of C++ software abstractions, primarily developed at
-Lawrence Livermore National Laboratory (LLNL), that enable architecture
+Lawrence Livermore National Laboratory (LLNL), that enables architecture
 and programming model portability for HPC applications. RAJA has two main goals:
 
   * To enable application portability with manageable disruption to existing 
@@ -22,11 +22,11 @@ and programming model portability for HPC applications. RAJA has two main goals:
   * To achieve performance comparable to using common programming models, 
     such as OpenMP, CUDA, etc. directly.
 
-RAJA targets portable, parallel loop execution by providing building blocks 
+RAJA offers portable, parallel loop execution by providing building blocks 
 that extend the generally-accepted parallel for idiom. RAJA relies on standard 
 C++11 features, such as lambda expressions.
 
-RAJA is rooted in a perspective based on decades of experience working on 
+RAJA's desing is rooted in decades of experience working on 
 production mesh-based multiphysics applications. Based on the diversity of
 algorithms and software engineering styles used in such applications, RAJA 
 is designed to enable application developers to adapt RAJA concepts and 
