@@ -10,13 +10,5 @@ raja_add_test(
   SOURCES test-reduce-sum.cpp)
 
 raja_add_test(
-  NAME test-cuda-reduce-tupleloc
-  SOURCES test-reduce-tupleloc.cpp)
-
-raja_add_test(
-  NAME test-cuda-reduce-randloc
-  SOURCES test-reduce-randloc.cpp)
-
-raja_add_test(
   NAME test-cuda-synchronize
   SOURCES test-synchronize.cpp)
