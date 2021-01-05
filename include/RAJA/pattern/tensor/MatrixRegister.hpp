@@ -25,8 +25,6 @@
 namespace RAJA
 {
 
-
-
   template<typename T, typename LAYOUT, typename REGISTER_POLICY = RAJA::default_register>
   using MatrixRegister =
       TensorRegister<REGISTER_POLICY,
@@ -34,8 +32,7 @@ namespace RAJA
                      LAYOUT,
                      camp::idx_seq<RegisterTraits<REGISTER_POLICY,T>::s_num_elem,
                                    RegisterTraits<REGISTER_POLICY,T>::s_num_elem>,
-                     camp::make_idx_seq_t<RegisterTraits<REGISTER_POLICY,T>::s_num_elem>,
-                     0>;
+                     camp::make_idx_seq_t<RegisterTraits<REGISTER_POLICY,T>::s_num_elem>>;
 
 
 }  // namespace RAJA

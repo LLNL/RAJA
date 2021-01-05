@@ -31,8 +31,7 @@ namespace RAJA
                                         T,
                                         VectorLayout,
                                         camp::idx_seq<RegisterTraits<REGISTER_POLICY,T>::s_num_elem>,
-                                        camp::make_idx_seq_t<RegisterTraits<REGISTER_POLICY,T>::s_num_elem>,
-                                        0>;
+                                        camp::make_idx_seq_t<RegisterTraits<REGISTER_POLICY,T>::s_num_elem>>;
 
 } // namespace RAJA
 

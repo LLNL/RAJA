@@ -38,13 +38,13 @@ namespace RAJA
    * We will implement this as a scalar value, and let the compiler use
    * whatever registers it deems appropriate.
    */
-  template<typename T, camp::idx_t SKEW>
-  class TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>, camp::idx_seq<0>, SKEW> :
-      public internal::VectorRegisterBase<TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>, camp::idx_seq<0>, SKEW>>
+  template<typename T>
+  class TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>, camp::idx_seq<0>> :
+      public internal::VectorRegisterBase<TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>, camp::idx_seq<0>>>
   {
     public:
       using register_policy = scalar_register;
-      using self_type = TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>, camp::idx_seq<0>, SKEW>;
+      using self_type = TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>, camp::idx_seq<0>>;
       using element_type = T;
       using register_type = T;
 

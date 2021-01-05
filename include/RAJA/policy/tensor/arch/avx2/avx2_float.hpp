@@ -32,13 +32,13 @@
 namespace RAJA
 {
 
-  template<camp::idx_t SKEW>
-  class TensorRegister<avx2_register, float, VectorLayout, camp::idx_seq<8>, camp::idx_seq<0,1,2,3,4,5,6,7>, SKEW> :
-    public internal::VectorRegisterBase<TensorRegister<avx2_register, float, VectorLayout, camp::idx_seq<8>, camp::idx_seq<0,1,2,3,4,5,6,7>, SKEW>>
+  template<>
+  class TensorRegister<avx2_register, float, VectorLayout, camp::idx_seq<8>, camp::idx_seq<0,1,2,3,4,5,6,7>> :
+    public internal::VectorRegisterBase<TensorRegister<avx2_register, float, VectorLayout, camp::idx_seq<8>, camp::idx_seq<0,1,2,3,4,5,6,7>>>
   {
     public:
       using register_policy = avx2_register;
-      using self_type = TensorRegister<avx2_register, float, VectorLayout, camp::idx_seq<8>, camp::idx_seq<0,1,2,3,4,5,6,7>, SKEW>;
+      using self_type = TensorRegister<avx2_register, float, VectorLayout, camp::idx_seq<8>, camp::idx_seq<0,1,2,3,4,5,6,7>>;
       using element_type = float;
       using register_type = __m256;
 

@@ -33,17 +33,16 @@ namespace RAJA
                                         T,
                                         ScalarLayout,
                                         camp::idx_seq<>,
-                                        camp::idx_seq<>,
-                                        0>;
+                                        camp::idx_seq<>>;
 
 
 
   template<typename T>
-  class TensorRegister<scalar_register, T, ScalarLayout, camp::idx_seq<>, camp::idx_seq<>, 0> :
+  class TensorRegister<scalar_register, T, ScalarLayout, camp::idx_seq<>, camp::idx_seq<>> :
     public VectorRegister<T, scalar_register>
   {
     public:
-      using self_type = TensorRegister<scalar_register, T, ScalarLayout, camp::idx_seq<>, camp::idx_seq<>, 0>;
+      using self_type = TensorRegister<scalar_register, T, ScalarLayout, camp::idx_seq<>, camp::idx_seq<>>;
       using base_type = VectorRegister<T, scalar_register>;
       using register_policy = scalar_register;
       using element_type = T;

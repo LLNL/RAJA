@@ -38,12 +38,12 @@ namespace internal {
   template<typename Derived>
   class VectorRegisterBase;
 
-  template<typename REGISTER_POLICY, typename T, camp::idx_t SIZE, camp::idx_t ... VAL_SEQ, camp::idx_t SKEW>
-  class VectorRegisterBase<TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>, camp::idx_seq<VAL_SEQ...>, SKEW>> :
-    public TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>, camp::idx_seq<VAL_SEQ...>, SKEW>>
+  template<typename REGISTER_POLICY, typename T, camp::idx_t SIZE, camp::idx_t ... VAL_SEQ>
+  class VectorRegisterBase<TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>, camp::idx_seq<VAL_SEQ...>>> :
+    public TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>, camp::idx_seq<VAL_SEQ...>>>
   {
     public:
-      using self_type = TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>, camp::idx_seq<VAL_SEQ...>, SKEW>;
+      using self_type = TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>, camp::idx_seq<VAL_SEQ...>>;
       using element_type = camp::decay<T>;
 
 

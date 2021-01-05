@@ -32,42 +32,41 @@ namespace RAJA
            typename T,
            typename LAYOUT,
            typename SIZES,
-           typename VAL_SEQ,
-           camp::idx_t SKEW>
+           typename VAL_SEQ>
   class TensorRegister;
 
 
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ, camp::idx_t SKEW>
+  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ>
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>
-  operator+(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW> const &y){
-    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>;
+  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ>
+  operator+(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ> const &y){
+    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ>;
     return register_t(x).add(y);
   }
 
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ, camp::idx_t SKEW>
+  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ>
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>
-  operator-(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW> const &y){
-    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>;
+  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ>
+  operator-(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ> const &y){
+    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ>;
     return register_t(x).subtract(y);
   }
 
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ, camp::idx_t SKEW>
-  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>
-  operator*(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW> const &y){
-    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>;
+  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ>
+  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ>
+  operator*(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ> const &y){
+    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ>;
     return register_t(x).multiply(y);
   }
 
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ, camp::idx_t SKEW>
+  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ>
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>
-  operator/(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW> const &y){
-    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>;
+  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ>
+  operator/(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ> const &y){
+    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ>;
     return register_t(x).divide(y);
   }
 
