@@ -158,6 +158,7 @@ namespace RAJA
   {
     public:
       using self_type = TensorRegister<REGISTER_POLICY, T, TensorLayout<ROW_ORD, COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>, camp::idx_seq<VAL_SEQ... >, SKEW>;
+      using base_type = internal::TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, TensorLayout<ROW_ORD, COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>, camp::idx_seq<VAL_SEQ... >, SKEW>>;
       using vector_type = VectorRegister<T, REGISTER_POLICY>;
       using register_policy = REGISTER_POLICY;
       using element_type = T;
@@ -182,7 +183,23 @@ namespace RAJA
       TensorRegister(self_type && c) = default;
 
 
+      /*
+       * Overload for:    assignment of ET to a TensorRegister
+
+       */
+      template<typename RHS,
+        typename std::enable_if<std::is_base_of<RAJA::internal::ET::TensorExpressionConcreteBase, RHS>::value, bool>::type = true>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      TensorRegister(RHS const &rhs)
+      {
+        // evaluate a single tile of the ET, storing in this TensorRegister
+        copy( rhs.eval(base_type::s_get_default_tile()) );
+      }
+
+
       template<typename ... REGS>
+      explicit
       RAJA_HOST_DEVICE
       RAJA_INLINE
       TensorRegister(vector_type reg0, REGS const &... regs) :
@@ -242,6 +259,22 @@ namespace RAJA
 
 
       TensorRegister &operator=(self_type const &c) = default;
+
+//      /*
+//       * Overload for:    assignment of ET to a TensorRegister
+//
+//       */
+//      template<typename RHS,
+//        typename std::enable_if<std::is_base_of<RAJA::internal::ET::TensorExpressionConcreteBase, RHS>::value, bool>::type = true>
+//      RAJA_INLINE
+//      RAJA_HOST_DEVICE
+//      self_type const &operator=(RHS const &rhs)
+//      {
+//        // evaluate a single tile of the ET, storing in this TensorRegister
+//        copy( rhs.eval(base_type::s_get_default_tile()) );
+//
+//        return *this;
+//      }
 
 
       /*!

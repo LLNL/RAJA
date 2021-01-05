@@ -19,7 +19,7 @@
 #define RAJA_pattern_tensor_HPP
 
 #include "RAJA/pattern/tensor/TensorIndex.hpp"
-#include "RAJA/pattern/tensor/TensorRegister.hpp"
+#include "RAJA/pattern/tensor/TensorRegisterBase.hpp"
 #include "RAJA/pattern/tensor/ScalarRegister.hpp"
 #include "RAJA/pattern/tensor/VectorRegister.hpp"
 #include "RAJA/pattern/tensor/MatrixRegister.hpp"

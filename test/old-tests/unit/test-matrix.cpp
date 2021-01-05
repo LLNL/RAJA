@@ -26,8 +26,8 @@ using MatrixTestTypes = ::testing::Types<
 //#endif
 //
 //#ifdef __AVX2__
-    RAJA::MatrixRegister<double, RAJA::MatrixColMajor, RAJA::avx2_register>,
-//    RAJA::MatrixRegister<double, RAJA::MatrixRowMajor, RAJA::avx2_register>,
+    RAJA::MatrixRegister<double, RAJA::ColMajorLayout, RAJA::avx2_register>,
+    RAJA::MatrixRegister<double, RAJA::RowMajorLayout, RAJA::avx2_register>,
 //    RAJA::MatrixRegister<float, RAJA::MatrixColMajor, RAJA::avx2_register>,
 //    RAJA::MatrixRegister<float, RAJA::MatrixRowMajor, RAJA::avx2_register>,
 //    RAJA::MatrixRegister<long, RAJA::MatrixColMajor, RAJA::avx2_register>,
@@ -54,7 +54,7 @@ using MatrixTestTypes = ::testing::Types<
 //    RAJA::MatrixRegister<long, RAJA::MatrixColMajor, RAJA::scalar_register>,
 //    RAJA::MatrixRegister<long, RAJA::MatrixRowMajor, RAJA::scalar_register>,
 //    RAJA::MatrixRegister<int, RAJA::MatrixColMajor, RAJA::scalar_register>,
-    RAJA::MatrixRegister<int, RAJA::MatrixRowMajor, RAJA::scalar_register>
+    RAJA::MatrixRegister<int, RAJA::RowMajorLayout, RAJA::scalar_register>
 
   >;
 
@@ -249,7 +249,7 @@ TYPED_TEST_P(MatrixTest, MatrixStore)
 
 TYPED_TEST_P(MatrixTest, MatrixViewLoad)
 {
-/*
+
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
 
@@ -267,7 +267,9 @@ TYPED_TEST_P(MatrixTest, MatrixViewLoad)
   RAJA::View<element_t, RAJA::Layout<2, int>> view1(&data1[0][0], matrix_t::vector_type::s_num_elem, matrix_t::vector_type::s_num_elem);
 
   // Load data
-  matrix_t m1 = view1(RAJA::RowIndex<int, matrix_t>(0), RAJA::ColIndex<int, matrix_t>(0));
+  auto rows = RAJA::RowIndex<int, matrix_t>::all();
+  auto cols = RAJA::ColIndex<int, matrix_t>::all();
+  matrix_t m1 = view1(rows, cols);
 
   // Check contents
   for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
@@ -292,14 +294,14 @@ TYPED_TEST_P(MatrixTest, MatrixViewLoad)
       &data2[0][0], RAJA::make_permuted_layout<2, int>({{matrix_t::vector_type::s_num_elem, matrix_t::vector_type::s_num_elem}}, {{1,0}}));
 
   // Load data
-  matrix_t m2 = view2(RAJA::RowIndex<int, matrix_t>(0), RAJA::ColIndex<int, matrix_t>(0));
+  matrix_t m2 = view2(rows, cols);
 
   // Check contents
   for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
       ASSERT_SCALAR_EQ(m2.get(i,j), data2[j][i]);
     }
-  }*/
+  }
 
 }
 
@@ -362,7 +364,6 @@ TYPED_TEST_P(MatrixTest, MatrixViewStore)
 
 }
 
-/*
 TYPED_TEST_P(MatrixTest, MatrixVector)
 {
 
@@ -382,20 +383,20 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
 
   // matrix vector product
   // note mv is not necessarily the same type as v
-  auto mv = m*v;
+//  auto mv = m*v;
 
-  // check result
-  for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
-    element_t expected(0);
+//  // check result
+//  for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
+//    element_t expected(0);
+//
+//    for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
+//      expected += m.get(i,j)*v.get(j);
+//    }
+//
+//    ASSERT_SCALAR_EQ(mv.get(i), expected);
+//  }
 
-    for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
-      expected += m.get(i,j)*v.get(j);
-    }
-
-    ASSERT_SCALAR_EQ(mv.get(i), expected);
-  }
-
-}*/
+}
 
 TYPED_TEST_P(MatrixTest, MatrixMatrix)
 {
@@ -947,7 +948,7 @@ REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
                                         MatrixStore,
                                         MatrixViewLoad,
                                         MatrixViewStore,
-//                                        MatrixVector,
+                                        MatrixVector,
                                         MatrixMatrix,
                                         MatrixMatrixAccumulate,
 

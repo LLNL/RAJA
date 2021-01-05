@@ -1,0 +1,89 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   RAJA header file defining SIMD/SIMT register operations.
+ *
+ ******************************************************************************
+ */
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_pattern_tensor_TensorLayout_HPP
+#define RAJA_pattern_tensor_TensorLayout_HPP
+
+#include "RAJA/config.hpp"
+#include "RAJA/util/macros.hpp"
+#include "camp/camp.hpp"
+
+namespace RAJA
+{
+
+
+
+  template<camp::idx_t ... DIM_SEQ>
+  struct TensorLayout : public camp::idx_seq<DIM_SEQ...>
+  {
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      constexpr
+      bool is_column_major(){
+        return false;
+      }
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      constexpr
+      bool is_row_major(){
+        return false;
+      }
+
+  };
+
+
+  // specialization for Matrix layouts, where column vs row major matters
+  template<camp::idx_t ROW, camp::idx_t COL>
+  struct TensorLayout<ROW, COL> : public camp::idx_seq<ROW, COL>
+  {
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      constexpr
+      bool is_column_major(){
+        return COL == 1;
+      }
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      constexpr
+      bool is_row_major(){
+        return ROW == 1;
+      }
+  };
+
+
+  // 0d tensor (scalar) layout
+  using ScalarLayout = TensorLayout<>;
+
+  // 1d tensor (vector) layout
+  using VectorLayout = TensorLayout<0>;
+
+  // 2d tensor (matrix) layouts
+  using RowMajorLayout = TensorLayout<1, 0>;
+  using ColMajorLayout = TensorLayout<0, 1>;
+
+
+
+}  // namespace RAJA
+
+
+#endif

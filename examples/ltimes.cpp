@@ -622,7 +622,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  using matrix_t = RAJA::MatrixRegister<double, MatrixColMajor>;
+  using matrix_t = RAJA::MatrixRegister<double, ColMajorLayout>;
 
 	std::cout << "vector width: " << matrix_t::s_dim_elem(0) << std::endl;
 

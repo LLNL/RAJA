@@ -15,18 +15,22 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_tensor_TensorTensorRegister_HPP
-#define RAJA_pattern_tensor_TensorTensorRegister_HPP
+#ifndef RAJA_pattern_tensor_TensorRegisterBase_HPP
+#define RAJA_pattern_tensor_TensorRegisterBase_HPP
 
 #include "RAJA/config.hpp"
 
 #include "RAJA/util/macros.hpp"
 
 #include "camp/camp.hpp"
+#include "RAJA/pattern/tensor/TensorLayout.hpp"
 #include "RAJA/pattern/tensor/TensorRef.hpp"
 
 namespace RAJA
 {
+
+  struct scalar_register;
+
   template<typename REGISTER_POLICY,
            typename T,
            typename LAYOUT,
@@ -34,61 +38,6 @@ namespace RAJA
            typename VAL_SEQ,
            camp::idx_t SKEW>
   class TensorRegister;
-
-  template<camp::idx_t ... DIM_SEQ>
-  struct TensorLayout : public camp::idx_seq<DIM_SEQ...>
-  {
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      static
-      constexpr
-      bool is_column_major(){
-        return false;
-      }
-
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      static
-      constexpr
-      bool is_row_major(){
-        return false;
-      }
-
-  };
-
-
-  // specialization for Matrix layouts, where column vs row major matters
-  template<camp::idx_t ROW, camp::idx_t COL>
-  struct TensorLayout<ROW, COL> : public camp::idx_seq<ROW, COL>
-  {
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      static
-      constexpr
-      bool is_column_major(){
-        return COL == 1;
-      }
-
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      static
-      constexpr
-      bool is_row_major(){
-        return ROW == 1;
-      }
-  };
-
-
-  // 0d tensor (scalar)
-  using ScalarLayout = TensorLayout<>;
-  struct scalar_register;
-
-  // 1d tensor layout
-  using VectorLayout = TensorLayout<0>;
-
-  // 2d tensor (matrix) layouts
-  using MatrixRowMajor = TensorLayout<1, 0>;
-  using MatrixColMajor = TensorLayout<0, 1>;
 
 
   template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ, camp::idx_t SKEW>
@@ -127,6 +76,35 @@ namespace RAJA
 
 
 namespace internal {
+
+  namespace ET
+  {
+    class TensorExpressionConcreteBase;
+  } // namespace ET
+
+
+  /*
+   * Tensor product helper class.
+   *
+   * This defines the default product operation between types when using the
+   * operator*
+   *
+   */
+  template<typename LHS, typename RHS>
+  struct TensorDefaultOperation{
+
+      using multiply_type = decltype(LHS().multiply(RHS()));
+
+      // default multiplication operator
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static
+      multiply_type multiply(LHS const &lhs, RHS const &rhs)
+      {
+        return lhs.multiply(rhs);
+      }
+
+  };
 
   class TensorRegisterConcreteBase {};
 
@@ -186,6 +164,22 @@ namespace internal {
       }
 
       /*!
+       * Gets the default tile of this tensor
+       * That tile always start at 0, and extends to the full tile sizes
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static
+      constexpr ET::TensorTile<int, ET::TENSOR_FULL, s_num_dims>
+      s_get_default_tile()
+      {
+        return ET::TensorTile<int, ET::TENSOR_FULL, s_num_dims>{
+          {int(SIZES*0)...},
+          {int(SIZES)...}
+        };
+      }
+
+      /*!
        * @brief convenience routine to allow Vector classes to use
        * camp::sink() across a variety of register types, and use things like
        * ternary operators
@@ -196,6 +190,20 @@ namespace internal {
       bool sink() const{
         return false;
       }
+
+
+      TensorRegisterBase() = default;
+      ~TensorRegisterBase() = default;
+
+
+
+      TensorRegisterBase(TensorRegisterBase const &) = default;
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      TensorRegisterBase(self_type const &){
+      }
+
 
 
       /*!
@@ -227,7 +235,7 @@ namespace internal {
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &operator=(element_type value)
+      self_type const &operator=(element_type value)
       {
         getThis()->broadcast(value);
         return *getThis();
@@ -240,7 +248,7 @@ namespace internal {
       template<typename T2>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &operator=(TensorRegister<scalar_register, T2, ScalarLayout, camp::idx_seq<>, camp::idx_seq<>, 0> const &value)
+      self_type const &operator=(TensorRegister<scalar_register, T2, ScalarLayout, camp::idx_seq<>, camp::idx_seq<>, 0> const &value)
       {
         getThis()->broadcast(value.get(0));
         return *getThis();
@@ -253,11 +261,14 @@ namespace internal {
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &operator=(self_type const &x)
+      self_type const &operator=(self_type const &x)
       {
         getThis()->copy(x);
-        return *this;
+        return *getThis();
       }
+
+
+
 
 
       /*!
@@ -327,11 +338,13 @@ namespace internal {
        * @param x Vector to subctract from this register
        * @return Value of (*this)+x
        */
+      template<typename RHS>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type operator*(self_type const &x) const
+      typename TensorDefaultOperation<self_type, RHS>::multiply_type
+      operator*(RHS const &rhs) const
       {
-        return getThis()->multiply(x);
+        return TensorDefaultOperation<self_type, RHS>::multiply(*getThis(), rhs);
       }
 
       /*!
@@ -339,11 +352,12 @@ namespace internal {
        * @param x Vector to multiple with this register
        * @return Value of (*this)+x
        */
+      template<typename RHS>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &operator*=(self_type const &x)
+      self_type &operator*=(RHS const &rhs)
       {
-        *getThis() = getThis()->multiply(x);
+        *getThis() = TensorDefaultOperation<self_type, RHS>::multiply(*getThis(), rhs);
         return *getThis();
       }
 
