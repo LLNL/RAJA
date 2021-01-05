@@ -22,8 +22,6 @@
 
 #include "RAJA/util/macros.hpp"
 
-#include "RAJA/pattern/tensor/TensorRef.hpp"
-
 #include "RAJA/pattern/tensor/internal/ET/ExpressionTemplateBase.hpp"
 
 

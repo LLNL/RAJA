@@ -24,55 +24,14 @@
 
 #include "camp/camp.hpp"
 #include "RAJA/pattern/tensor/TensorLayout.hpp"
-#include "RAJA/pattern/tensor/TensorRef.hpp"
+#include "RAJA/pattern/tensor/TensorRegister.hpp"
+#include "RAJA/pattern/tensor/internal/ET/TensorRef.hpp"
 
 namespace RAJA
 {
 
   struct scalar_register;
 
-  template<typename REGISTER_POLICY,
-           typename T,
-           typename LAYOUT,
-           typename SIZES,
-           typename VAL_SEQ,
-           camp::idx_t SKEW>
-  class TensorRegister;
-
-
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ, camp::idx_t SKEW>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>
-  operator+(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW> const &y){
-    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>;
-    return register_t(x).add(y);
-  }
-
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ, camp::idx_t SKEW>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>
-  operator-(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW> const &y){
-    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>;
-    return register_t(x).subtract(y);
-  }
-
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ, camp::idx_t SKEW>
-  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>
-  operator*(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW> const &y){
-    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>;
-    return register_t(x).multiply(y);
-  }
-
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ, camp::idx_t SKEW>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>
-  operator/(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW> const &y){
-    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ, SKEW>;
-    return register_t(x).divide(y);
-  }
 
 
 namespace internal {

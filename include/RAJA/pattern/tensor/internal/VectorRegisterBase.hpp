@@ -23,7 +23,7 @@
 #include "RAJA/util/macros.hpp"
 
 #include "camp/camp.hpp"
-#include "RAJA/pattern/tensor/TensorRegisterBase.hpp"
+#include "RAJA/pattern/tensor/internal/TensorRegisterBase.hpp"
 #include "RAJA/pattern/tensor/stats.hpp"
 
 

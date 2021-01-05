@@ -18,7 +18,7 @@
 #ifndef RAJA_policy_vector_register_scalar_HPP
 #define RAJA_policy_vector_register_scalar_HPP
 
-#include "RAJA/pattern/tensor/VectorRegisterBase.hpp"
+#include "RAJA/pattern/tensor/internal/VectorRegisterBase.hpp"
 
 namespace RAJA
 {

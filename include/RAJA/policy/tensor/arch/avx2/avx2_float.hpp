@@ -22,7 +22,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/pattern/tensor/VectorRegisterBase.hpp"
+#include "RAJA/pattern/tensor/internal/VectorRegisterBase.hpp"
 
 // Include SIMD intrinsics header file
 #include <immintrin.h>

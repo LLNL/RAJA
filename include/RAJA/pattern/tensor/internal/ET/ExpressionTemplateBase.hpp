@@ -22,7 +22,7 @@
 
 #include "RAJA/util/macros.hpp"
 
-#include "RAJA/pattern/tensor/TensorRef.hpp"
+#include "RAJA/pattern/tensor/internal/ET/TensorRef.hpp"
 
 #include "RAJA/pattern/tensor/internal/ET/normalizeOperand.hpp"
 
