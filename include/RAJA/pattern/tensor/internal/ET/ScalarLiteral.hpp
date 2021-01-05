@@ -51,7 +51,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         explicit
         TensorScalarLiteral(element_type const &value) :
-        m_value(value)
+        m_value{value}
         {}
 
 

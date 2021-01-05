@@ -51,7 +51,7 @@ namespace RAJA
         RAJA_INLINE
         RAJA_HOST_DEVICE
         TensorMultiply(lhs_type const &lhs, rhs_type const &rhs) :
-        m_lhs(lhs), m_rhs(rhs)
+        m_lhs{lhs}, m_rhs{rhs}
         {}
 
 

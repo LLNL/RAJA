@@ -50,7 +50,7 @@ namespace RAJA
         RAJA_INLINE
         RAJA_HOST_DEVICE
         TensorDivide(lhs_type const &lhs, rhs_type const &rhs) :
-        m_lhs(lhs), m_rhs(rhs)
+        m_lhs{lhs}, m_rhs{rhs}
         {}
 
 

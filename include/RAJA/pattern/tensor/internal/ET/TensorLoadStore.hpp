@@ -52,7 +52,7 @@ namespace RAJA
         RAJA_INLINE
         RAJA_HOST_DEVICE
         explicit
-        TensorLoadStore(ref_type const &ref) : m_ref(ref)
+        TensorLoadStore(ref_type const &ref) : m_ref{ref}
         {
         }
 
