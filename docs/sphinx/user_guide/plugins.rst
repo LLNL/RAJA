@@ -29,10 +29,10 @@ that kernel executes, CHAI will make the data available.
 
 To build CHAI with RAJA integration, you need to download and install CHAI with
 the ``ENABLE_RAJA_PLUGIN`` option turned on.  Please see the `CHAI project
-<https://github.com/LLNL/CHAI>`_ for details
+<https://github.com/LLNL/CHAI>`_ for details.
 
-After CHAI has been build with RAJA support enabled, applications can use CHAI
-``ManangedArray`` objects to access data inside a RAJA kernel; for example,::
+After CHAI has been built with RAJA support enabled, applications can use CHAI
+``ManangedArray`` objects to access data inside a RAJA kernel; for example::
 
   chai::ManagedArray<float> array(1000);
 
@@ -46,8 +46,9 @@ After CHAI has been build with RAJA support enabled, applications can use CHAI
 
 Here, the data held by ``array`` is allocated on the host CPU. Then, it is 
 initialized on a CUDA GPU device. CHAI sees that the data lives on the CPU
-and is needed in a GPU device data environment. So it copies the data from
-CPU to GPU, making it available for access in the first RAJA kernel. Next, 
-it is printed in the second kernel which runs on the CPU. So CHAI copies the 
-data back to the host CPU. All necessary data copies are done
-transparently on demand as needed for each kernel.
+and is needed in a GPU device data environment since it is used in a kernel that
+will run with a RAJA CUDA execution policy. So it copies the data from
+CPU to GPU, making it available for access in the RAJA kernel. Next, 
+it is printed in the second kernel which runs on the CPU (indicated by the
+RAJA sequential execution policy). So CHAI copies the data back to the host CPU. 
+All necessary data copies are done transparently on demand for each kernel.
