@@ -8,9 +8,3 @@
 raja_add_test(
   NAME test-synchronize
   SOURCES test-synchronize.cpp)
-
-if(NOT RAJA_ENABLE_TARGET_OPENMP)
-  raja_add_test(
-    NAME test-reductions
-    SOURCES test-reductions.cpp)
-endif()
