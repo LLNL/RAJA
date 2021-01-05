@@ -124,7 +124,6 @@ to use RAJA in an application can be found in :ref:`app-considerations-label`.
    tutorial
    using_raja
    config_options
-   plugins
    contributing
    developer_guide
    raja_license
