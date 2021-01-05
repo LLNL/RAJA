@@ -481,7 +481,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
 
   //
-  // This example takes the extend of the col and row loops and breaks
+  // This example takes the extents of the col and row loops and breaks
   // them down into `tiles`. Tile loops are used to generate RangeSegments of
   // fixed size, THREAD_SZ in this case. RAJA loops are then used to iterate
   // across the work within each tile. On the device, tiles are typically assigned
