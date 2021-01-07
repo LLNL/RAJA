@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.abspath('_exts'))
 # Generate Doxygen on RTD
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 if read_the_docs_build:
-    subprocess.call('cd ../doxygen; cp Doxyfile.in Doxyfile; doxygen', shell=True)
+    subprocess.call('cd doxygen; cp Doxyfile.in Doxyfile; doxygen', shell=True)
 
 # -- General configuration ------------------------------------------------
 
