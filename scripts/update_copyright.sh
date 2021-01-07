@@ -56,6 +56,10 @@ echo CONTRIBUTING
 cp CONTRIBUTING.md CONTRIBUTING.md.sed.bak
 sed "s/2016-20/2016-21/" CONTRIBUTING.md.sed.bak > CONTRIBUTING.md
 
+echo README
+cp README.md README.md.sed.bak
+sed "s/2016-20/2016-21/" README.md.sed.bak > README.md
+
 #=============================================================================
 # Remove temporary files created in the process
 #=============================================================================
