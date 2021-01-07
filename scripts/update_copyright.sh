@@ -54,7 +54,7 @@ sed "s/Copyright (c) 2016-2020/Copyright (c) 2016-2021/" LICENSE.sed.bak > LICEN
 
 echo CONTRIBUTING
 cp CONTRIBUTING.md CONTRIBUTING.md.sed.bak
-sed "s/2016-2020/2016-2021/" CONTRIBUTING.md.sed.bak > CONTRIBUTING.md
+sed "s/2016-20/2016-21/" CONTRIBUTING.md.sed.bak > CONTRIBUTING.md
 
 #=============================================================================
 # Remove temporary files created in the process
