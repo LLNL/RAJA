@@ -23,6 +23,6 @@
 #include "RAJA/pattern/tensor/ScalarRegister.hpp"
 #include "RAJA/pattern/tensor/VectorRegister.hpp"
 #include "RAJA/pattern/tensor/MatrixRegister.hpp"
-#include "RAJA/pattern/tensor/ExpressionTemplate.hpp"
+#include "RAJA/pattern/tensor/internal/ExpressionTemplate.hpp"
 
 #endif

@@ -44,6 +44,8 @@ namespace RAJA
         using result_type = tensor_type;
         using index_type = RAJA::Index_type;
 
+        static constexpr camp::idx_t s_num_dims = result_type::s_num_dims;
+
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
@@ -58,6 +60,12 @@ namespace RAJA
         RAJA_HOST_DEVICE
         result_type eval(TILE_TYPE const &) const {
           return m_value;
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        void print_ast() const {
+          printf("TensorLiteral()");
         }
 
       private:

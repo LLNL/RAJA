@@ -44,6 +44,8 @@ namespace RAJA
         using index_type = typename LHS_TYPE::index_type;
         using result_type = typename LHS_TYPE::result_type;
 
+        static constexpr camp::idx_t s_num_dims = result_type::s_num_dims;
+
         RAJA_INLINE
         RAJA_HOST_DEVICE
         TensorSubtract(lhs_type const &lhs, rhs_type const &rhs) :
@@ -60,6 +62,16 @@ namespace RAJA
           result_type y = m_rhs.eval(tile);
 
           return x.subtract(y);
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        void print_ast() const {
+          printf("Subtract(");
+          m_lhs.print_ast();
+          printf(", ");
+          m_rhs.print_ast();
+          printf(")");
         }
 
       private:

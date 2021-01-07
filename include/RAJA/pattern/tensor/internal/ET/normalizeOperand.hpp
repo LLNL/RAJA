@@ -79,6 +79,10 @@ namespace RAJA
       return NormalizeOperandHelper<RHS>::normalize(rhs);
     }
 
+    template<typename RHS>
+    using normalize_operand_t =
+        typename NormalizeOperandHelper<RHS>::return_type;
+
 
   } // namespace ET
 

@@ -47,6 +47,8 @@ namespace RAJA
         using tile_type = typename REF_TYPE::tile_type;
         using result_type = TENSOR_REGISTER_TYPE;
 
+        static constexpr camp::idx_t s_num_dims = result_type::s_num_dims;
+
         RAJA_INLINE
         RAJA_HOST_DEVICE
         explicit
@@ -141,6 +143,12 @@ namespace RAJA
           return m_ref.m_tile.m_size[dim];
         }
 
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        void print_ast() const {
+          printf("Load()");
+        }
+
       private:
 
         RAJA_INLINE
@@ -155,6 +163,12 @@ namespace RAJA
         RAJA_HOST_DEVICE
         void store(RHS const &rhs)
         {
+#ifdef RAJA_DEBUG_PRINT_ET_AST
+          printf("Store(");
+          rhs.print_ast();
+          printf(")\n");
+#endif
+
           store_expanded(rhs, camp::make_idx_seq_t<tensor_register_type::s_num_dims>{});
         }
 
