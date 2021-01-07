@@ -54,6 +54,13 @@ namespace RAJA
         {}
 
 
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        constexpr
+        index_type getDimSize(index_type dim) const {
+          return m_lhs.getDimSize(dim);
+        }
+
         template<typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE

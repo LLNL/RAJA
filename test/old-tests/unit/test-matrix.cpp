@@ -376,26 +376,44 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
   vector_t v;
   for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
     for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
-      m.set(i,j, element_t(NO_OPT_ZERO + i+j*j));
+      m.set(i,j, element_t(NO_OPT_ZERO + 5+i+j*j));
     }
-    v.set(j, j*2);
+    v.set(j, NO_OPT_ZERO + 3 + j*2);
   }
 
-  // matrix vector product
-  // note mv is not necessarily the same type as v
-//  auto mv = m*v;
 
-//  // check result
-//  for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
-//    element_t expected(0);
-//
-//    for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
-//      expected += m.get(i,j)*v.get(j);
-//    }
-//
-//    ASSERT_SCALAR_EQ(mv.get(i), expected);
-//  }
+  {
+    // matrix vector product
+    // note mv is not necessarily the same type as v
+    auto mv = m.right_multiply_vector(v);
 
+    // check result
+    for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
+      element_t expected(0);
+
+      for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
+        expected += m.get(i,j)*v.get(j);
+      }
+
+      ASSERT_SCALAR_EQ(mv.get(i), expected);
+    }
+  }
+
+  {
+    // matrix vector product
+    auto mv = m.left_multiply_vector(v);
+
+    // check result
+    for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
+      element_t expected(0);
+
+      for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
+        expected += m.get(i,j)*v.get(i);
+      }
+
+      ASSERT_SCALAR_EQ(mv.get(j), expected);
+    }
+  }
 }
 
 TYPED_TEST_P(MatrixTest, MatrixMatrix)
@@ -511,7 +529,7 @@ TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
 
 
   // explicit
-  auto Z2 = A.multiply_accumulate(B, C);
+  auto Z2 = A.matrix_multiply_add(B, C);
 
 //  printf("Z2:\n%s\n", Z2.toString().c_str());
 
@@ -552,7 +570,7 @@ TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
 }
 
 
-TYPED_TEST_P(MatrixTest, AllLoadStore)
+TYPED_TEST_P(MatrixTest, ETLoadStore)
 {
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
@@ -616,7 +634,7 @@ TYPED_TEST_P(MatrixTest, AllLoadStore)
 
 }
 
-TYPED_TEST_P(MatrixTest, AllAdd)
+TYPED_TEST_P(MatrixTest, ETAdd)
 {
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
@@ -670,7 +688,7 @@ TYPED_TEST_P(MatrixTest, AllAdd)
 
 }
 
-TYPED_TEST_P(MatrixTest, AllSubtract)
+TYPED_TEST_P(MatrixTest, ETSubtract)
 {
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
@@ -779,8 +797,97 @@ TYPED_TEST_P(MatrixTest, AllSubtract)
 
 }
 
+TYPED_TEST_P(MatrixTest, ETMatrixVectorMultiply)
+{
+  using matrix_t = TypeParam;
+  using vector_t = typename matrix_t::vector_type;
+  using element_t = typename matrix_t::element_type;
 
-TYPED_TEST_P(MatrixTest, AllMultiply)
+  static const int N = matrix_t::vector_type::s_num_elem * 4;
+
+  // Create a row-major data buffer
+  element_t data1[N][N], data2[N];
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      data1[i][j] = i*j*j;
+
+    }
+    data2[i] = i*i;
+  }
+
+  // print
+//  printf("data1:\n");
+//  for(camp::idx_t i = 0;i < N; ++ i){
+//    for(camp::idx_t j = 0;j < N; ++ j){
+//      printf("%e ", (double)data1[i][j]);
+//    }
+//    printf("\n");
+//  }
+//
+//  printf("\n");
+//  printf("data2:\n");
+//  for(camp::idx_t i = 0;i < N; ++ i){
+//    printf("%e ", (double)data2[i]);
+//  }
+//  printf("\n");
+
+
+  // Create an empty result bufffer
+  element_t data3[N];
+
+  //  Create views
+  RAJA::View<element_t, RAJA::Layout<2, int>> view1(
+      &data1[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
+
+
+  RAJA::View<element_t, RAJA::Layout<1, int>> view2(
+      &data2[0], RAJA::make_permuted_layout<1, int>({{N}}, {{0}}));
+
+  RAJA::View<element_t, RAJA::Layout<1, int>> view3(
+      &data3[0], RAJA::make_permuted_layout<1, int>({{N}}, {{0}}));
+
+
+
+  using Vec = RAJA::VectorIndex<int, vector_t>;
+  using Row = RAJA::RowIndex<int, matrix_t>;
+  using Col = RAJA::ColIndex<int, matrix_t>;
+
+
+  // Performn right matrix-vector multiplication
+  view3(Vec::all()) = view1(Row::all(), Col::all()) * view2(Vec::all());
+
+  // Check
+  for(camp::idx_t i = 0;i < N; ++ i){
+    element_t result = 0;
+    for(camp::idx_t j = 0;j < N; ++ j){
+      result += data1[i][j] * data2[j];
+    }
+
+    ASSERT_SCALAR_EQ(data3[i], result);
+  }
+
+
+
+
+  // Perform left matrix-vector multiplication
+  view3(Vec::all()) = view2(Vec::all()) * view1(Row::all(), Col::all());
+
+  // Check
+  for(camp::idx_t j = 0;j < N; ++ j){
+
+    element_t result = 0;
+    for(camp::idx_t i = 0;i < N; ++ i){
+      result += data1[i][j] * data2[i];
+    }
+
+    ASSERT_SCALAR_EQ(data3[j], result);
+//    printf("(%d): val=%e, exp=%e\n",(int)j, (double)data3[j], (double)result);
+  }
+
+}
+
+
+TYPED_TEST_P(MatrixTest, ETMatrixMatrixMultiply)
 {
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
@@ -836,7 +943,7 @@ TYPED_TEST_P(MatrixTest, AllMultiply)
 
 }
 
-TYPED_TEST_P(MatrixTest, AllMultiplyAdd)
+TYPED_TEST_P(MatrixTest, ETMatrixMatrixMultiplyAdd)
 {
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
@@ -878,10 +985,10 @@ TYPED_TEST_P(MatrixTest, AllMultiplyAdd)
   using Col = RAJA::ColIndex<int, matrix_t>;
 
 
-  // Perform view3 = view1 * view2 + view1;
+  // Perform view3 = 2.0 * view1 * view2 + view1;
   auto rows = Row::range(0,N);
   auto cols = Col::range(0,N);
-  view3(rows, cols) = view1(rows, cols) * view2(rows, cols) + view1(rows, cols);
+  view3(rows, cols) = 2.0 * view1(rows, cols) * view2(rows, cols) + view1(rows, cols);
 
 
   // Check that data1==data2
@@ -890,17 +997,17 @@ TYPED_TEST_P(MatrixTest, AllMultiplyAdd)
       element_t result = data1[i][j];
 
       for(camp::idx_t k = 0;k < N; ++ k){
-        result += data1[i][k] * data2[k][j];
+        result += 2.0 * data1[i][k] * data2[k][j];
       }
       ASSERT_SCALAR_EQ(data3[i][j], result);
       //printf("(%d,%d): val=%e, exp=%e\n",(int)i, (int)j, (double)data3[i][j], (double)result);
     }
   }
 
-  // Perform view3 = view1 + view2 * view1;
+  // Perform view3 = view1 + view2 * view1 * 2.0;
   view3(Row::all(), Col::all()) = view1(Row::all(), Col::all()) +
                                   view2(Row::all(), Col::all()) *
-                                  view1(Row::all(), Col::all());
+                                  view1(Row::all(), Col::all()) * 2.0;
 
 
 
@@ -910,7 +1017,7 @@ TYPED_TEST_P(MatrixTest, AllMultiplyAdd)
       element_t result = data1[i][j];
 
       for(camp::idx_t k = 0;k < N; ++ k){
-        result += data2[i][k] * data1[k][j];
+        result += data2[i][k] * data1[k][j] * 2.0;
       }
       ASSERT_SCALAR_EQ(data3[i][j], result);
       //printf("(%d,%d): val=%e, exp=%e\n",(int)i, (int)j, (double)data3[i][j], (double)result);
@@ -952,11 +1059,12 @@ REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
                                         MatrixMatrix,
                                         MatrixMatrixAccumulate,
 
-                                          AllLoadStore,
-                                          AllAdd,
-                                          AllSubtract,
-                                          AllMultiply,
-                                          AllMultiplyAdd);
+                                        ETLoadStore,
+                                        ETAdd,
+                                        ETSubtract,
+                                        ETMatrixVectorMultiply,
+                                        ETMatrixMatrixMultiply,
+                                        ETMatrixMatrixMultiplyAdd);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, MatrixTest, MatrixTestTypes);
 

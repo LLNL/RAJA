@@ -23,7 +23,7 @@
 namespace RAJA
 {
 
-  struct scalar_register {};
+
 
   template<typename T>
   struct RegisterTraits<scalar_register, T>{
@@ -281,7 +281,7 @@ namespace RAJA
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type fused_multiply_add(self_type const &b, self_type const &c) const
+      self_type multiply_add(self_type const &b, self_type const &c) const
       {
         return m_value * b.m_value + c.m_value;
       }
@@ -297,7 +297,7 @@ namespace RAJA
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
+      self_type multiply_subtract(self_type const &b, self_type const &c) const
       {
         return m_value * b.m_value - c.m_value;
       }

@@ -46,6 +46,12 @@ namespace RAJA
 
         static constexpr camp::idx_t s_num_dims = 0;
 
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        constexpr
+        index_type getDimSize(index_type ) const {
+          return 0;
+        }
 
         RAJA_INLINE
         RAJA_HOST_DEVICE

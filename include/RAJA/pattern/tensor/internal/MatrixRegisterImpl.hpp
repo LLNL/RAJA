@@ -159,6 +159,28 @@ namespace RAJA
 
 
       /*!
+       * Provide matrix-matrix multiply for operator* between to matrices
+       */
+      template<typename T2, typename L, typename RP>
+      self_type
+      operator*(MatrixRegister<T2, L, RP> const &y) const
+      {
+        return matrix_multiply(y);
+      }
+
+      /*!
+       * Provide right matrix-vector multiply for operator* between this
+       * matrix and a vector.
+       */
+      template<typename T2, typename RP>
+      VectorRegister<T2, RP>
+      operator*(VectorRegister<T2, RP> const &y) const
+      {
+        return right_multiply_vector(y);
+      }
+
+
+      /*!
        * Copy contents of another matrix operator
        */
       RAJA_HOST_DEVICE
@@ -540,6 +562,50 @@ namespace RAJA
         }
       }
 
+      /*!
+       * Matrix vector product
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      vector_type left_multiply_vector(vector_type v) const {
+
+        if(layout_type::is_column_major()){
+          vector_type result;
+          camp::sink(
+              result.set(VAL_SEQ, v.dot(m_values[VAL_SEQ]))...
+              );
+
+          return result;
+        }
+        else{
+          return
+                RAJA::sum<vector_type>(( m_values[VAL_SEQ] * v.get(VAL_SEQ))...);
+        }
+      }
+
+
+      /*!
+       * element-wise multiplication
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type multiply(self_type mat) const {
+        return self_type(
+            (m_values[VAL_SEQ])*(mat.m_values[VAL_SEQ]) ...
+        );
+      }
+
+      /*!
+       * element-wise fused multiply add
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type multiply_add(self_type mat, self_type add) const {
+        return self_type(
+            m_values[VAL_SEQ].multiply_add(mat.m_values[VAL_SEQ], add) ...
+        );
+      }
+
 
       /*!
        * Matrix-Matrix product
@@ -548,7 +614,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type
-      multiply(RMAT const &mat) const {
+      matrix_multiply(RMAT const &mat) const {
         return internal::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply(*this, mat);
       }
 
@@ -559,7 +625,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type
-      multiply_accumulate(RMAT const &B, typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type const &C) const {
+      matrix_multiply_add(RMAT const &B, typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type const &C) const {
         return internal::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply_accumulate(*this, B, C);
       }
 

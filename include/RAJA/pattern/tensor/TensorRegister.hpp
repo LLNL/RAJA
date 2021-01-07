@@ -75,4 +75,9 @@ namespace RAJA
 
 #include "RAJA/pattern/tensor/internal/TensorRegisterBase.hpp"
 
+// Bring in the register policy file so we get the default register type
+// and all of the register traits setup
+#include "RAJA/policy/tensor/arch.hpp"
+
+
 #endif

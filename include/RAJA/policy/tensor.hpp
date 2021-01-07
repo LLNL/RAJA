@@ -20,7 +20,7 @@
 #ifndef RAJA_policy_tensor_HPP
 #define RAJA_policy_tensor_HPP
 
-#include "RAJA/policy/tensor/arch.hpp"
+#include "RAJA/policy/tensor/arch_impl.hpp"
 //#include "RAJA/policy/simd_register/forall.hpp"
 //#include "RAJA/policy/simd_register/policy.hpp"
 //#include "RAJA/policy/simd_register/kernel/For.hpp"

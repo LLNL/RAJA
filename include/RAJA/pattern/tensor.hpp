@@ -20,9 +20,13 @@
 
 #include "RAJA/pattern/tensor/TensorIndex.hpp"
 #include "RAJA/pattern/tensor/TensorRegister.hpp"
+
 #include "RAJA/pattern/tensor/ScalarRegister.hpp"
 #include "RAJA/pattern/tensor/VectorRegister.hpp"
 #include "RAJA/pattern/tensor/MatrixRegister.hpp"
+
 #include "RAJA/pattern/tensor/internal/ExpressionTemplate.hpp"
+#include "RAJA/pattern/tensor/internal/MatrixRegisterImpl.hpp"
+
 
 #endif

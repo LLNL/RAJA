@@ -24,7 +24,6 @@
 
 #include "camp/camp.hpp"
 #include "RAJA/pattern/tensor/TensorLayout.hpp"
-#include "RAJA/pattern/tensor/TensorRegister.hpp"
 #include "RAJA/pattern/tensor/internal/ET/TensorRef.hpp"
 
 namespace RAJA
@@ -385,7 +384,7 @@ namespace internal {
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type fused_multiply_add(self_type const &b, self_type const &c) const
+      self_type multiply_add(self_type const &b, self_type const &c) const
       {
         return (self_type(*getThis()) * self_type(b)) + self_type(c);
       }
@@ -401,9 +400,19 @@ namespace internal {
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
+      self_type multiply_subtract(self_type const &b, self_type const &c) const
       {
-        return getThis()->fused_multiply_add(b, -c);
+        return getThis()->multiply_add(b, -c);
+      }
+
+      /*!
+       * Multiply this tensor by a scalar value
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type scale(element_type c) const
+      {
+        return getThis()->multiply(self_type(c));
       }
 
   };
@@ -413,10 +422,6 @@ namespace internal {
 
 }  // namespace RAJA
 
-
-// Bring in the register policy file so we get the default register type
-// and all of the register traits setup
-#include "RAJA/policy/tensor/arch.hpp"
 
 
 #endif

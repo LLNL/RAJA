@@ -24,11 +24,13 @@
 
 #include "camp/camp.hpp"
 #include "RAJA/pattern/tensor/internal/TensorRegisterBase.hpp"
+#include "RAJA/pattern/tensor/MatrixRegister.hpp"
 #include "RAJA/pattern/tensor/stats.hpp"
 
 
 namespace RAJA
 {
+
 
 namespace internal {
 
@@ -44,6 +46,7 @@ namespace internal {
   {
     public:
       using self_type = TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>, camp::idx_seq<VAL_SEQ...>>;
+      using base_type = TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>, camp::idx_seq<VAL_SEQ...>>>;
       using element_type = camp::decay<T>;
 
 
@@ -63,6 +66,22 @@ namespace internal {
       }
 
     public:
+
+      /*!
+       * Provide left vector-matrix multiply for operator* between
+       * this vector and a matrix
+       */
+      template<typename T2, typename L, typename RP>
+      self_type
+      operator*(MatrixRegister<T2, L, RP> const &y) const
+      {
+        return y.left_vector_multiply(*getThis());
+      }
+
+      // make sure our overloaded operator* doesn't hide our base class
+      // implementation
+      using base_type::operator*;
+
 
       /*!
        * @brief Performs load specified by TensorRef object.

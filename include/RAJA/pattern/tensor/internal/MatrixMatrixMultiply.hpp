@@ -56,7 +56,7 @@ namespace internal {
 
         camp::sink(
                 (sum.vec(VAL_SEQ) =
-                    B.vec(J).fused_multiply_add(
+                    B.vec(J).multiply_add(
                         A.vec(VAL_SEQ).get_and_broadcast(J),
                         sum.vec(VAL_SEQ)))...
                 );

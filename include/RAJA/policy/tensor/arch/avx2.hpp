@@ -21,7 +21,6 @@
 #define RAJA_policy_vector_register_avx2_HPP
 
 namespace RAJA {
-  struct avx2_register {};
 
   template<typename T>
   struct RegisterTraits<avx2_register, T>{

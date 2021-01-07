@@ -23,7 +23,7 @@
 #include "RAJA/util/macros.hpp"
 
 #include "RAJA/pattern/tensor/internal/ET/ExpressionTemplateBase.hpp"
-#include "RAJA/pattern/tensor/internal/ET/DefaultMultiply.hpp"
+#include "RAJA/pattern/tensor/internal/ET/MultiplyOperator.hpp"
 
 namespace RAJA
 {
@@ -51,17 +51,10 @@ namespace RAJA
         using add_type = ADD_TYPE;
         using element_type = typename LHS_TYPE::element_type;
         using index_type = typename LHS_TYPE::index_type;
-        using tile_type = typename LHS_TYPE::tile_type;
-
-
-        // Note that the ADD_TYPE is both the result of lhs*rhs and the
-        // return type
-        using result_type = typename ADD_TYPE::result_type;
-
-        using default_multiply = DefaultMultiply<LHS_TYPE, RHS_TYPE>;
-
-
-        static constexpr camp::idx_t s_num_dims = result_type::s_num_dims;
+        using multiply_op = MultiplyOperator<LHS_TYPE, RHS_TYPE>;
+        using result_type = typename multiply_op::result_type;
+        using tile_type = typename multiply_op::tile_type;
+        static constexpr camp::idx_t s_num_dims = multiply_op::s_num_dims;
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
@@ -75,7 +68,7 @@ namespace RAJA
         RAJA_INLINE
         RAJA_HOST_DEVICE
         result_type eval(TILE_TYPE const &tile) const {
-          return default_multiply::multiply_add(tile, m_lhs, m_rhs, m_add.eval(tile));
+          return multiply_op::multiply_add(tile, m_lhs, m_rhs, m_add.eval(tile));
         }
 
 
@@ -83,7 +76,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         void print_ast() const {
           printf("MultiplyAdd[");
-          default_multiply::print_ast();
+          multiply_op::print_ast();
           printf("](");
           m_lhs.print_ast();
           printf(", ");

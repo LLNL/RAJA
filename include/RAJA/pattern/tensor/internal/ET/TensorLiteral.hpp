@@ -46,6 +46,12 @@ namespace RAJA
 
         static constexpr camp::idx_t s_num_dims = result_type::s_num_dims;
 
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        constexpr
+        index_type getDimSize(index_type dim) const {
+          return tensor_type::s_dim_elem(dim);
+        }
 
         RAJA_INLINE
         RAJA_HOST_DEVICE

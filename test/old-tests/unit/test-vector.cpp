@@ -152,13 +152,13 @@ TYPED_TEST_P(VectorTest, FmaFms)
 
     // check FMA (A*B+C)
 
-    vector_t fma = vec_A.fused_multiply_add(vec_B, vec_C);
+    vector_t fma = vec_A.multiply_add(vec_B, vec_C);
     for(camp::idx_t i = 0;i < N;++ i){
       ASSERT_SCALAR_EQ(fma.get(i), A[i]*B[i]+C[i]);
     }
 
     // check FMS (A*B-C)
-    vector_t fms = vec_A.fused_multiply_subtract(vec_B, vec_C);
+    vector_t fms = vec_A.multiply_subtract(vec_B, vec_C);
     for(camp::idx_t i = 0;i < N;++ i){
       ASSERT_SCALAR_EQ(fms.get(i), A[i]*B[i]-C[i]);
     }

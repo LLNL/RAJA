@@ -35,9 +35,10 @@ namespace RAJA
                      camp::make_idx_seq_t<RegisterTraits<REGISTER_POLICY,T>::s_num_elem>>;
 
 
+
+
 }  // namespace RAJA
 
 
-#include "RAJA/pattern/tensor/internal/MatrixRegisterImpl.hpp"
 
 #endif

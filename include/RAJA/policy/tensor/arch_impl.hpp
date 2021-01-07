@@ -15,23 +15,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_policy_tensor_arch_HPP
-#define RAJA_policy_tensor_arch_HPP
+#ifndef RAJA_policy_tensor_arch_impl_HPP
+#define RAJA_policy_tensor_arch_impl_HPP
 
 #include "RAJA/config.hpp"
+#include "RAJA/policy/tensor/arch.hpp"
 
-namespace RAJA
-{
 
-  template<typename REGISTER_POLICY, typename T>
-  struct RegisterTraits;
-  /*
-   * using element_type = T;
-   * using register_policy = REGISTER_POLICY;
-   * static constexpr camp::idx s_num_bits = X;
-   * static constexpr camp::idx s_num_elem = Y;
-   *
-   */
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -42,41 +32,23 @@ namespace RAJA
 //
 
 #ifdef __AVX512F__
-struct avx512_register {};
-#ifndef RAJA_TENSOR_REGISTER_TYPE
-#define RAJA_TENSOR_REGISTER_TYPE RAJA::avx512_register
-#endif
+#include<RAJA/policy/tensor/arch/avx512.hpp>
 #endif
 
 
 #ifdef __AVX2__
-struct avx2_register {};
-#ifndef RAJA_TENSOR_REGISTER_TYPE
-#define RAJA_TENSOR_REGISTER_TYPE RAJA::avx2_register
-#endif
+#include<RAJA/policy/tensor/arch/avx2.hpp>
 #endif
 
 
 #ifdef __AVX__
-struct avx_register {};
-#ifndef RAJA_TENSOR_REGISTER_TYPE
-#define RAJA_TENSOR_REGISTER_TYPE RAJA::avx_register
+#include<RAJA/policy/tensor/arch/avx.hpp>
 #endif
-#endif
-
 
 
 // The scalar register is always supported (doesn't require any SIMD/SIMT)
-struct scalar_register {};
-#ifndef RAJA_TENSOR_REGISTER_TYPE
-#define RAJA_TENSOR_REGISTER_TYPE RAJA::scalar_register
-#endif
+#include<RAJA/policy/tensor/arch/scalar/scalar.hpp>
 
-
-  // This sets the default SIMD register that will be used
-  using default_register = RAJA_TENSOR_REGISTER_TYPE;
-
-} // namespace RAJA
 
 
 #endif
