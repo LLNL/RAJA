@@ -33,7 +33,7 @@
 //#include "RAJA/policy/cuda/reduce.hpp"
 //#include "RAJA/policy/cuda/scan.hpp"
 //#include "RAJA/policy/cuda/sort.hpp"
-//#include "RAJA/policy/cuda/kernel.hpp"
+#include "RAJA/policy/sycl/kernel.hpp"
 //#include "RAJA/policy/cuda/synchronize.hpp"
 //#include "RAJA/policy/cuda/WorkGroup.hpp"
 
