@@ -12,6 +12,9 @@
 RAJA Tutorial
 **********************
 
+In addition to the tutorial portion of this RAJA User Guide, we maintain
+a repository of tutorial presntation materials here `RAJA Tutorials Repo <https://github.com/LLNL/RAJA-tutorials>`_.
+
 This RAJA tutorial introduces RAJA concepts and capabilities via a 
 sequence of examples of increasing complexity. Complete working codes for 
 the examples are located in the ``RAJA``examples`` directory. The RAJA 

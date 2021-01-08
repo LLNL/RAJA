@@ -108,6 +108,7 @@ RAJA User Documentation
 =======================
 
   * :doc:`RAJA User Guide <sphinx/user_guide/index>`
+  * `RAJA Tutorials Repo <https://github.com/LLNL/RAJA-tutorials>`_
   * insert doxygen docs here...
 
 ============================
