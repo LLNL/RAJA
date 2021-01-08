@@ -647,6 +647,24 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
+      self_type divide(self_type mat) const {
+        return self_type(
+            (m_values[VAL_SEQ].divide(mat.m_values[VAL_SEQ])) ...
+        );
+      }
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type divide_n(self_type mat, camp::idx_t N) const {
+        return self_type(
+            (m_values[VAL_SEQ].divide_n(mat.m_values[VAL_SEQ], N)) ...
+        );
+      }
+
+
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
       self_type &set(int row, int col, element_type val){
         if(layout_type::is_row_major()){
           m_values[row].set(col, val);

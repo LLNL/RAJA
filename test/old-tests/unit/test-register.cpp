@@ -15,46 +15,31 @@
 using RegisterTestTypes = ::testing::Types<
 
 #ifdef __AVX__
-    RAJA::Register<RAJA::avx_register, double>,
-    RAJA::Register<RAJA::avx_register, float>,
-    RAJA::Register<RAJA::avx_register, int>,
-    RAJA::Register<RAJA::avx_register, long>,
+    RAJA::VectorRegister<double, RAJA::avx_register>,
+    RAJA::VectorRegister<float, RAJA::avx_register>,
+    RAJA::VectorRegister<int, RAJA::avx_register>,
+    RAJA::VectorRegister<long, RAJA::avx_register>,
 #endif
 
 #ifdef __AVX2__
-    RAJA::Register<RAJA::avx2_register, double>,
-    RAJA::Register<RAJA::avx2_register, float>,
-    RAJA::Register<RAJA::avx2_register, int>,
-    RAJA::Register<RAJA::avx2_register, long>,
+    RAJA::VectorRegister<double, RAJA::avx2_register>,
+    RAJA::VectorRegister<float, RAJA::avx2_register>,
+    RAJA::VectorRegister<int, RAJA::avx2_register>,
+    RAJA::VectorRegister<long, RAJA::avx2_register>,
 #endif
 
 #ifdef __AVX512__
-    RAJA::Register<RAJA::avx512_register, double>,
-    RAJA::Register<RAJA::avx512_register, float>,
-    RAJA::Register<RAJA::avx512_register, int>,
-    RAJA::Register<RAJA::avx512_register, long>,
+    RAJA::VectorRegister<double, RAJA::avx512_register>,
+    RAJA::VectorRegister<float, RAJA::avx512_register>,
+    RAJA::VectorRegister<int, RAJA::avx512_register>,
+    RAJA::VectorRegister<long, RAJA::avx512_register>,
 #endif
 
     // scalar_register is supported on all platforms
-    RAJA::Register<RAJA::scalar_register, int>,
-    RAJA::Register<RAJA::scalar_register, long>,
-    RAJA::Register<RAJA::scalar_register, float>,
-    RAJA::Register<RAJA::scalar_register, double>,
-
-    // Test register-like operators of vector classes
-    RAJA::StreamVector<int>,
-    RAJA::StreamVector<int, 2>,
-    RAJA::StreamVector<long>,
-    RAJA::StreamVector<float>,
-    RAJA::StreamVector<double>,
-    RAJA::FixedVector<int, 3>,
-    RAJA::FixedVector<int, 8>,
-    RAJA::FixedVector<long, 3>,
-    RAJA::FixedVector<long, 8>,
-    RAJA::FixedVector<float, 3>,
-    RAJA::FixedVector<float, 8>,
-    RAJA::FixedVector<double, 3>,
-    RAJA::FixedVector<double, 8>
+    RAJA::VectorRegister<double, RAJA::scalar_register>,
+    RAJA::VectorRegister<float, RAJA::scalar_register>,
+    RAJA::VectorRegister<int, RAJA::scalar_register>,
+    RAJA::VectorRegister<long, RAJA::scalar_register>
   >;
 
 
@@ -98,48 +83,48 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSetGet)
   }
 
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(x[i], A[i]);
+    ASSERT_SCALAR_EQ(x.get(i), A[i]);
     ASSERT_SCALAR_EQ(x.get(i), A[i]);
   }
 
   // test copy construction
   register_t cc(x);
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(cc[i], A[i]);
+    ASSERT_SCALAR_EQ(cc.get(i), A[i]);
   }
 
   // test explicit copy
   register_t ce(0);
   ce.copy(x);
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(ce[i], A[i]);
+    ASSERT_SCALAR_EQ(ce.get(i), A[i]);
   }
 
   // test assignment
   register_t ca(0);
   ca = cc;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(ca[i], A[i]);
+    ASSERT_SCALAR_EQ(ca.get(i), A[i]);
   }
 
   // test scalar construction (broadcast)
   register_t bc((element_t)5);
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(bc[i], 5.0);
+    ASSERT_SCALAR_EQ(bc.get(i), 5.0);
   }
 
   // test scalar assignment (broadcast)
   register_t ba((element_t)0);
   ba = (element_t)13.0;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(ba[i], 13.0);
+    ASSERT_SCALAR_EQ(ba.get(i), 13.0);
   }
 
   // test explicit broadcast
   register_t be((element_t)0);
   be.broadcast((element_t)13.0);
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(be[i], 13.0);
+    ASSERT_SCALAR_EQ(be.get(i), 13.0);
   }
 }
 
@@ -163,7 +148,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterLoad)
   x.load_packed(A);
 
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(x[i], A[i]);
+    ASSERT_SCALAR_EQ(x.get(i), A[i]);
   }
 
 
@@ -173,11 +158,11 @@ TYPED_TEST_P(RegisterTest, VectorRegisterLoad)
 
     // check first n-1 values
     for(size_t i = 0;i+1 < num_elem; ++ i){
-      ASSERT_SCALAR_EQ(x[i], A[i]);
+      ASSERT_SCALAR_EQ(x.get(i), A[i]);
     }
 
     // last value should be cleared to zero
-    ASSERT_SCALAR_EQ(x[num_elem-1], 0);
+    ASSERT_SCALAR_EQ(x.get(num_elem-1), 0);
   }
 
   // load stride-2 from pointer
@@ -185,7 +170,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterLoad)
   y.load_strided(A, 2);
 
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(y[i], A[i*2]);
+    ASSERT_SCALAR_EQ(y.get(i), A[i*2]);
   }
 
   // load n stride-2 from pointer
@@ -194,11 +179,11 @@ TYPED_TEST_P(RegisterTest, VectorRegisterLoad)
 
     // check first n-1 values
     for(size_t i = 0;i+1 < num_elem; ++ i){
-      ASSERT_SCALAR_EQ(y[i], A[i*2]);
+      ASSERT_SCALAR_EQ(y.get(i), A[i*2]);
     }
 
     // last value should be cleared to zero
-    ASSERT_SCALAR_EQ(y[num_elem-1], 0);
+    ASSERT_SCALAR_EQ(y.get(num_elem-1), 0);
   }
 }
 
@@ -225,35 +210,35 @@ TYPED_TEST_P(RegisterTest, VectorRegisterAdd)
   // operator +
   register_t op_add = x+y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_add[i], A[i] + B[i]);
+    ASSERT_SCALAR_EQ(op_add.get(i), A[i] + B[i]);
   }
 
   // operator +=
   register_t op_pluseq = x;
   op_pluseq += y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_pluseq[i], A[i] + B[i]);
+    ASSERT_SCALAR_EQ(op_pluseq.get(i), A[i] + B[i]);
   }
 
   // function add
   register_t func_add = x.add(y);
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(func_add[i], A[i] + B[i]);
+    ASSERT_SCALAR_EQ(func_add.get(i), A[i] + B[i]);
   }
 
   // operator + scalar
   register_t op_add_s1 = x + element_t(1);
   register_t op_add_s2 = element_t(1) + x;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_add_s1[i], A[i] + element_t(1));
-    ASSERT_SCALAR_EQ(op_add_s2[i], element_t(1) + A[i]);
+    ASSERT_SCALAR_EQ(op_add_s1.get(i), A[i] + element_t(1));
+    ASSERT_SCALAR_EQ(op_add_s2.get(i), element_t(1) + A[i]);
   }
 
   // operator += scalar
   register_t op_pluseq_s = x;
   op_pluseq_s += element_t(1);
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_pluseq_s[i], A[i] + element_t(1));
+    ASSERT_SCALAR_EQ(op_pluseq_s.get(i), A[i] + element_t(1));
   }
 
 }
@@ -284,35 +269,35 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSubtract)
   // operator -
   register_t op_sub = x-y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_sub[i], A[i] - B[i]);
+    ASSERT_SCALAR_EQ(op_sub.get(i), A[i] - B[i]);
   }
 
   // operator -=
   register_t op_subeq = x;
   op_subeq -= y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_subeq[i], A[i] - B[i]);
+    ASSERT_SCALAR_EQ(op_subeq.get(i), A[i] - B[i]);
   }
 
   // function subtract
   register_t func_sub = x.subtract(y);
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(func_sub[i], A[i] - B[i]);
+    ASSERT_SCALAR_EQ(func_sub.get(i), A[i] - B[i]);
   }
 
   // operator - scalar
   register_t op_sub_s1 = x - element_t(1);
   register_t op_sub_s2 = element_t(1) - x;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_sub_s1[i], A[i] - element_t(1));
-    ASSERT_SCALAR_EQ(op_sub_s2[i], element_t(1) - A[i]);
+    ASSERT_SCALAR_EQ(op_sub_s1.get(i), A[i] - element_t(1));
+    ASSERT_SCALAR_EQ(op_sub_s2.get(i), element_t(1) - A[i]);
   }
 
   // operator -= scalar
   register_t op_subeq_s = x;
   op_subeq_s -= element_t(1);
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_subeq_s[i], A[i] - element_t(1));
+    ASSERT_SCALAR_EQ(op_subeq_s.get(i), A[i] - element_t(1));
   }
 }
 
@@ -337,35 +322,35 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMultiply)
   // operator *
   register_t op_mul = x*y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_mul[i], (A[i] * B[i]));
+    ASSERT_SCALAR_EQ(op_mul.get(i), (A[i] * B[i]));
   }
 
   // operator *=
   register_t op_muleq = x;
   op_muleq *= y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_muleq[i], A[i] * B[i]);
+    ASSERT_SCALAR_EQ(op_muleq.get(i), A[i] * B[i]);
   }
 
   // function multiply
   register_t func_mul = x.multiply(y);
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(func_mul[i], A[i] * B[i]);
+    ASSERT_SCALAR_EQ(func_mul.get(i), A[i] * B[i]);
   }
 
   // operator * scalar
   register_t op_mul_s1 = x * element_t(2);
   register_t op_mul_s2 = element_t(2) * x;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_mul_s1[i], A[i] * element_t(2));
-    ASSERT_SCALAR_EQ(op_mul_s2[i], element_t(2) * A[i]);
+    ASSERT_SCALAR_EQ(op_mul_s1.get(i), A[i] * element_t(2));
+    ASSERT_SCALAR_EQ(op_mul_s2.get(i), element_t(2) * A[i]);
   }
 
   // operator *= scalar
   register_t op_muleq_s = x;
   op_muleq_s *= element_t(2);
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_muleq_s[i], A[i] * element_t(2));
+    ASSERT_SCALAR_EQ(op_muleq_s.get(i), A[i] * element_t(2));
   }
 }
 
@@ -390,20 +375,20 @@ TYPED_TEST_P(RegisterTest, VectorRegisterDivide)
   // operator /
   register_t op_div = x/y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_div[i], A[i] / B[i]);
+    ASSERT_SCALAR_EQ(op_div.get(i), A[i] / B[i]);
   }
 
   // operator /=
   register_t op_diveq = x;
   op_diveq /= y;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_diveq[i], A[i] / B[i]);
+    ASSERT_SCALAR_EQ(op_diveq.get(i), A[i] / B[i]);
   }
 
   // function divide
   register_t func_div = x.divide(y);
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(func_div[i], A[i] / B[i]);
+    ASSERT_SCALAR_EQ(func_div.get(i), A[i] / B[i]);
   }
 
 
@@ -411,15 +396,15 @@ TYPED_TEST_P(RegisterTest, VectorRegisterDivide)
   register_t op_div_s1 = x / element_t(2);
   register_t op_div_s2 = element_t(2) / x;
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_div_s1[i], A[i] / element_t(2));
-    ASSERT_SCALAR_EQ(op_div_s2[i], element_t(2) / A[i]);
+    ASSERT_SCALAR_EQ(op_div_s1.get(i), A[i] / element_t(2));
+    ASSERT_SCALAR_EQ(op_div_s2.get(i), element_t(2) / A[i]);
   }
 
   // operator /= scalar
   register_t op_diveq_s = x;
   op_diveq_s /= element_t(2);
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_diveq_s[i], A[i] / element_t(2));
+    ASSERT_SCALAR_EQ(op_diveq_s.get(i), A[i] / element_t(2));
   }
 }
 
@@ -468,10 +453,10 @@ TYPED_TEST_P(RegisterTest, VectorFMA)
     expected[i] = A[i]*B[i]+C[i];
   }
 
-  result = x.fused_multiply_add(y,z);
+  result = x.multiply_add(y,z);
 
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(result[i], expected[i]);
+    ASSERT_SCALAR_EQ(result.get(i), expected[i]);
   }
 
 }
@@ -498,10 +483,10 @@ TYPED_TEST_P(RegisterTest, VectorFMS)
     expected[i] = A[i]*B[i]-C[i];
   }
 
-  result = x.fused_multiply_subtract(y,z);
+  result = x.multiply_subtract(y,z);
 
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(result[i], expected[i]);
+    ASSERT_SCALAR_EQ(result.get(i), expected[i]);
   }
 
 }
@@ -536,7 +521,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMax)
     // Check element-wise
     register_t z = x.vmax(y);
     for(size_t i = 1;i < num_elem;++ i){
-      ASSERT_SCALAR_EQ(z[i], std::max<element_t>(A[i], B[i]));
+      ASSERT_SCALAR_EQ(z.get(i), std::max<element_t>(A[i], B[i]));
     }
 
 
@@ -572,7 +557,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMin)
     // Check element-wise
     register_t z = x.vmin(y);
     for(size_t i = 1;i < num_elem;++ i){
-      ASSERT_SCALAR_EQ(z[i], std::min<element_t>(A[i], B[i]));
+      ASSERT_SCALAR_EQ(z.get(i), std::min<element_t>(A[i], B[i]));
     }
 
   }
@@ -630,7 +615,7 @@ GPU_TEST(RegisterTestCuda, CudaWarp32)
   cudaErrchk(cudaDeviceSynchronize());
 
 
-  //using register_t = RAJA::Register<RAJA::cuda_warp_register<5>, element_t, 32>;
+  //using register_t = RAJA::VectorRegister<RAJA::cuda_warp_register<5>, element_t, 32>;
 
   using vector_t = RAJA::CudaWarpFixedVector<element_t, 32, 5>;
 
@@ -710,7 +695,7 @@ GPU_TEST(RegisterTestCuda, CudaWarp16)
   cudaErrchk(cudaDeviceSynchronize());
 
 
-  using register_t = RAJA::Register<RAJA::cuda_warp_register<4>, element_t>;
+  using register_t = RAJA::VectorRegister<RAJA::cuda_warp_register<4>, element_t>;
 
 
   using Pol = RAJA::KernelPolicy<

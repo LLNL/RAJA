@@ -266,7 +266,7 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b, camp::idx_t = 1) const {
+      self_type divide(self_type const &b) const {
         return self_type(m_value / b.m_value);
       }
 

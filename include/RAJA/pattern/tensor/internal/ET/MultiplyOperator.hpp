@@ -19,11 +19,6 @@
 #ifndef RAJA_pattern_tensor_ET_MultiplyOperator_HPP
 #define RAJA_pattern_tensor_ET_MultiplyOperator_HPP
 
-#include "RAJA/config.hpp"
-
-#include "RAJA/util/macros.hpp"
-
-#include "RAJA/pattern/tensor/internal/ET/ExpressionTemplateBase.hpp"
 
 
 namespace RAJA

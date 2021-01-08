@@ -280,7 +280,13 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b, camp::idx_t N = 8) const {
+      self_type divide(self_type const &b) const {
+        return self_type(_mm512_div_pd(m_value, b.m_value));
+      }
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type divide_n(self_type const &b, camp::idx_t N) const {
         return self_type(_mm512_maskz_div_pd(createMask(N), m_value, b.m_value));
       }
 

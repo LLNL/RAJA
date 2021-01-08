@@ -27,7 +27,7 @@
 #include "RAJA/pattern/tensor/internal/ET/normalizeOperand.hpp"
 
 
-#define RAJA_DEBUG_PRINT_ET_AST
+//#define RAJA_DEBUG_PRINT_ET_AST
 
 namespace RAJA
 {
@@ -118,7 +118,7 @@ namespace RAJA
         template<typename RHS>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        TensorMultiply<self_type, normalize_operand_t<RHS>>
+        TensorDivide<self_type, normalize_operand_t<RHS>>
         operator/(RHS const &rhs) const {
           return TensorDivide<self_type, normalize_operand_t<RHS>>(*getThis(), normalizeOperand(rhs));
         }

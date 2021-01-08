@@ -307,7 +307,31 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b, camp::idx_t N = 16) const {
+      self_type divide(self_type const &b) const {
+        // AVX512 does not supply an integer divide, so do it manually
+        return self_type(_mm512_set_epi32(
+            get(15)/b.get(15),
+            get(14)/b.get(14),
+            get(13)/b.get(13),
+            get(12)/b.get(12),
+            get(11)/b.get(11),
+            get(10)/b.get(10),
+            get(9)/b.get(9),
+            get(8)/b.get(8),
+            get(7)/b.get(7),
+            get(6)/b.get(6),
+            get(5)/b.get(5),
+            get(4)/b.get(4),
+            get(3)/b.get(3),
+            get(2)/b.get(2),
+            get(1)/b.get(1),
+            get(0)/b.get(0)
+            ));
+      }
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type divide_n(self_type const &b, camp::idx_t N) const {
         // AVX512 does not supply an integer divide, so do it manually
         return self_type(_mm512_set_epi32(
             N >= 16 ? get(15)/b.get(15) : 0,

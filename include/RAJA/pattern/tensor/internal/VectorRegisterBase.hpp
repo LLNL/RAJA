@@ -183,21 +183,7 @@ namespace internal {
 
 
 
-      /*!
-       * @brief Divide n elements of this vector by another vector
-       * @param x Vector to divide by
-       * @param n Number of elements to divide
-       * @return Value of (*this)+x
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type divide_n(self_type const &b, camp::idx_t n) const {
-        self_type q(*getThis());
-        for(camp::idx_t i = 0;i < n;++i){
-          q.set(i, getThis()->get(i) / b.get(i));
-        }
-        return q;
-      }
+
 
       /*!
        * @brief Dot product of two vectors

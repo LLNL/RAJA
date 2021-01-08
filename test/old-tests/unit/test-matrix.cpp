@@ -922,9 +922,8 @@ TYPED_TEST_P(MatrixTest, ETMatrixMatrixMultiply)
   using Col = RAJA::ColIndex<int, matrix_t>;
 
 
-  // Perform copy of view1 into view2
-  view3(Row::all(), Col::all()) = view1(Row::all(), Col::all()) *
-                                  view2(Row::all(), Col::all());
+  view3(Row::all(), Col::all()) = 2.0* view1(Row::all(), Col::all()) *
+                                  view2(Row::all(), Col::all()) / 2.0;
 
 
 

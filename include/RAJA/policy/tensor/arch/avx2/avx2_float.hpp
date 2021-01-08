@@ -293,8 +293,24 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b, camp::idx_t = 8) const {
+      self_type divide(self_type const &b) const {
         return self_type(_mm256_div_ps(m_value, b.m_value));
+      }
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type divide_n(self_type const &b, camp::idx_t N ) const {
+        // AVX2 does not supply a masked divide
+        return self_type(_mm256_set_ps(
+            N >= 8 ? get(7)/b.get(7) : 0,
+            N >= 7 ? get(6)/b.get(6) : 0,
+            N >= 6 ? get(5)/b.get(5) : 0,
+            N >= 5 ? get(4)/b.get(4) : 0,
+            N >= 4 ? get(3)/b.get(3) : 0,
+            N >= 3 ? get(2)/b.get(2) : 0,
+            N >= 2 ? get(1)/b.get(1) : 0,
+            N >= 1 ? get(0)/b.get(0) : 0
+            ));
       }
 
 // only use FMA's if the compiler has them turned on
