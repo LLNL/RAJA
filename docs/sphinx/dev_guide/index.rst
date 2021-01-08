@@ -16,6 +16,6 @@ The RAJA Developer Guide is minimal at this point. It will be expanded over
 time.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    host_config
