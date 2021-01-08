@@ -1,8 +1,19 @@
-.. developer_guide:
+.. ##
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## for details.
+.. ##
+.. ## SPDX-License-Identifier: (BSD-3-Clause)
+.. ##
 
-===============
-Developer Guide
-===============
+.. raja_host_config:
+
+**********************
+RAJA Host-Config Files
+**********************
+
+RAJA *host-config* files are used to configure and build RAJA for various
+platforms and compilers.
 
 Generating RAJA host-config files
 ===================================

@@ -114,7 +114,7 @@ RAJA User Documentation
 RAJA Developer Documentation
 ============================
 
-  * insert links here...
+  * :doc:`RAJA Developer Guide <sphinx/dev_guide/index>`
 
 ======================================================
 RAJA Copyright and License Information
@@ -133,5 +133,5 @@ Please see :ref:`raja-copyright`.
    :caption: Developer Documentation
 
    sphinx/contributing
-   sphinx/dev_guide/developer_guide
+   sphinx/dev_guide/index
    sphinx/raja_license
