@@ -135,7 +135,7 @@ policies have the prefix ``hip_``.
                                                         given, the default
                                                         of 256 threads/block is 
                                                         used. 
- cuda/hip_thread_x_direct                kernel (For)  Map loop iterates
+ cuda/hip_thread_x_direct                 kernel (For)  Map loop iterates
                                                         directly to GPU threads
                                                         in x-dimension, one
                                                         iterate per thread
@@ -471,28 +471,49 @@ type. Atomic policy types are distinct from loop execution policy types.
            policy for the kernel in which the atomic operation is used. The
            following table summarizes RAJA atomic policies and usage.
 
-===================== ============= ===========================================
-Atomic Policy         Loop Policies Brief description
-                      to Use With
-===================== ============= ===========================================
-seq_atomic            seq_exec,     Atomic operation performed in a non-parallel
-                      loop_exec     (sequential) kernel.
-omp_atomic            any OpenMP    Atomic operation performed in an OpenMP.
-                      policy        multithreading or target kernel; i.e.,
-                                    apply ``omp atomic`` pragma.
-cuda/hip_atomic       any CUDA/HIP  Atomic operation performed in a CUDA/HIP 
-                                    kernel.
-builtin_atomic        seq_exec,     Compiler *builtin* atomic operation.
-                      loop_exec,
-                      any OpenMP
-                      policy
-auto_atomic           seq_exec,     Atomic operation *compatible* with loop
-                      loop_exec,    execution policy. See example below.
-                      any OpenMP
-                      policy,
-                      any CUDA/HIP
-                      policy
-===================== ============= ===========================================
+========================= ============= ===========================================
+Atomic Policy             Loop Policies Brief description
+                          to Use With
+========================= ============= ===========================================
+seq_atomic                seq_exec,     Atomic operation performed in a
+                          loop_exec     non-parallel (sequential) kernel.
+omp_atomic                any OpenMP    Atomic operation performed in an OpenMP.
+                          policy        multithreading or target kernel; i.e.,
+                                        apply ``omp atomic`` pragma.
+cuda/hip_atomic           any CUDA/HIP  Atomic operation performed in a CUDA/HIP
+                                        kernel.
+cuda/hip_atomic_explicit  any CUDA/HIP  Atomic operation performed in a CUDA/HIP
+< host_atomic_policy >    any policy    kernel when compiling for the device.
+                          matching the  See description of host_atomic_policy
+                          host atomic   when compiling for the host.
+                          policy
+builtin_atomic            seq_exec,     Compiler *builtin* atomic operation.
+                          loop_exec,
+                          any OpenMP
+                          policy
+auto_atomic               seq_exec,     Atomic operation *compatible* with loop
+                          loop_exec,    execution policy. See example below.
+                          any OpenMP    Can not be used inside cuda/hip
+                          policy,       explicit atomic policies.
+                          any CUDA/HIP
+                          policy
+========================= ============= ===========================================
+
+Here is an example illustrating use of the ``cuda_atomic_explicit`` policy::
+
+  auto kernel = [=] RAJA_HOST_DEVICE (RAJA::Index_type i) {
+
+    RAJA::atomicAdd< RAJA::cuda_atomic_explicit<omp_atomic> >(&sum, 1);
+
+  };
+  RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment seg(0, N), kernel);
+  RAJA::forall< RAJA::omp_parallel_for_exec >(RAJA::RangeSegment seg(0, N),
+      kernel);
+
+In this case, the atomic operation knows when it is compiled for the device
+in a CUDA kernel context and the CUDA atomic operation is applied. Similarly
+when it is compiled for the host in an OpenMP kernel the omp_atomic policy is
+used and the OpenMP version of the atomic operation is applied.
 
 Here is an example illustrating use of the ``auto_atomic`` policy::
 

@@ -49,7 +49,7 @@ __global__ void get_Vtable_hip_device_call_global(
 inline void* get_Vtable_hip_device_call_ptrptr()
 {
   void* ptrptr = nullptr;
-  hipErrchk(hipHostMalloc(&ptrptr, sizeof(typename Vtable<>::call_sig)));
+  hipErrchk(hipHostMalloc(&ptrptr, sizeof(typename Vtable<void>::call_sig)));
   return ptrptr;
 }
 

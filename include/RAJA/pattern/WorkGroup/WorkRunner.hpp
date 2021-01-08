@@ -162,7 +162,7 @@ struct WorkRunnerForallOrdered_base
   using index_type = INDEX_T;
 
   using forall_exec_policy = FORALL_EXEC_POLICY;
-  using vtable_type = Vtable<Args...>;
+  using vtable_type = Vtable<void, Args...>;
 
   WorkRunnerForallOrdered_base() = default;
 
