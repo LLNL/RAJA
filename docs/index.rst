@@ -81,31 +81,57 @@ focus up to now. Those back-ends are used in a wide variety of production
 applications. OpenMP target offload and TBB back-ends do not support
 all RAJA features and should be considered experimental.
 
-===============
-RAJA User Guide
-===============
+=================================
+Git Repository and Issue Tracking
+=================================
 
-:doc:`RAJA User Guide <sphinx/user_guide/index>`
+The main interaction hub for RAJA is on `Github <https://github.com/LLNL/RAJA>`_
 
 ================================
-Interacting with the RAJA Team
+Communicating with the RAJA Team
 ================================
-
-If you are interested in communicating with the RAJA development team, please
-email us at ``raja-dev@llnl.gov``.  
-
-You are also welcome to join our `Google Group <https://groups.google.com/forum/#!forum/raja-users>`_
 
 If you have questions, find a bug, have ideas about expanding the
 functionality or applicability, or wish to contribute
 to RAJA development, please do not hesitate to contact us. We are always
-interested in improving RAJA and exploring new ways to use it. A brief
-description of how the RAJA team operates can be found in
+interested in improving RAJA and exploring new ways to use it. 
+
+The best way to communicate with us is via our email list: ``raja-dev@llnl.gov``
+
+You are also welcome to join our `Google Group <https://groups.google.com/forum/#!forum/raja-users>`_
+
+A brief description of how to start a contribution to RAJA team can be found in
 :ref:`contributing-label`.
 
-.. toctree::
-   :maxdepth: 2
+=======================
+RAJA User Documentation
+=======================
 
-   sphinx/dev_guide/contributing
+  * :doc:`RAJA User Guide <sphinx/user_guide/index>`
+  * insert doxygen docs here...
+
+============================
+RAJA Developer Documentation
+============================
+
+  * insert links here...
+
+======================================================
+RAJA Copyright and License Information
+======================================================
+
+Please see :ref:`raja-copyright`.
+
+.. toctree::
+   :hidden: 
+   :caption: User Documentation
+
+   sphinx/user_guide/index
+
+.. toctree::
+   :hidden: 
+   :caption: Developer Documentation
+
+   sphinx/contributing
    sphinx/dev_guide/developer_guide
-   raja_license
+   sphinx/raja_license
