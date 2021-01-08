@@ -24,10 +24,11 @@ LLNL-CODE-689114
 
 OCEC-16-063
 
+
 RAJA License
 ------------
 
-.. include:: ../LICENSE 
+.. include:: ../../LICENSE 
 
-.. include:: ../NOTICE 
+.. include:: ../../NOTICE 
 
