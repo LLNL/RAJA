@@ -81,7 +81,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         result_type subtract(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-          return lhs.eval(tile).add(rhs.eval(tile));
+          return lhs.eval(tile).subtract(rhs.eval(tile));
         }
 
         /*!
@@ -92,7 +92,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         result_type divide(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-          return lhs.eval(tile).add(rhs.eval(tile));
+          return lhs.eval(tile).divide(rhs.eval(tile));
         }
 
     };
