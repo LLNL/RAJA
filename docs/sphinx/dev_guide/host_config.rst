@@ -22,11 +22,11 @@ This mechanism will generate a cmake configuration file that reproduces the conf
 
 In particular, the host config file will setup:
 
-  * flags corresponding with the target required (Release, Debug).
-  * compilers path, and other toolkits (cuda if required), etc.
-  * paths to installed dependencies. However, RAJA only directly depends on CMake.
+  * Flags corresponding with the target required (Release, Debug)
+  * Compiler path and other toolkits (cuda if required), etc.
+  * Paths to installed dependencies. However, RAJA only directly depends on CMake
 
-This provides an easy way to build RAJA based on `Spack <https://github.com/spack/spack>` _and encapsulated in `Uberenv <https://github.com/LLNL/uberenv>`_.
+This provides an easy way to build RAJA based on `Spack <https://github.com/spack/spack>`_ and encapsulated in `Uberenv <https://github.com/LLNL/uberenv>`_.
 
 Uberenv role
 ------------
