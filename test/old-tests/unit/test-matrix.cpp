@@ -14,46 +14,46 @@
 
 using MatrixTestTypes = ::testing::Types<
 
-//#ifdef __AVX__
-//    RAJA::MatrixRegister<double, RAJA::MatrixColMajor, RAJA::avx_register>,
-//    RAJA::MatrixRegister<double, RAJA::MatrixRowMajor, RAJA::avx_register>,
-//    RAJA::MatrixRegister<float, RAJA::MatrixColMajor, RAJA::avx_register>,
-//    RAJA::MatrixRegister<float, RAJA::MatrixRowMajor, RAJA::avx_register>,
-//    RAJA::MatrixRegister<long, RAJA::MatrixColMajor, RAJA::avx_register>,
-//    RAJA::MatrixRegister<long, RAJA::MatrixRowMajor, RAJA::avx_register>,
-//    RAJA::MatrixRegister<int, RAJA::MatrixColMajor, RAJA::avx_register>,
-//    RAJA::MatrixRegister<int, RAJA::MatrixRowMajor, RAJA::avx_register>,
-//#endif
-//
-//#ifdef __AVX2__
+#ifdef __AVX__
+    RAJA::MatrixRegister<double, RAJA::ColMajorLayout, RAJA::avx_register>,
+    RAJA::MatrixRegister<double, RAJA::RowMajorLayout, RAJA::avx_register>,
+    RAJA::MatrixRegister<float, RAJA::ColMajorLayout, RAJA::avx_register>,
+    RAJA::MatrixRegister<float, RAJA::RowMajorLayout, RAJA::avx_register>,
+    RAJA::MatrixRegister<long, RAJA::ColMajorLayout, RAJA::avx_register>,
+    RAJA::MatrixRegister<long, RAJA::RowMajorLayout, RAJA::avx_register>,
+    RAJA::MatrixRegister<int, RAJA::ColMajorLayout, RAJA::avx_register>,
+    RAJA::MatrixRegister<int, RAJA::RowMajorLayout, RAJA::avx_register>,
+#endif
+
+#ifdef __AVX2__
     RAJA::MatrixRegister<double, RAJA::ColMajorLayout, RAJA::avx2_register>,
     RAJA::MatrixRegister<double, RAJA::RowMajorLayout, RAJA::avx2_register>,
-//    RAJA::MatrixRegister<float, RAJA::MatrixColMajor, RAJA::avx2_register>,
-//    RAJA::MatrixRegister<float, RAJA::MatrixRowMajor, RAJA::avx2_register>,
-//    RAJA::MatrixRegister<long, RAJA::MatrixColMajor, RAJA::avx2_register>,
-//    RAJA::MatrixRegister<long, RAJA::MatrixRowMajor, RAJA::avx2_register>,
-//    RAJA::MatrixRegister<int, RAJA::MatrixColMajor, RAJA::avx2_register>,
-//    RAJA::MatrixRegister<int, RAJA::MatrixRowMajor, RAJA::avx2_register>,
-//#endif
-//
-//#ifdef __AVX512__
-//    RAJA::MatrixRegister<double, RAJA::MatrixColMajor, RAJA::avx512_register>,
-//    RAJA::MatrixRegister<double, RAJA::MatrixRowMajor, RAJA::avx512_register>,
-//    RAJA::MatrixRegister<float, RAJA::MatrixColMajor, RAJA::avx512_register>,
-//    RAJA::MatrixRegister<float, RAJA::MatrixRowMajor, RAJA::avx512_register>,
-//    RAJA::MatrixRegister<long, RAJA::MatrixColMajor, RAJA::avx512_register>,
-//    RAJA::MatrixRegister<long, RAJA::MatrixRowMajor, RAJA::avx512_register>,
-//    RAJA::MatrixRegister<int, RAJA::MatrixColMajor, RAJA::avx512_register>,
-//    RAJA::MatrixRegister<int, RAJA::MatrixRowMajor, RAJA::avx512_register>,
-//#endif
-//
-//    RAJA::MatrixRegister<double, RAJA::MatrixColMajor, RAJA::scalar_register>,
-//    RAJA::MatrixRegister<double, RAJA::MatrixRowMajor, RAJA::scalar_register>,
-//    RAJA::MatrixRegister<float, RAJA::MatrixColMajor, RAJA::scalar_register>,
-//    RAJA::MatrixRegister<float, RAJA::MatrixRowMajor, RAJA::scalar_register>,
-//    RAJA::MatrixRegister<long, RAJA::MatrixColMajor, RAJA::scalar_register>,
-//    RAJA::MatrixRegister<long, RAJA::MatrixRowMajor, RAJA::scalar_register>,
-//    RAJA::MatrixRegister<int, RAJA::MatrixColMajor, RAJA::scalar_register>,
+    RAJA::MatrixRegister<float, RAJA::ColMajorLayout, RAJA::avx2_register>,
+    RAJA::MatrixRegister<float, RAJA::RowMajorLayout, RAJA::avx2_register>,
+    RAJA::MatrixRegister<long, RAJA::ColMajorLayout, RAJA::avx2_register>,
+    RAJA::MatrixRegister<long, RAJA::RowMajorLayout, RAJA::avx2_register>,
+    RAJA::MatrixRegister<int, RAJA::ColMajorLayout, RAJA::avx2_register>,
+    RAJA::MatrixRegister<int, RAJA::RowMajorLayout, RAJA::avx2_register>,
+#endif
+
+#ifdef __AVX512__
+    RAJA::MatrixRegister<double, RAJA::ColMajorLayout, RAJA::avx512_register>,
+    RAJA::MatrixRegister<double, RAJA::RowMajorLayout, RAJA::avx512_register>,
+    RAJA::MatrixRegister<float, RAJA::ColMajorLayout, RAJA::avx512_register>,
+    RAJA::MatrixRegister<float, RAJA::RowMajorLayout, RAJA::avx512_register>,
+    RAJA::MatrixRegister<long, RAJA::ColMajorLayout, RAJA::avx512_register>,
+    RAJA::MatrixRegister<long, RAJA::RowMajorLayout, RAJA::avx512_register>,
+    RAJA::MatrixRegister<int, RAJA::ColMajorLayout, RAJA::avx512_register>,
+    RAJA::MatrixRegister<int, RAJA::RowMajorLayout, RAJA::avx512_register>,
+#endif
+
+    RAJA::MatrixRegister<double, RAJA::ColMajorLayout, RAJA::scalar_register>,
+    RAJA::MatrixRegister<double, RAJA::RowMajorLayout, RAJA::scalar_register>,
+    RAJA::MatrixRegister<float, RAJA::ColMajorLayout, RAJA::scalar_register>,
+    RAJA::MatrixRegister<float, RAJA::RowMajorLayout, RAJA::scalar_register>,
+    RAJA::MatrixRegister<long, RAJA::ColMajorLayout, RAJA::scalar_register>,
+    RAJA::MatrixRegister<long, RAJA::RowMajorLayout, RAJA::scalar_register>,
+    RAJA::MatrixRegister<int, RAJA::ColMajorLayout, RAJA::scalar_register>,
     RAJA::MatrixRegister<int, RAJA::RowMajorLayout, RAJA::scalar_register>
 
   >;

@@ -14,15 +14,15 @@
 
 #include "RAJA/config.hpp"
 
-#define VARIANT_C                    0 
-#define VARIANT_C_VIEWS              0
-#define VARIANT_RAJA_SEQ             0
-#define VARIANT_RAJA_SEQ_ARGS        0
-#define VARIANT_RAJA_TEAMS_SEQ       0
+#define VARIANT_C                    1
+#define VARIANT_C_VIEWS              1
+#define VARIANT_RAJA_SEQ             1
+#define VARIANT_RAJA_SEQ_ARGS        1
+#define VARIANT_RAJA_TEAMS_SEQ       1
 #define VARIANT_RAJA_VECTOR          0
 #define VARIANT_RAJA_MATRIX          1
 #define VARIANT_RAJA_TEAMS_MATRIX    0
-#define VARIANT_RAJA_SEQ_SHMEM       0
+#define VARIANT_RAJA_SEQ_SHMEM       1
 #define VARIANT_RAJA_MATRIX_SHMEM    0
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -30,15 +30,15 @@
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-#define VARIANT_CUDA_KERNEL          0
-#define VARIANT_CUDA_TEAMS           0
+#define VARIANT_CUDA_KERNEL          1
+#define VARIANT_CUDA_TEAMS           1
 #define VARIANT_CUDA_TEAMS_MATRIX    1
-#define VARIANT_CUDA_KERNEL_SHMEM    0
+#define VARIANT_CUDA_KERNEL_SHMEM    1
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-#define RAJA_HIP_KERNEL              0
-#define RAJA_HIP_KERNEL_SHMEM        0
+#define RAJA_HIP_KERNEL              1
+#define RAJA_HIP_KERNEL_SHMEM        1
 #endif
 
 
