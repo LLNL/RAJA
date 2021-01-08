@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -124,7 +124,6 @@ to use RAJA in an application can be found in :ref:`app-considerations-label`.
    tutorial
    using_raja
    config_options
-   plugins
    contributing
    developer_guide
    raja_license
