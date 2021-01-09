@@ -67,28 +67,27 @@ namespace internal {
       RAJA_HOST_DEVICE
       static
       RAJA_INLINE
-      matrix_type multiply(matrix_type const &A, matrix_type const &B){
-        matrix_type sum(0);
+      matrix_type multiply(matrix_type const &A, matrix_type const &B, matrix_type &C){
+        C = matrix_type(0);
 
         if(LAYOUT::is_row_major()){
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::tensor_stats::num_matrix_mm_mult_row_row ++;
 #endif
-          camp::sink(calc_vec_product<VAL_SEQ>(sum, A, B)...);
+          camp::sink(calc_vec_product<VAL_SEQ>(C, A, B)...);
         }
         else{
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::tensor_stats::num_matrix_mm_mult_col_col ++;
 #endif
-          camp::sink(calc_vec_product<VAL_SEQ>(sum, B, A)...);
+          camp::sink(calc_vec_product<VAL_SEQ>(C, B, A)...);
         }
-        return sum;
       }
 
       RAJA_HOST_DEVICE
       static
       RAJA_INLINE
-      matrix_type multiply_accumulate(matrix_type const &A, matrix_type const &B, matrix_type C){
+      void multiply_accumulate(matrix_type const &A, matrix_type const &B, matrix_type &C){
         if(LAYOUT::is_row_major()){
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::tensor_stats::num_matrix_mm_multacc_row_row ++;
@@ -101,7 +100,6 @@ namespace internal {
 #endif
           camp::sink(calc_vec_product<VAL_SEQ>(C, B, A)...);
         }
-        return C;
       }
 
   };

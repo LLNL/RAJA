@@ -60,9 +60,17 @@ namespace RAJA
         m_values{(VAL_SEQ >= 0) ? vector_type(c) : vector_type(c)...}
       {}
 
-      TensorRegister(self_type const &c) = default;
-      TensorRegister(self_type && c) = default;
+//      TensorRegister(self_type const &c) = default;
+//      TensorRegister(self_type && c) = default;
 
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      constexpr
+      TensorRegister(self_type const &c) :
+        base_type(c),
+        m_values{c.m_values[VAL_SEQ]...}
+      {
+      }
 
       /*
        * Overload for:    assignment of ET to a TensorRegister
@@ -615,7 +623,9 @@ namespace RAJA
       RAJA_INLINE
       typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type
       matrix_multiply(RMAT const &mat) const {
-        return internal::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply(*this, mat);
+        typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type res(0);
+        internal::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply(*this, mat, res);
+        return res;
       }
 
       /*!
@@ -626,7 +636,9 @@ namespace RAJA
       RAJA_INLINE
       typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type
       matrix_multiply_add(RMAT const &B, typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type const &C) const {
-        return internal::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply_accumulate(*this, B, C);
+        typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type res(C);
+        internal::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply_accumulate(*this, B, res);
+        return res;
       }
 
       RAJA_HOST_DEVICE
@@ -692,6 +704,7 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
+      constexpr
       vector_type const &vec(int i) const{
         return m_values[i];
       }

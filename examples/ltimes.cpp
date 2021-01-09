@@ -14,15 +14,15 @@
 
 #include "RAJA/config.hpp"
 
-#define VARIANT_C                    1
-#define VARIANT_C_VIEWS              1
-#define VARIANT_RAJA_SEQ             1
-#define VARIANT_RAJA_SEQ_ARGS        1
-#define VARIANT_RAJA_TEAMS_SEQ       1
+#define VARIANT_C                    0
+#define VARIANT_C_VIEWS              0
+#define VARIANT_RAJA_SEQ             0
+#define VARIANT_RAJA_SEQ_ARGS        0
+#define VARIANT_RAJA_TEAMS_SEQ       0
 #define VARIANT_RAJA_VECTOR          0
 #define VARIANT_RAJA_MATRIX          1
 #define VARIANT_RAJA_TEAMS_MATRIX    0
-#define VARIANT_RAJA_SEQ_SHMEM       1
+#define VARIANT_RAJA_SEQ_SHMEM       0
 #define VARIANT_RAJA_MATRIX_SHMEM    0
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -132,8 +132,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Note: rand()/RAND_MAX is always zero, but forces the compiler to not
   // optimize out these values as compile time constants
   const int num_m = 25 + (rand()/RAND_MAX);
-  const int num_g = 128 + (rand()/RAND_MAX);
-  const int num_d = 120 + (rand()/RAND_MAX);
+  const int num_g = 48 + (rand()/RAND_MAX);
+  const int num_d = 80 + (rand()/RAND_MAX);
+
+//  const int num_m = 8 + (rand()/RAND_MAX);
+//  const int num_g = 8 + (rand()/RAND_MAX);
+//  const int num_d = 8 + (rand()/RAND_MAX);
 
 
 #ifdef DEBUG_LTIMES
@@ -143,7 +147,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const long num_z = 128 + (rand()/RAND_MAX);
 #else
   const int num_iter = 10 + (rand()/RAND_MAX);
-  const int num_z = 16*1024 + (rand()/RAND_MAX);
+  const int num_z = 32*1024 + (rand()/RAND_MAX);
 #endif
 
 
@@ -645,12 +649,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   for (int iter = 0;iter < num_iter;++ iter){
 
-    for(IG g : RAJA::TypedRangeSegment<IG>(0, num_g)){
+  RAJA::forall<loop_exec>(RAJA::TypedRangeSegment<IG>(0, num_g),
+    [=](IG g)
+    {
 
 #if 1
-        phi(RowM::all(), g, ColZ::all()) +=
-            L(RowM::all(), ColD::all()) *
-            psi(toRowIndex(ColD::all()), g, ColZ::all());
+
+      auto rows_m = RowM::all();
+      auto cols_z = ColZ::all();
+      auto cols_d = ColD::all();
+      auto rows_d = toRowIndex(cols_d);
+
+        phi(rows_m, g, cols_z) +=
+            L(rows_m, cols_d) * psi(rows_d, g, cols_z);
 
 #else
         // try using BLAS DGEMM for comparison
@@ -679,7 +690,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                Cptr, &ldc);
 
 #endif
-    }
+    });
 
 
 

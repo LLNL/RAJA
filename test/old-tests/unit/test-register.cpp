@@ -14,32 +14,32 @@
 
 using RegisterTestTypes = ::testing::Types<
 
-#ifdef __AVX__
-    RAJA::VectorRegister<double, RAJA::avx_register>,
-    RAJA::VectorRegister<float, RAJA::avx_register>,
-    RAJA::VectorRegister<int, RAJA::avx_register>,
-    RAJA::VectorRegister<long, RAJA::avx_register>,
-#endif
+//#ifdef __AVX__
+//    RAJA::VectorRegister<double, RAJA::avx_register>,
+//    RAJA::VectorRegister<float, RAJA::avx_register>,
+//    RAJA::VectorRegister<int, RAJA::avx_register>,
+//    RAJA::VectorRegister<long, RAJA::avx_register>,
+//#endif
 
 #ifdef __AVX2__
-    RAJA::VectorRegister<double, RAJA::avx2_register>,
-    RAJA::VectorRegister<float, RAJA::avx2_register>,
-    RAJA::VectorRegister<int, RAJA::avx2_register>,
-    RAJA::VectorRegister<long, RAJA::avx2_register>,
+//    RAJA::VectorRegister<double, RAJA::avx2_register>,
+    RAJA::VectorRegister<float, RAJA::avx2_register> //,
+//    RAJA::VectorRegister<int, RAJA::avx2_register>,
+//    RAJA::VectorRegister<long, RAJA::avx2_register>,
 #endif
 
-#ifdef __AVX512__
-    RAJA::VectorRegister<double, RAJA::avx512_register>,
-    RAJA::VectorRegister<float, RAJA::avx512_register>,
-    RAJA::VectorRegister<int, RAJA::avx512_register>,
-    RAJA::VectorRegister<long, RAJA::avx512_register>,
-#endif
-
-    // scalar_register is supported on all platforms
-    RAJA::VectorRegister<double, RAJA::scalar_register>,
-    RAJA::VectorRegister<float, RAJA::scalar_register>,
-    RAJA::VectorRegister<int, RAJA::scalar_register>,
-    RAJA::VectorRegister<long, RAJA::scalar_register>
+//#ifdef __AVX512__
+//    RAJA::VectorRegister<double, RAJA::avx512_register>,
+//    RAJA::VectorRegister<float, RAJA::avx512_register>,
+//    RAJA::VectorRegister<int, RAJA::avx512_register>,
+//    RAJA::VectorRegister<long, RAJA::avx512_register>,
+//#endif
+//
+//    // scalar_register is supported on all platforms
+//    RAJA::VectorRegister<double, RAJA::scalar_register>,
+//    RAJA::VectorRegister<float, RAJA::scalar_register>,
+//    RAJA::VectorRegister<int, RAJA::scalar_register>,
+   // RAJA::VectorRegister<long, RAJA::scalar_register>
   >;
 
 
@@ -61,7 +61,7 @@ protected:
 };
 TYPED_TEST_SUITE_P(RegisterTest);
 
-
+#if 0
 /*
  * We are using NO_OPT_RAND for input values so the compiler cannot do fancy
  * things, like constexpr out all of the intrinsics.
@@ -563,19 +563,79 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMin)
   }
 }
 
+
+#endif
+
+TYPED_TEST_P(RegisterTest, VectorRegisterTransposeShuffle)
+{
+  using register_t = TypeParam;
+
+//  using element_t = typename register_t::element_type;
+  static constexpr camp::idx_t  num_elem = register_t::s_num_elem;
+
+  register_t x, y;
+  for(camp::idx_t  i = 0;i < num_elem;++ i){
+    x.set(i, i);
+    y.set(i, i+num_elem);
+  }
+
+  printf("x:        ");
+  for(camp::idx_t  i = 0;i < num_elem;++ i){
+    printf("%2d ", (int)x.get(i));
+  }
+  printf("\n");
+
+  printf("y:        ");
+  for(camp::idx_t  i = 0;i < num_elem;++ i){
+    printf("%2d ", (int)y.get(i));
+  }
+  printf("\n");
+
+  for(camp::idx_t lvl = 0;lvl < 16;++ lvl){
+    if(1<<(lvl+1) > num_elem){
+      break;
+    }
+
+    register_t z = x.transpose_shuffle_left(lvl, y);
+
+    printf("L lvl=%2d: ", (int)lvl);
+    for(camp::idx_t  i = 0;i < num_elem;++ i){
+      printf("%2d ", (int)z.get(i));
+    }
+    printf("\n");
+  }
+
+  for(camp::idx_t lvl = 0;lvl < 16;++ lvl){
+    if(1<<(lvl+1) > num_elem){
+      break;
+    }
+
+    register_t z = x.transpose_shuffle_right(lvl, y);
+
+    printf("R lvl=%2d: ", (int)lvl);
+    for(camp::idx_t  i = 0;i < num_elem;++ i){
+      printf("%2d ", (int)z.get(i));
+    }
+    printf("\n");
+  }
+}
+
+
 //REGISTER_TYPED_TEST_SUITE_P(RegisterTest, VectorRegisterSubtract);
 
-REGISTER_TYPED_TEST_SUITE_P(RegisterTest, VectorRegisterSetGet,
-                                       VectorRegisterLoad,
-                                       VectorRegisterAdd,
-                                       VectorRegisterSubtract,
-                                       VectorRegisterMultiply,
-                                       VectorRegisterDivide,
-                                       VectorRegisterDotProduct,
-                                       VectorFMA,
-                                       VectorFMS,
-                                       VectorRegisterMax,
-                                       VectorRegisterMin);
+REGISTER_TYPED_TEST_SUITE_P(RegisterTest,
+//    VectorRegisterSetGet,
+//                                       VectorRegisterLoad,
+//                                       VectorRegisterAdd,
+//                                       VectorRegisterSubtract,
+//                                       VectorRegisterMultiply,
+//                                       VectorRegisterDivide,
+//                                       VectorRegisterDotProduct,
+//                                       VectorFMA,
+//                                       VectorFMS,
+//                                       VectorRegisterMax,
+//                                       VectorRegisterMin,
+                                       VectorRegisterTransposeShuffle);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, RegisterTest, RegisterTestTypes);
 
