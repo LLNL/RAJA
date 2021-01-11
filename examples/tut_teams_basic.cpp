@@ -158,7 +158,10 @@ int main(int argc, char *argv[])
     { select_cpu_or_gpu = RAJA::expt::DEVICE; printf("Running RAJA-Teams on the device \n"); }
 
 //
-//
+// The following three kernels illustrate loop based parallelism
+// based on nested for loops. For correctness team and thread loops
+// make the assumption that all work inside can be done
+// concurrently.
 //
 
   // __compute_grid_start
@@ -166,11 +169,13 @@ int main(int argc, char *argv[])
   const int Nthreads = 2;
   // __compute_grid_end
 
+  // __team_launch_start
   RAJA::expt::launch<launch_policy>(select_cpu_or_gpu,
   RAJA::expt::Resources(RAJA::expt::Teams(Nteams,Nteams),
                         RAJA::expt::Threads(Nthreads,Nthreads)),
-  [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
-
+  [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
+  // __team_launch_end
+  {
   //__team_loops_start
   RAJA::expt::loop<teams_y>(ctx, RAJA::RangeSegment(0, Nteams), [&] (int by) {
     RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, Nteams), [&] (int bx) {
@@ -178,7 +183,7 @@ int main(int argc, char *argv[])
       RAJA::expt::loop<threads_y>(ctx, RAJA::RangeSegment(0, Nthreads), [&] (int ty) {
         RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(0, Nthreads), [&] (int tx) {
 
-            printf("RAJA teams: threadId_x %d threadId_y %d teamId_x %d teamId_y %d \n",
+            printf("RAJA Teams: threadId_x %d threadId_y %d teamId_x %d teamId_y %d \n",
                    tx, ty, bx, by);
 
           });
@@ -187,7 +192,6 @@ int main(int argc, char *argv[])
       });
     });
   //__team_loops_end
-
  });
 
 
