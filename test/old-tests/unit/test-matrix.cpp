@@ -1089,7 +1089,7 @@ TYPED_TEST_P(MatrixTest, ETMatrixMatrixMultiplyAdd)
 
 #endif
 
-TYPED_TEST_P(MatrixTest, ETMatrixTranspose)
+TYPED_TEST_P(MatrixTest, ETMatrixTransposeNegate)
 {
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
@@ -1121,13 +1121,13 @@ TYPED_TEST_P(MatrixTest, ETMatrixTranspose)
 
 
   // Perform tranpose of view1 into view2
-  view2(Row::all(), Col::all()) = view1(Row::all(), Col::all()).transpose();
+  view2(Row::all(), Col::all()) = -view1(Row::all(), Col::all()).transpose();
 
 
   // Check
   for(camp::idx_t i = 0;i < N; ++ i){
     for(camp::idx_t j = 0;j < N; ++ j){
-      ASSERT_SCALAR_EQ(data2[i][j], data1[j][i]);
+      ASSERT_SCALAR_EQ(data2[i][j], -data1[j][i]);
     }
   }
 
@@ -1153,7 +1153,7 @@ REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
 //                                        ETMatrixVectorMultiply,
 //                                        ETMatrixMatrixMultiply,
 //                                        ETMatrixMatrixMultiplyAdd,
-                                        ETMatrixTranspose);
+                                          ETMatrixTransposeNegate);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, MatrixTest, MatrixTestTypes);
 

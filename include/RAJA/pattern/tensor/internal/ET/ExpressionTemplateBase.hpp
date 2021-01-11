@@ -51,16 +51,20 @@ namespace RAJA
     class TensorAdd;
 
     template<typename LHS_TYPE, typename RHS_TYPE>
-    class TensorSubtract;
+    class TensorDivide;
 
     template<typename LHS_TYPE, typename RHS_TYPE>
     class TensorMultiply;
 
+    template<typename TENSOR_TYPE>
+    class TensorNegate;
+
     template<typename LHS_TYPE, typename RHS_TYPE>
-    class TensorDivide;
+    class TensorSubtract;
 
     template<typename TENSOR_TYPE>
     class TensorTranspose;
+
 
 
 
@@ -107,6 +111,13 @@ namespace RAJA
         TensorSubtract<self_type, normalize_operand_t<RHS>>
         operator-(RHS const &rhs) const {
           return TensorSubtract<self_type, normalize_operand_t<RHS>>(*getThis(), normalizeOperand(rhs));
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        TensorNegate<self_type>
+        operator-() const {
+          return TensorNegate<self_type>(*getThis());
         }
 
         template<typename RHS>
