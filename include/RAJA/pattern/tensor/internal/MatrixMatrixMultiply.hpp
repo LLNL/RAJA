@@ -67,7 +67,7 @@ namespace internal {
       RAJA_HOST_DEVICE
       static
       RAJA_INLINE
-      matrix_type multiply(matrix_type const &A, matrix_type const &B, matrix_type &C){
+      void multiply(matrix_type const &A, matrix_type const &B, matrix_type &C){
         C = matrix_type(0);
 
         if(LAYOUT::is_row_major()){

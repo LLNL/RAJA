@@ -59,6 +59,8 @@ namespace RAJA
     template<typename LHS_TYPE, typename RHS_TYPE>
     class TensorDivide;
 
+    template<typename TENSOR_TYPE>
+    class TensorTranspose;
 
 
 
@@ -121,6 +123,14 @@ namespace RAJA
         TensorDivide<self_type, normalize_operand_t<RHS>>
         operator/(RHS const &rhs) const {
           return TensorDivide<self_type, normalize_operand_t<RHS>>(*getThis(), normalizeOperand(rhs));
+        }
+
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        TensorTranspose<self_type>
+        transpose() const {
+          return TensorTranspose<self_type>(*getThis());
         }
 
     };

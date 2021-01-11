@@ -45,6 +45,8 @@ namespace RAJA
       using element_type = T;
       using layout_type = TensorLayout<ROW_ORD, COL_ORD>;
 
+      using transpose_tensor_type = TensorRegister<REGISTER_POLICY, T, TensorLayout<!ROW_ORD, !COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>, camp::idx_seq<VAL_SEQ... >>;
+
     private:
 
       vector_type m_values[sizeof...(VAL_SEQ)];
@@ -548,6 +550,56 @@ namespace RAJA
       self_type &broadcast(element_type v){
         camp::sink((m_values[VAL_SEQ].broadcast(v))...);
         return *this;
+      }
+
+
+      /*!
+       * Matrix transpose, keeping layout
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type transpose() const {
+
+        static constexpr camp::idx_t num_elem = vector_type::s_num_elem;
+
+        /*
+         * We use Eklundh's Algorithm: Recursive block transpose because
+         * it's easy to implement using SIMD register permutation primitives
+         *
+         * Executes in n*log(n) row operations
+         *
+         */
+        self_type result = *this;
+        for(camp::idx_t lvl = 0; (1<<lvl) < num_elem;++ lvl){
+          // At this level, we do block transposes of NxN sub-matrices, where
+          // N = 1<<lvl
+
+          auto const &vals = result.m_values;
+
+          result = self_type((
+             ((VAL_SEQ>>lvl)&0x1) == 0 ?
+                 vals[VAL_SEQ - (VAL_SEQ&(1<<lvl))].transpose_shuffle_left(lvl, vals[VAL_SEQ - (VAL_SEQ&(1<<lvl)) + (1<<lvl)]) :
+                 vals[VAL_SEQ - (VAL_SEQ&(1<<lvl))].transpose_shuffle_right(lvl, vals[VAL_SEQ - (VAL_SEQ&(1<<lvl)) + (1<<lvl)])
+          )...);
+
+        }
+
+        return result;
+
+      }
+
+      /*!
+       * Transpose this matrix by swapping row/column majorness
+       *
+       * Row major matrix returns column major, and visa versa.
+       *
+       * This has zero cost.
+       *
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      transpose_tensor_type const &transpose_type() const {
+        return reinterpret_cast<transpose_tensor_type const &>(*this);
       }
 
       /*!

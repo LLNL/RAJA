@@ -20,13 +20,15 @@
 
 #include "RAJA/pattern/tensor/internal/ET/ExpressionTemplateBase.hpp"
 #include "RAJA/pattern/tensor/internal/ET/ScalarLiteral.hpp"
-#include "RAJA/pattern/tensor/internal/ET/TensorLiteral.hpp"
 #include "RAJA/pattern/tensor/internal/ET/TensorAdd.hpp"
-#include "RAJA/pattern/tensor/internal/ET/TensorSubtract.hpp"
+#include "RAJA/pattern/tensor/internal/ET/TensorDivide.hpp"
+#include "RAJA/pattern/tensor/internal/ET/TensorLiteral.hpp"
+#include "RAJA/pattern/tensor/internal/ET/TensorLoadStore.hpp"
 #include "RAJA/pattern/tensor/internal/ET/TensorMultiply.hpp"
 #include "RAJA/pattern/tensor/internal/ET/TensorMultiplyAdd.hpp"
-#include "RAJA/pattern/tensor/internal/ET/TensorDivide.hpp"
-#include "RAJA/pattern/tensor/internal/ET/TensorLoadStore.hpp"
+#include "RAJA/pattern/tensor/internal/ET/TensorSubtract.hpp"
+#include "RAJA/pattern/tensor/internal/ET/TensorTranspose.hpp"
+
 
 
 #endif

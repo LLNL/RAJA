@@ -77,7 +77,7 @@ protected:
 };
 TYPED_TEST_SUITE_P(MatrixTest);
 
-#if 1
+#if 0
 /*
  * We are using ((double)rand()/RAND_MAX) for input values so the compiler cannot do fancy
  * things, like constexpr out all of the intrinsics.
@@ -480,7 +480,6 @@ TYPED_TEST_P(MatrixTest, MatrixMatrix)
 
 
 }
-#endif
 TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
 {
 
@@ -567,6 +566,48 @@ TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
     }
   }
 
+}
+
+
+TYPED_TEST_P(MatrixTest, MatrixTranspose)
+{
+#if 1
+  using matrix_t = TypeParam;
+  using element_t = typename matrix_t::element_type;
+
+  static constexpr camp::idx_t num_elem = matrix_t::vector_type::s_num_elem;
+
+  matrix_t m;
+//  printf("M:\n");
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t j = 0;j < num_elem; ++ j){
+      m.set(i,j, element_t(i+j*num_elem));
+//      printf("%3lf ", (double)m.get(i,j));
+    }
+//    printf("\n");
+  }
+
+  // Use transpose.. keeping matrix layout and transposing data
+  matrix_t mt = m.transpose();
+
+  // Check values are transposed
+  for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
+      ASSERT_SCALAR_EQ(mt.get(j,i), element_t(i+j*num_elem));
+    }
+  }
+
+
+  // Use transpose_type.. swaps data layout, keeping data in place
+  auto mt2 = m.transpose_type();
+
+  // Check values are transposed
+  for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
+      ASSERT_SCALAR_EQ(mt2.get(j,i), element_t(i+j*num_elem));
+    }
+  }
+#endif
 }
 
 
@@ -1046,24 +1087,73 @@ TYPED_TEST_P(MatrixTest, ETMatrixMatrixMultiplyAdd)
 
 }
 
+#endif
+
+TYPED_TEST_P(MatrixTest, ETMatrixTranspose)
+{
+  using matrix_t = TypeParam;
+  using element_t = typename matrix_t::element_type;
+
+  static const int N = matrix_t::vector_type::s_num_elem * 4;
+
+  // Create a row-major data buffer
+  element_t data1[N][N];
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      data1[i][j] = i + j*N;
+    }
+  }
+
+  // Create an empty result bufffer
+  element_t data2[N][N];
+
+  //  Create views
+  RAJA::View<element_t, RAJA::Layout<2, int>> view1(
+      &data1[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
+
+  RAJA::View<element_t, RAJA::Layout<2, int>> view2(
+      &data2[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{0,1}}));
+
+
+
+  using Row = RAJA::RowIndex<int, matrix_t>;
+  using Col = RAJA::ColIndex<int, matrix_t>;
+
+
+  // Perform tranpose of view1 into view2
+  view2(Row::all(), Col::all()) = view1(Row::all(), Col::all()).transpose();
+
+
+  // Check
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      ASSERT_SCALAR_EQ(data2[i][j], data1[j][i]);
+    }
+  }
+
+}
+
+
 
 REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
-                                        MatrixCtor,
-                                        MatrixGetSet,
-                                        MatrixLoad,
-                                        MatrixStore,
-                                        MatrixViewLoad,
-                                        MatrixViewStore,
-                                        MatrixVector,
-                                        MatrixMatrix,
-                                        MatrixMatrixAccumulate,
-
-                                        ETLoadStore,
-                                        ETAdd,
-                                        ETSubtract,
-                                        ETMatrixVectorMultiply,
-                                        ETMatrixMatrixMultiply,
-                                        ETMatrixMatrixMultiplyAdd);
+//                                        MatrixCtor,
+//                                        MatrixGetSet,
+//                                        MatrixLoad,
+//                                        MatrixStore,
+//                                        MatrixViewLoad,
+//                                        MatrixViewStore,
+//                                        MatrixVector,
+//                                        MatrixMatrix,
+//                                        MatrixMatrixAccumulate,
+//                                        MatrixTranspose,
+//
+//                                        ETLoadStore,
+//                                        ETAdd,
+//                                        ETSubtract,
+//                                        ETMatrixVectorMultiply,
+//                                        ETMatrixMatrixMultiply,
+//                                        ETMatrixMatrixMultiplyAdd,
+                                        ETMatrixTranspose);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, MatrixTest, MatrixTestTypes);
 
