@@ -42,7 +42,7 @@ using host_launch = RAJA::expt::seq_launch_t;
 using device_launch = RAJA::expt::cuda_launch_t<false>;
 // __host_device_end
 #elif defined(RAJA_ENABLE_HIP)
-using device_launch = RAJA::expt::cuda_launch_t<false>;
+using device_launch = RAJA::expt::hip_launch_t<false>;
 #endif
 
 using launch_policy = RAJA::expt::LaunchPolicy<
