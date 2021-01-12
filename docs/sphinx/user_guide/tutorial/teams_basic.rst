@@ -34,7 +34,7 @@ inside an execution space. The execution space is launched using the
   });
 
 The ``RAJA::expt::launch`` method is templated on both a host and a device launch policy.
-As an example, the following constructs an execution space for either a sequential 
+As an example, the following constructs an execution space for a sequential 
 and CUDA kernel::
 
   using launch_policy = RAJA::expt::LaunchPolicy
@@ -42,7 +42,7 @@ and CUDA kernel::
 
 Kernel execution on either the host or device is driven by the first argument of
 the method which takes a ``RAJA::expt::ExecPlace`` enum type, either ``HOST`` or ``DEVICE``. 
-Similar to thread, and block programming models, RAJA teams carries out
+Similar to thread, and block programming models, RAJA Teams carries out
 computation in a predefined compute grid made up of threads which are
 then grouped into teams. The execution space is then enclosed by a host/device
 lambda which takes a ``RAJA::expt::LaunchContext`` object. The ``RAJA::expt::LaunchContext``
@@ -50,7 +50,7 @@ may then be used to control the flow within the kernel, for example creating thr
 synchronization points. 
 
 Inside the execution space the ``RAJA::expt::loop`` methods enable developers
-to express their code in terms of nested for loops. The manner in which the loops
+to express their code in terms of nested loops. The manner in which the loops
 are executed depends on the template. Following the CUDA/HIP programming models
 we follow a hierarchical structure in which outer loops are executed by thread-teams
 and inner loops are executed by a thread in a team. 
@@ -69,18 +69,18 @@ strategies as the following::
   using thread_x = RAJA::expt::LoopPolicy<RAJA::loop_exec, 
                                           RAJA::cuda_block_x_direct>;
 
-In the example above the ``RAJA::expt::LoopPolicy`` struct holds both a host and
+In the example above the ``RAJA::expt::LoopPolicy`` struct holds both the host and
 device loop mapping strategies. On the host, both the team/thread strategies expand
-out to standard C-style loops for execution:: 
+out to standard C-style loops for execution:
 
 .. literalinclude:: ../../../../examples/tut_teams_basic.cpp
    :start-after: // _c_style_loops_start
    :end-before: // _c_style_loops_end
    :language: C++
    
-On the device the ``teams_x`` policy will map loop iterations directly to CUDA thread blocks, 
-while the ``thread_x`` policy will map loop iterations directly to threads in a CUDA block.
-The CUDA equivalent is illustrated below:   
+On the device the ``teams_x/y`` policies will map loop iterations directly to 
+CUDA thread blocks, while the ``thread_x/y`` policies will map loop iterations
+directly to threads in a CUDA block. The CUDA equivalent is illustrated below:   
 
 .. literalinclude:: ../../../../examples/tut_teams_basic.cpp
    :start-after: // _device_loop_start
