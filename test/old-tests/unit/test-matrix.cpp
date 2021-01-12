@@ -77,7 +77,7 @@ protected:
 };
 TYPED_TEST_SUITE_P(MatrixTest);
 
-#if 0
+#if 1
 /*
  * We are using ((double)rand()/RAND_MAX) for input values so the compiler cannot do fancy
  * things, like constexpr out all of the intrinsics.
@@ -1136,24 +1136,24 @@ TYPED_TEST_P(MatrixTest, ETMatrixTransposeNegate)
 
 
 REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
-//                                        MatrixCtor,
-//                                        MatrixGetSet,
-//                                        MatrixLoad,
-//                                        MatrixStore,
-//                                        MatrixViewLoad,
-//                                        MatrixViewStore,
-//                                        MatrixVector,
-//                                        MatrixMatrix,
-//                                        MatrixMatrixAccumulate,
-//                                        MatrixTranspose,
-//
-//                                        ETLoadStore,
-//                                        ETAdd,
-//                                        ETSubtract,
-//                                        ETMatrixVectorMultiply,
-//                                        ETMatrixMatrixMultiply,
-//                                        ETMatrixMatrixMultiplyAdd,
-                                          ETMatrixTransposeNegate);
+                                        MatrixCtor,
+                                        MatrixGetSet,
+                                        MatrixLoad,
+                                        MatrixStore,
+                                        MatrixViewLoad,
+                                        MatrixViewStore,
+                                        MatrixVector,
+                                        MatrixMatrix,
+                                        MatrixMatrixAccumulate,
+                                        MatrixTranspose,
+
+                                        ETLoadStore,
+                                        ETAdd,
+                                        ETSubtract,
+                                        ETMatrixVectorMultiply,
+                                        ETMatrixMatrixMultiply,
+                                        ETMatrixMatrixMultiplyAdd,
+                                        ETMatrixTransposeNegate);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, MatrixTest, MatrixTestTypes);
 
