@@ -37,9 +37,9 @@ in terms of nested loops using the ``RAJA::expt::loop`` method.
               * a *tuple* of iteration space objects, and
               * one or more lambda expressions representing portions of
                 the loop kernel body.
-          * The ``RAJA::expt::launch`` method is templated on both a host and
-            device launch policy to create an execution space for kernels.
-            By templating on both host and device policy, the launch method
+          * The ``RAJA::expt::launch`` method is templated on both host and
+            device policies to create an execution space for kernels.
+            By templating for both host and device, the launch method
             enables run-time selection of running on the host or device.
             Algorithms are expressed inside the execution space as nested loops
             using ``RAJA::loop`` methods.
