@@ -8,9 +8,9 @@
 
 .. _teamsbasic-label:
 
--------------------------------
+------------------------------
 Team based loops (RAJA Teams)
--------------------------------
+------------------------------
 
 Key RAJA features shown in the following examples:
 
@@ -61,3 +61,31 @@ a team.
    :end-before: // _team_loops_end
    :language: C++
   
+The mapping between loop iteration and thread is decided through the thread/team
+policy. The team/thread types are an alias for a host and device loop mapping
+strategy:: 
+
+  using teams_x = RAJA::expt::LoopPolicy<RAJA::loop_exec,
+                                         RAJA::cuda_block_x_direct>;
+  using thread_x = RAJA::expt::LoopPolicy<RAJA::loop_exec, 
+                                          RAJA::cuda_block_x_direct>;
+
+The ``RAJA::expt::LoopPolicy`` struct holds both a host and device loop mapping
+strategy. The ``teams_x`` policy will map loop iterations directly to CUDA thread blocks, 
+while the ``thread_x`` policy will map loop iterations directly to threads in a CUDA block.
+The CUDA equivalent is illustrated below:   
+
+.. literalinclude:: ../../../../examples/tut_teams_basic.cpp
+   :start-after: // _device_loop_start
+   :end-before: // _device_loop_end
+   :language: C++
+   
+On the CPU the loop policies will expand to standard C-style for execution. 
+The equivalent CUDA kernel. The C-style equivalent loops are illustrated below:
+
+.. literalinclude:: ../../../../examples/tut_teams_basic.cpp
+   :start-after: // _c_style_loops_start
+   :end-before: // _c_style_loops_end
+   :language: C++
+   
+The file RAJA/examples/tut_teams_basic.cpp contains the complete working example code.

@@ -114,7 +114,7 @@ using threads_y = RAJA::expt::LoopPolicy<RAJA::loop_exec
 __global__ void gpuKernel()
 {
   //Equivalent CUDA/HIP style thread/block mapping
-  //__cuda_hip_loop_start
+  // _device_loop_start
   {int by = blockIdx.y;
     {int bx = blockIdx.x;
 
@@ -129,7 +129,7 @@ __global__ void gpuKernel()
 
     }
   }
-  //__cuda_hip_loop_end
+  // _device_loop_end
 }
 #endif
 
@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
 
   //Equivalent C style loops
   if(select_cpu_or_gpu == RAJA::expt::HOST) {
-    //__c_style_loops_start
+    // _c_style_loops_start
     for(int by=0; by<Nteams; ++by) {
       for(int bx=0; bx<Nteams; ++bx) {
 
@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
 
       }
     }
-    //__c_style_loops_end
+    // _c_style_loops_end
   }
 
 
