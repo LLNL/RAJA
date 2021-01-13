@@ -313,3 +313,7 @@ endif ()
 if (ENABLE_BENCHMARKS)
   add_subdirectory(benchmark)
 endif ()
+
+raja_add_executable(
+  NAME new_reduce
+  SOURCES new_reduce.cpp)
