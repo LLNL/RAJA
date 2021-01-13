@@ -322,7 +322,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //RAJA Teams 
   //--------
   {
-    printf("RAJA TEAM kernel 1  \n");
+    printf("RAJA TEAM kernel 0  \n");
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
                         RAJA::expt::Resources(RAJA::expt::Teams(N),
@@ -353,7 +353,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
 
   {
-    printf("RAJA TEAM kernel 2  \n");
+    printf("RAJA TEAM kernel 1  \n");
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
             RAJA::expt::Resources(RAJA::expt::Teams(griddim.x,griddim.y),
@@ -405,7 +405,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   {
-    printf("RAJA TEAM kernel 3  \n");
+    printf("RAJA TEAM kernel 2  \n");
     using seq_loop =  RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
@@ -483,7 +483,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //Tiling with kernel 
   printf("\n");
   {
-    printf("RAJA Kernel 2  \n");
+    printf("RAJA Kernel 1  \n");
     auto t0 = Clock::now();
 
     using EXEC_POL5 =
