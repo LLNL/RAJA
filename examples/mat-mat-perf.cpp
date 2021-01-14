@@ -286,12 +286,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   matMultKernel0<<<N, CUDA_BLOCK_SIZE>>>(N, C, A, B);
   cudaDeviceSynchronize();
+
   dim3 blockdim(CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE);
   dim3 griddim(RAJA_DIVIDE_CEILING_INT(N,blockdim.x),
                RAJA_DIVIDE_CEILING_INT(N,blockdim.y));
 
   {
-    printf("CUDA kernel 0 \n");
+    printf("\nCUDA kernel 0 \n");
     auto t0 = Clock::now();
     matMultKernel0<<<N, 256>>>(N, C, A, B);
     cudaDeviceSynchronize();
@@ -300,10 +301,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     std::cout << "Delta t0-tf: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(tf - t0).count()
               << " milliseconds" << std::endl;
+    checkResult(C, N);
   }
 
   {
-    printf("CUDA kernel 1 \n");
+    printf("\nCUDA kernel 1 \n");
     auto t0 = Clock::now();
     matMultKernel1<<<griddim, blockdim>>>(N, C, A, B);
     cudaDeviceSynchronize();
@@ -312,11 +314,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     std::cout << "Delta t0-tf: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(tf - t0).count()
               << " milliseconds" << std::endl;
+    checkResult(C, N);
   }
 
 
   {
-    printf("CUDA kernel 2 \n");
+    printf("\nCUDA kernel 2 \n");
     auto t0 = Clock::now();
     matMultKernel2<<<griddim, blockdim>>>(N, C, A, B);
     cudaDeviceSynchronize();
@@ -325,6 +328,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     std::cout << "Delta t0-tf: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(tf - t0).count()
               << " milliseconds" << std::endl;
+    checkResult(C, N);
   }
 
 
@@ -334,7 +338,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //--------
 
   {
-    printf("RAJA Teams kernel 0  \n");
+    printf("\nRAJA Teams kernel 0  \n");
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
                         RAJA::expt::Resources(RAJA::expt::Teams(N),
@@ -362,11 +366,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     std::cout << "Delta t0-tf: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(tf - t0).count()
               << " milliseconds" << std::endl;
-    //checkResult(C, N);
+    checkResult(C, N);
   }
 
   {
-    printf("RAJA Teams kernel 1  \n");
+    printf("\nRAJA Teams kernel 1 tiled  \n");
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
             RAJA::expt::Resources(RAJA::expt::Teams(griddim.x,griddim.y),
@@ -413,12 +417,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     std::cout << "Delta t0-tf: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(tf - t0).count()
               << " milliseconds" << std::endl;
-    //checkResult(C, N);
+    checkResult(C, N);
   }
 
 
   {
-    printf("RAJA Teams kernel 2  \n");
+    printf("\nRAJA Teams kernel 2 global \n");
     using seq_loop =  RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
     int Nx = griddim.x;
     int Ny = griddim.y;
@@ -560,7 +564,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     std::cout << "Delta t0-tf: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(tf - t0).count()
               << " milliseconds" << std::endl;
-    //checkResult(C, N);
+    checkResult(C, N);
   }
 
 
@@ -570,7 +574,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   printf("\n");
   {
-    printf("RAJA Kernel 1  \n");
+    printf("\nRAJA Kernel 1  \n");
     auto t0 = Clock::now();
 
     using EXEC_POL5 =
@@ -605,12 +609,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     std::cout << "Delta t0-tf: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(tf - t0).count()
               << " milliseconds" << std::endl;
+    checkResult(C, N);
 
   }
 
-  printf("\n");
   {
-    printf("RAJA Kernel 2  \n");
+    printf("\nRAJA Kernel 2  \n");
     auto t0 = Clock::now();
 
   using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE>>;
@@ -719,14 +723,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Cview(n,p) = cShared(tn,tp);
 
     });
-
     cudaDeviceSynchronize();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(tf - t0).count()
               << " milliseconds" << std::endl;
-
+    checkResult(C, N);
   }
 
 
@@ -743,43 +746,70 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   return 0;
 }
 
+
+template <typename T>
+__global__ void checkKernel(int N, const T* C, int* match)
+{
+  int row = blockIdx.y * blockDim.y + threadIdx.y;
+  int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if ( row < N && col < N ) {
+    if ( abs( C(row, col) -  N ) > 10e-12 ) {
+      atomicExch(match, 0);
+    }
+  }
+}
+
+template <typename T>
+__global__ void checkViewKernel(int N, RAJA::View<T, RAJA::Layout<DIM>> Cview, int* match)
+{
+  int row = blockIdx.y * blockDim.y + threadIdx.y;
+  int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if ( row < N && col < N ) {
+    if ( abs( Cview(row, col) -  N ) > 10e-12 ) {
+      atomicExch(match, 0);
+    }
+  }
+}
+
 //
 // Functions to check result and report P/F.
 //
 template <typename T>
 void checkResult(T* C, int N)
 {
-  bool match = true;
-  for (int row = 0; row < N; ++row) {
-    for (int col = 0; col < N; ++col) {
-      if ( std::abs( C(row, col) -  N ) > 10e-12 ) {
-        match = false;
-      }
-    }
-  }
-  if ( match ) {
+  int *match = memoryManager::allocate<int>(1);
+  *match = 1;
+  dim3 blockdim(CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE);
+  dim3 griddim(RAJA_DIVIDE_CEILING_INT(N,blockdim.x),
+               RAJA_DIVIDE_CEILING_INT(N,blockdim.y));
+  checkKernel<<<griddim, blockdim>>>(N, C, match);
+  cudaDeviceSynchronize();
+  if ( *match ) {
     std::cout << "\n\t result -- PASS\n";
   } else {
     std::cout << "\n\t result -- FAIL\n";
   }
+  memoryManager::deallocate(match);
 };
 
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N)
 {
-  bool match = true;
-  for (int row = 0; row < N; ++row) {
-    for (int col = 0; col < N; ++col) {
-      if ( std::abs( Cview(row, col) -  N ) > 10e-12 ) {
-        match = false;
-      }
-    }
-  }
-  if ( match ) {
+  int *match = memoryManager::allocate<int>(1);
+  *match = 1;
+  dim3 blockdim(CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE);
+  dim3 griddim(RAJA_DIVIDE_CEILING_INT(N,blockdim.x),
+               RAJA_DIVIDE_CEILING_INT(N,blockdim.y));
+  checkViewKernel<<<griddim, blockdim>>>(N, Cview, match);
+  cudaDeviceSynchronize();
+  if ( *match ) {
     std::cout << "\n\t result -- PASS\n";
   } else {
     std::cout << "\n\t result -- FAIL\n";
   }
+  memoryManager::deallocate(match);
 };
 
 //
