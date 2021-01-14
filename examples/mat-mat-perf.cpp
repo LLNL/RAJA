@@ -141,9 +141,7 @@ __global__ void matMultKernel2(int N, double* C, double* A, double* B)
 
   __shared__ double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
   __shared__ double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-  __shared__ double Cs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-
-  Cs[threadIdx.y][threadIdx.x] = 0.0;
+  double dot = 0.0;
 
   for (int k = 0; k < (CUDA_BLOCK_SIZE + N - 1)/CUDA_BLOCK_SIZE; k++) {
 
@@ -160,14 +158,14 @@ __global__ void matMultKernel2(int N, double* C, double* A, double* B)
     __syncthreads();
 
     for (int n = 0; n < CUDA_BLOCK_SIZE; ++n)
-      Cs[threadIdx.y][threadIdx.x] += As[threadIdx.y][n] * Bs[n][threadIdx.x];
+      dot += As[threadIdx.y][n] * Bs[n][threadIdx.x];
 
     __syncthreads();
   }
 
   if (Row < N && Col < N)
     C[((blockIdx.y * blockDim.y + threadIdx.y)*N) +
-      (blockIdx.x * blockDim.x)+ threadIdx.x] = Cs[threadIdx.y][threadIdx.x];
+      (blockIdx.x * blockDim.x)+ threadIdx.x] = dot;
 }
 
 __global__ void matMultKernel1(int N, double* C, double* A, double* B)
@@ -450,13 +448,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           RAJA_TEAM_SHARED double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
           RAJA_TEAM_SHARED double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-          RAJA_TEAM_SHARED double Cs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-
-          RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
-            RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
-              Cs[ty][tx] = 0.0;
-            });
-          });
+          double dot = 0.0;
 
           RAJA::expt::tile<seq_loop>(ctx, CUDA_BLOCK_SIZE, dot_range, [&] (RAJA::TypedRangeSegment<int> const &k_tile) {
 
@@ -478,7 +470,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
 
                 RAJA::expt::loop_icount<seq_loop>(ctx, k_tile, [&] (int gid, int e) {
-                  Cs[ty][tx] += As[ty][e] * Bs[e][tx];
+                  dot += As[ty][e] * Bs[e][tx];
                 });
 
               });
@@ -490,7 +482,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
             RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
-              Cview(col,row) = Cs[ty][tx];
+              Cview(col,row) = dot;
             });
           });
 
@@ -524,15 +516,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           RAJA_TEAM_SHARED double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
           RAJA_TEAM_SHARED double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-          RAJA_TEAM_SHARED double Cs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-
-          RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int ty) {
-            RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int tx) {
-
-              Cs[ty][tx] = 0.0;
-
-            });
-          });
+          double dot = 0.0;
 
           for (int k = 0; k < (CUDA_BLOCK_SIZE + N - 1)/CUDA_BLOCK_SIZE; k++) {
 
@@ -561,7 +545,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int tx) {
 
                 for (int n = 0; n < CUDA_BLOCK_SIZE; ++n)
-                  Cs[ty][tx] += As[ty][n] * Bs[n][tx];
+                  dot += As[ty][n] * Bs[n][tx];
 
               });
             });
@@ -577,7 +561,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               int Col = bx*CUDA_BLOCK_SIZE + tx;
 
               if (Row < N && Col < N)
-                Cview(Row, Col) = Cs[ty][tx];
+                Cview(Row, Col) = dot;
             });
           });
 
@@ -645,7 +629,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE>>;
 
-    using shmem_Lambda0 = RAJA::statement::Lambda<0, RAJA::Offsets<0, 2>, RAJA::Params<2>>;
+    using shmem_Lambda0 = RAJA::statement::Lambda<0, RAJA::Params<2>>;
     using shmem_Lambda1 = RAJA::statement::Lambda<1, RAJA::Segs<0, 1>, RAJA::Offsets<0, 1>, RAJA::Params<0>>;
     using shmem_Lambda2 = RAJA::statement::Lambda<2, RAJA::Segs<1, 2>, RAJA::Offsets<1, 2>, RAJA::Params<1>>;
     using shmem_Lambda3 = RAJA::statement::Lambda<3, RAJA::Offsets<0, 1, 2>, RAJA::Params<0, 1, 2>>;
@@ -655,18 +639,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernelFixed<CUDA_BLOCK_SIZE*CUDA_BLOCK_SIZE,
         //Initalize thread private value
-        RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2,1,0>,
+        RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<1,0>,
 
           // Tile rows and cols of C (the result matrix C)
           RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_direct,
             RAJA::statement::Tile<2, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
 
-              // zero out shmem tile of C
-              RAJA::statement::For<0, RAJA::cuda_thread_y_loop,
-                RAJA::statement::For<2, RAJA::cuda_thread_x_loop,
-                  shmem_Lambda0
-                >
-              >,
+              // zero out dot
+              shmem_Lambda0,
 
               // Slide window across matrix: Load tiles of global matrices A, B and compute
               // local dot products
@@ -718,12 +698,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::kernel_param<EXEC_POL10>(RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N),
                                                     RAJA::TypedRangeSegment<int>(0, N),
                                                     RAJA::TypedRangeSegment<int>(0, N)),
-                                   RAJA::make_tuple(aShared, bShared, cShared),
+                                   RAJA::make_tuple(aShared, bShared, 0.0),
 
     // Zero out thread local memory for storing dot products
-    [=] RAJA_HOST_DEVICE (int tn, int tp, Shmem &cShared) {
+    [=] RAJA_HOST_DEVICE (double &dot) {
 
-      cShared(tn,tp) = 0.0;
+      dot = 0.0;
 
     },
 
@@ -742,16 +722,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // Do partial update in shmem
-    [=] RAJA_HOST_DEVICE (int tn, int tm, int tp, Shmem &aShared,  Shmem &bShared, Shmem & cShared) {
+    [=] RAJA_HOST_DEVICE (int tn, int tm, int tp, Shmem &aShared,  Shmem &bShared, double &dot) {
 
-      cShared(tn,tp) += aShared(tn,tm) * bShared(tm, tp);
+      dot += aShared(tn,tm) * bShared(tm, tp);
 
     },
 
     // Write out complete result
-    [=] RAJA_HOST_DEVICE (int n, int p, int tn, int tp,  Shmem &cShared) {
+    [=] RAJA_HOST_DEVICE (int n, int p, int tn, int tp,  double &dot) {
 
-      Cview(n,p) = cShared(tn,tp);
+      Cview(n,p) = dot;
 
     });
     cudaDeviceSynchronize();
