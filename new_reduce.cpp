@@ -6,10 +6,6 @@
 #include <RAJA/RAJA.hpp>
 #include <RAJA/util/Timer.hpp>
 #include <camp/tuple.hpp>
-/*
-REQUIRED CMAKE FLAGS:
--DENABLE_CUDA=On -DENABLE_TARGET_OPENMP=On
-*/
 
 
 CAMP_SUPPRESS_HD_WARN
@@ -48,7 +44,6 @@ struct Reducer {
 
 template <template <typename, typename, typename> class Op, typename T>
 auto Reduce(T &target)
--> decltype(Reducer<Op<T, T, T>, T>(target))
 {
   return Reducer<Op<T, T, T>, T>(target);
 }
@@ -59,37 +54,37 @@ void apply_combiner(T &l, T const &r, camp::idx_seq<Idx...>)
   camp::sink((camp::get<Idx>(l) = typename Params::op{}(camp::get<Idx>(l),
                                                         camp::get<Idx>(r)))...);
 }
-int use_dev = 1;
+int use_dev = 0;
 
 template <typename B, typename... Params>
 void forall_param(int N, B const &body, Params... params)
 {
-  auto identity = camp::make_tuple(params.val...);
+  auto init_val = camp::make_tuple(params.val...);
 
 #pragma omp declare reduction(                                                \
     combine                                                                   \
-    : decltype(identity)                                                      \
+    : decltype(init_val)                                                      \
     : apply_combiner <Params...>(omp_out,                                     \
                                  omp_in,                                      \
                                  camp::make_idx_seq_t <sizeof...(Params)>{})) \
     initializer(omp_priv = camp::make_tuple(Params::op::identity()...))
 
-  printf("%p, %p\n", &identity, &body);
-#pragma omp target data if (use_dev) map(tofrom : identity) map(to : body)
+  //printf("%p, %p\n", &init_val, &body);
+#pragma omp target data if (use_dev) map(tofrom : init_val) map(to : body)
   {
+    //printparams(params...);
     /* #pragma omp target */
-    /*     printf("%p, %p\n", &identity, &body); */
-#pragma omp target if (use_dev)
-#pragma omp teams distribute parallel for reduction(combine : identity)
+    /*     printf("%p, %p\n", &init_val, &body); */
+#pragma omp target if (use_dev) teams distribute parallel for reduction(combine : init_val)
     /* #pragma omp target teams distribute parallel for schedule(static, 1)
      * reduction(combine: identity) */
     for (int i = 0; i < N; ++i) {
       /* if (i==0) */
-      printf("%p, %p\n", &identity, &body);
-      invoke(identity, body, i);
+      //printf("%p, %p\n", &init_val, &body);
+      invoke(init_val, body, i);
     }
   }
-  camp::tie(params.target...) = identity;
+  camp::tie(params.target...) = init_val;
 }
 
 // template<typename ...Ts>
@@ -99,6 +94,12 @@ void forall_param(int N, B const &body, Params... params)
 
 int main(int argc, char *argv[])
 {
+  if (argc < 3) {
+    std::cout << "Execution Format: ./executable N use_dev\n";
+    std::cout << "Example of usage: ./new_reduce 5000 0\n";
+    exit(0);
+  }
+  use_dev = atoi(argv[2]);
   int N = atoi(argv[1]);  // 500000;
   double r = 0;
   double m = 5000;
@@ -121,7 +122,7 @@ int main(int argc, char *argv[])
 #pragma omp target enter data map(to : a[:N], b[:N])
   RAJA::Timer t;
 //  for (int j = 0; j < 20; ++j) {
-    use_dev = 1;
+    //use_dev = 0;
     t.reset();
     t.start();
 //#pragma omp target data use_device_ptr(a, b) if (use_dev)
@@ -166,7 +167,7 @@ int main(int argc, char *argv[])
     m = 5000;
     ma = 0;
   }
-
+*/
   RAJA::ReduceSum<RAJA::omp_target_reduce, double> rr(0);
   RAJA::ReduceMin<RAJA::omp_target_reduce, double> rm(5000);
   RAJA::ReduceMax<RAJA::omp_target_reduce, double> rma(0);
@@ -185,12 +186,12 @@ int main(int argc, char *argv[])
   /*   r_host += a[i] * b[i]; */
   /* } */
 
-/*
+
   std::cout << rr.get() << " " << rt.elapsed() << std::endl;
   std::cout << rm.get() << " " << rma.get() << std::endl;
 
   std::cout << t.elapsed() << " " << rt.elapsed() << std::endl;
 
-*/
+
   return 0;
 }
