@@ -642,13 +642,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
                   // Load tile of A into shmem
                   RAJA::statement::For<1, RAJA::loop_exec,
-                    RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                    RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                       shmem_Lambda1
                     >
                    >,
 
                   // Load tile of B into shmem
-                  RAJA::statement::For<2, RAJA::cuda_thread_y_loop,
+                  RAJA::statement::For<2, RAJA::cuda_thread_y_direct,
                     RAJA::statement::For<1, RAJA::loop_exec,
                       shmem_Lambda2
                     >
@@ -657,9 +657,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                   RAJA::statement::CudaSyncThreads,
 
                   //Partial multiplication
-                  RAJA::statement::For<2, RAJA::cuda_thread_y_loop,
+                  RAJA::statement::For<2, RAJA::cuda_thread_y_direct,
                     RAJA::statement::For<1, RAJA::loop_exec,
-                      RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                      RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                         shmem_Lambda3
                       >
                     >
@@ -669,8 +669,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                 >, //sliding window
 
                //Write memory out to global matrix
-               RAJA::statement::For<2, RAJA::cuda_thread_y_loop,
-                RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+               RAJA::statement::For<2, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                 shmem_Lambda4 > >
              >
             >
