@@ -41,6 +41,11 @@ namespace internal {
   } // namespace ET
 
 
+  template<typename TENSOR, camp::idx_t DIM>
+  struct TensorDimSize{
+      static constexpr camp::idx_t value = TENSOR::s_dim_size(DIM);
+  };
+
   /*
    * Tensor product helper class.
    *

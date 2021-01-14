@@ -114,6 +114,20 @@ namespace internal
           detail::GetTensorArgIdxExpanded<DIM, camp::list<ARGS...>, camp::make_idx_seq_t<sizeof...(ARGS)> >:: value;
   };
 
+
+  /*
+   * Returns the beginning index in a vector argument
+   */
+  template<camp::idx_t DIM, typename LAYOUT, typename ... ARGS>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  static constexpr camp::idx_t get_tensor_args_begin(LAYOUT const &layout, ARGS ... args){
+    return RAJA::max<camp::idx_t>(
+        getTensorDim<ARGS>()==DIM
+        ? getTensorBegin<ARGS>(args, layout.template get_dim_begin<GetTesorArgIdx<DIM, ARGS...>::value>())
+        : 0 ...);
+  }
+
   /*
    * Returns the number of elements in the vector argument
    */
@@ -207,7 +221,7 @@ namespace internal
           // tile
           {
               // begin
-              {(LinIdx)(0*get_tensor_args_size<VecSeq>(layout, args...))...},
+              {(LinIdx)(get_tensor_args_begin<VecSeq>(layout, args...))...},
 
               // size
               {(LinIdx)get_tensor_args_size<VecSeq>(layout, args...)...}

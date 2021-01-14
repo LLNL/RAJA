@@ -79,6 +79,13 @@ namespace RAJA
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
+      index_type begin() const {
+        return m_index;
+      }
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      constexpr
       value_type size() const {
         return m_length;
       }

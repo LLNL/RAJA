@@ -73,6 +73,14 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         constexpr
+        value_type begin(arg_type const &){
+          return 0;
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
         value_type dim(){
           return 0;
         }
@@ -120,6 +128,14 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         constexpr
+        value_type begin(index_type const &arg){
+          return arg.begin();
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
         value_type dim(){
           return DIM;
         }
@@ -160,9 +176,7 @@ namespace RAJA
     }
 
     /*
-     * Returns vector size of argument.
-     *
-     * For scalars, always returns 1.
+     * Returns tensor dimension size of argument.
      *
      * For VectorIndex types, returns the number of vector lanes.
      */
@@ -175,6 +189,21 @@ namespace RAJA
       return TensorIndexTraits<ARG>::size(arg) >= 0 ?
           IDX(TensorIndexTraits<ARG>::size(arg)) :
           dim_size;
+    }
+
+    /*
+     * Returns tensor dimenson beginning index of an argument.
+     *
+     */
+    template<typename ARG, typename IDX>
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    constexpr
+    IDX getTensorBegin(ARG const &arg, IDX dim_minval)
+    {
+      return TensorIndexTraits<ARG>::begin(arg) >= 0 ?
+          IDX(TensorIndexTraits<ARG>::begin(arg)) :
+          dim_minval;
     }
 
     /*

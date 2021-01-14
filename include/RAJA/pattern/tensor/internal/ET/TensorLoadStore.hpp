@@ -256,7 +256,6 @@ namespace RAJA
           rhs.print_ast();
           printf(")\n");
 #endif
-
           store_expanded(rhs, camp::make_idx_seq_t<tensor_type::s_num_dims>{});
         }
 
