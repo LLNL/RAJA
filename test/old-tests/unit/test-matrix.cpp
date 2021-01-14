@@ -14,47 +14,17 @@
 
 using MatrixTestTypes = ::testing::Types<
 
-#ifdef __AVX__
-    RAJA::MatrixRegister<double, RAJA::ColMajorLayout, RAJA::avx_register>,
-    RAJA::MatrixRegister<double, RAJA::RowMajorLayout, RAJA::avx_register>,
-    RAJA::MatrixRegister<float, RAJA::ColMajorLayout, RAJA::avx_register>,
-    RAJA::MatrixRegister<float, RAJA::RowMajorLayout, RAJA::avx_register>,
-    RAJA::MatrixRegister<long, RAJA::ColMajorLayout, RAJA::avx_register>,
-    RAJA::MatrixRegister<long, RAJA::RowMajorLayout, RAJA::avx_register>,
-    RAJA::MatrixRegister<int, RAJA::ColMajorLayout, RAJA::avx_register>,
-    RAJA::MatrixRegister<int, RAJA::RowMajorLayout, RAJA::avx_register>,
-#endif
-
-#ifdef __AVX2__
-    RAJA::MatrixRegister<double, RAJA::ColMajorLayout, RAJA::avx2_register>,
-    RAJA::MatrixRegister<double, RAJA::RowMajorLayout, RAJA::avx2_register>,
-    RAJA::MatrixRegister<float, RAJA::ColMajorLayout, RAJA::avx2_register>,
-    RAJA::MatrixRegister<float, RAJA::RowMajorLayout, RAJA::avx2_register>,
-    RAJA::MatrixRegister<long, RAJA::ColMajorLayout, RAJA::avx2_register>,
-    RAJA::MatrixRegister<long, RAJA::RowMajorLayout, RAJA::avx2_register>,
-    RAJA::MatrixRegister<int, RAJA::ColMajorLayout, RAJA::avx2_register>,
-    RAJA::MatrixRegister<int, RAJA::RowMajorLayout, RAJA::avx2_register>,
-#endif
-
-#ifdef __AVX512__
-    RAJA::MatrixRegister<double, RAJA::ColMajorLayout, RAJA::avx512_register>,
-    RAJA::MatrixRegister<double, RAJA::RowMajorLayout, RAJA::avx512_register>,
-    RAJA::MatrixRegister<float, RAJA::ColMajorLayout, RAJA::avx512_register>,
-    RAJA::MatrixRegister<float, RAJA::RowMajorLayout, RAJA::avx512_register>,
-    RAJA::MatrixRegister<long, RAJA::ColMajorLayout, RAJA::avx512_register>,
-    RAJA::MatrixRegister<long, RAJA::RowMajorLayout, RAJA::avx512_register>,
-    RAJA::MatrixRegister<int, RAJA::ColMajorLayout, RAJA::avx512_register>,
-    RAJA::MatrixRegister<int, RAJA::RowMajorLayout, RAJA::avx512_register>,
-#endif
+    RAJA::MatrixRegister<double, RAJA::ColMajorLayout>,
+    RAJA::MatrixRegister<double, RAJA::RowMajorLayout>,
+    RAJA::MatrixRegister<float, RAJA::ColMajorLayout>,
+    RAJA::MatrixRegister<float, RAJA::RowMajorLayout>,
+    RAJA::MatrixRegister<long, RAJA::ColMajorLayout>,
+    RAJA::MatrixRegister<long, RAJA::RowMajorLayout>,
+    RAJA::MatrixRegister<int, RAJA::ColMajorLayout>,
+    RAJA::MatrixRegister<int, RAJA::RowMajorLayout>,
 
     RAJA::MatrixRegister<double, RAJA::ColMajorLayout, RAJA::scalar_register>,
-    RAJA::MatrixRegister<double, RAJA::RowMajorLayout, RAJA::scalar_register>,
-    RAJA::MatrixRegister<float, RAJA::ColMajorLayout, RAJA::scalar_register>,
-    RAJA::MatrixRegister<float, RAJA::RowMajorLayout, RAJA::scalar_register>,
-    RAJA::MatrixRegister<long, RAJA::ColMajorLayout, RAJA::scalar_register>,
-    RAJA::MatrixRegister<long, RAJA::RowMajorLayout, RAJA::scalar_register>,
-    RAJA::MatrixRegister<int, RAJA::ColMajorLayout, RAJA::scalar_register>,
-    RAJA::MatrixRegister<int, RAJA::RowMajorLayout, RAJA::scalar_register>
+    RAJA::MatrixRegister<double, RAJA::RowMajorLayout, RAJA::scalar_register>
 
   >;
 
@@ -609,7 +579,7 @@ TYPED_TEST_P(MatrixTest, MatrixTranspose)
   }
 #endif
 }
-
+#endif
 
 TYPED_TEST_P(MatrixTest, ETLoadStore)
 {
@@ -983,6 +953,7 @@ TYPED_TEST_P(MatrixTest, ETMatrixMatrixMultiply)
 
 }
 
+
 TYPED_TEST_P(MatrixTest, ETMatrixMatrixMultiplyAdd)
 {
   using matrix_t = TypeParam;
@@ -1087,7 +1058,7 @@ TYPED_TEST_P(MatrixTest, ETMatrixMatrixMultiplyAdd)
 
 }
 
-#endif
+
 
 TYPED_TEST_P(MatrixTest, ETMatrixTransposeNegate)
 {
@@ -1120,7 +1091,7 @@ TYPED_TEST_P(MatrixTest, ETMatrixTransposeNegate)
   using Col = RAJA::ColIndex<int, matrix_t>;
 
 
-  // Perform tranpose of view1 into view2
+  // Perform transpose of view1 into view2
   view2(Row::all(), Col::all()) = -view1(Row::all(), Col::all()).transpose();
 
 
@@ -1133,19 +1104,21 @@ TYPED_TEST_P(MatrixTest, ETMatrixTransposeNegate)
 
 }
 
+#if 0
+#endif
 
 
 REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
-                                        MatrixCtor,
-                                        MatrixGetSet,
-                                        MatrixLoad,
-                                        MatrixStore,
-                                        MatrixViewLoad,
-                                        MatrixViewStore,
-                                        MatrixVector,
-                                        MatrixMatrix,
-                                        MatrixMatrixAccumulate,
-                                        MatrixTranspose,
+                                          MatrixCtor,
+                                          MatrixGetSet,
+                                          MatrixLoad,
+                                          MatrixStore,
+                                          MatrixViewLoad,
+                                          MatrixViewStore,
+                                          MatrixVector,
+                                          MatrixMatrix,
+                                          MatrixMatrixAccumulate,
+                                          MatrixTranspose,
 
                                         ETLoadStore,
                                         ETAdd,
@@ -1153,7 +1126,8 @@ REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
                                         ETMatrixVectorMultiply,
                                         ETMatrixMatrixMultiply,
                                         ETMatrixMatrixMultiplyAdd,
-                                        ETMatrixTransposeNegate);
+                                        ETMatrixTransposeNegate
+                                        );
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, MatrixTest, MatrixTestTypes);
 

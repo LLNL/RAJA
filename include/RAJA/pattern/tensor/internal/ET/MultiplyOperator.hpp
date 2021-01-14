@@ -63,36 +63,70 @@ namespace RAJA
         /*!
          * Evaluate operands and perform element-wise multiply
          */
-        template<typename TILE_TYPE>
+        template<typename STORAGE, typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type multiply(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-          return lhs.eval(tile).multiply(rhs.eval(tile));
+        void multiply(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
+
+          // evaluate LHS in-place
+          lhs.eval(result, tile);
+
+          // evaluate RHS in temporary
+          STORAGE rhs_tmp;
+          rhs.eval(rhs_tmp, tile);
+
+          // compute result
+          result.inplace_multiply(rhs_tmp);
         }
 
 
         /*!
          * Evaluate operands and perform element-wise multiply add
          */
-        template<typename TILE_TYPE, typename ADD_TYPE>
+        template<typename STORAGE, typename TILE_TYPE, typename ADD_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type multiply_add(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs, ADD_TYPE const &add){
-          return lhs.eval(tile).multiply_add(rhs.eval(tile), add.eval(tile));
+        void multiply_add(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs, ADD_TYPE const &add){
+
+          // evaluate LHS in-place
+          lhs.eval(result, tile);
+
+          // evaluate RHS in temporary
+          STORAGE rhs_tmp;
+          rhs.eval(rhs_tmp, tile);
+
+          // evaluate ADD in temporary
+          STORAGE add_tmp;
+          add.eval(add_tmp, tile);
+
+          // compute result
+          result.inplace_multiply_add(rhs_tmp, add_tmp);
         }
 
 
         /*!
          * Evaluate operands and perform element-wise multiply subtract
          */
-        template<typename TILE_TYPE, typename SUB_TYPE>
+        template<typename STORAGE, typename TILE_TYPE, typename SUB_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type multiply_subtract(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs, SUB_TYPE const &sub){
-          return lhs.eval(tile).multiply_subtract(rhs.eval(tile), sub.eval(tile));
+        void multiply_subtract(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs, SUB_TYPE const &sub){
+          // evaluate LHS in-place
+          lhs.eval(result, tile);
+
+          // evaluate RHS in temporary
+          STORAGE rhs_tmp;
+          rhs.eval(rhs_tmp, tile);
+
+          // evaluate ADD in temporary
+          STORAGE sub_tmp;
+          sub.eval(sub_tmp, tile);
+
+          // compute result
+          result.inplace_multiply_subtract(rhs_tmp, sub_tmp);
         }
 
 
@@ -128,36 +162,76 @@ namespace RAJA
         /*!
          * Evaluate operands and perform element-wise multiply
          */
-        template<typename TILE_TYPE>
+        template<typename STORAGE, typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type multiply(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-          return rhs.eval(tile).scale(lhs.eval(tile));
+        void multiply(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
+          // evaluate RHS in-place
+          rhs.eval(result, tile);
+
+          // evaluate scalar
+          typename LHS_TYPE::result_type lhs_tmp;
+          lhs.eval(lhs_tmp, tile);
+
+          // scale it by the LHS
+          result.inplace_scale(lhs_tmp);
         }
+
+
 
 
         /*!
          * Evaluate operands and perform element-wise multiply add
          */
-        template<typename TILE_TYPE, typename ADD_TYPE>
+        template<typename STORAGE, typename TILE_TYPE, typename ADD_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type multiply_add(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs, ADD_TYPE const &add){
-          return rhs.eval(tile).scale(lhs.eval(tile)).add(add.eval(tile));
+        void multiply_add(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs, ADD_TYPE const &add){
+          // evaluate RHS in-place
+          rhs.eval(result, tile);
+
+          // evaluate scalar
+          typename LHS_TYPE::result_type lhs_tmp;
+          lhs.eval(lhs_tmp, tile);
+
+          // scale it by the LHS
+          result.inplace_scale(lhs_tmp);
+
+          // evaluate ADD in temporary
+          STORAGE add_tmp;
+          add.eval(add_tmp, tile);
+
+          // compute result
+          result.inplace_add(add_tmp);
         }
 
 
         /*!
          * Evaluate operands and perform element-wise multiply subtract
          */
-        template<typename TILE_TYPE, typename SUB_TYPE>
+        template<typename STORAGE, typename TILE_TYPE, typename SUB_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type multiply_subtract(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs, SUB_TYPE const &sub){
-          return rhs.eval(tile).scale(lhs.eval(tile)).subtract(sub.eval(tile));
+        result_type multiply_subtract(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs, SUB_TYPE const &sub){
+          // evaluate RHS in-place
+          rhs.eval(result, tile);
+
+          // evaluate scalar
+          typename LHS_TYPE::result_type lhs_tmp;
+          lhs.eval(lhs_tmp, tile);
+
+          // scale it by the LHS
+          result.inplace_scale(lhs_tmp);
+
+          // evaluate ADD in temporary
+          STORAGE sub_tmp;
+          sub.eval(sub_tmp, tile);
+
+          // compute result
+          result.inplace_add(sub_tmp);
         }
     };
 
@@ -191,36 +265,76 @@ namespace RAJA
         /*!
          * Evaluate operands and perform element-wise multiply
          */
-        template<typename TILE_TYPE>
+        template<typename STORAGE, typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type multiply(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-          return lhs.eval(tile).scale(rhs.eval(tile));
+        void multiply(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
+          // evaluate RHS in-place
+          lhs.eval(result, tile);
+
+          // evaluate scalar
+          typename RHS_TYPE::result_type rhs_tmp;
+          rhs.eval(rhs_tmp, tile);
+
+          // scale it by the LHS
+          result.inplace_scale(rhs_tmp);
         }
+
+
 
 
         /*!
          * Evaluate operands and perform element-wise multiply add
          */
-        template<typename TILE_TYPE, typename ADD_TYPE>
+        template<typename STORAGE, typename TILE_TYPE, typename ADD_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type multiply_add(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs, ADD_TYPE const &add){
-          return lhs.eval(tile).scale(rhs.eval(tile)).add(add.eval(tile));
+        void multiply_add(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs, ADD_TYPE const &add){
+          // evaluate RHS in-place
+          lhs.eval(result, tile);
+
+          // evaluate scalar
+          typename RHS_TYPE::result_type rhs_tmp;
+          rhs.eval(rhs_tmp, tile);
+
+          // scale it by the LHS
+          result.inplace_scale(rhs_tmp);
+
+          // evaluate ADD in temporary
+          STORAGE add_tmp;
+          add.eval(add_tmp, tile);
+
+          // compute result
+          result.inplace_add(add_tmp);
         }
 
 
         /*!
          * Evaluate operands and perform element-wise multiply subtract
          */
-        template<typename TILE_TYPE, typename SUB_TYPE>
+        template<typename STORAGE, typename TILE_TYPE, typename SUB_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type multiply_subtract(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs, SUB_TYPE const &sub){
-          return lhs.eval(tile).scale(rhs.eval(tile)).subtract(sub.eval(tile));
+        result_type multiply_subtract(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs, SUB_TYPE const &sub){
+          // evaluate RHS in-place
+          lhs.eval(result, tile);
+
+          // evaluate scalar
+          typename RHS_TYPE::result_type rhs_tmp;
+          rhs.eval(rhs_tmp, tile);
+
+          // scale it by the RHS
+          result.inplace_scale(rhs_tmp);
+
+          // evaluate ADD in temporary
+          STORAGE sub_tmp;
+          sub.eval(sub_tmp, tile);
+
+          // compute result
+          result.inplace_add(sub_tmp);
         }
     };
 
@@ -267,20 +381,38 @@ namespace RAJA
       /*!
        * Evaluate operands and perform element-wise multiply
        */
-      template<typename TILE_TYPE>
+      template<typename STORAGE, typename TILE_TYPE>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
-      result_type multiply(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-        return multiply_add(tile, lhs, rhs, result_type(element_type(0)) );
+      void multiply(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
+        // clear result
+        result.broadcast(element_type(0));
+
+        // multiply lhs and rhs into result
+        multiply_into_result(result, tile, lhs, rhs);
       }
 
-      template<typename TILE_TYPE, typename ADD_TYPE>
+      template<typename STORAGE, typename TILE_TYPE, typename ADD_TYPE>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
-      result_type multiply_add(TILE_TYPE const &tile, LHS_TYPE const &et_lhs, RHS_TYPE const &et_rhs, ADD_TYPE const &add){
+      void multiply_add(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs, ADD_TYPE const &add){
+        // evaluate add into result
+        add.eval(result, tile);
 
+        // multiply lhs and rhs into result
+        multiply_into_result(result, tile, lhs, rhs);
+      }
+
+    private:
+      template<typename STORAGE, typename TILE_TYPE>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      void multiply_into_result(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &et_lhs, RHS_TYPE const &et_rhs)
+      {
+        using LHS_STORAGE = typename LHS_TYPE::result_type;
 
         // get tile size from matrix type
         index_type tile_size = lhs_type::result_type::s_dim_elem(1);
@@ -298,40 +430,40 @@ namespace RAJA
         TILE_TYPE rhs_tile = tile;
         rhs_tile.m_size[0] = tile_size;
 
-        // start with value of m_add
-        result_type x(add);
-
         // Do full tiles in k
         index_type k = 0;
         for(;k+tile_size <= k_size; k+= tile_size){
 
           // evaluate both sides of operator
           lhs_tile.m_begin[1] = k;
-          auto lhs = et_lhs.eval(lhs_tile);
+          LHS_STORAGE lhs;
+          et_lhs.eval(lhs, lhs_tile);
 
           rhs_tile.m_begin[0] = k;
-          result_type rhs = et_rhs.eval(rhs_tile);
+          STORAGE rhs;
+          et_rhs.eval(rhs, rhs_tile);
 
-          // compute product into x
-          x = lhs.right_multiply_vector(rhs).add(x);
+          // accumulate product
+          lhs.right_multiply_vector_accumulate(result, rhs);
         }
         // remainder tile in k
         if(k < k_size){
           auto &lhs_part_tile = make_tensor_tile_partial(lhs_tile);
           lhs_part_tile.m_begin[1] = k;
           lhs_part_tile.m_size[1] = k_size-k;
-          auto lhs = et_lhs.eval(lhs_part_tile);
+          LHS_STORAGE lhs;
+          et_lhs.eval(lhs, lhs_part_tile);
 
           auto &rhs_part_tile = make_tensor_tile_partial(rhs_tile);
           rhs_part_tile.m_begin[0] = k;
           rhs_part_tile.m_size[0] = k_size-k;
-          result_type rhs = et_rhs.eval(rhs_part_tile);
+          STORAGE rhs;
+          et_rhs.eval(rhs, rhs_part_tile);
 
-          // compute product into x of partial tile
-          x = lhs.right_multiply_vector(rhs).add(x);
+          // accumulate product of partial tile
+          lhs.right_multiply_vector_accumulate(result, rhs);
         }
 
-        return x;
       }
 
     };
@@ -380,20 +512,38 @@ namespace RAJA
       /*!
        * Evaluate operands and perform element-wise multiply
        */
-      template<typename TILE_TYPE>
+      template<typename STORAGE, typename TILE_TYPE>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
-      result_type multiply(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-        return multiply_add(tile, lhs, rhs, result_type(element_type(0)) );
+      void multiply(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
+        // clear result
+        result.broadcast(element_type(0));
+
+        // multiply lhs and rhs into result
+        multiply_into_result(result, tile, lhs, rhs);
       }
 
-      template<typename TILE_TYPE, typename ADD_TYPE>
+      template<typename STORAGE, typename TILE_TYPE, typename ADD_TYPE>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
-      result_type multiply_add(TILE_TYPE const &tile, LHS_TYPE const &et_lhs, RHS_TYPE const &et_rhs, ADD_TYPE const &add){
+      void multiply_add(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs, ADD_TYPE const &add){
+        // evaluate add into result
+        add.eval(result, tile);
 
+        // multiply lhs and rhs into result
+        multiply_into_result(result, tile, lhs, rhs);
+      }
+
+    private:
+      template<typename STORAGE, typename TILE_TYPE>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      void multiply_into_result(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &et_lhs, RHS_TYPE const &et_rhs)
+      {
+        using RHS_STORAGE = typename RHS_TYPE::result_type;
 
         // get tile size from matrix type
         index_type tile_size = rhs_type::result_type::s_dim_elem(1);
@@ -411,43 +561,41 @@ namespace RAJA
         TILE_TYPE lhs_tile = tile;
         lhs_tile.m_size[0] = tile_size;
 
-        // start with value of m_add
-        result_type x(add);
-
         // Do full tiles in k
         index_type k = 0;
         for(;k+tile_size <= k_size; k+= tile_size){
-//          printf("k=%d\n", (int)k);
 
           // evaluate both sides of operator
           rhs_tile.m_begin[0] = k;
-          auto rhs = et_rhs.eval(rhs_tile);
-//          printf("  rhs_tile: "); rhs_tile.print();
+          RHS_STORAGE rhs;
+          et_rhs.eval(rhs, rhs_tile);
 
           lhs_tile.m_begin[0] = k;
-          result_type lhs = et_lhs.eval(lhs_tile);
-//          printf("  lhs_tile: "); lhs_tile.print();
+          STORAGE lhs;
+          et_lhs.eval(lhs, lhs_tile);
 
-          // compute product into x
-          x = rhs.left_multiply_vector(lhs).add(x);
+          // accumulate product
+          rhs.left_multiply_vector_accumulate(result, lhs);
+
         }
         // remainder tile in k
         if(k < k_size){
           auto &rhs_part_tile = make_tensor_tile_partial(rhs_tile);
           rhs_part_tile.m_begin[0] = k;
           rhs_part_tile.m_size[0] = k_size-k;
-          auto rhs = et_rhs.eval(rhs_part_tile);
+          RHS_STORAGE rhs;
+          et_rhs.eval(rhs, rhs_tile);
 
           auto &lhs_part_tile = make_tensor_tile_partial(lhs_tile);
           lhs_part_tile.m_begin[0] = k;
           lhs_part_tile.m_size[0] = k_size-k;
-          result_type lhs = et_lhs.eval(lhs_part_tile);
+          STORAGE lhs;
+          et_lhs.eval(lhs, lhs_tile);
 
           // compute product into x of partial tile
-          x = rhs.left_multiply_vector(lhs).add(x);
+          rhs.left_multiply_vector_accumulate(result, lhs);
         }
 
-        return x;
       }
 
     };
@@ -491,19 +639,37 @@ namespace RAJA
       /*!
        * Evaluate operands and perform element-wise multiply
        */
-      template<typename TILE_TYPE>
+      template<typename STORAGE, typename TILE_TYPE>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
-      result_type multiply(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-        return multiply_add(tile, lhs, rhs, result_type(element_type(0)) );
+      void multiply(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
+        // clear result
+        result.broadcast(element_type(0));
+
+        // multiply lhs and rhs into result
+        multiply_into_result(result, tile, lhs, rhs);
       }
 
-      template<typename TILE_TYPE, typename ADD_TYPE>
+      template<typename STORAGE, typename TILE_TYPE, typename ADD_TYPE>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
-      result_type multiply_add(TILE_TYPE const &tile, LHS_TYPE const &et_lhs, RHS_TYPE const &et_rhs, ADD_TYPE const &add){
+      void multiply_add(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs, ADD_TYPE const &add){
+        // evaluate add into result
+        add.eval(result, tile);
+
+        // multiply lhs and rhs into result
+        multiply_into_result(result, tile, lhs, rhs);
+      }
+
+    private:
+      template<typename STORAGE, typename TILE_TYPE>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      void multiply_into_result(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &et_lhs, RHS_TYPE const &et_rhs)
+      {
 
         // get tile size from matrix type
         index_type tile_size = result_type::s_dim_elem(1);
@@ -519,8 +685,7 @@ namespace RAJA
         TILE_TYPE rhs_tile = tile;
         rhs_tile.m_size[0] = tile_size;
 
-        // start with value of m_add
-        result_type x(add);
+
 
         // Do full tiles in k
         index_type k = 0;
@@ -528,34 +693,33 @@ namespace RAJA
 
           // evaluate both sides of operator
           lhs_tile.m_begin[1] = k;
-          result_type lhs = et_lhs.eval(lhs_tile);
-
+          STORAGE lhs;
+          et_lhs.eval(lhs, lhs_tile);
 
           rhs_tile.m_begin[0] = k;
-          result_type rhs = et_rhs.eval(rhs_tile);
+          STORAGE rhs;
+          et_rhs.eval(rhs, rhs_tile);
 
-
-          // compute product into x
-          x = lhs.matrix_multiply_add(rhs, x);
+          // accumulate product
+          lhs.matrix_multiply_accumulate(result, rhs);
         }
         // remainder tile in k
         if(k < k_size){
           auto &lhs_part_tile = make_tensor_tile_partial(lhs_tile);
           lhs_part_tile.m_begin[1] = k;
           lhs_part_tile.m_size[1] = k_size-k;
-          result_type lhs = et_lhs.eval(lhs_part_tile);
-
+          STORAGE lhs;
+          et_lhs.eval(lhs, lhs_part_tile);
 
           auto &rhs_part_tile = make_tensor_tile_partial(rhs_tile);
           rhs_part_tile.m_begin[0] = k;
           rhs_part_tile.m_size[0] = k_size-k;
-          result_type rhs = et_rhs.eval(rhs_part_tile);
+          STORAGE rhs;
+          et_rhs.eval(rhs, rhs_part_tile);
 
-          // compute product into x of partial tile
-          x = lhs.matrix_multiply_add(rhs, x);
+          // accumulate product
+          lhs.matrix_multiply_accumulate(result, rhs);
         }
-
-        return x;
       }
 
     };

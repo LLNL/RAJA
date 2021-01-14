@@ -415,6 +415,77 @@ namespace internal {
         return getThis()->multiply(self_type(c));
       }
 
+
+      /*!
+       * In-place add operation
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type &inplace_add(self_type x){
+        *getThis() = getThis()->add(x);
+        return *getThis();
+      }
+
+      /*!
+       * In-place sbutract operation
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type &inplace_subtract(self_type x){
+        *getThis() = getThis()->subtract(x);
+        return *getThis();
+      }
+
+      /*!
+       * In-place multiply operation
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type &inplace_multiply(self_type x){
+        *getThis() = getThis()->multiply(x);
+        return *getThis();
+      }
+
+      /*!
+       * In-place multiply-add operation
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type &inplace_multiply_add(self_type x, self_type y){
+        *getThis() = getThis()->multiply_add(x,y);
+        return *getThis();
+      }
+
+      /*!
+       * In-place multiply-subtract operation
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type &inplace_multiply_subtract(self_type x, self_type y){
+        *getThis() = getThis()->multiply_subtract(x,y);
+        return *getThis();
+      }
+
+      /*!
+       * In-place divide operation
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type &inplace_divide(self_type x){
+        *getThis() = getThis()->divide(x);
+        return *getThis();
+      }
+
+      /*!
+       * In-place scaling operation
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type &inplace_scale(element_type x){
+        *getThis() = getThis()->scale(x);
+        return *getThis();
+      }
+
   };
 
 } //namespace internal

@@ -74,6 +74,17 @@ namespace RAJA
       }
 
       /*!
+       * @brief Construct register with explicit values
+       */
+      RAJA_INLINE
+      TensorRegister(element_type x0,
+                     element_type x1,
+                     element_type x2,
+                     element_type x3) :
+        m_value(_mm256_set_pd(x3,x2,x1,x0))
+      {}
+
+      /*!
        * @brief Copy constructor from underlying simd register
        */
       RAJA_INLINE
@@ -104,16 +115,6 @@ namespace RAJA
        */
       RAJA_INLINE
       TensorRegister(element_type const &c) : m_value(_mm256_set1_pd(c)) {}
-
-      /*!
-       * @brief Construct from explicit scalars for each element.
-       */
-      RAJA_INLINE
-      TensorRegister(element_type c0,
-               element_type c1,
-               element_type c2,
-               element_type c3) :
-            m_value(_mm256_set_pd(c0, c1, c2, c3)) {}
 
 
 

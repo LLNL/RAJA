@@ -85,7 +85,7 @@ namespace RAJA
       TensorRegister(RHS const &rhs)
       {
         // evaluate a single tile of the ET, storing in this TensorRegister
-        copy( rhs.eval(base_type::s_get_default_tile()) );
+        rhs.eval(*this, base_type::s_get_default_tile());
       }
 
 
@@ -588,6 +588,18 @@ namespace RAJA
 
       }
 
+
+      /*!
+       * Matrix transpose inplace
+       *
+       * Modifies contents of this matrix
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      void inplace_transpose() {
+        *this = transpose();
+      }
+
       /*!
        * Transpose this matrix by swapping row/column majorness
        *
@@ -645,6 +657,43 @@ namespace RAJA
 
 
       /*!
+       * Matrix vector product with accumulation into another vector
+       *
+       * acc += (this) * v
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      void right_multiply_vector_accumulate(vector_type &acc, vector_type v) const {
+        if(layout_type::is_row_major()){
+          acc.inplace_add(vector_type{v.dot(m_values[VAL_SEQ])...});
+        }
+        else{
+          acc.inplace_add(
+              RAJA::sum<vector_type>(( m_values[VAL_SEQ] * v.get(VAL_SEQ))...)
+          );
+        }
+      }
+
+      /*!
+       * Matrix vector product with accumulation into another vector
+       *
+       * acc += v * (this)
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      void left_multiply_vector_accumulate(vector_type &acc, vector_type v) const {
+        if(layout_type::is_column_major()){
+          acc.inplace_add(vector_type{v.dot(m_values[VAL_SEQ])...});
+        }
+        else{
+          acc.inplace_add(
+              RAJA::sum<vector_type>(( m_values[VAL_SEQ] * v.get(VAL_SEQ))...)
+          );
+        }
+      }
+
+
+      /*!
        * element-wise multiplication
        */
       RAJA_HOST_DEVICE
@@ -681,7 +730,7 @@ namespace RAJA
       }
 
       /*!
-       * Matrix-Matrix multiply accumulate
+       * Matrix-Matrix multiply add
        */
       template<typename RMAT>
       RAJA_HOST_DEVICE
@@ -691,6 +740,17 @@ namespace RAJA
         typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type res(C);
         internal::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply_accumulate(*this, B, res);
         return res;
+      }
+
+      /*!
+       * Matrix-Matrix multiply accumulate
+       */
+      template<typename ACCMAT, typename RMAT>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      void
+      matrix_multiply_accumulate(ACCMAT &acc, RMAT const &B) const {
+        internal::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply_accumulate(*this, B, acc);
       }
 
       RAJA_HOST_DEVICE

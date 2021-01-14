@@ -64,11 +64,11 @@ namespace RAJA
           return operator_type::getDimSize(dim, m_lhs, m_rhs);
         }
 
-        template<typename TILE_TYPE>
+        template<typename STORAGE, typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        result_type eval(TILE_TYPE const &tile) const {
-          return operator_type::add(tile, m_lhs, m_rhs);
+        void eval(STORAGE &result, TILE_TYPE const &tile) const {
+          operator_type::add(result, tile, m_lhs, m_rhs);
         }
 
 

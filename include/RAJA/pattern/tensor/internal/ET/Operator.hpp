@@ -44,8 +44,8 @@ namespace RAJA
         using tile_type = typename LHS_TYPE::tile_type;
         static constexpr camp::idx_t s_num_dims = LHS_TYPE::s_num_dims;
 
-        static_assert(LHS_TYPE::s_num_dims == RHS_TYPE::s_num_dims,
-            "The operands are incompatible");
+//        static_assert(LHS_TYPE::s_num_dims == RHS_TYPE::s_num_dims,
+//            "The operands are incompatible");
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
@@ -65,38 +65,62 @@ namespace RAJA
         /*!
          * Evaluate operands and perform element-wise addition
          */
-        template<typename TILE_TYPE>
+        template<typename STORAGE, typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type add(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-          return lhs.eval(tile).add(rhs.eval(tile));
+        void add(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
+
+          // evaluate LHS in-place
+          lhs.eval(result, tile);
+
+          // evaluate RHS in temporary
+          STORAGE rhs_tmp;
+          rhs.eval(rhs_tmp, tile);
+
+          // compute result
+          result.inplace_add(rhs_tmp);
         }
 
         /*!
          * Evaluate operands and perform element-wise subtraction
          */
-        template<typename TILE_TYPE>
+        template<typename STORAGE, typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type subtract(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-          return lhs.eval(tile).subtract(rhs.eval(tile));
+        void subtract(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
+          // evaluate LHS in-place
+          lhs.eval(result, tile);
+
+          // evaluate RHS in temporary
+          STORAGE rhs_tmp;
+          rhs.eval(rhs_tmp, tile);
+
+          // compute result
+          result.inplace_subtract(rhs_tmp);
         }
 
         /*!
          * Evaluate operands and perform element-wise division
          */
-        template<typename TILE_TYPE>
+        template<typename STORAGE, typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type divide(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-          return lhs.eval(tile).divide(rhs.eval(tile));
+        void divide(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
+          // evaluate LHS in-place
+          lhs.eval(result, tile);
+
+          // evaluate RHS in temporary
+          STORAGE rhs_tmp;
+          rhs.eval(rhs_tmp, tile);
+
+          // compute result
+          result.inplace_divide(rhs_tmp);
         }
 
     };
-
 
     /*!
      * Specialization when the left operand is a scalar
@@ -124,37 +148,69 @@ namespace RAJA
           return rhs.getDimSize(dim);
         }
 
+
         /*!
          * Evaluate operands and perform element-wise addition
          */
-        template<typename TILE_TYPE>
+        template<typename STORAGE, typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type add(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-          return result_type(lhs.eval(tile)).add(rhs.eval(tile));
+        void add(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
+
+          // evaluate LHS
+          typename LHS_TYPE::result_type scalar;
+          lhs.eval(scalar, tile);
+          result = STORAGE(scalar);
+
+          // evaluate RHS
+          STORAGE rhs_tmp;
+          rhs.eval(rhs_tmp, tile);
+
+          // compute result
+          result.inplace_add(rhs_tmp);
         }
 
         /*!
          * Evaluate operands and perform element-wise subtraction
          */
-        template<typename TILE_TYPE>
+        template<typename STORAGE, typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type subtract(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-          return lresult_type(lhs.eval(tile)).subtract(rhs.eval(tile));
+        void subtract(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
+          // evaluate LHS
+          typename LHS_TYPE::result_type scalar;
+          lhs.eval(scalar, tile);
+          result = STORAGE(scalar);
+
+          // evaluate RHS
+          STORAGE rhs_tmp;
+          rhs.eval(rhs_tmp, tile);
+
+          // compute result
+          result.inplace_subtract(rhs_tmp);
         }
 
         /*!
          * Evaluate operands and perform element-wise division
          */
-        template<typename TILE_TYPE>
+        template<typename STORAGE, typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type divide(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-          return result_type(lhs.eval(tile)).divide(rhs.eval(tile));
+        void divide(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
+          // evaluate LHS
+          typename LHS_TYPE::result_type scalar;
+          lhs.eval(scalar, tile);
+          result = STORAGE(scalar);
+
+          // evaluate RHS
+          STORAGE rhs_tmp;
+          rhs.eval(rhs_tmp, tile);
+
+          // compute result
+          result.inplace_divide(rhs_tmp);
         }
     };
 
@@ -184,40 +240,71 @@ namespace RAJA
           return lhs.getDimSize(dim);
         }
 
+
         /*!
          * Evaluate operands and perform element-wise addition
          */
-        template<typename TILE_TYPE>
+        template<typename STORAGE, typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type add(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-          return lhs.eval(tile).add(result_type(rhs.eval(tile)));
+        void add(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
+
+          // evaluate LHS
+          lhs.eval(result, tile);
+
+          // evaluate RHS
+          typename RHS_TYPE::result_type scalar;
+          rhs.eval(scalar, tile);
+          STORAGE rhs_tmp(scalar);
+
+          // compute result
+          result.inplace_add(rhs_tmp);
         }
 
         /*!
          * Evaluate operands and perform element-wise subtraction
          */
-        template<typename TILE_TYPE>
+        template<typename STORAGE, typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type subtract(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-          return lhs.eval(tile).subtract(result_type(rhs.eval(tile)));
+        void subtract(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
+          // evaluate LHS
+          lhs.eval(result, tile);
+
+          // evaluate RHS
+          typename RHS_TYPE::result_type scalar;
+          rhs.eval(scalar, tile);
+          STORAGE rhs_tmp(scalar);
+
+          // compute result
+          result.inplace_subtract(rhs_tmp);
+
         }
 
         /*!
          * Evaluate operands and perform element-wise division
          */
-        template<typename TILE_TYPE>
+        template<typename STORAGE, typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        result_type divide(TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
-          return lhs.eval(tile).divide(result_type(rhs.eval(tile)));
-        }
-    };
+        void divide(STORAGE &result, TILE_TYPE const &tile, LHS_TYPE const &lhs, RHS_TYPE const &rhs){
+          // evaluate LHS
+          lhs.eval(result, tile);
 
+          // evaluate RHS
+          typename RHS_TYPE::result_type scalar;
+          rhs.eval(scalar, tile);
+          STORAGE rhs_tmp(scalar);
+
+          // compute result
+          result.inplace_divide(rhs_tmp);
+
+        }
+
+    };
 
 
   } // namespace ET

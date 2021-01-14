@@ -110,6 +110,21 @@ namespace RAJA
       }
 
       /*!
+       * @brief Construct register with explicit values
+       */
+      RAJA_INLINE
+      TensorRegister(element_type x0,
+                     element_type x1,
+                     element_type x2,
+                     element_type x3,
+                     element_type x4,
+                     element_type x5,
+                     element_type x6,
+                     element_type x7) :
+        m_value(_mm256_set_epi32(x7,x6,x5,x4,x3,x2,x1,x0))
+      {}
+
+      /*!
        * @brief Copy constructor from underlying simd register
        */
       RAJA_INLINE

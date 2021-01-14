@@ -64,11 +64,11 @@ namespace RAJA
         {}
 
 
-        template<typename TILE_TYPE>
+        template<typename STORAGE, typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        result_type eval(TILE_TYPE const &tile) const {
-          return multiply_op::multiply_add(tile, m_lhs, m_rhs, m_add.eval(tile));
+        void eval(STORAGE &result, TILE_TYPE const &tile) const {
+          multiply_op::multiply_add(result, tile, m_lhs, m_rhs, m_add);
         }
 
 
