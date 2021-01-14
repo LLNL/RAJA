@@ -285,8 +285,19 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
   RAJA::View<double, RAJA::Layout<2>> Y(B, N, M);
   RAJA::View<double, RAJA::Layout<2>> Z(C, N, M);
 
+  using idx_t = RAJA::VectorIndex<index_t, vector_t>;
+  auto all = idx_t::all();
 
-  using policy_t =
+
+
+
+  //
+  // Test with kernel, using sequential policies and ::all()
+  //
+  for(index_t i = 0;i < N*M; ++ i){
+    C[i] = 0.0;
+  }
+  using policy1_t =
       RAJA::KernelPolicy<
         RAJA::statement::For<0, RAJA::loop_exec,
             RAJA::statement::Lambda<0>
@@ -294,19 +305,57 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
       >;
 
 
-  auto all = RAJA::VectorIndex<index_t, vector_t>::all();
 
-//  RAJA::kernel<policy_t>(
-//      RAJA::make_tuple(RAJA::TypedRangeSegment<index_t>(0, N)),
-//
-//      [=](index_t i)
-//  {
-//    Z(i,all) = 3+(X(i,all)*(5/Y(i,all)))+9;
-//  });
-//
-//  for(index_t i = 0;i < N*M;i ++){
-//    ASSERT_SCALAR_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
-//  }
+
+
+  // Test with kernel, using sequential policies and ::all()
+  RAJA::kernel<policy1_t>(
+      RAJA::make_tuple(RAJA::TypedRangeSegment<index_t>(0, N)),
+
+      [=](index_t i)
+  {
+    Z(i,all) = 3+(X(i,all)*(5/Y(i,all)))+9;
+  });
+
+  for(index_t i = 0;i < N*M;i ++){
+    ASSERT_SCALAR_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
+  }
+
+
+
+
+  //
+  // Test with kernel, using tensor_exec policy
+  //
+
+
+  for(index_t i = 0;i < N*M; ++ i){
+    C[i] = 0.0;
+  }
+
+  using policy2_t =
+      RAJA::KernelPolicy<
+        RAJA::statement::For<0, RAJA::loop_exec,
+          RAJA::statement::For<1, RAJA::vector_exec<vector_t>,
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >;
+
+  RAJA::kernel<policy2_t>(
+      RAJA::make_tuple(RAJA::TypedRangeSegment<index_t>(0, N),
+                       RAJA::TypedRangeSegment<index_t>(0, M)),
+
+      [=](index_t i, idx_t j)
+  {
+    Z(i, j) = 3+(X(i, j)*(5/Y(i, j)))+9;
+  });
+
+  for(index_t i = 0;i < N*M;i ++){
+    ASSERT_SCALAR_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
+  }
+
+
 
 
   //

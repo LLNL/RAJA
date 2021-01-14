@@ -227,48 +227,48 @@ namespace RAJA
     {
       return TensorIndexTraits<ARG>::dim();
     }
-//
-//    /*
-//     * Lambda<N, Seg<X>>  overload that matches VectorIndex types, and properly
-//     * includes the vector length with them
-//     */
-//    template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM, camp::idx_t id>
-//    struct LambdaSegExtractor<TensorIndex<IDX, TENSOR_TYPE, DIM>, id>
-//    {
-//
-//      template<typename Data>
-//      RAJA_HOST_DEVICE
-//      RAJA_INLINE
-//      constexpr
-//      static TensorIndex<IDX, TENSOR_TYPE, DIM> extract(Data &&data)
-//      {
-//        return TensorIndex<IDX, TENSOR_TYPE, DIM>(
-//            camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)],
-//            camp::get<id>(data.vector_sizes));
-//      }
-//
-//    };
-//
-//    /*
-//     * Lambda<N, Seg<X>>  overload that matches VectorIndex types, and properly
-//     * includes the vector length with them
-//     */
-//    template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM, camp::idx_t id>
-//    struct LambdaOffsetExtractor<TensorIndex<IDX, TENSOR_TYPE, DIM>, id>
-//    {
-//
-//      template<typename Data>
-//      RAJA_HOST_DEVICE
-//      RAJA_INLINE
-//      constexpr
-//      static TensorIndex<IDX, TENSOR_TYPE, DIM> extract(Data &&data)
-//      {
-//        return TensorIndex<IDX, TENSOR_TYPE, DIM>(
-//            IDX(camp::get<id>(data.offset_tuple)), // convert offset type to IDX
-//            camp::get<id>(data.vector_sizes));
-//      }
-//
-//    };
+
+    /*
+     * Lambda<N, Seg<X>>  overload that matches VectorIndex types, and properly
+     * includes the vector length with them
+     */
+    template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM, camp::idx_t id>
+    struct LambdaSegExtractor<TensorIndex<IDX, TENSOR_TYPE, DIM>, id>
+    {
+
+      template<typename Data>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      static TensorIndex<IDX, TENSOR_TYPE, DIM> extract(Data &&data)
+      {
+        return TensorIndex<IDX, TENSOR_TYPE, DIM>(
+            camp::get<id>(data.segment_tuple).begin()[camp::get<id>(data.offset_tuple)],
+            camp::get<id>(data.vector_sizes));
+      }
+
+    };
+
+    /*
+     * Lambda<N, Seg<X>>  overload that matches VectorIndex types, and properly
+     * includes the vector length with them
+     */
+    template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM, camp::idx_t id>
+    struct LambdaOffsetExtractor<TensorIndex<IDX, TENSOR_TYPE, DIM>, id>
+    {
+
+      template<typename Data>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      static TensorIndex<IDX, TENSOR_TYPE, DIM> extract(Data &&data)
+      {
+        return TensorIndex<IDX, TENSOR_TYPE, DIM>(
+            IDX(camp::get<id>(data.offset_tuple)), // convert offset type to IDX
+            camp::get<id>(data.vector_sizes));
+      }
+
+    };
 
   } // namespace internal
 
