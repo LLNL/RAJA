@@ -262,9 +262,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // row, column, and dot-product loops for RAJA variants
 //
   // _matmult_ranges_start
-  RAJA::RangeSegment row_range(0, N);
-  RAJA::RangeSegment col_range(0, N);
-  RAJA::RangeSegment dot_range(0, N);
+  RAJA::TypedRangeSegment<int> row_range(0, N);
+  RAJA::TypedRangeSegment<int> col_range(0, N);
+  RAJA::TypedRangeSegment<int> dot_range(0, N);
   // _matmult_ranges_end
 
 //----------------------------------------------------------------------------//
@@ -643,76 +643,81 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     printf("\nRAJA Kernel 2  \n");
     auto t0 = Clock::now();
 
-  using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE>>;
+    using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE>>;
 
-  using shmem_Lambda0 = RAJA::statement::Lambda<0, RAJA::Offsets<0, 2>, RAJA::Params<2>>;
-  using shmem_Lambda1 = RAJA::statement::Lambda<1, RAJA::Segs<0, 1>, RAJA::Offsets<0, 1>, RAJA::Params<0>>;
-  using shmem_Lambda2 = RAJA::statement::Lambda<2, RAJA::Segs<1, 2>, RAJA::Offsets<1, 2>, RAJA::Params<1>>;
-  using shmem_Lambda3 = RAJA::statement::Lambda<3, RAJA::Offsets<0, 1, 2>, RAJA::Params<0, 1, 2>>;
-  using shmem_Lambda4 = RAJA::statement::Lambda<4, RAJA::Segs<0, 2>, RAJA::Offsets<0, 2>, RAJA::Params<2>>;
+    using shmem_Lambda0 = RAJA::statement::Lambda<0, RAJA::Offsets<0, 2>, RAJA::Params<2>>;
+    using shmem_Lambda1 = RAJA::statement::Lambda<1, RAJA::Segs<0, 1>, RAJA::Offsets<0, 1>, RAJA::Params<0>>;
+    using shmem_Lambda2 = RAJA::statement::Lambda<2, RAJA::Segs<1, 2>, RAJA::Offsets<1, 2>, RAJA::Params<1>>;
+    using shmem_Lambda3 = RAJA::statement::Lambda<3, RAJA::Offsets<0, 1, 2>, RAJA::Params<0, 1, 2>>;
+    using shmem_Lambda4 = RAJA::statement::Lambda<4, RAJA::Segs<0, 2>, RAJA::Offsets<0, 2>, RAJA::Params<2>>;
 
-  using EXEC_POL10 =
+    using EXEC_POL10 =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernelFixed<CUDA_BLOCK_SIZE*CUDA_BLOCK_SIZE,
         //Initalize thread private value
         RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2,1,0>,
 
           // Tile rows and cols of C (the result matrix C)
-          RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
-            RAJA::statement::Tile<2, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_direct,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_direct,
+            RAJA::statement::Tile<2, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
 
-            // zero out shmem tile of C
-            RAJA::statement::For<2, RAJA::cuda_thread_y_loop,
-              RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
-                shmem_Lambda0 > >,
+              // zero out shmem tile of C
+              RAJA::statement::For<0, RAJA::cuda_thread_y_loop,
+                RAJA::statement::For<2, RAJA::cuda_thread_x_loop,
+                  shmem_Lambda0
+                >
+              >,
 
-                // Slide window across matrix: Load tiles of global matrices A, B and compute
-                // local dot products
-                RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::loop_exec,
+              // Slide window across matrix: Load tiles of global matrices A, B and compute
+              // local dot products
+              RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::loop_exec,
 
-                  // Load tile of A into shmem
-                  RAJA::statement::For<1, RAJA::loop_exec,
-                    RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
-                      shmem_Lambda1
+                // Load tile of A into shmem
+                RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
+                  RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
+                    shmem_Lambda1
+                  >
+                >,
+
+                // Load tile of B into shmem
+                RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                  RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+                    shmem_Lambda2
+                  >
+                >,
+
+                RAJA::statement::CudaSyncThreads,
+
+                //Partial multiplication
+                RAJA::statement::For<1, RAJA::loop_exec,
+                  RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
+                    RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+                      shmem_Lambda3
                     >
-                   >,
+                  >
+                >,
 
-                  // Load tile of B into shmem
-                  RAJA::statement::For<2, RAJA::cuda_thread_y_direct,
-                    RAJA::statement::For<1, RAJA::loop_exec,
-                      shmem_Lambda2
-                    >
-                  >,
+                RAJA::statement::CudaSyncThreads
 
-                  RAJA::statement::CudaSyncThreads,
+              >, //sliding window
 
-                  //Partial multiplication
-                  RAJA::statement::For<2, RAJA::cuda_thread_y_direct,
-                    RAJA::statement::For<1, RAJA::loop_exec,
-                      RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
-                        shmem_Lambda3
-                      >
-                    >
-                  >,
-
-                  RAJA::statement::CudaSyncThreads
-                >, //sliding window
-
-               //Write memory out to global matrix
-               RAJA::statement::For<2, RAJA::cuda_thread_y_direct,
-                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
-                shmem_Lambda4 > >
-             >
+              //Write memory out to global matrix
+              RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+                  shmem_Lambda4
+                >
+              >
             >
-           > //Create shared memory
-         >//Cuda kernel
-        >;
+          >
+        > //Create shared memory
+      >//Cuda kernel
+    >;
 
     Shmem aShared, bShared, cShared;
 
-    RAJA::kernel_param<EXEC_POL10>(RAJA::make_tuple(RAJA::RangeSegment(0, N),
-                                                    RAJA::RangeSegment(0, N),
-                                                    RAJA::RangeSegment(0, N)),
+    RAJA::kernel_param<EXEC_POL10>(RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N),
+                                                    RAJA::TypedRangeSegment<int>(0, N),
+                                                    RAJA::TypedRangeSegment<int>(0, N)),
                                    RAJA::make_tuple(aShared, bShared, cShared),
 
     // Zero out thread local memory for storing dot products
