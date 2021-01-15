@@ -20,6 +20,9 @@
 
 #include "RAJA/pattern/teams/teams_core.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
+#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
+#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
+#include "RAJA/util/resource.hpp"
 
 namespace RAJA
 {
@@ -39,24 +42,60 @@ __global__ void launch_global_fcn(LaunchContext ctx, BODY body)
 
 template <bool async>
 struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
-  template <typename BODY>
-  static void exec(LaunchContext const &ctx, BODY const &body)
+  template <typename BODY_IN>
+  static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
   {
-    dim3 blocks;
-    dim3 threads;
+    using BODY = camp::decay<BODY_IN>;
 
-    blocks.x = ctx.teams.value[0];
-    blocks.y = ctx.teams.value[1];
-    blocks.z = ctx.teams.value[2];
+    auto func = launch_global_fcn<BODY>;
 
-    threads.x = ctx.threads.value[0];
-    threads.y = ctx.threads.value[1];
-    threads.z = ctx.threads.value[2];
-    launch_global_fcn<<<blocks, threads>>>(ctx, body);
+    resources::Cuda cuda_res = resources::Cuda::get_default();
+    cudaStream_t stream = cuda_res.get_stream();
 
-    if (!async) {
-      cudaDeviceSynchronize();
+    //
+    // Compute the number of blocks and threads
+    //
+
+    cuda_dim_t gridSize{ static_cast<cuda_dim_member_t>(ctx.teams.value[0]),
+                         static_cast<cuda_dim_member_t>(ctx.teams.value[1]),
+                         static_cast<cuda_dim_member_t>(ctx.teams.value[2]) };
+
+    cuda_dim_t blockSize{ static_cast<cuda_dim_member_t>(ctx.threads.value[0]),
+                          static_cast<cuda_dim_member_t>(ctx.threads.value[1]),
+                          static_cast<cuda_dim_member_t>(ctx.threads.value[2]) };
+
+    // Only launch kernel if we have something to iterate over
+    constexpr cuda_dim_member_t zero = 0;
+    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
+         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
+
+      RAJA_FT_BEGIN;
+
+      //
+      // Setup shared memory buffers
+      //
+      size_t shmem = 0;
+
+      {
+        //
+        // Privatize the loop_body, using make_launch_body to setup reductions
+        //
+        BODY body = RAJA::cuda::make_launch_body(
+            gridSize, blockSize, shmem, stream, std::forward<BODY_IN>(body_in));
+
+        //
+        // Launch the kernel
+        //
+        void *args[] = {(void*)&ctx, (void*)&body};
+        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+      }
+
+      if (!async) { RAJA::cuda::synchronize(stream); }
+
+      RAJA_FT_END;
     }
+
+    // return resources::EventProxy<resources::Cuda>(&cuda_res);
   }
 };
 
@@ -70,24 +109,60 @@ __launch_bounds__(num_threads, 1) __global__
 
 template <bool async, int nthreads>
 struct LaunchExecute<RAJA::expt::cuda_launch_t<async, nthreads>> {
-  template <typename BODY>
-  static void exec(LaunchContext const &ctx, BODY const &body)
+  template <typename BODY_IN>
+  static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
   {
-    dim3 blocks;
-    dim3 threads;
+    using BODY = camp::decay<BODY_IN>;
 
-    blocks.x = ctx.teams.value[0];
-    blocks.y = ctx.teams.value[1];
-    blocks.z = ctx.teams.value[2];
+    auto func = launch_global_fcn_fixed<BODY, nthreads>;
 
-    threads.x = ctx.threads.value[0];
-    threads.y = ctx.threads.value[1];
-    threads.z = ctx.threads.value[2];
-    launch_global_fcn_fixed<nthreads><<<blocks, threads>>>(ctx, body);
+    resources::Cuda cuda_res = resources::Cuda::get_default();
+    cudaStream_t stream = cuda_res.get_stream();
 
-    if (!async) {
-      cudaDeviceSynchronize();
+    //
+    // Compute the number of blocks and threads
+    //
+
+    cuda_dim_t gridSize{ static_cast<cuda_dim_member_t>(ctx.teams.value[0]),
+                         static_cast<cuda_dim_member_t>(ctx.teams.value[1]),
+                         static_cast<cuda_dim_member_t>(ctx.teams.value[2]) };
+
+    cuda_dim_t blockSize{ static_cast<cuda_dim_member_t>(ctx.threads.value[0]),
+                          static_cast<cuda_dim_member_t>(ctx.threads.value[1]),
+                          static_cast<cuda_dim_member_t>(ctx.threads.value[2]) };
+
+    // Only launch kernel if we have something to iterate over
+    constexpr cuda_dim_member_t zero = 0;
+    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
+         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
+
+      RAJA_FT_BEGIN;
+
+      //
+      // Setup shared memory buffers
+      //
+      size_t shmem = 0;
+
+      {
+        //
+        // Privatize the loop_body, using make_launch_body to setup reductions
+        //
+        BODY body = RAJA::cuda::make_launch_body(
+            gridSize, blockSize, shmem, stream, std::forward<BODY_IN>(body_in));
+
+        //
+        // Launch the kernel
+        //
+        void *args[] = {(void*)&ctx, (void*)&body};
+        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+      }
+
+      if (!async) { RAJA::cuda::synchronize(stream); }
+
+      RAJA_FT_END;
     }
+
+    // return resources::EventProxy<resources::Cuda>(&cuda_res);
   }
 };
 
