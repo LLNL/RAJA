@@ -21,11 +21,11 @@ using launch_policy = RAJA::expt::LaunchPolicy<
     RAJA::expt::seq_launch_t
 #if defined(RAJA_ENABLE_CUDA)
     ,
-    RAJA::expt::cuda_launch_t<false>
+    RAJA::expt::cuda_launch_t<false, 256>
 #endif
 #if defined(RAJA_ENABLE_HIP)
     ,
-    RAJA::expt::hip_launch_t<false>
+    RAJA::expt::hip_launch_t<false, 256>
 #endif
     >;
 
@@ -133,7 +133,8 @@ const int DIM = 2;
   Define CUDA matrix multiplication kernel for comparison to RAJA version
 */
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-__global__ void matMultKernel2(int N, double* C, double* A, double* B)
+__launch_bounds__(CUDA_BLOCK_SIZE*CUDA_BLOCK_SIZE, 1) __global__
+void matMultKernel2(int N, double* C, double* A, double* B)
 {
 
   int Row = blockIdx.y*CUDA_BLOCK_SIZE + threadIdx.y;
@@ -168,7 +169,8 @@ __global__ void matMultKernel2(int N, double* C, double* A, double* B)
       (blockIdx.x * blockDim.x)+ threadIdx.x] = dot;
 }
 
-__global__ void matMultKernel1(int N, double* C, double* A, double* B)
+__launch_bounds__(CUDA_BLOCK_SIZE*CUDA_BLOCK_SIZE, 1) __global__
+void matMultKernel1(int N, double* C, double* A, double* B)
 {
   int row = blockIdx.y * blockDim.y + threadIdx.y;
   int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -183,7 +185,8 @@ __global__ void matMultKernel1(int N, double* C, double* A, double* B)
   }
 }
 
-__global__ void matMultKernel0(int N, double* C, double* A, double* B)
+__launch_bounds__(256, 1) __global__
+void matMultKernel0(int N, double* C, double* A, double* B)
 {
 
   {int row = blockIdx.x;
