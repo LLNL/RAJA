@@ -85,7 +85,7 @@ all RAJA features and should be considered experimental.
 Git Repository and Issue Tracking
 =================================
 
-The main interaction hub for RAJA is on `Github <https://github.com/LLNL/RAJA>`_
+The main interaction hub for RAJA is on `GitHub <https://github.com/LLNL/RAJA>`_
 
 ================================
 Communicating with the RAJA Team
@@ -100,7 +100,7 @@ The best way to communicate with us is via our email list: ``raja-dev@llnl.gov``
 
 You are also welcome to join our `Google Group <https://groups.google.com/forum/#!forum/raja-users>`_
 
-A brief description of how to start a contribution to RAJA team can be found in
+A brief description of how to start a contribution to RAJA can be found in
 :ref:`contributing-label`.
 
 =======================
@@ -109,7 +109,7 @@ RAJA User Documentation
 
   * :doc:`RAJA User Guide <sphinx/user_guide/index>`
   * `RAJA Tutorials Repo <https://github.com/LLNL/RAJA-tutorials>`_
-  * insert doxygen docs here...
+  * `Source Documentation <doxygen/html/index.html>`_
 
 ============================
 RAJA Developer Documentation
