@@ -19,6 +19,7 @@
 #define RAJA_pattern_teams_cuda_HPP
 
 #include "RAJA/pattern/teams/teams_core.hpp"
+#include "RAJA/pattern/detail/privatizer.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
@@ -35,8 +36,11 @@ struct cuda_launch_t {
 };
 
 template <typename BODY>
-__global__ void launch_global_fcn(LaunchContext ctx, BODY body)
+__global__ void launch_global_fcn(LaunchContext ctx, BODY body_in)
 {
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(body_in);
+  auto& body = privatizer.get_priv();
   body(ctx);
 }
 
@@ -101,8 +105,11 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
 
 template <typename BODY, int num_threads>
 __launch_bounds__(num_threads, 1) __global__
-    void launch_global_fcn_fixed(LaunchContext ctx, BODY body)
+    void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
 {
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(body_in);
+  auto& body = privatizer.get_priv();
   body(ctx);
 }
 
