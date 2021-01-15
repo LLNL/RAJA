@@ -266,7 +266,7 @@ namespace RAJA
        * @param value Value of scalar to set
        */
       RAJA_INLINE
-      self_type &set(camp::idx_t i, element_type value)
+      self_type &set(element_type value, camp::idx_t i)
       {
 				m_value = _mm512_mask_set1_epi32(m_value, 1 << i, value);
         return *this;

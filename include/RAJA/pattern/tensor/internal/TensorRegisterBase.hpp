@@ -24,7 +24,7 @@
 
 #include "camp/camp.hpp"
 #include "RAJA/pattern/tensor/TensorLayout.hpp"
-#include "RAJA/pattern/tensor/internal/ET/TensorRef.hpp"
+#include "RAJA/pattern/tensor/internal/TensorRef.hpp"
 
 namespace RAJA
 {
@@ -133,10 +133,10 @@ namespace internal {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       static
-      constexpr ET::TensorTile<int, ET::TENSOR_FULL, s_num_dims>
+      constexpr TensorTile<int, TENSOR_FULL, s_num_dims>
       s_get_default_tile()
       {
-        return ET::TensorTile<int, ET::TENSOR_FULL, s_num_dims>{
+        return TensorTile<int, TENSOR_FULL, s_num_dims>{
           {int(SIZES*0)...},
           {int(SIZES)...}
         };
@@ -176,7 +176,7 @@ namespace internal {
       RAJA_INLINE
       self_type &broadcast_n(element_type const &value, camp::idx_t N){
         for(camp::idx_t i = 0;i < N;++ i){
-          getThis()->set(i, value);
+          getThis()->set(value, i);
         }
         return *getThis();
       }
@@ -361,7 +361,7 @@ namespace internal {
       self_type divide_n(self_type const &b, camp::idx_t n) const {
         self_type q(*getThis());
         for(camp::idx_t i = 0;i < n;++i){
-          q.set(i, getThis()->get(i) / b.get(i));
+          q.set(getThis()->get(i) / b.get(i), i);
         }
         return q;
       }

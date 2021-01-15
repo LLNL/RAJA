@@ -22,6 +22,21 @@ using VectorTestTypes = ::testing::Types<
   >;
 
 
+struct storage_policy{};
+
+TEST(foobar, TestBlock)
+{
+
+  using block_t = RAJA::TensorBlock<RAJA::avx2_register, double,
+      camp::idx_seq<0>,
+      camp::idx_seq<16>,
+      storage_policy>;
+
+
+  block_t block;
+
+}
+
 template <typename Policy>
 class VectorTest : public ::testing::Test
 {
@@ -68,7 +83,7 @@ TYPED_TEST_P(VectorTest, GetSet)
 
     // check set operations
     for(camp::idx_t i = 0;i < N;++ i){
-      vec.set(i, (element_t)(i+1));
+      vec.set((element_t)(i+1), i);
     }
     for(camp::idx_t i = 0;i < N;++ i){
       ASSERT_SCALAR_EQ(vec.get(i), (element_t)(i+1));

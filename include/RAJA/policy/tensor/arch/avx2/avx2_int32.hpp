@@ -284,7 +284,7 @@ namespace RAJA
        * @param value Value of scalar to set
        */
       RAJA_INLINE
-      self_type &set(camp::idx_t i, element_type value)
+      self_type &set(element_type value, camp::idx_t i)
       {
         // got to be a nicer way to do this!?!?
         switch(i){

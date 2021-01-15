@@ -88,16 +88,16 @@ namespace internal {
       /*!
        * @brief Performs load specified by TensorRef object.
        */
-      template<typename POINTER_TYPE, typename INDEX_TYPE, internal::ET::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
+      template<typename POINTER_TYPE, typename INDEX_TYPE, internal::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
       RAJA_INLINE
-      self_type &load_ref(internal::ET::TensorRef<self_type, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM> const &ref){
+      self_type &load_ref(internal::TensorRef<self_type, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM> const &ref){
 
         auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0];
 
         // check for packed data
         if(STRIDE_ONE_DIM == 0){
           // full vector?
-          if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
+          if(TENSOR_SIZE == internal::TENSOR_FULL){
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::tensor_stats::num_vector_load_packed ++;
 #endif
@@ -116,7 +116,7 @@ namespace internal {
         else
         {
           // full vector?
-          if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
+          if(TENSOR_SIZE == internal::TENSOR_FULL){
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::tensor_stats::num_vector_load_strided ++;
 #endif
@@ -137,16 +137,16 @@ namespace internal {
       /*!
        * @brief Performs load specified by TensorRef object.
        */
-      template<typename POINTER_TYPE, typename INDEX_TYPE, internal::ET::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
+      template<typename POINTER_TYPE, typename INDEX_TYPE, internal::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
       RAJA_INLINE
-      self_type const &store_ref(internal::ET::TensorRef<self_type, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM> const &ref) const {
+      self_type const &store_ref(internal::TensorRef<self_type, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM> const &ref) const {
 
         auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0];
 
         // check for packed data
         if(STRIDE_ONE_DIM == 0){
           // full vector?
-          if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
+          if(TENSOR_SIZE == internal::TENSOR_FULL){
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::tensor_stats::num_vector_store_packed ++;
 #endif
@@ -165,7 +165,7 @@ namespace internal {
         else
         {
           // full vector?
-          if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
+          if(TENSOR_SIZE == internal::TENSOR_FULL){
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::tensor_stats::num_vector_store_strided ++;
 #endif
@@ -229,7 +229,7 @@ namespace internal {
           camp::idx_t xy_select = (i >> lvl) & 0x1;
 
 
-          z.set(i, xy_select == 0 ? x.get(i) : y.get(i - (1<<lvl)));
+          z.set(xy_select == 0 ? x.get(i) : y.get(i - (1<<lvl)), i);
         }
 
         return z;
@@ -266,7 +266,7 @@ namespace internal {
           // extract value x or y
           camp::idx_t xy_select = (i >> lvl) & 0x1;
 
-          z.set(i, xy_select == 0 ? x.get(i0 + i) : y.get(i0 + i - (1<<lvl)));
+          z.set(xy_select == 0 ? x.get(i0 + i) : y.get(i0 + i - (1<<lvl)), i);
         }
 
         return z;

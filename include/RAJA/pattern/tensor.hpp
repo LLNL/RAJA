@@ -28,5 +28,6 @@
 #include "RAJA/pattern/tensor/internal/ExpressionTemplate.hpp"
 #include "RAJA/pattern/tensor/internal/MatrixRegisterImpl.hpp"
 
+#include "RAJA/pattern/tensor/TensorBlock.hpp"
 
 #endif

@@ -129,7 +129,7 @@ namespace expt {
           auto tile_begin = *(begin+i);
           auto tile_end = tile_begin+diff_t(TILE_SIZE);
           if(tile_end > distance){
-            tile_end = distance;
+            tile_end = *(begin+distance);
           }
           loop_body(tensor_index_type::range(tile_begin, tile_end));
         }

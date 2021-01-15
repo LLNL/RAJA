@@ -47,7 +47,7 @@ namespace RAJA
       static
       constexpr
       self_type range(index_type begin, index_type end){
-        return self_type(begin, value_type(end-begin));
+        return self_type(begin, value_type(stripIndexType(end-begin)));
       }
 
 

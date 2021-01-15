@@ -80,7 +80,7 @@ TYPED_TEST_P(MatrixTest, MatrixGetSet)
   matrix_t m;
   for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
-      m.set(i,j, element_t(NO_OPT_ZERO + i+j*j));
+      m.set(element_t(NO_OPT_ZERO + i+j*j), i,j);
       ASSERT_SCALAR_EQ(m.get(i,j), element_t(i+j*j));
     }
   }
@@ -174,7 +174,7 @@ TYPED_TEST_P(MatrixTest, MatrixStore)
   matrix_t m;
   for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
-      m.set(i,j, i*j*j);
+      m.set(i*j*j, i,j);
     }
   }
 
@@ -287,7 +287,7 @@ TYPED_TEST_P(MatrixTest, MatrixViewStore)
   matrix_t m;
   for(camp::idx_t i = 0;i < num_elem; ++ i){
     for(camp::idx_t j = 0;j < num_elem; ++ j){
-      m.set(i,j, i*j*j);
+      m.set(i*j*j, i,j);
     }
   }
 
@@ -346,9 +346,9 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
   vector_t v;
   for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
     for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
-      m.set(i,j, element_t(NO_OPT_ZERO + 5+i+j*j));
+      m.set(element_t(NO_OPT_ZERO + 5+i+j*j), i,j);
     }
-    v.set(j, NO_OPT_ZERO + 3 + j*2);
+    v.set(NO_OPT_ZERO + 3 + j*2, j);
   }
 
 
@@ -411,7 +411,7 @@ TYPED_TEST_P(MatrixTest, MatrixMatrix)
 
       for(camp::idx_t j = 0;j < size_b; ++ j){
         for(camp::idx_t i = 0;i < size_a; ++ i){
-          A.set(i,j, element_t(NO_OPT_ZERO + i+j*j));
+          A.set(element_t(NO_OPT_ZERO + i+j*j), i,j);
         }
       }
 
@@ -419,7 +419,7 @@ TYPED_TEST_P(MatrixTest, MatrixMatrix)
       B.clear();
       for(camp::idx_t j = 0;j < size_a; ++ j){
         for(camp::idx_t i = 0;i < size_b; ++ i){
-          B.set(i,j, element_t(NO_OPT_ZERO + i*i+2*j));
+          B.set(element_t(NO_OPT_ZERO + i*i+2*j), i,j);
         }
       }
 
@@ -461,7 +461,7 @@ TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
   matrix_t A;
   for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
     for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
-      A.set(i,j, element_t(NO_OPT_ZERO + i+j*j));
+      A.set(element_t(NO_OPT_ZERO + i+j*j), i,j);
     }
   }
 
@@ -469,10 +469,10 @@ TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
   for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
     for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
       if(i == 0){
-        B.set(i,j, element_t(0));
+        B.set(element_t(0), i, j);
       }
       else{
-        B.set(i,j, element_t(NO_OPT_ZERO + i*i+j*j));
+        B.set(element_t(NO_OPT_ZERO + i*i+j*j), i, j);
       }
 
     }
@@ -483,7 +483,7 @@ TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
   C_t C;
   for(camp::idx_t j = 0;j < matrix_t::vector_type::s_num_elem; ++ j){
     for(camp::idx_t i = 0;i < matrix_t::vector_type::s_num_elem; ++ i){
-      C.set(i,j, element_t(NO_OPT_ZERO + 2*i+3*j));
+      C.set(element_t(NO_OPT_ZERO + 2*i+3*j), i, j);
     }
   }
 
@@ -514,7 +514,7 @@ TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
 //        z += A.get(i, k) * B(k,j);
 //      }
 //
-//      expected.set(i,j,z);
+//      expected.set(z, i,j);
 //    }
 //  }
 //  printf("Expected:\n%s\n", expected.toString().c_str());
@@ -551,7 +551,7 @@ TYPED_TEST_P(MatrixTest, MatrixTranspose)
 //  printf("M:\n");
   for(camp::idx_t i = 0;i < num_elem; ++ i){
     for(camp::idx_t j = 0;j < num_elem; ++ j){
-      m.set(i,j, element_t(i+j*num_elem));
+      m.set(element_t(i+j*num_elem), i,j);
 //      printf("%3lf ", (double)m.get(i,j));
     }
 //    printf("\n");

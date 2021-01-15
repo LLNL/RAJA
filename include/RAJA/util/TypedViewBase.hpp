@@ -196,7 +196,7 @@ namespace internal
 
 
       using tensor_reg_type = typename camp::at_v<camp::list<Args...>, GetTesorArgIdx<0, Args...>::value>::tensor_type;
-      using ref_type = internal::ET::TensorRef<tensor_reg_type, ElementType*, LinIdx, internal::ET::TENSOR_MULTIPLE, s_num_dims, s_stride_one_dim>;
+      using ref_type = internal::TensorRef<tensor_reg_type, ElementType*, LinIdx, internal::TENSOR_MULTIPLE, s_num_dims, s_stride_one_dim>;
       using return_type = internal::ET::TensorLoadStore<tensor_reg_type, ref_type>;
 
       template<typename LayoutType>

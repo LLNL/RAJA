@@ -223,7 +223,7 @@ namespace RAJA
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type &set(camp::idx_t , element_type value)
+      self_type &set(element_type value, camp::idx_t)
       {
         m_value = value;
         return *this;

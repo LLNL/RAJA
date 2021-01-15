@@ -79,7 +79,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSetGet)
   register_t x;
   for(size_t i = 0;i < num_elem; ++ i){
     A[i] = (element_t)(NO_OPT_RAND*1000.0);
-    x.set(i, A[i]);
+    x.set(A[i], i);
   }
 
   for(size_t i = 0;i < num_elem; ++ i){
@@ -203,8 +203,8 @@ TYPED_TEST_P(RegisterTest, VectorRegisterAdd)
   for(size_t i = 0;i < num_elem; ++ i){
     A[i] = (element_t)(NO_OPT_RAND*1000.0);
     B[i] = (element_t)(NO_OPT_RAND*1000.0);
-    x.set(i, A[i]);
-    y.set(i, B[i]);
+    x.set(A[i], i);
+    y.set(B[i], i);
   }
 
   // operator +
@@ -262,8 +262,8 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSubtract)
   for(size_t i = 0;i < num_elem; ++ i){
     A[i] = (element_t)(NO_OPT_RAND*1000.0);
     B[i] = (element_t)(NO_OPT_RAND*1000.0);
-    x.set(i, A[i]);
-    y.set(i, B[i]);
+    x.set(A[i], i);
+    y.set(B[i], i);
   }
 
   // operator -
@@ -315,8 +315,8 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMultiply)
   for(size_t i = 0;i < num_elem; ++ i){
     A[i] = (element_t)(NO_OPT_RAND*1000.0);
     B[i] = (element_t)(NO_OPT_RAND*1000.0);
-    x.set(i, A[i]);
-    y.set(i, B[i]);
+    x.set(A[i], i);
+    y.set(B[i], i);
   }
 
   // operator *
@@ -368,8 +368,8 @@ TYPED_TEST_P(RegisterTest, VectorRegisterDivide)
   for(size_t i = 0;i < num_elem; ++ i){
     A[i] = (element_t)(NO_OPT_RAND*1000.0);
     B[i] = (element_t)(NO_OPT_RAND*1000.0)+1.0;
-    x.set(i, A[i]);
-    y.set(i, B[i]);
+    x.set(A[i], i);
+    y.set(B[i], i);
   }
 
   // operator /
@@ -423,8 +423,8 @@ TYPED_TEST_P(RegisterTest, VectorRegisterDotProduct)
   for(size_t i = 0;i < num_elem; ++ i){
     A[i] = (element_t)(NO_OPT_RAND*1000.0);
     B[i] = (element_t)(NO_OPT_RAND*1000.0);
-    x.set(i, A[i]);
-    y.set(i, B[i]);
+    x.set(A[i], i);
+    y.set(B[i], i);
     expected += A[i]*B[i];
   }
 
@@ -447,9 +447,9 @@ TYPED_TEST_P(RegisterTest, VectorFMA)
     A[i] = (element_t)(NO_OPT_RAND*1000.0);
     B[i] = (element_t)(NO_OPT_RAND*1000.0);
     C[i] = (element_t)(NO_OPT_RAND*1000.0);
-    x.set(i, A[i]);
-    y.set(i, B[i]);
-    z.set(i, C[i]);
+    x.set(A[i], i);
+    y.set(B[i], i);
+    z.set(C[i], i);
     expected[i] = A[i]*B[i]+C[i];
   }
 
@@ -477,9 +477,9 @@ TYPED_TEST_P(RegisterTest, VectorFMS)
     A[i] = (element_t)(NO_OPT_RAND*1000.0);
     B[i] = (element_t)(NO_OPT_RAND*1000.0);
     C[i] = (element_t)(NO_OPT_RAND*1000.0);
-    x.set(i, A[i]);
-    y.set(i, B[i]);
-    z.set(i, C[i]);
+    x.set(A[i], i);
+    y.set(B[i], i);
+    z.set(C[i], i);
     expected[i] = A[i]*B[i]-C[i];
   }
 
@@ -505,8 +505,8 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMax)
     for(size_t i = 0;i < num_elem; ++ i){
       A[i] = (element_t)(NO_OPT_RAND*1000.0);
       B[i] = (element_t)(NO_OPT_RAND*1000.0);
-      x.set(i, A[i]);
-      y.set(i, B[i]);
+      x.set(A[i], i);
+      y.set(B[i], i);
     }
 
     // Check vector reduction
@@ -542,8 +542,8 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMin)
     for(size_t i = 0;i < num_elem; ++ i){
       A[i] = (element_t)(NO_OPT_RAND*1000.0);
       B[i] = (element_t)(NO_OPT_RAND*1000.0);
-      x.set(i, A[i]);
-      y.set(i, B[i]);
+      x.set(A[i], i);
+      y.set(B[i], i);
     }
 
     // Check vector reduction

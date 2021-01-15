@@ -29,8 +29,6 @@ namespace RAJA
   namespace internal
   {
 
-  namespace ET
-  {
     enum TensorTileSize
     {
       TENSOR_PARTIAL,  // the tile is a full TensorRegister
@@ -167,7 +165,6 @@ namespace RAJA
 
 
 
-  } // namespace ET
 
   } // namespace internal
 

@@ -24,7 +24,7 @@
 
 #include "camp/camp.hpp"
 #include "RAJA/pattern/tensor/TensorLayout.hpp"
-#include "RAJA/pattern/tensor/internal/ET/TensorRef.hpp"
+#include "RAJA/pattern/tensor/internal/TensorRef.hpp"
 
 namespace RAJA
 {

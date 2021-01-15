@@ -177,7 +177,7 @@ namespace RAJA
       self_type &load_packed_n(element_type const *ptr, camp::idx_t N){
         m_value = _mm256_setzero_si256();
         for(camp::idx_t i = 0;i < N;++ i){
-          set(i, ptr[i]);
+          set(ptr[i], i);
         }
         return *this;
       }
@@ -189,7 +189,7 @@ namespace RAJA
       RAJA_INLINE
       self_type &load_strided(element_type const *ptr, camp::idx_t stride){
         for(camp::idx_t i = 0;i < 8;++ i){
-          set(i, ptr[i*stride]);
+          set(ptr[i*stride], i);
         }
         return *this;
       }
@@ -204,7 +204,7 @@ namespace RAJA
       self_type &load_strided_n(element_type const *ptr, camp::idx_t stride, camp::idx_t N){
         m_value = _mm256_setzero_si256();
         for(camp::idx_t i = 0;i < N;++ i){
-          set(i, ptr[i*stride]);
+          set(ptr[i*stride], i);
         }
         return *this;
       }
@@ -288,7 +288,7 @@ namespace RAJA
        * @param value Value of scalar to set
        */
       RAJA_INLINE
-      self_type &set(camp::idx_t i, element_type value)
+      self_type &set(element_type value, camp::idx_t i)
       {
         // got to be a nicer way to do this!?!?
         switch(i){

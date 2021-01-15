@@ -23,7 +23,9 @@
 #include "RAJA/util/macros.hpp"
 
 #include "RAJA/pattern/tensor/internal/ET/ExpressionTemplateBase.hpp"
+#include "RAJA/pattern/tensor/internal/TensorTileExec.hpp"
 #include "RAJA/util/TypedViewBase.hpp"
+
 
 namespace RAJA
 {
@@ -38,96 +40,38 @@ namespace RAJA
   {
 
 
-    template<typename STORAGE, typename DIM_SEQ>
-    struct TensorStoreExpanded;
 
-    /**
-     * Implement a dimension tiling loop
-     */
-    template<typename STORAGE, camp::idx_t DIM0, camp::idx_t ... DIM_REST>
-    struct TensorStoreExpanded<STORAGE, camp::idx_seq<DIM0, DIM_REST...>>{
+    template<typename STORAGE, typename RHS_TYPE, typename REF_TYPE>
+    struct TensorStoreFunctor
+    {
+        RHS_TYPE const &rhs;
+        REF_TYPE const &ref;
 
-      using inner_t = TensorStoreExpanded<STORAGE, camp::idx_seq<DIM_REST...>>;
+        template<typename TILE_TYPE>
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        void operator()(TILE_TYPE const &tile) const{
 
-      template<typename REF, typename RHS, typename TTYPE>
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      static
-      void store(REF &ref, RHS const &rhs, TTYPE &tile){
-        //          printf("store_tile_loop<DIM%d> %d to %d\n",
-        //              (int)DIM0, (int)m_ref.m_tile.m_begin[DIM0],
-        //              (int)(m_ref.m_tile.m_begin[DIM0] + m_ref.m_tile.m_size[DIM0]));
+          // Create top-level storage
+          STORAGE storage;
 
-        //auto const &store_tile = getTile();
-        auto orig_begin = ref.m_tile.m_begin[DIM0];
-        auto orig_size = ref.m_tile.m_size[DIM0];
+          // Call rhs to evaluate this tile
+          rhs.eval(storage, tile);
 
-        // Do the full tile sizes
-        for(tile.m_begin[DIM0] = orig_begin;
-
-            tile.m_begin[DIM0] +  STORAGE::s_dim_elem(DIM0) <=
-                orig_begin+orig_size;
-
-            tile.m_begin[DIM0] += STORAGE::s_dim_elem(DIM0)){
-
-          // Do the next inner tiling loop
-          inner_t::store(ref, rhs, tile);
+          // Store result
+          storage.store_ref(merge_ref_tile(ref, tile));
         }
-
-        // Postamble if needed
-        if(tile.m_begin[DIM0] <
-            orig_begin + orig_size)
-        {
-
-          // convert tile to a partial tile
-          auto &part_tile = make_tensor_tile_partial(tile);
-
-          // set tile size to the remainder
-          part_tile.m_size[DIM0] =
-              orig_begin +
-              orig_size -
-              tile.m_begin[DIM0];
-
-//            printf("store_tile_loop<DIM%d>  postamble %d to %d\n",
-//                (int)DIM0, (int)part_tile.m_begin[DIM0],
-//                (int)(part_tile.m_size[DIM0] + part_tile.m_size[DIM0]));
-
-
-          // Do the next inner tiling loop
-          inner_t::store(ref, rhs, part_tile);
-        }
-
-        // reset tile dimension
-        tile.m_begin[DIM0] = orig_begin;
-        tile.m_size[DIM0] = orig_size;
-      }
-
     };
 
-    /**
-     * Termination of nested loop:  execute evaluation of ET
-     */
-    template<typename STORAGE>
-    struct TensorStoreExpanded<STORAGE, camp::idx_seq<>>{
-
-      template<typename REF, typename RHS, typename TTYPE>
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      static
-      void store(REF &ref, RHS const &rhs, TTYPE const &tile){
-
-        // Create top-level storage
-        STORAGE storage;
-
-        // Call rhs to evaluate this tile
-        rhs.eval(storage, tile);
-
-        // Store result
-        storage.store_ref(merge_ref_tile(ref, tile));
-      }
-
-    };
-
+    template<typename STORAGE, typename RHS_TYPE, typename REF_TYPE>
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    constexpr
+    auto makeTensorStoreFunctor(RHS_TYPE const &rhs, REF_TYPE const &ref) ->
+    TensorStoreFunctor<STORAGE, RHS_TYPE, REF_TYPE>
+    {
+      return TensorStoreFunctor<STORAGE, RHS_TYPE, REF_TYPE>{rhs, ref};
+    }
 
 
     template<typename TENSOR_TYPE, typename REF_TYPE>
@@ -256,37 +200,10 @@ namespace RAJA
           rhs.print_ast();
           printf(")\n");
 #endif
-          store_expanded(rhs, camp::make_idx_seq_t<tensor_type::s_num_dims>{});
+          tensorTileExec<tensor_type>(m_ref.m_tile,
+              makeTensorStoreFunctor<tensor_type>(rhs, m_ref));
         }
 
-        template<typename RHS, camp::idx_t ... DIM_SEQ>
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        void store_expanded(RHS const &rhs, camp::idx_seq<DIM_SEQ...> const &)
-        {
-          // tile over full rows and columns
-          //tile_type tile{{0,0},{row_tile_size, col_tile_size}};
-          tile_type tile {
-            {getTile().m_begin[DIM_SEQ]...},
-            {tensor_type::s_dim_elem(DIM_SEQ)...},
-          };
-
-
-          // Promote the tile type to a "full-tile" so that the full-element
-          // register operations are used.
-          // Any of the tiling loops can demote this to a partial-tile when
-          // they do postamble execution
-          auto &full_tile = make_tensor_tile_full(tile);
-
-          // Do all of the tiling loops
-          //store_tile_loop(rhs, full_tile, camp::idx_seq<DIM_SEQ...>{});
-
-          using tensor_store_t =
-              TensorStoreExpanded<tensor_type, camp::idx_seq<DIM_SEQ...>>;
-
-          tensor_store_t::store(m_ref, rhs, full_tile);
-
-        }
 
 
 

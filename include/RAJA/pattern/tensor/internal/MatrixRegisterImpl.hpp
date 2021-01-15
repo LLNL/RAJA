@@ -221,9 +221,9 @@ namespace RAJA
       /*!
        * @brief Performs load specified by TensorRef object.
        */
-      template<typename POINTER_TYPE, typename INDEX_TYPE, internal::ET::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
+      template<typename POINTER_TYPE, typename INDEX_TYPE, internal::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
       RAJA_INLINE
-      self_type &load_ref(internal::ET::TensorRef<self_type, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 2, STRIDE_ONE_DIM> const &ref){
+      self_type &load_ref(internal::TensorRef<self_type, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 2, STRIDE_ONE_DIM> const &ref){
 
         auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0] +
                                    ref.m_tile.m_begin[1]*ref.m_stride[1];
@@ -231,7 +231,7 @@ namespace RAJA
         // check for packed data
         if(is_ref_packed<STRIDE_ONE_DIM>()){
           // full vector?
-          if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
+          if(TENSOR_SIZE == internal::TENSOR_FULL){
             load_packed(ptr, ref.m_stride[0], ref.m_stride[1]);
           }
           // partial
@@ -245,7 +245,7 @@ namespace RAJA
         else
         {
           // full vector?
-          if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
+          if(TENSOR_SIZE == internal::TENSOR_FULL){
             load_strided(ptr, ref.m_stride[0], ref.m_stride[1]);
           }
           // partial
@@ -261,9 +261,9 @@ namespace RAJA
       /*!
        * @brief Performs load specified by TensorRef object.
        */
-      template<typename POINTER_TYPE, typename INDEX_TYPE, internal::ET::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
+      template<typename POINTER_TYPE, typename INDEX_TYPE, internal::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
       RAJA_INLINE
-      self_type const &store_ref(internal::ET::TensorRef<self_type, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE,2, STRIDE_ONE_DIM> const &ref) const {
+      self_type const &store_ref(internal::TensorRef<self_type, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE,2, STRIDE_ONE_DIM> const &ref) const {
 
         auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0] +
                                    ref.m_tile.m_begin[1]*ref.m_stride[1];
@@ -272,7 +272,7 @@ namespace RAJA
         if(is_ref_packed<STRIDE_ONE_DIM>())
         {
           // full vector?
-          if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
+          if(TENSOR_SIZE == internal::TENSOR_FULL){
             store_packed(ptr, ref.m_stride[0], ref.m_stride[1]);
           }
           // partial
@@ -286,7 +286,7 @@ namespace RAJA
         else
         {
           // full vector?
-          if(TENSOR_SIZE == internal::ET::TENSOR_FULL){
+          if(TENSOR_SIZE == internal::TENSOR_FULL){
             store_strided(ptr, ref.m_stride[0], ref.m_stride[1]);
           }
           // partial
@@ -623,7 +623,7 @@ namespace RAJA
         if(layout_type::is_row_major()){
           vector_type result;
           camp::sink(
-              result.set(VAL_SEQ, v.dot(m_values[VAL_SEQ]))...
+              result.set(v.dot(m_values[VAL_SEQ]), VAL_SEQ)...
               );
 
           return result;
@@ -644,7 +644,7 @@ namespace RAJA
         if(layout_type::is_column_major()){
           vector_type result;
           camp::sink(
-              result.set(VAL_SEQ, v.dot(m_values[VAL_SEQ]))...
+              result.set(v.dot(m_values[VAL_SEQ]), VAL_SEQ)...
               );
 
           return result;
@@ -789,12 +789,12 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &set(int row, int col, element_type val){
+      self_type &set(element_type val, int row, int col){
         if(layout_type::is_row_major()){
-          m_values[row].set(col, val);
+          m_values[row].set(val, col);
         }
         else{
-          m_values[col].set(row, val);
+          m_values[col].set(val, row);
         }
         return *this;
       }
