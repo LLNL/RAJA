@@ -17,3 +17,7 @@ raja_add_reproducer(
   NAME reproducer-openmptarget-issue2
   SOURCES reproducer-openmptarget-issue2.cpp)
 
+raja_add_reproducer(
+  NAME reproducer-openmptarget-issue3
+  SOURCES reproducer-openmptarget-issue3.cpp)
+
