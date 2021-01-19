@@ -38,6 +38,10 @@ raja_add_executable(
   SOURCES tut_vertexsum-coloring.cpp)
 
 raja_add_executable(
+  NAME array_reductions
+  SOURCES array-reductions.cpp)
+
+raja_add_executable(
   NAME tut_reductions
   SOURCES tut_reductions.cpp)
 
