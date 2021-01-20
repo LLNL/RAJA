@@ -19,12 +19,31 @@ import subprocess
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('_exts'))
+#sys.path.insert(0, os.path.abspath('_exts'))
 
-# Generate Doxygen on RTD
+# Call doxygen in ReadtheDocs
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 if read_the_docs_build:
-    subprocess.call('cd ../doxygen; cp Doxyfile.in Doxyfile; doxygen', shell=True)
+  # Makes sure directory exists for doxygen output
+  cwd=os.getcwd()
+  buildpath=os.path.join(cwd,"_build")
+  if (os.path.isdir(buildpath) == 0):
+    os.mkdir(buildpath)
+  htmlpath=os.path.join(buildpath,"html")
+  if (os.path.isdir(htmlpath) == 0):
+    os.mkdir(htmlpath)
+
+  # Call doxygen
+    from subprocess import call
+    call(['doxygen', "./doxygen/Doxyfile"])
+
+# Get current directory
+conf_directory = os.path.dirname(os.path.realpath(__file__))
+
+# If extensions (or modules to document with autodoc) are in another directory,
+# add these directories to sys.path here. If the directory is relative to the
+# documentation root, use os.path.abspath to make it absolute, like shown here.
+#sys.path.insert(0, os.path.abspath('.'))
 
 # -- General configuration ------------------------------------------------
 
@@ -43,7 +62,7 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = [os.path.join(conf_directory, 'sphinx/_templates')]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -58,8 +77,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'RAJA'
-copyright = u'2016-2020'
-author = u'LLNS'
+copyright = u'2016-2021, Lawrence Livermore National Security, LLNS'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -117,6 +135,8 @@ todo_include_todos = False
 
 # -- Options for HTML output ----------------------------------------------
 
+# The theme to use for HTML and HTML help pages. See the documentation for 
+# list of built-in themes.
 try:
     import sphinx_rtd_theme
 except:
@@ -162,12 +182,12 @@ else:
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = [os.path.join(conf_directory, 'sphinx/_static')]
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
 # directly to the root of the documentation.
-html_extra_path = ['../doxygen/build/html']
+#html_extra_path = 
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -248,7 +268,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'RAJA.tex', u'RAJA Documentation',
-     author, 'manual'),
+     u'LLNL', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -278,7 +298,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (master_doc, 'raja', u'RAJA Documentation',
-     [author], 1)
+     [u'RAJA Team'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -292,7 +312,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'RAJA', u'RAJA Documentation',
-     author, 'RAJA', 'Performance Portability for HPC Simulations',
+     'RAJA Team', 'RAJA', 'Performance Portability for HPC Simulations',
      'Miscellaneous'),
 ]
 
@@ -307,5 +327,3 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
-
-#
