@@ -1,30 +1,42 @@
-.. developer_guide:
+.. ##
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## for details.
+.. ##
+.. ## SPDX-License-Identifier: (BSD-3-Clause)
+.. ##
 
-===============
-Developer Guide
-===============
+.. raja_host_config:
+
+**********************
+RAJA Host-Config Files
+**********************
+
+RAJA *host-config* files are used to configure and build RAJA for various
+platforms and compilers.
 
 Generating RAJA host-config files
 ===================================
 
-This mechanism will generate a cmake configuration file that reproduces the configuration `Spack <https://github.com/spack/spack>` would have generated in the same context. It contains all the information necessary to build RAJA with the described toolchain.
+This mechanism will generate a cmake configuration file that reproduces the configuration `Spack <https://github.com/spack/spack>`_ would have generated in the same context. It contains all the information necessary to build RAJA with the described toolchain.
 
 In particular, the host config file will setup:
-* flags corresponding with the target required (Release, Debug).
-* compilers path, and other toolkits (cuda if required), etc.
-* paths to installed dependencies. However, RAJA only directly depends on CMake.
 
-This provides an easy way to build RAJA based on `Spack <https://github.com/spack/spack>` and encapsulated in `Uberenv <https://github.com/LLNL/uberenv>`_.
+  * Flags corresponding with the target required (Release, Debug)
+  * Compiler path and other toolkits (cuda if required), etc.
+  * Paths to installed dependencies. However, RAJA only directly depends on CMake
+
+This provides an easy way to build RAJA based on `Spack <https://github.com/spack/spack>`_ and encapsulated in `Uberenv <https://github.com/LLNL/uberenv>`_.
 
 Uberenv role
 ------------
 
 Uberenv helps by doing the following:
 
-* Pulls a blessed version of Spack locally
-* If you are on a known operating system (like TOSS3), we have defined compilers and system packages so you don't have to rebuild the world (CMake typically in RAJA).
-* Overrides RAJA Spack packages with the local one if it exists. (see ``scripts/uberenv/packages``).
-* Covers both dependencies and project build in one command.
+  * Pulls a blessed version of Spack locally
+  * If you are on a known operating system (like TOSS3), we have defined compilers and system packages so you don't have to rebuild the world (CMake typically in RAJA).
+  * Overrides RAJA Spack packages with the local one if it exists. (see ``scripts/uberenv/packages``).
+  * Covers both dependencies and project build in one command.
 
 Uberenv will create a directory ``uberenv_libs`` containing a Spack instance with the required RAJA dependencies installed. It then generates a host-config file (``<config_dependent_name>.cmake``) at the root of RAJA repository.
 
@@ -36,7 +48,7 @@ Using Uberenv to generate the host-config file
   $ python scripts/uberenv/uberenv.py
 
 .. note::
-  On LC machines, it is good practice to do the build step in parallel on a compute node. Here is an example command: ``srun -ppdebug -N1 --exclusive python scripts/uberenv/uberenv.py``
+  On LC machines, do the build step in parallel on a compute node. Here is an example command: ``srun -ppdebug -N1 --exclusive python scripts/uberenv/uberenv.py``
 
 Unless otherwise specified Spack will default to a compiler. It is recommended to specify which compiler to use: add the compiler spec to the ``--spec`` Uberenv command line option.
 
