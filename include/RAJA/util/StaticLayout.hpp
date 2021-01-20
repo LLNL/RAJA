@@ -228,7 +228,7 @@ template <typename Perm, typename IdxLin, typename Sizes, typename Indexes>
 struct StaticLayoutMaker
 {
   using strides = typename detail::StrideCalculator<IdxLin, Indexes, Perm, Sizes>::strides;
-  using type = typename StaticLayoutBase_impl<IdxLin, Indexes, Sizes, strides>;
+  using type = StaticLayoutBase_impl<IdxLin, Indexes, Sizes, strides>;
 };
 
 }  // namespace detail
