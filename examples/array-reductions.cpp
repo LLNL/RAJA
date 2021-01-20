@@ -14,7 +14,7 @@
 int main(int argc, char* argv[])
 {
   // Test Parameters
-  constexpr int NUM_NODES = 50000;
+  constexpr int NUM_NODES = 500000;
   int NUM_PAIRS = 50000;
   if (argc > 1)
     NUM_PAIRS = std::atoi(argv[1]);
@@ -33,13 +33,14 @@ int main(int argc, char* argv[])
   using REDUCE_POL = RAJA::omp_reduce;
 
 
+#if 1
   // --------------------------------------------------------------------------------
   // Run Vector-of-Type Reduction Example
   // --------------------------------------------------------------------------------
-  std::cout << "\nRunning Vector-of-Type (VoT_t) Reducer example ...\n";
+  std::cout << "\nRunning 1D Vector-of-Type (VoT_t) Reducer example ...\n";
 
   using BASE_T = double;
-  VoT_t<BASE_T> VoT_nodeData(NUM_NODES);
+  VoT_t<1, BASE_T> VoT_nodeData(NUM_NODES);
 
   RAJA::ChronoTimer type_timer;
   type_timer.start();
@@ -47,13 +48,62 @@ int main(int argc, char* argv[])
     int i_idx = pairlist[ i ].first;
     int j_idx = pairlist[ i ].second;
 
-    BASE_T& i_data = VoT_nodeData[ i_idx ];
-    BASE_T& j_data = VoT_nodeData[ j_idx ];
+    BASE_T& i_data = VoT_nodeData.at( i_idx );
+    BASE_T& j_data = VoT_nodeData.at( j_idx );
     i_data += j_idx;
     j_data += i_idx;
   });
   type_timer.stop();
   checkResults(nodeDataSolution, VoT_nodeData, type_timer);
+#endif
+
+#if 1
+  // --------------------------------------------------------------------------------
+  // Run 2D Col-Major Vector-of-Type Reduction Example
+  // --------------------------------------------------------------------------------
+  std::cout << "\nRunning 2D Col-Major Vector-of-Type (VoT_t) Reducer example ...\n";
+
+  using BASE_T = double;
+  VoT_t<2, BASE_T> VoT_nodeData2c(1, NUM_NODES);
+
+  RAJA::ChronoTimer type_timer2c;
+  type_timer2c.start();
+  RAJA::forall<EXEC_POL> (np_range, [=](int i) {
+    int i_idx = pairlist[ i ].first;
+    int j_idx = pairlist[ i ].second;
+
+    BASE_T& i_data = VoT_nodeData2c.at( 0, i_idx );
+    BASE_T& j_data = VoT_nodeData2c.at( 0, j_idx );
+    i_data += j_idx;
+    j_data += i_idx;
+  });
+  type_timer2c.stop();
+  checkResults(nodeDataSolution, VoT_nodeData2c, type_timer2c);
+#endif
+
+#if 1
+  // --------------------------------------------------------------------------------
+  // Run 2D Row-Major Vector-of-Type Reduction Example
+  // --------------------------------------------------------------------------------
+  std::cout << "\nRunning 2D Row-Major Vector-of-Type (VoT_t) Reducer example ...\n";
+
+  using BASE_T = double;
+  VoT_t<2, BASE_T> VoT_nodeData2r(NUM_NODES, 1);
+
+  RAJA::ChronoTimer type_timer2;
+  type_timer2.start();
+  RAJA::forall<EXEC_POL> (np_range, [=](int i) {
+    int i_idx = pairlist[ i ].first;
+    int j_idx = pairlist[ i ].second;
+
+    BASE_T& i_data = VoT_nodeData2r.at( i_idx, 0 );
+    BASE_T& j_data = VoT_nodeData2r.at( j_idx, 0 );
+    i_data += j_idx;
+    j_data += i_idx;
+  });
+  type_timer2.stop();
+  checkResults(nodeDataSolution, VoT_nodeData2r, type_timer2);
+#endif
 
 
 #if 1
@@ -71,8 +121,8 @@ int main(int argc, char* argv[])
     int i_idx = pairlist[ i ].first;
     int j_idx = pairlist[ i ].second;
 
-    REDUCESUM_T& i_data = VoR_nodeData[ i_idx ];
-    REDUCESUM_T& j_data = VoR_nodeData[ j_idx ];
+    REDUCESUM_T& i_data = VoR_nodeData.at( i_idx );
+    REDUCESUM_T& j_data = VoR_nodeData.at( j_idx );
     i_data += j_idx;
     j_data += i_idx;
   });
@@ -114,20 +164,11 @@ pairlist_t generatePairList(const int n_nodes, const int n_pairs){
 template<typename T1, typename T2>
 void checkResults(const  T1& solution, const T2& test, const RAJA::ChronoTimer& timer){
 
-  bool correctness = true;
-  for (size_t i = 0; i < solution.size(); i++){
-    if (solution[i] != test[i]) correctness = false;
-  }
-
-  //size_t print_sz = solution.size() < 10 ? solution.size() : 10;
-  //for (size_t i = 0; i < print_sz; i++){
-  //  std::cout << "(" << solution[i] << ", " << test[i] << ")  ";
-  //}
-  //std::cout << "\n";
 
   std::cout << "\tTime : " << timer.elapsed() << "\n";
 
-  if (correctness)
+  //if (correctness)
+  if (test == solution)
     std::cout<< "\tPASSED !\n";
   else
     std::cout<< "\tFAILED !\n";
