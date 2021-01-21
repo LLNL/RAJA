@@ -51,7 +51,7 @@
 //------------------
 
 //#8,9
-//Same as CUDA kernel 0.
+//Same as Device kernel0.
 #define TEAMS_KERNEL_0
 #define TEAMS_KERNEL_0_BOUNDS //adds launch bounds
 
@@ -573,7 +573,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 //First run to get the data on the device
-  matMultKernel0<<<N, DEVICE_BLOCK_SIZE>>>(N, C, A, B);
+#if defined(RAJA_ENABLE_HIP)
+  hipLaunchKernelGGL((matMultKernel0), N, 256, 0, 0, N, C, A, B);
+#else
+  matMultKernel0<<<N, 256>>>(N, C, A, B);
+#endif
   DEVICE_SYNC();
 
   dim3 blockdim(DEVICE_BLOCK_SIZE, DEVICE_BLOCK_SIZE);
@@ -583,11 +587,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(CUDA_KERNEL_0)
   {
     printf("# 0");
-    printf("\nCUDA kernel 0 \n");
+    printf("\nDevice kernel 0 \n");
     printf("Maps CUDA blocks to rows \n");
     printf("Uses block stride loop for columns \n");
     auto t0 = Clock::now();
-    matMultKernel0<<<N, 256>>>(N, C, A, B);
+#if defined(RAJA_ENABLE_HIP)
+  hipLaunchKernelGGL((matMultKernel0), N, 256, 0, 0, N, C, A, B);
+#else
+  matMultKernel0<<<N, 256>>>(N, C, A, B);
+#endif
     DEVICE_SYNC();
     auto tf = Clock::now();
 
@@ -601,12 +609,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(CUDA_KERNEL_0_BOUNDS)
   {
     printf("# 1");
-    printf("\nCUDA kernel 0 (w launch bounds) \n");
+    printf("\nDevice kernel 0 (w launch bounds) \n");
     printf("Maps CUDA blocks to rows \n");
     printf("Uses block stride loop for columns \n");
     printf("Adds launch bounds \n");
     auto t0 = Clock::now();
+#if defined(RAJA_ENABLE_HIP)
+    hipLaunchKernelGGL((matMultKernel0_bounds), N, 256, 0, 0, N, C, A, B);
+#else
     matMultKernel0_bounds<<<N, 256>>>(N, C, A, B);
+#endif
     DEVICE_SYNC();
     auto tf = Clock::now();
 
@@ -620,11 +632,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(CUDA_KERNEL_1)
   {
     printf("# 2");
-    printf("\nCUDA kernel 1 \n");
+    printf("\nDevice kernel 1 \n");
     printf("Generates global 2D threads \n");
     printf("Each thread performs dot product \n");
     auto t0 = Clock::now();
+#if defined(RAJA_ENABLE_HIP)
+    hipLaunchKernelGGL((matMultKernel1), dim3(griddim), dim3(blockdim),
+                       0, 0, N, C, A, B);
+#else
     matMultKernel1<<<griddim, blockdim>>>(N, C, A, B);
+#endif
     DEVICE_SYNC();
     auto tf = Clock::now();
 
@@ -638,12 +655,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(CUDA_KERNEL_1_BOUNDS)
   {
     printf("# 3");
-    printf("\nCUDA kernel 1 (w launch bounds) \n");
+    printf("\nDevice kernel 1 (w launch bounds) \n");
     printf("Generates global 2D threads \n");
     printf("Each thread performs dot product \n");
     printf("Adds launch bounds \n");
     auto t0 = Clock::now();
+#if defined(RAJA_ENABLE_HIP)
+    hipLaunchKernelGGL((matMultKernel1_bounds), dim3(griddim), dim3(blockdim),
+                       0, 0, N, C, A, B);
+#else
     matMultKernel1_bounds<<<griddim, blockdim>>>(N, C, A, B);
+#endif
     DEVICE_SYNC();
     auto tf = Clock::now();
 
@@ -657,12 +679,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(CUDA_KERNEL_2)
   {
     printf("# 4");
-    printf("\nCUDA kernel 2 shared \n");
+    printf("\nDevice kernel 2 shared \n");
     printf("Performs multiplication by loading submatrices \n");
     printf("into shared memory tiles \n");
     printf("Solution is accumulated in shared memory \n");
     auto t0 = Clock::now();
+#if defined(RAJA_ENABLE_HIP)
+    hipLaunchKernelGGL((matMultKernel2_shared), dim3(griddim), dim3(blockdim),
+                       0, 0, N, C, A, B);
+#else
     matMultKernel2_shared<<<griddim, blockdim>>>(N, C, A, B);
+#endif
     DEVICE_SYNC();
     auto tf = Clock::now();
 
@@ -676,13 +703,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(CUDA_KERNEL_2_BOUNDS)
   {
     printf("# 5");
-    printf("\nCUDA kernel 2 shared (w launch bounds) \n");
+    printf("\nDevice kernel 2 shared (w launch bounds) \n");
     printf("Performs multiplication by loading submatrices \n");
     printf("into shared memory tiles \n");
     printf("Solution is accumulated in shared memory \n");
     printf("Adds launch bounds \n");
     auto t0 = Clock::now();
+#if defined(RAJA_ENABLE_HIP)
+    hipLaunchKernelGGL((matMultKernel2_bounds_shared),
+                       dim3(griddim), dim3(blockdim),
+                       0, 0, N, C, A, B);
+#else
     matMultKernel2_bounds_shared<<<griddim, blockdim>>>(N, C, A, B);
+#endif
     DEVICE_SYNC();
     auto tf = Clock::now();
 
@@ -696,12 +729,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(CUDA_KERNEL_2_REG)
   {
     printf("# 6");
-    printf("\nCUDA kernel 2 shared + register \n");
+    printf("\nDevice kernel 2 shared + register \n");
     printf("Performs multiplication by loading submatrices \n");
     printf("into shared memory tiles \n");
     printf("Solution is accumulated in register space (not portable) \n");
     auto t0 = Clock::now();
+#if defined(RAJA_ENABLE_HIP)
+    hipLaunchKernelGGL((matMultKernel2_register),
+                       dim3(griddim), dim3(blockdim),
+                       0, 0, N, C, A, B);
+#else
     matMultKernel2_register<<<griddim, blockdim>>>(N, C, A, B);
+#endif
     DEVICE_SYNC();
     auto tf = Clock::now();
 
@@ -715,13 +754,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(CUDA_KERNEL_2_REG_BOUNDS)
   {
     printf("# 7");
-    printf("\nCUDA kernel 2 shared + register \n");
+    printf("\nDevice kernel 2 shared + register \n");
     printf("Performs multiplication by loading submatrices \n");
     printf("into shared memory tiles \n");
     printf("Solution is accumulated in register space (not portable) \n");
     printf("Adds launch bounds \n");
     auto t0 = Clock::now();
+#if defined(RAJA_ENABLE_HIP)
+    hipLaunchKernelGGL((matMultKernel2_register),
+                       dim3(griddim), dim3(blockdim),
+                        0, 0, N, C, A, B);
+#else
     matMultKernel2_bounds_register<<<griddim, blockdim>>>(N, C, A, B);
+#endif
+
     DEVICE_SYNC();
     auto tf = Clock::now();
 
