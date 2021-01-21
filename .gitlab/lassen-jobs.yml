@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2016-2020, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -68,7 +68,7 @@ ibm_clang_9_gcc_8_cuda:
 
 gcc_8_3_1_cuda:
   variables:
-    SPEC: "+cuda %gcc@8.3.1 cxxflags='-finline-functions -finline-limit=20000' cflags='-finline-functions -finline-limit=20000' ^cuda@10.1.168"
+    SPEC: "+cuda %gcc@8.3.1 ^cuda@10.1.168"
   extends: .build_and_test_on_lassen
 
 pgi_19_10_cuda:
