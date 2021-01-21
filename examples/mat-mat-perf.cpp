@@ -16,7 +16,7 @@
 #include "RAJA/RAJA.hpp"
 
 //uncomment for RAJA kernel
-//#define RUN_RAJA_KERNEL
+#define RUN_RAJA_KERNEL
 
 //------------------
 //CUDA variants
@@ -1817,7 +1817,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
               // Slide window across matrix: Load tiles of global matrices A, B and compute
               // local dot products
-              RAJA::statement::Tile<1, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, RAJA::loop_exec,
+              RAJA::statement::Tile<1, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, RAJA::seq_exec,
 
                 // Load tile of A into shmem
                 RAJA::statement::For<0, gpu_thread_y_policy,
@@ -1836,7 +1836,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                 kernel_sync_threads,
 
                 //Partial multiplication
-                RAJA::statement::For<1, RAJA::loop_exec,
+                RAJA::statement::For<1, RAJA::seq_exec,
                   RAJA::statement::For<0, gpu_thread_y_policy,
                     RAJA::statement::For<2, gpu_thread_x_policy,
                       shmem_Lambda3
@@ -1889,7 +1889,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // Do partial update in shmem
-    [=] RAJA_HOST_DEVICE (int tn, int tm, int tp, Shmem &aShared,  Shmem &bShared, Shmem & cShared) {
+    [=] RAJA_HOST_DEVICE (int tn, int tm, int tp, Shmem &aShared,  Shmem &bShared, Shmem &cShared) {
 
       cShared(tn,tp) += aShared(tn,tm) * bShared(tm, tp);
 
@@ -1953,7 +1953,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
               // Slide window across matrix: Load tiles of global matrices A, B and compute
               // local dot products
-              RAJA::statement::Tile<1, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, RAJA::loop_exec,
+              RAJA::statement::Tile<1, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, RAJA::seq_exec,
 
                 // Load tile of A into shmem
                 RAJA::statement::For<0, gpu_thread_y_policy,
@@ -1972,7 +1972,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                 kernel_sync_threads,
 
                 //Partial multiplication
-                RAJA::statement::For<1, RAJA::loop_exec,
+                RAJA::statement::For<1, RAJA::seq_exec,
                   RAJA::statement::For<0, gpu_thread_y_policy,
                     RAJA::statement::For<2, gpu_thread_x_policy,
                       shmem_Lambda3
@@ -2083,7 +2083,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
               // Slide window across matrix: Load tiles of global matrices A, B and compute
               // local dot products
-              RAJA::statement::Tile<1, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, RAJA::loop_exec,
+              RAJA::statement::Tile<1, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, RAJA::seq_exec,
 
                 // Load tile of A into shmem
                 RAJA::statement::For<0, gpu_thread_y_policy,
@@ -2102,7 +2102,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                 kernel_sync_threads,
 
                 //Partial multiplication
-                RAJA::statement::For<1, RAJA::loop_exec,
+                RAJA::statement::For<1, RAJA::seq_exec,
                   RAJA::statement::For<0, gpu_thread_y_policy,
                     RAJA::statement::For<2, gpu_thread_x_policy,
                       shmem_Lambda3
@@ -2213,7 +2213,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
               // Slide window across matrix: Load tiles of global matrices A, B and compute
               // local dot products
-              RAJA::statement::Tile<1, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, RAJA::loop_exec,
+              RAJA::statement::Tile<1, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, RAJA::seq_exec,
 
                 // Load tile of A into shmem
                 RAJA::statement::For<0, gpu_thread_y_policy,
@@ -2232,7 +2232,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                 kernel_sync_threads,
 
                 //Partial multiplication
-                RAJA::statement::For<1, RAJA::loop_exec,
+                RAJA::statement::For<1, RAJA::seq_exec,
                   RAJA::statement::For<0, gpu_thread_y_policy,
                     RAJA::statement::For<2, gpu_thread_x_policy,
                       shmem_Lambda3
