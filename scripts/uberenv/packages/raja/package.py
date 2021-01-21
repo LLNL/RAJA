@@ -225,21 +225,9 @@ class Raja(CMakePackage, CudaPackage):
                 cfg.write(cmake_cache_entry("BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
                 "/usr/tce/packages/gcc/gcc-4.9.3/lib64;/usr/tce/packages/gcc/gcc-4.9.3/gnu/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3;/usr/tce/packages/gcc/gcc-4.9.3/gnu/lib64;/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/x86_64-unknown-linux-gnu/4.9.3"))
 
-#        if "toss_3_x86_64_ib" in sys_type:
-#            release_flags = "-O3 -msse4.2 -funroll-loops -finline-functions"
-#            cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELEASE", release_flags))
-#            reldebinf_flags = "-O3 -g -msse4.2 -funroll-loops -finline-functions"
-#            cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELWITHDEBINFO", reldebinf_flags))
-#            debug_flags = "-O0 -g"
-#            cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG", debug_flags))
-
-#        if "blueos_3_ppc64le_ib" in sys_type:
-#            release_flags = "-Ofast -finline-functions -finline-limit=20000"
-#            cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELEASE", release_flags))
-#            reldebinf_flags = "-Ofast -g -finline-functions -finline-limit=20000"
-#            cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_RELWITHDEBINFO", reldebinf_flags))
-#            debug_flags = "-O0 -g"
-#            cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG", debug_flags))
+        if ("xl" in cpp_compiler) and ("cuda" in spec):
+            cfg.write(cmake_cache_entry("HOST_OPT_FLAGS", "-Xcompiler -O3 -Xcompiler -qxlcompatmacros -Xcompiler -qalias=noansi -Xcompiler -qsmp=omp -Xcompiler -qhot -Xcompiler -qnoeh -Xcompiler -qsuppress=1500-029 -Xcompiler -qsuppress=1500-036"))
+            
 
         if "+cuda" in spec:
             cfg.write("#------------------{0}\n".format("-" * 60))
