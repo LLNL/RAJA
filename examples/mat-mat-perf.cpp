@@ -182,8 +182,8 @@ using gpu_block_x_policy = RAJA::hip_block_x_direct;
 using gpu_block_y_policy = RAJA::hip_block_y_direct;
 using gpu_thread_x_policy = RAJA::hip_thread_x_direct;
 using gpu_thread_y_policy = RAJA::hip_thread_y_direct;
-using gpu_thread_x_loop_policy = RAJA::cuda_thread_x_loop;
-using gpu_thread_y_loop_policy = RAJA::cuda_thread_y_loop;
+using gpu_thread_x_loop_policy = RAJA::hip_thread_x_loop;
+using gpu_thread_y_loop_policy = RAJA::hip_thread_y_loop;
 using gpu_global_thread_x_policy = RAJA::expt::hip_global_thread_x;
 using gpu_global_thread_y_policy = RAJA::expt::hip_global_thread_y;
 using gpu_global_thread_xy_policy = RAJA::expt::hip_global_thread_xy;
@@ -241,12 +241,20 @@ using global_thread_y = RAJA::expt::LoopPolicy<loop_policy
 /*
   Define number of threads in x and y dimensions of a CUDA thread block
 */
-#if defined(RAJA_ENABLE_CUDA)
-#define CUDA_BLOCK_SIZE 16
+#if defined(RAJA_DEVICE_ACTIVE)
+#define DEVICE_BLOCK_SIZE 16
 #endif
 
-#if defined(RAJA_ENABLE_HIP)
-#define HIP_BLOCK_SIZE 16
+#if defined (RAJA_ENABLE_CUDA)
+#define DEVICE_SYNC() cudaDeviceSynchronize();
+using kernel_sync_threads = RAJA::statement::CudaSyncThreads;
+using gpu_shared_mem = RAJA::cuda_shared_mem;
+#endif
+
+#if defined (RAJA_ENABLE_HIP)
+#define DEVICE_SYNC() hipDeviceSynchronize();
+using kernel_sync_threads = RAJA::statement::HipSyncThreads;
+using gpu_shared_mem = RAJA::hip_shared_mem;
 #endif
 
 //
@@ -271,30 +279,30 @@ __global__
 void matMultKernel2_shared(int N, double* C, double* A, double* B)
 {
 
-  int Row = blockIdx.y*CUDA_BLOCK_SIZE + threadIdx.y;
-  int Col = blockIdx.x*CUDA_BLOCK_SIZE + threadIdx.x;
+  int Row = blockIdx.y*DEVICE_BLOCK_SIZE + threadIdx.y;
+  int Col = blockIdx.x*DEVICE_BLOCK_SIZE + threadIdx.x;
 
-  __shared__ double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-  __shared__ double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-  __shared__ double Cs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+  __shared__ double As[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+  __shared__ double Bs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+  __shared__ double Cs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
 
   Cs[threadIdx.y][threadIdx.x] = 0.0;
 
-  for (int k = 0; k < (CUDA_BLOCK_SIZE + N - 1)/CUDA_BLOCK_SIZE; k++) {
+  for (int k = 0; k < (DEVICE_BLOCK_SIZE + N - 1)/DEVICE_BLOCK_SIZE; k++) {
 
-    if (k*CUDA_BLOCK_SIZE + threadIdx.x < N && Row < N)
-      As[threadIdx.y][threadIdx.x] = A[Row*N + k*CUDA_BLOCK_SIZE + threadIdx.x];
+    if (k*DEVICE_BLOCK_SIZE + threadIdx.x < N && Row < N)
+      As[threadIdx.y][threadIdx.x] = A[Row*N + k*DEVICE_BLOCK_SIZE + threadIdx.x];
     else
       As[threadIdx.y][threadIdx.x] = 0.0;
 
-    if (k*CUDA_BLOCK_SIZE + threadIdx.y < N && Col < N)
-      Bs[threadIdx.y][threadIdx.x] = B[(k*CUDA_BLOCK_SIZE + threadIdx.y)*N + Col];
+    if (k*DEVICE_BLOCK_SIZE + threadIdx.y < N && Col < N)
+      Bs[threadIdx.y][threadIdx.x] = B[(k*DEVICE_BLOCK_SIZE + threadIdx.y)*N + Col];
     else
       Bs[threadIdx.y][threadIdx.x] = 0.0;
 
     __syncthreads();
 
-    for (int n = 0; n < CUDA_BLOCK_SIZE; ++n)
+    for (int n = 0; n < DEVICE_BLOCK_SIZE; ++n)
       Cs[threadIdx.y][threadIdx.x] += As[threadIdx.y][n] * Bs[n][threadIdx.x];
 
     __syncthreads();
@@ -305,34 +313,34 @@ void matMultKernel2_shared(int N, double* C, double* A, double* B)
       (blockIdx.x * blockDim.x)+ threadIdx.x] = Cs[threadIdx.y][threadIdx.x];
 }
 
-__launch_bounds__(CUDA_BLOCK_SIZE*CUDA_BLOCK_SIZE, 1) __global__
+__launch_bounds__(DEVICE_BLOCK_SIZE*DEVICE_BLOCK_SIZE, 1) __global__
 void matMultKernel2_bounds_shared(int N, double* C, double* A, double* B)
 {
 
-  int Row = blockIdx.y*CUDA_BLOCK_SIZE + threadIdx.y;
-  int Col = blockIdx.x*CUDA_BLOCK_SIZE + threadIdx.x;
+  int Row = blockIdx.y*DEVICE_BLOCK_SIZE + threadIdx.y;
+  int Col = blockIdx.x*DEVICE_BLOCK_SIZE + threadIdx.x;
 
-  __shared__ double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-  __shared__ double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-  __shared__ double Cs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+  __shared__ double As[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+  __shared__ double Bs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+  __shared__ double Cs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
 
   Cs[threadIdx.y][threadIdx.x] = 0.0;
 
-  for (int k = 0; k < (CUDA_BLOCK_SIZE + N - 1)/CUDA_BLOCK_SIZE; k++) {
+  for (int k = 0; k < (DEVICE_BLOCK_SIZE + N - 1)/DEVICE_BLOCK_SIZE; k++) {
 
-    if (k*CUDA_BLOCK_SIZE + threadIdx.x < N && Row < N)
-      As[threadIdx.y][threadIdx.x] = A[Row*N + k*CUDA_BLOCK_SIZE + threadIdx.x];
+    if (k*DEVICE_BLOCK_SIZE + threadIdx.x < N && Row < N)
+      As[threadIdx.y][threadIdx.x] = A[Row*N + k*DEVICE_BLOCK_SIZE + threadIdx.x];
     else
       As[threadIdx.y][threadIdx.x] = 0.0;
 
-    if (k*CUDA_BLOCK_SIZE + threadIdx.y < N && Col < N)
-      Bs[threadIdx.y][threadIdx.x] = B[(k*CUDA_BLOCK_SIZE + threadIdx.y)*N + Col];
+    if (k*DEVICE_BLOCK_SIZE + threadIdx.y < N && Col < N)
+      Bs[threadIdx.y][threadIdx.x] = B[(k*DEVICE_BLOCK_SIZE + threadIdx.y)*N + Col];
     else
       Bs[threadIdx.y][threadIdx.x] = 0.0;
 
     __syncthreads();
 
-    for (int n = 0; n < CUDA_BLOCK_SIZE; ++n)
+    for (int n = 0; n < DEVICE_BLOCK_SIZE; ++n)
       Cs[threadIdx.y][threadIdx.x] += As[threadIdx.y][n] * Bs[n][threadIdx.x];
 
     __syncthreads();
@@ -347,28 +355,28 @@ __global__
 void matMultKernel2_register(int N, double* C, double* A, double* B)
 {
 
-  int Row = blockIdx.y*CUDA_BLOCK_SIZE + threadIdx.y;
-  int Col = blockIdx.x*CUDA_BLOCK_SIZE + threadIdx.x;
+  int Row = blockIdx.y*DEVICE_BLOCK_SIZE + threadIdx.y;
+  int Col = blockIdx.x*DEVICE_BLOCK_SIZE + threadIdx.x;
 
-  __shared__ double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-  __shared__ double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+  __shared__ double As[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+  __shared__ double Bs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
   double dot = 0.0;
 
-  for (int k = 0; k < (CUDA_BLOCK_SIZE + N - 1)/CUDA_BLOCK_SIZE; k++) {
+  for (int k = 0; k < (DEVICE_BLOCK_SIZE + N - 1)/DEVICE_BLOCK_SIZE; k++) {
 
-    if (k*CUDA_BLOCK_SIZE + threadIdx.x < N && Row < N)
-      As[threadIdx.y][threadIdx.x] = A[Row*N + k*CUDA_BLOCK_SIZE + threadIdx.x];
+    if (k*DEVICE_BLOCK_SIZE + threadIdx.x < N && Row < N)
+      As[threadIdx.y][threadIdx.x] = A[Row*N + k*DEVICE_BLOCK_SIZE + threadIdx.x];
     else
       As[threadIdx.y][threadIdx.x] = 0.0;
 
-    if (k*CUDA_BLOCK_SIZE + threadIdx.y < N && Col < N)
-      Bs[threadIdx.y][threadIdx.x] = B[(k*CUDA_BLOCK_SIZE + threadIdx.y)*N + Col];
+    if (k*DEVICE_BLOCK_SIZE + threadIdx.y < N && Col < N)
+      Bs[threadIdx.y][threadIdx.x] = B[(k*DEVICE_BLOCK_SIZE + threadIdx.y)*N + Col];
     else
       Bs[threadIdx.y][threadIdx.x] = 0.0;
 
     __syncthreads();
 
-    for (int n = 0; n < CUDA_BLOCK_SIZE; ++n)
+    for (int n = 0; n < DEVICE_BLOCK_SIZE; ++n)
       dot += As[threadIdx.y][n] * Bs[n][threadIdx.x];
 
     __syncthreads();
@@ -379,32 +387,32 @@ void matMultKernel2_register(int N, double* C, double* A, double* B)
       (blockIdx.x * blockDim.x)+ threadIdx.x] = dot;
 }
 
-__launch_bounds__(CUDA_BLOCK_SIZE*CUDA_BLOCK_SIZE, 1) __global__
+__launch_bounds__(DEVICE_BLOCK_SIZE*DEVICE_BLOCK_SIZE, 1) __global__
 void matMultKernel2_bounds_register(int N, double* C, double* A, double* B)
 {
 
-  int Row = blockIdx.y*CUDA_BLOCK_SIZE + threadIdx.y;
-  int Col = blockIdx.x*CUDA_BLOCK_SIZE + threadIdx.x;
+  int Row = blockIdx.y*DEVICE_BLOCK_SIZE + threadIdx.y;
+  int Col = blockIdx.x*DEVICE_BLOCK_SIZE + threadIdx.x;
 
-  __shared__ double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-  __shared__ double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+  __shared__ double As[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+  __shared__ double Bs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
   double dot = 0.0;
 
-  for (int k = 0; k < (CUDA_BLOCK_SIZE + N - 1)/CUDA_BLOCK_SIZE; k++) {
+  for (int k = 0; k < (DEVICE_BLOCK_SIZE + N - 1)/DEVICE_BLOCK_SIZE; k++) {
 
-    if (k*CUDA_BLOCK_SIZE + threadIdx.x < N && Row < N)
-      As[threadIdx.y][threadIdx.x] = A[Row*N + k*CUDA_BLOCK_SIZE + threadIdx.x];
+    if (k*DEVICE_BLOCK_SIZE + threadIdx.x < N && Row < N)
+      As[threadIdx.y][threadIdx.x] = A[Row*N + k*DEVICE_BLOCK_SIZE + threadIdx.x];
     else
       As[threadIdx.y][threadIdx.x] = 0.0;
 
-    if (k*CUDA_BLOCK_SIZE + threadIdx.y < N && Col < N)
-      Bs[threadIdx.y][threadIdx.x] = B[(k*CUDA_BLOCK_SIZE + threadIdx.y)*N + Col];
+    if (k*DEVICE_BLOCK_SIZE + threadIdx.y < N && Col < N)
+      Bs[threadIdx.y][threadIdx.x] = B[(k*DEVICE_BLOCK_SIZE + threadIdx.y)*N + Col];
     else
       Bs[threadIdx.y][threadIdx.x] = 0.0;
 
     __syncthreads();
 
-    for (int n = 0; n < CUDA_BLOCK_SIZE; ++n)
+    for (int n = 0; n < DEVICE_BLOCK_SIZE; ++n)
       dot += As[threadIdx.y][n] * Bs[n][threadIdx.x];
 
     __syncthreads();
@@ -431,7 +439,7 @@ void matMultKernel1(int N, double* C, double* A, double* B)
   }
 }
 
-__launch_bounds__(CUDA_BLOCK_SIZE*CUDA_BLOCK_SIZE, 1) __global__
+__launch_bounds__(DEVICE_BLOCK_SIZE*DEVICE_BLOCK_SIZE, 1) __global__
 void matMultKernel1_bounds(int N, double* C, double* A, double* B)
 {
   int row = blockIdx.y * blockDim.y + threadIdx.y;
@@ -515,7 +523,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
   const int N = 10000;
   //const int N = 25;
-//const int N = CUDA_BLOCK_SIZE * CUDA_BLOCK_SIZE;
+//const int N = DEVICE_BLOCK_SIZE * DEVICE_BLOCK_SIZE;
 
 //
 // Allocate and initialize matrix data.
@@ -565,10 +573,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 //First run to get the data on the device
-  matMultKernel0<<<N, CUDA_BLOCK_SIZE>>>(N, C, A, B);
-  cudaDeviceSynchronize();
+  matMultKernel0<<<N, DEVICE_BLOCK_SIZE>>>(N, C, A, B);
+  DEVICE_SYNC();
 
-  dim3 blockdim(CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE);
+  dim3 blockdim(DEVICE_BLOCK_SIZE, DEVICE_BLOCK_SIZE);
   dim3 griddim(RAJA_DIVIDE_CEILING_INT(N,blockdim.x),
                RAJA_DIVIDE_CEILING_INT(N,blockdim.y));
 
@@ -580,7 +588,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     printf("Uses block stride loop for columns \n");
     auto t0 = Clock::now();
     matMultKernel0<<<N, 256>>>(N, C, A, B);
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -599,7 +607,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     printf("Adds launch bounds \n");
     auto t0 = Clock::now();
     matMultKernel0_bounds<<<N, 256>>>(N, C, A, B);
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -617,7 +625,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     printf("Each thread performs dot product \n");
     auto t0 = Clock::now();
     matMultKernel1<<<griddim, blockdim>>>(N, C, A, B);
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -636,7 +644,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     printf("Adds launch bounds \n");
     auto t0 = Clock::now();
     matMultKernel1_bounds<<<griddim, blockdim>>>(N, C, A, B);
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -655,7 +663,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     printf("Solution is accumulated in shared memory \n");
     auto t0 = Clock::now();
     matMultKernel2_shared<<<griddim, blockdim>>>(N, C, A, B);
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -675,7 +683,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     printf("Adds launch bounds \n");
     auto t0 = Clock::now();
     matMultKernel2_bounds_shared<<<griddim, blockdim>>>(N, C, A, B);
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -694,7 +702,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     printf("Solution is accumulated in register space (not portable) \n");
     auto t0 = Clock::now();
     matMultKernel2_register<<<griddim, blockdim>>>(N, C, A, B);
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -714,7 +722,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     printf("Adds launch bounds \n");
     auto t0 = Clock::now();
     matMultKernel2_bounds_register<<<griddim, blockdim>>>(N, C, A, B);
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -752,7 +760,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         });
       });
     });
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -786,7 +794,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         });
       });
     });
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -805,11 +813,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(griddim.x,griddim.y),
-                              RAJA::expt::Threads(CUDA_BLOCK_SIZE,CUDA_BLOCK_SIZE)),
+                              RAJA::expt::Threads(DEVICE_BLOCK_SIZE,DEVICE_BLOCK_SIZE)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::tile<teams_y>(ctx, CUDA_BLOCK_SIZE, row_range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
-        RAJA::expt::tile<teams_x>(ctx, CUDA_BLOCK_SIZE, col_range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+      RAJA::expt::tile<teams_y>(ctx, DEVICE_BLOCK_SIZE, row_range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+        RAJA::expt::tile<teams_x>(ctx, DEVICE_BLOCK_SIZE, col_range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
           RAJA::expt::loop<threads_y>(ctx, row_tile, [&] (int row) {
             RAJA::expt::loop<threads_x>(ctx, col_tile, [&] (int col) {
@@ -826,7 +834,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         });
       });
     });
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -846,11 +854,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy_bounds>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(griddim.x,griddim.y),
-                              RAJA::expt::Threads(CUDA_BLOCK_SIZE,CUDA_BLOCK_SIZE)),
+                              RAJA::expt::Threads(DEVICE_BLOCK_SIZE,DEVICE_BLOCK_SIZE)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::tile<teams_y>(ctx, CUDA_BLOCK_SIZE, row_range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
-        RAJA::expt::tile<teams_x>(ctx, CUDA_BLOCK_SIZE, col_range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+      RAJA::expt::tile<teams_y>(ctx, DEVICE_BLOCK_SIZE, row_range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+        RAJA::expt::tile<teams_x>(ctx, DEVICE_BLOCK_SIZE, col_range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
           RAJA::expt::loop<threads_y>(ctx, row_tile, [&] (int row) {
             RAJA::expt::loop<threads_x>(ctx, col_tile, [&] (int col) {
@@ -867,7 +875,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         });
       });
     });
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -885,7 +893,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(griddim.x,griddim.y),
-                              RAJA::expt::Threads(CUDA_BLOCK_SIZE,CUDA_BLOCK_SIZE)),
+                              RAJA::expt::Threads(DEVICE_BLOCK_SIZE,DEVICE_BLOCK_SIZE)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::loop<global_thread_y>(ctx, row_range, [&] (int row) {
@@ -900,7 +908,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         });
       });
     });
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -919,7 +927,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy_bounds>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(griddim.x,griddim.y),
-                              RAJA::expt::Threads(CUDA_BLOCK_SIZE,CUDA_BLOCK_SIZE)),
+                              RAJA::expt::Threads(DEVICE_BLOCK_SIZE,DEVICE_BLOCK_SIZE)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::loop<global_thread_y>(ctx, row_range, [&] (int row) {
@@ -934,7 +942,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         });
       });
     });
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -957,17 +965,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(Nx, Ny),
-                              RAJA::expt::Threads(CUDA_BLOCK_SIZE,CUDA_BLOCK_SIZE)),
+                              RAJA::expt::Threads(DEVICE_BLOCK_SIZE,DEVICE_BLOCK_SIZE)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
       // Loop over teams
       //
-      RAJA::expt::tile<teams_y>(ctx, CUDA_BLOCK_SIZE, row_range, [&] (RAJA::TypedRangeSegment<int> const &y_tile) {
-        RAJA::expt::tile<teams_x>(ctx, CUDA_BLOCK_SIZE, col_range, [&] (RAJA::TypedRangeSegment<int> const &x_tile) {
+      RAJA::expt::tile<teams_y>(ctx, DEVICE_BLOCK_SIZE, row_range, [&] (RAJA::TypedRangeSegment<int> const &y_tile) {
+        RAJA::expt::tile<teams_x>(ctx, DEVICE_BLOCK_SIZE, col_range, [&] (RAJA::TypedRangeSegment<int> const &x_tile) {
 
-          RAJA_TEAM_SHARED double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-          RAJA_TEAM_SHARED double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-          RAJA_TEAM_SHARED double Cs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double As[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double Bs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double Cs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
 
           RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
             RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
@@ -975,7 +983,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             });
           });
 
-          RAJA::expt::tile<seq_loop>(ctx, CUDA_BLOCK_SIZE, dot_range, [&] (RAJA::TypedRangeSegment<int> const &k_tile) {
+          RAJA::expt::tile<seq_loop>(ctx, DEVICE_BLOCK_SIZE, dot_range, [&] (RAJA::TypedRangeSegment<int> const &k_tile) {
 
             RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
               RAJA::expt::loop_icount<threads_x>(ctx, k_tile, [&](int k_id, int tx) {
@@ -1015,7 +1023,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       });
 
     });  // kernel
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -1039,17 +1047,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy_bounds>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(Nx, Ny),
-                              RAJA::expt::Threads(CUDA_BLOCK_SIZE,CUDA_BLOCK_SIZE)),
+                              RAJA::expt::Threads(DEVICE_BLOCK_SIZE,DEVICE_BLOCK_SIZE)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
       // Loop over teams
       //
-      RAJA::expt::tile<teams_y>(ctx, CUDA_BLOCK_SIZE, row_range, [&] (RAJA::TypedRangeSegment<int> const &y_tile) {
-        RAJA::expt::tile<teams_x>(ctx, CUDA_BLOCK_SIZE, col_range, [&] (RAJA::TypedRangeSegment<int> const &x_tile) {
+      RAJA::expt::tile<teams_y>(ctx, DEVICE_BLOCK_SIZE, row_range, [&] (RAJA::TypedRangeSegment<int> const &y_tile) {
+        RAJA::expt::tile<teams_x>(ctx, DEVICE_BLOCK_SIZE, col_range, [&] (RAJA::TypedRangeSegment<int> const &x_tile) {
 
-          RAJA_TEAM_SHARED double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-          RAJA_TEAM_SHARED double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-          RAJA_TEAM_SHARED double Cs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double As[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double Bs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double Cs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
 
           RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
             RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
@@ -1057,7 +1065,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             });
           });
 
-          RAJA::expt::tile<seq_loop>(ctx, CUDA_BLOCK_SIZE, dot_range, [&] (RAJA::TypedRangeSegment<int> const &k_tile) {
+          RAJA::expt::tile<seq_loop>(ctx, DEVICE_BLOCK_SIZE, dot_range, [&] (RAJA::TypedRangeSegment<int> const &k_tile) {
 
             RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
               RAJA::expt::loop_icount<threads_x>(ctx, k_tile, [&](int k_id, int tx) {
@@ -1097,7 +1105,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       });
 
     });  // kernel
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -1120,19 +1128,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(Nx, Ny),
-                              RAJA::expt::Threads(CUDA_BLOCK_SIZE,CUDA_BLOCK_SIZE)),
+                              RAJA::expt::Threads(DEVICE_BLOCK_SIZE,DEVICE_BLOCK_SIZE)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
       // Loop over teams
       //
-      RAJA::expt::tile<teams_y>(ctx, CUDA_BLOCK_SIZE, row_range, [&] (RAJA::TypedRangeSegment<int> const &y_tile) {
-        RAJA::expt::tile<teams_x>(ctx, CUDA_BLOCK_SIZE, col_range, [&] (RAJA::TypedRangeSegment<int> const &x_tile) {
+      RAJA::expt::tile<teams_y>(ctx, DEVICE_BLOCK_SIZE, row_range, [&] (RAJA::TypedRangeSegment<int> const &y_tile) {
+        RAJA::expt::tile<teams_x>(ctx, DEVICE_BLOCK_SIZE, col_range, [&] (RAJA::TypedRangeSegment<int> const &x_tile) {
 
-          RAJA_TEAM_SHARED double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-          RAJA_TEAM_SHARED double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double As[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double Bs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
           double dot = 0.0;
 
-          RAJA::expt::tile<seq_loop>(ctx, CUDA_BLOCK_SIZE, dot_range, [&] (RAJA::TypedRangeSegment<int> const &k_tile) {
+          RAJA::expt::tile<seq_loop>(ctx, DEVICE_BLOCK_SIZE, dot_range, [&] (RAJA::TypedRangeSegment<int> const &k_tile) {
 
             RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
               RAJA::expt::loop_icount<threads_x>(ctx, k_tile, [&](int k_id, int tx) {
@@ -1172,7 +1180,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       });
 
     });  // kernel
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -1196,19 +1204,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy_bounds>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(Nx, Ny),
-                              RAJA::expt::Threads(CUDA_BLOCK_SIZE,CUDA_BLOCK_SIZE)),
+                              RAJA::expt::Threads(DEVICE_BLOCK_SIZE,DEVICE_BLOCK_SIZE)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
       // Loop over teams
       //
-      RAJA::expt::tile<teams_y>(ctx, CUDA_BLOCK_SIZE, row_range, [&] (RAJA::TypedRangeSegment<int> const &y_tile) {
-        RAJA::expt::tile<teams_x>(ctx, CUDA_BLOCK_SIZE, col_range, [&] (RAJA::TypedRangeSegment<int> const &x_tile) {
+      RAJA::expt::tile<teams_y>(ctx, DEVICE_BLOCK_SIZE, row_range, [&] (RAJA::TypedRangeSegment<int> const &y_tile) {
+        RAJA::expt::tile<teams_x>(ctx, DEVICE_BLOCK_SIZE, col_range, [&] (RAJA::TypedRangeSegment<int> const &x_tile) {
 
-          RAJA_TEAM_SHARED double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-          RAJA_TEAM_SHARED double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double As[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double Bs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
           double dot = 0.0;
 
-          RAJA::expt::tile<seq_loop>(ctx, CUDA_BLOCK_SIZE, dot_range, [&] (RAJA::TypedRangeSegment<int> const &k_tile) {
+          RAJA::expt::tile<seq_loop>(ctx, DEVICE_BLOCK_SIZE, dot_range, [&] (RAJA::TypedRangeSegment<int> const &k_tile) {
 
             RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
               RAJA::expt::loop_icount<threads_x>(ctx, k_tile, [&](int k_id, int tx) {
@@ -1248,7 +1256,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       });
 
     });  // kernel
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -1270,41 +1278,41 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(Nx, Ny),
-                              RAJA::expt::Threads(CUDA_BLOCK_SIZE,CUDA_BLOCK_SIZE)),
+                              RAJA::expt::Threads(DEVICE_BLOCK_SIZE,DEVICE_BLOCK_SIZE)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::loop<teams_y>(ctx, RAJA::TypedRangeSegment<int>(0,Ny), [&] (int by) {
         RAJA::expt::loop<teams_x>(ctx, RAJA::TypedRangeSegment<int>(0,Nx), [&] (int bx) {
 
-          RAJA_TEAM_SHARED double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-          RAJA_TEAM_SHARED double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-          RAJA_TEAM_SHARED double Cs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double As[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double Bs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double Cs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
 
-          RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int ty) {
-            RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int tx) {
+          RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int ty) {
+            RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int tx) {
 
               Cs[ty][tx] = 0.0;
 
             });
           });
 
-          for (int k = 0; k < (CUDA_BLOCK_SIZE + N - 1)/CUDA_BLOCK_SIZE; k++) {
+          for (int k = 0; k < (DEVICE_BLOCK_SIZE + N - 1)/DEVICE_BLOCK_SIZE; k++) {
 
-            RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int ty) {
-              RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int tx) {
+            RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int ty) {
+              RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int tx) {
 
-                const int Row = by*CUDA_BLOCK_SIZE + ty;
-                const int Col = bx*CUDA_BLOCK_SIZE + tx;
+                const int Row = by*DEVICE_BLOCK_SIZE + ty;
+                const int Col = bx*DEVICE_BLOCK_SIZE + tx;
 
-                if (k*CUDA_BLOCK_SIZE + tx < N && Row < N)
-                  As[ty][tx] = Aview(Row, (k*CUDA_BLOCK_SIZE + tx));
-                              //A[Row*N + k*CUDA_BLOCK_SIZE + tx];
+                if (k*DEVICE_BLOCK_SIZE + tx < N && Row < N)
+                  As[ty][tx] = Aview(Row, (k*DEVICE_BLOCK_SIZE + tx));
+                              //A[Row*N + k*DEVICE_BLOCK_SIZE + tx];
                 else
                   As[ty][tx] = 0.0;
 
-                if (k*CUDA_BLOCK_SIZE + ty < N && Col < N)
-                  Bs[ty][tx] = Bview((k*CUDA_BLOCK_SIZE + ty), Col);
-                 // Bs[ty][tx] = B[(k*CUDA_BLOCK_SIZE + ty)*N + Col];
+                if (k*DEVICE_BLOCK_SIZE + ty < N && Col < N)
+                  Bs[ty][tx] = Bview((k*DEVICE_BLOCK_SIZE + ty), Col);
+                 // Bs[ty][tx] = B[(k*DEVICE_BLOCK_SIZE + ty)*N + Col];
                 else
                   Bs[ty][tx] = 0.0;
 
@@ -1313,10 +1321,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
             ctx.teamSync();
 
-            RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int ty) {
-              RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int tx) {
+            RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int ty) {
+              RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int tx) {
 
-                for (int n = 0; n < CUDA_BLOCK_SIZE; ++n)
+                for (int n = 0; n < DEVICE_BLOCK_SIZE; ++n)
                   Cs[ty][tx] += As[ty][n] * Bs[n][tx];
 
               });
@@ -1326,11 +1334,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           }
 
-          RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int ty) {
-            RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int tx) {
+          RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int ty) {
+            RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int tx) {
 
-              int Row = by*CUDA_BLOCK_SIZE + ty;
-              int Col = bx*CUDA_BLOCK_SIZE + tx;
+              int Row = by*DEVICE_BLOCK_SIZE + ty;
+              int Col = bx*DEVICE_BLOCK_SIZE + tx;
 
               if (Row < N && Col < N)
                 Cview(Row, Col) = Cs[ty][tx];
@@ -1341,7 +1349,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       });
 
     });  // kernel
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -1364,41 +1372,41 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy_bounds>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(Nx, Ny),
-                              RAJA::expt::Threads(CUDA_BLOCK_SIZE,CUDA_BLOCK_SIZE)),
+                              RAJA::expt::Threads(DEVICE_BLOCK_SIZE,DEVICE_BLOCK_SIZE)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::loop<teams_y>(ctx, RAJA::TypedRangeSegment<int>(0,Ny), [&] (int by) {
         RAJA::expt::loop<teams_x>(ctx, RAJA::TypedRangeSegment<int>(0,Nx), [&] (int bx) {
 
-          RAJA_TEAM_SHARED double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-          RAJA_TEAM_SHARED double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-          RAJA_TEAM_SHARED double Cs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double As[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double Bs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double Cs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
 
-          RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int ty) {
-            RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int tx) {
+          RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int ty) {
+            RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int tx) {
 
               Cs[ty][tx] = 0.0;
 
             });
           });
 
-          for (int k = 0; k < (CUDA_BLOCK_SIZE + N - 1)/CUDA_BLOCK_SIZE; k++) {
+          for (int k = 0; k < (DEVICE_BLOCK_SIZE + N - 1)/DEVICE_BLOCK_SIZE; k++) {
 
-            RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int ty) {
-              RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int tx) {
+            RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int ty) {
+              RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int tx) {
 
-                const int Row = by*CUDA_BLOCK_SIZE + ty;
-                const int Col = bx*CUDA_BLOCK_SIZE + tx;
+                const int Row = by*DEVICE_BLOCK_SIZE + ty;
+                const int Col = bx*DEVICE_BLOCK_SIZE + tx;
 
-                if (k*CUDA_BLOCK_SIZE + tx < N && Row < N)
-                  As[ty][tx] = Aview(Row, (k*CUDA_BLOCK_SIZE + tx));
-                  //As[ty][tx] = A[Row*N + k*CUDA_BLOCK_SIZE + tx];
+                if (k*DEVICE_BLOCK_SIZE + tx < N && Row < N)
+                  As[ty][tx] = Aview(Row, (k*DEVICE_BLOCK_SIZE + tx));
+                  //As[ty][tx] = A[Row*N + k*DEVICE_BLOCK_SIZE + tx];
                 else
                   As[ty][tx] = 0.0;
 
-                if (k*CUDA_BLOCK_SIZE + ty < N && Col < N)
-                  Bs[ty][tx] = Bview((k*CUDA_BLOCK_SIZE + ty), Col);
-                  //Bs[ty][tx] = B[(k*CUDA_BLOCK_SIZE + ty)*N + Col];
+                if (k*DEVICE_BLOCK_SIZE + ty < N && Col < N)
+                  Bs[ty][tx] = Bview((k*DEVICE_BLOCK_SIZE + ty), Col);
+                  //Bs[ty][tx] = B[(k*DEVICE_BLOCK_SIZE + ty)*N + Col];
                 else
                   Bs[ty][tx] = 0.0;
 
@@ -1407,10 +1415,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
             ctx.teamSync();
 
-            RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int ty) {
-              RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int tx) {
+            RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int ty) {
+              RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int tx) {
 
-                for (int n = 0; n < CUDA_BLOCK_SIZE; ++n)
+                for (int n = 0; n < DEVICE_BLOCK_SIZE; ++n)
                   Cs[ty][tx] += As[ty][n] * Bs[n][tx];
 
               });
@@ -1420,11 +1428,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           }
 
-          RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int ty) {
-            RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int tx) {
+          RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int ty) {
+            RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int tx) {
 
-              int Row = by*CUDA_BLOCK_SIZE + ty;
-              int Col = bx*CUDA_BLOCK_SIZE + tx;
+              int Row = by*DEVICE_BLOCK_SIZE + ty;
+              int Col = bx*DEVICE_BLOCK_SIZE + tx;
 
               if (Row < N && Col < N)
                 Cview(Row, Col) = Cs[ty][tx];
@@ -1435,7 +1443,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       });
 
     });  // kernel
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -1457,33 +1465,33 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(Nx, Ny),
-                              RAJA::expt::Threads(CUDA_BLOCK_SIZE,CUDA_BLOCK_SIZE)),
+                              RAJA::expt::Threads(DEVICE_BLOCK_SIZE,DEVICE_BLOCK_SIZE)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::loop<teams_y>(ctx, RAJA::TypedRangeSegment<int>(0,Ny), [&] (int by) {
         RAJA::expt::loop<teams_x>(ctx, RAJA::TypedRangeSegment<int>(0,Nx), [&] (int bx) {
 
-          RAJA_TEAM_SHARED double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-          RAJA_TEAM_SHARED double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double As[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double Bs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
           double dot = 0.0;
 
-          for (int k = 0; k < (CUDA_BLOCK_SIZE + N - 1)/CUDA_BLOCK_SIZE; k++) {
+          for (int k = 0; k < (DEVICE_BLOCK_SIZE + N - 1)/DEVICE_BLOCK_SIZE; k++) {
 
-            RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int ty) {
-              RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int tx) {
+            RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int ty) {
+              RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int tx) {
 
-                const int Row = by*CUDA_BLOCK_SIZE + ty;
-                const int Col = bx*CUDA_BLOCK_SIZE + tx;
+                const int Row = by*DEVICE_BLOCK_SIZE + ty;
+                const int Col = bx*DEVICE_BLOCK_SIZE + tx;
 
-                if (k*CUDA_BLOCK_SIZE + tx < N && Row < N)
-                  As[ty][tx] = Aview(Row, (k*CUDA_BLOCK_SIZE + tx));
-                  //As[ty][tx] = A[Row*N + k*CUDA_BLOCK_SIZE + tx];
+                if (k*DEVICE_BLOCK_SIZE + tx < N && Row < N)
+                  As[ty][tx] = Aview(Row, (k*DEVICE_BLOCK_SIZE + tx));
+                  //As[ty][tx] = A[Row*N + k*DEVICE_BLOCK_SIZE + tx];
                 else
                   As[ty][tx] = 0.0;
 
-                if (k*CUDA_BLOCK_SIZE + ty < N && Col < N)
-                  Bs[ty][tx] = Bview((k*CUDA_BLOCK_SIZE + ty), Col);
-                  //Bs[ty][tx] = B[(k*CUDA_BLOCK_SIZE + ty)*N + Col];
+                if (k*DEVICE_BLOCK_SIZE + ty < N && Col < N)
+                  Bs[ty][tx] = Bview((k*DEVICE_BLOCK_SIZE + ty), Col);
+                  //Bs[ty][tx] = B[(k*DEVICE_BLOCK_SIZE + ty)*N + Col];
                 else
                   Bs[ty][tx] = 0.0;
 
@@ -1492,10 +1500,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
             ctx.teamSync();
 
-            RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int ty) {
-              RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int tx) {
+            RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int ty) {
+              RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int tx) {
 
-                for (int n = 0; n < CUDA_BLOCK_SIZE; ++n)
+                for (int n = 0; n < DEVICE_BLOCK_SIZE; ++n)
                   dot += As[ty][n] * Bs[n][tx];
 
               });
@@ -1505,11 +1513,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           }
 
-          RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int ty) {
-            RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int tx) {
+          RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int ty) {
+            RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int tx) {
 
-              int Row = by*CUDA_BLOCK_SIZE + ty;
-              int Col = bx*CUDA_BLOCK_SIZE + tx;
+              int Row = by*DEVICE_BLOCK_SIZE + ty;
+              int Col = bx*DEVICE_BLOCK_SIZE + tx;
 
               if (Row < N && Col < N)
                 Cview(Row, Col) = dot;
@@ -1520,7 +1528,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       });
 
     });  // kernel
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -1543,33 +1551,33 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy_bounds>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(Nx, Ny),
-                              RAJA::expt::Threads(CUDA_BLOCK_SIZE,CUDA_BLOCK_SIZE)),
+                              RAJA::expt::Threads(DEVICE_BLOCK_SIZE,DEVICE_BLOCK_SIZE)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::loop<teams_y>(ctx, RAJA::TypedRangeSegment<int>(0,Ny), [&] (int by) {
         RAJA::expt::loop<teams_x>(ctx, RAJA::TypedRangeSegment<int>(0,Nx), [&] (int bx) {
 
-          RAJA_TEAM_SHARED double As[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
-          RAJA_TEAM_SHARED double Bs[CUDA_BLOCK_SIZE][CUDA_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double As[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
+          RAJA_TEAM_SHARED double Bs[DEVICE_BLOCK_SIZE][DEVICE_BLOCK_SIZE];
           double dot = 0.0;
 
-          for (int k = 0; k < (CUDA_BLOCK_SIZE + N - 1)/CUDA_BLOCK_SIZE; k++) {
+          for (int k = 0; k < (DEVICE_BLOCK_SIZE + N - 1)/DEVICE_BLOCK_SIZE; k++) {
 
-            RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int ty) {
-              RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int tx) {
+            RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int ty) {
+              RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int tx) {
 
-                const int Row = by*CUDA_BLOCK_SIZE + ty;
-                const int Col = bx*CUDA_BLOCK_SIZE + tx;
+                const int Row = by*DEVICE_BLOCK_SIZE + ty;
+                const int Col = bx*DEVICE_BLOCK_SIZE + tx;
 
-                if (k*CUDA_BLOCK_SIZE + tx < N && Row < N)
-                  As[ty][tx] = Aview(Row, (k*CUDA_BLOCK_SIZE + tx));
-                  //As[ty][tx] = A[Row*N + k*CUDA_BLOCK_SIZE + tx];
+                if (k*DEVICE_BLOCK_SIZE + tx < N && Row < N)
+                  As[ty][tx] = Aview(Row, (k*DEVICE_BLOCK_SIZE + tx));
+                  //As[ty][tx] = A[Row*N + k*DEVICE_BLOCK_SIZE + tx];
                 else
                   As[ty][tx] = 0.0;
 
-                if (k*CUDA_BLOCK_SIZE + ty < N && Col < N)
-                  Bs[ty][tx] = Bview((k*CUDA_BLOCK_SIZE + ty), Col);
-                  //Bs[ty][tx] = B[(k*CUDA_BLOCK_SIZE + ty)*N + Col];
+                if (k*DEVICE_BLOCK_SIZE + ty < N && Col < N)
+                  Bs[ty][tx] = Bview((k*DEVICE_BLOCK_SIZE + ty), Col);
+                  //Bs[ty][tx] = B[(k*DEVICE_BLOCK_SIZE + ty)*N + Col];
                 else
                   Bs[ty][tx] = 0.0;
 
@@ -1578,10 +1586,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
             ctx.teamSync();
 
-            RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int ty) {
-              RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int tx) {
+            RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int ty) {
+              RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int tx) {
 
-                for (int n = 0; n < CUDA_BLOCK_SIZE; ++n)
+                for (int n = 0; n < DEVICE_BLOCK_SIZE; ++n)
                   dot += As[ty][n] * Bs[n][tx];
 
               });
@@ -1591,11 +1599,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           }
 
-          RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int ty) {
-            RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,CUDA_BLOCK_SIZE), [&] (int tx) {
+          RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int ty) {
+            RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0,DEVICE_BLOCK_SIZE), [&] (int tx) {
 
-              int Row = by*CUDA_BLOCK_SIZE + ty;
-              int Col = bx*CUDA_BLOCK_SIZE + tx;
+              int Row = by*DEVICE_BLOCK_SIZE + ty;
+              int Col = bx*DEVICE_BLOCK_SIZE + tx;
 
               if (Row < N && Col < N)
                 Cview(Row, Col) = dot;
@@ -1606,7 +1614,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       });
 
     });  // kernel
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -1619,7 +1627,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //=======================================
   //Tiling with kernel
-
+#if 0
   printf("\n");
 #if defined(RAJA_KERNEL_1_TILED)
   {
@@ -1630,11 +1638,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     using EXEC_POL5 =
       RAJA::KernelPolicy<
+#if defined(RAJA_ENABLE_CUDA)
         RAJA::statement::CudaKernelOccAsync<
-          RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_direct,
-            RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
-              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
-                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+#elif defined(RAJA_ENABLE_HIP)
+        RAJA::statement::HipKernelOccAsync<
+#endif
+          RAJA::statement::Tile<1, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, gpu_block_y_policy,
+            RAJA::statement::Tile<0, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, gpu_block_x_policy,
+              RAJA::statement::For<1, gpu_thread_y_policy,
+                RAJA::statement::For<0, gpu_thread_x_policy,
                   RAJA::statement::Lambda<0>
                 >
               >
@@ -1654,7 +1666,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Cview(row, col) = dot;
 
     });
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -1674,11 +1686,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     using EXEC_POL5 =
       RAJA::KernelPolicy<
-        RAJA::statement::CudaKernelFixedAsync<CUDA_BLOCK_SIZE*CUDA_BLOCK_SIZE,
-          RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_direct,
-            RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
-              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
-                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+#if defined(RAJA_ENABLE_CUDA)
+        RAJA::statement::CudaKernelFixedAsync<DEVICE_BLOCK_SIZE*DEVICE_BLOCK_SIZE,
+#elif defined(RAJA_ENABLE_HIP)
+        RAJA::statement::HipKernelFixedAsync<DEVICE_BLOCK_SIZE*DEVICE_BLOCK_SIZE,
+#endif
+          RAJA::statement::Tile<1, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, gpu_block_y_policy,
+            RAJA::statement::Tile<0, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, gpu_block_x_policy,
+              RAJA::statement::For<1, gpu_thread_y_policy,
+                RAJA::statement::For<0, gpu_thread_x_policy,
                   RAJA::statement::Lambda<0>
                 >
               >
@@ -1698,7 +1714,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Cview(row, col) = dot;
 
     });
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -1717,7 +1733,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     printf("Solution is accumulated in shared memory \n");
     auto t0 = Clock::now();
 
-    using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE>>;
+    using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<DEVICE_BLOCK_SIZE, DEVICE_BLOCK_SIZE>>;
 
     using shmem_Lambda0 = RAJA::statement::Lambda<0, RAJA::Offsets<0, 2>, RAJA::Params<2>>;
     using shmem_Lambda1 = RAJA::statement::Lambda<1, RAJA::Segs<0, 1>, RAJA::Offsets<0, 1>, RAJA::Params<0>>;
@@ -1727,57 +1743,64 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     using EXEC_POL10 =
     RAJA::KernelPolicy<
+#if defined(RAJA_ENABLE_CUDA)
       RAJA::statement::CudaKernelOccAsync<
+#elif defined(RAJA_ENABLE_HIP)
+     RAJA::statement::HipKernelOccAsync<
+#endif
         //Initalize thread private value
-        RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2,1,0>,
-
+#if defined(RAJA_ENABLE_CUDA)
+     RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2,1,0>,
+#elif defined(RAJA_ENABLE_HIP)
+        RAJA::statement::InitLocalMem<RAJA::hip_shared_mem, RAJA::ParamList<2,1,0>,
+#endif
           // Tile rows and cols of C (the result matrix C)
-          RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_direct,
-            RAJA::statement::Tile<2, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, gpu_block_y_policy,
+            RAJA::statement::Tile<2, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, gpu_block_x_policy,
 
               // zero out dot
-              RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+              RAJA::statement::For<0, gpu_thread_y_policy,
+                RAJA::statement::For<2, gpu_thread_x_policy,
                   shmem_Lambda0
                 >
               >,
 
               // Slide window across matrix: Load tiles of global matrices A, B and compute
               // local dot products
-              RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::loop_exec,
+              RAJA::statement::Tile<1, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, RAJA::loop_exec,
 
                 // Load tile of A into shmem
-                RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                  RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
+                RAJA::statement::For<0, gpu_thread_y_policy,
+                  RAJA::statement::For<1, gpu_thread_x_policy,
                     shmem_Lambda1
                   >
                 >,
 
                 // Load tile of B into shmem
-                RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
-                  RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+                RAJA::statement::For<1, gpu_thread_y_policy,
+                  RAJA::statement::For<2, gpu_thread_x_policy,
                     shmem_Lambda2
                   >
                 >,
 
-                RAJA::statement::CudaSyncThreads,
+                kernel_sync_threads,
 
                 //Partial multiplication
                 RAJA::statement::For<1, RAJA::loop_exec,
-                  RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                    RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+                  RAJA::statement::For<0, gpu_thread_y_policy,
+                    RAJA::statement::For<2, gpu_thread_x_policy,
                       shmem_Lambda3
                     >
                   >
                 >,
 
-                RAJA::statement::CudaSyncThreads
+                kernel_sync_threads
 
               >, //sliding window
 
               //Write memory out to global matrix
-              RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+              RAJA::statement::For<0, gpu_thread_y_policy,
+                RAJA::statement::For<2, gpu_thread_x_policy,
                   shmem_Lambda4
                 >
               >
@@ -1828,7 +1851,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Cview(n,p) = cShared(tn,tp);
 
     });
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -1848,7 +1871,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     printf("Adds launch bounds \n");
     auto t0 = Clock::now();
 
-    using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE>>;
+    using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<DEVICE_BLOCK_SIZE, DEVICE_BLOCK_SIZE>>;
 
     using shmem_Lambda0 = RAJA::statement::Lambda<0, RAJA::Offsets<0, 2>, RAJA::Params<2>>;
     using shmem_Lambda1 = RAJA::statement::Lambda<1, RAJA::Segs<0, 1>, RAJA::Offsets<0, 1>, RAJA::Params<0>>;
@@ -1858,57 +1881,62 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     using EXEC_POL10 =
     RAJA::KernelPolicy<
-      RAJA::statement::CudaKernelFixedAsync<CUDA_BLOCK_SIZE*CUDA_BLOCK_SIZE,
+#if defined (RAJA_ENABLE_CUDA)
+      RAJA::statement::CudaKernelFixedAsync<DEVICE_BLOCK_SIZE*DEVICE_BLOCK_SIZE,
+#elif defined(RAJA_ENABLE_HIP)
+    RAJA::statement::HipKernelFixedAsync<DEVICE_BLOCK_SIZE*DEVICE_BLOCK_SIZE,
+#endif
+
         //Initalize thread private value
-        RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2,1,0>,
+        RAJA::statement::InitLocalMem<gpu_shared_mem, RAJA::ParamList<2,1,0>,
 
           // Tile rows and cols of C (the result matrix C)
-          RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_direct,
-            RAJA::statement::Tile<2, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, gpu_block_y_policy,
+            RAJA::statement::Tile<2, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, gpu_block_x_policy,
 
               // zero out dot
-              RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+              RAJA::statement::For<0, gpu_thread_y_policy,
+                RAJA::statement::For<2, gpu_thread_x_policy,
                   shmem_Lambda0
                 >
               >,
 
               // Slide window across matrix: Load tiles of global matrices A, B and compute
               // local dot products
-              RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::loop_exec,
+              RAJA::statement::Tile<1, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, RAJA::loop_exec,
 
                 // Load tile of A into shmem
-                RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                  RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
+                RAJA::statement::For<0, gpu_thread_y_policy,
+                  RAJA::statement::For<1, gpu_thread_x_policy,
                     shmem_Lambda1
                   >
                 >,
 
                 // Load tile of B into shmem
-                RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
-                  RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+                RAJA::statement::For<1, gpu_thread_y_policy,
+                  RAJA::statement::For<2, gpu_thread_x_policy,
                     shmem_Lambda2
                   >
                 >,
 
-                RAJA::statement::CudaSyncThreads,
+                kernel_sync_threads,
 
                 //Partial multiplication
                 RAJA::statement::For<1, RAJA::loop_exec,
-                  RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                    RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+                  RAJA::statement::For<0, gpu_thread_y_policy,
+                    RAJA::statement::For<2, gpu_thread_x_policy,
                       shmem_Lambda3
                     >
                   >
                 >,
 
-                RAJA::statement::CudaSyncThreads
+                kernel_sync_threads
 
               >, //sliding window
 
               //Write memory out to global matrix
-              RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+              RAJA::statement::For<0, gpu_thread_y_policy,
+                RAJA::statement::For<2, gpu_thread_x_policy,
                   shmem_Lambda4
                 >
               >
@@ -1959,7 +1987,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Cview(n,p) = cShared(tn,tp);
 
     });
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -1978,7 +2006,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     printf("Solution is accumulated in register \n");
     auto t0 = Clock::now();
 
-    using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE>>;
+    using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<DEVICE_BLOCK_SIZE, DEVICE_BLOCK_SIZE>>;
 
     using shmem_Lambda0 = RAJA::statement::Lambda<0, RAJA::Params<2>>;
     using shmem_Lambda1 = RAJA::statement::Lambda<1, RAJA::Segs<0, 1>, RAJA::Offsets<0, 1>, RAJA::Params<0>>;
@@ -1988,53 +2016,57 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     using EXEC_POL10 =
     RAJA::KernelPolicy<
+#if defined (RAJA_ENABLE_CUDA)
       RAJA::statement::CudaKernelOccAsync<
+#elif defined(RAJA_ENABLE_HIP)
+      RAJA::statement::HipKernelOccAsync<
+#endif
         //Initalize thread private value
-        RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<1,0>,
+        RAJA::statement::InitLocalMem<gpu_shared_mem, RAJA::ParamList<1,0>,
 
           // Tile rows and cols of C (the result matrix C)
-          RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_direct,
-            RAJA::statement::Tile<2, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, gpu_block_y_policy,
+            RAJA::statement::Tile<2, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, gpu_block_x_policy,
 
               // zero out dot
               shmem_Lambda0,
 
               // Slide window across matrix: Load tiles of global matrices A, B and compute
               // local dot products
-              RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::loop_exec,
+              RAJA::statement::Tile<1, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, RAJA::loop_exec,
 
                 // Load tile of A into shmem
-                RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                  RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
+                RAJA::statement::For<0, gpu_thread_y_policy,
+                  RAJA::statement::For<1, gpu_thread_x_policy,
                     shmem_Lambda1
                   >
                 >,
 
                 // Load tile of B into shmem
-                RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
-                  RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+                RAJA::statement::For<1, gpu_thread_y_policy,
+                  RAJA::statement::For<2, gpu_thread_x_policy,
                     shmem_Lambda2
                   >
                 >,
 
-                RAJA::statement::CudaSyncThreads,
+                kernel_sync_threads,
 
                 //Partial multiplication
                 RAJA::statement::For<1, RAJA::loop_exec,
-                  RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                    RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+                  RAJA::statement::For<0, gpu_thread_y_policy,
+                    RAJA::statement::For<2, gpu_thread_x_policy,
                       shmem_Lambda3
                     >
                   >
                 >,
 
-                RAJA::statement::CudaSyncThreads
+                kernel_sync_threads
 
               >, //sliding window
 
               //Write memory out to global matrix
-              RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+              RAJA::statement::For<0, gpu_thread_y_policy,
+                RAJA::statement::For<2, gpu_thread_x_policy,
                   shmem_Lambda4
                 >
               >
@@ -2085,7 +2117,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Cview(n,p) = dot;
 
     });
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -2104,7 +2136,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     printf("Solution is accumulated in register \n");
     auto t0 = Clock::now();
 
-    using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE>>;
+    using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<DEVICE_BLOCK_SIZE, DEVICE_BLOCK_SIZE>>;
 
     using shmem_Lambda0 = RAJA::statement::Lambda<0, RAJA::Params<2>>;
     using shmem_Lambda1 = RAJA::statement::Lambda<1, RAJA::Segs<0, 1>, RAJA::Offsets<0, 1>, RAJA::Params<0>>;
@@ -2114,53 +2146,57 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     using EXEC_POL10 =
     RAJA::KernelPolicy<
-      RAJA::statement::CudaKernelFixedAsync<CUDA_BLOCK_SIZE*CUDA_BLOCK_SIZE,
+#if defined (RAJA_ENABLE_CUDA)
+      RAJA::statement::CudaKernelFixedAsync<DEVICE_BLOCK_SIZE*DEVICE_BLOCK_SIZE,
+#elif defined(RAJA_ENABLE_HIP)
+      RAJA::statement::HipKernelFixedAsync<DEVICE_BLOCK_SIZE*DEVICE_BLOCK_SIZE,
+#endif
         //Initalize thread private value
-        RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<1,0>,
+        RAJA::statement::InitLocalMem<gpu_shared_mem, RAJA::ParamList<1,0>,
 
           // Tile rows and cols of C (the result matrix C)
-          RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_direct,
-            RAJA::statement::Tile<2, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, gpu_block_y_policy,
+            RAJA::statement::Tile<2, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, gpu_block_x_policy,
 
               // zero out dot
               shmem_Lambda0,
 
               // Slide window across matrix: Load tiles of global matrices A, B and compute
               // local dot products
-              RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::loop_exec,
+              RAJA::statement::Tile<1, RAJA::tile_fixed<DEVICE_BLOCK_SIZE>, RAJA::loop_exec,
 
                 // Load tile of A into shmem
-                RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                  RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
+                RAJA::statement::For<0, gpu_thread_y_policy,
+                  RAJA::statement::For<1, gpu_thread_x_policy,
                     shmem_Lambda1
                   >
                 >,
 
                 // Load tile of B into shmem
-                RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
-                  RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+                RAJA::statement::For<1, gpu_thread_y_policy,
+                  RAJA::statement::For<2, gpu_thread_x_policy,
                     shmem_Lambda2
                   >
                 >,
 
-                RAJA::statement::CudaSyncThreads,
+                kernel_sync_threads,
 
                 //Partial multiplication
                 RAJA::statement::For<1, RAJA::loop_exec,
-                  RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                    RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+                  RAJA::statement::For<0, gpu_thread_y_policy,
+                    RAJA::statement::For<2, gpu_thread_x_policy,
                       shmem_Lambda3
                     >
                   >
                 >,
 
-                RAJA::statement::CudaSyncThreads
+                kernel_sync_threads
 
               >, //sliding window
 
               //Write memory out to global matrix
-              RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
+              RAJA::statement::For<0, gpu_thread_y_policy,
+                RAJA::statement::For<2, gpu_thread_x_policy,
                   shmem_Lambda4
                 >
               >
@@ -2211,7 +2247,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Cview(n,p) = dot;
 
     });
-    cudaDeviceSynchronize();
+    DEVICE_SYNC();
     auto tf = Clock::now();
 
     std::cout << "Delta t0-tf: "
@@ -2221,6 +2257,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
 #endif
 
+#endif//ENABLE RAJA kernel
 
 //
 // Clean up.
@@ -2269,11 +2306,11 @@ void checkResult(T* C, int N)
 {
   int *match = memoryManager::allocate<int>(1);
   *match = 1;
-  dim3 blockdim(CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE);
+  dim3 blockdim(DEVICE_BLOCK_SIZE, DEVICE_BLOCK_SIZE);
   dim3 griddim(RAJA_DIVIDE_CEILING_INT(N,blockdim.x),
                RAJA_DIVIDE_CEILING_INT(N,blockdim.y));
   checkKernel<<<griddim, blockdim>>>(N, C, match);
-  cudaDeviceSynchronize();
+  DEVICE_SYNC();
   if ( *match ) {
     std::cout << "\n\t result -- PASS\n";
   } else {
@@ -2287,11 +2324,11 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N)
 {
   int *match = memoryManager::allocate<int>(1);
   *match = 1;
-  dim3 blockdim(CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE);
+  dim3 blockdim(DEVICE_BLOCK_SIZE, DEVICE_BLOCK_SIZE);
   dim3 griddim(RAJA_DIVIDE_CEILING_INT(N,blockdim.x),
                RAJA_DIVIDE_CEILING_INT(N,blockdim.y));
   checkViewKernel<<<griddim, blockdim>>>(N, Cview, match);
-  cudaDeviceSynchronize();
+  DEVICE_SYNC();
   if ( *match ) {
     std::cout << "\n\t result -- PASS\n";
   } else {
