@@ -315,7 +315,7 @@ struct HipDimHelper<1>{
   static
   constexpr
   auto get(dim_t const &d) ->
-    decltype(d.x)
+    decltype(d.y)
   {
     return d.y;
   }
@@ -339,7 +339,7 @@ struct HipDimHelper<2>{
   static
   constexpr
   auto get(dim_t const &d) ->
-    decltype(d.x)
+    decltype(d.z)
   {
     return d.z;
   }
@@ -358,7 +358,7 @@ template<int dim, typename dim_t>
 RAJA_HOST_DEVICE
 constexpr
 auto get_hip_dim(dim_t const &d) ->
-  decltype(d.x)
+  decltype(HipDimHelper<dim>::get(d))
 {
   return HipDimHelper<dim>::get(d);
 }
