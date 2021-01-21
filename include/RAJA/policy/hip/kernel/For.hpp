@@ -774,7 +774,18 @@ struct HipStatementExecutor<
   }
 };
 
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename... EnclosedStmts,
+          typename Types>
+struct HipStatementExecutor<
+    Data,
+    statement::For<ArgumentId, loop_exec, EnclosedStmts...>,
+    Types>
+:  HipStatementExecutor<Data, statement::For<ArgumentId, seq_exec, EnclosedStmts...>, Types>
+{
 
+};
 
 
 }  // namespace internal
