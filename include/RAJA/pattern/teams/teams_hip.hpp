@@ -99,12 +99,13 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
       RAJA_FT_END;
     }
 
+  }
     // return resources::EventProxy<resources::Hip>(&hip_res);
 };
 
 template <typename BODY, int num_threads>
 __launch_bounds__(num_threads, 1) __global__
-    void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
+static void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(body_in);
