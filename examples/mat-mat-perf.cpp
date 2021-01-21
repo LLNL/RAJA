@@ -15,6 +15,128 @@
 
 #include "RAJA/RAJA.hpp"
 
+//------------------
+//CUDA variants
+//------------------
+
+//#0,1
+//Maps rows to cuda blocks,
+//and uses block stride loop for column loop.
+#define CUDA_KERNEL_0
+#define CUDA_KERNEL_0_BOUNDS //adds launch bounds
+
+//#2,3
+//Maps 2D global thread id to output matrix, each thread
+//is responsible for computing one dot product.
+#define CUDA_KERNEL_1
+#define CUDA_KERNEL_1_BOUNDS //adds launch bounds
+
+//#4,5
+//Performs multiplication by accomulating result
+//in terms of tiles (shmem) then writing out to
+//global memory.
+#define CUDA_KERNEL_2
+#define CUDA_KERNEL_2_BOUNDS // adds launch bounds
+
+//#6,7
+//Performs multiplication by accomulating result
+//in terms of tiles (shmem) then writing out to
+//global memory. Accumulates result by using
+//thread private memory.
+#define CUDA_KERNEL_2_REG
+#define CUDA_KERNEL_2_REG_BOUNDS // adds launch bounds
+
+//------------------
+//RAJA teams variants
+//------------------
+
+//#8,9
+//Same as CUDA kernel 0.
+#define TEAMS_KERNEL_0
+#define TEAMS_KERNEL_0_BOUNDS //adds launch bounds
+
+//#10,11
+//Breaks up the iteration space into 2D tiles
+//maps each tile to a CUDA block and threads
+//to values within the block.
+#define TEAMS_KERNEL_1_RAJA_TILED
+#define TEAMS_KERNEL_1_RAJA_TILED_BOUNDS //adds launch bounds
+
+//#12,13
+//Maps 2D global thread id to output matrix, each thread
+//is responsible for computing one dot product.
+#define TEAMS_KERNEL_1_GLOBAL
+#define TEAMS_KERNEL_1_GLOBAL_BOUNDS //adds launch bounds
+
+//#14,15
+//Performs multiplication by accumulating the result
+//in terms of tiles (shmem) then writing out to
+//global memory. The RAJA tiling methods are used
+//to break up the iteration space into tiles, and
+//the solution is accumulated within a tile.
+#define TEAMS_KERNEL_2_RAJA_TILED_SHARED
+#define TEAMS_KERNEL_2_RAJA_TILED_SHARED_BOUNDS //adds launch bounds
+
+//#16,17
+//Performs multiplication by accumulating the result
+//in terms of tiles (shmem) then writing out to
+//global memory. The RAJA tiling methods are used
+//to break up the iteration space into tiles, and
+//the solution is accumulated within a tile.
+//Uses thread local register value to accumulate the
+//result.
+#define TEAMS_KERNEL_2_RAJA_TILED_SHARED_REG
+#define TEAMS_KERNEL_2_RAJA_TILED_SHARED_REG_BOUNDS //adds launch bounds
+
+//#18,19
+//Performs multiplication by accumulating the result
+//in terms of tiles (shmem) then writing out to
+//global memory. Manual indexing is used to perform
+//calculations.
+#define TEAMS_KERNEL_2_DIRECT_TILED_SHARED
+#define TEAMS_KERNEL_2_DIRECT_TILED_SHARED_BOUNDS //adds launch bounds
+
+//#20,21
+//Performs multiplication by accumulating the result
+//in terms of tiles (shmem) then writing out to
+//global memory. Manual indexing is used to perform
+//calculations. Uses thread local register value to
+//accumulate the result.
+#define TEAMS_KERNEL_2_DIRECT_TILED_SHARED_REG
+#define TEAMS_KERNEL_2_DIRECT_TILED_SHARED_REG_BOUNDS //adds launch bounds
+
+//------------------
+//RAJA kernel variants
+//------------------
+
+//#22,23
+//Breaks up the iteration space into 2D tiles
+//maps each tile to a CUDA block and threads
+//to values within the block.
+#define RAJA_KERNEL_1_TILED
+#define RAJA_KERNEL_1_TILED_BOUNDS //adds launch bounds
+
+//#24,25
+//Performs multiplication by accumulating the result
+//in terms of tiles (shmem) then writing out to
+//global memory. The RAJA tiling methods are used
+//to break up the iteration space into tiles, and
+//the solution is accumulated within a tile.
+#define RAJA_KERNEL_2_TILED_SHARED
+#define RAJA_KERNEL_2_TILED_SHARED_BOUNDS //adds launch bounds
+
+//#26,27
+//Performs multiplication by accumulating the result
+//in terms of tiles (shmem) then writing out to
+//global memory. The RAJA tiling methods are used
+//to break up the iteration space into tiles, and
+//the solution is accumulated within a tile.
+//Uses thread local register value to accumulate the
+//result.
+#define RAJA_KERNEL_2_TILED_SHARED_REG
+#define RAJA_KERNEL_2_TILED_SHARED_REG_BOUNDS //adds launch bounds
+
+
 typedef std::chrono::high_resolution_clock Clock;
 
 using launch_policy = RAJA::expt::LaunchPolicy<
@@ -442,8 +564,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _matmult_views_end
 //----------------------------------------------------------------------------//
 
-  //Dry run
-
+//First run to get the data on the device
   matMultKernel0<<<N, CUDA_BLOCK_SIZE>>>(N, C, A, B);
   cudaDeviceSynchronize();
 
@@ -451,8 +572,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   dim3 griddim(RAJA_DIVIDE_CEILING_INT(N,blockdim.x),
                RAJA_DIVIDE_CEILING_INT(N,blockdim.y));
 
+#if defined(CUDA_KERNEL_0)
   {
+    printf("# 0");
     printf("\nCUDA kernel 0 \n");
+    printf("Maps CUDA blocks to rows \n");
+    printf("Uses block stride loop for columns \n");
     auto t0 = Clock::now();
     matMultKernel0<<<N, 256>>>(N, C, A, B);
     cudaDeviceSynchronize();
@@ -463,9 +588,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(CUDA_KERNEL_0_BOUNDS)
   {
-    printf("\nCUDA kernel 0 bounds \n");
+    printf("# 1");
+    printf("\nCUDA kernel 0 (w launch bounds) \n");
+    printf("Maps CUDA blocks to rows \n");
+    printf("Uses block stride loop for columns \n");
+    printf("Adds launch bounds \n");
     auto t0 = Clock::now();
     matMultKernel0_bounds<<<N, 256>>>(N, C, A, B);
     cudaDeviceSynchronize();
@@ -476,9 +607,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(CUDA_KERNEL_1)
   {
+    printf("# 2");
     printf("\nCUDA kernel 1 \n");
+    printf("Generates global 2D threads \n");
+    printf("Each thread performs dot product \n");
     auto t0 = Clock::now();
     matMultKernel1<<<griddim, blockdim>>>(N, C, A, B);
     cudaDeviceSynchronize();
@@ -489,9 +625,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(CUDA_KERNEL_1_BOUNDS)
   {
-    printf("\nCUDA kernel 1 bounds \n");
+    printf("# 3");
+    printf("\nCUDA kernel 1 (w launch bounds) \n");
+    printf("Generates global 2D threads \n");
+    printf("Each thread performs dot product \n");
+    printf("Adds launch bounds \n");
     auto t0 = Clock::now();
     matMultKernel1_bounds<<<griddim, blockdim>>>(N, C, A, B);
     cudaDeviceSynchronize();
@@ -502,9 +644,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(CUDA_KERNEL_2)
   {
+    printf("# 4");
     printf("\nCUDA kernel 2 shared \n");
+    printf("Performs multiplication by loading submatrices \n");
+    printf("into shared memory tiles \n");
+    printf("Solution is accumulated in shared memory \n");
     auto t0 = Clock::now();
     matMultKernel2_shared<<<griddim, blockdim>>>(N, C, A, B);
     cudaDeviceSynchronize();
@@ -515,9 +663,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(CUDA_KERNEL_2_BOUNDS)
   {
-    printf("\nCUDA kernel 2 shared bounds \n");
+    printf("# 5");
+    printf("\nCUDA kernel 2 shared (w launch bounds) \n");
+    printf("Performs multiplication by loading submatrices \n");
+    printf("into shared memory tiles \n");
+    printf("Solution is accumulated in shared memory \n");
+    printf("Adds launch bounds \n");
     auto t0 = Clock::now();
     matMultKernel2_bounds_shared<<<griddim, blockdim>>>(N, C, A, B);
     cudaDeviceSynchronize();
@@ -528,9 +683,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(CUDA_KERNEL_2_REG)
   {
-    printf("\nCUDA kernel 2 register \n");
+    printf("# 6");
+    printf("\nCUDA kernel 2 shared + register \n");
+    printf("Performs multiplication by loading submatrices \n");
+    printf("into shared memory tiles \n");
+    printf("Solution is accumulated in register space (not portable) \n");
     auto t0 = Clock::now();
     matMultKernel2_register<<<griddim, blockdim>>>(N, C, A, B);
     cudaDeviceSynchronize();
@@ -541,9 +702,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(CUDA_KERNEL_2_REG_BOUNDS)
   {
-    printf("\nCUDA kernel 2 register bounds \n");
+    printf("# 7");
+    printf("\nCUDA kernel 2 shared + register \n");
+    printf("Performs multiplication by loading submatrices \n");
+    printf("into shared memory tiles \n");
+    printf("Solution is accumulated in register space (not portable) \n");
+    printf("Adds launch bounds \n");
     auto t0 = Clock::now();
     matMultKernel2_bounds_register<<<griddim, blockdim>>>(N, C, A, B);
     cudaDeviceSynchronize();
@@ -554,15 +722,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
-
+#endif
 
   printf("\n");
   //-------
   //RAJA Teams
   //--------
-
+#if defined(TEAMS_KERNEL_0)
   {
+    printf("# 8");
     printf("\nRAJA Teams kernel 0  \n");
+    printf("Maps CUDA blocks to rows \n");
+    printf("Uses block stride loop for columns \n");
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(N),
@@ -589,9 +760,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(TEAMS_KERNEL_0_BOUNDS)
   {
-    printf("\nRAJA Teams kernel 0 bounds \n");
+    printf("# 9");
+    printf("\nRAJA Teams kernel 0 (w launch bounds) \n");
+    printf("Blocks to rows, and block stride loop for columns \n");
+    printf("Adds launch bounds \n");
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy_bounds>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(N),
@@ -618,9 +794,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(TEAMS_KERNEL_1_RAJA_TILED)
   {
-    printf("\nRAJA Teams kernel 1 tiled  \n");
+    printf("# 10");
+    printf("\nRAJA Teams kernel 1 w RAJA tiling  \n");
+    printf("Uses RAJA tiling to map blocks to tiles \n");
+    printf("Maps threads to iterates within a tile \n");
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(griddim.x,griddim.y),
@@ -653,9 +834,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(TEAMS_KERNEL_1_RAJA_TILED_BOUNDS)
   {
-    printf("\nRAJA Teams kernel 1 tiled bounds \n");
+    printf("# 11");
+    printf("\nRAJA Teams kernel 1 w RAJA tiling (with launch bounds) \n");
+    printf("Uses RAJA tiling to map blocks to tiles \n");
+    printf("Maps threads to iterates within a tile \n");
+    printf("Adds launch bounds \n");
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy_bounds>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(griddim.x,griddim.y),
@@ -688,9 +875,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(TEAMS_KERNEL_1_GLOBAL)
   {
+    printf("# 12");
     printf("\nRAJA Teams kernel 1 global  \n");
+    printf("Generates global 2D threads, each thread performs a dot product \n");
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(griddim.x,griddim.y),
@@ -717,9 +908,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(TEAMS_KERNEL_1_GLOBAL_BOUNDS)
   {
-    printf("\nRAJA Teams kernel 1 global bounds \n");
+    printf("# 13");
+    printf("\nRAJA Teams kernel 1 global (w launch bounds) \n");
+    printf("Generates global 2D threads, each thread performs a dot product \n");
+    printf("Adds launch bounds \n");
     auto t0 = Clock::now();
     RAJA::expt::launch<launch_policy_bounds>(RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(griddim.x,griddim.y),
@@ -746,9 +942,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(TEAMS_KERNEL_2_RAJA_TILED_SHARED)
   {
-    printf("\nRAJA Teams kernel 2 tiled shared \n");
+    printf("# 14");
+    printf("\nRAJA Teams kernel 2 RAJA tiled shared \n");
+    printf("Uses RAJA methods to break up the iteration space into tiles\n");
+    printf("Performs multiplication by loading submatrices into tiles of shmem \n");
+    printf("Solution is accumulated in shared memory \n");
     using seq_loop =  RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
     int Nx = griddim.x;
     int Ny = griddim.y;
@@ -821,9 +1023,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(TEAMS_KERNEL_2_RAJA_TILED_SHARED_BOUNDS)
   {
-    printf("\nRAJA Teams kernel 2 tiled shared bounds \n");
+    printf("# 15");
+    printf("\nRAJA Teams kernel 2 RAJA tiled shared (with launch bounds) \n");
+    printf("Uses RAJA methods to break up the iteration space into tiles\n");
+    printf("Performs multiplication by loading submatrices into tiles of shmem \n");
+    printf("Solution is accumulated in shared memory \n");
+    printf("Adds launch bounds \n");
     using seq_loop =  RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
     int Nx = griddim.x;
     int Ny = griddim.y;
@@ -896,9 +1105,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(TEAMS_KERNEL_2_RAJA_TILED_SHARED_REG)
   {
-    printf("\nRAJA Teams kernel 2 tiled register \n");
+    printf("# 16");
+    printf("\nRAJA Teams kernel 2 RAJA tiling + register \n");
+    printf("Uses RAJA methods to break up the iteration space into tiles\n");
+    printf("Performs multiplication by loading submatrices into tiles \n");
+    printf("Solution is accumulated in register (not currently portable) \n");
     using seq_loop =  RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
     int Nx = griddim.x;
     int Ny = griddim.y;
@@ -965,9 +1180,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(TEAMS_KERNEL_2_RAJA_TILED_SHARED_REG_BOUNDS)
   {
-    printf("\nRAJA Teams kernel 2 tiled register bounds \n");
+    printf("# 17");
+    printf("\nRAJA Teams kernel 2 RAJA tiling + register (with launch bounds) \n");
+    printf("Uses RAJA methods to break up the iteration space into tiles\n");
+    printf("Performs multiplication by loading submatrices into tiles \n");
+    printf("Solution is accumulated in register (not currently portable) \n");
+    printf("Adds launch bounds \n");
     using seq_loop =  RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
     int Nx = griddim.x;
     int Ny = griddim.y;
@@ -1034,9 +1256,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(TEAMS_KERNEL_2_DIRECT_TILED_SHARED)
   {
-    printf("\nRAJA Teams kernel 2 global shared \n");
+    printf("# 18");
+    printf("\nRAJA Teams kernel 2 direct tiling\n");
+    printf("Performs multiplication by loading submatrices into tiles \n");
+    printf("Solution is accumulated in shared memory \n");
     using seq_loop =  RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
     int Nx = griddim.x;
     int Ny = griddim.y;
@@ -1070,12 +1297,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                 const int Col = bx*CUDA_BLOCK_SIZE + tx;
 
                 if (k*CUDA_BLOCK_SIZE + tx < N && Row < N)
-                  As[ty][tx] = A[Row*N + k*CUDA_BLOCK_SIZE + tx];
+                  As[ty][tx] = Aview(Row, (k*CUDA_BLOCK_SIZE + tx));
+                              //A[Row*N + k*CUDA_BLOCK_SIZE + tx];
                 else
                   As[ty][tx] = 0.0;
 
                 if (k*CUDA_BLOCK_SIZE + ty < N && Col < N)
-                  Bs[ty][tx] = B[(k*CUDA_BLOCK_SIZE + ty)*N + Col];
+                  Bs[ty][tx] = Bview((k*CUDA_BLOCK_SIZE + ty), Col);
+                 // Bs[ty][tx] = B[(k*CUDA_BLOCK_SIZE + ty)*N + Col];
                 else
                   Bs[ty][tx] = 0.0;
 
@@ -1120,9 +1349,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(TEAMS_KERNEL_2_DIRECT_TILED_SHARED_BOUNDS)
   {
-    printf("\nRAJA Teams kernel 2 global shared bounds \n");
+    printf("# 19");
+    printf("\nRAJA Teams kernel 2 direct tiling (with launch bounds) \n");
+    printf("Performs multiplication by loading submatrices into tiles \n");
+    printf("Solution is accumulated in shared mem \n");
+    printf("Adds launch bounds \n");
     using seq_loop =  RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
     int Nx = griddim.x;
     int Ny = griddim.y;
@@ -1156,12 +1391,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                 const int Col = bx*CUDA_BLOCK_SIZE + tx;
 
                 if (k*CUDA_BLOCK_SIZE + tx < N && Row < N)
-                  As[ty][tx] = A[Row*N + k*CUDA_BLOCK_SIZE + tx];
+                  As[ty][tx] = Aview(Row, (k*CUDA_BLOCK_SIZE + tx));
+                  //As[ty][tx] = A[Row*N + k*CUDA_BLOCK_SIZE + tx];
                 else
                   As[ty][tx] = 0.0;
 
                 if (k*CUDA_BLOCK_SIZE + ty < N && Col < N)
-                  Bs[ty][tx] = B[(k*CUDA_BLOCK_SIZE + ty)*N + Col];
+                  Bs[ty][tx] = Bview((k*CUDA_BLOCK_SIZE + ty), Col);
+                  //Bs[ty][tx] = B[(k*CUDA_BLOCK_SIZE + ty)*N + Col];
                 else
                   Bs[ty][tx] = 0.0;
 
@@ -1206,9 +1443,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(TEAMS_KERNEL_2_DIRECT_TILED_SHARED_REG)
   {
-    printf("\nRAJA Teams kernel 2 global register \n");
+    printf("# 20");
+    printf("\nRAJA Teams kernel 2 direct tiling with register \n");
+    printf("Performs multiplication by loading submatrices into tiles \n");
+    printf("Solution is accumulated in thread register \n");
     using seq_loop =  RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
     int Nx = griddim.x;
     int Ny = griddim.y;
@@ -1234,12 +1476,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                 const int Col = bx*CUDA_BLOCK_SIZE + tx;
 
                 if (k*CUDA_BLOCK_SIZE + tx < N && Row < N)
-                  As[ty][tx] = A[Row*N + k*CUDA_BLOCK_SIZE + tx];
+                  As[ty][tx] = Aview(Row, (k*CUDA_BLOCK_SIZE + tx));
+                  //As[ty][tx] = A[Row*N + k*CUDA_BLOCK_SIZE + tx];
                 else
                   As[ty][tx] = 0.0;
 
                 if (k*CUDA_BLOCK_SIZE + ty < N && Col < N)
-                  Bs[ty][tx] = B[(k*CUDA_BLOCK_SIZE + ty)*N + Col];
+                  Bs[ty][tx] = Bview((k*CUDA_BLOCK_SIZE + ty), Col);
+                  //Bs[ty][tx] = B[(k*CUDA_BLOCK_SIZE + ty)*N + Col];
                 else
                   Bs[ty][tx] = 0.0;
 
@@ -1284,9 +1528,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(TEAMS_KERNEL_2_DIRECT_TILED_SHARED_REG_BOUNDS)
   {
-    printf("\nRAJA Teams kernel 2 global register bounds \n");
+    printf("# 21");
+    printf("\nRAJA Teams kernel 2 direct tiling + register (w launch bounds) \n");
+    printf("Performs multiplication by loading submatrices into tiles \n");
+    printf("Solution is accumulated in thread register \n");
+    printf("Adds launch bounds \n");
     using seq_loop =  RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
     int Nx = griddim.x;
     int Ny = griddim.y;
@@ -1312,12 +1562,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                 const int Col = bx*CUDA_BLOCK_SIZE + tx;
 
                 if (k*CUDA_BLOCK_SIZE + tx < N && Row < N)
-                  As[ty][tx] = A[Row*N + k*CUDA_BLOCK_SIZE + tx];
+                  As[ty][tx] = Aview(Row, (k*CUDA_BLOCK_SIZE + tx));
+                  //As[ty][tx] = A[Row*N + k*CUDA_BLOCK_SIZE + tx];
                 else
                   As[ty][tx] = 0.0;
 
                 if (k*CUDA_BLOCK_SIZE + ty < N && Col < N)
-                  Bs[ty][tx] = B[(k*CUDA_BLOCK_SIZE + ty)*N + Col];
+                  Bs[ty][tx] = Bview((k*CUDA_BLOCK_SIZE + ty), Col);
+                  //Bs[ty][tx] = B[(k*CUDA_BLOCK_SIZE + ty)*N + Col];
                 else
                   Bs[ty][tx] = 0.0;
 
@@ -1362,15 +1614,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
-
+#endif
 
 
   //=======================================
   //Tiling with kernel
 
   printf("\n");
+#if defined(RAJA_KERNEL_1_TILED)
   {
+    printf("# 22");
     printf("\nRAJA Kernel 1  \n");
+    printf("Uses RAJA methods to perform tiling\n");
     auto t0 = Clock::now();
 
     using EXEC_POL5 =
@@ -1378,8 +1633,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         RAJA::statement::CudaKernelOccAsync<
           RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_direct,
             RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
-              RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
-                RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                   RAJA::statement::Lambda<0>
                 >
               >
@@ -1407,9 +1662,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(RAJA_KERNEL_1_TILED_BOUNDS)
   {
-    printf("\nRAJA Kernel 1 bounds \n");
+    printf("# 23");
+    printf("\nRAJA Kernel 1 (w launch bounds) \n");
+    printf("Uses RAJA methods to perform tiling\n");
+    printf("Adds launch bounds \n");
     auto t0 = Clock::now();
 
     using EXEC_POL5 =
@@ -1417,8 +1677,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         RAJA::statement::CudaKernelFixedAsync<CUDA_BLOCK_SIZE*CUDA_BLOCK_SIZE,
           RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_direct,
             RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
-              RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
-                RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                   RAJA::statement::Lambda<0>
                 >
               >
@@ -1446,9 +1706,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(RAJA_KERNEL_2_TILED_SHARED)
   {
+    printf("# 24");
     printf("\nRAJA Kernel 2 shared \n");
+    printf("Uses RAJA methods to break up the iteration space into tiles\n");
+    printf("Performs multiplication by loading submatrices into tiles \n");
+    printf("Solution is accumulated in shared memory \n");
     auto t0 = Clock::now();
 
     using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE>>;
@@ -1470,8 +1736,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             RAJA::statement::Tile<2, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
 
               // zero out dot
-              RAJA::statement::For<0, RAJA::cuda_thread_y_loop,
-                RAJA::statement::For<2, RAJA::cuda_thread_x_loop,
+              RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
                   shmem_Lambda0
                 >
               >,
@@ -1570,9 +1836,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(RAJA_KERNEL_2_TILED_SHARED_BOUNDS)
   {
-    printf("\nRAJA Kernel 2 shared bounds \n");
+    printf("# 25");
+    printf("\nRAJA Kernel 2 shared (with launch bounds) \n");
+    printf("Uses RAJA methods to break up the iteration space into tiles\n");
+    printf("Performs multiplication within tiles \n");
+    printf("Solution is accumulated in shared memory \n");
+    printf("Adds launch bounds \n");
     auto t0 = Clock::now();
 
     using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE>>;
@@ -1594,8 +1867,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             RAJA::statement::Tile<2, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
 
               // zero out dot
-              RAJA::statement::For<0, RAJA::cuda_thread_y_loop,
-                RAJA::statement::For<2, RAJA::cuda_thread_x_loop,
+              RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<2, RAJA::cuda_thread_x_direct,
                   shmem_Lambda0
                 >
               >,
@@ -1694,9 +1967,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(RAJA_KERNEL_2_TILED_SHARED_REG)
   {
-    printf("\nRAJA Kernel 2 register \n");
+    printf("# 26");
+    printf("\nRAJA Kernel 2 + reg \n");
+    printf("Uses RAJA methods to break up the iteration space into tiles\n");
+    printf("Performs multiplication within tiles \n");
+    printf("Solution is accumulated in register \n");
     auto t0 = Clock::now();
 
     using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE>>;
@@ -1814,9 +2093,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
+#endif
 
+#if defined(RAJA_KERNEL_2_TILED_SHARED_REG_BOUNDS)
   {
-    printf("\nRAJA Kernel 2 register bounds \n");
+    printf("# 27");
+    printf("\nRAJA Kernel 2 + register (with launch bounds) \n");
+    printf("Uses RAJA methods to break up the iteration space into tiles\n");
+    printf("Performs multiplication by loading submatrices into tiles \n");
+    printf("Solution is accumulated in register \n");
     auto t0 = Clock::now();
 
     using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE>>;
@@ -1934,7 +2219,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               << " milliseconds" << std::endl;
     checkResult(C, N);
   }
-
+#endif
 
 
 //
