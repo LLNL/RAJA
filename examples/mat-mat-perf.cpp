@@ -15,6 +15,9 @@
 
 #include "RAJA/RAJA.hpp"
 
+//uncomment for RAJA kernel
+//#define RUN_RAJA_KERNEL
+
 //------------------
 //CUDA variants
 //------------------
@@ -1673,7 +1676,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //=======================================
   //Tiling with kernel
-#if 0
+#if defined(RUN_RAJA_KERNEL)
+
   printf("\n");
 #if defined(RAJA_KERNEL_1_TILED)
   {
@@ -2303,7 +2307,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
 #endif
 
-#endif//ENABLE RAJA kernel
+#endif //ENABLE_RAJA_KERNEL
 
 //
 // Clean up.
