@@ -240,8 +240,7 @@ class Raja(CMakePackage, CudaPackage):
                                         cudacompiler))
 
             if ("xl" in cpp_compiler):
-                cfg.write(cmake_cache_entry("CMAKE_CUDA_FLAGS", "-Xcompiler -O3 -Xcompiler -qxlcompatmacros -Xcompiler -qalias=noansi -Xcompiler -qsmp=omp 
-                          -Xcompiler -qhot -Xcompiler -qnoeh -Xcompiler -qsuppress=1500-029 -Xcompiler -qsuppress=1500-036 -Xcompiler -qsuppress=1500-030"))
+                cfg.write(cmake_cache_entry("CMAKE_CUDA_FLAGS", "-Xcompiler -O3 -Xcompiler -qxlcompatmacros -Xcompiler -qalias=noansi -Xcompiler -qsmp=omp -Xcompiler -qhot -Xcompiler -qnoeh -Xcompiler -qsuppress=1500-029 -Xcompiler -qsuppress=1500-036 -Xcompiler -qsuppress=1500-030"))
                 cuda_release_flags = "-O3"
                 cuda_reldebinf_flags = "-O3 -g"
                 cuda_debug_flags = "-O0 -g"
