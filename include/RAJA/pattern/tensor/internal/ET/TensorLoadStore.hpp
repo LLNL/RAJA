@@ -41,36 +41,49 @@ namespace RAJA
 
 
 
-    template<typename STORAGE, typename RHS_TYPE, typename REF_TYPE>
+    template<typename STORAGE, typename LHS_TYPE, typename RHS_TYPE>
     struct TensorStoreFunctor
     {
-        RHS_TYPE const &rhs;
-        REF_TYPE const &ref;
+        LHS_TYPE const &m_lhs;
+        RHS_TYPE const &m_rhs;
 
         template<typename TILE_TYPE>
         RAJA_HOST_DEVICE
         RAJA_INLINE
-        void operator()(TILE_TYPE const &tile) const{
+        void operator()(TILE_TYPE const &tile) const {
 
-          // Create top-level storage
-          STORAGE storage;
 
-          // Call rhs to evaluate this tile
-          rhs.eval(storage, tile);
+          /*
+           *
+           * view(bah) -> ET
+           *
+           * ETLoadStore(A) = ET
+           *
+           *    tileloop(Atile in A){
+           *
+           *      ETLoadStore(A).eval_lhs(Atile) = ET.eval(Atile)
+           *
+           *    }
+           *
+           *
+           * For recursive ET types, eval() produces a new ET, and
+           * eval_lhs() produces a new TensorLoadStore.
+           *
+           */
 
-          // Store result
-          storage.store_ref(merge_ref_tile(ref, tile));
+          m_lhs.eval_lhs(tile) = m_rhs.eval(tile);
+
         }
     };
 
-    template<typename STORAGE, typename RHS_TYPE, typename REF_TYPE>
+    template<typename STORAGE, typename LHS_TYPE, typename RHS_TYPE>
     RAJA_HOST_DEVICE
     RAJA_INLINE
     constexpr
-    auto makeTensorStoreFunctor(RHS_TYPE const &rhs, REF_TYPE const &ref) ->
-    TensorStoreFunctor<STORAGE, RHS_TYPE, REF_TYPE>
+    auto makeTensorStoreFunctor(LHS_TYPE const &lhs, RHS_TYPE const &rhs) ->
+    TensorStoreFunctor<STORAGE, LHS_TYPE, RHS_TYPE>
     {
-      return TensorStoreFunctor<STORAGE, RHS_TYPE, REF_TYPE>{rhs, ref};
+      return TensorStoreFunctor<STORAGE, LHS_TYPE, RHS_TYPE>{lhs, rhs};
     }
 
 
@@ -86,6 +99,13 @@ namespace RAJA
         using result_type = TENSOR_TYPE;
 
         static constexpr camp::idx_t s_num_dims = result_type::s_num_dims;
+
+
+      private:
+        ref_type m_ref;
+
+
+      public:
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
@@ -160,11 +180,22 @@ namespace RAJA
           return *this;
         }
 
-        template<typename STORAGE, typename TILE_TYPE>
+        template<typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        void eval(STORAGE &storage, TILE_TYPE const &tile) const {
-          storage.load_ref(merge_ref_tile(m_ref, tile));
+        auto eval(TILE_TYPE const &tile) const ->
+          decltype(tensor_type::s_load_ref(merge_ref_tile(m_ref, tile)))
+        {
+          return tensor_type::s_load_ref(merge_ref_tile(m_ref, tile));
+        }
+
+        template<typename TILE_TYPE>
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        auto eval_lhs(TILE_TYPE const &tile) const ->
+          decltype(TENSOR_TYPE::create_et_store_ref(merge_ref_tile(this->m_ref, tile)))
+        {
+          return TENSOR_TYPE::create_et_store_ref(merge_ref_tile(m_ref, tile));
         }
 
 
@@ -201,15 +232,13 @@ namespace RAJA
           printf(")\n");
 #endif
           tensorTileExec<tensor_type>(m_ref.m_tile,
-              makeTensorStoreFunctor<tensor_type>(rhs, m_ref));
+              makeTensorStoreFunctor<tensor_type>(*this, rhs));
         }
 
 
 
 
 
-      private:
-        ref_type m_ref;
     };
 
 

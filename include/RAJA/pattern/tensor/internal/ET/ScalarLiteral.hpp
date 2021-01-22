@@ -36,7 +36,7 @@ namespace RAJA
 
 
     template<typename T>
-    class TensorScalarLiteral :  public TensorExpressionBase<TensorScalarLiteral<ScalarRegister<T>>> {
+    class TensorScalarLiteral :  public TensorExpressionBase<TensorScalarLiteral<T>> {
       public:
         using self_type = TensorScalarLiteral<T>;
         using tensor_type = ScalarRegister<T>;
@@ -56,16 +56,18 @@ namespace RAJA
         RAJA_INLINE
         RAJA_HOST_DEVICE
         explicit
-        TensorScalarLiteral(element_type const &value) :
+        constexpr
+        TensorScalarLiteral(element_type const &value) noexcept :
         m_value{value}
         {}
 
 
-        template<typename STORAGE, typename TILE_TYPE>
+        template<typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        void eval(STORAGE &result, TILE_TYPE const &) const {
-          result = m_value;
+        constexpr
+        element_type eval(TILE_TYPE const &) const noexcept {
+          return element_type(m_value);
         }
 
         RAJA_INLINE

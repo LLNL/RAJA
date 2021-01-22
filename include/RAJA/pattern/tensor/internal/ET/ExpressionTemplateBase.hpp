@@ -25,6 +25,7 @@
 #include "RAJA/pattern/tensor/internal/TensorRef.hpp"
 
 #include "RAJA/pattern/tensor/internal/ET/normalizeOperand.hpp"
+#include "RAJA/pattern/tensor/internal/ET/BinaryOperatorTraits.hpp"
 
 
 //#define RAJA_DEBUG_PRINT_ET_AST
@@ -47,20 +48,12 @@ namespace RAJA
     template<typename TENSOR_REGISTER_TYPE, typename REF_TYPE>
     class TensorLoadStore;
 
-    template<typename LHS_TYPE, typename RHS_TYPE>
-    class TensorAdd;
-
-    template<typename LHS_TYPE, typename RHS_TYPE>
-    class TensorDivide;
 
     template<typename LHS_TYPE, typename RHS_TYPE>
     class TensorMultiply;
 
     template<typename TENSOR_TYPE>
     class TensorNegate;
-
-    template<typename LHS_TYPE, typename RHS_TYPE>
-    class TensorSubtract;
 
     template<typename TENSOR_TYPE>
     class TensorTranspose;

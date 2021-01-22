@@ -19,7 +19,6 @@
 #define RAJA_policy_tensor_vectorregister_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/pattern/tensor/VectorRegister.hpp"
 
 namespace RAJA
 {

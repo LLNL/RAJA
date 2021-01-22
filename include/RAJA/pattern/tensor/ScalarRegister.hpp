@@ -60,6 +60,7 @@ namespace RAJA
         return base_type::get(0);
       }
 
+
   };
 
 } // namespace RAJA

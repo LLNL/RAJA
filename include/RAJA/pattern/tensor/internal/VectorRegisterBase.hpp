@@ -90,7 +90,7 @@ namespace internal {
        */
       template<typename POINTER_TYPE, typename INDEX_TYPE, internal::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
       RAJA_INLINE
-      self_type &load_ref(internal::TensorRef<self_type, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM> const &ref){
+      self_type &load_ref(internal::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM> const &ref){
 
         auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0];
 
@@ -139,7 +139,7 @@ namespace internal {
        */
       template<typename POINTER_TYPE, typename INDEX_TYPE, internal::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
       RAJA_INLINE
-      self_type const &store_ref(internal::TensorRef<self_type, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM> const &ref) const {
+      self_type const &store_ref(internal::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM> const &ref) const {
 
         auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0];
 

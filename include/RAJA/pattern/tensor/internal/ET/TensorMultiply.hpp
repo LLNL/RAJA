@@ -36,28 +36,33 @@ namespace RAJA
   {
 
     // forward decl for FMA contraction
-    template<typename LHS_TYPE, typename RHS_TYPE, typename ADD_TYPE>
+    template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE, typename ADD_TYPE>
     class TensorMultiplyAdd;
 
 
-    template<typename LHS_TYPE, typename RHS_TYPE>
-    class TensorMultiply : public TensorExpressionBase<TensorMultiply<LHS_TYPE, RHS_TYPE>> {
+    template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
+    class TensorMultiply : public TensorExpressionBase<TensorMultiply<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE>> {
       public:
-        using self_type = TensorMultiply<LHS_TYPE, RHS_TYPE>;
-        using lhs_type = LHS_TYPE;
-        using rhs_type = RHS_TYPE;
-        using element_type = typename LHS_TYPE::element_type;
-        using index_type = typename LHS_TYPE::index_type;
-        using multiply_op = MultiplyOperator<LHS_TYPE, RHS_TYPE>;
+        using self_type = TensorMultiply<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE>;
+        using left_operand_type = LEFT_OPERAND_TYPE;
+        using right_operand_type = RIGHT_OPERAND_TYPE;
+        using element_type = typename LEFT_OPERAND_TYPE::element_type;
+        using index_type = typename LEFT_OPERAND_TYPE::index_type;
+        using multiply_op = MultiplyOperator<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE>;
         using result_type = typename multiply_op::result_type;
         using tile_type = typename multiply_op::tile_type;
         static constexpr camp::idx_t s_num_dims = multiply_op::s_num_dims;
 
+      private:
+        left_operand_type m_left_operand;
+        right_operand_type m_right_operand;
+
+      public:
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        TensorMultiply(lhs_type const &lhs, rhs_type const &rhs) :
-        m_lhs{lhs}, m_rhs{rhs}
+        TensorMultiply(left_operand_type const &left_operand, right_operand_type const &right_operand) :
+        m_left_operand{left_operand}, m_right_operand{right_operand}
         {}
 
 
@@ -65,15 +70,17 @@ namespace RAJA
         RAJA_HOST_DEVICE
         constexpr
         index_type getDimSize(index_type dim) const {
-          return multiply_op::getDimSize(dim, m_lhs, m_rhs);
+          return multiply_op::getDimSize(dim, m_left_operand, m_right_operand);
         }
 
 
-        template<typename STORAGE, typename TILE_TYPE>
+        template<typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        void eval(STORAGE &result, TILE_TYPE const &tile) const {
-          multiply_op::multiply(result, tile, m_lhs, m_rhs);
+        auto eval(TILE_TYPE const &tile) const ->
+          decltype(multiply_op::multiply(tile, m_left_operand, m_right_operand))
+        {
+          return multiply_op::multiply(tile, m_left_operand, m_right_operand);
         }
 
         /*!
@@ -82,8 +89,8 @@ namespace RAJA
         RAJA_INLINE
         RAJA_HOST_DEVICE
         constexpr
-        lhs_type const &getLHS() const {
-          return m_lhs;
+        left_operand_type const &getLeftOperand() const {
+          return m_left_operand;
         }
 
         /*!
@@ -92,8 +99,8 @@ namespace RAJA
         RAJA_INLINE
         RAJA_HOST_DEVICE
         constexpr
-        rhs_type const &getRHS() const {
-          return m_rhs;
+        right_operand_type const &getRightOperand() const {
+          return m_right_operand;
         }
 
 
@@ -103,9 +110,9 @@ namespace RAJA
         template<typename ADD>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        TensorMultiplyAdd<lhs_type, rhs_type, normalize_operand_t<ADD>>
+        TensorMultiplyAdd<left_operand_type, right_operand_type, normalize_operand_t<ADD>>
         operator+(ADD const &add) const {
-          return TensorMultiplyAdd<lhs_type, rhs_type, normalize_operand_t<ADD>>(m_lhs, m_rhs, normalizeOperand(add));
+          return TensorMultiplyAdd<left_operand_type, right_operand_type, normalize_operand_t<ADD>>(m_left_operand, m_right_operand, normalizeOperand(add));
         }
 
 
@@ -115,15 +122,13 @@ namespace RAJA
           printf("Multiply[");
           multiply_op::print_ast();
           printf("](");
-          m_lhs.print_ast();
+          m_left_operand.print_ast();
           printf(", ");
-          m_rhs.print_ast();
+          m_right_operand.print_ast();
           printf(")");
         }
 
-      private:
-        lhs_type m_lhs;
-        rhs_type m_rhs;
+
     };
 
 
@@ -136,10 +141,10 @@ namespace RAJA
       typename std::enable_if<std::is_base_of<TensorExpressionConcreteBase, RHS>::value, bool>::type = true>
     RAJA_INLINE
     RAJA_HOST_DEVICE
-    auto operator*(LHS const &lhs, RHS const &rhs) ->
+    auto operator*(LHS const &left_operand, RHS const &right_operand) ->
     TensorMultiply<typename NormalizeOperandHelper<LHS>::return_type, RHS>
     {
-      return TensorMultiply<typename NormalizeOperandHelper<LHS>::return_type, RHS>(NormalizeOperandHelper<LHS>::normalize(lhs), rhs);
+      return TensorMultiply<typename NormalizeOperandHelper<LHS>::return_type, RHS>(NormalizeOperandHelper<LHS>::normalize(left_operand), right_operand);
     }
 
   } // namespace ET

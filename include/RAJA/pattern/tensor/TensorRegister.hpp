@@ -28,6 +28,10 @@
 
 namespace RAJA
 {
+  namespace internal {
+    class TensorRegisterConcreteBase;
+  }
+
   template<typename REGISTER_POLICY,
            typename T,
            typename LAYOUT,
@@ -36,39 +40,62 @@ namespace RAJA
   class TensorRegister;
 
 
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ>
-  RAJA_HOST_DEVICE
+  /*
+   * Overload for:    arithmetic + TensorRegister
+
+   */
+  template<typename LEFT, typename RIGHT,
+    typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
+    typename std::enable_if<std::is_base_of<internal::TensorRegisterConcreteBase, RIGHT>::value, bool>::type = true>
   RAJA_INLINE
-  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ>
-  operator+(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ> const &y){
-    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ>;
-    return register_t(x).add(y);
+  RAJA_HOST_DEVICE
+  RIGHT operator+(LEFT const &lhs, RIGHT const &rhs)
+  {
+    return RIGHT(lhs).add(rhs);
   }
 
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ>
-  RAJA_HOST_DEVICE
+  /*
+   * Overload for:    arithmetic - TensorRegister
+
+   */
+  template<typename LEFT, typename RIGHT,
+    typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
+    typename std::enable_if<std::is_base_of<internal::TensorRegisterConcreteBase, RIGHT>::value, bool>::type = true>
   RAJA_INLINE
-  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ>
-  operator-(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ> const &y){
-    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ>;
-    return register_t(x).subtract(y);
+  RAJA_HOST_DEVICE
+  RIGHT operator-(LEFT const &lhs, RIGHT const &rhs)
+  {
+    return RIGHT(lhs).subtract(rhs);
   }
 
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ>
-  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ>
-  operator*(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ> const &y){
-    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ>;
-    return register_t(x).multiply(y);
+  /*
+   * Overload for:    arithmetic * TensorRegister
+
+   */
+  template<typename LEFT, typename RIGHT,
+    typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
+    typename std::enable_if<std::is_base_of<internal::TensorRegisterConcreteBase, RIGHT>::value, bool>::type = true>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  RIGHT operator*(LEFT const &lhs, RIGHT const &rhs)
+  {
+    return rhs.scale(lhs);
   }
 
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename SIZES, typename VAL_SEQ>
-  RAJA_HOST_DEVICE
+  /*
+   * Overload for:    arithmetic / TensorRegister
+
+   */
+  template<typename LEFT, typename RIGHT,
+    typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
+    typename std::enable_if<std::is_base_of<internal::TensorRegisterConcreteBase, RIGHT>::value, bool>::type = true>
   RAJA_INLINE
-  TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ>
-  operator/(T x, TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ> const &y){
-    using register_t = TensorRegister<REGISTER_POLICY, T, LAYOUT, SIZES, VAL_SEQ>;
-    return register_t(x).divide(y);
+  RAJA_HOST_DEVICE
+  RIGHT operator/(LEFT const &lhs, RIGHT const &rhs)
+  {
+    return RIGHT(lhs).divide(rhs);
   }
+
 
 }  // namespace RAJA
 

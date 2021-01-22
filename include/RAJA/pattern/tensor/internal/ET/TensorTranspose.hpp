@@ -23,7 +23,6 @@
 #include "RAJA/util/macros.hpp"
 
 #include "RAJA/pattern/tensor/internal/ET/ExpressionTemplateBase.hpp"
-#include "RAJA/pattern/tensor/internal/ET/Operator.hpp"
 
 
 namespace RAJA

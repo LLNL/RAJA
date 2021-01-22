@@ -21,7 +21,7 @@
 #define VARIANT_RAJA_TEAMS_SEQ       0
 #define VARIANT_RAJA_VECTOR          0
 #define VARIANT_RAJA_MATRIX          1
-#define VARIANT_RAJA_TEAMS_MATRIX    1
+#define VARIANT_RAJA_TEAMS_MATRIX    0
 #define VARIANT_RAJA_SEQ_SHMEM       0
 #define VARIANT_RAJA_MATRIX_SHMEM    0
 
@@ -628,6 +628,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using matrix_t = RAJA::MatrixRegister<double, ColMajorLayout>;
 
+//  using matrix_t = RAJA::TensorBlock<RAJA::avx2_register, double,
+//      camp::idx_seq<0,1>,
+//      camp::idx_seq<16,16>,
+//      int>;
+
 	std::cout << "vector width: " << matrix_t::s_dim_elem(0) << std::endl;
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
@@ -660,8 +665,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       auto cols_d = ColD::all();
       auto rows_d = toRowIndex(cols_d);
 
-        phi(rows_m, g, cols_z) +=
-            L(rows_m, cols_d) * psi(rows_d, g, cols_z);
+        phi(rows_m, g, cols_z) =
+            L(rows_m, cols_d) * psi(rows_d, g, cols_z) + phi(rows_m, g, cols_z);
 
 #else
         // try using BLAS DGEMM for comparison

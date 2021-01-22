@@ -69,6 +69,23 @@ namespace internal {
 
   };
 
+
+  template<typename REF_TYPE>
+  struct TensorRegisterStoreRef{
+      using self_type = TensorRegisterStoreRef<REF_TYPE>;
+      REF_TYPE m_ref;
+
+      template<typename RHS>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type operator=(RHS const &rhs)
+      {
+        rhs.store_ref(m_ref);
+        return *this;
+      }
+  };
+
+
   class TensorRegisterConcreteBase {};
 
   /*!
@@ -113,6 +130,27 @@ namespace internal {
       constexpr
       bool is_root() {
         return true;
+      }
+
+      template<typename REF_TYPE>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static
+      constexpr
+      TensorRegisterStoreRef<REF_TYPE>
+      create_et_store_ref(REF_TYPE const &ref) {
+        return TensorRegisterStoreRef<REF_TYPE>{ref};
+      }
+
+      template<typename REF_TYPE>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static
+      self_type
+      s_load_ref(REF_TYPE const &ref) {
+        self_type value;
+        value.load_ref(ref);
+        return value;
       }
 
       /*!

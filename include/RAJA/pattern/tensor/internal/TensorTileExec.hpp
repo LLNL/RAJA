@@ -75,6 +75,9 @@ namespace RAJA
           // convert tile to a partial tile
           auto &part_tile = make_tensor_tile_partial(tile);
 
+          // store original size
+          auto tmp_size = part_tile.m_size[DIM0];
+
           // set tile size to the remainder
           part_tile.m_size[DIM0] =
               orig_begin +
@@ -88,11 +91,13 @@ namespace RAJA
 
           // Do the next inner tiling loop
           inner_t::exec(otile, part_tile, body);
+
+          // restore size
+          part_tile.m_size[DIM0] = tmp_size;
         }
 
         // reset tile dimension
         tile.m_begin[DIM0] = orig_begin;
-        tile.m_size[DIM0] = orig_size;
       }
 
     };

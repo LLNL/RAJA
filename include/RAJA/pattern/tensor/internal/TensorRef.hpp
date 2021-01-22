@@ -39,12 +39,33 @@ namespace RAJA
     template<typename INDEX_TYPE, TensorTileSize TENSOR_SIZE, camp::idx_t NUM_DIMS>
     struct TensorTile
     {
+        using self_type = TensorTile<INDEX_TYPE, TENSOR_SIZE, NUM_DIMS>;
         using index_type = INDEX_TYPE;
         index_type m_begin[NUM_DIMS];
         index_type m_size[NUM_DIMS];
 
         static constexpr camp::idx_t s_num_dims = NUM_DIMS;
         static constexpr TensorTileSize s_tensor_size = TENSOR_SIZE;
+
+
+
+        /*!
+         * Subtract begin offsets of two tiles.
+         *
+         * The resulting tile has the sizes of the left operand, but has
+         * m_begin[i] = left.m_begin[i] - right.m_begin[i]
+         *
+         */
+        template<typename INDEX_TYPE2, TensorTileSize TENSOR_SIZE2>
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        self_type operator-(TensorTile<INDEX_TYPE2, TENSOR_SIZE2, NUM_DIMS> const &sub) const {
+          self_type result(*this);
+          for(camp::idx_t i = 0;i < s_num_dims; ++ i){
+            result.m_begin[i] -= sub.m_begin[i];
+          }
+          return result;
+        }
 
 
         RAJA_HOST_DEVICE
@@ -68,13 +89,13 @@ namespace RAJA
 
 
 
-    template<typename TENSOR_TYPE, typename POINTER_TYPE, typename INDEX_TYPE, TensorTileSize TENSOR_SIZE, camp::idx_t NUM_DIMS, camp::idx_t STRIDE_ONE_DIM = -1>
+    template<typename POINTER_TYPE, typename INDEX_TYPE, TensorTileSize TENSOR_SIZE, camp::idx_t NUM_DIMS, camp::idx_t STRIDE_ONE_DIM = -1>
     struct TensorRef
     {
-        using self_type = TensorRef<TENSOR_TYPE, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>;
+        using self_type = TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>;
         using tile_type = TensorTile<INDEX_TYPE, TENSOR_SIZE, NUM_DIMS>;
 
-        using tensor_type = TENSOR_TYPE;
+//        using tensor_type = TENSOR_TYPE;
         using pointer_type = POINTER_TYPE;
         using index_type = INDEX_TYPE;
         static constexpr camp::idx_t s_stride_one_dim = STRIDE_ONE_DIM;
@@ -92,7 +113,7 @@ namespace RAJA
             printf("%ld ", (long)m_stride[i]);
           }
 
-          printf("]\n");
+          printf("], stride_one_dim=%d\n", (int)STRIDE_ONE_DIM);
 
           m_tile.print();
         }
@@ -104,13 +125,13 @@ namespace RAJA
     struct MergeRefTile;
 
 
-    template<typename TENSOR_TYPE, typename POINTER_TYPE, typename INDEX_TYPE, TensorTileSize RTENSOR_SIZE, camp::idx_t NUM_DIMS, camp::idx_t STRIDE_ONE_DIM, TensorTileSize TENSOR_SIZE, camp::idx_t ... DIM_SEQ>
-    struct MergeRefTile<TensorRef<TENSOR_TYPE, POINTER_TYPE, INDEX_TYPE, RTENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>, TensorTile<INDEX_TYPE, TENSOR_SIZE, NUM_DIMS>, camp::idx_seq<DIM_SEQ...>> {
+    template<typename POINTER_TYPE, typename INDEX_TYPE, TensorTileSize RTENSOR_SIZE, camp::idx_t NUM_DIMS, camp::idx_t STRIDE_ONE_DIM, TensorTileSize TENSOR_SIZE, camp::idx_t ... DIM_SEQ>
+    struct MergeRefTile<TensorRef<POINTER_TYPE, INDEX_TYPE, RTENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>, TensorTile<INDEX_TYPE, TENSOR_SIZE, NUM_DIMS>, camp::idx_seq<DIM_SEQ...>> {
 
-        using ref_type = TensorRef<TENSOR_TYPE, POINTER_TYPE, INDEX_TYPE, RTENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>;
+        using ref_type = TensorRef<POINTER_TYPE, INDEX_TYPE, RTENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>;
         using tile_type = TensorTile<INDEX_TYPE, TENSOR_SIZE, NUM_DIMS>;
 
-        using result_type = TensorRef<TENSOR_TYPE, POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>;
+        using result_type = TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>;
 
         RAJA_INLINE
         RAJA_HOST_DEVICE

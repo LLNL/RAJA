@@ -28,14 +28,79 @@ TEST(foobar, TestBlock)
 {
 
   using block_t = RAJA::TensorBlock<RAJA::avx2_register, double,
-      camp::idx_seq<0>,
-      camp::idx_seq<16>,
+      camp::idx_seq<0,1>,
+      camp::idx_seq<16,16>,
       storage_policy>;
 
 
   block_t block;
 
+  using matrix_t = block_t;
+
+//  using matrix_t = RAJA::MatrixRegister<double, RAJA::ColMajorLayout>;
+  using element_t = typename matrix_t::element_type;
+
+  static const int N = 35;
+
+  // Create a row-major data buffer
+  element_t data1[N][N];
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      data1[i][j] = i*j*j;
+    }
+  }
+
+  // Create an empty data bufffer
+  element_t data2[N][N];
+
+  //  Create views
+  RAJA::View<element_t, RAJA::Layout<2, int>> view1(
+      &data1[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{1,0}}));
+
+
+  RAJA::View<element_t, RAJA::Layout<2, int>> view2(
+      &data2[0][0], RAJA::make_permuted_layout<2, int>({{N, N}}, {{1,0}}));
+
+
+  using Row = RAJA::RowIndex<int, matrix_t>;
+  using Col = RAJA::ColIndex<int, matrix_t>;
+
+
+  // Perform copy of view1 into view2
+  view2(Row::all(), Col::all()) = 3 + 1*view1(Row::all(), Col::all()) - 3;
+
+
+  // Check that data1==data2
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      ASSERT_SCALAR_EQ(data1[i][j], data2[i][j]);
+    }
+  }
+
+  // Perform transpose view1 into view2 by switching col and row for view1
+  view2(Row::all(), Col::all()) = view1(Col::all(), Row::all());
+
+  // Check that data1==transpose(data2)
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      ASSERT_SCALAR_EQ(data1[i][j], data2[j][i]);
+    }
+  }
+
+  // Perform transpose view1 into view2 by switching col and row for view2
+  view2(Col::all(), Row::all()) = view1(Row::all(), Col::all());
+
+  // Check that data1==transpose(data2)
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      ASSERT_SCALAR_EQ(data1[i][j], data2[j][i]);
+    }
+  }
+
+
 }
+
+#if 0
 
 template <typename Policy>
 class VectorTest : public ::testing::Test
@@ -426,3 +491,5 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
 REGISTER_TYPED_TEST_SUITE_P(VectorTest, GetSet, MinMaxSumDot, FmaFms, ForallVectorRef1d, ForallVectorRef2d);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, VectorTest, VectorTestTypes);
+
+#endif
