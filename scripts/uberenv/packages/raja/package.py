@@ -244,6 +244,8 @@ class Raja(CMakePackage, CudaPackage):
                 cuda_release_flags = "-O3"
                 cuda_reldebinf_flags = "-O3 -g"
                 cuda_debug_flags = "-O0 -g"
+            
+                cfg.write(cmake_cache_string("BLT_CXX_STD", "c++14"))
             else:
                 cuda_release_flags = "-O3 -Xcompiler -Ofast -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
                 cuda_reldebinf_flags = "-O3 -g -Xcompiler -Ofast -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
