@@ -105,13 +105,13 @@ struct memory_manager_allocator
   }
 };
 
-template <typename T, typename U, typename Resource>
+template <typename T, typename U>
 bool operator==(memory_manager_allocator<T> const&, memory_manager_allocator<U> const&)
 {
   return true;
 }
 
-template <typename T, typename U, typename Resource>
+template <typename T, typename U>
 bool operator!=(memory_manager_allocator<T> const& lhs, memory_manager_allocator<U> const& rhs)
 {
   return !(lhs == rhs);
@@ -161,13 +161,13 @@ struct pinned_allocator
   }
 };
 
-template <typename T, typename U, typename Resource>
+template <typename T, typename U>
 bool operator==(pinned_allocator<T> const&, pinned_allocator<U> const&)
 {
   return true;
 }
 
-template <typename T, typename U, typename Resource>
+template <typename T, typename U>
 bool operator!=(pinned_allocator<T> const& lhs, pinned_allocator<U> const& rhs)
 {
   return !(lhs == rhs);
