@@ -13,6 +13,16 @@
 
 #include "test-kernel-nested-loop-@NESTED_LOOP_TYPE@.hpp"
 
+template<typename EXEC_POL1, typename EXEC_POL2>
+using DoubleNestedLoopExec = 
+  RAJA::KernelPolicy<
+    RAJA::statement::For<1, EXEC_POL1,
+      RAJA::statement::For<0, EXEC_POL2,
+        RAJA::statement::Lambda<0>
+      >
+    >
+  >;
+
 //SeqKernelExecPol
 //
 //Seq
@@ -29,22 +39,10 @@
 //
 using SequentialKernelNestedLoopExecPols =
   camp::list<
-
-    RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::loop_exec,  // row
-        RAJA::statement::For<0, RAJA::loop_exec,  // col
-          RAJA::statement::Lambda<0>
-        >
-      >
-    >,
-
-    RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::seq_exec,  // row
-        RAJA::statement::For<0, RAJA::seq_exec,  // col
-          RAJA::statement::Lambda<0>
-        >
-      >
-    >
+    DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::seq_exec  >,
+    DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::loop_exec >,
+    DoubleNestedLoopExec< RAJA::loop_exec, RAJA::seq_exec  >,
+    DoubleNestedLoopExec< RAJA::loop_exec, RAJA::loop_exec >
   >;
 
 
@@ -75,14 +73,14 @@ using SequentialKernelNestedLoopExecPols =
 using OpenMPKernelNestedLoopExecPols =
   camp::list<
 
-    RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::seq_exec,  // row
-        RAJA::statement::For<0, RAJA::omp_parallel_for_exec,  // col
-          RAJA::statement::Lambda<0>
-        >
-      >
-    >,
+    DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::omp_for_exec>,
+    DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::omp_parallel_for_exec >,
+    DoubleNestedLoopExec< RAJA::omp_parallel_for_exec, RAJA::seq_exec >,
+    DoubleNestedLoopExec< RAJA::omp_parallel_for_exec, RAJA::omp_parallel_for_exec >,
+    DoubleNestedLoopExec< RAJA::omp_parallel_for_static<8>, RAJA::seq_exec >,
+    DoubleNestedLoopExec< RAJA::omp_parallel_for_static<8>, RAJA::omp_parallel_for_exec >,
 
+    // Collapse Exec Pols
     RAJA::KernelPolicy<
       RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
         RAJA::ArgList<1,0>,
@@ -144,8 +142,7 @@ using OpenMPKernelNestedLoopExecPols =
 // Cartesian product of types used in parameterized tests
 //
 using @NESTED_LOOP_BACKEND@KernelNestedLoopTypes =
-  Test< camp::cartesian_product<IdxTypeList,
-                                @NESTED_LOOP_BACKEND@ResourceList,
+  Test< camp::cartesian_product<@NESTED_LOOP_BACKEND@ResourceList,
                                 @NESTED_LOOP_BACKEND@KernelNestedLoopExecPols>>::Types;
 
 //
