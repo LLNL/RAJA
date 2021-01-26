@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
+add_subdirectory(nested-loop)
+
 add_subdirectory(region)
 
 add_subdirectory(reduce-basic)

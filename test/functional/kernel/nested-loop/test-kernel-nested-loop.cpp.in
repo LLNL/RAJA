@@ -1,0 +1,156 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-index-types.hpp"
+
+#include "RAJA_test-forall-data.hpp"
+
+#include "test-kernel-nested-loop-@NESTED_LOOP_TYPE@.hpp"
+
+//SeqKernelExecPol
+//
+//Seq
+//  Seq
+//
+//Seq
+//  Loop
+//
+//Loop
+//  Seq
+//
+//Loop
+//  Loop
+//
+using SequentialKernelNestedLoopExecPols =
+  camp::list<
+
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::loop_exec,  // row
+        RAJA::statement::For<0, RAJA::loop_exec,  // col
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::seq_exec,  // row
+        RAJA::statement::For<0, RAJA::seq_exec,  // col
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >
+  >;
+
+
+//OMPKernelExexPol
+//
+//seq
+//  omp_for
+//
+//seq
+//  omp_parallel_for
+//
+//omp_parallel
+//  omp_for ?
+//
+//omp_parallel_for
+//  seq
+//
+//omp_parallel_for
+//  omp_parallel_for
+//
+//omp_parallel_for_static
+//  omp_parallel_for
+//
+//Collapse < omp_parallel_collapse_exec >
+
+#if defined(RAJA_ENABLE_OPENMP)
+
+using OpenMPKernelNestedLoopExecPols =
+  camp::list<
+
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::seq_exec,  // row
+        RAJA::statement::For<0, RAJA::omp_parallel_for_exec,  // col
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+        RAJA::ArgList<1,0>,
+        RAJA::statement::Lambda<0>
+      >
+    >
+
+  >;
+
+#endif  // RAJA_ENABLE_OPENMP
+
+//OMPKernelExexPol
+//
+//seq
+//  omp_target_parallel_for
+//
+//loop
+//  omp_target_parallel_for
+//
+//omp_parallel_for
+//  omp_target_parallel_for ?
+
+
+//TBBKernelExecPol
+//
+//tbb_for_exec
+//  tbb_for_exec
+//
+//seq
+//  tbb_for_exec
+//
+//tbb_for_exec
+//  seq
+
+
+//Cuda(Hip)KernelExecPols
+//
+//CudaKernel
+//  thread_x_loop
+//    thread_y_loop
+//
+//seq
+//  CudaKernel
+//    thread_x_loop
+//      thread_y_loop
+//
+//CudaKernel
+//  block_x_loop
+//    thread_x_loop
+//      thread_y_loop
+//
+//CudaKernel
+//  Tile< tile_fixed, cuda_block_x_loop
+//    thread_x_loop
+//      thread_y_loop
+
+
+//
+// Cartesian product of types used in parameterized tests
+//
+using @NESTED_LOOP_BACKEND@KernelNestedLoopTypes =
+  Test< camp::cartesian_product<IdxTypeList,
+                                @NESTED_LOOP_BACKEND@ResourceList,
+                                @NESTED_LOOP_BACKEND@KernelNestedLoopExecPols>>::Types;
+
+//
+// Instantiate parameterized test
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@NESTED_LOOP_BACKEND@,
+                               KernelNestedLoop@NESTED_LOOP_TYPE@Test,
+                               @NESTED_LOOP_BACKEND@KernelNestedLoopTypes);
