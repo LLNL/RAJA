@@ -39,6 +39,16 @@ using TripleNestedLoopExec =
     >
   >;
 
+template<typename COLLAPSE_POLICY>
+using DoubleCollapseLoopExec =
+  camp::tuple<DEPTH_2,
+    RAJA::KernelPolicy<
+      RAJA::statement::Collapse<COLLAPSE_POLICY,
+        RAJA::ArgList<1,0>,
+        RAJA::statement::Lambda<0>
+      >
+    >
+  >;
 
 // ----------------------------------------------------------------------------
 // Sequential
@@ -60,22 +70,15 @@ using SequentialKernelNestedLoopExecPols =
 
 using OpenMPKernelNestedLoopExecPols =
   camp::list<
-
     DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::omp_for_exec>,
     DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::omp_parallel_for_exec >,
     DoubleNestedLoopExec< RAJA::omp_parallel_for_exec, RAJA::seq_exec >,
     DoubleNestedLoopExec< RAJA::omp_parallel_for_exec, RAJA::omp_parallel_for_exec >,
     DoubleNestedLoopExec< RAJA::omp_parallel_for_static<8>, RAJA::seq_exec >,
-    DoubleNestedLoopExec< RAJA::omp_parallel_for_static<8>, RAJA::omp_parallel_for_exec >
+    DoubleNestedLoopExec< RAJA::omp_parallel_for_static<8>, RAJA::omp_parallel_for_exec >,
 
     // Collapse Exec Pols
-    //RAJA::KernelPolicy<
-    //  RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-    //    RAJA::ArgList<1,0>,
-    //    RAJA::statement::Lambda<0>
-    //  >
-    //>
-
+    DoubleCollapseLoopExec< RAJA::omp_parallel_collapse_exec >
   >;
 #endif  // RAJA_ENABLE_OPENMP
 
@@ -86,15 +89,10 @@ using OpenMPKernelNestedLoopExecPols =
 using OpenMPTargetKernelNestedLoopExecPols =
   camp::list<
     DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::omp_target_parallel_for_exec<16> >,
-    DoubleNestedLoopExec< RAJA::loop_exec,  RAJA::omp_target_parallel_for_exec<16> >
+    DoubleNestedLoopExec< RAJA::loop_exec,  RAJA::omp_target_parallel_for_exec<16> >,
 
     //// TODO: Works for XLC and Clang10, but only up to input size of 362x362 matrix.
-    //RAJA::KernelPolicy<
-    //  RAJA::statement::Collapse<RAJA::omp_target_parallel_collapse_exec,
-    //    RAJA::ArgList<1,0>,
-    //    RAJA::statement::Lambda<0>
-    //  >
-    //>
+    DoubleCollapseLoopExec< RAJA::omp_target_parallel_collapse_exec >
   >;
 #endif  // RAJA_ENABLE_TARGET_OPENMP
 
