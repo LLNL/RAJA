@@ -10,17 +10,17 @@
 
 #include <numeric>
 
-template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
+template <typename WORKING_RES, typename EXEC_POLICY>
 void KernelNestedLoopDoubleTestImpl(const RAJA::Index_type dim0, const RAJA::Index_type dim1) {
 
   camp::resources::Resource work_res{WORKING_RES::get_default()};
 
   RAJA::Index_type flatSize = dim0 * dim1;
-  INDEX_TYPE* work_array;
-  INDEX_TYPE* check_array;
-  INDEX_TYPE* test_array;
+  RAJA::Index_type* work_array;
+  RAJA::Index_type* check_array;
+  RAJA::Index_type* test_array;
 
-  allocateForallTestData<INDEX_TYPE>(flatSize,
+  allocateForallTestData<RAJA::Index_type>(flatSize,
                                      work_res,
                                      &work_array,
                                      &check_array,
@@ -33,19 +33,19 @@ void KernelNestedLoopDoubleTestImpl(const RAJA::Index_type dim0, const RAJA::Ind
   std::iota(test_array, test_array + RAJA::stripIndexType(flatSize), 0);
 
   constexpr int DIM = 2;
-  RAJA::View< INDEX_TYPE, RAJA::Layout<DIM> > work_view(work_array, dim0, dim1);
+  RAJA::View< RAJA::Index_type, RAJA::Layout<DIM> > work_view(work_array, dim0, dim1);
 
   RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(range0, range1),
                             [=] RAJA_HOST_DEVICE (RAJA::Index_type i, RAJA::Index_type j) {
                               work_view(i,j) = i * dim0 + j;
                             });
 
-  work_res.memcpy(check_array, work_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(flatSize));
-  RAJA::forall<RAJA::seq_exec>(rangeflat, [=] (INDEX_TYPE i) {
+  work_res.memcpy(check_array, work_array, sizeof(RAJA::Index_type) * RAJA::stripIndexType(flatSize));
+  RAJA::forall<RAJA::seq_exec>(rangeflat, [=] (RAJA::Index_type i) {
     ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
   });
 
-  deallocateForallTestData<INDEX_TYPE>(work_res,
+  deallocateForallTestData<RAJA::Index_type>(work_res,
                                        work_array,
                                        check_array,
                                        test_array);
@@ -56,11 +56,10 @@ template <typename T>
 class KernelNestedLoopDoubleTest : public ::testing::Test {};
 
 TYPED_TEST_P(KernelNestedLoopDoubleTest, NestedLoopDoubleKernel) {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
+  using WORKING_RES = typename camp::at<TypeParam, camp::num<0>>::type;
+  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<1>>::type;
 
-  KernelNestedLoopDoubleTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(10,10);
+  KernelNestedLoopDoubleTestImpl<WORKING_RES, EXEC_POLICY>(10,10);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopDoubleTest,
