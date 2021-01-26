@@ -31,18 +31,6 @@
 #include "RAJA/util/Span.hpp"
 #include "RAJA/util/types.hpp"
 
-#if defined(RAJA_CUDA_ACTIVE)
-#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
-#else
-#define cudaErrchk(...)
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-#include "RAJA/policy/hip/raja_hiperrchk.hpp"
-#else
-#define hipErrchk(...)
-#endif
-
 namespace RAJA
 {
 
@@ -62,106 +50,6 @@ namespace RAJA
 template <typename T>
 class TypedListSegment
 {
-/*
- * All of the following down to the 'public' section is original machinery 
- * to manage segment index data using CUDA or HIP unified memory. Eventually,
- * it will be removed, but is left in place for now to preserve original
- * behavior so our tests don't need to be reworked en masse now and users
- * won't see any different usage or behavior.
- */
-  
-#if defined(RAJA_DEVICE_ACTIVE)
-  static constexpr bool Has_GPU = true;
-#else
-  static constexpr bool Has_GPU = false;
-#endif
-
-  //! tag for trivial per-element copy
-  struct TrivialCopy {
-  };
-  //! tag for memcpy-style copy
-  struct BlockCopy {
-  };
-
-  //! alias for GPU memory tag
-  using GPU_memory = std::integral_constant<bool, true>;
-  //! alias for CPU memory tag
-  using CPU_memory = std::integral_constant<bool, false>;
-
-  //! specialization for deallocation of GPU_memory
-  void deallocate(GPU_memory) {
-#if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaFree(m_data));
-#elif defined(RAJA_ENABLE_HIP)
-    hipErrchk(hipHostFree(m_data));
-#endif
-  }
-
-  //! specialization for allocation of GPU_memory
-  void allocate(GPU_memory)
-  {
-#if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaMallocManaged((void**)&m_data,
-                                 m_size * sizeof(value_type),
-                                 cudaMemAttachGlobal));
-#elif defined(RAJA_ENABLE_HIP)
-    hipErrchk(hipHostMalloc((void**)&m_data,
-                            m_size * sizeof(value_type),
-                            hipHostMallocMapped));
-#endif
-  }
-
-  //! specialization for deallocation of CPU_memory
-  void deallocate(CPU_memory) { delete[] m_data; }
-
-  //! specialization for allocation of CPU_memory
-  void allocate(CPU_memory) { m_data = new T[m_size]; }
-
-#if defined(RAJA_CUDA_ACTIVE)
-  //! copy data from container using BlockCopy
-  template <typename Container>
-  void copy(Container&& src, BlockCopy)
-  {
-    cudaErrchk(cudaMemcpy(
-        m_data, &(*src.begin()), m_size * sizeof(T), cudaMemcpyDefault));
-  }
-
-#elif defined(RAJA_ENABLE_HIP)
-  //! copy data from container using BlockCopy
-  template <typename Container>
-  void copy(Container&& src, BlockCopy)
-  {
-    memcpy(m_data, &(*src.begin()), m_size * sizeof(T));
-  }
-#endif
-
-  //! copy data from container using TrivialCopy
-  template <typename Container>
-  void copy(Container&& source, TrivialCopy)
-  {
-    auto dest = m_data;
-    auto src = source.begin();
-    auto const end = source.end();
-    while (src != end) {
-      *dest = *src;
-      ++dest;
-      ++src;
-    }
-  }
-
-  // internal helper to allocate data and populate with data from a container
-  template <bool GPU, typename Container>
-  void allocate_and_copy(Container&& src)
-  {
-    allocate(std::integral_constant<bool, GPU>());
-    static constexpr bool use_gpu =
-        GPU && std::is_pointer<decltype(src.begin())>::value &&
-        std::is_same<type_traits::IterableValue<Container>, value_type>::value;
-    using TagType =
-        typename std::conditional<use_gpu, BlockCopy, TrivialCopy>::type;
-    copy(src, TagType());
-  }
-
 public:
   //! value type for storage
   using value_type = T;
@@ -170,19 +58,10 @@ public:
   using iterator = T*;
 
   //! expose underlying index type
-  using IndexType = RAJA::Index_type;
+  using IndexType = T;
 
   //! prevent compiler from providing a default constructor
   TypedListSegment() = delete;
-
-/*
- * The following two constructors allow users to specify a camp resource
- * for each list segment, which be used to manage segment index data.
- *
- * Eventually, I think it would be better to add a template parameter for
- * this class to specify the camp resource type rather than passing in a 
- * resource object.
- */
 
   ///
   /// \brief Construct list segment from given array with specified length
@@ -199,10 +78,9 @@ public:
                    Index_type length,
                    camp::resources::Resource& resource,
                    IndexOwnership owned = Owned)
-    : m_resource(resource), m_use_resource(true)
+    : m_resource(resource)
   {
-    initIndexData(m_use_resource,
-                  values, length, owned);
+    initIndexData(values, length, owned);
   }
 
   ///
@@ -214,7 +92,7 @@ public:
   template <typename Container>
   TypedListSegment(const Container& container,
                    camp::resources::Resource& resource)
-    : m_resource(resource), m_use_resource(true),
+    : m_resource(resource),
       m_owned(Unowned), m_data(nullptr), m_size(container.size())
   {
 
@@ -242,74 +120,22 @@ public:
     }
   }
 
-
-/*
- * The following two ctors preserve the original list segment behavior for
- * CUDA and HIP device memory management. 
- *
- * Note that the host resource object created in the member initialization
- * list is not used. Where memory management routines are shared between
- * the old way and using camp resources are controlled by the m_use_resource
- * boolean member.
- */
-
-  ///
-  /// \brief Construct list segment from given array with specified length.
-  ///
-  /// By default the ctor performs deep copy of array elements.
-  ///
-  /// If 'Unowned' is passed as last argument, the constructed object
-  /// does not own the segment data and will hold a pointer to given
-  /// array's data. In this case, caller must manage object lifetimes properly.
-  ///
-  RAJA_DEPRECATE("In next RAJA release, TypedListSegment ctor will require a camp Resource object")
-  TypedListSegment(const value_type* values,
-                   Index_type length,
-                   IndexOwnership owned = Owned)
-    : m_resource(camp::resources::Resource{camp::resources::Host()}),
-      m_use_resource(false),
-      m_owned(Unowned), m_data(nullptr), m_size(0)
-  {
-    initIndexData(m_use_resource,
-                  values, length, owned);
-  }
-
-  ///
-  /// Construct list segment from arbitrary object holding
-  /// indices using a deep copy of given data.
-  ///
-  /// The object must provide methods: begin(), end(), size().
-  ///
-  template <typename Container>
-  RAJA_DEPRECATE("In next RAJA release, TypedListSegment ctor will require a camp Resource object")
-  explicit TypedListSegment(const Container& container)
-    : m_resource(camp::resources::Resource{camp::resources::Host()}),
-      m_use_resource(false),
-      m_owned(Unowned), m_data(nullptr), m_size(container.size())
-  {
-    if (m_size > 0) {
-      allocate_and_copy<Has_GPU>(container);
-      m_owned = Owned;
-    }
-  }
-
   ///
   /// Copy-constructor for list segment.
   ///
   TypedListSegment(const TypedListSegment& other)
-    : m_resource(other.m_resource), m_use_resource(other.m_use_resource),
+    : m_resource(other.m_resource),
       m_owned(Unowned), m_data(nullptr), m_size(0)
   {
     bool from_copy_ctor = true;
-    initIndexData(other.m_use_resource,
-                  other.m_data, other.m_size, other.m_owned, from_copy_ctor);
+    initIndexData(other.m_data, other.m_size, other.m_owned, from_copy_ctor);
   }
 
   ///
   /// Move-constructor for list segment.
   ///
   TypedListSegment(TypedListSegment&& rhs)
-    : m_resource(rhs.m_resource), m_use_resource(rhs.m_use_resource),
+    : m_resource(rhs.m_resource),
       m_owned(rhs.m_owned), m_data(rhs.m_data), m_size(rhs.m_size)
   {
     // make the rhs non-owning so it's destructor won't have any side effects
@@ -322,13 +148,7 @@ public:
   ~TypedListSegment()
   {
     if (m_data != nullptr && m_owned == Owned) {
-
-      if (m_use_resource) {
-        m_resource.deallocate(m_data);
-      } else {
-        deallocate(std::integral_constant<bool, Has_GPU>());
-      }
-
+      m_resource.deallocate(m_data);
     }
   }
 
@@ -339,7 +159,6 @@ public:
   RAJA_HOST_DEVICE void swap(TypedListSegment& other)
   {
     camp::safe_swap(m_resource, other.m_resource);
-    camp::safe_swap(m_use_resource, other.m_use_resource);
     camp::safe_swap(m_data, other.m_data);
     camp::safe_swap(m_size, other.m_size);
     camp::safe_swap(m_owned, other.m_owned);
@@ -391,8 +210,7 @@ private:
   // Initialize segment data properly based on whether object
   // owns the index data.
   //
-  void initIndexData(bool use_resource,
-                     const value_type* container,
+  void initIndexData(const value_type* container,
                      Index_type len,
                      IndexOwnership container_own,
                      bool from_copy_ctor = false)
@@ -411,32 +229,26 @@ private:
     m_owned = container_own;
     if (m_owned == Owned) {
 
-      if (use_resource) {
+      if ( from_copy_ctor ) {
 
-        if ( from_copy_ctor ) {
-
-          m_data = m_resource.allocate<value_type>(m_size);
-          m_resource.memcpy(m_data, container, sizeof(value_type) * m_size); 
-
-        } else {
-
-          camp::resources::Resource host_res{camp::resources::Host()};
-
-          value_type* tmp = host_res.allocate<value_type>(m_size);
-
-          for (Index_type i = 0; i < m_size; ++i) {
-            tmp[i] = container[i];
-          }
-
-          m_data = m_resource.allocate<value_type>(m_size);
-          m_resource.memcpy(m_data, tmp, sizeof(value_type) * m_size);
-
-          host_res.deallocate(tmp);
-
-        }
+        m_data = m_resource.allocate<value_type>(m_size);
+        m_resource.memcpy(m_data, container, sizeof(value_type) * m_size); 
 
       } else {
-        allocate_and_copy<Has_GPU>(RAJA::make_span(container, len));
+
+        camp::resources::Resource host_res{camp::resources::Host()};
+
+        value_type* tmp = host_res.allocate<value_type>(m_size);
+
+        for (Index_type i = 0; i < m_size; ++i) {
+          tmp[i] = container[i];
+        }
+
+        m_data = m_resource.allocate<value_type>(m_size);
+        m_resource.memcpy(m_data, tmp, sizeof(value_type) * m_size);
+
+        host_res.deallocate(tmp);
+
       }
 
       return;
@@ -450,9 +262,6 @@ private:
 
   // Copy of camp resource passed to ctor
   camp::resources::Resource m_resource;
-
-  // Boolean indicating whether camp resource is used to manage index data
-  bool m_use_resource;
 
   // ownership flag to guide data copying/management
   IndexOwnership m_owned;
