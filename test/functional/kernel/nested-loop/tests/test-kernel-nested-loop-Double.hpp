@@ -41,7 +41,6 @@ struct KernelNestedLoopTest<DEPTH_2, WORKING_RES, EXEC_POLICY>{
     std::iota(test_array, test_array + RAJA::stripIndexType(flatSize), 0);
 
     constexpr int Depth = 2;
-    std::cout << "Depth 2 Exec\n";
     RAJA::View< RAJA::Index_type, RAJA::Layout<Depth> > work_view(work_array, dim1, dim0);
 
     RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(range1, range0),
@@ -87,7 +86,6 @@ struct KernelNestedLoopTest<DEPTH_3, WORKING_RES, EXEC_POLICY>{
     std::iota(test_array, test_array + RAJA::stripIndexType(flatSize), 0);
 
     constexpr int Depth = 3;
-    std::cout << "Depth 3 Exec\n";
     RAJA::View< RAJA::Index_type, RAJA::Layout<Depth> > work_view(work_array, dim2, dim1, dim0);
 
     RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(range2, range1, range0),
@@ -119,6 +117,8 @@ TYPED_TEST_P(KernelNestedLoopDoubleTest, NestedLoopDoubleKernel) {
   using KERNEL_DEPTH = typename camp::at<EXEC_POL_DATA, camp::num<0>>::type;
   using EXEC_POLICY  = typename camp::at<EXEC_POL_DATA, camp::num<1>>::type;
 
+  // For double nested loop tests the third arg is ignored.
+  KernelNestedLoopTest<KERNEL_DEPTH, WORKING_RES, EXEC_POLICY>(1,1,1);
   KernelNestedLoopTest<KERNEL_DEPTH, WORKING_RES, EXEC_POLICY>(40,30,20);
 }
 
