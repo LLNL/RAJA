@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_NESTED_LOOP_2D_HPP__
-#define __TEST_KERNEL_NESTED_LOOP_2D_HPP__
+#ifndef __TEST_KERNEL_NESTED_LOOP_BASIC_HPP__
+#define __TEST_KERNEL_NESTED_LOOP_BASIC_HPP__
 
 struct DEPTH_2 {};
 struct DEPTH_3 {};
@@ -106,11 +106,11 @@ struct KernelNestedLoopTest<DEPTH_3, WORKING_RES, EXEC_POLICY>{
 
 };
 
-TYPED_TEST_SUITE_P(KernelNestedLoopDoubleTest);
+TYPED_TEST_SUITE_P(KernelNestedLoopBasicTest);
 template <typename T>
-class KernelNestedLoopDoubleTest : public ::testing::Test {};
+class KernelNestedLoopBasicTest : public ::testing::Test {};
 
-TYPED_TEST_P(KernelNestedLoopDoubleTest, NestedLoopDoubleKernel) {
+TYPED_TEST_P(KernelNestedLoopBasicTest, NestedLoopBasicKernel) {
   using WORKING_RES = typename camp::at<TypeParam, camp::num<0>>::type;
   using EXEC_POL_DATA = typename camp::at<TypeParam, camp::num<1>>::type;
 
@@ -122,7 +122,7 @@ TYPED_TEST_P(KernelNestedLoopDoubleTest, NestedLoopDoubleKernel) {
   KernelNestedLoopTest<KERNEL_DEPTH, WORKING_RES, EXEC_POLICY>(40,30,20);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopDoubleTest,
-                            NestedLoopDoubleKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopBasicTest,
+                            NestedLoopBasicKernel);
 
-#endif  // __TEST_KERNEL_NESTED_LOOP_2D_HPP__
+#endif  // __TEST_KERNEL_NESTED_LOOP_BASIC_HPP__

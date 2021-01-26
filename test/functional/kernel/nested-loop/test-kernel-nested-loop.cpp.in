@@ -39,20 +39,10 @@ using TripleNestedLoopExec =
     >
   >;
 
-//SeqKernelExecPol
-//
-//Seq
-//  Seq
-//
-//Seq
-//  Loop
-//
-//Loop
-//  Seq
-//
-//Loop
-//  Loop
-//
+
+// ----------------------------------------------------------------------------
+// Sequential
+// ----------------------------------------------------------------------------
 using SequentialKernelNestedLoopExecPols =
   camp::list<
     DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::seq_exec  >,
@@ -63,25 +53,9 @@ using SequentialKernelNestedLoopExecPols =
   >;
 
 
-//OMPKernelExexPol
-//
-//seq
-//  omp_for
-//
-//seq
-//  omp_parallel_for
-//
-//omp_parallel_for
-//  seq
-//
-//omp_parallel_for
-//  omp_parallel_for
-//
-//omp_parallel_for_static
-//  omp_parallel_for
-//
-//Collapse < omp_parallel_collapse_exec >
-
+// ----------------------------------------------------------------------------
+// OpenMP
+// ----------------------------------------------------------------------------
 #if defined(RAJA_ENABLE_OPENMP)
 
 using OpenMPKernelNestedLoopExecPols =
@@ -103,24 +77,16 @@ using OpenMPKernelNestedLoopExecPols =
     //>
 
   >;
-
 #endif  // RAJA_ENABLE_OPENMP
 
-//OMPKernelExexPol
-//
-//seq
-//  omp_target_parallel_for
-//
-//loop
-//  omp_target_parallel_for
-//
-//omp_parallel_for
-//  omp_target_parallel_for ?
+// ----------------------------------------------------------------------------
+// OpenMP Target
+// ----------------------------------------------------------------------------
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-
 using OpenMPTargetKernelNestedLoopExecPols =
   camp::list<
-    DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::omp_target_parallel_for_exec<16> >
+    DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::omp_target_parallel_for_exec<16> >,
+    DoubleNestedLoopExec< RAJA::loop_exec,  RAJA::omp_target_parallel_for_exec<16> >
 
     //// TODO: Works for XLC and Clang10, but only up to input size of 362x362 matrix.
     //RAJA::KernelPolicy<
@@ -129,10 +95,9 @@ using OpenMPTargetKernelNestedLoopExecPols =
     //    RAJA::statement::Lambda<0>
     //  >
     //>
-
   >;
-
 #endif  // RAJA_ENABLE_TARGET_OPENMP
+
 
 //TBBKernelExecPol
 //
