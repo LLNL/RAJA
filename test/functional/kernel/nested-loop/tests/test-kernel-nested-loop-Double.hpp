@@ -19,7 +19,8 @@ struct KernelNestedLoopTest{ KernelNestedLoopTest(){} };
 template <typename WORKING_RES, typename EXEC_POLICY>
 struct KernelNestedLoopTest<DEPTH_2, WORKING_RES, EXEC_POLICY>{
 
-  KernelNestedLoopTest(const RAJA::Index_type dim0, const RAJA::Index_type dim1){
+  template <typename... ExtraArgs>
+  KernelNestedLoopTest(const RAJA::Index_type dim0, const RAJA::Index_type dim1, ExtraArgs...){
     camp::resources::Resource work_res{WORKING_RES::get_default()};
 
     RAJA::Index_type flatSize = dim0 * dim1;
@@ -39,13 +40,13 @@ struct KernelNestedLoopTest<DEPTH_2, WORKING_RES, EXEC_POLICY>{
 
     std::iota(test_array, test_array + RAJA::stripIndexType(flatSize), 0);
 
-    std::cout << "Depth 2 Work\n";
-    constexpr int DIM = 2;
-    RAJA::View< RAJA::Index_type, RAJA::Layout<DIM> > work_view(work_array, dim0, dim1);
+    constexpr int Depth = 2;
+    std::cout << "Depth 2 Exec\n";
+    RAJA::View< RAJA::Index_type, RAJA::Layout<Depth> > work_view(work_array, dim1, dim0);
 
-    RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(range0, range1),
-                              [=] RAJA_HOST_DEVICE (RAJA::Index_type i, RAJA::Index_type j) {
-                                work_view(i,j) = i * dim0 + j;
+    RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(range1, range0),
+                              [=] RAJA_HOST_DEVICE (RAJA::Index_type j, RAJA::Index_type i) {
+                                work_view(j,i) = (j * dim0) + i;
                               });
 
     work_res.memcpy(check_array, work_array, sizeof(RAJA::Index_type) * RAJA::stripIndexType(flatSize));
@@ -61,6 +62,51 @@ struct KernelNestedLoopTest<DEPTH_2, WORKING_RES, EXEC_POLICY>{
 
 };
 
+template <typename WORKING_RES, typename EXEC_POLICY>
+struct KernelNestedLoopTest<DEPTH_3, WORKING_RES, EXEC_POLICY>{
+
+  KernelNestedLoopTest(const RAJA::Index_type dim0, const RAJA::Index_type dim1, const RAJA::Index_type dim2){
+    camp::resources::Resource work_res{WORKING_RES::get_default()};
+
+    RAJA::Index_type flatSize = dim0 * dim1 * dim2;
+    RAJA::Index_type* work_array;
+    RAJA::Index_type* check_array;
+    RAJA::Index_type* test_array;
+
+    allocateForallTestData<RAJA::Index_type>(flatSize,
+                                       work_res,
+                                       &work_array,
+                                       &check_array,
+                                       &test_array);
+
+    RAJA::TypedRangeSegment<RAJA::Index_type> rangeflat(0,flatSize);
+    RAJA::TypedRangeSegment<RAJA::Index_type> range0(0, dim0);
+    RAJA::TypedRangeSegment<RAJA::Index_type> range1(0, dim1);
+    RAJA::TypedRangeSegment<RAJA::Index_type> range2(0, dim2);
+
+    std::iota(test_array, test_array + RAJA::stripIndexType(flatSize), 0);
+
+    constexpr int Depth = 3;
+    std::cout << "Depth 3 Exec\n";
+    RAJA::View< RAJA::Index_type, RAJA::Layout<Depth> > work_view(work_array, dim2, dim1, dim0);
+
+    RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(range2, range1, range0),
+                              [=] RAJA_HOST_DEVICE (RAJA::Index_type k, RAJA::Index_type j, RAJA::Index_type i) {
+                                work_view(k,j,i) = (dim0 * dim1 * k) + (dim0 * j) + i;
+                              });
+
+    work_res.memcpy(check_array, work_array, sizeof(RAJA::Index_type) * RAJA::stripIndexType(flatSize));
+    RAJA::forall<RAJA::seq_exec>(rangeflat, [=] (RAJA::Index_type i) {
+      ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
+    });
+
+    deallocateForallTestData<RAJA::Index_type>(work_res,
+                                         work_array,
+                                         check_array,
+                                         test_array);
+  }
+
+};
 
 TYPED_TEST_SUITE_P(KernelNestedLoopDoubleTest);
 template <typename T>
@@ -73,7 +119,7 @@ TYPED_TEST_P(KernelNestedLoopDoubleTest, NestedLoopDoubleKernel) {
   using KERNEL_DEPTH = typename camp::at<EXEC_POL_DATA, camp::num<0>>::type;
   using EXEC_POLICY  = typename camp::at<EXEC_POL_DATA, camp::num<1>>::type;
 
-  KernelNestedLoopTest<KERNEL_DEPTH, WORKING_RES, EXEC_POLICY>(10,10);
+  KernelNestedLoopTest<KERNEL_DEPTH, WORKING_RES, EXEC_POLICY>(40,30,20);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopDoubleTest,

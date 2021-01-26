@@ -25,6 +25,20 @@ using DoubleNestedLoopExec =
     >
   >;
 
+template<typename EXEC_POL1, typename EXEC_POL2, typename EXEC_POL3>
+using TripleNestedLoopExec = 
+  camp::tuple<DEPTH_3,
+    RAJA::KernelPolicy<
+      RAJA::statement::For<2, EXEC_POL1,
+        RAJA::statement::For<1, EXEC_POL2,
+          RAJA::statement::For<0, EXEC_POL3,
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >
+    >
+  >;
+
 //SeqKernelExecPol
 //
 //Seq
@@ -44,7 +58,8 @@ using SequentialKernelNestedLoopExecPols =
     DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::seq_exec  >,
     DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::loop_exec >,
     DoubleNestedLoopExec< RAJA::loop_exec, RAJA::seq_exec  >,
-    DoubleNestedLoopExec< RAJA::loop_exec, RAJA::loop_exec >
+    DoubleNestedLoopExec< RAJA::loop_exec, RAJA::loop_exec >,
+    TripleNestedLoopExec< RAJA::seq_exec,  RAJA::seq_exec, RAJA::seq_exec >
   >;
 
 
