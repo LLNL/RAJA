@@ -1,7 +1,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file RangeSegment.hpp
  *
  * \brief   RAJA header file defining typed range segment classes.
  *
@@ -34,62 +34,87 @@ namespace RAJA
 /*!
  ******************************************************************************
  *
- * \brief  Segment class representing a contiguous typed range of indices
+ * \class TypedRangeSegment
  *
- * \tparam StorageT the underlying data type for the Segment
+ * \brief  Segment class representing a contiguous range of typed indices
+ *
+ * \tparam StorageT underlying data type for the segment indices (required)
+ * \tparam DiffT underlying data type for the difference between two segment
+ *         indices (optional)
  *
  * A TypedRangeSegment models an Iterable interface:
  *
  *  begin() -- returns an iterator (TypedRangeSegment::iterator)
  *  end() -- returns an iterator (TypedRangeSegment::iterator)
- *  size() -- returns the total size of the Segment
+ *  size() -- returns the total size of the Segment (DiffT)
  *
  * NOTE: TypedRangeSegment::iterator is a RandomAccessIterator
  *
  * Usage:
  *
- * A common traversal pattern (in C) would be:
+ * A common C-style loop traversal pattern would be:
  *
+ * \verbatim
  * for (T i = begin; i < end; ++i) {
  *   // loop body -- use i as index value
  * }
+ * \endverbatim
  *
  * Using a TypedRangeSegment, this becomes:
  *
+ * \verbatim
  * TypedRangeSegment<T> seg (begin, end);
  * for (auto i = seg.begin(); i != seg.end(); ++i) {
  *   // loop body -- use (*i) as index value
  * }
+ * \endverbatim
  *
  * This can also be used in a C++11 style range-based for:
  *
+ * \verbatim
  * for (auto i : TypedRangeSegment<T>(begin, end)) {
  *   // loop body -- use i as index value
  * }
+ * \endverbatim
+ *
+ * Or, as it would be commonly used with a RAJA forall execution template:
+ * \verbatim
+ * forall<exec_pol>(TypedRangeSegment<T>(beg, end), [=] (T i) {
+ *   // loop body -- use i as index value
+ * });
+ * \endverbatim
  *
  ******************************************************************************
  */
-
 template <typename StorageT, typename DiffT = make_signed_t<strip_index_type_t<StorageT>>>
 struct TypedRangeSegment {
-  
+
+  // 
+  // Static asserts to provide some useful error messages during compilation
+  // for incorrect usage.
+  // 
   static_assert(std::is_signed<DiffT>::value, "TypedRangeSegment DiffT requires signed type.");
   static_assert(!std::is_floating_point<StorageT>::value, "TypedRangeSegment Type must be non floating point.");
 
-  //! the underlying iterator type
+  //@{
+  //!   @name Types used in implementation based on template parameters.
+
+  //! The underlying iterator type
   using iterator = Iterators::numeric_iterator<StorageT, DiffT>;
-  //! the underlying value_type type
-  /*!
-   * these corresponds to the template parameter
-   */
+
+  //! The underlying value
   using value_type = StorageT;
 
+  //! The underlying type for a difference in indices  
   using IndexType = DiffT;
 
-  //! construct a TypedRangeSegment from a begin and end value
+  //@}
+
+  //@{
+  //!   @name Constructors, destructor, and assignment. 
+
   /*!
-   * \param[in] begin the starting value (inclusive) for the range
-   * \param[in] end the ending value (exclusive) for the range
+   * \brief Construct a range segment for the interval [begin, end)
    */
   using StripStorageT = strip_index_type_t<StorageT>;
   RAJA_HOST_DEVICE constexpr TypedRangeSegment(StripStorageT begin, StripStorageT end)
@@ -98,53 +123,72 @@ struct TypedRangeSegment {
   {
   }
 
-  //! disable compiler generated constructor
+  //! Disable compiler generated constructor
   RAJA_HOST_DEVICE TypedRangeSegment() = delete;
 
-  //! move constructor
+  //! Defaulted move constructor
   constexpr TypedRangeSegment(TypedRangeSegment&&) = default;
 
-  //! copy constructor
+  //! Defaulted copy constructor
   constexpr TypedRangeSegment(TypedRangeSegment const&) = default;
 
-  //! copy assignment
+  //! Defaulted copy assignment operator
   RAJA_INLINE TypedRangeSegment& operator=(TypedRangeSegment const&) = default;
 
-  //! destructor
+  //! Defaulted destructor
   RAJA_INLINE ~TypedRangeSegment() = default;
 
-  //! swap one TypedRangeSegment with another
-  /*!
-   * \param[in] other another TypedRangeSegment instance
-   */
-  RAJA_HOST_DEVICE RAJA_INLINE void swap(TypedRangeSegment& other)
-  {
-    camp::safe_swap(m_begin, other.m_begin);
-    camp::safe_swap(m_end, other.m_end);
-  }
+  //@}
 
-  //! obtain an iterator to the beginning of this TypedRangeSegment
+  //@{
+  //!   @name Basic accessor methods
+
   /*!
-   * \return an iterator corresponding to the beginning of the Segment
+   * \brief Get iterator to the beginning of this segment
    */
   RAJA_HOST_DEVICE RAJA_INLINE iterator begin() const { return m_begin; }
 
-  //! obtain an iterator to the end of this TypedRangeSegment
   /*!
-   * \return an iterator corresponding to the end of the Segment
+   * \brief Get iterator to the end of this segment
    */
   RAJA_HOST_DEVICE RAJA_INLINE iterator end() const { return m_end; }
 
-  //! obtain the size of this TypedRangeSegment
   /*!
-   * \return the range (end - begin) of this Segment
+   * \brief Get size (end - begin) of this segment
    */
   RAJA_HOST_DEVICE RAJA_INLINE DiffT size() const { return m_end - m_begin; }
 
-  //! Create a slice of this instance as a new instance
+  //@}
+
+  //@{
+  //!   @name Segment comparison methods
+
   /*!
-   * \return A new instance spanning *begin() + begin to *begin() + begin +
-   * length
+   * \brief Ccompare this segment to another for equality
+   *
+   * \return true if and only if begin, end, and size match
+   */
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator==(TypedRangeSegment const& o) const
+  {
+    // someday this shall be replaced with a compiler-generated operator==
+    return m_begin == o.m_begin && m_end == o.m_end;
+  }
+
+  /*!
+   * \brief Ccompare this segment to another for inequality
+   *
+   * \return true if and only if one of begin, end, and size does not match
+   */ 
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator!=(TypedRangeSegment const& o) const
+  {
+    return !(operator==(o));
+  }
+
+  //@}
+
+  /*!
+   * \brief Get a new range segment instance (a slice) spanning 
+   *        *begin() + begin to *begin() + begin + length
    */
   RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(StorageT begin,
                                                        DiffT length) const
@@ -155,28 +199,20 @@ struct TypedRangeSegment {
     return TypedRangeSegment{stripIndexType(start), stripIndexType(end)};
   }
 
-  //! equality comparison
   /*!
-   * \return true if and only if the begin, end, and size match
-   * \param[in] other a TypedRangeSegment to compare
+   * \brief Swap this segment with another
    */
-  RAJA_HOST_DEVICE RAJA_INLINE bool operator==(TypedRangeSegment const& o) const
+  RAJA_HOST_DEVICE RAJA_INLINE void swap(TypedRangeSegment& other)
   {
-    // someday this shall be replaced with a compiler-generated operator==
-    return m_begin == o.m_begin && m_end == o.m_end;
-  }
-
-
-  RAJA_HOST_DEVICE RAJA_INLINE bool operator!=(TypedRangeSegment const& o) const
-  {
-    return !(operator==(o));
+    camp::safe_swap(m_begin, other.m_begin);
+    camp::safe_swap(m_end, other.m_end);
   }
 
 private:
-  //! member variable for begin iterator
+  // Member variable for begin iterator
   iterator m_begin;
 
-  //! member variable for end iterator
+  // Member variable for end iterator
   iterator m_end;
 };
 
