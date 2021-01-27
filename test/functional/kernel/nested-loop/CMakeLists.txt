@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-set(NESTED_LOOPTYPES Basic )
+set(NESTED_LOOPTYPES Basic MultiLambda)
 
 list(APPEND KERNEL_NESTED_LOOP_BACKENDS Sequential)
 
