@@ -13,53 +13,48 @@
 
 #include "test-kernel-nested-loop-@NESTED_LOOP_TYPE@.hpp"
 
+//
+//
+// Nested Loop Data Type information
+// Might want this in a header somewhere
+//
+//
+template<typename EXEC_POL1, typename EXEC_POL2=void, typename EXEC_POL3=void>
+struct s_NestedLoopData { 
+  using type = camp::list<DEPTH_3,
+                          EXEC_POL1,
+                          EXEC_POL2,
+                          EXEC_POL3>;
+};
+
 template<typename EXEC_POL1, typename EXEC_POL2>
-using DoubleNestedLoopExec = 
-  camp::tuple<DEPTH_2,
-    RAJA::KernelPolicy<
-      RAJA::statement::For<1, EXEC_POL1,
-        RAJA::statement::For<0, EXEC_POL2,
-          RAJA::statement::Lambda<0>
-        >
-      >
-    >
-  >;
+struct s_NestedLoopData<EXEC_POL1, EXEC_POL2, void> { 
+  using type = camp::list<DEPTH_2,
+                          EXEC_POL1,
+                          EXEC_POL2>;
+};
 
-template<typename EXEC_POL1, typename EXEC_POL2, typename EXEC_POL3>
-using TripleNestedLoopExec = 
-  camp::tuple<DEPTH_3,
-    RAJA::KernelPolicy<
-      RAJA::statement::For<2, EXEC_POL1,
-        RAJA::statement::For<1, EXEC_POL2,
-          RAJA::statement::For<0, EXEC_POL3,
-            RAJA::statement::Lambda<0>
-          >
-        >
-      >
-    >
-  >;
+template<typename EXEC_POL1>
+struct s_NestedLoopData<EXEC_POL1, void, void> { 
+  using type = camp::list<DEPTH_2_COLLAPSE,
+                          EXEC_POL1>;
+};
 
-template<typename COLLAPSE_POLICY>
-using DoubleCollapseLoopExec =
-  camp::tuple<DEPTH_2,
-    RAJA::KernelPolicy<
-      RAJA::statement::Collapse<COLLAPSE_POLICY,
-        RAJA::ArgList<1,0>,
-        RAJA::statement::Lambda<0>
-      >
-    >
-  >;
+// Alias to clean up loop type information
+template<typename... T >
+using NestedLoopData = typename s_NestedLoopData<T...>::type;
+
 
 // ----------------------------------------------------------------------------
 // Sequential
 // ----------------------------------------------------------------------------
 using SequentialKernelNestedLoopExecPols =
   camp::list<
-    DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::seq_exec  >,
-    DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::loop_exec >,
-    DoubleNestedLoopExec< RAJA::loop_exec, RAJA::seq_exec  >,
-    DoubleNestedLoopExec< RAJA::loop_exec, RAJA::loop_exec >,
-    TripleNestedLoopExec< RAJA::seq_exec,  RAJA::seq_exec, RAJA::seq_exec >
+    NestedLoopData< RAJA::seq_exec,  RAJA::seq_exec  >,
+    NestedLoopData< RAJA::seq_exec,  RAJA::loop_exec >,
+    NestedLoopData< RAJA::loop_exec, RAJA::seq_exec  >,
+    NestedLoopData< RAJA::loop_exec, RAJA::loop_exec >,
+    NestedLoopData< RAJA::seq_exec,  RAJA::seq_exec, RAJA::seq_exec >
   >;
 
 
@@ -70,17 +65,18 @@ using SequentialKernelNestedLoopExecPols =
 
 using OpenMPKernelNestedLoopExecPols =
   camp::list<
-    DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::omp_for_exec>,
-    DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::omp_parallel_for_exec >,
-    DoubleNestedLoopExec< RAJA::omp_parallel_for_exec, RAJA::seq_exec >,
-    DoubleNestedLoopExec< RAJA::omp_parallel_for_exec, RAJA::omp_parallel_for_exec >,
-    DoubleNestedLoopExec< RAJA::omp_parallel_for_static<8>, RAJA::seq_exec >,
-    DoubleNestedLoopExec< RAJA::omp_parallel_for_static<8>, RAJA::omp_parallel_for_exec >,
+    NestedLoopData< RAJA::seq_exec,  RAJA::omp_for_exec>,
+    NestedLoopData< RAJA::seq_exec,  RAJA::omp_parallel_for_exec >,
+    NestedLoopData< RAJA::omp_parallel_for_exec, RAJA::seq_exec >,
+    NestedLoopData< RAJA::omp_parallel_for_exec, RAJA::omp_parallel_for_exec >,
+    NestedLoopData< RAJA::omp_parallel_for_static<8>, RAJA::seq_exec >,
+    NestedLoopData< RAJA::omp_parallel_for_static<8>, RAJA::omp_parallel_for_exec >,
 
     // Collapse Exec Pols
-    DoubleCollapseLoopExec< RAJA::omp_parallel_collapse_exec >
+    NestedLoopData< RAJA::omp_parallel_collapse_exec >
   >;
 #endif  // RAJA_ENABLE_OPENMP
+
 
 // ----------------------------------------------------------------------------
 // OpenMP Target
@@ -88,11 +84,11 @@ using OpenMPKernelNestedLoopExecPols =
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OpenMPTargetKernelNestedLoopExecPols =
   camp::list<
-    DoubleNestedLoopExec< RAJA::seq_exec,  RAJA::omp_target_parallel_for_exec<16> >,
-    DoubleNestedLoopExec< RAJA::loop_exec,  RAJA::omp_target_parallel_for_exec<16> >,
+    NestedLoopData< RAJA::seq_exec,  RAJA::omp_target_parallel_for_exec<16> >,
+    NestedLoopData< RAJA::loop_exec,  RAJA::omp_target_parallel_for_exec<16> >,
 
-    //// TODO: Works for XLC and Clang10, but only up to input size of 362x362 matrix.
-    DoubleCollapseLoopExec< RAJA::omp_target_parallel_collapse_exec >
+    // Collapse Exec Pols
+    NestedLoopData< RAJA::omp_target_parallel_collapse_exec >
   >;
 #endif  // RAJA_ENABLE_TARGET_OPENMP
 
