@@ -80,6 +80,7 @@ namespace internal {
       RAJA_INLINE
       self_type operator=(RHS const &rhs)
       {
+//        printf("Storing TensorRegister: "); m_ref.m_tile.print();
         rhs.store_ref(m_ref);
         return *this;
       }
@@ -107,6 +108,7 @@ namespace internal {
 
       static constexpr camp::idx_t s_num_dims = sizeof...(SIZES);
 
+      using index_type = camp::idx_t;
     private:
 
       RAJA_HOST_DEVICE
@@ -132,6 +134,7 @@ namespace internal {
         return true;
       }
 
+
       template<typename REF_TYPE>
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -148,6 +151,7 @@ namespace internal {
       static
       self_type
       s_load_ref(REF_TYPE const &ref) {
+//        printf("TensorRegister Load: "); ref.m_tile.print();
         self_type value;
         value.load_ref(ref);
         return value;

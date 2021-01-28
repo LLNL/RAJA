@@ -70,8 +70,13 @@ namespace RAJA
            * eval_lhs() produces a new TensorLoadStore.
            *
            */
+//          printf("Starting tile:"); tile.print();
 
           m_lhs.eval_lhs(tile) = m_rhs.eval(tile);
+
+
+//          printf("Ending tile:"); tile.print();
+//          printf("\n");
 
         }
     };
@@ -121,8 +126,16 @@ namespace RAJA
         RAJA_HOST_DEVICE
         void print() const {
           printf("TensorLoadStore: ");
-          m_ref.print();
+          m_ref.m_tile.print();
         }
+
+//        RAJA_HOST_DEVICE
+//        RAJA_INLINE
+//        static
+//        constexpr
+//        decltype(TENSOR_TYPE::s_create_temporary()) s_create_temporary() {
+//          return TENSOR_TYPE::s_create_temporary();
+//        }
 
         RAJA_HOST_DEVICE
         RAJA_INLINE
@@ -149,7 +162,8 @@ namespace RAJA
         RAJA_INLINE
         self_type &operator+=(RHS const &rhs)
         {
-          store(TensorAdd<self_type, RHS>(*this, normalizeOperand(rhs)) );
+          //store(TensorAdd<self_type, RHS>(*this, normalizeOperand(rhs)) );
+          store( (*this) + normalizeOperand(rhs) );
           return *this;
         }
 

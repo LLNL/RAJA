@@ -19,8 +19,9 @@
 #define RAJA_pattern_tensor_expression_template_HPP
 
 #include "RAJA/pattern/tensor/internal/ET/ExpressionTemplateBase.hpp"
-#include "RAJA/pattern/tensor/internal/ET/ScalarLiteral.hpp"
 #include "RAJA/pattern/tensor/internal/ET/BinaryOperator.hpp"
+#include "RAJA/pattern/tensor/internal/ET/BlockLiteral.hpp"
+#include "RAJA/pattern/tensor/internal/ET/ScalarLiteral.hpp"
 #include "RAJA/pattern/tensor/internal/ET/TensorLiteral.hpp"
 #include "RAJA/pattern/tensor/internal/ET/TensorLoadStore.hpp"
 #include "RAJA/pattern/tensor/internal/ET/TensorMultiply.hpp"

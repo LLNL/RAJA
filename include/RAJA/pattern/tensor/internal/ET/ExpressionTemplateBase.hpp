@@ -88,7 +88,13 @@ namespace RAJA
 
       public:
 
-
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        constexpr
+        auto getDimBegin(camp::idx_t ) const
+        {
+          return 0;
+        }
 
         template<typename RHS>
         RAJA_INLINE

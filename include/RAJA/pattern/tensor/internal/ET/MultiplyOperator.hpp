@@ -24,8 +24,12 @@
 namespace RAJA
 {
 
+  //forward
+  class TensorBlockConcreteBase;
+
   namespace internal
   {
+
 
   namespace ET
   {
@@ -39,7 +43,9 @@ namespace RAJA
      * Otherwise, we perform element-wise operations.
      */
     template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE, class ENABLE = void>
-    struct MultiplyOperator {
+    struct MultiplyOperator
+#if 0
+    {
 
         using result_type = typename LEFT_OPERAND_TYPE::result_type;
         using tile_type = typename LEFT_OPERAND_TYPE::tile_type;
@@ -102,7 +108,9 @@ namespace RAJA
         }
 
 
-    };
+    }
+#endif
+;
 
 #if 1
     /*!
@@ -149,11 +157,11 @@ namespace RAJA
         /*!
          * Evaluate operands and perform element-wise multiply add
          */
-        template<typename STORAGE, typename TILE_TYPE, typename ADD_OPERAND_TYPE>
+        template<typename TILE_TYPE, typename ADD_OPERAND_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        auto multiply_add(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, ADD_OPERAND_TYPE const &add) ->
+        auto multiply_add(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, ADD_OPERAND_TYPE const &add) ->
           decltype(right.eval(tile).scale(left.eval(tile)) + add.eval(tile))
         {
           return right.eval(tile).scale(left.eval(tile)) + add.eval(tile);
@@ -163,11 +171,11 @@ namespace RAJA
         /*!
          * Evaluate operands and perform element-wise multiply subtract
          */
-        template<typename STORAGE, typename TILE_TYPE, typename SUBTRACT_OPERAND_TYPE>
+        template<typename TILE_TYPE, typename SUBTRACT_OPERAND_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        auto multiply_subtract(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, SUBTRACT_OPERAND_TYPE const &subtract) ->
+        auto multiply_subtract(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, SUBTRACT_OPERAND_TYPE const &subtract) ->
           decltype(right.eval(tile).scale(left.eval(tile)) - subtract.eval(tile))
         {
           return right.eval(tile).scale(left.eval(tile)) - subtract.eval(tile);
@@ -219,11 +227,11 @@ namespace RAJA
         /*!
          * Evaluate operands and perform element-wise multiply add
          */
-        template<typename STORAGE, typename TILE_TYPE, typename ADD_OPERAND_TYPE>
+        template<typename TILE_TYPE, typename ADD_OPERAND_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        auto multiply_add(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, ADD_OPERAND_TYPE const &add) ->
+        auto multiply_add(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, ADD_OPERAND_TYPE const &add) ->
           decltype(left.eval(tile).scale(right.eval(tile)) + add.eval(tile))
         {
           return left.eval(tile).scale(right.eval(tile)) + add.eval(tile);
@@ -233,11 +241,11 @@ namespace RAJA
         /*!
          * Evaluate operands and perform element-wise multiply subtract
          */
-        template<typename STORAGE, typename TILE_TYPE, typename SUBTRACT_OPERAND_TYPE>
+        template<typename TILE_TYPE, typename SUBTRACT_OPERAND_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        auto multiply_subtract(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, SUBTRACT_OPERAND_TYPE const &subtract) ->
+        auto multiply_subtract(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, SUBTRACT_OPERAND_TYPE const &subtract) ->
           decltype(left.eval(tile).scale(right.eval(tile)) - subtract.eval(tile))
         {
           return left.eval(tile).scale(right.eval(tile)) - subtract.eval(tile);
@@ -375,6 +383,9 @@ namespace RAJA
     };
 
 
+    template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE, typename ADD_OPERAND_TYPE>
+    class TensorMultiplyAdd;
+
 
     /*!
      * Specialization for vector*matrix left multiplication.
@@ -509,15 +520,18 @@ namespace RAJA
 
 
     /*!
-     * Specialization for matrix-matrix multiplication.
+     * Specialization for matrix-matrix multiplication for TensorRegisters
      *
      * By default the A*B operator for two matrices produces a matrix-matrix
      * multiplication.
      *
      */
+#if 1
     template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
     struct MultiplyOperator<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE,
-    typename std::enable_if<LEFT_OPERAND_TYPE::s_num_dims == 2 && RIGHT_OPERAND_TYPE::s_num_dims==2>::type>
+    typename std::enable_if<
+    std::is_base_of<TensorRegisterConcreteBase, typename LEFT_OPERAND_TYPE::tensor_type>::value &&
+    LEFT_OPERAND_TYPE::s_num_dims == 2 && RIGHT_OPERAND_TYPE::s_num_dims==2>::type>
     {
 
       using left_type = LEFT_OPERAND_TYPE;
@@ -545,28 +559,57 @@ namespace RAJA
       /*!
        * Evaluate operands and perform element-wise multiply
        */
-      template<typename STORAGE, typename TILE_TYPE>
+      template<typename TILE_TYPE>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
-      void multiply(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right){
-        // clear result
-        result.broadcast(element_type(0));
+      result_type multiply(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right)
+      {
 
-        // multiply left and right into result
-        multiply_into_result(result, tile, left, right);
+        /*
+         *
+         * For TensorRegister:
+         *
+         *   Return's a register containing product of left and right operands
+         *
+         * For TensorBlock:
+         *
+         *  Return's an ET TensorLiteral containing the left and right operrands
+         *
+         *  OR
+         *
+         *  Returns an ET multiply
+         *
+         */
+        // create zeroed temporary
+        result_type result;
+        result.broadcast(0);
+
+//        printf("      MM Multiply Register:"); tile.print();
+
+
+        // multiply left and right operands into temporary
+        multiply_into_result(result, tile, left,right);
+
+        return result;
       }
 
-      template<typename STORAGE, typename TILE_TYPE, typename ADD_TYPE>
+      template<typename TILE_TYPE, typename ADD_TYPE>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
-      void multiply_add(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, ADD_TYPE const &add){
-        // evaluate add into result
-        add.eval(result, tile);
+      result_type multiply_add(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, ADD_TYPE const &add)
+      {
 
-        // multiply left and right into result
+//        printf("      MM Multiply-Add Register:"); tile.print();
+
+        // start accumulator with addition term
+        result_type result = add.eval(tile);
+
         multiply_into_result(result, tile, left, right);
+
+        return result;
+
       }
 
     private:
@@ -588,41 +631,50 @@ namespace RAJA
         // tile over row of left and column of right
         TILE_TYPE left_tile = tile;
         left_tile.m_size[1] = tile_size;
+        auto left_begin = et_left.getDimBegin(1);
 
         TILE_TYPE right_tile = tile;
         right_tile.m_size[0] = tile_size;
-
+        auto right_begin = et_right.getDimBegin(0);
 
 
         // Do full tiles in k
         decltype(k_size) k = 0;
         for(;k+tile_size <= k_size; k+= tile_size){
 
-          // evaluate both sides of operator
-          left_tile.m_begin[1] = k;
-          STORAGE left;
-          et_left.eval(left, left_tile);
+//          printf("       - k-tile %d\n", (int)k);
 
-          right_tile.m_begin[0] = k;
-          STORAGE right;
-          et_right.eval(right, right_tile);
+
+          // evaluate both sides of operator
+          left_tile.m_begin[1] = k + left_begin;
+          auto left = et_left.eval(left_tile);
+
+          right_tile.m_begin[0] = k + right_begin;
+          auto right = et_right.eval(right_tile);
+
+//          printf("        left: "); left_tile.print();
+//          printf("        right:"); right_tile.print();
 
           // accumulate product
           left.matrix_multiply_accumulate(result, right);
         }
         // remainder tile in k
         if(k < k_size){
+
+//          printf("       - k-tile %d (partial)\n", (int)k);
+
           auto &left_part_tile = make_tensor_tile_partial(left_tile);
-          left_part_tile.m_begin[1] = k;
+          left_part_tile.m_begin[1] = k + left_begin;
           left_part_tile.m_size[1] = k_size-k;
-          STORAGE left;
-          et_left.eval(left, left_part_tile);
+          auto left = et_left.eval(left_part_tile);
 
           auto &right_part_tile = make_tensor_tile_partial(right_tile);
-          right_part_tile.m_begin[0] = k;
+          right_part_tile.m_begin[0] = k + right_begin;
           right_part_tile.m_size[0] = k_size-k;
-          STORAGE right;
-          et_right.eval(right, right_part_tile);
+          auto right = et_right.eval(right_part_tile);
+
+//          printf("        left: "); left_part_tile.print();
+//          printf("        right:"); right_part_tile.print();
 
           // accumulate product
           left.matrix_multiply_accumulate(result, right);
@@ -631,7 +683,286 @@ namespace RAJA
 
     };
 
+
 #endif
+
+#endif
+
+
+
+    template<typename OPERAND_TYPE>
+    class RestrictExtents : public TensorExpressionBase<RestrictExtents<OPERAND_TYPE>> {
+      public:
+        using self_type = RestrictExtents<OPERAND_TYPE>;
+        using operand_type = OPERAND_TYPE;
+        using element_type = typename OPERAND_TYPE::element_type;
+        using index_type = typename OPERAND_TYPE::index_type;
+        using tensor_type = typename OPERAND_TYPE::tensor_type;
+        using result_type = typename OPERAND_TYPE::result_type;
+        using tile_type = typename OPERAND_TYPE::tile_type;
+        static constexpr camp::idx_t s_num_dims = OPERAND_TYPE::s_num_dims;
+
+      private:
+        operand_type m_operand;
+        tile_type m_tile;
+
+      public:
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        RestrictExtents(operand_type const &operand, tile_type const &tile) :
+        m_operand{operand}, m_tile{tile}
+        {}
+
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        constexpr
+        index_type getDimSize(index_type dim) const {
+          return m_tile.m_size[dim];
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        constexpr
+        index_type getDimBegin(camp::idx_t dim) const {
+          return m_tile.m_begin[dim];
+        }
+
+
+        template<typename TILE_TYPE>
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        auto eval(TILE_TYPE const &tile) const ->
+          decltype(m_operand.eval(tile))
+        {
+          return m_operand.eval(tile);
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        void print_ast() const {
+          printf("RestrictExtents(");
+          m_operand.print_ast();
+          printf(")");
+        }
+
+
+    };
+
+    template<typename OPERAND, typename TILE>
+    RestrictExtents<OPERAND> restrictExtents(OPERAND const &operand, TILE const &tile){
+      using tile_type = typename OPERAND::tile_type;
+      tile_type new_tile;
+      new_tile.copy(tile);
+      return RestrictExtents<OPERAND>(operand, new_tile);
+    }
+
+
+
+    /*!
+     * Specialization for matrix-matrix multiplication for TensorBlocks
+     *
+     * By default the A*B operator for two matrices produces a matrix-matrix
+     * multiplication.
+     *
+     */
+
+    template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
+    struct MultiplyOperator<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE,
+    typename std::enable_if<
+    std::is_base_of<TensorBlockConcreteBase, typename RIGHT_OPERAND_TYPE::tensor_type>::value &&
+    LEFT_OPERAND_TYPE::s_num_dims == 2 && RIGHT_OPERAND_TYPE::s_num_dims==2>::type>
+    {
+        using left_type = LEFT_OPERAND_TYPE;
+        using right_type = RIGHT_OPERAND_TYPE;
+        using element_type = typename LEFT_OPERAND_TYPE::element_type;
+  //      using index_type = typename LEFT_OPERAND_TYPE::index_type;
+        using tile_type = typename LEFT_OPERAND_TYPE::tile_type;
+        using result_type = typename RIGHT_OPERAND_TYPE::result_type;
+        static constexpr camp::idx_t s_num_dims = 2;
+
+  //      static_assert(LEFT_OPERAND_TYPE::s_num_dims == 1, "WHAOO");
+  //      static_assert(! std::is_base_of<TensorBlockConcreteBase, typename RIGHT_OPERAND_TYPE::tensor_type>::value, "MATCH");
+
+
+        // This tensor type is a TensorBlock of some kind
+        using tensor_type = typename RIGHT_OPERAND_TYPE::tensor_type;
+
+        // Get the storage type from the TensorBlock
+        using storage_type = typename tensor_type::storage_type;
+
+        // Create a BlockLiteral that uses the TensorBlock's indicated storage
+        // and has an eval() that produces the TensorBlock's register type
+        using block_literal = BlockLiteral<storage_type,
+                                           typename tensor_type::register_type>;
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        void print_ast() {
+          printf("Matrx*Matrix");
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        int getDimSize(int dim, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right) {
+          return dim == 0 ? left.getDimSize(0) : right.getDimSize(1);
+        }
+
+        /*!
+         * Evaluate operands and perform element-wise multiply
+         */
+        template<typename TILE_TYPE>
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        block_literal multiply(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &, RIGHT_OPERAND_TYPE const &) //->
+          ///decltype(TensorMultiply<decltype(left.eval(tile)), decltype(right.eval(tile))>(left.eval(tile), right.eval(tile)))
+        {
+
+          /*
+           * First pass:  just return a Multiply ET that evaluates the block
+           * with underlying TensorRegisters
+           *
+           *
+           * Second pass: we want to return a TensorLiteral ET node with the
+           * matrix product already evaluated.?
+           *
+           * What we really care about is improving the data reuse: so perhaps
+           * returning a Multiply ET node with TensorLiteral nodes for each
+           * of the operands
+           *
+           */
+//          printf("MM Multiply Block:"); tile.print();
+          // create a BlockLiteral
+          block_literal result(tile);
+
+          // evaluate the block-wise product into result
+
+          //return TensorMultiply<decltype(left.eval(tile)), decltype(right.eval(tile))>(left.eval(tile), right.eval(tile));
+
+          // return the BlockLiterat ET
+          return result;
+        }
+
+        template<typename TILE_TYPE, typename ADD_TYPE>
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        block_literal multiply_add(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, ADD_TYPE const &add) //->
+          //decltype(TensorMultiplyAdd<decltype(left.eval(tile)), decltype(right.eval(tile)), decltype(add.eval(tile))>(left.eval(tile), right.eval(tile), add.eval(tile)))
+        {
+          /*
+           * First pass:  we want to return a BlockLiteral ET node with the
+           * matrix product already evaluated.  We do this by creating
+           * a LoadStore node wrapping the BlockLiteral, and evaluating it as
+           * a sub-expression.
+           *
+           * What we really care about is improving the data reuse: so perhaps
+           * returning a Multiply ET node with TensorLiteral nodes for each
+           * of the operands
+           *
+           */
+
+          // create a BlockLiteral
+          using block_tile_type = typename block_literal::tile_type;
+          block_tile_type block_tile;
+          block_tile.copy(tile);
+          block_literal result(block_tile);
+
+          using ref_type = typename block_literal::ref_type;
+          using load_store_type = TensorLoadStore<tensor_type, ref_type>;
+
+          // initialize the result with our addition term
+          auto result_et = load_store_type(result.get_ref()).eval(tile);
+          result_et = add.eval(tile);
+
+          //return TensorMultiplyAdd<decltype(left.eval(tile)), decltype(right.eval(tile)), decltype(add.eval(tile))>(left.eval(tile), right.eval(tile), add.eval(tile));
+
+//          printf("MM Multiply-Add Block:"); tile.print();
+
+//          multiply_into_result(result_et, tile, restrictExtents(left, tile), restrictExtents(right, tile));
+          multiply_into_result(result_et, tile, left, right);
+
+          // return the BlockLiterat ET
+          return result;
+        }
+
+      private:
+
+        template<typename STORAGE, typename TILE_TYPE>
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        void multiply_into_result(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &et_left, RIGHT_OPERAND_TYPE const &et_right)
+        {
+
+          // get tile size from matrix type
+          auto tile_size = result_type::s_dim_elem(1);
+          auto k_size = et_left.getDimSize(1);
+
+          // TODO: check that left and right are compatible
+          // m_left.getDimSize(1) == m_right.getDimSize(0)
+          // how do we provide checking for this kind of error?
+
+          // tile over row of left and column of right
+          TILE_TYPE left_tile = tile;
+          left_tile.m_size[1] = tile_size;
+          auto left_begin = et_left.getDimBegin(1);
+
+          TILE_TYPE right_tile = tile;
+          right_tile.m_size[0] = tile_size;
+          auto right_begin = et_right.getDimBegin(0);
+
+
+
+          // Do full tiles in k
+          decltype(k_size) k = 0;
+          for(;k+tile_size <= k_size; k+= tile_size){
+
+//            printf("   - k-tile %d\n", (int)k);
+
+
+            // evaluate both sides of operator
+            left_tile.m_begin[1] = k + left_begin;
+            auto left = et_left.eval(left_tile);
+
+            right_tile.m_begin[0] = k + right_begin;
+            auto right = et_right.eval(right_tile);
+
+//            printf("      left: "); left_tile.print();
+//            printf("      right:"); right_tile.print();
+
+            // accumulate product
+            //left.matrix_multiply_accumulate(result, right);
+            result += restrictExtents(left, left_tile) * restrictExtents(right, right_tile);
+          }
+          // remainder tile in k
+          if(k < k_size){
+
+//            printf("   - k-tile %d (partial)\n", (int)k);
+
+            auto &left_part_tile = make_tensor_tile_partial(left_tile);
+            left_part_tile.m_begin[1] = k + left_begin;
+            left_part_tile.m_size[1] = k_size-k;
+            auto left = et_left.eval(left_part_tile);
+
+            auto &right_part_tile = make_tensor_tile_partial(right_tile);
+            right_part_tile.m_begin[0] = k + right_begin;
+            right_part_tile.m_size[0] = k_size-k;
+            auto right = et_right.eval(right_part_tile);
+
+//            printf("      left: "); left_part_tile.print();
+//            printf("      right:"); right_part_tile.print();
+
+            // accumulate product
+            //left.matrix_multiply_accumulate(result, right);
+            result += restrictExtents(left, left_part_tile) * restrictExtents(right, right_part_tile);
+          }
+        }
+    };
 
 
   } // namespace ET

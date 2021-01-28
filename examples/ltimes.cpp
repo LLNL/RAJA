@@ -626,14 +626,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  using matrix_t = RAJA::MatrixRegister<double, ColMajorLayout>;
+//  using matrix_t = RAJA::MatrixRegister<double, ColMajorLayout>;
 
-//  using matrix_t = RAJA::TensorBlock<RAJA::avx2_register, double,
-//      camp::idx_seq<0,1>,
-//      camp::idx_seq<16,16>,
-//      int>;
+  using matrix_t = RAJA::TensorBlock<RAJA::avx2_register, double,
+      camp::idx_seq<1,0>,
+      camp::idx_seq<32,64>,
+      int>;
 
-	std::cout << "vector width: " << matrix_t::s_dim_elem(0) << std::endl;
+  /*
+   *
+   * MatrixRegister         8.74085
+   * MatrixBlock      16    3.9000
+   *                  32    4.6099
+   *                  64    4.5484
+   *                  128   4.2068
+   *
+   *            32x64       4.49409
+   */
+
+	std::cout << "matrix size: " << matrix_t::s_dim_elem(0) << std::endl;
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
   using ColD = RAJA::ColIndex<ID, matrix_t>;

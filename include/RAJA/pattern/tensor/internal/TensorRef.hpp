@@ -47,7 +47,16 @@ namespace RAJA
         static constexpr camp::idx_t s_num_dims = NUM_DIMS;
         static constexpr TensorTileSize s_tensor_size = TENSOR_SIZE;
 
-
+//        TensorTile(self_type const &) = default;
+//
+        template<typename I, TensorTileSize S>
+        void copy(TensorTile<I, S, NUM_DIMS> const &c)
+        {
+          for(camp::idx_t i = 0;i < NUM_DIMS;++i){
+            m_begin[i] = c.m_begin[i];
+            m_size[i] = c.m_size[i];
+          }
+        }
 
         /*!
          * Subtract begin offsets of two tiles.
@@ -125,13 +134,13 @@ namespace RAJA
     struct MergeRefTile;
 
 
-    template<typename POINTER_TYPE, typename INDEX_TYPE, TensorTileSize RTENSOR_SIZE, camp::idx_t NUM_DIMS, camp::idx_t STRIDE_ONE_DIM, TensorTileSize TENSOR_SIZE, camp::idx_t ... DIM_SEQ>
-    struct MergeRefTile<TensorRef<POINTER_TYPE, INDEX_TYPE, RTENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>, TensorTile<INDEX_TYPE, TENSOR_SIZE, NUM_DIMS>, camp::idx_seq<DIM_SEQ...>> {
+    template<typename POINTER_TYPE, typename INDEX_TYPE1, TensorTileSize RTENSOR_SIZE, camp::idx_t NUM_DIMS, camp::idx_t STRIDE_ONE_DIM, typename INDEX_TYPE2, TensorTileSize TENSOR_SIZE, camp::idx_t ... DIM_SEQ>
+    struct MergeRefTile<TensorRef<POINTER_TYPE, INDEX_TYPE1, RTENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>, TensorTile<INDEX_TYPE2, TENSOR_SIZE, NUM_DIMS>, camp::idx_seq<DIM_SEQ...>> {
 
-        using ref_type = TensorRef<POINTER_TYPE, INDEX_TYPE, RTENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>;
-        using tile_type = TensorTile<INDEX_TYPE, TENSOR_SIZE, NUM_DIMS>;
+        using ref_type = TensorRef<POINTER_TYPE, INDEX_TYPE1, RTENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>;
+        using tile_type = TensorTile<INDEX_TYPE2, TENSOR_SIZE, NUM_DIMS>;
 
-        using result_type = TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>;
+        using result_type = TensorRef<POINTER_TYPE, INDEX_TYPE2, TENSOR_SIZE, NUM_DIMS, STRIDE_ONE_DIM>;
 
         RAJA_INLINE
         RAJA_HOST_DEVICE
@@ -139,10 +148,22 @@ namespace RAJA
         result_type merge(ref_type const &ref, tile_type const &tile){
           return result_type{
             ref.m_pointer,
-            {ref.m_stride[DIM_SEQ]...},
+            {INDEX_TYPE2(ref.m_stride[DIM_SEQ])...},
             tile
           };
         }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static constexpr
+        result_type shift_origin(ref_type const &ref, tile_type const &tile_origin){
+          return result_type{
+            ref.m_pointer - RAJA::sum<camp::idx_t>((tile_origin.m_begin[DIM_SEQ]*ref.m_stride[DIM_SEQ]) ...),
+            {INDEX_TYPE2(ref.m_stride[DIM_SEQ])...},
+            ref.m_tile
+          };
+        }
+
 
 
     };
@@ -157,6 +178,20 @@ namespace RAJA
       typename MergeRefTile<REF_TYPE, TILE_TYPE, camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::result_type
     {
       return MergeRefTile<REF_TYPE, TILE_TYPE, camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::merge(ref, tile);
+    }
+
+    /*!
+     * Modifies a ref's pointer so that the supplied tile_origin will resolve
+     * to the original pointer.
+     */
+    template<typename REF_TYPE, typename TILE_TYPE>
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    constexpr
+    auto shift_tile_origin(REF_TYPE const &ref, TILE_TYPE const &tile_origin) ->
+      typename MergeRefTile<REF_TYPE, TILE_TYPE, camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::result_type
+    {
+      return MergeRefTile<REF_TYPE, TILE_TYPE, camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::shift_origin(ref, tile_origin);
     }
 
     /*!
