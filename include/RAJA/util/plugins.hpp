@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,11 +8,15 @@
 #ifndef RAJA_plugins_HPP
 #define RAJA_plugins_HPP
 
+#include "RAJA/config.hpp"
+
 #include "RAJA/util/PluginContext.hpp"
 #include "RAJA/util/PluginOptions.hpp"
 #include "RAJA/util/PluginStrategy.hpp"
+#if defined(RAJA_ENABLE_RUNTIME_PLUGINS)
 #include "RAJA/util/RuntimePluginLoader.hpp"
 #include "RAJA/util/KokkosPluginLoader.hpp"
+#endif
 
 namespace RAJA {
 namespace util {

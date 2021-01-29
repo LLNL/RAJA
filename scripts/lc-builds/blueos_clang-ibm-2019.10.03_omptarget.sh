@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -25,7 +25,6 @@ cmake \
   -DENABLE_TARGET_OPENMP=On \
   -DOpenMP_CXX_FLAGS="-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda" \
   -DENABLE_ALL_WARNINGS=Off \
-  -DENABLE_EXAMPLES=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

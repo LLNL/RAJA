@@ -12,7 +12,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -65,7 +65,6 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &
     auto body = thread_privatize(loop_body);
     forall_impl(host_res, InnerPolicy{}, iter, body.get_priv());
   });
-
   return resources::EventProxy<resources::Host>(&host_res);
 }
 

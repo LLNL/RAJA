@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -45,12 +45,20 @@ for i in `cat files2change`
 do
     echo $i
     cp $i $i.sed.bak
-    sed "s/Copyright (c) 2016-19/Copyright (c) 2016-20/" $i.sed.bak > $i
+    sed "s/Copyright (c) 2016-20/Copyright (c) 2016-21/" $i.sed.bak > $i
 done
 
 echo LICENSE
 cp LICENSE LICENSE.sed.bak
-sed "s/Copyright (c) 2016-19/Copyright (c) 2016-20/" LICENSE.sed.bak > LICENSE
+sed "s/Copyright (c) 2016-2020/Copyright (c) 2016-2021/" LICENSE.sed.bak > LICENSE
+
+echo CONTRIBUTING
+cp CONTRIBUTING.md CONTRIBUTING.md.sed.bak
+sed "s/2016-20/2016-21/" CONTRIBUTING.md.sed.bak > CONTRIBUTING.md
+
+echo README
+cp README.md README.md.sed.bak
+sed "s/2016-20/2016-21/" README.md.sed.bak > README.md
 
 #=============================================================================
 # Remove temporary files created in the process

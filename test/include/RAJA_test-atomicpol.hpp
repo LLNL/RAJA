@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,8 +14,23 @@
 using SequentialAtomicPols =
   camp::list<
 #if defined(RAJA_TEST_EXHAUSTIVE)
+              RAJA::loop_atomic,
               RAJA::auto_atomic,
               RAJA::builtin_atomic,
+#endif
+#if defined(RAJA_ENABLE_CUDA)
+              RAJA::cuda_atomic_explicit<RAJA::seq_atomic>,
+#if defined(RAJA_TEST_EXHAUSTIVE)
+              RAJA::cuda_atomic_explicit<RAJA::loop_atomic>,
+              RAJA::cuda_atomic_explicit<RAJA::builtin_atomic>,
+#endif
+#endif
+#if defined(RAJA_ENABLE_HIP)
+              RAJA::hip_atomic_explicit<RAJA::seq_atomic>,
+#if defined(RAJA_TEST_EXHAUSTIVE)
+              RAJA::hip_atomic_explicit<RAJA::loop_atomic>,
+              RAJA::hip_atomic_explicit<RAJA::builtin_atomic>,
+#endif
 #endif
               RAJA::seq_atomic
             >;
@@ -27,15 +42,46 @@ using OpenMPAtomicPols =
               RAJA::omp_atomic,
               RAJA::builtin_atomic,
 #endif
+#if defined(RAJA_ENABLE_CUDA)
+              RAJA::cuda_atomic_explicit<RAJA::omp_atomic>,
+#if defined(RAJA_TEST_EXHAUSTIVE)
+              RAJA::cuda_atomic_explicit<RAJA::builtin_atomic>,
+#endif
+#endif
+#if defined(RAJA_ENABLE_HIP)
+              RAJA::hip_atomic_explicit<RAJA::omp_atomic>,
+#if defined(RAJA_TEST_EXHAUSTIVE)
+              RAJA::hip_atomic_explicit<RAJA::builtin_atomic>,
+#endif
+#endif
               RAJA::auto_atomic
             >;
 #endif  // RAJA_ENABLE_OPENMP
+
+#if defined(RAJA_ENABLE_TBB)
+using TBBAtomicPols =
+  camp::list<
+#if defined(RAJA_ENABLE_CUDA)
+              RAJA::cuda_atomic_explicit<RAJA::builtin_atomic>,
+#endif
+#if defined(RAJA_ENABLE_HIP)
+              RAJA::hip_atomic_explicit<RAJA::builtin_atomic>,
+#endif
+              RAJA::builtin_atomic
+            >;
+#endif  // RAJA_ENABLE_TBB
 
 #if defined(RAJA_ENABLE_CUDA)
 using CudaAtomicPols =
   camp::list<
 #if defined(RAJA_TEST_EXHAUSTIVE)
               RAJA::auto_atomic,
+              RAJA::cuda_atomic_explicit<RAJA::seq_atomic>,
+              RAJA::cuda_atomic_explicit<RAJA::loop_atomic>,
+              RAJA::cuda_atomic_explicit<RAJA::builtin_atomic>,
+#if defined(RAJA_ENABLE_OPENMP)
+              RAJA::cuda_atomic_explicit<RAJA::omp_atomic>,
+#endif
 #endif
               RAJA::cuda_atomic
             >;
@@ -46,6 +92,12 @@ using HipAtomicPols =
   camp::list<
 #if defined(RAJA_TEST_EXHAUSTIVE)
                RAJA::auto_atomic,
+               RAJA::hip_atomic_explicit<RAJA::seq_atomic>,
+               RAJA::hip_atomic_explicit<RAJA::loop_atomic>,
+               RAJA::hip_atomic_explicit<RAJA::builtin_atomic>,
+#if defined(RAJA_ENABLE_OPENMP)
+               RAJA::hip_atomic_explicit<RAJA::omp_atomic>,
+#endif
 #endif
                RAJA::hip_atomic
             >;

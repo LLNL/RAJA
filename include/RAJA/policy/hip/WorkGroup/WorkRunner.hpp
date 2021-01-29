@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -215,7 +215,7 @@ struct WorkRunner<
   using Allocator = ALLOCATOR_T;
   using index_type = INDEX_T;
 
-  using vtable_type = Vtable<Args...>;
+  using vtable_type = Vtable<RAJA::hip_work<BLOCK_SIZE, true>, Args...>;
 
   WorkRunner() = default;
 
@@ -326,11 +326,8 @@ struct WorkRunner<
         //
         // Launch the kernel
         //
-        hipLaunchKernelGGL(func,
-                           dim3(gridSize), dim3(blockSize), shmem, stream,
-                           std::move(begin),
-                           std::forward<Args>(args)...);
-        RAJA::hip::launch(stream);
+        void* func_args[] = { (void*)&begin, (void*)&args... };
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, func_args, shmem, stream);
       }
 
       if (!Async) { RAJA::hip::synchronize(stream); }
