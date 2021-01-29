@@ -49,6 +49,14 @@ namespace RAJA
  *  end() -- returns a StorageT*
  *  size() -- returns size of the Segment iteration space (RAJA::Index_type)
  *
+ * NOTE: TypedListSegment supports the option for the segment to own the 
+ *       its index data or simply use the index array passed to the constructor.
+ *       Owning the index data is the default; an array is created in the 
+ *       memory space specified by the camp resource object and the values are
+ *       copied from the input array to that. Ownership of the indices is 
+ *       determined by an optional ownership enum value passed to the 
+ *       constructor.
+ *
  * Usage:
  *
  * A common C-style loop traversal pattern using an indirection array would be:
@@ -70,14 +78,6 @@ namespace RAJA
  *   // loop body -- use i as index value
  * });
  * \endverbatim
- *
- * NOTE: TypedListSegment supports the option for the segment to own the 
- *       its index data or simply use the index array passed to the constructor.
- *       Owning the index data is the default; an array is created in the 
- *       memory space specified by the camp resource object and the values are
- *       copied from the input array to that. Ownership of the indices is 
- *       determined by an optional ownership enum value passed to the 
- *       constructor.
  *
  ******************************************************************************
  */
