@@ -42,6 +42,10 @@ raja_add_executable(
   SOURCES array-reductions.cpp)
 
 raja_add_executable(
+  NAME array_reductions2
+  SOURCES array-reductions2.cpp)
+
+raja_add_executable(
   NAME tut_reductions
   SOURCES tut_reductions.cpp)
 
