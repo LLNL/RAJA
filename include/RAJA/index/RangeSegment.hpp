@@ -173,7 +173,7 @@ struct TypedRangeSegment {
   //!   @name Segment comparison methods
 
   /*!
-   * \brief Ccompare this segment to another for equality
+   * \brief Compare this segment to another for equality
    *
    * \return true if begin and end match, else false
    */
@@ -184,7 +184,7 @@ struct TypedRangeSegment {
   }
 
   /*!
-   * \brief Ccompare this segment to another for inequality
+   * \brief Compare this segment to another for inequality
    *
    * \return true if begin or end does not match, else false
    */ 
@@ -420,7 +420,7 @@ struct TypedRangeStrideSegment {
   //!   @name Segment comparison methods
 
   /*!
-   * \brief Ccompare this segment to another for equality
+   * \brief Compare this segment to another for equality
    *
    * \return true if begin, end, and size match, else false
    */
@@ -431,7 +431,7 @@ struct TypedRangeStrideSegment {
   }
 
   /*!
-   * \brief Ccompare this segment to another for inequality
+   * \brief Compare this segment to another for inequality
    *
    * \return true if begin, end, or size does not match, else false
    */
@@ -602,7 +602,7 @@ DefineTypeTraitFromConcept(is_range_stride_constructible,
 namespace std
 {
 
-//! specialization of swap for TypedRangeSegment
+//! Specialization of std::swap for TypedRangeSegment
 template <typename T>
 RAJA_HOST_DEVICE RAJA_INLINE void swap(RAJA::TypedRangeSegment<T>& a,
                                        RAJA::TypedRangeSegment<T>& b)
@@ -610,7 +610,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void swap(RAJA::TypedRangeSegment<T>& a,
   a.swap(b);
 }
 
-//! specialization of swap for TypedRangeStrideSegment
+//! Specialization of std::swap for TypedRangeStrideSegment
 template <typename T>
 RAJA_HOST_DEVICE RAJA_INLINE void swap(RAJA::TypedRangeStrideSegment<T>& a,
                                        RAJA::TypedRangeStrideSegment<T>& b)
