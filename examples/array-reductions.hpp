@@ -54,8 +54,8 @@ public:
   }
 
   ~VoT_t(){
-    #pragma omp critical
     if (Base::parent) { 
+    #pragma omp critical
       #pragma omp parallel for
       for(size_t i = 0; i < Base::data.size(); i++) {
         Base::parent->local()[i] += Base::data[i];
@@ -141,8 +141,13 @@ public:
 // --------------------------------------------------------------------------------
 using pairlist_t = std::vector<std::pair<int,int>>;
 
+pairlist_t generatePairList(const int n_nodes, const int n_pairs);
+pairlist_t generate2DPairList(const int n_nodes, const int n_node_lists, const int n_pairs);
+
+std::vector<double> generateSolution(const int n_nodes, const pairlist_t pl);
+std::vector<std::vector<double>> generate2DSolution(const int n_nodes, const int n_node_lists, const pairlist_t pl);
+
 template<typename T1, typename T2>
 void checkResults(const  T1& solution, const T2& test, const RAJA::ChronoTimer& timer);
-pairlist_t generatePairList(const int n_nodes, const int n_pairs);
-std::vector<double> generateSolution(const int n_nodes, const pairlist_t pl);
+
 #endif

@@ -14,7 +14,8 @@
 int main(int argc, char* argv[])
 {
   // Test Parameters
-  constexpr int NUM_NODES = 500000;
+  constexpr int NUM_NODES = 5000;
+  int NUM_NODE_LISTS = 2;
   int NUM_PAIRS = 50000;
   if (argc > 1)
     NUM_PAIRS = std::atoi(argv[1]);
@@ -23,6 +24,7 @@ int main(int argc, char* argv[])
 
   // Initialize NodePair list
   auto pairlist = generatePairList(NUM_NODES, NUM_PAIRS);
+  auto pairlist2d = generate2DPairList(NUM_NODES, NUM_NODE_LISTS, NUM_PAIRS);
 
   // Calculate Solution
   auto nodeDataSolution = generateSolution(NUM_NODES, pairlist);
@@ -32,6 +34,8 @@ int main(int argc, char* argv[])
   using EXEC_POL = RAJA::omp_parallel_for_exec;
   using REDUCE_POL = RAJA::omp_reduce;
 
+  using BASE_T = double;
+  using REDUCESUM_T = RAJA::ReduceSum<REDUCE_POL, BASE_T>;
 
 #if 1
   // --------------------------------------------------------------------------------
@@ -39,7 +43,6 @@ int main(int argc, char* argv[])
   // --------------------------------------------------------------------------------
   std::cout << "\nRunning 1D Vector-of-Type (VoT_t) Reducer example ...\n";
 
-  using BASE_T = double;
   VoT_t<1, BASE_T> VoT_nodeData(NUM_NODES);
 
   RAJA::ChronoTimer type_timer;
@@ -57,13 +60,12 @@ int main(int argc, char* argv[])
   checkResults(nodeDataSolution, VoT_nodeData, type_timer);
 #endif
 
-#if 1
+#if 0
   // --------------------------------------------------------------------------------
   // Run 2D Col-Major Vector-of-Type Reduction Example
   // --------------------------------------------------------------------------------
   std::cout << "\nRunning 2D Col-Major Vector-of-Type (VoT_t) Reducer example ...\n";
 
-  using BASE_T = double;
   VoT_t<2, BASE_T> VoT_nodeData2c(1, NUM_NODES);
 
   RAJA::ChronoTimer type_timer2c;
@@ -81,30 +83,28 @@ int main(int argc, char* argv[])
   checkResults(nodeDataSolution, VoT_nodeData2c, type_timer2c);
 #endif
 
-#if 1
-  // --------------------------------------------------------------------------------
-  // Run 2D Row-Major Vector-of-Type Reduction Example
-  // --------------------------------------------------------------------------------
-  std::cout << "\nRunning 2D Row-Major Vector-of-Type (VoT_t) Reducer example ...\n";
+#if 0
+  {
+    // --------------------------------------------------------------------------------
+    // Run 2D Row-Major Vector-of-Type Reduction Example
+    // --------------------------------------------------------------------------------
+    std::cout << "\nRunning 2D Row-Major Vector-of-Type (VoT_t) Reducer example ...\n";
 
-  using BASE_T = double;
-  VoT_t<2, BASE_T> VoT_nodeData2r(NUM_NODES, 1);
+    auto nodeDataSolution2d = generate2DSolution(1, NUM_NODES, pairlist2d);
+    VoT_t<2, BASE_T> VoT_nodeData2r(1, NUM_NODES);
 
-  RAJA::ChronoTimer type_timer2;
-  type_timer2.start();
-  RAJA::forall<EXEC_POL> (np_range, [=](int i) {
-    int i_idx = pairlist[ i ].first;
-    int j_idx = pairlist[ i ].second;
-
-    BASE_T& i_data = VoT_nodeData2r.at( i_idx, 0 );
-    BASE_T& j_data = VoT_nodeData2r.at( j_idx, 0 );
-    i_data += j_idx;
-    j_data += i_idx;
-  });
-  type_timer2.stop();
-  checkResults(nodeDataSolution, VoT_nodeData2r, type_timer2);
+    RAJA::ChronoTimer type_timer2;
+    type_timer2.start();
+    RAJA::forall<EXEC_POL> (np_range, [=](int i) {
+      int i_idx = pairlist2d[ i ].first;
+      int j_idx = pairlist2d[ i ].second;
+      BASE_T& _data = VoT_nodeData2r.at( i_idx , j_idx );
+      _data += i_idx + j_idx;
+    });
+    type_timer2.stop();
+    checkResults(nodeDataSolution2d, VoT_nodeData2r, type_timer2);
+  }
 #endif
-
 
 #if 1
   // --------------------------------------------------------------------------------
@@ -112,7 +112,6 @@ int main(int argc, char* argv[])
   // --------------------------------------------------------------------------------
   std::cout << "\nRunning Vector-of-Reducer (VoR_t) Reducer example ...\n";
 
-  using REDUCESUM_T = RAJA::ReduceSum<REDUCE_POL, BASE_T>;
   VoR_t<REDUCESUM_T> VoR_nodeData(NUM_NODES);
 
   RAJA::ChronoTimer reduce_timer;
@@ -130,7 +129,25 @@ int main(int argc, char* argv[])
   checkResults(nodeDataSolution, VoR_nodeData, reduce_timer);
 #endif
 
+#if 0
+  {
+    VoT_t<2, BASE_T> VoT_nodeData2(NUM_NODE_LISTS, NUM_NODES);
 
+    auto nodeDataSolution2d = generate2DSolution(NUM_NODE_LISTS, NUM_NODES, pairlist2d);
+
+    std::cout << "check\n";
+    RAJA::ChronoTimer type_timer2d;
+    type_timer2d.start();
+    RAJA::forall<EXEC_POL> (np_range, [=](int i) {
+      int i_idx = pairlist2d[ i ].first;
+      int j_idx = pairlist2d[ i ].second;
+      BASE_T& _data = VoT_nodeData2.at( i_idx , j_idx );
+      _data += i_idx + j_idx;
+    });
+    type_timer2d.stop();
+    checkResults(nodeDataSolution2d, VoT_nodeData2, type_timer2d);
+  }
+#endif
 }
 
 
@@ -139,6 +156,22 @@ int main(int argc, char* argv[])
 // --------------------------------------------------------------------------------
 // Helper Function Definitions
 // --------------------------------------------------------------------------------
+
+pairlist_t generatePairList(const int n_nodes, const int n_pairs){
+  srand(0);
+  pairlist_t pl;
+  for (auto i = 0; i < n_pairs; i++)
+    pl.push_back(std::make_pair(rand() % n_nodes, rand() % n_nodes));
+  return pl;
+}
+
+pairlist_t generate2DPairList(const int n_nodes, const int n_node_lists, const int n_pairs){
+  srand(0);
+  pairlist_t pl;
+  for (auto i = 0; i < n_pairs; i++)
+    pl.push_back(std::make_pair(rand() % n_node_lists, rand() % n_nodes));
+  return pl;
+}
 
 std::vector<double> generateSolution(const int n_nodes, const pairlist_t pl){
   std::vector<double> solution(n_nodes);
@@ -153,17 +186,23 @@ std::vector<double> generateSolution(const int n_nodes, const pairlist_t pl){
   return solution;
 }
 
-pairlist_t generatePairList(const int n_nodes, const int n_pairs){
-  srand(0);
-  pairlist_t pl;
-  for (auto i = 0; i < n_pairs; i++)
-    pl.push_back(std::make_pair(rand() % n_nodes, rand() % n_nodes));
-  return pl;
+std::vector<std::vector<double>> generate2DSolution(const int n_node_lists, const int n_nodes, const pairlist_t pl){
+  std::vector<std::vector<double>> solution;
+  for (int i = 0; i < n_node_lists; i++) {
+    solution.push_back(std::vector<double>(n_nodes));
+  }
+
+  for (size_t i = 0; i < pl.size(); i++){
+    int i_idx = pl[ i ].first;
+    int j_idx = pl[ i ].second;
+    double& _data = solution[i_idx][j_idx];
+    _data += i_idx + j_idx;
+  }
+  return solution;
 }
 
 template<typename T1, typename T2>
 void checkResults(const  T1& solution, const T2& test, const RAJA::ChronoTimer& timer){
-
 
   std::cout << "\tTime : " << timer.elapsed() << "\n";
 
