@@ -9,44 +9,43 @@ struct my_type {
 };
 
 template<typename T, int N>
-class data_dim { 
+class CombMultiArray { 
 public:
-  using inner_type = data_dim< T, N-1 >;
+  using inner_type = CombMultiArray< T, N-1 >;
   using type = std::vector<inner_type>;
   constexpr static int depth = N;
 
   inner_type& operator[](size_t idx) { return data[idx]; }
 
-  data_dim(){};
+  CombMultiArray(){};
 
   template<typename ...Args>
-  data_dim(T val, int n, Args ...dims) {
+  CombMultiArray(T val, int n, Args ...dims) {
     data.resize(n);
     for(int i =0; i < n; i++){
-      //std::cout << "Depth : "<< n << dd.data.size() << '\n';
       data[i] = inner_type(val, dims...);
     }
   }
 
-  data_dim(const data_dim& copy) :
+  CombMultiArray(const CombMultiArray& copy) :
     data(copy.data),
     parent{copy.parent ? copy.parent : &copy} {}
 
   type &local() const { return data; }
 protected:
   type mutable data;
-  data_dim const *parent = nullptr;
+  CombMultiArray const *parent = nullptr;
 };
 
 template<typename T>
-class data_dim<T, 0> {
+class CombMultiArray<T, 0> {
 public:
   using type = T;
   type data;
 
   void operator=(const T& rhs){ data = rhs; }
-  data_dim(){};
-  data_dim(T val){
+  CombMultiArray(){};
+  CombMultiArray(T val){
     data = val; 
     static int count = 0;
     std::cout << "Test : " << ++count << " " << val << '\n';
@@ -54,7 +53,7 @@ public:
 };
 
 template<typename T>
-std::ostream& operator<<(std::ostream& os, const data_dim<T,0>& dd) {
+std::ostream& operator<<(std::ostream& os, const CombMultiArray<T,0>& dd) {
   return os << dd.data;
 }
 
@@ -62,7 +61,7 @@ std::ostream& operator<<(std::ostream& os, const data_dim<T,0>& dd) {
 template<int N, typename REDUCE_T>
 class CombinableArray{
 protected:
-  using data_t = typename data_dim<REDUCE_T, N>::type;
+  using data_t = typename CombMultiArray<REDUCE_T, N>::type;
   data_t mutable data;
   CombinableArray const *parent = nullptr;
 

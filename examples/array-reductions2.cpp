@@ -59,8 +59,8 @@ int main(int argc, char* argv[])
   using BASE_T = double;
   using REDUCESUM_T = RAJA::ReduceSum<REDUCE_POL, BASE_T>;
 
-  data_dim<double, 3> data3(0, 3, 2, 1);
-  data_dim<double, 2> data2(1, 7, 3);
+  CombMultiArray<double, 3> data3(0.0, 3, 2, 1);
+  CombMultiArray<double, 2> data2(1.3, 7, 3);
 
   data3[1][1][0] = 15;
   data2[3][0] = 12;
