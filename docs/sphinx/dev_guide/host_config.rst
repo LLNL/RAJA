@@ -1,7 +1,7 @@
 .. host_config:
 
 **********************
-RAJA Host-Config File
+RAJA Host-Config Files
 **********************
 
 RAJA *host-config* files are used to configure and build RAJA for various

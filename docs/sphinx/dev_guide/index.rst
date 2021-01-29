@@ -20,5 +20,5 @@ Local build scenarios as well as CI testing will be discussed here.
 .. toctree::
    :maxdepth: 1
 
-   host_config.rst
-   ci.rst
+   host_config
+   ci
