@@ -8,6 +8,8 @@
 #include "RAJA/pattern/tensor/stats.hpp"
 #include <stdio.h>
 
+int RAJA::tensor_stats::indent = 0;
+
 camp::idx_t RAJA::tensor_stats::num_vector_copy = 0;
 camp::idx_t RAJA::tensor_stats::num_vector_copy_ctor = 0;
 camp::idx_t RAJA::tensor_stats::num_vector_broadcast_ctor = 0;

@@ -222,7 +222,7 @@ namespace RAJA
 
   class TensorBlock<REGISTER_POLICY,
                     ELEMENT_TYPE,
-                    camp::idx_seq<LAYOUT...>,
+                    TensorLayout<LAYOUT...>,
                     camp::idx_seq<DIM_SIZES...>,
                     STORAGE_POLICY> : public TensorBlockConcreteBase
   {
@@ -230,16 +230,17 @@ namespace RAJA
 
     public:
       using self_type = TensorBlock<REGISTER_POLICY, ELEMENT_TYPE,
-          camp::idx_seq<LAYOUT...>,
+          TensorLayout<LAYOUT...>,
           camp::idx_seq<DIM_SIZES...>,
           STORAGE_POLICY>;
       using element_type = camp::decay<ELEMENT_TYPE>;
 
+      using layout_type = camp::idx_seq<LAYOUT...>;
+
       using register_type =
             TensorRegister<REGISTER_POLICY,
                            ELEMENT_TYPE,
-                           //TensorLayout<LAYOUT...>,
-                           RowMajorLayout,
+                           TensorLayout<LAYOUT...>,
                            camp::idx_seq<
                               (0*LAYOUT+RegisterTraits<REGISTER_POLICY,ELEMENT_TYPE>::s_num_elem)...>,
                            camp::make_idx_seq_t<RegisterTraits<REGISTER_POLICY,ELEMENT_TYPE>::s_num_elem>>;
@@ -247,6 +248,7 @@ namespace RAJA
       static constexpr camp::idx_t s_num_dims = sizeof...(DIM_SIZES);
 
       using storage_layout = RAJA::StaticLayout<camp::idx_seq<LAYOUT...>, DIM_SIZES...>;
+      //using storage_layout = RAJA::StaticLayout<camp::idx_seq<1,0>, DIM_SIZES...>;
       using storage_type = TensorBlockStorage<STORAGE_POLICY, ELEMENT_TYPE, storage_layout>;
 
       using index_type = camp::idx_t;

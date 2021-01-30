@@ -18,6 +18,7 @@
 #ifndef RAJA_pattern_tensor_HPP
 #define RAJA_pattern_tensor_HPP
 
+#include "RAJA/pattern/tensor/stats.hpp"
 #include "RAJA/pattern/tensor/TensorIndex.hpp"
 #include "RAJA/pattern/tensor/TensorRegister.hpp"
 

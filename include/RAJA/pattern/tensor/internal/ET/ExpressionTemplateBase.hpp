@@ -91,7 +91,7 @@ namespace RAJA
         RAJA_INLINE
         RAJA_HOST_DEVICE
         constexpr
-        auto getDimBegin(camp::idx_t ) const
+        camp::idx_t getDimBegin(camp::idx_t ) const
         {
           return 0;
         }

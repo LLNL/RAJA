@@ -163,7 +163,7 @@ namespace RAJA
         self_type &operator+=(RHS const &rhs)
         {
           //store(TensorAdd<self_type, RHS>(*this, normalizeOperand(rhs)) );
-          store( (*this) + normalizeOperand(rhs) );
+          store( normalizeOperand(rhs) + (*this) );
           return *this;
         }
 

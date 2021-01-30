@@ -48,6 +48,7 @@ namespace internal {
       using self_type = TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>, camp::idx_seq<VAL_SEQ...>>;
       using base_type = TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>, camp::idx_seq<VAL_SEQ...>>>;
       using element_type = camp::decay<T>;
+      using layout_type = TensorLayout<0>;
 
 
       static constexpr camp::idx_t s_num_elem = sizeof...(VAL_SEQ);

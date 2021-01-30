@@ -50,15 +50,15 @@ namespace RAJA
 
 
   // specialization for Matrix layouts, where column vs row major matters
-  template<camp::idx_t ROW, camp::idx_t COL>
-  struct TensorLayout<ROW, COL> : public camp::idx_seq<ROW, COL>
+  template<camp::idx_t S2, camp::idx_t S1>
+  struct TensorLayout<S2, S1> : public camp::idx_seq<S2, S1>
   {
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
       constexpr
       bool is_column_major(){
-        return COL == 1;
+        return S1 == 0; // Rows are stride-1
       }
 
       RAJA_INLINE
@@ -66,7 +66,7 @@ namespace RAJA
       static
       constexpr
       bool is_row_major(){
-        return ROW == 1;
+        return S1 == 1; // Columns are stride-1
       }
   };
 
@@ -78,8 +78,8 @@ namespace RAJA
   using VectorLayout = TensorLayout<0>;
 
   // 2d tensor (matrix) layouts
-  using RowMajorLayout = TensorLayout<1, 0>;
-  using ColMajorLayout = TensorLayout<0, 1>;
+  using RowMajorLayout = TensorLayout<0, 1>;
+  using ColMajorLayout = TensorLayout<1, 0>;
 
 
 
