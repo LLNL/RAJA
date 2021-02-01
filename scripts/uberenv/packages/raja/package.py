@@ -249,7 +249,7 @@ class Raja(CMakePackage, CudaPackage):
 
             if not spec.satisfies('cuda_arch=none'):
                 cuda_arch = spec.variants['cuda_arch'].value
-                options.append('-DCUDA_ARCH=sm_{0}'.format(cuda_arch[0]))
+                cfg.write(cmake_cache_string("CUDA_ARCH", 'sm_{0}'.format(cuda_arch[0])))
 
         else:
             cfg.write(cmake_cache_option("ENABLE_CUDA", False))
