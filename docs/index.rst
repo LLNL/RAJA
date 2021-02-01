@@ -128,6 +128,7 @@ Please see :ref:`raja-copyright`.
    :caption: User Documentation
 
    sphinx/user_guide/index
+   Source Documentation <doxygen/html/index.html#http://>
 
 .. toctree::
    :hidden: 
