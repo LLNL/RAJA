@@ -75,6 +75,7 @@ __global__ void matMultKernel(int N, double* C, double* A, double* B)
 }
 #endif
 
+// <Some very important changes>
 //
 // Functions for checking results
 //
@@ -84,6 +85,7 @@ void checkResult(T *C, int N);
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
+// <Some very important changes>
 //
 // Functions for printing results
 //
@@ -99,12 +101,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n\nRAJA matrix multiplication example...\n";
 
+// <Some very important changes>
 //
 // Define num rows/cols in matrix
 //
   const int N = 1000;
 //const int N = CUDA_BLOCK_SIZE * CUDA_BLOCK_SIZE;
 
+// <Some very important changes>
 //
 // Allocate and initialize matrix data.
 //

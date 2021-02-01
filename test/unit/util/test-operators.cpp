@@ -127,7 +127,7 @@ void logical_and_test()
   T j0 = static_cast<T>(0);
   T j1 = static_cast<T>(1);
   T j2 = static_cast<T>(2);
-  ASSERT_FALSE(a(i0,j0));
+  ASSERT_TRUE(a(i0,j0));
   ASSERT_FALSE(a(i0,j1));
   ASSERT_FALSE(a(i1,j0));
   ASSERT_TRUE(a(i1,j1));
