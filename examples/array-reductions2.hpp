@@ -15,7 +15,7 @@ public:
   using type = std::vector<inner_type>;
   constexpr static int depth = N;
 
-  inner_type& operator[](size_t idx) { return data[idx]; }
+  inner_type& operator[](size_t idx) const { return data[idx]; }
 
   CombMultiArray(){};
 
@@ -38,19 +38,40 @@ protected:
 };
 
 template<typename T>
-class CombMultiArray<T, 0> {
+class CombMultiArray<T, 1> {
 public:
-  using type = T;
-  type data;
+  using type = std::vector<T>;
+  using inner_type = T;
+  T& operator[](size_t idx) const { return data[idx]; }
 
-  void operator=(const T& rhs){ data = rhs; }
   CombMultiArray(){};
-  CombMultiArray(T val){
-    data = val; 
-    static int count = 0;
-    std::cout << "Test : " << ++count << " " << val << '\n';
+
+  CombMultiArray(T val, int n) {
+    data.resize(n);
+    for(int i =0; i < n; i++){
+      data[i] = val;
+    }
   }
+
+protected:
+  type mutable data;
+  CombMultiArray const *parent = nullptr;
 };
+
+//template<typename T>
+//class CombMultiArray<T, 0> {
+//public:
+//  using type = T;
+//  type data;
+//
+//  void operator=(const T& rhs){ data = rhs; }
+//  CombMultiArray(){};
+//  CombMultiArray(T val){
+//    data = val; 
+//    static int count = 0;
+//    std::cout << "Test : " << ++count << " " << val << '\n';
+//  }
+//};
 
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const CombMultiArray<T,0>& dd) {
@@ -58,22 +79,22 @@ std::ostream& operator<<(std::ostream& os, const CombMultiArray<T,0>& dd) {
 }
 
 
-template<int N, typename REDUCE_T>
-class CombinableArray{
-protected:
-  using data_t = typename CombMultiArray<REDUCE_T, N>::type;
-  data_t mutable data;
-  CombinableArray const *parent = nullptr;
-
-public:
-  CombinableArray(){}
-
-  CombinableArray(const CombinableArray &copy) : 
-    data(copy.data), 
-    parent{copy.parent ? copy.parent : &copy} {}
-
-  data_t &local() const { return data; }
-};
+//template<int N, typename REDUCE_T>
+//class CombinableArray{
+//protected:
+//  using data_t = typename CombMultiArray<REDUCE_T, N>::type;
+//  data_t mutable data;
+//  CombinableArray const *parent = nullptr;
+//
+//public:
+//  CombinableArray(){}
+//
+//  CombinableArray(const CombinableArray &copy) : 
+//    data(copy.data), 
+//    parent{copy.parent ? copy.parent : &copy} {}
+//
+//  data_t &local() const { return data; }
+//};
 
 
 

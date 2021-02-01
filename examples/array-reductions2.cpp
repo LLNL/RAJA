@@ -80,27 +80,36 @@ int main(int argc, char* argv[])
     }
   }
   std::cout << "\n";
-#if 0
+
+#if 1
+{
   // --------------------------------------------------------------------------------
   // Run Vector-of-Type Reduction Example
   // --------------------------------------------------------------------------------
-  std::cout << "\nRunning 1D Vector-of-Type (VoT_t) Reducer example ...\n";
+  std::cout << "\nRunning 1D Combinatorial Reducer example ...\n";
 
-  VoT_t<1, BASE_T> VoT_nodeData(NUM_NODES);
+  CombMultiArray<BASE_T, 1> r_nodeData(0, NUM_NODES);
 
   RAJA::ChronoTimer type_timer;
   type_timer.start();
+  
   RAJA::forall<EXEC_POL> (np_range, [=](int i) {
     int i_idx = pairlist[ i ].first;
     int j_idx = pairlist[ i ].second;
 
-    BASE_T& i_data = VoT_nodeData.at( i_idx );
-    BASE_T& j_data = VoT_nodeData.at( j_idx );
+    BASE_T& i_data = r_nodeData[ i_idx ];
+    BASE_T& j_data = r_nodeData[ j_idx ];
     i_data += j_idx;
     j_data += i_idx;
   });
+
   type_timer.stop();
-  checkResults(nodeDataSolution, VoT_nodeData, type_timer);
+  for(int i = 0; i < NUM_NODES; i++){
+    std::cout << r_nodeData[i] << " ";
+  }
+  std::cout << '\n';
+  //checkResults(nodeDataSolution, r_nodeData, type_timer);
+}
 #endif
 
 }
