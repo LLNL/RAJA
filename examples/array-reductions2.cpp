@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
   // Test Parameters
   constexpr int NUM_NODES = 30;
   int NUM_NODE_LISTS = 2;
-  int NUM_PAIRS = 50000;
+  int NUM_PAIRS = 50;
   if (argc > 1)
     NUM_PAIRS = std::atoi(argv[1]);
 
@@ -59,63 +59,59 @@ int main(int argc, char* argv[])
   using BASE_T = double;
   using REDUCESUM_T = RAJA::ReduceSum<REDUCE_POL, BASE_T>;
 
-  CombMultiArray<double, 3> data3(0.0, 3, 2, 1);
-  CombMultiArray<double, 2> data2(1.3, 7, 3);
+{
+  //ContainerReducer<double, 1> data(1.0, NUM_NODES);
+  //data.print();
+}
 
-  data3[1][1][0] = 15;
-  data2[3][0] = 12;
-
-  for(int i = 0; i < 3; i++){
-    for(int j = 0; j < 2; j++){
-      for(int k = 0; k < 1; k++){
-        std::cout << data3[i][j][k] << " ";
-      }
-    }
-  }
-  std::cout << "\n";
-
-  for(int j = 0; j < 7; j++){
-    for(int k = 0; k < 3; k++){
-      std::cout << data2[j][k] << " ";
-    }
-  }
-  std::cout << "\n";
+{
+  ContainerReducer<double, 3> data(2.0, 4, 3, 2);
+  data.print();
+}
 
 #if 1
 {
   // --------------------------------------------------------------------------------
-  // Run Vector-of-Type Reduction Example
+  // Run 1D Reduction Sum Test
   // --------------------------------------------------------------------------------
-  std::cout << "\nRunning 1D Combinatorial Reducer example ...\n";
+  std::cout << "\nRunning 1D Reducer Sum Test...\n";
 
-  CombMultiArray<BASE_T, 1> r_nodeData(0, NUM_NODES);
+  ContainerReducer<BASE_T, 1> r_nodeData(0, 7);
 
-  RAJA::ChronoTimer type_timer;
-  type_timer.start();
+  RAJA::ChronoTimer timer;
+  timer.start();
   
   RAJA::forall<EXEC_POL> (np_range, [=](int i) {
-    int i_idx = pairlist[ i ].first;
-    int j_idx = pairlist[ i ].second;
-
-    BASE_T& i_data = r_nodeData[ i_idx ];
-    BASE_T& j_data = r_nodeData[ j_idx ];
-    i_data += j_idx;
-    j_data += i_idx;
+    r_nodeData[2] += 5;
   });
 
-  type_timer.stop();
-  for(int i = 0; i < NUM_NODES; i++){
-    std::cout << r_nodeData[i] << " ";
-  }
-  std::cout << '\n';
-  //checkResults(nodeDataSolution, r_nodeData, type_timer);
+  timer.stop();
+  r_nodeData.print();
+}
+#endif
+
+#if 1
+{
+  // --------------------------------------------------------------------------------
+  // Run 2D Reduction Sum Test
+  // --------------------------------------------------------------------------------
+  std::cout << "\nRunning 2D Reducer Sum Test...\n";
+
+  ContainerReducer<BASE_T, 2> r_nodeData(0, 4,3);
+
+  RAJA::ChronoTimer timer;
+  timer.start();
+  
+  RAJA::forall<EXEC_POL> (np_range, [=](int i) {
+    r_nodeData[2][2] += 5;
+  });
+
+  timer.stop();
+  r_nodeData.print();
 }
 #endif
 
 }
-
-
-
 
 // --------------------------------------------------------------------------------
 // Helper Function Definitions

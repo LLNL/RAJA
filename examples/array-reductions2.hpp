@@ -4,10 +4,6 @@
 #include "RAJA/RAJA.hpp"
 #include <iostream>
 
-struct my_type {
-  my_type(){ std::cout << "Hazza an object of quality!\n";}
-};
-
 template<typename T, int N>
 class CombMultiArray { 
 public:
@@ -27,14 +23,23 @@ public:
     }
   }
 
-  CombMultiArray(const CombMultiArray& copy) :
-    data(copy.data),
-    parent{copy.parent ? copy.parent : &copy} {}
-
   type &local() const { return data; }
+  CombMultiArray(const CombMultiArray& copy) :
+    data(copy.data){}//,
+
+  void print() {
+    for(size_t i =0; i < data.size(); i++) data[i].print();
+    std::cout << '\n';
+  }
+
+  static void reduction(type& parent, type& data) {
+    for (size_t i = 0; i < data.size(); i++) {
+      inner_type::reduction(parent[i].local(), data[i].local());
+    }
+  }
+
 protected:
   type mutable data;
-  CombMultiArray const *parent = nullptr;
 };
 
 template<typename T>
@@ -42,7 +47,7 @@ class CombMultiArray<T, 1> {
 public:
   using type = std::vector<T>;
   using inner_type = T;
-  T& operator[](size_t idx) const { return data[idx]; }
+  inner_type& operator[](size_t idx) const { return data[idx]; }
 
   CombMultiArray(){};
 
@@ -53,49 +58,56 @@ public:
     }
   }
 
+  type &local() const { return data; }
+  CombMultiArray(const CombMultiArray& copy) : data(copy.data){}
+
+  void print() {
+    for(size_t i =0; i < data.size(); i++) std::cout << data[i] << " ";
+    std::cout << '\n';
+  }
+
+  static void reduction(type& parent, type& data) {
+    for (size_t i = 0; i < data.size(); i++) {
+      parent[i] += data[i];
+    }
+  }
+
 protected:
   type mutable data;
-  CombMultiArray const *parent = nullptr;
 };
 
-//template<typename T>
-//class CombMultiArray<T, 0> {
-//public:
-//  using type = T;
-//  type data;
-//
-//  void operator=(const T& rhs){ data = rhs; }
-//  CombMultiArray(){};
-//  CombMultiArray(T val){
-//    data = val; 
-//    static int count = 0;
-//    std::cout << "Test : " << ++count << " " << val << '\n';
-//  }
-//};
-
-template<typename T>
-std::ostream& operator<<(std::ostream& os, const CombMultiArray<T,0>& dd) {
-  return os << dd.data;
-}
 
 
-//template<int N, typename REDUCE_T>
-//class CombinableArray{
-//protected:
-//  using data_t = typename CombMultiArray<REDUCE_T, N>::type;
-//  data_t mutable data;
-//  CombinableArray const *parent = nullptr;
-//
-//public:
-//  CombinableArray(){}
-//
-//  CombinableArray(const CombinableArray &copy) : 
-//    data(copy.data), 
-//    parent{copy.parent ? copy.parent : &copy} {}
-//
-//  data_t &local() const { return data; }
-//};
+template<typename T, int N>
+class ContainerReducer : public CombMultiArray<T, N> {
+  using Base = CombMultiArray<T, N>;
+  using Base_inner = typename Base::inner_type;
+  ContainerReducer const *parent = nullptr;
 
+public:
+  Base_inner& operator[](size_t idx) const { 
+    return Base::data[idx];
+  }
+
+  ContainerReducer(){}
+
+  template<typename ...Args>
+  ContainerReducer(Args ...args)
+    : Base(args...) {  
+  }
+
+  ContainerReducer(const ContainerReducer& copy)
+    : Base(copy),
+    parent{copy.parent ? copy.parent : &copy} {}
+
+  void print() { Base::print(); }
+
+  ~ContainerReducer(){
+    if (parent)
+    #pragma omp critical
+    Base::reduction(parent->local(), Base::local()); 
+  }
+};
 
 
 // --------------------------------------------------------------------------------
