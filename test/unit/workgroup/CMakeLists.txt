@@ -59,17 +59,11 @@ if(RAJA_ENABLE_HIP)
   endif()
 endif()
 
-# reduce travis build times with intel compiler
-if(RAJA_TEST_EXHAUSTIVE OR NOT RAJA_COMPILER MATCHES "RAJA_COMPILER_Intel")
-  set(Constructor_SUBTESTS Single)
-  buildunitworkgrouptest(Constructor "${Constructor_SUBTESTS}" "${BACKENDS}")
+set(Constructor_SUBTESTS Single)
+buildunitworkgrouptest(Constructor "${Constructor_SUBTESTS}" "${BACKENDS}")
 
-  set(Enqueue_SUBTESTS Single Multiple)
-  buildunitworkgrouptest(Enqueue     "${Enqueue_SUBTESTS}"     "${BACKENDS}")
-
-  unset(Constructor_SUBTESTS)
-  unset(Enqueue_SUBTESTS)
-endif()
+set(Enqueue_SUBTESTS Single Multiple)
+buildunitworkgrouptest(Enqueue     "${Enqueue_SUBTESTS}"     "${BACKENDS}")
 
 set(Vtable_SUBTESTS Single)
 buildunitworkgrouptest(Vtable      "${Vtable_SUBTESTS}"      "${Vtable_BACKENDS}")
@@ -77,6 +71,8 @@ buildunitworkgrouptest(Vtable      "${Vtable_SUBTESTS}"      "${Vtable_BACKENDS}
 set(WorkStorage_SUBTESTS Constructor Iterator InsertCall Multiple)
 buildunitworkgrouptest(WorkStorage "${WorkStorage_SUBTESTS}" "${WorkStorage_BACKENDS}")
 
+unset(Constructor_SUBTESTS)
+unset(Enqueue_SUBTESTS)
 unset(Vtable_SUBTESTS)
 unset(WorkStorage_SUBTESTS)
 
