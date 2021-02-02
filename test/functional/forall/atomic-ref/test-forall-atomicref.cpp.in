@@ -12,6 +12,7 @@
 #include "RAJA_test-camp.hpp"
 #include "RAJA_test-index-types.hpp"
 
+#include "RAJA_test-atomic-ref-types.hpp"
 #include "RAJA_test-atomic-types.hpp"
 #include "RAJA_test-atomicpol.hpp"
 
