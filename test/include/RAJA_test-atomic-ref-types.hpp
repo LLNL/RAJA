@@ -83,10 +83,8 @@ typename std::enable_if<sizeof(T) == 16, T>::type np2m1(T val)
   return val;
 }
 
-// Assist return type conditional overloading of testAtomicRefOtherOp
+// Assist return type conditional overloading of testAtomicRefLogicalOp
 struct int_op {}; // represents underlying op type = integral
-
-// Assist return type conditional overloading of testAtomicRefOtherOp
 struct all_op {}; // these op types can accept integral or float
 
 

@@ -6,7 +6,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing basic functional tests for non-arithmetic atomic operations using forall
+/// Source file containing basic functional tests for logical atomic operations using forall
 ///
 
 #ifndef __TEST_FORALL_ATOMICREF_LOGICAL_HPP__
@@ -117,7 +117,6 @@ template  < typename ExecPolicy,
             typename T,
             template <typename, typename, typename> class OtherOp>
 // Run test if T is integral and operation is int_op, or for any all_op
-//void
 typename std::enable_if<
            (std::is_integral<T>::value && 
             std::is_base_of<int_op, OtherOp<T,AtomicPolicy, IdxType>>::value) || 
