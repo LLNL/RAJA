@@ -27,7 +27,7 @@ if(RAJA_ENABLE_TARGET_OPENMP)
   list(APPEND KERNEL_BACKENDS OpenMPTarget)
 endif()
 
-#add_subdirectory(most-basic)
+add_subdirectory(basic-single-loop)
 
 add_subdirectory(reduce-loc)
 
