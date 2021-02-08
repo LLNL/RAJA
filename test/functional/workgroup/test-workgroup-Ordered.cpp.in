@@ -9,7 +9,7 @@
 /// Source file containing tests for RAJA workgroup ordered execution.
 ///
 
-#include "test-workgroup-Ordered.hpp"
+#include "test-workgroup-Ordered-@SUBTESTNAME@.hpp"
 
 using @BACKEND@BasicWorkGroupOrdered@SUBTESTNAME@Types =
   Test< camp::cartesian_product< @BACKEND@ExecPolicyList,

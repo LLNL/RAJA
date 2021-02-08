@@ -9,39 +9,13 @@
 /// Header file containing tests for RAJA workgroup enqueue.
 ///
 
-#ifndef __TEST_WORKGROUP_ENQUEUE__
-#define __TEST_WORKGROUP_ENQUEUE__
+#ifndef __TEST_WORKGROUP_ENQUEUESINGLE__
+#define __TEST_WORKGROUP_ENQUEUESINGLE__
 
 #include "RAJA_test-workgroup.hpp"
+#include "test-util-workgroup-Enqueue.hpp"
 
 #include <random>
-
-
-template < typename IndexType,
-           typename ... Args >
-struct EnqueueTestCallable
-{
-  EnqueueTestCallable(IndexType* _ptr, IndexType _val)
-    : ptr(_ptr)
-    , val(_val)
-  { }
-
-  EnqueueTestCallable(EnqueueTestCallable const&) = default;
-  EnqueueTestCallable& operator=(EnqueueTestCallable const&) = default;
-
-  EnqueueTestCallable(EnqueueTestCallable&& o) = default;
-  EnqueueTestCallable& operator=(EnqueueTestCallable&& o) = default;
-
-  RAJA_HOST_DEVICE void operator()(IndexType i, Args... args) const
-  {
-    RAJA_UNUSED_VAR(args...);
-    ptr[i] = val;
-  }
-
-private:
-  IndexType* ptr;
-  IndexType  val;
-};
 
 
 template <typename ExecPolicy,
@@ -111,12 +85,6 @@ class WorkGroupBasicEnqueueSingleUnitTest : public ::testing::Test
 
 TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueSingleUnitTest);
 
-template <typename T>
-class WorkGroupBasicEnqueueMultipleUnitTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueMultipleUnitTest);
 
 TYPED_TEST_P(WorkGroupBasicEnqueueSingleUnitTest, BasicWorkGroupEnqueueSingle)
 {
@@ -131,20 +99,4 @@ TYPED_TEST_P(WorkGroupBasicEnqueueSingleUnitTest, BasicWorkGroupEnqueueSingle)
   testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, true, 1, 1);
 }
 
-TYPED_TEST_P(WorkGroupBasicEnqueueMultipleUnitTest, BasicWorkGroupEnqueueMultiple)
-{
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
-  using StoragePolicy = typename camp::at<TypeParam, camp::num<2>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using Xargs = typename camp::at<TypeParam, camp::num<4>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
-
-  std::mt19937 rng(std::random_device{}());
-  std::uniform_int_distribution<size_t> dist(0, 128);
-
-  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, false, dist(rng), dist(rng));
-  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, true, dist(rng), dist(rng));
-}
-
-#endif  //__TEST_WORKGROUP_ENQUEUE__
+#endif  //__TEST_WORKGROUP_ENQUEUESINGLE__
