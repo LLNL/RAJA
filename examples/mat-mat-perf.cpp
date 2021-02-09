@@ -139,7 +139,7 @@
 #define RAJA_KERNEL_2_TILED_SHARED_REG
 #define RAJA_KERNEL_2_TILED_SHARED_REG_BOUNDS //adds launch bounds
 
-
+#if defined(RAJA_DEVICE_ACTIVE)
 typedef std::chrono::high_resolution_clock Clock;
 
 using launch_policy = RAJA::expt::LaunchPolicy<
@@ -193,60 +193,44 @@ using gpu_global_thread_xy_policy = RAJA::expt::hip_global_thread_xy;
 #endif
 
 using teams_x = RAJA::expt::LoopPolicy<loop_policy
-#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
                                        gpu_block_x_policy
-#endif
                                        >;
 
 using teams_y = RAJA::expt::LoopPolicy<loop_policy
-#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
                                        gpu_block_y_policy
-#endif
                                        >;
 
 using threads_x = RAJA::expt::LoopPolicy<loop_policy
-#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
                                        gpu_thread_x_policy
-#endif
                                        >;
 
 using threads_x_loop = RAJA::expt::LoopPolicy<loop_policy
-#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
                                        gpu_thread_x_loop_policy
-#endif
                                        >;
 
 using threads_y = RAJA::expt::LoopPolicy<loop_policy
-#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
                                        gpu_thread_y_policy
-#endif
                                        >;
 
 using global_thread_x = RAJA::expt::LoopPolicy<loop_policy
-#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
                                        gpu_global_thread_x_policy
-#endif
                                        >;
 
 using global_thread_y = RAJA::expt::LoopPolicy<loop_policy
-#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
                                        gpu_global_thread_y_policy
-#endif
                                        >;
 
 /*
   Define number of threads in x and y dimensions of a CUDA thread block
 */
-#if defined(RAJA_DEVICE_ACTIVE)
 #define DEVICE_BLOCK_SIZE 16
-#endif
 
 #if defined (RAJA_ENABLE_CUDA)
 #define DEVICE_SYNC() cudaDeviceSynchronize();
@@ -277,7 +261,6 @@ const int DIM = 2;
 /*
   Define CUDA matrix multiplication kernel for comparison to RAJA version
 */
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 __global__
 void matMultKernel2_shared(int N, double* C, double* A, double* B)
 {
@@ -495,7 +478,6 @@ void matMultKernel0_bounds(int N, double* C, double* A, double* B)
   }
 
 }
-#endif
 
 //
 // Functions for checking results
@@ -514,11 +496,11 @@ void printResult(T *C, int N);
 
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
-
+#endif
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
-
+#if defined(RAJA_DEVICE_ACTIVE)
   std::cout << "\n\nRAJA matrix multiplication example...\n";
 
 //
@@ -2317,10 +2299,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   memoryManager::deallocate(C);
 
   std::cout << "\n DONE!...\n";
+#endif
 
   return 0;
 }
 
+#if defined(RAJA_DEVICE_ACTIVE)
 
 template <typename T>
 __global__ void checkKernel(int N, const T* C, int* match)
@@ -2415,3 +2399,4 @@ void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N)
   }
   std::cout << std::endl;
 }
+#endif
