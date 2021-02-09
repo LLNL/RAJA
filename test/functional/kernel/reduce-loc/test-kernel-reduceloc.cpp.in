@@ -22,7 +22,7 @@
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-kernel-loc-@LOC_TYPE@.hpp"
+#include "test-kernel-reduceloc-@LOC_TYPE@.hpp"
 
 
 //
