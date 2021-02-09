@@ -23,18 +23,18 @@
 //
 // All platforms must support loop execution.
 //
-#include "RAJA/pattern/teams/teams_sequential.hpp"
+#include "RAJA/policy/loop/teams.hpp"
 
 #if defined(RAJA_CUDA_ACTIVE)
-#include "RAJA/pattern/teams/teams_cuda.hpp"
+#include "RAJA/policy/cuda/teams.hpp"
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-#include "RAJA/pattern/teams/teams_hip.hpp"
+#include "RAJA/policy/hip/teams.hpp"
 #endif
 
 #if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/pattern/teams/teams_openmp.hpp"
+#include "RAJA/policy/openmp/teams.hpp"
 #endif
 
 #endif /* RAJA_pattern_teams_HPP */
