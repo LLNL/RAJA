@@ -44,6 +44,16 @@ struct s_NestedLoopData<EXEC_POL1, void, void> {
 template<typename... T >
 using NestedLoopData = typename s_NestedLoopData<T...>::type;
 
+template<typename EXEC_POL1, typename EXEC_POL2>
+struct s_OffloadNestedLoopData { 
+  using type = camp::list<OFFLOAD,
+                          EXEC_POL1,
+                          EXEC_POL2>;
+};
+
+// Alias to clean up loop type information
+template<typename... T >
+using OffloadNestedLoopData = typename s_OffloadNestedLoopData<T...>::type;
 
 // ----------------------------------------------------------------------------
 // Sequential
@@ -105,26 +115,19 @@ using OpenMPTargetKernelNestedLoopExecPols =
 //  seq
 
 
-//Cuda(Hip)KernelExecPols
-//
-//CudaKernel
-//  thread_x_loop
-//    thread_y_loop
-//
-//seq
-//  CudaKernel
-//    thread_x_loop
-//      thread_y_loop
-//
-//CudaKernel
-//  block_x_loop
-//    thread_x_loop
-//      thread_y_loop
-//
-//CudaKernel
-//  Tile< tile_fixed, cuda_block_x_loop
-//    thread_x_loop
-//      thread_y_loop
+#if defined(RAJA_ENABLE_CUDA)
+
+// ----------------------------------------------------------------------------
+// CUDA
+// ----------------------------------------------------------------------------
+using CudaKernelNestedLoopExecPols =
+  camp::list<
+    OffloadNestedLoopData< RAJA::cuda_thread_x_loop, RAJA::cuda_thread_y_loop >,
+    OffloadNestedLoopData< RAJA::seq_exec, RAJA::cuda_thread_x_loop >,
+    OffloadNestedLoopData< RAJA::cuda_thread_x_loop, RAJA::seq_exec >
+  >;
+
+#endif  // RAJA_ENABLE_CUDA
 
 
 //
