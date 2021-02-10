@@ -1,9 +1,10 @@
+
 /*!
  ******************************************************************************
  *
  * \file
  *
- * \brief   RAJA header file containing user interface for RAJA::Teams::seq
+ * \brief   RAJA header file containing user interface for RAJA::Teams::loop
  *
  ******************************************************************************
  */
@@ -15,8 +16,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_teams_sequential_HPP
-#define RAJA_pattern_teams_sequential_HPP
+#ifndef RAJA_pattern_teams_loop_HPP
+#define RAJA_pattern_teams_loop_HPP
 
 #include "RAJA/pattern/teams/teams_core.hpp"
 #include "RAJA/policy/loop/policy.hpp"
@@ -61,7 +62,6 @@ struct LoopExecute<loop_exec, SEGMENT> {
       BODY const &body)
   {
 
-    // block stride loop
     const int len = segment.end() - segment.begin();
     for (int i = 0; i < len; i++) {
 

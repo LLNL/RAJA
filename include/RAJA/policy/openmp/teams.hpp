@@ -21,6 +21,7 @@
 #include "RAJA/pattern/teams/teams_core.hpp"
 #include "RAJA/policy/openmp/policy.hpp"
 
+
 namespace RAJA
 {
 

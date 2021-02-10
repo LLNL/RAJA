@@ -21,9 +21,11 @@
 #include "RAJA/pattern/teams/teams_core.hpp"
 
 //
-// All platforms must support loop execution.
+// All platforms must support host execution.
 //
+#include "RAJA/policy/sequential/teams.hpp"
 #include "RAJA/policy/loop/teams.hpp"
+#include "RAJA/policy/simd/teams.hpp"
 
 #if defined(RAJA_CUDA_ACTIVE)
 #include "RAJA/policy/cuda/teams.hpp"
