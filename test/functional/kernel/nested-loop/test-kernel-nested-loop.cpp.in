@@ -91,6 +91,20 @@ using CudaKernelNestedLoopExecPols =
 
 #endif  // RAJA_ENABLE_CUDA
 
+// ----------------------------------------------------------------------------
+// HIP
+// ----------------------------------------------------------------------------
+#if defined(RAJA_ENABLE_HIP)
+
+using HipKernelNestedLoopExecPols =
+  camp::list<
+    OffloadNestedLoopData< RAJA::hip_thread_x_loop, RAJA::hip_thread_y_loop >,
+    OffloadNestedLoopData< RAJA::seq_exec, RAJA::hip_thread_x_loop >,
+    OffloadNestedLoopData< RAJA::hip_thread_x_loop, RAJA::seq_exec >
+  >;
+
+#endif  // RAJA_ENABLE_HIP
+
 
 //
 // Cartesian product of types used in parameterized tests

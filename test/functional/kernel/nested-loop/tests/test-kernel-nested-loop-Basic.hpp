@@ -57,7 +57,6 @@ template <typename WORKING_RES, typename EXEC_POLICY, typename... Args>
 void KernelNestedLoopTest(const DEPTH_2_COLLAPSE&, Args... args){
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY>(DEPTH_2(), args...);
 }
-
 template <typename WORKING_RES, typename EXEC_POLICY, typename... Args>
 void KernelNestedLoopTest(const OFFLOAD&, Args... args){
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY>(DEPTH_2(), args...);

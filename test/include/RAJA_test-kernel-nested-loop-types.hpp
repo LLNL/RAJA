@@ -9,6 +9,11 @@
 #ifndef __TEST_KERNEL_NESTED_LOOP_TYPES_HPP__
 #define __TEST_KERNEL_NESTED_LOOP_TYPES_HPP__
 
+#define OFFLOAD_KERNEL CudaKernel
+#if defined(RAJA_ENABLE_HIP)
+#define OFFLOAD_KERNEL HipKernel
+#endif
+
 struct LAMBDA_COUNT_2 {};
 struct LAMBDA_COUNT_3 {};
 struct DEPTH_2 {};
@@ -19,7 +24,6 @@ struct OFFLOAD {};
 //
 //
 // Nested Loop Data Type information
-// Might want this in a header somewhere
 //
 //
 template<typename EXEC_POL1, typename EXEC_POL2=void, typename EXEC_POL3=void>

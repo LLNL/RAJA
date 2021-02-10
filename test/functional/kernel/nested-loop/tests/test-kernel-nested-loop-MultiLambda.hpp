@@ -121,7 +121,7 @@ template<typename POLICY_DATA>
 struct MultiLambdaNestedLoopExec<OFFLOAD, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
-      RAJA::statement::CudaKernel<
+      RAJA::statement::OFFLOAD_KERNEL<
         RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<1>>::type,
           RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<2>>::type,
             RAJA::statement::Lambda<0>
