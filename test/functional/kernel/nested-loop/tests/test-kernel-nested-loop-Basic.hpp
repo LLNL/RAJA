@@ -152,13 +152,13 @@ struct BasicNestedLoopExec<DEPTH_2_COLLAPSE, POLICY_DATA> {
     >;
 };
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP)
 
 template<typename POLICY_DATA>
 struct BasicNestedLoopExec<OFFLOAD, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
-      RAJA::statement::CudaKernel<
+      RAJA::statement::OFFLOAD_KERNEL<
         RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<1>>::type,  // row
           RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<2>>::type,  // col
             RAJA::statement::Lambda<0>

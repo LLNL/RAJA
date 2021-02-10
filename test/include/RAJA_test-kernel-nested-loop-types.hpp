@@ -9,9 +9,10 @@
 #ifndef __TEST_KERNEL_NESTED_LOOP_TYPES_HPP__
 #define __TEST_KERNEL_NESTED_LOOP_TYPES_HPP__
 
-#define OFFLOAD_KERNEL CudaKernel
 #if defined(RAJA_ENABLE_HIP)
 #define OFFLOAD_KERNEL HipKernel
+#else
+#define OFFLOAD_KERNEL CudaKernel
 #endif
 
 struct LAMBDA_COUNT_2 {};
