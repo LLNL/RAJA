@@ -10,17 +10,6 @@
 
 #include <numeric>
 
-//
-//
-// Defining Nested Loop test type data, we probably want to define this in a header somewhere.
-//
-//
-struct DEPTH_2 {};
-struct DEPTH_2_COLLAPSE {};
-struct DEPTH_3 {};
-struct OFFLOAD {};
-
-
 template <typename WORKING_RES, typename EXEC_POLICY, typename... ExtraArgs>
 void KernelNestedLoopTest(const DEPTH_2&,
                           const RAJA::Index_type dim0,
