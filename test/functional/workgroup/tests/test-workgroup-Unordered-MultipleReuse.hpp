@@ -6,17 +6,16 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Header file containing tests for RAJA workgroup ordered runs.
+/// Header file containing tests for RAJA workgroup unordered runs.
 ///
 
-#ifndef __TEST_WORKGROUP_ORDERED__
-#define __TEST_WORKGROUP_ORDERED__
+#ifndef __TEST_WORKGROUP_UNORDERED_MULTIPLEREUSE__
+#define __TEST_WORKGROUP_UNORDERED_MULTIPLEREUSE__
 
 #include "RAJA_test-workgroup.hpp"
 #include "RAJA_test-forall-data.hpp"
 
 #include <random>
-#include <vector>
 
 
 template <typename ExecPolicy,
@@ -26,107 +25,7 @@ template <typename ExecPolicy,
           typename Allocator,
           typename WORKING_RES
           >
-void testWorkGroupOrderedSingle(IndexType begin, IndexType end)
-{
-  using WorkPool_type = RAJA::WorkPool<
-                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                  IndexType,
-                  RAJA::xargs<>,
-                  Allocator
-                >;
-
-  using WorkGroup_type = RAJA::WorkGroup<
-                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                  IndexType,
-                  RAJA::xargs<>,
-                  Allocator
-                >;
-
-  using WorkSite_type = RAJA::WorkSite<
-                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                  IndexType,
-                  RAJA::xargs<>,
-                  Allocator
-                >;
-
-  ASSERT_GE(begin, (IndexType)0);
-  ASSERT_GE(end, begin);
-  IndexType N = end + begin;
-
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
-
-  IndexType* working_array;
-  IndexType* check_array;
-  IndexType* test_array;
-
-  allocateForallTestData<IndexType>(N,
-                                    working_res,
-                                    &working_array,
-                                    &check_array,
-                                    &test_array);
-
-
-  {
-    for (IndexType i = IndexType(0); i < N; i++) {
-      test_array[i] = IndexType(0);
-    }
-
-    working_res.memcpy(working_array, test_array, sizeof(IndexType) * N);
-
-    for (IndexType i = begin; i < end; ++i) {
-      test_array[ i ] = IndexType(i);
-    }
-  }
-
-  WorkPool_type pool(Allocator{});
-
-  IndexType test_val(5);
-
-  {
-    pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
-        [=] RAJA_HOST_DEVICE (IndexType i) {
-      working_array[i] += i;
-    });
-    pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
-        [=] RAJA_HOST_DEVICE (IndexType i) {
-      working_array[i] += test_val;
-    });
-  }
-
-  WorkGroup_type group = pool.instantiate();
-
-  WorkSite_type site = group.run();
-
-  {
-    working_res.memcpy(check_array, working_array, sizeof(IndexType) * N);
-
-    for (IndexType i = IndexType(0); i < begin; i++) {
-      ASSERT_EQ(test_array[i], check_array[i]);
-    }
-    for (IndexType i = begin;        i < end;   i++) {
-      ASSERT_EQ(test_array[i] + test_val, check_array[i]);
-    }
-    for (IndexType i = end;          i < N;     i++) {
-      ASSERT_EQ(test_array[i], check_array[i]);
-    }
-  }
-
-
-  deallocateForallTestData<IndexType>(working_res,
-                                      working_array,
-                                      check_array,
-                                      test_array);
-}
-
-
-template <typename ExecPolicy,
-          typename OrderPolicy,
-          typename StoragePolicy,
-          typename IndexType,
-          typename Allocator,
-          typename WORKING_RES
-          >
-void testWorkGroupOrderedMultiple(
+void testWorkGroupUnorderedMultiple(
     std::mt19937& rng, IndexType max_begin, IndexType min_end,
     IndexType num1, IndexType num2, IndexType num3,
     IndexType pool_reuse, IndexType group_reuse)
@@ -178,7 +77,6 @@ void testWorkGroupOrderedMultiple(
     }
   }
 
-
   camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   using type1 = IndexType;
@@ -217,8 +115,6 @@ void testWorkGroupOrderedMultiple(
 
 
   WorkPool_type pool(Allocator{});
-  WorkGroup_type group = pool.instantiate();
-  WorkSite_type site = group.run();
 
   for (IndexType pr = 0; pr < pool_reuse; pr++) {
 
@@ -232,11 +128,7 @@ void testWorkGroupOrderedMultiple(
         type1* working_ptr1 = working_array1 + N * j;
         pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin1[j], end1[j] },
             [=] RAJA_HOST_DEVICE (IndexType i) {
-          working_ptr1[i] += type1(i);
-        });
-        pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin1[j], end1[j] },
-            [=] RAJA_HOST_DEVICE (IndexType i) {
-          working_ptr1[i] += test_val1;
+          working_ptr1[i] += type1(i) + test_val1;
         });
       }
 
@@ -244,11 +136,7 @@ void testWorkGroupOrderedMultiple(
         type2* working_ptr2 = working_array2 + N * j;
         pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin2[j], end2[j] },
             [=] RAJA_HOST_DEVICE (IndexType i) {
-          working_ptr2[i] += type2(i);
-        });
-        pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin2[j], end2[j] },
-            [=] RAJA_HOST_DEVICE (IndexType i) {
-          working_ptr2[i] += test_val2;
+          working_ptr2[i] += type2(i) + test_val2;
         });
       }
 
@@ -256,16 +144,12 @@ void testWorkGroupOrderedMultiple(
         type3* working_ptr3 = working_array3 + N * j;
         pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin3[j], end3[j] },
             [=] RAJA_HOST_DEVICE (IndexType i) {
-          working_ptr3[i] += type3(i);
-        });
-        pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin3[j], end3[j] },
-            [=] RAJA_HOST_DEVICE (IndexType i) {
-          working_ptr3[i] += test_val3;
+          working_ptr3[i] += type3(i) + test_val3;
         });
       }
     }
 
-    group = pool.instantiate();
+    WorkGroup_type group = pool.instantiate();
 
     for (IndexType gr = 0; gr < group_reuse; gr++) {
 
@@ -322,7 +206,7 @@ void testWorkGroupOrderedMultiple(
         }
       }
 
-      site = group.run();
+      WorkSite_type site = group.run();
 
       // check_test_data(type1(5), type2(7), type3(11));
       {
@@ -377,8 +261,6 @@ void testWorkGroupOrderedMultiple(
       }
     }
 
-    site.clear();
-    group.clear();
     pool.clear();
   }
 
@@ -401,47 +283,14 @@ void testWorkGroupOrderedMultiple(
 
 
 template <typename T>
-class WorkGroupBasicOrderedSingleFunctionalTest : public ::testing::Test
+class WorkGroupBasicUnorderedMultipleReuseFunctionalTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_SUITE_P(WorkGroupBasicOrderedSingleFunctionalTest);
-
-template <typename T>
-class WorkGroupBasicOrderedMultipleReuseFunctionalTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_SUITE_P(WorkGroupBasicOrderedMultipleReuseFunctionalTest);
+TYPED_TEST_SUITE_P(WorkGroupBasicUnorderedMultipleReuseFunctionalTest);
 
 
-TYPED_TEST_P(WorkGroupBasicOrderedSingleFunctionalTest, BasicWorkGroupOrderedSingle)
-{
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
-  using StoragePolicy = typename camp::at<TypeParam, camp::num<2>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<4>>::type;
-  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<5>>::type;
-
-  std::mt19937 rng(std::random_device{}());
-  using dist_type = std::uniform_int_distribution<IndexType>;
-
-  IndexType b1 = dist_type(IndexType(0), IndexType(15))(rng);
-  IndexType e1 = dist_type(b1, IndexType(16))(rng);
-
-  IndexType b2 = dist_type(e1, IndexType(127))(rng);
-  IndexType e2 = dist_type(b2, IndexType(128))(rng);
-
-  IndexType b3 = dist_type(e2, IndexType(1023))(rng);
-  IndexType e3 = dist_type(b3, IndexType(1024))(rng);
-
-  testWorkGroupOrderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b1, e1);
-  testWorkGroupOrderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b2, e2);
-  testWorkGroupOrderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b3, e3);
-}
-
-TYPED_TEST_P(WorkGroupBasicOrderedMultipleReuseFunctionalTest, BasicWorkGroupOrderedMultipleReuse)
+TYPED_TEST_P(WorkGroupBasicUnorderedMultipleReuseFunctionalTest, BasicWorkGroupUnorderedMultipleReuse)
 {
   using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -460,8 +309,8 @@ TYPED_TEST_P(WorkGroupBasicOrderedMultipleReuseFunctionalTest, BasicWorkGroupOrd
   IndexType pool_reuse  = dist_type(IndexType(0), IndexType(8))(rng);
   IndexType group_reuse = dist_type(IndexType(0), IndexType(8))(rng);
 
-  testWorkGroupOrderedMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(
+  testWorkGroupUnorderedMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(
       rng, IndexType(96), IndexType(4000), num1, num2, num3, pool_reuse, group_reuse);
 }
 
-#endif  //__TEST_WORKGROUP_ORDERED__
+#endif  //__TEST_WORKGROUP_UNORDERED_MULTIPLEREUSE__

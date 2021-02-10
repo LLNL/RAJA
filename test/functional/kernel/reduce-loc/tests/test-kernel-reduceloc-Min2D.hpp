@@ -5,11 +5,11 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_LOC_MAX2DVIEW_HPP__
-#define __TEST_KERNEL_LOC_MAX2DVIEW_HPP__
+#ifndef __TEST_KERNEL_REDUCELOC_MIN2D_HPP__
+#define __TEST_KERNEL_REDUCELOC_MIN2D_HPP__
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename FORALL_POLICY, typename EXEC_POLICY, typename REDUCE_POLICY>
-void KernelLocMax2DViewTestImpl(const int xdim, const int ydim)
+void KernelLocMin2DTestImpl(const int xdim, const int ydim)
 {
   camp::resources::Resource work_res{WORKING_RES::get_default()};
 
@@ -64,31 +64,29 @@ void KernelLocMax2DViewTestImpl(const int xdim, const int ydim)
   RAJA::TypedRangeSegment<INDEX_TYPE> colrange(0, xdim);
   RAJA::TypedRangeSegment<INDEX_TYPE> rowrange(0, ydim);
 
-  RAJA::View<DATA_TYPE, RAJA::Layout<2>> ArrView(work_array, xdim, ydim);
-
-  RAJA::ReduceMaxLoc<REDUCE_POLICY, DATA_TYPE, Index2D> maxloc_reducer((DATA_TYPE)0, Index2D(0, 0));
+  RAJA::ReduceMinLoc<REDUCE_POLICY, DATA_TYPE, Index2D> minloc_reducer((DATA_TYPE)1024, Index2D(0, 0));
 
   RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(colrange, rowrange),
                            [=] RAJA_HOST_DEVICE (int c, int r) {
-                             maxloc_reducer.maxloc(ArrView(r, c), Index2D(c, r));
+                             minloc_reducer.minloc(workarr2D[r][c], Index2D(c, r));
                            });
 
   // CPU answer
-  RAJA::ReduceMaxLoc<RAJA::seq_reduce, DATA_TYPE, Index2D> checkmaxloc_reducer((DATA_TYPE)0, Index2D(0, 0));
+  RAJA::ReduceMinLoc<RAJA::seq_reduce, DATA_TYPE, Index2D> checkminloc_reducer((DATA_TYPE)0, Index2D(0, 0));
 
   RAJA::forall<RAJA::seq_exec>(colrange, [=] (INDEX_TYPE c) {
     for( int r = 0; r < ydim; ++r)
     {
-      checkmaxloc_reducer.maxloc(checkarr2D[r][c], Index2D(c, r));
+      checkminloc_reducer.minloc(checkarr2D[r][c], Index2D(c, r));
     }
   });
 
-  Index2D raja_loc = maxloc_reducer.getLoc();
-  DATA_TYPE raja_max = (DATA_TYPE)maxloc_reducer.get();
-  Index2D checkraja_loc = checkmaxloc_reducer.getLoc();
-  DATA_TYPE checkraja_max = (DATA_TYPE)checkmaxloc_reducer.get();
+  Index2D raja_loc = minloc_reducer.getLoc();
+  DATA_TYPE raja_min = (DATA_TYPE)minloc_reducer.get();
+  Index2D checkraja_loc = checkminloc_reducer.getLoc();
+  DATA_TYPE checkraja_min = (DATA_TYPE)checkminloc_reducer.get();
 
-  ASSERT_DOUBLE_EQ((DATA_TYPE)checkraja_max, (DATA_TYPE)raja_max);
+  ASSERT_DOUBLE_EQ((DATA_TYPE)checkraja_min, (DATA_TYPE)raja_min);
   ASSERT_EQ(checkraja_loc.idx, raja_loc.idx);
   ASSERT_EQ(checkraja_loc.idy, raja_loc.idy);
 
@@ -106,13 +104,13 @@ void KernelLocMax2DViewTestImpl(const int xdim, const int ydim)
 }
 
 
-TYPED_TEST_SUITE_P(KernelLocMax2DViewTest);
+TYPED_TEST_SUITE_P(KernelLocMin2DTest);
 template <typename T>
-class KernelLocMax2DViewTest : public ::testing::Test
+class KernelLocMin2DTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(KernelLocMax2DViewTest, LocMax2DViewKernel)
+TYPED_TEST_P(KernelLocMin2DTest, LocMin2DKernel)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using DATA_TYPE  = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -121,12 +119,12 @@ TYPED_TEST_P(KernelLocMax2DViewTest, LocMax2DViewKernel)
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<5>>::type;
 
-  KernelLocMax2DViewTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(10, 10);
-  KernelLocMax2DViewTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(151, 151);
-  KernelLocMax2DViewTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(362, 362);
+  KernelLocMin2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(10, 10);
+  KernelLocMin2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(151, 151);
+  KernelLocMin2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(362, 362);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelLocMax2DViewTest,
-                            LocMax2DViewKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelLocMin2DTest,
+                            LocMin2DKernel);
 
-#endif  // __TEST_KERNEL_LOC_MAX2DVIEW_HPP__
+#endif  // __TEST_KERNEL_REDUCELOC_MIN2D_HPP__
