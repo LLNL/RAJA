@@ -6,6 +6,12 @@
   - Fixes (issue number(s))
   - Adds (specific feature) at the request of (project or person)
 
+Note:
+
+***YOUR PR WILL FAIL*** unless you initiate the gitlab CI test suite.
+You can do this by simply commenting on your PR after creation with
+something as simple as "LGTM".
+
 # Design review (for API changes or additions---delete if unneeded)
 
 On (date), we reviewed this PR.  We discussed the design ideas:
