@@ -8,7 +8,7 @@
 #
 # List of atomic test types for generating test files.
 #
-set(TESTTYPES AtomicRefMath AtomicRefOther)
+set(TESTTYPES AtomicRefAdd AtomicRefSub AtomicRefLoadStore AtomicRefCAS AtomicRefMinMax AtomicRefLogical)
 
 #
 # Generate atomicref tests for each enabled RAJA back-end.
