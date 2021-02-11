@@ -117,6 +117,8 @@ struct MultiLambdaNestedLoopExec<DEPTH_2_COLLAPSE, POLICY_DATA> {
     >;
 };
 
+#if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP)
+
 template<typename POLICY_DATA>
 struct MultiLambdaNestedLoopExec<OFFLOAD, POLICY_DATA> {
   using type = 
@@ -135,6 +137,8 @@ struct MultiLambdaNestedLoopExec<OFFLOAD, POLICY_DATA> {
       >
     >;
 };
+
+#endif  // RAJA_ENABLE_CUDA
 
 //
 //
@@ -156,7 +160,6 @@ TYPED_TEST_P(KernelNestedLoopMultiLambdaTest, NestedLoopMultiLambdaKernel) {
   using EXEC_POLICY = typename MultiLambdaNestedLoopExec<POLICY_TYPE, EXEC_POL_DATA>::type;
 
   // For double nested loop tests the third arg is ignored.
-  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY>();
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY>();
 }
 

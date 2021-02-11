@@ -56,7 +56,7 @@ using OpenMPKernelNestedLoopExecPols =
 using OpenMPTargetKernelNestedLoopExecPols =
   camp::list<
     NestedLoopData< RAJA::seq_exec,  RAJA::omp_target_parallel_for_exec<16> >,
-    NestedLoopData< RAJA::loop_exec,  RAJA::omp_target_parallel_for_exec<16> >,
+    NestedLoopData< RAJA::loop_exec, RAJA::omp_target_parallel_for_exec<16> >,
 
     // Collapse Exec Pols
     NestedLoopData< RAJA::omp_target_parallel_collapse_exec >
