@@ -58,10 +58,9 @@ void KernelNestedLoopTest(const DEPTH_2_COLLAPSE&, Args... args){
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY>(DEPTH_2(), args...);
 }
 template <typename WORKING_RES, typename EXEC_POLICY, typename... Args>
-void KernelNestedLoopTest(const OFFLOAD&, Args... args){
+void KernelNestedLoopTest(const OFFLOAD_DEPTH_2&, Args... args){
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY>(DEPTH_2(), args...);
 }
-
 
 template <typename WORKING_RES, typename EXEC_POLICY>
 void KernelNestedLoopTest(const DEPTH_3&,
@@ -113,7 +112,7 @@ void KernelNestedLoopTest(const DEPTH_3&,
 //
 //
 template<typename POLICY_TYPE, typename POLICY_DATA>
-struct BasicNestedLoopExec {};
+struct BasicNestedLoopExec { using type = NULL_T; };
 
 template<typename POLICY_DATA>
 struct BasicNestedLoopExec<DEPTH_3, POLICY_DATA> {
@@ -155,7 +154,7 @@ struct BasicNestedLoopExec<DEPTH_2_COLLAPSE, POLICY_DATA> {
 #if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP)
 
 template<typename POLICY_DATA>
-struct BasicNestedLoopExec<OFFLOAD, POLICY_DATA> {
+struct BasicNestedLoopExec<OFFLOAD_DEPTH_2, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
       RAJA::statement::OFFLOAD_KERNEL<

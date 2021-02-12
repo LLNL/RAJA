@@ -9,7 +9,8 @@
 #define __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_HPP__
 
 template <typename WORKING_RES, typename EXEC_POLICY>
-void KernelNestedLoopTest(){
+typename std::enable_if<is_not_null_exec_pol<EXEC_POLICY>::value>::type
+KernelNestedLoopTest(){
   constexpr static int N = 1000;
   constexpr static int DIM = 2;
 
@@ -86,7 +87,10 @@ void KernelNestedLoopTest(){
 //
 //
 template<typename POLICY_TYPE, typename POLICY_DATA>
-struct MultiLambdaNestedLoopExec {
+struct MultiLambdaNestedLoopExec { using type = NULL_T; };
+
+template<typename POLICY_DATA>
+struct MultiLambdaNestedLoopExec<DEPTH_2, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
       RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<1>>::type,
@@ -120,7 +124,7 @@ struct MultiLambdaNestedLoopExec<DEPTH_2_COLLAPSE, POLICY_DATA> {
 #if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP)
 
 template<typename POLICY_DATA>
-struct MultiLambdaNestedLoopExec<OFFLOAD, POLICY_DATA> {
+struct MultiLambdaNestedLoopExec<OFFLOAD_DEPTH_2, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
       RAJA::statement::OFFLOAD_KERNEL<

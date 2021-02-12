@@ -8,11 +8,10 @@
 #ifndef __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_PARAM_HPP__
 #define __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_PARAM_HPP__
 
-template <typename WORKING_RES, typename EXEC_POLICY, typename POLICY_TYPE>
-void KernelNestedLoopTest(const POLICY_TYPE&){}
-
 template <typename WORKING_RES, typename EXEC_POLICY>
-void KernelNestedLoopTest(const DEPTH_3&){
+typename std::enable_if<is_not_null_exec_pol<EXEC_POLICY>::value>::type
+KernelNestedLoopTest(){
+
   constexpr static int N = 1000;
   constexpr static int DIM = 2;
 
@@ -111,7 +110,7 @@ void KernelNestedLoopTest(const DEPTH_3&){
 //
 //
 template<typename POLICY_TYPE, typename POLICY_DATA>
-struct MultiLambdaParamNestedLoopExec { using type = void; };
+struct MultiLambdaParamNestedLoopExec { using type = NULL_T; };
 
 template<typename POLICY_DATA>
 struct MultiLambdaParamNestedLoopExec<DEPTH_3, POLICY_DATA> {
@@ -149,7 +148,7 @@ TYPED_TEST_P(KernelNestedLoopMultiLambdaParamTest, NestedLoopMultiLambdaParamKer
   using EXEC_POLICY = typename MultiLambdaParamNestedLoopExec<POLICY_TYPE, EXEC_POL_DATA>::type;
 
   // For double nested loop tests the third arg is ignored.
-  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY>(POLICY_TYPE());
+  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY>();
 }
 
 REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopMultiLambdaParamTest,
