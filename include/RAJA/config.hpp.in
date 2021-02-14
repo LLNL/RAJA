@@ -170,7 +170,8 @@ namespace RAJA {
 #endif // RAJA_ENABLE_CUDA && __CUDACC__
 
 #if defined(RAJA_CUDA_ACTIVE) || \
-  defined(RAJA_ENABLE_HIP)
+  defined(RAJA_ENABLE_HIP)    || \
+  defined(RAJA_ENABLE_SYCL)
 #define RAJA_DEVICE_ACTIVE
 #endif
 
