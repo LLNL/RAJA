@@ -8,9 +8,9 @@
 
 Note:
 
-***YOUR PR WILL FAIL*** unless you initiate the gitlab CI test suite.
-You can do this by simply commenting on your PR after creation with
-something as simple as "LGTM".
+Passing gitlab CI test suite is now ***REQUIRED*** to get your PR merged.
+You can initiate the gitlab CI test suite by simply commenting on your PR 
+after creation with something as simple as "LGTM".
 
 # Design review (for API changes or additions---delete if unneeded)
 
