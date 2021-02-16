@@ -8,6 +8,10 @@
 #ifndef __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_PARAM_HPP__
 #define __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_PARAM_HPP__
 
+using MultiLambdaParamPolicyTypeList = camp::list<
+  DEPTH_3
+  >;
+
 template <typename WORKING_RES, typename EXEC_POLICY>
 typename std::enable_if<is_not_null_exec_pol<EXEC_POLICY>::value>::type
 KernelNestedLoopTest(){

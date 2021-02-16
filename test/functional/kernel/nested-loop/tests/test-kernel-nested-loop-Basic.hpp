@@ -10,6 +10,12 @@
 
 #include <numeric>
 
+using BasicPolicyTypeList = camp::list<
+  DEPTH_2,
+  DEPTH_2_COLLAPSE,
+  DEPTH_3,
+  OFFLOAD_DEPTH_2>;
+
 template <typename WORKING_RES, typename EXEC_POLICY, typename... ExtraArgs>
 void KernelNestedLoopTest(const DEPTH_2&,
                           const RAJA::Index_type dim0,
@@ -168,7 +174,6 @@ struct BasicNestedLoopExec<OFFLOAD_DEPTH_2, POLICY_DATA> {
 };
 
 #endif  // RAJA_ENABLE_CUDA
-
 
 //
 //

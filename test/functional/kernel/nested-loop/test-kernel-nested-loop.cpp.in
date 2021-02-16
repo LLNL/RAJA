@@ -17,51 +17,30 @@
 // ----------------------------------------------------------------------------
 // Sequential
 // ----------------------------------------------------------------------------
-using DEPTH_2_SequentialKernelNestedLoopExecPols =
-  camp::list<
+using SequentialKernelNestedLoopExecPols = camp::list<
     NestedLoopData< RAJA::seq_exec,  RAJA::seq_exec  >,
     NestedLoopData< RAJA::seq_exec,  RAJA::loop_exec >,
     NestedLoopData< RAJA::loop_exec, RAJA::seq_exec  >,
-    NestedLoopData< RAJA::loop_exec, RAJA::loop_exec >
-  >;
-
-using DEPTH_2_COLLAPSE_SequentialKernelNestedLoopExecPols = camp::list<>;
-
-using DEPTH_3_SequentialKernelNestedLoopExecPols =
-  camp::list<
+    NestedLoopData< RAJA::loop_exec, RAJA::loop_exec >,
     NestedLoopData< RAJA::seq_exec,  RAJA::seq_exec, RAJA::seq_exec >
   >;
-
-using OFFLOAD_DEPTH_2_SequentialKernelNestedLoopExecPols = camp::list<>;
-using OFFLOAD_DEPTH_3_SequentialKernelNestedLoopExecPols = camp::list<>;
 
 // ----------------------------------------------------------------------------
 // OpenMP
 // ----------------------------------------------------------------------------
 #if defined(RAJA_ENABLE_OPENMP)
 
-using DEPTH_2_OpenMPKernelNestedLoopExecPols =
-  camp::list<
+using OpenMPKernelNestedLoopExecPols = camp::list<
     NestedLoopData< RAJA::seq_exec,  RAJA::omp_for_exec>,
     NestedLoopData< RAJA::seq_exec,  RAJA::omp_parallel_for_exec >,
     NestedLoopData< RAJA::omp_parallel_for_exec, RAJA::seq_exec >,
     NestedLoopData< RAJA::omp_parallel_for_exec, RAJA::omp_parallel_for_exec >,
     NestedLoopData< RAJA::omp_parallel_for_static<8>, RAJA::seq_exec >,
-    NestedLoopData< RAJA::omp_parallel_for_static<8>, RAJA::omp_parallel_for_exec >
-  >;
-
-    // Collapse Exec Pols
-using DEPTH_2_COLLAPSE_OpenMPKernelNestedLoopExecPols =
-  camp::list<
-    NestedLoopData< RAJA::omp_parallel_collapse_exec >
-  >;
-  
-using DEPTH_3_OpenMPKernelNestedLoopExecPols = camp::list<
+    NestedLoopData< RAJA::omp_parallel_for_static<8>, RAJA::omp_parallel_for_exec >,
+    NestedLoopData< RAJA::omp_parallel_collapse_exec >,
     NestedLoopData< RAJA::omp_parallel_for_exec, RAJA::loop_exec, RAJA::loop_exec >
   >;
 
-using OFFLOAD_DEPTH_2_OpenMPKernelNestedLoopExecPols = camp::list<>;
-using OFFLOAD_DEPTH_3_OpenMPKernelNestedLoopExecPols = camp::list<>;
 #endif  // RAJA_ENABLE_OPENMP
 
 
@@ -70,25 +49,17 @@ using OFFLOAD_DEPTH_3_OpenMPKernelNestedLoopExecPols = camp::list<>;
 // ----------------------------------------------------------------------------
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 
-using DEPTH_2_OpenMPTargetKernelNestedLoopExecPols =
-  camp::list<
+using OpenMPTargetKernelNestedLoopExecPols = camp::list<
     NestedLoopData< RAJA::seq_exec,  RAJA::omp_target_parallel_for_exec<16> >,
-    NestedLoopData< RAJA::loop_exec, RAJA::omp_target_parallel_for_exec<16> >
-  >;
+    NestedLoopData< RAJA::loop_exec, RAJA::omp_target_parallel_for_exec<16> >,
 
     // Collapse Exec Pols
-using DEPTH_2_COLLAPSE_OpenMPTargetKernelNestedLoopExecPols =
-  camp::list<
-    NestedLoopData< RAJA::omp_target_parallel_collapse_exec >
-  >;
+    NestedLoopData< RAJA::omp_target_parallel_collapse_exec >,
 
-using DEPTH_3_OpenMPTargetKernelNestedLoopExecPols =
-  camp::list<
+    // Depth 3 Exec Pols
     NestedLoopData< RAJA::seq_exec,  RAJA::omp_target_parallel_for_exec<16>, RAJA::seq_exec >
   >;
 
-using OFFLOAD_DEPTH_2_OpenMPTargetKernelNestedLoopExecPols = camp::list<>;
-using OFFLOAD_DEPTH_3_OpenMPTargetKernelNestedLoopExecPols = camp::list<>;
 #endif  // RAJA_ENABLE_TARGET_OPENMP
 
 
@@ -108,19 +79,11 @@ using OFFLOAD_DEPTH_3_OpenMPTargetKernelNestedLoopExecPols = camp::list<>;
 // CUDA
 // ----------------------------------------------------------------------------
 #if defined(RAJA_ENABLE_CUDA)
-using DEPTH_2_CudaKernelNestedLoopExecPols = camp::list<>;
-using DEPTH_3_CudaKernelNestedLoopExecPols = camp::list<>;
-using DEPTH_2_COLLAPSE_CudaKernelNestedLoopExecPols = camp::list<>;
-
-using OFFLOAD_DEPTH_2_CudaKernelNestedLoopExecPols =
-  camp::list<
+using CudaKernelNestedLoopExecPols = camp::list<
     OffloadNestedLoopData< RAJA::cuda_thread_x_loop, RAJA::cuda_thread_y_loop >,
     OffloadNestedLoopData< RAJA::seq_exec, RAJA::cuda_thread_x_loop >,
-    OffloadNestedLoopData< RAJA::cuda_thread_x_loop, RAJA::seq_exec >
-  >;
+    OffloadNestedLoopData< RAJA::cuda_thread_x_loop, RAJA::seq_exec >,
 
-using OFFLOAD_DEPTH_3_CudaKernelNestedLoopExecPols =
-  camp::list<
     OffloadNestedLoopData< RAJA::cuda_thread_x_loop, RAJA::cuda_thread_y_loop, RAJA::seq_exec >,
     OffloadNestedLoopData< RAJA::cuda_block_x_loop, RAJA::cuda_thread_x_loop, RAJA::seq_exec >
   >;
@@ -132,43 +95,66 @@ using OFFLOAD_DEPTH_3_CudaKernelNestedLoopExecPols =
 // ----------------------------------------------------------------------------
 #if defined(RAJA_ENABLE_HIP)
   
-using DEPTH_2_HipKernelNestedLoopExecPols = camp::list<>;
-using DEPTH_3_HipKernelNestedLoopExecPols = camp::list<>;
-using DEPTH_2_COLLAPSE_HipKernelNestedLoopExecPols = camp::list<>;
-
-using OFFLOAD_DEPTH_2_HipKernelNestedLoopExecPols =
-  camp::list<
+using HipKernelNestedLoopExecPols = camp::list<
     OffloadNestedLoopData< RAJA::hip_thread_x_loop, RAJA::hip_thread_y_loop >,
     OffloadNestedLoopData< RAJA::seq_exec, RAJA::hip_thread_x_loop >,
-    OffloadNestedLoopData< RAJA::hip_thread_x_loop, RAJA::seq_exec >
-  >;
+    OffloadNestedLoopData< RAJA::hip_thread_x_loop, RAJA::seq_exec >,
 
-using OFFLOAD_DEPTH_3_HipKernelNestedLoopExecPols =
-  camp::list<
     OffloadNestedLoopData< RAJA::hip_thread_x_loop, RAJA::hip_thread_y_loop, RAJA::seq_exec >,
     OffloadNestedLoopData< RAJA::hip_block_x_loop, RAJA::hip_thread_x_loop, RAJA::seq_exec >
   >;
 
 #endif  // RAJA_ENABLE_HIP
 
-using BasicKernelNestedLoopExecPols = 
-  camp::join<
-    DEPTH_2_@NESTED_LOOP_BACKEND@KernelNestedLoopExecPols,
-    DEPTH_2_COLLAPSE_@NESTED_LOOP_BACKEND@KernelNestedLoopExecPols,
-    DEPTH_3_@NESTED_LOOP_BACKEND@KernelNestedLoopExecPols,
-    OFFLOAD_DEPTH_2_@NESTED_LOOP_BACKEND@KernelNestedLoopExecPols
-  >::type;
+namespace detail{
 
-using MultiLambdaKernelNestedLoopExecPols = 
-  camp::join<
-    DEPTH_2_@NESTED_LOOP_BACKEND@KernelNestedLoopExecPols,
-    DEPTH_2_COLLAPSE_@NESTED_LOOP_BACKEND@KernelNestedLoopExecPols,
-    OFFLOAD_DEPTH_2_@NESTED_LOOP_BACKEND@KernelNestedLoopExecPols
-  >::type;
+  template<typename T, typename Elements>
+  struct _is_in_type_list ;
 
-using MultiLambdaParamKernelNestedLoopExecPols = 
-  camp::join<
-    DEPTH_3_@NESTED_LOOP_BACKEND@KernelNestedLoopExecPols
+  template<typename T, typename First, typename... Rest>
+  struct _is_in_type_list<T, camp::list<First, Rest...>> {
+    using type = typename std::conditional< std::is_same< typename camp::at<T, camp::num<0>>::type , First >::value,
+                                         camp::list<T>,
+                                         typename _is_in_type_list<T, camp::list<Rest...>>::type >::type;
+  };
+
+  template<typename T, typename Last>
+  struct _is_in_type_list<T, camp::list<Last>> {
+    using type = typename std::conditional< std::is_same< typename camp::at<T, camp::num<0>>::type , Last>::value,
+                                         camp::list<T>,
+                                         camp::list<> >::type;
+  };
+
+
+  template<typename T, typename Elements>
+  struct implLEB ;
+ 
+  template<typename POL_TYPE_LIST, typename First, typename... Rest>
+  struct implLEB<POL_TYPE_LIST, camp::list<First, Rest...>> {
+    using type = typename camp::join<typename implLEB<POL_TYPE_LIST, camp::list<First>  >::type, 
+                                     typename implLEB<POL_TYPE_LIST, camp::list<Rest...>>::type  >::type;
+  };
+
+  template<typename POL_TYPE_LIST, typename Last>
+  struct implLEB<POL_TYPE_LIST, camp::list<Last>> {
+    using type = typename _is_in_type_list<Last, POL_TYPE_LIST >::type;
+  };
+
+  template<typename POL_TYPE_LIST>
+  struct implLEB<POL_TYPE_LIST, camp::list<>> {
+    using type = camp::list<>;
+  };
+}
+
+template<typename POL_TYPE_LIST, typename EXEC_POL_LIST>
+struct NestedLoopExecBuilder {
+  using type = typename detail::implLEB<POL_TYPE_LIST, EXEC_POL_LIST>::type;
+};
+
+using @NESTED_LOOP_TYPE@KernelNestedLoopExecPols = 
+  NestedLoopExecBuilder<
+    @NESTED_LOOP_TYPE@PolicyTypeList,
+    @NESTED_LOOP_BACKEND@KernelNestedLoopExecPols
   >::type;
 
 //
