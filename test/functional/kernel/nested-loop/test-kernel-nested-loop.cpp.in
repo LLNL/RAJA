@@ -7,7 +7,6 @@
 
 #include "RAJA_test-base.hpp"
 #include "RAJA_test-camp.hpp"
-#include "RAJA_test-index-types.hpp"
 
 #include "RAJA_test-forall-data.hpp"
 #include "RAJA_test-kernel-nested-loop-types.hpp"
@@ -75,17 +74,24 @@ using OpenMPTargetKernelNestedLoopExecPols = camp::list<
 #endif  // RAJA_ENABLE_TARGET_OPENMP
 
 
-//TBBKernelExecPol
-//
-//tbb_for_exec
-//  tbb_for_exec
-//
-//seq
-//  tbb_for_exec
-//
-//tbb_for_exec
-//  seq
+// ----------------------------------------------------------------------------
+// TBB
+// ----------------------------------------------------------------------------
+#if defined(RAJA_ENABLE_TBB)
 
+using TBBKernelNestedLoopExecPols = camp::list<
+
+    // Depth 2 Exec Pols
+    NestedLoopData<DEPTH_2, RAJA::seq_exec,  RAJA::tbb_for_exec >,
+    NestedLoopData<DEPTH_2, RAJA::loop_exec, RAJA::tbb_for_exec >,
+    NestedLoopData<DEPTH_2, RAJA::tbb_for_exec, RAJA::tbb_for_exec >,
+
+    // Depth 3 Exec Pols
+    NestedLoopData<DEPTH_3, RAJA::loop_exec,  RAJA::tbb_for_exec, RAJA::tbb_for_exec >,
+    NestedLoopData<DEPTH_3, RAJA::tbb_for_exec, RAJA::tbb_for_exec, RAJA::tbb_for_exec >
+  >;
+
+#endif  // RAJA_ENABLE_TARGET_OPENMP
 
 // ----------------------------------------------------------------------------
 // CUDA
