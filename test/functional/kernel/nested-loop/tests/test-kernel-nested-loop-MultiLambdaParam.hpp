@@ -8,17 +8,26 @@
 #ifndef __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_PARAM_HPP__
 #define __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_PARAM_HPP__
 
-
+//
+//
+// Define list of nested loop types the MultiLambdaParam test supports.
+//
+//
 using MultiLambdaParamSupportedLoopTypeList = camp::list<
   DEPTH_3,
-  OFFLOAD_DEPTH_3
+  DEVICE_DEPTH_3
   >;
 
 
+//
+//
+// Matrix-Matrix Multiplication test.
+//
+//
 template <typename WORKING_RES, typename EXEC_POLICY>
 void KernelNestedLoopTest(){
 
-  constexpr static int N = 1000;
+  constexpr static int N = 100;
   constexpr static int DIM = 2;
 
   camp::resources::Resource host_res{camp::resources::Host()};
@@ -104,9 +113,11 @@ void KernelNestedLoopTest(){
   work_res.deallocate(work_arrA);
   work_res.deallocate(work_arrB);
   work_res.deallocate(work_arrC);
+
   host_res.deallocate(test_arrA);
   host_res.deallocate(test_arrB);
   host_res.deallocate(test_arrC);
+
   host_res.deallocate(check_arrC);
 }
 
@@ -117,7 +128,7 @@ void KernelNestedLoopTest(){
 //
 //
 template<typename POLICY_TYPE, typename POLICY_DATA>
-struct MultiLambdaParamNestedLoopExec { using type = NULL_T; };
+struct MultiLambdaParamNestedLoopExec;
 
 template<typename POLICY_DATA>
 struct MultiLambdaParamNestedLoopExec<DEPTH_3, POLICY_DATA> {
@@ -138,10 +149,10 @@ struct MultiLambdaParamNestedLoopExec<DEPTH_3, POLICY_DATA> {
 #if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP)
 
 template<typename POLICY_DATA>
-struct MultiLambdaParamNestedLoopExec<OFFLOAD_DEPTH_3, POLICY_DATA> {
+struct MultiLambdaParamNestedLoopExec<DEVICE_DEPTH_3, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
-      RAJA::statement::OFFLOAD_KERNEL<
+      RAJA::statement::DEVICE_KERNEL<
       RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<0>>::type,
         RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<1>>::type,
           RAJA::statement::Lambda<0, RAJA::Params<0>>,  // dot = 0.0

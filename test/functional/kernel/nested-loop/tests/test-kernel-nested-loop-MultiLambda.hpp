@@ -8,13 +8,21 @@
 #ifndef __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_HPP__
 #define __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_HPP__
 
-
+//
+//
+// Define list of nested loop types the MultiLambda test supports.
+//
+//
 using MultiLambdaSupportedLoopTypeList = camp::list<
   DEPTH_2,
   DEPTH_2_COLLAPSE,
-  OFFLOAD_DEPTH_2>;
+  DEVICE_DEPTH_2>;
 
-
+//
+//
+// Simple 5 point matrix calculation test.
+//
+//
 template <typename WORKING_RES, typename EXEC_POLICY>
 void KernelNestedLoopTest(){
   constexpr static int N = 1000;
@@ -26,8 +34,10 @@ void KernelNestedLoopTest(){
   // Allocate Tests Data
   double* work_arrA = work_res.allocate<double>(N*N);
   double* work_arrB = work_res.allocate<double>(N*N);
+
   double* test_arrA = host_res.allocate<double>(N*N);
   double* test_arrB = host_res.allocate<double>(N*N);
+
   double* check_arrA = host_res.allocate<double>(N*N);
   double* check_arrB = host_res.allocate<double>(N*N);
 
@@ -81,8 +91,10 @@ void KernelNestedLoopTest(){
 
   work_res.deallocate(work_arrA);
   work_res.deallocate(work_arrB);
+
   host_res.deallocate(test_arrA);
   host_res.deallocate(test_arrB);
+
   host_res.deallocate(check_arrA);
   host_res.deallocate(check_arrB);
 }
@@ -93,7 +105,7 @@ void KernelNestedLoopTest(){
 //
 //
 template<typename POLICY_TYPE, typename POLICY_DATA>
-struct MultiLambdaNestedLoopExec { using type = NULL_T; };
+struct MultiLambdaNestedLoopExec;
 
 template<typename POLICY_DATA>
 struct MultiLambdaNestedLoopExec<DEPTH_2, POLICY_DATA> {
@@ -130,10 +142,10 @@ struct MultiLambdaNestedLoopExec<DEPTH_2_COLLAPSE, POLICY_DATA> {
 #if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP)
 
 template<typename POLICY_DATA>
-struct MultiLambdaNestedLoopExec<OFFLOAD_DEPTH_2, POLICY_DATA> {
+struct MultiLambdaNestedLoopExec<DEVICE_DEPTH_2, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
-      RAJA::statement::OFFLOAD_KERNEL<
+      RAJA::statement::DEVICE_KERNEL<
         RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<0>>::type,
           RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<1>>::type,
             RAJA::statement::Lambda<0>

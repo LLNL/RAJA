@@ -10,14 +10,23 @@
 
 #include <numeric>
 
-
+//
+//
+// Define list of nested loop types the Basic test supports.
+//
+//
 using BasicSupportedLoopTypeList = camp::list<
   DEPTH_2,
   DEPTH_2_COLLAPSE,
   DEPTH_3,
-  OFFLOAD_DEPTH_2>;
+  DEVICE_DEPTH_2>;
 
 
+//
+//
+// Basic 2D Matrix index calculation per element.
+//
+//
 template <typename WORKING_RES, typename EXEC_POLICY, typename... ExtraArgs>
 void KernelNestedLoopTest(const DEPTH_2&,
                           const RAJA::Index_type dim0,
@@ -61,15 +70,22 @@ void KernelNestedLoopTest(const DEPTH_2&,
                                        test_array);
 }
 
+// DEPTH_2_COLLAPSE and DEVICE_DEPTH_2 execution policies use the above DEPTH_2 test.
 template <typename WORKING_RES, typename EXEC_POLICY, typename... Args>
 void KernelNestedLoopTest(const DEPTH_2_COLLAPSE&, Args... args){
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY>(DEPTH_2(), args...);
 }
 template <typename WORKING_RES, typename EXEC_POLICY, typename... Args>
-void KernelNestedLoopTest(const OFFLOAD_DEPTH_2&, Args... args){
+void KernelNestedLoopTest(const DEVICE_DEPTH_2&, Args... args){
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY>(DEPTH_2(), args...);
 }
 
+
+//
+//
+// Basic 3D Matrix index calculation per element.
+//
+//
 template <typename WORKING_RES, typename EXEC_POLICY>
 void KernelNestedLoopTest(const DEPTH_3&,
                           const RAJA::Index_type dim0,
@@ -121,7 +137,7 @@ void KernelNestedLoopTest(const DEPTH_3&,
 //
 //
 template<typename POLICY_TYPE, typename POLICY_DATA>
-struct BasicNestedLoopExec { using type = NULL_T; };
+struct BasicNestedLoopExec;
 
 template<typename POLICY_DATA>
 struct BasicNestedLoopExec<DEPTH_3, POLICY_DATA> {
@@ -163,10 +179,10 @@ struct BasicNestedLoopExec<DEPTH_2_COLLAPSE, POLICY_DATA> {
 #if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP)
 
 template<typename POLICY_DATA>
-struct BasicNestedLoopExec<OFFLOAD_DEPTH_2, POLICY_DATA> {
+struct BasicNestedLoopExec<DEVICE_DEPTH_2, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
-      RAJA::statement::OFFLOAD_KERNEL<
+      RAJA::statement::DEVICE_KERNEL<
         RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<0>>::type,  // row
           RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<1>>::type,  // col
             RAJA::statement::Lambda<0>
