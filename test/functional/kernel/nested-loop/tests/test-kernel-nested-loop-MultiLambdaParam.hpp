@@ -8,14 +8,15 @@
 #ifndef __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_PARAM_HPP__
 #define __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_PARAM_HPP__
 
+
 using MultiLambdaParamSupportedLoopTypeList = camp::list<
   DEPTH_3,
   OFFLOAD_DEPTH_3
   >;
 
+
 template <typename WORKING_RES, typename EXEC_POLICY>
-typename std::enable_if<is_not_null_exec_pol<EXEC_POLICY>::value>::type
-KernelNestedLoopTest(){
+void KernelNestedLoopTest(){
 
   constexpr static int N = 1000;
   constexpr static int DIM = 2;
@@ -109,6 +110,7 @@ KernelNestedLoopTest(){
   host_res.deallocate(check_arrC);
 }
 
+
 //
 //
 // Defining the Kernel Loop structure for MultiLambdaParam Nested Loop Tests.
@@ -133,6 +135,8 @@ struct MultiLambdaParamNestedLoopExec<DEPTH_3, POLICY_DATA> {
     >;
 };
 
+#if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP)
+
 template<typename POLICY_DATA>
 struct MultiLambdaParamNestedLoopExec<OFFLOAD_DEPTH_3, POLICY_DATA> {
   using type = 
@@ -150,6 +154,9 @@ struct MultiLambdaParamNestedLoopExec<OFFLOAD_DEPTH_3, POLICY_DATA> {
       > // end CudaKernel
     >;
 };
+
+#endif  // RAJA_ENABLE_CUDA or RAJA_ENABLE_HIP
+
 
 //
 //

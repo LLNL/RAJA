@@ -33,17 +33,6 @@ struct NestedLoopData : camp::list<Policies...> {
 };
 
 
-template<typename EXEC_POL>
-using is_null_exec_pol = typename std::is_same<EXEC_POL, NULL_T>::type;
-
-template<typename EXEC_POL>
-using is_not_null_exec_pol = typename camp::concepts::negate<is_null_exec_pol<EXEC_POL>>::type;
-
-template <typename WORKING_RES, typename EXEC_POLICY, typename... Args>
-typename std::enable_if<is_null_exec_pol<EXEC_POLICY>::value>::type
-KernelNestedLoopTest(Args...){}
-
-
 namespace detail{
 
   using namespace camp;
@@ -78,8 +67,11 @@ namespace detail{
 
 } // namespace detail
 
+
 template<typename POL_TYPE_LIST, typename EXEC_POL_LIST>
 struct NestedLoopExecBuilder {
   using type = typename detail::NLEB_impl<POL_TYPE_LIST, EXEC_POL_LIST>::type;
 };
+
+
 #endif  // __TEST_KERNEL_NESTED_LOOP_TYPES_HPP__

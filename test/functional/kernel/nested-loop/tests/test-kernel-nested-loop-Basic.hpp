@@ -10,11 +10,13 @@
 
 #include <numeric>
 
+
 using BasicSupportedLoopTypeList = camp::list<
   DEPTH_2,
   DEPTH_2_COLLAPSE,
   DEPTH_3,
   OFFLOAD_DEPTH_2>;
+
 
 template <typename WORKING_RES, typename EXEC_POLICY, typename... ExtraArgs>
 void KernelNestedLoopTest(const DEPTH_2&,
@@ -112,6 +114,7 @@ void KernelNestedLoopTest(const DEPTH_3&,
                                        test_array);
 }
 
+
 //
 //
 // Defining the Kernel Loop structure for Basic Nested Loop Tests.
@@ -173,7 +176,8 @@ struct BasicNestedLoopExec<OFFLOAD_DEPTH_2, POLICY_DATA> {
     >;
 };
 
-#endif  // RAJA_ENABLE_CUDA
+#endif  // RAJA_ENABLE_CUDA or RAJA_ENABLE_HIP
+
 
 //
 //
