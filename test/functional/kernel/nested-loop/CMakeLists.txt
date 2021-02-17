@@ -22,5 +22,4 @@ foreach( NESTED_LOOP_BACKEND ${KERNEL_BACKENDS} )
   endforeach()
 endforeach()
 
-unset( KERNEL_BACKENDS )
 unset( NESTED_LOOPTYPES )
