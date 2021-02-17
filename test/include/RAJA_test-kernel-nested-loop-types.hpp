@@ -27,50 +27,10 @@ struct OFFLOAD_DEPTH_3 {};
 // Nested Loop Data Type information
 //
 //
-template<typename EXEC_POL1, typename EXEC_POL2=void, typename EXEC_POL3=void>
-struct s_NestedLoopData { 
-  using type = camp::list<DEPTH_3,
-                          EXEC_POL1,
-                          EXEC_POL2,
-                          EXEC_POL3>;
+template<typename LoopPolType, typename... Policies> 
+struct NestedLoopData : camp::list<Policies...> {
+  using LoopType = LoopPolType;
 };
-
-template<typename EXEC_POL1, typename EXEC_POL2>
-struct s_NestedLoopData<EXEC_POL1, EXEC_POL2, void> { 
-  using type = camp::list<DEPTH_2,
-                          EXEC_POL1,
-                          EXEC_POL2>;
-};
-
-template<typename EXEC_POL1>
-struct s_NestedLoopData<EXEC_POL1, void, void> { 
-  using type = camp::list<DEPTH_2_COLLAPSE,
-                          EXEC_POL1>;
-};
-
-// Alias to clean up loop type information
-template<typename... T >
-using NestedLoopData = typename s_NestedLoopData<T...>::type;
-
-template<typename EXEC_POL1, typename EXEC_POL2, typename EXEC_POL3=void>
-struct s_OffloadNestedLoopData { 
-  using type = camp::list<OFFLOAD_DEPTH_3,
-                          EXEC_POL1,
-                          EXEC_POL2,
-                          EXEC_POL3>;
-};
-
-template<typename EXEC_POL1, typename EXEC_POL2>
-struct s_OffloadNestedLoopData<EXEC_POL1, EXEC_POL2, void> { 
-  using type = camp::list<OFFLOAD_DEPTH_2,
-                          EXEC_POL1,
-                          EXEC_POL2>;
-};
-
-
-// Alias to clean up loop type information
-template<typename... T >
-using OffloadNestedLoopData = typename s_OffloadNestedLoopData<T...>::type;
 
 
 template<typename EXEC_POL>
@@ -83,4 +43,43 @@ template <typename WORKING_RES, typename EXEC_POLICY, typename... Args>
 typename std::enable_if<is_null_exec_pol<EXEC_POLICY>::value>::type
 KernelNestedLoopTest(Args...){}
 
+
+namespace detail{
+
+  using namespace camp;
+
+  template<typename T, typename Elements>
+  struct is_in_type_list;
+
+  template<typename T, typename Elements>
+  struct NLEB_impl;
+
+  template<typename T, typename First, typename... Rest>
+  struct is_in_type_list<T, list<First, Rest...>> :
+    std::conditional<
+      std::is_same<  typename at<T, num<0>>::type, First  >::value,
+      list<T>,
+      typename is_in_type_list<T, list<Rest...>>::type > {};
+
+  template<typename T, typename Last>
+  struct is_in_type_list<T, list<Last>> :
+    std::conditional< std::is_same< typename at<T, num<0>>::type , Last>::value,
+      list<T>,
+      list<> >{};
+
+  template<typename POL_TYPE_LIST, typename First, typename... Rest>
+  struct NLEB_impl<POL_TYPE_LIST, list<First, Rest...>> :
+    join< typename NLEB_impl<POL_TYPE_LIST, list<First>>::type, 
+          typename NLEB_impl<POL_TYPE_LIST, list<Rest...>>::type > {};
+
+  template<typename POL_TYPE_LIST, typename Last>
+  struct NLEB_impl<POL_TYPE_LIST, list<Last>> :
+    is_in_type_list<Last, POL_TYPE_LIST > {};
+
+} // namespace detail
+
+template<typename POL_TYPE_LIST, typename EXEC_POL_LIST>
+struct NestedLoopExecBuilder {
+  using type = typename detail::NLEB_impl<POL_TYPE_LIST, EXEC_POL_LIST>::type;
+};
 #endif  // __TEST_KERNEL_NESTED_LOOP_TYPES_HPP__

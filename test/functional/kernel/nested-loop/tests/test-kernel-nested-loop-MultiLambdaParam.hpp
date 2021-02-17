@@ -8,7 +8,7 @@
 #ifndef __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_PARAM_HPP__
 #define __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_PARAM_HPP__
 
-using MultiLambdaParamPolicyTypeList = camp::list<
+using MultiLambdaParamSupportedLoopTypeList = camp::list<
   DEPTH_3
   >;
 
@@ -120,10 +120,10 @@ template<typename POLICY_DATA>
 struct MultiLambdaParamNestedLoopExec<DEPTH_3, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
-      RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<1>>::type,
-        RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<2>>::type,
+      RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<0>>::type,
+        RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<1>>::type,
           RAJA::statement::Lambda<0, RAJA::Params<0>>,  // dot = 0.0
-          RAJA::statement::For<2, typename camp::at<POLICY_DATA, camp::num<3>>::type,
+          RAJA::statement::For<2, typename camp::at<POLICY_DATA, camp::num<2>>::type,
             RAJA::statement::Lambda<1> // inner loop: dot += ...
           >,
           RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C(row, col) = dot
@@ -146,10 +146,13 @@ TYPED_TEST_P(KernelNestedLoopMultiLambdaParamTest, NestedLoopMultiLambdaParamKer
   using EXEC_POL_DATA = typename camp::at<TypeParam, camp::num<1>>::type;
 
   // Attain the loop depth type from execpol data.
-  using POLICY_TYPE = typename camp::at<EXEC_POL_DATA, camp::num<0>>::type;
+  using LOOP_TYPE = typename EXEC_POL_DATA::LoopType;
+
+  // Get List of loop exec policies.
+  using LOOP_POLS = typename EXEC_POL_DATA::type;
 
   // Build proper basic kernel exec policy type.
-  using EXEC_POLICY = typename MultiLambdaParamNestedLoopExec<POLICY_TYPE, EXEC_POL_DATA>::type;
+  using EXEC_POLICY = typename MultiLambdaParamNestedLoopExec<LOOP_TYPE, LOOP_POLS>::type;
 
   // For double nested loop tests the third arg is ignored.
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY>();

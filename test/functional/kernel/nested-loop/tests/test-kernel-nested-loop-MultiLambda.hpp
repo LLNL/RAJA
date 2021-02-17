@@ -8,7 +8,7 @@
 #ifndef __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_HPP__
 #define __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_HPP__
 
-using MultiLambdaPolicyTypeList = camp::list<
+using MultiLambdaSupportedLoopTypeList = camp::list<
   DEPTH_2,
   DEPTH_2_COLLAPSE,
   OFFLOAD_DEPTH_2>;
@@ -98,13 +98,13 @@ template<typename POLICY_DATA>
 struct MultiLambdaNestedLoopExec<DEPTH_2, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
-      RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<1>>::type,
-        RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<2>>::type,
+      RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<0>>::type,
+        RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<1>>::type,
           RAJA::statement::Lambda<0>
         >
       >,
-      RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<1>>::type,
-        RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<2>>::type,
+      RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<0>>::type,
+        RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<1>>::type,
           RAJA::statement::Lambda<1>
         >
       >
@@ -115,11 +115,11 @@ template<typename POLICY_DATA>
 struct MultiLambdaNestedLoopExec<DEPTH_2_COLLAPSE, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
-      RAJA::statement::Collapse< typename camp::at<POLICY_DATA, camp::num<1>>::type,
+      RAJA::statement::Collapse< typename camp::at<POLICY_DATA, camp::num<0>>::type,
         RAJA::ArgList<1,0>,
         RAJA::statement::Lambda<0>
       >,
-      RAJA::statement::Collapse< typename camp::at<POLICY_DATA, camp::num<1>>::type,
+      RAJA::statement::Collapse< typename camp::at<POLICY_DATA, camp::num<0>>::type,
         RAJA::ArgList<1,0>,
         RAJA::statement::Lambda<1>
       >
@@ -133,13 +133,13 @@ struct MultiLambdaNestedLoopExec<OFFLOAD_DEPTH_2, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
       RAJA::statement::OFFLOAD_KERNEL<
-        RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<1>>::type,
-          RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<2>>::type,
+        RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<0>>::type,
+          RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<1>>::type,
             RAJA::statement::Lambda<0>
           >
         >,
-        RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<1>>::type,
-          RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<2>>::type,
+        RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<0>>::type,
+          RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<1>>::type,
             RAJA::statement::Lambda<1>
           >
         >
@@ -163,10 +163,13 @@ TYPED_TEST_P(KernelNestedLoopMultiLambdaTest, NestedLoopMultiLambdaKernel) {
   using EXEC_POL_DATA = typename camp::at<TypeParam, camp::num<1>>::type;
 
   // Attain the loop depth type from execpol data.
-  using POLICY_TYPE = typename camp::at<EXEC_POL_DATA, camp::num<0>>::type;
+  using LOOP_TYPE = typename EXEC_POL_DATA::LoopType;
+
+  // Get List of loop exec policies.
+  using LOOP_POLS = typename EXEC_POL_DATA::type;
 
   // Build proper basic kernel exec policy type.
-  using EXEC_POLICY = typename MultiLambdaNestedLoopExec<POLICY_TYPE, EXEC_POL_DATA>::type;
+  using EXEC_POLICY = typename MultiLambdaNestedLoopExec<LOOP_TYPE, LOOP_POLS>::type;
 
   // For double nested loop tests the third arg is ignored.
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY>();

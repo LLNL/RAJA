@@ -10,7 +10,7 @@
 
 #include <numeric>
 
-using BasicPolicyTypeList = camp::list<
+using BasicSupportedLoopTypeList = camp::list<
   DEPTH_2,
   DEPTH_2_COLLAPSE,
   DEPTH_3,
@@ -124,9 +124,9 @@ template<typename POLICY_DATA>
 struct BasicNestedLoopExec<DEPTH_3, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
-      RAJA::statement::For<2, typename camp::at<POLICY_DATA, camp::num<1>>::type,
-        RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<2>>::type,
-          RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<3>>::type,
+      RAJA::statement::For<2, typename camp::at<POLICY_DATA, camp::num<0>>::type,
+        RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<1>>::type,
+          RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<2>>::type,
             RAJA::statement::Lambda<0>
           >
         >
@@ -138,8 +138,8 @@ template<typename POLICY_DATA>
 struct BasicNestedLoopExec<DEPTH_2, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
-      RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<1>>::type,
-        RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<2>>::type,
+      RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<0>>::type,
+        RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<1>>::type,
           RAJA::statement::Lambda<0>
         >
       >
@@ -150,7 +150,7 @@ template<typename POLICY_DATA>
 struct BasicNestedLoopExec<DEPTH_2_COLLAPSE, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
-      RAJA::statement::Collapse< typename camp::at<POLICY_DATA, camp::num<1>>::type,
+      RAJA::statement::Collapse< typename camp::at<POLICY_DATA, camp::num<0>>::type,
         RAJA::ArgList<1,0>,
         RAJA::statement::Lambda<0>
       >
@@ -189,14 +189,17 @@ TYPED_TEST_P(KernelNestedLoopBasicTest, NestedLoopBasicKernel) {
   using EXEC_POL_DATA = typename camp::at<TypeParam, camp::num<1>>::type;
 
   // Attain the loop depth type from execpol data.
-  using POLICY_TYPE = typename camp::at<EXEC_POL_DATA, camp::num<0>>::type;
+  using LOOP_TYPE = typename EXEC_POL_DATA::LoopType;
+
+  // Get List of loop exec policies.
+  using LOOP_POLS = typename EXEC_POL_DATA::type;
 
   // Build proper basic kernel exec policy type.
-  using EXEC_POLICY = typename BasicNestedLoopExec<POLICY_TYPE, EXEC_POL_DATA>::type;
+  using EXEC_POLICY = typename BasicNestedLoopExec<LOOP_TYPE, LOOP_POLS>::type;
 
   // For double nested loop tests the third arg is ignored.
-  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY>( POLICY_TYPE(), 1,1,1);
-  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY>( POLICY_TYPE(), 40,30,20);
+  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY>( LOOP_TYPE(), 1,1,1);
+  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY>( LOOP_TYPE(), 40,30,20);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopBasicTest,
