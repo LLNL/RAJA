@@ -164,8 +164,8 @@ struct BasicNestedLoopExec<OFFLOAD_DEPTH_2, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
       RAJA::statement::OFFLOAD_KERNEL<
-        RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<1>>::type,  // row
-          RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<2>>::type,  // col
+        RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<0>>::type,  // row
+          RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<1>>::type,  // col
             RAJA::statement::Lambda<0>
           >
         >

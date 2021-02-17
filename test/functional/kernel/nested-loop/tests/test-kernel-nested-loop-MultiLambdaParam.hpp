@@ -9,7 +9,8 @@
 #define __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_PARAM_HPP__
 
 using MultiLambdaParamSupportedLoopTypeList = camp::list<
-  DEPTH_3
+  DEPTH_3,
+  OFFLOAD_DEPTH_3
   >;
 
 template <typename WORKING_RES, typename EXEC_POLICY>
@@ -77,17 +78,17 @@ KernelNestedLoopTest(){
     RAJA::tuple<double>{0.0},
 
     // lambda 0
-    [=] (double& dot) {
+    [=] RAJA_HOST_DEVICE (double& dot) {
        dot = 0.0;
     },
 
     // lambda 1
-    [=] (int col, int row, int k, double& dot) {
+    [=] RAJA_HOST_DEVICE (int col, int row, int k, double& dot) {
        dot += work_viewA(row, k) * work_viewB(k, col);
     },
 
     // lambda 2
-    [=] (int col, int row, double& dot) {
+    [=] RAJA_HOST_DEVICE (int col, int row, double& dot) {
        work_viewC(row, col) = dot;
     }
 
@@ -129,6 +130,24 @@ struct MultiLambdaParamNestedLoopExec<DEPTH_3, POLICY_DATA> {
           RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C(row, col) = dot
         >
       >
+    >;
+};
+
+template<typename POLICY_DATA>
+struct MultiLambdaParamNestedLoopExec<OFFLOAD_DEPTH_3, POLICY_DATA> {
+  using type = 
+    RAJA::KernelPolicy<
+      RAJA::statement::OFFLOAD_KERNEL<
+      RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<0>>::type,
+        RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<1>>::type,
+          RAJA::statement::Lambda<0, RAJA::Params<0>>,  // dot = 0.0
+          RAJA::statement::For<2, typename camp::at<POLICY_DATA, camp::num<2>>::type,
+            RAJA::statement::Lambda<1> // inner loop: dot += ...
+          >,
+          RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C(row, col) = dot
+        >
+      >
+      > // end CudaKernel
     >;
 };
 
