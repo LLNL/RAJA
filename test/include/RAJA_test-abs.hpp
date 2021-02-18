@@ -5,10 +5,6 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-//
-// Fundamental includes and structs used throughout RAJA tests.
-//
-
 #ifndef __RAJA_test_abs_HPP__
 #define __RAJA_test_abs_HPP__
 
