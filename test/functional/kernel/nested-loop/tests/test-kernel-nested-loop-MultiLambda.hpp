@@ -8,6 +8,8 @@
 #ifndef __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_HPP__
 #define __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_HPP__
 
+#include "RAJA_test-abs.hpp"
+
 //
 //
 // Define list of nested loop types the MultiLambda test supports.
@@ -85,8 +87,8 @@ void KernelNestedLoopTest(){
   work_res.memcpy(check_arrB, work_arrB, sizeof(double) * RAJA::stripIndexType(N*N));
 
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment{0, N*N}, [=] (RAJA::Index_type i) {
-    ASSERT_TRUE( std::abs(test_arrA[i] - check_arrA[i]) < 10e-8 );
-    ASSERT_TRUE( std::abs(test_arrB[i] - check_arrB[i]) < 10e-8 );
+    ASSERT_TRUE( RAJA::test_abs(test_arrA[i] - check_arrA[i]) < 10e-8 );
+    ASSERT_TRUE( RAJA::test_abs(test_arrB[i] - check_arrB[i]) < 10e-8 );
   });
 
   work_res.deallocate(work_arrA);
