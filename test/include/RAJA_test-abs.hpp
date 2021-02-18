@@ -11,16 +11,18 @@
 #include "RAJA/RAJA.hpp"
 #include "camp/camp.hpp"
 
+#include <math.h>
+
 namespace RAJA {
 
   template<typename T>
-  std::enable_if_t< std::is_floating_point<T>::value , T>
+  camp::concepts::enable_if_t<T, std::is_floating_point<T> >
   test_abs(T&& val) {
     return std::fabs(val);
   } 
 
   template<typename T>
-  std::enable_if_t< std::is_integral<T>::value , T>
+  camp::concepts::enable_if_t<T, std::is_integral<T> >
   test_abs(T&& val) {
     return std::abs(val);
   }
