@@ -39,15 +39,16 @@ using OpenMPKernelNestedLoopExecPols = camp::list<
     NestedLoopData<DEPTH_2, RAJA::seq_exec,  RAJA::omp_for_exec>,
     NestedLoopData<DEPTH_2, RAJA::seq_exec,  RAJA::omp_parallel_for_exec >,
     NestedLoopData<DEPTH_2, RAJA::omp_parallel_for_exec, RAJA::seq_exec >,
-    NestedLoopData<DEPTH_2, RAJA::omp_parallel_for_exec, RAJA::omp_parallel_for_exec >,
+    NestedLoopData<DEPTH_2, RAJA::omp_parallel_for_exec, RAJA::simd_exec >,
     NestedLoopData<DEPTH_2, RAJA::omp_parallel_for_static<8>, RAJA::seq_exec >,
-    NestedLoopData<DEPTH_2, RAJA::omp_parallel_for_static<8>, RAJA::omp_parallel_for_exec >,
+    NestedLoopData<DEPTH_2, RAJA::omp_parallel_for_static<8>, RAJA::simd_exec >,
 
     // Collapse Exec Pols
     NestedLoopData<DEPTH_2_COLLAPSE, RAJA::omp_parallel_collapse_exec >,
 
     // Depth 3 Exec Pols
-    NestedLoopData<DEPTH_3, RAJA::omp_parallel_for_exec, RAJA::loop_exec, RAJA::loop_exec >
+    NestedLoopData<DEPTH_3, RAJA::omp_parallel_for_exec, RAJA::loop_exec, RAJA::loop_exec >,
+    NestedLoopData<DEPTH_3, RAJA::loop_exec, RAJA::omp_parallel_for_exec, RAJA::simd_exec >
   >;
 
 #endif  // RAJA_ENABLE_OPENMP
