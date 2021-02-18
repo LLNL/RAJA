@@ -11,7 +11,7 @@
 #include "RAJA/RAJA.hpp"
 #include "camp/camp.hpp"
 
-#include <math.h>
+#include <cmath>
 
 namespace RAJA {
 
