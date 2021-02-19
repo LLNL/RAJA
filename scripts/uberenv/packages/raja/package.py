@@ -78,11 +78,13 @@ class Raja(CMakePackage, CudaPackage):
     variant('openmp', default=True, description='Build OpenMP backend')
     variant('shared', default=True, description='Build Shared Libs')
     variant('libcpp', default=False, description='Uses libc++ instead of libstdc++')
+    variant('hip', default=False, description='Build with HIP support')
     variant('tests', default='basic', values=('none', 'basic', 'benchmarks'),
             multi=False, description='Tests to run')
 
     depends_on('cmake@3.8:', type='build')
     depends_on('cmake@3.9:', when='+cuda', type='build')
+    depends_on('hip', when='+hip')
 
     phases = ['hostconfig', 'cmake', 'build', 'install']
 
@@ -253,6 +255,39 @@ class Raja(CMakePackage, CudaPackage):
 
         else:
             cfg.write(cmake_cache_option("ENABLE_CUDA", False))
+
+        if "+hip" in spec:
+            cfg.write("#------------------{0}\n".format("-" * 60))
+            cfg.write("# HIP\n")
+            cfg.write("#------------------{0}\n\n".format("-" * 60))
+
+            cfg.write(cmake_cache_option("ENABLE_HIP", True))
+
+#            -DHIP_ROOT_DIR=/opt/rocm-3.6.0/hip -DHIP_CLANG_PATH=/opt/rocm-3.6.0/llvm/bin
+
+            hip_root = spec['hip'].prefix
+            rocm_root = hip_root + "/.."
+            cfg.write(cmake_cache_entry("HIP_ROOT_DIR",
+                                        hip_root))
+            cfg.write(cmake_cache_entry("HIP_CLANG_PATH",
+                                        rocm_root + '/llvm/bin'))
+            cfg.write(cmake_cache_entry("HIP_HIPCC_FLAGS",
+                                        '--amdgpu-target=gfx906'))
+            cfg.write(cmake_cache_entry("HIP_RUNTIME_INCLUDE_DIRS",
+                                        "{0}/include;{0}/../hsa/include".format(hip_root)))
+            if '%gcc' in spec:
+                gcc_bin = os.path.dirname(self.compiler.cxx)
+                gcc_prefix = join_path(gcc_bin, '..')
+                cfg.write(cmake_cache_entry("HIP_CLANG_FLAGS",
+                "--gcc-toolchain={0}".format(gcc_prefix))) 
+                cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS",
+                "-Wl,-rpath {}/lib64".format(gcc_prefix)))
+
+            if '+deviceconst' in spec:
+                cfg.write(cmake_cache_option("ENABLE_DEVICE_CONST", True))
+
+        else:
+            cfg.write(cmake_cache_option("ENABLE_HIP", False))
 
         cfg.write("#------------------{0}\n".format("-" * 60))
         cfg.write("# Other\n")
