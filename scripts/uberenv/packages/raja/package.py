@@ -86,6 +86,8 @@ class Raja(CMakePackage, CudaPackage):
     depends_on('cmake@3.9:', when='+cuda', type='build')
     depends_on('hip', when='+hip')
 
+    #conflicts('+openmp', when='+hip')
+
     phases = ['hostconfig', 'cmake', 'build', 'install']
 
     def _get_sys_type(self, spec):
@@ -262,6 +264,7 @@ class Raja(CMakePackage, CudaPackage):
             cfg.write("#------------------{0}\n\n".format("-" * 60))
 
             cfg.write(cmake_cache_option("ENABLE_HIP", True))
+            cfg.write(cmake_cache_option("ENABLE_OPENMP", False))
 
 #            -DHIP_ROOT_DIR=/opt/rocm-3.6.0/hip -DHIP_CLANG_PATH=/opt/rocm-3.6.0/llvm/bin
 
@@ -282,9 +285,6 @@ class Raja(CMakePackage, CudaPackage):
                 "--gcc-toolchain={0}".format(gcc_prefix))) 
                 cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS",
                 "-Wl,-rpath {}/lib64".format(gcc_prefix)))
-
-            if '+deviceconst' in spec:
-                cfg.write(cmake_cache_option("ENABLE_DEVICE_CONST", True))
 
         else:
             cfg.write(cmake_cache_option("ENABLE_HIP", False))
