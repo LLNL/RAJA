@@ -239,13 +239,23 @@ class Raja(CMakePackage, CudaPackage):
             cfg.write(cmake_cache_entry("CMAKE_CUDA_COMPILER",
                                         cudacompiler))
 
-            cuda_release_flags = "-O3 -Xcompiler -Ofast -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
-            cuda_reldebinf_flags = "-O3 -g -Xcompiler -Ofast -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
-            cuda_debug_flags = "-O0 -g -Xcompiler -O0 -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
+            if ("xl" in cpp_compiler):
+                cfg.write(cmake_cache_entry("CMAKE_CUDA_FLAGS", "-Xcompiler -O3 -Xcompiler -qxlcompatmacros -Xcompiler -qalias=noansi " + 
+                                            "-Xcompiler -qsmp=omp -Xcompiler -qhot -Xcompiler -qnoeh -Xcompiler -qsuppress=1500-029 " +
+                                            "-Xcompiler -qsuppress=1500-036 -Xcompiler -qsuppress=1500-030"))
+                cuda_release_flags = "-O3"
+                cuda_reldebinf_flags = "-O3 -g"
+                cuda_debug_flags = "-O0 -g"
+
+                cfg.write(cmake_cache_string("BLT_CXX_STD", "c++14"))
+            else:
+                cuda_release_flags = "-O3 -Xcompiler -Ofast -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
+                cuda_reldebinf_flags = "-O3 -g -Xcompiler -Ofast -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
+                cuda_debug_flags = "-O0 -g -Xcompiler -O0 -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
    
-            cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_RELEASE", cuda_release_flags))
-            cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_RELWITHDEBINFO", cuda_reldebinf_flags))
-            cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_DEBUG", cuda_debug_flags))
+                cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_RELEASE", cuda_release_flags))
+                cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_RELWITHDEBINFO", cuda_reldebinf_flags))
+                cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_DEBUG", cuda_debug_flags))
 
             if not spec.satisfies('cuda_arch=none'):
                 cuda_arch = spec.variants['cuda_arch'].value
