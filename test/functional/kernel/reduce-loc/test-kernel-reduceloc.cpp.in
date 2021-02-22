@@ -270,7 +270,7 @@ using HipKernelLocExecPols =
             RAJA::statement::Lambda<0>
           >
         >
-      >,
+      >
     >,
 
     RAJA::KernelPolicy<
