@@ -134,6 +134,7 @@ using HipKernelNestedLoopExecPols = camp::list<
 //
 // Build out list of supported Nested Loop data for tests' suported types.
 //
+//
 using @NESTED_LOOP_TYPE@KernelNestedLoopExecPols = 
   KernelExecListBuilder<
     @NESTED_LOOP_TYPE@SupportedLoopTypeList,
