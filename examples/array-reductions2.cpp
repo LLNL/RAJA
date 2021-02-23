@@ -36,9 +36,9 @@ const char* demangle(const char* name)
 int main(int argc, char* argv[])
 {
   // Test Parameters
-  constexpr int NUM_NODES = 30;
+  constexpr int NUM_NODES = 5000;
   int NUM_NODE_LISTS = 2;
-  int NUM_PAIRS = 50;
+  int NUM_PAIRS = 50000;
   if (argc > 1)
     NUM_PAIRS = std::atoi(argv[1]);
 
@@ -54,20 +54,33 @@ int main(int argc, char* argv[])
   //using EXEC_POL = RAJA::seq_exec;
   //using REDUCE_POL = RAJA::seq_reduce;
   using EXEC_POL = RAJA::omp_parallel_for_exec;
-  using REDUCE_POL = RAJA::omp_reduce;
+  //using REDUCE_POL = RAJA::omp_reduce;
 
   using BASE_T = double;
-  using REDUCESUM_T = RAJA::ReduceSum<REDUCE_POL, BASE_T>;
+  //using REDUCESUM_T = RAJA::ReduceSum<REDUCE_POL, BASE_T>;
 
+#if 0
+  // --------------------------------------------------------------------------------
+  // Run 1D Reduction Sum Test
+  // --------------------------------------------------------------------------------
 {
-  //ContainerReducer<double, 1> data(1.0, NUM_NODES);
-  //data.print();
+  std::cout << "\n1D Constructor Test...\n";
+  ContainerReducer<double, 1> data(1.0, NUM_NODES);
+  data.print();
 }
 
 {
+  std::cout << "\n3D Constructor Test...\n";
   ContainerReducer<double, 3> data(2.0, 4, 3, 2);
   data.print();
 }
+
+{
+  std::cout << "\n5D Constructor Test...\n";
+  ContainerReducer<double, 5> data(5.0, 4, 3, 2, 1, 7);
+  data.print();
+}
+#endif
 
 #if 1
 {
@@ -81,7 +94,7 @@ int main(int argc, char* argv[])
   RAJA::ChronoTimer timer;
   timer.start();
   
-  RAJA::forall<EXEC_POL> (np_range, [=](int i) {
+  RAJA::forall<EXEC_POL> (np_range, [=](int) {
     r_nodeData[2] += 5;
   });
 
@@ -102,7 +115,7 @@ int main(int argc, char* argv[])
   RAJA::ChronoTimer timer;
   timer.start();
   
-  RAJA::forall<EXEC_POL> (np_range, [=](int i) {
+  RAJA::forall<EXEC_POL> (np_range, [=](int) {
     r_nodeData[2][2] += 5;
   });
 
@@ -111,6 +124,57 @@ int main(int argc, char* argv[])
 }
 #endif
 
+#if 1
+{
+  // --------------------------------------------------------------------------------
+  // Run 1D Reduction Performance/Correctness Test
+  // --------------------------------------------------------------------------------
+  std::cout << "\nRunning 1D Reducer Performance/Correctness test ...\n";
+
+  ContainerReducer<BASE_T, 1> r_nodeData(0, NUM_NODES);
+
+  RAJA::ChronoTimer timer;
+  timer.start();
+  RAJA::forall<EXEC_POL> (np_range, [=](int i) {
+    int i_idx = pairlist[ i ].first;
+    int j_idx = pairlist[ i ].second;
+
+    BASE_T& i_data = r_nodeData[ i_idx ];
+    BASE_T& j_data = r_nodeData[ j_idx ];
+    i_data += j_idx;
+    j_data += i_idx;
+
+  });
+  timer.stop();
+  checkResults(nodeDataSolution, r_nodeData, timer);
+}
+#endif
+
+#if 1
+{
+  // --------------------------------------------------------------------------------
+  // Run 2D Reduction Performance/Correctness Test
+  // --------------------------------------------------------------------------------
+  std::cout << "\nRunning 2D Reducer Performance/Correctness test ...\n";
+
+  auto nodeDataSolution2d = generate2DSolution(NUM_NODE_LISTS, NUM_NODES, pairlist2d);
+  //VoT_t<2, BASE_T> VoT_nodeData2(NUM_NODE_LISTS, NUM_NODES);
+  
+  ContainerReducer<BASE_T, 2> r_nodeData(0, NUM_NODE_LISTS, NUM_NODES);
+
+  RAJA::ChronoTimer timer;
+  timer.start();
+  RAJA::forall<EXEC_POL> (np_range, [=](int i) {
+    int i_idx = pairlist2d[ i ].first;
+    int j_idx = pairlist2d[ i ].second;
+    BASE_T& _data = r_nodeData[ i_idx ][ j_idx ];
+    _data += i_idx + j_idx;
+  });
+  timer.stop();
+
+  checkResults(nodeDataSolution2d, r_nodeData, timer);
+}
+#endif
 }
 
 // --------------------------------------------------------------------------------
