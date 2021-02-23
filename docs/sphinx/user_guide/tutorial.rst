@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -11,6 +11,9 @@
 **********************
 RAJA Tutorial
 **********************
+
+In addition to the tutorial portion of this RAJA User Guide, we maintain
+a repository of tutorial presntation materials here `RAJA Tutorials Repo <https://github.com/LLNL/RAJA-tutorials>`_.
 
 This RAJA tutorial introduces RAJA concepts and capabilities via a 
 sequence of examples of increasing complexity. Complete working codes for 

@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -162,7 +162,7 @@ struct WorkRunnerForallOrdered_base
   using index_type = INDEX_T;
 
   using forall_exec_policy = FORALL_EXEC_POLICY;
-  using vtable_type = Vtable<Args...>;
+  using vtable_type = Vtable<void, Args...>;
 
   WorkRunnerForallOrdered_base() = default;
 

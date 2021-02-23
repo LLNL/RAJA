@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,20 +9,25 @@
 #define __TEST_FORALL_BASIC_REDUCEBITAND_HPP__
 
 #include <cstdlib>
+#include <ctime>
 #include <numeric>
+#include <vector>
 
-template <typename IDX_TYPE, typename DATA_TYPE, typename WORKING_RES, 
+template <typename IDX_TYPE, typename DATA_TYPE,
+          typename SEG_TYPE,
           typename EXEC_POLICY, typename REDUCE_POLICY>
-void ForallReduceBitAndBasicTestImpl(IDX_TYPE first, IDX_TYPE last)
+void ForallReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
+                                     const std::vector<IDX_TYPE>& seg_idx,
+                                     camp::resources::Resource& working_res)
 {
-  RAJA::TypedRangeSegment<IDX_TYPE> r1(first, last);
+  IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
+  IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
   DATA_TYPE* working_array;
   DATA_TYPE* check_array;
   DATA_TYPE* test_array;
 
-  allocateForallTestData<DATA_TYPE>(last,
+  allocateForallTestData<DATA_TYPE>(data_len,
                                     working_res,
                                     &working_array,
                                     &check_array,
@@ -31,14 +36,14 @@ void ForallReduceBitAndBasicTestImpl(IDX_TYPE first, IDX_TYPE last)
   //
   // First a simple non-trivial test that is mildly interesting
   //
-  for (IDX_TYPE i = 0; i < last; ++i) {
+  for (IDX_TYPE i = 0; i < data_len; ++i) {
     test_array[i] = 13;
   }
-  working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * last);
+  working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
 
   RAJA::ReduceBitAnd<REDUCE_POLICY, DATA_TYPE> simpand(21);
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
+  RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
     simpand &= working_array[idx];
   });
 
@@ -51,20 +56,20 @@ void ForallReduceBitAndBasicTestImpl(IDX_TYPE first, IDX_TYPE last)
 
   const int modval = 100;
 
-  for (IDX_TYPE i = 0; i < last; ++i) {
+  for (IDX_TYPE i = 0; i < data_len; ++i) {
     test_array[i] = static_cast<DATA_TYPE>( rand() % modval );
   }
-  working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * last);
+  working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
 
   DATA_TYPE ref_and = 0;
-  for (IDX_TYPE i = first; i < last; ++i) {
-    ref_and &= test_array[i];
+  for (IDX_TYPE i = 0; i < idx_len; ++i) {
+    ref_and &= test_array[ seg_idx[i] ];
   }
 
   RAJA::ReduceBitAnd<REDUCE_POLICY, DATA_TYPE> redand(0);
   RAJA::ReduceBitAnd<REDUCE_POLICY, DATA_TYPE> redand2(2);
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
+  RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
     redand  &= working_array[idx];
     redand2 &= working_array[idx];
   });
@@ -76,7 +81,7 @@ void ForallReduceBitAndBasicTestImpl(IDX_TYPE first, IDX_TYPE last)
 
   const int nloops = 3;
   for (int j = 0; j < nloops; ++j) {
-    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
+    RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
       redand &= working_array[idx];
     });
   }
@@ -105,12 +110,67 @@ TYPED_TEST_P(ForallReduceBitAndBasicTest, ReduceBitAndBasicForall)
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallReduceBitAndBasicTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
-                                  EXEC_POLICY, REDUCE_POLICY>(0, 28);
-  ForallReduceBitAndBasicTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
-                                  EXEC_POLICY, REDUCE_POLICY>(3, 642);
-  ForallReduceBitAndBasicTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, 
-                                  EXEC_POLICY, REDUCE_POLICY>(0, 2057);
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
+
+  std::vector<IDX_TYPE> seg_idx;
+
+// Range segment tests
+  RAJA::TypedRangeSegment<IDX_TYPE> r1( 0, 28 );
+  RAJA::getIndices(seg_idx, r1);
+  ForallReduceBitAndBasicTestImpl<IDX_TYPE, DATA_TYPE,
+                                  RAJA::TypedRangeSegment<IDX_TYPE>,
+                                  EXEC_POLICY, REDUCE_POLICY>(
+                                    r1, seg_idx, working_res);
+
+  seg_idx.clear();
+  RAJA::TypedRangeSegment<IDX_TYPE> r2( 3, 642 );
+  RAJA::getIndices(seg_idx, r2);
+  ForallReduceBitAndBasicTestImpl<IDX_TYPE, DATA_TYPE,
+                                  RAJA::TypedRangeSegment<IDX_TYPE>,
+                                  EXEC_POLICY, REDUCE_POLICY>(
+                                    r2, seg_idx, working_res);
+
+  seg_idx.clear();
+  RAJA::TypedRangeSegment<IDX_TYPE> r3( 0, 2057 );
+  RAJA::getIndices(seg_idx, r3);
+  ForallReduceBitAndBasicTestImpl<IDX_TYPE, DATA_TYPE,
+                                  RAJA::TypedRangeSegment<IDX_TYPE>,
+                                  EXEC_POLICY, REDUCE_POLICY>(
+                                    r3, seg_idx, working_res);
+
+// Range-stride segment tests
+  seg_idx.clear();
+  RAJA::TypedRangeStrideSegment<IDX_TYPE> r4( 0, 188, 2 );
+  RAJA::getIndices(seg_idx, r4);
+  ForallReduceBitAndBasicTestImpl<IDX_TYPE, DATA_TYPE,
+                                  RAJA::TypedRangeStrideSegment<IDX_TYPE>,
+                                  EXEC_POLICY, REDUCE_POLICY>(
+                                    r4, seg_idx, working_res);
+
+  seg_idx.clear();
+  RAJA::TypedRangeStrideSegment<IDX_TYPE> r5( 3, 1029, 3 );
+  RAJA::getIndices(seg_idx, r5);
+  ForallReduceBitAndBasicTestImpl<IDX_TYPE, DATA_TYPE,
+                                  RAJA::TypedRangeStrideSegment<IDX_TYPE>,
+                                  EXEC_POLICY, REDUCE_POLICY>(
+                                    r5, seg_idx, working_res);
+
+  // List segment tests
+  seg_idx.clear();
+  IDX_TYPE last = 10567;
+  srand( time(NULL) );
+  for (IDX_TYPE i = 0; i < last; ++i) {
+    IDX_TYPE randval = IDX_TYPE( rand() % RAJA::stripIndexType(last) );
+    if ( i < randval ) {
+      seg_idx.push_back(i);
+    }
+  }
+  RAJA::TypedListSegment<IDX_TYPE> l1( &seg_idx[0], seg_idx.size(),
+                                       working_res );
+  ForallReduceBitAndBasicTestImpl<IDX_TYPE, DATA_TYPE,
+                                  RAJA::TypedListSegment<IDX_TYPE>,
+                                  EXEC_POLICY, REDUCE_POLICY>(
+                                    l1, seg_idx, working_res);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallReduceBitAndBasicTest,

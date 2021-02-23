@@ -1,15 +1,15 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file RangeSegment.hpp
  *
- * \brief   RAJA header file defining typed range segment classes.
+ * \brief  Header file containing definitions of RAJA range segment classes.
  *
  ******************************************************************************
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -34,62 +34,96 @@ namespace RAJA
 /*!
  ******************************************************************************
  *
- * \brief  Segment class representing a contiguous typed range of indices
+ * \class TypedRangeSegment
  *
- * \tparam StorageT the underlying data type for the Segment
+ * \brief  Segment class representing a contiguous range of typed indices
+ *
+ * \tparam StorageT underlying data type for the segment indices (required)
+ * \tparam DiffT underlying data type for the difference between two segment
+ *         indices (optional)
  *
  * A TypedRangeSegment models an Iterable interface:
  *
  *  begin() -- returns an iterator (TypedRangeSegment::iterator)
  *  end() -- returns an iterator (TypedRangeSegment::iterator)
- *  size() -- returns the total size of the Segment
+ *  size() -- returns the total size of the Segment iteration space (DiffT)
  *
  * NOTE: TypedRangeSegment::iterator is a RandomAccessIterator
  *
+ * NOTE: TypedRangeSegment supports negative indices; e.g., an interval of 
+ *       indices [-5, 3).
+ *
+ * NOTE: Proper handling of indices strides requires that StorageT is a 
+ *       signed type.
+ *
  * Usage:
  *
- * A common traversal pattern (in C) would be:
+ * A common C-style loop traversal pattern would be:
  *
+ * \verbatim
  * for (T i = begin; i < end; ++i) {
  *   // loop body -- use i as index value
  * }
+ * \endverbatim
  *
  * Using a TypedRangeSegment, this becomes:
  *
+ * \verbatim
  * TypedRangeSegment<T> seg (begin, end);
  * for (auto i = seg.begin(); i != seg.end(); ++i) {
  *   // loop body -- use (*i) as index value
  * }
+ * \endverbatim
  *
  * This can also be used in a C++11 style range-based for:
  *
+ * \verbatim
  * for (auto i : TypedRangeSegment<T>(begin, end)) {
  *   // loop body -- use i as index value
  * }
+ * \endverbatim
+ *
+ * Or, as it would be commonly used with a RAJA forall execution template:
+ * \verbatim
+ * forall<exec_pol>(TypedRangeSegment<T>(beg, end), [=] (T i) {
+ *   // loop body -- use i as index value
+ * });
+ * \endverbatim
  *
  ******************************************************************************
  */
-
 template <typename StorageT, typename DiffT = make_signed_t<strip_index_type_t<StorageT>>>
 struct TypedRangeSegment {
-  
-  static_assert(std::is_signed<DiffT>::value, "TypedRangeSegment DiffT requires signed type.");
-  static_assert(!std::is_floating_point<StorageT>::value, "TypedRangeStrideSegment Type must be non floating point.");
 
-  //! the underlying iterator type
+  // 
+  // Static asserts to provide some useful error messages during compilation
+  // for incorrect usage.
+  // 
+  static_assert(std::is_signed<DiffT>::value, "TypedRangeSegment DiffT requires signed type.");
+  static_assert(!std::is_floating_point<StorageT>::value, "TypedRangeSegment Type must be non floating point.");
+
+  //@{
+  //!   @name Types used in implementation based on template parameters.
+
+  //! The underlying iterator type
   using iterator = Iterators::numeric_iterator<StorageT, DiffT>;
-  //! the underlying value_type type
-  /*!
-   * these corresponds to the template parameter
-   */
+
+  //! The underlying value type
   using value_type = StorageT;
 
+  //! The underlying type for a difference in index values
   using IndexType = DiffT;
 
-  //! construct a TypedRangeSegment from a begin and end value
+  //@}
+
+  //@{
+  //!   @name Constructors, destructor, and copy assignment. 
+
   /*!
-   * \param[in] begin the starting value (inclusive) for the range
-   * \param[in] end the ending value (exclusive) for the range
+   * \brief Construct a range segment repreenting the interval [begin, end)
+   * 
+   * \param begin start value (inclusive) for the range
+   * \param end end value (exclusive) for the range
    */
   using StripStorageT = strip_index_type_t<StorageT>;
   RAJA_HOST_DEVICE constexpr TypedRangeSegment(StripStorageT begin, StripStorageT end)
@@ -98,53 +132,90 @@ struct TypedRangeSegment {
   {
   }
 
-  //! disable compiler generated constructor
+  //! Disable compiler generated constructor
   RAJA_HOST_DEVICE TypedRangeSegment() = delete;
 
-  //! move constructor
+  //! Defaulted move constructor
   constexpr TypedRangeSegment(TypedRangeSegment&&) = default;
 
-  //! copy constructor
+  //! Defaulted copy constructor
   constexpr TypedRangeSegment(TypedRangeSegment const&) = default;
 
-  //! copy assignment
+  //! Defaulted copy assignment operator
   RAJA_INLINE TypedRangeSegment& operator=(TypedRangeSegment const&) = default;
 
-  //! destructor
+  //! Defaulted destructor
   RAJA_INLINE ~TypedRangeSegment() = default;
 
-  //! swap one TypedRangeSegment with another
-  /*!
-   * \param[in] other another TypedRangeSegment instance
-   */
-  RAJA_HOST_DEVICE RAJA_INLINE void swap(TypedRangeSegment& other)
-  {
-    camp::safe_swap(m_begin, other.m_begin);
-    camp::safe_swap(m_end, other.m_end);
-  }
+  //@}
 
-  //! obtain an iterator to the beginning of this TypedRangeSegment
+  //@{
+  //!   @name Accessor methods
+
   /*!
-   * \return an iterator corresponding to the beginning of the Segment
+   * \brief Get iterator to the beginning of this segment
    */
   RAJA_HOST_DEVICE RAJA_INLINE iterator begin() const { return m_begin; }
 
-  //! obtain an iterator to the end of this TypedRangeSegment
   /*!
-   * \return an iterator corresponding to the end of the Segment
+   * \brief Get iterator to the end of this segment
    */
   RAJA_HOST_DEVICE RAJA_INLINE iterator end() const { return m_end; }
 
-  //! obtain the size of this TypedRangeSegment
   /*!
-   * \return the range (end - begin) of this Segment
+   * \brief Get size of this segment (end - begin)
    */
   RAJA_HOST_DEVICE RAJA_INLINE DiffT size() const { return m_end - m_begin; }
 
-  //! Create a slice of this instance as a new instance
+  //@}
+
+  //@{
+  //!   @name Segment comparison methods
+
   /*!
-   * \return A new instance spanning *begin() + begin to *begin() + begin +
-   * length
+   * \brief Compare this segment to another for equality
+   *
+   * \return true if begin and end match, else false
+   */
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator==(TypedRangeSegment const& o) const
+  {
+    // someday this shall be replaced with a compiler-generated operator==
+    return m_begin == o.m_begin && m_end == o.m_end;
+  }
+
+  /*!
+   * \brief Compare this segment to another for inequality
+   *
+   * \return true if begin or end does not match, else false
+   */ 
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator!=(TypedRangeSegment const& o) const
+  {
+    return !(operator==(o));
+  }
+
+  //@}
+
+  /*!
+   * \brief Get a new TypedRangeSegment instance representing a slice of
+   *        existing segment
+   * 
+   * \param begin start iterate of new range 
+   * \param length maximum length of new range 
+   * \return TypedRangeSegment representing the interval
+   *         [ *begin() + begin, min( *begin() + begin + length, *end() ) )
+   *
+   * Here's an example of a slice operation on a range segment with negative
+   * indices:
+   *
+   *   \verbatim
+   *
+   *     // r represents the index interval [-4, 4)
+   *     auto r = RAJA::TypedRangeSegment<int>(-4, 4);
+   *
+   *     // s repreents the subinterval  [-3, 2)
+   *     auto s = r.slice(1, 5); 
+   *
+   *   \endverbatim
    */
   RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(StorageT begin,
                                                        DiffT length) const
@@ -155,28 +226,20 @@ struct TypedRangeSegment {
     return TypedRangeSegment{stripIndexType(start), stripIndexType(end)};
   }
 
-  //! equality comparison
   /*!
-   * \return true if and only if the begin, end, and size match
-   * \param[in] other a TypedRangeSegment to compare
+   * \brief Swap this segment with another
    */
-  RAJA_HOST_DEVICE RAJA_INLINE bool operator==(TypedRangeSegment const& o) const
+  RAJA_HOST_DEVICE RAJA_INLINE void swap(TypedRangeSegment& other)
   {
-    // someday this shall be replaced with a compiler-generated operator==
-    return m_begin == o.m_begin && m_end == o.m_end;
-  }
-
-
-  RAJA_HOST_DEVICE RAJA_INLINE bool operator!=(TypedRangeSegment const& o) const
-  {
-    return !(operator==(o));
+    camp::safe_swap(m_begin, other.m_begin);
+    camp::safe_swap(m_end, other.m_end);
   }
 
 private:
-  //! member variable for begin iterator
+  // Member variable for begin iterator
   iterator m_begin;
 
-  //! member variable for end iterator
+  // Member variable for end iterator
   iterator m_end;
 };
 
@@ -184,83 +247,114 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief  Segment class representing a strided and typed range of indices
+ * \class TypedRangeStrideSegment 
+ * 
+ * \brief  Segment class representing a strided range of typed indices
  *
- * \tparam StorageT the underlying data type for the Segment
+ * \tparam StorageT underlying data type for the segment indices (required)
+ * \tparam DiffT underlying data type for the difference between two segment
+ *         indices (optional)
  *
  * A TypedRangeStrideSegment models an Iterable interface:
  *
  *  begin() -- returns an iterator (TypedRangeStrideSegment::iterator)
  *  end() -- returns an iterator (TypedRangeStrideSegment::iterator)
- *  size() -- returns the total iteration size of the Segment, not
- *            necessarily the distance between begin() and end()
+ *  size() -- returns total size of the Segment iteration space, which is
+ *            not the distance between begin() and end() for non-unit strides
  *
  * NOTE: TypedRangeStrideSegment::iterator is a RandomAccessIterator
  *
- * NOTE: TypedRangeStrideSegment allows for positive or negative strides, but
- *       a stride of zero is undefined and will cause DBZ
+ * NOTE: TypedRangeStrideSegment allows for positive or negative strides and 
+ *       indices. This allows for forward (stride > 0) or backward (stride < 0) 
+ *       traversal of the iteration space. A stride of zero is undefined and 
+ *       will cause divide-by-zero errors.
  *
- *
- * As with other segment, the iteration space is inclusive of begin() and
+ * As with RangeSegment, the iteration space is inclusive of begin() and
  * exclusive of end()
  *
  * For positive strides, begin() > end() implies size()==0
  * For negative strides, begin() < end() implies size()==0
  *
- * NOTE: Proper handling of negative strides requires StorageT is a signed type
+ * NOTE: Proper handling of negative strides and indices requires that 
+ *       StorageT is a signed type.
  *
  * Usage:
  *
- * A common traversal pattern (in C) would be:
+ * A common C-style loop traversal pattern would be:
  *
- * for (T i = begin; i < end; i += incr) {
+ * \verbatim
+ * for (T i = begin; i < end; i += stride) {
  *   // loop body -- use i as index value
  * }
+ * \endverbatim
  *
- * Or, equivalently for a negative stride (incr < 0):
+ * Or, equivalently for a negative stride (stride < 0):
  *
- * for (T i = begin; i > end; i += incr) {
+ * \verbatim
+ * for (T i = begin; i > end; i += stride) {
  *   // loop body -- use i as index value
  * }
+ * \endverbatim
  *
- *
+ * \verbatim
  * Using a TypedRangeStrideSegment, this becomes:
- *
- * TypedRangeStrideSegment<T> seg (begin, end, incr);
+ * TypedRangeStrideSegment<T> seg (begin, end, stride);
  * for (auto i = seg.begin(); i != seg.end(); ++i) {
  *   // loop body -- use (*i) as index value
  * }
+ * \endverbatim
  *
  * This can also be used in a C++11 style range-based for:
  *
- * for (auto i : TypedRangeStrideSegment<T>(begin, end, incr)) {
+ * \verbatim
+ * for (auto i : TypedRangeStrideSegment<T>(begin, end, stride)) {
  *   // loop body -- use i as index value
  * }
+ * \endverbatim
  *
+ * Or, as it would be commonly used with a RAJA forall execution template:
+ * \verbatim
+ * forall<exec_pol>(TypedRangeStrideSegment<T>(beg, end, stride), [=] (T i) {
+ *   // loop body -- use i as index value
+ * });
+ * \endverbatim
  *
  ******************************************************************************
  */
 template <typename StorageT, typename DiffT = make_signed_t<strip_index_type_t<StorageT>>>
 struct TypedRangeStrideSegment {
 
+  //
+  // Static asserts to provide some useful error messages during compilation
+  // for incorrect usage.
+  //
   static_assert(std::is_signed<DiffT>::value, "TypedRangeStrideSegment DiffT requires signed type.");
   static_assert(!std::is_floating_point<StorageT>::value, "TypedRangeStrideSegment Type must be non floating point.");
-  
-  //! the underlying iterator type
+
+  //@{
+  //!   @name Types used in implementation based on template parameters.
+
+  //! The underlying iterator type
   using iterator = Iterators::strided_numeric_iterator<StorageT, DiffT>;
 
-  //! the underlying value_type type
-  /*!
-   * this corresponds to the template parameter
-   */
+  //! The underlying value type
   using value_type = StorageT;
 
+  //! The underlying type for a difference in index values
   using IndexType = DiffT;
-  //! construct a TypedRangeStrideSegment from a begin and end value
+
+  //@}
+
+  //@{
+  //!   @name Constructors, destructor, and copy assignment.
+
   /*!
-   * \param[in] begin the starting value (inclusive) for the range
-   * \param[in] end the ending value (exclusive) for the range
-   * \param[in] stride the increment value for the iteration of the range
+   * \brief Construct a range segment for the interval [begin, end) with 
+   *        given stride
+   *
+   * \param begin start value (inclusive) for the range
+   * \param end end value (exclusive) for the range
+   * \param stride stride value when iterating over the range
    */
   using StripStorageT = strip_index_type_t<StorageT>;
   RAJA_HOST_DEVICE TypedRangeStrideSegment(StripStorageT begin,
@@ -271,74 +365,108 @@ struct TypedRangeStrideSegment {
         // essentially a ceil((end-begin)/stride) but using integer math,
         // and allowing for negative strides
         m_size((end - begin + stride - (stride > 0 ? 1 : -1)) / stride)
-//        m_size((static_cast<value_type>(end) - static_cast<value_type>(begin) +
-//                static_cast<value_type>(stride) -
-//                (stride > 0 ? value_type{1} : value_type{-1})) /
-//               static_cast<value_type>(stride))
   {
-    // clamp range when the end is unreachable from the beginning without
-    // wrapping
+    // clamp range when end is unreachable from begin without wrapping
     if (stride < 0 && end > begin) {
       m_end = m_begin;
     } else if (stride > 0 && end < begin) {
       m_end = m_begin;
     }
-    // if m_size was initialized as negative, that indicates a zero iteration
-    // space
+    // m_size initialized as negative indicates a zero iteration space
     m_size = m_size < DiffT{0} ? DiffT{0} : m_size;
   }
 
-  //! disable compiler generated constructor
+  //! Disable compiler generated constructor
   TypedRangeStrideSegment() = delete;
 
-  //! move constructor
+  //! Defaulted move constructor
   TypedRangeStrideSegment(TypedRangeStrideSegment&&) = default;
 
-  //! copy constructor
+  //! Defaulted copy constructor
   TypedRangeStrideSegment(TypedRangeStrideSegment const&) = default;
 
-  //! copy assignment
+  //! Defaulted copy assignment operator
   TypedRangeStrideSegment& operator=(TypedRangeStrideSegment const&) = default;
 
-  //! destructor
+  //! Defaulted destructore
   ~TypedRangeStrideSegment() = default;
 
-  //! swap one TypedRangeStrideSegment with another
-  /*!
-   * \param[in] other another TypedRangeStrideSegment instance
-   */
-  RAJA_HOST_DEVICE void swap(TypedRangeStrideSegment& other)
-  {
-    camp::safe_swap(m_begin, other.m_begin);
-    camp::safe_swap(m_end, other.m_end);
-    camp::safe_swap(m_size, other.m_size);
-  }
+  //@}
 
-  //! obtain an iterator to the beginning of this TypedRangeStrideSegment
+  //@{
+  //!   @name Accessor methods
+
   /*!
-   * \return an iterator corresponding to the beginning of the Segment
+   * \brief Get iterator to the beginning of this segment
    */
   RAJA_HOST_DEVICE iterator begin() const { return m_begin; }
 
-  //! obtain an iterator to the end of this TypedRangeStrideSegment
   /*!
-   * \return an iterator corresponding to the end of the Segment
+   * \brief Get iterator to the end of this segment
    */
   RAJA_HOST_DEVICE iterator end() const { return m_end; }
 
-  //! obtain the size of this TypedRangeStrideSegment
   /*!
-   * the size is calculated by determing the actual trip count in the
-   * interval of [begin, end) with a specified step
-   *
-   * \return the total number of steps for this Segment
+   * \brief Get size of this segment
+   * 
+   * The size is the number of iterates in the 
+   * interval [begin, end) when striding over it
    */
   RAJA_HOST_DEVICE DiffT size() const { return m_size; }
 
-  //! Create a slice of this instance as a new instance
+  //@}
+
+  //@{
+  //!   @name Segment comparison methods
+
   /*!
-   * \return A new instance spanning *begin() + begin * stride to *begin() +
-   * (begin + length) * stride
+   * \brief Compare this segment to another for equality
+   *
+   * \return true if begin, end, and size match, else false
+   */
+  RAJA_HOST_DEVICE bool operator==(TypedRangeStrideSegment const& o) const
+  {
+    // someday this shall be replaced with a compiler-generated operator==
+    return m_begin == o.m_begin && m_end == o.m_end && m_size == o.m_size;
+  }
+
+  /*!
+   * \brief Compare this segment to another for inequality
+   *
+   * \return true if begin, end, or size does not match, else false
+   */
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator!=(TypedRangeStrideSegment const& o) const
+  {
+    return !(operator==(o));
+  }
+
+  //@}
+
+  /*!
+   * \brief Get a new TypedRangeStrideSegment instance representing a slice of
+   *        existing segment
+   *
+   * \param begin start iterate of new range
+   * \param length maximum length of new range
+   *
+   * \return TypedRangeStrideSegment representing the interval
+   *         [ *begin() + begin * stride, 
+   *           min( *begin() + (begin + length) * stride, *end() )
+   *
+   * Here's an example of a slice operation on a range segment with a negative
+   * stride:
+   *
+   *   \verbatim
+   *
+   *     // r represents the set of indices {10, 9, ..., 1, 0}
+   *     auto r = RAJA::TypedRangeSegment<int>(10, -1, -1);
+   *
+   *     // s repreents the subset of indices {4, 3, 2, 1, 0}
+   *     // Note: the length of s is 5, not 6, because there are only
+   *     //       5 indices in r starting at the 6th entry
+   *     auto s = r.slice(6, 6);
+   *
+   *   \endverbatim 
    */
   RAJA_HOST_DEVICE TypedRangeStrideSegment slice(StorageT begin,
                                                  DiffT length) const
@@ -356,28 +484,26 @@ struct TypedRangeStrideSegment {
     return TypedRangeStrideSegment{stripIndexType(start),
                                    stripIndexType(end),
                                    m_begin.get_stride()};
-
   }
 
-  //! equality comparison
   /*!
-   * \return true if and only if the begin, end, and size match
-   * \param[in] other a TypedRangeStrideSegment to compare
+   * \brief Swap this segment with another
    */
-  RAJA_HOST_DEVICE bool operator==(TypedRangeStrideSegment const& o) const
+  RAJA_HOST_DEVICE void swap(TypedRangeStrideSegment& other)
   {
-    // someday this shall be replaced with a compiler-generated operator==
-    return m_begin == o.m_begin && m_end == o.m_end && m_size == o.m_size;
+    camp::safe_swap(m_begin, other.m_begin);
+    camp::safe_swap(m_end, other.m_end);
+    camp::safe_swap(m_size, other.m_size);
   }
 
 private:
-  //! member variable for begin iterator
+  // Member variable for begin iterator
   iterator m_begin;
 
-  //! member variable for end iterator
+  // Member variable for end iterator
   iterator m_end;
 
-  //! member variable for size of segment
+  // Member variable for size of segment
   DiffT m_size;
 };
 
@@ -405,10 +531,9 @@ using common_type_t = typename common_type<Ts...>::type;
 
 }  // namespace detail
 
-//! make function for TypedRangeSegment
 /*!
- *  \param[in] begin the beginning of the segment
- *  \param[in] end the end of the segment (exclusive)
+ * \brief Function to make a TypedRangeSegment for the interval [begin, end)
+ *
  *  \return a newly constructed TypedRangeSegment where the
  *          value_type is equivilent to the common type of
  *          @begin and @end. If there is no common type, then
@@ -423,11 +548,10 @@ RAJA_HOST_DEVICE TypedRangeSegment<Common> make_range(BeginT&& begin,
   return {begin, end};
 }
 
-//! make function for TypedRangeSegment
 /*!
- *  \param[in] begin the beginning of the segment
- *  \param[in] end the end of the segment (exclusive)
- *  \param[in] strude the increment for the segment
+ * \brief Function to make a TypedRangeStride Segment for the interval 
+ *        [begin, end) with given stride
+ *
  *  \return a newly constructed TypedRangeStrideSegment where
  *          the value_type is equivilent to the common type of
  *          @begin, @end, and @stride. If there is no common
@@ -478,7 +602,7 @@ DefineTypeTraitFromConcept(is_range_stride_constructible,
 namespace std
 {
 
-//! specialization of swap for TypedRangeSegment
+//! Specialization of std::swap for TypedRangeSegment
 template <typename T>
 RAJA_HOST_DEVICE RAJA_INLINE void swap(RAJA::TypedRangeSegment<T>& a,
                                        RAJA::TypedRangeSegment<T>& b)
@@ -486,7 +610,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void swap(RAJA::TypedRangeSegment<T>& a,
   a.swap(b);
 }
 
-//! specialization of swap for TypedRangeStrideSegment
+//! Specialization of std::swap for TypedRangeStrideSegment
 template <typename T>
 RAJA_HOST_DEVICE RAJA_INLINE void swap(RAJA::TypedRangeStrideSegment<T>& a,
                                        RAJA::TypedRangeStrideSegment<T>& b)
