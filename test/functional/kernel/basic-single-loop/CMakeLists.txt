@@ -24,7 +24,10 @@ foreach( BACKEND ${KERNEL_BACKENDS} )
 
     target_include_directories(test-kernel-basic-single-loop-${TESTTYPE}-${BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  endforeach()
 
+  # Resource Tests.
+  foreach( TESTTYPE ${TESTTYPES} )
     configure_file( test-kernel-basic-single-loop.cpp.in
                     test-kernel-resource-basic-single-loop-${TESTTYPE}-${BACKEND}.cpp )
     raja_add_test( NAME test-kernel-resource-basic-single-loop-${TESTTYPE}-${BACKEND}

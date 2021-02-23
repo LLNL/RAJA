@@ -21,7 +21,10 @@ foreach( NESTED_LOOP_BACKEND ${KERNEL_BACKENDS} )
     target_include_directories(test-kernel-nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
-    # Resource Tests.
+  endforeach()
+
+  # Resource Tests.
+  foreach( NESTED_LOOP_TYPE ${NESTED_LOOPTYPES} )
     configure_file( test-kernel-nested-loop.cpp.in
                     test-kernel-resource-nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
     raja_add_test( NAME test-kernel-resource-nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}
