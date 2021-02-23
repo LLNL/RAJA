@@ -188,8 +188,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk( cudaDeviceSynchronize() );
   timer.start();
 
-  //RAJA::kernel_resources<EXECPOL>( segments, cuda_res,
-  RAJA::kernel<EXECPOL>( segments,
+  RAJA::kernel_resources<EXECPOL>( segments, cuda_res,
     [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z) {
        phi(m, g, z) += L(m, d) * psi(d, g, z);
     }
@@ -234,7 +233,6 @@ void checkResult(PHIVIEW_T& phi, LVIEW_T& L, PSIVIEW_T& psi,
                  const Index_type num_z)
 {
   size_t nerrors = 0;
-  double total_error = 0.0;
 
   for (IM m(0); m < num_m; ++m) {
     for (IG g(0); g < num_g; ++g) {
@@ -247,7 +245,6 @@ void checkResult(PHIVIEW_T& phi, LVIEW_T& L, PSIVIEW_T& psi,
         if (std::abs(total-phi(m, g, z)) > 1e-9) {
           ++nerrors;
         }
-        //total_error += std::abs(total-phi(m, g, z));
       }
     }
   }

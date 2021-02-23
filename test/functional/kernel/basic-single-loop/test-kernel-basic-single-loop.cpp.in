@@ -21,6 +21,7 @@
 // Note: CMake adds ./tests as an include dir for these tests.
 //
 #include "test-kernel-basic-single-loop-segments.hpp"
+#include "test-kernel-resource-basic-single-loop-segments.hpp"
 
 
 // Sequential execution policy types
@@ -196,6 +197,12 @@ using @BACKEND@KernelBasicSingleLoopTypes =
                                 @BACKEND@ResourceList,
                                 @BACKEND@KernelExecPols>>::Types;
 
+//
+// Instantiate parameterized tests
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
+                               KernelResourceBasicSingleLoopTest,
+                               @BACKEND@KernelBasicSingleLoopTypes);
 //
 // Instantiate parameterized tests
 //
