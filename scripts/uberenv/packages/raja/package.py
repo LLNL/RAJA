@@ -76,7 +76,7 @@ class Raja(CMakePackage, CudaPackage):
     version('0.4.0', tag='v0.4.0', submodules="True")
 
     variant('openmp', default=True, description='Build OpenMP backend')
-    variant('shared', default=True, description='Build Shared Libs')
+    variant('shared', default=False, description='Build Shared Libs')
     variant('libcpp', default=False, description='Uses libc++ instead of libstdc++')
     variant('hip', default=False, description='Build with HIP support')
     variant('tests', default='basic', values=('none', 'basic', 'benchmarks'),
@@ -265,8 +265,6 @@ class Raja(CMakePackage, CudaPackage):
 
             cfg.write(cmake_cache_option("ENABLE_HIP", True))
             cfg.write(cmake_cache_option("ENABLE_OPENMP", False))
-
-#            -DHIP_ROOT_DIR=/opt/rocm-3.6.0/hip -DHIP_CLANG_PATH=/opt/rocm-3.6.0/llvm/bin
 
             hip_root = spec['hip'].prefix
             rocm_root = hip_root + "/.."
