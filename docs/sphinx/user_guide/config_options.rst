@@ -89,8 +89,8 @@ and their default settings:
       ======================   ======================
       Variable                 Default
       ======================   ======================
-      ENABLE_TESTS             On 
-      ENABLE_EXAMPLES          On 
+      RAJA_ENABLE_TESTS        On 
+      RAJA_ENABLE_EXAMPLES     On 
       ENABLE_EXERCISES         On 
       ======================   ======================
 
