@@ -55,16 +55,22 @@ option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
 option(ENABLE_EXTERNAL_CUB "Use an external cub for scans" Off)
 option(ENABLE_EXTERNAL_ROCPRIM "Use an external rocPRIM for scans" Off)
-option(ENABLE_TESTS "Build tests" On)
+
+cmake_dependent_option(RAJA_ENABLE_TESTS "Build tests" On "ENABLE_TESTS" Off)
+
 option(ENABLE_REPRODUCERS "Build issue reproducers" Off)
-option(ENABLE_EXAMPLES "Build simple examples" On)
+
+cmake_dependent_option(RAJA_ENABLE_EXAMPLES "Build simple examples" On "ENABLE_EXAMPLES" off)
+
 option(ENABLE_EXERCISES "Build exercises " On)
 option(ENABLE_MODULES "Enable modules in supporting compilers (clang)" On)
 option(ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
 option(ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
 option(ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
 option(ENABLE_FORCEINLINE_RECURSIVE "Enable Forceinline recursive (only supported with Intel compilers)" On)
-option(ENABLE_BENCHMARKS "Build benchmarks" Off)
+
+cmake_dependent_option(RAJA_ENABLE_BENCHMARKS "Build benchmarks" On "ENABLE_BENCHMARKS" Off)
+
 option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 option(RAJA_ENABLE_BOUNDS_CHECK "Enable bounds checking in RAJA::Views/Layouts" Off)
 option(RAJA_TEST_EXHAUSTIVE "Build RAJA exhaustive tests" Off)
@@ -290,7 +296,7 @@ install(FILES
   include/RAJA/module.private.modulemap
   DESTINATION "include/RAJA/")
 
-if(ENABLE_TESTS)
+if(RAJA_ENABLE_TESTS)
   add_subdirectory(test)
 endif()
 
@@ -298,7 +304,7 @@ if(ENABLE_REPRODUCERS)
   add_subdirectory(reproducers)
 endif()
 
-if(ENABLE_EXAMPLES)
+if(RAJA_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
@@ -310,6 +316,6 @@ if (ENABLE_DOCUMENTATION)
   add_subdirectory(docs)
 endif ()
 
-if (ENABLE_BENCHMARKS)
+if (RAJA_ENABLE_BENCHMARKS)
   add_subdirectory(benchmark)
 endif ()
