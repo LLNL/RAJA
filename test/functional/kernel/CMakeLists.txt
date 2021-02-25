@@ -29,6 +29,10 @@ endif()
 
 add_subdirectory(basic-single-loop)
 
+add_subdirectory(nested-loop)
+
+add_subdirectory(nested-loop-segment-types)
+
 add_subdirectory(reduce-loc)
 
 unset( KERNEL_BACKENDS )
