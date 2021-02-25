@@ -12,6 +12,8 @@ if (APPLE)
  cmake_policy(SET CMP0025 NEW)
 endif()
 
+include(CMakeDependentOption)
+
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
 set(RAJA_VERSION_MINOR 13)
