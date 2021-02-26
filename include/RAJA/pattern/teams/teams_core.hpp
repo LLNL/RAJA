@@ -195,7 +195,7 @@ void launch(ExecPlace place, Resources const &team_resources, BODY const &body)
     }
 #endif
     default:
-      RAJA_ABORT_OR_THROW("Unknown launch place or Device is not enabled");
+      RAJA_ABORT_OR_THROW("Unknown launch place or device is not enabled");
   }
 }
 
