@@ -20,7 +20,6 @@ foreach( NESTED_LOOP_BACKEND ${KERNEL_BACKENDS} )
 
     target_include_directories(test-kernel-nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-
   endforeach()
 
   # Resource Tests.

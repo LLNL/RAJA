@@ -48,7 +48,7 @@ void KernelBasicSingleLoopTestImpl(const SEG_TYPE& seg,
        seg_idx[RAJA::stripIndexType(i)];
   }
  
-  RAJA::kernel_resources<EXEC_POLICY>( RAJA::make_tuple( seg ), working_res,
+  RAJA::kernel_resource<EXEC_POLICY>( RAJA::make_tuple( seg ), working_res,
     [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
       working_array[RAJA::stripIndexType(idx)] = idx;
     }

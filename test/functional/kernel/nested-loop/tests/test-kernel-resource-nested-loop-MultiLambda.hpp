@@ -69,7 +69,7 @@ void KernelNestedLoopTest(){
   RAJA::View< double, RAJA::Layout<DIM> > work_viewA(work_arrA, N, N);
   RAJA::View< double, RAJA::Layout<DIM> > work_viewB(work_arrB, N, N);
 
-  RAJA::kernel_resources<EXEC_POLICY>(
+  RAJA::kernel_resource<EXEC_POLICY>(
     RAJA::make_tuple(RAJA::RangeSegment{1, N-1},
                      RAJA::RangeSegment{1, N-1}),
 

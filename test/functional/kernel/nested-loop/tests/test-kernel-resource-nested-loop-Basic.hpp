@@ -55,7 +55,7 @@ void KernelNestedLoopTest(const DEPTH_2&,
   constexpr int Depth = 2;
   RAJA::View< RAJA::Index_type, RAJA::Layout<Depth> > work_view(work_array, dim1, dim0);
 
-  RAJA::kernel_resources<EXEC_POLICY>(RAJA::make_tuple(range1, range0), work_res,
+  RAJA::kernel_resource<EXEC_POLICY>(RAJA::make_tuple(range1, range0), work_res,
                             [=] RAJA_HOST_DEVICE (RAJA::Index_type j, RAJA::Index_type i) {
                               work_view(j,i) = (j * dim0) + i;
                             });

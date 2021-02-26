@@ -188,7 +188,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk( cudaDeviceSynchronize() );
   timer.start();
 
-  RAJA::kernel_resources<EXECPOL>( segments, cuda_res,
+  RAJA::kernel_resource<EXECPOL>( segments, cuda_res,
     [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z) {
        phi(m, g, z) += L(m, d) * psi(d, g, z);
     }

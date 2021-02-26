@@ -154,9 +154,9 @@ template <typename PolicyType,
           typename SegmentTuple,
           typename Resource,
           typename... Bodies>
-RAJA_INLINE void kernel_resources(SegmentTuple &&segments,
-                                  Resource &&resources,
-                                  Bodies &&... bodies)
+RAJA_INLINE void kernel_resource(SegmentTuple &&segments,
+                                 Resource &&resources,
+                                 Bodies &&... bodies)
 {
   RAJA::kernel_param_resource<PolicyType>(std::forward<SegmentTuple>(segments),
                                           RAJA::make_tuple(),
