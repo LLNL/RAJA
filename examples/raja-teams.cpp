@@ -42,11 +42,11 @@ using launch_policy = RAJA::expt::LaunchPolicy<
 #endif
 #if defined(RAJA_ENABLE_CUDA)
     ,
-    RAJA::expt::cuda_launch_t<false>
+    RAJA::expt::cuda_launch_t<true>
 #endif
 #if defined(RAJA_ENABLE_HIP)
     ,
-    RAJA::expt::hip_launch_t<false>
+    RAJA::expt::hip_launch_t<true>
 #endif
     >;
 
