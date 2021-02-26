@@ -6,10 +6,6 @@
 ###############################################################################
 
 raja_add_executable(
-  NAME mat-mat-perf
-  SOURCES mat-mat-perf.cpp)
-
-raja_add_executable(
   NAME resource-forall
   SOURCES resource-forall.cpp)
 
