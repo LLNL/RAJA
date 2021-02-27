@@ -33,6 +33,8 @@ add_subdirectory(nested-loop)
 
 add_subdirectory(reduce-loc)
 
+add_subdirectory(tile)
+
 unset( KERNEL_BACKENDS )
 
 #
