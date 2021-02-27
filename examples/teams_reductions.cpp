@@ -149,22 +149,24 @@ int main(int argc, char *argv[])
   const int TEAM_SZ = 256;
   const int GRID_SZ = RAJA_DIVIDE_CEILING_INT(N,TEAM_SZ);
 
-  RAJA::expt::launch<launch_policy>(select_cpu_or_gpu,
-                                    RAJA::expt::Resources(RAJA::expt::Teams(GRID_SZ),
-                                                          RAJA::expt::Threads(TEAM_SZ)),
-                                    [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+  RAJA::expt::launch<launch_policy>
+    (select_cpu_or_gpu,
+     RAJA::expt::Resources(RAJA::expt::Teams(GRID_SZ),
+                           RAJA::expt::Threads(TEAM_SZ)),
+     [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) 
+     {
 
-    RAJA::expt::loop<loop_pol>(ctx, arange, [=] (int i) {
-
-        kernel_sum += a[i];
-
-        kernel_min.min(a[i]);
-        kernel_max.max(a[i]);
-
-        kernel_minloc.minloc(a[i], i);
-        kernel_maxloc.maxloc(a[i], i);
-      });
-
+       RAJA::expt::loop<loop_pol>(ctx, arange, [&] (int i) {
+           
+           kernel_sum += a[i];
+           
+           kernel_min.min(a[i]);
+           kernel_max.max(a[i]);
+           
+           kernel_minloc.minloc(a[i], i);
+           kernel_maxloc.maxloc(a[i], i);
+         });
+       
     });
 
   std::cout << "\tsum = " << kernel_sum.get() << std::endl;
