@@ -12,7 +12,7 @@ set(TILETYPES Fixed2D)
 
 foreach( TILE_BACKEND ${KERNEL_BACKENDS} )
   foreach( TILE_TYPE ${TILETYPES} )
-    configure_file( test-kernel-tile.cpp.in
+    configure_file( test-kernel-tilefixed.cpp.in
                     test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.cpp )
     raja_add_test( NAME test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}
                    SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.cpp )
