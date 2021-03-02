@@ -486,7 +486,6 @@ struct StatementExecutor<
       //
       int shmem = 0;
       cudaStream_t stream = res.get_stream();
-      std::cout<< " Hazza a function of quality... " << stream <<"\n";
 
 
       //
