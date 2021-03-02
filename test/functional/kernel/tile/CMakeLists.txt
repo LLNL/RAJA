@@ -47,3 +47,25 @@ endforeach()
 
 unset( TILETYPES )
 
+#
+# Generate kernel local array tile tests for each enabled RAJA back-end.
+#
+set(TILETYPES LocalArray2D)
+
+foreach( TILE_BACKEND ${KERNEL_BACKENDS} )
+  foreach( TILE_TYPE ${TILETYPES} )
+    # Removing OpenMPTarget because local array capability does not exist
+    # TBB not working for local array
+    if( NOT ((TILE_BACKEND STREQUAL "OpenMPTarget") OR (TILE_BACKEND STREQUAL "TBB")) )
+      configure_file( test-kernel-tilelocal.cpp.in
+                      test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.cpp )
+      raja_add_test( NAME test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}
+                     SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.cpp )
+
+      target_include_directories(test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.exe
+                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    endif()
+  endforeach()
+endforeach()
+
+unset( TILETYPES )
