@@ -6,7 +6,7 @@
 ###############################################################################
 
 #
-# List of segment types for generating test files.
+# List of test types for future expansion, if needed. 
 #
 set(TESTTYPES Segments)
 
