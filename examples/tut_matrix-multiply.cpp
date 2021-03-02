@@ -960,8 +960,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2,1,0>,
 
           // Tile rows and cols of C (the result matrix C)
-          RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
-            RAJA::statement::Tile<2, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
+            RAJA::statement::Tile<2, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_direct,
 
             // zero out shmem tile of C
             RAJA::statement::For<2, RAJA::cuda_thread_y_loop,
@@ -973,7 +973,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                 RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::loop_exec,
 
                   // Load tile of A into shmem
-                  RAJA::statement::For<1, RAJA::loop_exec,
+                  RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
                     RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
                       shmem_Lambda1
                     >
@@ -981,7 +981,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
                   // Load tile of B into shmem
                   RAJA::statement::For<2, RAJA::cuda_thread_y_loop,
-                    RAJA::statement::For<1, RAJA::loop_exec,
+                    RAJA::statement::For<1, RAJA::cuda_thread_x_loop,
                       shmem_Lambda2
                     >
                   >,
