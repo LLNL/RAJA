@@ -15,7 +15,10 @@ RAJA Developer Guide
 The RAJA Developer Guide is minimal at this point. It will be expanded over
 time.
 
+Local build scenarios as well as CI testing will be discussed here.
+
 .. toctree::
    :maxdepth: 1
 
    host_config
+   ci

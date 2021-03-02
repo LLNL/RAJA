@@ -27,7 +27,7 @@
 #=============================================================================
 #
 # If you need to modify this script, you may want to run each of these 
-# commands individual from the command line to make sure things are doing 
+# commands individually from the command line to make sure things are doing 
 # what you think they should be doing. This is why they are separated into 
 # steps here.
 # 
@@ -52,13 +52,12 @@ echo LICENSE
 cp LICENSE LICENSE.sed.bak
 sed "s/Copyright (c) 2016-2020/Copyright (c) 2016-2021/" LICENSE.sed.bak > LICENSE
 
-echo CONTRIBUTING
-cp CONTRIBUTING.md CONTRIBUTING.md.sed.bak
-sed "s/2016-20/2016-21/" CONTRIBUTING.md.sed.bak > CONTRIBUTING.md
-
-echo README
-cp README.md README.md.sed.bak
-sed "s/2016-20/2016-21/" README.md.sed.bak > README.md
+for i in README.md RELEASE_NOTES.md CONTRIBUTING.md RELEASE 
+do 
+    echo $i
+    cp $i $i.sed.bak
+    sed "s/2016-20/2016-21/" $i.sed.bak > $i
+done
 
 #=============================================================================
 # Remove temporary files created in the process
