@@ -22,7 +22,7 @@
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-kernel-loc-@LOC_TYPE@.hpp"
+#include "test-kernel-reduceloc-@LOC_TYPE@.hpp"
 
 
 //
@@ -42,6 +42,22 @@ using SequentialKernelLocExecPols =
 
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::seq_exec,  // row
+        RAJA::statement::For<0, RAJA::seq_exec,  // col
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::seq_exec,  // row
+        RAJA::statement::For<0, RAJA::loop_exec,  // col
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::loop_exec,  // row
         RAJA::statement::For<0, RAJA::seq_exec,  // col
           RAJA::statement::Lambda<0>
         >
@@ -180,12 +196,42 @@ using CudaKernelLocExecPols =
 
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-      RAJA::statement::For<1, RAJA::cuda_thread_x_loop,  // row
-        RAJA::statement::For<0, RAJA::cuda_thread_y_loop,  // col
-          RAJA::statement::Lambda<0>
+        RAJA::statement::For<1, RAJA::cuda_thread_x_loop,  // row
+          RAJA::statement::For<0, RAJA::cuda_thread_y_loop,  // col
+            RAJA::statement::Lambda<0>
+          >
         >
       >
-      > // end CudaKernel
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::seq_exec,  // row
+        RAJA::statement::CudaKernel<
+          RAJA::statement::For<0, RAJA::cuda_thread_x_loop,  // col
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::For<1, RAJA::seq_exec,  // row
+          RAJA::statement::For<0, RAJA::cuda_thread_x_loop,  // col
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::For<1, RAJA::cuda_thread_x_loop,  // row
+          RAJA::statement::For<0, RAJA::seq_exec,  // col
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >
     >
 
   >;
@@ -209,12 +255,42 @@ using HipKernelLocExecPols =
 
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
-      RAJA::statement::For<1, RAJA::hip_thread_x_loop,  // row
-        RAJA::statement::For<0, RAJA::hip_thread_y_loop,  // col
-          RAJA::statement::Lambda<0>
+        RAJA::statement::For<1, RAJA::hip_thread_x_loop,  // row
+          RAJA::statement::For<0, RAJA::hip_thread_y_loop,  // col
+            RAJA::statement::Lambda<0>
+          >
         >
       >
-      > // end HipKernel
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::seq_exec,  // row
+        RAJA::statement::HipKernel<
+          RAJA::statement::For<0, RAJA::hip_thread_x_loop,  // col
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+        RAJA::statement::For<1, RAJA::seq_exec,  // row
+          RAJA::statement::For<0, RAJA::hip_thread_x_loop,  // col
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+        RAJA::statement::For<1, RAJA::hip_thread_x_loop,  // row
+          RAJA::statement::For<0, RAJA::seq_exec,  // col
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >
     >
 
   >;

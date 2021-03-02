@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_LOC_MAX2DVIEWTUPLE_HPP__
-#define __TEST_KERNEL_LOC_MAX2DVIEWTUPLE_HPP__
+#ifndef __TEST_KERNEL_REDUCELOC_MAX2DVIEWTUPLE_HPP__
+#define __TEST_KERNEL_REDUCELOC_MAX2DVIEWTUPLE_HPP__
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename FORALL_POLICY, typename EXEC_POLICY, typename REDUCE_POLICY>
 void KernelLocMax2DViewTupleTestImpl(const int xdim, const int ydim)
@@ -135,4 +135,4 @@ TYPED_TEST_P(KernelLocMax2DViewTupleTest, LocMax2DViewTupleKernel)
 REGISTER_TYPED_TEST_SUITE_P(KernelLocMax2DViewTupleTest,
                             LocMax2DViewTupleKernel);
 
-#endif  // __TEST_KERNEL_LOC_MAX2DVIEWTUPLE_HPP__
+#endif  // __TEST_KERNEL_REDUCELOC_MAX2DVIEWTUPLE_HPP__
