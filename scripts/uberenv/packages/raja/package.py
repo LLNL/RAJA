@@ -214,9 +214,9 @@ class Raja(CMakePackage, CudaPackage):
                 if os.path.exists(_libpath):
                     flags += " -Wl,-rpath,{0}".format(_libpath)
             description = ("Adds a missing libstdc++ rpath")
-            if flags:
-                cfg.write(cmake_cache_string("BLT_EXE_LINKER_FLAGS", flags,
-                                            description))
+            #if flags:
+            #    cfg.write(cmake_cache_string("BLT_EXE_LINKER_FLAGS", flags,
+            #                                description))
 
         gcc_toolchain_regex = re.compile(".*gcc-toolchain.*")
         gcc_name_regex = re.compile(".*gcc-name.*")
@@ -276,7 +276,7 @@ class Raja(CMakePackage, CudaPackage):
                                         '--amdgpu-target=gfx906'))
             cfg.write(cmake_cache_entry("HIP_RUNTIME_INCLUDE_DIRS",
                                         "{0}/include;{0}/../hsa/include".format(hip_root)))
-            if '%gcc' in spec:
+            if ("gcc" in cpp_compiler):
                 gcc_bin = os.path.dirname(self.compiler.cxx)
                 gcc_prefix = join_path(gcc_bin, '..')
                 cfg.write(cmake_cache_entry("HIP_CLANG_FLAGS",

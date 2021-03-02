@@ -14,3 +14,8 @@ hip_3_10_gcc_8_1_0 (build and test on corona):
   variables:
     SPEC: "+hip %gcc@8.1.0 ^hip@3.10.0"
   extends: .build_and_test_on_corona
+
+hip_3_10_clang_9_0_0 (build and test on corona):
+  variables:
+    SPEC: "+hip %clang@9.0.0 ^hip@3.10.0"
+  extends: .build_and_test_on_corona
