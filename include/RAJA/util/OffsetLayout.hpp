@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -44,8 +44,11 @@ template <camp::idx_t... RangeInts, typename IdxLin>
 struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   using Self = OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>;
   using IndexRange = camp::idx_seq<RangeInts...>;
+  using IndexLinear = IdxLin;
   using Base = RAJA::detail::LayoutBase_impl<IndexRange, IdxLin>;
   Base base_;
+
+  static constexpr camp::idx_t stride_one_dim = Base::stride_one_dim;
 
   static constexpr size_t n_dims = sizeof...(RangeInts);
   IdxLin offsets[n_dims]={0}; //If not specified set to zero
@@ -118,6 +121,14 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
       : base_{rhs}
   {
   }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_stride() const {
+    return base_.get_dim_stride();
+  }
 };
 
 }  // namespace internal
@@ -150,6 +161,7 @@ struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>
    using Self = TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>;
    using Base = OffsetLayout<sizeof...(DimTypes), Index_type>;
    using DimArr = std::array<Index_type, sizeof...(DimTypes)>;
+   using IndexLinear = IdxLin;
 
    // Pull in base coonstructors
  #if 0

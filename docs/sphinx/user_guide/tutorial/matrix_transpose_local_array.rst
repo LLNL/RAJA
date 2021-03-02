@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -200,4 +200,4 @@ tuple in this case, the local tile array. The placeholders are not needed.
 
 The file ``RAJA/examples/tut_matrix-transpose-local-array.cpp`` contains the 
 complete working example code for the examples described in this section along 
-with OpenMP and CUDA variants.
+with OpenMP, CUDA, and HIP variants.

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,7 +8,7 @@
 #
 # List of atomic test types for generating test files.
 #
-set(TESTTYPES AtomicRefMath AtomicRefOther)
+set(TESTTYPES AtomicRefAdd AtomicRefSub AtomicRefLoadStore AtomicRefCAS AtomicRefMinMax AtomicRefLogical)
 
 #
 # Generate atomicref tests for each enabled RAJA back-end.

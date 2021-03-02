@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,10 +15,14 @@ class CounterPlugin :
 {
   public:
   void preCapture(const RAJA::util::PluginContext& p) override {
-    if (p.platform == RAJA::Platform::host)
+    if (p.platform == RAJA::Platform::host) 
+    {
       std::cout << " [CounterPlugin]: Capturing host kernel for the " << ++host_capture_counter << " time!" << std::endl;
+    }
     else
+    {
       std::cout << " [CounterPlugin]: Capturing device kernel for the " << ++device_capture_counter << " time!" << std::endl;
+    }
   }
 
   void preLaunch(const RAJA::util::PluginContext& p) override {

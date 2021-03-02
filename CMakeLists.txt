@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,8 +14,8 @@ endif()
 
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 12)
-set(RAJA_VERSION_PATCHLEVEL 1)
+set(RAJA_VERSION_MINOR 13)
+set(RAJA_VERSION_PATCHLEVEL 0)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
   message(FATAL_ERROR "You are mixing RAJA versions. Loaded is ${RAJA_LOADED}, expected ${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")

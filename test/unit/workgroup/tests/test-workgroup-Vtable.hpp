@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -111,7 +111,8 @@ void testWorkGroupVtableSingle(RAJA::xargs<Args...>)
   camp::resources::Resource work_res{WORKING_RES()};
   camp::resources::Resource host_res{camp::resources::Host()};
 
-  using Vtable_type = RAJA::detail::Vtable<IndexType, Args...>;
+  using Vtable_type = RAJA::detail::Vtable<void, IndexType, Args...>;
+  using Vtable_cptr_type = typename Vtable_type::void_cptr_wrapper;
   const Vtable_type* vtable =
       RAJA::detail::get_Vtable<TestCallable, Vtable_type>(ExecPolicy{});
 
@@ -174,7 +175,7 @@ void testWorkGroupVtableSingle(RAJA::xargs<Args...>)
   work_res.memcpy(wrk_obj, new_obj, sizeof(TestCallable) * 1);
 
   // move a value onto device and fiddle
-  call_dispatcher<ForOnePol, const void*, IndexType, Args...>(
+  call_dispatcher<ForOnePol, Vtable_cptr_type, IndexType, Args...>(
       vtable->call_function_ptr, wrk_obj, (IndexType)1, Args{}...);
 
   work_res.memcpy(testCall, workCall, sizeof(IndexType) * 3);

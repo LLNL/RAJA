@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -105,13 +105,13 @@ struct memory_manager_allocator
   }
 };
 
-template <typename T, typename U, typename Resource>
+template <typename T, typename U>
 bool operator==(memory_manager_allocator<T> const&, memory_manager_allocator<U> const&)
 {
   return true;
 }
 
-template <typename T, typename U, typename Resource>
+template <typename T, typename U>
 bool operator!=(memory_manager_allocator<T> const& lhs, memory_manager_allocator<U> const& rhs)
 {
   return !(lhs == rhs);
@@ -161,13 +161,13 @@ struct pinned_allocator
   }
 };
 
-template <typename T, typename U, typename Resource>
+template <typename T, typename U>
 bool operator==(pinned_allocator<T> const&, pinned_allocator<U> const&)
 {
   return true;
 }
 
-template <typename T, typename U, typename Resource>
+template <typename T, typename U>
 bool operator!=(pinned_allocator<T> const& lhs, pinned_allocator<U> const& rhs)
 {
   return !(lhs == rhs);
@@ -317,7 +317,7 @@ int main(int argc, char **argv)
       }
       // _halo_exchange_sequential_cstyle_packing_end
 
-      // _halo_exchange_sequential_cstyle_packing_start
+      // _halo_exchange_sequential_cstyle_unpacking_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         // recv single message

@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -98,9 +98,11 @@ Example Code
 
 Complete working examples that run the batched matrix-multiplication 
 computation for both layouts and various RAJA execution policies is located
-in the file ``RAJA/examples/tut_batched-matrix-multiply.cpp``. It compares 
-the execution run times of the two layouts using three RAJA back-ends 
-(Sequential, OpenMP, and CUDA). The OpenMP version for layout 1 looks like this:
+in the file ``RAJA/examples/tut_batched-matrix-multiply.cpp``. 
+
+It compares the execution run times of the two layouts described above 
+using four RAJA back-ends (Sequential, OpenMP, CUDA, and HIP). The OpenMP 
+version for layout 1 looks like this:
 
 .. literalinclude:: ../../../../examples/tut_batched-matrix-multiply.cpp
    :start-after: _permutedlayout_batchedmatmult_omp_start

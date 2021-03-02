@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -25,6 +25,13 @@
 #include <stdexcept>
 #include <type_traits>
 #include "hip/hip_runtime.h"
+
+#include "RAJA/policy/loop/atomic.hpp"
+#include "RAJA/policy/sequential/atomic.hpp"
+#include "RAJA/policy/atomic_builtin.hpp"
+#if defined(RAJA_ENABLE_OPENMP)
+#include "RAJA/policy/openmp/atomic.hpp"
+#endif
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/TypeConvert.hpp"
@@ -559,8 +566,18 @@ RAJA_INLINE __device__ unsigned long long hip_atomicCAS<unsigned long long>(
 }  // namespace detail
 
 
-struct hip_atomic {
-};
+/*!
+ * Hip atomic policy for using hip atomics on the device and
+ * the provided host_policy on the host
+ */
+template<typename host_policy>
+struct hip_atomic_explicit{};
+
+/*!
+ * Default hip atomic policy uses hip atomics on the device and non-atomics
+ * on the host
+ */
+using hip_atomic = hip_atomic_explicit<loop_atomic>;
 
 
 /*!
@@ -572,96 +589,159 @@ struct hip_atomic {
  * These are atomic in hip device code and non-atomic otherwise
  */
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(hip_atomic, T volatile *acc, T value)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicAdd(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
+#if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicAdd(acc, value);
+#else
+  return RAJA::atomicAdd(host_policy{}, acc, value);
+#endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicSub(hip_atomic, T volatile *acc, T value)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicSub(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
+#if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicSub(acc, value);
+#else
+  return RAJA::atomicSub(host_policy{}, acc, value);
+#endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicMin(hip_atomic, T volatile *acc, T value)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicMin(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
+#if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicMin(acc, value);
+#else
+  return RAJA::atomicMin(host_policy{}, acc, value);
+#endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicMax(hip_atomic, T volatile *acc, T value)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicMax(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
+#if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicMax(acc, value);
+#else
+  return RAJA::atomicMax(host_policy{}, acc, value);
+#endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(hip_atomic, T volatile *acc, T val)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicInc(hip_atomic_explicit<host_policy>, T volatile *acc, T val)
 {
+#if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicInc(acc, val);
+#else
+  return RAJA::atomicInc(host_policy{}, acc, val);
+#endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(hip_atomic, T volatile *acc)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicInc(hip_atomic_explicit<host_policy>, T volatile *acc)
 {
+#if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicInc(acc);
+#else
+  return RAJA::atomicInc(host_policy{}, acc);
+#endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(hip_atomic, T volatile *acc, T val)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicDec(hip_atomic_explicit<host_policy>, T volatile *acc, T val)
 {
+#if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicDec(acc, val);
+#else
+  return RAJA::atomicDec(host_policy{}, acc, val);
+#endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(hip_atomic, T volatile *acc)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicDec(hip_atomic_explicit<host_policy>, T volatile *acc)
 {
+#if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicDec(acc);
+#else
+  return RAJA::atomicDec(host_policy{}, acc);
+#endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicAnd(hip_atomic, T volatile *acc, T value)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicAnd(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
+#if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicAnd(acc, value);
+#else
+  return RAJA::atomicAnd(host_policy{}, acc, value);
+#endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicOr(hip_atomic, T volatile *acc, T value)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicOr(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
+#if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicOr(acc, value);
+#else
+  return RAJA::atomicOr(host_policy{}, acc, value);
+#endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicXor(hip_atomic, T volatile *acc, T value)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicXor(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
+#if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicXor(acc, value);
+#else
+  return RAJA::atomicXor(host_policy{}, acc, value);
+#endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
+template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicExchange(hip_atomic, T volatile *acc, T value)
+atomicExchange(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
+#if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicExchange(acc, value);
+#else
+  return RAJA::atomicExchange(host_policy{}, acc, value);
+#endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
+template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicCAS(hip_atomic, T volatile *acc, T compare, T value)
+atomicCAS(hip_atomic_explicit<host_policy>, T volatile *acc, T compare, T value)
 {
+#if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicCAS(acc, compare, value);
+#else
+  return RAJA::atomicCAS(host_policy{}, acc, compare, value);
+#endif
 }
 
 }  // namespace RAJA
