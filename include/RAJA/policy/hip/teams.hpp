@@ -54,7 +54,8 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
     auto func = launch_global_fcn<BODY>;
 
     resources::Hip hip_res = resources::Hip::get_default();
-    hipStream_t stream = hip_res.get_stream();
+    /* Use the zero stream until resource is better supported */
+    hipStream_t stream = 0;//hip_res.get_stream();
 
     //
     // Compute the number of blocks and threads
