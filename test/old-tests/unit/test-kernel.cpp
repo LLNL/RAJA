@@ -1164,6 +1164,9 @@ TEST(Kernel, ForICountTyped_seq)
   delete[] x;
 }
 
+// simd bug when using intel version pre 19.0
+#if defined(__INTEL_COMPILER) and (__INTEL_COMPILER_BUILD_DATE < 20180804) 
+#else
 TEST(Kernel, ForICountTyped_simd)
 {
   using namespace RAJA;
@@ -1202,6 +1205,7 @@ TEST(Kernel, ForICountTyped_simd)
   delete[] xi;
   delete[] x;
 }
+#endif
 
 
 
