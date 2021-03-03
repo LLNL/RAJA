@@ -234,12 +234,24 @@ class ViewBase {
 
   public:
 
-    constexpr ViewBase() = default;
-    RAJA_INLINE constexpr ViewBase(ViewBase const &) = default;
-    RAJA_INLINE constexpr ViewBase(ViewBase &&) = default;
-    RAJA_INLINE ViewBase& operator=(ViewBase const &) = default;
-    RAJA_INLINE ViewBase& operator=(ViewBase &&) = default;
 
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    constexpr ViewBase(){};
+
+    RAJA_HOST_DEVICE
+    RAJA_INLINE ViewBase(ViewBase const &c)
+      : m_layout(c.m_layout), m_data(c.m_data)
+    {
+    }
+
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    ViewBase &operator=(ViewBase const &c)
+    {
+      m_layout = c.m_layout;
+      m_data = c.m_data;
+    }
 
 
     RAJA_HOST_DEVICE
