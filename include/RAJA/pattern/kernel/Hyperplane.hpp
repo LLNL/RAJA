@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -145,7 +145,8 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
      * later, the HyperplaneInner executor can pull it out, and calculate that
      * arguments actual value (and restrict to valid hyperplane indices)
      */
-    forall_impl(HpExecPolicy{},
+    auto r = resources::get_resource<HpExecPolicy>::type::get_default();
+    forall_impl(r, HpExecPolicy{},
                 TypedRangeSegment<idx_t>(0, hp_len),
                 outer_wrapper);
   }

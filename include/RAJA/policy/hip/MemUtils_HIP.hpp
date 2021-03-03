@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -204,12 +204,10 @@ void launch(hipStream_t stream)
 }
 
 //! Launch kernel and indicate stream is asynchronous
-template<typename Func, typename Data>
 RAJA_INLINE
-void launch(Func &func, hip_dim_t gridDim, hip_dim_t blockDim, Data &&data, size_t shmem, hipStream_t stream)
+void launch(const void* func, hip_dim_t gridDim, hip_dim_t blockDim, void** args, size_t shmem, hipStream_t stream)
 {
-  hipLaunchKernelGGL(func, dim3(gridDim), dim3(blockDim), shmem, stream, data);
-  hipErrchk(hipGetLastError());
+  hipErrchk(hipLaunchKernel(func, dim3(gridDim), dim3(blockDim), args, shmem, stream));
   launch(stream);
 }
 

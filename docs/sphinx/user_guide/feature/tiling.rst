@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 .. ## and other RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -16,8 +16,8 @@ In this section, we discuss RAJA statements that can be used to tile nested
 for-loops. Typical loop tiling involves partitioning an iteration space into 
 a collection of "tiles" and then iterating over tiles in outer loops and 
 entries within each tile in inner loops. Many scientific computing algorithms 
-can benefit from loop tiling due to more efficient cache usage and other 
-considerations. 
+can benefit from loop tiling due to more efficient cache usage on a CPU or
+use of GPU shared memory.
 
 For example, an operation performed using a for-loop with a range of [0, 10)::
 
@@ -59,11 +59,11 @@ statement types.
 In RAJA, the simplest way to tile an iteration space is to use RAJA 
 ``statement::Tile`` and ``statement::For`` statement types. A
 ``statement::Tile`` type is similar to a ``statement::For`` type, but takes
-a tile size as the second template argument. The Tile statement generates
-the outer loop over tiles and the For statement iterates over each tile. 
-Nested together, as in the example, these statements will pass the global
-index 'i' to the loop body in the lambda expression as in the non-tiled 
-version above.
+a tile size as the second template argument. The ``statement::Tile`` 
+construct generates the outer loop over tiles and the ``statement::For`` 
+statement iterates over each tile.  Nested together, as in the example, these 
+statements will pass the global index 'i' to the loop body in the lambda 
+expression as in the non-tiled version above.
 
 .. note:: When using ``statement::Tile`` and ``statement::For`` types together
           to define a tiled loop structure, the integer passed as the first
@@ -71,7 +71,7 @@ version above.
           indicates that they both apply to the same item in the iteration
           space tuple passed to the ``RAJA::kernel`` methods.
 
-RAJA also provides alternative Tile and For statements that provide the tile 
+RAJA also provides alternative tiling and for statements that provide the tile 
 number and local tile index, if needed inside the kernel body, as shown below::
 
   using KERNEL_EXEC_POL2 =
@@ -98,16 +98,17 @@ number and local tile index, if needed inside the kernel body, as shown below::
    });
 
 The ``statement::TileTCount`` type allows the tile number to be accessed as a
-parameter and the ``statement::ForICount`` type allows the local tile loop 
-index to be accessed. These values are specified in the tuple, which is the
-second argument passed to the ``RAJA::kernel_param`` method above. The 
-``statement::Param<#>`` type appearing as the second template parameter for
-each statement type indicates which parameter tuple entry the tile number
-or local tile loop index is passed to the lambda, and in what order. Here,
-the tile number is the second lambda argument (tuple parameter '0') and the
-local tile loop index is the third lambda argument (tuple parameter '1').
+lambda argument and the ``statement::ForICount`` type allows the local tile 
+loop index to be accessed as a lambda argument. These values are specified in 
+the tuple, which is the second argument passed to the ``RAJA::kernel_param`` 
+method above. The ``statement::Param<#>`` type appearing as the second 
+template parameter for each statement type indicates which parameter tuple 
+entry the tile number or local tile loop index is passed to the lambda, and 
+in which order. Here, the tile number is the second lambda argument (tuple 
+parameter '0') and the local tile loop index is the third lambda argument 
+(tuple parameter '1').
 
 .. note:: The global loop indices always appear as the first lambda expression
-          arguments. Then, the parameter tuples, identified by the integers 
+          arguments. Then, the parameter tuples identified by the integers 
           in the ``Param`` statement types given for the loop statement 
           types follow. 

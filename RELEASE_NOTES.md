@@ -1,6 +1,6 @@
 
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2016-20, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2016-21, Lawrence Livermore National Security, LLC)
 [comment]: # (and RAJA project contributors. See the RAJA/COPYRIGHT file)
 [comment]: # (for details.)
 [comment]: # 
@@ -9,6 +9,146 @@
 
 Version vxx.yy.zz -- Release date 20yy-mm-dd
 ============================================
+
+Version v0.13.0 -- Release date 2020-10-30
+============================================
+
+This release contains new features, bug fixes, and build improvements. Please 
+see the RAJA user guide for more information about items in this release.
+
+Notable changes include:
+
+  * New features:
+      * Execution policies for the RAJA HIP back-end and examples have been
+        added to the RAJA User Guide and Tutorial.
+      * Strongly-typed indices now work with Multiview.
+
+  * Build changes/improvements:
+      * Update BLT to latest develop branch (SHA-1: cbe99c93d)
+      * Added option to enable/disable runtime plugin loading. This is now 
+        off by default. Previously, it was always enabled and there was no
+        way to disable it.
+
+  * Bug fixes/improvements:
+      * Issues have been addressed so that the OpenMP target back-end is
+        now working properly for all supported features. This has been
+        verified with multiple clang compilers, including clang 10, and the
+        XL compiler.
+      * Various data structures have been made trivially copyable to 
+        ensure they are mapped properly to device memory with OpenMP 
+        target execution.
+      * Numerous improvements and fixes (formatting, typos, etc.) in User Guide.
+
+Version v0.12.1 -- Release date 2020-09-09
+============================================
+
+This release contains fixes for errors when using a CUDA build with a
+non-CUDA compiler and compiler warnings, plus some other bug fixes related
+to OpenMP target compilation.
+
+Version v0.12.0 -- Release date 2020-09-03
+============================================
+
+This release contains new features, notable changes, and bug fixes. Please
+see the RAJA user guide for more information about items in this release.
+
+Notable changes include:
+
+  * Notable repository change:
+      * The 'master' branch in the RAJA git repo has been renamed to 'main'.
+
+  * New features:
+      * New RAJA "work group" capability added. This allows multiple GPU
+        kernels to be fused into one kernel launch, greatly reducing the
+        run time overhead of launching CUDA kernels.
+      * Added support for dynamic plug-ins in RAJA, which enable the use of
+        things like Kokkos Performance Profiline Tools to be used with RAJA
+        (https://github.com/kokkos/kokkos-tools)
+      * Added ability to pass a resource object to RAJA::forall methods to
+        enable asynchronous execution for CUDA and HIP back-ends.
+      * Added "Multi-view" that works like a regular view, except that it
+        can wrap multiple arrays so their accesses can share index arithmetic.
+      * Multiple sort algorithms added. This provides portable parallel sort 
+        operations, which are basic parallel algorithm building blocks.
+      * Introduced RAJA "Teams" concept as an experimental feature. This
+        enables hierarchical parallelism and additional nested loop patterns
+        beyond what RAJA::kernel supports. Please note that this is very much
+        a work-in-progress and is not yet documented in the user guide.
+      * Added initial support for dynamic loop tiling.
+      * New OpenMP execution policies added to support static, dynamic, and 
+        guided scheduling.
+      * Added support for const iterators to be used with RAJA scans.
+      * Support for bitwise and and or reductions have been added.
+      * The RAJA::kernel interface has been expanded to allow only segment 
+        index arguments used in a lambda to be passed to the lambda. In 
+        previous versions of RAJA, every lambda invoked in a kernel had to 
+        accept an index argument for every segment in the segment tuple passed 
+        to RAJA::kernel execution templates, even if not all segment indices 
+        were used in a lambda. This release still allows that usage pattern.
+        The new capability requires an additional template parameter to be 
+        passed to the RAJA::statement::Lambda type, which identify the segment 
+        indices that will be passed and in which order.
+     
+  * API Changes:
+      * The RAJA 'VarOps' namespace has been removed. All entities previously
+        in that namespace are now in the 'RAJA' namespace.
+      * RAJA span is now public for users to access and has been made more like
+        std::span.
+      * RAJA::statement::tile_fixed has been moved to RAJA::tile_fixed
+        (namespace change).
+      * RAJA::statement::{Segs, Offsets, Params, ValuesT} have been moved to
+        RAJA::{Segs, Offsets, Params, ValuesT} (namespace change).
+      * RAJA ListSegment constructors have been expanded to accept a camp
+        Resource object. This enables run time specification of the memory
+        space where the data for list segment indices will live. In earlier
+        RAJA versions, the space in which list segment index data lived was a 
+        compile-time choice based on whether CUDA or HIP was enabled and the 
+        data resided in unified memory for either case. This is still supported
+        in this release, but is marked as a DEPRECATED FEATURE. In the next RAJA
+        release, ListSegment construction will require a camp Resource object.
+        When compiling RAJA with your application, you will see deprecation
+        warnings if you are using the deprecated ListSegment constructor. 
+      * A reset method was added to OpenMP target offload reduction classes
+        so they contain the same functionality as reductions for all other 
+        back-ends.
+
+  * Build changes/improvements:
+      * The BLT, camp, CUB, and rocPRIM submodules have all been updated to 
+        more recent versions. Please note that RAJA now requires rocm version 
+        3.5 or newer to use the HIP back-end.
+      * Build for clang9 on macosx has been fixed.
+      * Build for Intel19 on Windows has been fixed.
+      * Host/device annotations have been added to reduction operations to
+        eliminate compiler warnings for certain use cases.
+      * Several warnings generated by the MSVC compiler have been eliminated.
+      * A couple of PGI compiler warnings have been removed.
+      * CMake improvements to make it is easier to use an external camp or 
+        CUB library with RAJA. 
+      * Note that the RAJA tests are undergoing a substantial overhaul. Users,
+        who chose to build and run RAJA tests, should know that many tests
+        are now being generated in the build space directory structure which
+        mimics the RAJA source directory structure. As a result, only some
+        test executables appear in the top-level 'test' subdirectory of the 
+        build directory; others can be found in lower-level directories. The
+        reason for this change is to reduce test build times for certain 
+        compilers.
+
+  * Bug fixes:
+      * An issue with SIMD privatization with the Intel compiler, required
+        to generate correct code, has been fixed.
+      * An issue with the atomicExchange() operation for the RAJA HIP back-end
+        has been fixed.
+      * A type issue in the RAJA::kernel implementation involving RAJA span
+        usage has been fixed.
+      * Checks for iterator ranges and container sizes have been added to
+        RAJA scans, which fixes an issue when users attempted to run a 
+        scan over a range of size zero.
+      * Several type errors in the Layout.hpp header file have been fixed.
+      * Several fixes have been made in the Layout and Static Layout types.
+      * Several fixes have been made to the OpenMP target offload back-end
+        to address host-device memory issues.
+      * A variety of RAJA User Guide issues have been addressed, as well as
+        issues in RAJA example codes.
 
 Version v0.11.0 -- Release date 2020-01-29
 ==========================================
@@ -85,7 +225,7 @@ Notable changes include:
       * Added a bounds checking option to RAJA Layout types as a debugging
         feature. This is a compile-time option that will report user errors
         when given View or Layout indices are out-of-bounds. See View/Layout
-        section in the RAjA User Guide for instructions on enabling this and 
+        section in the RAJA User Guide for instructions on enabling this and 
         how this feature works. 
       * We've added a RAJA Template Project on GitHub, which shows how to
         use RAJA in an application, either as a Git submodule or as an

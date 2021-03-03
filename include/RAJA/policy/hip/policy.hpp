@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -82,6 +82,18 @@ struct hip_exec : public RAJA::make_policy_pattern_launch_platform_t<
 //
 // NOTE: There is no Index set segment iteration policy for HIP
 //
+
+///
+/// WorkGroup execution policies
+///
+template <size_t BLOCK_SIZE, bool Async = false>
+struct hip_work : public RAJA::make_policy_pattern_launch_platform_t<
+                       RAJA::Policy::hip,
+                       RAJA::Pattern::workgroup_exec,
+                       detail::get_launch<Async>::value,
+                       RAJA::Platform::hip> {
+};
+
 
 ///
 ///////////////////////////////////////////////////////////////////////
@@ -184,6 +196,11 @@ using policy::hip::hip_exec;
 
 template <size_t BLOCK_SIZE>
 using hip_exec_async = policy::hip::hip_exec<BLOCK_SIZE, true>;
+
+using policy::hip::hip_work;
+
+template <size_t BLOCK_SIZE>
+using hip_work_async = policy::hip::hip_work<BLOCK_SIZE, true>;
 
 using policy::hip::hip_reduce_base;
 using policy::hip::hip_reduce;

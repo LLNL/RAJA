@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 .. ## and other RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -12,10 +12,10 @@
 Local Array
 ===========
 
-This section introduces RAJA local arrays. A ``RAJA::LocalArray`` is a 
-multi-dimensional array object whose memory is allocated when a RAJA kernel 
-is executed and only lives within the scope of the kernel execution. To 
-motivate the concept and usage, consider a simple C++ example
+This section introduces RAJA *local arrays*. A ``RAJA::LocalArray`` is an
+array object with one or more dimensions whose memory is allocated when a 
+RAJA kernel is executed and only lives within the scope of the kernel 
+execution. To motivate the concept and usage, consider a simple C++ example
 in which we construct and use two arrays in nested loops::
 
            for(int k = 0; k < 7; ++k) { //k loop
@@ -93,19 +93,20 @@ two-dimensional and one one-dimensional and creates an instance of each type.
 The template arguments for the ``RAJA::LocalArray`` types are:
 
   * Array data type
-  * Index permutation (see :ref:`view-label` for more on layouts and permutations)
+  * Index permutation (see :ref:`view-label` for more on RAJA permutations)
   * Array dimensions
 
 .. note:: ``RAJA::LocalArray`` types support arbitrary dimensions and sizes.
 
 The kernel policy is a two-level nested loop policy (see 
-:ref:`loop_elements-kernel-label`` for more information) with a statement type
-``RAJA::statement::InitLocalMem`` inserted between the nested for-loops which
-allocates the memory for the local arrays when the kernel executes. 
-The ``InitLocalMem`` statement type uses a 'CPU tile' memory type, for the 
-two entries '0' and '1' in the kernel parameter tuple (second argument to 
-``RAJA::kernel_param``). Then, the inner initialization loop and inner print 
-loops are run with the respective lambda bodies defined in the kernel.
+:ref:`loop_elements-kernel-label` for information about RAJA kernel policies) 
+with a statement type ``RAJA::statement::InitLocalMem`` inserted between the 
+nested for-loops which allocates the memory for the local arrays when the 
+kernel executes.  The ``InitLocalMem`` statement type uses a 'CPU tile' memory 
+type, for the two entries '0' and '1' in the kernel parameter tuple 
+(second argument to ``RAJA::kernel_param``). Then, the inner initialization 
+loop and inner print loop are run with the respective lambda bodies defined 
+in the kernel.
 
 -------------------
 Memory Policies

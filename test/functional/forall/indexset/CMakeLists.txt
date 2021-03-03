@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,7 +8,7 @@
 #
 # List of indexset test types for generating test files.
 #
-set(INDEXSETTESTTYPES ForallIndexSet ForallIcountIndexSet)
+set(INDEXSETTESTTYPES IndexSet IcountIndexSet)
 
 
 #
@@ -19,11 +19,11 @@ set(INDEXSETTESTTYPES ForallIndexSet ForallIcountIndexSet)
 foreach( BACKEND ${FORALL_BACKENDS} )
   foreach( INDEXSETTESTTYPE ${INDEXSETTESTTYPES} )
     configure_file( test-forall-indexset.cpp.in
-                    test-${INDEXSETTESTTYPE}-${BACKEND}.cpp )
-    raja_add_test( NAME test-${INDEXSETTESTTYPE}-${BACKEND}
-                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-${INDEXSETTESTTYPE}-${BACKEND}.cpp )
+                    test-forall-${INDEXSETTESTTYPE}-${BACKEND}.cpp )
+    raja_add_test( NAME test-forall-${INDEXSETTESTTYPE}-${BACKEND}
+                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-${INDEXSETTESTTYPE}-${BACKEND}.cpp )
 
-    target_include_directories(test-${INDEXSETTESTTYPE}-${BACKEND}.exe
+    target_include_directories(test-forall-${INDEXSETTESTTYPE}-${BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
   endforeach()
 endforeach()

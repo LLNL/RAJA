@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -51,10 +51,16 @@ using UnitIntegralTypes = ::testing::Types<char,
 #endif // RAJA_UNIT_EXPANDED_INTEGRAL_TYPES
 
 #ifndef RAJA_UNIT_FLOAT_TYPES
+#ifndef __clang__
   #define RAJA_UNIT_FLOAT_TYPES \
     float,               \
     double,              \
     long double
+#else
+  #define RAJA_UNIT_FLOAT_TYPES \
+    float,               \
+    double
+#endif // __clang__
 #endif // FLOATING_TYPES
 
 using UnitExpandedIntegralTypes = 

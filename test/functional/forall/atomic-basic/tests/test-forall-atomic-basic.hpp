@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,57 +14,59 @@
 
 #include <numeric>
 
-// range segment multiplexer
-template< typename Index, typename SegType >
+// segment multiplexer
+template< typename IdxType, typename SegType >
 struct RSMultiplexer {};
 
-template< typename Index >
-struct RSMultiplexer < Index, RAJA::TypedRangeSegment<Index> >
+template< typename IdxType >
+struct RSMultiplexer < IdxType, RAJA::TypedRangeSegment<IdxType> >
 {
-  RAJA::TypedRangeSegment<Index>
-  makeseg( Index N, camp::resources::Resource RAJA_UNUSED_ARG(work_res) )
+  RAJA::TypedRangeSegment<IdxType>
+  makeseg( IdxType N, camp::resources::Resource RAJA_UNUSED_ARG(work_res) )
   {
-    return RAJA::TypedRangeSegment<Index>( 0, N );
+    return RAJA::TypedRangeSegment<IdxType>( 0, N );
   }
 };
 
-template< typename Index >
-struct RSMultiplexer < Index, RAJA::TypedRangeStrideSegment<Index> >
+template< typename IdxType >
+struct RSMultiplexer < IdxType, RAJA::TypedRangeStrideSegment<IdxType> >
 {
-  RAJA::TypedRangeStrideSegment<Index>
-  makeseg( Index N, camp::resources::Resource RAJA_UNUSED_ARG(work_res) )
+  RAJA::TypedRangeStrideSegment<IdxType>
+  makeseg( IdxType N, camp::resources::Resource RAJA_UNUSED_ARG(work_res) )
   {
-    return RAJA::TypedRangeStrideSegment<Index>( 0, N, 1 );
+    return RAJA::TypedRangeStrideSegment<IdxType>( 0, N, 1 );
   }
 };
 
-template< typename Index >
-struct RSMultiplexer < Index, RAJA::TypedListSegment<Index> >
+template< typename IdxType >
+struct RSMultiplexer < IdxType, RAJA::TypedListSegment<IdxType> >
 {
-  RAJA::TypedListSegment<Index>
-  makeseg( Index N, camp::resources::Resource work_res )
+  RAJA::TypedListSegment<IdxType>
+  makeseg( IdxType N, camp::resources::Resource work_res )
   {
-    std::vector<Index> temp(N);
+    std::vector<IdxType> temp(N);
     std::iota( std::begin(temp), std::end(temp), 0 );
-    return RAJA::TypedListSegment<Index>( &temp[0], static_cast<size_t>(temp.size()), work_res );
+    return RAJA::TypedListSegment<IdxType>( &temp[0], static_cast<size_t>(temp.size()), work_res );
   }
 };
-// end range segment multiplexer
+// end segment multiplexer
 
 
 template <typename ExecPolicy,
           typename AtomicPolicy,
           typename WORKINGRES,
+          typename IdxType,
           typename SegmentType,
           typename T>
-void ForallAtomicBasicTestImpl( RAJA::Index_type seglimit )
+void ForallAtomicBasicTestImpl( IdxType seglimit )
 {
   // initialize an array
   const int len = 10;
 
   camp::resources::Resource work_res{WORKINGRES()};
 
-  SegmentType seg = RSMultiplexer<RAJA::Index_type, SegmentType>().makeseg(seglimit, work_res);
+  SegmentType seg = 
+    RSMultiplexer<IdxType, SegmentType>().makeseg(seglimit, work_res);
 
   T * work_array;
   T * test_array;
@@ -100,7 +102,7 @@ void ForallAtomicBasicTestImpl( RAJA::Index_type seglimit )
 
   work_res.memcpy( work_array, test_array, sizeof(T) * len );
 
-  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
+  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
     RAJA::atomicAdd<AtomicPolicy>(work_array + 0, (T)1);
     RAJA::atomicSub<AtomicPolicy>(work_array + 1, (T)1);
     RAJA::atomicMin<AtomicPolicy>(work_array + 2, (T)i);
@@ -153,10 +155,18 @@ TYPED_TEST_P(ForallAtomicBasicTest, AtomicBasicForall)
   using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
-  using SType   = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IdxType = typename camp::at<TypeParam, camp::num<3>>::type;
   using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallAtomicBasicTestImpl<AExec, APol, ResType, SType, DType>( 10000 );
+  ForallAtomicBasicTestImpl<AExec, APol, ResType, 
+                            IdxType, RAJA::TypedRangeSegment<IdxType>, 
+                            DType>( 10000 );
+  ForallAtomicBasicTestImpl<AExec, APol, ResType, 
+                            IdxType, RAJA::TypedRangeStrideSegment<IdxType>, 
+                            DType>( 10000 );
+  ForallAtomicBasicTestImpl<AExec, APol, ResType, 
+                            IdxType, RAJA::TypedListSegment<IdxType>, 
+                            DType>( 10000 );
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallAtomicBasicTest,

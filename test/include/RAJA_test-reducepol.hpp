@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,6 +13,7 @@
 #define __RAJA_test_reducepol_HPP__
 
 #include "RAJA/RAJA.hpp"
+#include "camp/list.hpp"
 
 // Sequential reduction policy types
 using SequentialReducePols = camp::list< RAJA::seq_reduce >;

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,6 +7,8 @@
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
+
+#include "camp/resource.hpp"
 
 #include <cstdio>
 
@@ -102,12 +104,13 @@ RAJA_HOST_DEVICE constexpr Index_type get_val(T v) noexcept
 GPU_TYPED_TEST_P(Kernel, Basic)
 {
   using Pol = at_v<TypeParam, 0>;
-  using IndexTypes = at_v<TypeParam, 1>;
+  using Res = at_v<TypeParam, 1>;
+  using IndexTypes = at_v<TypeParam, 2>;
   using Idx0 = at_v<IndexTypes, 0>;
   using Idx1 = at_v<IndexTypes, 1>;
-  RAJA::ReduceSum<at_v<TypeParam, 2>, RAJA::Real_type> tsum(0.0);
-  RAJA::ReduceMin<at_v<TypeParam, 2>, RAJA::Real_type> tMin(0.0);
-  RAJA::ReduceMax<at_v<TypeParam, 2>, RAJA::Real_type> tMax(0.0);
+  RAJA::ReduceSum<at_v<TypeParam, 3>, RAJA::Real_type> tsum(0.0);
+  RAJA::ReduceMin<at_v<TypeParam, 3>, RAJA::Real_type> tMin(0.0);
+  RAJA::ReduceMax<at_v<TypeParam, 3>, RAJA::Real_type> tMax(0.0);
   RAJA::Real_type total{0.0};
   auto ranges = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0, x_len),
                                  RAJA::TypedRangeSegment<Idx1>(0, y_len));
@@ -125,6 +128,7 @@ GPU_TYPED_TEST_P(Kernel, Basic)
   }
   ASSERT_FLOAT_EQ((double)total, (double)tsum.get());
 
+  camp::resources::Resource work_res{Res()};
 
   // Check reduction
   int stride1 = 5;
@@ -187,8 +191,8 @@ GPU_TYPED_TEST_P(Kernel, Basic)
 
   tsum.reset(0.0);
   total = 0.0;
-  RAJA::TypedListSegment<Idx0> idx_list(&idx_x[0], idx_x.size());
-  RAJA::TypedListSegment<Idx1> idy_list(&idx_y[0], idx_y.size());
+  RAJA::TypedListSegment<Idx0> idx_list(&idx_x[0], idx_x.size(), work_res);
+  RAJA::TypedListSegment<Idx1> idy_list(&idx_y[0], idx_y.size(), work_res);
   auto rangeList = RAJA::make_tuple(idx_list, idy_list);
 
   RAJA::kernel<Pol>(rangeList, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
@@ -252,12 +256,13 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
 {
   using Pol2d = at_v<TypeParam, 0>;
   using Pol3d = at_v<TypeParam, 1>;
-  using IndexTypes = at_v<TypeParam, 2>;
+  using Res = at_v<TypeParam, 2>;
+  using IndexTypes = at_v<TypeParam, 3>;
   using Idx0 = at_v<IndexTypes, 0>;
   using Idx1 = at_v<IndexTypes, 1>;
-  RAJA::ReduceSum<at_v<TypeParam, 3>, RAJA::Real_type> tsum(0.0);
-  RAJA::ReduceMin<at_v<TypeParam, 3>, RAJA::Real_type> tMin(0.0);
-  RAJA::ReduceMax<at_v<TypeParam, 3>, RAJA::Real_type> tMax(0.0);
+  RAJA::ReduceSum<at_v<TypeParam, 4>, RAJA::Real_type> tsum(0.0);
+  RAJA::ReduceMin<at_v<TypeParam, 4>, RAJA::Real_type> tMin(0.0);
+  RAJA::ReduceMax<at_v<TypeParam, 4>, RAJA::Real_type> tMax(0.0);
   RAJA::Real_type total{0.0};
   auto ranges = RAJA::make_tuple(RAJA::TypedRangeSegment<Idx0>(0, x_len),
                                  RAJA::TypedRangeSegment<Idx1>(0, y_len));
@@ -279,6 +284,8 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
     }
   }
   ASSERT_FLOAT_EQ(total, tsum.get());
+
+  camp::resources::Resource work_res{Res()};
 
   //Check reduction
   int stride1 = 5;
@@ -337,8 +344,8 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
 
   tsum.reset(0.0);
   total = 0.0;
-  RAJA::TypedListSegment<Idx0> idx_list(&idx_x[0], idx_x.size());
-  RAJA::TypedListSegment<Idx1> idy_list(&idx_y[0], idx_y.size());
+  RAJA::TypedListSegment<Idx0> idx_list(&idx_x[0], idx_x.size(), work_res);
+  RAJA::TypedListSegment<Idx1> idy_list(&idx_y[0], idx_y.size(), work_res);
 
   auto rangeList = RAJA::make_tuple(idx_list, idy_list);
 
@@ -411,6 +418,7 @@ using RAJA::list;
 using s = RAJA::seq_exec;
 using TestTypes = ::testing::Types<
     list<KernelPolicy<For<1, s, statement::For<0, s, Lambda<0>>>>,
+         camp::resources::Host,
          list<TypedIndex, Index_type>,
          RAJA::seq_reduce>,
     list<KernelPolicy<
@@ -421,9 +429,11 @@ using TestTypes = ::testing::Types<
                                              tile_fixed<2>,
                                              RAJA::loop_exec,
                                              For<0, s, For<1, s, Lambda<0>>>>>>,
+         camp::resources::Host,
          list<Index_type, Index_type>,
          RAJA::seq_reduce>,
     list<KernelPolicy<statement::Collapse<s, ArgList<0, 1>, Lambda<0>>>,
+         camp::resources::Host,
          list<Index_type, Index_type>,
          RAJA::seq_reduce>>;
 
@@ -434,6 +444,7 @@ INSTANTIATE_TYPED_TEST_SUITE_P(Sequential, Kernel, TestTypes);
 using OMPTypes = ::testing::Types<
     list<
         KernelPolicy<For<1, RAJA::omp_parallel_for_exec, For<0, s, Lambda<0>>>>,
+        camp::resources::Host,
         list<TypedIndex, Index_type>,
         RAJA::omp_reduce>,
     list<KernelPolicy<
@@ -441,6 +452,7 @@ using OMPTypes = ::testing::Types<
                              tile_fixed<2>,
                              RAJA::omp_parallel_for_exec,
                              For<1, RAJA::loop_exec, For<0, s, Lambda<0>>>>>,
+         camp::resources::Host,
          list<TypedIndex, Index_type>,
          RAJA::omp_reduce>>;
 INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP, Kernel, OMPTypes);
@@ -448,6 +460,7 @@ INSTANTIATE_TYPED_TEST_SUITE_P(OpenMP, Kernel, OMPTypes);
 #if defined(RAJA_ENABLE_TBB)
 using TBBTypes = ::testing::Types<
     list<KernelPolicy<For<1, RAJA::tbb_for_exec, For<0, s, Lambda<0>>>>,
+         camp::resources::Host,
          list<TypedIndex, Index_type>,
          RAJA::tbb_reduce>>;
 INSTANTIATE_TYPED_TEST_SUITE_P(TBB, Kernel, TBBTypes);
@@ -458,6 +471,7 @@ using CUDATypes = ::testing::Types<
              1,
              s,
              CudaKernel<For<0, RAJA::cuda_thread_x_loop, Lambda<0>>>>>,
+         camp::resources::Cuda,
          list<TypedIndex, Index_type>,
          RAJA::cuda_reduce>>;
 INSTANTIATE_TYPED_TEST_SUITE_P(CUDA, Kernel, CUDATypes);
@@ -482,6 +496,7 @@ using HIPTypes = ::testing::Types<
              >
            >
          >,
+         camp::resources::Hip,
          list<TypedIndex, Index_type>,
          RAJA::hip_reduce>>;
 INSTANTIATE_TYPED_TEST_SUITE_P(HIP, Kernel_gpu, HIPTypes);

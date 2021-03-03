@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -28,11 +28,12 @@
 #endif
 
 //
-// Macros for decorating host/device functions for CUDA kernels.
+// Macros for decorating host/device functions for CUDA and HIP kernels.
 // We need a better solution than this as it is a pain to manage
 // this stuff in an application.
 //
-#if defined(RAJA_ENABLE_CUDA) && defined(__CUDA_ARCH__)
+#if (defined(RAJA_ENABLE_CUDA) && defined(__CUDA_ARCH__)) \
+ || (defined(RAJA_ENABLE_HIP) && defined(__HIP_DEVICE_COMPILE__))
 #define RAJA_DEVICE_CODE
 #endif
 
@@ -128,9 +129,10 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
 #if defined(__CUDA_ARCH__)
   asm ("trap;");
 
-#elif defined(__HIPCC__)
+#elif defined(__HIP_DEVICE_COMPILE__)
   abort();
-#else 
+
+#else
 #ifdef RAJA_COMPILER_MSVC
   char *value;
   size_t len;
@@ -172,7 +174,6 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
 #endif
 
 #if defined(RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED)
-
 // When using a C++14 compiler, use the standard-specified deprecated attribute
 #define RAJA_DEPRECATE(Msg) [[deprecated(Msg)]]
 #define RAJA_DEPRECATE_ALIAS(Msg) [[deprecated(Msg)]]

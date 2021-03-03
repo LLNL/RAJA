@@ -3,58 +3,70 @@
  *
  * \file
  *
- * \brief   Implementation file for aligned-range index set builder methods.
+ * \brief   Implmentation file for aligned range index set builder methods.
  *
  ******************************************************************************
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+#include <iostream>
+
+#include "RAJA/index/IndexSetBuilders.hpp"
+
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/index/ListSegment.hpp"
 #include "RAJA/index/RangeSegment.hpp"
+
+#include "camp/resource.hpp"
 
 namespace RAJA
 {
 
 /*
-*************************************************************************
-*
-* Initialize index set with aligned Ranges and List segments from array
-* of indices with given length.
-*
-*************************************************************************
-*/
-
-void buildTypedIndexSetAligned(
-    RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& hiset,
-    const Index_type* const indices_in,
-    Index_type length)
+ ******************************************************************************
+ *
+ * Generate an index set with aligned Range segments and List segments,
+ * as needed, from given array of indices.
+ *
+ ******************************************************************************
+ */
+void buildIndexSetAligned(
+    RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& iset,
+    camp::resources::Resource& work_res,
+    const RAJA::Index_type* const indices_in,
+    RAJA::Index_type length,
+    RAJA::Index_type range_min_length,
+    RAJA::Index_type range_align)
 {
   if (length == 0) return;
 
   /* only transform relatively large */
-  if (length > RANGE_MIN_LENGTH) {
+  if (length > range_min_length) {
     /* build a rindex array from an index array */
-    Index_type docount = 0;
-    Index_type inrange = -1;
+    RAJA::Index_type docount = 0;
+    RAJA::Index_type inrange = -1;
 
     /****************************/
     /* first, gather statistics */
     /****************************/
 
-    Index_type scanVal = indices_in[0];
-    Index_type sliceCount = 0;
-    for (Index_type ii = 1; ii < length; ++ii) {
-      Index_type lookAhead = indices_in[ii];
+    RAJA::Index_type scanVal = indices_in[0];
+    RAJA::Index_type sliceCount = 0;
+    for (RAJA::Index_type ii = 1; ii < length; ++ii) {
+      RAJA::Index_type lookAhead = indices_in[ii];
 
       if (inrange == -1) {
-        if ((lookAhead == scanVal + 1) && ((scanVal % RANGE_ALIGN) == 0)) {
+        if ((lookAhead == scanVal + 1) && ((scanVal % range_align) == 0)) {
           inrange = 1;
         } else {
           inrange = 0;
@@ -62,7 +74,7 @@ void buildTypedIndexSetAligned(
       }
 
       if (lookAhead == scanVal + 1) {
-        if ((inrange == 0) && ((scanVal % RANGE_ALIGN) == 0)) {
+        if ((inrange == 0) && ((scanVal % range_align) == 0)) {
           if (sliceCount != 0) {
             docount += 1 + sliceCount; /* length + singletons */
           }
@@ -106,7 +118,7 @@ void buildTypedIndexSetAligned(
     ++docount; /* zero length termination */
 
     /* What is the cutoff criteria for generating the rindex array? */
-    if (docount < (length * (RANGE_ALIGN - 1)) / RANGE_ALIGN) {
+    if (docount < (length * (range_align - 1)) / range_align) {
       /* The rindex array can either contain a pointer into the */
       /* original index array, *or* it can repack the data from the */
       /* original index array.  Benefits of repacking could include */
@@ -117,17 +129,17 @@ void buildTypedIndexSetAligned(
       /* now, build the rindex array */
       /*******************************/
 
-      Index_type dobegin;
+      RAJA::Index_type dobegin;
       inrange = -1;
 
       scanVal = indices_in[0];
       sliceCount = 0;
       dobegin = scanVal;
-      for (Index_type ii = 1; ii < length; ++ii) {
-        Index_type lookAhead = indices_in[ii];
+      for (RAJA::Index_type ii = 1; ii < length; ++ii) {
+        RAJA::Index_type lookAhead = indices_in[ii];
 
         if (inrange == -1) {
-          if ((lookAhead == scanVal + 1) && ((scanVal % RANGE_ALIGN) == 0)) {
+          if ((lookAhead == scanVal + 1) && ((scanVal % range_align) == 0)) {
             inrange = 1;
           } else {
             inrange = 0;
@@ -135,9 +147,10 @@ void buildTypedIndexSetAligned(
           }
         }
         if (lookAhead == scanVal + 1) {
-          if ((inrange == 0) && ((scanVal % RANGE_ALIGN) == 0)) {
+          if ((inrange == 0) && ((scanVal % range_align) == 0)) {
             if (sliceCount != 0) {
-              hiset.push_back(ListSegment(&indices_in[dobegin], sliceCount));
+              iset.push_back(ListSegment(&indices_in[dobegin], sliceCount,
+                                          work_res));
             }
             inrange = 1;
             dobegin = scanVal;
@@ -154,7 +167,7 @@ void buildTypedIndexSetAligned(
             /* we need to emit a random array instead of */
             /* a range array */
             ++sliceCount;
-            hiset.push_back(RangeSegment(dobegin, dobegin + sliceCount));
+            iset.push_back(RangeSegment(dobegin, dobegin + sliceCount));
             inrange = 0;
             sliceCount = 0;
             dobegin = ii;
@@ -164,24 +177,25 @@ void buildTypedIndexSetAligned(
         }
 
         scanVal = lookAhead;
-      }  // for (Index_type ii ...
+      }  // for (RAJA::Index_type ii ...
 
       if (inrange != -1) {
         if (inrange) {
           ++sliceCount;
-          hiset.push_back(RangeSegment(dobegin, dobegin + sliceCount));
+          iset.push_back(RangeSegment(dobegin, dobegin + sliceCount));
         } else {
           ++sliceCount;
-          hiset.push_back(ListSegment(&indices_in[dobegin], sliceCount));
+          iset.push_back(ListSegment(&indices_in[dobegin], sliceCount,
+                                      work_res));
         }
       } else if (scanVal != -1) {
-        hiset.push_back(ListSegment(&scanVal, 1));
+        iset.push_back(ListSegment(&scanVal, 1, work_res));
       }
-    } else {  // !(docount < (length*RANGE_ALIGN-1))/RANGE_ALIGN)
-      hiset.push_back(ListSegment(indices_in, length));
+    } else {  // !(docount < (length*range_align-1))/range_align)
+      iset.push_back(ListSegment(indices_in, length, work_res));
     }
-  } else {  // else !(length > RANGE_MIN_LENGTH)
-    hiset.push_back(ListSegment(indices_in, length));
+  } else {  // else !(length > range_min_length)
+    iset.push_back(ListSegment(indices_in, length, work_res));
   }
 }
 

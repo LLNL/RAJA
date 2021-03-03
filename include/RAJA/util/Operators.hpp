@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -416,6 +416,8 @@ struct bit_or : public detail::binary_function<Arg1, Arg2, Ret> {
   {
     return lhs | rhs;
   }
+
+RAJA_HOST_DEVICE static constexpr Ret identity() { return Ret{0}; }
 };
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
@@ -425,7 +427,10 @@ struct bit_and : public detail::binary_function<Arg1, Arg2, Ret> {
   {
     return lhs & rhs;
   }
+
+RAJA_HOST_DEVICE static constexpr Ret identity() { return ~Ret{0}; }
 };
+
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct bit_xor : public detail::binary_function<Arg1, Arg2, Ret> {
@@ -608,6 +613,7 @@ namespace type_traits
 DefineTypeTraitFromConcept(is_binary_function, RAJA::concepts::BinaryFunction);
 DefineTypeTraitFromConcept(is_unary_function, RAJA::concepts::UnaryFunction);
 }  // namespace type_traits
+
 
 }  // namespace RAJA
 

@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -31,13 +31,6 @@
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/policy/openmp/policy.hpp"
-
-
-#if !defined(RAJA_COMPILER_MSVC)
-#define RAJA_COLLAPSE(X) collapse(X)
-#else
-#define RAJA_COLLAPSE(X)
-#endif
 
 namespace RAJA
 {

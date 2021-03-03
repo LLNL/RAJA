@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -34,6 +34,11 @@ add_subdirectory(segment)
 add_subdirectory(segment-view)
 
 add_subdirectory(reduce-basic)
+add_subdirectory(reduce-multiple-segment)
+add_subdirectory(reduce-multiple-indexset)
+
+add_subdirectory(resource-indexset)
+add_subdirectory(resource-segment)
 
 unset( FORALL_BACKENDS ) 
 
@@ -50,7 +55,8 @@ endif()
 
 if(RAJA_ENABLE_TBB)
 # TBB atomics are not available in RAJA currently
-#  list(APPEND FORALL_BACKENDS TBB)
+# so built-in atomics are used
+  list(APPEND FORALL_ATOMIC_BACKENDS TBB)
 endif()
 
 if(RAJA_ENABLE_CUDA)

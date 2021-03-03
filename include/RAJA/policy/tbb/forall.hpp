@@ -12,7 +12,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -67,10 +67,12 @@ namespace tbb
  * argument.  This should be used for composable parallelism and increased work
  * stealing at the cost of initial start-up overhead for a top-level loop.
  */
+
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const tbb_for_dynamic& p,
-                             Iterable&& iter,
-                             Func&& loop_body)
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
+                                                               const tbb_for_dynamic& p,
+                                                               Iterable&& iter,
+                                                               Func&& loop_body)
 {
   using std::begin;
   using std::distance;
@@ -85,8 +87,9 @@ RAJA_INLINE void forall_impl(const tbb_for_dynamic& p,
     for (auto i = r.begin(); i != r.end(); ++i)
       body(b[i]);
   });
-}
 
+  return resources::EventProxy<resources::Host>(&host_res);
+}
 ///
 /// TBB parallel for static policy implementation
 ///
@@ -107,10 +110,12 @@ RAJA_INLINE void forall_impl(const tbb_for_dynamic& p,
  * threads must be maintained across multiple loops for correctness. NOTE: if
  * correctnes requires the per-thread mapping, you *must* use TBB 2017 or newer
  */
+
 template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE void forall_impl(const tbb_for_static<ChunkSize>&,
-                             Iterable&& iter,
-                             Func&& loop_body)
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
+                                                               const tbb_for_static<ChunkSize>&,
+                                                               Iterable&& iter,
+                                                               Func&& loop_body)
 {
   using std::begin;
   using std::distance;
@@ -128,6 +133,8 @@ RAJA_INLINE void forall_impl(const tbb_for_static<ChunkSize>&,
           body(b[i]);
       },
       tbb_static_partitioner{});
+
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 }  // namespace tbb

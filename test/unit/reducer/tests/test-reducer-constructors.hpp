@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -100,7 +100,7 @@ template <typename ReducePolicy,
           typename ForOnePol>
 void testInitReducerConstructor()
 {
-  camp::resources::Resource work_res{WORKING_RES()};
+  camp::resources::Resource work_res{WORKING_RES::get_default()};
   camp::resources::Resource host_res{camp::resources::Host()};
 
   NumericType * theVal = nullptr;

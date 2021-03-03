@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -21,38 +21,35 @@
 
 #include <iostream>
 
+#include "RAJA/index/IndexSetBuilders.hpp"
+
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/index/ListSegment.hpp"
 #include "RAJA/index/RangeSegment.hpp"
 
 #include "RAJA/internal/ThreadUtils_CPU.hpp"
 
+#include "camp/resource.hpp"
+
 namespace RAJA
 {
 
 /*
- * See buildLockFreeIndexSet.hxx for other comments.
- */
-
-/*
  ******************************************************************************
  *
- * Build Lock-free "block" index set (planar division).
- *
- * Note: Method assumes IndexSet ptr refers to an empty index set.
+ * Generate a lock-free "block" index set (planar division) containing
+ * range segments. 
  *
  ******************************************************************************
  */
-#define PROFITABLE_ENTITY_THRESHOLD_BLOCK 100
-
 void buildLockFreeBlockIndexset(
-    RAJA::TypedIndexSet<RAJA::RangeSegment,
-                        RAJA::ListSegment,
-                        RAJA::RangeStrideSegment>& iset,
-    Index_type fastDim,
-    Index_type midDim,
-    Index_type slowDim)
+    RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
+    int fastDim,
+    int midDim,
+    int slowDim)
 {
+  constexpr int PROFITABLE_ENTITY_THRESHOLD_BLOCK = 100;
+
   int numThreads = getMaxOMPThreadsCPU();
 
   // printf("Lock-free created\n") ;
@@ -73,8 +70,8 @@ void buildLockFreeBlockIndexset(
       int numSegments = numThreads * 3;
       for (int lane = 0; lane < 3; ++lane) {
         for (int i = lane; i < numSegments; i += 3) {
-          Index_type start = i * fastDim / numSegments;
-          Index_type end = (i + 1) * fastDim / numSegments;
+          RAJA::Index_type start = i * fastDim / numSegments;
+          RAJA::Index_type end = (i + 1) * fastDim / numSegments;
           // printf("%d %d\n", start, end) ;
           iset.push_back(RAJA::RangeSegment(start, end));
         }
@@ -96,11 +93,11 @@ void buildLockFreeBlockIndexset(
       /* now use the brain dead approach. */
       for (int lane = 0; lane < 3; ++lane) {
         for (int i = 0; i < numThreads; ++i) {
-          Index_type startRow = i * midDim / numThreads;
-          Index_type endRow = (i + 1) * midDim / numThreads;
-          Index_type start = startRow * fastDim;
-          Index_type end = endRow * fastDim;
-          Index_type len = end - start;
+          RAJA::Index_type startRow = i * midDim / numThreads;
+          RAJA::Index_type endRow = (i + 1) * midDim / numThreads;
+          RAJA::Index_type start = startRow * fastDim;
+          RAJA::Index_type end = endRow * fastDim;
+          RAJA::Index_type len = end - start;
           // printf("%d %d\n", start + (lane  )*len/3,
           //                   start + (lane+1)*len/3  ) ;
           iset.push_back(RAJA::RangeSegment(start + (lane)*len / 3,
@@ -136,11 +133,11 @@ void buildLockFreeBlockIndexset(
     /*
           for (int lane = 0; lane < segmentsPerThread; ++lane) {
             for (int i = 0; i < numThreads; ++i) {
-              Index_type startPlane = i * slowDim / numThreads;
-              Index_type endPlane = (i + 1) * slowDim / numThreads;
-              Index_type start = startPlane * fastDim * midDim;
-              Index_type end = endPlane * fastDim * midDim;
-              Index_type len = end - start;
+              RAJA::Index_type startPlane = i * slowDim / numThreads;
+              RAJA::Index_type endPlane = (i + 1) * slowDim / numThreads;
+              RAJA::Index_type start = startPlane * fastDim * midDim;
+              RAJA::Index_type end = endPlane * fastDim * midDim;
+              RAJA::Index_type len = end - start;
               // printf("%d %d\n", start + (lane  )*len/segmentsPerThread,
               //                   start + (lane+1)*len/segmentsPerThread  );
               iset.push_back(
@@ -198,45 +195,40 @@ void buildLockFreeBlockIndexset(
 /*
  ******************************************************************************
  *
- * Build Lock-free "color" index set. The domain-set is colored based on
- * connectivity to the range-set.  All elements in each segment are
- * independent, and no two segments can be executed in parallel.
- *
- * Note: Method assumes IndexSet ptr refers to an empty index set.
+ * Generate a lock-free "color" index set containing range and list segments.
  *
  ******************************************************************************
  */
 void buildLockFreeColorIndexset(
-    RAJA::TypedIndexSet<RAJA::RangeSegment,
-                        RAJA::ListSegment,
-                        RAJA::RangeStrideSegment>& iset,
-    Index_type const* domainToRange,
+    RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& iset,
+    camp::resources::Resource& work_res,
+    RAJA::Index_type const* domainToRange,
     int numEntity,
     int numRangePerDomain,
     int numEntityRange,
-    Index_type* elemPermutation,
-    Index_type* ielemPermutation)
+    RAJA::Index_type* elemPermutation,
+    RAJA::Index_type* ielemPermutation)
 {
   bool done = false;
   bool* isMarked = new bool[numEntity];
 
-  Index_type numWorkset = 0;
-  Index_type* worksetDelim = new Index_type[numEntity];
+  RAJA::Index_type numWorkset = 0;
+  RAJA::Index_type* worksetDelim = new RAJA::Index_type[numEntity];
 
-  Index_type worksetSize = 0;
-  Index_type* workset = new Index_type[numEntity];
+  RAJA::Index_type worksetSize = 0;
+  RAJA::Index_type* workset = new RAJA::Index_type[numEntity];
 
-  Index_type* rangeToDomain =
-      new Index_type[numEntityRange * numRangePerDomain];
-  Index_type* rangeToDomainCount = new Index_type[numEntityRange];
+  RAJA::Index_type* rangeToDomain =
+      new RAJA::Index_type[numEntityRange * numRangePerDomain];
+  RAJA::Index_type* rangeToDomainCount = new RAJA::Index_type[numEntityRange];
 
-  memset(rangeToDomainCount, 0, numEntityRange * sizeof(Index_type));
+  memset(rangeToDomainCount, 0, numEntityRange * sizeof(RAJA::Index_type));
 
   /* create an inverse mapping */
   for (int i = 0; i < numEntity; ++i) {
     for (int j = 0; j < numRangePerDomain; ++j) {
-      Index_type id = domainToRange[i * numRangePerDomain + j];
-      Index_type idx = id * numRangePerDomain + rangeToDomainCount[id]++;
+      RAJA::Index_type id = domainToRange[i * numRangePerDomain + j];
+      RAJA::Index_type idx = id * numRangePerDomain + rangeToDomainCount[id]++;
       if (idx > numEntityRange * numRangePerDomain ||
           rangeToDomainCount[id] > numRangePerDomain) {
         printf("foiled!\n");
@@ -266,9 +258,9 @@ void buildLockFreeColorIndexset(
         }
         workset[worksetSize++] = i;
         for (int j = 0; j < numRangePerDomain; ++j) {
-          Index_type id = domainToRange[i * numRangePerDomain + j];
+          RAJA::Index_type id = domainToRange[i * numRangePerDomain + j];
           for (int k = 0; k < rangeToDomainCount[id]; ++k) {
-            Index_type idx = rangeToDomain[id * numRangePerDomain + k];
+            RAJA::Index_type idx = rangeToDomain[id * numRangePerDomain + k];
             if (idx < 0 || idx >= numEntity) {
               printf("foiled!\n");
               exit(-1);
@@ -301,16 +293,16 @@ void buildLockFreeColorIndexset(
         ielemPermutation[elemPermutation[i]] = i;
       }
     }
-    Index_type end = 0;
+    RAJA::Index_type end = 0;
     for (int i = 0; i < numWorkset; ++i) {
-      Index_type begin = end;
+      RAJA::Index_type begin = end;
       end = worksetDelim[i];
       iset.push_back(RAJA::RangeSegment(begin, end));
     }
   } else {
-    Index_type end = 0;
+    RAJA::Index_type end = 0;
     for (int i = 0; i < numWorkset; ++i) {
-      Index_type begin = end;
+      RAJA::Index_type begin = end;
       end = worksetDelim[i];
       bool isRange = true;
       for (int j = begin + 1; j < end; ++j) {
@@ -323,7 +315,8 @@ void buildLockFreeColorIndexset(
         iset.push_back(
             RAJA::RangeSegment(workset[begin], workset[end - 1] + 1));
       } else {
-        iset.push_back(RAJA::ListSegment(&workset[begin], end - begin));
+        iset.push_back(RAJA::ListSegment(&workset[begin], end - begin,
+                                         work_res));
         // printf("segment %d\n", i) ;
         // for (int j=begin; j<end; ++j) {
         //    printf("%d\n", workset[j]) ;

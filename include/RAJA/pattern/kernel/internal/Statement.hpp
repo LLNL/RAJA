@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,6 +19,8 @@
 #define RAJA_pattern_kernel_internal_Statement_HPP
 
 #include "RAJA/pattern/kernel/internal/StatementList.hpp"
+#include <type_traits>
+#include <camp/camp.hpp>
 
 namespace RAJA
 {
@@ -29,6 +31,8 @@ namespace internal
 
 template <typename ExecPolicy, typename... EnclosedStmts>
 struct Statement {
+  static_assert(std::is_same<ExecPolicy, camp::nil>::value || sizeof...(EnclosedStmts) > 0,
+      "Executable statement with no enclosed statements, this is almost certainly a bug");
   Statement() = delete;
 
   using enclosed_statements_t = StatementList<EnclosedStmts...>;

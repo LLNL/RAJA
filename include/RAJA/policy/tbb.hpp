@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,6 +26,8 @@
 #include "RAJA/policy/tbb/policy.hpp"
 #include "RAJA/policy/tbb/reduce.hpp"
 #include "RAJA/policy/tbb/scan.hpp"
+#include "RAJA/policy/tbb/sort.hpp"
+#include "RAJA/policy/tbb/WorkGroup.hpp"
 
 #endif
 

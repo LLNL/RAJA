@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -101,7 +101,43 @@ struct StatementExecutor<
     auto len = segment_length<ArgumentId>(data);
     using len_t = decltype(len);
 
-    forall_impl(ExecPolicy{}, TypedRangeSegment<len_t>(0, len), for_wrapper);
+    auto r = resources::get_resource<ExecPolicy>::type::get_default();
+
+    forall_impl(r, ExecPolicy{}, TypedRangeSegment<len_t>(0, len), for_wrapper);
+  }
+};
+
+/*!
+ * A generic RAJA::kernel forall_impl executor for statement::For
+ *
+ *
+ */
+template <camp::idx_t ArgumentId,
+          typename... EnclosedStmts,
+          typename Types>
+struct StatementExecutor<
+    statement::For<ArgumentId, seq_exec, EnclosedStmts...>, Types> {
+
+
+  template <typename Data>
+  static RAJA_INLINE void exec(Data &&data)
+  {
+
+    // Set the argument type for this loop
+    using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
+    // Create a wrapper, just in case forall_impl needs to thread_privatize
+    ForWrapper<ArgumentId, Data, NewTypes, EnclosedStmts...> for_wrapper(data);
+
+    auto len = segment_length<ArgumentId>(data);
+    using len_t = decltype(len);
+
+    RAJA_EXTRACT_BED_IT(TypedRangeSegment<len_t>(0, len));
+
+    RAJA_NO_SIMD
+    for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+      for_wrapper(*(begin_it + i));
+    }
   }
 };
 

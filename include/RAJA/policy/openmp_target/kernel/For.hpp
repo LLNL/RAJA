@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -48,12 +48,16 @@ struct StatementExecutor<statement::For<ArgumentId, omp_target_parallel_for_exec
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
   {
-    OpenMPTargetForWrapper<ArgumentId, Data, Types, EnclosedStmts...> for_wrapper(data);
+    // Set the argument type for this loop
+    using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
+    OpenMPTargetForWrapper<ArgumentId, Data, NewTypes, EnclosedStmts...> for_wrapper(data);
 
     auto len = segment_length<ArgumentId>(data);
     using len_t = decltype(len);
 
-    forall_impl(omp_target_parallel_for_exec<N>{}, TypedRangeSegment<len_t>(0, len), for_wrapper);
+    auto r = resources::Omp::get_default();
+    forall_impl(r, omp_target_parallel_for_exec<N>{}, TypedRangeSegment<len_t>(0, len), for_wrapper);
   }
 };
 

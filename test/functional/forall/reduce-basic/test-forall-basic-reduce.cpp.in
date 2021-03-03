@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -25,18 +25,31 @@
 #include "test-forall-basic-@REDUCETYPE@.hpp"
 
 //
-// Data types for reduction basic tests
+// Data types for core reduction basic tests
 //
-using ReductionDataTypeList = camp::list< int,
-                                          float,
-                                          double >;
+using CoreReductionDataTypeList = camp::list< int,
+                                              float,
+                                              double >;
 
+//
+// Data types for bitwise reduction basic tests
+//
+using BitwiseReductionDataTypeList = camp::list< int,
+                                                 unsigned int >;
+
+
+//
+// These tests exercise only one index type. We parameterize here to 
+// make it easier to expand types in the future if needed.
+//
+using TestIdxTypeList = camp::list< RAJA::Index_type >;
 
 //
 // Cartesian product of types used in parameterized tests
 //
 using @BACKEND@ForallReduceBasicTypes =
-  Test< camp::cartesian_product<ReductionDataTypeList,
+  Test< camp::cartesian_product<TestIdxTypeList,
+                                @DATATYPES@,
                                 @BACKEND@ResourceList,
                                 @BACKEND@ForallReduceExecPols,
                                 @BACKEND@ReducePols>>::Types;

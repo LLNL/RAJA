@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -165,24 +165,23 @@ struct CudaStatementExecutor<
   {
     // block stride loop
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i0 = threadIdx.x;
+    diff_t i_init = threadIdx.x;
     diff_t i_stride = RAJA::policy::cuda::WARP_SIZE;
-    diff_t i = i0;
-    for( ; i < len; i += i_stride){
+
+    // Iterate through grid stride of chunks
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i_init;
+
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-    }
-    // do we need one more masked iteration?
-    if(i - threadIdx.x < len){
-      // execute enclosed statements one more time, but masking them off
-      // this is because there's at least one thread that isn't masked off
-      // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
+      enclosed_stmts_t::exec(data, thread_active && have_work);
     }
   }
 };
@@ -298,22 +297,23 @@ struct CudaStatementExecutor<
   {
     // masked size strided loop
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i = mask_t::maskValue(threadIdx.x);
-    for( ; i < len; i += (diff_t) mask_t::max_masked_size){
+    diff_t i_init = mask_t::maskValue(threadIdx.x);
+    diff_t i_stride = (diff_t) mask_t::max_masked_size;
+
+    // Iterate through grid stride of chunks
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i_init;
+
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
 
       // Assign the x thread to the argument and param
       data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-    }
-    // do we need one more masked iteration?
-    if(i - mask_t::maskValue(threadIdx.x) < len){
-      // execute enclosed statements one more time, but masking them off
-      // this is because there's at least one thread that isn't masked off
-      // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
+      enclosed_stmts_t::exec(data, thread_active && have_work);
     }
   }
 
@@ -428,22 +428,23 @@ struct CudaStatementExecutor<
   {
     // masked size strided loop
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i = mask_t::maskValue(threadIdx.x);
-    for( ; i < len; i += (diff_t) mask_t::max_masked_size){
+    diff_t i_init = mask_t::maskValue(threadIdx.x);
+    diff_t i_stride = (diff_t) mask_t::max_masked_size;
+
+    // Iterate through grid stride of chunks
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i_init;
+
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-    }
-    // do we need one more masked iteration?
-    if(i - mask_t::maskValue(threadIdx.x) < len){
-      // execute enclosed statements one more time, but masking them off
-      // this is because there's at least one thread that isn't masked off
-      // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
+      enclosed_stmts_t::exec(data, thread_active && have_work);
     }
   }
 
@@ -489,25 +490,23 @@ struct CudaStatementExecutor<
   {
     // block stride loop
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i0 = get_cuda_dim<ThreadDim>(threadIdx);
+    diff_t i_init = get_cuda_dim<ThreadDim>(threadIdx);
     diff_t i_stride = get_cuda_dim<ThreadDim>(blockDim);
-    diff_t i = i0;
-    for(;i < len;i += i_stride){
+
+    // Iterate through grid stride of chunks
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i_init;
+
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-    }
-    // do we need one more masked iteration?
-    if(i - i0 < len)
-    {
-      // execute enclosed statements one more time, but masking them off
-      // this is because there's at least one thread that isn't masked off
-      // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
+      enclosed_stmts_t::exec(data, thread_active && have_work);
     }
   }
 };
@@ -516,7 +515,7 @@ struct CudaStatementExecutor<
 
 /*
  * Executor for block work sharing inside CudaKernel.
- * Provides a direct mapping for each block in xyz.
+ * Provides a direct mapping of each block in xyz.
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId
  */
@@ -597,9 +596,11 @@ struct CudaStatementExecutor<
   {
     // grid stride loop
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i0 = get_cuda_dim<BlockDim>(blockIdx);
+    diff_t i_init = get_cuda_dim<BlockDim>(blockIdx);
     diff_t i_stride = get_cuda_dim<BlockDim>(gridDim);
-    for(diff_t i = i0;i < len;i += i_stride){
+
+    // Iterate through grid stride of chunks
+    for (diff_t i = i_init; i < len; i += i_stride) {
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
@@ -664,4 +665,4 @@ struct CudaStatementExecutor<
 }  // end namespace RAJA
 
 
-#endif /* RAJA_pattern_kernel_HPP */
+#endif /* RAJA_policy_cuda_kernel_ForICount_HPP */

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -41,20 +41,6 @@ using CudaReducerPolicyList = camp::list< RAJA::cuda_reduce >;
 
 #if defined(RAJA_ENABLE_HIP)
 using HipReducerPolicyList = camp::list< RAJA::hip_reduce >;
-#endif
-
-
-//
-// Forone unit test policies
-//
-using SequentialForoneList = camp::list<forone_seq>;
-
-#if defined(RAJA_ENABLE_CUDA)
-using CudaForoneList = camp::list<forone_cuda>;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-using HipForoneList = camp::list<forone_hip>;
 #endif
 
 #endif  // __TEST_REDUCER_UTILS_HPP__

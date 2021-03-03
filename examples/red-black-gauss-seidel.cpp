@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,7 +14,7 @@
 
 #include "RAJA/RAJA.hpp"
 
-#include "memoryManager.hpp"
+#include "camp/resource.hpp"
 
 /*
  * Gauss-Seidel with Red-Black Ordering Example
@@ -65,7 +65,8 @@ struct grid_s {
 */
 double solution(double x, double y);
 void computeErr(double *I, grid_s grid);
-RAJA::TypedIndexSet<RAJA::ListSegment> gsColorPolicy(int N);
+RAJA::TypedIndexSet<RAJA::ListSegment> 
+  gsColorPolicy(int N, camp::resources::Resource& res);
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -97,11 +98,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   gridx.h = 1.0 / (N + 1.0);
   gridx.n = N + 2;
 
-  double *I = memoryManager::allocate<double>(NN);
+  camp::resources::Resource resource{camp::resources::Host()};
+
+  double *I = resource.allocate<double>(NN);
 
   memset(I, 0, NN * sizeof(double));
 
-  RAJA::TypedIndexSet<RAJA::ListSegment> colorSet = gsColorPolicy(N);
+  RAJA::TypedIndexSet<RAJA::ListSegment> colorSet = gsColorPolicy(N, resource);
 
   memset(I, 0, NN * sizeof(double));
 
@@ -160,8 +163,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   computeErr(I, gridx);
   printf("No of iterations: %d \n \n", iteration);
 
-
-  memoryManager::deallocate(I);
+  resource.deallocate(I);
 
   return 0;
 }
@@ -172,9 +174,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //  to generate RAJA ListSegments and populate a RAJA Static Index
 //  Set.
 
-RAJA::TypedIndexSet<RAJA::ListSegment> gsColorPolicy(int N)
+RAJA::TypedIndexSet<RAJA::ListSegment> 
+  gsColorPolicy(int N, camp::resources::Resource& res)
 {
-
   RAJA::TypedIndexSet<RAJA::ListSegment> colorSet;
 
   int redN = ceil(N * N / 2);
@@ -205,8 +207,8 @@ RAJA::TypedIndexSet<RAJA::ListSegment> gsColorPolicy(int N)
   }
 
   // Create Index
-  colorSet.push_back(RAJA::ListSegment(Blk, blkN));
-  colorSet.push_back(RAJA::ListSegment(Red, redN));
+  colorSet.push_back(RAJA::ListSegment(Blk, blkN, res));
+  colorSet.push_back(RAJA::ListSegment(Red, redN, res));
   delete[] Blk;
   delete[] Red;
 
