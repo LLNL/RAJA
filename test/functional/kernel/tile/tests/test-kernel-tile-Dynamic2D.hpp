@@ -70,7 +70,7 @@ void KernelTileDynamic2DTestImpl(const int rows, const int cols)
 
   RAJA::kernel_param<EXEC_POLICY> (
     RAJA::make_tuple( colrange, rowrange ),
-    RAJA::make_tuple( RAJA::TileSize{16}, RAJA::TileSize{16} ),
+    RAJA::make_tuple( RAJA::TileSize{tile_dim_x}, RAJA::TileSize{tile_dim_y} ),
     [=] RAJA_HOST_DEVICE ( INDEX_TYPE cc, INDEX_TYPE rr ) {
       WorkTView( cc, rr ) = WorkView( rr, cc );
   });
@@ -92,7 +92,7 @@ void KernelTileDynamic2DTestImpl(const int rows, const int cols)
   // transpose work_array again with different tile sizes
   RAJA::kernel_param<EXEC_POLICY> (
     RAJA::make_tuple( colrange, rowrange ),
-    RAJA::make_tuple( RAJA::TileSize{32}, RAJA::TileSize{8} ),
+    RAJA::make_tuple( RAJA::TileSize{tile_dim_x}, RAJA::TileSize{tile_dim_y/2} ),
     [=] RAJA_HOST_DEVICE ( INDEX_TYPE cc, INDEX_TYPE rr ) {
       WorkTView( cc, rr ) = WorkView( rr, cc );
   });

@@ -11,6 +11,7 @@
 #include "RAJA_test-base.hpp"
 #include "RAJA_test-camp.hpp"
 #include "RAJA_test-index-types.hpp"
+#include "RAJA_test-kernel-tile-size.hpp"
 
 // for data types
 #include "RAJA_test-reduce-types.hpp"
@@ -32,8 +33,8 @@ using SequentialKernelTileExecPols =
   camp::list<
 
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::tile_fixed<16>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<16>, RAJA::loop_exec,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::loop_exec,
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
             RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
               RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
@@ -59,8 +60,8 @@ using OpenMPKernelTileExecPols =
   camp::list<
 
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::tile_fixed<16>, RAJA::omp_parallel_for_exec,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<16>, RAJA::loop_exec,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::omp_parallel_for_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::loop_exec,
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
             RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
               RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
@@ -90,8 +91,8 @@ using CudaKernelTileExecPols =
 
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::tile_fixed<16>, RAJA::cuda_block_x_loop,
-          RAJA::statement::Tile<0, RAJA::tile_fixed<16>, RAJA::cuda_block_y_direct,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::cuda_block_x_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::cuda_block_y_direct,
             RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2>,
               RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::cuda_thread_x_loop,
                 RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::cuda_thread_y_direct,
@@ -125,8 +126,8 @@ using HipKernelTileExecPols =
 
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
-        RAJA::statement::Tile<1, RAJA::tile_fixed<16>, RAJA::hip_block_x_loop,
-          RAJA::statement::Tile<0, RAJA::tile_fixed<16>, RAJA::hip_block_y_direct,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::hip_block_x_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::hip_block_y_direct,
             RAJA::statement::InitLocalMem<RAJA::hip_shared_mem, RAJA::ParamList<2>,
               RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::hip_thread_x_loop,
                 RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::hip_thread_y_direct,

@@ -49,7 +49,7 @@ void KernelTileLocalArray2DTestImpl(const int rows, const int cols)
   RAJA::View<DATA_TYPE, RAJA::Layout<2>> CheckTView( check_array_t, cols, rows );
 
   // initialize local array (shared mem)
-  using TILE_MEM = RAJA::LocalArray<DATA_TYPE, RAJA::Perm<0,1>, RAJA::SizeList<16, 16>>;
+  using TILE_MEM = RAJA::LocalArray<DATA_TYPE, RAJA::Perm<0,1>, RAJA::SizeList<tile_dim_x, tile_dim_y>>;
   TILE_MEM Tile_Array;
 
   // initialize arrays

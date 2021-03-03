@@ -11,6 +11,7 @@
 #include "RAJA_test-base.hpp"
 #include "RAJA_test-camp.hpp"
 #include "RAJA_test-index-types.hpp"
+#include "RAJA_test-kernel-tile-size.hpp"
 
 // for data types
 #include "RAJA_test-reduce-types.hpp"
