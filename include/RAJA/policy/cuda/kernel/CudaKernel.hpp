@@ -23,7 +23,6 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 
-#include <iostream>
 #include <cassert>
 #include <climits>
 
