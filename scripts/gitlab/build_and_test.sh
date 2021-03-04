@@ -102,10 +102,19 @@ then
     rm -rf ${build_dir} 2>/dev/null
     mkdir -p ${build_dir} && cd ${build_dir}
 
-    cmake \
-      -C ${hostconfig_path} \
-      ${project_dir}
-    cmake --build . -j 32
+    if [[ ${sys_type} == *toss_3* ]]; then
+        cmake \
+        -DENABLE_CCACHE=ON \
+        -DCCACHE_DIR=/collab/usr/global/tools/ccache/toss_3_x86_64_ib/ccache-4.2/bin/ccache \
+        -C ${hostconfig_path} \
+        ${project_dir}
+        cmake --build . -j 32
+    else
+        cmake \
+        -C ${hostconfig_path} \
+        ${project_dir}
+        cmake --build . -j 32
+    fi
 fi
 
 # Test
