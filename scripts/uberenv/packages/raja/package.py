@@ -225,7 +225,7 @@ class Raja(CMakePackage, CudaPackage):
                 cfg.write(cmake_cache_entry("BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
                 "/usr/tce/packages/gcc/gcc-4.9.3/lib64;/usr/tce/packages/gcc/gcc-4.9.3/gnu/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3;/usr/tce/packages/gcc/gcc-4.9.3/gnu/lib64;/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/x86_64-unknown-linux-gnu/4.9.3"))
 
-        if "%xl" in spec:
+        if ("%xl" in spec) and ("+cuda" not in spec):
             xl_release_flags = "-qthreaded -std=c++14 -O3 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -std=c++11"
             xl_reldebinf_flags = "-qthreaded -std=c++14 -O3 -g -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -std=c++11"
             xl_debug_flags = "-qthreaded -std=c++14 -O0 -g -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -std=c++11"
