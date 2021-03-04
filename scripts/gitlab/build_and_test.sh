@@ -122,7 +122,17 @@ then
 
     cd ${build_dir}
 
+    date
     ctest --output-on-failure -T test 2>&1 | tee tests_output.txt
+    date
+
+    # If HIP enabled, don't run the tests that are known to fail
+    if [[ "${option}" != "--build-only" ]] && grep -q -i "ENABLE_HIP.*ON" ${hostconfig_path}
+    then
+        date
+        ctest --output-on-failure -T test -E skip 
+        date
+    fi
 
     no_test_str="No tests were found!!!"
     if [[ "$(tail -n 1 tests_output.txt)" == "${no_test_str}" ]]
