@@ -203,7 +203,7 @@ RAJA_INLINE resources::EventProxy<resources::resource_from_pol_t<PolicyType>> ke
 #include "RAJA/pattern/kernel/InitLocalMem.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
 #include "RAJA/pattern/kernel/Param.hpp"
-#include "RAJA/pattern/kernel/Resource.hpp"
+//#include "RAJA/pattern/kernel/Resource.hpp"
 #include "RAJA/pattern/kernel/Reduce.hpp"
 #include "RAJA/pattern/kernel/Region.hpp"
 #include "RAJA/pattern/kernel/Tile.hpp"
