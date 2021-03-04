@@ -8,66 +8,7 @@
 #ifndef __TEST_KERNEL_RESOURCE_BASIC_SINGLE_LOOP_SEGMENTS_HPP__
 #define __TEST_KERNEL_RESOURCE_BASIC_SINGLE_LOOP_SEGMENTS_HPP__
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <ctime>
-#include <algorithm>
-#include <numeric>
-#include <vector>
-
-template <typename IDX_TYPE, typename EXEC_POLICY, typename WORKING_RES,
-          typename SEG_TYPE>
-void KernelBasicSingleLoopTestImpl(const SEG_TYPE& seg, 
-                                   const std::vector<IDX_TYPE>& seg_idx,
-                                   WORKING_RES working_res,
-                                   camp::resources::Resource& erased_working_res)
-{
-  IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
-  IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
-
-  IDX_TYPE* working_array;
-  IDX_TYPE* check_array;
-  IDX_TYPE* test_array;
-
-  allocateForallTestData<IDX_TYPE>(data_len,
-                                   erased_working_res,
-                                   &working_array,
-                                   &check_array,
-                                   &test_array);
-
-  for (IDX_TYPE i = IDX_TYPE(0); i < data_len; ++i) {
-    test_array[RAJA::stripIndexType(i)] = static_cast<IDX_TYPE>(0);
-  }
- 
-  working_res.memcpy(working_array, test_array, 
-                     sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
-
-  for (IDX_TYPE i = IDX_TYPE(0); i < idx_len; ++i) {
-    test_array[ RAJA::stripIndexType(seg_idx[RAJA::stripIndexType(i)]) ] = 
-       seg_idx[RAJA::stripIndexType(i)];
-  }
- 
-  RAJA::kernel_resource<EXEC_POLICY>( RAJA::make_tuple( seg ), working_res,
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
-      working_array[RAJA::stripIndexType(idx)] = idx;
-    }
-  );
-
-  working_res.memcpy(check_array, working_array, 
-                     sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
-
-  for (IDX_TYPE i = IDX_TYPE(0); i < data_len; ++i) {
-    ASSERT_EQ( test_array[RAJA::stripIndexType(i)], 
-               check_array[RAJA::stripIndexType(i)] );
-  }
-
-  deallocateForallTestData<IDX_TYPE>(erased_working_res,
-                                     working_array,
-                                     check_array,
-                                     test_array);
-}
-
+#include "basic-single-loop-segments-impl.hpp"
 
 TYPED_TEST_SUITE_P(KernelBasicSingleLoopTest);
 template <typename T>
@@ -84,6 +25,8 @@ TYPED_TEST_P(KernelBasicSingleLoopTest, BasicSingleLoopSegmentKernel)
   WORKING_RES working_res{WORKING_RES::get_default()};
   camp::resources::Resource erased_working_res{working_res};
 
+  constexpr bool USE_RES = true;
+
   std::vector<IDX_TYPE> seg_idx;
 
 // Range segment tests
@@ -91,14 +34,14 @@ TYPED_TEST_P(KernelBasicSingleLoopTest, BasicSingleLoopSegmentKernel)
   RAJA::getIndices(seg_idx, r1);
 
   KernelBasicSingleLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
-                                RAJA::TypedRangeSegment<IDX_TYPE>>(
+                                RAJA::TypedRangeSegment<IDX_TYPE>, USE_RES>(
                                   r1, seg_idx, working_res, erased_working_res);
 
   seg_idx.clear();
   RAJA::TypedRangeSegment<IDX_TYPE> r2( 3, 2057 );
   RAJA::getIndices(seg_idx, r2);
   KernelBasicSingleLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
-                                RAJA::TypedRangeSegment<IDX_TYPE>>(
+                                RAJA::TypedRangeSegment<IDX_TYPE>, USE_RES>(
                                   r2, seg_idx, working_res, erased_working_res);
 
 // Range-stride segment tests
@@ -106,14 +49,14 @@ TYPED_TEST_P(KernelBasicSingleLoopTest, BasicSingleLoopSegmentKernel)
   RAJA::TypedRangeStrideSegment<IDX_TYPE> rs1( 0, 188, 2 );
   RAJA::getIndices(seg_idx, rs1);
   KernelBasicSingleLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
-                                RAJA::TypedRangeStrideSegment<IDX_TYPE>>(
+                                RAJA::TypedRangeStrideSegment<IDX_TYPE>, USE_RES>(
                                   rs1, seg_idx, working_res, erased_working_res);
 
   seg_idx.clear();
   RAJA::TypedRangeStrideSegment<IDX_TYPE> rs2( 2, 1029, 3 );
   RAJA::getIndices(seg_idx, rs2);
   KernelBasicSingleLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
-                                RAJA::TypedRangeStrideSegment<IDX_TYPE>>(
+                                RAJA::TypedRangeStrideSegment<IDX_TYPE>, USE_RES>(
                                   rs2, seg_idx, working_res, erased_working_res);
 
 // List segment tests
@@ -128,7 +71,7 @@ TYPED_TEST_P(KernelBasicSingleLoopTest, BasicSingleLoopSegmentKernel)
   }
   RAJA::TypedListSegment<IDX_TYPE> l1( &seg_idx[0], seg_idx.size(), erased_working_res);
   KernelBasicSingleLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
-                                RAJA::TypedListSegment<IDX_TYPE>>(
+                                RAJA::TypedListSegment<IDX_TYPE>, USE_RES>(
                                   l1, seg_idx, working_res, erased_working_res);
 }
 

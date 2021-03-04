@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+
 //
 // test/include headers
 //
@@ -20,7 +21,7 @@
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-kernel-basic-single-loop-segments.hpp"
+#include "test-kernel@RESOURCE@basic-single-loop-segments.hpp"
 
 
 // Sequential execution policy types
