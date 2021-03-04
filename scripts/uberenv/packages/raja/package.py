@@ -253,11 +253,6 @@ class Raja(CMakePackage, CudaPackage):
 
         else:
             cfg.write(cmake_cache_option("ENABLE_CUDA", False))
-            if ("%xl" in spec):
-                xl_release_flags = "-qthreaded -std=c++14 -O3 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -std=c++11"
-                xl_reldebinf_flags = "-qthreaded -std=c++14 -O3 -g -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -std=c++11"
-                xl_debug_flags = "-qthreaded -std=c++14 -O0 -g -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -std=c++11"
-                cfg.write(cmake_cache_string("CMAKE_CXX_FLAGS", xl_release_flags))
 
         cfg.write("#------------------{0}\n".format("-" * 60))
         cfg.write("# Other\n")
