@@ -34,8 +34,8 @@ void KernelNestedLoopTest(){
   WORKING_RES work_res{WORKING_RES::get_default()};
 
   // Allocate Tests Data
-  double* work_arrA = work_res.allocate<double>(N*N);
-  double* work_arrB = work_res.allocate<double>(N*N);
+  double* work_arrA = work_res.template allocate<double>(N*N);
+  double* work_arrB = work_res.template allocate<double>(N*N);
 
   double* test_arrA = host_res.allocate<double>(N*N);
   double* test_arrB = host_res.allocate<double>(N*N);

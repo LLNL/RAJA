@@ -11,7 +11,7 @@
 #include "RAJA_test-forall-data.hpp"
 #include "RAJA_test-kernel-nested-loop-types.hpp"
 
-#include "test-kernel-nested-loop-@NESTED_LOOP_TYPE@.hpp"
+#include "test-kernel@RESOURCE@nested-loop-@NESTED_LOOP_TYPE@.hpp"
 
 // ----------------------------------------------------------------------------
 // Sequential
