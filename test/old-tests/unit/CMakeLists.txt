@@ -6,14 +6,6 @@
 ###############################################################################
 
 raja_add_test(
-  NAME test-kernel-lambda-args
-  SOURCES test-kernel-lambda-args.cpp)
-
-raja_add_test(
-  NAME test-kernel-dynamic-tile
-  SOURCES test-kernel-dynamic-tile.cpp)
-
-raja_add_test(
   NAME test-kernel
   SOURCES test-kernel.cpp)
 
