@@ -64,7 +64,7 @@ option(ENABLE_REPRODUCERS "Build issue reproducers" Off)
 
 cmake_dependent_option(RAJA_ENABLE_EXAMPLES "Build simple examples" On "ENABLE_EXAMPLES" off)
 
-option(ENABLE_EXERCISES "Build exercises " On)
+option(RAJA_ENABLE_EXERCISES "Build exercises " On)
 option(ENABLE_MODULES "Enable modules in supporting compilers (clang)" On)
 option(ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
 option(ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
@@ -310,7 +310,7 @@ if(RAJA_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-if(ENABLE_EXERCISES)
+if(RAJA_ENABLE_EXERCISES)
   add_subdirectory(exercises)
 endif()
 
