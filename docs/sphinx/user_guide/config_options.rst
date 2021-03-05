@@ -92,6 +92,7 @@ and their default settings:
       RAJA_ENABLE_TESTS        On 
       RAJA_ENABLE_EXAMPLES     On 
       RAJA_ENABLE_EXERCISES    On 
+      RAJA_ENABLE_BENCHMARKS   Off
       ======================   ======================
 
      RAJA can also be configured to build with compiler warnings reported as
