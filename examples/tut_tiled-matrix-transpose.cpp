@@ -193,8 +193,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   using KERNEL_EXEC_POL_OMP = 
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::omp_parallel_for_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
           RAJA::statement::For<1, RAJA::omp_parallel_for_exec, 
             RAJA::statement::For<0, RAJA::loop_exec,
               RAJA::statement::Lambda<0>
