@@ -24,7 +24,7 @@ template<typename EXEC_POL, bool USE_RESOURCE,
          typename PARAMS,
          typename WORKING_RES,
          typename... Args>
-typename std::enable_if< !USE_RESOURCE >::type call_kernel(SEGMENTS&& segs, PARAMS&& params, WORKING_RES work_res, Args&&... args) {
+typename std::enable_if< !USE_RESOURCE >::type call_kernel(SEGMENTS&& segs, PARAMS&& params, WORKING_RES, Args&&... args) {
   RAJA::kernel_param<EXEC_POL>( segs, params, args...);
 }
 
