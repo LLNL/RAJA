@@ -302,7 +302,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // 3) Launch context is used synchronize threads within a team, an example of this
 //    is presented further below.
 //
-// 4) Parallism is expressed through RAJA loops. Hierachial parallism can be
+// 4) Parallelism is expressed through RAJA loops. Hierarchical parallelism can be
 //    expressed by mapping outer loops (up to 3) to gpu blocks (teams) and inner
 //    loops to threads in a block (team).
 //
