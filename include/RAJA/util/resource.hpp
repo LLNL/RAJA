@@ -72,6 +72,11 @@ namespace RAJA
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
+  template<>
+  struct get_resource_from_platform<Platform::hip>{
+    using type = camp::resources::Hip;
+  };
+
   template<size_t BlockSize, bool Async>
   struct get_resource<hip_exec<BlockSize, Async>>{
     using type = camp::resources::Hip;
