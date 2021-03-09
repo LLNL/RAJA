@@ -35,6 +35,8 @@ add_subdirectory(nested-loop-segment-types)
 
 add_subdirectory(reduce-loc)
 
+add_subdirectory(tile)
+
 unset( KERNEL_BACKENDS )
 
 #
