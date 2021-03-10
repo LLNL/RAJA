@@ -248,6 +248,8 @@ camp source repository")
       add_subdirectory(tpl/camp)
     else (NOT camp_FOUND)
       message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
+      # Save the path so it can be used in raja-config.cmake
+      set(EXTERNAL_CAMP_SOURCE_DIR ${camp_INSTALL_PREFIX})
     endif(NOT camp_FOUND)
   endif (EXTERNAL_CAMP_SOURCE_DIR)
 endif (NOT TARGET camp)
