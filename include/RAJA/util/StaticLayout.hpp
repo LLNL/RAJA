@@ -224,19 +224,23 @@ struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
   static void print() { Layout::print(); }
 };
 
+template <typename Perm, typename IdxLin, typename Sizes, typename Indexes>
+struct StaticLayoutMaker
+{
+  using strides = typename detail::StrideCalculator<IdxLin, Indexes, Perm, Sizes>::strides;
+  using type = StaticLayoutBase_impl<IdxLin, Indexes, Sizes, strides>;
+};
 
 }  // namespace detail
 
 
 template <typename Perm, typename IdxLin, camp::idx_t... Sizes>
-using StaticLayoutT = detail::StaticLayoutBase_impl<
+using StaticLayoutT = typename detail::StaticLayoutMaker<
+    Perm,
     IdxLin,
-    camp::make_int_seq_t<IdxLin, sizeof...(Sizes)>,
     camp::int_seq<IdxLin, Sizes...>,
-    typename detail::StrideCalculator<IdxLin,
-                                      camp::make_int_seq_t<IdxLin, sizeof...(Sizes)>,
-                                      Perm,
-                                      camp::int_seq<IdxLin, Sizes...>>::strides>;
+    camp::make_int_seq_t<IdxLin, sizeof...(Sizes)>
+    >::type;
 
 
 template <typename Perm, camp::idx_t... Sizes>
