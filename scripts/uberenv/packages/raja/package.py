@@ -222,7 +222,7 @@ class Raja(CMakePackage, CudaPackage):
         gcc_name_regex = re.compile(".*gcc-name.*")
 
         using_toolchain = list(filter(gcc_toolchain_regex.match, spec.compiler_flags['cxxflags']))
-        clang_toolchain_path = gcc_toolchain_regex.match(using_toolchain[0])  #gcc_clang_toolchain[0])
+        gcc_toolchain_path = gcc_toolchain_regex.match(using_toolchain[0])
         using_gcc_name = list(filter(gcc_name_regex.match, spec.compiler_flags['cxxflags']))
         compilers_using_toolchain = ["pgi", "xl", "icpc"]
         if any(compiler in cpp_compiler for compiler in compilers_using_toolchain):
@@ -281,7 +281,7 @@ class Raja(CMakePackage, CudaPackage):
                     gcc_bin = os.path.dirname(self.compiler.cxx)
                     gcc_prefix = join_path(gcc_bin, '..')
                 else:
-                    gcc_prefix = clang_toolchain_path.group(1) #rename to gcc
+                    gcc_prefix = gcc_toolchain_path.group(1)
                 cfg.write(cmake_cache_entry("HIP_CLANG_FLAGS",
                 "--gcc-toolchain={0}".format(gcc_prefix))) 
                 cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS",
