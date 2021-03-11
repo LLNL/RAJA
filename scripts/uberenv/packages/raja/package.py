@@ -86,7 +86,7 @@ class Raja(CMakePackage, CudaPackage):
     depends_on('cmake@3.9:', when='+cuda', type='build')
     depends_on('hip', when='+hip')
 
-    #conflicts('+openmp', when='+hip')
+    conflicts('+openmp', when='+hip')
 
     phases = ['hostconfig', 'cmake', 'build', 'install']
 
@@ -218,10 +218,11 @@ class Raja(CMakePackage, CudaPackage):
             #    cfg.write(cmake_cache_string("BLT_EXE_LINKER_FLAGS", flags,
             #                                description))
 
-        gcc_toolchain_regex = re.compile(".*gcc-toolchain.*")
+        gcc_toolchain_regex = re.compile("--gcc-toolchain=(.*)")
         gcc_name_regex = re.compile(".*gcc-name.*")
 
         using_toolchain = list(filter(gcc_toolchain_regex.match, spec.compiler_flags['cxxflags']))
+        clang_toolchain_path = gcc_toolchain_regex.match(using_toolchain[0])  #gcc_clang_toolchain[0])
         using_gcc_name = list(filter(gcc_name_regex.match, spec.compiler_flags['cxxflags']))
         compilers_using_toolchain = ["pgi", "xl", "icpc"]
         if any(compiler in cpp_compiler for compiler in compilers_using_toolchain):
@@ -264,7 +265,6 @@ class Raja(CMakePackage, CudaPackage):
             cfg.write("#------------------{0}\n\n".format("-" * 60))
 
             cfg.write(cmake_cache_option("ENABLE_HIP", True))
-            cfg.write(cmake_cache_option("ENABLE_OPENMP", False))
 
             hip_root = spec['hip'].prefix
             rocm_root = hip_root + "/.."
@@ -276,9 +276,12 @@ class Raja(CMakePackage, CudaPackage):
                                         '--amdgpu-target=gfx906'))
             cfg.write(cmake_cache_entry("HIP_RUNTIME_INCLUDE_DIRS",
                                         "{0}/include;{0}/../hsa/include".format(hip_root)))
-            if ("gcc" in cpp_compiler):
-                gcc_bin = os.path.dirname(self.compiler.cxx)
-                gcc_prefix = join_path(gcc_bin, '..')
+            if ("%gcc" in cpp_compiler) or (using_toolchain):
+                if ('%gcc' in cpp_compiler):
+                    gcc_bin = os.path.dirname(self.compiler.cxx)
+                    gcc_prefix = join_path(gcc_bin, '..')
+                else:
+                    gcc_prefix = clang_toolchain_path.group(1) #rename to gcc
                 cfg.write(cmake_cache_entry("HIP_CLANG_FLAGS",
                 "--gcc-toolchain={0}".format(gcc_prefix))) 
                 cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS",

@@ -130,7 +130,7 @@ then
     if [[ "${option}" != "--build-only" ]] && grep -q -i "ENABLE_HIP.*ON" ${hostconfig_path}
     then
         date
-        ctest --output-on-failure -T test -E skip 
+        ctest --output-on-failure -T test -E Known-Hip-Failure 
         date
     fi
 
