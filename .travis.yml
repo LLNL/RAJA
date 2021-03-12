@@ -92,6 +92,7 @@ before_install: # don't try to build and run intel when it's impossible
 - export ASAN_OPTIONS
 
 script:
+- echo "$DOCKER_PASSWORD" | docker login -u rajaci --password-stdin
 - docker run --rm --user='root' -v ${TRAVIS_BUILD_DIR}:/home/raja rajaorg/compiler:$IMG chown -R raja /home/raja
 - docker run --rm -v ${TRAVIS_BUILD_DIR}/travis-data:/opt/intel/licenses -v ${TRAVIS_BUILD_DIR}:/home/raja -e ASAN_OPTIONS -e LSAN_OPTIONS -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS -e HCC_AMDGPU_TARGET rajaorg/compiler:$IMG ./scripts/travis_build_and_test.sh
 
