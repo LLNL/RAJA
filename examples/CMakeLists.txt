@@ -119,4 +119,8 @@ raja_add_executable(
   NAME kernel-dynamic-tile
   SOURCES kernel-dynamic-tile.cpp)
 
+raja_add_executable(
+  NAME resource-kernel
+  SOURCES resource-kernel.cpp)
+
 add_subdirectory(plugin)
