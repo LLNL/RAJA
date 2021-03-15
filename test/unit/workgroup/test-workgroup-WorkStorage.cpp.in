@@ -9,7 +9,7 @@
 /// Source file containing tests for RAJA workgroup workstorage.
 ///
 
-#include "test-workgroup-WorkStorage.hpp"
+#include "test-workgroup-WorkStorage-@SUBTESTNAME@.hpp"
 
 using @BACKEND@BasicWorkGroupWorkStorage@SUBTESTNAME@Types =
   Test< camp::cartesian_product< @BACKEND@StoragePolicyList,

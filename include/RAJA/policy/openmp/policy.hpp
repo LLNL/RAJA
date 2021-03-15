@@ -205,6 +205,7 @@ using policy::omp::omp_for_nowait_schedule_exec;
 using policy::omp::omp_for_static;
 using policy::omp::omp_parallel_exec;
 using policy::omp::omp_parallel_for_exec;
+using policy::omp::omp_parallel_for_static;
 using policy::omp::omp_parallel_for_segit;
 using policy::omp::omp_parallel_region;
 using policy::omp::omp_parallel_segit;

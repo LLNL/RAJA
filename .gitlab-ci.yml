@@ -26,12 +26,18 @@
 # The path to the shared resources between all jobs. The BUILD_ROOT is unique to
 # the pipeline, preventing any form of concurrency with other pipelines. This
 # also means that the BUILD_ROOT directory will never be cleaned.
+#
+# DEFAULT_TIME:
+# Default time to let the Lassen jobs run will be 30 minutes. However, if it is
+# a job that requires more time, it will be overwritten in the lassen template 
+# file.
 # TODO: add a clean-up mechanism
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   ALLOC_NAME: ${CI_PROJECT_NAME}_ci_${CI_PIPELINE_ID}
   BUILD_ROOT: ${CI_PROJECT_DIR}
+  DEFAULT_TIME: 30
 
 # Normally, stages are blocking in Gitlab. However, using the keyword "needs" we
 # can express dependencies between job that break the ordering of stages, in
@@ -60,13 +66,13 @@ stages:
     - echo ${ALLOC_NAME}
     - export JOBID=$(squeue -h --name=${ALLOC_NAME} --format=%A)
     - echo ${JOBID}
-    - srun $( [[ -n "${JOBID}" ]] && echo "--jobid=${JOBID}" ) -t 15 -N 1 scripts/gitlab/build_and_test.sh
+    - srun $( [[ -n "${JOBID}" ]] && echo "--jobid=${JOBID}" ) -t ${DEFAULT_TIME} -N 1 scripts/gitlab/build_and_test.sh
 
 # Lassen and Butte use a different job scheduler (spectrum lsf) that does not
 # allow pre-allocation the same way slurm does.
 .build_blueos_3_ppc64le_ib_script:
   script:
-    - lalloc 1 -W 15 scripts/gitlab/build_and_test.sh
+    - lalloc 1 -W ${DEFAULT_TIME} scripts/gitlab/build_and_test.sh
 
 .build_blueos_3_ppc64le_ib_p9_script:
   extends: .build_blueos_3_ppc64le_ib_script
