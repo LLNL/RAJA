@@ -5,12 +5,11 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_NESTED_LOOP_BASIC_HPP__
-#define __TEST_KERNEL_NESTED_LOOP_BASIC_HPP__
+#ifndef __TEST_KERNEL_NESTED_LOOP_RESOURCE_BASIC_HPP__
+#define __TEST_KERNEL_NESTED_LOOP_RESOURCE_BASIC_HPP__
 
 #include "nested-loop-Basic-impl.hpp"
 
-//
 //
 // Setup the Nested Loop Basic g-tests.
 //
@@ -32,7 +31,7 @@ TYPED_TEST_P(KernelNestedLoopBasicTest, NestedLoopBasicKernel) {
   // Build proper basic kernel exec policy type.
   using EXEC_POLICY = typename BasicNestedLoopExec<LOOP_TYPE, LOOP_POLS>::type;
 
-  constexpr bool USE_RES = false;
+  constexpr bool USE_RES = true;
 
   // For double nested loop tests the third arg is ignored.
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RES>( LOOP_TYPE(), 1,1,1);
@@ -42,4 +41,4 @@ TYPED_TEST_P(KernelNestedLoopBasicTest, NestedLoopBasicKernel) {
 REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopBasicTest,
                             NestedLoopBasicKernel);
 
-#endif  // __TEST_KERNEL_NESTED_LOOP_BASIC_HPP__
+#endif  // __TEST_KERNEL_NESTED_LOOP_RESOURCE_BASIC_HPP__
