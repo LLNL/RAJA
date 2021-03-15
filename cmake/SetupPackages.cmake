@@ -28,3 +28,31 @@ if (ENABLE_TBB)
     set(ENABLE_TBB Off)
   endif()
 endif ()
+
+if (ENABLE_CUDA OR ENABLE_EXTERNAL_CUB)
+  find_package(CUB)
+  if (CUB_FOUND)
+    set(ENABLE_EXTERNAL_CUB On)
+    blt_register_library(
+      NAME cub
+      INCLUDES ${CUB_INCLUDE_DIRS})
+  elseif(ENABLE_EXTERNAL_CUB)
+    message(FATAL_ERROR "External CUB not found, CUB_DIR=${CUB_DIR}.")
+  else()
+    message(STATUS "Using RAJA CUB submodule.")
+  endif()
+endif ()
+
+if (ENABLE_HIP OR ENABLE_EXTERNAL_ROCPRIM)
+  find_package(RocPRIM)
+  if (ROCPRIM_FOUND)
+    set(ENABLE_EXTERNAL_ROCPRIM On)
+    blt_register_library(
+      NAME rocPRIM
+      INCLUDES ${ROCPRIM_INCLUDE_DIRS})
+  elseif (ENABLE_EXTERNAL_ROCPRIM)
+      message(FATAL_ERROR "External rocPRIM not found, ROCPRIM_DIR=${ROCPRIM_DIR}.")
+  else()
+    message(STATUS "Using RAJA rocPRIM submodule.")
+  endif()
+endif ()
