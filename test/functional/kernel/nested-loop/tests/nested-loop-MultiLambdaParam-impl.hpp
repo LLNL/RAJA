@@ -38,7 +38,6 @@ using MultiLambdaParamSupportedLoopTypeList = camp::list<
   DEVICE_DEPTH_3
   >;
 
-
 //
 //
 // Matrix-Matrix Multiplication test.
@@ -143,7 +142,6 @@ void KernelNestedLoopTest(){
 
   host_res.deallocate(check_arrC);
 }
-
 
 //
 //

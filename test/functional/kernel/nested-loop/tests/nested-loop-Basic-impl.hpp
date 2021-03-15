@@ -37,7 +37,6 @@ using BasicSupportedLoopTypeList = camp::list<
   DEPTH_3,
   DEVICE_DEPTH_2>;
 
-
 //
 //
 // Basic 2D Matrix index calculation per element.
@@ -97,7 +96,6 @@ void KernelNestedLoopTest(const DEVICE_DEPTH_2&, Args... args){
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RESOURCE>(DEPTH_2(), args...);
 }
 
-
 //
 //
 // Basic 3D Matrix index calculation per element.
@@ -147,7 +145,6 @@ void KernelNestedLoopTest(const DEPTH_3&,
                                        check_array,
                                        test_array);
 }
-
 
 //
 //

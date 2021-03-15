@@ -45,7 +45,6 @@ namespace RAJA
     using type = camp::resources::Host;
   };
 
-
   template<typename ExecPol>
   using resource_from_pol_t = typename get_resource_from_platform<detail::get_platform<ExecPol>::value>::type;
 
