@@ -6,9 +6,5 @@
 ###############################################################################
 
 raja_add_test(
-  NAME test-cuda-reduce-sum
-  SOURCES test-reduce-sum.cpp)
-
-raja_add_test(
   NAME test-cuda-synchronize
   SOURCES test-synchronize.cpp)
