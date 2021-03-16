@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -164,9 +164,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using KERNEL_EXEC_POL_SEQ =
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, 
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
                                RAJA::seq_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, 
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_SZ>,
                                  RAJA::seq_exec,
           RAJA::statement::For<1, RAJA::seq_exec,
             RAJA::statement::For<0, RAJA::seq_exec,
@@ -198,9 +198,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using KERNEL_EXEC_POL_OMP =
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, 
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
                                RAJA::seq_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, 
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_SZ>,
                                  RAJA::seq_exec,
           RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
             RAJA::statement::For<0, RAJA::seq_exec,
@@ -236,9 +236,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using KERNEL_EXEC_POL_OMP2 =
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, 
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
                                RAJA::seq_exec,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, 
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_SZ>,
                                  RAJA::seq_exec,
           RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                     RAJA::ArgList<0, 1>,
@@ -269,9 +269,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using KERNEL_EXEC_POL_CUDA =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<TILE_SZ>, 
+        RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
                                  RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<TILE_SZ>, 
+          RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_SZ>,
                                    RAJA::cuda_block_x_loop,
             RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
               RAJA::statement::For<0, RAJA::cuda_thread_x_direct,

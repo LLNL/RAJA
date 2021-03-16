@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,59 +9,33 @@
 /// Source file containing unit tests for Operators.
 ///
 
-#include "gtest/gtest.h"
-#include "RAJA/RAJA.hpp"
-
-#ifndef INTEGRAL_TYPES
-  #define INTEGRAL_TYPES \
-    RAJA::Index_type,    \
-    char,                \
-    unsigned char,       \
-    short,               \
-    unsigned short,      \
-    int,                 \
-    unsigned int,        \
-    long,                \
-    unsigned long,       \
-    long int,            \
-    unsigned long int,   \
-    long long,           \
-    unsigned long long
-#endif // INTEGRAL_TYPES
-
-#ifndef FLOATING_TYPES
-  #define FLOATING_TYPES \
-    float,               \
-    double
-#endif // FLOATING_TYPES
+#include "RAJA_test-base.hpp"
+#include "RAJA_unit-test-types.hpp"
 
 template<typename T>
 class OperatorsUnitTest : public ::testing::Test {};
 template<typename T>
 class OperatorsIntegralUnitTest : public ::testing::Test {};
 
-using MyTypes = ::testing::Types<INTEGRAL_TYPES, FLOATING_TYPES>;
-using MyIntegralTypes = ::testing::Types<INTEGRAL_TYPES>;
-
-TYPED_TEST_SUITE(OperatorsUnitTest, MyTypes);
-TYPED_TEST_SUITE(OperatorsIntegralUnitTest, MyIntegralTypes);
+TYPED_TEST_SUITE(OperatorsUnitTest, UnitIntFloatTypes);
+TYPED_TEST_SUITE(OperatorsIntegralUnitTest, UnitExpandedIntegralTypes);
 
 template<typename T>
 void plus_test()
 {
   using Plus = RAJA::operators::plus<T>;
   auto ident = Plus::identity();
-  ASSERT_EQ(ident, 0);
+  ASSERT_EQ(ident, T(0));
 
   Plus p;
   T i = static_cast<T>(1);
   T j = static_cast<T>(2);
-  ASSERT_EQ(p(i,j), 3);
+  ASSERT_EQ(p(i,j), T(3));
 
   if (std::is_signed<T>::value) {
     i = static_cast<T>(-5);
     j = static_cast<T>(-2);
-    ASSERT_EQ(p(i,j), -7);
+    ASSERT_EQ(p(i,j), T(-7));
   }
 }
 
@@ -73,12 +47,12 @@ void minus_test()
   Minus m;
   T i = static_cast<T>(5);
   T j = static_cast<T>(2);
-  ASSERT_EQ(m(i,j), 3);
+  ASSERT_EQ(m(i,j), T(3));
 
   if (std::is_signed<T>::value) {
     i = static_cast<T>(-5);
     j = static_cast<T>(-2);
-    ASSERT_EQ(m(i,j), -3);
+    ASSERT_EQ(m(i,j), T(-3));
   }
 }
 
@@ -87,17 +61,17 @@ void multiplies_test()
 {
   using Mult = RAJA::operators::multiplies<T>;
   auto ident = Mult::identity();
-  ASSERT_EQ(ident, 1);
+  ASSERT_EQ(ident, T(1));
 
   Mult m;
   T i = static_cast<T>(5);
   T j = static_cast<T>(2);
-  ASSERT_EQ(m(i,j), 10);
+  ASSERT_EQ(m(i,j), T(10));
 
   if (std::is_signed<T>::value) {
     i = static_cast<T>(-5);
     j = static_cast<T>(-2);
-    ASSERT_EQ(m(i,j), 10);
+    ASSERT_EQ(m(i,j), T(10));
   }
 }
 
@@ -110,17 +84,17 @@ void divides_test()
   T i = static_cast<T>(5);
   T j = static_cast<T>(2);
   if(std::is_floating_point<T>::value) 
-    ASSERT_EQ(d(i,j), 2.5);
+    ASSERT_EQ(d(i,j), T(2.5));
   else
-    ASSERT_EQ(d(i,j), 2);
+    ASSERT_EQ(d(i,j), T(2));
 
   if (std::is_signed<T>::value) {
     i = static_cast<T>(-5);
     j = static_cast<T>(-2);
     if(std::is_floating_point<T>::value) 
-      ASSERT_EQ(d(i,j), 2.5);
+      ASSERT_EQ(d(i,j), T(2.5));
     else
-      ASSERT_EQ(d(i,j), 2);
+      ASSERT_EQ(d(i,j), T(2));
   }
 }
 
@@ -132,12 +106,12 @@ void modulus_test()
   Mod m;
   T i = static_cast<T>(5);
   T j = static_cast<T>(2);
-  ASSERT_EQ(m(i,j), 1);
+  ASSERT_EQ(m(i,j), T(1));
 
   if (std::is_signed<T>::value) {
     i = static_cast<T>(-5);
     j = static_cast<T>(-2);
-    ASSERT_EQ(m(i,j), -1);
+    ASSERT_EQ(m(i,j), T(-1));
   }
 }
 
@@ -218,9 +192,9 @@ void bit_or_test()
   T i = static_cast<T>(0010);
   T j = static_cast<T>(0001);
   T k = static_cast<T>(0111);
-  ASSERT_EQ(o(i,j), 0011);
-  ASSERT_EQ(o(i,k), 0111);
-  ASSERT_EQ(o(j,k), 0111);
+  ASSERT_EQ(o(i,j), T(0011));
+  ASSERT_EQ(o(i,k), T(0111));
+  ASSERT_EQ(o(j,k), T(0111));
 }
 
 template<typename T>
@@ -232,9 +206,9 @@ void bit_and_test()
   T i = static_cast<T>(0010);
   T j = static_cast<T>(0001);
   T k = static_cast<T>(0111);
-  ASSERT_EQ(a(i,j), 0000);
-  ASSERT_EQ(a(i,k), 0010);
-  ASSERT_EQ(a(j,k), 0001);
+  ASSERT_EQ(a(i,j), T(0000));
+  ASSERT_EQ(a(i,k), T(0010));
+  ASSERT_EQ(a(j,k), T(0001));
 }
 
 template<typename T>
@@ -246,9 +220,9 @@ void bit_xor_test()
   T i = static_cast<T>(0010);
   T j = static_cast<T>(0001);
   T k = static_cast<T>(0111);
-  ASSERT_EQ(x(i,j), 0011);
-  ASSERT_EQ(x(i,k), 0101);
-  ASSERT_EQ(x(j,k), 0110);
+  ASSERT_EQ(x(i,j), T(0011));
+  ASSERT_EQ(x(i,k), T(0101));
+  ASSERT_EQ(x(j,k), T(0110));
 }
 
 template<typename T>
@@ -413,12 +387,12 @@ void identity_test()
   Ident id;
   T i = static_cast<T>(0);
   T j = static_cast<T>(1);
-  ASSERT_EQ(id(i), 0);
-  ASSERT_EQ(id(j), 1);
+  ASSERT_EQ(id(i), T(0));
+  ASSERT_EQ(id(j), T(1));
 
   if (std::is_signed<T>::value) {
     j = static_cast<T>(-1);
-    ASSERT_EQ(id(j), -1);
+    ASSERT_EQ(id(j), T(-1));
   }
 }
 
@@ -430,13 +404,13 @@ void project1st_test()
   Proj1 p;
   T i = static_cast<T>(0);
   T j = static_cast<T>(1);
-  ASSERT_EQ(p(i,j), 0);
-  ASSERT_EQ(p(j,i), 1);
+  ASSERT_EQ(p(i,j), T(0));
+  ASSERT_EQ(p(j,i), T(1));
 
   if (std::is_signed<T>::value) {
     j = static_cast<T>(-1);
-    ASSERT_EQ(p(i,j), 0);
-    ASSERT_EQ(p(j,i), -1);
+    ASSERT_EQ(p(i,j), T(0));
+    ASSERT_EQ(p(j,i), T(-1));
   }
 }
 
@@ -448,14 +422,20 @@ void project2nd_test()
   Proj2 p;
   T i = static_cast<T>(0);
   T j = static_cast<T>(1);
-  ASSERT_EQ(p(i,j), 1);
-  ASSERT_EQ(p(j,i), 0);
+  ASSERT_EQ(p(i,j), T(1));
+  ASSERT_EQ(p(j,i), T(0));
 
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4245 )  // Force msvc to not emit signed conversion warning
+#endif
   if (std::is_signed<T>::value) {
     j = static_cast<T>(-1);
-    ASSERT_EQ(p(i,j), -1);
-    ASSERT_EQ(p(j,i), 0);
+    ASSERT_EQ(p(i,j), T(-1));
+    ASSERT_EQ(p(j,i), T(0));
   }
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4245 )
+#endif
 }
 
 TYPED_TEST(OperatorsUnitTest, plus) { plus_test<TypeParam>(); }

@@ -1,0 +1,30 @@
+###############################################################################
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+###############################################################################
+
+set(NESTED_LOOPTYPES Basic MultiLambda MultiLambdaParam)
+
+set( USE_RESOURCE "-resource-" "-" )
+
+#
+# Generate kernel region basic tests for each enabled RAJA back-end.
+#
+foreach( NESTED_LOOP_BACKEND ${KERNEL_BACKENDS} )
+  foreach( RESOURCE ${USE_RESOURCE} )
+    foreach( NESTED_LOOP_TYPE ${NESTED_LOOPTYPES} )
+      configure_file( test-kernel-nested-loop.cpp.in
+        test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
+      raja_add_test( NAME test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}
+        SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
+
+      target_include_directories(test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.exe
+                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+
+    endforeach()
+  endforeach()
+endforeach()
+
+unset( NESTED_LOOPTYPES )

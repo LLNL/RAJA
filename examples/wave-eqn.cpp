@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -128,15 +128,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0> > > >;
 
   // OpenMP policy
-  // using fdPolicy = RAJA::KernelPolicy<
-  // RAJA::statement::For<0, RAJA::omp_parallel_for_exec >,
-  // RAJA::statement::For<1, RAJA::seq_exec > >;
+  //using fdPolicy = RAJA::KernelPolicy<
+  //RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+  //  RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0> > > >;
 
   // CUDA policy
-  // using fdPolicy = RAJA::KernelPolicy<
-  // RAJA::statement::CudaCollapse<
-  // RAJA::statement::For<0, RAJA::cuda_threadblock_x_exec<16> >,
-  // RAJA::statement::For<1, RAJA::cuda_threadblock_y_exec<16> > > >;
+  //using fdPolicy =
+  //RAJA::KernelPolicy<
+  //  RAJA::statement::CudaKernel<
+  //      RAJA::statement::Tile<1, RAJA::tile_fixed<16>, RAJA::cuda_block_y_direct,
+  //        RAJA::statement::Tile<0, RAJA::tile_fixed<16>, RAJA::cuda_block_x_direct,
+  //          RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+  //            RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+  //              RAJA::statement::Lambda<0>
+  //            >
+  //          >
+  //        >
+  //      >
+  //    >
+  //  >;
 
 
   time = 0;
@@ -182,8 +192,8 @@ void computeErr(double *P, double tf, grid_s grid)
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
   using initialPolicy = RAJA::KernelPolicy<
-  RAJA::statement::For<1, RAJA::loop_exec >,
-    RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0>> >;
+  RAJA::statement::For<1, RAJA::loop_exec ,
+    RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0> > > >;
 
   RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
                        [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
@@ -213,8 +223,8 @@ void setIC(double *P1, double *P2, double t0, double t1, grid_s grid)
   RAJA::RangeSegment fdBounds(0, grid.nx);
 
   using initialPolicy = RAJA::KernelPolicy<
-  RAJA::statement::For<1, RAJA::loop_exec >,
-    RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0>> >;
+  RAJA::statement::For<1, RAJA::loop_exec,
+    RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0>> > >;
   
   RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
                        [=] (RAJA::Index_type tx, RAJA::Index_type ty) {

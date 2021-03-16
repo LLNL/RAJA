@@ -12,7 +12,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -29,6 +29,7 @@
 
 #include <hip/hip_runtime.h>
 
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/SoAArray.hpp"
 #include "RAJA/util/SoAPtr.hpp"
 #include "RAJA/util/basic_mempool.hpp"
@@ -289,7 +290,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   if (numThreads > policy::hip::WARP_SIZE) {
 
     __shared__ unsigned char tmpsd[sizeof(RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS>)];
-    RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS>* sd = 
+    RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS>* sd =
       reinterpret_cast<RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS> *>(tmpsd);
 
     // write per warp values to shared memory
@@ -816,7 +817,7 @@ public:
   //  reducer in host device lambda not being used on device.
   RAJA_HOST_DEVICE
   Reduce(const Reduce& other)
-#if !defined(__HIP_DEVICE_COMPILE__)
+#if !defined(RAJA_DEVICE_CODE)
       : parent{other.parent},
 #else
       : parent{&other},
@@ -824,7 +825,7 @@ public:
         tally_or_val_ptr{other.tally_or_val_ptr},
         val(other.val)
   {
-#if !defined(__HIP_DEVICE_COMPILE__)
+#if !defined(RAJA_DEVICE_CODE)
     if (parent) {
       if (val.setupForDevice()) {
         tally_or_val_ptr.val_ptr =
@@ -841,7 +842,7 @@ public:
   RAJA_HOST_DEVICE
   ~Reduce()
   {
-#if !defined(__HIP_DEVICE_COMPILE__)
+#if !defined(RAJA_DEVICE_CODE)
     if (parent == this) {
       delete tally_or_val_ptr.list;
       tally_or_val_ptr.list = nullptr;
@@ -932,6 +933,42 @@ public:
   //! enable operator+= for ReduceSum -- alias for combine()
   RAJA_HOST_DEVICE
   const ReduceSum& operator+=(T rhs) const
+  {
+    this->combine(rhs);
+    return *this;
+  }
+};
+
+//! specialization of ReduceBitOr for hip_reduce
+template <bool maybe_atomic, typename T>
+class ReduceBitOr<hip_reduce_base<maybe_atomic>, T>
+    : public hip::Reduce<RAJA::reduce::or_bit<T>, T, maybe_atomic>
+{
+
+public:
+  using Base = hip::Reduce<RAJA::reduce::or_bit<T>, T, maybe_atomic>;
+  using Base::Base;
+  //! enable operator|= for ReduceOr -- alias for combine()
+  RAJA_HOST_DEVICE
+  const ReduceBitOr& operator|=(T rhs) const
+  {
+    this->combine(rhs);
+    return *this;
+  }
+};
+
+//! specialization of ReduceBitAnd for hip_reduce
+template <bool maybe_atomic, typename T>
+class ReduceBitAnd<hip_reduce_base<maybe_atomic>, T>
+    : public hip::Reduce<RAJA::reduce::and_bit<T>, T, maybe_atomic>
+{
+
+public:
+  using Base = hip::Reduce<RAJA::reduce::and_bit<T>, T, maybe_atomic>;
+  using Base::Base;
+  //! enable operator&= for ReduceBitAnd -- alias for combine()
+  RAJA_HOST_DEVICE
+  const ReduceBitAnd& operator&=(T rhs) const
   {
     this->combine(rhs);
     return *this;

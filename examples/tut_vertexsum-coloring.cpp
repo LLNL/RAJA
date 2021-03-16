@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,6 +14,8 @@
 #include "memoryManager.hpp"
 
 #include "RAJA/RAJA.hpp"
+
+#include "camp/resource.hpp"
 
 /*
  *  Mesh Vertex Sum with Index Coloring Example
@@ -232,10 +234,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::TypedIndexSet<SegmentType> colorset;
 
-  colorset.push_back( SegmentType(&idx0[0], idx0.size()) ); 
-  colorset.push_back( SegmentType(&idx1[0], idx1.size()) ); 
-  colorset.push_back( SegmentType(&idx2[0], idx2.size()) ); 
-  colorset.push_back( SegmentType(&idx3[0], idx3.size()) ); 
+  camp::resources::Resource host_res{camp::resources::Host()};
+
+  colorset.push_back( SegmentType(&idx0[0], idx0.size(), host_res) ); 
+  colorset.push_back( SegmentType(&idx1[0], idx1.size(), host_res) ); 
+  colorset.push_back( SegmentType(&idx2[0], idx2.size(), host_res) ); 
+  colorset.push_back( SegmentType(&idx3[0], idx3.size(), host_res) ); 
   // _colorindexset_vertexsum_end
 
 //----------------------------------------------------------------------------//
@@ -307,13 +311,27 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
   std::cout << "\n Running RAJA CUDA index set version...\n";
 
+//
+// We create a RAJA TypedIndexSet with four ListSegments as before,
+// but now we use a CUDA resource so the segment indices live in
+// device memory.
+//
+  RAJA::TypedIndexSet<SegmentType> colorset_cuda;
+
+  camp::resources::Resource cuda_res{camp::resources::Cuda()};
+
+  colorset_cuda.push_back( SegmentType(&idx0[0], idx0.size(), cuda_res) );
+  colorset_cuda.push_back( SegmentType(&idx1[0], idx1.size(), cuda_res) );
+  colorset_cuda.push_back( SegmentType(&idx2[0], idx2.size(), cuda_res) );
+  colorset_cuda.push_back( SegmentType(&idx3[0], idx3.size(), cuda_res) );
+
   std::memset(vertexvol, 0, N_vert*N_vert * sizeof(double));
 
   // _raja_cuda_colorindexset_vertexsum_start
   using EXEC_POL4 = RAJA::ExecPolicy<RAJA::seq_segit, 
                                      RAJA::cuda_exec<CUDA_BLOCK_SIZE>>;
 
-  RAJA::forall<EXEC_POL4>(colorset, [=] RAJA_DEVICE (int ie) {
+  RAJA::forall<EXEC_POL4>(colorset_cuda, [=] RAJA_DEVICE (int ie) {
     int* iv = &(elem2vert_map[4*ie]);
     vertexvol[ iv[0] ] += elemvol[ie] / 4.0 ;
     vertexvol[ iv[1] ] += elemvol[ie] / 4.0 ;
@@ -347,10 +365,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(vertexvol, 0, N_vert*N_vert * sizeof(double));
   hipMemcpy(d_vertexvol, vertexvol, N_vert*N_vert*sizeof(double), hipMemcpyHostToDevice);
 
+//
+// We create a RAJA TypedIndexSet with four ListSegments as before,
+// but now we use a Hip resource so the segment indices live in
+// device memory.
+//
+  RAJA::TypedIndexSet<SegmentType> colorset_hip;
+
+  camp::resources::Resource hip_res{camp::resources::Hip()};
+
+  colorset_hip.push_back( SegmentType(&idx0[0], idx0.size(), hip_res) );
+  colorset_hip.push_back( SegmentType(&idx1[0], idx1.size(), hip_res) );
+  colorset_hip.push_back( SegmentType(&idx2[0], idx2.size(), hip_res) );
+  colorset_hip.push_back( SegmentType(&idx3[0], idx3.size(), hip_res) );
+
   using EXEC_POL4 = RAJA::ExecPolicy<RAJA::seq_segit,
                                      RAJA::hip_exec<HIP_BLOCK_SIZE>>;
 
-  RAJA::forall<EXEC_POL4>(colorset, [=] RAJA_DEVICE (int ie) {
+  RAJA::forall<EXEC_POL4>(colorset_hip, [=] RAJA_DEVICE (int ie) {
     int* iv = &(d_elem2vert_map[4*ie]);
     d_vertexvol[ iv[0] ] += d_elemvol[ie] / 4.0 ;
     d_vertexvol[ iv[1] ] += d_elemvol[ie] / 4.0 ;
