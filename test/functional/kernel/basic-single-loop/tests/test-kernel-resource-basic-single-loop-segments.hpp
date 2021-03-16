@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_BASIC_SINGLE_LOOP_SEGMENTS_HPP__
-#define __TEST_KERNEL_BASIC_SINGLE_LOOP_SEGMENTS_HPP__
+#ifndef __TEST_KERNEL_RESOURCE_BASIC_SINGLE_LOOP_SEGMENTS_HPP__
+#define __TEST_KERNEL_RESOURCE_BASIC_SINGLE_LOOP_SEGMENTS_HPP__
 
 #include "basic-single-loop-segments-impl.hpp"
 
@@ -25,7 +25,7 @@ TYPED_TEST_P(KernelBasicSingleLoopTest, BasicSingleLoopSegmentKernel)
   WORKING_RES working_res{WORKING_RES::get_default()};
   camp::resources::Resource erased_working_res{working_res};
 
-  constexpr bool USE_RES = false;
+  constexpr bool USE_RES = true;
 
   std::vector<IDX_TYPE> seg_idx;
 
@@ -78,4 +78,4 @@ TYPED_TEST_P(KernelBasicSingleLoopTest, BasicSingleLoopSegmentKernel)
 REGISTER_TYPED_TEST_SUITE_P(KernelBasicSingleLoopTest,
                             BasicSingleLoopSegmentKernel);
 
-#endif  // __TEST_KERNEL_BASIC_SINGLE_LOOP_SEGMENTS_HPP__
+#endif  // __TEST_KERNEL_RESOURCE_BASIC_SINGLE_LOOP_SEGMENTS_HPP__
