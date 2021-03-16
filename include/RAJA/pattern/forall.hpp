@@ -211,7 +211,7 @@ template <typename Res,
           typename SegmentExecPolicy,
           typename... SegmentTypes,
           typename LoopBody>
-RAJA_INLINE resources::EventProxy<Res> forall_Icount(Res&r,
+RAJA_INLINE resources::EventProxy<Res> forall_Icount(Res &r,
                                                 ExecPolicy<SegmentIterPolicy,
                                                 SegmentExecPolicy>,
                                                 const TypedIndexSet<SegmentTypes...>& iset,
