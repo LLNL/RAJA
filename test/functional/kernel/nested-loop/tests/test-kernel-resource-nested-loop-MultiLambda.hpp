@@ -5,21 +5,21 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_NESTED_LOOP_BASIC_HPP__
-#define __TEST_KERNEL_NESTED_LOOP_BASIC_HPP__
+#ifndef __TEST_KERNEL_RESOURCE_NESTED_LOOP_MULTI_LAMBDA_HPP__
+#define __TEST_KERNEL_RESOURCE_NESTED_LOOP_MULTI_LAMBDA_HPP__
 
-#include "nested-loop-Basic-impl.hpp"
+#include "nested-loop-MultiLambda-impl.hpp"
 
 //
 //
-// Setup the Nested Loop Basic g-tests.
+// Setup the Nested Loop Multi Lambda g-tests.
 //
 //
-TYPED_TEST_SUITE_P(KernelNestedLoopBasicTest);
+TYPED_TEST_SUITE_P(KernelNestedLoopMultiLambdaTest);
 template <typename T>
-class KernelNestedLoopBasicTest : public ::testing::Test {};
+class KernelNestedLoopMultiLambdaTest : public ::testing::Test {};
 
-TYPED_TEST_P(KernelNestedLoopBasicTest, NestedLoopBasicKernel) {
+TYPED_TEST_P(KernelNestedLoopMultiLambdaTest, NestedLoopMultiLambdaKernel) {
   using WORKING_RES = typename camp::at<TypeParam, camp::num<0>>::type;
   using EXEC_POL_DATA = typename camp::at<TypeParam, camp::num<1>>::type;
 
@@ -30,16 +30,15 @@ TYPED_TEST_P(KernelNestedLoopBasicTest, NestedLoopBasicKernel) {
   using LOOP_POLS = typename EXEC_POL_DATA::type;
 
   // Build proper basic kernel exec policy type.
-  using EXEC_POLICY = typename BasicNestedLoopExec<LOOP_TYPE, LOOP_POLS>::type;
+  using EXEC_POLICY = typename MultiLambdaNestedLoopExec<LOOP_TYPE, LOOP_POLS>::type;
 
-  constexpr bool USE_RES = false;
+  constexpr bool USE_RES = true;
 
   // For double nested loop tests the third arg is ignored.
-  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RES>( LOOP_TYPE(), 1,1,1);
-  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RES>( LOOP_TYPE(), 40,30,20);
+  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RES>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopBasicTest,
-                            NestedLoopBasicKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopMultiLambdaTest,
+                            NestedLoopMultiLambdaKernel);
 
-#endif  // __TEST_KERNEL_NESTED_LOOP_BASIC_HPP__
+#endif  // __TEST_KERNEL_RESOURCE_NESTED_LOOP_MULTI_LAMBDA_HPP__

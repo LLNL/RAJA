@@ -449,6 +449,9 @@ struct StatementExecutor<
     using launch_t = HipLaunchHelper<LaunchConfig, stmt_list_t, data_t, Types>;
 
 
+    RAJA::resources::Hip res = data.get_resource();
+
+
     //
     // Compute the requested kernel dimensions
     //
@@ -464,7 +467,7 @@ struct StatementExecutor<
       // Setup shared memory buffers
       //
       int shmem = 0;
-      hipStream_t stream = 0;
+      hipStream_t stream = res.get_stream();
 
 
       //
