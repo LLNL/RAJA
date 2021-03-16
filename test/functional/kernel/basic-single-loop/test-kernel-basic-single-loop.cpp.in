@@ -14,14 +14,12 @@
 
 #include "RAJA_test-forall-data.hpp"
 
-
 //
 // Header for tests in ./tests directory
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-kernel-basic-single-loop-segments.hpp"
-
+#include "test-kernel@RESOURCE@basic-single-loop-segments.hpp"
 
 // Sequential execution policy types
 using SequentialKernelExecPols = camp::list< 
