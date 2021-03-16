@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -37,8 +37,6 @@
 
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
 #include "RAJA/policy/hip/policy.hpp"
-
-#include "RAJA/internal/LegacyCompatibility.hpp"
 
 #include "RAJA/policy/hip/kernel/internal.hpp"
 
@@ -242,7 +240,7 @@ struct HipKernelLauncherGetter<0, Data, executor_t>
  * Helper class that handles HIP kernel launching, and computing
  * maximum number of threads/blocks
  */
-template<typename LaunchPolicy, typename StmtList, typename Data>
+template<typename LaunchPolicy, typename StmtList, typename Data, typename Types>
 struct HipLaunchHelper;
 
 
@@ -251,14 +249,14 @@ struct HipLaunchHelper;
  * The user may specify the number of threads and blocks or let one or both be
  * determined at runtime using the HIP occupancy calculator.
  */
-template<bool async0, int num_blocks, int num_threads, typename StmtList, typename Data>
-struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data>
+template<bool async0, int num_blocks, int num_threads, typename StmtList, typename Data, typename Types>
+struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data,Types>
 {
   using Self = HipLaunchHelper;
 
   static constexpr bool async = async0;
 
-  using executor_t = internal::hip_statement_list_executor_t<StmtList, Data>;
+  using executor_t = internal::hip_statement_list_executor_t<StmtList, Data, Types>;
 
   using kernelGetter_t = HipKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads, Data, executor_t>;
 
@@ -368,7 +366,8 @@ struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data
   {
     auto func = kernelGetter_t::get();
 
-    RAJA::hip::launch(func, launch_dims.blocks, launch_dims.threads, std::move(data), shmem, stream);
+    void *args[] = {(void*)&data};
+    RAJA::hip::launch((const void*)func, launch_dims.blocks, launch_dims.threads, args, shmem, stream);
   }
 };
 
@@ -433,9 +432,9 @@ hip_dim_t fitHipDims(unsigned int limit, hip_dim_t result, hip_dim_t minimum = h
 /*!
  * Specialization that launches HIP kernels for RAJA::kernel from host code
  */
-template <typename LaunchConfig, typename... EnclosedStmts>
+template <typename LaunchConfig, typename... EnclosedStmts, typename Types>
 struct StatementExecutor<
-    statement::HipKernelExt<LaunchConfig, EnclosedStmts...>> {
+    statement::HipKernelExt<LaunchConfig, EnclosedStmts...>, Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
   using StatementType =
@@ -446,8 +445,11 @@ struct StatementExecutor<
   {
 
     using data_t = camp::decay<Data>;
-    using executor_t = hip_statement_list_executor_t<stmt_list_t, data_t>;
-    using launch_t = HipLaunchHelper<LaunchConfig, stmt_list_t, data_t>;
+    using executor_t = hip_statement_list_executor_t<stmt_list_t, data_t, Types>;
+    using launch_t = HipLaunchHelper<LaunchConfig, stmt_list_t, data_t, Types>;
+
+
+    RAJA::resources::Hip res = data.get_resource();
 
 
     //
@@ -465,7 +467,7 @@ struct StatementExecutor<
       // Setup shared memory buffers
       //
       int shmem = 0;
-      hipStream_t stream = 0;
+      hipStream_t stream = res.get_stream();
 
 
       //
@@ -539,9 +541,10 @@ struct StatementExecutor<
       //
       // make sure that we fit
       //
+      /* Doesn't make sense to check this anymore - AJK
       if(launch_dims.num_blocks() > max_blocks){
         RAJA_ABORT_OR_THROW("RAJA::kernel exceeds max num blocks");
-      }
+      }*/
       if(launch_dims.num_threads() > max_threads){
         RAJA_ABORT_OR_THROW("RAJA::kernel exceeds max num threads");
       }

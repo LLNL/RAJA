@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -46,7 +46,9 @@
   RAJA_DECLARE_REDUCER(Min, POL, COMBINER)             \
   RAJA_DECLARE_REDUCER(Max, POL, COMBINER)             \
   RAJA_DECLARE_INDEX_REDUCER(MinLoc, POL, COMBINER)    \
-  RAJA_DECLARE_INDEX_REDUCER(MaxLoc, POL, COMBINER)
+  RAJA_DECLARE_INDEX_REDUCER(MaxLoc, POL, COMBINER)    \
+  RAJA_DECLARE_REDUCER(BitOr, POL, COMBINER)           \
+  RAJA_DECLARE_REDUCER(BitAnd, POL, COMBINER)
 
 namespace RAJA
 {
@@ -88,6 +90,15 @@ template <typename T>
 struct max : detail::op_adapter<T, RAJA::operators::maximum> {
 };
 
+template <typename T>
+struct or_bit : detail::op_adapter<T, RAJA::operators::bit_or> {
+};
+
+template <typename T>
+struct and_bit : detail::op_adapter<T, RAJA::operators::bit_and> {
+};
+
+
 #if defined(RAJA_RAJA_ENABLE_TARGET_OPENMP)
 #pragma omp end declare target
 #endif
@@ -124,13 +135,13 @@ public:
   ValueLoc &operator=(ValueLoc const &other) { val = other.val; loc = other.loc; return *this;}
 #else
   constexpr ValueLoc() = default;
-  constexpr ValueLoc(ValueLoc const &other) = default;
-  ValueLoc &operator=(ValueLoc const &other) = default;
+  constexpr ValueLoc(ValueLoc const &) = default;
+  ValueLoc &operator=(ValueLoc const &) = default;
 #endif
 
-  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val) : val{val}, loc{DefaultLoc<IndexType>().value()} {}
-  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val, IndexType const &loc)
-      : val{val}, loc{loc}
+  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val_) : val{val_}, loc{DefaultLoc<IndexType>().value()} {}
+  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val_, IndexType const &loc_)
+      : val{val_}, loc{loc_}
   {
   }
 
@@ -315,6 +326,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE
   const BaseReduceMin &min(T rhs) const
   {
     this->combine(rhs);
@@ -336,20 +348,29 @@ class BaseReduceMinLoc
 public:
   using Base = BaseReduce<ValueLoc<T, IndexType>, RAJA::reduce::min, Combiner>;
   using value_type = typename Base::value_type;
+  using reduce_type = typename Base::reduce_type;
   using Base::Base;
 
   constexpr BaseReduceMinLoc() : Base(value_type(T(), IndexType())) {}
 
-  constexpr BaseReduceMinLoc(T init_val, IndexType init_idx)
-      : Base(value_type(init_val, init_idx))
+  constexpr BaseReduceMinLoc(T init_val, IndexType init_idx,
+                             T identity_ = reduce_type::identity())
+    : Base(value_type(init_val, init_idx), identity_)
   {
   }
 
   /// \brief reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE
   const BaseReduceMinLoc &minloc(T rhs, IndexType loc) const
   {
     this->combine(value_type(rhs, loc));
     return *this;
+  }
+
+  void reset(T init_val, IndexType init_idx=DefaultLoc<IndexType>().value(),
+             T identity_ = reduce_type::identity())
+  {
+    Base::reset(value_type(init_val, init_idx), identity_);
   }
 
   //! Get the calculated reduced value
@@ -374,6 +395,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE
   const BaseReduceMax &max(T rhs) const
   {
     this->combine(rhs);
@@ -408,6 +430,55 @@ public:
 /*!
  **************************************************************************
  *
+ * \brief  Bitwise OR reducer class template for use in tbb execution.
+ *
+ **************************************************************************
+ */
+template <typename T, template <typename, typename> class Combiner>
+class BaseReduceBitOr : public BaseReduce<T, RAJA::reduce::or_bit, Combiner>
+{
+public:
+  using Base = BaseReduce<T, RAJA::reduce::or_bit, Combiner>;
+  using Base::Base;
+
+  //! reducer function; updates the current instance's state
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
+  const BaseReduceBitOr &operator|=(T rhs) const
+  {
+    this->combine(rhs);
+    return *this;
+  }
+};
+
+/*!
+ **************************************************************************
+ *
+ * \brief  Bitwise AND reducer class template for use in tbb execution.
+ *
+ **************************************************************************
+ */
+template <typename T, template <typename, typename> class Combiner>
+class BaseReduceBitAnd : public BaseReduce<T, RAJA::reduce::and_bit, Combiner>
+{
+public:
+  using Base = BaseReduce<T, RAJA::reduce::and_bit, Combiner>;
+  using Base::Base;
+
+  //! reducer function; updates the current instance's state
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
+  const BaseReduceBitAnd &operator&=(T rhs) const
+  {
+    this->combine(rhs);
+    return *this;
+  }
+};
+
+
+/*!
+ **************************************************************************
+ *
  * \brief  MaxLoc reducer class template for use in tbb execution.
  *
  **************************************************************************
@@ -419,20 +490,29 @@ class BaseReduceMaxLoc
 public:
   using Base = BaseReduce<ValueLoc<T, IndexType, false>, RAJA::reduce::max, Combiner>;
   using value_type = typename Base::value_type;
+  using reduce_type = typename Base::reduce_type;
   using Base::Base;
 
   constexpr BaseReduceMaxLoc() : Base(value_type(T(), IndexType())) {}
 
-  constexpr BaseReduceMaxLoc(T init_val, IndexType init_idx)
-      : Base(value_type(init_val, init_idx))
+  constexpr BaseReduceMaxLoc(T init_val, IndexType init_idx,
+                             T identity_ = reduce_type::identity())
+    : Base(value_type(init_val, init_idx), identity_)
   {
   }
 
   //! reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE
   const BaseReduceMaxLoc &maxloc(T rhs, IndexType loc) const
   {
     this->combine(value_type(rhs, loc));
     return *this;
+  }
+
+  void reset(T init_val, IndexType init_idx=DefaultLoc<IndexType>().value(),
+             T identity_ = reduce_type::identity())
+  {
+    Base::reset(value_type(init_val, init_idx), identity_);
   }
 
   //! Get the calculated reduced value

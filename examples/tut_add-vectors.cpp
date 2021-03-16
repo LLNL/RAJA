@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -193,10 +193,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   hipRc.memcpy(d_b,b,N*sizeof(int));
   hipRc.memcpy(d_c,c,N*sizeof(int));
 
+  // _rajahip_vector_add_start
   RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
     [=] RAJA_DEVICE (int i) {
     d_c[i] = d_a[i] + d_b[i];
   });
+  // _rajahip_vector_add_end
 
   hipRc.memcpy(c,d_c,N*sizeof(int));
   hipRc.deallocate(d_a);

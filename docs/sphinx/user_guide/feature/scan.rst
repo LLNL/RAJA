@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 .. ## and other RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -28,13 +28,12 @@ A few important notes:
 
 Also:
 
-.. note:: For scans using the CUDA back-end, RAJA uses the implementations
-          provided by the NVIDIA cub library, which is available in the 
-          RAJA source repository as a Git submodule. The CMake variable 
-          ``CUB_DIR`` will be automatically set to the location of the cub 
-          library when CUDA is enabled; to use a different version of the
-          cub library, install it and set the ``CUB_DIR`` variable to the
-          desired location when running CMake.
+.. note:: For scans using the CUDA back-end, RAJA uses the NVIDIA cub library
+          internally, which is available in the RAJA source repository as a 
+          Git submodule. The CMake variable ``CUB_DIR`` will be automatically 
+          set to the location of the cub library when CUDA is enabled. Details
+          for using a different version of the cub library are available in
+          the :ref:`getting_started-label` section.
 
 Please see the :ref:`scan-label` tutorial section for usage examples of RAJA
 scan operations.
@@ -110,6 +109,8 @@ Using RAJA exclusive scans is essentially the same as for inclusive scans:
 
  * ``RAJA::exclusive_scan< exec_policy >(in, in + N, out)``
  * ``RAJA::exclusive_scan< exec_policy >(in, in + N, out, operator)``
+
+and
 
  * ``RAJA::exclusive_scan_inplace< exec_policy >(in, in + N)``
  * ``RAJA::exclusive_scan_inplace< exec_policy >(in, in + N, <operator>)``

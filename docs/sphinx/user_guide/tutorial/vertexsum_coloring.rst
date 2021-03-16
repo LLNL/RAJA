@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -102,7 +102,7 @@ using the vectors:
 
 Now, we can use an index set execution policy that iterates over the 
 segments sequentially and executes each segment in parallel using OpenMP
-multi-threading (and ``RAJA::forall``):
+multithreading (and ``RAJA::forall``):
 
 .. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
    :start-after: _raja_seq_colorindexset_vertexsum_start
@@ -126,5 +126,7 @@ Here, we have marked the lambda loop body with the 'RAJA_DEVICE' macro
 and specified the number of threads in a CUDA thread block in the segment
 execution policy.
 
-The file ``RAJA/examples/tut_vertexsum-coloring.cpp`` contains the complete 
-working example code.
+The RAJA HIP variant is similar.
+
+The file ``RAJA/examples/tut_vertexsum-coloring.cpp`` contains a complete 
+working example code, including a RAJA HIP variant.

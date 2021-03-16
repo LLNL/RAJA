@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -12,11 +12,12 @@
 Using RAJA in Your Application
 ******************************
 
-Using RAJA in an application requires two things: ensuring the header files
+Using RAJA in an application requires two things: ensuring the RAJA header files
 are visible, and linking against the RAJA library. We maintain a 
 `RAJA Template Project <https://github.com/LLNL/RAJA-project-template>`_
-shows how to use RAJA in a CMake project, either as a Git submodule or
-as an externally installed library that you link your application against.
+that shows how to use RAJA in a project that uses CMake or make, either as a 
+Git submodule or as an externally installed library that you link your 
+application against.
 
 ========================
 CMake Configuration File

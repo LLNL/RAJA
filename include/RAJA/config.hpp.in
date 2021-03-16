@@ -22,7 +22,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -77,10 +77,19 @@
  */
 #cmakedefine RAJA_ENABLE_BOUNDS_CHECK
 
+/*
+ ******************************************************************************
+ *
+ * \brief Exhaustive index types for tests
+ *
+ ******************************************************************************
+ */
+#cmakedefine RAJA_TEST_EXHAUSTIVE
+
 /*!
  ******************************************************************************
  *
- * \brief Programming model back-ends, plus CHAI enable/disable.
+ * \brief Programming model back-ends.
  *
  ******************************************************************************
  */
@@ -90,6 +99,8 @@
 #cmakedefine RAJA_ENABLE_CUDA
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
 #cmakedefine RAJA_ENABLE_HIP
+
+#cmakedefine RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL
 
 /*!
  ******************************************************************************
@@ -102,6 +113,15 @@
 #cmakedefine RAJA_USE_GETTIME
 #cmakedefine RAJA_USE_CLOCK
 #cmakedefine RAJA_USE_CYCLE
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Runtime plugins.
+ *
+ ******************************************************************************
+ */
+#cmakedefine RAJA_ENABLE_RUNTIME_PLUGINS
 
 /*!
  ******************************************************************************
@@ -135,11 +155,23 @@
 namespace RAJA {
 
 #if defined(RAJA_ENABLE_OPENMP)
-#if !defined(_OPENMP)
+#if defined(_OPENMP)
+#if _OPENMP >= 200805
+#define RAJA_ENABLE_OPENMP_TASK
+#endif
+#else
 #error RAJA configured with ENABLE_OPENMP, but OpenMP not supported by current compiler
 #endif // _OPENMP
 #endif // RAJA_ENABLE_OPENMP
 
+#if defined(RAJA_ENABLE_CUDA) && defined(__CUDACC__)
+#define RAJA_CUDA_ACTIVE
+#endif // RAJA_ENABLE_CUDA && __CUDACC__
+
+#if defined(RAJA_CUDA_ACTIVE) || \
+  defined(RAJA_ENABLE_HIP)
+#define RAJA_DEVICE_ACTIVE
+#endif
 
 /*!
  ******************************************************************************
@@ -162,23 +194,11 @@ namespace RAJA {
  */
 
 //
-//  Platform-specific constants for range index set and data alignment:
-//
-//     RANGE_ALIGN - alignment of begin/end indices in range segments
-//                   (i.e., starting index and length of range segments
-//                    constructed by index set builder methods will
-//                    be multiples of this value)
-//
-//     RANGE_MIN_LENGTH - used in index set builder methods
-//                        as min length of range segments (an integer multiple
-//                        of RANGE_ALIGN)
+//  Platform-specific constants for data alignment:
 //
 //     DATA_ALIGN - used in compiler-specific intrinsics and type aliases
 //                  to specify alignment of data, loop bounds, etc.;
 //                  units of "bytes"
-
-const int RANGE_ALIGN = @RAJA_RANGE_ALIGN@;
-const int RANGE_MIN_LENGTH = @RAJA_RANGE_MIN_LENGTH@;
 const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #if defined (_WIN32)
@@ -187,32 +207,20 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_RESTRICT __restrict__
 #endif
 
+#if !defined(RAJA_COMPILER_MSVC)
+#define RAJA_COLLAPSE(X) collapse(X)
+#else
+#define RAJA_COLLAPSE(X)
+#endif
+
 //
 // Runtime bounds checking for Views
 //
 #if defined(RAJA_ENABLE_BOUNDS_CHECK)
 #define RAJA_BOUNDS_CHECK_INTERNAL
 #define RAJA_BOUNDS_CHECK_constexpr
-
-#if !defined(NDEBUG)
-#define RAJA_ASSERT(EXP) assert( (EXP) )
-#endif
-
-//
-//TODO: Once HIP is supported use asm("s_trap 2");
-//      to halt HIP kernels.
-//
-#if defined(NDEBUG) && defined(__CUDA_ARCH__)
-#define RAJA_ASSERT(EXP) asm ("trap;")
-#endif
-
-#if defined(NDEBUG) && !defined(__CUDA_ARCH__)
-#define RAJA_ASSERT(EXP) abort();
-#endif
-
 #else
 #define RAJA_BOUNDS_CHECK_constexpr constexpr
-#define RAJA_ASSERT(EXP)
 #endif
 
 //
@@ -363,6 +371,17 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #define RAJA_NO_SIMD  RAJA_PRAGMA(clang loop vectorize(disable))
 #endif
+
+
+// This is the same as undefined compiler, but squelches the warning message
+#elif defined(RAJA_COMPILER_MSVC)
+
+#define RAJA_FORCEINLINE_RECURSIVE
+#define RAJA_INLINE inline
+#define RAJA_ALIGN_DATA(d) d
+#define RAJA_SIMD
+#define RAJA_NO_SIMD
+
 
 #else
 

@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -53,6 +53,15 @@ struct loop_exec : make_policy_pattern_launch_platform_t<Policy::loop,
 using loop_segit = loop_exec;
 
 ///
+/// WorkGroup execution policies
+///
+struct loop_work : make_policy_pattern_launch_platform_t<Policy::loop,
+                                                         Pattern::workgroup_exec,
+                                                         Launch::sync,
+                                                         Platform::host> {
+};
+
+///
 ///////////////////////////////////////////////////////////////////////
 ///
 /// Reduction execution policies
@@ -68,6 +77,7 @@ using loop_reduce = seq_reduce;
 using policy::loop::loop_exec;
 using policy::loop::loop_reduce;
 using policy::loop::loop_segit;
+using policy::loop::loop_work;
 
 }  // namespace RAJA
 

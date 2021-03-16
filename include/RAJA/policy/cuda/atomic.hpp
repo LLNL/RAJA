@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -24,6 +24,13 @@
 
 #include <stdexcept>
 #include <type_traits>
+
+#include "RAJA/policy/loop/atomic.hpp"
+#include "RAJA/policy/sequential/atomic.hpp"
+#include "RAJA/policy/atomic_builtin.hpp"
+#if defined(RAJA_ENABLE_OPENMP)
+#include "RAJA/policy/openmp/atomic.hpp"
+#endif
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/TypeConvert.hpp"
@@ -577,8 +584,18 @@ RAJA_INLINE __device__ unsigned long long cuda_atomicCAS<unsigned long long>(
 }  // namespace detail
 
 
-struct cuda_atomic {
-};
+/*!
+ * Cuda atomic policy for using cuda atomics on the device and
+ * the provided host_policy on the host
+ */
+template<typename host_policy>
+struct cuda_atomic_explicit{};
+
+/*!
+ * Default cuda atomic policy uses cuda atomics on the device and non-atomics
+ * on the host
+ */
+using cuda_atomic = cuda_atomic_explicit<loop_atomic>;
 
 
 /*!
@@ -590,177 +607,162 @@ struct cuda_atomic {
  * These are atomic in cuda device code and non-atomic otherwise
  */
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(cuda_atomic, T volatile *acc, T value)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicAdd(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicAdd(acc, value);
 #else
-  T old = *acc;
-  *acc = old + value;
-  return old;
+  return RAJA::atomicAdd(host_policy{}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicSub(cuda_atomic, T volatile *acc, T value)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicSub(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicSub(acc, value);
 #else
-  T old = *acc;
-  *acc = old - value;
-  return old;
+  return RAJA::atomicSub(host_policy{}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicMin(cuda_atomic, T volatile *acc, T value)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicMin(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicMin(acc, value);
 #else
-  T old = *acc;
-  if (value < old) *acc = value;
-  return old;
+  return RAJA::atomicMin(host_policy{}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicMax(cuda_atomic, T volatile *acc, T value)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicMax(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicMax(acc, value);
 #else
-  T old = *acc;
-  if (value > old) *acc = value;
-  return old;
+  return RAJA::atomicMax(host_policy{}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(cuda_atomic, T volatile *acc, T val)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicInc(cuda_atomic_explicit<host_policy>, T volatile *acc, T val)
 {
 #ifdef __CUDA_ARCH__
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicinc
   return detail::cuda_atomicInc(acc, val);
 #else
-  T old = *acc;
-  *acc = ((old >= val) ? 0 : (old + 1));
-  return old;
+  return RAJA::atomicInc(host_policy{}, acc, val);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(cuda_atomic, T volatile *acc)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicInc(cuda_atomic_explicit<host_policy>, T volatile *acc)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicInc(acc);
 #else
-  T old = *acc;
-  *acc = old + 1;
-  return old;
+  return RAJA::atomicInc(host_policy{}, acc);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(cuda_atomic, T volatile *acc, T val)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicDec(cuda_atomic_explicit<host_policy>, T volatile *acc, T val)
 {
 #ifdef __CUDA_ARCH__
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicdec
   return detail::cuda_atomicDec(acc, val);
 #else
-  T old = *acc;
-  *acc = (((old == 0) | (old > val)) ? val : (old - 1));
-  return old;
+  return RAJA::atomicDec(host_policy{}, acc, val);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(cuda_atomic, T volatile *acc)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicDec(cuda_atomic_explicit<host_policy>, T volatile *acc)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicDec(acc);
 #else
-  T old = *acc;
-  *acc = old - 1;
-  return old;
+  return RAJA::atomicDec(host_policy{}, acc);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicAnd(cuda_atomic, T volatile *acc, T value)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicAnd(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicAnd(acc, value);
 #else
-  T old = *acc;
-  *acc = old & value;
-  return old;
+  return RAJA::atomicAnd(host_policy{}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicOr(cuda_atomic, T volatile *acc, T value)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicOr(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicOr(acc, value);
 #else
-  T old = *acc;
-  *acc = old | value;
-  return old;
+  return RAJA::atomicOr(host_policy{}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicXor(cuda_atomic, T volatile *acc, T value)
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicXor(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicXor(acc, value);
 #else
-  T old = *acc;
-  *acc = old ^ value;
-  return old;
+  return RAJA::atomicXor(host_policy{}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
+template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicExchange(cuda_atomic, T volatile *acc, T value)
+atomicExchange(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicExchange(acc, value);
 #else
-  T old = *acc;
-  *acc = value;
-  return old;
+  return RAJA::atomicExchange(host_policy{}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T>
+template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicCAS(cuda_atomic, T volatile *acc, T compare, T value)
+atomicCAS(cuda_atomic_explicit<host_policy>, T volatile *acc, T compare, T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicCAS(acc, compare, value);
 #else
-  T old = *acc;
-  if (old == compare) *acc = value;
-  return old;
+  return RAJA::atomicCAS(host_policy{}, acc, compare, value);
 #endif
 }
 

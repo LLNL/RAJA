@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,6 +14,8 @@
 #include "memoryManager.hpp"
 
 #include "RAJA/RAJA.hpp"
+
+#include "camp/resource.hpp"
 
 /*
  *  Index sets and Segments Example
@@ -127,6 +129,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printResult(a, N);
 
 //----------------------------------------------------------------------------//
+// Resource object used to construct list segment objects with indices
+// living in host (CPU) memory.
+
+  camp::resources::Resource host_res{camp::resources::Host()};
+
+
 //
 // RAJA list segment version #1
 //
@@ -144,7 +152,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     idx.push_back(i); 
   } 
 
-  ListSegType idx_list( &idx[0], idx.size() );
+  ListSegType idx_list( &idx[0], idx.size(), host_res );
 
   RAJA::forall<RAJA::seq_exec>(idx_list, [=] (IdxType i) {
     a[i] += b[i] * c;
@@ -168,7 +176,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _raja_list_segment_daxpy_reverse_start
   std::reverse( idx.begin(), idx.end() ); 
 
-  ListSegType idx_reverse_list( &idx[0], idx.size() );
+  ListSegType idx_reverse_list( &idx[0], idx.size(), host_res );
 
   RAJA::forall<RAJA::seq_exec>(idx_reverse_list, [=] (IdxType i) {
     a[i] += b[i] * c;
@@ -267,7 +275,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     idx1.push_back(i);
   }
 
-  ListSegType idx1_list( &idx1[0], idx1.size() );
+  ListSegType idx1_list( &idx1[0], idx1.size(), host_res );
 
   RAJA::TypedIndexSet<RAJA::RangeSegment, ListSegType> is3;
   is3.push_back( RAJA::RangeSegment(0, N/3) );
@@ -333,18 +341,33 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
+
+//
+// We create a new resource object and index set so that list segment 
+// indices live in CUDA deviec memory.
+//
+  camp::resources::Resource cuda_res{camp::resources::Cuda()};
+
+  ListSegType idx1_list_cuda( &idx1[0], idx1.size(), cuda_res );
+
+  RAJA::TypedIndexSet<RAJA::RangeSegment, ListSegType> is3_cuda;
+  is3_cuda.push_back( RAJA::RangeSegment(0, N/3) );
+  is3_cuda.push_back( idx1_list_cuda );
+  is3_cuda.push_back( RAJA::RangeSegment(2*N/3, N) );
+
+
   std::cout << 
     "\n Running RAJA index set (2 RangeSegments, 1 ListSegment) daxpy\n" << 
     " (sequential iteration over segments, CUDA parallel segment execution)...\n";
 
   // _raja_indexset_cudapolicy_daxpy_start
-  using OMP_ISET_EXECPOL3 = RAJA::ExecPolicy<RAJA::seq_segit,
+  using CUDA_ISET_EXECPOL = RAJA::ExecPolicy<RAJA::seq_segit,
                                              RAJA::cuda_exec<CUDA_BLOCK_SIZE>>;
   // _raja_indexset_cudapolicy_daxpy_end
 
   std::memcpy( a, a0, N * sizeof(double) );
 
-  RAJA::forall<OMP_ISET_EXECPOL3>(is3, [=] RAJA_DEVICE (IdxType i) {
+  RAJA::forall<CUDA_ISET_EXECPOL>(is3_cuda, [=] RAJA_DEVICE (IdxType i) {
     a[i] += b[i] * c;
   });
 
@@ -355,12 +378,28 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_HIP)
+
+//
+// We create a new resource object and index set so that list segment
+// indices live in Hip deviec memory.
+//
+  camp::resources::Resource hip_res{camp::resources::Hip()};
+
+  ListSegType idx1_list_hip( &idx1[0], idx1.size(), hip_res );
+
+  RAJA::TypedIndexSet<RAJA::RangeSegment, ListSegType> is3_hip;
+  is3_hip.push_back( RAJA::RangeSegment(0, N/3) );
+  is3_hip.push_back( idx1_list_hip );
+  is3_hip.push_back( RAJA::RangeSegment(2*N/3, N) );
+
   std::cout <<
     "\n Running RAJA index set (2 RangeSegments, 1 ListSegment) daxpy\n" <<
     " (sequential iteration over segments, HIP parallel segment execution)...\n";
 
-  using OMP_ISET_EXECPOL3 = RAJA::ExecPolicy<RAJA::seq_segit,
-                                             RAJA::hip_exec<HIP_BLOCK_SIZE>>;
+  // _raja_indexset_hippolicy_daxpy_start
+  using HIP_ISET_EXECPOL = RAJA::ExecPolicy<RAJA::seq_segit,
+                                            RAJA::hip_exec<HIP_BLOCK_SIZE>>;
+  // _raja_indexset_hippolicy_daxpy_end
 
   double* d_a = memoryManager::allocate_gpu<double>(N);
   double* d_b = memoryManager::allocate_gpu<double>(N);
@@ -368,7 +407,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( d_a, a0, N * sizeof(double), hipMemcpyHostToDevice ));
   hipErrchk(hipMemcpy( d_b,  b, N * sizeof(double), hipMemcpyHostToDevice ));
 
-  RAJA::forall<OMP_ISET_EXECPOL3>(is3, [=] RAJA_DEVICE (IdxType i) {
+  RAJA::forall<HIP_ISET_EXECPOL>(is3_hip, [=] RAJA_DEVICE (IdxType i) {
     d_a[i] += d_b[i] * c;
   });
 

@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -30,11 +30,15 @@ namespace RAJA
 RAJA_INLINE
 void* align(size_t alignment, size_t size, void*& ptr, size_t& space)
 {
+
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4146 )  // Force msvc to ignore subtracting from signed number warning
+#endif
   void* r = nullptr;
   if (size <= space) {
     char* p1 = static_cast<char*>(ptr);
     char* p2 = reinterpret_cast<char*>(
-        reinterpret_cast<size_t>(p1 + (alignment - 1)) & -alignment);
+        reinterpret_cast<size_t>(p1 + (static_cast<ptrdiff_t>(alignment) - 1)) & -alignment);
     size_t d = static_cast<size_t>(p2 - p1);
     if (d <= space - size) {
       r = p2;
@@ -43,6 +47,11 @@ void* align(size_t alignment, size_t size, void*& ptr, size_t& space)
     }
   }
   return r;
+
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4146 )  // Force msvc to ignore subtracting from signed number warning
+#endif
+
 }
 
 }  // end namespace RAJA

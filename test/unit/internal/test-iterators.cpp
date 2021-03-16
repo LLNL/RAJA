@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,53 +9,41 @@
 /// Source file containing unit tests for numeric_iterator
 ///
 
-#include "RAJA/RAJA.hpp"
-#include "gtest/gtest.h"
+#include "RAJA_test-base.hpp"
+#include "RAJA_unit-test-types.hpp"
+
 #include <limits>
 
 template<typename T>
 class NumericIteratorUnitTest : public ::testing::Test {};
+
 template<typename T>
 class StridedNumericIteratorUnitTest : public ::testing::Test {};
 
-using MyTypes = ::testing::Types<RAJA::Index_type,
-                                 char,
-                                 unsigned char,
-                                 short,
-                                 unsigned short,
-                                 int,
-                                 unsigned int,
-                                 long,
-                                 unsigned long,
-                                 long int,
-                                 unsigned long int,
-                                 long long,
-                                 unsigned long long>;
-
-TYPED_TEST_SUITE(NumericIteratorUnitTest, MyTypes);
-TYPED_TEST_SUITE(StridedNumericIteratorUnitTest, MyTypes);
+TYPED_TEST_SUITE(NumericIteratorUnitTest, UnitExpandedIntegralTypes);
+TYPED_TEST_SUITE(StridedNumericIteratorUnitTest, UnitExpandedIntegralTypes);
 
 TYPED_TEST(NumericIteratorUnitTest, simple)
 {
   RAJA::Iterators::numeric_iterator<TypeParam> i;
-  ASSERT_EQ(0, *i);
+  ASSERT_EQ(TypeParam(0), *i);
   ++i;
-  ASSERT_EQ(1, *i);
+  ASSERT_EQ(TypeParam(1), *i);
   --i;
-  ASSERT_EQ(0, *i);
-  ASSERT_EQ(0, *i++);
-  ASSERT_EQ(1, *i);
-  ASSERT_EQ(1, *i--);
-  ASSERT_EQ(0, *i);
+  ASSERT_EQ(TypeParam(0), *i);
+  ASSERT_EQ(TypeParam(0), *i++);
+  ASSERT_EQ(TypeParam(1), *i);
+  ASSERT_EQ(TypeParam(1), *i--);
+  ASSERT_EQ(TypeParam(0), *i);
   i += 2;
-  ASSERT_EQ(2, *i);
+  ASSERT_EQ(TypeParam(2), *i);
   i -= 1;
-  ASSERT_EQ(1, *i);
+  ASSERT_EQ(TypeParam(1), *i);
   RAJA::Iterators::numeric_iterator<TypeParam> five(5);
   i += five;
-  ASSERT_EQ(6, *i);
+  ASSERT_EQ(TypeParam(6), *i);
   i -= five;
-  ASSERT_EQ(1, *i);
+  ASSERT_EQ(TypeParam(1), *i);
   RAJA::Iterators::numeric_iterator<TypeParam> three(3);
   ASSERT_LE(three, three);
   ASSERT_LE(three, five);
@@ -72,15 +60,15 @@ TYPED_TEST(NumericIteratorUnitTest, simple)
 TYPED_TEST(StridedNumericIteratorUnitTest, simple)
 {
   RAJA::Iterators::strided_numeric_iterator<TypeParam> i(0, 2);
-  ASSERT_EQ(0, *i);
+  ASSERT_EQ(TypeParam(0), *i);
   ++i;
-  ASSERT_EQ(2, *i);
+  ASSERT_EQ(TypeParam(2), *i);
   --i;
-  ASSERT_EQ(0, *i);
+  ASSERT_EQ(TypeParam(0), *i);
   i += 2;
-  ASSERT_EQ(4, *i);
+  ASSERT_EQ(TypeParam(4), *i);
   i -= 1;
-  ASSERT_EQ(2, *i);
+  ASSERT_EQ(TypeParam(2), *i);
   RAJA::Iterators::strided_numeric_iterator<TypeParam> three(3, 2);
   RAJA::Iterators::strided_numeric_iterator<TypeParam> five(5, 2);
   ASSERT_LE(three, three);

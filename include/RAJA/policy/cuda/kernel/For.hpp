@@ -9,11 +9,12 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 
 #ifndef RAJA_policy_cuda_kernel_For_HPP
 #define RAJA_policy_cuda_kernel_For_HPP
@@ -38,24 +39,29 @@ namespace internal
 template <typename Data,
           camp::idx_t ArgumentId,
           int ThreadDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::cuda_thread_xyz_direct<ThreadDim>, EnclosedStmts...>> {
+    statement::For<ArgumentId, RAJA::cuda_thread_xyz_direct<ThreadDim>, EnclosedStmts...>, Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
-  using enclosed_stmts_t =
-      CudaStatementListExecutor<Data, stmt_list_t>;
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
 
+  using enclosed_stmts_t =
+      CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
   inline
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    auto len = segment_length<ArgumentId>(data);
-    auto i = get_cuda_dim<ThreadDim>(threadIdx);
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i = get_cuda_dim<ThreadDim>(threadIdx);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -69,7 +75,7 @@ struct CudaStatementExecutor<
   inline
   LaunchDims calculateDimensions(Data const &data)
   {
-    auto len = segment_length<ArgumentId>(data);
+    diff_t len = segment_length<ArgumentId>(data);
 
     // request one thread per element in the segment
     LaunchDims dims;
@@ -92,15 +98,22 @@ struct CudaStatementExecutor<
  */
 template <typename Data,
           camp::idx_t ArgumentId,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::cuda_warp_direct, EnclosedStmts...>> {
+    statement::For<ArgumentId, RAJA::cuda_warp_direct, EnclosedStmts...>,
+    Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-      CudaStatementListExecutor<Data, stmt_list_t>;
+      CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
 
   static
@@ -108,8 +121,8 @@ struct CudaStatementExecutor<
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    auto len = segment_length<ArgumentId>(data);
-    auto i = threadIdx.x;
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i = threadIdx.x;
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -127,7 +140,7 @@ struct CudaStatementExecutor<
     LaunchDims dims = enclosed_stmts_t::calculateDimensions(data);
 
     // we always get EXACTLY one warp by allocating one warp in the X dimension
-    int len = RAJA::policy::cuda::WARP_SIZE;
+    diff_t len = RAJA::policy::cuda::WARP_SIZE;
 
     // request one thread per element in the segment
     set_cuda_dim<0>(dims.threads, len);
@@ -150,40 +163,45 @@ template <typename Data,
           camp::idx_t ArgumentId,
           int ThreadDim,
           int MinThreads,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::cuda_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>> {
+    statement::For<ArgumentId, RAJA::cuda_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>,
+    Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-      CudaStatementListExecutor<Data, stmt_list_t>;
+      CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
 
   static
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // block stride loop
-    auto len = segment_length<ArgumentId>(data);
-    auto i0 = get_cuda_dim<ThreadDim>(threadIdx);
-    auto i_stride = get_cuda_dim<ThreadDim>(blockDim);
-    auto i = i0;
-    for(;i < len;i += i_stride){
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i_init = get_cuda_dim<ThreadDim>(threadIdx);
+    diff_t i_stride = get_cuda_dim<ThreadDim>(blockDim);
+
+    // Iterate through block stride of chunks
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i_init;
+
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-    }
-    // do we need one more masked iteration?
-    if(i - i0 < len)
-    {
-      // execute enclosed statements one more time, but masking them off
-      // this is because there's at least one thread that isn't masked off
-      // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
+      enclosed_stmts_t::exec(data, thread_active && have_work);
     }
   }
 
@@ -192,7 +210,7 @@ struct CudaStatementExecutor<
   inline
   LaunchDims calculateDimensions(Data const &data)
   {
-    auto len = segment_length<ArgumentId>(data);
+    diff_t len = segment_length<ArgumentId>(data);
 
     // request one thread per element in the segment
     LaunchDims dims;
@@ -216,40 +234,45 @@ struct CudaStatementExecutor<
  */
 template <typename Data,
           camp::idx_t ArgumentId,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::cuda_warp_loop, EnclosedStmts...>> {
+    statement::For<ArgumentId, RAJA::cuda_warp_loop, EnclosedStmts...>,
+    Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-      CudaStatementListExecutor<Data, stmt_list_t>;
+      CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
 
   static
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // block stride loop
-    auto len = segment_length<ArgumentId>(data);
-    auto i0 = threadIdx.x;
-    auto i_stride = RAJA::policy::cuda::WARP_SIZE;
-    auto i = i0;
-    for(;i < len;i += i_stride){
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i_init = threadIdx.x;
+    diff_t i_stride = RAJA::policy::cuda::WARP_SIZE;
+
+    // Iterate through grid stride of chunks
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i_init;
+
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-    }
-    // do we need one more masked iteration?
-    if(i - i0 < len)
-    {
-      // execute enclosed statements one more time, but masking them off
-      // this is because there's at least one thread that isn't masked off
-      // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
+      enclosed_stmts_t::exec(data, thread_active && have_work);
     }
   }
 
@@ -262,7 +285,7 @@ struct CudaStatementExecutor<
     LaunchDims dims = enclosed_stmts_t::calculateDimensions(data);
 
     // we always get EXACTLY one warp by allocating one warp in the X dimension
-    int len = RAJA::policy::cuda::WARP_SIZE;
+    diff_t len = RAJA::policy::cuda::WARP_SIZE;
 
     // request one thread per element in the segment
     set_cuda_dim<0>(dims.threads, len);
@@ -283,18 +306,25 @@ struct CudaStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           typename Mask,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
   Data,
   statement::For<ArgumentId, RAJA::cuda_warp_masked_direct<Mask>,
-                 EnclosedStmts ...> > {
+                 EnclosedStmts ...>,
+  Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-          CudaStatementListExecutor<Data, stmt_list_t>;
+          CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
   using mask_t = Mask;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static_assert(mask_t::max_masked_size <= RAJA::policy::cuda::WARP_SIZE,
                 "BitMask is too large for CUDA warp size");
@@ -304,9 +334,9 @@ struct CudaStatementExecutor<
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    auto len = segment_length<ArgumentId>(data);
+    diff_t len = segment_length<ArgumentId>(data);
 
-    auto i = mask_t::maskValue(threadIdx.x);
+    diff_t i = mask_t::maskValue(threadIdx.x);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -325,7 +355,7 @@ struct CudaStatementExecutor<
 
     // we always get EXACTLY one warp by allocating one warp in the X
     // dimension
-    int len = RAJA::policy::cuda::WARP_SIZE;
+    diff_t len = RAJA::policy::cuda::WARP_SIZE;
 
     // request one thread per element in the segment
     set_cuda_dim<0>(dims.threads, len);
@@ -347,18 +377,25 @@ struct CudaStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           typename Mask,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
   Data,
   statement::For<ArgumentId, RAJA::cuda_warp_masked_loop<Mask>,
-                 EnclosedStmts ...> > {
+                 EnclosedStmts ...>,
+  Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-          CudaStatementListExecutor<Data, stmt_list_t>;
+          CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
   using mask_t = Mask;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static_assert(mask_t::max_masked_size <= RAJA::policy::cuda::WARP_SIZE,
                 "BitMask is too large for CUDA warp size");
@@ -369,24 +406,24 @@ struct CudaStatementExecutor<
   void exec(Data &data, bool thread_active)
   {
     // masked size strided loop
-    int len = segment_length<ArgumentId>(data);
-    int i = mask_t::maskValue(threadIdx.x);
-    for( ; i < len; i += (int) mask_t::max_masked_size){
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i_init = mask_t::maskValue(threadIdx.x);
+    diff_t i_stride = (diff_t) mask_t::max_masked_size;
+
+    // Iterate through grid stride of chunks
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i_init;
+
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
+      enclosed_stmts_t::exec(data, thread_active && have_work);
     }
-    // do we need one more masked iteration?
-    if(i - mask_t::maskValue(threadIdx.x) < len){
-      // execute enclosed statements one more time, but masking them off
-      // this is because there's at least one thread that isn't masked off
-      // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
-    }
-
   }
 
 
@@ -399,7 +436,7 @@ struct CudaStatementExecutor<
 
     // we always get EXACTLY one warp by allocating one warp in the X
     // dimension
-    int len = RAJA::policy::cuda::WARP_SIZE;
+    diff_t len = RAJA::policy::cuda::WARP_SIZE;
 
     // request one thread per element in the segment
     set_cuda_dim<0>(dims.threads, len);
@@ -420,27 +457,34 @@ struct CudaStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           typename Mask,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
   Data,
   statement::For<ArgumentId, RAJA::cuda_thread_masked_direct<Mask>,
-                 EnclosedStmts ...> > {
+                 EnclosedStmts ...>,
+  Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-          CudaStatementListExecutor<Data, stmt_list_t>;
+          CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
   using mask_t = Mask;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
   inline
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    auto len = segment_length<ArgumentId>(data);
+    diff_t len = segment_length<ArgumentId>(data);
 
-    auto i = mask_t::maskValue(threadIdx.x);
+    diff_t i = mask_t::maskValue(threadIdx.x);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -459,7 +503,7 @@ struct CudaStatementExecutor<
 
     // we need to allocate enough threads for the segment size, and the
     // shifted off bits
-    int len = mask_t::max_input_size;
+    diff_t len = mask_t::max_input_size;
 
     // request one thread per element in the segment
     set_cuda_dim<0>(dims.threads, len);
@@ -483,18 +527,25 @@ struct CudaStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           typename Mask,
-          typename ... EnclosedStmts>
+          typename ... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
   Data,
   statement::For<ArgumentId, RAJA::cuda_thread_masked_loop<Mask>,
-                 EnclosedStmts ...> > {
+                 EnclosedStmts ...>,
+  Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
 
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-          CudaStatementListExecutor<Data, stmt_list_t>;
+          CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
   using mask_t = Mask;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
 
   static
@@ -503,24 +554,24 @@ struct CudaStatementExecutor<
   void exec(Data &data, bool thread_active)
   {
     // masked size strided loop
-    int len = segment_length<ArgumentId>(data);
-    int i = mask_t::maskValue(threadIdx.x);
-    for( ; i < len; i += (int) mask_t::max_masked_size){
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i_init = mask_t::maskValue(threadIdx.x);
+    diff_t i_stride = (diff_t) mask_t::max_masked_size;
+
+    // Iterate through grid stride of chunks
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      diff_t i = ii + i_init;
+
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
 
       // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
+      enclosed_stmts_t::exec(data, thread_active && have_work);
     }
-    // do we need one more masked iteration?
-    if(i - mask_t::maskValue(threadIdx.x) < len){
-      // execute enclosed statements one more time, but masking them off
-      // this is because there's at least one thread that isn't masked off
-      // that is still executing the above loop
-      enclosed_stmts_t::exec(data, false);
-    }
-
   }
 
 
@@ -533,7 +584,7 @@ struct CudaStatementExecutor<
 
     // we need to allocate enough threads for the segment size, and the
     // shifted off bits
-    int len = mask_t::max_input_size;
+    diff_t len = mask_t::max_input_size;
 
     // request one thread per element in the segment
     set_cuda_dim<0>(dims.threads, len);
@@ -555,22 +606,29 @@ struct CudaStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           int BlockDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>> {
+    statement::For<ArgumentId, RAJA::cuda_block_xyz_direct<BlockDim>, EnclosedStmts...>,
+    Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-      CudaStatementListExecutor<Data, stmt_list_t>;
+      CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
 
   static
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
-    auto len = segment_length<ArgumentId>(data);
-    auto i = get_cuda_dim<BlockDim>(blockIdx);
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i = get_cuda_dim<BlockDim>(blockIdx);
 
     if (i < len) {
 
@@ -587,7 +645,7 @@ struct CudaStatementExecutor<
   inline
   LaunchDims calculateDimensions(Data const &data)
   {
-    auto len = segment_length<ArgumentId>(data);
+    diff_t len = segment_length<ArgumentId>(data);
 
     // request one block per element in the segment
     LaunchDims dims;
@@ -611,25 +669,34 @@ struct CudaStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           int BlockDim,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::cuda_block_xyz_loop<BlockDim>, EnclosedStmts...>> {
+    statement::For<ArgumentId, RAJA::cuda_block_xyz_loop<BlockDim>, EnclosedStmts...>,
+    Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-      CudaStatementListExecutor<Data, stmt_list_t>;
+      CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
 
   static
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // grid stride loop
-    auto len = segment_length<ArgumentId>(data);
-    auto i0 = get_cuda_dim<BlockDim>(blockIdx);
-    auto i_stride = get_cuda_dim<BlockDim>(gridDim);
-    for(auto i = i0;i < len;i += i_stride){
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i_init = get_cuda_dim<BlockDim>(blockIdx);
+    diff_t i_stride = get_cuda_dim<BlockDim>(gridDim);
+
+    // Iterate through grid stride of chunks
+    for(diff_t i = i_init;i < len;i += i_stride){
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
@@ -644,7 +711,7 @@ struct CudaStatementExecutor<
   inline
   LaunchDims calculateDimensions(Data const &data)
   {
-    auto len = segment_length<ArgumentId>(data);
+    diff_t len = segment_length<ArgumentId>(data);
 
     // request one block per element in the segment
     LaunchDims dims;
@@ -666,27 +733,31 @@ struct CudaStatementExecutor<
  */
 template <typename Data,
           camp::idx_t ArgumentId,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::For<ArgumentId, seq_exec, EnclosedStmts...> > {
+    statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
+    Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
   using enclosed_stmts_t =
-      CudaStatementListExecutor<Data, stmt_list_t>;
+      CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
   inline
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
+    diff_t len = segment_length<ArgumentId>(data);
 
-    using idx_type = camp::decay<decltype(camp::get<ArgumentId>(data.offset_tuple))>;
-
-    idx_type len = segment_length<ArgumentId>(data);
-
-    for(idx_type i = 0;i < len;++ i){
+    for(diff_t i = 0;i < len;++ i){
       // Assign i to the argument
       data.template assign_offset<ArgumentId>(i);
 
@@ -711,4 +782,4 @@ struct CudaStatementExecutor<
 }  // end namespace RAJA
 
 
-#endif /* RAJA_pattern_kernel_HPP */
+#endif /* RAJA_policy_cuda_kernel_For_HPP */

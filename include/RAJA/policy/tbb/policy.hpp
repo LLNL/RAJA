@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -65,6 +65,15 @@ using tbb_for_exec = tbb_for_static<>;
 ///
 using tbb_segit = tbb_for_exec;
 
+///
+/// WorkGroup execution policies
+///
+struct tbb_work : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                                        Pattern::workgroup_exec,
+                                                        Launch::sync,
+                                                        Platform::host> {
+};
+
 
 ///
 ///////////////////////////////////////////////////////////////////////
@@ -87,6 +96,7 @@ using policy::tbb::tbb_for_exec;
 using policy::tbb::tbb_for_static;
 using policy::tbb::tbb_reduce;
 using policy::tbb::tbb_segit;
+using policy::tbb::tbb_work;
 
 }  // namespace RAJA
 

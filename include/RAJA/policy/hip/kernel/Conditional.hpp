@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -38,12 +38,14 @@ namespace internal
 
 template <typename Data,
           typename Conditional,
-          typename... EnclosedStmts>
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<Data,
-                             statement::If<Conditional, EnclosedStmts...>> {
+                             statement::If<Conditional, EnclosedStmts...>,
+                             Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t>;
+  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
 
 
   static

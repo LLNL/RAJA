@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -57,8 +57,8 @@ struct HipSyncWarp : public internal::Statement<camp::nil> {
 namespace internal
 {
 
-template <typename Data>
-struct HipStatementExecutor<Data, statement::HipSyncThreads> {
+template <typename Data, typename Types>
+struct HipStatementExecutor<Data, statement::HipSyncThreads, Types> {
 
   static
   inline
@@ -74,8 +74,8 @@ struct HipStatementExecutor<Data, statement::HipSyncThreads> {
   }
 };
 
-template <typename Data>
-struct HipStatementExecutor<Data, statement::HipSyncWarp> {
+template <typename Data, typename Types>
+struct HipStatementExecutor<Data, statement::HipSyncWarp, Types> {
 
   static
   inline

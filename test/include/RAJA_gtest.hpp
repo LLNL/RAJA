@@ -9,14 +9,21 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_gtest_HPP
-#define RAJA_gtest_HPP
+#ifndef __RAJA_gtest_HPP__
+#define __RAJA_gtest_HPP__
+
+#ifdef RAJA_COMPILER_MSVC
+// disable some warnings for MSVC that we can't control, because they're emitted
+// by googletest headers
+#pragma warning( disable : 4244 )  // Force msvc to not emit conversion warning
+#pragma warning( disable : 4389 )  // Force msvc to not emit conversion warning
+#endif
 
 #include "gtest/gtest.h"
 
@@ -92,5 +99,11 @@
     template <typename gtest_TypeParam_>                                \
     void GTEST_SUITE_NAMESPACE_(                                        \
         SuiteName)::TestName<gtest_TypeParam_>::TestBody()
+
+
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4244 )  // reenable warning
+#pragma warning( default : 4389 )  // reenable warning
+#endif
 
 #endif  // closing endif for header file include guard
