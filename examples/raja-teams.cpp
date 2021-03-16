@@ -113,8 +113,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     RAJA::expt::ExecPlace select_cpu_or_gpu = (RAJA::expt::ExecPlace)exec_place;
 
-    // auto select_cpu_or_gpu = RAJA::HOST;
-    // auto select_cpu_or_gpu = RAJA::DEVICE;
+    // auto select_cpu_or_gpu = RAJA::expt::HOST;
+    // auto select_cpu_or_gpu = RAJA::expt::DEVICE;
 
     // Allocate memory for either host or device
     int N_tri = 5;
