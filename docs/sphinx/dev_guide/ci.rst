@@ -26,8 +26,10 @@ These tools include:
     is a work-in-progress to get full coverage of compilers and tests we
     need to exercise.
 
-Travis and Appveyor integrate seamlessly with GitHub. So they will automatically
-(re)run RAJA builds and tests as changes are pushed to each PR branch.
+These tools integrate seamlessly with GitHub. So they will automatically
+(re)run RAJA builds and tests as changes are pushed to each PR branch. Gitlab
+CI execution on Livermore Computing resources has some restrictions which are
+described below.
 
 Gitlab CI support is still being developed to make it more easy to use with 
 GitHub projects. The current state is described below.
@@ -39,20 +41,14 @@ GitHub projects. The current state is described below.
 Gitlab CI
 =========
 
-Due to Livermore Computing security policies, Gitlab CI must be launched 
-manually by a *blessed* GitHub user. Specifially, one must be a member of the
-LLNL GitHub organization and have tw-factor authentication enabled on your
-GitHub account. If you satisfy these requirements, you can initiate Gitlab CI
-on a pull request by adding a comment with 'LGTM' in it.
-
-.. note:: Gitlab CI is run on Livermore Computing systems that are heavily used
-          and so throughput is less than ideal. To avoid squandering resources,
-          **it is important that all RAJA developers only launch Gitlab CI when
-          a pull request has passed all other checks and is ready to be 
-          merged.** Also, be aware that when a PR is merged, all CI checks will 
-          need to be rerun on other PR branches after they are updated with the 
-          merged changes. So it's not prudent to have Gitlab CI checks running 
-          (or queued to be run) on more than one branch at a time.
+If all memmbers of a GitHub project are members of the LLNL GitHub organization 
+and have tw-factor authentication enabled on their GitHub accounts, 
+auto-mirroring on the Livermore Computing Collaboration Zone Gitlab server is
+anabled. Thus, Gitlab CI will run automatically for those projects on pull 
+requested that are made by project members. Otherwise, due to Livermore 
+Computing security policies, Gitlab CI must be launched manually by a *blessed* 
+GitHub user satisfying the constraints described above. To manually initiate
+Gitlab CI on a pull request, add a comment with 'LGTM' in it.
 
 It is important to note that RAJA shares its Gitlab CI workflow with 
 other projects. See `Shared Gitlab CI Workflow <https://radiuss-ci.readthedocs.io/en/latest/uberenv.html#ci>`_ for more information.
