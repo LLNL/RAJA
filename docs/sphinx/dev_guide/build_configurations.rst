@@ -119,11 +119,15 @@ the compiler and version. For example,
 
   hc-quartz-toss_3_x86_64_ib-gcc@8.1.0-fjcjwd6ec3uen5rh6msdqujydsj74ubf.cmake
 
+Specs that are exercised during the Gitlab CI process are found YAML files in 
+the ``RAJA/.gitlab`` directory. See :ref:`vettedspecs-label` for more 
+information.
+
 Building RAJA with a generated host-config file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To build RAJA with one of these host-config files, create a build directory and
-run CMake in in it passing the host-config file to CMake using the '-C' option.
+run CMake in it by passing the host-config file to CMake using the '-C' option.
 Then, run make and RAJA tests, if desired, to make sure the build was done
 properly:
 
