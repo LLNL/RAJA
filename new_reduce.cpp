@@ -24,8 +24,7 @@ namespace detail {
                                                     camp::idx_seq<Sequence...>,
                                                     Ts &&... extra)
   {
-    //return f(extra..., camp::get<Sequence>(t.value_refs())...);
-    return f(extra..., (*camp::get<Sequence>(t))...);
+    return f(extra..., (t.template get_value_ref<Sequence>())...);
   }
 
   CAMP_SUPPRESS_HD_WARN
@@ -34,10 +33,9 @@ namespace detail {
   constexpr auto invoke(TupleLike &&t, Fn &&f, Ts &&... extra)
   {
     return invoke_with_order(
-        //camp::forward<TupleLike>(t),
-        camp::forward<decltype(t.value_refs())>(t.value_refs()),
+        camp::forward<TupleLike>(t),
         camp::forward<Fn>(f),
-        camp::make_idx_seq_t< camp::decay<TupleLike>::c_size::value >{},
+        typename camp::decay<TupleLike>::params_seq(),
         camp::forward<Ts>(extra)...);
   }
 
@@ -47,16 +45,11 @@ namespace detail {
     using val_type = T;
     Reducer() {}
     Reducer(T *target_in) : target(target_in), val(op::identity()) {}
-    Reducer(const Reducer& rhs) : target(rhs.target), val(op::identity()) {}
     T *target = nullptr;
     T val = op::identity();
 
     T& init() { 
       val = op::identity();
-      return val; // Returning this because void parameter loop expansion is broken
-    }
-    T& resolve() { 
-      target = &val;
       return val; // Returning this because void parameter loop expansion is broken
     }
   };
@@ -149,16 +142,10 @@ namespace detail {
   template<typename... Params>
   struct FORALL_PARAMS_T {
     using Base = camp::tuple<Params...>;
+    using params_seq = camp::make_idx_seq_t< camp::tuple_size<Base>::value >;
     Base param_tup;
-    
-    using c_size = camp::tuple_size<Base>; 
 
   private:
-    template<camp::idx_t... Seq>
-    auto m_targets(camp::idx_seq<Seq...>)
-      -> decltype( camp::make_tuple( (camp::get<Seq>(param_tup).target)...) ) {
-      return camp::make_tuple( (camp::get<Seq>(param_tup).target)...) ;
-    }
 
     template<camp::idx_t... Seq>
     auto m_value_refs(camp::idx_seq<Seq...>)
@@ -172,41 +159,21 @@ namespace detail {
       return camp::make_tuple( (camp::get<Seq>(param_tup).init())...) ;
     }
 
-    template<camp::idx_t... Seq>
-    auto m_resolve(camp::idx_seq<Seq...>)
-      -> decltype( camp::make_tuple( (camp::get<Seq>(param_tup).resolve())...) ) {
-      return camp::make_tuple( (camp::get<Seq>(param_tup).resolve())...) ;
-    }
-
-
   public:
-    using params_seq = camp::make_idx_seq_t< c_size::value >;
 
     FORALL_PARAMS_T(Params... params) {
       param_tup = camp::make_tuple(params...);
     };
 
-    auto targets() -> decltype(m_targets(params_seq{})) {
-      return m_targets(params_seq{});
-    }
-    auto value_refs() -> decltype(m_value_refs(params_seq{})) {
-      return m_value_refs(params_seq{});
+    template<camp::idx_t Idx>
+    auto get_value_ref() -> decltype(*camp::get<Idx>(m_value_refs(params_seq{}))) {
+      return (*camp::get<Idx>(m_value_refs(params_seq{})));
     }
 
     auto initialize() -> FORALL_PARAMS_T { // Returning this because void param loop machine broken.
       m_init(params_seq{});
       return *this;
     }
-
-    auto resolve() -> decltype(m_resolve(params_seq{})){
-      return m_resolve(params_seq{});
-    }
-
-    void combine(const FORALL_PARAMS_T& rhs){};
-
-    FORALL_PARAMS_T(const FORALL_PARAMS_T& rhs) = default;
-    FORALL_PARAMS_T& operator=(FORALL_PARAMS_T &&rhs) = default;
-    FORALL_PARAMS_T& operator=(const FORALL_PARAMS_T& rhs) = default;
   };
 
 
