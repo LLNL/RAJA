@@ -9,7 +9,7 @@
 /// Source file containing tests for RAJA workgroup enqueue.
 ///
 
-#include "test-workgroup-Enqueue.hpp"
+#include "test-workgroup-Enqueue-@SUBTESTNAME@.hpp"
 
 using @BACKEND@BasicWorkGroupEnqueue@SUBTESTNAME@Types =
   Test< camp::cartesian_product< @BACKEND@ExecPolicyList,

@@ -12,6 +12,9 @@
 RAJA Tutorial
 **********************
 
+In addition to the tutorial portion of this RAJA User Guide, we maintain
+a repository of tutorial presntation materials here `RAJA Tutorials Repo <https://github.com/LLNL/RAJA-tutorials>`_.
+
 This RAJA tutorial introduces RAJA concepts and capabilities via a 
 sequence of examples of increasing complexity. Complete working codes for 
 the examples are located in the ``RAJA``examples`` directory. The RAJA 
@@ -292,3 +295,16 @@ tiling mechanisms to transform loop patterns.
    tutorial/tiled_matrix_transpose.rst
    tutorial/matrix_transpose_local_array.rst
    tutorial/halo-exchange.rst
+
+=================================================================
+Team based Loops: Nested loops with a thread/team model
+=================================================================
+
+The examples in this section illustrate how to use ``RAJA::expt::launch``
+to create an run-time selectable execution space for expressing algorithms
+in terms of threads and teams.
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorial/teams_basic.rst

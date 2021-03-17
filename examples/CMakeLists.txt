@@ -6,6 +6,10 @@
 ###############################################################################
 
 raja_add_executable(
+  NAME tut_teams_basic
+  SOURCES tut_teams_basic.cpp)
+
+raja_add_executable(
   NAME resource-forall
   SOURCES resource-forall.cpp)
 
@@ -114,5 +118,9 @@ endif()
 raja_add_executable(
   NAME kernel-dynamic-tile
   SOURCES kernel-dynamic-tile.cpp)
+
+raja_add_executable(
+  NAME resource-kernel
+  SOURCES resource-kernel.cpp)
 
 add_subdirectory(plugin)

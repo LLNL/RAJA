@@ -25,8 +25,8 @@ cmake \
   -C ../host-configs/lc-builds/blueos/nvcc_clang_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
-  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-11.0.2 \
-  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-11.0.2/bin/nvcc \
+  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-11.1.1 \
+  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-11.1.1/bin/nvcc \
   -DCUDA_ARCH=sm_70 \
   -DCMAKE_CUDA_STANDARD="14" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
