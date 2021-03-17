@@ -28,7 +28,7 @@ Each of these specifies compiler versions and options, a build target
 (Release, Debug, etc.), RAJA features to enable (OpenMP, CUDA, etc.), 
 and paths to required tool chains, such as CUDA, ROCm, etc.
 
-They will be describe briefly in the following sections.
+They are described briefly in the following sections.
 
 
 ===================
