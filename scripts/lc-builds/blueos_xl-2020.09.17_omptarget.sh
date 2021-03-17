@@ -8,7 +8,6 @@
 ###############################################################################
 
 BUILD_SUFFIX=lc_blueos-xl_2020.09.17_omptarget
-RAJA_HOSTCONFIG=../tpl/RAJA/host-configs/lc-builds/blueos/xl_X.cmake
 
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
