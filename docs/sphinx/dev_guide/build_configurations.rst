@@ -147,5 +147,5 @@ MacOS
 In RAJA, the Spack configuration for MacOS contains the default compiler
 corresponding to the OS version (`compilers.yaml`), and a commented section to 
 illustrate how to add `CMake` as an external package. You may install CMake 
-with ``Homebrew <https://brew.sh/>``_, for example, and follow the process 
+with `Homebrew <https://brew.sh>`_, for example, and follow the process 
 outlined above after it is installed.

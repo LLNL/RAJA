@@ -48,11 +48,11 @@ on a pull request by adding a comment with 'LGTM' in it.
 .. note:: Gitlab CI is run on Livermore Computing systems that are heavily used
           and so throughput is less than ideal. To avoid squandering resources,
           **it is important that all RAJA developers only launch Gitlab CI when
-          a pull request has pass all other checks and is ready to be merged.** 
-          Also, be aware that when a PR is merged, all CI checks wil need to be
-          rerun on other PR branches. So it's not prudent to have Gitlab CI 
-          checks running (or queued to be run) on more than one branch at a 
-          time.
+          a pull request has passed all other checks and is ready to be 
+          merged.** Also, be aware that when a PR is merged, all CI checks will 
+          need to be rerun on other PR branches after they are updated with the 
+          merged changes. So it's not prudent to have Gitlab CI checks running 
+          (or queued to be run) on more than one branch at a time.
 
 It is important to note that RAJA shares its Gitlab CI workflow with 
 other projects. See `Shared Gitlab CI Workflow <https://radiuss-ci.readthedocs.io/en/latest/uberenv.html#ci>`_ for more information.
@@ -82,6 +82,6 @@ Then, executing a command such as:
       SPEC: "%gcc@7.3.0"
       SPEC: "%gcc@8.1.0"
 
-will list the specs vetted on ``quartz``/``toss_3_x86_64_ib``.
+will list the specs vetted on the quartz platform.
 
 More details to come...
