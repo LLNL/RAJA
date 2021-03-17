@@ -38,8 +38,14 @@ if(RAJA_ENABLE_OPENMP)
   list(APPEND BACKENDS OpenMP)
 endif()
 
+#
+# If building a subset of openmp target tests, do not add the back-end to
+# the list of tests to generate here.
+#
 if(RAJA_ENABLE_TARGET_OPENMP)
-  list(APPEND BACKENDS OpenMPTarget)
+  if(NOT RAJA_TEST_OPENMP_TARGET_SUBSET)
+    list(APPEND BACKENDS OpenMPTarget)
+  endif() 
 endif()
 
 if(RAJA_ENABLE_CUDA)
@@ -59,5 +65,18 @@ buildunitworkgrouptest(Unordered "${Unordered_SUBTESTS}" "${BACKENDS}")
 
 unset(BACKENDS)
 
+#
+# If building a subset of openmp target tests, add tests to build here.
+#
+if(RAJA_ENABLE_TARGET_OPENMP)
+  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
+
+    set(BACKENDS OpenMPTarget)
+    buildunitworkgrouptest(Unordered "${Unordered_SUBTESTS}" "${BACKENDS}")
+
+  endif()
+endif()
+
+unset(BACKENDS)
 unset(Ordered_SUBTESTS)
 unset(Unordered_SUBTESTS)
