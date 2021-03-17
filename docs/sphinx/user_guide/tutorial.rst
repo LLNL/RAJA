@@ -295,3 +295,16 @@ tiling mechanisms to transform loop patterns.
    tutorial/tiled_matrix_transpose.rst
    tutorial/matrix_transpose_local_array.rst
    tutorial/halo-exchange.rst
+
+=================================================================
+Team based Loops: Nested loops with a thread/team model
+=================================================================
+
+The examples in this section illustrate how to use ``RAJA::expt::launch``
+to create an run-time selectable execution space for expressing algorithms
+in terms of threads and teams.
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorial/teams_basic.rst
