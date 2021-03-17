@@ -99,10 +99,12 @@ RAJA_INLINE constexpr auto make_wrapped_tuple(Tuple &&t)
 template <typename PolicyType,
           typename SegmentTuple,
           typename ParamTuple,
+          typename Resource,
           typename... Bodies>
-RAJA_INLINE void kernel_param(SegmentTuple &&segments,
-                              ParamTuple &&params,
-                              Bodies &&... bodies)
+RAJA_INLINE resources::EventProxy<Resource> kernel_param_resource(SegmentTuple &&segments,
+                                                                  ParamTuple &&params,
+                                                                  Resource &resource,
+                                                                  Bodies &&... bodies)
 {
   util::PluginContext context{util::make_context<PolicyType>()};
 
@@ -119,6 +121,7 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
 
   using loop_data_t = internal::LoopData<segment_tuple_t,
                                          param_tuple_t,
+                                         Resource,
                                          camp::decay<Bodies>...>;
 
 
@@ -130,8 +133,9 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
   // and only copied to provide thread-private instances.
   loop_data_t loop_data(make_wrapped_tuple(
                             std::forward<SegmentTuple>(segments)),
-                        std::forward<ParamTuple>(params),
-                        std::forward<Bodies>(bodies)...);
+                            std::forward<ParamTuple>(params),
+                            resource,
+                            std::forward<Bodies>(bodies)...);
 
   util::callPostCapturePlugins(context);
 
@@ -144,14 +148,48 @@ RAJA_INLINE void kernel_param(SegmentTuple &&segments,
   internal::execute_statement_list<PolicyType, loop_types_t>(loop_data);
 
   util::callPostLaunchPlugins(context);
+
+  return resources::EventProxy<Resource>(&resource);
+}
+
+template <typename PolicyType,
+          typename SegmentTuple,
+          typename Resource,
+          typename... Bodies>
+RAJA_INLINE resources::EventProxy<Resource> kernel_resource(SegmentTuple &&segments,
+                                                            Resource &resource,
+                                                            Bodies &&... bodies)
+{
+  return RAJA::kernel_param_resource<PolicyType>(std::forward<SegmentTuple>(segments),
+                                                 RAJA::make_tuple(),
+                                                 resource,
+                                                 std::forward<Bodies>(bodies)...);
+}
+
+template <typename PolicyType,
+          typename SegmentTuple,
+          typename ParamTuple,
+          typename... Bodies>
+RAJA_INLINE resources::EventProxy<resources::resource_from_pol_t<PolicyType>> kernel_param(SegmentTuple &&segments,
+                                                                                           ParamTuple &&params,
+                                                                                           Bodies &&... bodies)
+{
+  auto res = resources::get_default_resource<PolicyType>();
+  return RAJA::kernel_param_resource<PolicyType>(std::forward<SegmentTuple>(segments),
+                                                 std::forward<ParamTuple>(params),
+                                                 res,
+                                                 std::forward<Bodies>(bodies)...);
 }
 
 template <typename PolicyType, typename SegmentTuple, typename... Bodies>
-RAJA_INLINE void kernel(SegmentTuple &&segments, Bodies &&... bodies)
+RAJA_INLINE resources::EventProxy<resources::resource_from_pol_t<PolicyType>> kernel(SegmentTuple &&segments,
+                                                                                     Bodies &&... bodies)
 {
-  RAJA::kernel_param<PolicyType>(std::forward<SegmentTuple>(segments),
-                                 RAJA::make_tuple(),
-                                 std::forward<Bodies>(bodies)...);
+  auto res = resources::get_default_resource<PolicyType>();
+  return RAJA::kernel_param_resource<PolicyType>(std::forward<SegmentTuple>(segments),
+                                                 RAJA::make_tuple(),
+                                                 res,
+                                                 std::forward<Bodies>(bodies)...);
 }
 
 
