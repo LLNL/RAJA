@@ -11,34 +11,45 @@
 
 int use_dev = 1;
 
-namespace detail {
 
+// -------------------------------------------------------------------------------------------------
+namespace detail {
+  //
+  //
+  // Invoke Forall with Params.
+  //
+  //
   CAMP_SUPPRESS_HD_WARN
   template <typename Fn,
             camp::idx_t... Sequence,
-            typename TupleLike,
+            typename Params,
             typename... Ts>
-  CAMP_HOST_DEVICE
-  auto constexpr invoke_with_order(TupleLike &&t,
-                                                    Fn &&f,
+  CAMP_HOST_DEVICE constexpr auto invoke_with_order(Params&& params,
+                                                    Fn&& f,
                                                     camp::idx_seq<Sequence...>,
-                                                    Ts &&... extra)
+                                                    Ts&&... extra)
   {
-    return f(extra..., (t.template get_value_ref<Sequence>())...);
+    return f(extra..., ( params.template get_value_ref<Sequence>() )...);
   }
 
   CAMP_SUPPRESS_HD_WARN
-  template <typename TupleLike, typename Fn, typename... Ts>
-  CAMP_HOST_DEVICE
-  constexpr auto invoke(TupleLike &&t, Fn &&f, Ts &&... extra)
+  template <typename Params, typename Fn, typename... Ts>
+  CAMP_HOST_DEVICE constexpr auto invoke(Params&& params, Fn&& f, Ts&&... extra)
   {
     return invoke_with_order(
-        camp::forward<TupleLike>(t),
+        camp::forward<Params>(params),
         camp::forward<Fn>(f),
-        typename camp::decay<TupleLike>::params_seq(),
+        typename camp::decay<Params>::params_seq(),
         camp::forward<Ts>(extra)...);
   }
 
+
+
+  //
+  //
+  // Basic Reducer
+  //
+  //
   template <typename Op, typename T>
   struct Reducer {
     using op = Op;
@@ -48,6 +59,8 @@ namespace detail {
     T *target = nullptr;
     T val = op::identity();
 
+    // Do we want this in here? Probably want to have this work like Combine and Resolve
+    // do in this prototype...
     T& init() { 
       val = op::identity();
       return val; // Returning this because void parameter loop expansion is broken
@@ -87,11 +100,11 @@ namespace detail {
 
   // Base Functions
   template<typename EXEC_POL, typename F_PARAM_T, camp::idx_t... Seq>
-  void detail_combine(EXEC_POL, F_PARAM_T& out, const F_PARAM_T& in, camp::idx_seq<Seq...>) {
+  void constexpr detail_combine(EXEC_POL, F_PARAM_T& out, const F_PARAM_T& in, camp::idx_seq<Seq...>) {
     camp::make_tuple( (combine<EXEC_POL>( camp::get<Seq>(out.param_tup), camp::get<Seq>(in.param_tup)))...  );
   }
   template<typename EXEC_POL, typename F_PARAM_T>
-  void combine(F_PARAM_T& out, const F_PARAM_T& in) {
+  void constexpr combine(F_PARAM_T& out, const F_PARAM_T& in) {
     detail_combine(EXEC_POL(), out, in, typename F_PARAM_T::params_seq::type{} );
   }
 
@@ -125,15 +138,16 @@ namespace detail {
 
   // Base Functions
   template<typename EXEC_POL, typename F_PARAM_T, camp::idx_t... Seq>
-  void detail_resove(EXEC_POL, F_PARAM_T& f_params, camp::idx_seq<Seq...>) {
+  void constexpr detail_resove(EXEC_POL, F_PARAM_T& f_params, camp::idx_seq<Seq...>) {
     camp::make_tuple( (resolve<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ))...  );
   }
 
   template<typename EXEC_POL, typename F_PARAM_T>
-  void resolve( F_PARAM_T& f_params ) {
+  void constexpr resolve( F_PARAM_T& f_params ) {
     detail_resove(EXEC_POL(), f_params, typename F_PARAM_T::params_seq::type{} );
   }
   
+
   //
   //
   // Forall Param Wrapper Type
@@ -148,13 +162,13 @@ namespace detail {
   private:
 
     template<camp::idx_t... Seq>
-    auto m_value_refs(camp::idx_seq<Seq...>)
+    constexpr auto m_value_refs(camp::idx_seq<Seq...>)
       -> decltype( camp::make_tuple( (&camp::get<Seq>(param_tup).val)...) ) {
       return camp::make_tuple( (&camp::get<Seq>(param_tup).val)...) ;
     }
 
     template<camp::idx_t... Seq>
-    auto m_init(camp::idx_seq<Seq...>)
+    constexpr auto m_init(camp::idx_seq<Seq...>)
       -> decltype( camp::make_tuple( (camp::get<Seq>(param_tup).val)...) ) {
       return camp::make_tuple( (camp::get<Seq>(param_tup).init())...) ;
     }
@@ -165,12 +179,13 @@ namespace detail {
       param_tup = camp::make_tuple(params...);
     };
 
+    // Might want a better name for this? Used in invokation of forall to pass param values / types.
     template<camp::idx_t Idx>
-    auto get_value_ref() -> decltype(*camp::get<Idx>(m_value_refs(params_seq{}))) {
+    constexpr auto get_value_ref() -> decltype(*camp::get<Idx>(m_value_refs(params_seq{}))) {
       return (*camp::get<Idx>(m_value_refs(params_seq{})));
     }
 
-    auto initialize() -> FORALL_PARAMS_T { // Returning this because void param loop machine broken.
+    constexpr auto initialize() -> FORALL_PARAMS_T { // Returning this because void param loop machine broken.
       m_init(params_seq{});
       return *this;
     }
