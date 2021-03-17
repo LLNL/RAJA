@@ -45,6 +45,15 @@ LLNL GitHub organization and have tw-factor authentication enabled on your
 GitHub account. If you satisfy these requirements, you can initiate Gitlab CI
 on a pull request by adding a comment with 'LGTM' in it.
 
+.. note:: Gitlab CI is run on Livermore Computing systems that are heavily used
+          and so throughput is less than ideal. To avoid squandering resources,
+          **it is important that all RAJA developers only launch Gitlab CI when
+          a pull request has pass all other checks and is ready to be merged.** 
+          Also, be aware that when a PR is merged, all CI checks wil need to be
+          rerun on other PR branches. So it's not prudent to have Gitlab CI 
+          checks running (or queued to be run) on more than one branch at a 
+          time.
+
 It is important to note that RAJA shares its Gitlab CI workflow with 
 other projects. See `Shared Gitlab CI Workflow <https://radiuss-ci.readthedocs.io/en/latest/uberenv.html#ci>`_ for more information.
 
