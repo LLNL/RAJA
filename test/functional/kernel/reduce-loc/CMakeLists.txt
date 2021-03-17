@@ -8,6 +8,16 @@
 set(LOCTYPES Min2D Max2D Min2DView Max2DView Min2DViewTuple Max2DViewTuple)
 
 #
+# If building a subset of openmp target tests, remove the back-end from
+# from the list of tests to generate here.
+#
+if(RAJA_ENABLE_TARGET_OPENMP)
+  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
+    list(REMOVE_ITEM KERNEL_BACKENDS OpenMPTarget)
+  endif()
+endif()
+
+#
 # Generate kernel region basic tests for each enabled RAJA back-end.
 #
 foreach( LOC_BACKEND ${KERNEL_BACKENDS} )
