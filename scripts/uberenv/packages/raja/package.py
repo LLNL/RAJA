@@ -277,8 +277,8 @@ class Raja(CMakePackage, CudaPackage):
                                         '--amdgpu-target=gfx906'))
             cfg.write(cmake_cache_entry("HIP_RUNTIME_INCLUDE_DIRS",
                                         "{0}/include;{0}/../hsa/include".format(hip_root)))
-            if ("%gcc" in cpp_compiler) or (using_toolchain):
-                if ('%gcc' in cpp_compiler):
+            if ('%gcc' in spec) or (using_toolchain):
+                if ('%gcc' in spec):
                     gcc_bin = os.path.dirname(self.compiler.cxx)
                     gcc_prefix = join_path(gcc_bin, '..')
                 else:
