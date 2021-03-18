@@ -162,4 +162,3 @@ echo "~~~~~ CLEAN UP"
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
 make clean
-rm -rf uberenv_libs
