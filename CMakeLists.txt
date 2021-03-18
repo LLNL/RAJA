@@ -1,7 +1,6 @@
 ###############################################################################
 # Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
-#
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
@@ -78,6 +77,8 @@ option(RAJA_TEST_OPENMP_TARGET_SUBSET "Build subset of RAJA OpenMP target tests 
 option(RAJA_ENABLE_RUNTIME_PLUGINS "Enable support for loading plugins at runtime" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
+
+set(BLT_EXPORT_THIRDPARTY ON CACHE BOOL "")
 
 cmake_minimum_required(VERSION 3.9)
 
