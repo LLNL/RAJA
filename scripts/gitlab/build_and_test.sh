@@ -102,10 +102,12 @@ then
     rm -rf ${build_dir} 2>/dev/null
     mkdir -p ${build_dir} && cd ${build_dir}
 
+    date
     cmake \
       -C ${hostconfig_path} \
       ${project_dir}
     cmake --build . -j 32
+    date
 fi
 
 # Test
@@ -122,7 +124,9 @@ then
 
     cd ${build_dir}
 
+    date
     ctest --output-on-failure -T test 2>&1 | tee tests_output.txt
+    date
 
     no_test_str="No tests were found!!!"
     if [[ "$(tail -n 1 tests_output.txt)" == "${no_test_str}" ]]
@@ -152,3 +156,10 @@ then
         echo "ERROR: failure(s) while running CTest" && exit 1
     fi
 fi
+
+echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+echo "~~~~~ CLEAN UP"
+echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+make clean
+rm -rf uberenv_libs
