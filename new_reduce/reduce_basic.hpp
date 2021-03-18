@@ -16,7 +16,7 @@ namespace detail
     Reducer() {}
     Reducer(T *target_in) : target(target_in), val(op::identity()) {}
     T *target = nullptr;
-    T val = op::identity();
+    T val;
   };
 
 } //  namespace detail
