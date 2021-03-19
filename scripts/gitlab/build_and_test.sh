@@ -38,9 +38,8 @@ then
 
     if [[ -d /dev/shm ]]
     then
-        do
+        while[! -d $date_in_sec]; do
           date_in_sec=$(date + %s)
-        while[[! -d $date_in_sec]]
         done
 
         prefix="/dev/shm/${hostname}/${date_in_sec}"
