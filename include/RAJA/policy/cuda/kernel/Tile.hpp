@@ -115,6 +115,19 @@ struct CudaStatementExecutor<
   }
 };
 
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename TPol,
+          typename... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<
+    Data,
+  statement::Tile<ArgumentId, TPol, loop_exec, EnclosedStmts...>, Types>
+: CudaStatementExecutor<Data, statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types>
+{
+
+};
+
 
 /*!
  * A specialized RAJA::kernel cuda_impl executor for statement::Tile
@@ -405,14 +418,13 @@ template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
           int ThreadDim,
-          int MinThreads,
           typename ... EnclosedStmts,
           typename Types>
 struct CudaStatementExecutor<
   Data,
   statement::Tile<ArgumentId,
                   RAJA::tile_fixed<chunk_size>,
-                  cuda_thread_xyz_loop<ThreadDim, MinThreads>,
+                  cuda_thread_xyz_loop<ThreadDim>,
                   EnclosedStmts ...>, Types>{
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
@@ -470,11 +482,11 @@ struct CudaStatementExecutor<
     if(num_threads * chunk_size < len){
       num_threads++;
     }
-    num_threads = std::max(num_threads, (diff_t)MinThreads);
+    num_threads = std::max(num_threads, (diff_t)1);
 
     LaunchDims dims;
     set_cuda_dim<ThreadDim>(dims.threads, num_threads);
-    set_cuda_dim<ThreadDim>(dims.min_threads, MinThreads);
+    set_cuda_dim<ThreadDim>(dims.min_threads, 1);
 
     // privatize data, so we can mess with the segments
     using data_t = camp::decay<Data>;

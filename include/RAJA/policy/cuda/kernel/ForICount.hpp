@@ -465,21 +465,20 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           int ThreadDim,
-          int MinThreads,
           typename... EnclosedStmts,
           typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::cuda_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>,
+    statement::ForICount<ArgumentId, ParamId, RAJA::cuda_thread_xyz_loop<ThreadDim>, EnclosedStmts...>,
     Types>
     : public CudaStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::cuda_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>,
+        statement::For<ArgumentId, RAJA::cuda_thread_xyz_loop<ThreadDim>, EnclosedStmts...>,
         Types> {
 
   using Base = CudaStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::cuda_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>,
+        statement::For<ArgumentId, RAJA::cuda_thread_xyz_loop<ThreadDim>, EnclosedStmts...>,
         Types>;
 
   using typename Base::enclosed_stmts_t;

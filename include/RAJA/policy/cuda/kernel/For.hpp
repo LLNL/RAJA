@@ -162,12 +162,11 @@ struct CudaStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           int ThreadDim,
-          int MinThreads,
           typename... EnclosedStmts,
           typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::cuda_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>,
+    statement::For<ArgumentId, RAJA::cuda_thread_xyz_loop<ThreadDim>, EnclosedStmts...>,
     Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -218,7 +217,7 @@ struct CudaStatementExecutor<
 
     // but, since we are looping, we only need 1 thread, or whatever
     // the user specified for MinThreads
-    set_cuda_dim<ThreadDim>(dims.min_threads, MinThreads);
+    set_cuda_dim<ThreadDim>(dims.min_threads, 1);
 
     // combine with enclosed statements
     LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
@@ -775,7 +774,18 @@ struct CudaStatementExecutor<
   }
 };
 
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<
+    Data,
+    statement::For<ArgumentId, loop_exec, EnclosedStmts...>,
+    Types>
+:  CudaStatementExecutor<Data, statement::For<ArgumentId, seq_exec, EnclosedStmts...>, Types>
+{
 
+};
 
 
 }  // namespace internal
