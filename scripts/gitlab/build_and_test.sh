@@ -40,6 +40,7 @@ then
     then
         while[! -d $date_in_sec]; do
           date_in_sec=$(date + %s)
+          sleep 1
         done
 
         prefix="/dev/shm/${hostname}/${date_in_sec}"
