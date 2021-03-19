@@ -38,7 +38,7 @@ then
 
     if [[ -d /dev/shm ]]
     then
-        date_in_spec=$(date + %s)
+        date_in_sec=$(date + %s)
         while [[ -d $date_in_sec ]] ; do
             sleep 1
             date_in_sec=$(date + %s)
