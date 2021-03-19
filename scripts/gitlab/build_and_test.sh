@@ -17,6 +17,7 @@ project_dir="$(pwd)"
 build_root=${BUILD_ROOT:-""}
 hostconfig=${HOST_CONFIG:-""}
 spec=${SPEC:-""}
+job_unique_id=${CI_JOB_ID:-""}
 
 sys_type=${SYS_TYPE:-""}
 py_env_path=${PYTHON_ENVIRONMENT_PATH:-""}
@@ -38,13 +39,16 @@ then
 
     if [[ -d /dev/shm ]]
     then
-        date_in_sec=$(date +%s)
-        while [[ -d $date_in_sec ]] ; do
-            sleep 1
-            date_in_sec=$(date +%s)
-        done
+        if [[-z ${job_unique_id} ]]; then
+          date_in_sec=$(date +%s)
+          while [[ -d $date_in_sec ]] ; do
+              sleep 1
+              date_in_sec=$(date +%s)
+          done
+        job_unique_id=manual_job_${date_in_sec}
+        fi  
 
-        prefix="/dev/shm/${hostname}/${date_in_sec}"
+        prefix="/dev/shm/${hostname}/${job_unique_id}"
         mkdir -p ${prefix}
         prefix_opt="--prefix=${prefix}"
     fi
