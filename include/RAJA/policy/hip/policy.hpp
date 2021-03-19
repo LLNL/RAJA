@@ -230,7 +230,7 @@ using policy::hip::hip_synchronize;
  * For example, a segment of size 2000 will not fit, and trigger a runtime
  * error.
  */
-template<int dim>
+template<int ... dim>
 struct hip_thread_xyz_direct{};
 
 using hip_thread_x_direct = hip_thread_xyz_direct<0>;
@@ -242,12 +242,12 @@ using hip_thread_z_direct = hip_thread_xyz_direct<2>;
  * Maps segment indices to HIP threads.
  * Uses block-stride looping to exceed the maximum number of physical threads
  */
-template<int dim, int min_threads>
+template<int ... dim>
 struct hip_thread_xyz_loop{};
 
-using hip_thread_x_loop = hip_thread_xyz_loop<0, 1>;
-using hip_thread_y_loop = hip_thread_xyz_loop<1, 1>;
-using hip_thread_z_loop = hip_thread_xyz_loop<2, 1>;
+using hip_thread_x_loop = hip_thread_xyz_loop<0>;
+using hip_thread_y_loop = hip_thread_xyz_loop<1>;
+using hip_thread_z_loop = hip_thread_xyz_loop<2>;
 
 
 /*!
@@ -255,7 +255,7 @@ using hip_thread_z_loop = hip_thread_xyz_loop<2, 1>;
  * This is the lowest overhead mapping, but requires that there are enough
  * physical blocks to fit all of the direct map requests.
  */
-template<int dim>
+template<int ... dim>
 struct hip_block_xyz_direct{};
 
 using hip_block_x_direct = hip_block_xyz_direct<0>;
@@ -267,7 +267,7 @@ using hip_block_z_direct = hip_block_xyz_direct<2>;
  * Maps segment indices to HIP blocks.
  * Uses grid-stride looping to exceed the maximum number of blocks
  */
-template<int dim>
+template<int ... dim>
 struct hip_block_xyz_loop{};
 
 using hip_block_x_loop = hip_block_xyz_loop<0>;
@@ -285,20 +285,22 @@ struct HipDimHelper;
 template<>
 struct HipDimHelper<0>{
 
+  template<typename dim_t>
+  RAJA_HOST_DEVICE
   inline
   static
   constexpr
-  RAJA_HOST_DEVICE
-  auto get(hip_dim_t const &d) ->
+  auto get(dim_t const &d) ->
     decltype(d.x)
   {
     return d.x;
   }
 
+  template<typename dim_t>
+  RAJA_HOST_DEVICE
   inline
   static
-  RAJA_HOST_DEVICE
-  void set(hip_dim_t &d, int value)
+  void set(dim_t &d, int value)
   {
     d.x = value;
   }
@@ -307,20 +309,22 @@ struct HipDimHelper<0>{
 template<>
 struct HipDimHelper<1>{
 
+  template<typename dim_t>
+  RAJA_HOST_DEVICE
   inline
   static
   constexpr
-  RAJA_HOST_DEVICE
-  auto get(hip_dim_t const &d) ->
-    decltype(d.x)
+  auto get(dim_t const &d) ->
+    decltype(d.y)
   {
     return d.y;
   }
 
+  template<typename dim_t>
+  RAJA_HOST_DEVICE
   inline
   static
-  RAJA_HOST_DEVICE
-  void set(hip_dim_t &d, int value)
+  void set(dim_t &d, int value)
   {
     d.y = value;
   }
@@ -329,37 +333,39 @@ struct HipDimHelper<1>{
 template<>
 struct HipDimHelper<2>{
 
+  template<typename dim_t>
+  RAJA_HOST_DEVICE
   inline
   static
   constexpr
-  RAJA_HOST_DEVICE
-  auto get(hip_dim_t const &d) ->
-    decltype(d.x)
+  auto get(dim_t const &d) ->
+    decltype(d.z)
   {
     return d.z;
   }
 
+  template<typename dim_t>
   inline
   static
   RAJA_HOST_DEVICE
-  void set(hip_dim_t &d, int value)
+  void set(dim_t &d, int value)
   {
     d.z = value;
   }
 };
 
-template<int dim>
-constexpr
+template<int dim, typename dim_t>
 RAJA_HOST_DEVICE
-auto get_hip_dim(hip_dim_t const &d) ->
-  decltype(d.x)
+constexpr
+auto get_hip_dim(dim_t const &d) ->
+  decltype(HipDimHelper<dim>::get(d))
 {
   return HipDimHelper<dim>::get(d);
 }
 
-template<int dim>
+template<int dim, typename dim_t>
 RAJA_HOST_DEVICE
-void set_hip_dim(hip_dim_t &d, int value)
+void set_hip_dim(dim_t &d, int value)
 {
   return HipDimHelper<dim>::set(d, value);
 }
