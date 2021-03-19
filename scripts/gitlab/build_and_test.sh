@@ -38,7 +38,12 @@ then
 
     if [[ -d /dev/shm ]]
     then
-        prefix="/dev/shm/${hostname}/${spec// /_}"
+        do
+          date_in_sec=$(date + %s)
+        while[[! -d $date_in_sec]]
+        done
+
+        prefix="/dev/shm/${hostname}/${date_in_sec}"
         mkdir -p ${prefix}
         prefix_opt="--prefix=${prefix}"
     fi
