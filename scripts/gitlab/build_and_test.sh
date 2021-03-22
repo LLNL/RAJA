@@ -45,7 +45,7 @@ then
               sleep 1
               date_in_sec=$(date +%s)
           done
-        job_unique_id=manual_job_${date_in_sec}
+          job_unique_id=manual_job_${date_in_sec}
         fi  
 
         prefix="/dev/shm/${hostname}/${job_unique_id}"
