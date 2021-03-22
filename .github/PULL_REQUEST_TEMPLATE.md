@@ -6,12 +6,6 @@
   - Fixes (issue number(s))
   - Adds (specific feature) at the request of (project or person)
 
-Note:
-
-Passing gitlab CI test suite is now ***REQUIRED*** to get your PR merged.
-You can initiate the gitlab CI test suite by simply commenting on your PR 
-after creation with something as simple as "LGTM".
-
 # Design review (for API changes or additions---delete if unneeded)
 
 On (date), we reviewed this PR.  We discussed the design ideas:
