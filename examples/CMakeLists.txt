@@ -6,6 +6,10 @@
 ###############################################################################
 
 raja_add_executable(
+  NAME tut_teams_basic
+  SOURCES tut_teams_basic.cpp)
+
+raja_add_executable(
   NAME resource-forall
   SOURCES resource-forall.cpp)
 
@@ -40,6 +44,10 @@ raja_add_executable(
 raja_add_executable(
   NAME tut_reductions
   SOURCES tut_reductions.cpp)
+
+raja_add_executable(
+  NAME teams_reductions
+  SOURCES teams_reductions.cpp)
 
 raja_add_executable(
   NAME tut_scan
@@ -82,6 +90,10 @@ raja_add_executable(
   SOURCES raja-teams.cpp)
 
 raja_add_executable(
+  NAME teams_matrix-multiply
+  SOURCES teams_matrix-multiply.cpp)
+
+raja_add_executable(
   NAME jacobi
   SOURCES jacobi.cpp)
 
@@ -114,5 +126,9 @@ endif()
 raja_add_executable(
   NAME kernel-dynamic-tile
   SOURCES kernel-dynamic-tile.cpp)
+
+raja_add_executable(
+  NAME resource-kernel
+  SOURCES resource-kernel.cpp)
 
 add_subdirectory(plugin)

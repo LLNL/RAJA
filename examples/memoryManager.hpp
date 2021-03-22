@@ -34,6 +34,8 @@ T *allocate(RAJA::Index_type size)
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(
       cudaMallocManaged((void **)&ptr, sizeof(T) * size, cudaMemAttachGlobal));
+#elif defined(RAJA_ENABLE_HIP)
+      hipErrchk(hipMalloc((void **)&ptr, sizeof(T) * size));
 #else
   ptr = new T[size];
 #endif
@@ -46,6 +48,8 @@ void deallocate(T *&ptr)
   if (ptr) {
 #if defined(RAJA_ENABLE_CUDA)
     cudaErrchk(cudaFree(ptr));
+#elif defined(RAJA_ENABLE_HIP)
+    hipErrchk(hipFree(ptr));
 #else
     delete[] ptr;
 #endif

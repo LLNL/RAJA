@@ -35,6 +35,7 @@
 #include "RAJA/policy/cuda/sort.hpp"
 #include "RAJA/policy/cuda/kernel.hpp"
 #include "RAJA/policy/cuda/synchronize.hpp"
+#include "RAJA/policy/cuda/teams.hpp"
 #include "RAJA/policy/cuda/WorkGroup.hpp"
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CUDA)

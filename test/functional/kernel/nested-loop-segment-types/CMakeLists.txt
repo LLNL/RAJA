@@ -11,6 +11,12 @@
 # Note: KERNEL_BACKENDS is defined in ../CMakeLists.txt
 #
 
+if(RAJA_ENABLE_TARGET_OPENMP)
+  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
+    list(REMOVE_ITEM KERNEL_BACKENDS OpenMPTarget)
+  endif()
+endif()
+
 foreach( BACKEND ${KERNEL_BACKENDS} )
   configure_file( test-kernel-nested-loop-segments.cpp.in
                   test-kernel-nested-loop-segments-${BACKEND}.cpp )
