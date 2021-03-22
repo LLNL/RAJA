@@ -56,3 +56,21 @@ if (ENABLE_HIP OR ENABLE_EXTERNAL_ROCPRIM)
     message(STATUS "Using RAJA rocPRIM submodule.")
   endif()
 endif ()
+
+set(TPL_DEPS)
+blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF ENABLE_CUDA)
+blt_list_append(TO TPL_DEPS ELEMENTS hip hip_runtime IF ENABLE_HIP)
+blt_list_append(TO TPL_DEPS ELEMENTS openmp IF ENABLE_OPENMP)
+blt_list_append(TO TPL_DEPS ELEMENTS mpi IF ENABLE_MPI)
+
+foreach(dep ${TPL_DEPS})
+    # If the target is EXPORTABLE, add it to the export set
+    get_target_property(_is_imported ${dep} IMPORTED)
+    if(NOT ${_is_imported})
+        install(TARGETS              ${dep}
+                EXPORT               RAJA
+                DESTINATION          lib)
+        # Namespace target to avoid conflicts
+        set_target_properties(${dep} PROPERTIES EXPORT_NAME RAJA::${dep})
+    endif()
+endforeach()
