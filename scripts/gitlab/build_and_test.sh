@@ -39,7 +39,7 @@ then
 
     if [[ -d /dev/shm ]]
     then
-        if [[-z ${job_unique_id} ]]; then
+        if [[ -z ${job_unique_id} ]]; then
           date_in_sec=$(date +%s)
           while [[ -d $date_in_sec ]] ; do
               sleep 1
