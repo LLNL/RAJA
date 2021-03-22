@@ -10,6 +10,11 @@
 #
 set(INDEXSETTESTTYPES IndexSetView IcountIndexSetView)
 
+if(RAJA_ENABLE_TARGET_OPENMP)
+  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
+    list(REMOVE_ITEM FORALL_BACKENDS OpenMPTarget)
+  endif()
+endif() 
 
 #
 # Generate tests for each enabled RAJA back-end.
