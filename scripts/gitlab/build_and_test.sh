@@ -39,16 +39,16 @@ then
 
     if [[ -d /dev/shm ]]
     then
+        prefix="/dev/shm/${hostname}"
         if [[ -z ${job_unique_id} ]]; then
-          date_in_sec=$(date +%s)
-          while [[ -d $date_in_sec ]] ; do
+          job_unique_id=manual_job_$(date +%s)
+          while [[ -d ${prefix}/${job_unique_id} ]] ; do
               sleep 1
-              date_in_sec=$(date +%s)
+              job_unique_id=manual_job_$(date +%s)
           done
-          job_unique_id=manual_job_${date_in_sec}
-        fi  
+        fi
 
-        prefix="/dev/shm/${hostname}/${job_unique_id}"
+        prefix="${prefix}/${job_unique_id}"
         mkdir -p ${prefix}
         prefix_opt="--prefix=${prefix}"
     fi
