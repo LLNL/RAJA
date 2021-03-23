@@ -15,7 +15,7 @@ Help()
    # Display Help
    echo "Syntax: make_raja_branch_from_fork_pr [-h|num]"
    echo "options:"
-   echo "h     Print this help usage message."
+   echo "-h     Print this help usage message."
    echo "num   PR number."
    echo
 }
