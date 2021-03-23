@@ -76,6 +76,11 @@ namespace RAJA
     using type = camp::resources::Sycl;
   };
 
+  template<size_t BlockSize, bool Async>
+  struct get_resource<sycl_exec_nontrivial<BlockSize, Async>>{
+    using type = camp::resources::Sycl;
+  };
+
   template<typename ISetIter, size_t BlockSize, bool Async>
   struct get_resource<ExecPolicy<ISetIter, sycl_exec<BlockSize, Async>>>{
     using type = camp::resources::Sycl;

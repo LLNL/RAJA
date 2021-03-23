@@ -30,7 +30,7 @@
 //#include "RAJA/policy/cuda/atomic.hpp"
 #include "RAJA/policy/sycl/forall.hpp"
 #include "RAJA/policy/sycl/policy.hpp"
-//#include "RAJA/policy/cuda/reduce.hpp"
+#include "RAJA/policy/sycl/reduce.hpp"
 //#include "RAJA/policy/cuda/scan.hpp"
 //#include "RAJA/policy/cuda/sort.hpp"
 #include "RAJA/policy/sycl/kernel.hpp"

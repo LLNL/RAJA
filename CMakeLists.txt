@@ -229,6 +229,12 @@ if (ENABLE_HIP)
   endif ()
 endif ()
 
+if (ENABLE_SYCL)
+  set (raja_depends
+    ${raja_depends}
+    sycl)
+endif ()
+
 if (ENABLE_TBB)
   set(raja_depends
     ${raja_depends}

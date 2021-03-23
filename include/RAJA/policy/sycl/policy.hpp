@@ -67,7 +67,7 @@ struct sycl_exec : public RAJA::make_policy_pattern_launch_platform_t<
 };
 
 template <size_t BLOCK_SIZE, bool Async = true>
-struct sycl_exec_trivial : public RAJA::make_policy_pattern_launch_platform_t<
+struct sycl_exec_nontrivial : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Policy::sycl,
                        RAJA::Pattern::forall,
                        detail::get_launch<Async>::value,
@@ -75,16 +75,16 @@ struct sycl_exec_trivial : public RAJA::make_policy_pattern_launch_platform_t<
 };
 
 
-/*struct sycl_reduce
+struct sycl_reduce
     : make_policy_pattern_t<RAJA::Policy::sycl, RAJA::Pattern::reduce> {
 };
-*/
+
 }  // namespace sycl
 }  // namespace policy
 
 using policy::sycl::sycl_exec;
-using policy::sycl::sycl_exec_trivial;
-//using policy::sycl::sycl_reduce;
+using policy::sycl::sycl_exec_nontrivial;
+using policy::sycl::sycl_reduce;
 
 // TODO
 template<int dim, int BLOCK_SIZE>

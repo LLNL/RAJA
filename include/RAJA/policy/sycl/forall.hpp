@@ -149,10 +149,10 @@ RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl 
 
   return resources::EventProxy<resources::Sycl>(&sycl_res);
 }
-/*
+
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
 RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &sycl_res,
-                                                    sycl_exec<BlockSize, Async>,
+                                                    sycl_exec_nontrivial<BlockSize, Async>,
                                                     Iterable&& iter,
                                                     LoopBody&& loop_body)
 {
@@ -177,9 +177,12 @@ RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &
     //
     // Compute the number of blocks
     //
-    sycl_dim_t blockSize{BlockSize, 1, 1};
-    sycl_dim_t gridSize = impl::getGridDim(static_cast<sycl_dim_member_t>(len), blockSize);
+    sycl_dim_t blockSize{BlockSize};
+    sycl_dim_t gridSize = impl::getGridDim(static_cast<size_t>(len), BlockSize);
 
+    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+    LOOP_BODY* lbody;
+    Iterator* beg;
     RAJA_FT_BEGIN;
 
     //
@@ -192,28 +195,37 @@ RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &
     //         (int)gridSize.y,
     //         (int)blockSize.x);
 // TODO: BRIAN
-    {
-      //
-      // Privatize the loop_body, using make_launch_body to setup reductions
-      //
-      LOOP_BODY body = RAJA::cuda::make_launch_body(
-          gridSize, blockSize, shmem, stream, std::forward<LoopBody>(loop_body));
+      lbody = (LOOP_BODY*) cl::sycl::malloc_device(sizeof(LOOP_BODY), *q);
+      auto e = q->memcpy(lbody, &loop_body, sizeof(LOOP_BODY));
+      e.wait();
 
-      //
-      // Launch the kernels
-      //
-      void *args[] = {(void*)&body, (void*)&begin, (void*)&len};
-      RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
-    }
+      beg = (Iterator*) cl::sycl::malloc_device(sizeof(Iterator), *q);
+      auto e2 = q->memcpy(beg, &begin, sizeof(Iterator));
+      e2.wait();
 
-    if (!Async) { RAJA::cuda::synchronize(stream); }
+      q->submit([&](cl::sycl::handler& h) {
+
+        h.parallel_for( cl::sycl::nd_range<1>{gridSize, blockSize},
+                        [=]  (cl::sycl::nd_item<1> it) {
+
+          size_t ii = it.get_global_id(0);
+
+          if (ii < len) {
+            (*lbody)((*beg)[ii]);
+          }
+        });
+      });
+    q->wait();
+      cl::sycl::free(lbody, *q);
+      cl::sycl::free(beg, *q);
+
 
     RAJA_FT_END;
   }
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Sycl>(&sycl_res);
 }
-*/
+
 
 //
 //////////////////////////////////////////////////////////////////////
