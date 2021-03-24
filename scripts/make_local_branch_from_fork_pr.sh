@@ -13,9 +13,12 @@
 Help()
 {
    # Display Help
-   echo "Syntax: make_raja_branch_from_fork_pr [-h|num]"
+   echo "This script will make a branch in a local git repo for a PR from a "
+   echo "branch in a forked repo. The script must be run inside the local repo."
+   echo 
+   echo "Syntax: make_local_branch_from_fork_pr [-h|num]"
    echo "options:"
-   echo "-h     Print this help usage message."
+   echo "-h    Print this help usage message."
    echo "num   PR number."
    echo
 }
@@ -35,12 +38,14 @@ while getopts ":h" option; do
    esac
 done
 
-echo "Making RAJA branch from branch on fork for PR $1";
-
-echo "When script exits, you will be on branch pr-from-fork/$1 in your local RAJA repo."
-
-echo "Do 'git push -u' to push the new branch to the main RAJA repo."
-
-echo "Then, make a PR for that branch and reference the original PR from the forked repo."
+echo "Making RAJA branch from branch on fork for PR $1"
+echo 
+echo "When script exits, you will be on local branch pr-from-fork/$1."
+echo
+echo "You can then push the new branch to the main repo; e.g.,"
+echo "   git push <remote> <branch>"
+echo
+echo "If you make a PR for the new branch, it is a good idea to reference " 
+echo "the original PR from the forked repo to trach the original PR discussion."
 
 git fetch origin pull/$1/head:pr-from-fork/$1 && git checkout pr-from-fork/$1
