@@ -28,12 +28,17 @@ A few important notes:
 
 Also:
 
-.. note:: For scans using the CUDA back-end, RAJA uses the NVIDIA cub library
-          internally, which is available in the RAJA source repository as a 
-          Git submodule. The CMake variable ``CUB_DIR`` will be automatically 
-          set to the location of the cub library when CUDA is enabled. Details
-          for using a different version of the cub library are available in
+.. note:: For scans using the CUDA back-end, RAJA uses the NVIDIA CUB library
+          internally. The CMake variable ``CUB_DIR`` will be automatically
+          set to the location of the CUB library when CUDA is enabled. Details
+          for using a different version of the CUB library are available in
           the :ref:`getting_started-label` section.
+
+.. note:: For scans using the HIP back-end, RAJA uses the AMD rocPRIM library
+          internally. The CMake variable ``ROCPRIM_DIR`` will be automatically
+          set to the location of the rocPRIM library when HIP is enabled.
+          Details for using a different version of the rocPRIM library are
+          available in the :ref:`getting_started-label` section.
 
 Please see the :ref:`scan-label` tutorial section for usage examples of RAJA
 scan operations.
