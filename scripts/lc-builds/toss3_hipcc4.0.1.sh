@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-BUILD_SUFFIX=lc_toss3-hipcc-4.0.0
+BUILD_SUFFIX=lc_toss3-hipcc-4.0.1
 
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
@@ -17,10 +17,10 @@ mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DHIP_ROOT_DIR="/opt/rocm-4.0.0/hip" \
-  -DHIP_CLANG_PATH=/opt/rocm-4.0.0/llvm/bin \
-  -DCMAKE_C_COMPILER=/opt/rocm-4.0.0/llvm/bin/clang \
-  -DCMAKE_CXX_COMPILER=/opt/rocm-4.0.0/llvm/bin/clang++ \
+  -DHIP_ROOT_DIR="/opt/rocm-4.0.1/hip" \
+  -DHIP_CLANG_PATH=/opt/rocm-4.0.1/llvm/bin \
+  -DCMAKE_C_COMPILER=/opt/rocm-4.0.1/llvm/bin/clang \
+  -DCMAKE_CXX_COMPILER=/opt/rocm-4.0.1/llvm/bin/clang++ \
   -C ../host-configs/lc-builds/toss3/hip.cmake \
   -DENABLE_HIP=ON \
   -DENABLE_OPENMP=OFF \
