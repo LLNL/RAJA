@@ -8,10 +8,14 @@
 include (FindPackageHandleStandardArgs)
 
 find_path(ROCPRIM_INCLUDE_DIRS
-  NAMES rocPRIM/rocprim/include/rocprim
+  NAMES rocprim/rocprim.hpp
   HINTS
     ${ROCPRIM_DIR}/
-    ${ROCPRIM_DIR}/include)
+    ${ROCPRIM_DIR}/include
+    ${ROCPRIM_DIR}/rocprim/include
+    ${HIP_ROOT_DIR}/../rocprim
+    ${HIP_ROOT_DIR}/../rocprim/include
+    ${HIP_ROOT_DIR}/../include)
 
 find_package_handle_standard_args(
   ROCPRIM
