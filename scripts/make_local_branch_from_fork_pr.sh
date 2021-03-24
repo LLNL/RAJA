@@ -46,6 +46,6 @@ echo "You can then push the new branch to the main repo; e.g.,"
 echo "   git push <remote> <branch>"
 echo
 echo "If you make a PR for the new branch, it is a good idea to reference " 
-echo "the original PR from the forked repo to trach the original PR discussion."
+echo "the original PR from the forked repo to track the original PR discussion."
 
 git fetch origin pull/$1/head:pr-from-fork/$1 && git checkout pr-from-fork/$1
