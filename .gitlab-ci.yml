@@ -37,7 +37,7 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   ALLOC_NAME: ${CI_PROJECT_NAME}_ci_${CI_PIPELINE_ID}
   BUILD_ROOT: ${CI_PROJECT_DIR}
-  DEFAULT_TIME: 40
+  DEFAULT_TIME: 30
 
 # Normally, stages are blocking in Gitlab. However, using the keyword "needs" we
 # can express dependencies between job that break the ordering of stages, in
