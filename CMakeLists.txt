@@ -167,8 +167,7 @@ include(cmake/SetupBasics.cmake)
 include(cmake/SetupPackages.cmake)
 # Setup vendor-specific compiler flags
 include(cmake/SetupCompilers.cmake)
-# Setup internal RAJA configuration options
-include(cmake/SetupRajaConfig.cmake)
+
 # Macros for building executables and libraries
 include (cmake/RAJAMacros.cmake)
 
@@ -242,6 +241,8 @@ camp source repository")
       add_subdirectory(tpl/camp)
     else (NOT camp_FOUND)
       message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
+      # Save the path so it can be used in raja-config.cmake
+      set(EXTERNAL_CAMP_INSTALL_DIR ${camp_INSTALL_PREFIX} CACHE PATH "")
     endif(NOT camp_FOUND)
   endif (EXTERNAL_CAMP_SOURCE_DIR)
 endif (NOT TARGET camp)
@@ -289,6 +290,10 @@ install(FILES
   include/RAJA/module.modulemap
   include/RAJA/module.private.modulemap
   DESTINATION "include/RAJA/")
+
+
+# Setup internal RAJA configuration options
+include(cmake/SetupRajaConfig.cmake)
 
 if(RAJA_ENABLE_TESTS)
   add_subdirectory(test)
