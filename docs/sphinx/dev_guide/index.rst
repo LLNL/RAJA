@@ -12,13 +12,13 @@
 RAJA Developer Guide
 ####################
 
-The RAJA Developer Guide is minimal at this point. It will be expanded over
-time.
+The RAJA Developer Guide is a work-in-progress....
 
-Local build scenarios as well as CI testing will be discussed here.
+The intent of this guide is to document key software development processes
+for the RAJA project so that they are uniformly applied by contributors.
 
 .. toctree::
    :maxdepth: 1
 
-   host_config
+   build_configurations
    ci
