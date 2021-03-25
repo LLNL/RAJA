@@ -54,7 +54,7 @@ while [ "$1" != "" ]; do
         echo
         echo "Attempting to make local branch from branch on fork for PR ${num}"
         echo
-        echo "If successful, you will be on local branch pr-from-fork/$1"
+        echo "If successful, you will be on local branch pr-from-fork/${num}"
         echo "when script exits."
         echo
         echo "Run 'git branch' to be sure the new branch exists."
