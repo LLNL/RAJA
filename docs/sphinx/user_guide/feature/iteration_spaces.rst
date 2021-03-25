@@ -136,7 +136,7 @@ segment constructor. For example::
    // Create list segment with these loop indices where the indices are 
    // stored in the host memory space
    camp::resources::Resource host_res{camp::resources::Host()};
-   RAJA::TypedListSegment<int> idx_list( &idx[0], static_cast<int>(idx.size()),
+   RAJA::TypedListSegment<int> idx_list( &idx[0], idx.size(),
                                          host_res );
 
 Using a list segment in a RAJA loop traversal template will run the loop 
@@ -151,6 +151,16 @@ will print the values::
 
    0 2 3 4 7 8 9 53
 
+Note that a ``RAJA::TypedListSegment`` constructor can take a pointer to
+an array of indices and an array length, as shown above. If the indices are
+in a container, such as ``std::vector`` that provides ``begin()``, ``end()``,
+and ``size()`` methods, the length argument is not required. For example::
+
+   std::vector<int> idx = {0, 2, 3, 4, 7, 8, 9, 53};
+
+   camp::resources::Resource host_res{camp::resources::Host()};
+   RAJA::TypedListSegment<int> idx_list( idx, host_res );
+
 Similar to range segment types, RAJA provides ``RAJA::ListSegment``, which is
 a type alias to ``RAJA::TypedListSegment`` using ``RAJA::Index_type`` as the
 template type parameter.
@@ -158,13 +168,13 @@ template type parameter.
 By default, the list segment constructor copies the indices in the array
 passed to it to the memory space specified by the resource argument.
 The resource argument is required so that the segment index values are in the
-proper memory space for the kernel to run. Since the kernel is run in this 
-example on the CPU host (indicated by the ``RAJA::seq_exec`` execution policy),
-we pass a host resource object to the list segment constructor. If, for 
-example, the kernel was to run on a GPU using a CUDA or HIP execution 
-policy, then the resource type passed to the camp resource constructor would
-have to be ``camp::resources::Cuda()`` or ``camp::resources::Hip()``,
-respectively.
+proper memory space for the kernel to run. Since the kernel is run on 
+the CPU host in this example (indicated by the ``RAJA::seq_exec`` execution 
+policy), we pass a host resource object to the list segment constructor. 
+If, for example, the kernel was to run on a GPU using a CUDA or HIP 
+execution policy, then the resource type passed to the camp resource 
+constructor would be ``camp::resources::Cuda()`` or 
+``camp::resources::Hip()``, respectively.
 
 Segment Types and  Iteration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
