@@ -29,10 +29,13 @@ A few important notes:
 Also:
 
 .. note:: * For sorts using the CUDA back-end, RAJA uses the implementations
-            provided by the NVIDIA cub library. For information please see
+            provided by the NVIDIA CUB library. For information please see
+            :ref:`build-external-tpl <build-external-tpl-label>`.
+          * For sorts using the HIP back-end, RAJA uses the implementations
+            provided by the AMD rocPRIM library. For information please see
             :ref:`build-external-tpl <build-external-tpl-label>`.
           * The RAJA CUDA and HIP back-ends only support sorting
-            arithmetic types using RAJA operators 'less than' and 
+            arithmetic types using RAJA operators 'less than' and
             'greater than'.
 
 Please see the :ref:`sort-label` tutorial section for usage examples of RAJA
