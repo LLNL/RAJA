@@ -23,6 +23,7 @@ sys_type=${SYS_TYPE:-""}
 py_env_path=${PYTHON_ENVIRONMENT_PATH:-""}
 
 # Dependencies
+date
 if [[ "${option}" != "--build-only" && "${option}" != "--test-only" ]]
 then
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
@@ -56,6 +57,7 @@ then
     python scripts/uberenv/uberenv.py --spec="${spec}" ${prefix_opt}
 
 fi
+date
 
 # Host config file
 if [[ -z ${hostconfig} ]]
@@ -94,6 +96,7 @@ build_dir="${build_root}/build_${hostconfig//.cmake/}"
 # Build
 if [[ "${option}" != "--deps-only" && "${option}" != "--test-only" ]]
 then
+    date
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     echo "~ Host-config: ${hostconfig_path}"
     echo "~ Build Dir:   ${build_dir}"
@@ -169,5 +172,10 @@ then
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     echo "~~~~~ CLEAN UP"
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo "~~~~~ Space used BEFORE clean:"
+    du -sh
     make clean
+    echo "~~~~~ Space used AFTER clean:"
+    du -sh
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 fi
