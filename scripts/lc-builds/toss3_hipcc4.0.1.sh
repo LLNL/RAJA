@@ -7,22 +7,24 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-BUILD_SUFFIX=lc_blueos-nvcc10-xl_2019.08.20
+BUILD_SUFFIX=lc_toss3-hipcc-4.0.1
 
-rm -rf build_${BUILD_SUFFIX} 2>/dev/null
+rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-module load cmake/3.14.5
+
+# module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/xl/xl-2019.08.20/bin/xlc++_r \
-  -C ../host-configs/lc-builds/blueos/nvcc_xl_X.cmake \
-  -DENABLE_OPENMP=On \
-  -DENABLE_CUDA=On \
-  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-10.1.243 \
-  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-10.1.243/bin/nvcc \
-  -DCUDA_ARCH=sm_70 \
+  -DHIP_ROOT_DIR="/opt/rocm-4.0.1/hip" \
+  -DHIP_CLANG_PATH=/opt/rocm-4.0.1/llvm/bin \
+  -DCMAKE_C_COMPILER=/opt/rocm-4.0.1/llvm/bin/clang \
+  -DCMAKE_CXX_COMPILER=/opt/rocm-4.0.1/llvm/bin/clang++ \
+  -C ../host-configs/lc-builds/toss3/hip.cmake \
+  -DENABLE_HIP=ON \
+  -DENABLE_OPENMP=OFF \
+  -DENABLE_CUDA=OFF \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
