@@ -59,7 +59,7 @@ Each new feature, or other well-defined portion of work, is developed on its
 own feature branch. We typically include a label, such as  "feature" or 
 "bugfix", in a feature branch name to make it clear what type of work is being 
 done on the branch. For example, **feature/<name-of-feature>** for a new 
-feature, **bugfix/<fixed-issue>** for a bugfix, etc.
+feature, **bugfix/<issue>** for a bugfix, etc.
 
 .. important:: When doing development on a feature branch, it is good practice
                to regularly push your changes to the central RAJA repository 
