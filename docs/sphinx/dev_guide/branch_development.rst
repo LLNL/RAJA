@@ -17,7 +17,7 @@ Gitflow Branching Model
 ========================
 
 The RAJA project uses a simple branch development model based on 
-`Gitflow https://datasift.github.io/gitflow/IntroducingGitFlow.html>`_.
+`Gitflow <https://datasift.github.io/gitflow/IntroducingGitFlow.html>`_.
 Gitflow is a branching model centered around software releases. It is a simple
 workflow that makes clear which branches correspond to which phases of
 development and those phases are represented explicitly in the branch names and
@@ -31,10 +31,10 @@ Persistent, Protected Branches
 The **main** and **develop** branches are the two primary branches we use.
 They always exist and the distinction between them is central to Gitflow.
 
-  * Merges into the *main* branch record the official release history of the 
-    project. Each time the main branch is changed, it is tagged with a new 
-    version number. For a description of the **semantic versioning** scheme
-    we use, please see :ref:`semver-label`.
+  * The *main* branch records the release history of the project. Each time 
+    the main branch is changed, a new tag with the version number is made. 
+    See :ref:`semver-label` for a description of the version numbering scheme 
+    we use.
 
   * The *develop* branch is used to integrate and test new features and most
     bug fixes before they are merged into main for a relase.

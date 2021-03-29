@@ -31,7 +31,9 @@ The RAJA release process typically involves the following sequence of steps:
      the gzipped tarfile for the release rather than one of the assets GitHub 
      creates. This GitHub-created assets do not contain the RAJA submodules.
 
-     Please follow the description of previous RAJA releases for consistency.
+     .. important:: Please follow the way other RAJA releases are described 
+                    for consistency.
+
   #. Check out the main branch locally and make sure it is up-to-date.     
      Then, generate the release tarfile for the release by running the script 
      ``.scripts/make_release_tarball.sh`` from the top-level RAJA directory. 
@@ -44,7 +46,7 @@ The RAJA release process typically involves the following sequence of steps:
      all changes done to finalize the release will not be lost in future
      changes to the develop branch.
 
-_rcbranch-label:
+.. _rcbranch-label:
 
 ===========================
 Release Candidate Branches
@@ -72,7 +74,7 @@ of steps:
 
   #. Fill in list...
 
-_hotfixbranch-label:
+.. _hotfixbranch-label:
 
 ===========================
 Hotfix Branches
