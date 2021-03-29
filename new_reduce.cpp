@@ -5,51 +5,6 @@
 #include "new_reduce/reduce_basic.hpp"
 #include "new_reduce/forall_param.hpp"
 
-template<typename T>
-class ValLoc {
-  T val;
-  RAJA::Index_type loc;
-public:
-
-  ValLoc() : val(RAJA::operators::limits<T>::min()), loc(-1) {}
-  ValLoc(T v) : val(v), loc(-1) {}
-  ValLoc(T v, RAJA::Index_type l) : val(v), loc(l) {}
-
-  ValLoc operator () (T v, RAJA::Index_type l) { val = v; loc = l; return *this; }
-  //ValLoc operator () (T v, RAJA::Index_type l) { if (v < val) { val = v; loc = l; } return *this; }
-  //ValLoc operator () (T v, RAJA::Index_type l) { if (v > val) { val = v; loc = l; } return *this; }
-
-  bool operator < (const ValLoc& rhs) const { return val < rhs.val; }
-  bool operator <=(const ValLoc& rhs) const { return val < rhs.val; }
-  bool operator > (const ValLoc& rhs) const { return val > rhs.val; }
-  bool operator >=(const ValLoc& rhs) const { return val > rhs.val; }
-
-  T getVal() {return val;}
-  RAJA::Index_type getLoc() {return loc;}
-};
-
-template<typename T>
-ValLoc<T>& make_valloc(T v, RAJA::Index_type l) { return ValLoc<T>(v, l); }
-
-namespace RAJA
-{
-
-namespace operators
-{
-
-template <typename T>
-struct limits<ValLoc<T>> {
-  RAJA_INLINE RAJA_HOST_DEVICE static constexpr ValLoc<T> min()
-  {
-    return ValLoc<T>(RAJA::operators::limits<T>::min());
-  }
-  RAJA_INLINE RAJA_HOST_DEVICE static constexpr ValLoc<T> max()
-  {
-    return ValLoc<T>(RAJA::operators::limits<T>::max());
-  }
-};
-}}
-
 int main(int argc, char *argv[])
 {
   if (argc < 2) {
@@ -69,32 +24,32 @@ int main(int argc, char *argv[])
   std::iota(a, a + N, 0);
   std::iota(b, b + N, 0);
 
-//#if defined(RAJA_ENABLE_TARGET_OPENMP)
-//  {
-//    std::cout << "OMP Target Reduction NEW\n";
-//    #pragma omp target enter data map(to : a[:N], b[:N])
-//
-//    RAJA::Timer t;
-//    t.reset();
-//    t.start();
-//
-//    forall_param<RAJA::omp_target_parallel_for_exec_nt>(N,
-//                 [=](int i, double &r_, double &m_, double &ma_) {
-//                   r_ += a[i] * b[i];
-//                   m_ = a[i] < m_ ? a[i] : m_;
-//                   ma_ = a[i] > m_ ? a[i] : m_;
-//                 },
-//                 Reduce<RAJA::operators::plus>(&r),
-//                 Reduce<RAJA::operators::minimum>(&m),
-//                 Reduce<RAJA::operators::maximum>(&ma));
-//    t.stop();
-//    
-//    std::cout << "t : " << t.elapsed() << "\n";
-//    std::cout << "r : " << r << "\n";
-//    std::cout << "m : "  << m  <<"\n";
-//    std::cout << "ma : " << ma <<"\n";
-//  }
-//#endif
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+  {
+    std::cout << "OMP Target Reduction NEW\n";
+    #pragma omp target enter data map(to : a[:N], b[:N])
+
+    RAJA::Timer t;
+    t.reset();
+    t.start();
+
+    forall_param<RAJA::omp_target_parallel_for_exec_nt>(N,
+                 [=](int i, double &r_, double &m_, double &ma_) {
+                   r_ += a[i] * b[i];
+                   m_ = a[i] < m_ ? a[i] : m_;
+                   ma_ = a[i] > m_ ? a[i] : m_;
+                 },
+                 Reduce<RAJA::operators::plus>(&r),
+                 Reduce<RAJA::operators::minimum>(&m),
+                 Reduce<RAJA::operators::maximum>(&ma));
+    t.stop();
+    
+    std::cout << "t : " << t.elapsed() << "\n";
+    std::cout << "r : " << r << "\n";
+    std::cout << "m : "  << m  <<"\n";
+    std::cout << "ma : " << ma <<"\n";
+  }
+#endif
 
 #if defined(RAJA_ENABLE_OPENMP)
   {
@@ -104,78 +59,49 @@ int main(int argc, char *argv[])
     t.reset();
     t.start();
 
-    ValLoc<double> mL;
-
     forall_param<RAJA::omp_parallel_for_exec>(N,
-                 [=](int i, ValLoc<double> &mL_) {
-                   mL_(a[i], i);
+                 [=](int i, double &r_, double &m_, double &ma_) {
+                   r_ += a[i] * b[i];
+
+                   m_ = a[i] < m_ ? a[i] : m_;
+                   ma_ = a[i] > m_ ? a[i] : m_;
                  },
-                 Reduce<RAJA::operators::minimum>(&mL));
-                 //Reduce<RAJA::operators::maximum>(&mL));
+                 Reduce<RAJA::operators::plus>(&r),
+                 Reduce<RAJA::operators::minimum>(&m),
+                 Reduce<RAJA::operators::maximum>(&ma));
     t.stop();
     
     std::cout << "t : " << t.elapsed() << "\n";
-    std::cout << "mL : " << mL.getLoc() <<"\n";
+    std::cout << "r : " << r << "\n";
+    std::cout << "m : "  << m  <<"\n";
+    std::cout << "ma : " << ma <<"\n";
   }
 #endif
 
-//#if defined(RAJA_ENABLE_OPENMP)
-//  {
-//    std::cout << "OMP Reduction NEW\n";
-//
-//    RAJA::Timer t;
-//    t.reset();
-//    t.start();
-//
-//    ValueLoc<double, int> mL(-1);
-//
-//    forall_param<RAJA::omp_parallel_for_exec>(N,
-//                 [=](int i, ValueLoc<double, int> &mL_, double &r_, double &m_, double &ma_) {
-//                   r_ += a[i] * b[i];
-//
-//                   mL_ = ValueLoc<double, int>(a[i], i);
-//
-//                   m_ = a[i] < m_ ? a[i] : m_;
-//                   ma_ = a[i] > m_ ? a[i] : m_;
-//                 },
-//                 Reduce<RAJA::operators::minimum>(&mL),
-//                 Reduce<RAJA::operators::plus>(&r),
-//                 Reduce<RAJA::operators::minimum>(&m),
-//                 Reduce<RAJA::operators::maximum>(&ma));
-//    t.stop();
-//    
-//    std::cout << "t : " << t.elapsed() << "\n";
-//    std::cout << "r : " << r << "\n";
-//    std::cout << "m : "  << m  <<"\n";
-//    std::cout << "ma : " << ma <<"\n";
-//    std::cout << "mL : " << mL <<"\n";
-//  }
-//#endif
+  {
+    std::cout << "Sequential Reduction NEW\n";
 
-//  {
-//    std::cout << "Sequential Reduction NEW\n";
-//
-//    RAJA::Timer t;
-//    t.reset();
-//    t.start();
-//
-//    forall_param<RAJA::seq_exec>(N,
-//                 [=](int i, double &r_, double &m_) {
-//                 //[=](int i, double &r_, double &m_, double &ma_) {
-//                   r_ += a[i] * b[i];
-//                   m_ = a[i] < m_ ? a[i] : m_;
-//                   //ma_ = a[i] > m_ ? a[i] : m_;
-//                 },
-//                 Reduce<RAJA::operators::plus>(&r),
-//                 Reduce<RAJA::operators::minimum>(&m));//,
-//                 //Reduce<RAJA::operators::maximum>(&ma));
-//    t.stop();
-//    
-//    std::cout << "t : " << t.elapsed() << "\n";
-//    std::cout << "r : " << r << "\n";
-//    std::cout << "m : "  << m  <<"\n";
-//    //std::cout << "ma : " << ma <<"\n";
-//  }
+    RAJA::Timer t;
+    t.reset();
+    t.start();
+
+    forall_param<RAJA::seq_exec>(N,
+                 [=](int i, double &r_, double &m_) {
+                 //[=](int i, double &r_, double &m_, double &ma_) {
+                   r_ += a[i] * b[i];
+                   m_ = a[i] < m_ ? a[i] : m_;
+                   //ma_ = a[i] > m_ ? a[i] : m_;
+                 },
+                 Reduce<RAJA::operators::plus>(&r),
+                 Reduce<RAJA::operators::minimum>(&m));//,
+                 //Reduce<RAJA::operators::maximum>(&ma));
+    t.stop();
+    
+    std::cout << "t : " << t.elapsed() << "\n";
+    std::cout << "r : " << r << "\n";
+    std::cout << "m : "  << m  <<"\n";
+    //std::cout << "ma : " << ma <<"\n";
+  }
 
   {
     std::cout << "Basic Reduction RAJA\n";
