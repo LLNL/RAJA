@@ -134,6 +134,5 @@ Please see :ref:`raja-copyright`.
    :hidden: 
    :caption: Developer Documentation
 
-   sphinx/contributing
    sphinx/dev_guide/index
    sphinx/raja_license

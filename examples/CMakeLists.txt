@@ -46,6 +46,10 @@ raja_add_executable(
   SOURCES tut_reductions.cpp)
 
 raja_add_executable(
+  NAME teams_reductions
+  SOURCES teams_reductions.cpp)
+
+raja_add_executable(
   NAME tut_scan
   SOURCES tut_scan.cpp)
 
@@ -84,6 +88,10 @@ raja_add_executable(
 raja_add_executable(
   NAME raja-teams
   SOURCES raja-teams.cpp)
+
+raja_add_executable(
+  NAME teams_matrix-multiply
+  SOURCES teams_matrix-multiply.cpp)
 
 raja_add_executable(
   NAME jacobi
