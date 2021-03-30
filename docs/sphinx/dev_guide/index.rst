@@ -15,10 +15,12 @@ RAJA Developer Guide
 The RAJA Developer Guide is a work-in-progress....
 
 The intent of this guide is to document key software development processes
-for the RAJA project so that they are uniformly applied by contributors.
+for the RAJA project so that they are understood and uniformly applied by 
+contributors.
 
 .. toctree::
    :maxdepth: 1
 
-   build_configurations
+   contributing
    ci
+   build_configurations
