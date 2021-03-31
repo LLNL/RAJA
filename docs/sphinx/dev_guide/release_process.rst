@@ -54,7 +54,7 @@ The RAJA release process typically involves the following sequence of steps:
 .. _rcbranch-label:
 
 ===========================
-Release Candidate Branches
+Release Candidate Branch
 ===========================
 
 A *release candidate* branch is a temporary branch used to finalize a release.
@@ -97,7 +97,7 @@ Finalizing a release on a release candidate branch involves the following steps:
 .. _hotfixbranch-label:
 
 ===========================
-Hotfix Branches
+Hotfix Branch
 ===========================
 
 *Hotfix* branches are used in the (hopefully!) rare event that a bug is found
