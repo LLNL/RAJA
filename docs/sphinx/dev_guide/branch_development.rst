@@ -46,8 +46,8 @@ Gitflow.
                develop branch.**
 
 All other branches in the RAJA repo are temporary and are used to perform 
-specific development tasks. When such a branch is no longer needed, after it
-is merged for example, the branch is deleted typically.
+specific development tasks. When such a branch is no longer needed (e.g., 
+after it is merged), the branch is deleted typically.
 
 ----------------
 Feature Branches

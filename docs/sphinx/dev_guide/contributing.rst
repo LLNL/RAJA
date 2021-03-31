@@ -31,7 +31,7 @@ This section describes development processes, such as:
 Forking RAJA
 ============
 
-If you are not a member of the LLNL organization on GitHub or not a member of 
+If you are not a member of the LLNL organization on GitHub and of 
 the core RAJA team of developers, then you do not have permission to create 
 a branch in the RAJA repository. This is due to the policy adopted by the LLNL
 organization on GitHub in which the RAJA project resides. Fortunately, you may 
@@ -41,7 +41,7 @@ repository that you own. You can push code changes on that copy to GitHub and
 create a pull request in the RAJA project.
 
 .. note:: A contributor who is not a member of the LLNL GitHub organization 
-          and a member of the core team of RAJA developers cannot create a
+          and the core team of RAJA developers cannot create a
           branch in the RAJA repo. However, anyone can create a fork of the 
           RAJA project and create a pull request in the RAJA project.
 
@@ -49,7 +49,7 @@ create a pull request in the RAJA project.
 Developing RAJA Code
 =========================
 
-New features, bugfixes, and other changes are developed on a **feature branch**
+New features, bugfixes, and other changes are developed on a **feature branch.**
 Each such branch should be based on the RAJA ``develop`` branch. For more 
 information on the branch development model used in RAJA, please see
 :ref:`branching-label`. When you want to make a contribution, first ensure 
@@ -66,7 +66,7 @@ Developing a Feature
 
 Assuming you are on the develop branch in your local copy of the RAJA repo,
 and the branch is up-to-date, the first step toward developing a RAJA feature
-is to create a new branch to on which to perform your development. For example:
+is to create a new branch on which to perform your development. For example:
 
 .. code-block:: bash
 
@@ -101,7 +101,7 @@ indicate in the name of your branch that it is for a bugfix; for example:
     $ git checkout -b bugfix/<fixed-issue>
 
 We recommend that you add a test that reproduces the issue you have found
-and which demonstrates that issue is resolved. To verify that you have done
+and demonstrates that the issue is resolved. To verify that you have done
 this properly, build the code for your branch and then run ``make test`` to 
 ensure that your new test passes.
 
@@ -125,7 +125,7 @@ and any other relevant details that will assist the RAJA team in reviewing your
 contribution.
 
 When a PR is created in RAJA, it will be run through our automated testing
-processes and be reviewed by RAJA team members. Providing the PR passes all 
+processes and be reviewed by RAJA team members. When the PR passes all 
 tests and it is approved, a member of the RAJA team will merge it.
 
 .. note:: Before a PR can be merged into RAJA, all CI checks must pass and
@@ -160,8 +160,9 @@ Testing Pull Requests from Branches in Forked Repositories
 Due to LLNL security policies and RAJA project policies, only a PR created
 by someone on the RAJA core development team will be run automatically
 through all RAJA CI tools. In particular, a PR made from branch on a forked 
-repository will not. Gitlab CI on internal LLNL platforms and Travis CI will 
-only be run on PRs that are made from branches in the GitHub RAJA repository.
+repository will not trigger Gitlab and Travis CI checks. Gitlab CI on internal 
+LLNL platforms and Travis CI will only be run on PRs that are made from 
+branches in the GitHub RAJA repository.
 
 .. note:: **RAJA core team members:**
 
@@ -173,7 +174,7 @@ only be run on PRs that are made from branches in the GitHub RAJA repository.
             $ ./scripts/make_local_branch_from_fork_pr -b <PR #>
 
           If successful, this will create a branch in your local copy of the
-          RAJA repo labeled ``pr-from-fork/<PR #> and you will be on that
+          RAJA repo labeled ``pr-from-fork/<PR #>`` and you will be on that
           local branch in your checkout space. To verify this, you can run
           the following command after you run the script::
 
@@ -190,10 +191,10 @@ only be run on PRs that are made from branches in the GitHub RAJA repository.
           the original PR in the description of the new PR to track the 
           original PR discussion and reviews.
 
-          All CI checks will be triggered to run on the PR make in the
+          All CI checks will be triggered to run on the new PR made in the
           RAJA repo. When everything passes and the PR is approved, it may 
           be merged. When it is merged, the original PR from the forked repo 
-          will be closed and marked as merged also unless it is referenced 
+          will be closed and marked as merged unless it is referenced 
           elsewhere, such as in a GitHub issue. If this is the case, then the 
           original PR (from the forked repo) must be closed manually.
 
