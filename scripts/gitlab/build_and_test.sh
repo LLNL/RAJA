@@ -141,9 +141,9 @@ then
     if [[ "${option}" != "--build-only" ]] && grep -q -i "ENABLE_HIP.*ON" ${hostconfig_path}
     then # don't run the tests that are known to fail
         date
-        ctest --output-on-failure -T test -E Known-Hip-Failure | tee tests_output.txt
+        ctest --output-on-failure -T test 2>&1 -E Known-Hip-Failure | tee tests_output.txt
         date
-    else # run all tests like normal
+    else #run all tests like normal
         date
         ctest --output-on-failure -T test 2>&1 | tee tests_output.txt
         date
