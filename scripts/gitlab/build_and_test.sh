@@ -17,11 +17,13 @@ project_dir="$(pwd)"
 build_root=${BUILD_ROOT:-""}
 hostconfig=${HOST_CONFIG:-""}
 spec=${SPEC:-""}
+job_unique_id=${CI_JOB_ID:-""}
 
 sys_type=${SYS_TYPE:-""}
 py_env_path=${PYTHON_ENVIRONMENT_PATH:-""}
 
 # Dependencies
+date
 if [[ "${option}" != "--build-only" && "${option}" != "--test-only" ]]
 then
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
@@ -38,14 +40,24 @@ then
 
     if [[ -d /dev/shm ]]
     then
-        prefix="/dev/shm/${hostname}/${spec// /_}"
+        prefix="/dev/shm/${hostname}"
+        if [[ -z ${job_unique_id} ]]; then
+          job_unique_id=manual_job_$(date +%s)
+          while [[ -d ${prefix}/${job_unique_id} ]] ; do
+              sleep 1
+              job_unique_id=manual_job_$(date +%s)
+          done
+        fi
+
+        prefix="${prefix}/${job_unique_id}"
         mkdir -p ${prefix}
         prefix_opt="--prefix=${prefix}"
     fi
 
-    python scripts/uberenv/uberenv.py --spec="${spec}"
+    python scripts/uberenv/uberenv.py --spec="${spec}" ${prefix_opt}
 
 fi
+date
 
 # Host config file
 if [[ -z ${hostconfig} ]]
@@ -84,6 +96,7 @@ build_dir="${build_root}/build_${hostconfig//.cmake/}"
 # Build
 if [[ "${option}" != "--deps-only" && "${option}" != "--test-only" ]]
 then
+    date
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     echo "~ Host-config: ${hostconfig_path}"
     echo "~ Build Dir:   ${build_dir}"
@@ -102,10 +115,12 @@ then
     rm -rf ${build_dir} 2>/dev/null
     mkdir -p ${build_dir} && cd ${build_dir}
 
+    date
     cmake \
       -C ${hostconfig_path} \
       ${project_dir}
     cmake --build . -j 32
+    date
 fi
 
 # Test
@@ -122,7 +137,9 @@ then
 
     cd ${build_dir}
 
+    date
     ctest --output-on-failure -T test 2>&1 | tee tests_output.txt
+    date
 
     no_test_str="No tests were found!!!"
     if [[ "$(tail -n 1 tests_output.txt)" == "${no_test_str}" ]]
@@ -140,4 +157,9 @@ then
     then
         echo "ERROR: failure(s) while running CTest" && exit 1
     fi
+
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo "~~~~~ CLEAN UP"
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    make clean
 fi
