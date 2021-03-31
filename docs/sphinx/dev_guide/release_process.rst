@@ -31,8 +31,7 @@ The RAJA release process typically involves the following sequence of steps:
      contents of the ``RELEASE_NOTES.md`` file in the RAJA repo, which may 
      contain more detailed information. Also, add a note to the 
      release description to remind users to download the gzipped tarfile for 
-     the release, if they will not checkout the tag for the release for some 
-     reason, rather than one of the assets GitHub creates for the release. 
+     the release instead of the assets GitHub creates for the release.
      The GitHub-created assets do not contain the RAJA submodules and will
      cause issues for users as a result.
 
@@ -40,7 +39,7 @@ The RAJA release process typically involves the following sequence of steps:
                     pattern for all RAJA releases.
 
   #. Check out the main branch locally and make sure it is up-to-date.     
-     Then, generate the release tarfile for the release by running the script 
+     Then, generate the release tarfile by running the script 
      ``./scripts/make_release_tarball.sh`` from the top-level RAJA directory. 
      If this is successful, a gzipped tarfile whose name includes the release 
      tag **with no extraneous SHA-1 hash information** will be in the top-level
@@ -90,7 +89,7 @@ Finalizing a release on a release candidate branch involves the following steps:
      file to the new release number. This information is used in the online
      RAJA documentation.
 
-.. important:: **No new feature development is done a release branch. Only bug 
+.. important:: **No feature development is done on a release branch. Only bug 
                fixes, release documentation, and other release-oriented changes
                are made on a release candidate branch.**
 
