@@ -12,33 +12,38 @@
 Contributing to RAJA
 *********************
 
-RAJA is a collaborative open source software project. We embrace contributions 
-from anyone who wants to add features or improve its existing capabilities.
-This section is intended for folks who want to contribute new features or 
-bugfixes to RAJA. It assumes you are familiar with Git, which we use for
-source code revision control, and GitHub, which is the site where our project
-is hosted. It describes the basics, such as: 
+Since RAJA is a collaborative open source software project, we embrace 
+contributions from anyone who wants to add features or improve its existing 
+capabilities. This section describes basic processes to follow
+for individuals outside of the core RAJA team to contribute new features or 
+bugfixes to RAJA. It assumes you are familiar with 
+`Git <https://git-scm.com/>`_, which we use for source code version control,
+and `GitHub <https://github.com/>`_, which is where our project is hosted. 
 
-  * what a good pull request (PR) looks like
-  * tests that your PR must pass before it can be merged into RAJA
+This section describes development processes, such as:
+
+  * Making a fork of the RAJA repository 
+  * Creating a branch for development
+  * Creating a pull request (PR)
+  * Tests that your PR must pass before it can be merged into RAJA
 
 ============
 Forking RAJA
 ============
 
-If you aren't in the LLNL organization on GitHub or not a member of the core
-RAJA team of developers at LLNL, then you won't have permission to push a
-new branch to the RAJA repository. This is due to the policy adopted by the LLNL
+If you are not a member of the LLNL organization on GitHub or not a member of 
+the core RAJA team of developers, then you do not have permission to create 
+a branch in the RAJA repository. This is due to the policy adopted by the LLNL
 organization on GitHub in which the RAJA project resides. Fortunately, you may 
 still contribute to RAJA by `forking the RAJA repo 
-<https://github.com/LLNL/RAJA/fork>`_. This will create a copy of the RAJA 
-repository that you own. You can push code changes to that copy to GitHub and 
-create pull requests in the RAJA project.
+<https://github.com/LLNL/RAJA/fork>`_. Forking creates a copy of the RAJA 
+repository that you own. You can push code changes on that copy to GitHub and 
+create a pull request in the RAJA project.
 
-.. note:: Contributors who are not in the LLNL GitHub organization and members
-          of the core team of RAJA developers cannot create branches in the 
-          RAJA repo. However, anyone can create a fork of the RAJA project
-          and create a pull request in the RAJA project.
+.. note:: A contributor who is not a member of the LLNL GitHub organization 
+          and a member of the core team of RAJA developers cannot create a
+          branch in the RAJA repo. However, anyone can create a fork of the 
+          RAJA project and create a pull request in the RAJA project.
 
 =========================
 Developing RAJA Code
@@ -55,7 +60,13 @@ you have an up-to-date copy of the ``develop`` branch locally:
     $ git checkout develop
     $ git pull origin develop
 
-Then, create a new branch to on which to perform your development. For example:
+----------------------
+Developing a Feature
+----------------------
+
+Assuming you are on the develop branch in your local copy of the RAJA repo,
+and the branch is up-to-date, the first step toward developing a RAJA feature
+is to create a new branch to on which to perform your development. For example:
 
 .. code-block:: bash
 
@@ -67,11 +78,11 @@ new code. If you are creating new functionality, please add documentation to
 the appropriate section of the `RAJA User Guide <https://readthedocs.org/projects/raja/>`_. The source files for the RAJA documentation are maintained in 
 the ``RAJA/docs`` directory.
 
-After your new code is complete and you've tested it and developed appropriate
+After your new code is complete, you've tested it, and developed appropriate
 documentation, you can push your branch to GitHub and create a PR in the RAJA
-project. It will be reviewed by members of the core RAJA team, who will provide 
-comments, suggestions, etc. Once approved, your contribution will be merged into
-the GitHub RAJA repository.
+project. It will be reviewed by members of the RAJA team, who will provide 
+comments, suggestions, etc. After it is approved and all CI checks pass, your 
+contribution will be merged into the RAJA repository.
 
 .. important:: When creating a branch that you intend to be merged into the 
                RAJA repo, please give it a succinct name that clearly describes 
@@ -83,11 +94,14 @@ Developing a Bug Fix
 --------------------
 
 Contributing a bugfix follows the same process as described above. Be sure to
-indicate in the name of your branch that it is for a bugfix; for example,
-**bugfix/<fixed-issue>**.
+indicate in the name of your branch that it is for a bugfix; for example:
 
-Also, we recommend that you add a test that reproduces the issue you have found
-and which demonstrates that issue is addressed. To verify that you have done
+.. code-block:: bash
+
+    $ git checkout -b bugfix/<fixed-issue>
+
+We recommend that you add a test that reproduces the issue you have found
+and which demonstrates that issue is resolved. To verify that you have done
 this properly, build the code for your branch and then run ``make test`` to 
 ensure that your new test passes.
 
@@ -127,13 +141,15 @@ request. See :ref:`ci-label` for more information.
 All RAJA tests are in the ``RAJA/test`` directory and are split into 
 *unit tests* and *functional tests*. Unit tests are intended to test basic
 interfaces and features of individual classes, methods, etc. Functional tests
-are used to test combinations of RAJA features. Please follow the sub-directory
-structure and code implementation pattern of existing tests in the 
-``RAJA/test`` directory when adding or modifying tests. We have organized our 
+are used to test combinations of RAJA features. We have organized our 
 tests to make it easy to see what is being tested and easy to add new tests.
 For example, tests for each programming model back-end are exercised using
 the same common, parameterized test code to ensure back-end support is
 consistent.
+
+.. important:: Please follow the sub-directory structure and code implementation
+               pattern for existing tests in the ``RAJA/test`` directory when 
+               adding or modifying tests. 
 
 .. _prfromfork-label::
 
@@ -145,7 +161,7 @@ Due to LLNL security policies and RAJA project policies, only a PR created
 by someone on the RAJA core development team will be run automatically
 through all RAJA CI tools. In particular, a PR made from branch on a forked 
 repository will not. Gitlab CI on internal LLNL platforms and Travis CI will 
-only be run on PRs that are made on branches within the GitHub RAJA repository.
+only be run on PRs that are made from branches in the GitHub RAJA repository.
 
 .. note:: **RAJA core team members:**
 
@@ -166,7 +182,7 @@ only be run on PRs that are made on branches within the GitHub RAJA repository.
           You will see the new branch in the listing of branches and the branch
           you are on will be starred.
 
-          You can push the new branch to the RAJA repo on GitHub by running::
+          You can push the new branch to the RAJA repo on GitHub::
 
             $ git push origin <branch-name>
 
@@ -179,5 +195,5 @@ only be run on PRs that are made on branches within the GitHub RAJA repository.
           be merged. When it is merged, the original PR from the forked repo 
           will be closed and marked as merged also unless it is referenced 
           elsewhere, such as in a GitHub issue. If this is the case, then the 
-          original PR must be closed manually. 
- 
+          original PR (from the forked repo) must be closed manually.
+

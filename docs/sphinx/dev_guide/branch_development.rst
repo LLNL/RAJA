@@ -18,9 +18,9 @@ Gitflow Branching Model
 
 The RAJA project uses a simple branch development model based on 
 `Gitflow <https://datasift.github.io/gitflow/IntroducingGitFlow.html>`_.
-Gitflow is a branching model centered around software releases. It is a simple
+The Gitflow model is centered around software releases. It is a simple
 workflow that makes clear which branches correspond to which phases of
-development and those phases are represented explicitly in the branch names and
+development. Those phases are represented explicitly in the branch names and
 structure of the repository. As in other branching models, developers develop 
 code on a local branch and push their work to a central repository.
 
@@ -29,22 +29,25 @@ Persistent, Protected Branches
 ---------------------------------
 
 The **main** and **develop** branches are the two primary branches we use.
-They always exist and the distinction between them is central to Gitflow.
+They always exist and are protected in the RAJA GitHub project in that
+changes to them only occur as a result of approved pull requests. The 
+distinction between the main and develop branches is an important part of 
+Gitflow.
 
   * The *main* branch records the release history of the project. Each time 
-    the main branch is changed, a new tag with the version number is made. 
+    the main branch is changed, a new tag for a new code version is made. 
     See :ref:`semver-label` for a description of the version numbering scheme 
     we use.
 
   * The *develop* branch is used to integrate and test new features and most
-    bug fixes before they are merged into main for a relase.
-
-All other branches in the RAJA repo are temporary and are used to perform 
-specific development tasks. When those tasks are complete, the corresponding
-branch is deleted.
+    bug fixes before they are merged into the main branch for a release.
 
 .. important:: **Development never occurs directly on the main branch or 
                develop branch.**
+
+All other branches in the RAJA repo are temporary and are used to perform 
+specific development tasks. When such a branch is no longer needed, after it
+is merged for example, the branch is deleted typically.
 
 ----------------
 Feature Branches
@@ -62,18 +65,18 @@ done on the branch. For example, **feature/<name-of-feature>** for a new
 feature, **bugfix/<issue>** for a bugfix, etc.
 
 .. important:: When doing development on a feature branch, it is good practice
-               to regularly push your changes to the central RAJA repository 
-               as a backup mechanism. Also, regularly merge the develop branch 
-               into your feature branch so that it does not diverge too much 
-               from other development on the project. This will help reduce 
-               merge conflicts that you must resolve when your work is ready 
-               to be merged into the develop branch.
+               to regularly push your changes to the GitHub repository 
+               as a backup mechanism. Also, regularly merge the RAJA develop 
+               branch into your feature branch so that it does not diverge 
+               too much from other development on the project. This will help 
+               reduce merge conflicts that you must resolve when your work is 
+               ready to be merged into the RAJA develop branch.
 
 When a portion of development is complete and ready to be merged into the
-develop branch, submit a *pull request* for review by other team members. 
-When all issues, suggestions, etc. arising in review discussion have been 
-addressed, reviewers have approved them, and all continuous integration checks 
-have passed, the pull request can merged into the develop branch.
+develop branch, submit a *pull request* (PR) for review by other team members. 
+When all issues and comments arising in PR review discussion have been 
+addressed, the PR has been approved, and all continuous integration checks 
+have passed, the pull request can be merged.
 
 .. important:: **Feature branches never interact directly with the main
                branch.**
@@ -95,13 +98,13 @@ The figure below shows the basics of how branches interact in Gitflow.
 .. figure:: git-workflow-gitflow2.png
 
    This figure shows typical interactions between key branches in the Gitflow
-   workflow. Here, development starts after the v0.1.0 release. Then, 
-   a bug was found that needed to be made available to users.
-   A *hotfix* branch was made off of main and merged back to main after the
-   issue was fixed. Release v0.1.1 was tagged and main was merged into 
-   develop. Work started on a topic/feature branch before the v0.1.1 releases
-   and was merged into develop after the v0.1.1 release. Then, a release 
-   candidate branch was made from develop. Some release finalization changes
-   were made on it, it was merged into main, and the v0.2.0 release was tagged.
-   Finally, main was merged into develop so the changes made for the release
-   would be integrated into subsequent development.
+   workflow. Here, development is shown following the v0.1.0 release. While
+   development was ongoing, a bug was found and a fix was needed to be made 
+   available to users. A *hotfix* branch was made off of main and merged back 
+   to main after the issue was addressed. Release v0.1.1 was tagged and main 
+   was merged into develop so that it would not recur. Work started on a 
+   feature branch before the v0.1.1 release and was merged into develop after 
+   the v0.1.1 release. Then, a release candidate branch was made from develop. 
+   The release was finalized on that branch after which it was merged into 
+   main, and the v0.2.0 release was tagged. Finally, main was merged into 
+   develop.
