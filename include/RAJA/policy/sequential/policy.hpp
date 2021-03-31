@@ -66,6 +66,15 @@ struct seq_work : make_policy_pattern_launch_platform_t<Policy::sequential,
 };
 
 ///
+/// WorkGroup execution policies
+///
+struct seq_graph : make_policy_pattern_launch_platform_t<Policy::sequential,
+                                                         Pattern::graph,
+                                                         Launch::sync,
+                                                         Platform::host> {
+};
+
+///
 ///////////////////////////////////////////////////////////////////////
 ///
 /// Reduction execution policies
@@ -85,7 +94,7 @@ using policy::sequential::seq_reduce;
 using policy::sequential::seq_region;
 using policy::sequential::seq_segit;
 using policy::sequential::seq_work;
-
+using policy::sequential::seq_graph;
 
 
 }  // namespace RAJA
