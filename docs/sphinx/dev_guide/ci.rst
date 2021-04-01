@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _ci:
+.. _ci-label:
 
 ************************************
 Continuous Integration (CI) Testing
@@ -19,8 +19,10 @@ These tools include:
   * **Travis CI.** This runs builds for a Linux environment using multiple 
     versions of the GNU and clang compilers, and one version each of the Intel, 
     nvcc (CUDA), and HIP compilers. RAJA tests are run for each non-GPU build.
+
   * **Appveyor.** This runs builds and tests for a Windows environment for two
     versions of the Visual Studio compiler.
+
   * **Gitlab CI.** This runs builds and tests on platforms in the Livermore
     Computing *Collaboration Zone*. This is a recent addition for RAJA and
     is a work-in-progress to get full coverage of compilers and tests we

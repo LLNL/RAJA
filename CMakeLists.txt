@@ -58,8 +58,8 @@ set(RAJA_CXX_STANDARD_FLAG "default" CACHE STRING "Specific c++ standard flag to
 option(ENABLE_TBB "Build TBB support" Off)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
-option(ENABLE_EXTERNAL_CUB "Use an external cub for scans" Off)
-option(ENABLE_EXTERNAL_ROCPRIM "Use an external rocPRIM for scans" Off)
+option(ENABLE_EXTERNAL_CUB "Use an external cub" Off)
+option(ENABLE_EXTERNAL_ROCPRIM "Use an external rocPRIM" Off)
 
 option(ENABLE_REPRODUCERS "Build issue reproducers" Off)
 
@@ -169,8 +169,7 @@ include(cmake/SetupBasics.cmake)
 include(cmake/SetupPackages.cmake)
 # Setup vendor-specific compiler flags
 include(cmake/SetupCompilers.cmake)
-# Setup internal RAJA configuration options
-include(cmake/SetupRajaConfig.cmake)
+
 # Macros for building executables and libraries
 include (cmake/RAJAMacros.cmake)
 
@@ -201,49 +200,27 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION V
 endif()
 
 if (ENABLE_CUDA)
-  set (raja_depends
+  set(raja_depends
     ${raja_depends}
     cuda)
 endif ()
 
-if (ENABLE_CUDA)
-  if(ENABLE_EXTERNAL_CUB)
-    find_package(CUB)
-    if (CUB_FOUND)
-      blt_register_library(
-        NAME cub
-        INCLUDES $<BUILD_INTERFACE:${CUB_INCLUDE_DIRS}>)
-      set(raja_depends
-        ${raja_depends}
-        cub)
-    else()
-      message(WARNING "External CUB not found.")
-      set(ENABLE_EXTERNAL_CUB Off)
-    endif()
-  endif ()
+if (ENABLE_EXTERNAL_CUB)
+  set(raja_depends
+    ${raja_depends}
+    cub)
 endif ()
 
 if (ENABLE_HIP)
-  set (raja_depends
+  set(raja_depends
     ${raja_depends}
     hip)
 endif ()
 
-if (ENABLE_HIP)
-  if(ENABLE_EXTERNAL_ROCPRIM)
-    find_package(ROCPRIM)
-    if (ROCPRIM_FOUND)
-      blt_register_library(
-        NAME rocPRIM
-        INCLUDES ${ROCPRIM_INCLUDE_DIRS})
-      set(raja_depends
-          ${raja_depends}
-          rocPRIM)
-    else()
-      message(WARNING "External rocPRIM not found.")
-      set(ENABLE_EXTERNAL_ROCPRIM Off)
-     endif()
-  endif ()
+if (ENABLE_EXTERNAL_ROCPRIM)
+  set(raja_depends
+    ${raja_depends}
+    rocPRIM)
 endif ()
 
 if (ENABLE_TBB)
@@ -266,6 +243,8 @@ camp source repository")
       add_subdirectory(tpl/camp)
     else (NOT camp_FOUND)
       message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
+      # Save the path so it can be used in raja-config.cmake
+      set(EXTERNAL_CAMP_INSTALL_DIR ${camp_INSTALL_PREFIX} CACHE PATH "")
     endif(NOT camp_FOUND)
   endif (EXTERNAL_CAMP_SOURCE_DIR)
 endif (NOT TARGET camp)
@@ -289,16 +268,22 @@ target_include_directories(RAJA
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_include_directories(RAJA SYSTEM
-  PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/rocPRIM/rocprim/include>)
+if (ENABLE_CUDA AND NOT ENABLE_EXTERNAL_CUB)
+  target_include_directories(RAJA SYSTEM
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>)
+endif()
+if (ENABLE_HIP AND NOT ENABLE_EXTERNAL_ROCPRIM)
+  target_include_directories(RAJA SYSTEM
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/rocPRIM/rocprim/include>)
+endif()
 
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
-if(NOT ENABLE_EXTERNAL_CUB)
-  install(DIRECTORY tpl/cub/ DESTINATION include FILES_MATCHING PATTERN *.cuh)
+if (ENABLE_CUDA AND NOT ENABLE_EXTERNAL_CUB)
+  install(DIRECTORY tpl/cub/cub/ DESTINATION include/cub FILES_MATCHING PATTERN *.cuh)
 endif()
-if(NOT ENABLE_EXTERNAL_ROCPRIM)
+if (ENABLE_HIP AND NOT ENABLE_EXTERNAL_ROCPRIM)
   install(DIRECTORY tpl/rocPRIM/rocprim/include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
 endif()
 
@@ -307,6 +292,10 @@ install(FILES
   include/RAJA/module.modulemap
   include/RAJA/module.private.modulemap
   DESTINATION "include/RAJA/")
+
+
+# Setup internal RAJA configuration options
+include(cmake/SetupRajaConfig.cmake)
 
 if(RAJA_ENABLE_TESTS)
   add_subdirectory(test)
