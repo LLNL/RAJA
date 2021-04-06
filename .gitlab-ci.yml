@@ -50,6 +50,7 @@ stages:
   - q_release_resources
   - l_build_and_test
   - b_build_and_test
+  - c_build_and_test
   - multi_project
 
 # This is the rules that drives the activation of "advanced" jobs. All advanced
@@ -67,12 +68,22 @@ stages:
     - export JOBID=$(squeue -h --name=${ALLOC_NAME} --format=%A)
     - echo ${JOBID}
     - srun $( [[ -n "${JOBID}" ]] && echo "--jobid=${JOBID}" ) -t ${DEFAULT_TIME} -N 1 scripts/gitlab/build_and_test.sh
+  artifacts:
+    reports:
+      junit: junit.xml
+
+.build_toss_3_x86_64_ib_corona_script:
+  script:
+    - srun -p mi60 -t 30 -N 1 scripts/gitlab/build_and_test.sh
 
 # Lassen and Butte use a different job scheduler (spectrum lsf) that does not
 # allow pre-allocation the same way slurm does.
 .build_blueos_3_ppc64le_ib_script:
   script:
     - lalloc 1 -W ${DEFAULT_TIME} scripts/gitlab/build_and_test.sh
+  artifacts:
+    reports:
+      junit: junit.xml
 
 .build_blueos_3_ppc64le_ib_p9_script:
   extends: .build_blueos_3_ppc64le_ib_script
@@ -97,3 +108,5 @@ include:
   - local: .gitlab/quartz-jobs.yml
   - local: .gitlab/lassen-templates.yml
   - local: .gitlab/lassen-jobs.yml
+  - local: .gitlab/corona-templates.yml
+  - local: .gitlab/corona-jobs.yml

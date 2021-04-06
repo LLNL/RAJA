@@ -71,7 +71,7 @@ configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hpp.in
 
 # Configure CMake config
 configure_file(${PROJECT_SOURCE_DIR}/share/raja/cmake/RAJA-config.cmake.in
-  ${PROJECT_BINARY_DIR}/share/raja/cmake/raja-config.cmake)
+  ${PROJECT_BINARY_DIR}/share/raja/cmake/raja-config.cmake @ONLY)
 
 install(FILES ${PROJECT_BINARY_DIR}/share/raja/cmake/raja-config.cmake
   DESTINATION share/raja/cmake/)
