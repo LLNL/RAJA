@@ -91,10 +91,11 @@ stages:
 # If testing develop branch, trigger CHAI pipeline with this version of RAJA.
 # TODO: Once spack allows to clone a specific commit on demand, then point to the exact commit.
 #       This will prevent from sticking to a branch (here develop).
+#       To turn back on chai trigger, add '$CI_COMMIT_BRANCH == "develop" to rule.
 trigger-chai:
   stage: multi_project
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop" || $MULTI_PROJECT == "ON"' #run only if ...
+    - if: '$MULTI_PROJECT == "ON"' #run only if ...
   variables:
     UPDATE_RAJA: develop
   trigger:
