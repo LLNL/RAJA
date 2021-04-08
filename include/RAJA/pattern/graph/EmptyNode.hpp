@@ -15,10 +15,20 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_graph_Node_HPP
-#define RAJA_pattern_graph_Node_HPP
+#ifndef RAJA_pattern_graph_EmptyNode_HPP
+#define RAJA_pattern_graph_EmptyNode_HPP
 
 #include "RAJA/config.hpp"
+
+#include <utility>
+#include <type_traits>
+
+#include "RAJA/policy/loop/policy.hpp"
+
+#include "RAJA/pattern/forall.hpp"
+
+#include "RAJA/pattern/graph/DAG.hpp"
+#include "RAJA/pattern/graph/Node.hpp"
 
 namespace RAJA
 {
@@ -29,15 +39,34 @@ namespace expt
 namespace graph
 {
 
-struct Node
+struct EmptyNode : Node
 {
+
   RAJA_INLINE
-  Node() = default;
+  EmptyNode()
+  {
+  }
 
-  virtual void exec() = 0;
+  virtual void exec() override
+  {
+  }
 
-  virtual ~Node() = default;
+  virtual ~EmptyNode() = default;
 };
+
+
+template <typename DAGPolicy>
+RAJA_INLINE EmptyNode*
+make_EmptyNode(DAG<DAGPolicy>& dag)
+{
+  using node_type = EmptyNode;
+
+  node_type* node = new node_type{ };
+
+  dag.insert_node(node);
+
+  return node;
+}
 
 }  // namespace graph
 

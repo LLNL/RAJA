@@ -30,32 +30,31 @@ TYPED_TEST_SUITE_P( GraphBasicConstructorUnitTest );
 TYPED_TEST_P( GraphBasicConstructorUnitTest, BasicConstructors )
 {
   using GraphPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using forallPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
+
+  using graph_type = RAJA::expt::graph::DAG<GraphPolicy>;
+  using Res = typename graph_type::Resource;
 
   // default constructor
-  RAJA::expt::graph::DAG<GraphPolicy> test1;
+  graph_type test1;
 
   // test ()
   ASSERT_TRUE( test1.empty() );
 
-  RAJA::TypedRangeSegment<int> seg(0, 10);
+  RAJA::expt::graph::EmptyNode* node1 = make_EmptyNode(test1);
 
-  test1.template emplace_forall<forallPolicy>(seg, [=](int i) {
-
-  });
+  ASSERT_TRUE( node1 != nullptr );
 
   ASSERT_FALSE( test1.empty() );
 
-
-
+  auto r = Res::get_default();
+  test1.exec(r);
 }
 
 //
 // Cartesian product of types used in parameterized tests
 //
-using SequentialResourceTypes =
-  Test< camp::cartesian_product<SequentialGraphExecPols,
-                                SequentialForallExecPols>>::Types;
+using ResourceTypes =
+  Test< camp::cartesian_product<SequentialGraphExecPols>>::Types;
 
 
 REGISTER_TYPED_TEST_SUITE_P( GraphBasicConstructorUnitTest,
@@ -64,5 +63,5 @@ REGISTER_TYPED_TEST_SUITE_P( GraphBasicConstructorUnitTest,
 
 INSTANTIATE_TYPED_TEST_SUITE_P( BasicConstructorUnitTest,
                                 GraphBasicConstructorUnitTest,
-                                SequentialResourceTypes
+                                ResourceTypes
                               );

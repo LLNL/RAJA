@@ -146,9 +146,10 @@
 #include "RAJA/pattern/WorkGroup.hpp"
 
 //
-// WorkPool, WorkGroup, WorkSite objects
+// graph constructs
 //
 #include "RAJA/pattern/graph.hpp"
+#include "RAJA/policy/graph.hpp"
 
 //
 // Reduction objects

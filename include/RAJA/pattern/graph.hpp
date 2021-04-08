@@ -19,15 +19,6 @@
 #define RAJA_pattern_graph_HPP
 
 #include "RAJA/pattern/graph/DAG.hpp"
-
-//
-// All platforms must support host execution.
-//
-#include "RAJA/policy/sequential/policy.hpp"
-#include "RAJA/policy/loop/policy.hpp"
-
-// #if defined(RAJA_ENABLE_OPENMP)
-// #include "RAJA/policy/openmp/graph.hpp"
-// #endif
+#include "RAJA/pattern/graph/EmptyNode.hpp"
 
 #endif /* RAJA_pattern_graph_HPP */

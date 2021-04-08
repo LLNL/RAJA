@@ -20,7 +20,6 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/pattern/graph/Node.hpp"
-#include "RAJA/pattern/graph/ForallNode.hpp"
 #include "RAJA/util/macros.hpp"
 
 namespace RAJA
@@ -35,6 +34,8 @@ namespace graph
 template < typename policy >
 struct DAG
 {
+  using Resource = typename resources::get_resource<policy>::type;
+
   RAJA_INLINE
   DAG() = default;
 
@@ -43,29 +44,16 @@ struct DAG
     return (m_root == nullptr);
   }
 
-  template < typename ExecutionPolicy, typename Container, typename LoopBody >
-  ForallNode<camp::decay<ExecutionPolicy>,
-             camp::decay<Container>,
-             camp::decay<LoopBody>>&
-  emplace_forall(Container&& c,
-                 LoopBody&& loop_body)
+  void insert_node(Node* node)
   {
-    using Resource = typename resources::get_resource<ExecutionPolicy>::type;
-    Resource r = Resource::get_default();
-
-    using node_type = ForallNode<camp::decay<ExecutionPolicy>,
-                                 camp::decay<Container>,
-                                 camp::decay<LoopBody>>;
-
-    node_type* node = make_ForallNode(r,
-                                      ExecutionPolicy(),
-                                      std::forward<Container>(c),
-                                      std::forward<LoopBody>(loop_body));
-
-    insert_node(node);
-
-    return *node;
+    if (m_root == nullptr) {
+      m_root = node;
+    } else {
+      RAJA_ABORT_OR_THROW("DAG::insert_node");
+    }
   }
+
+  void exec(Resource& r);
 
   ~DAG()
   {
@@ -76,15 +64,6 @@ struct DAG
 
 private:
   Node* m_root = nullptr;
-
-  void insert_node(Node* node)
-  {
-    if (m_root == nullptr) {
-      m_root = node;
-    } else {
-      RAJA_ABORT_OR_THROW("DAG::insert_node");
-    }
-  }
 };
 
 }  // namespace graph
@@ -92,4 +71,5 @@ private:
 }  // namespace expt
 
 }  // namespace RAJA
+
 #endif

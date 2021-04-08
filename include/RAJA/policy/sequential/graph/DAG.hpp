@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing the core components of RAJA::graph::Node
+ * \brief   RAJA header file containing the core components of RAJA::graph::DAG
  *
  ******************************************************************************
  */
@@ -15,10 +15,12 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_graph_Node_HPP
-#define RAJA_pattern_graph_Node_HPP
+#ifndef RAJA_policy_sequential_graph_DAG_HPP
+#define RAJA_policy_sequential_graph_DAG_HPP
 
 #include "RAJA/config.hpp"
+#include "RAJA/pattern/graph/DAG.hpp"
+#include "RAJA/pattern/graph/Node.hpp"
 
 namespace RAJA
 {
@@ -29,15 +31,13 @@ namespace expt
 namespace graph
 {
 
-struct Node
+template <>
+void DAG<seq_graph>::exec(typename DAG<seq_graph>::Resource&)
 {
-  RAJA_INLINE
-  Node() = default;
-
-  virtual void exec() = 0;
-
-  virtual ~Node() = default;
-};
+  if (m_root != nullptr) {
+    m_root->exec();
+  }
+}
 
 }  // namespace graph
 
