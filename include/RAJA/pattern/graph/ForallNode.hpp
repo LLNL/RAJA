@@ -27,6 +27,7 @@
 
 #include "RAJA/pattern/forall.hpp"
 
+#include "RAJA/pattern/graph/DAG.hpp"
 #include "RAJA/pattern/graph/Node.hpp"
 
 namespace RAJA
@@ -81,7 +82,7 @@ private:
 };
 
 
-template <typename Resource, typename ExecutionPolicy, typename Container, typename LoopBody>
+template <typename DAGPolicy, typename ExecutionPolicy, typename Container, typename LoopBody>
 RAJA_INLINE concepts::enable_if_t<
     ForallNode<camp::decay<ExecutionPolicy>,
                camp::decay<Container>,
@@ -89,7 +90,7 @@ RAJA_INLINE concepts::enable_if_t<
     concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
     concepts::negate<type_traits::is_multi_policy<ExecutionPolicy>>,
     type_traits::is_range<Container>>
-make_ForallNode(Resource& r,
+make_ForallNode(DAG<DAGPolicy>& dag,
                 ExecutionPolicy&& p,
                 Container&& c,
                 LoopBody&& loop_body)
@@ -97,6 +98,9 @@ make_ForallNode(Resource& r,
   using node_type = ForallNode<camp::decay<ExecutionPolicy>,
                                camp::decay<Container>,
                                camp::decay<LoopBody>>;
+  using Res = typename node_type::Resource;
+
+  auto r = Res::get_default();
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
   util::callPreCapturePlugins(context);
@@ -111,6 +115,9 @@ make_ForallNode(Resource& r,
                                    std::forward<Container>(c),
                                    std::move(body) };
 
+
+  dag.insert_node(node);
+
   return node;
 }
 
@@ -119,4 +126,5 @@ make_ForallNode(Resource& r,
 }  // namespace expt
 
 }  // namespace RAJA
+
 #endif
