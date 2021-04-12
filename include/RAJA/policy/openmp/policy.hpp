@@ -133,8 +133,8 @@ using omp_for_exec = omp_for_schedule_exec<Auto>;
 
 using omp_for_nowait_exec = omp_for_nowait_schedule_exec<Auto>;
 
-template <unsigned int N>
-using omp_for_static = omp_for_schedule_exec<omp::Static<N>>;
+template <int ChunkSize>
+using omp_for_static = omp_for_schedule_exec<omp::Static<ChunkSize>>;
 
 template <typename InnerPolicy>
 using omp_parallel_exec = make_policy_pattern_launch_platform_t<Policy::openmp,
@@ -146,8 +146,8 @@ using omp_parallel_exec = make_policy_pattern_launch_platform_t<Policy::openmp,
 
 using omp_parallel_for_exec = omp_parallel_exec<omp_for_exec>;
 
-template <unsigned int N>
-using omp_parallel_for_static = omp_parallel_exec<omp_for_static<N>>;
+template <int ChunkSize>
+using omp_parallel_for_static_exec = omp_parallel_exec<omp_for_static<ChunkSize>>;
 
 
 ///
@@ -205,7 +205,7 @@ using policy::omp::omp_for_nowait_schedule_exec;
 using policy::omp::omp_for_static;
 using policy::omp::omp_parallel_exec;
 using policy::omp::omp_parallel_for_exec;
-using policy::omp::omp_parallel_for_static;
+using policy::omp::omp_parallel_for_static_exec;
 using policy::omp::omp_parallel_for_segit;
 using policy::omp::omp_parallel_region;
 using policy::omp::omp_parallel_segit;

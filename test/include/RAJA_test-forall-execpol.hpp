@@ -35,6 +35,7 @@ using SequentialForallAtomicExecPols = camp::list< RAJA::seq_exec,
 using OpenMPForallExecPols = 
   camp::list< RAJA::omp_parallel_exec<RAJA::omp_for_nowait_exec>
               , RAJA::omp_parallel_exec<RAJA::omp_for_exec>
+              , RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Static< >>>
 #if defined(RAJA_TEST_EXHAUSTIVE)
               , RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Static<4>>>
               , RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Static<8>>>
