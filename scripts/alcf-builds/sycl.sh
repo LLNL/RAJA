@@ -36,8 +36,11 @@ cmake \
   -DCMAKE_LINKER=dpcpp \
   -DENABLE_TESTS=Off \
   -DENABLE_EXAMPLES=Off \
-  -DCMAKE_INSTALL_PREFIX=/home/bhomerding/install/raja.${DATE} \
+  -DCMAKE_INSTALL_PREFIX=/home/bhomerding/EQSIM_work/pushOut/RAJAPerf/tpl/RAJA/install/raja \
   "$@" \
   ..
 
-make -j 2
+make -j 16
+make install
+
+#-DCMAKE_INSTALL_PREFIX=/home/bhomerding/install/raja.${DATE} \
