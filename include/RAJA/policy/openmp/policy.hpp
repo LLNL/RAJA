@@ -131,10 +131,13 @@ struct omp_for_schedule_exec : make_policy_pattern_launch_platform_t<Policy::ope
 
 using omp_for_exec = omp_for_schedule_exec<Auto>;
 
+template <int ChunkSize = default_chunk_size>
+using omp_for_static_exec = omp_for_schedule_exec<omp::Static<ChunkSize>>;
+
 using omp_for_nowait_exec = omp_for_nowait_schedule_exec<Auto>;
 
-template <int ChunkSize>
-using omp_for_static = omp_for_schedule_exec<omp::Static<ChunkSize>>;
+template <int ChunkSize = default_chunk_size>
+using omp_for_nowait_static_exec = omp_for_nowait_schedule_exec<omp::Static<ChunkSize>>;
 
 template <typename InnerPolicy>
 using omp_parallel_exec = make_policy_pattern_launch_platform_t<Policy::openmp,
@@ -146,8 +149,8 @@ using omp_parallel_exec = make_policy_pattern_launch_platform_t<Policy::openmp,
 
 using omp_parallel_for_exec = omp_parallel_exec<omp_for_exec>;
 
-template <int ChunkSize>
-using omp_parallel_for_static_exec = omp_parallel_exec<omp_for_static<ChunkSize>>;
+template <int ChunkSize = default_chunk_size>
+using omp_parallel_for_static_exec = omp_parallel_exec<omp_for_schedule_exec<omp::Static<ChunkSize>> >;
 
 
 ///
@@ -198,20 +201,66 @@ struct omp_synchronize : make_policy_pattern_launch_t<Policy::openmp,
 }  // namespace omp
 }  // namespace policy
 
-using policy::omp::omp_for_exec;
-using policy::omp::omp_for_nowait_exec;
-using policy::omp::omp_for_schedule_exec;
-using policy::omp::omp_for_nowait_schedule_exec;
-using policy::omp::omp_for_static;
-using policy::omp::omp_parallel_exec;
+
+//
+// Type aliases to simplify common omp parallel for loop execution
+//
 using policy::omp::omp_parallel_for_exec;
 using policy::omp::omp_parallel_for_static_exec;
+
+//
+// Type aliases for omp parallel for iteration over indexset segments
+//
 using policy::omp::omp_parallel_for_segit;
-using policy::omp::omp_parallel_region;
 using policy::omp::omp_parallel_segit;
+
+//
+// Type alias for omp parallel region containing an inner omp for loop 
+// execution policy. Inner policy types follow.
+//
+using policy::omp::omp_parallel_exec;
+
+//
+// Type aliases for omp for and omp for nowait loop execution within
+// an omp_parallel_exec construct
+//
+using policy::omp::omp_for_exec;
+using policy::omp::omp_for_nowait_exec;
+
+//
+// Type aliases for omp for and omp for nowait loop execution with a 
+// scheduling policy within an omp_parallel_exec construct
+// Scheduling policies are near the top of this file and include:
+// RAJA::policy::omp::{Auto, Static, Dynamic, Guided, Runtime}
+//
+// Helper aliases to make usage less verbose for common use cases follow these.
+//
+using policy::omp::omp_for_schedule_exec;
+using policy::omp::omp_for_nowait_schedule_exec;
+
+//
+// Type aliases for omp for and omp for nowait loop execution with a 
+// static scheduling policy within an omp_parallel_exec construct
+//
+using policy::omp::omp_for_static_exec;
+using policy::omp::omp_for_nowait_static_exec;
+
+//
+// Type aliases for omp parallel region
+//
+using policy::omp::omp_parallel_region;
+
+//
+// Type aliases for omp reductions
+//
 using policy::omp::omp_reduce;
 using policy::omp::omp_reduce_ordered;
+
+//
+// Type aliases for omp reductions
+//
 using policy::omp::omp_synchronize;
+
 using policy::omp::omp_work;
 
 }  // namespace RAJA
