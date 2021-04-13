@@ -134,10 +134,18 @@ using omp_for_exec = omp_for_schedule_exec<Auto>;
 template <int ChunkSize = default_chunk_size>
 using omp_for_static_exec = omp_for_schedule_exec<omp::Static<ChunkSize>>;
 
+template <int ChunkSize = default_chunk_size>
+using omp_for_dynamic_exec = omp_for_schedule_exec<omp::Dynamic<ChunkSize>>;
+
+
 using omp_for_nowait_exec = omp_for_nowait_schedule_exec<Auto>;
 
 template <int ChunkSize = default_chunk_size>
 using omp_for_nowait_static_exec = omp_for_nowait_schedule_exec<omp::Static<ChunkSize>>;
+
+template <int ChunkSize = default_chunk_size>
+using omp_for_nowait_dynamic_exec = omp_for_nowait_schedule_exec<omp::Dynamic<ChunkSize>>;
+
 
 template <typename InnerPolicy>
 using omp_parallel_exec = make_policy_pattern_launch_platform_t<Policy::openmp,
@@ -152,14 +160,16 @@ using omp_parallel_for_exec = omp_parallel_exec<omp_for_exec>;
 template <int ChunkSize = default_chunk_size>
 using omp_parallel_for_static_exec = omp_parallel_exec<omp_for_schedule_exec<omp::Static<ChunkSize>> >;
 
+template <int ChunkSize = default_chunk_size>
+using omp_parallel_for_dynamic_exec = omp_parallel_exec<omp_for_schedule_exec<omp::Dynamic<ChunkSize>> >;
+
 
 ///
 /// Index set segment iteration policies
 ///
-
 using omp_parallel_for_segit = omp_parallel_for_exec;
-
 using omp_parallel_segit = omp_parallel_for_segit;
+
 
 struct omp_taskgraph_segit
     : make_policy_pattern_t<Policy::openmp, Pattern::taskgraph, omp::Parallel> {
@@ -207,6 +217,7 @@ struct omp_synchronize : make_policy_pattern_launch_t<Policy::openmp,
 //
 using policy::omp::omp_parallel_for_exec;
 using policy::omp::omp_parallel_for_static_exec;
+using policy::omp::omp_parallel_for_dynamic_exec;
 
 //
 // Type aliases for omp parallel for iteration over indexset segments
@@ -244,6 +255,8 @@ using policy::omp::omp_for_nowait_schedule_exec;
 //
 using policy::omp::omp_for_static_exec;
 using policy::omp::omp_for_nowait_static_exec;
+using policy::omp::omp_for_dynamic_exec;
+using policy::omp::omp_for_nowait_dynamic_exec;
 
 //
 // Type aliases for omp parallel region
