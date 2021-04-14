@@ -137,6 +137,9 @@ using omp_for_static_exec = omp_for_schedule_exec<omp::Static<ChunkSize>>;
 template <int ChunkSize = default_chunk_size>
 using omp_for_dynamic_exec = omp_for_schedule_exec<omp::Dynamic<ChunkSize>>;
 
+template <int ChunkSize = default_chunk_size>
+using omp_for_guided_exec = omp_for_schedule_exec<omp::Guided<ChunkSize>>;
+
 
 using omp_for_nowait_exec = omp_for_nowait_schedule_exec<Auto>;
 
@@ -145,6 +148,9 @@ using omp_for_nowait_static_exec = omp_for_nowait_schedule_exec<omp::Static<Chun
 
 template <int ChunkSize = default_chunk_size>
 using omp_for_nowait_dynamic_exec = omp_for_nowait_schedule_exec<omp::Dynamic<ChunkSize>>;
+
+template <int ChunkSize = default_chunk_size>
+using omp_for_nowait_guided_exec = omp_for_nowait_schedule_exec<omp::Guided<ChunkSize>>;
 
 
 template <typename InnerPolicy>
@@ -162,6 +168,9 @@ using omp_parallel_for_static_exec = omp_parallel_exec<omp_for_schedule_exec<omp
 
 template <int ChunkSize = default_chunk_size>
 using omp_parallel_for_dynamic_exec = omp_parallel_exec<omp_for_schedule_exec<omp::Dynamic<ChunkSize>> >;
+
+template <int ChunkSize = default_chunk_size>
+using omp_parallel_for_guided_exec = omp_parallel_exec<omp_for_schedule_exec<omp::Guided<ChunkSize>> >;
 
 
 ///
@@ -218,6 +227,7 @@ struct omp_synchronize : make_policy_pattern_launch_t<Policy::openmp,
 using policy::omp::omp_parallel_for_exec;
 using policy::omp::omp_parallel_for_static_exec;
 using policy::omp::omp_parallel_for_dynamic_exec;
+using policy::omp::omp_parallel_for_guided_exec;
 
 //
 // Type aliases for omp parallel for iteration over indexset segments
@@ -257,6 +267,8 @@ using policy::omp::omp_for_static_exec;
 using policy::omp::omp_for_nowait_static_exec;
 using policy::omp::omp_for_dynamic_exec;
 using policy::omp::omp_for_nowait_dynamic_exec;
+using policy::omp::omp_for_guided_exec;
+using policy::omp::omp_for_nowait_guided_exec;
 
 //
 // Type aliases for omp parallel region
