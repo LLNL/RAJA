@@ -13,8 +13,8 @@
 #include "RAJA_unit-test-types.hpp"
 
 template<typename T>
-class OperatorsUnitTestBasic : public ::testing::Test {};
-TYPED_TEST_SUITE(OperatorsUnitTestBasic, UnitIntFloatTypes);
+class OperatorsUnitTestMath : public ::testing::Test {};
+TYPED_TEST_SUITE(OperatorsUnitTestMath, UnitIntFloatTypes);
 
 template<typename T>
 void plus_test()
@@ -94,7 +94,7 @@ void divides_test()
   }
 }
 
-TYPED_TEST(OperatorsUnitTestBasic, basic) {
+TYPED_TEST(OperatorsUnitTestMath, math) {
   plus_test<TypeParam>();
   minus_test<TypeParam>();
   multiplies_test<TypeParam>();

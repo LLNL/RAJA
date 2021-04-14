@@ -6,8 +6,8 @@
 ###############################################################################
 
 raja_add_test(
-  NAME test-operators-basic
-  SOURCES test-operators-basic.cpp)
+  NAME test-operators-math
+  SOURCES test-operators-math.cpp)
 
 raja_add_test(
   NAME test-operators-logical
