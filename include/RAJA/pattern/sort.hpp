@@ -37,143 +37,6 @@ namespace RAJA
 * \brief  sort execution pattern
 *
 * \param[in] p Execution policy
-* \param[in,out] begin Pointer or Random-Access Iterator to start of data range
-* \param[in,out] end Pointer or Random-Access Iterator to end of data range
-*(exclusive)
-* \param[in] comp comparison function to apply for sort
-*
-******************************************************************************
-*/
-template <typename ExecPolicy,
-          typename Iter,
-          typename Compare = operators::less<RAJA::detail::IterVal<Iter>>>
-concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
-                    type_traits::is_iterator<Iter>>
-sort(const ExecPolicy &p,
-     Iter begin,
-     Iter end,
-     Compare comp = Compare{})
-{
-  using R = RAJA::detail::IterVal<Iter>;
-  static_assert(type_traits::is_binary_function<Compare, bool, R, R>::value,
-                "Compare must model BinaryFunction");
-  static_assert(type_traits::is_random_access_iterator<Iter>::value,
-                "Iterator must model RandomAccessIterator");
-  impl::sort::unstable(p, begin, end, comp);
-}
-
-/*!
-******************************************************************************
-*
-* \brief  stable sort execution pattern
-*
-* \param[in] p Execution policy
-* \param[in,out] begin Pointer or Random-Access Iterator to start of data range
-* \param[in,out] end Pointer or Random-Access Iterator to end of data range
-*(exclusive)
-* \param[in] comp comparison function to apply for stable_sort
-*
-******************************************************************************
-*/
-template <typename ExecPolicy,
-          typename Iter,
-          typename Compare = operators::less<RAJA::detail::IterVal<Iter>>>
-concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
-                    type_traits::is_iterator<Iter>>
-stable_sort(const ExecPolicy &p,
-            Iter begin,
-            Iter end,
-            Compare comp = Compare{})
-{
-  using R = RAJA::detail::IterVal<Iter>;
-  static_assert(type_traits::is_binary_function<Compare, bool, R, R>::value,
-                "Compare must model BinaryFunction");
-  static_assert(type_traits::is_random_access_iterator<Iter>::value,
-                "Iterator must model RandomAccessIterator");
-  impl::sort::stable(p, begin, end, comp);
-}
-
-/*!
-******************************************************************************
-*
-* \brief  sort pairs execution pattern
-*
-* \param[in] p Execution policy
-* \param[in,out] keys_begin Pointer or Random-Access Iterator to start of data keys range
-* \param[in,out] keys_end Pointer or Random-Access Iterator to end of data keys range
-* \param[in,out] vals_begin Pointer or Random-Access Iterator to start of data values range
-* \param[in] comp comparison function to apply for sort
-*
-******************************************************************************
-*/
-template <typename ExecPolicy,
-          typename KeyIter,
-          typename ValIter,
-          typename Compare = operators::less<RAJA::detail::IterVal<KeyIter>>>
-concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
-                    type_traits::is_iterator<KeyIter>,
-                    type_traits::is_iterator<ValIter>>
-sort_pairs(const ExecPolicy &p,
-           KeyIter keys_begin,
-           KeyIter keys_end,
-           ValIter vals_begin,
-           Compare comp = Compare{})
-{
-  using R = RAJA::detail::IterVal<KeyIter>;
-  static_assert(type_traits::is_binary_function<Compare, bool, R, R>::value,
-                "Compare must model BinaryFunction");
-  static_assert(type_traits::is_random_access_iterator<KeyIter>::value,
-                "Keys Iterator must model RandomAccessIterator");
-  static_assert(type_traits::is_random_access_iterator<ValIter>::value,
-                "Vals Iterator must model RandomAccessIterator");
-  impl::sort::unstable_pairs(p, keys_begin, keys_end, vals_begin, comp);
-}
-
-/*!
-******************************************************************************
-*
-* \brief  stable sort pairs execution pattern
-*
-* \param[in] p Execution policy
-* \param[in,out] keys_begin Pointer or Random-Access Iterator to start of data keys range
-* \param[in,out] keys_end Pointer or Random-Access Iterator to end of data keys range
-* \param[in,out] vals_begin Pointer or Random-Access Iterator to start of data values range
-* \param[in] comp comparison function to apply for stable_sort
-*
-******************************************************************************
-*/
-template <typename ExecPolicy,
-          typename KeyIter,
-          typename ValIter,
-          typename Compare = operators::less<RAJA::detail::IterVal<KeyIter>>>
-concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
-                    type_traits::is_iterator<KeyIter>,
-                    type_traits::is_iterator<ValIter>>
-stable_sort_pairs(const ExecPolicy &p,
-                  KeyIter keys_begin,
-                  KeyIter keys_end,
-                  ValIter vals_begin,
-                  Compare comp = Compare{})
-{
-  using R = RAJA::detail::IterVal<KeyIter>;
-  static_assert(type_traits::is_binary_function<Compare, bool, R, R>::value,
-                "Compare must model BinaryFunction");
-  static_assert(type_traits::is_random_access_iterator<KeyIter>::value,
-                "Keys Iterator must model RandomAccessIterator");
-  static_assert(type_traits::is_random_access_iterator<ValIter>::value,
-                "Vals Iterator must model RandomAccessIterator");
-  impl::sort::stable_pairs(p, keys_begin, keys_end, vals_begin, comp);
-}
-
-
-// =============================================================================
-
-/*!
-******************************************************************************
-*
-* \brief  sort execution pattern
-*
-* \param[in] p Execution policy
 * \param[in,out] c RandomAccess Container
 *range
 * \param[in] comp comparison function to apply for sort
@@ -185,16 +48,18 @@ template <typename ExecPolicy,
           typename Compare = operators::less<RAJA::detail::ContainerVal<Container>>>
 concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
                     type_traits::is_range<Container>>
-sort(const ExecPolicy &p,
-     Container &c,
+sort(const ExecPolicy& p,
+     Container&& c,
      Compare comp = Compare{})
 {
+  using std::begin;
+  using std::end;
   using T = RAJA::detail::ContainerVal<Container>;
   static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
                 "Compare must model BinaryFunction");
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container must model RandomAccessRange");
-  impl::sort::unstable(p, std::begin(c), std::end(c), comp);
+  impl::sort::unstable(p, begin(c), end(c), comp);
 }
 
 /*!
@@ -214,16 +79,18 @@ template <typename ExecPolicy,
           typename Compare = operators::less<RAJA::detail::ContainerVal<Container>>>
 concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
                     type_traits::is_range<Container>>
-stable_sort(const ExecPolicy &p,
-            Container &c,
+stable_sort(const ExecPolicy& p,
+            Container&& c,
             Compare comp = Compare{})
 {
+  using std::begin;
+  using std::end;
   using T = RAJA::detail::ContainerVal<Container>;
   static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
                 "Compare must model BinaryFunction");
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container must model RandomAccessRange");
-  impl::sort::stable(p, std::begin(c), std::end(c), comp);
+  impl::sort::stable(p, begin(c), end(c), comp);
 }
 
 /*!
@@ -246,11 +113,13 @@ template <typename ExecPolicy,
 concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
                     type_traits::is_range<KeyContainer>,
                     type_traits::is_range<ValContainer>>
-sort_pairs(const ExecPolicy &p,
-           KeyContainer &keys,
-           ValContainer &vals,
+sort_pairs(const ExecPolicy& p,
+           KeyContainer&& keys,
+           ValContainer&& vals,
            Compare comp = Compare{})
 {
+  using std::begin;
+  using std::end;
   using T = RAJA::detail::ContainerVal<KeyContainer>;
   static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
                 "Compare must model BinaryFunction");
@@ -258,7 +127,7 @@ sort_pairs(const ExecPolicy &p,
                 "KeyContainer must model RandomAccessRange");
   static_assert(type_traits::is_random_access_range<ValContainer>::value,
                 "ValContainer must model RandomAccessRange");
-  impl::sort::unstable_pairs(p, std::begin(keys), std::end(keys), std::begin(vals), comp);
+  impl::sort::unstable_pairs(p, begin(keys), end(keys), begin(vals), comp);
 }
 
 /*!
@@ -281,11 +150,13 @@ template <typename ExecPolicy,
 concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
                     type_traits::is_range<KeyContainer>,
                     type_traits::is_range<ValContainer>>
-stable_sort_pairs(const ExecPolicy &p,
-                  KeyContainer &keys,
-                  ValContainer &vals,
+stable_sort_pairs(const ExecPolicy& p,
+                  KeyContainer&& keys,
+                  ValContainer&& vals,
                   Compare comp = Compare{})
 {
+  using std::begin;
+  using std::end;
   using T = RAJA::detail::ContainerVal<KeyContainer>;
   static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
                 "Compare must model BinaryFunction");
@@ -293,7 +164,7 @@ stable_sort_pairs(const ExecPolicy &p,
                 "KeyContainer must model RandomAccessRange");
   static_assert(type_traits::is_random_access_range<ValContainer>::value,
                 "ValContainer must model RandomAccessRange");
-  impl::sort::stable_pairs(p, std::begin(keys), std::end(keys), std::begin(vals), comp);
+  impl::sort::stable_pairs(p, begin(keys), end(keys), begin(vals), comp);
 }
 
 
