@@ -30,7 +30,7 @@ template <typename OP, typename T>
 
 template <typename EXEC_POLICY, typename WORKING_RES, typename OP_TYPE>
 void ScanExclusiveTestImpl(int N,
-                           typename OP_TYPE::result_type offset = 
+                           typename OP_TYPE::result_type offset =
                            OP_TYPE::identity())
 {
   using T = typename OP_TYPE::result_type;
@@ -42,18 +42,17 @@ void ScanExclusiveTestImpl(int N,
   T* host_in;
   T* host_out;
 
-  allocScanTestData(N, 
+  allocScanTestData(N,
                     working_res,
-                    &work_in, &work_out, 
+                    &work_in, &work_out,
                     &host_in, &host_out);
 
   std::iota(host_in, host_in + N, 1);
 
   working_res.memcpy(work_in, host_in, sizeof(T) * N);
 
-  RAJA::exclusive_scan<EXEC_POLICY>(work_in,
-                                    work_in + N,
-                                    work_out,
+  RAJA::exclusive_scan<EXEC_POLICY>(RAJA::make_span(work_in, N),
+                                    RAJA::make_span(work_out, N),
                                     OP_TYPE{},
                                     offset);
 
@@ -62,7 +61,7 @@ void ScanExclusiveTestImpl(int N,
   ASSERT_TRUE(check_exclusive<OP_TYPE>(host_out, host_in, N, offset));
 
   deallocScanTestData(working_res,
-                      work_in, work_out,             
+                      work_in, work_out,
                       host_in, host_out);
 }
 
@@ -79,33 +78,33 @@ TYPED_TEST_P(ScanExclusiveTest, ScanExclusive)
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
   using OP_TYPE          = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  ScanExclusiveTestImpl<EXEC_POLICY, 
-                              WORKING_RESOURCE, 
+  ScanExclusiveTestImpl<EXEC_POLICY,
+                              WORKING_RESOURCE,
                               OP_TYPE>(0);
-  ScanExclusiveTestImpl<EXEC_POLICY, 
-                              WORKING_RESOURCE, 
+  ScanExclusiveTestImpl<EXEC_POLICY,
+                              WORKING_RESOURCE,
                               OP_TYPE>(357);
-  ScanExclusiveTestImpl<EXEC_POLICY, 
-                              WORKING_RESOURCE, 
+  ScanExclusiveTestImpl<EXEC_POLICY,
+                              WORKING_RESOURCE,
                               OP_TYPE>(32000);
 
   //
   // Perform some non-identity offset tests
-  // 
+  //
   using T = typename OP_TYPE::result_type;
 
-  ScanExclusiveTestImpl<EXEC_POLICY, 
-                        WORKING_RESOURCE, 
+  ScanExclusiveTestImpl<EXEC_POLICY,
+                        WORKING_RESOURCE,
                         OP_TYPE>(0, T(13));
-  ScanExclusiveTestImpl<EXEC_POLICY, 
-                        WORKING_RESOURCE, 
+  ScanExclusiveTestImpl<EXEC_POLICY,
+                        WORKING_RESOURCE,
                         OP_TYPE>(357, T(15));
-  ScanExclusiveTestImpl<EXEC_POLICY, 
-                        WORKING_RESOURCE, 
+  ScanExclusiveTestImpl<EXEC_POLICY,
+                        WORKING_RESOURCE,
                         OP_TYPE>(32000, T(2));
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ScanExclusiveTest, 
+REGISTER_TYPED_TEST_SUITE_P(ScanExclusiveTest,
                             ScanExclusive);
 
 #endif // __TEST_SCAN_EXCLUSIVE_HPP__

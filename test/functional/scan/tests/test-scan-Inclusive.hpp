@@ -41,18 +41,17 @@ void ScanInclusiveTestImpl(int N)
   T* host_in;
   T* host_out;
 
-  allocScanTestData(N, 
+  allocScanTestData(N,
                     working_res,
-                    &work_in, &work_out, 
+                    &work_in, &work_out,
                     &host_in, &host_out);
 
   std::iota(host_in, host_in + N, 1);
 
   working_res.memcpy(work_in, host_in, sizeof(T) * N);
 
-  RAJA::inclusive_scan<EXEC_POLICY>(work_in,
-                                    work_in + N,
-                                    work_out,
+  RAJA::inclusive_scan<EXEC_POLICY>(RAJA::make_span(work_in, N),
+                                    RAJA::make_span(work_out, N),
                                     OP_TYPE{});
 
   working_res.memcpy(host_out, work_out, sizeof(T) * N);
@@ -60,7 +59,7 @@ void ScanInclusiveTestImpl(int N)
   ASSERT_TRUE(check_inclusive<OP_TYPE>(host_out, host_in, N));
 
   deallocScanTestData(working_res,
-                      work_in, work_out,             
+                      work_in, work_out,
                       host_in, host_out);
 }
 
@@ -77,18 +76,18 @@ TYPED_TEST_P(ScanInclusiveTest, ScanInclusive)
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
   using OP_TYPE          = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  ScanInclusiveTestImpl<EXEC_POLICY, 
-                        WORKING_RESOURCE, 
+  ScanInclusiveTestImpl<EXEC_POLICY,
+                        WORKING_RESOURCE,
                         OP_TYPE>(0);
-  ScanInclusiveTestImpl<EXEC_POLICY, 
-                        WORKING_RESOURCE, 
+  ScanInclusiveTestImpl<EXEC_POLICY,
+                        WORKING_RESOURCE,
                         OP_TYPE>(357);
-  ScanInclusiveTestImpl<EXEC_POLICY, 
-                        WORKING_RESOURCE, 
+  ScanInclusiveTestImpl<EXEC_POLICY,
+                        WORKING_RESOURCE,
                         OP_TYPE>(32000);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ScanInclusiveTest, 
+REGISTER_TYPED_TEST_SUITE_P(ScanInclusiveTest,
                             ScanInclusive);
 
 #endif // __TEST_SCAN_INCLUSIVE_HPP__

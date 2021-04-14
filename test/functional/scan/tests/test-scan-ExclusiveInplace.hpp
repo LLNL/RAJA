@@ -42,17 +42,16 @@ void ScanExclusiveInplaceTestImpl(int N,
   T* host_in;
   T* host_out;
 
-  allocScanTestData(N,             
+  allocScanTestData(N,
                     working_res,
-                    &work_in, &work_out,             
+                    &work_in, &work_out,
                     &host_in, &host_out);
 
   std::iota(host_in, host_in + N, 1);
 
   working_res.memcpy(work_in, host_in, sizeof(T) * N);
 
-  RAJA::exclusive_scan_inplace<EXEC_POLICY>(work_in,
-                                            work_in + N,
+  RAJA::exclusive_scan_inplace<EXEC_POLICY>(RAJA::make_span(work_in, N),
                                             OP_TYPE{},
                                             offset);
 
@@ -78,10 +77,10 @@ TYPED_TEST_P(ScanExclusiveInplaceTest, ScanExclusiveInplace)
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
   using OP_TYPE          = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  ScanExclusiveInplaceTestImpl<EXEC_POLICY, 
+  ScanExclusiveInplaceTestImpl<EXEC_POLICY,
                                WORKING_RESOURCE,
                                OP_TYPE>(0);
-  ScanExclusiveInplaceTestImpl<EXEC_POLICY, 
+  ScanExclusiveInplaceTestImpl<EXEC_POLICY,
                                WORKING_RESOURCE,
                                OP_TYPE>(357);
   ScanExclusiveInplaceTestImpl<EXEC_POLICY,
@@ -104,7 +103,7 @@ TYPED_TEST_P(ScanExclusiveInplaceTest, ScanExclusiveInplace)
                                OP_TYPE>(32000, T(2));
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ScanExclusiveInplaceTest, 
+REGISTER_TYPED_TEST_SUITE_P(ScanExclusiveInplaceTest,
                             ScanExclusiveInplace);
 
 #endif // __TEST_SCAN_EXCLUSIVE_INPLACE_HPP__
