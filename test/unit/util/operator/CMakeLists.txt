@@ -13,10 +13,6 @@ raja_add_test(
   NAME test-operators-logical
   SOURCES test-operators-logical.cpp)
 
-#raja_add_test(
-#  NAME test-operators-min-max
-#  SOURCES test-operators-min-max.cpp)
-
 raja_add_test(
   NAME test-operators-equivalence
   SOURCES test-operators-equivalence.cpp)

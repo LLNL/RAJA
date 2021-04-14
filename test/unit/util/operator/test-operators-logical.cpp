@@ -89,6 +89,3 @@ TYPED_TEST(OperatorsUnitTestLogical, logical) {
   logical_or_test<TypeParam>();
   logical_not_test<TypeParam>();
 }
-//TYPED_TEST(OperatorsUnitTestLogical, logical_and) { logical_and_test<TypeParam>(); }
-//TYPED_TEST(OperatorsUnitTestLogical, logical_or) { logical_or_test<TypeParam>(); }
-//TYPED_TEST(OperatorsUnitTestLogical, logical_not) { logical_not_test<TypeParam>(); }
