@@ -189,6 +189,9 @@ namespace internal
     }
   }
 
+  //
+  // omp for schedule(runtime)
+  //
   template <typename Iterable, typename Func>
   RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Runtime&,
                                Iterable&& iter,
@@ -331,6 +334,9 @@ namespace internal
     }
   }
 
+  //
+  // omp for schedule(runtime) nowait
+  //
   template <typename Iterable, typename Func>
   RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Runtime&,
                                Iterable&& iter,
