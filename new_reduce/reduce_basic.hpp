@@ -1,6 +1,8 @@
 #ifndef NEW_REDUCE_HPP
 #define NEW_REDUCE_HPP
 
+#include "util/valloc.hpp"
+
 namespace detail
 {
 
@@ -26,9 +28,22 @@ namespace detail
 #include "omp-target/reduce.hpp"
 
 template <template <typename, typename, typename> class Op, typename T>
-auto Reduce(T *target)
+auto constexpr Reduce(T *target)
 {
   return detail::Reducer<Op<T, T, T>, T>(target);
+}
+
+template <typename T>
+auto constexpr ReduceLoc(ValLocMin<T> *target)
+{
+  using R = ValLocMin<T>;
+  return detail::Reducer<RAJA::operators::minimum<R,R,R>, R>(target);
+}
+template <typename T>
+auto constexpr ReduceLoc(ValLocMax<T> *target)
+{
+  using R = ValLocMax<T>;
+  return detail::Reducer<RAJA::operators::maximum<R,R,R>, R>(target);
 }
 
 #endif //  NEW_REDUCE_HPP
