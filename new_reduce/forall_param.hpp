@@ -68,6 +68,7 @@ namespace detail
     }
 
   public:
+    FORALL_PARAMS_T (){}
     FORALL_PARAMS_T(Params... params) {
       param_tup = camp::make_tuple(params...);
     };
