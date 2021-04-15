@@ -13,9 +13,9 @@
 #include "RAJA_unit-test-types.hpp"
 
 template<typename T>
-class OperatorsUnitTestIdentityProject : public ::testing::Test {};
+class OperatorsUnitTestIdentity: public ::testing::Test {};
 
-TYPED_TEST_SUITE(OperatorsUnitTestIdentityProject, UnitIntFloatTypes);
+TYPED_TEST_SUITE(OperatorsUnitTestIdentity, UnitIntFloatTypes);
 
 template<typename T>
 void identity_test()
@@ -76,7 +76,7 @@ void project2nd_test()
 #endif
 }
 
-TYPED_TEST(OperatorsUnitTestIdentityProject, identity_project) {
+TYPED_TEST(OperatorsUnitTestIdentity, identity_project) {
   identity_test<TypeParam>();
   project1st_test<TypeParam>();
   project2nd_test<TypeParam>();

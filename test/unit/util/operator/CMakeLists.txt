@@ -22,6 +22,6 @@ raja_add_test(
   SOURCES test-operators-bitwise-modulus.cpp)
 
 raja_add_test(
-  NAME test-operators-identity-project
-  SOURCES test-operators-identity-project.cpp)
+  NAME test-operators-identity
+  SOURCES test-operators-identity.cpp)
 
