@@ -79,13 +79,23 @@ sort(ExecPolicy&& p,
 {
   using std::begin;
   using std::end;
+  using std::distance;
   using T = RAJA::detail::ContainerVal<Container>;
   static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
                 "Compare must model BinaryFunction");
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container must model RandomAccessRange");
-  return impl::sort::unstable(r, std::forward<ExecPolicy>(p),
-                              begin(c), end(c), comp);
+
+  auto begin_it = begin(c);
+  auto end_it   = end(c);
+  auto N = distance(begin_it, end_it);
+
+  if (N > 1) {
+    return impl::sort::unstable(r, std::forward<ExecPolicy>(p),
+                                begin_it, end_it, comp);
+  } else {
+    return resources::EventProxy<Res>(&r);
+  }
 }
 
 /*!
@@ -132,13 +142,23 @@ stable_sort(ExecPolicy&& p,
 {
   using std::begin;
   using std::end;
+  using std::distance;
   using T = RAJA::detail::ContainerVal<Container>;
   static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
                 "Compare must model BinaryFunction");
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container must model RandomAccessRange");
-  return impl::sort::stable(r, std::forward<ExecPolicy>(p),
-                            begin(c), end(c), comp);
+
+  auto begin_it = begin(c);
+  auto end_it   = end(c);
+  auto N = distance(begin_it, end_it);
+
+  if (N > 1) {
+    return impl::sort::stable(r, std::forward<ExecPolicy>(p),
+                              begin_it, end_it, comp);
+  } else {
+    return resources::EventProxy<Res>(&r);
+  }
 }
 
 /*!
@@ -194,6 +214,7 @@ sort_pairs(ExecPolicy&& p,
 {
   using std::begin;
   using std::end;
+  using std::distance;
   using T = RAJA::detail::ContainerVal<KeyContainer>;
   static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
                 "Compare must model BinaryFunction");
@@ -201,8 +222,17 @@ sort_pairs(ExecPolicy&& p,
                 "KeyContainer must model RandomAccessRange");
   static_assert(type_traits::is_random_access_range<ValContainer>::value,
                 "ValContainer must model RandomAccessRange");
-  return impl::sort::unstable_pairs(r, std::forward<ExecPolicy>(p),
-                                    begin(keys), end(keys), begin(vals), comp);
+
+  auto begin_key = begin(keys);
+  auto end_key   = end(keys);
+  auto N = distance(begin_key, end_key);
+
+  if (N > 1) {
+    return impl::sort::unstable_pairs(r, std::forward<ExecPolicy>(p),
+                                      begin_key, end_key, begin(vals), comp);
+  } else {
+    return resources::EventProxy<Res>(&r);
+  }
 }
 
 /*!
@@ -258,6 +288,7 @@ stable_sort_pairs(ExecPolicy&& p,
 {
   using std::begin;
   using std::end;
+  using std::distance;
   using T = RAJA::detail::ContainerVal<KeyContainer>;
   static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
                 "Compare must model BinaryFunction");
@@ -265,8 +296,17 @@ stable_sort_pairs(ExecPolicy&& p,
                 "KeyContainer must model RandomAccessRange");
   static_assert(type_traits::is_random_access_range<ValContainer>::value,
                 "ValContainer must model RandomAccessRange");
-  return impl::sort::stable_pairs(r, std::forward<ExecPolicy>(p),
-                                  begin(keys), end(keys), begin(vals), comp);
+
+  auto begin_key = begin(keys);
+  auto end_key   = end(keys);
+  auto N = distance(begin_key, end_key);
+
+  if (N > 1) {
+    return impl::sort::stable_pairs(r, std::forward<ExecPolicy>(p),
+                                    begin_key, end_key, begin(vals), comp);
+  } else {
+    return resources::EventProxy<Res>(&r);
+  }
 }
 
 }  // end inline namespace policy_by_value_interface

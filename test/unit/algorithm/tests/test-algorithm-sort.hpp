@@ -44,14 +44,10 @@ struct PolicySort
     return m_name.c_str();
   }
 
-  template < typename Iter, typename... Args >
-  void operator()(Iter begin, Iter end, Args&&... args)
+  template < typename... Args >
+  void operator()(Args&&... args)
   {
-    using std::distance;
-    auto N = distance(begin, end);
-    RAJA::sort<policy>(
-        RAJA::make_span(begin, N),
-        std::forward<Args>(args)...);
+    RAJA::sort<policy>(std::forward<Args>(args)...);
   }
 };
 
@@ -77,17 +73,10 @@ struct PolicySortPairs
     return m_name.c_str();
   }
 
-  template < typename KeyIter, typename ValIter, typename... Args >
-  void operator()(KeyIter keys_begin, KeyIter keys_end,
-                  ValIter vals_begin,
-                  Args&&... args)
+  template < typename... Args >
+  void operator()(Args&&... args)
   {
-    using std::distance;
-    auto N = distance(keys_begin, keys_end);
-    RAJA::sort_pairs<policy>(
-        RAJA::make_span(keys_begin, N),
-        RAJA::make_span(vals_begin, N),
-        std::forward<Args>(args)...);
+    RAJA::sort_pairs<policy>(std::forward<Args>(args)...);
   }
 };
 

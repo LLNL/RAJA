@@ -186,7 +186,7 @@ void doSort(SortData<Res, sort_interface_tag, T> & data,
 {
   data.copy_data(N);
   data.wait();
-  sorter(data.sorted_keys, data.sorted_keys+N);
+  sorter(RAJA::make_span(data.sorted_keys, N));
   sorter.synchronize();
 }
 
@@ -201,7 +201,8 @@ void doSort(SortData<Res, sort_interface_tag, T> & data,
 {
   data.copy_data(N);
   data.wait();
-  sorter(data.sorted_keys, data.sorted_keys+N, comp);
+  sorter(RAJA::make_span(data.sorted_keys, N),
+         comp);
   sorter.synchronize();
 }
 
@@ -217,7 +218,8 @@ void doSort(SortData<Res, sort_pairs_interface_tag, K, V> & data,
 {
   data.copy_data(N);
   data.wait();
-  sorter(data.sorted_keys, data.sorted_keys+N, data.sorted_vals);
+  sorter(RAJA::make_span(data.sorted_keys, N),
+         RAJA::make_span(data.sorted_vals, N));
   sorter.synchronize();
 }
 
@@ -233,7 +235,9 @@ void doSort(SortData<Res, sort_pairs_interface_tag, K, V> & data,
 {
   data.copy_data(N);
   data.wait();
-  sorter(data.sorted_keys, data.sorted_keys+N, data.sorted_vals, comp);
+  sorter(RAJA::make_span(data.sorted_keys, N),
+         RAJA::make_span(data.sorted_vals, N),
+         comp);
   sorter.synchronize();
 }
 

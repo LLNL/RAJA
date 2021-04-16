@@ -54,7 +54,7 @@ struct UnstableSorter
   RAJA_INLINE
   void operator()(Args&&... args) const
   {
-    RAJA::intro_sort(std::forward<Args>(args)...);
+    RAJA::detail::intro_sort(std::forward<Args>(args)...);
   }
 };
 
@@ -68,7 +68,7 @@ struct StableSorter
   RAJA_INLINE
   void operator()(Args&&... args) const
   {
-    RAJA::merge_sort(std::forward<Args>(args)...);
+    RAJA::detail::merge_sort(std::forward<Args>(args)...);
   }
 };
 
