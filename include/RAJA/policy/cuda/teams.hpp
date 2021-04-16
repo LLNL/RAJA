@@ -93,7 +93,13 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
         //
         void *args[] = {(void*)&ctx, (void*)&body};
         {
-          RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream, "MyKernelName");
+          if(ctx.kernel_name)
+          {
+            RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream, ctx.kernel_name);
+          }else
+          {
+            RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+          }
         }
       }
 

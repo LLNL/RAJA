@@ -215,9 +215,9 @@ void launch(const void* func, cuda_dim_t gridDim, cuda_dim_t blockDim, void** ar
 
 RAJA_INLINE
 void launch(const void* func, cuda_dim_t gridDim, cuda_dim_t blockDim, void** args, size_t shmem,
-            cudaStream_t stream, char *name)
+            cudaStream_t stream, const char *name)
 {
-  nvtxRangePushA("MyKernelName");
+  nvtxRangePushA(name);
   cudaErrchk(cudaLaunchKernel(func, gridDim, blockDim, args, shmem, stream));
   nvtxRangePop();
   launch(stream);
