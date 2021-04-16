@@ -45,6 +45,8 @@ struct sort_pairs_interface_tag { };
 
 struct sort_default_interface_tag { };
 struct sort_comp_interface_tag { };
+struct sort_res_default_interface_tag { };
+struct sort_res_comp_interface_tag { };
 
 
 // synchronize based on a RAJA execution policy
@@ -58,7 +60,7 @@ struct PolicySynchronize
 };
 
 #if defined(RAJA_ENABLE_CUDA)
-// partial specializatoin for cuda_exec
+// partial specialization for cuda_exec
 template < size_t BLOCK_SIZE, bool Async >
 struct PolicySynchronize<RAJA::cuda_exec<BLOCK_SIZE, Async>>
 {
@@ -70,7 +72,7 @@ struct PolicySynchronize<RAJA::cuda_exec<BLOCK_SIZE, Async>>
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-// partial specializatoin for hip_exec
+// partial specialization for hip_exec
 template < size_t BLOCK_SIZE, bool Async >
 struct PolicySynchronize<RAJA::hip_exec<BLOCK_SIZE, Async>>
 {
@@ -115,9 +117,9 @@ struct SortData<Res, sort_interface_tag, K, V>
     m_res->memcpy(sorted_keys, orig_keys, N*sizeof(K));
   }
 
-  void wait()
+  Res& resource()
   {
-    m_res->wait();
+    return *m_res;
   }
 
   SortData(SortData const&) = delete;
@@ -185,7 +187,7 @@ void doSort(SortData<Res, sort_interface_tag, T> & data,
             Sorter sorter, sort_interface_tag, sort_default_interface_tag)
 {
   data.copy_data(N);
-  data.wait();
+  data.resource().wait();
   sorter(RAJA::make_span(data.sorted_keys, N));
   sorter.synchronize();
 }
@@ -200,10 +202,41 @@ void doSort(SortData<Res, sort_interface_tag, T> & data,
             Sorter sorter, sort_interface_tag, sort_comp_interface_tag)
 {
   data.copy_data(N);
-  data.wait();
+  data.resource().wait();
   sorter(RAJA::make_span(data.sorted_keys, N),
          comp);
   sorter.synchronize();
+}
+
+template <typename Res,
+          typename T,
+          typename Compare,
+          typename Sorter>
+void doSort(SortData<Res, sort_interface_tag, T> & data,
+            RAJA::Index_type N,
+            Compare,
+            Sorter sorter, sort_interface_tag, sort_res_default_interface_tag)
+{
+  data.copy_data(N);
+  sorter(data.resource(),
+         RAJA::make_span(data.sorted_keys, N));
+  data.resource().wait();
+}
+
+template <typename Res,
+          typename T,
+          typename Compare,
+          typename Sorter>
+void doSort(SortData<Res, sort_interface_tag, T> & data,
+            RAJA::Index_type N,
+            Compare comp,
+            Sorter sorter, sort_interface_tag, sort_res_comp_interface_tag)
+{
+  data.copy_data(N);
+  sorter(data.resource(),
+         RAJA::make_span(data.sorted_keys, N),
+         comp);
+  data.resource().wait();
 }
 
 template <typename Res,
@@ -217,7 +250,7 @@ void doSort(SortData<Res, sort_pairs_interface_tag, K, V> & data,
             Sorter sorter, sort_pairs_interface_tag, sort_default_interface_tag)
 {
   data.copy_data(N);
-  data.wait();
+  data.resource().wait();
   sorter(RAJA::make_span(data.sorted_keys, N),
          RAJA::make_span(data.sorted_vals, N));
   sorter.synchronize();
@@ -234,11 +267,46 @@ void doSort(SortData<Res, sort_pairs_interface_tag, K, V> & data,
             Sorter sorter, sort_pairs_interface_tag, sort_comp_interface_tag)
 {
   data.copy_data(N);
-  data.wait();
+  data.resource().wait();
   sorter(RAJA::make_span(data.sorted_keys, N),
          RAJA::make_span(data.sorted_vals, N),
          comp);
   sorter.synchronize();
+}
+
+template <typename Res,
+          typename K,
+          typename V,
+          typename Compare,
+          typename Sorter>
+void doSort(SortData<Res, sort_pairs_interface_tag, K, V> & data,
+            RAJA::Index_type N,
+            Compare,
+            Sorter sorter, sort_pairs_interface_tag, sort_res_default_interface_tag)
+{
+  data.copy_data(N);
+  sorter(data.resource(),
+         RAJA::make_span(data.sorted_keys, N),
+         RAJA::make_span(data.sorted_vals, N));
+  data.resource().wait();
+}
+
+template <typename Res,
+          typename K,
+          typename V,
+          typename Compare,
+          typename Sorter>
+void doSort(SortData<Res, sort_pairs_interface_tag, K, V> & data,
+            RAJA::Index_type N,
+            Compare comp,
+            Sorter sorter, sort_pairs_interface_tag, sort_res_comp_interface_tag)
+{
+  data.copy_data(N);
+  sorter(data.resource(),
+         RAJA::make_span(data.sorted_keys, N),
+         RAJA::make_span(data.sorted_vals, N),
+         comp);
+  data.resource().wait();
 }
 
 
@@ -496,6 +564,46 @@ template <typename Res,
   return ::testing::AssertionSuccess();
 }
 
+
+template <typename Res,
+          typename K,
+          typename V,
+          typename Sorter>
+void testSorterResInterfaces(
+    std::false_type,
+    unsigned,
+    SortData<Res, typename Sorter::sort_interface, K, V> &,
+    RAJA::Index_type,
+    Sorter)
+{
+  // Sorter does not support resource interface, no tests
+}
+
+template <typename Res,
+          typename K,
+          typename V,
+          typename Sorter>
+void testSorterResInterfaces(
+    std::true_type,
+    unsigned seed,
+    SortData<Res, typename Sorter::sort_interface, K, V> & data,
+    RAJA::Index_type N,
+    Sorter sorter)
+{
+  // Sorter supports resource interface, res tests
+  using stability_category = typename Sorter::sort_category ;
+  using pairs_category     = typename Sorter::sort_interface ;
+  using resource_no_comparator  = sort_res_default_interface_tag;
+  using resource_use_comparator = sort_res_comp_interface_tag;
+
+  ASSERT_TRUE(testSort("resource+default", seed, data, N, RAJA::operators::less<K>{},
+      sorter, stability_category{}, pairs_category{}, resource_no_comparator{}));
+  ASSERT_TRUE(testSort("resource+ascending", seed, data, N, RAJA::operators::less<K>{},
+      sorter, stability_category{}, pairs_category{}, resource_use_comparator{}));
+  ASSERT_TRUE(testSort("resource+descending", seed, data, N, RAJA::operators::greater<K>{},
+      sorter, stability_category{}, pairs_category{}, resource_use_comparator{}));
+}
+
 template <typename K,
           typename Sorter,
           typename Res>
@@ -503,6 +611,7 @@ void testSorterInterfaces(unsigned seed, RAJA::Index_type MaxN, Sorter sorter, R
 {
   using stability_category = typename Sorter::sort_category ;
   using pairs_category     = typename Sorter::sort_interface ;
+  using supports_resource  = typename Sorter::supports_resource ;
   using no_comparator      = sort_default_interface_tag;
   using use_comparator     = sort_comp_interface_tag;
 
@@ -518,6 +627,8 @@ void testSorterInterfaces(unsigned seed, RAJA::Index_type MaxN, Sorter sorter, R
       sorter, stability_category{}, pairs_category{}, use_comparator{}));
   ASSERT_TRUE(testSort("descending", seed, data, N, RAJA::operators::greater<K>{},
       sorter, stability_category{}, pairs_category{}, use_comparator{}));
+
+  testSorterResInterfaces(supports_resource(), seed, data, N, sorter);
 }
 
 template <typename K,

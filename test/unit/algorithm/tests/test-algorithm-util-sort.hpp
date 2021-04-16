@@ -64,6 +64,7 @@ struct InsertionSort<forone_policy, RunOnHost>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_interface_tag;
+  using supports_resource = std::false_type;
 
   const char* name()
   {
@@ -83,6 +84,7 @@ struct InsertionSortPairs<forone_policy, RunOnHost>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
+  using supports_resource = std::false_type;
 
   const char* name()
   {
@@ -107,6 +109,7 @@ struct ShellSort<forone_policy, RunOnHost>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
+  using supports_resource = std::false_type;
 
   const char* name()
   {
@@ -126,6 +129,7 @@ struct ShellSortPairs<forone_policy, RunOnHost>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
+  using supports_resource = std::false_type;
 
   const char* name()
   {
@@ -150,6 +154,7 @@ struct HeapSort<forone_policy, RunOnHost>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
+  using supports_resource = std::false_type;
 
   const char* name()
   {
@@ -169,6 +174,7 @@ struct HeapSortPairs<forone_policy, RunOnHost>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
+  using supports_resource = std::false_type;
 
   const char* name()
   {
@@ -193,6 +199,7 @@ struct IntroSort<forone_policy, RunOnHost>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
+  using supports_resource = std::false_type;
 
   const char* name()
   {
@@ -212,6 +219,7 @@ struct IntroSortPairs<forone_policy, RunOnHost>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
+  using supports_resource = std::false_type;
 
   const char* name()
   {
@@ -236,6 +244,7 @@ struct MergeSort<forone_policy, RunOnHost>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_interface_tag;
+  using supports_resource = std::false_type;
 
   const char* name()
   {
@@ -255,6 +264,7 @@ struct MergeSortPairs<forone_policy, RunOnHost>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
+  using supports_resource = std::false_type;
 
   const char* name()
   {
@@ -281,6 +291,7 @@ struct InsertionSort<forone_policy, RunOnDevice>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_interface_tag;
+  using supports_resource = std::false_type;
 
   std::string m_name;
 
@@ -316,6 +327,7 @@ struct InsertionSortPairs<forone_policy, RunOnDevice>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
+  using supports_resource = std::false_type;
 
   std::string m_name;
 
@@ -348,6 +360,7 @@ struct ShellSort<forone_policy, RunOnDevice>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
+  using supports_resource = std::false_type;
 
   std::string m_name;
 
@@ -383,6 +396,7 @@ struct ShellSortPairs<forone_policy, RunOnDevice>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
+  using supports_resource = std::false_type;
 
   std::string m_name;
 
@@ -415,6 +429,7 @@ struct HeapSort<forone_policy, RunOnDevice>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
+  using supports_resource = std::false_type;
 
   std::string m_name;
 
@@ -450,6 +465,7 @@ struct HeapSortPairs<forone_policy, RunOnDevice>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
+  using supports_resource = std::false_type;
 
   std::string m_name;
 
@@ -482,6 +498,7 @@ struct IntroSort<forone_policy, RunOnDevice>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
+  using supports_resource = std::false_type;
 
   std::string m_name;
 
@@ -517,6 +534,7 @@ struct IntroSortPairs<forone_policy, RunOnDevice>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
+  using supports_resource = std::false_type;
 
   std::string m_name;
 
@@ -549,6 +567,7 @@ struct MergeSort<forone_policy, RunOnDevice>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
+  using supports_resource = std::false_type;
 
   std::string m_name;
 
@@ -584,6 +603,7 @@ struct MergeSortPairs<forone_policy, RunOnDevice>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
+  using supports_resource = std::false_type;
 
   std::string m_name;
 
