@@ -20,6 +20,7 @@
 
 #include "RAJA/pattern/graph/DAG.hpp"
 #include "RAJA/pattern/graph/EmptyNode.hpp"
+#include "RAJA/pattern/graph/FunctionNode.hpp"
 #include "RAJA/pattern/graph/ForallNode.hpp"
 
 #endif /* RAJA_pattern_graph_HPP */
