@@ -69,12 +69,12 @@ template < typename Enter_Func, typename Exit_Func >
 void Node::forward_traverse(Node* node, Enter_Func&& enter_func, Exit_Func&& exit_func)
 {
   if (++node->m_count == node->m_parent_count) {
+    node->m_count = 0;
     std::forward<Enter_Func>(enter_func)(node);
     for (Node* child : node->m_children)
     {
       forward_traverse(child, std::forward<Enter_Func>(enter_func), std::forward<Exit_Func>(exit_func));
     }
-    node->m_count = 0;
     std::forward<Exit_Func>(exit_func)(node);
   }
 }
