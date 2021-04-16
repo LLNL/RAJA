@@ -29,6 +29,8 @@
 #include <type_traits>
 #include <unordered_map>
 
+#include "nvToolsExt.h"
+
 #include "RAJA/util/basic_mempool.hpp"
 #include "RAJA/util/mutex.hpp"
 #include "RAJA/util/types.hpp"
@@ -208,6 +210,16 @@ RAJA_INLINE
 void launch(const void* func, cuda_dim_t gridDim, cuda_dim_t blockDim, void** args, size_t shmem, cudaStream_t stream)
 {
   cudaErrchk(cudaLaunchKernel(func, gridDim, blockDim, args, shmem, stream));
+  launch(stream);
+}
+
+RAJA_INLINE
+void launch(const void* func, cuda_dim_t gridDim, cuda_dim_t blockDim, void** args, size_t shmem,
+            cudaStream_t stream, char *name)
+{
+  nvtxRangePushA("MyKernelName");
+  cudaErrchk(cudaLaunchKernel(func, gridDim, blockDim, args, shmem, stream));
+  nvtxRangePop();
   launch(stream);
 }
 

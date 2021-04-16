@@ -45,6 +45,20 @@ if (ENABLE_CUDA OR ENABLE_EXTERNAL_CUB)
   endif()
 endif ()
 
+if (ENABLE_CUDA AND ENABLE_NV_TOOLS_EXT)
+  find_package(NvToolsExt)
+  if (NVTOOLSEXT_FOUND)
+    blt_import_library( NAME       nvtoolsext
+                        TREAT_INCLUDES_AS_SYSTEM ON
+                        INCLUDES   ${NVTOOLSEXT_INCLUDE_DIRS}
+                        LIBRARIES  ${NVTOOLSEXT_LIBRARY}
+                        EXPORTABLE ON
+                      )
+  else()
+    message(FATAL_ERROR "NvToolsExt not found, NVTOOLSEXT_DIR=${NVTOOLSEXT_DIR}.")
+  endif()
+endif ()
+
 if (ENABLE_HIP OR ENABLE_EXTERNAL_ROCPRIM)
   find_package(RocPRIM)
   if (ROCPRIM_FOUND)
@@ -63,6 +77,7 @@ endif ()
 
 set(TPL_DEPS)
 blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF ENABLE_CUDA)
+blt_list_append(TO TPL_DEPS ELEMENTS nvtoolsext IF ENABLE_NV_TOOLS_EXT)
 blt_list_append(TO TPL_DEPS ELEMENTS cub IF ENABLE_EXTERNAL_CUB)
 blt_list_append(TO TPL_DEPS ELEMENTS hip hip_runtime IF ENABLE_HIP)
 blt_list_append(TO TPL_DEPS ELEMENTS rocPRIM IF ENABLE_EXTERNAL_ROCPRIM)
