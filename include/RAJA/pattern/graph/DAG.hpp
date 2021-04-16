@@ -19,8 +19,13 @@
 #define RAJA_pattern_graph_DAG_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/pattern/graph/Node.hpp"
+
+#include <utility>
+#include <vector>
+
 #include "RAJA/util/macros.hpp"
+
+#include "RAJA/pattern/graph/Node.hpp"
 
 namespace RAJA
 {
@@ -41,29 +46,47 @@ struct DAG
 
   bool empty() const
   {
-    return (m_root == nullptr);
+    return m_children.empty();
   }
 
-  void insert_node(Node* node)
+  Node* insert_node(Node* node)
   {
-    if (m_root == nullptr) {
-      m_root = node;
-    } else {
-      RAJA_ABORT_OR_THROW("DAG::insert_node");
-    }
+    m_children.emplace_back(node);
+    node->m_parent_count += 1;
+    return node;
   }
 
   void exec(Resource& r);
 
   ~DAG()
   {
-    if (m_root != nullptr) {
-      delete m_root; m_root = nullptr;
-    }
+    // destroy all nodes in a safe order
+    forward_traverse(
+        [](Node*) {
+          // do nothing
+        },
+        [](Node* node) {
+          delete node;
+        });
   }
 
 private:
-  Node* m_root = nullptr;
+  std::vector<Node*> m_children;
+
+  // traverse nodes in an order consistent with the DAG, calling enter_func
+  // when traversing a node before traversing any of the node's children and
+  // calling exit_func after looking, but not necessarily traversing each of
+  // the node's children. NOTE that exit_function is not necessarily called
+  // after exit_function is called on each of the node's children. NOTE that a
+  // node is not used again after exit_function is called on it.
+  template < typename Enter_Func, typename Exit_Func >
+  void forward_traverse(Enter_Func&& enter_func, Exit_Func&& exit_func)
+  {
+    for (Node* node : m_children)
+    {
+      Node::forward_traverse(node, std::forward<Enter_Func>(enter_func), std::forward<Exit_Func>(exit_func));
+    }
+  }
 };
 
 }  // namespace graph

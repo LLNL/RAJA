@@ -34,9 +34,14 @@ namespace graph
 template <>
 void DAG<seq_graph>::exec(typename DAG<seq_graph>::Resource&)
 {
-  if (m_root != nullptr) {
-    m_root->exec();
-  }
+  // exec all nodes in a correct order
+  forward_traverse(
+        [](Node* node) {
+          node->exec();
+        },
+        [](Node*) {
+          // do nothing
+        });
 }
 
 }  // namespace graph

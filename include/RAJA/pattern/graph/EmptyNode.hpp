@@ -68,6 +68,16 @@ make_EmptyNode()
 }  // namespace detail
 
 
+template <typename... Args>
+RAJA_INLINE auto
+make_EmptyNode(Node* parent, Args&&... args)
+  -> decltype(detail::make_EmptyNode(std::forward<Args>(args)...))
+{
+  auto node = detail::make_EmptyNode(std::forward<Args>(args)...);
+  parent->add_child(node);
+  return node;
+}
+
 template <typename DAGPolicy, typename... Args>
 RAJA_INLINE auto
 make_EmptyNode(DAG<DAGPolicy>& dag, Args&&... args)
