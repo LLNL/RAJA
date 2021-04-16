@@ -35,7 +35,8 @@ void ScanExclusiveInplaceTestImpl(int N,
 {
   using T = typename OP_TYPE::result_type;
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  WORKING_RES res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res{res};
 
   T* work_in;
   T* work_out;
@@ -49,13 +50,29 @@ void ScanExclusiveInplaceTestImpl(int N,
 
   std::iota(host_in, host_in + N, 1);
 
-  working_res.memcpy(work_in, host_in, sizeof(T) * N);
+  // test interface without resource
+  res.memcpy(work_in, host_in, sizeof(T) * N);
+  res.wait();
 
   RAJA::exclusive_scan_inplace<EXEC_POLICY>(RAJA::make_span(work_in, N),
                                             OP_TYPE{},
                                             offset);
 
-  working_res.memcpy(host_out, work_in, sizeof(T) * N);
+  res.memcpy(host_out, work_in, sizeof(T) * N);
+  res.wait();
+
+  ASSERT_TRUE(check_exclusive<OP_TYPE>(host_out, host_in, N, offset));
+
+  // test interface with resource
+  res.memcpy(work_in, host_in, sizeof(T) * N);
+
+  RAJA::exclusive_scan_inplace<EXEC_POLICY>(res,
+                                            RAJA::make_span(work_in, N),
+                                            OP_TYPE{},
+                                            offset);
+
+  res.memcpy(host_out, work_in, sizeof(T) * N);
+  res.wait();
 
   ASSERT_TRUE(check_exclusive<OP_TYPE>(host_out, host_in, N, offset));
 
