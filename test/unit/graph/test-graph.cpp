@@ -32,23 +32,105 @@ TYPED_TEST_P( GraphBasicConstructorUnitTest, BasicConstructors )
   using GraphPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
 
   using graph_type = RAJA::expt::graph::DAG<GraphPolicy>;
-  using Res = typename graph_type::Resource;
 
   // default constructor
-  graph_type test1;
+  graph_type g;
 
-  // test ()
-  ASSERT_TRUE( test1.empty() );
+  ASSERT_TRUE( g.empty() );
+}
 
-  RAJA::expt::graph::EmptyNode* node1 = make_EmptyNode(test1);
 
-  ASSERT_TRUE( node1 != nullptr );
+// Basic Constructors
 
-  ASSERT_FALSE( test1.empty() );
+template <typename T>
+class GraphBasicExecUnitTest : public ::testing::Test
+{};
+
+TYPED_TEST_SUITE_P( GraphBasicExecUnitTest );
+
+TYPED_TEST_P( GraphBasicExecUnitTest, EmptyExec )
+{
+  using GraphPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
+
+  using graph_type = RAJA::expt::graph::DAG<GraphPolicy>;
+  using Res = typename graph_type::Resource;
 
   auto r = Res::get_default();
-  test1.exec(r);
+
+  // default constructor
+  graph_type g;
+
+  // empty exec
+  g.exec(r);
+
+  ASSERT_TRUE( g.empty() );
 }
+
+TYPED_TEST_P( GraphBasicExecUnitTest, OneNodeExec )
+{
+  using GraphPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
+
+  using graph_type = RAJA::expt::graph::DAG<GraphPolicy>;
+  using Res = typename graph_type::Resource;
+
+  auto r = Res::get_default();
+
+  // default constructor
+  graph_type g;
+
+  RAJA::expt::graph::EmptyNode* n = RAJA::expt::graph::make_EmptyNode(g);
+
+  ASSERT_TRUE( n != nullptr );
+
+  ASSERT_FALSE( g.empty() );
+
+  // 1-node exec
+  g.exec(r);
+
+  ASSERT_FALSE( g.empty() );
+}
+
+TYPED_TEST_P( GraphBasicExecUnitTest, FourNodeExec )
+{
+  using GraphPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
+
+  using graph_type = RAJA::expt::graph::DAG<GraphPolicy>;
+  using Res = typename graph_type::Resource;
+
+  auto r = Res::get_default();
+
+  // default constructor
+  graph_type g;
+
+  int count = 0;
+  int order[4]{-1, -1, -1, -1};
+
+  auto n0 = RAJA::expt::graph::make_FunctionNode(g,  [&](){ order[0] = count++; });
+  auto n1 = RAJA::expt::graph::make_FunctionNode(n0, [&](){ order[1] = count++; });
+  auto n3 = RAJA::expt::graph::make_FunctionNode(n1, [&](){ order[3] = count++; });
+  auto n2 = RAJA::expt::graph::make_FunctionNode(n0, [&](){ order[2] = count++; });
+  n2->add_child(n3);
+
+  ASSERT_FALSE( g.empty() );
+
+  ASSERT_EQ(count, 0);
+  ASSERT_EQ(order[0], -1);
+  ASSERT_EQ(order[1], -1);
+  ASSERT_EQ(order[2], -1);
+  ASSERT_EQ(order[3], -1);
+
+  // 4-node diamond DAG exec
+  g.exec(r);
+
+  ASSERT_FALSE( g.empty() );
+
+  ASSERT_EQ(count, 4);
+  ASSERT_EQ(order[0], 0);
+  ASSERT_TRUE(order[1] == 1 || order[1] == 2);
+  ASSERT_TRUE(order[2] == 1 || order[2] == 2);
+  ASSERT_EQ(order[3], 3);
+}
+
 
 //
 // Cartesian product of types used in parameterized tests
@@ -63,5 +145,17 @@ REGISTER_TYPED_TEST_SUITE_P( GraphBasicConstructorUnitTest,
 
 INSTANTIATE_TYPED_TEST_SUITE_P( BasicConstructorUnitTest,
                                 GraphBasicConstructorUnitTest,
+                                ResourceTypes
+                              );
+
+
+REGISTER_TYPED_TEST_SUITE_P( GraphBasicExecUnitTest,
+                             EmptyExec,
+                             OneNodeExec,
+                             FourNodeExec
+                           );
+
+INSTANTIATE_TYPED_TEST_SUITE_P( BasicExecUnitTest,
+                                GraphBasicExecUnitTest,
                                 ResourceTypes
                               );
