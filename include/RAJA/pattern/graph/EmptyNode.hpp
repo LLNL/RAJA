@@ -55,16 +55,26 @@ struct EmptyNode : Node
 };
 
 
-template <typename DAGPolicy>
+namespace detail {
+
 RAJA_INLINE EmptyNode*
-make_EmptyNode(DAG<DAGPolicy>& dag)
+make_EmptyNode()
 {
   using node_type = EmptyNode;
 
-  node_type* node = new node_type{ };
+  return new node_type{ };
+}
 
+}  // namespace detail
+
+
+template <typename DAGPolicy, typename... Args>
+RAJA_INLINE auto
+make_EmptyNode(DAG<DAGPolicy>& dag, Args&&... args)
+  -> decltype(detail::make_EmptyNode(std::forward<Args>(args)...))
+{
+  auto node = detail::make_EmptyNode(std::forward<Args>(args)...);
   dag.insert_node(node);
-
   return node;
 }
 
