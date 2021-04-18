@@ -35,6 +35,17 @@ namespace graph
 template < typename policy >
 struct DAG;
 
+namespace detail {
+
+struct NodeArgs
+{ };
+
+template < typename node_type, typename node_args >
+RAJA_INLINE node_type*
+make_Node(node_args&& arg);
+
+}
+
 struct Node
 {
   RAJA_INLINE
@@ -44,7 +55,21 @@ struct Node
 
   virtual ~Node() = default;
 
-  Node* add_child(Node*);
+  template < typename node_type >
+  concepts::enable_if_t<node_type&,
+                        std::is_base_of<Node, node_type>>
+  operator>>(node_type& rhs)
+  {
+    return *add_child(&rhs);
+  }
+
+  template < typename node_args>
+  auto operator>>(node_args&& rhs)
+    -> concepts::enable_if_t<decltype(*std::forward<node_args>(rhs).toNode()),
+                             std::is_base_of<detail::NodeArgs, camp::decay<node_args>>>
+  {
+    return *add_child(std::forward<node_args>(rhs).toNode());
+  }
 
 private:
   template < typename >
@@ -56,14 +81,16 @@ private:
   int m_parent_count = 0;
   int m_count = 0;
   std::vector<Node*> m_children;
-};
 
-Node* Node::add_child(Node* node)
-{
-  m_children.emplace_back(node);
-  node->m_parent_count += 1;
-  return node;
-}
+  template < typename node_type >
+  concepts::enable_if_t<node_type*, std::is_base_of<Node, node_type>>
+  add_child(node_type* node)
+  {
+    m_children.emplace_back(node);
+    node->m_parent_count += 1;
+    return node;
+  }
+};
 
 template < typename Enter_Func, typename Exit_Func >
 void Node::forward_traverse(Node* node, Enter_Func&& enter_func, Exit_Func&& exit_func)

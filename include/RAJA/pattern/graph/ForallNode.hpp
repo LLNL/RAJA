@@ -39,9 +39,7 @@ namespace expt
 namespace graph
 {
 
-template < typename ExecutionPolicy,
-           typename Container,
-           typename LoopBody >
+template < typename ExecutionPolicy, typename Container, typename LoopBody >
 struct ForallNode : Node
 {
   using Resource = typename resources::get_resource<ExecutionPolicy>::type;
@@ -50,10 +48,8 @@ struct ForallNode : Node
                 "Container does not model RandomAccessIterator");
 
   template < typename EP_arg, typename CO_arg, typename LB_arg >
-  RAJA_INLINE
-  ForallNode(Resource& r, EP_arg&& p, CO_arg&& c, LB_arg&& loop_body)
-    : m_resource(r)
-    , m_policy(std::forward<EP_arg>(p))
+  ForallNode(EP_arg&& p, CO_arg&& c, LB_arg&& loop_body)
+    : m_policy(std::forward<EP_arg>(p))
     , m_container(std::forward<CO_arg>(c))
     , m_body(std::forward<LB_arg>(loop_body))
   {
@@ -61,10 +57,12 @@ struct ForallNode : Node
 
   virtual void exec() override
   {
+    auto r = Resource::get_default();
+
     util::PluginContext context{util::make_context<ExecutionPolicy>()};
     util::callPreLaunchPlugins(context);
 
-    wrap::forall(m_resource,
+    wrap::forall(r,
                  m_policy,
                  m_container,
                  m_body);
@@ -75,7 +73,6 @@ struct ForallNode : Node
   virtual ~ForallNode() = default;
 
 private:
-  Resource m_resource;
   ExecutionPolicy m_policy;
   Container m_container;
   LoopBody m_body;
@@ -84,60 +81,78 @@ private:
 
 namespace detail {
 
-template <typename ExecutionPolicy, typename Container, typename LoopBody>
-RAJA_INLINE concepts::enable_if_t<
-    ForallNode<camp::decay<ExecutionPolicy>,
-               camp::decay<Container>,
-               camp::decay<LoopBody>>*,
-    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
-    concepts::negate<type_traits::is_multi_policy<ExecutionPolicy>>,
-    type_traits::is_range<Container>>
-make_ForallNode(ExecutionPolicy&& p,
-                Container&& c,
-                LoopBody&& loop_body)
+template < typename ExecutionPolicy, typename Container, typename LoopBody >
+struct ForallArgs : NodeArgs
 {
-  using node_type = ForallNode<camp::decay<ExecutionPolicy>,
-                               camp::decay<Container>,
-                               camp::decay<LoopBody>>;
-  using Res = typename node_type::Resource;
+  using node_type = ForallNode<ExecutionPolicy, Container, LoopBody>;
 
-  auto r = Res::get_default();
+  template < typename EP_arg, typename CO_arg, typename LB_arg >
+  ForallArgs(EP_arg&& p, CO_arg&& c, LB_arg&& loop_body)
+    : m_policy(std::forward<EP_arg>(p))
+    , m_container(std::forward<CO_arg>(c))
+    , m_body(std::forward<LB_arg>(loop_body))
+  {
+  }
 
-  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
-  util::callPreCapturePlugins(context);
+  node_type* toNode()
+  {
+    util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
+    util::callPreCapturePlugins(context);
 
-  using RAJA::util::trigger_updates_before;
-  auto body = trigger_updates_before(loop_body);
+    using RAJA::util::trigger_updates_before;
+    auto body = trigger_updates_before(m_body);
 
-  util::callPostCapturePlugins(context);
+    util::callPostCapturePlugins(context);
 
-  return new node_type{ r,
-                        std::forward<ExecutionPolicy>(p),
-                        std::forward<Container>(c),
-                        std::move(body) };
-}
+    return new node_type{ std::move(m_policy),
+                          std::move(m_container),
+                          std::move(body) };
+  }
+
+  ExecutionPolicy m_policy;
+  Container m_container;
+  LoopBody m_body;
+};
 
 }  // namespace detail
 
 
-template <typename... Args>
-RAJA_INLINE auto
-make_ForallNode(Node* parent, Args&&... args)
-  -> decltype(detail::make_ForallNode(std::forward<Args>(args)...))
+// policy by value
+template < typename ExecutionPolicy, typename Container, typename LoopBody >
+RAJA_INLINE concepts::enable_if_t<
+      detail::ForallArgs<camp::decay<ExecutionPolicy>,
+                         camp::decay<Container>,
+                         camp::decay<LoopBody>>,
+      concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+      concepts::negate<type_traits::is_multi_policy<ExecutionPolicy>>,
+      type_traits::is_range<Container>>
+Forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
-  auto node = detail::make_ForallNode(std::forward<Args>(args)...);
-  parent->add_child(node);
-  return node;
+  return detail::ForallArgs<camp::decay<ExecutionPolicy>,
+                            camp::decay<Container>,
+                            camp::decay<LoopBody>>(
+      std::forward<ExecutionPolicy>(p),
+      std::forward<Container>(c),
+      std::forward<LoopBody>(loop_body));
 }
 
-template <typename DAGPolicy, typename... Args>
-RAJA_INLINE auto
-make_ForallNode(DAG<DAGPolicy>& dag, Args&&... args)
-  -> decltype(detail::make_ForallNode(std::forward<Args>(args)...))
+// policy by template
+template < typename ExecutionPolicy, typename Container, typename LoopBody >
+RAJA_INLINE concepts::enable_if_t<
+      detail::ForallArgs<ExecutionPolicy,
+                         camp::decay<Container>,
+                         camp::decay<LoopBody>>,
+      concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+      concepts::negate<type_traits::is_multi_policy<ExecutionPolicy>>,
+      type_traits::is_range<Container>>
+Forall(Container&& c, LoopBody&& loop_body)
 {
-  auto node = detail::make_ForallNode(std::forward<Args>(args)...);
-  dag.insert_node(node);
-  return node;
+  return detail::ForallArgs<ExecutionPolicy,
+                            camp::decay<Container>,
+                            camp::decay<LoopBody>>(
+      ExecutionPolicy(),
+      std::forward<Container>(c),
+      std::forward<LoopBody>(loop_body));
 }
 
 }  // namespace graph

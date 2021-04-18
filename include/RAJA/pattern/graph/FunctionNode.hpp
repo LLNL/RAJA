@@ -39,12 +39,11 @@ namespace expt
 namespace graph
 {
 
-template < typename Function >
+template < typename function_type >
 struct FunctionNode : Node
 {
 
   template < typename Func >
-  RAJA_INLINE
   FunctionNode(Func&& func)
     : m_function(std::forward<Func>(func))
   {
@@ -58,42 +57,39 @@ struct FunctionNode : Node
   virtual ~FunctionNode() = default;
 
 private:
-  Function m_function;
+  function_type m_function;
 };
 
 
 namespace detail {
 
-template <typename Func>
-RAJA_INLINE FunctionNode<camp::decay<Func>>*
-make_FunctionNode(Func&& func)
+template < typename function_type >
+struct FunctionArgs : NodeArgs
 {
-  using node_type = FunctionNode<camp::decay<Func>>;
+  using node_type = FunctionNode<function_type>;
 
-  return new node_type{ std::forward<Func>(func) };
-}
+  template < typename Func >
+  FunctionArgs(Func&& func)
+    : m_function(std::forward<Func>(func))
+  {
+  }
+
+  node_type* toNode()
+  {
+    return new node_type{ std::move(m_function) };
+  }
+
+  function_type m_function;
+};
 
 }  // namespace detail
 
 
-template <typename... Args>
-RAJA_INLINE auto
-make_FunctionNode(Node* parent, Args&&... args)
-  -> decltype(detail::make_FunctionNode(std::forward<Args>(args)...))
+template < typename Func >
+detail::FunctionArgs<camp::decay<Func>>
+Function(Func&& func)
 {
-  auto node = detail::make_FunctionNode(std::forward<Args>(args)...);
-  parent->add_child(node);
-  return node;
-}
-
-template <typename DAGPolicy, typename... Args>
-RAJA_INLINE auto
-make_FunctionNode(DAG<DAGPolicy>& dag, Args&&... args)
-  -> decltype(detail::make_FunctionNode(std::forward<Args>(args)...))
-{
-  auto node = detail::make_FunctionNode(std::forward<Args>(args)...);
-  dag.insert_node(node);
-  return node;
+  return detail::FunctionArgs<camp::decay<Func>>(std::forward<Func>(func));
 }
 
 }  // namespace graph

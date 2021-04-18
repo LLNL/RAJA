@@ -41,8 +41,6 @@ namespace graph
 
 struct EmptyNode : Node
 {
-
-  RAJA_INLINE
   EmptyNode()
   {
   }
@@ -57,35 +55,22 @@ struct EmptyNode : Node
 
 namespace detail {
 
-RAJA_INLINE EmptyNode*
-make_EmptyNode()
+struct EmptyArgs : NodeArgs
 {
   using node_type = EmptyNode;
 
-  return new node_type{ };
-}
+  node_type* toNode()
+  {
+    return new node_type();
+  }
+};
 
 }  // namespace detail
 
 
-template <typename... Args>
-RAJA_INLINE auto
-make_EmptyNode(Node* parent, Args&&... args)
-  -> decltype(detail::make_EmptyNode(std::forward<Args>(args)...))
+detail::EmptyArgs Empty()
 {
-  auto node = detail::make_EmptyNode(std::forward<Args>(args)...);
-  parent->add_child(node);
-  return node;
-}
-
-template <typename DAGPolicy, typename... Args>
-RAJA_INLINE auto
-make_EmptyNode(DAG<DAGPolicy>& dag, Args&&... args)
-  -> decltype(detail::make_EmptyNode(std::forward<Args>(args)...))
-{
-  auto node = detail::make_EmptyNode(std::forward<Args>(args)...);
-  dag.insert_node(node);
-  return node;
+  return detail::EmptyArgs();
 }
 
 }  // namespace graph

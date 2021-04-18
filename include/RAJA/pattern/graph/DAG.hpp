@@ -49,11 +49,12 @@ struct DAG
     return m_children.empty();
   }
 
-  Node* insert_node(Node* node)
+  template < typename node_args>
+  auto operator>>(node_args&& rhs)
+    -> concepts::enable_if_t<decltype(*std::forward<node_args>(rhs).toNode()),
+                             std::is_base_of<detail::NodeArgs, camp::decay<node_args>>>
   {
-    m_children.emplace_back(node);
-    node->m_parent_count += 1;
-    return node;
+    return *insert_node(std::forward<node_args>(rhs).toNode());
   }
 
   void exec(Resource& r);
@@ -72,6 +73,15 @@ struct DAG
 
 private:
   std::vector<Node*> m_children;
+
+  template < typename node_type >
+  concepts::enable_if_t<node_type*, std::is_base_of<Node, node_type>>
+  insert_node(node_type* node)
+  {
+    m_children.emplace_back(node);
+    node->m_parent_count += 1;
+    return node;
+  }
 
   // traverse nodes in an order consistent with the DAG, calling enter_func
   // when traversing a node before traversing any of the node's children and
