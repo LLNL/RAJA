@@ -39,14 +39,16 @@ namespace expt
 namespace graph
 {
 
-struct EmptyNode : Node
+template < typename GraphResource >
+struct EmptyNode : Node<GraphResource>
 {
   EmptyNode()
   {
   }
 
-  virtual void exec() override
+  resources::EventProxy<GraphResource> exec(GraphResource& gr) override
   {
+    return resources::EventProxy<GraphResource>(&gr);
   }
 
   virtual ~EmptyNode() = default;
@@ -57,11 +59,13 @@ namespace detail {
 
 struct EmptyArgs : NodeArgs
 {
-  using node_type = EmptyNode;
+  template < typename GraphResource >
+  using node_type = EmptyNode<GraphResource>;
 
-  node_type* toNode()
+  template < typename GraphResource >
+  node_type<GraphResource>* toNode()
   {
-    return new node_type();
+    return new node_type<GraphResource>();
   }
 };
 

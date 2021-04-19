@@ -32,7 +32,7 @@ namespace expt
 namespace graph
 {
 
-template < typename policy >
+template < typename GraphPolicy, typename GraphResource >
 struct DAG;
 
 namespace detail {
@@ -46,12 +46,15 @@ make_Node(node_args&& arg);
 
 }
 
+template < typename GraphResource >
 struct Node
 {
-  RAJA_INLINE
+  static_assert(type_traits::is_resource<GraphResource>::value,
+                "GraphResource is not a resource");
+
   Node() = default;
 
-  virtual void exec() = 0;
+  virtual resources::EventProxy<GraphResource> exec(GraphResource&) = 0;
 
   virtual ~Node() = default;
 
@@ -65,18 +68,21 @@ struct Node
 
   template < typename node_args>
   auto operator>>(node_args&& rhs)
-    -> concepts::enable_if_t<decltype(*std::forward<node_args>(rhs).toNode()),
+    -> concepts::enable_if_t<decltype(*std::forward<node_args>(rhs).template toNode<GraphResource>()),
                              std::is_base_of<detail::NodeArgs, camp::decay<node_args>>>
   {
-    return *add_child(std::forward<node_args>(rhs).toNode());
+    return *add_child(std::forward<node_args>(rhs).template toNode<GraphResource>());
   }
 
 private:
-  template < typename >
+  template < typename, typename >
   friend struct DAG;
 
-  template < typename Enter_Func, typename Exit_Func >
-  static void forward_traverse(Node* node, Enter_Func&& enter_func, Exit_Func&& exit_func);
+  template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
+  static void forward_traverse(Node* node,
+                               Examine_Func&& examine_func,
+                               Enter_Func&& enter_func,
+                               Exit_Func&& exit_func);
 
   int m_parent_count = 0;
   int m_count = 0;
@@ -92,15 +98,22 @@ private:
   }
 };
 
-template < typename Enter_Func, typename Exit_Func >
-void Node::forward_traverse(Node* node, Enter_Func&& enter_func, Exit_Func&& exit_func)
+template < typename GraphResource >
+template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
+void Node<GraphResource>::forward_traverse(Node<GraphResource>* node,
+                                           Examine_Func&& examine_func,
+                                           Enter_Func&& enter_func,
+                                           Exit_Func&& exit_func)
 {
+  std::forward<Examine_Func>(examine_func)(node);
   if (++node->m_count == node->m_parent_count) {
     node->m_count = 0;
     std::forward<Enter_Func>(enter_func)(node);
-    for (Node* child : node->m_children)
+    for (Node<GraphResource>* child : node->m_children)
     {
-      forward_traverse(child, std::forward<Enter_Func>(enter_func), std::forward<Exit_Func>(exit_func));
+      forward_traverse(child, std::forward<Examine_Func>(examine_func),
+                              std::forward<Enter_Func>(enter_func),
+                              std::forward<Exit_Func>(exit_func));
     }
     std::forward<Exit_Func>(exit_func)(node);
   }

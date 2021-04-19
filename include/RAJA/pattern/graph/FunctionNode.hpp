@@ -39,9 +39,11 @@ namespace expt
 namespace graph
 {
 
-template < typename function_type >
-struct FunctionNode : Node
+template < typename GraphResource, typename function_type >
+struct FunctionNode : Node<GraphResource>
 {
+  using ExecutionResource = resources::Host;
+  using same_resources = std::is_same<GraphResource, ExecutionResource>;
 
   template < typename Func >
   FunctionNode(Func&& func)
@@ -49,15 +51,35 @@ struct FunctionNode : Node
   {
   }
 
-  virtual void exec() override
+  resources::EventProxy<GraphResource> exec(GraphResource& gr) override
   {
-    m_function();
+    return exec_impl(same_resources(), gr);
   }
 
   virtual ~FunctionNode() = default;
 
 private:
   function_type m_function;
+
+  resources::EventProxy<GraphResource>
+  exec_impl(std::true_type, GraphResource& gr)
+  {
+    gr.wait();
+    m_function();
+    return resources::EventProxy<GraphResource>(&gr);
+  }
+
+  resources::EventProxy<GraphResource>
+  exec_impl(std::false_type, GraphResource& gr)
+  {
+    ExecutionResource er();
+    gr.wait();
+
+    resources::Event ee = exec_impl(std::true_type(), er);
+    gr.wait_on(ee);
+
+    return resources::EventProxy<GraphResource>(&gr);
+  }
 };
 
 
@@ -66,7 +88,8 @@ namespace detail {
 template < typename function_type >
 struct FunctionArgs : NodeArgs
 {
-  using node_type = FunctionNode<function_type>;
+  template < typename GraphResource >
+  using node_type = FunctionNode<GraphResource, function_type>;
 
   template < typename Func >
   FunctionArgs(Func&& func)
@@ -74,9 +97,10 @@ struct FunctionArgs : NodeArgs
   {
   }
 
-  node_type* toNode()
+  template < typename GraphResource >
+  node_type<GraphResource>* toNode()
   {
-    return new node_type{ std::move(m_function) };
+    return new node_type<GraphResource>{ std::move(m_function) };
   }
 
   function_type m_function;

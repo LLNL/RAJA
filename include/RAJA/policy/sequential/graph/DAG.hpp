@@ -31,18 +31,31 @@ namespace expt
 namespace graph
 {
 
-template <>
-void DAG<seq_graph>::exec(typename DAG<seq_graph>::Resource&)
+namespace detail
 {
-  // exec all nodes in a correct order
-  forward_traverse(
-        [](Node* node) {
-          node->exec();
-        },
-        [](Node*) {
-          // do nothing
-        });
-}
+
+template < typename GraphResource >
+struct DAGExec<seq_graph, GraphResource>
+{
+  resources::EventProxy<GraphResource> operator()(
+      DAG<seq_graph, GraphResource>& dag, GraphResource& gr)
+  {
+    // exec all nodes in a correct order
+    dag.forward_traverse(
+          [](Node<GraphResource>*) {
+            // do nothing
+          },
+          [&](Node<GraphResource>* node) {
+            node->exec(gr);
+          },
+          [](Node<GraphResource>*) {
+            // do nothing
+          });
+    return resources::EventProxy<GraphResource>(&gr);
+  }
+};
+
+}  // namespace detail
 
 }  // namespace graph
 

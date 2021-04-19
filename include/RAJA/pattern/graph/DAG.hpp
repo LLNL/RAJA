@@ -36,10 +36,28 @@ namespace expt
 namespace graph
 {
 
-template < typename policy >
+template < typename GraphPolicy, typename GraphResource >
+struct DAG;
+
+namespace detail
+{
+
+template < typename GraphPolicy, typename GraphResource >
+struct DAGExec;
+
+}  // namespace detail
+
+template < typename GraphPolicy, typename GraphResource >
 struct DAG
 {
-  using Resource = typename resources::get_resource<policy>::type;
+  static_assert(type_traits::is_execution_policy<GraphPolicy>::value,
+                "GraphPolicy is not a policy");
+  static_assert(pattern_is<GraphPolicy, Pattern::graph>::value,
+                "GraphPolicy is not a graph policy");
+  static_assert(type_traits::is_resource<GraphResource>::value,
+                "GraphResource is not a resource");
+
+  using base_node_type = Node<GraphResource>;
 
   RAJA_INLINE
   DAG() = default;
@@ -51,31 +69,45 @@ struct DAG
 
   template < typename node_args>
   auto operator>>(node_args&& rhs)
-    -> concepts::enable_if_t<decltype(*std::forward<node_args>(rhs).toNode()),
+    -> concepts::enable_if_t<decltype(*std::forward<node_args>(rhs).template toNode<GraphResource>()),
                              std::is_base_of<detail::NodeArgs, camp::decay<node_args>>>
   {
-    return *insert_node(std::forward<node_args>(rhs).toNode());
+    return *insert_node(std::forward<node_args>(rhs).template toNode<GraphResource>());
   }
 
-  void exec(Resource& r);
+  resources::EventProxy<GraphResource> exec(GraphResource& gr)
+  {
+    return detail::DAGExec<GraphPolicy, GraphResource>{}(*this, gr);
+  }
+
+  resources::EventProxy<GraphResource> exec()
+  {
+    auto gr = GraphResource::get_default();
+    return exec(gr);
+  }
 
   ~DAG()
   {
     // destroy all nodes in a safe order
     forward_traverse(
-        [](Node*) {
+        [](base_node_type*) {
           // do nothing
         },
-        [](Node* node) {
+        [](base_node_type*) {
+          // do nothing
+        },
+        [](base_node_type* node) {
           delete node;
         });
   }
 
 private:
-  std::vector<Node*> m_children;
+  friend detail::DAGExec<GraphPolicy, GraphResource>;
+
+  std::vector<base_node_type*> m_children;
 
   template < typename node_type >
-  concepts::enable_if_t<node_type*, std::is_base_of<Node, node_type>>
+  concepts::enable_if_t<node_type*, std::is_base_of<base_node_type, node_type>>
   insert_node(node_type* node)
   {
     m_children.emplace_back(node);
@@ -89,12 +121,16 @@ private:
   // the node's children. NOTE that exit_function is not necessarily called
   // after exit_function is called on each of the node's children. NOTE that a
   // node is not used again after exit_function is called on it.
-  template < typename Enter_Func, typename Exit_Func >
-  void forward_traverse(Enter_Func&& enter_func, Exit_Func&& exit_func)
+  template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
+  void forward_traverse(Examine_Func&& examine_func,
+                        Enter_Func&& enter_func,
+                        Exit_Func&& exit_func)
   {
-    for (Node* node : m_children)
+    for (base_node_type* node : m_children)
     {
-      Node::forward_traverse(node, std::forward<Enter_Func>(enter_func), std::forward<Exit_Func>(exit_func));
+      base_node_type::forward_traverse(node, std::forward<Examine_Func>(examine_func),
+                                             std::forward<Enter_Func>(enter_func),
+                                             std::forward<Exit_Func>(exit_func));
     }
   }
 };
