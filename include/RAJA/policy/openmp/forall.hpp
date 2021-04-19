@@ -183,7 +183,7 @@ namespace internal
                                Func&& loop_body)
   {
     RAJA_EXTRACT_BED_IT(iter);
-    #pragma omp for schedule(dynamic, ChunkSize)
+    #pragma omp for schedule(guided, ChunkSize)
     for (decltype(distance_it) i = 0; i < distance_it; ++i) {
       loop_body(begin_it[i]);
     }
