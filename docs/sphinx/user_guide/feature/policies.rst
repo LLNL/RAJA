@@ -72,7 +72,14 @@ For the OpenMP CPU multithreading back-end, RAJA has policies that can be used
 by themselves to execute kernels. In particular, they create an OpenMP parallel
 region and execute a kernel within it. To distinguish these in this discussion,
 we refer to these as **full policies**. These policies are provided 
-to users for convenience in common use cases.
+to users for convenience in common use cases. 
+
+RAJA also provides other OpenMP policies, which we refer to as 
+**partial policies**, since they need to be used in combination with other 
+policies. Typically, they work by providing an *outer policy* and an 
+*inner policy* as a template parameter to the outer policy. These give users 
+flexibility to create more complex execution patterns.
+
 
 .. note:: To control the number of threads used by OpenMP policies
           set the value of the environment variable 'OMP_NUM_THREADS' (which is
@@ -80,7 +87,8 @@ to users for convenience in common use cases.
           'omp_set_num_threads(nthreads)' in your application, which allows 
           one to change the number of threads at runtime.
 
-The full policies are described in the following tables.
+The full policies are described in the following table. Partial policies
+are described in other tables below.
 
  ========================================= ============= =======================
  OpenMP CPU Full Policies                  Works with    Brief description
@@ -114,12 +122,6 @@ The full policies are described in the following tables.
           ``omp_parallel_for_{static|dynamic|guided}_exec< >``, which will 
           result in the OpenMP pragma 
           ``omp parallel for schedule({static|dynamic|guided})`` being applied. 
-
-RAJA contains other OpenMP policies, which we refer to as **partial policies**,
-since they need to be used in combination with other policies. Typically, 
-they work by providing an *outer policy* and an *inner policy* as a template
-parameter to the outer policy. These give users flexibility to create more
-complex execution patterns.
 
 RAJA provides an (outer) OpenMP CPU policy to create a parallel region in 
 which to execute a kernel. It requires an inner policy that defines how a 
