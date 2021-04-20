@@ -39,6 +39,7 @@ using OpenMPForallExecPols =
 
               , RAJA::omp_parallel_for_static_exec< >
               , RAJA::omp_parallel_for_static_exec<4>
+#if defined(RAJA_TEST_EXHAUSTIVE)
               , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_static_exec< >>
 
               , RAJA::omp_parallel_for_dynamic_exec< >
@@ -51,7 +52,6 @@ using OpenMPForallExecPols =
 
               , RAJA::omp_parallel_for_runtime_exec
 
-#if defined(RAJA_TEST_EXHAUSTIVE)
               , RAJA::omp_parallel_exec<RAJA::omp_for_exec>
 
               , RAJA::omp_parallel_exec<RAJA::omp_for_static_exec< >>
