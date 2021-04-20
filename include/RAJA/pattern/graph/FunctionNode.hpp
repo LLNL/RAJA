@@ -72,7 +72,7 @@ private:
   resources::EventProxy<GraphResource>
   exec_impl(std::false_type, GraphResource& gr)
   {
-    ExecutionResource er();
+    ExecutionResource er = ExecutionResource::get_default();
     gr.wait();
 
     resources::Event ee = exec_impl(std::true_type(), er);
