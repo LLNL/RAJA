@@ -18,6 +18,12 @@
 #include "RAJA_test-graph-execpol.hpp"
 #include "RAJA_test-forall-execpol.hpp"
 
+#include <unordered_map>
+#include <type_traits>
+#include <random>
+#include <numeric>
+#include <algorithm>
+
 
 // Basic Constructors
 
@@ -54,6 +60,7 @@ TEST( GraphBasicExecUnitTest, EmptyExec )
   ASSERT_TRUE( g.empty() );
 }
 
+
 TEST( GraphBasicExecUnitTest, OneNodeExec )
 {
   using GraphPolicy = RAJA::loop_graph;
@@ -75,6 +82,7 @@ TEST( GraphBasicExecUnitTest, OneNodeExec )
 
   ASSERT_FALSE( g.empty() );
 }
+
 
 TEST( GraphBasicExecUnitTest, FourNodeExec )
 {
@@ -125,7 +133,7 @@ TEST( GraphBasicExecUnitTest, FourNodeExec )
   ASSERT_LT(order[2], order[3]);
 }
 
-// replace with exec ordering test using randomly generated DAGs
+
 TEST( GraphBasicExecUnitTest, TwentyNodeExec )
 {
   using GraphPolicy = RAJA::loop_graph;
@@ -216,4 +224,174 @@ TEST( GraphBasicExecUnitTest, TwentyNodeExec )
   ASSERT_LT(order[11], order[16]); ASSERT_LT(order[11], order[17]);
   ASSERT_LT(order[12], order[17]); ASSERT_LT(order[12], order[18]);
   ASSERT_LT(order[13], order[19]);
+}
+
+
+template < typename graph_type >
+struct RandomGraph
+{
+  using base_node_type = typename graph_type::base_node_type;
+
+  static const int graph_min_nodes = 0;
+  static const int graph_max_nodes = 1024;
+
+  RandomGraph(unsigned seed)
+    : m_rng(seed)
+    , m_num_nodes(std::uniform_int_distribution<int>(graph_min_nodes, graph_max_nodes)(m_rng))
+  {
+
+  }
+
+  std::vector<int> get_dependencies(int node_id)
+  {
+    assert(node_id < m_num_nodes);
+
+    int num_edges_to_node = std::uniform_int_distribution<int>(0, node_id)(m_rng);
+
+    // create a list of numbers from [0, node_id)
+    std::vector<int> edges_to_node(node_id);
+    std::iota(edges_to_node.begin(), edges_to_node.end(), 0);
+    // randomly reorder the list
+    std::shuffle(edges_to_node.begin(), edges_to_node.end(), m_rng);
+    // remove extras
+    edges_to_node.resize(num_edges_to_node);
+
+    return edges_to_node;
+  }
+
+  // add a node
+  // as a new disconnected component of the DAG
+  // or with edges from some previous nodes
+  // NOTE that this algorithm creates DAGs with more edges than necessary for
+  // the required ordering
+  //   Ex. a >> b, b >> c, a >> c where a >> c is unnecessary
+  template < typename NodeArg >
+  void add_node(int node_id, std::vector<int>&& edges_to_node, NodeArg&& arg)
+  {
+    assert(node_id < m_num_nodes);
+
+    int num_edges_to_node = edges_to_node.size();
+
+    base_node_type* n = nullptr;
+
+    if (num_edges_to_node == 0) {
+
+      // connect node to graph
+      n = &(m_g >> std::forward<NodeArg>(arg));
+
+    } else {
+
+      // create edges
+      // first creating node from an existing node
+      n = &(*m_nodes[edges_to_node[0]] >> std::forward<NodeArg>(arg));
+      m_edges.emplace(edges_to_node[0], node_id);
+
+      // then adding other edges
+      for (int i = 1; i < num_edges_to_node; ++i) {
+        *m_nodes[edges_to_node[i]] >> *n;
+        m_edges.emplace(edges_to_node[i], node_id);
+      }
+    }
+
+    m_nodes.emplace_back(n);
+  }
+
+  int num_nodes() const
+  {
+    return m_num_nodes;
+  }
+
+  std::unordered_multimap<int, int> const& edges() const
+  {
+    return m_edges;
+  }
+
+  graph_type& graph()
+  {
+    return m_g;
+  }
+
+  ~RandomGraph() = default;
+
+private:
+  std::mt19937 m_rng;
+
+  int m_num_nodes;
+
+  std::unordered_multimap<int, int> m_edges;
+  std::vector<base_node_type*> m_nodes;
+
+  graph_type m_g;
+};
+
+
+inline unsigned get_random_seed()
+{
+  static unsigned seed = std::random_device{}();
+  return seed;
+}
+
+TEST( GraphBasicExecUnitTest, RandomExec )
+{
+  using GraphPolicy = RAJA::loop_graph;
+  using GraphResource = RAJA::resources::Host;
+  using graph_type = RAJA::expt::graph::DAG<GraphPolicy, GraphResource>;
+
+  auto r = GraphResource::get_default();
+
+  unsigned seed = get_random_seed();
+
+  RandomGraph<graph_type> g(seed);
+
+  const int num_nodes = g.num_nodes();
+
+  int count = 0;
+  std::vector<int> order(num_nodes, -1);
+
+  // add nodes
+  for (int node_id = 0; node_id < num_nodes; ++node_id) {
+
+    auto edges_to_node = g.get_dependencies(node_id);
+
+    g.add_node(node_id, std::move(edges_to_node),
+        RAJA::expt::graph::Function([&, node_id](){
+      ASSERT_LE(0, node_id);
+      ASSERT_LT(node_id, num_nodes);
+      order[node_id] = count++;
+    }));
+  }
+
+  ASSERT_FALSE( g.graph().empty() );
+
+  // check graph has not executed
+  ASSERT_EQ(count, 0);
+  for (int i = 0; i < num_nodes; ++i) {
+    ASSERT_EQ(order[i],  -1);
+  }
+
+  // check graph edges are valid
+  for (std::pair<int, int> const& edge : g.edges()) {
+    ASSERT_LE(0, edge.first);
+    ASSERT_LT(edge.first, num_nodes);
+    ASSERT_LE(0, edge.second);
+    ASSERT_LT(edge.second, num_nodes);
+    ASSERT_LT(edge.first, edge.second);
+  }
+
+  // 8-node DAG exec
+  g.graph().exec(r);
+  r.wait();
+
+  // check graph has executed
+  ASSERT_FALSE( g.graph().empty() );
+  ASSERT_EQ(count, num_nodes);
+
+  // check graph edges are valid
+  for (std::pair<int, int> const& edge : g.edges()) {
+    ASSERT_LE(0, order[edge.first]);
+    ASSERT_LT(order[edge.first], num_nodes);
+    ASSERT_LE(0, order[edge.second]);
+    ASSERT_LT(order[edge.second], num_nodes);
+    ASSERT_LT(order[edge.first], order[edge.second]);
+  }
 }
