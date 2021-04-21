@@ -35,20 +35,15 @@ using SequentialForallAtomicExecPols = camp::list< RAJA::seq_exec,
 using OpenMPForallExecPols = 
   camp::list< RAJA::omp_parallel_for_exec
  
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_exec>
-
               , RAJA::omp_parallel_for_static_exec< >
               , RAJA::omp_parallel_for_static_exec<4>
-#if defined(RAJA_TEST_EXHAUSTIVE)
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_static_exec< >>
 
+#if defined(RAJA_TEST_EXHAUSTIVE)
               , RAJA::omp_parallel_for_dynamic_exec< >
               , RAJA::omp_parallel_for_dynamic_exec<4>
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_dynamic_exec< >>
 
               , RAJA::omp_parallel_for_guided_exec< >
               , RAJA::omp_parallel_for_guided_exec<4>
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_guided_exec< >>
 
               , RAJA::omp_parallel_for_runtime_exec
 
@@ -68,24 +63,13 @@ using OpenMPForallExecPols =
               , RAJA::omp_parallel_exec<RAJA::omp_for_dynamic_exec<8>>
               , RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Dynamic<8>>>
 
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_schedule_exec<RAJA::policy::omp::Dynamic< >>>
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_dynamic_exec<4>>
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_schedule_exec<RAJA::policy::omp::Dynamic<4>>>
-
               , RAJA::omp_parallel_exec<RAJA::omp_for_guided_exec< >>
               , RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Guided< >>>
               , RAJA::omp_parallel_exec<RAJA::omp_for_guided_exec<8>>
               , RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Guided<8>>>
 
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_schedule_exec<RAJA::policy::omp::Guided< >>>
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_guided_exec<4>>
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_schedule_exec<RAJA::policy::omp::Guided<4>>>
-
               , RAJA::omp_parallel_exec<RAJA::omp_for_runtime_exec>
               , RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Runtime>>
-
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_runtime_exec>
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_schedule_exec<RAJA::policy::omp::Runtime>>
 #endif       
              >;
 
@@ -93,21 +77,18 @@ using OpenMPForallReduceExecPols = OpenMPForallExecPols;
 
 using OpenMPForallAtomicExecPols =
   camp::list< RAJA::omp_parallel_for_exec
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_exec>
 
 #if defined(RAJA_TEST_EXHAUSTIVE)
               , RAJA::omp_parallel_for_static_exec< >
               , RAJA::omp_parallel_for_static_exec<4>
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_static_exec< >>
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_static_exec<8>>
+              , RAJA::omp_parallel_for_nowait_static_exec< >
+              , RAJA::omp_parallel_for_nowait_static_exec<4>
 
               , RAJA::omp_parallel_for_dynamic_exec< >
               , RAJA::omp_parallel_for_dynamic_exec<2>
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_dynamic_exec< >>
 
               , RAJA::omp_parallel_for_guided_exec< >
               , RAJA::omp_parallel_for_guided_exec<3>
-              , RAJA::omp_parallel_exec<RAJA::omp_for_nowait_guided_exec< >>
 
               , RAJA::omp_parallel_for_runtime_exec
 #endif

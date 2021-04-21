@@ -148,13 +148,6 @@ a template argument as described above.
                                         kernel (For), *existing parallel 
                                         scan          region*; i.e., 
                                                       apply 'omp for' pragma. 
- omp_for_nowait_exec                    forall,       Parallel execution within
-                                        kernel (For), existing parallel 
-                                        scan          region *without 
-                                                      thread synchronization
-                                                      after kernel*; i.e., 
-                                                      apply 'omp for nowait' 
-                                                      pragma. 
  omp_for_static_exec<ChunkSize>         forall,       Same as applying
                                         kernel (For)  'omp for
                                                       schedule(static,
@@ -167,25 +160,22 @@ a template argument as described above.
                                         kernel (For)  'omp for
                                                       schedule(dynamic,
                                                       ChunkSize)'
- omp_for_nowait_dynamic_exec<ChunkSize> forall,       Same as applying
-                                        kernel (For)  'omp for
-                                                      schedule(dynamic,
-                                                      ChunkSize) nowait'
  omp_for_guided_exec<ChunkSize>         forall,       Same as applying
                                         kernel (For)  'omp for
                                                       schedule(guided,
                                                       ChunkSize)'
- omp_for_nowait_guided_exec<ChunkSize>  forall,       Same as applying
-                                        kernel (For)  'omp for
-                                                      schedule(guided,
-                                                      ChunkSize) nowait'
  omp_for_runtime_exec                   forall,       Same as applying
                                         kernel (For)  'omp for
                                                       schedule(runtime)'
- omp_for_nowait_runtime_exec            forall,       Same as applying
-                                        kernel (For)  'omp for
-                                                      schedule(runtime) nowait'
  ====================================== ============= ==========================
+
+.. important:: **RAJA only provides a nowait policy option for static schedule**
+               since that is the only schedule case that can be used with
+               nowait and be correct in general when chaining multiple loops
+               in a single parallel region. Paraphrasing the OpenMP standard:
+               *programs that depend on which thread executes a particular
+               loop iteration under any circumstance other than static schedule
+               are non-conforming.*
 
 .. note:: As in the RAJA full policies for OpenMP scheduling, the ``ChunkSize``
           is optional. If not provided, the default chunk size that the OpenMP 
@@ -194,10 +184,9 @@ a template argument as described above.
           ``omp_for_{static|dynamic|guided}_exec< >``, which will result 
           in the OpenMP pragma 
           ``omp for schedule({static|dynamic|guided})`` being applied.
-          Similarly, for ``nowait`` policy variants, the RAJA policy syntax is
-          ``omp_for_nowait_{static|dynamic|guided}_exec< >``, which will result
-          in the OpenMP pragma
-          ``omp for schedule({static|dynamic|guided}) nowait`` being applied.
+          Similarly, for ``nowait`` static policy, the RAJA policy syntax is
+          ``omp_for_nowait_static_exec< >``, which will result in the OpenMP 
+          pragma ``omp for schedule(static) nowait`` being applied.
 
 .. note:: As noted above, RAJA inner OpenMP policies must only be used within an
           **existing** parallel region to work properly. Embedding an inner 
@@ -210,13 +199,13 @@ a template argument as described above.
 
             RAJA::region<RAJA::omp_parallel_region>([=]() {
 
-              RAJA::forall<RAJA::omp_for_nowait_static_exec>(segment, 
+              RAJA::forall<RAJA::omp_for_nowait_static_exec< > >(segment, 
                 [=] (int idx) {
                   // do something at iterate 'idx'
                 }
               );
 
-              RAJA::forall<RAJA::omp_for_static_exec>(segment, 
+              RAJA::forall<RAJA::omp_for_static_exec< > >(segment, 
                 [=] (int idx) {
                   // do something else at iterate 'idx'
                 }
@@ -226,7 +215,7 @@ a template argument as described above.
 
           Here, the ``RAJA::region<RAJA::omp_parallel_region>`` method call
           creates an OpenMP parallel region, which contains two ``RAJA::forall``
-          kernels. The first uses the ``RAJA::omp_for_nowait_static_exec`` 
+          kernels. The first uses the ``RAJA::omp_for_nowait_static_exec< >`` 
           policy, meaning that no thread synchronization is needed after the 
           kernel. Thus, threads can start working on the second kernel while 
           others are still working on the first kernel. I general, this will

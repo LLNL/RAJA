@@ -42,7 +42,13 @@ using SequentialKernelExecPols = camp::list<
 using OpenMPKernelExecPols = camp::list< 
     
   RAJA::KernelPolicy<
-    RAJA::statement::For<0, RAJA::omp_parallel_exec<RAJA::omp_for_nowait_exec>,
+    RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
+      RAJA::statement::Lambda<0, RAJA::Segs<0>>
+    >
+  >,
+
+  RAJA::KernelPolicy<
+    RAJA::statement::For<0, RAJA::omp_parallel_for_static_exec< >,
       RAJA::statement::Lambda<0, RAJA::Segs<0>>
     >
   >,
