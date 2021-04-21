@@ -52,7 +52,8 @@ template <typename ExecPolicy,
           typename Res = typename resources::get_resource<ExecPolicy>::type>
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
-                      type_traits::is_range<Container>>
+                      type_traits::is_range<Container>,
+                      concepts::negate<std::is_constructible<camp::resources::Resource, Container>>>
 sort(ExecPolicy&& p,
      Container&& c,
      Compare comp = Compare{})
@@ -71,6 +72,7 @@ template <typename ExecPolicy,
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>,
+                      std::is_constructible<camp::resources::Resource, Res>,
                       type_traits::is_range<Container>>
 sort(ExecPolicy&& p,
      Res& r,
@@ -116,7 +118,8 @@ template <typename ExecPolicy,
           typename Res = typename resources::get_resource<ExecPolicy>::type>
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
-                      type_traits::is_range<Container>>
+                      type_traits::is_range<Container>,
+                      concepts::negate<std::is_constructible<camp::resources::Resource, Container>>>
 stable_sort(ExecPolicy&& p,
             Container&& c,
             Compare comp = Compare{})
@@ -134,6 +137,7 @@ template <typename ExecPolicy,
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>,
+                      std::is_constructible<camp::resources::Resource, Res>,
                       type_traits::is_range<Container>>
 stable_sort(ExecPolicy&& p,
             Res& r,
@@ -182,6 +186,7 @@ template <typename ExecPolicy,
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_range<KeyContainer>,
+                      concepts::negate<std::is_constructible<camp::resources::Resource, KeyContainer>>,
                       type_traits::is_range<ValContainer>>
 sort_pairs(ExecPolicy&& p,
            KeyContainer&& keys,
@@ -204,6 +209,7 @@ template <typename ExecPolicy,
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>,
+                      std::is_constructible<camp::resources::Resource, Res>,
                       type_traits::is_range<KeyContainer>,
                       type_traits::is_range<ValContainer>>
 sort_pairs(ExecPolicy&& p,
@@ -256,6 +262,7 @@ template <typename ExecPolicy,
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_range<KeyContainer>,
+                      concepts::negate<std::is_constructible<camp::resources::Resource, KeyContainer>>,
                       type_traits::is_range<ValContainer>>
 stable_sort_pairs(ExecPolicy&& p,
                   KeyContainer&& keys,
@@ -278,6 +285,7 @@ template <typename ExecPolicy,
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>,
+                      std::is_constructible<camp::resources::Resource, Res>,
                       type_traits::is_range<KeyContainer>,
                       type_traits::is_range<ValContainer>>
 stable_sort_pairs(ExecPolicy&& p,

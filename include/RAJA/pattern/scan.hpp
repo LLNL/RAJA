@@ -53,7 +53,8 @@ template <typename ExecPolicy,
 RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
-                      type_traits::is_range<Container>>
+                      type_traits::is_range<Container>,
+                      concepts::negate<std::is_constructible<camp::resources::Resource, Container>>>
 inclusive_scan_inplace(ExecPolicy&& p,
                        Container&& c,
                        Function binop = Function{})
@@ -73,6 +74,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>,
+                      std::is_constructible<camp::resources::Resource, Res>,
                       type_traits::is_range<Container>>
 inclusive_scan_inplace(ExecPolicy&& p,
                        Res& r,
@@ -113,7 +115,8 @@ template <typename ExecPolicy,
 RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
-                      type_traits::is_range<Container>>
+                      type_traits::is_range<Container>,
+                      concepts::negate<std::is_constructible<camp::resources::Resource, Container>>>
 exclusive_scan_inplace(ExecPolicy&& p,
                        Container&& c,
                        Function binop = Function{},
@@ -136,6 +139,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>,
+                      std::is_constructible<camp::resources::Resource, Res>,
                       type_traits::is_range<Container>>
 exclusive_scan_inplace(ExecPolicy&& p,
                        Res& r,
@@ -182,6 +186,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_range<InContainer>,
+                      concepts::negate<std::is_constructible<camp::resources::Resource, InContainer>>,
                       type_traits::is_range<OutContainer>>
 inclusive_scan(ExecPolicy&& p,
                InContainer&& in,
@@ -205,6 +210,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>,
+                      std::is_constructible<camp::resources::Resource, Res>,
                       type_traits::is_range<InContainer>,
                       type_traits::is_range<OutContainer>>
 inclusive_scan(ExecPolicy&& p,
@@ -256,6 +262,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_range<InContainer>,
+                      concepts::negate<std::is_constructible<camp::resources::Resource, InContainer>>,
                       type_traits::is_range<OutContainer>>
 exclusive_scan(ExecPolicy&& p,
                InContainer&& in,
@@ -282,6 +289,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>,
+                      std::is_constructible<camp::resources::Resource, Res>,
                       type_traits::is_range<InContainer>,
                       type_traits::is_range<OutContainer>>
 exclusive_scan(ExecPolicy&& p,
