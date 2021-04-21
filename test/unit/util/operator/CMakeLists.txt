@@ -6,19 +6,22 @@
 ###############################################################################
 
 raja_add_test(
-  NAME test-float-limits
-  SOURCES test-float-limits.cpp)
+  NAME test-operators-math
+  SOURCES test-operators-math.cpp)
 
 raja_add_test(
-  NAME test-integral-limits
-  SOURCES test-integral-limits.cpp)
+  NAME test-operators-logical
+  SOURCES test-operators-logical.cpp)
 
 raja_add_test(
-  NAME test-timer
-  SOURCES test-timer.cpp)
+  NAME test-operators-equivalence
+  SOURCES test-operators-equivalence.cpp)
 
 raja_add_test(
-  NAME test-span
-  SOURCES test-span.cpp)
+  NAME test-operators-bitwise-modulus
+  SOURCES test-operators-bitwise-modulus.cpp)
 
-add_subdirectory(operator)
+raja_add_test(
+  NAME test-operators-identity
+  SOURCES test-operators-identity.cpp)
+
