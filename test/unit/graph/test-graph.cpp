@@ -250,7 +250,11 @@ TEST( GraphBasicExecUnitTest, RandomExec )
     }));
   }
 
-  ASSERT_FALSE( g.graph().empty() );
+  if (num_nodes > 0) {
+    ASSERT_FALSE( g.graph().empty() );
+  } else {
+    ASSERT_TRUE( g.graph().empty() );
+  }
 
   // check graph has not executed
   ASSERT_EQ(count, 0);
@@ -267,12 +271,16 @@ TEST( GraphBasicExecUnitTest, RandomExec )
     ASSERT_LT(edge.first, edge.second);
   }
 
-  // 8-node DAG exec
+  // DAG exec
   g.graph().exec(r);
   r.wait();
 
   // check graph has executed
-  ASSERT_FALSE( g.graph().empty() );
+  if (num_nodes > 0) {
+    ASSERT_FALSE( g.graph().empty() );
+  } else {
+    ASSERT_TRUE( g.graph().empty() );
+  }
   ASSERT_EQ(count, num_nodes);
 
   // check graph edges are valid

@@ -105,6 +105,11 @@ struct RandomGraph
     return m_g;
   }
 
+  std::mt19937& rng()
+  {
+    return m_rng;
+  }
+
   ~RandomGraph() = default;
 
 private:

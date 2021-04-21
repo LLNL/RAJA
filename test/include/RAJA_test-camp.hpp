@@ -42,4 +42,17 @@ using OpenMPTargetResourceList = camp::list<camp::resources::Omp>;
 using HipResourceList = camp::list<camp::resources::Hip>;
 #endif
 
+
+using AllResourceList = camp::list<camp::resources::Host
+#if defined(RAJA_ENABLE_CUDA)
+                                  ,camp::resources::Cuda>;
+#endif
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+                                  ,camp::list<camp::resources::Omp>;
+#endif
+#if defined(RAJA_ENABLE_HIP)
+                                  ,camp::list<camp::resources::Hip>;
+#endif
+                                   >;
+
 #endif // __RAJA_test_camp_HPP__
