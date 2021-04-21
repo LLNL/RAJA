@@ -22,6 +22,7 @@
 
 #include "RAJA_test-base.hpp"
 #include "RAJA_test-camp.hpp"
+#include "RAJA_test-random.hpp"
 #include "RAJA_test-forall-data.hpp"
 #include "type_helper.hpp"
 #include "RAJA_unit-test-forone.hpp"
@@ -505,12 +506,6 @@ void testSorter(unsigned seed, RAJA::Index_type MaxN, Sorter sorter, camp::resou
   for (RAJA::Index_type n = 1; n <= MaxN; n *= 10) {
     testSorterInterfaces<K>(seed, n, sorter, res);
   }
-}
-
-inline unsigned get_random_seed()
-{
-  static unsigned seed = std::random_device{}();
-  return seed;
 }
 
 

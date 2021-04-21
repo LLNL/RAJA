@@ -16,3 +16,5 @@ add_subdirectory(scan)
 add_subdirectory(workgroup)
 
 add_subdirectory(teams)
+
+add_subdirectory(graph)
