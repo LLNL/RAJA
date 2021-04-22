@@ -18,16 +18,18 @@ class KokkosPluginLoader;
 
 struct PluginContext {
   public:
-    PluginContext(const Platform p) :
-      platform(p) {}
+     PluginContext(const Platform p, const char *name_ = nullptr) :
+       platform(p), name(name_) {}
 
     Platform platform;
+    const char *name;   
 
   private:
     mutable uint64_t kID;
 
     friend class KokkosPluginLoader;
 };
+
 
 template<typename Policy>
 PluginContext make_context()
@@ -36,6 +38,18 @@ PluginContext make_context()
 }
 
 } // closing brace for util namespace
+
+template<typename Policy>
+struct ExecContext : util::PluginContext {
+
+  ExecContext(const char *name_ = nullptr) : 
+    util::PluginContext{detail::get_platform<Policy>::value, name_}
+  {
+
+  }
+
+};
+
 } // closing brace for RAJA namespace
 
 #endif

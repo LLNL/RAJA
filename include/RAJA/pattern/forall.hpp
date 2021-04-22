@@ -509,6 +509,37 @@ forall(ExecutionPolicy&& p, Res &r, Container&& c, LoopBody&& loop_body)
 
 }  // end inline namespace policy_by_value_interface
 
+template <typename ExecutionPolicy, typename Container, typename LoopBody,
+          typename Res = typename resources::get_resource<ExecutionPolicy>::type >
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<Res>,
+    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+    concepts::negate<type_traits::is_multi_policy<ExecutionPolicy>>,
+    type_traits::is_range<Container>>
+forall(ExecContext<ExecutionPolicy> context, Container&& c, LoopBody&& loop_body)
+{
+  static_assert(type_traits::is_random_access_range<Container>::value,
+                "Container does not model RandomAccessIterator");
+
+  auto r = Res::get_default();
+
+  util::callPreCapturePlugins(context);
+
+  using RAJA::util::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
+
+  util::callPostCapturePlugins(context);
+
+  util::callPreLaunchPlugins(context);
+
+  resources::EventProxy<Res> e =  wrap::forall(r,
+                                          ExecutionPolicy(),
+                                          std::forward<Container>(c),
+                                          std::move(body));
+
+  util::callPostLaunchPlugins(context);
+  return e;
+}
 
 /*!
  * \brief Conversion from template-based policy to value-based policy for forall
