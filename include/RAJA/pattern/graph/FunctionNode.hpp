@@ -61,12 +61,11 @@ struct FunctionNode : Node<GraphResource>
 private:
   function_type m_function;
 
-  resources::EventProxy<GraphResource>
-  exec_impl(std::true_type, GraphResource& gr)
+  resources::EventProxy<ExecutionResource>
+  exec_impl(std::true_type, ExecutionResource& er)
   {
-    gr.wait();
     m_function();
-    return resources::EventProxy<GraphResource>(&gr);
+    return resources::EventProxy<ExecutionResource>(&er);
   }
 
   resources::EventProxy<GraphResource>

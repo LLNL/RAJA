@@ -69,20 +69,20 @@ private:
   Container m_container;
   LoopBody m_body;
 
-  resources::EventProxy<GraphResource>
-  exec_impl(std::true_type, GraphResource& gr)
+  resources::EventProxy<ExecutionResource>
+  exec_impl(std::true_type, ExecutionResource& er)
   {
     util::PluginContext context{util::make_context<ExecutionPolicy>()};
     util::callPreLaunchPlugins(context);
 
-    wrap::forall(gr,
+    wrap::forall(er,
                  m_policy,
                  m_container,
                  m_body);
 
     util::callPostLaunchPlugins(context);
 
-    return resources::EventProxy<GraphResource>(&gr);
+    return resources::EventProxy<ExecutionResource>(&er);
   }
 
   resources::EventProxy<GraphResource>
