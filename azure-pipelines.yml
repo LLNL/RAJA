@@ -75,7 +75,7 @@ jobs:
       dockerFile: Dockerfile
       arguments: '--target $(docker_target)'
   - script: |
-      CID=$(docker create llnl/umpire:$(Build.BuildId))
+      CID=$(docker create llnl/raja:$(Build.BuildId))
       echo ${CID}
       docker cp ${CID}:/home/axom/workspace/build local-build
       docker rm ${CID}
