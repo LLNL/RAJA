@@ -242,7 +242,7 @@ TEST( GraphBasicExecUnitTest, RandomExec )
 
     auto edges_to_node = g.get_dependencies(node_id);
 
-    g.add_node(node_id, std::move(edges_to_node),
+    g.add_node(node_id, edges_to_node,
         RAJA::expt::graph::Function([&, node_id](){
       ASSERT_LE(0, node_id);
       ASSERT_LT(node_id, num_nodes);

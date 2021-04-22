@@ -62,14 +62,14 @@ void MixedNodesTestImpl(int node_size)
       int node_type_id = -1;
       if (++node_type_id == final_type_id) {
         add_node_data(camp::resources::Host());
-        g.add_node(node_id, std::move(edges_to_node),
+        g.add_node(node_id, edges_to_node,
             RAJA::expt::graph::Empty());
       }
       else if (++node_type_id == final_type_id) {
         add_node_data(camp::resources::Host());
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
-        g.add_node(node_id, std::move(edges_to_node),
+        g.add_node(node_id, edges_to_node,
             RAJA::expt::graph::Function([=](){
           for (int e = 0; e < num_edges_to_node; ++e) {
             int other_id = previous[e];
@@ -84,7 +84,7 @@ void MixedNodesTestImpl(int node_size)
         add_node_data(camp::resources::Host());
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
-        g.add_node(node_id, std::move(edges_to_node),
+        g.add_node(node_id, edges_to_node,
             RAJA::expt::graph::Forall<RAJA::loop_exec>(seg, [=](int i){
           for (int e = 0; e < num_edges_to_node; ++e) {
             int other_id = previous[e];
@@ -93,12 +93,32 @@ void MixedNodesTestImpl(int node_size)
           }
         }));
       }
+      else if (++node_type_id == final_type_id) {
+        add_node_data(camp::resources::Host());
+        int* previous = node_previous[node_id];
+        int* my_data  = node_data[node_id];
+        using Allocator = typename detail::ResourceAllocator<camp::resources::Host>::template std_allocator<char>;
+        auto& n = g.add_node(node_id, edges_to_node,
+            RAJA::expt::graph::WorkGroup<
+             RAJA::WorkGroupPolicy<RAJA::loop_work, RAJA::ordered, RAJA::constant_stride_array_of_objects>,
+             int,
+             RAJA::xargs<>,
+             Allocator
+           >(Allocator{}));
+        for (int e = 0; e < num_edges_to_node; ++e) {
+          int other_id = previous[e];
+          int* other_data = node_data[other_id];
+          n.enqueue(seg, [=](int i){
+            my_data[i] += other_data[i];
+          });
+        }
+      }
 #if defined(RAJA_ENABLE_OPENMP)
       else if (++node_type_id == final_type_id) {
         add_node_data(camp::resources::Host());
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
-        g.add_node(node_id, std::move(edges_to_node),
+        g.add_node(node_id, edges_to_node,
             RAJA::expt::graph::Forall<RAJA::omp_parallel_exec<RAJA::omp_for_nowait_exec>>(seg, [=](int i){
           for (int e = 0; e < num_edges_to_node; ++e) {
             int other_id = previous[e];
@@ -107,13 +127,33 @@ void MixedNodesTestImpl(int node_size)
           }
         }));
       }
+      else if (++node_type_id == final_type_id) {
+        add_node_data(camp::resources::Host());
+        int* previous = node_previous[node_id];
+        int* my_data  = node_data[node_id];
+        using Allocator = typename detail::ResourceAllocator<camp::resources::Host>::template std_allocator<char>;
+        auto& n = g.add_node(node_id, edges_to_node,
+            RAJA::expt::graph::WorkGroup<
+             RAJA::WorkGroupPolicy<RAJA::omp_work, RAJA::ordered, RAJA::constant_stride_array_of_objects>,
+             int,
+             RAJA::xargs<>,
+             Allocator
+           >(Allocator{}));
+        for (int e = 0; e < num_edges_to_node; ++e) {
+          int other_id = previous[e];
+          int* other_data = node_data[other_id];
+          n.enqueue(seg, [=](int i){
+            my_data[i] += other_data[i];
+          });
+        }
+      }
 #endif
 #if defined(RAJA_ENABLE_TBB)
       else if (++node_type_id == final_type_id) {
         add_node_data(camp::resources::Host());
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
-        g.add_node(node_id, std::move(edges_to_node),
+        g.add_node(node_id, edges_to_node,
             RAJA::expt::graph::Forall<RAJA::tbb_for_exec>(seg, [=](int i){
           for (int e = 0; e < num_edges_to_node; ++e) {
             int other_id = previous[e];
@@ -122,13 +162,33 @@ void MixedNodesTestImpl(int node_size)
           }
         }));
       }
+      else if (++node_type_id == final_type_id) {
+        add_node_data(camp::resources::Host());
+        int* previous = node_previous[node_id];
+        int* my_data  = node_data[node_id];
+        using Allocator = typename detail::ResourceAllocator<camp::resources::Host>::template std_allocator<char>;
+        auto& n = g.add_node(node_id, edges_to_node,
+            RAJA::expt::graph::WorkGroup<
+             RAJA::WorkGroupPolicy<RAJA::tbb_work, RAJA::ordered, RAJA::constant_stride_array_of_objects>,
+             int,
+             RAJA::xargs<>,
+             Allocator
+           >(Allocator{}));
+        for (int e = 0; e < num_edges_to_node; ++e) {
+          int other_id = previous[e];
+          int* other_data = node_data[other_id];
+          n.enqueue(seg, [=](int i){
+            my_data[i] += other_data[i];
+          });
+        }
+      }
 #endif
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
       else if (++node_type_id == final_type_id) {
         add_node_data(camp::resources::Omp());
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
-        g.add_node(node_id, std::move(edges_to_node),
+        g.add_node(node_id, edges_to_node,
             RAJA::expt::graph::Forall<RAJA::omp_target_parallel_for_exec_nt>(seg, [=](int i){
           for (int e = 0; e < num_edges_to_node; ++e) {
             int other_id = previous[e];
@@ -137,13 +197,33 @@ void MixedNodesTestImpl(int node_size)
           }
         }));
       }
+      else if (++node_type_id == final_type_id) {
+        add_node_data(camp::resources::Omp());
+        int* previous = node_previous[node_id];
+        int* my_data  = node_data[node_id];
+        using Allocator = typename detail::ResourceAllocator<camp::resources::Omp>::template std_allocator<char>;
+        auto& n = g.add_node(node_id, edges_to_node,
+            RAJA::expt::graph::WorkGroup<
+             RAJA::WorkGroupPolicy<RAJA::omp_target_work, RAJA::ordered, RAJA::constant_stride_array_of_objects>,
+             int,
+             RAJA::xargs<>,
+             Allocator
+           >(Allocator{}));
+        for (int e = 0; e < num_edges_to_node; ++e) {
+          int other_id = previous[e];
+          int* other_data = node_data[other_id];
+          n.enqueue(seg, [=](int i){
+            my_data[i] += other_data[i];
+          });
+        }
+      }
 #endif
 #if defined(RAJA_ENABLE_CUDA)
       else if (++node_type_id == final_type_id) {
         add_node_data(camp::resources::Cuda());
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
-        g.add_node(node_id, std::move(edges_to_node),
+        g.add_node(node_id, edges_to_node,
             RAJA::expt::graph::Forall<RAJA::cuda_exec_async<128>>(seg, [=]RAJA_DEVICE(int i){
           for (int e = 0; e < num_edges_to_node; ++e) {
             int other_id = previous[e];
@@ -152,13 +232,35 @@ void MixedNodesTestImpl(int node_size)
           }
         }));
       }
+      else if (++node_type_id == final_type_id) {
+        add_node_data(camp::resources::Cuda());
+        int* previous = node_previous[node_id];
+        int* my_data  = node_data[node_id];
+        using Allocator = typename detail::ResourceAllocator<camp::resources::Cuda>::template std_allocator<char>;
+        auto& n = g.add_node(node_id, edges_to_node,
+            RAJA::expt::graph::WorkGroup<
+             RAJA::WorkGroupPolicy<RAJA::cuda_work_async<1024>,
+                                   RAJA::unordered_cuda_loop_y_block_iter_x_threadblock_average,
+                                   RAJA::constant_stride_array_of_objects>,
+             int,
+             RAJA::xargs<>,
+             Allocator
+           >(Allocator{}));
+        for (int e = 0; e < num_edges_to_node; ++e) {
+          int other_id = previous[e];
+          int* other_data = node_data[other_id];
+          n.enqueue(seg, [=]RAJA_DEVICE(int i){
+            my_data[i] += other_data[i];
+          });
+        }
+      }
 #endif
 #if defined(RAJA_ENABLE_HIP)
       else if (++node_type_id == final_type_id) {
         add_node_data(camp::resources::Hip());
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
-        g.add_node(node_id, std::move(edges_to_node),
+        g.add_node(node_id, edges_to_node,
             RAJA::expt::graph::Forall<RAJA::hip_exec_async<128>>(seg, [=]RAJA_DEVICE(int i){
           for (int e = 0; e < num_edges_to_node; ++e) {
             int other_id = previous[e];
@@ -166,6 +268,32 @@ void MixedNodesTestImpl(int node_size)
             my_data[i] += other_data[i];
           }
         }));
+      }
+      else if (++node_type_id == final_type_id) {
+        add_node_data(camp::resources::Cuda());
+        int* previous = node_previous[node_id];
+        int* my_data  = node_data[node_id];
+        using Allocator = typename detail::ResourceAllocator<camp::resources::Cuda>::template std_allocator<char>;
+        auto& n = g.add_node(node_id, edges_to_node,
+            RAJA::expt::graph::WorkGroup<
+             RAJA::WorkGroupPolicy<RAJA::hip_work_async<1024>,
+#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+                                   RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
+#else
+                                   RAJA::ordered,
+#endif
+                                   RAJA::constant_stride_array_of_objects>,
+             int,
+             RAJA::xargs<>,
+             Allocator
+           >(Allocator{}));
+        for (int e = 0; e < num_edges_to_node; ++e) {
+          int other_id = previous[e];
+          int* other_data = node_data[other_id];
+          n.enqueue(seg, [=]RAJA_DEVICE(int i){
+            my_data[i] += other_data[i];
+          });
+        }
       }
 #endif
 

@@ -16,6 +16,8 @@
 #include "RAJA_test-graph-creation.hpp"
 #include "RAJA_test-graph-execpol.hpp"
 
+#include "RAJA_test-workgroup.hpp"
+
 
 //
 // Header for tests in ./tests directory

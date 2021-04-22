@@ -60,34 +60,38 @@ struct RandomGraph
   // the required ordering
   //   Ex. a >> b, b >> c, a >> c where a >> c is unnecessary
   template < typename NodeArg >
-  void add_node(int node_id, std::vector<int>&& edges_to_node, NodeArg&& arg)
+  auto add_node(int node_id, std::vector<int> const& edges_to_node, NodeArg&& arg)
+    -> decltype(camp::val<graph_type&>() >> std::forward<NodeArg>(arg))
   {
     assert(node_id < m_num_nodes);
+    assert(node_id == static_cast<int>(m_nodes.size()));
 
     int num_edges_to_node = edges_to_node.size();
-
-    base_node_type* n = nullptr;
 
     if (num_edges_to_node == 0) {
 
       // connect node to graph
-      n = &(m_g >> std::forward<NodeArg>(arg));
+      auto& n = m_g >> std::forward<NodeArg>(arg);
+
+      m_nodes.emplace_back(&n);
+      return n;
 
     } else {
 
       // create edges
       // first creating node from an existing node
-      n = &(*m_nodes[edges_to_node[0]] >> std::forward<NodeArg>(arg));
+      auto& n = *m_nodes[edges_to_node[0]] >> std::forward<NodeArg>(arg);
       m_edges.emplace(edges_to_node[0], node_id);
 
       // then adding other edges
       for (int i = 1; i < num_edges_to_node; ++i) {
-        *m_nodes[edges_to_node[i]] >> *n;
+        *m_nodes[edges_to_node[i]] >> n;
         m_edges.emplace(edges_to_node[i], node_id);
       }
-    }
 
-    m_nodes.emplace_back(n);
+      m_nodes.emplace_back(&n);
+      return n;
+    }
   }
 
   int num_nodes() const

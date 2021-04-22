@@ -31,6 +31,8 @@ endif()
 
 add_subdirectory(ForallNode)
 
+add_subdirectory(WorkGroupNode)
+
 add_subdirectory(MixedNodes)
 
 unset( GRAPH_FORALL_BACKENDS )

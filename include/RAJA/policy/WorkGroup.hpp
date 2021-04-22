@@ -85,6 +85,17 @@ using policy::workgroup::constant_stride_array_of_objects;
 
 using policy::workgroup::WorkGroupPolicy;
 
+
+namespace type_traits
+{
+
+template <typename T>
+struct is_WorkGroup_policy
+    : ::RAJA::type_traits::SpecializationOf<RAJA::WorkGroupPolicy, typename std::decay<T>::type> {
+};
+
+}  // namespace type_traits
+
 }  // end namespace RAJA
 
 #endif

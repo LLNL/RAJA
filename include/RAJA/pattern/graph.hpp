@@ -22,5 +22,6 @@
 #include "RAJA/pattern/graph/EmptyNode.hpp"
 #include "RAJA/pattern/graph/FunctionNode.hpp"
 #include "RAJA/pattern/graph/ForallNode.hpp"
+#include "RAJA/pattern/graph/WorkGroupNode.hpp"
 
 #endif /* RAJA_pattern_graph_HPP */
