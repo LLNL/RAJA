@@ -61,27 +61,19 @@ RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=g++ -DENABLE_WARNINGS=
 RUN cd build && make -j 16
 RUN cd build && ctest -T test --output-on-failure
 
-FROM axom/compilers:clang-4 AS clang4
+FROM axom/compilers:clang-9 AS clang9
 ENV GTEST_COLOR=1
 COPY --chown=axom:axom . /home/axom/workspace
 WORKDIR /home/axom/workspace
-RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=clang++ ..
+RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS=-fmodules -DENABLE_TBB=On ..
 RUN cd build && make -j 16
 RUN cd build && ctest -T test --output-on-failure
 
-FROM axom/compilers:clang-5 AS clang5
+FROM axom/compilers:clang-9 AS clang9-debug
 ENV GTEST_COLOR=1
 COPY --chown=axom:axom . /home/axom/workspace
 WORKDIR /home/axom/workspace
-RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=clang++ ..
-RUN cd build && make -j 16
-RUN cd build && ctest -T test --output-on-failure
-
-FROM axom/compilers:clang-6 AS clang
-ENV GTEST_COLOR=1
-COPY --chown=axom:axom . /home/axom/workspace
-WORKDIR /home/axom/workspace
-RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=clang++ ..
+RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug -DENABLE_TBB=On -DCMAKE_CXX_FLAGS=-fsanitize=address ..
 RUN cd build && make -j 16
 RUN cd build && ctest -T test --output-on-failure
 
