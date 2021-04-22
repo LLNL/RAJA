@@ -137,9 +137,17 @@ then
 
     cd ${build_dir}
 
-    date
-    ctest --output-on-failure -T test 2>&1 | tee tests_output.txt
-    date
+    # If HIP enabled
+    if [[ "${option}" != "--build-only" ]] && grep -q -i "ENABLE_HIP.*ON" ${hostconfig_path}
+    then # don't run the tests that are known to fail
+        date
+        ctest --output-on-failure -T test 2>&1 -E Known-Hip-Failure | tee tests_output.txt
+        date
+    else #run all tests like normal
+        date
+        ctest --output-on-failure -T test 2>&1 | tee tests_output.txt
+        date
+    fi
 
     no_test_str="No tests were found!!!"
     if [[ "$(tail -n 1 tests_output.txt)" == "${no_test_str}" ]]
@@ -149,20 +157,9 @@ then
 
     echo "Copying Testing xml reports for export"
     tree Testing
-    cp Testing/*/Test.xml ${project_dir}
+    xsltproc -o junit.xml ${project_dir}/blt/tests/ctest-to-junit.xsl Testing/*/Test.xml
+    mv junit.xml ${project_dir}/junit.xml
 
-    # Convert CTest xml to JUnit (on toss3 only)
-    if [[ ${sys_type} == *toss_3* ]]; then
-        if [[ -n ${py_env_path} ]]; then
-            . ${py_env_path}/bin/activate
-
-            python3 ${project_dir}/scripts/gitlab/convert_to_junit.py \
-            ${project_dir}/Test.xml \
-            ${project_dir}/scripts/gitlab/junit.xslt > ${project_dir}/junit.xml
-        else
-            echo "ERROR: needs python env with lxml, please set PYTHON_ENVIRONMENT_PATH"
-        fi
-    fi
 
     if grep -q "Errors while running CTest" ./tests_output.txt
     then

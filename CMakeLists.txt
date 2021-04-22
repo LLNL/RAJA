@@ -247,10 +247,20 @@ camp source repository")
   endif (EXTERNAL_CAMP_SOURCE_DIR)
 endif (NOT TARGET camp)
 
+set (raja_defines)
+
+if (COMPILER_FAMILY_IS_MSVC AND NOT BUILD_SHARED_LIBS)
+  set (raja_defines
+    ${raja_defines}
+    RAJA_WIN_STATIC_BUILD)
+endif ()
+
 blt_add_library(
   NAME RAJA
   SOURCES ${raja_sources}
-  DEPENDS_ON ${raja_depends} camp ${CMAKE_DL_LIBS})
+  DEPENDS_ON ${raja_depends} camp ${CMAKE_DL_LIBS}
+  DEFINES ${raja_defines})
+
 
 install(TARGETS RAJA
   EXPORT RAJA

@@ -57,6 +57,9 @@ void testWorkGroupConstructorSingle(RAJA::xargs<Xargs...>)
                   >
         site = group.run(Xargs{}...);
 
+    camp::resources::Event e = site.get_event();
+    e.wait();
+
     pool.clear();
     group.clear();
     site.clear();
