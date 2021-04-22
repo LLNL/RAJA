@@ -81,7 +81,7 @@ FROM axom/compilers:nvcc-10 AS nvcc
 ENV GTEST_COLOR=1
 COPY --chown=axom:axom . /home/axom/workspace
 WORKDIR /home/axom/workspace
-RUN mkdir build && cd build && cmake -DENABLE_DEVELOPER_DEFAULTS=On -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On ..
+RUN mkdir build && cd build && cmake -DENABLE_DEVELOPER_DEFAULTS=On -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DENABLE_TBB=On ..
 RUN cd build && make -j 16
 
 FROM axom/compilers:rocm AS hip
@@ -89,7 +89,7 @@ ENV GTEST_COLOR=1
 COPY --chown=axom:axom . /home/axom/workspace
 WORKDIR /home/axom/workspace
 ENV HCC_AMDGPU_TARGET=gfx900
-RUN mkdir build && cd build && cmake -DROCM_ROOT_DIR=/opt/rocm/include -DHIP_RUNTIME_INCLUDE_DIRS="/opt/rocm/include;/opt/rocm/hip/include" -DENABLE_DEVELOPER_DEFAULTS=On -DENABLE_HIP=On ..
+RUN mkdir build && cd build && cmake -DROCM_ROOT_DIR=/opt/rocm/include -DHIP_RUNTIME_INCLUDE_DIRS="/opt/rocm/include;/opt/rocm/hip/include" -DENABLE_HIP=On -DENABLE_OPENMP=Off -DENABLE_CUDA=Off -DENABLE_WARNINGS_AS_ERRORS=Off -DHIP_HIPCC_FLAGS=fPIC ..
 RUN cd build && make -j 16
 
 FROM axom/compilers:oneapi AS sycl
