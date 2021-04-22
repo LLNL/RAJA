@@ -59,7 +59,6 @@ struct DAG
 
   using base_node_type = Node<GraphResource>;
 
-  RAJA_INLINE
   DAG() = default;
 
   bool empty() const
@@ -86,7 +85,7 @@ struct DAG
     return exec(gr);
   }
 
-  ~DAG()
+  void clear()
   {
     // destroy all nodes in a safe order
     forward_traverse(
@@ -99,6 +98,12 @@ struct DAG
         [](base_node_type* node) {
           delete node;
         });
+    m_children.clear();
+  }
+
+  ~DAG()
+  {
+    clear();
   }
 
 private:
