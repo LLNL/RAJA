@@ -77,7 +77,7 @@ RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_
 RUN cd build && make -j 16
 RUN cd build && ctest -T test --output-on-failure
 
-FROM axom/compilers:nvcc-10 AS nvcc
+FROM axom/compilers:nvcc-10 AS nvcc10
 ENV GTEST_COLOR=1
 COPY --chown=axom:axom . /home/axom/workspace
 WORKDIR /home/axom/workspace
@@ -89,7 +89,7 @@ ENV GTEST_COLOR=1
 COPY --chown=axom:axom . /home/axom/workspace
 WORKDIR /home/axom/workspace
 ENV HCC_AMDGPU_TARGET=gfx900
-RUN mkdir build && cd build && cmake -DROCM_ROOT_DIR=/opt/rocm/include -DHIP_RUNTIME_INCLUDE_DIRS="/opt/rocm/include;/opt/rocm/hip/include" -DENABLE_HIP=On ..
+RUN mkdir build && cd build && cmake -DROCM_ROOT_DIR=/opt/rocm/include -DHIP_RUNTIME_INCLUDE_DIRS="/opt/rocm/include;/opt/rocm/hip/include" -DENABLE_HIP=On -DENABLE_OPENMP=Off -DENABLE_CUDA=Off -DENABLE_WARNINGS_AS_ERRORS=Off -DHIP_HIPCC_FLAGS=-fPIC ..
 RUN cd build && make -j 16
 
 FROM axom/compilers:oneapi AS sycl
