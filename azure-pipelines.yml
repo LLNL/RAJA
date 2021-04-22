@@ -40,26 +40,26 @@ jobs:
 - job: Docker
   strategy:
     matrix: 
-      gcc5: 
-        docker_target: gcc5
-      gcc6:
-        docker_target: gcc6
-      gcc7:
-        docker_target: gcc7
-      gcc8:
-        docker_target: gcc
-      clang4:
-        docker_target: clang4
-      clang5:
-        docker_target: clang5
-      clang6:
-        docker_target: clang
+#      gcc5: 
+#        docker_target: gcc5
+#      gcc6:
+#        docker_target: gcc6
+#      gcc7:
+#        docker_target: gcc7
+#      gcc8:
+#        docker_target: gcc
+#      clang4:
+#        docker_target: clang4
+#      clang5:
+#        docker_target: clang5
+#      clang6:
+#        docker_target: clang
       nvcc:
         docker_target: nvcc
-      hip:
-        docker_target: hip
-      sycl:
-        docker_target: sycl
+#      hip:
+#        docker_target: hip
+#      sycl:
+#        docker_target: sycl
   pool:
     vmImage: 'ubuntu-latest'
   variables:
