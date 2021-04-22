@@ -81,7 +81,7 @@ FROM axom/compilers:nvcc-10 AS nvcc
 ENV GTEST_COLOR=1
 COPY --chown=axom:axom . /home/axom/workspace
 WORKDIR /home/axom/workspace
-RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DENABLE_TBB=On ..
+RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On ..
 RUN cd build && make -j 16
 
 FROM axom/compilers:rocm AS hip
