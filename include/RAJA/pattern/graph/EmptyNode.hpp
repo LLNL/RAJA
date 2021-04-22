@@ -46,12 +46,13 @@ struct EmptyNode : Node<GraphResource>
   {
   }
 
+  virtual ~EmptyNode() = default;
+
+protected:
   resources::EventProxy<GraphResource> exec(GraphResource& gr) override
   {
     return resources::EventProxy<GraphResource>(&gr);
   }
-
-  virtual ~EmptyNode() = default;
 };
 
 

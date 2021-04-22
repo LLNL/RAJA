@@ -32,10 +32,13 @@ namespace expt
 namespace graph
 {
 
-template < typename GraphPolicy, typename GraphResource >
+template < typename, typename >
 struct DAG;
 
 namespace detail {
+
+template < typename, typename >
+struct DAGExec;
 
 struct NodeArgs
 { };
@@ -53,8 +56,6 @@ struct Node
                 "GraphResource is not a resource");
 
   Node() = default;
-
-  virtual resources::EventProxy<GraphResource> exec(GraphResource&) = 0;
 
   virtual ~Node() = default;
 
@@ -74,9 +75,14 @@ struct Node
     return *add_child(std::forward<node_args>(rhs).template toNode<GraphResource>());
   }
 
+protected:
+  virtual resources::EventProxy<GraphResource> exec(GraphResource&) = 0;
+
 private:
   template < typename, typename >
   friend struct DAG;
+  template < typename, typename >
+  friend struct detail::DAGExec;
 
   template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
   static void forward_traverse(Node* node,

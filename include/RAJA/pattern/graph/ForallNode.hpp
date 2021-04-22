@@ -57,12 +57,13 @@ struct ForallNode : Node<GraphResource>
   {
   }
 
+  virtual ~ForallNode() = default;
+
+protected:
   resources::EventProxy<GraphResource> exec(GraphResource& gr) override
   {
     return exec_impl(same_resources(), gr);
   }
-
-  virtual ~ForallNode() = default;
 
 private:
   ExecutionPolicy m_policy;

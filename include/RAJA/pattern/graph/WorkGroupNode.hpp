@@ -133,13 +133,14 @@ struct WorkGroupNode<GraphResource,
     m_site = m_group.run(Args()...);
   }
 
+  virtual ~WorkGroupNode() = default;
+
+protected:
   resources::EventProxy<GraphResource> exec(GraphResource& gr) override
   {
     instantiate();
     return exec_impl(same_resources(), gr);
   }
-
-  virtual ~WorkGroupNode() = default;
 
 private:
   workpool_type m_pool;

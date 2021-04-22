@@ -51,12 +51,13 @@ struct FunctionNode : Node<GraphResource>
   {
   }
 
+  virtual ~FunctionNode() = default;
+
+protected:
   resources::EventProxy<GraphResource> exec(GraphResource& gr) override
   {
     return exec_impl(same_resources(), gr);
   }
-
-  virtual ~FunctionNode() = default;
 
 private:
   function_type m_function;
