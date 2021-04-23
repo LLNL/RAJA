@@ -131,11 +131,11 @@ private:
                         Enter_Func&& enter_func,
                         Exit_Func&& exit_func)
   {
-    for (base_node_type* node : m_children)
+    for (base_node_type* child : m_children)
     {
-      base_node_type::forward_traverse(node, std::forward<Examine_Func>(examine_func),
-                                             std::forward<Enter_Func>(enter_func),
-                                             std::forward<Exit_Func>(exit_func));
+      child->forward_traverse(std::forward<Examine_Func>(examine_func),
+                              std::forward<Enter_Func>(enter_func),
+                              std::forward<Exit_Func>(exit_func));
     }
   }
 };

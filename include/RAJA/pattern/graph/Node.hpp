@@ -85,10 +85,23 @@ private:
   friend struct detail::DAGExec;
 
   template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
-  static void forward_traverse(Node* node,
-                               Examine_Func&& examine_func,
-                               Enter_Func&& enter_func,
-                               Exit_Func&& exit_func);
+  void forward_traverse(Examine_Func&& examine_func,
+                        Enter_Func&& enter_func,
+                        Exit_Func&& exit_func)
+  {
+    std::forward<Examine_Func>(examine_func)(this);
+    if (++m_count == m_parent_count) {
+      m_count = 0;
+      std::forward<Enter_Func>(enter_func)(this);
+      for (Node<GraphResource>* child : m_children)
+      {
+        child->forward_traverse(std::forward<Examine_Func>(examine_func),
+                                std::forward<Enter_Func>(enter_func),
+                                std::forward<Exit_Func>(exit_func));
+      }
+      std::forward<Exit_Func>(exit_func)(this);
+    }
+  }
 
   int m_parent_count = 0;
   int m_count = 0;
@@ -103,27 +116,6 @@ private:
     return node;
   }
 };
-
-template < typename GraphResource >
-template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
-void Node<GraphResource>::forward_traverse(Node<GraphResource>* node,
-                                           Examine_Func&& examine_func,
-                                           Enter_Func&& enter_func,
-                                           Exit_Func&& exit_func)
-{
-  std::forward<Examine_Func>(examine_func)(node);
-  if (++node->m_count == node->m_parent_count) {
-    node->m_count = 0;
-    std::forward<Enter_Func>(enter_func)(node);
-    for (Node<GraphResource>* child : node->m_children)
-    {
-      forward_traverse(child, std::forward<Examine_Func>(examine_func),
-                              std::forward<Enter_Func>(enter_func),
-                              std::forward<Exit_Func>(exit_func));
-    }
-    std::forward<Exit_Func>(exit_func)(node);
-  }
-}
 
 }  // namespace graph
 
