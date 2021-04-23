@@ -48,10 +48,10 @@ using AllResourceList = camp::list<camp::resources::Host
                                   ,camp::resources::Cuda
 #endif
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-                                  ,camp::list<camp::resources::Omp
+                                  ,camp::resources::Omp
 #endif
 #if defined(RAJA_ENABLE_HIP)
-                                  ,camp::list<camp::resources::Hip
+                                  ,camp::resources::Hip
 #endif
                                    >;
 
