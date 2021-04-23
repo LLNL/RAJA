@@ -23,8 +23,6 @@
 #include <utility>
 #include <type_traits>
 
-#include "RAJA/policy/loop/policy.hpp"
-
 #include "RAJA/pattern/WorkGroup.hpp"
 
 #include "RAJA/pattern/graph/DAG.hpp"
@@ -170,8 +168,8 @@ private:
     ExecutionResource er = ExecutionResource::get_default();
     gr.wait();
 
-    resources::EventProxy<ExecutionResource> ee = exec_impl(std::true_type(), er);
-    gr.wait_on(ee);
+    resources::Event ee = exec_impl(std::true_type(), er);
+    gr.wait_for(&ee);
 
     return resources::EventProxy<GraphResource>(&gr);
   }

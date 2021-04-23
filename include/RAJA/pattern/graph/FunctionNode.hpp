@@ -23,10 +23,6 @@
 #include <utility>
 #include <type_traits>
 
-#include "RAJA/policy/loop/policy.hpp"
-
-#include "RAJA/pattern/forall.hpp"
-
 #include "RAJA/pattern/graph/DAG.hpp"
 #include "RAJA/pattern/graph/Node.hpp"
 
@@ -76,7 +72,7 @@ private:
     gr.wait();
 
     resources::Event ee = exec_impl(std::true_type(), er);
-    gr.wait_on(ee);
+    gr.wait_for(&ee);
 
     return resources::EventProxy<GraphResource>(&gr);
   }
