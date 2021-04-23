@@ -45,13 +45,13 @@ using HipResourceList = camp::list<camp::resources::Hip>;
 
 using AllResourceList = camp::list<camp::resources::Host
 #if defined(RAJA_ENABLE_CUDA)
-                                  ,camp::resources::Cuda>;
+                                  ,camp::resources::Cuda
 #endif
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-                                  ,camp::list<camp::resources::Omp>;
+                                  ,camp::list<camp::resources::Omp
 #endif
 #if defined(RAJA_ENABLE_HIP)
-                                  ,camp::list<camp::resources::Hip>;
+                                  ,camp::list<camp::resources::Hip
 #endif
                                    >;
 
