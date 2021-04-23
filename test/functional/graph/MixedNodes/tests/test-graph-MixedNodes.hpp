@@ -17,6 +17,17 @@ void MixedNodesTestImpl(int node_size)
 
   auto r = WORKING_RES::get_default();
 
+  camp::resources::Host host_res = camp::resources::Host::get_default();
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+  camp::resources::Omp  omp_res = camp::resources::Omp::get_default();
+#endif
+#if defined(RAJA_ENABLE_CUDA)
+  camp::resources::Cuda cuda_res = camp::resources::Cuda::get_default();
+#endif
+#if defined(RAJA_ENABLE_HIP)
+  camp::resources::Hip  hip_res = camp::resources::Hip::get_default();
+#endif
+
   unsigned seed = get_random_seed();
 
   RAJA::TypedRangeSegment<int> seg(0, node_size);
@@ -29,9 +40,28 @@ void MixedNodesTestImpl(int node_size)
 
   // node data pointers and resources
   // TODO: fix data allocation so it is visible everywhere
-  std::vector<int*>                      node_previous(num_nodes, nullptr);
-  std::vector<int*>                      node_data(num_nodes, nullptr);
-  std::vector<camp::resources::Resource> node_res(num_nodes, camp::resources::Resource(camp::resources::Host()));
+  int** node_previous = host_res.allocate<int*>(num_nodes);
+  host_res.memset(node_previous, 0, num_nodes*sizeof(int*));
+  std::vector<camp::resources::Resource> node_res(num_nodes, camp::resources::Resource(host_res));
+
+  int** node_data     = host_res.allocate<int*>(num_nodes);
+  host_res.memset(node_data,     0, num_nodes*sizeof(int*));
+  host_res.wait();
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+  int** omp_node_data = omp_res.allocate<int*>(num_nodes);
+  omp_res.memset(omp_node_data, 0, num_nodes*sizeof(int*));
+  omp_res.wait();
+#endif
+#if defined(RAJA_ENABLE_CUDA)
+  int** cuda_node_data = cuda_res.allocate<int*>(num_nodes);
+  cuda_res.memset(cuda_node_data, 0, num_nodes*sizeof(int*));
+  cuda_res.wait();
+#endif
+#if defined(RAJA_ENABLE_HIP)
+  int** hip_node_data = hip_res.allocate<int*>(num_nodes);
+  hip_res.memset(hip_node_data, 0, num_nodes*sizeof(int*));
+  hip_res.wait();
+#endif
 
   auto add_node = [&](int node_id){
 
@@ -46,6 +76,7 @@ void MixedNodesTestImpl(int node_size)
       std::vector<int> ones(node_size, 1);
       res.memcpy(node_data[node_id], &ones[0], sizeof(int) * node_size);
       node_res[node_id] = res;
+      res.get_event().wait();
     };
 
     int final_type_id = -1;
@@ -81,7 +112,7 @@ void MixedNodesTestImpl(int node_size)
         }));
       }
       else if (++node_type_id == final_type_id) {
-        add_node_data(camp::resources::Host());
+        add_node_data(host_res);
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
         g.add_node(node_id, edges_to_node,
@@ -94,7 +125,7 @@ void MixedNodesTestImpl(int node_size)
         }));
       }
       else if (++node_type_id == final_type_id) {
-        add_node_data(camp::resources::Host());
+        add_node_data(host_res);
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
         using Allocator = typename detail::ResourceAllocator<camp::resources::Host>::template std_allocator<char>;
@@ -115,7 +146,7 @@ void MixedNodesTestImpl(int node_size)
       }
 #if defined(RAJA_ENABLE_OPENMP)
       else if (++node_type_id == final_type_id) {
-        add_node_data(camp::resources::Host());
+        add_node_data(host_res);
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
         g.add_node(node_id, edges_to_node,
@@ -128,7 +159,7 @@ void MixedNodesTestImpl(int node_size)
         }));
       }
       else if (++node_type_id == final_type_id) {
-        add_node_data(camp::resources::Host());
+        add_node_data(host_res);
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
         using Allocator = typename detail::ResourceAllocator<camp::resources::Host>::template std_allocator<char>;
@@ -150,7 +181,7 @@ void MixedNodesTestImpl(int node_size)
 #endif
 #if defined(RAJA_ENABLE_TBB)
       else if (++node_type_id == final_type_id) {
-        add_node_data(camp::resources::Host());
+        add_node_data(host_res);
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
         g.add_node(node_id, edges_to_node,
@@ -163,7 +194,7 @@ void MixedNodesTestImpl(int node_size)
         }));
       }
       else if (++node_type_id == final_type_id) {
-        add_node_data(camp::resources::Host());
+        add_node_data(host_res);
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
         using Allocator = typename detail::ResourceAllocator<camp::resources::Host>::template std_allocator<char>;
@@ -185,20 +216,20 @@ void MixedNodesTestImpl(int node_size)
 #endif
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
       else if (++node_type_id == final_type_id) {
-        add_node_data(camp::resources::Omp());
+        add_node_data(omp_res);
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
         g.add_node(node_id, edges_to_node,
             RAJA::expt::graph::Forall<RAJA::omp_target_parallel_for_exec_nt>(seg, [=](int i){
           for (int e = 0; e < num_edges_to_node; ++e) {
             int other_id = previous[e];
-            int* other_data = node_data[other_id];
+            int* other_data = omp_node_data[other_id];
             my_data[i] += other_data[i];
           }
         }));
       }
       else if (++node_type_id == final_type_id) {
-        add_node_data(camp::resources::Omp());
+        add_node_data(omp_res);
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
         using Allocator = typename detail::ResourceAllocator<camp::resources::Omp>::template std_allocator<char>;
@@ -220,20 +251,20 @@ void MixedNodesTestImpl(int node_size)
 #endif
 #if defined(RAJA_ENABLE_CUDA)
       else if (++node_type_id == final_type_id) {
-        add_node_data(camp::resources::Cuda());
+        add_node_data(cuda_res);
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
         g.add_node(node_id, edges_to_node,
             RAJA::expt::graph::Forall<RAJA::cuda_exec_async<128>>(seg, [=]RAJA_DEVICE(int i){
           for (int e = 0; e < num_edges_to_node; ++e) {
             int other_id = previous[e];
-            int* other_data = node_data[other_id];
+            int* other_data = cuda_node_data[other_id];
             my_data[i] += other_data[i];
           }
         }));
       }
       else if (++node_type_id == final_type_id) {
-        add_node_data(camp::resources::Cuda());
+        add_node_data(cuda_res);
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
         using Allocator = typename detail::ResourceAllocator<camp::resources::Cuda>::template std_allocator<char>;
@@ -257,20 +288,20 @@ void MixedNodesTestImpl(int node_size)
 #endif
 #if defined(RAJA_ENABLE_HIP)
       else if (++node_type_id == final_type_id) {
-        add_node_data(camp::resources::Hip());
+        add_node_data(hip_res);
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
         g.add_node(node_id, edges_to_node,
             RAJA::expt::graph::Forall<RAJA::hip_exec_async<128>>(seg, [=]RAJA_DEVICE(int i){
           for (int e = 0; e < num_edges_to_node; ++e) {
             int other_id = previous[e];
-            int* other_data = node_data[other_id];
+            int* other_data = hip_node_data[other_id];
             my_data[i] += other_data[i];
           }
         }));
       }
       else if (++node_type_id == final_type_id) {
-        add_node_data(camp::resources::Cuda());
+        add_node_data(hip_res);
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
         using Allocator = typename detail::ResourceAllocator<camp::resources::Cuda>::template std_allocator<char>;
@@ -320,6 +351,20 @@ void MixedNodesTestImpl(int node_size)
     add_node(node_id);
   }
 
+  // copy pointers to platform specific memory
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+  omp_res.memcpy(omp_node_data, node_data, num_nodes*sizeof(int*));
+  omp_res.wait();
+#endif
+#if defined(RAJA_ENABLE_CUDA)
+  cuda_res.memcpy(cuda_node_data, node_data, num_nodes*sizeof(int*));
+  cuda_res.wait();
+#endif
+#if defined(RAJA_ENABLE_HIP)
+  hip_res.memcpy(hip_node_data, node_data, num_nodes*sizeof(int*));
+  hip_res.wait();
+#endif
+
   g.graph().exec(r);
   r.wait();
 
@@ -336,6 +381,19 @@ void MixedNodesTestImpl(int node_size)
     node_res[node_id].deallocate(node_previous[node_id]);
     node_res[node_id].deallocate(node_data[node_id]);
   }
+
+  host_res.deallocate(node_previous);
+  host_res.deallocate(node_data);
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+  omp_res.deallocate(omp_node_data);
+#endif
+#if defined(RAJA_ENABLE_CUDA)
+  cuda_res.deallocate(cuda_node_data);
+#endif
+#if defined(RAJA_ENABLE_HIP)
+  hip_res.deallocate(hip_node_data);
+#endif
+
 }
 
 
