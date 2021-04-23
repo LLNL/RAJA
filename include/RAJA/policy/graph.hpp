@@ -19,7 +19,4 @@
 #ifndef RAJA_policy_graph_HPP
 #define RAJA_policy_graph_HPP
 
-#include "RAJA/policy/loop/graph.hpp"
-#include "RAJA/policy/sequential/graph.hpp"
-
 #endif

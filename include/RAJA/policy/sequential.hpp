@@ -29,5 +29,6 @@
 #include "RAJA/policy/sequential/sort.hpp"
 #include "RAJA/policy/sequential/teams.hpp"
 #include "RAJA/policy/sequential/WorkGroup.hpp"
+#include "RAJA/policy/sequential/graph.hpp"
 
 #endif  // closing endif for header file include guard

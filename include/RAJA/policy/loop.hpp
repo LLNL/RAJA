@@ -28,5 +28,6 @@
 #include "RAJA/policy/loop/sort.hpp"
 #include "RAJA/policy/loop/teams.hpp"
 #include "RAJA/policy/loop/WorkGroup.hpp"
+#include "RAJA/policy/loop/graph.hpp"
 
 #endif  // closing endif for header file include guard

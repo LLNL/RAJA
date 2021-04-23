@@ -62,7 +62,7 @@ struct loop_work : make_policy_pattern_launch_platform_t<Policy::loop,
 };
 
 ///
-/// WorkGroup execution policies
+/// graph execution policies
 ///
 struct loop_graph : make_policy_pattern_launch_platform_t<Policy::loop,
                                                           Pattern::graph,

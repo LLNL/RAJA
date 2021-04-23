@@ -19,6 +19,7 @@
 #define RAJA_policy_loop_graph_DAG_HPP
 
 #include "RAJA/config.hpp"
+
 #include "RAJA/pattern/graph/DAG.hpp"
 #include "RAJA/pattern/graph/Node.hpp"
 

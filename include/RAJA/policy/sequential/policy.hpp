@@ -66,7 +66,7 @@ struct seq_work : make_policy_pattern_launch_platform_t<Policy::sequential,
 };
 
 ///
-/// WorkGroup execution policies
+/// graph execution policies
 ///
 struct seq_graph : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                          Pattern::graph,
