@@ -40,35 +40,40 @@ namespace detail
 template < typename GraphResource >
 struct DAGExec<omp_task_graph, GraphResource>
 {
+private:
+  using base_node_type = typename DAG<omp_task_graph, GraphResource>::base_node_type;
+
+public:
   resources::EventProxy<GraphResource> operator()(
       DAG<omp_task_graph, GraphResource>& dag, GraphResource& gr)
   {
 #pragma omp parallel
 #pragma omp single nowait
     {
-      dag.forward_traverse(
-          [](Node<GraphResource>*) {
-            // do nothing on examine
-          },
-          [&](Node<GraphResource>* node) {
-            // exec on enter
-
-            // nodes express in dependencies through themselves and
-            // express out dependencies through their child nodes
-            size_t num_children = node->m_children.size();
-            Node<GraphResource>** children = &node->m_children[0];
-
-#pragma omp task depend(in:node[0:1]) depend(out:children[0:num_children][0:1])
-            {
-              node->exec(gr);
-            }
-
-          },
-          [](Node<GraphResource>*) {
-            // do nothing on exit
-          });
+      for (base_node_type* child : dag.m_children) {
+        traverse(child, gr);
+      }
     } // end omp parallel
     return resources::EventProxy<GraphResource>(&gr);
+  }
+private:
+
+  static void traverse(base_node_type* node, GraphResource& gr)
+  {
+    int node_count;
+#pragma omp atomic capture
+    node_count = ++node->m_count;
+    if (node_count == node->m_parent_count) {
+      node->m_count = 0;
+
+#pragma omp task
+      {
+        node->exec(gr);
+        for (base_node_type* child : node->m_children) {
+          traverse(child, gr);
+        }
+      } // end omp task
+    }
   }
 };
 
