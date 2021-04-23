@@ -200,6 +200,35 @@ void launch(ExecPlace place, Resources const &team_resources, BODY const &body)
 }
 
 
+///Prototype for
+#if 0
+template <typename POLICY_LIST, typename BODY>
+void launch(ExecPlace place, RAJA::resources::Resource &res,
+            Resources const &team_resources, BODY const &body)
+{
+  switch (place) {
+    case HOST: {
+      using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
+      using Res = typename resources::get_resource<typename POLICY_LIST::host_policy_t>::type;
+      Res *r = res.try_get<Res>(); // or get<Res>()
+      if(r == nullptr) {/*throw error \n*/};
+      launch_t::exec(r, LaunchContext(team_resources, HOST), body);
+      break;
+    }
+#ifdef RAJA_DEVICE_ACTIVE
+    case DEVICE: {
+      using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
+      launch_t::exec(LaunchContext(team_resources, DEVICE), body);
+      break;
+    }
+#endif
+    default:
+      RAJA_ABORT_OR_THROW("Unknown launch place or device is not enabled");
+  }
+}
+#endif
+
+
 template<typename POLICY_LIST>
 #if defined(RAJA_DEVICE_CODE)
 using loop_policy = typename POLICY_LIST::device_policy_t;

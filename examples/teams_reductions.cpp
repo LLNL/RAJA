@@ -149,6 +149,9 @@ int main(int argc, char *argv[])
   const int TEAM_SZ = 256;
   const int GRID_SZ = RAJA_DIVIDE_CEILING_INT(N,TEAM_SZ);
 
+  RAJA::resources::Host res_host;
+  RAJA::resources::Cuda res_gpu;
+
   RAJA::expt::launch<launch_policy>
     (select_cpu_or_gpu,
      RAJA::expt::Resources(RAJA::expt::Teams(GRID_SZ),
@@ -168,6 +171,8 @@ int main(int argc, char *argv[])
          });
        
     });
+
+
 
   std::cout << "\tsum = " << kernel_sum.get() << std::endl;
   std::cout << "\tmin = " << kernel_min.get() << std::endl;
