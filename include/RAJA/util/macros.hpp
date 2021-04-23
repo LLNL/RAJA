@@ -126,7 +126,9 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
 RAJA_HOST_DEVICE
 inline void RAJA_ABORT_OR_THROW(const char *str)
 {
-#if defined(__CUDA_ARCH__)
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+  printf ( "%s\n", str );
+#elif defined(__CUDA_ARCH__)
   asm ("trap;");
 
 #elif defined(__HIP_DEVICE_COMPILE__)

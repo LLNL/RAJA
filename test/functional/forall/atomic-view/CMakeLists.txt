@@ -15,9 +15,9 @@ set(TESTTYPES AtomicView AtomicMultiView)
 # from the list of tests to generate here.
 #
 if(RAJA_ENABLE_TARGET_OPENMP)
-  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
-    list(REMOVE_ITEM FORALL_ATOMIC_BACKENDS OpenMPTarget)
-  endif()
+  #if(RAJA_TEST_OPENMP_TARGET_SUBSET)
+  #  list(REMOVE_ITEM FORALL_ATOMIC_BACKENDS OpenMPTarget)
+  #endif()
 endif()
 
 #
@@ -42,20 +42,20 @@ unset( TESTTYPES )
 #
 # If building a subset of openmp target tests, add tests to build here.
 #
-if(RAJA_ENABLE_TARGET_OPENMP)
-  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
-
-    set(ATOMIC_BACKEND OpenMPTarget)
-    set(TEST AtomicView)
-
-    configure_file( test-forall-atomic-view.cpp.in
-                    test-forall-${TEST}-${ATOMIC_BACKEND}.cpp )
-    raja_add_test( NAME test-forall-${TEST}-${ATOMIC_BACKEND}
-                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-${TEST}-${ATOMIC_BACKEND}.cpp )
-
-    target_include_directories(test-forall-${TEST}-${ATOMIC_BACKEND}.exe
-                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-
-  endif()
-endif()
+#if(RAJA_ENABLE_TARGET_OPENMP)
+#  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
+#
+#    set(ATOMIC_BACKEND OpenMPTarget)
+#    set(TEST AtomicView)
+#
+#    configure_file( test-forall-atomic-view.cpp.in
+#                    test-forall-${TEST}-${ATOMIC_BACKEND}.cpp )
+#    raja_add_test( NAME test-forall-${TEST}-${ATOMIC_BACKEND}
+#                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-${TEST}-${ATOMIC_BACKEND}.cpp )
+#
+#    target_include_directories(test-forall-${TEST}-${ATOMIC_BACKEND}.exe
+#                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+#
+#  endif()
+#endif()
 
