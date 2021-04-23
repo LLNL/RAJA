@@ -19,4 +19,14 @@
 using SequentialGraphExecPols = camp::list< RAJA::seq_graph,
                                             RAJA::loop_graph >;
 
+#if defined(RAJA_ENABLE_OPENMP)
+using OpenMPGraphExecPols = camp::list<
+#if defined(RAJA_ENABLE_OPENMP_TASK_DEPEND)
+                                        RAJA::omp_task_graph
+#else
+                                        RAJA::loop_graph // must have at least one entry
+#endif
+                                       >;
+#endif  // RAJA_ENABLE_OPENMP
+
 #endif  // __RAJA_test_graph_execpol_HPP__

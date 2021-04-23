@@ -23,15 +23,15 @@
 #include "RAJA/policy/PolicyBase.hpp"
 
 #if defined(RAJA_COMPILER_MSVC)
-typedef enum omp_sched_t { 
-    // schedule kinds 
-    omp_sched_static = 0x1, 
-    omp_sched_dynamic = 0x2, 
-    omp_sched_guided = 0x3, 
-    omp_sched_auto = 0x4, 
-    
-    // schedule modifier 
-    omp_sched_monotonic = 0x80000000u 
+typedef enum omp_sched_t {
+    // schedule kinds
+    omp_sched_static = 0x1,
+    omp_sched_dynamic = 0x2,
+    omp_sched_guided = 0x3,
+    omp_sched_auto = 0x4,
+
+    // schedule modifier
+    omp_sched_monotonic = 0x80000000u
 } omp_sched_t;
 #else
 #include <omp.h>
@@ -176,6 +176,19 @@ struct omp_work : make_policy_pattern_launch_platform_t<Policy::openmp,
 };
 
 ///
+/// graph execution policies
+///
+#if defined(RAJA_ENABLE_OPENMP_TASK_DEPEND)
+
+struct omp_task_graph : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                                              Pattern::graph,
+                                                              Launch::sync,
+                                                              Platform::host> {
+};
+
+#endif
+
+///
 ///////////////////////////////////////////////////////////////////////
 ///
 /// Reduction execution policies
@@ -213,6 +226,9 @@ using policy::omp::omp_reduce;
 using policy::omp::omp_reduce_ordered;
 using policy::omp::omp_synchronize;
 using policy::omp::omp_work;
+#if defined(RAJA_ENABLE_OPENMP_TASK_DEPEND)
+using policy::omp::omp_task_graph;
+#endif
 
 }  // namespace RAJA
 

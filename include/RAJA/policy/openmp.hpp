@@ -40,6 +40,7 @@
 #include "RAJA/policy/openmp/synchronize.hpp"
 #include "RAJA/policy/openmp/teams.hpp"
 #include "RAJA/policy/openmp/WorkGroup.hpp"
+#include "RAJA/policy/openmp/graph.hpp"
 
 
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)

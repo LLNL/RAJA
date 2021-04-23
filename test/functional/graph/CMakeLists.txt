@@ -6,10 +6,10 @@
 ###############################################################################
 
 list(APPEND GRAPH_BACKENDS Sequential)
-
 list(APPEND GRAPH_FORALL_BACKENDS Sequential)
 
 if(RAJA_ENABLE_OPENMP)
+  list(APPEND GRAPH_BACKENDS OpenMP)
   list(APPEND GRAPH_FORALL_BACKENDS OpenMP)
 endif()
 

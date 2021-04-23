@@ -159,6 +159,9 @@ namespace RAJA {
 #if _OPENMP >= 200805
 #define RAJA_ENABLE_OPENMP_TASK
 #endif
+#if _OPENMP >= 201307
+#define RAJA_ENABLE_OPENMP_TASK_DEPEND
+#endif
 #else
 #error RAJA configured with ENABLE_OPENMP, but OpenMP not supported by current compiler
 #endif // _OPENMP
