@@ -70,7 +70,7 @@ namespace statement
  *
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
-struct SyclKernelExtTrivial
+struct SyclKernelExtNonTrivial
     : public internal::Statement<sycl_exec<0>, EnclosedStmts...> {
 };
 
@@ -79,8 +79,8 @@ struct SyclKernelExtTrivial
  * The kernel launch is synchronous.
  */
 template <typename... EnclosedStmts>
-using SyclKernelTrivial =
-    SyclKernelExtTrivial<sycl_launch<false>,
+using SyclKernelNonTrivial =
+    SyclKernelExtNonTrivial<sycl_launch<false>,
                   EnclosedStmts...>;
 
 /*! RAJA::kernel statement that launches a SYCL kernel.
@@ -145,7 +145,51 @@ struct SyclLaunchHelper;
  * maximum number of threads/blocks
  */
 template<typename LaunchPolicy, typename StmtList, typename Data, typename Types>
-struct SyclLaunchHelperTrivial;
+struct SyclLaunchHelperNonTrivial;
+
+/*!
+ * Helper class specialization to determine the number of threads and blocks.
+ * The user may specify the number of threads and blocks or let one or both be
+ * determined at runtime using the SYCL occupancy calculator.
+ */
+template<bool async0, typename StmtList, typename Data, typename Types>
+struct SyclLaunchHelperNonTrivial<sycl_launch<async0>,StmtList,Data,Types>
+{
+  using Self = SyclLaunchHelperNonTrivial;
+
+  static constexpr bool async = async0;
+
+  using executor_t = internal::sycl_statement_list_executor_t<StmtList, Data, Types>;
+  using data_t = camp::decay<Data>;
+
+  static void launch(Data &&data,
+                     internal::LaunchDims launch_dims,
+                     size_t shmem,
+                     cl::sycl::queue* qu)
+  {
+
+    data_t* m_data = (data_t*) cl::sycl::malloc_device(sizeof(data_t), *qu);
+    auto e = qu->memcpy(m_data, &data, sizeof(data_t));
+    e.wait();
+
+//    std::cout << "Non-Trivial, synchronous" << std::endl;
+
+    qu->submit([&](cl::sycl::handler& h) {
+ 
+      h.parallel_for(launch_dims.fit_nd_range(),
+                     [=] (cl::sycl::nd_item<3> item) {
+        
+        SyclKernelLauncher<Data, executor_t>(*m_data, item);
+
+      });
+    });
+
+    if (true/*!async*/) { qu->wait(); };
+
+    cl::sycl::free(m_data, *qu);
+
+  }
+};
 
 /*!
  * Helper class specialization to determine the number of threads and blocks.
@@ -165,56 +209,12 @@ struct SyclLaunchHelper<sycl_launch<async0>,StmtList,Data,Types>
   static void launch(Data &&data,
                      internal::LaunchDims launch_dims,
                      size_t shmem,
-                     cl::sycl::queue* stream)
-  {
-
-    data_t* m_data = (data_t*) cl::sycl::malloc_device(sizeof(data_t), *stream);
-    auto e = stream->memcpy(m_data, &data, sizeof(data_t));
-    e.wait();
-
-//    std::cout << "Non-Trivial, synchronous" << std::endl;
-
-    stream->submit([&](cl::sycl::handler& h) {
- 
-      h.parallel_for(launch_dims.fit_nd_range(),
-                     [=] (cl::sycl::nd_item<3> item) {
-        
-        SyclKernelLauncher<Data, executor_t>(*m_data, item);
-
-      });
-    });
-
-    if (true/*!async*/) { stream->wait(); };
-
-    cl::sycl::free(m_data, *stream);
-
-  }
-};
-
-/*!
- * Helper class specialization to determine the number of threads and blocks.
- * The user may specify the number of threads and blocks or let one or both be
- * determined at runtime using the SYCL occupancy calculator.
- */
-template<bool async0, typename StmtList, typename Data, typename Types>
-struct SyclLaunchHelperTrivial<sycl_launch<async0>,StmtList,Data,Types>
-{
-  using Self = SyclLaunchHelperTrivial;
-
-  static constexpr bool async = async0;
-
-  using executor_t = internal::sycl_statement_list_executor_t<StmtList, Data, Types>;
-  using data_t = camp::decay<Data>;
-
-  static void launch(Data &&data,
-                     internal::LaunchDims launch_dims,
-                     size_t shmem,
-                     cl::sycl::queue* stream)
+                     cl::sycl::queue* qu)
   {
 
 //    std::cout << "Trivial, asynchronous" << std::endl;
 
-    stream->submit([&](cl::sycl::handler& h) {
+    qu->submit([&](cl::sycl::handler& h) {
  
       h.parallel_for(launch_dims.fit_nd_range(),
                      [=] (cl::sycl::nd_item<3> item) {
@@ -224,7 +224,7 @@ struct SyclLaunchHelperTrivial<sycl_launch<async0>,StmtList,Data,Types>
       });
     });
 
-    if (!async) { stream->wait(); };
+    if (!async) { qu->wait(); };
 
   }
 };
@@ -270,11 +270,11 @@ struct StatementExecutor<
  */
 template <typename LaunchConfig, typename... EnclosedStmts, typename Types>
 struct StatementExecutor<
-    statement::SyclKernelExtTrivial<LaunchConfig, EnclosedStmts...>, Types> {
+    statement::SyclKernelExtNonTrivial<LaunchConfig, EnclosedStmts...>, Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
   using StatementType =
-      statement::SyclKernelTrivial<LaunchConfig, EnclosedStmts...>;
+      statement::SyclKernelNonTrivial<LaunchConfig, EnclosedStmts...>;
 
   template <typename Data>
   static inline void exec(Data &&data)
@@ -282,7 +282,7 @@ struct StatementExecutor<
 
     using data_t = camp::decay<Data>;
     using executor_t = sycl_statement_list_executor_t<stmt_list_t, data_t, Types>;
-    using launch_t = SyclLaunchHelperTrivial<LaunchConfig, stmt_list_t, data_t, Types>;
+    using launch_t = SyclLaunchHelperNonTrivial<LaunchConfig, stmt_list_t, data_t, Types>;
 
     //
     // Compute the requested kernel dimensions

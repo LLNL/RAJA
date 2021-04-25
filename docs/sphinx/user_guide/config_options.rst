@@ -128,7 +128,8 @@ and their default settings:
       ENABLE_TARGET_OPENMP     Off (when on, ENABLE_OPENMP must also be on)
       ENABLE_TBB               Off 
       ENABLE_CUDA              Off 
-      ENABLE_HIP               Off 
+      ENABLE_HIP               Off
+      ENABLE_SYCL              Off 
       ======================   ============================================
 
      Other compilation options are available via the following:

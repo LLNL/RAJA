@@ -220,6 +220,59 @@ policies have the prefix ``hip_``.
                                                         thread warp.
  ======================================== ============= ========================
 
+ ======================================== ============= ========================
+ SYCL Execution Policies              Works with    Brief description
+ ======================================== ============= ========================
+ sycl_exec<BLOCK_SIZE>                forall,       Execute loop iterations
+                                          scan,         in a GPU kernel launched
+                                          sort          with given thread-block
+                                                        size. If block size not
+                                                        given, the default
+                                                        of 256 threads/block is 
+                                                        used. 
+ sycl_local_1_direct                 kernel (For)  Map loop iterates
+                                                        directly to GPU threads
+                                                        in x-dimension, one
+                                                        iterate per thread
+                                                        (see note below about
+                                                        limitations)
+ sycl_local_2_direct                 kernel (For)  Same as above, but map
+                                                        to threads in y-dim
+ sycl_local_3_direct                 kernel (For)  Same as above, but map
+                                                        to threads in z-dim
+ sycl_local_1_loop                   kernel (For)  Similar to 
+                                                        thread-x-direct
+                                                        policy, but use a
+                                                        block-stride loop which
+                                                        doesn't limit number of
+                                                        loop iterates
+ sycl_local_2_loop                   kernel (For)  Same as above, but for
+                                                        threads in y-dimension
+ sycl_local_3_loop                   kernel (For)  Same as above, but for
+                                                        threads in z-dimension
+ sycl_group_1_direct                  kernel (For)  Map loop iterates
+                                                        directly to GPU thread
+                                                        blocks in x-dimension,
+                                                        one iterate per block
+ sycl_group_2_direct                  kernel (For)  Same as above, but map
+                                                        to blocks in y-dimension
+ sycl_group_3_direct                  kernel (For)  Same as above, but map
+                                                        to blocks in z-dimension
+ sycl_group_1_loop                    kernel (For)  Similar to 
+                                                        block-x-direct policy, 
+                                                        but use a grid-stride 
+                                                        loop.
+ sycl_group_2_loop                    kernel (For)  Same as above, but use
+                                                        blocks in y-dimension
+ sycl_group_3_loop                    kernel (For)  Same as above, but use
+                                                        blocks in z-dimension
+ sycl_global_1<BLOCK_SIZE>
+ sycl_global_2<BLOCK_SIZE>
+ sycl_global_3<BLOCK_SIZE>
+
+ ======================================== ============= ========================
+
+
  ====================================== ============= ==========================
  OpenMP Target Execution Policies       Works with    Brief description
  ====================================== ============= ==========================

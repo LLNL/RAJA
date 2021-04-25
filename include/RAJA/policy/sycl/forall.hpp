@@ -113,6 +113,8 @@ RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl 
 
   // Only launch kernel if we have something to iterate over
   if (len > 0 && BlockSize > 0) {
+    // TODO BRIAN:
+    // Message if WG size is not supported
 
     //
     // Compute the number of blocks
@@ -214,8 +216,8 @@ RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &
             (*lbody)((*beg)[ii]);
           }
         });
-      });
-    q->wait();
+      }).wait();
+//    q->wait();
       cl::sycl::free(lbody, *q);
       cl::sycl::free(beg, *q);
 
