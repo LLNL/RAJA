@@ -266,7 +266,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _matmult_ranges_start
   RAJA::RangeSegment row_range(0, N);
   RAJA::RangeSegment col_range(0, N);
+#if defined(RAJA_ENABLE_CUDA)
   RAJA::RangeSegment dot_range(0, N);
+#endif
   // _matmult_ranges_end
 
 //----------------------------------------------------------------------------//
