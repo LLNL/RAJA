@@ -263,7 +263,7 @@ TEST( GraphBasicExecUnitTest, RandomExec )
   }
 
   // check graph edges are valid
-  for (std::pair<int, int> const& edge : g.edges()) {
+  for (auto const& edge : g.edges()) {
     ASSERT_LE(0, edge.first);
     ASSERT_LT(edge.first, num_nodes);
     ASSERT_LE(0, edge.second);
@@ -284,7 +284,7 @@ TEST( GraphBasicExecUnitTest, RandomExec )
   ASSERT_EQ(count, num_nodes);
 
   // check graph edges are valid
-  for (std::pair<int, int> const& edge : g.edges()) {
+  for (auto const& edge : g.edges()) {
     ASSERT_LE(0, order[edge.first]);
     ASSERT_LT(order[edge.first], num_nodes);
     ASSERT_LE(0, order[edge.second]);
