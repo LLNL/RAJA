@@ -304,7 +304,7 @@ void MixedNodesTestImpl(int node_size)
         add_node_data(hip_res);
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
-        using Allocator = typename detail::ResourceAllocator<camp::resources::Cuda>::template std_allocator<char>;
+        using Allocator = typename detail::ResourceAllocator<camp::resources::Hip>::template std_allocator<char>;
         auto& n = g.add_node(node_id, edges_to_node,
             RAJA::expt::graph::WorkGroup<
              RAJA::WorkGroupPolicy<RAJA::hip_work_async<1024>,
