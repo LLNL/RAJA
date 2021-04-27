@@ -54,8 +54,8 @@ void setQueue(camp::resources::Resource* qu) {
   app_q = qu;
 }
 
-//! State of raja cuda stream synchronization for cuda reducer objects
-std::unordered_map<cl::sycl::queue, bool> g_stream_info_map{
+//! State of raja sycl queue synchronization for sycl reducer objects
+std::unordered_map<cl::sycl::queue, bool> g_queue_info_map{
     {cl::sycl::queue(), true}};
 
 cl::sycl::queue* getQueue() {
@@ -64,7 +64,7 @@ cl::sycl::queue* getQueue() {
   }
 
   std::cout << "NOT USING Application QUEUE" << std::endl;
-  return &g_status.stream;
+  return &g_status.qu;
 }
 
 }  // namespace detail

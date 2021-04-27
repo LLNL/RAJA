@@ -110,20 +110,10 @@ struct LaunchDims {
     }
 
 
-    // TODO: Update. Requested local sizes need to fit (256 for gen9)
-    while ( launch_local.x * launch_local.y * launch_local.z > 256) {
-      launch_local.x = sqrt(launch_local.x);
-      launch_local.y = sqrt(launch_local.y);
-      launch_local.z = sqrt(launch_local.z);
-    }
+    // Note: Work group allowable sizes depend on the device
+    //       Could query the device to set them
+    //       For now, error on bad work group sizei
 
-/*    std::cout << "\nGlobal.x = " << launch_global.x
-              << "\nGlobal.y = " << launch_global.y
-              << "\nGlobal.z = " << launch_global.z
-              << "\nThreads.x = " << launch_local.x
-              << "\nThreads.y = " << launch_local.y
-              << "\nThreads.z = " << launch_local.z;
-*/
     cl::sycl::range<3> ret_th = {launch_local.x, launch_local.y, launch_local.z};
     cl::sycl::range<3> ret_gl = {launch_global.x, launch_global.y, launch_global.z};
 

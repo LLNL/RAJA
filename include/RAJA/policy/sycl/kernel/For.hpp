@@ -159,7 +159,7 @@ struct SyclStatementExecutor<
 };
 
 /*
- * Executor for block work sharing inside CudaKernel.
+ * Executor for work group sharing inside SyclKernel.
  * Provides a group-stride loop (stride of grid range) for
  * each group in dims.
  * Assigns the loop index to offset ArgumentId
@@ -287,7 +287,7 @@ struct SyclStatementExecutor<
 };
 
 /*
- * Executor for work item sharing loop inside CudaKernel.
+ * Executor for local item sharing loop inside SyclKernel.
  * Provides a local-stride loop (stride of work item local range)
  * for each item in dim.
  * Assigns the loop index to offset ArgumentId
@@ -342,11 +342,6 @@ struct SyclStatementExecutor<
   LaunchDims calculateDimensions(Data const &data)
   {
     auto len = segment_length<ArgumentId>(data);
-
-// TODO
-    // request one thread per element in the segment
-//    LaunchDims dims;
-//    set_cuda_dim<ThreadDim>(dims.local, len);
 
     // request one block per element in the segment
     LaunchDims dims;

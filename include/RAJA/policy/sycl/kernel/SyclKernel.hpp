@@ -45,24 +45,13 @@ namespace RAJA
 
 /*! TODO
  * SYCL kernel launch policy where the user may specify the number of physical
- * thread blocks and threads per block.
- * If num_blocks is 0 and num_threads is non-zero then num_blocks is chosen at
- * runtime.
- * Num_blocks is chosen to maximize the number of blocks running concurrently.
- * If num_threads and num_blocks are both 0 then num_threads and num_blocks are
- * chosen at runtime.
- * Num_threads and num_blocks are determined by the SYCL occupancy calculator.
- * If num_threads is 0 and num_blocks is non-zero then num_threads is chosen at
- * runtime.
- * Num_threads is 1024, which may not be appropriate for all kernels.
+ * work group and work items per group.
  */
 template <bool async0>
 struct sycl_launch {};
 
 namespace statement
 {
-
-
 
 /*!
  * A RAJA::kernel statement that launches a SYCL kernel.
@@ -168,11 +157,13 @@ struct SyclLaunchHelperNonTrivial<sycl_launch<async0>,StmtList,Data,Types>
                      cl::sycl::queue* qu)
   {
 
+    //
+    // Setup shared memory buffers
+    // Kernel body is nontrivially copyable, create space on device and copy to
+    // Workaround until "is_device_copyable" is supported
+    //
     data_t* m_data = (data_t*) cl::sycl::malloc_device(sizeof(data_t), *qu);
-    auto e = qu->memcpy(m_data, &data, sizeof(data_t));
-    e.wait();
-
-//    std::cout << "Non-Trivial, synchronous" << std::endl;
+    qu->memcpy(m_data, &data, sizeof(data_t)).wait();
 
     qu->submit([&](cl::sycl::handler& h) {
  
@@ -182,9 +173,7 @@ struct SyclLaunchHelperNonTrivial<sycl_launch<async0>,StmtList,Data,Types>
         SyclKernelLauncher<Data, executor_t>(*m_data, item);
 
       });
-    });
-
-    if (true/*!async*/) { qu->wait(); };
+    }).wait(); // Need to wait to free memory
 
     cl::sycl::free(m_data, *qu);
 
@@ -211,8 +200,6 @@ struct SyclLaunchHelper<sycl_launch<async0>,StmtList,Data,Types>
                      size_t shmem,
                      cl::sycl::queue* qu)
   {
-
-//    std::cout << "Trivial, asynchronous" << std::endl;
 
     qu->submit([&](cl::sycl::handler& h) {
  
