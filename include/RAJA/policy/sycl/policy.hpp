@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA sequential policy definitions.
+ * \brief   Header file containing RAJA SYCL policy definitions.
  *
  ******************************************************************************
  */
@@ -66,7 +66,7 @@ struct sycl_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::sycl> {
 };
 
-template <size_t BLOCK_SIZE, bool Async = true>
+template <size_t BLOCK_SIZE, bool Async = false>
 struct sycl_exec_nontrivial : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Policy::sycl,
                        RAJA::Pattern::forall,
@@ -86,23 +86,23 @@ using policy::sycl::sycl_exec;
 using policy::sycl::sycl_exec_nontrivial;
 using policy::sycl::sycl_reduce;
 
-// TODO
-template<int dim, int BLOCK_SIZE>
+/*!
+ * Maps indices to SYCL global id
+ * Optional WORK_GROUP_SIZE to 
+ */ 
+template<int dim, int WORK_GROUP_SIZE = 1>
 struct sycl_global_123{};
 
-template<int BLOCK_SIZE>
-using sycl_global_1 = sycl_global_123<0, BLOCK_SIZE>;
-template<int BLOCK_SIZE>
-using sycl_global_2 = sycl_global_123<1, BLOCK_SIZE>;
-template<int BLOCK_SIZE>
-using sycl_global_3 = sycl_global_123<2, BLOCK_SIZE>;
+template<int WORK_GROUP_SIZE>
+using sycl_global_1 = sycl_global_123<0, WORK_GROUP_SIZE>;
+template<int WORK_GROUP_SIZE>
+using sycl_global_2 = sycl_global_123<1, WORK_GROUP_SIZE>;
+template<int WORK_GROUP_SIZE>
+using sycl_global_3 = sycl_global_123<2, WORK_GROUP_SIZE>;
 
 /*!
- * Maps segment indices to SYCL threads.
- * This is the lowest overhead mapping, but requires that there are enough
- * physical threads to fit all of the direct map requests.
- * For example, a segment of size 2000 will not fit, and trigger a runtime
- * error.
+ * Maps segment indices to SYCL group ids.
+ * Loops to allow for any value
  */
 template<int dim>
 struct sycl_group_123_loop{};
@@ -112,11 +112,8 @@ using sycl_group_2_loop = sycl_group_123_loop<1>;
 using sycl_group_3_loop = sycl_group_123_loop<2>;
 
 /*!
- * Maps segment indices to SYCL threads.
- * This is the lowest overhead mapping, but requires that there are enough
- * physical threads to fit all of the direct map requests.
- * For example, a segment of size 2000 will not fit, and trigger a runtime
- * error.
+ * Maps segment indices to SYCL local ids.
+ * Loops to allow for any value
  */
 template<int dim>
 struct sycl_local_123_loop{};
@@ -126,11 +123,7 @@ using sycl_local_2_loop = sycl_local_123_loop<1>;
 using sycl_local_3_loop = sycl_local_123_loop<2>;
 
 /*!
- * Maps segment indices to SYCL threads.
- * This is the lowest overhead mapping, but requires that there are enough
- * physical threads to fit all of the direct map requests.
- * For example, a segment of size 2000 will not fit, and trigger a runtime
- * error.
+ * Maps segment indices to SYCL group ids.
  */
 template<int dim>
 struct sycl_group_123_direct{};
@@ -140,11 +133,7 @@ using sycl_group_2_direct = sycl_group_123_direct<1>;
 using sycl_group_3_direct = sycl_group_123_direct<2>;
 
 /*!
- * Maps segment indices to SYCL threads.
- * This is the lowest overhead mapping, but requires that there are enough
- * physical threads to fit all of the direct map requests.
- * For example, a segment of size 2000 will not fit, and trigger a runtime
- * error.
+ * Maps segment indices to SYCL local ids.
  */
 template<int dim>
 struct sycl_local_123_direct{};

@@ -20,9 +20,6 @@
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/sycl/policy.hpp"
-//#include <CL/__spirv/spirv_vars.hpp>
-//#include <CL/sycl/ONEAPI/atomic_ref.hpp>
-//#include <CL/sycl/detail/defines.hpp>
 
 namespace RAJA
 {
@@ -62,7 +59,7 @@ struct maxloc
   }
 };
 
-// Alias for clarity. Reduction size operates on number of omp teams.
+// Alias for clarity. Reduction size operates on number of  teams.
 // Ideally, MaxNumTeams = ThreadsPerTeam in omp_target_parallel_for_exec.
 static int MaxNumTeams = 256;
 
@@ -180,14 +177,6 @@ struct TargetReduce
   //! apply reduction on device upon destruction
   ~TargetReduce()
   {
-    //assert ( omp_get_num_teams() <= omp::MaxNumTeams );  // Leaving out until XL is fixed 2/25/2019.
-//    if (!omp_is_initial_device()) {
-//#pragma omp critical
-//      {
-  //      int tid = omp_get_team_num();
-    //    Reducer{}(val.device[tid], val.value);
-      //}
-   // }
   }
 
   //! map result value back to host if not done already; return aggregate value
@@ -197,7 +186,6 @@ struct TargetReduce
       val.deviceToHost(info);
 
       for (int i = 0; i < sycl::MaxNumTeams; ++i) {
-//        std::cout << "host[" << i << "] = " << val.host[i] << std::endl;
         Reducer{}(val.value, val.host[i]);
       }
       val.cleanup(info);
@@ -233,7 +221,6 @@ struct TargetReduce
     auto i = 0; //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
     auto atm = cl::sycl::ONEAPI::atomic_ref<T, cl::sycl::ONEAPI::memory_order::relaxed, cl::sycl::ONEAPI::memory_scope::device, cl::sycl::access::address_space::global_space>(val.device[i]);
     atm.fetch_add(rhsVal);  
-//    Reducer{}(atm, rhsVal);
     return *this;
 #else
     auto i = 0;
@@ -249,7 +236,6 @@ private:
   //! storage for offload information (host ID, device ID)
   sycl::Offload_Info info;
   //! storage for reduction data (host ptr, device ptr, value)
-//  sycl::Reduce_Data<T> val;
   T initVal;
   T finalVal;
 };

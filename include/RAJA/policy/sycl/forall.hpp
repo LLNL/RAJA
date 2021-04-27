@@ -39,7 +39,6 @@
 
 #include "RAJA/policy/sycl/MemUtils_SYCL.hpp"
 #include "RAJA/policy/sycl/policy.hpp"
-//#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
 
@@ -75,7 +74,6 @@ cl::sycl::range<1> getGridDim(size_t len, size_t block_size)
 }  // namespace impl
 
 
-
 //
 ////////////////////////////////////////////////////////////////////////
 //
@@ -84,14 +82,11 @@ cl::sycl::range<1> getGridDim(size_t len, size_t block_size)
 ////////////////////////////////////////////////////////////////////////
 //
 
-
-
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
 RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl &sycl_res,
                                                                 sycl_exec<BlockSize, Async>,
                                                                 Iterable&& iter,
                                                                 LoopBody&& loop_body)
-//RAJA_INLINE void launchSyclTrivial(size_t BlockSize, bool Async, Iterable&& iter, LoopBody&& loop_body)
 {
 
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
@@ -105,16 +100,11 @@ RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl 
   Iterator end = std::end(iter);
   IndexType len = std::distance(begin, end);
 
-//  std::cout << "loop_body ptr: " << &loop_body << std::endl;
-//  using return_type = typename std::remove_reference<LOOP_BODY>::type;
-//  auto func = loop_body;
-
-//std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-
   // Only launch kernel if we have something to iterate over
   if (len > 0 && BlockSize > 0) {
-    // TODO BRIAN:
-    // Message if WG size is not supported
+    // Note: We could fix an incorrect workgroup size.
+    //       It would change what was specified.
+    //       For now, leave the device compiler to error with invalid WG size.
 
     //
     // Compute the number of blocks
@@ -123,11 +113,6 @@ RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl 
     sycl_dim_t gridSize = impl::getGridDim(static_cast<size_t>(len), BlockSize);
 
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
-  //  cl::sycl::device D = q->get_device();
-    //cl::sycl::context C = q->get_context();
-//    cl::sycl::program P(C);
-//    auto FptrStorage = cl::sycl::ONEAPI::get_device_func_ptr(&loop_body, "", P, D);
-//    std::cout << "RAJA launch qu ptr = " << q << std::endl;
 
     q->submit([&](cl::sycl::handler& h) {
 
@@ -135,7 +120,6 @@ RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl 
                       [=]  (cl::sycl::nd_item<1> it) {
 
         size_t ii = it.get_global_id(0);
-//        auto Fptr = cl::sycl::ONEAPI::to_device_func_ptr<decltype(loop_body)>(FptrStorage);
         if (ii < len) {
           loop_body(begin[ii]);
         }
@@ -144,10 +128,6 @@ RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl 
 
     if (!Async) { q->wait(); }
   }
-//std::chrono::steady_clock::time_point stop = std::chrono::steady_clock::now();
-
-//std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() << "[µs]" << std::endl;
-//std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds> (stop - start).count() << "[ns]" << std::endl;
 
   return resources::EventProxy<resources::Sycl>(&sycl_res);
 }
@@ -162,10 +142,6 @@ RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
-//  auto func = impl::forall_cuda_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
-
-//  cudaStream_t stream = cuda_res.get_stream();
-
   //
   // Compute the requested iteration space size
   //
@@ -175,6 +151,9 @@ RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &
 
   // Only launch kernel if we have something to iterate over
   if (len > 0 && BlockSize > 0) {
+    // Note: We could fix an incorrect workgroup size.
+    //       It would change what was specified.
+    //       For now, leave the device compiler to error with invalid WG size.
 
     //
     // Compute the number of blocks
@@ -189,38 +168,31 @@ RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &
 
     //
     // Setup shared memory buffers
+    // Kernel body is nontrivially copyable, create space on device and copy to
+    // Workaround until "is_device_copyable" is supported
     //
-//    size_t shmem = 0;
+    lbody = (LOOP_BODY*) cl::sycl::malloc_device(sizeof(LOOP_BODY), *q);
+    q->memcpy(lbody, &loop_body, sizeof(LOOP_BODY)).wait();
 
-    //  printf("gridsize = (%d,%d), blocksize = %d\n",
-    //         (int)gridSize.x,
-    //         (int)gridSize.y,
-    //         (int)blockSize.x);
-// TODO: BRIAN
-      lbody = (LOOP_BODY*) cl::sycl::malloc_device(sizeof(LOOP_BODY), *q);
-      auto e = q->memcpy(lbody, &loop_body, sizeof(LOOP_BODY));
-      e.wait();
+    beg = (Iterator*) cl::sycl::malloc_device(sizeof(Iterator), *q);
+    q->memcpy(beg, &begin, sizeof(Iterator)).wait();
 
-      beg = (Iterator*) cl::sycl::malloc_device(sizeof(Iterator), *q);
-      auto e2 = q->memcpy(beg, &begin, sizeof(Iterator));
-      e2.wait();
+    q->submit([&](cl::sycl::handler& h) {
 
-      q->submit([&](cl::sycl::handler& h) {
+      h.parallel_for( cl::sycl::nd_range<1>{gridSize, blockSize},
+                      [=]  (cl::sycl::nd_item<1> it) {
 
-        h.parallel_for( cl::sycl::nd_range<1>{gridSize, blockSize},
-                        [=]  (cl::sycl::nd_item<1> it) {
+        size_t ii = it.get_global_id(0);
 
-          size_t ii = it.get_global_id(0);
+        if (ii < len) {
+          (*lbody)((*beg)[ii]);
+        }
+      });
+    }).wait(); // Need to wait for completion to free memory
 
-          if (ii < len) {
-            (*lbody)((*beg)[ii]);
-          }
-        });
-      }).wait();
-//    q->wait();
-      cl::sycl::free(lbody, *q);
-      cl::sycl::free(beg, *q);
-
+    // Free our device memory
+    cl::sycl::free(lbody, *q);
+    cl::sycl::free(beg, *q);
 
     RAJA_FT_END;
   }
@@ -296,12 +268,12 @@ RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &
   return resources::EventProxy<resources::Sycl>(&r);
 }
 
-}  // namespace cuda
+}  // namespace sycl
 
 }  // namespace policy
 
 }  // namespace RAJA
 
-#endif  // closing endif for RAJA_ENABLE_CUDA guard
+#endif  // closing endif for RAJA_ENABLE_SYCL guard
 
 #endif  // closing endif for header file include guard
