@@ -112,14 +112,12 @@ namespace detail
 
 //! struct containing data necessary to coordinate kernel launches with reducers
 struct cudaInfo {
+  // current launch parameters
   cuda_dim_t gridDim{0, 0, 0};
   cuda_dim_t blockDim{0, 0, 0};
   cudaStream_t stream = 0;
+  // currently should setup reducers for device execution
   bool setup_reducers = false;
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  cudaInfo* thread_states = nullptr;
-  omp::mutex lock;
-#endif
 };
 
 //! class that changes a value on construction then resets it at destruction
@@ -139,69 +137,16 @@ private:
   T m_old_val;
 };
 
-extern cudaInfo g_status;
-
-extern cudaInfo tl_status;
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-#pragma omp threadprivate(tl_status)
-#endif
-
-extern std::unordered_map<cudaStream_t, bool> g_stream_info_map;
-
 }  // namespace detail
 
 //! Ensure all streams in use are synchronized wrt raja kernel launches
-RAJA_INLINE
-void synchronize()
-{
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  lock_guard<omp::mutex> lock(detail::g_status.lock);
-#endif
-  bool synchronize = false;
-  for (auto& val : detail::g_stream_info_map) {
-    if (!val.second) {
-      synchronize = true;
-      val.second = true;
-    }
-  }
-  if (synchronize) {
-    cudaErrchk(cudaDeviceSynchronize());
-  }
-}
+extern void synchronize();
 
 //! Ensure stream is synchronized wrt raja kernel launches
-RAJA_INLINE
-void synchronize(cudaStream_t stream)
-{
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  lock_guard<omp::mutex> lock(detail::g_status.lock);
-#endif
-  auto iter = detail::g_stream_info_map.find(stream);
-  if (iter != detail::g_stream_info_map.end()) {
-    if (!iter->second) {
-      iter->second = true;
-      cudaErrchk(cudaStreamSynchronize(stream));
-    }
-  } else {
-    fprintf(stderr, "Cannot synchronize unknown stream.\n");
-    std::abort();
-  }
-}
+extern void synchronize(cudaStream_t stream);
 
 //! Indicate stream is asynchronous
-RAJA_INLINE
-void launch(cudaStream_t stream)
-{
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  lock_guard<omp::mutex> lock(detail::g_status.lock);
-#endif
-  auto iter = detail::g_stream_info_map.find(stream);
-  if (iter != detail::g_stream_info_map.end()) {
-    iter->second = false;
-  } else {
-    detail::g_stream_info_map.emplace(stream, false);
-  }
-}
+extern void launch(cudaStream_t stream);
 
 //! Launch kernel and indicate stream is asynchronous
 RAJA_INLINE
@@ -215,21 +160,7 @@ void launch(const void* func, cuda_dim_t gridDim, cuda_dim_t blockDim, void** ar
 RAJA_INLINE
 void peekAtLastError() { cudaErrchk(cudaPeekAtLastError()); }
 
-//! query whether reducers in this thread should setup for device execution now
-RAJA_INLINE
-bool setupReducers() { return detail::tl_status.setup_reducers; }
-
-//! get gridDim of current launch
-RAJA_INLINE
-cuda_dim_t currentGridDim() { return detail::tl_status.gridDim; }
-
-//! get blockDim of current launch
-RAJA_INLINE
-cuda_dim_t currentBlockDim() { return detail::tl_status.blockDim; }
-
-//! get stream for current launch
-RAJA_INLINE
-cudaStream_t currentStream() { return detail::tl_status.stream; }
+extern detail::cudaInfo& get_tl_status();
 
 //! create copy of loop_body that is setup for device execution
 template <typename LOOP_BODY>
@@ -240,12 +171,13 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
     cudaStream_t stream,
     LOOP_BODY&& loop_body)
 {
+  detail::cudaInfo& tl_status = get_tl_status();
   detail::SetterResetter<bool> setup_reducers_srer(
-      detail::tl_status.setup_reducers, true);
+      tl_status.setup_reducers, true);
 
-  detail::tl_status.stream = stream;
-  detail::tl_status.gridDim = gridDim;
-  detail::tl_status.blockDim = blockDim;
+  tl_status.stream = stream;
+  tl_status.gridDim = gridDim;
+  tl_status.blockDim = blockDim;
 
   using return_type = typename std::remove_reference<LOOP_BODY>::type;
   return return_type(std::forward<LOOP_BODY>(loop_body));

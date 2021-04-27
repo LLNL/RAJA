@@ -674,18 +674,19 @@ struct Reduce_Data {
 
   //! check and setup for device
   //  allocate device pointers and get a new result buffer from the pinned tally
-  bool setupForDevice()
+  detail::hipInfo* setupForDevice()
   {
-    bool act = !device.allocated() && setupReducers();
+    detail::hipInfo* tl_status = &get_tl_status();
+    bool act = !device.allocated() && tl_status->setup_reducers;
     if (act) {
-      hip_dim_t gridDim = currentGridDim();
+      hip_dim_t gridDim = tl_status->gridDim;
       size_t numBlocks = gridDim.x * gridDim.y * gridDim.z;
       device.allocate(numBlocks);
       device_count = device_zeroed_mempool_type::getInstance()
                          .template malloc<unsigned int>(1);
       own_device_ptr = true;
     }
-    return act;
+    return act ? tl_status : nullptr;
   }
 
   //! if own resources teardown device setup
@@ -762,16 +763,17 @@ struct ReduceAtomic_Data {
 
   //! check and setup for device
   //  allocate device pointers and get a new result buffer from the pinned tally
-  bool setupForDevice()
+  detail::hipInfo* setupForDevice()
   {
-    bool act = !device && setupReducers();
+    detail::hipInfo* tl_status = &get_tl_status();
+    bool act = !device && tl_status->setup_reducers;
     if (act) {
       device = device_mempool_type::getInstance().template malloc<T>(1);
       device_count = device_zeroed_mempool_type::getInstance()
                          .template malloc<unsigned int>(1);
       own_device_ptr = true;
     }
-    return act;
+    return act ? tl_status : nullptr;
   }
 
   //! if own resources teardown device setup
@@ -827,9 +829,10 @@ public:
   {
 #if !defined(RAJA_DEVICE_CODE)
     if (parent) {
-      if (val.setupForDevice()) {
+      detail::hipInfo* tl_status = val.setupForDevice();
+      if (tl_status != nullptr) {
         tally_or_val_ptr.val_ptr =
-            tally_or_val_ptr.list->new_value(currentStream());
+            tally_or_val_ptr.list->new_value(tl_status->stream);
         val.init_grid_val(tally_or_val_ptr.val_ptr);
         parent = nullptr;
       }
