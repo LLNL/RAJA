@@ -48,9 +48,9 @@ syclInfo tl_status;
 #pragma omp threadprivate(tl_status)
 #endif
 
-cl::sycl::queue* app_q = NULL;
+camp::resources::Resource* app_q = NULL;
 
-void setQueue(cl::sycl::queue* qu) {
+void setQueue(camp::resources::Resource* qu) {
   app_q = qu;
 }
 
@@ -59,8 +59,9 @@ std::unordered_map<cl::sycl::queue, bool> g_stream_info_map{
     {cl::sycl::queue(), true}};
 
 cl::sycl::queue* getQueue() {
-  if (app_q != NULL)
-    return app_q;
+  if (app_q != NULL) {
+    return app_q->get<camp::resources::Sycl>().get_queue();
+  }
 
   std::cout << "NOT USING Application QUEUE" << std::endl;
   return &g_status.stream;
