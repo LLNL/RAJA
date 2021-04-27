@@ -398,6 +398,76 @@ Finally
           as the block-direct policies may yield better performance.
 
 
+ GPU Policies for SYCL
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ ======================================== ============= ========================
+ SYCL Execution Policies                  Works with    Brief description
+ ======================================== ============= ========================
+ sycl_exec<WORK_GROUP_SIZE>               forall,       Execute loop iterations
+                                                        in a GPU kernel launched
+                                                        with given work group
+                                                        size.
+ sycl_global_1<WORK_GROUP_SIZE>           kernel (For)  Map loop iterates
+                                                        directly to GPU global
+                                                        ids in first
+                                                        dimension, one iterate 
+                                                        per work item. Group
+                                                        execution into work
+                                                        groups of given size. 
+ sycl_global_2<WORK_GROUP_SIZE>           kernel (For)  Same as above, but map
+                                                        to global ids in second
+                                                        dim
+ sycl_global_3<WORK_GROUP_SIZE>           kernel (For)  Same as above, but map
+                                                        to global ids in third 
+                                                        dim
+ sycl_local_1_direct                      kernel (For)  Map loop iterates
+                                                        directly to GPU work
+                                                        items in first
+                                                        dimension, one iterate 
+                                                        per work item (see note 
+                                                        below about limitations)
+ sycl_local_2_direct                      kernel (For)  Same as above, but map
+                                                        to work items in second
+                                                        dim
+ sycl_local_3_direct                      kernel (For)  Same as above, but map
+                                                        to work items in third 
+                                                        dim
+ sycl_local_1_loop                        kernel (For)  Similar to 
+                                                        local-1-direct policy, 
+                                                        but use a work 
+                                                        group-stride loop which
+                                                        doesn't limit number of
+                                                        loop iterates
+ sycl_local_2_loop                        kernel (For)  Same as above, but for
+                                                        work items in second 
+                                                        dimension
+ sycl_local_3_loop                        kernel (For)  Same as above, but for
+                                                        work items in third 
+                                                        dimension
+ sycl_group_1_direct                      kernel (For)  Map loop iterates
+                                                        directly to GPU group
+                                                        ids in first dimension, 
+                                                        one iterate per group
+ sycl_group_2_direct                      kernel (For)  Same as above, but map
+                                                        to groups in second 
+                                                        dimension
+ sycl_group_3_direct                      kernel (For)  Same as above, but map
+                                                        to groups in third 
+                                                        dimension
+ sycl_group_1_loop                        kernel (For)  Similar to 
+                                                        group-1-direct policy, 
+                                                        but use a group-stride 
+                                                        loop.
+ sycl_group_2_loop                        kernel (For)  Same as above, but use
+                                                        groups in second 
+                                                        dimension
+ sycl_group_3_loop                        kernel (For)  Same as above, but use
+                                                        groups in third 
+                                                        dimension
+
+ ======================================== ============= ========================
+
 OpenMP Target Offload Policies 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -533,6 +603,9 @@ cuda/hip_reduce         any CUDA/HIP  Parallel reduction in a CUDA/HIP kernel
                                       reduction value is finalized).
 cuda/hip_reduce_atomic  any CUDA/HIP  Same as above, but reduction may use CUDA
                         policy        atomic operations.
+sycl_reduce             any SYCL      Reduction in a SYCL kernel (device 
+                        policy        synchronization will occur when the 
+                                      reduction value is finalized).
 ======================= ============= ===========================================
 
 .. note:: RAJA reductions used with SIMD execution policies are not
@@ -725,6 +798,12 @@ explanation along with examples of how they are used can be found in
   * ``statement::CudaSyncThreads`` calls CUDA '__syncthreads()' barrier.
 
   * ``statement::CudaSyncWarp`` calls CUDA '__syncwarp()' barrier.
+
+  * ``statement::SyclKernel<EnclosedStatements>`` launches 'EnclosedStatements' as a SYCL kernel.  This kernel launch is synchronous.
+
+  * ``statement::SyclKernelAsync<EnclosedStatements`` asynchronous version of SyclKernel.
+
+  * ``statement::SyclKernelNonTrivial<EnclosedStatements`` Same as SyclKernel, but allows for non-trivially copyable kernels by preforming an allocation on the device followed by a memcpy.  If the non-trivially data type in the kernel cannot be safely memcpy'd to the device the kernel the execution may be incorrect. 
 
   * ``statement::OmpSyncThreads`` applies the OpenMP '#pragma omp barrier' directive.
 
