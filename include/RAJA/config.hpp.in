@@ -22,7 +22,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -242,7 +242,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //     RAJA_ALIGNED_ATTR(<alignment>) - macro to express type or variable alignments
 //
 
-#ifdef _WIN32
+#if (defined(_WIN32) || defined(_WIN64)) && !defined(RAJA_WIN_STATIC_BUILD)
 #ifdef RAJASHAREDDLL_EXPORTS
 #define RAJASHAREDDLL_API __declspec(dllexport)
 #else

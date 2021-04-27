@@ -9,7 +9,7 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -41,8 +41,15 @@ namespace scan
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename BinFn>
-concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
-inclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f)
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                      type_traits::is_sequential_policy<ExecPolicy>>
+inclusive_inplace(
+    resources::Host& host_res,
+    const ExecPolicy &,
+    Iter begin,
+    Iter end,
+    BinFn f)
 {
   using ValueT = typename std::remove_reference<decltype(*begin)>::type;
   ValueT agg = *begin;
@@ -52,6 +59,8 @@ inclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f)
     agg = f(agg, *i);
     *i = agg;
   }
+
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 /*!
@@ -59,8 +68,16 @@ inclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f)
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename BinFn, typename T>
-concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
-exclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f, T v)
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                      type_traits::is_sequential_policy<ExecPolicy>>
+exclusive_inplace(
+    resources::Host& host_res,
+    const ExecPolicy &,
+    Iter begin,
+    Iter end,
+    BinFn f,
+    T v)
 {
   using std::distance;
   const auto n = distance(begin, end);
@@ -75,6 +92,8 @@ exclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f, T v)
     begin[i] = agg;
     agg = f(agg, t);
   }
+
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 /*!
@@ -82,7 +101,11 @@ exclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f, T v)
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename OutIter, typename BinFn>
-concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> inclusive(
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                      type_traits::is_sequential_policy<ExecPolicy>>
+inclusive(
+    resources::Host& host_res,
     const ExecPolicy &,
     const Iter begin,
     const Iter end,
@@ -99,6 +122,8 @@ concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> inclusive(
     agg = f(agg, *i);
     *out++ = agg;
   }
+
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 /*!
@@ -110,7 +135,11 @@ template <typename ExecPolicy,
           typename OutIter,
           typename BinFn,
           typename T>
-concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> exclusive(
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                      type_traits::is_sequential_policy<ExecPolicy>>
+exclusive(
+    resources::Host& host_res,
     const ExecPolicy &,
     const Iter begin,
     const Iter end,
@@ -128,6 +157,8 @@ concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> exclusive(
     agg = f(agg, *i);
     *o = agg;
   }
+
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 }  // namespace scan

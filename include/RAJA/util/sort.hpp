@@ -9,7 +9,7 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -339,15 +339,15 @@ struct intro_sort_insertion_sort_cutoff
 
 /*!
     \brief unstable intro sort given range inplace using comparison function
-    and using O(N*lg(N)) comparisons and O(lg(N)) memory
+    and using O(N*lg(N)) comparisons and O(lg(N)) memory, with limited depth.
 */
 template <typename Iter, typename Compare>
 RAJA_HOST_DEVICE inline
 void
-intro_sort(Iter begin,
-           Iter end,
-           Compare comp,
-           unsigned depth)
+intro_sort_depth(Iter begin,
+                 Iter end,
+                 Compare comp,
+                 unsigned depth)
 {
   using RAJA::safe_iter_swap;
   using diff_type = ::RAJA::detail::IterDiff<Iter>;
@@ -407,9 +407,35 @@ intro_sort(Iter begin,
 
     // recurse to sort first and second parts, ignoring already sorted pivot
     // by construction pivot is always in the range [begin, last]
-    detail::intro_sort(begin, pivot, comp, depth-1);
-    detail::intro_sort(RAJA::next(pivot), end, comp, depth-1);
+    detail::intro_sort_depth(begin, pivot, comp, depth-1);
+    detail::intro_sort_depth(RAJA::next(pivot), end, comp, depth-1);
   }
+}
+
+/*!
+    \brief unstable intro sort given range inplace using comparison function
+    and using O(N*lg(N)) comparisons and O(lg(N)) memory
+*/
+template <typename Iter, typename Compare>
+RAJA_HOST_DEVICE inline
+void
+intro_sort(Iter begin,
+           Iter end,
+           Compare comp)
+{
+  auto N = end - begin;
+
+  // set max depth to 2*lg(N)
+  unsigned max_depth = 2*detail::ulog2(N);
+
+#if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
+  // limit max_depth statically in device code to allow compiler to remove recursion
+  if (max_depth > detail::intro_sort_device_max_depth::get()) {
+    max_depth = detail::intro_sort_device_max_depth::get();
+  }
+#endif
+
+  detail::intro_sort_depth(begin, end, comp, max_depth);
 }
 
 /*!
@@ -418,7 +444,7 @@ intro_sort(Iter begin,
 */
 template <typename Iter, typename Compare>
 void
-RAJA_INLINE 
+RAJA_INLINE
 inplace_merge(  Iter first,
                 Iter middle,
                 Iter last,
@@ -498,7 +524,7 @@ inplace_merge(  Iter first,
 template <typename Iter1, typename Iter2, typename OutIter, typename Compare>
 //constexpr OutIter // <-- std:: return value
 void
-RAJA_INLINE 
+RAJA_INLINE
 merge_like_std( Iter1 first1,
                 Iter1 last1,
                 Iter2 first2,
@@ -559,7 +585,7 @@ merge_like_std( Iter1 first1,
     and using O(N*lg(N)) comparisons and O(N) memory
 */
 template <typename Iter, typename Compare>
-RAJA_INLINE 
+RAJA_INLINE
 void
 merge_sort(Iter begin,
            Iter end,
@@ -673,19 +699,29 @@ merge_sort(Iter begin,
     \brief stable insertion sort given range inplace using comparison function
     and using O(N^2) comparisons and O(1) memory
 */
-template <typename Iter,
-          typename Compare = operators::less<detail::IterVal<Iter>>>
+template <typename Container,
+          typename Compare = operators::less<detail::ContainerVal<Container>>>
 RAJA_HOST_DEVICE RAJA_INLINE
-concepts::enable_if<type_traits::is_iterator<Iter>>
-insertion_sort(Iter begin,
-               Iter end,
+concepts::enable_if<type_traits::is_range<Container>>
+insertion_sort(Container&& c,
                Compare comp = Compare{})
 {
-  auto N = end - begin;
+  using std::begin;
+  using std::end;
+  using T = RAJA::detail::ContainerVal<Container>;
+  static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
+                "Compare must model BinaryFunction");
+  static_assert(type_traits::is_random_access_range<Container>::value,
+                "Container must model RandomAccessRange");
 
-  if (N > 1) {
+  auto begin_it = begin(c);
+  auto end_it   = end(c);
 
-    detail::insertion_sort(begin, end, comp);
+  if (begin_it != end_it) {
+    auto next = begin_it;
+    if (++next != end_it) {
+      detail::insertion_sort(begin_it, end_it, comp);
+    }
   }
 }
 
@@ -693,19 +729,29 @@ insertion_sort(Iter begin,
     \brief unstable shell sort given range inplace using comparison function
     and using O(N^?) comparisons and O(1) memory
 */
-template <typename Iter,
-          typename Compare = operators::less<detail::IterVal<Iter>>>
+template <typename Container,
+          typename Compare = operators::less<detail::ContainerVal<Container>>>
 RAJA_HOST_DEVICE RAJA_INLINE
-concepts::enable_if<type_traits::is_iterator<Iter>>
-shell_sort(Iter begin,
-               Iter end,
-               Compare comp = Compare{})
+concepts::enable_if<type_traits::is_range<Container>>
+shell_sort(Container&& c,
+           Compare comp = Compare{})
 {
-  auto N = end - begin;
+  using std::begin;
+  using std::end;
+  using T = RAJA::detail::ContainerVal<Container>;
+  static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
+                "Compare must model BinaryFunction");
+  static_assert(type_traits::is_random_access_range<Container>::value,
+                "Container must model RandomAccessRange");
 
-  if (N > 1) {
+  auto begin_it = begin(c);
+  auto end_it   = end(c);
 
-    detail::shell_sort(begin, end, comp);
+  if (begin_it != end_it) {
+    auto next = begin_it;
+    if (++next != end_it) {
+      detail::shell_sort(begin_it, end_it, comp);
+    }
   }
 }
 
@@ -713,19 +759,29 @@ shell_sort(Iter begin,
     \brief unstable heap sort given range inplace using comparison function
     and using O(N*lg(N)) comparisons and O(1) memory
 */
-template <typename Iter,
-          typename Compare = operators::less<detail::IterVal<Iter>>>
+template <typename Container,
+          typename Compare = operators::less<detail::ContainerVal<Container>>>
 RAJA_HOST_DEVICE RAJA_INLINE
-concepts::enable_if<type_traits::is_iterator<Iter>>
-heap_sort(Iter begin,
-          Iter end,
+concepts::enable_if<type_traits::is_range<Container>>
+heap_sort(Container&& c,
           Compare comp = Compare{})
 {
-  auto N = end - begin;
+  using std::begin;
+  using std::end;
+  using T = RAJA::detail::ContainerVal<Container>;
+  static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
+                "Compare must model BinaryFunction");
+  static_assert(type_traits::is_random_access_range<Container>::value,
+                "Container must model RandomAccessRange");
 
-  if (N > 1) {
+  auto begin_it = begin(c);
+  auto end_it   = end(c);
 
-    detail::heap_sort(begin, end, comp);
+  if (begin_it != end_it) {
+    auto next = begin_it;
+    if (++next != end_it) {
+      detail::heap_sort(begin_it, end_it, comp);
+    }
   }
 }
 
@@ -733,29 +789,29 @@ heap_sort(Iter begin,
     \brief unstable intro sort given range inplace using comparison function
     and using O(N*lg(N)) comparisons and O(lg(N)) memory
 */
-template <typename Iter,
-          typename Compare = operators::less<detail::IterVal<Iter>>>
+template <typename Container,
+          typename Compare = operators::less<detail::ContainerVal<Container>>>
 RAJA_HOST_DEVICE RAJA_INLINE
-concepts::enable_if<type_traits::is_iterator<Iter>>
-intro_sort(Iter begin,
-           Iter end,
+concepts::enable_if<type_traits::is_range<Container>>
+intro_sort(Container&& c,
            Compare comp = Compare{})
 {
-  auto N = end - begin;
+  using std::begin;
+  using std::end;
+  using T = RAJA::detail::ContainerVal<Container>;
+  static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
+                "Compare must model BinaryFunction");
+  static_assert(type_traits::is_random_access_range<Container>::value,
+                "Container must model RandomAccessRange");
 
-  if (N > 1) {
+  auto begin_it = begin(c);
+  auto end_it   = end(c);
 
-    // set max depth to 2*lg(N)
-    unsigned max_depth = 2*detail::ulog2(N);
-
-#if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
-    // limit max_depth statically in device code to allow compiler to remove recursion
-    if (max_depth > detail::intro_sort_device_max_depth::get()) {
-      max_depth = detail::intro_sort_device_max_depth::get();
+  if (begin_it != end_it) {
+    auto next = begin_it;
+    if (++next != end_it) {
+      detail::intro_sort(begin_it, end_it, comp);
     }
-#endif
-
-    detail::intro_sort(begin, end, comp, max_depth);
   }
 }
 
@@ -763,19 +819,29 @@ intro_sort(Iter begin,
     \brief stable merge sort given range inplace using comparison function
     and using O(N*lg(N)) comparisons and O(N) memory
 */
-template <typename Iter,
-          typename Compare = operators::less<detail::IterVal<Iter>>>
+template <typename Container,
+          typename Compare = operators::less<detail::ContainerVal<Container>>>
 RAJA_INLINE
-concepts::enable_if<type_traits::is_iterator<Iter>>
-merge_sort(Iter begin,
-           Iter end,
+concepts::enable_if<type_traits::is_range<Container>>
+merge_sort(Container&& c,
            Compare comp = Compare{})
 {
-  auto N = end - begin;
+  using std::begin;
+  using std::end;
+  using T = RAJA::detail::ContainerVal<Container>;
+  static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
+                "Compare must model BinaryFunction");
+  static_assert(type_traits::is_random_access_range<Container>::value,
+                "Container must model RandomAccessRange");
 
-  if (N > 1) {
+  auto begin_it = begin(c);
+  auto end_it   = end(c);
 
-    detail::merge_sort(begin, end, comp);
+  if (begin_it != end_it) {
+    auto next = begin_it;
+    if (++next != end_it) {
+      detail::merge_sort(begin_it, end_it, comp);
+    }
   }
 }
 

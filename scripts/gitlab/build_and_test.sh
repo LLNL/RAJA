@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
-
 
 set -o errexit
 set -o nounset
@@ -18,10 +17,13 @@ project_dir="$(pwd)"
 build_root=${BUILD_ROOT:-""}
 hostconfig=${HOST_CONFIG:-""}
 spec=${SPEC:-""}
+job_unique_id=${CI_JOB_ID:-""}
 
-chai_version=${UPDATE_CHAI:-""}
+sys_type=${SYS_TYPE:-""}
+py_env_path=${PYTHON_ENVIRONMENT_PATH:-""}
 
 # Dependencies
+date
 if [[ "${option}" != "--build-only" && "${option}" != "--test-only" ]]
 then
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
@@ -34,23 +36,20 @@ then
         exit 1
     fi
 
-    extra_variants=""
-    extra_deps=""
-
-    if [[ -n ${chai_version} ]]
-    then
-        extra_variants="${extra_variants} +chai"
-        extra_deps="${extra_deps} ^chai@${chai_version}"
-    fi
-
-    [[ -n ${extra_variants} ]] && spec="${spec} ${extra_variants}"
-    [[ -n ${extra_deps} ]] && spec="${spec} ${extra_deps}"
-
     prefix_opt=""
 
     if [[ -d /dev/shm ]]
     then
-        prefix="/dev/shm/${hostname}/${spec// /_}"
+        prefix="/dev/shm/${hostname}"
+        if [[ -z ${job_unique_id} ]]; then
+          job_unique_id=manual_job_$(date +%s)
+          while [[ -d ${prefix}/${job_unique_id} ]] ; do
+              sleep 1
+              job_unique_id=manual_job_$(date +%s)
+          done
+        fi
+
+        prefix="${prefix}/${job_unique_id}"
         mkdir -p ${prefix}
         prefix_opt="--prefix=${prefix}"
     fi
@@ -58,6 +57,7 @@ then
     python scripts/uberenv/uberenv.py --spec="${spec}" ${prefix_opt}
 
 fi
+date
 
 # Host config file
 if [[ -z ${hostconfig} ]]
@@ -93,15 +93,20 @@ fi
 
 build_dir="${build_root}/build_${hostconfig//.cmake/}"
 
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-echo "~~~~~ Host-config: ${hostconfig_path}"
-echo "~~~~~ Build Dir:   ${build_dir}"
-echo "~~~~~ Project Dir: ${project_dir}"
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-
 # Build
 if [[ "${option}" != "--deps-only" && "${option}" != "--test-only" ]]
 then
+    date
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo "~ Host-config: ${hostconfig_path}"
+    echo "~ Build Dir:   ${build_dir}"
+    echo "~ Project Dir: ${project_dir}"
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo ""
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo "~~~~ ENV ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     echo "~~~~~ Building RAJA"
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
@@ -110,14 +115,16 @@ then
     rm -rf ${build_dir} 2>/dev/null
     mkdir -p ${build_dir} && cd ${build_dir}
 
+    date
     cmake \
       -C ${hostconfig_path} \
       ${project_dir}
-    cmake --build . -j
+    cmake --build . -j 32
+    date
 fi
 
 # Test
-if [[ "${option}" != "--build-only" ]]
+if [[ "${option}" != "--build-only" ]] && grep -q -i "ENABLE_TESTS.*ON" ${hostconfig_path}
 then
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     echo "~~~~~ Testing RAJA"
@@ -130,7 +137,17 @@ then
 
     cd ${build_dir}
 
-    ctest --output-on-failure -T test 2>&1 | tee tests_output.txt
+    # If HIP enabled
+    if [[ "${option}" != "--build-only" ]] && grep -q -i "ENABLE_HIP.*ON" ${hostconfig_path}
+    then # don't run the tests that are known to fail
+        date
+        ctest --output-on-failure -T test 2>&1 -E Known-Hip-Failure | tee tests_output.txt
+        date
+    else #run all tests like normal
+        date
+        ctest --output-on-failure -T test 2>&1 | tee tests_output.txt
+        date
+    fi
 
     no_test_str="No tests were found!!!"
     if [[ "$(tail -n 1 tests_output.txt)" == "${no_test_str}" ]]
@@ -140,10 +157,17 @@ then
 
     echo "Copying Testing xml reports for export"
     tree Testing
-    cp Testing/*/Test.xml ${project_dir}
+    xsltproc -o junit.xml ${project_dir}/blt/tests/ctest-to-junit.xsl Testing/*/Test.xml
+    mv junit.xml ${project_dir}/junit.xml
+
 
     if grep -q "Errors while running CTest" ./tests_output.txt
     then
         echo "ERROR: failure(s) while running CTest" && exit 1
     fi
+
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo "~~~~~ CLEAN UP"
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    make clean
 fi

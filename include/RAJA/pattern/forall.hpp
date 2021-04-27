@@ -43,7 +43,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -211,7 +211,7 @@ template <typename Res,
           typename SegmentExecPolicy,
           typename... SegmentTypes,
           typename LoopBody>
-RAJA_INLINE resources::EventProxy<Res> forall_Icount(Res&r,
+RAJA_INLINE resources::EventProxy<Res> forall_Icount(Res &r,
                                                 ExecPolicy<SegmentIterPolicy,
                                                 SegmentExecPolicy>,
                                                 const TypedIndexSet<SegmentTypes...>& iset,

@@ -9,7 +9,7 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -44,7 +44,11 @@ namespace scan
    initial value
 */
 template <typename Policy, typename Iter, typename BinFn>
-concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive_inplace(
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                      type_traits::is_openmp_policy<Policy>>
+inclusive_inplace(
+    resources::Host& host_res,
     const Policy&,
     Iter begin,
     Iter end,
@@ -64,17 +68,20 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive_inplace(
     const DistanceT idx_begin = firstIndex(n, p, pid);
     const DistanceT idx_end = firstIndex(n, p, pid + 1);
     if (idx_begin != idx_end) {
-      inclusive_inplace(::RAJA::loop_exec{}, begin + idx_begin, begin + idx_end, f);
+      inclusive_inplace(host_res, ::RAJA::loop_exec{},
+                        begin + idx_begin, begin + idx_end, f);
       sums[pid] = begin[idx_end - 1];
     }
 #pragma omp barrier
 #pragma omp single
-    exclusive_inplace(
-        ::RAJA::loop_exec{}, sums.data(), sums.data() + p, f, BinFn::identity());
+    exclusive_inplace(host_res, ::RAJA::loop_exec{},
+                      sums.data(), sums.data() + p, f, BinFn::identity());
     for (auto i = idx_begin; i < idx_end; ++i) {
       begin[i] = f(begin[i], sums[pid]);
     }
   }
+
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 /*!
@@ -82,7 +89,11 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive_inplace(
    initial value
 */
 template <typename Policy, typename Iter, typename BinFn, typename ValueT>
-concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive_inplace(
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                      type_traits::is_openmp_policy<Policy>>
+exclusive_inplace(
+    resources::Host& host_res,
     const Policy&,
     Iter begin,
     Iter end,
@@ -105,17 +116,20 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive_inplace(
     const Value init = ((pid == 0) ? v : *(begin + idx_begin - 1));
 #pragma omp barrier
     if (idx_begin != idx_end) {
-      exclusive_inplace(loop_exec{}, begin + idx_begin, begin + idx_end, f, init);
+      exclusive_inplace(host_res, loop_exec{},
+                        begin + idx_begin, begin + idx_end, f, init);
       sums[pid] = begin[idx_end - 1];
     }
 #pragma omp barrier
 #pragma omp single
-    exclusive_inplace(
-        loop_exec{}, sums.data(), sums.data() + p, f, BinFn::identity());
+    exclusive_inplace(host_res, loop_exec{},
+                      sums.data(), sums.data() + p, f, BinFn::identity());
     for (auto i = idx_begin; i < idx_end; ++i) {
       begin[i] = f(begin[i], sums[pid]);
     }
   }
+
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 /*!
@@ -123,7 +137,11 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive_inplace(
    initial value
 */
 template <typename Policy, typename Iter, typename OutIter, typename BinFn>
-concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive(
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                      type_traits::is_openmp_policy<Policy>>
+inclusive(
+    resources::Host& host_res,
     const Policy& exec,
     Iter begin,
     Iter end,
@@ -132,7 +150,7 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive(
 {
   using std::distance;
   ::std::copy(begin, end, out);
-  inclusive_inplace(exec, out, out + distance(begin, end), f);
+  return inclusive_inplace(host_res, exec, out, out + distance(begin, end), f);
 }
 
 /*!
@@ -144,7 +162,11 @@ template <typename Policy,
           typename OutIter,
           typename BinFn,
           typename ValueT>
-concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive(
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                      type_traits::is_openmp_policy<Policy>>
+exclusive(
+    resources::Host& host_res,
     const Policy& exec,
     Iter begin,
     Iter end,
@@ -154,7 +176,7 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive(
 {
   using std::distance;
   ::std::copy(begin, end, out);
-  exclusive_inplace(exec, out, out + distance(begin, end), f, v);
+  return exclusive_inplace(host_res, exec, out, out + distance(begin, end), f, v);
 }
 
 }  // namespace scan

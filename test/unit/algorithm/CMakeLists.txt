@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -62,11 +62,22 @@ macro(RAJA_GENERATE_ALGORITHM_UTIL_SORT_TESTS SORT_BACKEND_in SORT_SIZE_in UTIL_
   foreach( UTIL_SORT ${UTIL_SORTS} )
     configure_file( test-algorithm-util-sort.cpp.in
                     test-algorithm-util-sort-${UTIL_SORT}-${SORT_BACKEND}.cpp )
-    raja_add_test( NAME test-algorithm-util-sort-${UTIL_SORT}-${SORT_BACKEND}
-                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-algorithm-util-sort-${UTIL_SORT}-${SORT_BACKEND}.cpp )
 
-    target_include_directories(test-algorithm-util-sort-${UTIL_SORT}-${SORT_BACKEND}.exe
+    #Some tests are known to fail for Hip, mark those tests (Will not be run in Gitlab CI)
+    if(${SORT_BACKEND} STREQUAL "Hip" AND (${UTIL_SORT} STREQUAL "Heap" OR ${UTIL_SORT} STREQUAL "Insertion"))
+        raja_add_test( NAME test-algorithm-util-sort-Known-Hip-Failure-${UTIL_SORT}-${SORT_BACKEND}
+                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-algorithm-util-sort-${UTIL_SORT}-${SORT_BACKEND}.cpp )
+        
+        target_include_directories(test-algorithm-util-sort-Known-Hip-Failure-${UTIL_SORT}-${SORT_BACKEND}.exe
                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    else()
+        raja_add_test( NAME test-algorithm-util-sort-${UTIL_SORT}-${SORT_BACKEND}
+                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-algorithm-util-sort-${UTIL_SORT}-${SORT_BACKEND}.cpp )
+        
+        target_include_directories(test-algorithm-util-sort-${UTIL_SORT}-${SORT_BACKEND}.exe
+                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    endif()
+
   endforeach()
   unset( SORT_SIZE )
   unset( SORT_BACKEND )

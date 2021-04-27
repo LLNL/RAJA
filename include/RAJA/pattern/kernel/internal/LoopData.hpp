@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -98,10 +98,11 @@ using index_tuple_from_segments =
 
 template <typename SegmentTuple,
           typename ParamTuple,
+          typename Resource,
           typename... Bodies>
 struct LoopData {
 
-  using Self = LoopData<SegmentTuple, ParamTuple, Bodies...>;
+  using Self = LoopData<SegmentTuple, ParamTuple, Resource, Bodies...>;
 
   using offset_tuple_t =
       difftype_tuple_from_segments<typename SegmentTuple::TList>;
@@ -115,13 +116,15 @@ struct LoopData {
   using param_tuple_t = ParamTuple;
   ParamTuple param_tuple;
 
+  Resource res;
+
   using BodiesTuple = camp::tuple<Bodies...>;
   const BodiesTuple bodies;
   offset_tuple_t offset_tuple;
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr
-  LoopData(SegmentTuple const &s, ParamTuple const &p, Bodies const &... b)
-      : segment_tuple(s), param_tuple(p), bodies(b...)
+  LoopData(SegmentTuple const &s, ParamTuple const &p, Resource const &r, Bodies const &... b)
+      : segment_tuple(s), param_tuple(p), res(r), bodies(b...)
   {
     //assign_begin_all();
   }
@@ -147,6 +150,12 @@ struct LoopData {
     camp::at_v<typename param_tuple_t::TList, ParamId::param_idx>
   {
     return camp::get<ParamId::param_idx>(param_tuple);
+  }
+
+  RAJA_HOST_DEVICE RAJA_INLINE
+  Resource get_resource()
+  {
+    return res;
   }
 
 

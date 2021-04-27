@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -42,11 +42,11 @@ using launch_policy = RAJA::expt::LaunchPolicy<
 #endif
 #if defined(RAJA_ENABLE_CUDA)
     ,
-    RAJA::expt::cuda_launch_t<false>
+    RAJA::expt::cuda_launch_t<true>
 #endif
 #if defined(RAJA_ENABLE_HIP)
     ,
-    RAJA::expt::hip_launch_t<false>
+    RAJA::expt::hip_launch_t<true>
 #endif
     >;
 
@@ -113,8 +113,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     RAJA::expt::ExecPlace select_cpu_or_gpu = (RAJA::expt::ExecPlace)exec_place;
 
-    // auto select_cpu_or_gpu = RAJA::HOST;
-    // auto select_cpu_or_gpu = RAJA::DEVICE;
+    // auto select_cpu_or_gpu = RAJA::expt::HOST;
+    // auto select_cpu_or_gpu = RAJA::expt::DEVICE;
 
     // Allocate memory for either host or device
     int N_tri = 5;

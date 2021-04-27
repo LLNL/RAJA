@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -28,6 +28,7 @@
 #include "RAJA/util/camp_aliases.hpp"
 #include "RAJA/util/concepts.hpp"
 #include "RAJA/util/zip_tuple.hpp"
+#include "RAJA/util/Span.hpp"
 
 namespace RAJA
 {
@@ -215,6 +216,24 @@ auto zip(Args&&... args)
   -> ZipIterator<camp::decay<Args>...>
 {
   return {std::forward<Args>(args)...};
+}
+
+/*!
+    \brief Zip multiple containers together to iterate them simultaneously with
+    ZipIterator objects.
+*/
+template <typename... Args>
+RAJA_HOST_DEVICE RAJA_INLINE
+auto zip_span(Args&&... args)
+  -> Span<ZipIterator<detail::ContainerIter<camp::decay<Args>>...>,
+          typename ZipIterator<detail::ContainerIter<camp::decay<Args>>...>::difference_type>
+{
+  using std::begin;
+  using std::end;
+  return Span<ZipIterator<detail::ContainerIter<camp::decay<Args>>...>,
+              typename ZipIterator<detail::ContainerIter<camp::decay<Args>>...>::difference_type>(
+      zip(begin(std::forward<Args>(args))...),
+      zip(  end(std::forward<Args>(args))...));
 }
 
 /*!

@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -27,6 +27,7 @@
 #include "RAJA/policy/sequential/reduce.hpp"
 #include "RAJA/policy/sequential/scan.hpp"
 #include "RAJA/policy/sequential/sort.hpp"
+#include "RAJA/policy/sequential/teams.hpp"
 #include "RAJA/policy/sequential/WorkGroup.hpp"
 
 #endif  // closing endif for header file include guard

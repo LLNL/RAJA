@@ -9,7 +9,7 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -45,16 +45,19 @@ namespace sort
         \brief static assert unimplemented stable sort
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter, typename Compare>
-concepts::enable_if<concepts::negate<concepts::all_of<
-                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-                      std::is_pointer<Iter>,
-                      concepts::any_of<
-                        camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
-                        camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
-stable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
-       Iter,
-       Iter,
-       Compare)
+concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
+                      concepts::negate<concepts::all_of<
+                        type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
+                        std::is_pointer<Iter>,
+                        concepts::any_of<
+                          camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
+                          camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
+stable(
+    resources::Cuda& cuda_res,
+    cuda_exec<BLOCK_SIZE, Async>,
+    Iter,
+    Iter,
+    Compare)
 {
   static_assert (std::is_pointer<Iter>::value,
       "stable_sort<cuda_exec> is only implemented for pointers");
@@ -65,20 +68,25 @@ stable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
       camp::is_same<Compare, operators::less<iterval>>,
       camp::is_same<Compare, operators::greater<iterval>>>::value,
       "stable_sort<cuda_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
+
+  return resources::EventProxy<resources::Cuda>(&cuda_res);
 }
 
 /*!
         \brief stable sort given range in ascending order
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter>
-concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-                    std::is_pointer<Iter>>
-stable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
-       Iter begin,
-       Iter end,
-       operators::less<RAJA::detail::IterVal<Iter>>)
+concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
+                      std::is_pointer<Iter>>
+stable(
+    resources::Cuda& cuda_res,
+    cuda_exec<BLOCK_SIZE, Async>,
+    Iter begin,
+    Iter end,
+    operators::less<RAJA::detail::IterVal<Iter>>)
 {
-  cudaStream_t stream = 0;
+  cudaStream_t stream = cuda_res.get_stream();
 
   using R = RAJA::detail::IterVal<Iter>;
 
@@ -129,20 +137,25 @@ stable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
+
+  return resources::EventProxy<resources::Cuda>(&cuda_res);
 }
 
 /*!
         \brief stable sort given range in descending order
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter>
-concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-                    std::is_pointer<Iter>>
-stable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
-       Iter begin,
-       Iter end,
-       operators::greater<RAJA::detail::IterVal<Iter>>)
+concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
+                      std::is_pointer<Iter>>
+stable(
+    resources::Cuda& cuda_res,
+    cuda_exec<BLOCK_SIZE, Async>,
+    Iter begin,
+    Iter end,
+    operators::greater<RAJA::detail::IterVal<Iter>>)
 {
-  cudaStream_t stream = 0;
+  cudaStream_t stream = cuda_res.get_stream();
 
   using R = RAJA::detail::IterVal<Iter>;
 
@@ -193,6 +206,8 @@ stable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
+
+  return resources::EventProxy<resources::Cuda>(&cuda_res);
 }
 
 
@@ -200,16 +215,19 @@ stable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
         \brief static assert unimplemented sort
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter, typename Compare>
-concepts::enable_if<concepts::negate<concepts::all_of<
-                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-                      std::is_pointer<Iter>,
-                      concepts::any_of<
-                        camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
-                        camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
-unstable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
-         Iter,
-         Iter,
-         Compare)
+concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
+                      concepts::negate<concepts::all_of<
+                        type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
+                        std::is_pointer<Iter>,
+                        concepts::any_of<
+                          camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
+                          camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
+unstable(
+    resources::Cuda& cuda_res,
+    cuda_exec<BLOCK_SIZE, Async>,
+    Iter,
+    Iter,
+    Compare)
 {
   static_assert (std::is_pointer<Iter>::value,
       "sort<cuda_exec> is only implemented for pointers");
@@ -220,34 +238,42 @@ unstable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
       camp::is_same<Compare, operators::less<iterval>>,
       camp::is_same<Compare, operators::greater<iterval>>>::value,
       "sort<cuda_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
+
+  return resources::EventProxy<resources::Cuda>(&cuda_res);
 }
 
 /*!
         \brief sort given range in ascending order
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter>
-concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-                    std::is_pointer<Iter>>
-unstable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>& p,
-         Iter begin,
-         Iter end,
-         operators::less<RAJA::detail::IterVal<Iter>> comp)
+concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
+                      std::is_pointer<Iter>>
+unstable(
+    resources::Cuda& cuda_res,
+    cuda_exec<BLOCK_SIZE, Async> p,
+    Iter begin,
+    Iter end,
+    operators::less<RAJA::detail::IterVal<Iter>> comp)
 {
-  stable(p, begin, end, comp);
+  return stable(cuda_res, p, begin, end, comp);
 }
 
 /*!
         \brief sort given range in descending order
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter>
-concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-                    std::is_pointer<Iter>>
-unstable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>& p,
-         Iter begin,
-         Iter end,
-         operators::greater<RAJA::detail::IterVal<Iter>> comp)
+concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
+                      std::is_pointer<Iter>>
+unstable(
+    resources::Cuda& cuda_res,
+    cuda_exec<BLOCK_SIZE, Async> p,
+    Iter begin,
+    Iter end,
+    operators::greater<RAJA::detail::IterVal<Iter>> comp)
 {
-  stable(p, begin, end, comp);
+  return stable(cuda_res, p, begin, end, comp);
 }
 
 
@@ -256,18 +282,21 @@ unstable(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>& p,
 */
 template <size_t BLOCK_SIZE, bool Async,
           typename KeyIter, typename ValIter, typename Compare>
-concepts::enable_if<concepts::negate<concepts::all_of<
-                      type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
-                      std::is_pointer<KeyIter>,
-                      std::is_pointer<ValIter>,
-                      concepts::any_of<
-                        camp::is_same<Compare, operators::less<RAJA::detail::IterVal<KeyIter>>>,
-                        camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<KeyIter>>>>>>>
-stable_pairs(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
-             KeyIter,
-             KeyIter,
-             ValIter,
-             Compare)
+concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
+                      concepts::negate<concepts::all_of<
+                        type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
+                        std::is_pointer<KeyIter>,
+                        std::is_pointer<ValIter>,
+                        concepts::any_of<
+                          camp::is_same<Compare, operators::less<RAJA::detail::IterVal<KeyIter>>>,
+                          camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<KeyIter>>>>>>>
+stable_pairs(
+    resources::Cuda& cuda_res,
+    cuda_exec<BLOCK_SIZE, Async>,
+    KeyIter,
+    KeyIter,
+    ValIter,
+    Compare)
 {
   static_assert (std::is_pointer<KeyIter>::value,
       "stable_sort_pairs<cuda_exec> is only implemented for pointers");
@@ -280,6 +309,8 @@ stable_pairs(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
       camp::is_same<Compare, operators::less<K>>,
       camp::is_same<Compare, operators::greater<K>>>::value,
       "stable_sort_pairs<cuda_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
+
+  return resources::EventProxy<resources::Cuda>(&cuda_res);
 }
 
 /*!
@@ -287,16 +318,19 @@ stable_pairs(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 */
 template <size_t BLOCK_SIZE, bool Async,
           typename KeyIter, typename ValIter>
-concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
-                    std::is_pointer<KeyIter>,
-                    std::is_pointer<ValIter>>
-stable_pairs(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
-             KeyIter keys_begin,
-             KeyIter keys_end,
-             ValIter vals_begin,
-             operators::less<RAJA::detail::IterVal<KeyIter>>)
+concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
+                      std::is_pointer<KeyIter>,
+                      std::is_pointer<ValIter>>
+stable_pairs(
+    resources::Cuda& cuda_res,
+    cuda_exec<BLOCK_SIZE, Async>,
+    KeyIter keys_begin,
+    KeyIter keys_end,
+    ValIter vals_begin,
+    operators::less<RAJA::detail::IterVal<KeyIter>>)
 {
-  cudaStream_t stream = 0;
+  cudaStream_t stream = cuda_res.get_stream();
 
   using K = RAJA::detail::IterVal<KeyIter>;
   using V = RAJA::detail::IterVal<ValIter>;
@@ -358,6 +392,8 @@ stable_pairs(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
+
+  return resources::EventProxy<resources::Cuda>(&cuda_res);
 }
 
 /*!
@@ -365,16 +401,19 @@ stable_pairs(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 */
 template <size_t BLOCK_SIZE, bool Async,
           typename KeyIter, typename ValIter>
-concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
-                    std::is_pointer<KeyIter>,
-                    std::is_pointer<ValIter>>
-stable_pairs(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
-             KeyIter keys_begin,
-             KeyIter keys_end,
-             ValIter vals_begin,
-             operators::greater<RAJA::detail::IterVal<KeyIter>>)
+concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
+                      std::is_pointer<KeyIter>,
+                      std::is_pointer<ValIter>>
+stable_pairs(
+    resources::Cuda& cuda_res,
+    cuda_exec<BLOCK_SIZE, Async>,
+    KeyIter keys_begin,
+    KeyIter keys_end,
+    ValIter vals_begin,
+    operators::greater<RAJA::detail::IterVal<KeyIter>>)
 {
-  cudaStream_t stream = 0;
+  cudaStream_t stream = cuda_res.get_stream();
 
   using K = RAJA::detail::IterVal<KeyIter>;
   using V = RAJA::detail::IterVal<ValIter>;
@@ -436,6 +475,8 @@ stable_pairs(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
+
+  return resources::EventProxy<resources::Cuda>(&cuda_res);
 }
 
 
@@ -444,18 +485,21 @@ stable_pairs(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 */
 template <size_t BLOCK_SIZE, bool Async,
           typename KeyIter, typename ValIter, typename Compare>
-concepts::enable_if<concepts::negate<concepts::all_of<
-                      type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
-                      std::is_pointer<KeyIter>,
-                      std::is_pointer<ValIter>,
-                      concepts::any_of<
-                        camp::is_same<Compare, operators::less<RAJA::detail::IterVal<KeyIter>>>,
-                        camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<KeyIter>>>>>>>
-unstable_pairs(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
-               KeyIter,
-               KeyIter,
-               ValIter,
-               Compare)
+concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
+                      concepts::negate<concepts::all_of<
+                        type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
+                        std::is_pointer<KeyIter>,
+                        std::is_pointer<ValIter>,
+                        concepts::any_of<
+                          camp::is_same<Compare, operators::less<RAJA::detail::IterVal<KeyIter>>>,
+                          camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<KeyIter>>>>>>>
+unstable_pairs(
+    resources::Cuda& cuda_res,
+    cuda_exec<BLOCK_SIZE, Async>,
+    KeyIter,
+    KeyIter,
+    ValIter,
+    Compare)
 {
   static_assert (std::is_pointer<KeyIter>::value,
       "sort_pairs<cuda_exec> is only implemented for pointers");
@@ -468,6 +512,8 @@ unstable_pairs(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
       camp::is_same<Compare, operators::less<K>>,
       camp::is_same<Compare, operators::greater<K>>>::value,
       "sort_pairs<cuda_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
+
+  return resources::EventProxy<resources::Cuda>(&cuda_res);
 }
 
 /*!
@@ -475,16 +521,19 @@ unstable_pairs(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 */
 template <size_t BLOCK_SIZE, bool Async,
           typename KeyIter, typename ValIter>
-concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
-                    std::is_pointer<KeyIter>,
-                    std::is_pointer<ValIter>>
-unstable_pairs(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>& p,
-               KeyIter keys_begin,
-               KeyIter keys_end,
-               ValIter vals_begin,
-               operators::less<RAJA::detail::IterVal<KeyIter>> comp)
+concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
+                      std::is_pointer<KeyIter>,
+                      std::is_pointer<ValIter>>
+unstable_pairs(
+    resources::Cuda& cuda_res,
+    cuda_exec<BLOCK_SIZE, Async> p,
+    KeyIter keys_begin,
+    KeyIter keys_end,
+    ValIter vals_begin,
+    operators::less<RAJA::detail::IterVal<KeyIter>> comp)
 {
-  stable_pairs(p, keys_begin, keys_end, vals_begin, comp);
+  return stable_pairs(cuda_res, p, keys_begin, keys_end, vals_begin, comp);
 }
 
 /*!
@@ -492,16 +541,19 @@ unstable_pairs(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>& p,
 */
 template <size_t BLOCK_SIZE, bool Async,
           typename KeyIter, typename ValIter>
-concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
-                    std::is_pointer<KeyIter>,
-                    std::is_pointer<ValIter>>
-unstable_pairs(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>& p,
-               KeyIter keys_begin,
-               KeyIter keys_end,
-               ValIter vals_begin,
-               operators::greater<RAJA::detail::IterVal<KeyIter>> comp)
+concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
+                      std::is_pointer<KeyIter>,
+                      std::is_pointer<ValIter>>
+unstable_pairs(
+    resources::Cuda& cuda_res,
+    cuda_exec<BLOCK_SIZE, Async> p,
+    KeyIter keys_begin,
+    KeyIter keys_end,
+    ValIter vals_begin,
+    operators::greater<RAJA::detail::IterVal<KeyIter>> comp)
 {
-  stable_pairs(p, keys_begin, keys_end, vals_begin, comp);
+  return stable_pairs(cuda_res, p, keys_begin, keys_end, vals_begin, comp);
 }
 
 }  // namespace sort

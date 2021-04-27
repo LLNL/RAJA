@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -114,7 +114,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _sort_seq_start
-  RAJA::sort<RAJA::seq_exec>(out, out + N);
+  RAJA::sort<RAJA::seq_exec>(RAJA::make_span(out, N));
   // _sort_seq_end
 
   checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
@@ -128,7 +128,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _sort_seq_less_start
-  RAJA::sort<RAJA::seq_exec>(out, out + N,
+  RAJA::sort<RAJA::seq_exec>(RAJA::make_span(out, N),
                              RAJA::operators::less<int>{});
   // _sort_seq_less_end
 
@@ -143,7 +143,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _sort_stable_seq_less_start
-  RAJA::stable_sort<RAJA::seq_exec>(out, out + N,
+  RAJA::stable_sort<RAJA::seq_exec>(RAJA::make_span(out, N),
                                     RAJA::operators::less<int>{});
   // _sort_stable_seq_less_end
 
@@ -158,7 +158,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _sort_stable_seq_greater_start
-  RAJA::stable_sort<RAJA::seq_exec>(out, out + N,
+  RAJA::stable_sort<RAJA::seq_exec>(RAJA::make_span(out, N),
                                     RAJA::operators::greater<int>{});
   // _sort_stable_seq_greater_end
 
@@ -174,7 +174,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in_vals, N, out_vals);
 
   // _sort_pairs_seq_less_start
-  RAJA::sort_pairs<RAJA::seq_exec>(out, out + N, out_vals,
+  RAJA::sort_pairs<RAJA::seq_exec>(RAJA::make_span(out, N),
+                                   RAJA::make_span(out_vals, N),
                                    RAJA::operators::less<int>{});
   // _sort_pairs_seq_less_end
 
@@ -190,7 +191,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in_vals, N, out_vals);
 
   // _sort_stable_pairs_seq_greater_start
-  RAJA::stable_sort_pairs<RAJA::seq_exec>(out, out + N, out_vals,
+  RAJA::stable_sort_pairs<RAJA::seq_exec>(RAJA::make_span(out, N),
+                                          RAJA::make_span(out_vals, N),
                                           RAJA::operators::greater<int>{});
   // _sort_stable_pairs_seq_greater_end
 
@@ -210,7 +212,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _sort_omp_less_start
-  RAJA::sort<RAJA::omp_parallel_for_exec>(out, out + N,
+  RAJA::sort<RAJA::omp_parallel_for_exec>(RAJA::make_span(out, N),
                                           RAJA::operators::less<int>{});
   // _sort_omp_less_end
 
@@ -226,7 +228,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in_vals, N, out_vals);
 
   // _sort_stable_pairs_omp_greater_start
-  RAJA::stable_sort_pairs<RAJA::omp_parallel_for_exec>(out, out + N, out_vals,
+  RAJA::stable_sort_pairs<RAJA::omp_parallel_for_exec>(RAJA::make_span(out, N),
+                                                       RAJA::make_span(out_vals, N),
                                                        RAJA::operators::greater<int>{});
   // _sort_stable_pairs_omp_greater_end
 
@@ -250,8 +253,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in_vals, N, out_vals);
 
   // _sort_pairs_cuda_greater_start
-  RAJA::sort_pairs<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(out, out + N, out_vals,
-                                       RAJA::operators::greater<int>{});
+  RAJA::sort_pairs<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::make_span(out, N),
+                                                     RAJA::make_span(out_vals, N),
+                                                     RAJA::operators::greater<int>{});
   // _sort_pairs_cuda_greater_end
 
   checkUnstableSortResult<RAJA::operators::greater<int>>(in, out, in_vals, out_vals, N);
@@ -265,8 +269,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _sort_stable_cuda_less_start
-  RAJA::stable_sort<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(out, out + N,
-                                       RAJA::operators::less<int>{});
+  RAJA::stable_sort<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::make_span(out, N),
+                                                      RAJA::operators::less<int>{});
   // _sort_stable_cuda_less_end
 
   checkStableSortResult<RAJA::operators::less<int>>(in, out, N);
@@ -294,8 +298,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
   hipErrchk(hipMemcpy( d_out_vals, out_vals, N * sizeof(int), hipMemcpyHostToDevice ));
 
-  RAJA::sort_pairs<RAJA::hip_exec<HIP_BLOCK_SIZE>>(d_out, d_out + N, d_out_vals,
-                                       RAJA::operators::less<int>{});
+  RAJA::sort_pairs<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::make_span(d_out, N),
+                                                   RAJA::make_span(d_out_vals, N),
+                                                   RAJA::operators::less<int>{});
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
   hipErrchk(hipMemcpy( out_vals, d_out_vals, N * sizeof(int), hipMemcpyDeviceToHost ));
@@ -312,7 +317,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
 
-  RAJA::stable_sort<RAJA::hip_exec<HIP_BLOCK_SIZE>>(d_out, d_out + N,
+  RAJA::stable_sort<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::make_span(d_out, N),
                                        RAJA::operators::greater<int>{});
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));

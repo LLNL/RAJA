@@ -1,12 +1,12 @@
 ##############################################################################
-# Copyright (c) 2016-2020, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ##############################################################################
 
 ####
-# This is the share configuration of jobs for quartz
+# This is the shared configuration of jobs for quartz
 
 ####
 # In pre-build phase, allocate a node for builds
@@ -29,8 +29,7 @@ allocate_resources (on quartz):
   extends: .on_quartz
   stage: q_allocate_resources
   script:
-    - salloc -N 1 -c 36 -p pdebug -t 20 --no-shell --job-name=${ALLOC_NAME}
-  needs: []
+    - salloc -N 1 -c 36 -p pdebug -t 45 --no-shell --job-name=${ALLOC_NAME}
 
 ####
 # In post-build phase, deallocate resources
@@ -47,8 +46,9 @@ release_resources (on quartz):
 ####
 # Generic quartz build job, extending build script
 .build_and_test_on_quartz:
-  stage: q_build_and_test
   extends: [.build_toss_3_x86_64_ib_script, .on_quartz]
+  stage: q_build_and_test
 
 .build_and_test_on_quartz_advanced:
   extends: [.build_and_test_on_quartz, .advanced_pipeline]
+

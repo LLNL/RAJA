@@ -9,7 +9,7 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -43,12 +43,16 @@ namespace scan
    initial value
 */
 template <size_t BLOCK_SIZE, bool Async, typename InputIter, typename Function>
-void inclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
-                       InputIter begin,
-                       InputIter end,
-                       Function binary_op)
+RAJA_INLINE
+resources::EventProxy<resources::Cuda>
+inclusive_inplace(
+    resources::Cuda &cuda_res,
+    cuda_exec<BLOCK_SIZE, Async>,
+    InputIter begin,
+    InputIter end,
+    Function binary_op)
 {
-  cudaStream_t stream = 0;
+  cudaStream_t stream = cuda_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
@@ -78,6 +82,8 @@ void inclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
+
+  return resources::EventProxy<resources::Cuda>(&cuda_res);
 }
 
 /*!
@@ -89,13 +95,17 @@ template <size_t BLOCK_SIZE,
           typename InputIter,
           typename Function,
           typename T>
-void exclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
-                       InputIter begin,
-                       InputIter end,
-                       Function binary_op,
-                       T init)
+RAJA_INLINE
+resources::EventProxy<resources::Cuda>
+exclusive_inplace(
+    resources::Cuda &cuda_res,
+    cuda_exec<BLOCK_SIZE, Async>,
+    InputIter begin,
+    InputIter end,
+    Function binary_op,
+    T init)
 {
-  cudaStream_t stream = 0;
+  cudaStream_t stream = cuda_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
@@ -127,6 +137,8 @@ void exclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
+
+  return resources::EventProxy<resources::Cuda>(&cuda_res);
 }
 
 /*!
@@ -138,32 +150,48 @@ template <size_t BLOCK_SIZE,
           typename InputIter,
           typename OutputIter,
           typename Function>
-void inclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
-               InputIter begin,
-               InputIter end,
-               OutputIter out,
-               Function binary_op)
+RAJA_INLINE
+resources::EventProxy<resources::Cuda>
+inclusive(
+    resources::Cuda &cuda_res,
+    cuda_exec<BLOCK_SIZE, Async>,
+    InputIter begin,
+    InputIter end,
+    OutputIter out,
+    Function binary_op)
 {
-  cudaStream_t stream = 0;
+  cudaStream_t stream = cuda_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
   size_t temp_storage_bytes = 0;
-  cudaErrchk(::cub::DeviceScan::InclusiveScan(
-      d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
+  cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
+                                              temp_storage_bytes,
+                                              begin,
+                                              out,
+                                              binary_op,
+                                              len,
+                                              stream));
   // Allocate temporary storage
   d_temp_storage =
       cuda::device_mempool_type::getInstance().malloc<unsigned char>(
           temp_storage_bytes);
   // Run
-  cudaErrchk(::cub::DeviceScan::InclusiveScan(
-      d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
+  cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
+                                              temp_storage_bytes,
+                                              begin,
+                                              out,
+                                              binary_op,
+                                              len,
+                                              stream));
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
+
+  return resources::EventProxy<resources::Cuda>(&cuda_res);
 }
 
 /*!
@@ -176,14 +204,18 @@ template <size_t BLOCK_SIZE,
           typename OutputIter,
           typename Function,
           typename T>
-void exclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
-               InputIter begin,
-               InputIter end,
-               OutputIter out,
-               Function binary_op,
-               T init)
+RAJA_INLINE
+resources::EventProxy<resources::Cuda>
+exclusive(
+    resources::Cuda &cuda_res,
+    cuda_exec<BLOCK_SIZE, Async>,
+    InputIter begin,
+    InputIter end,
+    OutputIter out,
+    Function binary_op,
+    T init)
 {
-  cudaStream_t stream = 0;
+  cudaStream_t stream = cuda_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
@@ -215,6 +247,8 @@ void exclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
+
+  return resources::EventProxy<resources::Cuda>(&cuda_res);
 }
 
 }  // namespace scan

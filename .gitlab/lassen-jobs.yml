@@ -1,14 +1,71 @@
 ##############################################################################
-# Copyright (c) 2016-2020, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ##############################################################################
 
-####
-# All lassen build jobs
-nvcc_10_clang_8_0_1 (build and test on lassen):
+##########
+# CPU ONLY
+##########
+
+ibm_clang_9:
   variables:
-    SPEC: "%clang@8.0.1+cuda"
+    SPEC: "%clang@9.0.0ibm"
   extends: .build_and_test_on_lassen
-  allow_failure: True
+
+ibm_clang_9_gcc_8:
+  variables:
+    SPEC: "%clang@9.0.0ibm cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
+  extends: .build_and_test_on_lassen
+
+gcc_8_3_1:
+  variables:
+    SPEC: "%gcc@8.3.1 cxxflags='-finline-functions -finline-limit=20000' cflags='-finline-functions -finline-limit=20000'"
+  extends: .build_and_test_on_lassen
+
+xl_16_1_1_7:
+  variables:
+    SPEC: "%xl@16.1.1.7 cxxflags='-qthreaded -std=c++14 -O3 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -std=c++11 -qsuppress=1500-029 -qsuppress=1500-036'"
+    DEFAULT_TIME: 50
+  extends: .build_and_test_on_lassen
+
+xl_16_1_1_7_gcc_8_3_1:
+  variables:
+    SPEC: "%xl@16.1.1.7 cxxflags='--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -qthreaded -std=c++14 -O3 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -std=c++11 -qsuppress=1500-029 -qsuppress=1500-036' cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
+    DEFAULT_TIME: 50
+  extends: .build_and_test_on_lassen
+
+##########
+# CUDA
+##########
+
+ibm_clang_9_cuda:
+  variables:
+    SPEC: "+cuda+allow-untested-versions cuda_arch=70 %clang@9.0.0ibm ^cuda@10.1.168"
+  extends: .build_and_test_on_lassen
+
+ibm_clang_9_gcc_8_cuda:
+  variables:
+    SPEC: "+cuda %clang@9.0.0ibm cuda_arch=70 +allow-untested-versions cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 ^cuda@10.1.168"
+  extends: .build_and_test_on_lassen
+
+gcc_8_3_1_cuda:
+  variables:
+    SPEC: "+cuda %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.168"
+  extends: .build_and_test_on_lassen
+
+##########
+# EXTRAS
+##########
+
+clang_9_0_0_libcpp (build and test on lassen):
+  variables:
+    SPEC: "%clang@9.0.0+libcpp"
+  extends: .build_and_test_on_lassen
+
+clang_9_0_0_memleak (build and test on lassen):
+  variables:
+    SPEC: "%clang@9.0.0 cxxflags=-fsanitize=address"
+    ASAN_OPTIONS: "detect_leaks=1"
+  extends: .build_and_test_on_lassen

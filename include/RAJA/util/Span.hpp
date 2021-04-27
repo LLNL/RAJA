@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -81,10 +81,19 @@ struct Span {
   {
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE iterator begin() const { return m_begin; }
-  RAJA_HOST_DEVICE RAJA_INLINE iterator end() const { return m_end; }
+  RAJA_HOST_DEVICE RAJA_INLINE iterator begin() { return m_begin; }
+  RAJA_HOST_DEVICE RAJA_INLINE iterator end() { return m_end; }
+  RAJA_HOST_DEVICE RAJA_INLINE const_iterator begin() const { return m_begin; }
+  RAJA_HOST_DEVICE RAJA_INLINE const_iterator end() const { return m_end; }
   RAJA_HOST_DEVICE RAJA_INLINE const_iterator cbegin() const { return m_begin; }
   RAJA_HOST_DEVICE RAJA_INLINE const_iterator cend() const { return m_end; }
+
+  RAJA_HOST_DEVICE RAJA_INLINE friend iterator begin(Span& s) { return s.begin(); }
+  RAJA_HOST_DEVICE RAJA_INLINE friend iterator end(Span& s) { return s.end(); }
+  RAJA_HOST_DEVICE RAJA_INLINE friend const_iterator begin(const Span& s) { return s.begin(); }
+  RAJA_HOST_DEVICE RAJA_INLINE friend const_iterator end(const Span& s) { return s.end(); }
+  RAJA_HOST_DEVICE RAJA_INLINE friend const_iterator cbegin(const Span& s) { return s.cbegin(); }
+  RAJA_HOST_DEVICE RAJA_INLINE friend const_iterator cend(const Span& s) { return s.cend(); }
 
   RAJA_HOST_DEVICE RAJA_INLINE reference front() const { return *begin(); }
   RAJA_HOST_DEVICE RAJA_INLINE reference back() const { return *(end()-1); }

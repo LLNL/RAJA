@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -34,6 +34,8 @@ T *allocate(RAJA::Index_type size)
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(
       cudaMallocManaged((void **)&ptr, sizeof(T) * size, cudaMemAttachGlobal));
+#elif defined(RAJA_ENABLE_HIP)
+      hipErrchk(hipMalloc((void **)&ptr, sizeof(T) * size));
 #else
   ptr = new T[size];
 #endif
@@ -46,6 +48,8 @@ void deallocate(T *&ptr)
   if (ptr) {
 #if defined(RAJA_ENABLE_CUDA)
     cudaErrchk(cudaFree(ptr));
+#elif defined(RAJA_ENABLE_HIP)
+    hipErrchk(hipFree(ptr));
 #else
     delete[] ptr;
 #endif

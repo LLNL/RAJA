@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 .. ## and other RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -12,28 +12,43 @@
 Elements of Loop Execution
 ==============================================
 
-In this section, we describe the basic elements of RAJA loop kernel execution. 
-``RAJA::forall`` and ``RAJA::kernel`` template methods comprise the
-RAJA interface for loop execution. ``RAJA::forall`` methods execute simple 
-loops (e.g., non-nested loops) while ``RAJA::kernel`` methods support nested 
-loops and other complex loop kernels and transformations.
+In this section, we describe the basic elements of RAJA loop kernel 
+execution.  ``RAJA::forall``, ``RAJA::kernel``, and ``RAJA::expt::launch`` 
+(aka *RAJA Teams*) template methods comprise the RAJA interface for loop 
+execution. ``RAJA::forall`` methods execute simple, non-nested loops, 
+``RAJA::kernel`` methods support nested loops and other complex loop 
+kernels and transformations, and ``RAJA::expt::launch`` creates an execution 
+space in which algorithms are expressed in terms of nested loops using 
+the ``RAJA::expt::loop`` method.
 
-.. note:: * All ``forall`` and ``kernel`` methods are in the namespace ``RAJA``.
-          * A ``RAJA::forall`` loop execution method is a template on an 
+.. note:: * The ``forall`` , and ``kernel`` methods are in the
+            namespace ``RAJA``, while ``launch`` is found under
+            the RAJA namespace for experimental features ``RAJA::expt``.
+
+          * A ``RAJA::forall`` loop execution method is a template on an
             *execution policy* type. A ``RAJA::forall`` method takes two 
-            arguments: 
+            arguments:
               * an iteration space object, such as a contiguous range of loop
                 indices, and
-              * a lambda expression representing the loop body.
-          * Each ``RAJA::kernel`` method is a template on a policy that 
-            contains statements with *execution policy* types appropriate for 
+              * a single lambda expression representing the loop body.
+          * Each ``RAJA::kernel`` method is a template on a policy that
+            contains statements with *execution policy* types appropriate for
             the kernel structure; e.g., an execution policy for each level in a
             loop nest. A ``RAJA::kernel`` method takes multiple arguments:
               * a *tuple* of iteration space objects, and
-              * one or more lambda expressions representing portions of 
+              * one or more lambda expressions representing portions of
                 the loop kernel body.
+          * The ``RAJA::expt::launch`` method is a template on both host and
+            device policies to create an execution space for kernels.
+            Since both host and device poilices are specified, the launch 
+            method can be used to select at run-time whether to run a kernel
+            on the host or device.  Algorithms are expressed inside the 
+            execution space as nested loops using ``RAJA::loop`` methods.
+              * Hierarchical parallelism can be expressed using the thread and
+                thread-team model with ``RAJA::expt::loop`` methods as found in
+                programming models such as CUDA/HIP.
 
-Various examples showing how to use ``RAJA::forall`` and ``RAJA::kernel`` 
+Various examples showing how to use ``RAJA::forall``, ``RAJA::kernel``, ``RAJA::launch``
 methods may be found in the :ref:`tutorial-label`.
 
 For more information on RAJA execution policies and iteration space constructs, 
@@ -245,3 +260,65 @@ describing nested loop reordering.
 Finally, a discussion of how to construct ``RAJA::KernelPolicy`` types and 
 available ``RAJA::statement`` types can be found in 
 :ref:`loop_elements-kernelpol-label`.
+
+--------------------------------
+Team based loops (RAJA::launch)
+--------------------------------
+
+The *RAJA Teams* framework aims to unify thread/block based
+programming models such as CUDA/HIP/SYCL while maintaining portability on
+host backends (OpenMP, sequential). When using the ``RAJA::kernel`` 
+interface, developers express all aspects of nested loop execution in the
+execution policy type on which the ``RAJA::kernel`` method is templated.
+In contrast, the ``RAJA::launch`` interface allows users to express 
+nested loop execution in a manner that more closely reflects how one would
+write conventional nested C-style for-loop code.  Additionally, *RAJA Teams* 
+introduces run-time host or device selectable kernel execution. The main 
+application of *RAJA Teams* is imperfectly nested loops. Using the 
+``RAJA::expt::launch method`` developers are provided with an execution 
+space enabling them to express algorithms in terms of nested
+``RAJA::expt::loop`` statements::
+
+  RAJA::expt::launch<launch_policy>(select_CPU_or_GPU)
+  RAJA::expt::Resources(RAJA::expt::Teams(NE), RAJA::expt::Threads(Q1D)),
+  [=] RAJA_HOST_DEVICE (RAJA::expt::Launch ctx) {
+
+    RAJA::expt::loop<team_x> (ctx, RAJA::RangeSegment(0, teamRange), [&] (int bx) {
+
+      RAJA_TEAM_SHARED double s_A[SHARE_MEM_SIZE];
+
+      RAJA::expt::loop<thread_x> (ctx, RAJA::RangeSegment(0, threadRange), [&] (int tx) {
+        s_A[tx] = tx;
+      });
+
+        ctx.teamSync();
+
+   )};
+
+  });
+  
+The underlying idea of *RAJA Teams* is to enable developers to express nested
+parallelism in terms of teams and threads. Similar to the CUDA programming model,
+development is done using a collection of threads, threads are grouped into teams.
+Using the ``RAJA::expt::loop`` methods iterations of the loop may be executed by threads
+or teams (depending on the execution policy). The launch context serves to synchronize
+threads within the same team. The *RAJA Teams* abstraction consist of three main concepts.
+
+  * *Launch Method*: creates an execution space in which developers may express 
+    their algorithm in terms of nested ``RAJA::expt::loop`` statements. The loops are then
+    executed by threads or thread-teams. The method is templated on both a host
+    and device execution space and enables run-time selection of the execution environment.
+
+  * *Resources*: holds a number of teams and threads (akin to CUDA blocks/threads).
+
+  * *Loops*: are used to express hierarchical parallelism. Work within a loop is mapped to either teams or threads. Team shared memory
+    is available by using the ``RAJA_TEAM_SHARED`` macro. Team shared memory enables
+    threads in a given team to share data. In practice, team policies are typically
+    aliases for RAJA GPU block policies in the x,y,z dimensions (for example cuda_block_direct),
+    while thread policies are aliases for RAJA GPU thread policies (for example cuda_thread_direct)
+    x,y,z dimensions. On the host, teams and threads may be mapped to sequential
+    loop execution or OpenMP threaded regions.
+    
+The team loop interface combines concepts from ``RAJA::forall`` and ``RAJA::kernel``.
+Various policies from ``RAJA::kernel`` are compatible with the ``RAJA Teams``
+framework.

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -90,12 +90,14 @@ void testReducerReset()
   camp::resources::Resource host_res{camp::resources::Host()};
 
   NumericType * resetVal = nullptr;
-  NumericType * initVal = nullptr;
+  NumericType * workVal = nullptr;
 
-  initVal = work_res.allocate<NumericType>(1);
+  NumericType initVal = (NumericType)5;
+
+  workVal = work_res.allocate<NumericType>(1);
   resetVal = host_res.allocate<NumericType>(1);
 
-  initVal[0] = (NumericType)5;
+  work_res.memcpy( workVal, &initVal, sizeof(initVal) );
   resetVal[0] = (NumericType)10;
 
   #if defined(RAJA_ENABLE_CUDA)
@@ -106,15 +108,15 @@ void testReducerReset()
   hipErrchk(hipDeviceSynchronize());
   #endif
 
-  RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum(initVal[0]);
-  RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min(initVal[0]);
-  RAJA::ReduceMax<ReducePolicy, NumericType> reduce_max(initVal[0]);
-  RAJA::ReduceMinLoc<ReducePolicy, NumericType> reduce_minloc(initVal[0], 1);
-  RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc(initVal[0], 1);
+  RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum(initVal);
+  RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min(initVal);
+  RAJA::ReduceMax<ReducePolicy, NumericType> reduce_max(initVal);
+  RAJA::ReduceMinLoc<ReducePolicy, NumericType> reduce_minloc(initVal, 1);
+  RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc(initVal, 1);
 
   RAJA::tuple<RAJA::Index_type, RAJA::Index_type> LocTup(1, 1);
-  RAJA::ReduceMinLoc<ReducePolicy, NumericType, RAJA::tuple<RAJA::Index_type, RAJA::Index_type>> reduce_minloctup(initVal[0], LocTup);
-  RAJA::ReduceMaxLoc<ReducePolicy, NumericType, RAJA::tuple<RAJA::Index_type, RAJA::Index_type>> reduce_maxloctup(initVal[0], LocTup);
+  RAJA::ReduceMinLoc<ReducePolicy, NumericType, RAJA::tuple<RAJA::Index_type, RAJA::Index_type>> reduce_minloctup(initVal, LocTup);
+  RAJA::ReduceMaxLoc<ReducePolicy, NumericType, RAJA::tuple<RAJA::Index_type, RAJA::Index_type>> reduce_maxloctup(initVal, LocTup);
 
   // initiate some device computation if using device policy
   exec_dispatcher < ReducePolicy,
@@ -130,7 +132,7 @@ void testReducerReset()
                     reduce_maxloc,
                     reduce_minloctup,
                     reduce_maxloctup,
-                    initVal[0]
+                    initVal
                  );
 
   // perform real host resets
@@ -167,7 +169,7 @@ void testReducerReset()
   ASSERT_EQ((RAJA::Index_type)reduce_minloc.getLoc(), (RAJA::Index_type)(-1));
   ASSERT_EQ((RAJA::Index_type)reduce_maxloc.getLoc(), (RAJA::Index_type)(-1));
 
-  work_res.deallocate( initVal );
+  work_res.deallocate( workVal );
   host_res.deallocate( resetVal );
 }
 

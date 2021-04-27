@@ -9,7 +9,7 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -105,7 +105,11 @@ struct scan_adapter_exclusive : scan_adapter<T, InIter, OutIter, Fn> {
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename BinFn>
-concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> inclusive_inplace(
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                      type_traits::is_tbb_policy<ExecPolicy>>
+inclusive_inplace(
+    resources::Host& host_res,
     const ExecPolicy&,
     Iter begin,
     Iter end,
@@ -119,6 +123,8 @@ concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> inclusive_inplace(
   tbb::parallel_scan(tbb::blocked_range<Index_type>{0,
                                                     std::distance(begin, end)},
                      adapter);
+
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 /*!
@@ -126,7 +132,11 @@ concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> inclusive_inplace(
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename BinFn, typename T>
-concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> exclusive_inplace(
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                      type_traits::is_tbb_policy<ExecPolicy>>
+exclusive_inplace(
+    resources::Host& host_res,
     const ExecPolicy&,
     Iter begin,
     Iter end,
@@ -141,6 +151,8 @@ concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> exclusive_inplace(
   tbb::parallel_scan(tbb::blocked_range<Index_type>{0,
                                                     std::distance(begin, end)},
                      adapter);
+
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 /*!
@@ -148,7 +160,11 @@ concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> exclusive_inplace(
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename OutIter, typename BinFn>
-concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> inclusive(
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                      type_traits::is_tbb_policy<ExecPolicy>>
+inclusive(
+    resources::Host& host_res,
     const ExecPolicy&,
     const Iter begin,
     const Iter end,
@@ -163,6 +179,8 @@ concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> inclusive(
   tbb::parallel_scan(tbb::blocked_range<Index_type>{0,
                                                     std::distance(begin, end)},
                      adapter);
+
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 /*!
@@ -174,7 +192,11 @@ template <typename ExecPolicy,
           typename OutIter,
           typename BinFn,
           typename T>
-concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> exclusive(
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                      type_traits::is_tbb_policy<ExecPolicy>>
+exclusive(
+    resources::Host& host_res,
     const ExecPolicy&,
     const Iter begin,
     const Iter end,
@@ -190,6 +212,8 @@ concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> exclusive(
   tbb::parallel_scan(tbb::blocked_range<Index_type>{0,
                                                     std::distance(begin, end)},
                      adapter);
+
+  return resources::EventProxy<resources::Host>(&host_res);
 }
 
 }  // namespace scan

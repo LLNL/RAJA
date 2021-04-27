@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -366,7 +366,8 @@ struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data
   {
     auto func = kernelGetter_t::get();
 
-    RAJA::hip::launch(func, launch_dims.blocks, launch_dims.threads, std::move(data), shmem, stream);
+    void *args[] = {(void*)&data};
+    RAJA::hip::launch((const void*)func, launch_dims.blocks, launch_dims.threads, args, shmem, stream);
   }
 };
 
@@ -448,6 +449,9 @@ struct StatementExecutor<
     using launch_t = HipLaunchHelper<LaunchConfig, stmt_list_t, data_t, Types>;
 
 
+    RAJA::resources::Hip res = data.get_resource();
+
+
     //
     // Compute the requested kernel dimensions
     //
@@ -463,7 +467,7 @@ struct StatementExecutor<
       // Setup shared memory buffers
       //
       int shmem = 0;
-      hipStream_t stream = 0;
+      hipStream_t stream = res.get_stream();
 
 
       //

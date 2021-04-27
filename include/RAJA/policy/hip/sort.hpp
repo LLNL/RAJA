@@ -9,7 +9,7 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -74,16 +74,19 @@ namespace detail
         \brief static assert unimplemented stable sort
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter, typename Compare>
-concepts::enable_if<concepts::negate<concepts::all_of<
-                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-                      std::is_pointer<Iter>,
-                      concepts::any_of<
-                        camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
-                        camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
-stable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
-     Iter,
-     Iter,
-     Compare)
+concepts::enable_if_t<resources::EventProxy<resources::Hip>,
+                      concepts::negate<concepts::all_of<
+                        type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
+                        std::is_pointer<Iter>,
+                        concepts::any_of<
+                          camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
+                          camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
+stable(
+    resources::Hip& hip_res,
+    hip_exec<BLOCK_SIZE, Async>,
+    Iter,
+    Iter,
+    Compare)
 {
   static_assert(concepts::all_of<
                   type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
@@ -92,20 +95,25 @@ stable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
                     camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
                     camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>::value,
                 "RAJA stable_sort<hip_exec> is only implemented for pointers to arithmetic types and RAJA::operators::less and RAJA::operators::greater.");
+
+  return resources::EventProxy<resources::Hip>(&hip_res);
 }
 
 /*!
         \brief stable sort given range in ascending order
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter>
-concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-                    std::is_pointer<Iter>>
-stable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
-     Iter begin,
-     Iter end,
-     operators::less<RAJA::detail::IterVal<Iter>>)
+concepts::enable_if_t<resources::EventProxy<resources::Hip>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
+                      std::is_pointer<Iter>>
+stable(
+    resources::Hip& hip_res,
+    hip_exec<BLOCK_SIZE, Async>,
+    Iter begin,
+    Iter end,
+    operators::less<RAJA::detail::IterVal<Iter>>)
 {
-  hipStream_t stream = 0;
+  hipStream_t stream = hip_res.get_stream();
 
   using R = RAJA::detail::IterVal<Iter>;
 
@@ -176,20 +184,25 @@ stable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
 
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
+
+  return resources::EventProxy<resources::Hip>(&hip_res);
 }
 
 /*!
         \brief stable sort given range in descending order
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter>
-concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-                    std::is_pointer<Iter>>
-stable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
-     Iter begin,
-     Iter end,
-     operators::greater<RAJA::detail::IterVal<Iter>>)
+concepts::enable_if_t<resources::EventProxy<resources::Hip>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
+                      std::is_pointer<Iter>>
+stable(
+    resources::Hip& hip_res,
+    hip_exec<BLOCK_SIZE, Async>,
+    Iter begin,
+    Iter end,
+    operators::greater<RAJA::detail::IterVal<Iter>>)
 {
-  hipStream_t stream = 0;
+  hipStream_t stream = hip_res.get_stream();
 
   using R = RAJA::detail::IterVal<Iter>;
 
@@ -260,6 +273,8 @@ stable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
 
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
+
+  return resources::EventProxy<resources::Hip>(&hip_res);
 }
 
 
@@ -267,16 +282,19 @@ stable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
         \brief static assert unimplemented sort
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter, typename Compare>
-concepts::enable_if<concepts::negate<concepts::all_of<
-                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-                      std::is_pointer<Iter>,
-                      concepts::any_of<
-                        camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
-                        camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
-unstable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
-         Iter,
-         Iter,
-         Compare)
+concepts::enable_if_t<resources::EventProxy<resources::Hip>,
+                      concepts::negate<concepts::all_of<
+                        type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
+                        std::is_pointer<Iter>,
+                        concepts::any_of<
+                          camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
+                          camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
+unstable(
+    resources::Hip& hip_res,
+    hip_exec<BLOCK_SIZE, Async>,
+    Iter,
+    Iter,
+    Compare)
 {
   static_assert(concepts::all_of<
                   type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
@@ -285,34 +303,42 @@ unstable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
                     camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
                     camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>::value,
                 "RAJA sort<hip_exec> is only implemented for pointers to arithmetic types and RAJA::operators::less and RAJA::operators::greater.");
+
+  return resources::EventProxy<resources::Hip>(&hip_res);
 }
 
 /*!
         \brief sort given range in ascending order
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter>
-concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-                    std::is_pointer<Iter>>
-unstable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>& p,
-     Iter begin,
-     Iter end,
-     operators::less<RAJA::detail::IterVal<Iter>> comp)
+concepts::enable_if_t<resources::EventProxy<resources::Hip>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
+                      std::is_pointer<Iter>>
+unstable(
+    resources::Hip& hip_res,
+    hip_exec<BLOCK_SIZE, Async> p,
+    Iter begin,
+    Iter end,
+    operators::less<RAJA::detail::IterVal<Iter>> comp)
 {
-  stable(p, begin, end, comp);
+  return stable(hip_res, p, begin, end, comp);
 }
 
 /*!
         \brief sort given range in descending order
 */
 template <size_t BLOCK_SIZE, bool Async, typename Iter>
-concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-                    std::is_pointer<Iter>>
-unstable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>& p,
-     Iter begin,
-     Iter end,
-     operators::greater<RAJA::detail::IterVal<Iter>> comp)
+concepts::enable_if_t<resources::EventProxy<resources::Hip>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
+                      std::is_pointer<Iter>>
+unstable(
+    resources::Hip& hip_res,
+    hip_exec<BLOCK_SIZE, Async> p,
+    Iter begin,
+    Iter end,
+    operators::greater<RAJA::detail::IterVal<Iter>> comp)
 {
-  stable(p, begin, end, comp);
+  return stable(hip_res, p, begin, end, comp);
 }
 
 
@@ -321,18 +347,21 @@ unstable(const ::RAJA::hip_exec<BLOCK_SIZE, Async>& p,
 */
 template <size_t BLOCK_SIZE, bool Async,
           typename KeyIter, typename ValIter, typename Compare>
-concepts::enable_if<concepts::negate<concepts::all_of<
-                      type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
-                      std::is_pointer<KeyIter>,
-                      std::is_pointer<ValIter>,
-                      concepts::any_of<
-                        camp::is_same<Compare, operators::less<RAJA::detail::IterVal<KeyIter>>>,
-                        camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<KeyIter>>>>>>>
-stable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
-             KeyIter,
-             KeyIter,
-             ValIter,
-             Compare)
+concepts::enable_if_t<resources::EventProxy<resources::Hip>,
+                      concepts::negate<concepts::all_of<
+                        type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
+                        std::is_pointer<KeyIter>,
+                        std::is_pointer<ValIter>,
+                        concepts::any_of<
+                          camp::is_same<Compare, operators::less<RAJA::detail::IterVal<KeyIter>>>,
+                          camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<KeyIter>>>>>>>
+stable_pairs(
+    resources::Hip& hip_res,
+    hip_exec<BLOCK_SIZE, Async>,
+    KeyIter,
+    KeyIter,
+    ValIter,
+    Compare)
 {
   static_assert (std::is_pointer<KeyIter>::value,
       "stable_sort_pairs<hip_exec> is only implemented for pointers");
@@ -345,6 +374,8 @@ stable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
       camp::is_same<Compare, operators::less<K>>,
       camp::is_same<Compare, operators::greater<K>>>::value,
       "stable_sort_pairs<hip_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
+
+  return resources::EventProxy<resources::Hip>(&hip_res);
 }
 
 /*!
@@ -352,16 +383,19 @@ stable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
 */
 template <size_t BLOCK_SIZE, bool Async,
           typename KeyIter, typename ValIter>
-concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
-                    std::is_pointer<KeyIter>,
-                    std::is_pointer<ValIter>>
-stable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
-             KeyIter keys_begin,
-             KeyIter keys_end,
-             ValIter vals_begin,
-             operators::less<RAJA::detail::IterVal<KeyIter>>)
+concepts::enable_if_t<resources::EventProxy<resources::Hip>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
+                      std::is_pointer<KeyIter>,
+                      std::is_pointer<ValIter>>
+stable_pairs(
+    resources::Hip& hip_res,
+    hip_exec<BLOCK_SIZE, Async>,
+    KeyIter keys_begin,
+    KeyIter keys_end,
+    ValIter vals_begin,
+    operators::less<RAJA::detail::IterVal<KeyIter>>)
 {
-  hipStream_t stream = 0;
+  hipStream_t stream = hip_res.get_stream();
 
   using K = RAJA::detail::IterVal<KeyIter>;
   using V = RAJA::detail::IterVal<ValIter>;
@@ -445,6 +479,8 @@ stable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
 
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
+
+  return resources::EventProxy<resources::Hip>(&hip_res);
 }
 
 /*!
@@ -452,16 +488,19 @@ stable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
 */
 template <size_t BLOCK_SIZE, bool Async,
           typename KeyIter, typename ValIter>
-concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
-                    std::is_pointer<KeyIter>,
-                    std::is_pointer<ValIter>>
-stable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
-             KeyIter keys_begin,
-             KeyIter keys_end,
-             ValIter vals_begin,
-             operators::greater<RAJA::detail::IterVal<KeyIter>>)
+concepts::enable_if_t<resources::EventProxy<resources::Hip>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
+                      std::is_pointer<KeyIter>,
+                      std::is_pointer<ValIter>>
+stable_pairs(
+    resources::Hip& hip_res,
+    hip_exec<BLOCK_SIZE, Async>,
+    KeyIter keys_begin,
+    KeyIter keys_end,
+    ValIter vals_begin,
+    operators::greater<RAJA::detail::IterVal<KeyIter>>)
 {
-  hipStream_t stream = 0;
+  hipStream_t stream = hip_res.get_stream();
 
   using K = RAJA::detail::IterVal<KeyIter>;
   using V = RAJA::detail::IterVal<ValIter>;
@@ -545,6 +584,8 @@ stable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
 
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
+
+  return resources::EventProxy<resources::Hip>(&hip_res);
 }
 
 
@@ -553,18 +594,21 @@ stable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
 */
 template <size_t BLOCK_SIZE, bool Async,
           typename KeyIter, typename ValIter, typename Compare>
-concepts::enable_if<concepts::negate<concepts::all_of<
-                      type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
-                      std::is_pointer<KeyIter>,
-                      std::is_pointer<ValIter>,
-                      concepts::any_of<
-                        camp::is_same<Compare, operators::less<RAJA::detail::IterVal<KeyIter>>>,
-                        camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<KeyIter>>>>>>>
-unstable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
-               KeyIter,
-               KeyIter,
-               ValIter,
-               Compare)
+concepts::enable_if_t<resources::EventProxy<resources::Hip>,
+                      concepts::negate<concepts::all_of<
+                        type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
+                        std::is_pointer<KeyIter>,
+                        std::is_pointer<ValIter>,
+                        concepts::any_of<
+                          camp::is_same<Compare, operators::less<RAJA::detail::IterVal<KeyIter>>>,
+                          camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<KeyIter>>>>>>>
+unstable_pairs(
+    resources::Hip& hip_res,
+    hip_exec<BLOCK_SIZE, Async>,
+    KeyIter,
+    KeyIter,
+    ValIter,
+    Compare)
 {
   static_assert (std::is_pointer<KeyIter>::value,
       "sort_pairs<hip_exec> is only implemented for pointers");
@@ -577,6 +621,8 @@ unstable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
       camp::is_same<Compare, operators::less<K>>,
       camp::is_same<Compare, operators::greater<K>>>::value,
       "sort_pairs<hip_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
+
+  return resources::EventProxy<resources::Hip>(&hip_res);
 }
 
 /*!
@@ -584,16 +630,19 @@ unstable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
 */
 template <size_t BLOCK_SIZE, bool Async,
           typename KeyIter, typename ValIter>
-concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
-                    std::is_pointer<KeyIter>,
-                    std::is_pointer<ValIter>>
-unstable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>& p,
-               KeyIter keys_begin,
-               KeyIter keys_end,
-               ValIter vals_begin,
-               operators::less<RAJA::detail::IterVal<KeyIter>> comp)
+concepts::enable_if_t<resources::EventProxy<resources::Hip>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
+                      std::is_pointer<KeyIter>,
+                      std::is_pointer<ValIter>>
+unstable_pairs(
+    resources::Hip& hip_res,
+    hip_exec<BLOCK_SIZE, Async> p,
+    KeyIter keys_begin,
+    KeyIter keys_end,
+    ValIter vals_begin,
+    operators::less<RAJA::detail::IterVal<KeyIter>> comp)
 {
-  stable_pairs(p, keys_begin, keys_end, vals_begin, comp);
+  return stable_pairs(hip_res, p, keys_begin, keys_end, vals_begin, comp);
 }
 
 /*!
@@ -601,16 +650,19 @@ unstable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>& p,
 */
 template <size_t BLOCK_SIZE, bool Async,
           typename KeyIter, typename ValIter>
-concepts::enable_if<type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
-                    std::is_pointer<KeyIter>,
-                    std::is_pointer<ValIter>>
-unstable_pairs(const ::RAJA::hip_exec<BLOCK_SIZE, Async>& p,
-               KeyIter keys_begin,
-               KeyIter keys_end,
-               ValIter vals_begin,
-               operators::greater<RAJA::detail::IterVal<KeyIter>> comp)
+concepts::enable_if_t<resources::EventProxy<resources::Hip>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
+                      std::is_pointer<KeyIter>,
+                      std::is_pointer<ValIter>>
+unstable_pairs(
+    resources::Hip& hip_res,
+    hip_exec<BLOCK_SIZE, Async> p,
+    KeyIter keys_begin,
+    KeyIter keys_end,
+    ValIter vals_begin,
+    operators::greater<RAJA::detail::IterVal<KeyIter>> comp)
 {
-  stable_pairs(p, keys_begin, keys_end, vals_begin, comp);
+  return stable_pairs(hip_res, p, keys_begin, keys_end, vals_begin, comp);
 }
 
 }  // namespace sort

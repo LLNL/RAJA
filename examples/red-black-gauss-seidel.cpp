@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -179,8 +179,8 @@ RAJA::TypedIndexSet<RAJA::ListSegment>
 {
   RAJA::TypedIndexSet<RAJA::ListSegment> colorSet;
 
-  int redN = ceil(N * N / 2);
-  int blkN = floor(N * N / 2);
+  int redN = static_cast<int>( std::ceil( static_cast<double>(N * N / 2) ) );
+  int blkN = static_cast<int>( std::floor( static_cast<double>(N * N / 2) ) );
   RAJA::Index_type *Red = new RAJA::Index_type[redN];
   RAJA::Index_type *Blk = new RAJA::Index_type[blkN];
 
