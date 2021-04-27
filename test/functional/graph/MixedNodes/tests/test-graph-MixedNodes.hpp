@@ -150,7 +150,7 @@ void MixedNodesTestImpl(int node_size)
         int* previous = node_previous[node_id];
         int* my_data  = node_data[node_id];
         g.add_node(node_id, edges_to_node,
-            RAJA::expt::graph::Forall<RAJA::omp_parallel_exec<RAJA::omp_for_nowait_exec>>(seg, [=](int i){
+            RAJA::expt::graph::Forall<RAJA::omp_parallel_exec<RAJA::omp_for_exec>>(seg, [=](int i){
           for (int e = 0; e < num_edges_to_node; ++e) {
             int other_id = previous[e];
             int* other_data = node_data[other_id];
