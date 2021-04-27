@@ -135,7 +135,7 @@ void MixedNodesTestImpl(int node_size)
              int,
              RAJA::xargs<>,
              Allocator
-           >(Allocator{}));
+           >(Allocator(host_res)));
         for (int e = 0; e < num_edges_to_node; ++e) {
           int other_id = previous[e];
           int* other_data = node_data[other_id];
@@ -169,7 +169,7 @@ void MixedNodesTestImpl(int node_size)
              int,
              RAJA::xargs<>,
              Allocator
-           >(Allocator{}));
+           >(Allocator(host_res)));
         for (int e = 0; e < num_edges_to_node; ++e) {
           int other_id = previous[e];
           int* other_data = node_data[other_id];
@@ -204,7 +204,7 @@ void MixedNodesTestImpl(int node_size)
              int,
              RAJA::xargs<>,
              Allocator
-           >(Allocator{}));
+           >(Allocator(host_res)));
         for (int e = 0; e < num_edges_to_node; ++e) {
           int other_id = previous[e];
           int* other_data = node_data[other_id];
@@ -239,7 +239,7 @@ void MixedNodesTestImpl(int node_size)
              int,
              RAJA::xargs<>,
              Allocator
-           >(Allocator{}));
+           >(Allocator(omp_res)));
         for (int e = 0; e < num_edges_to_node; ++e) {
           int other_id = previous[e];
           int* other_data = node_data[other_id];
@@ -276,7 +276,7 @@ void MixedNodesTestImpl(int node_size)
              int,
              RAJA::xargs<>,
              Allocator
-           >(Allocator{}));
+           >(Allocator(cuda_res)));
         for (int e = 0; e < num_edges_to_node; ++e) {
           int other_id = previous[e];
           int* other_data = node_data[other_id];
@@ -317,7 +317,7 @@ void MixedNodesTestImpl(int node_size)
              int,
              RAJA::xargs<>,
              Allocator
-           >(Allocator{}));
+           >(Allocator(hip_res)));
         for (int e = 0; e < num_edges_to_node; ++e) {
           int other_id = previous[e];
           int* other_data = node_data[other_id];
