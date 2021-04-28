@@ -4,39 +4,39 @@ variables:
   DO_INSTALL: 'yes'
   COMPILER: 'g++'
 
-jobs:
-- job: Windows #temporarily commenting out until cmake/azure version issue resolved
-  strategy:
-    matrix:
-      shared:
-        SHARED_ARGS: '-DBUILD_SHARED_LIBS=On -DCMAKE_CXX_FLAGS="/DRAJASHAREDDLL_EXPORTS" '
-      static:
-        SHARED_ARGS: '-DBUILD_SHARED_LIBS=Off'
-  pool:
-    vmImage: 'windows-2019'
-  variables:
-    CMAKE_EXTRA_FLAGS: '-DENABLE_WARNINGS_AS_ERRORS=Off -DBLT_CXX_STD="" -DCMAKE_CXX_STANDARD=17'
-  steps:
-  - checkout: self
-    clean: boolean
-    submodules: recursive
-  - task: CMake@1
-    inputs:
-      workingDir: 'build'
-      cmakeArgs: '$(CMAKE_EXTRA_FLAGS) $(SHARED_ARGS) ../'
-  - task: CMake@1
-    inputs:
-      workingDir: 'build'
-      cmakeArgs: '--build . --config Release --verbose'
-#   - task: CmdLine@2
-#     inputs:
-#       script: 'ctest.exe -T test -C Release'
-#       workingDirectory: 'build'
-#     condition: eq( variables['Agent.OS'], 'Windows_NT')
-#   - task: PublishTestResults@2
-#     inputs:
-#       testResultsFormat: 'cTest'
-#       testResultsFiles: '**/Test.xml'
+#jobs:
+#- job: Windows #temporarily commenting out until cmake/azure version issue resolved
+#  strategy:
+#    matrix:
+#      shared:
+#        SHARED_ARGS: '-DBUILD_SHARED_LIBS=On -DCMAKE_CXX_FLAGS="/DRAJASHAREDDLL_EXPORTS" '
+#      static:
+#        SHARED_ARGS: '-DBUILD_SHARED_LIBS=Off'
+#  pool:
+#    vmImage: 'windows-2019'
+#  variables:
+#    CMAKE_EXTRA_FLAGS: '-DENABLE_WARNINGS_AS_ERRORS=Off -DBLT_CXX_STD="" -DCMAKE_CXX_STANDARD=17'
+#  steps:
+#  - checkout: self
+#    clean: boolean
+#    submodules: recursive
+#  - task: CMake@1
+#    inputs:
+#      workingDir: 'build'
+#      cmakeArgs: '$(CMAKE_EXTRA_FLAGS) $(SHARED_ARGS) ../'
+#  - task: CMake@1
+#    inputs:
+#      workingDir: 'build'
+#      cmakeArgs: '--build . --config Release --verbose'
+##   - task: CmdLine@2
+##     inputs:
+##       script: 'ctest.exe -T test -C Release'
+##       workingDirectory: 'build'
+##     condition: eq( variables['Agent.OS'], 'Windows_NT')
+##   - task: PublishTestResults@2
+##     inputs:
+##       testResultsFormat: 'cTest'
+##       testResultsFiles: '**/Test.xml'
 #- job: Docker
 #  strategy:
 #    matrix: 
@@ -89,30 +89,30 @@ jobs:
 #    inputs:
 #      testResultsFormat: 'cTest'
 #      testResultsFiles: '**/Test.xml'
-#- job: Mac 
-#  pool:
-#    vmImage: 'macOS-latest'
-#  variables:
-#    CMAKE_EXTRA_FLAGS: '-DENABLE_DEVELOPER_DEFAULTS=On -DENABLE_DEVELOPER_BENCHMARKS=On'
-#  steps:
-#  - checkout: self
-#    clean: boolean
-#    submodules: recursive
-#  - task: CMake@1
-#    inputs:
-#      workingDir: 'build'
-#      cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../'
-#  - script: |
-#      cd build
-#      make
-#    displayName: 'OSX Build'
-#    condition: eq( variables['Agent.OS'], 'Darwin')
-#  - script: |
-#      cd build
-#      ctest -T test --output-on-failure
-#    displayName: 'OSX Test'
-#    condition: eq( variables['Agent.OS'], 'Darwin')
-#  - task: PublishTestResults@2
-#    inputs:
-#      testResultsFormat: 'cTest'
-#      testResultsFiles: '**/Test.xml'
+- job: Mac 
+  pool:
+    vmImage: 'macOS-latest'
+  variables:
+    CMAKE_EXTRA_FLAGS: '-DENABLE_OPENMP=Off'
+  steps:
+  - checkout: self
+    clean: boolean
+    submodules: recursive
+  - task: CMake@1
+    inputs:
+      workingDir: 'build'
+      cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../'
+  - script: |
+      cd build
+      make
+    displayName: 'OSX Build'
+    condition: eq( variables['Agent.OS'], 'Darwin')
+  - script: |
+      cd build
+      ctest -T test --output-on-failure
+    displayName: 'OSX Test'
+    condition: eq( variables['Agent.OS'], 'Darwin')
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'cTest'
+      testResultsFiles: '**/Test.xml'
