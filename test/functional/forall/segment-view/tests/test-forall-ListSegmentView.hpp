@@ -68,10 +68,14 @@ void ForallListSegmentViewTestImpl(INDEX_TYPE N)
   #endif
   static_assert(IS_TRIVIALLY_COPYABLE(layout_type),
                 "These layouts should always be triviallly copyable");
-// AJK: Until we resolve the CUDA issue with defaulted ctors in View, we
-//      cannot have trivially copyable Views
-//  static_assert(IS_TRIVIALLY_COPYABLE(view_type),
-//                "These views should always be triviallly copyable");
+
+  // AJK: see ViewBase Ctor notes in RAJA/Util/TypedViewBase.hpp
+#ifndef RAJA_ENABLE_CUDA
+  static_assert(IS_TRIVIALLY_COPYABLE(view_type),
+                "These views should always be triviallly copyable");
+#endif
+
+
 #endif
   
   RAJA::Layout<1> layout(N);
