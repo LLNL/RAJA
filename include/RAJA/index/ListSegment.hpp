@@ -118,7 +118,7 @@ public:
    */
   TypedListSegment(const value_type* values,
                    Index_type length,
-                   camp::resources::Resource& resource,
+                   camp::resources::Resource resource,
                    IndexOwnership owned = Owned)
     : m_resource(resource)
   {
@@ -139,7 +139,7 @@ public:
    */
   template <typename Container>
   TypedListSegment(const Container& container,
-                   camp::resources::Resource& resource)
+                   camp::resources::Resource resource)
     : m_resource(resource),
       m_owned(Unowned), m_data(nullptr), m_size(container.size())
   {

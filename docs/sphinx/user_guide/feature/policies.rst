@@ -12,15 +12,15 @@
 Policies
 ==================
 
-This section describes various RAJA policies for loop kernel execution,
+This section describes RAJA policies for loop kernel execution,
 scans, sorts, reductions, atomics, etc. Each policy is a type that is passed to
 a RAJA template method or class to specialize its behavior. Typically, the
 policy indicates which programming model back-end to use and sometimes
-provides additional information about the execution pattern, such as
+specifies additional information about the execution pattern, such as
 number of CUDA threads per thread block, whether execution is synchronous
 or asynchronous, etc.
 
-As RAJA functionality is expanded, new policies will be added and some may
+As RAJA functionality evolves, new policies will be added and some may
 be redefined and to work in new ways.
 
 .. note:: * All RAJA policies are in the namespace ``RAJA``.
@@ -32,9 +32,17 @@ be redefined and to work in new ways.
 RAJA Loop/Kernel Execution Policies
 -----------------------------------------------------
 
-The following tables summarize RAJA policies for executing loops and kernels.
+The following tables summarize RAJA policies for executing kernels.
 Please see notes below policy descriptions for additional usage details and
 caveats.
+
+
+Sequential CPU Policies
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+For the sequential CPU back-end, RAJA provides policies that allow developers
+to have some control over the optimizations that compilers are allow to
+apply during code compilation.
 
  ====================================== ============= ==========================
  Sequential/SIMD Execution Policies     Works with    Brief description
@@ -45,66 +53,185 @@ caveats.
                                         sort
  simd_exec                              forall,       Try to force generation of
                                         kernel (For), SIMD instructions via
-                                        scan          compiler hints in RAJA
+                                        scan          compiler hints in RAJA's
                                                       internal implementation.
- loop_exec                              forall,       Allow compiler to generate
-                                        kernel (For), any optimizations, such as
-                                        scan,         SIMD, that may be
-                                        sort          beneficial according to
-                                                      its heuristics;
+ loop_exec                              forall,       Allow the compiler to 
+                                        kernel (For), generate any optimizations
+                                        scan,         that its heuristics deem
+                                        sort          beneficial according;
                                                       i.e., no loop decorations
                                                       (pragmas or intrinsics) in
                                                       RAJA implementation.
  ====================================== ============= ==========================
 
+
+OpenMP Parallel CPU Policies
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For the OpenMP CPU multithreading back-end, RAJA has policies that can be used
+by themselves to execute kernels. In particular, they create an OpenMP parallel
+region and execute a kernel within it. To distinguish these in this discussion,
+we refer to these as **full policies**. These policies are provided 
+to users for convenience in common use cases. 
+
+RAJA also provides other OpenMP policies, which we refer to as 
+**partial policies**, since they need to be used in combination with other 
+policies. Typically, they work by providing an *outer policy* and an 
+*inner policy* as a template parameter to the outer policy. These give users 
+flexibility to create more complex execution patterns.
+
+
+.. note:: To control the number of threads used by OpenMP policies
+          set the value of the environment variable 'OMP_NUM_THREADS' (which is
+          fixed for duration of run), or call the OpenMP routine
+          'omp_set_num_threads(nthreads)' in your application, which allows 
+          one to change the number of threads at runtime.
+
+The full policies are described in the following table. Partial policies
+are described in other tables below.
+
+ ========================================= ============= =======================
+ OpenMP CPU Full Policies                  Works with    Brief description
+ ========================================= ============= =======================
+ omp_parallel_for_exec                     forall,       Same as applying 
+                                           kernel (For), 'omp parallel for' 
+                                           scan,         pragma
+                                           sort
+ omp_parallel_for_static_exec<ChunkSize>   forall,       Same as applying
+                                           kernel (For)  'omp parallel for
+                                                         schedule(static,
+                                                         ChunkSize)'
+ omp_parallel_for_dynamic_exec<ChunkSize>  forall,       Same as applying
+                                           kernel (For)  'omp parallel for
+                                                         schedule(dynamic,
+                                                         ChunkSize)'
+ omp_parallel_for_guided_exec<ChunkSize>   forall,       Same as applying
+                                           kernel (For)  'omp parallel for
+                                                         schedule(guided,
+                                                         ChunkSize)'
+ omp_parallel_for_runtime_exec             forall,       Same as applying
+                                           kernel (For)  'omp parallel for
+                                                         schedule(runtime)'
+ ========================================= ============= =======================
+
+.. note:: For the OpenMP scheduling policies above that take a ``ChunkSize``
+          parameter, the chunk size is optional. If not provided, the 
+          default chunk size that OpenMP applies will be used, which may
+          be specific to the OpenMP implementation in use. For this case,
+          the RAJA policy syntax is 
+          ``omp_parallel_for_{static|dynamic|guided}_exec< >``, which will 
+          result in the OpenMP pragma 
+          ``omp parallel for schedule({static|dynamic|guided})`` being applied. 
+
+RAJA provides an (outer) OpenMP CPU policy to create a parallel region in 
+which to execute a kernel. It requires an inner policy that defines how a 
+kernel will execute in parallel inside the region.
+
  ====================================== ============= ==========================
- OpenMP CPU Multithreading Policies     Works with    Brief description
+ OpenMP CPU Outer Policies              Works with    Brief description
  ====================================== ============= ==========================
- omp_parallel_for_exec                  forall,       Create OpenMP parallel
-                                        kernel (For), region and execute with
-                                        scan,         CPU multithreading inside
-                                        sort          it; i.e., apply ``omp
-                                                      parallel for`` pragma.
- omp_for_exec                           forall,       Parallel execution with
-                                        kernel (For), OpenMP CPU multithreading
-                                        scan          inside an *existing* 
-                                                      parallel region (see 
-                                                      comments below); i.e., 
-                                                      apply ``omp for`` pragma. 
- omp_for_static<CHUNK_SIZE>             forall,       Execute loop with OpenMP
-                                        kernel (For), CPU multithreading using
-                                        scan          static schedule and given
-                                                      chunk size inside an 
-                                                      *existing* parallel 
-                                                      region (see comments 
-                                                      below); i.e., apply ``omp                                                       for schedule(static, 
-                                                      CHUNK_SIZE)`` pragma.
- omp_for_nowait_exec                    forall,       Parallel execution with
-                                        kernel (For), OpenMP CPU multithreading
-                                        scan          inside an *existing* 
-                                                      parallel region (see 
-                                                      comments below) without
-                                                      synchronization after 
-                                                      loop; i.e., apply
-                                                      ``omp for nowait`` pragma.
- omp_for_schedule_exec<Sched>           forall,       Parallel execution with
-                                        kernel (For)  OpenMP CPU multithreading
-                                                      inside an *existing* 
-                                                      parallel region (see 
-                                                      comments below) with a
-                                                      specified schedule 
-                                                      (*Sched*).
- omp_for_nowait_schedule_exec<Sched>    forall,       Parallel execution with
-                                        kernel (For)  OpenMP CPU multithreading
-                                                      inside an *existing* 
-                                                      parallel region (see 
-                                                      comments below) with a
-                                                      specified schedule 
-                                                      (*Sched*) and without 
-                                                      synchronization after 
-                                                      loop; e.g., apply
-                                                      ``nowait`` to pragma.
+ omp_parallel_exec<InnerPolicy>         forall,       Creates OpenMP parallel
+                                        kernel (For), region and requires an
+                                        scan          **InnerPolicy**. Same as
+                                                      applying 'omp parallel'
+                                                      pragma.
  ====================================== ============= ==========================
+
+Finally, we summarize the inner policies that RAJA provides for OpenMP.
+These policies are passed to the RAJA ``omp_parallel_exec`` outer policy as 
+a template argument as described above.
+
+ ====================================== ============= ==========================
+ OpenMP CPU Inner Policies              Works with    Brief description
+ ====================================== ============= ==========================
+ omp_for_exec                           forall,       Parallel execution within
+                                        kernel (For), *existing parallel 
+                                        scan          region*; i.e., 
+                                                      apply 'omp for' pragma. 
+ omp_for_static_exec<ChunkSize>         forall,       Same as applying
+                                        kernel (For)  'omp for
+                                                      schedule(static,
+                                                      ChunkSize)'
+ omp_for_nowait_static_exec<ChunkSize>  forall,       Same as applying
+                                        kernel (For)  'omp for
+                                                      schedule(static,
+                                                      ChunkSize) nowait'
+ omp_for_dynamic_exec<ChunkSize>        forall,       Same as applying
+                                        kernel (For)  'omp for
+                                                      schedule(dynamic,
+                                                      ChunkSize)'
+ omp_for_guided_exec<ChunkSize>         forall,       Same as applying
+                                        kernel (For)  'omp for
+                                                      schedule(guided,
+                                                      ChunkSize)'
+ omp_for_runtime_exec                   forall,       Same as applying
+                                        kernel (For)  'omp for
+                                                      schedule(runtime)'
+ ====================================== ============= ==========================
+
+.. important:: **RAJA only provides a nowait policy option for static schedule**
+               since that is the only schedule case that can be used with
+               nowait and be correct in general when chaining multiple loops
+               in a single parallel region. Paraphrasing the OpenMP standard:
+               *programs that depend on which thread executes a particular
+               loop iteration under any circumstance other than static schedule
+               are non-conforming.*
+
+.. note:: As in the RAJA full policies for OpenMP scheduling, the ``ChunkSize``
+          is optional. If not provided, the default chunk size that the OpenMP 
+          implementation applies will be used. For this case,
+          the RAJA policy syntax is 
+          ``omp_for_{static|dynamic|guided}_exec< >``, which will result 
+          in the OpenMP pragma 
+          ``omp for schedule({static|dynamic|guided})`` being applied.
+          Similarly, for ``nowait`` static policy, the RAJA policy syntax is
+          ``omp_for_nowait_static_exec< >``, which will result in the OpenMP 
+          pragma ``omp for schedule(static) nowait`` being applied.
+
+.. note:: As noted above, RAJA inner OpenMP policies must only be used within an
+          **existing** parallel region to work properly. Embedding an inner 
+          policy inside the RAJA outer ``omp_parallel_exec`` will allow you to 
+          apply the OpenMP execution prescription specified by the policies to 
+          a single kernel. To support use cases with multiple kernels inside an
+          OpenMP parallel region, RAJA provides a **region** construct that 
+          takes a template argument to specify the execution back-end. For 
+          example::
+
+            RAJA::region<RAJA::omp_parallel_region>([=]() {
+
+              RAJA::forall<RAJA::omp_for_nowait_static_exec< > >(segment, 
+                [=] (int idx) {
+                  // do something at iterate 'idx'
+                }
+              );
+
+              RAJA::forall<RAJA::omp_for_static_exec< > >(segment, 
+                [=] (int idx) {
+                  // do something else at iterate 'idx'
+                }
+              );
+
+            });
+
+          Here, the ``RAJA::region<RAJA::omp_parallel_region>`` method call
+          creates an OpenMP parallel region, which contains two ``RAJA::forall``
+          kernels. The first uses the ``RAJA::omp_for_nowait_static_exec< >`` 
+          policy, meaning that no thread synchronization is needed after the 
+          kernel. Thus, threads can start working on the second kernel while 
+          others are still working on the first kernel. I general, this will
+          be correct when the segments used in the two kernels are the same,
+          each loop is data parallel, and static scheduling is applied to both
+          loops. The second kernel uses the ``RAJA::omp_for_static_exec`` 
+          policy, which means that all threads will complete before the kernel 
+          exits. In this example, this is not really needed since there is no 
+          more code to execute in the parallel region and there is an implicit 
+          barrier at the end of it.
+
+Threading Building Block (TBB) Parallel CPU Policies
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+RAJA provides a basic set of TBB execution policies for users who would like
+to try it.
 
  ====================================== ============= ==========================
  Threading Building Blocks Policies     Works with    Brief description
@@ -120,6 +247,25 @@ caveats.
                                         kernel (For), a dynamic scheduler.
                                         scan
  ====================================== ============= ==========================
+
+.. note:: To control the number of TBB worker threads used by these policies:
+          set the value of the environment variable 'TBB_NUM_WORKERS' (which is
+          fixed for duration of run), or create a 'task_scheduler_init' object::
+
+            tbb::task_scheduler_init TBBinit( nworkers );
+
+            // do some parallel work
+
+            TBBinit.terminate();
+            TBBinit.initialize( new_nworkers );
+
+            // do some more parallel work
+
+          This allows changing number of workers at runtime.
+
+
+GPU Policies for CUDA and HIP
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 RAJA policies for GPU execution using CUDA or HIP are essentially identical. 
 The only difference is that CUDA policies have the prefix ``cuda_`` and HIP 
@@ -220,11 +366,49 @@ policies have the prefix ``hip_``.
                                                         thread warp.
  ======================================== ============= ========================
 
+Several notable constraints apply to RAJA CUDA/HIP *thread-direct* policies.
+
+.. note:: * Repeating thread direct policies with the same thread dimension
+            in perfectly nested loops is not recommended. Your code may do
+            something, but likely will not do what you expect and/or be correct.
+          * If multiple thread direct policies are used in a kernel (using
+            different thread dimensions), the product of sizes of the
+            corresponding iteration spaces cannot be greater than the
+            maximum allowable threads per block. Typically, this is
+            equ:math:`\leq` 1024; e.g., attempting to launch a CUDA kernel
+            with more than 1024 threads per block will cause the CUDA runtime
+            to complain about *illegal launch parameters.*
+          * **Thread-direct policies are recommended only for certain loop
+            patterns, such as tiling.**
+
+Several notes regarding CUDA/HIP thread and block *loop* policies are also
+good to know.
+
+.. note:: * There is no constraint on the product of sizes of the associated
+            loop iteration space.
+          * These polices allow having a larger number of iterates than
+            threads in the x, y, or z thread dimension.
+          * **CUDA/HIP thread and block loop policies are recommended for most
+            loop patterns.**
+
+Finally
+
+.. note:: CUDA/HIP block-direct policies may be preferable to block-loop
+          policies in situations where block load balancing may be an issue
+          as the block-direct policies may yield better performance.
+
+
+OpenMP Target Offload Policies 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+RAJA provides policies to use OpenMP to offload kernel execution to a GPU 
+device, for example. They are summarized in the following table.
+
  ====================================== ============= ==========================
  OpenMP Target Execution Policies       Works with    Brief description
  ====================================== ============= ==========================
- omp_target_parallel_for_exec<#>        forall        Create parallel target
-                                                      region and execute with
+ omp_target_parallel_for_exec<#>        forall,       Create parallel target
+                                        kernel(For)   region and execute with
                                                       given number of threads
                                                       per team inside it. Number
                                                       of teams is calculated
@@ -244,104 +428,6 @@ policies have the prefix ``hip_``.
                                                       of thread teams and
                                                       threads per team
  ====================================== ============= ==========================
-
-The following notes provide additional information about policy usage.
-
-.. note:: To control the number of threads used by OpenMP policies
-          set the value of the environment variable 'OMP_NUM_THREADS' (which is
-          fixed for duration of run), or call the OpenMP routine
-          'omp_set_num_threads(nthreads)' (which allows changing number of
-          threads at runtime).
-
-.. note:: As noted above, some OpenMP policies must only be used within an
-          **existing** parallel region to work the way you would expect them
-          to. For example::
-
-            RAJA::region<RAJA::omp_parallel_region>([=]() {
-
-              RAJA::forall<RAJA::omp_for_nowait_exec>(segment, [=] (int idx) {
-                 // do something at iterate 'idx'
-              });
-
-              RAJA::forall<RAJA::omp_for_exec>(segment, [=] (int idx) {
-                 // do something else at iterate 'idx'
-              });
-
-            });
-
-          Here, the ``RAJA::region<RAJA::omp_parallel_region>`` method call
-          creates an OpenMP parallel region, which contains two ``RAJA::forall``
-          kernels. The first uses the ``RAJA::omp_for_nowait_exec`` policy, 
-          meaning that no thread synchronization is needed after the kernel.
-          Thus, threads can start working on the second kernel while others
-          are still working on the first kernel. I general, this can only be 
-          guaranteed to be correct if the segments used in the two kernels
-          are the same and each loop is data parallel. The second kernel uses
-          the ``RAJA::omp_for_exec`` policy, which means that all threads will
-          complete before the kernel exits. In this example, this is not
-          really needed since there is no more code to execute in the parallel
-          region and there is an implicit barrier at the end of it.
-
-.. note:: As noted above, a *Scheduling Policy* can be specified for
-          ``omp_for_schedule_exec`` and ``omp_for_nowait_schedule_exec`` policies.
-          All possible schedules reside under the ``RAJA::policy::omp`` namespace
-
-          * ``Static<ChunkSize>`` equivilent to ``schedule(static, ChunkSize)``
-          * ``Dynamic<ChunkSize>`` equivilent to ``schedule(dynamic, ChunkSize)``
-          * ``Guided<ChunkSize>`` equivilent to ``schedule(guided, ChunkSize)``
-          * ``Runtime`` equivilent to ``schedule(runtime)``
-          * ``Auto`` equivilent to no schedule specified
-
-          There is a special identifier ``RAJA::policy::omp::default_chunk_size``
-          which can be used as the template argument to ``Static``, ``Dynamic``,
-          or ``Guided`` to defer to the implementation-defined default chunk size.
-
-.. note:: To control the number of TBB worker threads used by these policies:
-          set the value of the environment variable 'TBB_NUM_WORKERS' (which is
-          fixed for duration of run), or create a 'task_scheduler_init' object::
-
-            tbb::task_scheduler_init TBBinit( nworkers );
-
-            // do some parallel work
-
-            TBBinit.terminate();
-            TBBinit.initialize( new_nworkers );
-
-            // do some more parallel work
-
-          This allows changing number of workers at runtime.
-
-Several notable constraints apply to RAJA CUDA/HIP *thread-direct* policies.
-
-.. note:: * Repeating thread direct policies with the same thread dimension
-            in perfectly nested loops is not recommended. Your code may do
-            something, but likely will not do what you expect and/or be correct.
-          * If multiple thread direct policies are used in a kernel (using
-            different thread dimensions), the product of sizes of the
-            corresponding iteration spaces cannot be greater than the
-            maximum allowable threads per block. Typically, this is
-            equ:math:`\leq` 1024; e.g., attempting to launch a CUDA kernel
-            with more than 1024 threads per block will cause the CUDA runtime
-            to complain about *illegal launch parameters.*
-          * **Thread-direct policies are recommended only for certain loop
-            patterns, such as tiling.**
-
-Several notes regarding CUDA/HIP thread and block *loop* policies are also 
-good to know.
-
-.. note:: * There is no constraint on the product of sizes of the associated
-            loop iteration space.
-          * These polices allow having a larger number of iterates than
-            threads in the x, y, or z thread dimension.
-          * **CUDA/HIP thread and block loop policies are recommended for most
-            loop patterns.**
-
-Finally
-
-.. note:: CUDA/HIP block-direct policies may be preferable to block-loop 
-          policies in situations where block load balancing may be an issue 
-          as the block-direct policies may yield better performance.
-
 
 .. _indexsetpolicy-label:
 
@@ -387,34 +473,28 @@ tbb_segit                              Iterate over index set segments in
 Parallel Region Policies
 -------------------------
 
-The following policies may only be used with the ``RAJA::region`` method.
-``RAJA::forall`` and ``RAJA::kernel`` methods may be used within a parallel
-region created with the ``RAJA::region`` construct.
+Earlier, we discussed an example using the ``RAJA::region`` construct to
+execute multiple kernels in an OpenMP parallel region. To support source code 
+portability, RAJA provides a sequential region concept that can be used to 
+surround code that uses execution back-ends other than OpenMP. For example::
 
-* ``seq_region`` - Create a sequential region (see note below).
-* ``omp_parallel_region`` - Create an OpenMP parallel region.
+  RAJA::region<RAJA::seq_region>([=]() {
 
-For example, the following code will execute two consecutive loops in parallel
-in an OpenMP parallel region without synchronizing threads between them::
+     RAJA::forall<RAJA::loop_exec>(segment, [=] (int idx) {
+         // do something at iterate 'idx'
+     } );
 
-  RAJA::region<RAJA::omp_parallel_region>( [=]() {
+     RAJA::forall<RAJA::loop_exec>(segment, [=] (int idx) {
+         // do something else at iterate 'idx'
+     } );
 
-    RAJA::forall<RAJA::omp_for_nowait_exec>(
-      RAJA::RangeSegment(0, N), [=](int i) {
-        // loop body #1
-    });
-
-    RAJA::forall<RAJA::omp_for_nowait_exec>(
-      RAJA::RangeSegment(0, N), [=](int i) {
-        // loop body #2
-    });
-
-  }); // end omp parallel region
+   });
 
 .. note:: The sequential region specialization is essentially a *pass through*
           operation. It is provided so that if you want to turn off OpenMP in
-          your code, you can simply replace the region policy type and you do
-          not have to change your algorithm source code.
+          your code, for example, you can simply replace the region policy 
+          type and you do not have to change your algorithm source code.
+
 
 .. _reducepolicy-label:
 

@@ -42,33 +42,39 @@ using SequentialKernelExecPols = camp::list<
 using OpenMPKernelExecPols = camp::list< 
     
   RAJA::KernelPolicy<
-    RAJA::statement::For<0, RAJA::omp_parallel_exec<RAJA::omp_for_nowait_exec>,
+    RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
+      RAJA::statement::Lambda<0, RAJA::Segs<0>>
+    >
+  >,
+
+  RAJA::KernelPolicy<
+    RAJA::statement::For<0, RAJA::omp_parallel_for_static_exec< >,
       RAJA::statement::Lambda<0, RAJA::Segs<0>>
     >
   >,
 
 #if defined(RAJA_TEST_EXHAUSTIVE)
   RAJA::KernelPolicy<
-    RAJA::statement::For<0, RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Static<4>>>,
+    RAJA::statement::For<0, RAJA::omp_parallel_for_static_exec<4>,
       RAJA::statement::Lambda<0, RAJA::Segs<0>>
     >
   >,
 
   RAJA::KernelPolicy<
-    RAJA::statement::For<0, RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Dynamic<2>>>,
+    RAJA::statement::For<0, RAJA::omp_parallel_for_dynamic_exec<2>,
       RAJA::statement::Lambda<0, RAJA::Segs<0>>
     >
   >,
 
   RAJA::KernelPolicy<
-    RAJA::statement::For<0, RAJA::omp_parallel_exec<RAJA::omp_for_schedule_exec<RAJA::policy::omp::Guided<3>>>,
+    RAJA::statement::For<0, RAJA::omp_parallel_for_guided_exec<3>,
       RAJA::statement::Lambda<0, RAJA::Segs<0>>
     >
-  >
+  >,
 #endif
 
   RAJA::KernelPolicy<
-    RAJA::statement::For<0, RAJA::omp_parallel_exec<RAJA::omp_for_exec>,
+    RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
       RAJA::statement::Lambda<0, RAJA::Segs<0>>
     >
   >
