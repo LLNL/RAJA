@@ -9,7 +9,7 @@ jobs:
   strategy:
     matrix:
       shared:
-        SHARED_ARGS: '-DBUILD_SHARED_LIBS=On -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=On'
+        SHARED_ARGS: '-DBUILD_SHARED_LIBS=On'
       static:
         SHARED_ARGS: '-DBUILD_SHARED_LIBS=Off'
   pool:
