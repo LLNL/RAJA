@@ -4,7 +4,7 @@ variables:
   DO_INSTALL: 'yes'
   COMPILER: 'g++'
 
-#jobs:
+jobs:
 #- job: Windows #temporarily commenting out until cmake/azure version issue resolved
 #  strategy:
 #    matrix:
