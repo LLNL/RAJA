@@ -57,9 +57,9 @@ struct StaticLayoutBase_impl<IdxLin,
   using sizes = camp::int_seq<IdxLin, Sizes...>;
   using strides = camp::int_seq<IdxLin, Strides...>;
 
-  static constexpr IdxLin stride_one_dim =
-      RAJA::max<IdxLin>(
-          (camp::seq_at<RangeInts, strides>::value == IdxLin(1) ? IdxLin(RangeInts) : IdxLin(-1))...);
+  static constexpr camp::idx_t stride_one_dim =
+      RAJA::max<camp::idx_t>(
+          (camp::seq_at<RangeInts, strides>::value == 1 ? RangeInts : -1)...);
 
   static constexpr size_t n_dims = sizeof...(Sizes);
 
