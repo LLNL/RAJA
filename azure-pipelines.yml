@@ -38,6 +38,7 @@ jobs:
 ##       testResultsFormat: 'cTest'
 ##       testResultsFiles: '**/Test.xml'
 - job: Docker
+  timeoutInMinutes: 0
   strategy:
     matrix: 
 #      gcc5: 
