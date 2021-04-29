@@ -6,24 +6,21 @@ namespace detail {
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
   // Init
   template<typename EXEC_POL, typename OP, typename T>
-  camp::concepts::enable_if_t< bool, std::is_same< EXEC_POL, RAJA::omp_target_parallel_for_exec_nt> > // Returning bool because void param loop machine broken.
+  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::omp_target_parallel_for_exec_nt> >
   init(Reducer<OP, T>& red) {
     red.val = Reducer<OP,T>::op::identity();
-    return true;
   }
   // Combine
   template<typename EXEC_POL, typename OP, typename T>
-  camp::concepts::enable_if_t< bool, std::is_same< EXEC_POL, RAJA::omp_target_parallel_for_exec_nt> > // Returning bool because void param loop machine broken.
+  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::omp_target_parallel_for_exec_nt> >
   combine(Reducer<OP, T>& out, const Reducer<OP, T>& in) {
     out.val = typename Reducer<OP,T>::op{}(out.val, in.val);
-    return true;
   }
   // Resolve
   template<typename EXEC_POL, typename OP, typename T>
-  camp::concepts::enable_if_t< bool, std::is_same< EXEC_POL, RAJA::omp_target_parallel_for_exec_nt> > // Returning bool because void param loop machine broken.
+  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::omp_target_parallel_for_exec_nt> >
   resolve(Reducer<OP, T>& red) {
     *red.target = red.val;
-    return true;
   }
 #endif
 

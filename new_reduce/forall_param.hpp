@@ -54,17 +54,17 @@ namespace detail
     // Init
     template<typename EXEC_POL, camp::idx_t... Seq>
     friend void constexpr detail_init(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
-      camp::make_tuple( (init<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ))...  );
+      CAMP_EXPAND(init<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
     // Combine
     template<typename EXEC_POL, camp::idx_t... Seq>
     friend void constexpr detail_combine(EXEC_POL, FORALL_PARAMS_T& out, const FORALL_PARAMS_T& in, camp::idx_seq<Seq...>) {
-      camp::make_tuple( (combine<EXEC_POL>( camp::get<Seq>(out.param_tup), camp::get<Seq>(in.param_tup)))...  );
+      CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(out.param_tup), camp::get<Seq>(in.param_tup)));
     }
     // Resolve
     template<typename EXEC_POL, camp::idx_t... Seq>
     friend void constexpr detail_resove(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
-      camp::make_tuple( (resolve<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ))...  );
+      CAMP_EXPAND(resolve<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
 
   public:
