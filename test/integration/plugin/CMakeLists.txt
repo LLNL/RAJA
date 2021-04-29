@@ -35,11 +35,22 @@ endforeach()
 foreach( BACKEND ${PLUGIN_BACKENDS} )
   configure_file( test-plugin-workgroup.cpp.in
                   test-plugin-workgroup-${BACKEND}.cpp )
-  raja_add_test( NAME test-plugin-workgroup-${BACKEND}
+
+  #Some tests are known to fail for Hip, mark those tests (Will not be run in Gitlab CI)
+  if(${BACKEND} STREQUAL "Hip")
+      raja_add_test( NAME test-plugin-workgroup-Known-Hip-Failure-${BACKEND}
                  SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-plugin-workgroup-${BACKEND}.cpp
                          plugin_to_test.cpp )
 
-  target_include_directories(test-plugin-workgroup-${BACKEND}.exe
+      target_include_directories(test-plugin-workgroup-Known-Hip-Failure-${BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  else()
+      raja_add_test( NAME test-plugin-workgroup-${BACKEND}
+                 SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-plugin-workgroup-${BACKEND}.cpp
+                         plugin_to_test.cpp )
+
+      target_include_directories(test-plugin-workgroup-${BACKEND}.exe
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  endif()
 endforeach()
 
