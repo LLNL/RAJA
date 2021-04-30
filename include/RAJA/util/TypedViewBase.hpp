@@ -246,14 +246,7 @@ class ViewBase {
      * in the case that CUDA is enabled, we switch to explicitly defined
      * operators.
      */
-
-#ifndef RAJA_ENABLE_CUDA
-    constexpr ViewBase() = default;
-    RAJA_INLINE constexpr ViewBase(ViewBase const &) = default;
-    RAJA_INLINE constexpr ViewBase(ViewBase &&) = default;
-    RAJA_INLINE ViewBase& operator=(ViewBase const &) = default;
-    RAJA_INLINE ViewBase& operator=(ViewBase &&) = default;
-#else
+#if (defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_CLANG_CUDA))
     RAJA_HOST_DEVICE
     RAJA_INLINE
     constexpr ViewBase(){};
@@ -271,6 +264,13 @@ class ViewBase {
       m_layout = c.m_layout;
       m_data = c.m_data;
     }
+#else
+    constexpr ViewBase() = default;
+    RAJA_INLINE constexpr ViewBase(ViewBase const &) = default;
+    RAJA_INLINE constexpr ViewBase(ViewBase &&) = default;
+    RAJA_INLINE ViewBase& operator=(ViewBase const &) = default;
+    RAJA_INLINE ViewBase& operator=(ViewBase &&) = default;
+
 #endif
 
     RAJA_HOST_DEVICE

@@ -70,7 +70,7 @@ void ForallListSegmentViewTestImpl(INDEX_TYPE N)
                 "These layouts should always be triviallly copyable");
 
   // AJK: see ViewBase Ctor notes in RAJA/Util/TypedViewBase.hpp
-#ifndef RAJA_ENABLE_CUDA
+#if (!defined(RAJA_ENABLE_CUDA) && !defined(RAJA_ENABLE_CLANG_CUDA))
   static_assert(IS_TRIVIALLY_COPYABLE(view_type),
                 "These views should always be triviallly copyable");
 #endif
