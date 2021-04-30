@@ -104,10 +104,11 @@ using index_types_from_segments =
 
 template <typename SegmentTuple,
           typename ParamTuple,
+          typename Resource,
           typename... Bodies>
 struct LoopData {
 
-  using Self = LoopData<SegmentTuple, ParamTuple, Bodies...>;
+  using Self = LoopData<SegmentTuple, ParamTuple, Resource, Bodies...>;
 
   // Offset tuple holds offset from begin() for each of the segments
   using offset_tuple_t =
@@ -115,7 +116,6 @@ struct LoopData {
 
   // Used by LoopTypes and various execution policies to determine the
   // index value type of each segment
-//  using index_tuple_t = index_tuple_from_segments<typename SegmentTuple::TList>;
   using index_types_t = index_types_from_segments<typename SegmentTuple::TList>;
 
   // Tuple of segments that can be iterated over
@@ -125,6 +125,8 @@ struct LoopData {
   // Tuple of parameters that are thread privatized
   using param_tuple_t = ParamTuple;
   ParamTuple param_tuple;
+
+  Resource res;
 
   // Lambdas that were passed into the kernel
   using BodiesTuple = camp::tuple<Bodies...>;
@@ -137,8 +139,8 @@ struct LoopData {
   vector_sizes_t vector_sizes;
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr
-  LoopData(SegmentTuple const &s, ParamTuple const &p, Bodies const &... b)
-      : segment_tuple(s), param_tuple(p), bodies(b...)
+  LoopData(SegmentTuple const &s, ParamTuple const &p, Resource const &r, Bodies const &... b)
+      : segment_tuple(s), param_tuple(p), res(r), bodies(b...)
   {
   }
   constexpr LoopData(LoopData const &) = default;
@@ -163,6 +165,12 @@ struct LoopData {
     camp::at_v<typename param_tuple_t::TList, ParamId::param_idx>
   {
     return camp::get<ParamId::param_idx>(param_tuple);
+  }
+
+  RAJA_HOST_DEVICE RAJA_INLINE
+  Resource get_resource()
+  {
+    return res;
   }
 
 

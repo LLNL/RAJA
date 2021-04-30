@@ -774,7 +774,18 @@ struct CudaStatementExecutor<
   }
 };
 
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<
+    Data,
+    statement::For<ArgumentId, loop_exec, EnclosedStmts...>,
+    Types>
+:  CudaStatementExecutor<Data, statement::For<ArgumentId, seq_exec, EnclosedStmts...>, Types>
+{
 
+};
 
 
 /*

@@ -1,7 +1,6 @@
 ###############################################################################
 # Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
-#
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
@@ -11,6 +10,8 @@ cmake_policy(SET CMP0048 NEW)
 if (APPLE)
  cmake_policy(SET CMP0025 NEW)
 endif()
+
+include(CMakeDependentOption)
 
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
@@ -50,27 +51,34 @@ set(ENABLE_GTEST_DEATH_TESTS On CACHE BOOL "Enable tests asserting failure.")
 
 set(RAJA_CXX_STANDARD_FLAG "default" CACHE STRING "Specific c++ standard flag to use, default attempts to autodetect the highest available")
 
+## NOTE: CMake-dependent options are placed AFTER BLT is loaded so they 
+##       work as intended. BLT has variables defined for these and we use
+##       the same names with 'RAJA_' prepended to them.
+
 option(ENABLE_TBB "Build TBB support" Off)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
-option(ENABLE_EXTERNAL_CUB "Use an external cub for scans" Off)
-option(ENABLE_EXTERNAL_ROCPRIM "Use an external rocPRIM for scans" Off)
-option(ENABLE_TESTS "Build tests" On)
+option(ENABLE_EXTERNAL_CUB "Use an external cub" Off)
+option(ENABLE_EXTERNAL_ROCPRIM "Use an external rocPRIM" Off)
+
 option(ENABLE_REPRODUCERS "Build issue reproducers" Off)
-option(ENABLE_EXAMPLES "Build simple examples" On)
-option(ENABLE_EXERCISES "Build exercises " On)
+
+option(RAJA_ENABLE_EXERCISES "Build exercises " On)
 option(ENABLE_MODULES "Enable modules in supporting compilers (clang)" On)
 option(ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
 option(ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
 option(ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
 option(ENABLE_FORCEINLINE_RECURSIVE "Enable Forceinline recursive (only supported with Intel compilers)" On)
-option(ENABLE_BENCHMARKS "Build benchmarks" Off)
+
 option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 option(RAJA_ENABLE_BOUNDS_CHECK "Enable bounds checking in RAJA::Views/Layouts" Off)
 option(RAJA_TEST_EXHAUSTIVE "Build RAJA exhaustive tests" Off)
+option(RAJA_TEST_OPENMP_TARGET_SUBSET "Build subset of RAJA OpenMP target tests when it is enabled" On)
 option(RAJA_ENABLE_RUNTIME_PLUGINS "Enable support for loading plugins at runtime" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
+
+set(BLT_EXPORT_THIRDPARTY ON CACHE BOOL "")
 
 cmake_minimum_required(VERSION 3.9)
 
@@ -145,14 +153,21 @@ if (NOT BLT_LOADED)
   include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 endif()
 
+##
+## Here are the CMake dependent options...
+##
+cmake_dependent_option(RAJA_ENABLE_TESTS "Build tests" On "ENABLE_TESTS" Off)
+cmake_dependent_option(RAJA_ENABLE_EXAMPLES "Build simple examples" On "ENABLE_EXAMPLES" off)
+cmake_dependent_option(RAJA_ENABLE_BENCHMARKS "Build benchmarks" On "ENABLE_BENCHMARKS" Off)
+
+
 # Setup basic CMake options
 include(cmake/SetupBasics.cmake)
 # Find third-party packages
 include(cmake/SetupPackages.cmake)
 # Setup vendor-specific compiler flags
 include(cmake/SetupCompilers.cmake)
-# Setup internal RAJA configuration options
-include(cmake/SetupRajaConfig.cmake)
+
 # Macros for building executables and libraries
 include (cmake/RAJAMacros.cmake)
 
@@ -184,49 +199,27 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION V
 endif()
 
 if (ENABLE_CUDA)
-  set (raja_depends
+  set(raja_depends
     ${raja_depends}
     cuda)
 endif ()
 
-if (ENABLE_CUDA)
-  if(ENABLE_EXTERNAL_CUB)
-    find_package(CUB)
-    if (CUB_FOUND)
-      blt_register_library(
-        NAME cub
-        INCLUDES $<BUILD_INTERFACE:${CUB_INCLUDE_DIRS}>)
-      set(raja_depends
-        ${raja_depends}
-        cub)
-    else()
-      message(WARNING "External CUB not found.")
-      set(ENABLE_EXTERNAL_CUB Off)
-    endif()
-  endif ()
+if (ENABLE_EXTERNAL_CUB)
+  set(raja_depends
+    ${raja_depends}
+    cub)
 endif ()
 
 if (ENABLE_HIP)
-  set (raja_depends
+  set(raja_depends
     ${raja_depends}
     hip)
 endif ()
 
-if (ENABLE_HIP)
-  if(ENABLE_EXTERNAL_ROCPRIM)
-    find_package(ROCPRIM)
-    if (ROCPRIM_FOUND)
-      blt_register_library(
-        NAME rocPRIM
-        INCLUDES ${ROCPRIM_INCLUDE_DIRS})
-      set(raja_depends
-          ${raja_depends}
-          rocPRIM)
-    else()
-      message(WARNING "External rocPRIM not found.")
-      set(ENABLE_EXTERNAL_ROCPRIM Off)
-     endif()
-  endif ()
+if (ENABLE_EXTERNAL_ROCPRIM)
+  set(raja_depends
+    ${raja_depends}
+    rocPRIM)
 endif ()
 
 if (ENABLE_TBB)
@@ -255,14 +248,26 @@ camp source repository")
       add_subdirectory(tpl/camp)
     else (NOT camp_FOUND)
       message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
+      # Save the path so it can be used in raja-config.cmake
+      set(EXTERNAL_CAMP_INSTALL_DIR ${camp_INSTALL_PREFIX} CACHE PATH "")
     endif(NOT camp_FOUND)
   endif (EXTERNAL_CAMP_SOURCE_DIR)
 endif (NOT TARGET camp)
 
+set (raja_defines)
+
+if (COMPILER_FAMILY_IS_MSVC AND NOT BUILD_SHARED_LIBS)
+  set (raja_defines
+    ${raja_defines}
+    RAJA_WIN_STATIC_BUILD)
+endif ()
+
 blt_add_library(
   NAME RAJA
   SOURCES ${raja_sources}
-  DEPENDS_ON ${raja_depends} camp ${CMAKE_DL_LIBS})
+  DEPENDS_ON ${raja_depends} camp ${CMAKE_DL_LIBS}
+  DEFINES ${raja_defines})
+
 
 install(TARGETS RAJA
   EXPORT RAJA
@@ -278,16 +283,22 @@ target_include_directories(RAJA
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_include_directories(RAJA SYSTEM
-  PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/rocPRIM/rocprim/include>)
+if (ENABLE_CUDA AND NOT ENABLE_EXTERNAL_CUB)
+  target_include_directories(RAJA SYSTEM
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>)
+endif()
+if (ENABLE_HIP AND NOT ENABLE_EXTERNAL_ROCPRIM)
+  target_include_directories(RAJA SYSTEM
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/rocPRIM/rocprim/include>)
+endif()
 
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
-if(NOT ENABLE_EXTERNAL_CUB)
-  install(DIRECTORY tpl/cub/ DESTINATION include FILES_MATCHING PATTERN *.cuh)
+if (ENABLE_CUDA AND NOT ENABLE_EXTERNAL_CUB)
+  install(DIRECTORY tpl/cub/cub/ DESTINATION include/cub FILES_MATCHING PATTERN *.cuh)
 endif()
-if(NOT ENABLE_EXTERNAL_ROCPRIM)
+if (ENABLE_HIP AND NOT ENABLE_EXTERNAL_ROCPRIM)
   install(DIRECTORY tpl/rocPRIM/rocprim/include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
 endif()
 
@@ -297,7 +308,11 @@ install(FILES
   include/RAJA/module.private.modulemap
   DESTINATION "include/RAJA/")
 
-if(ENABLE_TESTS)
+
+# Setup internal RAJA configuration options
+include(cmake/SetupRajaConfig.cmake)
+
+if(RAJA_ENABLE_TESTS)
   add_subdirectory(test)
 endif()
 
@@ -305,11 +320,11 @@ if(ENABLE_REPRODUCERS)
   add_subdirectory(reproducers)
 endif()
 
-if(ENABLE_EXAMPLES)
+if(RAJA_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-if(ENABLE_EXERCISES)
+if(RAJA_ENABLE_EXERCISES)
   add_subdirectory(exercises)
 endif()
 
@@ -317,6 +332,6 @@ if (ENABLE_DOCUMENTATION)
   add_subdirectory(docs)
 endif ()
 
-if (ENABLE_BENCHMARKS)
+if (RAJA_ENABLE_BENCHMARKS)
   add_subdirectory(benchmark)
 endif ()
