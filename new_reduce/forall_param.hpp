@@ -56,14 +56,20 @@ namespace detail
     friend void constexpr detail_init(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
       CAMP_EXPAND(init<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
+    template<typename EXEC_POL, camp::idx_t... Seq>
+    friend void constexpr detail_init(EXEC_POL, FORALL_PARAMS_T& f_params, const RAJA::cuda::detail::cudaInfo & cs, camp::idx_seq<Seq...>) {
+      CAMP_EXPAND(init<EXEC_POL>( camp::get<Seq>(f_params.param_tup), cs ));
+    }
     // Combine
     template<typename EXEC_POL, camp::idx_t... Seq>
+    RAJA_HOST_DEVICE
     friend void constexpr detail_combine(EXEC_POL, FORALL_PARAMS_T& out, const FORALL_PARAMS_T& in, camp::idx_seq<Seq...>) {
       CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(out.param_tup), camp::get<Seq>(in.param_tup)));
     }
     // Resolve
     template<typename EXEC_POL, camp::idx_t... Seq>
-    friend void constexpr detail_resove(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
+    RAJA_HOST_DEVICE
+    friend void constexpr detail_resolve(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
       CAMP_EXPAND(resolve<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
 
@@ -83,15 +89,21 @@ namespace detail
     friend void constexpr init( FORALL_PARAMS_T& f_params ) {
       detail_init(EXEC_POL(), f_params, params_seq{} );
     }
+    template<typename EXEC_POL>
+    friend void constexpr init( FORALL_PARAMS_T& f_params, const RAJA::cuda::detail::cudaInfo & cs ) {
+      detail_init(EXEC_POL(), f_params, cs, params_seq{} );
+    }
     // Combine
     template<typename EXEC_POL>
+    RAJA_HOST_DEVICE
     friend void constexpr combine(FORALL_PARAMS_T& out, const FORALL_PARAMS_T& in) {
       detail_combine(EXEC_POL(), out, in, params_seq{} );
     }
     // Resolve
     template<typename EXEC_POL>
+    RAJA_HOST_DEVICE
     friend void constexpr resolve( FORALL_PARAMS_T& f_params ) {
-      detail_resove(EXEC_POL(), f_params, params_seq{} );
+      detail_resolve(EXEC_POL(), f_params, params_seq{} );
     }
   };
 
@@ -100,6 +112,7 @@ namespace detail
 #include "sequential/forall.hpp"
 #include "openmp/forall.hpp"
 #include "omp-target/forall.hpp"
+#include "cuda/forall.hpp"
 
 template<typename ExecPol, typename B, typename... Params>
 void forall_param(int N, const B& body, Params... params) {

@@ -18,7 +18,20 @@ namespace detail
     Reducer() {}
     Reducer(T *target_in) : target(target_in), val(op::identity()) {}
     T *target = nullptr;
-    T val;
+    T val = op::identity();
+    T * cudaval = nullptr;
+
+    RAJA::detail::SoAPtr<T, RAJA::cuda::device_mempool_type> device_mem;
+    unsigned int * device_count = nullptr;
+
+    struct combine{
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      void operator() (T & lhs, const T & rhs) const
+      {
+        lhs = op{}(lhs, rhs);
+      }
+    };
   };
 
 } //  namespace detail
@@ -26,6 +39,7 @@ namespace detail
 #include "sequential/reduce.hpp"
 #include "openmp/reduce.hpp"
 #include "omp-target/reduce.hpp"
+#include "cuda/reduce.hpp"
 
 template <template <typename, typename, typename> class Op, typename T>
 auto constexpr Reduce(T *target)
