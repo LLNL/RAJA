@@ -54,48 +54,47 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
     auto func = launch_global_fcn<BODY>;
 
     resources::Hip hip_res = resources::Hip::get_default();
-    /* Use the zero stream until resource is better supported */
-    hipStream_t stream = 0;//hip_res.get_stream();
 
     //
-    // Compute the number of blocks and threads
+    // Gather or compute launch info
+    //   the number of blocks
+    //   the size of each block
+    //   the size of dynamic shared memory
+    //   the stream
     //
-
-    hip_dim_t gridSize{ static_cast<hip_dim_member_t>(ctx.teams.value[0]),
-                        static_cast<hip_dim_member_t>(ctx.teams.value[1]),
-                        static_cast<hip_dim_member_t>(ctx.teams.value[2]) };
-
-    hip_dim_t blockSize{ static_cast<hip_dim_member_t>(ctx.threads.value[0]),
-                         static_cast<hip_dim_member_t>(ctx.threads.value[1]),
-                         static_cast<hip_dim_member_t>(ctx.threads.value[2]) };
+    RAJA::hip::detail::LaunchInfo launch_info{
+          hip_dim_t{ static_cast<hip_dim_member_t>(ctx.teams.value[0]),
+                     static_cast<hip_dim_member_t>(ctx.teams.value[1]),
+                     static_cast<hip_dim_member_t>(ctx.teams.value[2]) },
+          hip_dim_t{ static_cast<hip_dim_member_t>(ctx.threads.value[0]),
+                     static_cast<hip_dim_member_t>(ctx.threads.value[1]),
+                     static_cast<hip_dim_member_t>(ctx.threads.value[2]) },
+          0,
+          hip_res.get_stream()
+        };
 
     // Only launch kernel if we have something to iterate over
     constexpr hip_dim_member_t zero = 0;
-    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
-         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
+    if ( launch_info.gridDim.x  > zero && launch_info.gridDim.y  > zero && launch_info.gridDim.z  > zero &&
+         launch_info.blockDim.x > zero && launch_info.blockDim.y > zero && launch_info.blockDim.z > zero ) {
 
       RAJA_FT_BEGIN;
-
-      //
-      // Setup shared memory buffers
-      //
-      size_t shmem = 0;
 
       {
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
         BODY body = RAJA::hip::make_launch_body(
-            gridSize, blockSize, shmem, stream, std::forward<BODY_IN>(body_in));
+            launch_info, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+        RAJA::hip::launch((const void*)func, launch_info, args);
       }
 
-      if (!async) { RAJA::hip::synchronize(stream); }
+      if (!async) { RAJA::hip::synchronize(launch_info.stream); }
 
       RAJA_FT_END;
     }
@@ -125,47 +124,47 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
     auto func = launch_global_fcn_fixed<BODY, nthreads>;
 
     resources::Hip hip_res = resources::Hip::get_default();
-    hipStream_t stream = hip_res.get_stream();
 
     //
-    // Compute the number of blocks and threads
+    // Gather or compute launch info
+    //   the number of blocks
+    //   the size of each block
+    //   the size of dynamic shared memory
+    //   the stream
     //
-
-    hip_dim_t gridSize{ static_cast<hip_dim_member_t>(ctx.teams.value[0]),
-                        static_cast<hip_dim_member_t>(ctx.teams.value[1]),
-                        static_cast<hip_dim_member_t>(ctx.teams.value[2]) };
-
-    hip_dim_t blockSize{ static_cast<hip_dim_member_t>(ctx.threads.value[0]),
-                         static_cast<hip_dim_member_t>(ctx.threads.value[1]),
-                         static_cast<hip_dim_member_t>(ctx.threads.value[2]) };
+    RAJA::hip::detail::LaunchInfo launch_info{
+          hip_dim_t{ static_cast<hip_dim_member_t>(ctx.teams.value[0]),
+                     static_cast<hip_dim_member_t>(ctx.teams.value[1]),
+                     static_cast<hip_dim_member_t>(ctx.teams.value[2]) },
+          hip_dim_t{ static_cast<hip_dim_member_t>(ctx.threads.value[0]),
+                     static_cast<hip_dim_member_t>(ctx.threads.value[1]),
+                     static_cast<hip_dim_member_t>(ctx.threads.value[2]) },
+          0,
+          hip_res.get_stream()
+        };
 
     // Only launch kernel if we have something to iterate over
     constexpr hip_dim_member_t zero = 0;
-    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
-         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
+    if ( launch_info.gridDim.x  > zero && launch_info.gridDim.y  > zero && launch_info.gridDim.z  > zero &&
+         launch_info.blockDim.x > zero && launch_info.blockDim.y > zero && launch_info.blockDim.z > zero ) {
 
       RAJA_FT_BEGIN;
-
-      //
-      // Setup shared memory buffers
-      //
-      size_t shmem = 0;
 
       {
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
         BODY body = RAJA::hip::make_launch_body(
-            gridSize, blockSize, shmem, stream, std::forward<BODY_IN>(body_in));
+            launch_info, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+        RAJA::hip::launch((const void*)func, launch_info, args);
       }
 
-      if (!async) { RAJA::hip::synchronize(stream); }
+      if (!async) { RAJA::hip::synchronize(launch_info.stream); }
 
       RAJA_FT_END;
     }

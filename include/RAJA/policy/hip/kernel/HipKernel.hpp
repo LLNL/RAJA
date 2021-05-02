@@ -360,14 +360,12 @@ struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data
   }
 
   static void launch(Data &&data,
-                     internal::LaunchDims launch_dims,
-                     size_t shmem,
-                     hipStream_t stream)
+                     RAJA::hip::detail::LaunchInfo const& launch_info)
   {
     auto func = kernelGetter_t::get();
 
     void *args[] = {(void*)&data};
-    RAJA::hip::launch((const void*)func, launch_dims.blocks, launch_dims.threads, args, shmem, stream);
+    RAJA::hip::launch((const void*)func, launch_info, args);
   }
 };
 
@@ -467,7 +465,6 @@ struct StatementExecutor<
       // Setup shared memory buffers
       //
       int shmem = 0;
-      hipStream_t stream = res.get_stream();
 
 
       //
@@ -549,24 +546,38 @@ struct StatementExecutor<
         RAJA_ABORT_OR_THROW("RAJA::kernel exceeds max num threads");
       }
 
+      //
+      // Gather or compute launch info
+      //   the number of blocks
+      //   the size of each block
+      //   the size of dynamic shared memory
+      //   the stream
+      //
+      RAJA::hip::detail::LaunchInfo launch_info{
+            launch_dims.blocks,
+            launch_dims.threads,
+            static_cast<size_t>(shmem),
+            res.get_stream()
+          };
+
       {
         //
         // Privatize the LoopData, using make_launch_body to setup reductions
         //
         auto hip_data = RAJA::hip::make_launch_body(
-            launch_dims.blocks, launch_dims.threads, shmem, stream, data);
+            launch_info, data);
 
 
         //
         // Launch the kernels
         //
-        launch_t::launch(std::move(hip_data), launch_dims, shmem, stream);
+        launch_t::launch(std::move(hip_data), launch_info);
       }
 
       //
       // Synchronize
       //
-      if (!launch_t::async) { RAJA::hip::synchronize(stream); }
+      if (!launch_t::async) { RAJA::hip::synchronize(launch_info.stream); }
     }
   }
 };

@@ -167,8 +167,6 @@ RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip &hi
 
   auto func = impl::forall_hip_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
 
-  hipStream_t stream = hip_res.get_stream();
-
   //
   // Compute the requested iteration space size
   //
@@ -176,42 +174,44 @@ RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip &hi
   Iterator end = std::end(iter);
   IndexType len = std::distance(begin, end);
 
+  //
+  // Gather or compute launch info
+  //   the number of blocks
+  //   the size of each block
+  //   the size of dynamic shared memory
+  //   the stream
+  //
+  RAJA::hip::detail::LaunchInfo launch_info{
+        impl::getGridDim(static_cast<hip_dim_member_t>(len), BlockSize),
+        hip_dim_t{ static_cast<hip_dim_member_t>(BlockSize),
+                   static_cast<hip_dim_member_t>(1),
+                   static_cast<hip_dim_member_t>(1)},
+        0,
+        hip_res.get_stream()
+      };
+
   // Only launch kernel if we have something to iterate over
-  if (len > 0 && BlockSize > 0) {
-    //
-    // Compute the number of blocks
-    //
-    hip_dim_t blockSize{BlockSize, 1, 1};
-    hip_dim_t gridSize = impl::getGridDim(static_cast<hip_dim_member_t>(len), blockSize);
+  constexpr hip_dim_member_t zero = 0;
+  if ( launch_info.gridDim.x  > zero && launch_info.gridDim.y  > zero && launch_info.gridDim.z  > zero &&
+       launch_info.blockDim.x > zero && launch_info.blockDim.y > zero && launch_info.blockDim.z > zero ) {
 
     RAJA_FT_BEGIN;
-
-    //
-    // Setup shared memory buffers
-    //
-    size_t shmem = 0;
-
-    //  printf("gridsize = (%d,%d), blocksize = %d\n",
-    //         (int)gridSize.x,
-    //         (int)gridSize.y,
-    //         (int)blockSize.x);
 
     {
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
       //
       LOOP_BODY body = RAJA::hip::make_launch_body(
-          gridSize, blockSize, shmem, stream, std::forward<LoopBody>(loop_body));
-
+          launch_info, std::forward<LoopBody>(loop_body));
 
       //
       // Launch the kernels
       //
       void *args[] = {(void*)&body, (void*)&begin, (void*)&len};
-      RAJA::hip::launch((const void*)func, gridSize, BlockSize, args, shmem, stream);
+      RAJA::hip::launch((const void*)func, launch_info, args);
     }
 
-    if (!Async) { RAJA::hip::synchronize(stream); }
+    if (!Async) { RAJA::hip::synchronize(launch_info.stream); }
 
     RAJA_FT_END;
   }

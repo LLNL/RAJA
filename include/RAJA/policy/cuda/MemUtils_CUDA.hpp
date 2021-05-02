@@ -110,14 +110,20 @@ using pinned_mempool_type = basic_mempool::MemPool<PinnedAllocator>;
 namespace detail
 {
 
-//! struct containing data necessary to coordinate kernel launches with reducers
-struct cudaInfo {
-  // current launch parameters
-  cuda_dim_t gridDim{0, 0, 0};
-  cuda_dim_t blockDim{0, 0, 0};
+//! struct containing launch parameters
+struct LaunchInfo {
+  cuda_dim_t   gridDim{0, 0, 0};
+  cuda_dim_t   blockDim{0, 0, 0};
+  size_t       shmem  = 0;
   cudaStream_t stream = 0;
-  // currently should setup reducers for device execution
-  bool setup_reducers = false;
+
+  LaunchInfo(cuda_dim_t gridDim_, cuda_dim_t blockDim_,
+             size_t shmem_, cudaStream_t stream_)
+    : gridDim(gridDim_)
+    , blockDim(blockDim_)
+    , shmem(shmem_)
+    , stream(stream_)
+  { }
 };
 
 //! class that changes a value on construction then resets it at destruction
@@ -150,34 +156,28 @@ extern void launch(cudaStream_t stream);
 
 //! Launch kernel and indicate stream is asynchronous
 RAJA_INLINE
-void launch(const void* func, cuda_dim_t gridDim, cuda_dim_t blockDim, void** args, size_t shmem, cudaStream_t stream)
+void launch(const void* func, detail::LaunchInfo const& launch_info, void** args)
 {
-  cudaErrchk(cudaLaunchKernel(func, gridDim, blockDim, args, shmem, stream));
-  launch(stream);
+  cudaErrchk(cudaLaunchKernel(func, launch_info.gridDim, launch_info.blockDim,
+                              args, launch_info.shmem, launch_info.stream));
+  launch(launch_info.stream);
 }
 
 //! Check for errors
 RAJA_INLINE
 void peekAtLastError() { cudaErrchk(cudaPeekAtLastError()); }
 
-extern detail::cudaInfo& get_tl_status();
+//! get launch info for the current thread
+extern detail::LaunchInfo*& get_tl_launch_info();
 
 //! create copy of loop_body that is setup for device execution
 template <typename LOOP_BODY>
 RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
-    cuda_dim_t gridDim,
-    cuda_dim_t blockDim,
-    size_t RAJA_UNUSED_ARG(dynamic_smem),
-    cudaStream_t stream,
+    detail::LaunchInfo& launch_info,
     LOOP_BODY&& loop_body)
 {
-  detail::cudaInfo& tl_status = get_tl_status();
-  detail::SetterResetter<bool> setup_reducers_srer(
-      tl_status.setup_reducers, true);
-
-  tl_status.stream = stream;
-  tl_status.gridDim = gridDim;
-  tl_status.blockDim = blockDim;
+  detail::SetterResetter<detail::LaunchInfo*> setup_reducers_srer(
+      get_tl_launch_info(), &launch_info);
 
   using return_type = typename std::remove_reference<LOOP_BODY>::type;
   return return_type(std::forward<LOOP_BODY>(loop_body));

@@ -46,21 +46,15 @@ namespace detail
 /////////////////////////////////////////////////////////////////////////////
 //
 
-struct hipOmpInfo : hipInfo
-{
+//! Lock for global state updates
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  hipInfo* thread_states = nullptr;
-  omp::mutex lock;
+omp::mutex g_lock;
 #endif
-};
 
-//! State of the host code globally
-hipOmpInfo g_status;
-
-//! State of the host code in this thread
-hipOmpInfo tl_status;
+//! Launch info for this thread
+LaunchInfo* tl_launch_info = nullptr;
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-#pragma omp threadprivate(tl_status)
+#pragma omp threadprivate(tl_launch_info)
 #endif
 
 //! State of raja hip stream synchronization for hip reducer objects
@@ -73,7 +67,7 @@ std::unordered_map<hipStream_t, bool> g_stream_info_map{
 void synchronize()
 {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  lock_guard<omp::mutex> lock(detail::g_status.lock);
+  lock_guard<omp::mutex> lock(detail::g_lock);
 #endif
   bool synchronize = false;
   for (auto& val : detail::g_stream_info_map) {
@@ -90,7 +84,7 @@ void synchronize()
 void synchronize(hipStream_t stream)
 {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  lock_guard<omp::mutex> lock(detail::g_status.lock);
+  lock_guard<omp::mutex> lock(detail::g_lock);
 #endif
   auto iter = detail::g_stream_info_map.find(stream);
   if (iter != detail::g_stream_info_map.end()) {
@@ -107,7 +101,7 @@ void synchronize(hipStream_t stream)
 void launch(hipStream_t stream)
 {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  lock_guard<omp::mutex> lock(detail::g_status.lock);
+  lock_guard<omp::mutex> lock(detail::g_lock);
 #endif
   auto iter = detail::g_stream_info_map.find(stream);
   if (iter != detail::g_stream_info_map.end()) {
@@ -117,9 +111,9 @@ void launch(hipStream_t stream)
   }
 }
 
-detail::hipInfo& get_tl_status()
+detail::LaunchInfo*& get_tl_launch_info()
 {
-   return detail::tl_status;
+   return detail::tl_launch_info;
 }
 
 }  // namespace hip

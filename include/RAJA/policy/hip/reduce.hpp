@@ -674,19 +674,19 @@ struct Reduce_Data {
 
   //! check and setup for device
   //  allocate device pointers and get a new result buffer from the pinned tally
-  detail::hipInfo* setupForDevice()
+  RAJA::hip::detail::LaunchInfo* setupForDevice()
   {
-    detail::hipInfo* tl_status = &get_tl_status();
-    bool act = !device.allocated() && tl_status->setup_reducers;
-    if (act) {
-      hip_dim_t gridDim = tl_status->gridDim;
+    RAJA::hip::detail::LaunchInfo* tl_launch_info = get_tl_launch_info();
+    if (!device.allocated() && tl_launch_info != nullptr) {
+      hip_dim_t gridDim = tl_launch_info->gridDim;
       size_t numBlocks = gridDim.x * gridDim.y * gridDim.z;
       device.allocate(numBlocks);
       device_count = device_zeroed_mempool_type::getInstance()
                          .template malloc<unsigned int>(1);
       own_device_ptr = true;
+      return tl_launch_info;
     }
-    return act ? tl_status : nullptr;
+    return nullptr;
   }
 
   //! if own resources teardown device setup
@@ -763,17 +763,17 @@ struct ReduceAtomic_Data {
 
   //! check and setup for device
   //  allocate device pointers and get a new result buffer from the pinned tally
-  detail::hipInfo* setupForDevice()
+  RAJA::hip::detail::LaunchInfo* setupForDevice()
   {
-    detail::hipInfo* tl_status = &get_tl_status();
-    bool act = !device && tl_status->setup_reducers;
-    if (act) {
+    RAJA::hip::detail::LaunchInfo* tl_launch_info = get_tl_launch_info();
+    if (!device && tl_launch_info != nullptr) {
       device = device_mempool_type::getInstance().template malloc<T>(1);
       device_count = device_zeroed_mempool_type::getInstance()
                          .template malloc<unsigned int>(1);
       own_device_ptr = true;
+      return tl_launch_info;
     }
-    return act ? tl_status : nullptr;
+    return nullptr;
   }
 
   //! if own resources teardown device setup
@@ -829,10 +829,10 @@ public:
   {
 #if !defined(RAJA_DEVICE_CODE)
     if (parent) {
-      detail::hipInfo* tl_status = val.setupForDevice();
-      if (tl_status != nullptr) {
+      RAJA::hip::detail::LaunchInfo* tl_launch_info = val.setupForDevice();
+      if (tl_launch_info != nullptr) {
         tally_or_val_ptr.val_ptr =
-            tally_or_val_ptr.list->new_value(tl_status->stream);
+            tally_or_val_ptr.list->new_value(tl_launch_info->stream);
         val.init_grid_val(tally_or_val_ptr.val_ptr);
         parent = nullptr;
       }
