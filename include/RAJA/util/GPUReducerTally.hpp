@@ -66,7 +66,7 @@ struct ResourceInfo<resources::Cuda>
   {
     cuda::synchronize(s);
   }
-  static bool get_launch_info(size_t& num_teams, cudaStream_t& id)
+  static bool get_tl_launch_info(size_t& num_teams, cudaStream_t& id)
   {
     RAJA::cuda::detail::LaunchInfo* tl_launch_info = cuda::get_tl_launch_info();
     if (tl_launch_info != nullptr) {
@@ -101,7 +101,7 @@ struct ResourceInfo<resources::Hip>
   {
     hip::synchronize(s);
   }
-  static bool get_launch_info(size_t& num_teams, hipStream_t& id)
+  static bool get_tl_launch_info(size_t& num_teams, hipStream_t& id)
   {
     RAJA::hip::detail::LaunchInfo* tl_launch_info = hip::get_tl_launch_info();
     if (tl_launch_info != nullptr) {
@@ -246,23 +246,38 @@ public:
   //! get end iterator over values
   ResourceNodeIterator end() { return {nullptr, nullptr}; }
 
-  //! get new value and pointers
-  bool new_value(T*& value_ptr,
+  //! get new value and pointers based on arguments
+  void new_value(size_t num_teams,
+                 identifier id,
+                 T*& value_ptr,
                  T*& device_atomic_ptr,
                  unsigned int*& device_count_ptr)
   {
+    void* device_memory = nullptr;
+    const size_t device_memory_size = sizeof(T);
+
+    new_value_impl(id,
+                   device_count_ptr,
+                   value_ptr,
+                   device_memory, device_memory_size);
+
+    device_atomic_ptr = static_cast<T*>(device_memory);
+  }
+
+  //! get new value and pointers based on thread local launch info
+  bool new_value_tl(T*& value_ptr,
+                    T*& device_atomic_ptr,
+                    unsigned int*& device_count_ptr)
+  {
     size_t num_teams;
     identifier id;
-    if (resource_info::get_launch_info(num_teams, id)) {
+    if (resource_info::get_tl_launch_info(num_teams, id)) {
 
-      void* device_memory = nullptr;
-      const size_t device_memory_size = sizeof(T);
-
-      new_value_impl(id, device_count_ptr,
-                         value_ptr,
-                         device_memory, device_memory_size);
-
-      device_atomic_ptr = static_cast<T*>(device_memory);
+      new_value(num_teams,
+                id,
+                value_ptr,
+                device_atomic_ptr,
+                device_count_ptr);
 
       return true;
     } else {
@@ -270,23 +285,37 @@ public:
     }
   }
 
-  //! get new value and pointers
-  bool new_value(T*& value_ptr,
+  //! get new value and pointers based on arguments
+  void new_value(size_t num_teams,
+                 identifier id,
+                 T*& value_ptr,
                  SoAPtr<T, device_mempool_type>& device_soa_ptr,
                  unsigned int*& device_count_ptr)
   {
+    void* device_memory = nullptr;
+    const size_t device_memory_size = device_soa_ptr.allocationSize(num_teams);
+
+    new_value_impl(id, device_count_ptr,
+                       value_ptr,
+                       device_memory, device_memory_size);
+
+    device_soa_ptr.setMemory(num_teams, device_memory);
+  }
+
+  //! get new value and pointers based on thread local launch info
+  bool new_value_tl(T*& value_ptr,
+                    SoAPtr<T, device_mempool_type>& device_soa_ptr,
+                    unsigned int*& device_count_ptr)
+  {
     size_t num_teams;
     identifier id;
-    if (resource_info::get_launch_info(num_teams, id)) {
+    if (resource_info::get_tl_launch_info(num_teams, id)) {
 
-      void* device_memory = nullptr;
-      const size_t device_memory_size = device_soa_ptr.allocationSize(num_teams);
-
-      new_value_impl(id, device_count_ptr,
-                         value_ptr,
-                         device_memory, device_memory_size);
-
-      device_soa_ptr.setMemory(num_teams, device_memory);
+      new_value(num_teams,
+                id,
+                value_ptr,
+                device_soa_ptr,
+                device_count_ptr);
 
       return true;
     } else {

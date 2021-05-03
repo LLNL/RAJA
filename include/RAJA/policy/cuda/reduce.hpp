@@ -720,9 +720,9 @@ public:
 #if !defined(RAJA_DEVICE_CODE)
     if (parent) {
       if (!val.isSetupForDevice()) {
-        if (tally_or_val_ptr.list->new_value(tally_or_val_ptr.val_ptr,
-                                             val.device,
-                                             val.device_count)) {
+        if (tally_or_val_ptr.list->new_value_tl(tally_or_val_ptr.val_ptr,
+                                                val.device,
+                                                val.device_count)) {
           val.init_grid_val(tally_or_val_ptr.val_ptr);
           parent = nullptr;
         }
