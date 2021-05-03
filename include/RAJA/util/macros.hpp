@@ -128,6 +128,9 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
 {
 #if defined(RAJA_ENABLE_TARGET_OPENMP) && (_OPENMP >= 201511)
   printf ( "%s\n", str );
+  // seg faulting here instead of calling std::abort for omp target
+  const char * errtemp = nullptr;
+  errtemp = str;
 #elif defined(__CUDA_ARCH__)
   asm ("trap;");
 
