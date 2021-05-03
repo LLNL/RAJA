@@ -55,6 +55,8 @@ template < >
 struct ResourceInfo<resources::Cuda>
 {
   using pinned_mempool_type = cuda::pinned_mempool_type;
+  using device_mempool_type = cuda::device_mempool_type;
+  using device_zeroed_mempool_type = cuda::device_zeroed_mempool_type;
   using identifier = cudaStream_t;
   static cudaStream_t get_identifier(resources::Cuda& r)
   {
@@ -63,6 +65,19 @@ struct ResourceInfo<resources::Cuda>
   static void synchronize(cudaStream_t s)
   {
     cuda::synchronize(s);
+  }
+  static bool get_launch_info(size_t& num_teams, cudaStream_t& id)
+  {
+    RAJA::cuda::detail::LaunchInfo* tl_launch_info = cuda::get_tl_launch_info();
+    if (tl_launch_info != nullptr) {
+      num_teams = tl_launch_info->gridDim.x *
+                  tl_launch_info->gridDim.y *
+                  tl_launch_info->gridDim.z ;
+      id = tl_launch_info->stream;
+      return true;
+    } else {
+      return false;
+    }
   }
 };
 
@@ -75,6 +90,8 @@ template < >
 struct ResourceInfo<resources::Hip>
 {
   using pinned_mempool_type = hip::pinned_mempool_type;
+  using device_mempool_type = hip::device_mempool_type;
+  using device_zeroed_mempool_type = hip::device_zeroed_mempool_type;
   using identifier = hipStream_t;
   static hipStream_t get_identifier(resources::Hip& r)
   {
@@ -83,6 +100,19 @@ struct ResourceInfo<resources::Hip>
   static void synchronize(hipStream_t s)
   {
     hip::synchronize(s);
+  }
+  static bool get_launch_info(size_t& num_teams, hipStream_t& id)
+  {
+    RAJA::hip::detail::LaunchInfo* tl_launch_info = hip::get_tl_launch_info();
+    if (tl_launch_info != nullptr) {
+      num_teams = tl_launch_info->gridDim.x *
+                  tl_launch_info->gridDim.y *
+                  tl_launch_info->gridDim.z ;
+      id = tl_launch_info->stream;
+      return true;
+    } else {
+      return false;
+    }
   }
 };
 
@@ -96,11 +126,14 @@ class GPUReducerTally
 {
   using resource_info = ResourceInfo<Resource>;
   using pinned_mempool_type = typename resource_info::pinned_mempool_type;
+  using device_mempool_type = typename resource_info::device_mempool_type;
+  using device_zeroed_mempool_type = typename resource_info::device_zeroed_mempool_type;
   using identifier = typename resource_info::identifier;
 public:
   //! Object put in Pinned memory with value and pointer to next Node
   struct Node {
     Node* next;
+    void* device_memory;
     T value;
   };
   //! Object per id to keep track of pinned memory nodes
@@ -108,6 +141,7 @@ public:
     ResourceNode* next;
     identifier id;
     Node* node_list;
+    unsigned int* device_count;
   };
 
   //! Iterator over streams used by reducer
@@ -212,28 +246,52 @@ public:
   //! get end iterator over values
   ResourceNodeIterator end() { return {nullptr, nullptr}; }
 
-  //! get new value for use in id
-  T* new_value(identifier id)
+  //! get new value and pointers
+  bool new_value(T*& value_ptr,
+                 T*& device_atomic_ptr,
+                 unsigned int*& device_count_ptr)
   {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-    lock_guard<omp::mutex> lock(m_mutex);
-#endif
-    ResourceNode* rn = stream_list;
-    while (rn) {
-      if (rn->id == id) break;
-      rn = rn->next;
+    size_t num_teams;
+    identifier id;
+    if (resource_info::get_launch_info(num_teams, id)) {
+
+      void* device_memory = nullptr;
+      const size_t device_memory_size = sizeof(T);
+
+      new_value_impl(id, device_count_ptr,
+                         value_ptr,
+                         device_memory, device_memory_size);
+
+      device_atomic_ptr = static_cast<T*>(device_memory);
+
+      return true;
+    } else {
+      return false;
     }
-    if (!rn) {
-      rn = (ResourceNode*)malloc(sizeof(ResourceNode));
-      rn->next = stream_list;
-      rn->id = id;
-      rn->node_list = nullptr;
-      stream_list = rn;
+  }
+
+  //! get new value and pointers
+  bool new_value(T*& value_ptr,
+                 SoAPtr<T, device_mempool_type>& device_soa_ptr,
+                 unsigned int*& device_count_ptr)
+  {
+    size_t num_teams;
+    identifier id;
+    if (resource_info::get_launch_info(num_teams, id)) {
+
+      void* device_memory = nullptr;
+      const size_t device_memory_size = device_soa_ptr.allocationSize(num_teams);
+
+      new_value_impl(id, device_count_ptr,
+                         value_ptr,
+                         device_memory, device_memory_size);
+
+      device_soa_ptr.setMemory(num_teams, device_memory);
+
+      return true;
+    } else {
+      return false;
     }
-    Node* n = pinned_mempool_type::getInstance().template malloc<Node>(1);
-    n->next = rn->node_list;
-    rn->node_list = n;
-    return &n->value;
   }
 
   //! synchronize all streams used
@@ -250,9 +308,11 @@ public:
   {
     while (stream_list) {
       ResourceNode* rn = stream_list;
+      device_zeroed_mempool_type::getInstance().free(rn->device_count);
       while (rn->node_list) {
         Node* n = rn->node_list;
         rn->node_list = n->next;
+        device_mempool_type::getInstance().free(n->device_memory);
         pinned_mempool_type::getInstance().free(n);
       }
       stream_list = rn->next;
@@ -268,10 +328,40 @@ public:
 
 private:
   ResourceNode* stream_list;
+
+  void new_value_impl(identifier id,
+                      unsigned int*& device_count_ptr,
+                      T*& value_ptr,
+                      void*& device_memory, size_t device_memory_size)
+  {
+#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+    lock_guard<omp::mutex> lock(m_mutex);
+#endif
+    ResourceNode* rn = stream_list;
+    while (rn) {
+      if (rn->id == id) break;
+      rn = rn->next;
+    }
+    if (!rn) {
+      rn = (ResourceNode*)malloc(sizeof(ResourceNode));
+      rn->next = stream_list;
+      rn->id = id;
+      rn->node_list = nullptr;
+      rn->device_count = device_zeroed_mempool_type::getInstance()
+          .template malloc<unsigned int>(1);
+      stream_list = rn;
+    }
+    Node* n = pinned_mempool_type::getInstance().template malloc<Node>(1);
+    n->next = rn->node_list;
+    rn->node_list = n;
+    n->device_memory = device_mempool_type::getInstance().template
+        malloc<char>(device_memory_size, alignof(T));
+
+    device_count_ptr = rn->device_count;
+    value_ptr        = &n->value;
+    device_memory    = n->device_memory;
+  }
 };
-
-
-
 
 }  // end namespace detail
 

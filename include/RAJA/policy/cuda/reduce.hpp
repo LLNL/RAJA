@@ -567,7 +567,6 @@ struct Reduce_Data {
   T identity;
   unsigned int* device_count;
   RAJA::detail::SoAPtr<T, device_mempool_type> device;
-  bool own_device_ptr;
 
   Reduce_Data() : Reduce_Data(T(), T()){};
 
@@ -580,8 +579,7 @@ struct Reduce_Data {
       : value{initValue},
         identity{identity_},
         device_count{nullptr},
-        device{},
-        own_device_ptr{false}
+        device{}
   {
   }
 
@@ -590,7 +588,6 @@ struct Reduce_Data {
     value = initValue;
     identity = identity_;
     device_count = nullptr;
-    own_device_ptr = false;
   }
 
   RAJA_HOST_DEVICE
@@ -598,8 +595,7 @@ struct Reduce_Data {
       : value{other.identity},
         identity{other.identity},
         device_count{other.device_count},
-        device{other.device},
-        own_device_ptr{false}
+        device{other.device}
   {
   }
 
@@ -623,43 +619,6 @@ struct Reduce_Data {
   {
     return device.allocated();
   }
-
-  //! check if own setup for device and should call teardownForDevice
-  bool ownSetupForDevice() const
-  {
-    return own_device_ptr;
-  }
-
-  //! check and setup for device
-  //  allocate device pointers and get a new result buffer from the pinned tally
-  RAJA::cuda::detail::LaunchInfo* setupForDevice()
-  {
-    RAJA::cuda::detail::LaunchInfo* tl_launch_info = get_tl_launch_info();
-    if (!isSetupForDevice() && tl_launch_info != nullptr) {
-      cuda_dim_t gridDim = tl_launch_info->gridDim;
-      size_t numBlocks = gridDim.x * gridDim.y * gridDim.z;
-      device.allocate(numBlocks);
-      device_count = device_zeroed_mempool_type::getInstance()
-                         .template malloc<unsigned int>(1);
-      own_device_ptr = true;
-      return tl_launch_info;
-    }
-    return nullptr;
-  }
-
-  //! if own resources teardown device setup
-  //  free device pointers
-  bool teardownForDevice()
-  {
-    if (ownSetupForDevice()) {
-      device.deallocate();
-      device_zeroed_mempool_type::getInstance().free(device_count);
-      device_count = nullptr;
-      own_device_ptr = false;
-      return true;
-    }
-    return false;
-  }
 };
 
 
@@ -671,7 +630,6 @@ struct ReduceAtomic_Data {
   T identity;
   unsigned int* device_count;
   T* device;
-  bool own_device_ptr;
 
   ReduceAtomic_Data() : ReduceAtomic_Data(T(), T()){};
 
@@ -679,8 +637,7 @@ struct ReduceAtomic_Data {
       : value{initValue},
         identity{identity_},
         device_count{nullptr},
-        device{nullptr},
-        own_device_ptr{false}
+        device{nullptr}
   {
   }
 
@@ -690,7 +647,6 @@ struct ReduceAtomic_Data {
     identity = identity_;
     device_count = nullptr;
     device = nullptr;
-    own_device_ptr = false;
   }
 
   RAJA_HOST_DEVICE
@@ -698,8 +654,7 @@ struct ReduceAtomic_Data {
       : value{other.identity},
         identity{other.identity},
         device_count{other.device_count},
-        device{other.device},
-        own_device_ptr{false}
+        device{other.device}
   {
   }
 
@@ -723,42 +678,6 @@ struct ReduceAtomic_Data {
   bool isSetupForDevice() const
   {
     return device != nullptr;
-  }
-
-  //! check if own setup for device and should call teardownForDevice
-  bool ownSetupForDevice() const
-  {
-    return own_device_ptr;
-  }
-
-  //! check and setup for device
-  //  allocate device pointers and get a new result buffer from the pinned tally
-  RAJA::cuda::detail::LaunchInfo* setupForDevice()
-  {
-    RAJA::cuda::detail::LaunchInfo* tl_launch_info = get_tl_launch_info();
-    if (!isSetupForDevice() && tl_launch_info != nullptr) {
-      device = device_mempool_type::getInstance().template malloc<T>(1);
-      device_count = device_zeroed_mempool_type::getInstance()
-                         .template malloc<unsigned int>(1);
-      own_device_ptr = true;
-      return tl_launch_info;
-    }
-    return nullptr;
-  }
-
-  //! if own resources teardown device setup
-  //  free device pointers
-  bool teardownForDevice()
-  {
-    if (ownSetupForDevice()) {
-      device_mempool_type::getInstance().free(device);
-      device = nullptr;
-      device_zeroed_mempool_type::getInstance().free(device_count);
-      device_count = nullptr;
-      own_device_ptr = false;
-      return true;
-    }
-    return false;
   }
 };
 
@@ -800,12 +719,13 @@ public:
   {
 #if !defined(RAJA_DEVICE_CODE)
     if (parent) {
-      RAJA::cuda::detail::LaunchInfo* tl_launch_info = val.setupForDevice();
-      if (tl_launch_info != nullptr) {
-        tally_or_val_ptr.val_ptr =
-            tally_or_val_ptr.list->new_value(tl_launch_info->stream);
-        val.init_grid_val(tally_or_val_ptr.val_ptr);
-        parent = nullptr;
+      if (!val.isSetupForDevice()) {
+        if (tally_or_val_ptr.list->new_value(tally_or_val_ptr.val_ptr,
+                                             val.device,
+                                             val.device_count)) {
+          val.init_grid_val(tally_or_val_ptr.val_ptr);
+          parent = nullptr;
+        }
       }
     }
 #endif
@@ -828,9 +748,9 @@ public:
         parent->combine(val.value);
       }
     } else {
-      if (val.teardownForDevice()) {
-        tally_or_val_ptr.val_ptr = nullptr;
-      }
+      // tally_or_val_ptr.val_ptr is set
+      // tally handles memory management
+      // do nothing
     }
 #else
     if (!parent->parent) {
