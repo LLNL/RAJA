@@ -23,6 +23,7 @@
 
 #include "RAJA/config.hpp"
 
+#include <map>
 #include <type_traits>
 
 #include "RAJA/util/macros.hpp"
@@ -130,18 +131,24 @@ class GPUReducerTally
   using device_zeroed_mempool_type = typename resource_info::device_zeroed_mempool_type;
   using identifier = typename resource_info::identifier;
 public:
-  //! Object put in Pinned memory with value and pointer to next Node
-  struct Node {
-    Node* next;
-    void* device_memory;
+  //! Object put in Pinned memory with value and pointer to next ValueNode
+  struct ValueNode {
+    ValueNode* next;
     T value;
   };
+
+  struct MemoryNode {
+    bool in_use;
+    void* device_memory;
+    unsigned int* device_count_ptr;
+  };
+
   //! Object per id to keep track of pinned memory nodes
   struct ResourceNode {
     ResourceNode* next;
     identifier id;
-    Node* node_list;
-    unsigned int* device_count;
+    ValueNode* node_list;
+    std::multimap<size_t, MemoryNode> size_to_memory_map;
   };
 
   //! Iterator over streams used by reducer
@@ -187,7 +194,7 @@ public:
   public:
     ResourceNodeIterator() = delete;
 
-    ResourceNodeIterator(ResourceNode* rn, Node* n) : m_rn(rn), m_n(n) {}
+    ResourceNodeIterator(ResourceNode* rn, ValueNode* n) : m_rn(rn), m_n(n) {}
 
     const ResourceNodeIterator& operator++()
     {
@@ -224,7 +231,7 @@ public:
 
   private:
     ResourceNode* m_rn;
-    Node* m_n;
+    ValueNode* m_n;
   };
 
   GPUReducerTally() : stream_list(nullptr) {}
@@ -247,80 +254,86 @@ public:
   ResourceNodeIterator end() { return {nullptr, nullptr}; }
 
   //! get new value and pointers based on arguments
-  void new_value(size_t num_teams,
-                 identifier id,
-                 T*& value_ptr,
-                 T*& device_atomic_ptr,
-                 unsigned int*& device_count_ptr)
+  MemoryNode* new_value(size_t num_teams,
+                        identifier id,
+                        T*& value_ptr,
+                        T*& device_atomic_ptr,
+                        unsigned int*& device_count_ptr)
   {
     void* device_memory = nullptr;
     const size_t device_memory_size = sizeof(T);
 
-    new_value_impl(id,
-                   device_count_ptr,
-                   value_ptr,
-                   device_memory, device_memory_size);
+    MemoryNode* n = new_value_impl(id,
+                                   value_ptr,
+                                   device_memory, device_memory_size,
+                                   device_count_ptr);
 
     device_atomic_ptr = static_cast<T*>(device_memory);
+
+    return n;
   }
 
   //! get new value and pointers based on thread local launch info
-  bool new_value_tl(T*& value_ptr,
-                    T*& device_atomic_ptr,
-                    unsigned int*& device_count_ptr)
+  MemoryNode* new_value_tl(T*& value_ptr,
+                           T*& device_atomic_ptr,
+                           unsigned int*& device_count_ptr)
   {
     size_t num_teams;
     identifier id;
     if (resource_info::get_tl_launch_info(num_teams, id)) {
 
-      new_value(num_teams,
-                id,
-                value_ptr,
-                device_atomic_ptr,
-                device_count_ptr);
-
-      return true;
+      return new_value(num_teams,
+                       id,
+                       value_ptr,
+                       device_atomic_ptr,
+                       device_count_ptr);
     } else {
-      return false;
+      return nullptr;
     }
   }
 
   //! get new value and pointers based on arguments
-  void new_value(size_t num_teams,
-                 identifier id,
-                 T*& value_ptr,
-                 SoAPtr<T, device_mempool_type>& device_soa_ptr,
-                 unsigned int*& device_count_ptr)
+  MemoryNode* new_value(size_t num_teams,
+                        identifier id,
+                        T*& value_ptr,
+                        SoAPtr<T, device_mempool_type>& device_soa_ptr,
+                        unsigned int*& device_count_ptr)
   {
     void* device_memory = nullptr;
     const size_t device_memory_size = device_soa_ptr.allocationSize(num_teams);
 
-    new_value_impl(id, device_count_ptr,
-                       value_ptr,
-                       device_memory, device_memory_size);
+    MemoryNode* n = new_value_impl(id,
+                                   value_ptr,
+                                   device_memory, device_memory_size,
+                                   device_count_ptr);
 
     device_soa_ptr.setMemory(num_teams, device_memory);
+
+    return n;
   }
 
   //! get new value and pointers based on thread local launch info
-  bool new_value_tl(T*& value_ptr,
-                    SoAPtr<T, device_mempool_type>& device_soa_ptr,
-                    unsigned int*& device_count_ptr)
+  MemoryNode* new_value_tl(T*& value_ptr,
+                           SoAPtr<T, device_mempool_type>& device_soa_ptr,
+                           unsigned int*& device_count_ptr)
   {
     size_t num_teams;
     identifier id;
     if (resource_info::get_tl_launch_info(num_teams, id)) {
 
-      new_value(num_teams,
-                id,
-                value_ptr,
-                device_soa_ptr,
-                device_count_ptr);
-
-      return true;
+      return new_value(num_teams,
+                       id,
+                       value_ptr,
+                       device_soa_ptr,
+                       device_count_ptr);
     } else {
-      return false;
+      return nullptr;
     }
+  }
+
+  void reuse_memory(MemoryNode* mn)
+  {
+    mn->in_use = false;
   }
 
   //! synchronize all streams used
@@ -337,15 +350,20 @@ public:
   {
     while (stream_list) {
       ResourceNode* rn = stream_list;
-      device_zeroed_mempool_type::getInstance().free(rn->device_count);
       while (rn->node_list) {
-        Node* n = rn->node_list;
+        ValueNode* n = rn->node_list;
         rn->node_list = n->next;
-        device_mempool_type::getInstance().free(n->device_memory);
         pinned_mempool_type::getInstance().free(n);
       }
+      for (auto& mn : rn->size_to_memory_map) {
+        device_mempool_type::getInstance().free(mn.second.device_memory);
+        device_zeroed_mempool_type::getInstance().free(mn.second.device_count_ptr);
+        if (mn.second.in_use) {
+          RAJA_ABORT_OR_THROW("GPUReducerTally: Can't free MemoryNode that is in use");
+        }
+      }
       stream_list = rn->next;
-      free(rn);
+      delete rn;
     }
   }
 
@@ -358,37 +376,67 @@ public:
 private:
   ResourceNode* stream_list;
 
-  void new_value_impl(identifier id,
-                      unsigned int*& device_count_ptr,
-                      T*& value_ptr,
-                      void*& device_memory, size_t device_memory_size)
+  MemoryNode* new_value_impl(identifier id,
+                             T*& value_ptr,
+                             void*& device_memory, size_t device_memory_size,
+                             unsigned int*& device_count_ptr)
   {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
     lock_guard<omp::mutex> lock(m_mutex);
 #endif
-    ResourceNode* rn = stream_list;
-    while (rn) {
+    // find ResourceNode for id
+    ResourceNode* rn;
+    for (rn = stream_list; rn != nullptr; rn = rn->next) {
       if (rn->id == id) break;
-      rn = rn->next;
     }
+
+    // allocate ResourceNode if not found
     if (!rn) {
-      rn = (ResourceNode*)malloc(sizeof(ResourceNode));
+      rn = new ResourceNode;
       rn->next = stream_list;
       rn->id = id;
       rn->node_list = nullptr;
-      rn->device_count = device_zeroed_mempool_type::getInstance()
-          .template malloc<unsigned int>(1);
       stream_list = rn;
     }
-    Node* n = pinned_mempool_type::getInstance().template malloc<Node>(1);
-    n->next = rn->node_list;
-    rn->node_list = n;
-    n->device_memory = device_mempool_type::getInstance().template
-        malloc<char>(device_memory_size, alignof(T));
 
-    device_count_ptr = rn->device_count;
-    value_ptr        = &n->value;
-    device_memory    = n->device_memory;
+    // allocate ValueNode
+    ValueNode* vn = pinned_mempool_type::getInstance().template malloc<ValueNode>(1);
+    vn->next = rn->node_list;
+    rn->node_list = vn;
+
+    // find MemoryNode with enough storage
+    MemoryNode* mn = nullptr;
+    for (auto mn_i = rn->size_to_memory_map.lower_bound(device_memory_size);
+         mn_i != rn->size_to_memory_map.end();
+         ++mn_i) {
+      if (!mn_i->second.in_use) {
+        mn = &mn_i->second;
+        break;
+      }
+    }
+
+    // allocate MemoryNode if not found
+    if (mn == nullptr) {
+      auto mn_i = rn->size_to_memory_map.emplace(
+        device_memory_size,
+        MemoryNode{
+          false,
+          device_mempool_type::getInstance().template
+              malloc<char>(device_memory_size, alignof(T)),
+          device_zeroed_mempool_type::getInstance().template
+              malloc<unsigned int>(1)
+        });
+      mn = &mn_i->second;
+    }
+
+    // indicate MemoryNode is in use
+    mn->in_use = true;
+
+    value_ptr        = &vn->value;
+    device_memory    = mn->device_memory;
+    device_count_ptr = mn->device_count_ptr;
+
+    return mn;
   }
 };
 

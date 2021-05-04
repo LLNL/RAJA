@@ -686,6 +686,7 @@ template <typename Combiner, typename T, bool maybe_atomic>
 class Reduce
 {
   using tally_type = RAJA::detail::GPUReducerTally<T, resources::Cuda>;
+  using memory_node_type = typename tally_type::MemoryNode;
 public:
   Reduce() : Reduce(T(), Combiner::identity()) {}
 
@@ -693,7 +694,9 @@ public:
   //  the original object's parent is itself
   explicit Reduce(T init_val, T identity_ = Combiner::identity())
       : parent{this},
-        tally_or_val_ptr{new tally_type},
+        tally{new tally_type},
+        memory_node{nullptr},
+        val_ptr{nullptr},
         val(init_val, identity_)
   {
   }
@@ -714,19 +717,26 @@ public:
 #else
       : parent{&other},
 #endif
-        tally_or_val_ptr{other.tally_or_val_ptr},
+        tally{other.tally},
+        memory_node{nullptr},
+        val_ptr{other.val_ptr},
         val(other.val)
   {
 #if !defined(RAJA_DEVICE_CODE)
     if (parent) {
       if (!val.isSetupForDevice()) {
-        if (tally_or_val_ptr.list->new_value_tl(tally_or_val_ptr.val_ptr,
-                                                val.device,
-                                                val.device_count)) {
-          val.init_grid_val(tally_or_val_ptr.val_ptr);
+        memory_node = tally->new_value_tl(val_ptr,
+                                          val.device,
+                                          val.device_count);
+        if (memory_node != nullptr) {
+          // this copy is performing setup for the device and owns memory_node
+          val.init_grid_val(val_ptr);
           parent = nullptr;
         }
       }
+    } else {
+      // this copy is setup for the device but does not own val_ptr
+      tally = nullptr;
     }
 #endif
   }
@@ -738,23 +748,27 @@ public:
   {
 #if !defined(RAJA_DEVICE_CODE)
     if (parent == this) {
-      delete tally_or_val_ptr.list;
-      tally_or_val_ptr.list = nullptr;
+      // this is the original reducer because it is the parent
+      delete tally;
+      tally = nullptr;
     } else if (parent) {
+      // this is a copy not involved in kernel launch setup
       if (val.value != val.identity) {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-        lock_guard<omp::mutex> lock(tally_or_val_ptr.list->m_mutex);
+        lock_guard<omp::mutex> lock(tally->m_mutex);
 #endif
         parent->combine(val.value);
       }
+    } else if (memory_node) {
+      // this is a copy involved in kernel launch setup that owns memory_node
+      tally->reuse_memory(memory_node);
     } else {
-      // tally_or_val_ptr.val_ptr is set
-      // tally handles memory management
+      // this is a copy involved in kernel launch setup
       // do nothing
     }
 #else
     if (!parent->parent) {
-      val.grid_reduce(tally_or_val_ptr.val_ptr);
+      val.grid_reduce(val_ptr);
     } else {
       parent->combine(val.value);
     }
@@ -764,14 +778,14 @@ public:
   //! map result value back to host if not done already; return aggregate value
   operator T()
   {
-    auto n = tally_or_val_ptr.list->begin();
-    auto end = tally_or_val_ptr.list->end();
+    auto n = tally->begin();
+    auto end = tally->end();
     if (n != end) {
-      tally_or_val_ptr.list->synchronize_streams();
+      tally->synchronize_streams();
       for (; n != end; ++n) {
         Combiner{}(val.value, *n);
       }
-      tally_or_val_ptr.list->free_list();
+      tally->free_list();
     }
     return val.value;
   }
@@ -791,17 +805,9 @@ public:
 
 private:
   const Reduce* parent;
-
-  //! union to hold either pointer to tally_type or pointer to value
-  //  only use list before setup for device and only use val_ptr after
-  union tally_u {
-    tally_type* list;
-    T* val_ptr;
-    constexpr tally_u(tally_type* l) : list(l){};
-    constexpr tally_u(T* v_ptr) : val_ptr(v_ptr){};
-  };
-
-  tally_u tally_or_val_ptr;
+  tally_type* tally;
+  memory_node_type* memory_node;
+  T* val_ptr;
 
   //! cuda reduction data storage class and folding algorithm
   using reduce_data_type = typename std::conditional<
