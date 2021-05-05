@@ -137,9 +137,13 @@ void set_device_allocator(RAJA::Allocator* allocator)
       RAJA_ABORT_OR_THROW("RAJA::hip::set_device_allocator old pool is not empty");
     }
     s_device_allocator->release();
+    RAJA::detail::remove_allocator(s_device_allocator);
     delete s_device_allocator;
   }
   s_device_allocator = allocator;
+  if (s_device_allocator != nullptr) {
+    RAJA::detail::add_allocator(s_device_allocator);
+  }
 }
 
 void set_device_zeroed_allocator(RAJA::Allocator* allocator)
@@ -149,9 +153,13 @@ void set_device_zeroed_allocator(RAJA::Allocator* allocator)
       RAJA_ABORT_OR_THROW("RAJA::hip::set_device_zeroed_allocator old pool is not empty");
     }
     s_device_zeroed_allocator->release();
+    RAJA::detail::remove_allocator(s_device_zeroed_allocator);
     delete s_device_zeroed_allocator;
   }
   s_device_zeroed_allocator = allocator;
+  if (s_device_zeroed_allocator != nullptr) {
+    RAJA::detail::add_allocator(s_device_zeroed_allocator);
+  }
 }
 
 void set_pinned_allocator(RAJA::Allocator* allocator)
@@ -161,9 +169,13 @@ void set_pinned_allocator(RAJA::Allocator* allocator)
       RAJA_ABORT_OR_THROW("RAJA::hip::set_pinned_allocator old pool is not empty");
     }
     s_pinned_allocator->release();
+    RAJA::detail::remove_allocator(s_pinned_allocator);
     delete s_pinned_allocator;
   }
   s_pinned_allocator = allocator;
+  if (s_pinned_allocator != nullptr) {
+    RAJA::detail::add_allocator(s_pinned_allocator);
+  }
 }
 
 }  // namespace detail

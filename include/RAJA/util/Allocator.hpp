@@ -20,6 +20,7 @@
 
 #include <cstddef>
 #include <string>
+#include <unordered_set>
 
 #include "RAJA/util/camp_aliases.hpp"
 
@@ -67,6 +68,20 @@ struct Allocator
 
   virtual Platform getPlatform() noexcept = 0;
 };
+
+namespace detail
+{
+
+extern void add_allocator(Allocator* aloc);
+extern void remove_allocator(Allocator* aloc);
+
+} /* end namespace detail */
+
+
+/*!
+ * \brief Get the set of allocators used by RAJA internally
+ */
+extern std::unordered_set<Allocator*> get_allocators();
 
 } /* end namespace RAJA */
 
