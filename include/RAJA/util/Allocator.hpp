@@ -33,7 +33,7 @@ namespace RAJA
  *
  * Allocator& device_pool = RAJA::cuda::get_device_allocator();
  *
- * RAJA::cuda::set_device_allocator(new SomeOtherDevicePool());
+ * RAJA::cuda::set_device_allocator<SomeOtherDevicePoolAllocator>(args...);
  *
  ******************************************************************************
  */

@@ -685,7 +685,7 @@ template <typename Combiner, typename T, bool maybe_atomic>
 class Reduce
 {
   using tally_type = RAJA::detail::GPUReducerTally<T, resources::Cuda>;
-  using memory_node_type = typename tally_type::MemoryNode;
+  using tally_device_pointers = typename tally_type::DevicePointers;
 public:
   Reduce() : Reduce(T(), Combiner::identity()) {}
 
@@ -754,7 +754,7 @@ public:
       // this is a copy not involved in kernel launch setup
       if (val.value != val.identity) {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-        lock_guard<omp::mutex> lock(tally->m_mutex);
+        lock_guard<omp::mutex> lock(tally->get_mutex());
 #endif
         parent->combine(val.value);
       }
@@ -805,7 +805,7 @@ public:
 private:
   const Reduce* parent;
   tally_type* tally;
-  memory_node_type* memory_node;
+  tally_device_pointers* memory_node;
   T* val_ptr;
 
   //! cuda reduction data storage class and folding algorithm
