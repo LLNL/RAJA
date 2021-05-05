@@ -2048,7 +2048,7 @@ GPU_TEST(Kernel, CudaExec1c)
 
   // Loop Fusion
   using Pol = KernelPolicy<
-      CudaKernelExt<cuda_explicit_launch<false, 5, 1, 3>,
+      CudaKernelExt<cuda_explicit_launch<false, 5, 3, 1>,
            statement::Tile<2, tile_fixed<2>, cuda_block_z_loop,
                     For<0, cuda_block_x_loop,
                         For<1, cuda_block_y_loop,
