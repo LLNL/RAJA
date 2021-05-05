@@ -95,7 +95,7 @@ stable(
   int end_bit=sizeof(R)*CHAR_BIT;
 
   // Allocate temporary storage for the output array
-  R* d_out = cuda::device_mempool_type::getInstance().malloc<R>(len);
+  R* d_out = cuda::get_device_allocator().allocate<R>(len);
 
   // use cub double buffer to reduce temporary memory requirements
   // by allowing cub to write to the begin buffer
@@ -113,7 +113,7 @@ stable(
                                               stream));
   // Allocate temporary storage
   d_temp_storage =
-      cuda::device_mempool_type::getInstance().malloc<unsigned char>(
+      cuda::get_device_allocator().allocate<unsigned char>(
           temp_storage_bytes);
 
   // Run
@@ -125,7 +125,7 @@ stable(
                                               end_bit,
                                               stream));
   // Free temporary storage
-  cuda::device_mempool_type::getInstance().free(d_temp_storage);
+  cuda::get_device_allocator().deallocate(d_temp_storage);
 
   if (d_keys.Current() == d_out) {
 
@@ -133,7 +133,7 @@ stable(
     cudaErrchk(cudaMemcpyAsync(begin, d_out, len*sizeof(R), cudaMemcpyDefault, stream));
   }
 
-  cuda::device_mempool_type::getInstance().free(d_out);
+  cuda::get_device_allocator().deallocate(d_out);
 
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
@@ -164,7 +164,7 @@ stable(
   int end_bit=sizeof(R)*CHAR_BIT;
 
   // Allocate temporary storage for the output array
-  R* d_out = cuda::device_mempool_type::getInstance().malloc<R>(len);
+  R* d_out = cuda::get_device_allocator().allocate<R>(len);
 
   // use cub double buffer to reduce temporary memory requirements
   // by allowing cub to write to the begin buffer
@@ -182,7 +182,7 @@ stable(
                                                         stream));
   // Allocate temporary storage
   d_temp_storage =
-      cuda::device_mempool_type::getInstance().malloc<unsigned char>(
+      cuda::get_device_allocator().allocate<unsigned char>(
           temp_storage_bytes);
 
   // Run
@@ -194,7 +194,7 @@ stable(
                                                         end_bit,
                                                         stream));
   // Free temporary storage
-  cuda::device_mempool_type::getInstance().free(d_temp_storage);
+  cuda::get_device_allocator().deallocate(d_temp_storage);
 
   if (d_keys.Current() == d_out) {
 
@@ -202,7 +202,7 @@ stable(
     cudaErrchk(cudaMemcpyAsync(begin, d_out, len*sizeof(R), cudaMemcpyDefault, stream));
   }
 
-  cuda::device_mempool_type::getInstance().free(d_out);
+  cuda::get_device_allocator().deallocate(d_out);
 
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
@@ -340,8 +340,8 @@ stable_pairs(
   int end_bit=sizeof(K)*CHAR_BIT;
 
   // Allocate temporary storage for the output arrays
-  K* d_keys_out = cuda::device_mempool_type::getInstance().malloc<K>(len);
-  V* d_vals_out = cuda::device_mempool_type::getInstance().malloc<V>(len);
+  K* d_keys_out = cuda::get_device_allocator().allocate<K>(len);
+  V* d_vals_out = cuda::get_device_allocator().allocate<V>(len);
 
   // use cub double buffer to reduce temporary memory requirements
   // by allowing cub to write to the keys_begin and vals_begin buffers
@@ -361,7 +361,7 @@ stable_pairs(
                                                stream));
   // Allocate temporary storage
   d_temp_storage =
-      cuda::device_mempool_type::getInstance().malloc<unsigned char>(
+      cuda::get_device_allocator().allocate<unsigned char>(
           temp_storage_bytes);
 
   // Run
@@ -374,7 +374,7 @@ stable_pairs(
                                                end_bit,
                                                stream));
   // Free temporary storage
-  cuda::device_mempool_type::getInstance().free(d_temp_storage);
+  cuda::get_device_allocator().deallocate(d_temp_storage);
 
   if (d_keys.Current() == d_keys_out) {
 
@@ -387,8 +387,8 @@ stable_pairs(
     cudaErrchk(cudaMemcpyAsync(vals_begin, d_vals_out, len*sizeof(V), cudaMemcpyDefault, stream));
   }
 
-  cuda::device_mempool_type::getInstance().free(d_keys_out);
-  cuda::device_mempool_type::getInstance().free(d_vals_out);
+  cuda::get_device_allocator().deallocate(d_keys_out);
+  cuda::get_device_allocator().deallocate(d_vals_out);
 
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
@@ -423,8 +423,8 @@ stable_pairs(
   int end_bit=sizeof(K)*CHAR_BIT;
 
   // Allocate temporary storage for the output arrays
-  K* d_keys_out = cuda::device_mempool_type::getInstance().malloc<K>(len);
-  V* d_vals_out = cuda::device_mempool_type::getInstance().malloc<V>(len);
+  K* d_keys_out = cuda::get_device_allocator().allocate<K>(len);
+  V* d_vals_out = cuda::get_device_allocator().allocate<V>(len);
 
   // use cub double buffer to reduce temporary memory requirements
   // by allowing cub to write to the keys_begin and vals_begin buffers
@@ -444,7 +444,7 @@ stable_pairs(
                                                          stream));
   // Allocate temporary storage
   d_temp_storage =
-      cuda::device_mempool_type::getInstance().malloc<unsigned char>(
+      cuda::get_device_allocator().allocate<unsigned char>(
           temp_storage_bytes);
 
   // Run
@@ -457,7 +457,7 @@ stable_pairs(
                                                          end_bit,
                                                          stream));
   // Free temporary storage
-  cuda::device_mempool_type::getInstance().free(d_temp_storage);
+  cuda::get_device_allocator().deallocate(d_temp_storage);
 
   if (d_keys.Current() == d_keys_out) {
 
@@ -470,8 +470,8 @@ stable_pairs(
     cudaErrchk(cudaMemcpyAsync(vals_begin, d_vals_out, len*sizeof(V), cudaMemcpyDefault, stream));
   }
 
-  cuda::device_mempool_type::getInstance().free(d_keys_out);
-  cuda::device_mempool_type::getInstance().free(d_vals_out);
+  cuda::get_device_allocator().deallocate(d_keys_out);
+  cuda::get_device_allocator().deallocate(d_vals_out);
 
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);

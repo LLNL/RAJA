@@ -32,7 +32,6 @@
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/SoAArray.hpp"
 #include "RAJA/util/SoAPtr.hpp"
-#include "RAJA/util/basic_mempool.hpp"
 #include "RAJA/util/mutex.hpp"
 #include "RAJA/util/types.hpp"
 #include "RAJA/util/GPUReducerTally.hpp"
@@ -444,7 +443,7 @@ struct Reduce_Data {
   mutable T value;
   T identity;
   unsigned int* device_count;
-  RAJA::detail::SoAPtr<T, device_mempool_type> device;
+  RAJA::detail::SoAPtr<T> device;
 
   Reduce_Data() : Reduce_Data(T(), T()){};
 

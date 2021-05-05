@@ -27,7 +27,7 @@
 #include <type_traits>
 
 #include "RAJA/util/macros.hpp"
-#include "RAJA/util/basic_mempool.hpp"
+#include "RAJA/util/Allocator.hpp"
 #include "RAJA/util/mutex.hpp"
 #include "RAJA/util/types.hpp"
 
@@ -39,6 +39,11 @@
 #if defined(RAJA_ENABLE_HIP)
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
 #include "RAJA/policy/hip/raja_hiperrchk.hpp"
+#endif
+
+// TODO: Remove this once omp::mutex is removed
+#if defined(RAJA_ENABLE_OPENMP) && !defined(_OPENMP)
+#error RAJA configured with ENABLE_OPENMP, but OpenMP not supported by current compiler
 #endif
 
 namespace RAJA
@@ -55,9 +60,15 @@ struct ResourceInfo;
 template < >
 struct ResourceInfo<resources::Cuda>
 {
-  using pinned_mempool_type = cuda::pinned_mempool_type;
-  using device_mempool_type = cuda::device_mempool_type;
-  using device_zeroed_mempool_type = cuda::device_zeroed_mempool_type;
+  static Allocator& get_pinned_allocator() {
+    return cuda::get_pinned_allocator();
+  }
+  static Allocator& get_device_allocator() {
+    return cuda::get_device_allocator();
+  }
+  static Allocator& get_device_zeroed_allocator() {
+    return cuda::get_device_zeroed_allocator();
+  }
   using identifier = cudaStream_t;
   static cudaStream_t get_identifier(resources::Cuda& r)
   {
@@ -90,9 +101,15 @@ struct ResourceInfo<resources::Cuda>
 template < >
 struct ResourceInfo<resources::Hip>
 {
-  using pinned_mempool_type = hip::pinned_mempool_type;
-  using device_mempool_type = hip::device_mempool_type;
-  using device_zeroed_mempool_type = hip::device_zeroed_mempool_type;
+  static Allocator& get_pinned_allocator() {
+    return hip::get_pinned_allocator();
+  }
+  static Allocator& get_device_allocator() {
+    return hip::get_device_allocator();
+  }
+  static Allocator& get_device_zeroed_allocator() {
+    return hip::get_device_zeroed_allocator();
+  }
   using identifier = hipStream_t;
   static hipStream_t get_identifier(resources::Hip& r)
   {
@@ -126,9 +143,6 @@ template <typename T, typename Resource>
 class GPUReducerTally
 {
   using resource_info = ResourceInfo<Resource>;
-  using pinned_mempool_type = typename resource_info::pinned_mempool_type;
-  using device_mempool_type = typename resource_info::device_mempool_type;
-  using device_zeroed_mempool_type = typename resource_info::device_zeroed_mempool_type;
   using identifier = typename resource_info::identifier;
 public:
   //! Object put in Pinned memory with value and pointer to next ValueNode
@@ -296,7 +310,7 @@ public:
   MemoryNode* new_value(size_t num_teams,
                         identifier id,
                         T*& value_ptr,
-                        SoAPtr<T, device_mempool_type>& device_soa_ptr,
+                        SoAPtr<T>& device_soa_ptr,
                         unsigned int*& device_count_ptr)
   {
     void* device_memory = nullptr;
@@ -314,7 +328,7 @@ public:
 
   //! get new value and pointers based on thread local launch info
   MemoryNode* new_value_tl(T*& value_ptr,
-                           SoAPtr<T, device_mempool_type>& device_soa_ptr,
+                           SoAPtr<T>& device_soa_ptr,
                            unsigned int*& device_count_ptr)
   {
     size_t num_teams;
@@ -353,11 +367,11 @@ public:
       while (rn->node_list) {
         ValueNode* n = rn->node_list;
         rn->node_list = n->next;
-        pinned_mempool_type::getInstance().free(n);
+        resource_info::get_pinned_allocator().deallocate(n);
       }
       for (auto& mn : rn->size_to_memory_map) {
-        device_mempool_type::getInstance().free(mn.second.device_memory);
-        device_zeroed_mempool_type::getInstance().free(mn.second.device_count_ptr);
+        resource_info::get_device_allocator().deallocate(mn.second.device_memory);
+        resource_info::get_device_zeroed_allocator().deallocate(mn.second.device_count_ptr);
         if (mn.second.in_use) {
           RAJA_ABORT_OR_THROW("GPUReducerTally: Can't free MemoryNode that is in use");
         }
@@ -369,7 +383,7 @@ public:
 
   ~GPUReducerTally() { free_list(); }
 
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
   omp::mutex m_mutex;
 #endif
 
@@ -381,7 +395,7 @@ private:
                              void*& device_memory, size_t device_memory_size,
                              unsigned int*& device_count_ptr)
   {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
     lock_guard<omp::mutex> lock(m_mutex);
 #endif
     // find ResourceNode for id
@@ -400,7 +414,8 @@ private:
     }
 
     // allocate ValueNode
-    ValueNode* vn = pinned_mempool_type::getInstance().template malloc<ValueNode>(1);
+    ValueNode* vn = resource_info::get_pinned_allocator().template
+        allocate<ValueNode>(1);
     vn->next = rn->node_list;
     rn->node_list = vn;
 
@@ -421,10 +436,10 @@ private:
         device_memory_size,
         MemoryNode{
           false,
-          device_mempool_type::getInstance().template
-              malloc<char>(device_memory_size, alignof(T)),
-          device_zeroed_mempool_type::getInstance().template
-              malloc<unsigned int>(1)
+          resource_info::get_device_allocator().
+              allocate(device_memory_size),
+          resource_info::get_device_zeroed_allocator().template
+              allocate<unsigned int>(1)
         });
       mn = &mn_i->second;
     }

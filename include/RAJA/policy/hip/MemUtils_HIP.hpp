@@ -29,7 +29,7 @@
 #include <type_traits>
 #include <unordered_map>
 
-#include "RAJA/util/basic_mempool.hpp"
+#include "RAJA/util/Allocator.hpp"
 #include "RAJA/util/mutex.hpp"
 #include "RAJA/util/types.hpp"
 
@@ -42,70 +42,48 @@ namespace RAJA
 namespace hip
 {
 
+namespace detail
+{
 
-//! Allocator for pinned memory for use in basic_mempool
-struct PinnedAllocator {
+extern void set_device_allocator(RAJA::Allocator* allocator);
+extern void set_device_zeroed_allocator(RAJA::Allocator* allocator);
+extern void set_pinned_allocator(RAJA::Allocator* allocator);
 
-  // returns a valid pointer on success, nullptr on failure
-  void* malloc(size_t nbytes)
-  {
-    void* ptr;
-    hipErrchk(hipHostMalloc(&ptr, nbytes, hipHostMallocMapped));
-    return ptr;
-  }
+}
 
-  // returns true on success, false on failure
-  bool free(void* ptr)
-  {
-    hipErrchk(hipHostFree(ptr));
-    return true;
-  }
-};
+// Sets the allocator used by RAJA internally by making an allocator of
+// allocator_type with the given arguments. It is an error to change the
+// allocator when any memory is allocated. This routine is not thread safe.
+template < typename allocator_type, typename ... Args >
+void set_device_allocator(Args&&... args)
+{
+  detail::set_device_allocator(
+      new allocator_type(std::forward<Args>(args)...));
+}
+template < typename allocator_type, typename ... Args >
+void set_device_zeroed_allocator(Args&&... args)
+{
+  detail::set_device_zeroed_allocator(
+      new allocator_type(std::forward<Args>(args)...));
+}
+template < typename allocator_type, typename ... Args >
+void set_pinned_allocator(Args&&... args)
+{
+  detail::set_pinned_allocator(
+      new allocator_type(std::forward<Args>(args)...));
+}
 
-//! Allocator for device memory for use in basic_mempool
-struct DeviceAllocator {
+// Reset the allocator used by RAJA internally. This will destroy any existing
+// allocator and replace it with the kind of allocator used by default.
+extern void reset_device_allocator();
+extern void reset_device_zeroed_allocator();
+extern void reset_pinned_allocator();
 
-  // returns a valid pointer on success, nullptr on failure
-  void* malloc(size_t nbytes)
-  {
-    void* ptr;
-    hipErrchk(hipMalloc(&ptr, nbytes));
-    return ptr;
-  }
-
-  // returns true on success, false on failure
-  bool free(void* ptr)
-  {
-    hipErrchk(hipFree(ptr));
-    return true;
-  }
-};
-
-//! Allocator for pre-zeroed device memory for use in basic_mempool
-//  Note: Memory must be zero when returned to mempool
-struct DeviceZeroedAllocator {
-
-  // returns a valid pointer on success, nullptr on failure
-  void* malloc(size_t nbytes)
-  {
-    void* ptr;
-    hipErrchk(hipMalloc(&ptr, nbytes));
-    hipErrchk(hipMemset(ptr, 0, nbytes));
-    return ptr;
-  }
-
-  // returns true on success, false on failure
-  bool free(void* ptr)
-  {
-    hipErrchk(hipFree(ptr));
-    return true;
-  }
-};
-
-using device_mempool_type = basic_mempool::MemPool<DeviceAllocator>;
-using device_zeroed_mempool_type =
-    basic_mempool::MemPool<DeviceZeroedAllocator>;
-using pinned_mempool_type = basic_mempool::MemPool<PinnedAllocator>;
+// Gets the allocator used by RAJA internally. This allows the user to query
+// the memory stats of the allocator.
+extern RAJA::Allocator& get_device_allocator();
+extern RAJA::Allocator& get_device_zeroed_allocator();
+extern RAJA::Allocator& get_pinned_allocator();
 
 namespace detail
 {
