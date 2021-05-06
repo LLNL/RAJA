@@ -178,6 +178,14 @@ TEST(AllocatorUnitTest, get_allocators)
   }
 }
 
+TEST(AllocatorUnitTest, AllocatorPool)
+{
+  RAJA::AllocatorPool<ResourceAllocator<RAJA::resources::Host>> aloc(
+      RAJA::resources::Host::get_default());
+  AllocatorUnitTestNewAllocator(aloc, RAJA::Platform::host);
+}
+
+
 #if defined(RAJA_ENABLE_CUDA)
 
 TEST(AllocatorUnitTest, allocators_CUDA)
