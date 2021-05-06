@@ -562,7 +562,7 @@ struct ReduceAtomic_Data {
 template <typename Combiner, typename T, bool maybe_atomic>
 class Reduce
 {
-  using tally_type = RAJA::detail::GPUReducerTally<T, resources::Hip>;
+  using tally_type = RAJA::detail::GPUReducerTally<resources::Hip>;
   using tally_device_pointers = typename tally_type::DevicePointers;
 public:
   Reduce() : Reduce(T(), Combiner::identity()) {}
@@ -627,11 +627,25 @@ public:
       tally = nullptr;
     } else if (parent) {
       // this is a copy not involved in kernel launch setup
+      // it may be being used in a sequential or an openmp loop
       if (val.value != val.identity) {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-        lock_guard<omp::mutex> lock(tally->get_mutex());
-#endif
+        // combine val with parent
+#if defined(RAJA_ENABLE_OPENMP)
+        // built with openmp, protect with tally's lock
+
+        // make lambda that does combination
+        auto combine_func = [&]() {
+          parent->combine(val.value);
+        };
+
+        // use tally routine that calls the given function in a locked context
+        tally->lock_and_call(
+            [](void* a) { (*static_cast<decltype(combine_func)*>(a))(); },
+            static_cast<void*>(&combine_func));
+#else
+        // not built with openmp, do not protect
         parent->combine(val.value);
+#endif
       }
     } else if (memory_node) {
       // this is a copy involved in kernel launch setup that owns memory_node
@@ -652,8 +666,8 @@ public:
   //! map result value back to host if not done already; return aggregate value
   operator T()
   {
-    auto n = tally->begin();
-    auto end = tally->end();
+    auto n = tally->begin<T>();
+    auto end = tally->end<T>();
     if (n != end) {
       tally->synchronize_streams();
       for (; n != end; ++n) {
