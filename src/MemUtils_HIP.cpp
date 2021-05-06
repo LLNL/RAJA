@@ -4,7 +4,7 @@
  * \file
  *
  * \brief   Implementation file for routines used to manage
- *          memory for CUDA reductions and other operations.
+ *          memory for HIP reductions and other operations.
  *
  ******************************************************************************
  */
@@ -104,7 +104,7 @@ struct DeviceZeroedAllocator
   }
   Platform getPlatform() noexcept
   {
-    return Platform::cuda;
+    return Platform::hip;
   }
   // returns a valid pointer on success, nullptr on failure
   void* allocate(size_t nbytes)
