@@ -306,15 +306,14 @@ private:
  *   }
  *
  *   // returns true on success, false on failure
- *   bool deallocate(void* ptr)
+ *   void deallocate(void* ptr)
  *   {
  *     std::free(ptr);
- *     return true;
  *   }
  * };
  *
  * RAJA::Allocator* aloc =
- *     new RAJA::detail::AllocatorPool<host_allocator>();
+ *     new RAJA::AllocatorPool<host_allocator>();
  *
  ******************************************************************************
  */
@@ -391,7 +390,7 @@ struct AllocatorPool : Allocator
         m_actualSize += m_arenas.front().capacity();
         mem = m_arenas.front().get(nbytes, alignment);
       } else{
-        RAJA_ABORT_OR_THROW("RAJA::detail::AllocatorPool::allocate arena allocation failed");
+        RAJA_ABORT_OR_THROW("RAJA::AllocatorPool::allocate arena allocation failed");
       }
     }
 
@@ -423,7 +422,7 @@ struct AllocatorPool : Allocator
     }
 
     if (ptr != nullptr) {
-      RAJA_ABORT_OR_THROW("RAJA::detail::AllocatorPool::deallocate unknown pointer");
+      RAJA_ABORT_OR_THROW("RAJA::AllocatorPool::deallocate unknown pointer");
     } else {
       // update stats
       m_currentSize -= mem.nbytes();

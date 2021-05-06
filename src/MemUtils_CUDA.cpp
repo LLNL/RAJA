@@ -61,10 +61,9 @@ struct PinnedAllocator
   }
 
   // returns true on success, false on failure
-  bool deallocate(void* ptr)
+  void deallocate(void* ptr)
   {
     cudaErrchk(cudaFreeHost(ptr));
-    return true;
   }
 };
 
@@ -88,10 +87,9 @@ struct DeviceAllocator
   }
 
   // returns true on success, false on failure
-  bool deallocate(void* ptr)
+  void deallocate(void* ptr)
   {
     cudaErrchk(cudaFree(ptr));
-    return true;
   }
 };
 
@@ -118,10 +116,9 @@ struct DeviceZeroedAllocator
   }
 
   // returns true on success, false on failure
-  bool deallocate(void* ptr)
+  void deallocate(void* ptr)
   {
     cudaErrchk(cudaFree(ptr));
-    return true;
   }
 };
 
