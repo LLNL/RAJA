@@ -48,7 +48,7 @@ struct PinnedAllocator
   {
     return "RAJA::hip::detail::PinnedAllocator";
   }
-  Platform getPlatform() const noexcept
+  Platform getPlatform() noexcept
   {
     return Platform::hip;
   }
@@ -74,7 +74,7 @@ struct DeviceAllocator
   {
     return "RAJA::hip::detail::DeviceAllocator";
   }
-  Platform getPlatform() const noexcept
+  Platform getPlatform() noexcept
   {
     return Platform::hip;
   }
@@ -102,7 +102,7 @@ struct DeviceZeroedAllocator
   {
     return "RAJA::hip::detail::DeviceZeroedAllocator";
   }
-  Platform getPlatform() const noexcept
+  Platform getPlatform() noexcept
   {
     return Platform::cuda;
   }
