@@ -16,18 +16,17 @@
 #include "RAJA/util/AllocatorUmpire.hpp"
 
 
-#if defined(RAJA_ENABLE_CUDA)
-
-struct CudaResourceAllocator
+template < typename Resource >
+struct ResourceAllocator
 {
-  CudaResourceAllocator(RAJA::resources::Cuda const& res) : m_res(res) { }
+  ResourceAllocator(Resource const& res) : m_res(res) { }
   const char* getName() const noexcept
   {
-    return "CudaResourceAllocator";
+    return "ResourceAllocator";
   }
-  RAJA::Platform getPlatform() const noexcept
+  RAJA::Platform getPlatform() noexcept
   {
-    return RAJA::Platform::cuda;
+    return m_res.get_platform();
   }
   void* allocate(size_t nbytes)
   {
@@ -38,40 +37,8 @@ struct CudaResourceAllocator
     m_res.deallocate(ptr);
   }
 private:
-  RAJA::resources::Cuda m_res;
+  Resource m_res;
 };
-
-#endif  // if defined(RAJA_ENABLE_CUDA)
-
-#if defined(RAJA_ENABLE_HIP)
-
-struct HipResourceAllocator
-{
-  HipResourceAllocator(RAJA::resources::Hip const& res) : m_res(res) { }
-  const char* getName() const noexcept
-  {
-    return "HipResourceAllocator";
-  }
-  RAJA::Platform getPlatform() const noexcept
-  {
-    return RAJA::Platform::hip;
-  }
-  void* allocate(size_t nbytes)
-  {
-    return m_res.calloc(nbytes);
-  }
-  void deallocate(void* ptr)
-  {
-    m_res.deallocate(ptr);
-  }
-private:
-  RAJA::resources::Hip m_res;
-};
-
-#endif  // if defined(RAJA_ENABLE_HIP)
-
-
-
 
 
 void AllocatorUnitTestExistingAllocator(RAJA::Allocator& aloc) {
@@ -216,8 +183,9 @@ TEST(AllocatorUnitTest, get_allocators)
 TEST(AllocatorUnitTest, allocators_CUDA)
 {
   AllocatorUnitTestExistingAllocator(RAJA::cuda::get_device_allocator());
-  RAJA::cuda::set_device_allocator<RAJA::AllocatorPool<
-        CudaResourceAllocator>>(RAJA::resources::Cuda::get_default());
+  RAJA::cuda::set_device_allocator<
+        RAJA::AllocatorPool<ResourceAllocator<RAJA::resources::Cuda>>>(
+      RAJA::resources::Cuda::get_default());
   AllocatorUnitTestNewAllocator(RAJA::cuda::get_device_allocator(),
                                 RAJA::Platform::cuda);
   RAJA::cuda::reset_device_allocator();
@@ -225,8 +193,9 @@ TEST(AllocatorUnitTest, allocators_CUDA)
                                 RAJA::Platform::cuda);
 
   AllocatorUnitTestExistingAllocator(RAJA::cuda::get_pinned_allocator());
-  RAJA::cuda::set_pinned_allocator<RAJA::AllocatorPool<
-        CudaResourceAllocator>>(RAJA::resources::Cuda::get_default());
+  RAJA::cuda::set_pinned_allocator<
+        RAJA::AllocatorPool<ResourceAllocator<RAJA::resources::Cuda>>>(
+      RAJA::resources::Cuda::get_default());
   AllocatorUnitTestNewAllocator(RAJA::cuda::get_pinned_allocator(),
                                 RAJA::Platform::cuda);
   RAJA::cuda::reset_pinned_allocator();
@@ -234,8 +203,9 @@ TEST(AllocatorUnitTest, allocators_CUDA)
                                 RAJA::Platform::cuda);
 
   AllocatorUnitTestExistingAllocator(RAJA::cuda::get_device_zeroed_allocator());
-  RAJA::cuda::set_device_zeroed_allocator<RAJA::AllocatorPool<
-        CudaResourceAllocator>>(RAJA::resources::Cuda::get_default());
+  RAJA::cuda::set_device_zeroed_allocator<
+        RAJA::AllocatorPool<ResourceAllocator<RAJA::resources::Cuda>>>(
+      RAJA::resources::Cuda::get_default());
   AllocatorUnitTestNewAllocator(RAJA::cuda::get_device_zeroed_allocator(),
                                 RAJA::Platform::cuda);
   RAJA::cuda::reset_device_zeroed_allocator();
@@ -250,8 +220,9 @@ TEST(AllocatorUnitTest, allocators_CUDA)
 TEST(AllocatorUnitTest, allocators_HIP)
 {
   AllocatorUnitTestExistingAllocator(RAJA::hip::get_device_allocator());
-  RAJA::hip::set_device_allocator<RAJA::AllocatorPool<
-        HipResourceAllocator>>(RAJA::resources::Hip::get_default());
+  RAJA::hip::set_device_allocator<
+        RAJA::AllocatorPool<ResourceAllocator<RAJA::resources::Hip>>>(
+      RAJA::resources::Hip::get_default());
   AllocatorUnitTestNewAllocator(RAJA::hip::get_device_allocator(),
                                 RAJA::Platform::hip);
   RAJA::hip::reset_device_allocator();
@@ -259,8 +230,9 @@ TEST(AllocatorUnitTest, allocators_HIP)
                                 RAJA::Platform::hip);
 
   AllocatorUnitTestExistingAllocator(RAJA::hip::get_pinned_allocator());
-  RAJA::hip::set_pinned_allocator<RAJA::AllocatorPool<
-        HipResourceAllocator>>(RAJA::resources::Hip::get_default());
+  RAJA::hip::set_pinned_allocator<
+        RAJA::AllocatorPool<ResourceAllocator<RAJA::resources::Hip>>>(
+      RAJA::resources::Hip::get_default());
   AllocatorUnitTestNewAllocator(RAJA::hip::get_pinned_allocator(),
                                 RAJA::Platform::hip);
   RAJA::hip::reset_pinned_allocator();
@@ -268,8 +240,9 @@ TEST(AllocatorUnitTest, allocators_HIP)
                                 RAJA::Platform::hip);
 
   AllocatorUnitTestExistingAllocator(RAJA::hip::get_device_zeroed_allocator());
-  RAJA::hip::set_device_zeroed_allocator<RAJA::AllocatorPool<
-        HipResourceAllocator>>(RAJA::resources::Hip::get_default());
+  RAJA::hip::set_device_zeroed_allocator<
+        RAJA::AllocatorPool<ResourceAllocator<RAJA::resources::Hip>>>(
+      RAJA::resources::Hip::get_default());
   AllocatorUnitTestNewAllocator(RAJA::hip::get_device_zeroed_allocator(),
                                 RAJA::Platform::hip);
   RAJA::hip::reset_device_zeroed_allocator();
