@@ -20,7 +20,7 @@
 
 #include <cstddef>
 #include <string>
-#include <unordered_set>
+#include <vector>
 
 #include "RAJA/util/camp_aliases.hpp"
 
@@ -81,7 +81,7 @@ extern void remove_allocator(Allocator* aloc);
 /*!
  * \brief Get the set of allocators used by RAJA internally
  */
-extern std::unordered_set<Allocator*> get_allocators();
+extern std::vector<Allocator*> get_allocators();
 
 } /* end namespace RAJA */
 

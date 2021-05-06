@@ -18,6 +18,8 @@
 
 #include "RAJA/config.hpp"
 
+#include <unordered_set>
+
 #include "RAJA/util/mutex.hpp"
 #include "RAJA/util/Allocator.hpp"
 
@@ -66,13 +68,16 @@ void remove_allocator(Allocator* aloc)
 } /* namespace detail */
 
 
-std::unordered_set<Allocator*> get_allocators()
+std::vector<Allocator*> get_allocators()
 {
 #if defined(RAJA_ENABLE_OPENMP)
     lock_guard<omp::mutex> lock(detail::s_mutex);
 #endif
+  using std::begin;
+  using std::end;
 
-  return detail::s_allocator_set;
+  return std::vector<Allocator*>{ begin(detail::s_allocator_set),
+                                  end(detail::s_allocator_set) };
 }
 
 }  // namespace RAJA
