@@ -52,15 +52,10 @@ namespace detail
     }
 
     // Init
-    template<typename EXEC_POL, camp::idx_t... Seq>
-    friend void constexpr detail_init(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
-      CAMP_EXPAND(init<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
+    template<typename EXEC_POL, camp::idx_t... Seq, typename ...Args>
+    friend void constexpr detail_init(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>, Args&& ...args) {
+      CAMP_EXPAND(init<EXEC_POL>( camp::get<Seq>(f_params.param_tup), std::forward<Args>(args)... ));
     }
-    template<typename EXEC_POL, camp::idx_t... Seq>
-    friend void constexpr detail_init(EXEC_POL, FORALL_PARAMS_T& f_params, const RAJA::cuda::detail::cudaInfo & cs, camp::idx_seq<Seq...>) {
-      CAMP_EXPAND(init<EXEC_POL>( camp::get<Seq>(f_params.param_tup), cs ));
-    }
-    // Combine
     template<typename EXEC_POL, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
     friend void constexpr detail_combine(EXEC_POL, FORALL_PARAMS_T& out, const FORALL_PARAMS_T& in, camp::idx_seq<Seq...>) {
@@ -85,15 +80,10 @@ namespace detail
     }
 
     // Init
-    template<typename EXEC_POL>
-    friend void constexpr init( FORALL_PARAMS_T& f_params ) {
-      detail_init(EXEC_POL(), f_params, params_seq{} );
+    template<typename EXEC_POL, typename ...Args>
+    friend void constexpr init( FORALL_PARAMS_T& f_params, Args&& ...args) {
+      detail_init(EXEC_POL(), f_params, params_seq{}, std::forward<Args>(args)... );
     }
-    template<typename EXEC_POL>
-    friend void constexpr init( FORALL_PARAMS_T& f_params, const RAJA::cuda::detail::cudaInfo & cs ) {
-      detail_init(EXEC_POL(), f_params, cs, params_seq{} );
-    }
-    // Combine
     template<typename EXEC_POL>
     RAJA_HOST_DEVICE
     friend void constexpr combine(FORALL_PARAMS_T& out, const FORALL_PARAMS_T& in) {

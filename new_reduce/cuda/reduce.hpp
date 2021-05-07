@@ -3,22 +3,12 @@
 
 
 #if defined(RAJA_ENABLE_CUDA)
+
 #include <cuda.h>
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
+
 namespace detail {
 using cuda_dim_t = dim3;
-
-  // Init
-  template<typename EXEC_POL, typename OP, typename T>
-  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::cuda_exec<256>> >
-  init(Reducer<OP, T>& red) {
-    cudaMallocManaged( (void**)(&(red.cudaval)), sizeof(T));//, cudaHostAllocPortable );
-    *red.cudaval = Reducer<OP,T>::op::identity();
-
-    cuda_dim_t gridDim = RAJA::cuda::currentGridDim();
-    red.device_mem.allocate(gridDim.x * gridDim.y * gridDim.z);
-    red.device_count = RAJA::cuda::device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
-  }
 
   template<typename EXEC_POL, typename OP, typename T>
   camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::cuda_exec<256>> >
@@ -26,7 +16,6 @@ using cuda_dim_t = dim3;
     cudaMallocManaged( (void**)(&(red.cudaval)), sizeof(T));//, cudaHostAllocPortable );
     *red.cudaval = Reducer<OP,T>::op::identity();
 
-    //cuda_dim_t gridDim = RAJA::cuda::currentGridDim();
     red.device_mem.allocate(cs.gridDim.x * cs.gridDim.y * cs.gridDim.z);
     red.device_count = RAJA::cuda::device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
   }
