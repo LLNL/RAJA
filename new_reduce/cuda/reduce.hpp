@@ -189,7 +189,8 @@ using cuda_dim_t = dim3;
     //{
     //  printf("device %d val %f\n", threadIdx.x, (double)(red.val));
     //}
-    bool blah = grid_reduce<Reducer<OP,T>::combine>(red.val, red);
+
+    bool blah = grid_reduce<Reducer<OP,T>::op>(red.val, red);
     if ( blah )
     {
       *red.cudaval = red.val;
