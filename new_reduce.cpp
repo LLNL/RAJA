@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
   double m = 5000;
   double ma = 0;
 
+#if defined(RAJA_ENABLE_CUDA)
   cudaMallocManaged( (void**)(&r), sizeof(double));//, cudaHostAllocPortable );
   cudaMallocManaged( (void**)(&m), sizeof(double));//, cudaHostAllocPortable );
   cudaMallocManaged( (void**)(&ma), sizeof(double));//, cudaHostAllocPortable );
@@ -29,6 +30,10 @@ int main(int argc, char *argv[])
 
   cudaMallocManaged( (void**)(&a), N*sizeof(double));//, cudaHostAllocPortable );
   cudaMallocManaged( (void**)(&b), N*sizeof(double));//, cudaHostAllocPortable );
+#else
+  double *a = new double[N]();
+  double *b = new double[N]();
+#endif
 
   std::iota(a, a + N, 0);
   std::iota(b, b + N, 0);
