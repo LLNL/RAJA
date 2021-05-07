@@ -10,6 +10,86 @@
 Version vxx.yy.zz -- Release date 20yy-mm-dd
 ============================================
 
+Version v0.14.0 -- Release date 2021-05-dd
+============================================
+
+This release contains new features, bug fixes, and build improvements. Please
+see the RAJA user guide for more information about items in this release.
+
+Notable changes include:
+
+  * New features / API changes:
+      * Various enhancements to the experimental RAJA "teams" capability,
+        including documentation and complete code examples illustrating usage.
+      * Deprecated sort and scan methods taking iterators have been removed,
+        Now, these methods take RAJA span arguments. For example,
+        (begin, end) args are replaced with RAJA::make_span(begin, N), where
+        N is (end - begin).  Please see the RAJA User Guide documentation for
+        scan and sort operations for details and usage examples.
+      * Sort and scan methods now accept an optional resource argument.
+      * Methods were added to the RAJA::kernel API to accept a resource 
+        argument; specifically 'kernel_resource' and 'kernel_param_resource'.
+        These kernel methods return an Event object similar to the RAJA::forall
+        interface.
+      * OpenMP CPU multithreading policies have been reworked so that usage
+        involving OpenMP scheduling are consistent. Specification of a chunk
+        size for scheduling policies is optional, which is consistent with
+        native OpenMP usage. In addition, no-wait policies are more constrained
+        to prevent potentially non-conforming (to the OpenMP spec) usage. 
+        Finally, additional policy type aliases have been added to make common 
+        use cases less verbose. Please see the RAJA policy documentation in 
+        the User Guide for policy descriptions. 
+      * Host implementation of HIP atomics added.
+      * Add ability to specify atomic to use on the host in CUDA and HIP
+        atomic policies (i.e., added host atomic templlate parameter), This
+        is useful for host-device deorated lambda expressions that may be
+        used for either host or device execution. It also fixes compilation 
+        issues with HIP atomic compilation in host-device contexts.
+      * The RAJA Registry API has been changed to return raw pointers to
+        registry objects rather than shared_ptr type. This is better for
+        performance.
+      * New content has been added to the RAJA Developer Guide available in the
+        Read The Docs Sphinx documentation. This should help folks align their
+        work with RAJA processes when making contributions to RAJA.
+      * Basic doxygen source code documentation is now available via a link
+        in our Read The Docs Sphinx documentation.
+      * Unified memory implementation for storing indices in TypedListSegment, 
+        which was marked deprecated in v0.12.0 release has been removed. Now,
+        TypedListSegment constructor requires a camp resource object to be 
+        passed which indicates the memory space where the indices will live.
+      * The ListSegment constructor takes a resource by value now, previously
+        taken by reference, which allows more resource argument types to be 
+        passed more seamlessly to the List Segment constructor.
+
+  * Build changes/improvements:
+      * Update BLT to newer develop branch commit (SHA-1: b7e2bdc)
+      * Support for building RAJA as a shared library on Windows has been added.
+      * A build sysstem adjustment was made to address an issue when RAJA is 
+        built with an external version of camp (e.g., through Spack).
+      * The build default has been changed to use the version of CUB that
+        is installed in the specified version of the CUDA toolkit, if available,
+        when CUDA is enabled. Similary, for the analogous functionality in
+        HIP. Specific versions of these libraries can still be specified for
+        a RAJA build. Please see the RAJA User Guide for details. 
+      * The build system now uses the BLT cmake_dependent_options support for
+        options defined by BLT. This avoids shadowing of BLT options by options
+        defined in RAJA and in the cases where RAJA is used as a sub-module in
+        another BLT project. For example, it provides the ability to disable 
+        RAJA tests and examples at a more fine granularity.
+      * A build system bug was fixed so that targets for third-party 
+        dependencies provided by BLT (e.g. CUDA and HIP) are exported properly.
+        This allows non-BLT projects to use the imported RAJA target.
+      * An issue was fixed to appease the MSVC 2019 compiler.
+
+  * Bug fixes/improvements:
+      * IndexSet utility methods for collecting indices into a separate 
+        container now work with any index type. 
+      * The volatile qualifier was removed from a type conversion function used
+        in RAJA atomics. This fixes a performance issue with HIP where the 
+        value was written to stack memory during type conversion.
+      * Numerous improvements and fixes (formatting, typos, etc.) in User Guide.
+
+
 Version v0.13.0 -- Release date 2020-10-30
 ============================================
 
