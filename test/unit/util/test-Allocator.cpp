@@ -15,6 +15,13 @@
 #include "RAJA/util/AllocatorPool.hpp"
 #include "RAJA/util/AllocatorUmpire.hpp"
 
+#include <random>
+#include <vector>
+#include <algorithm>
+#include <utility>
+
+namespace
+{
 
 template < typename Resource >
 struct ResourceAllocator
@@ -41,67 +48,129 @@ private:
 };
 
 
-void AllocatorUnitTestExistingAllocator(RAJA::Allocator& aloc) {
-  RAJA::Allocator const& caloc = aloc;
+inline unsigned get_random_seed()
+{
+  static unsigned seed = std::random_device{}();
+  return seed;
+}
 
-  ASSERT_TRUE(!caloc.getName().empty());
 
-  ASSERT_NE(aloc.getPlatform(), RAJA::Platform::undefined);
+void AllocatorUnitTestAllocatorAllocation(RAJA::Allocator& aloc) {
 
-  const size_t initial_highWatermark   = caloc.getHighWatermark();
-  const size_t initial_currentSize     = caloc.getCurrentSize();
-  const size_t initial_actualSize      = caloc.getActualSize();
-  const size_t initial_allocationCount = caloc.getAllocationCount();
+  std::mt19937 rng(get_random_seed());
+  using dist_type = std::uniform_int_distribution<size_t>;
+
+  const size_t initial_highWatermark   = aloc.getHighWatermark();
+  const size_t initial_currentSize     = aloc.getCurrentSize();
+  const size_t initial_actualSize      = aloc.getActualSize();
+  const size_t initial_allocationCount = aloc.getAllocationCount();
 
   ASSERT_GE(initial_highWatermark,   0u);
   ASSERT_EQ(initial_currentSize,     0u);
   ASSERT_GE(initial_actualSize,      0u);
   ASSERT_EQ(initial_allocationCount, 0u);
 
-  {
-    void* ptr = aloc.allocate(1);
+  size_t highWatermark   = initial_highWatermark;
+  size_t currentSize     = initial_currentSize;
+  size_t allocationCount = initial_allocationCount;
 
-    ASSERT_NE(ptr, nullptr);
+  size_t remaining_allocations = dist_type(0u, 1024u)(rng);
 
-    ASSERT_GE(caloc.getHighWatermark(),   initial_highWatermark);
-    ASSERT_EQ(caloc.getCurrentSize(),     initial_currentSize + 1u);
-    ASSERT_GE(caloc.getActualSize(),      initial_actualSize);
-    ASSERT_EQ(caloc.getAllocationCount(), initial_allocationCount + 1u);
+  std::vector<std::pair<void*, size_t>> allocations;
+  allocations.reserve(remaining_allocations);
 
-    aloc.deallocate(ptr);
+  while (remaining_allocations > 0u || !allocations.empty()) {
+
+    bool allocate   = false;
+    bool deallocate = false;
+    if (remaining_allocations > 0u && !allocations.empty()) {
+      if (dist_type(0u, 1u)(rng) == 0u) {
+        allocate = true;
+      } else {
+        deallocate = true;
+      }
+    } else if (remaining_allocations > 0u) {
+      allocate = true;
+    } else if (!allocations.empty()) {
+      deallocate = true;
+    }
+
+    if (allocate) {
+      size_t allocation_size = dist_type(1u, 1024u)(rng);
+      switch (dist_type(0u, 2u)(rng)) {
+        case 0u:
+        {
+          allocations.emplace_back(aloc.allocate(allocation_size), allocation_size);
+          break;
+        }
+        case 1u:
+        {
+          allocations.emplace_back(aloc.allocate<int>(allocation_size), allocation_size*sizeof(int));
+          allocation_size *= sizeof(int);
+          break;
+        }
+        case 2u:
+        {
+          allocations.emplace_back(aloc.allocate<double>(allocation_size), allocation_size*sizeof(double));
+          allocation_size *= sizeof(double);
+          break;
+        }
+        default:
+        {
+          ASSERT_TRUE(false);
+        }
+      }
+      remaining_allocations -= 1u;
+
+      currentSize     += allocation_size;
+      highWatermark    = std::max(highWatermark, currentSize);
+      allocationCount += 1u;
+
+      ASSERT_EQ(aloc.getHighWatermark(),   highWatermark);
+      ASSERT_EQ(aloc.getCurrentSize(),     currentSize);
+      ASSERT_GE(aloc.getActualSize(),      currentSize);
+      ASSERT_EQ(aloc.getAllocationCount(), allocationCount);
+    }
+
+    if (deallocate) {
+      size_t allocation_id = dist_type(0u, allocations.size()-1u)(rng);
+      void* ptr = allocations[allocation_id].first;
+      size_t allocation_size = allocations[allocation_id].second;
+      if (allocation_id != allocations.size()-1u) {
+        allocations[allocation_id] = allocations[allocations.size()-1u];
+      }
+      aloc.deallocate(ptr);
+      allocations.erase(--allocations.end());
+
+      currentSize     -= allocation_size;
+      allocationCount -= 1u;
+
+      ASSERT_EQ(aloc.getHighWatermark(),   highWatermark);
+      ASSERT_EQ(aloc.getCurrentSize(),     currentSize);
+      ASSERT_GE(aloc.getActualSize(),      currentSize);
+      ASSERT_EQ(aloc.getAllocationCount(), allocationCount);
+    }
+
   }
-
-  ASSERT_GE(caloc.getHighWatermark(),   initial_highWatermark);
-  ASSERT_EQ(caloc.getCurrentSize(),     initial_currentSize);
-  ASSERT_GE(caloc.getActualSize(),      initial_actualSize);
-  ASSERT_EQ(caloc.getAllocationCount(), initial_allocationCount);
-
-  {
-    double* ptr = aloc.template allocate<double>(1);
-
-    ASSERT_NE(ptr, nullptr);
-
-    ASSERT_GE(caloc.getHighWatermark(),   initial_highWatermark);
-    ASSERT_EQ(caloc.getCurrentSize(),     initial_currentSize + sizeof(double));
-    ASSERT_GE(caloc.getActualSize(),      initial_actualSize);
-    ASSERT_EQ(caloc.getAllocationCount(), initial_allocationCount + 1u);
-
-    aloc.deallocate(ptr);
-  }
-
-  ASSERT_GE(caloc.getHighWatermark(),   initial_highWatermark);
-  ASSERT_EQ(caloc.getCurrentSize(),     initial_currentSize);
-  ASSERT_GE(caloc.getActualSize(),      initial_actualSize);
-  ASSERT_EQ(caloc.getAllocationCount(), initial_allocationCount);
-
-  const size_t preRelease_highWatermark   = caloc.getHighWatermark();
 
   aloc.release();
 
-  ASSERT_EQ(caloc.getHighWatermark(),   preRelease_highWatermark);
-  ASSERT_EQ(caloc.getCurrentSize(),     0u);
-  ASSERT_EQ(caloc.getActualSize(),      0u);
-  ASSERT_EQ(caloc.getAllocationCount(), 0u);
+  ASSERT_EQ(aloc.getHighWatermark(),   highWatermark);
+  ASSERT_EQ(aloc.getCurrentSize(),     initial_currentSize);
+  ASSERT_GE(aloc.getActualSize(),      initial_currentSize);
+  ASSERT_EQ(aloc.getAllocationCount(), initial_allocationCount);
+}
+
+} // end namespace
+
+
+void AllocatorUnitTestExistingAllocator(RAJA::Allocator& aloc) {
+
+  ASSERT_TRUE(!aloc.getName().empty());
+
+  ASSERT_NE(aloc.getPlatform(), RAJA::Platform::undefined);
+
+  AllocatorUnitTestAllocatorAllocation(aloc);
 }
 
 void AllocatorUnitTestNewAllocator(RAJA::Allocator& aloc, RAJA::Platform platform) {
@@ -111,60 +180,12 @@ void AllocatorUnitTestNewAllocator(RAJA::Allocator& aloc, RAJA::Platform platfor
 
   ASSERT_EQ(aloc.getPlatform(), platform);
 
-  const size_t initial_highWatermark   = caloc.getHighWatermark();
-  const size_t initial_currentSize     = caloc.getCurrentSize();
-  const size_t initial_actualSize      = caloc.getActualSize();
-  const size_t initial_allocationCount = caloc.getAllocationCount();
-
-  ASSERT_EQ(initial_highWatermark,   0u);
-  ASSERT_EQ(initial_currentSize,     0u);
-  ASSERT_EQ(initial_actualSize,      0u);
-  ASSERT_EQ(initial_allocationCount, 0u);
-
-  {
-    void* ptr = aloc.allocate(1u);
-
-    ASSERT_NE(ptr, nullptr);
-
-    ASSERT_EQ(caloc.getHighWatermark(),   initial_highWatermark + 1u);
-    ASSERT_EQ(caloc.getCurrentSize(),     initial_currentSize + 1u);
-    ASSERT_GE(caloc.getActualSize(),      initial_actualSize + 1u);
-    ASSERT_EQ(caloc.getAllocationCount(), initial_allocationCount + 1u);
-
-    aloc.deallocate(ptr);
-  }
-
-  ASSERT_EQ(caloc.getHighWatermark(),   initial_highWatermark + 1u);
-  ASSERT_EQ(caloc.getCurrentSize(),     initial_currentSize);
-  ASSERT_GE(caloc.getActualSize(),      initial_actualSize + 1u);
-  ASSERT_EQ(caloc.getAllocationCount(), initial_allocationCount);
-
-  {
-    double* ptr = aloc.template allocate<double>(1);
-
-    ASSERT_NE(ptr, nullptr);
-
-    ASSERT_EQ(caloc.getHighWatermark(),   initial_highWatermark + sizeof(double));
-    ASSERT_EQ(caloc.getCurrentSize(),     initial_currentSize + sizeof(double));
-    ASSERT_GE(caloc.getActualSize(),      initial_actualSize + sizeof(double));
-    ASSERT_EQ(caloc.getAllocationCount(), initial_allocationCount + 1u);
-
-    aloc.deallocate(ptr);
-  }
-
-  ASSERT_EQ(caloc.getHighWatermark(),   initial_highWatermark + sizeof(double));
-  ASSERT_EQ(caloc.getCurrentSize(),     initial_currentSize);
-  ASSERT_GE(caloc.getActualSize(),      initial_actualSize + sizeof(double));
-  ASSERT_EQ(caloc.getAllocationCount(), initial_allocationCount);
-
-  const size_t preRelease_highWatermark   = caloc.getHighWatermark();
-
-  aloc.release();
-
-  ASSERT_EQ(caloc.getHighWatermark(),   preRelease_highWatermark);
+  ASSERT_EQ(caloc.getHighWatermark(),   0u);
   ASSERT_EQ(caloc.getCurrentSize(),     0u);
   ASSERT_EQ(caloc.getActualSize(),      0u);
   ASSERT_EQ(caloc.getAllocationCount(), 0u);
+
+  AllocatorUnitTestAllocatorAllocation(aloc);
 }
 
 TEST(AllocatorUnitTest, get_allocators)
