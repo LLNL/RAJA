@@ -52,8 +52,6 @@ using cuda_dim_t = dim3;
 
     T temp = val;
 
-    ////printf( "1 blockred %d temp %f\n", threadId, temp );
-
     if (numThreads % RAJA::policy::cuda::WARP_SIZE == 0) {
 
       // reduce each warp
@@ -62,7 +60,6 @@ using cuda_dim_t = dim3;
         Combiner{}(temp, rhs);
       }
 
-      //printf( "2 blockred %d temp %f\n", threadId, temp );
     } else {
 
       // reduce each warp
@@ -74,7 +71,6 @@ using cuda_dim_t = dim3;
           Combiner{}(temp, rhs);
         }
       }
-      //printf( "3 blockred %d temp %f\n", threadId, temp );
     }
 
     // reduce per warp values
@@ -110,13 +106,12 @@ using cuda_dim_t = dim3;
       }
 
       __syncthreads();
-      //printf( "4 blockred %d temp %f\n", threadId, temp );
     }
 
     return temp;
   }
 
-  template <typename Combiner, typename OP, typename T/*, typename TempIterator*/>
+  template <typename Combiner, typename OP, typename T>
   RAJA_DEVICE RAJA_INLINE bool grid_reduce(T& val,
                                             Reducer<OP, T>& red
                                            //T identity,
@@ -124,10 +119,7 @@ using cuda_dim_t = dim3;
                                            //unsigned int* device_count
                                           )
   {
-    //RAJA::detail::SoAPtr<T, RAJA::cuda::device_mempool_type> device_mem;
     int numBlocks = gridDim.x * gridDim.y * gridDim.z;
-    //device_mem.allocate(numBlocks);
-    //unsigned int * device_count = RAJA::cuda::device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
     int numThreads = blockDim.x * blockDim.y * blockDim.z;
     unsigned int wrap_around = numBlocks - 1;
 
@@ -167,7 +159,6 @@ using cuda_dim_t = dim3;
       // one thread returns value
       if (threadId == 0) {
         val = temp;
-        //printf("last gridreduce temp %f\n", temp);
       }
     }
 
@@ -179,22 +170,17 @@ using cuda_dim_t = dim3;
   RAJA_HOST_DEVICE
   camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::cuda_exec<256>> >
   resolve(Reducer<OP, T>& red) {
+
+  // TODO : Check if we still need this?
 #if !defined(RAJA_DEVICE_CODE)
     cudaDeviceSynchronize();
     *red.target = *red.cudaval; 
-    //printf("host cudaval %f\n", (double)(*red.cudaval));
-    //printf("host val %f\n", (double)(red.val));
 #else
-    //if ( threadIdx.x < 2 )
-    //{
-    //  printf("device %d val %f\n", threadIdx.x, (double)(red.val));
-    //}
 
     bool blah = grid_reduce<Reducer<OP,T>::op>(red.val, red);
     if ( blah )
     {
       *red.cudaval = red.val;
-    //  printf("device cudaval %f\n", (double)(*red.cudaval));
     }
 #endif
   }

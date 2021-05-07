@@ -20,8 +20,8 @@ namespace detail
     T *target = nullptr;
     T val = op::identity();
 
+    // CUDA related attributes.
     T * cudaval = nullptr;
-
     RAJA::detail::SoAPtr<T, RAJA::cuda::device_mempool_type> device_mem;
     unsigned int * device_count = nullptr;
   };
