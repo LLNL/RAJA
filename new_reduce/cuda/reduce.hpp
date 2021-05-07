@@ -101,13 +101,8 @@ using cuda_dim_t = dim3;
   }
 
   template <typename Combiner, typename OP, typename T>
-  RAJA_DEVICE RAJA_INLINE bool grid_reduce(T& val,
-                                            Reducer<OP, T>& red
-                                           //T identity,
-                                           //TempIterator device_mem,
-                                           //unsigned int* device_count
-                                          )
-  {
+  RAJA_DEVICE RAJA_INLINE bool grid_reduce(Reducer<OP, T>& red) {
+
     int numBlocks = gridDim.x * gridDim.y * gridDim.z;
     int numThreads = blockDim.x * blockDim.y * blockDim.z;
     unsigned int wrap_around = numBlocks - 1;
@@ -118,7 +113,7 @@ using cuda_dim_t = dim3;
     int threadId = threadIdx.x + blockDim.x * threadIdx.y +
                    (blockDim.x * blockDim.y) * threadIdx.z;
 
-    T temp = block_reduce<Combiner>(val, T()); // RCC change this back to identity!
+    T temp = block_reduce<Combiner>(red.val, T()); // RCC change this back to identity!
 
     // one thread per block writes to device_mem
     bool lastBlock = false;
@@ -147,7 +142,7 @@ using cuda_dim_t = dim3;
 
       // one thread returns value
       if (threadId == 0) {
-        val = temp;
+        red.val = temp;
       }
     }
 
@@ -166,7 +161,7 @@ using cuda_dim_t = dim3;
     *red.target = *red.cudaval; 
 #else
 
-    bool blah = grid_reduce<Reducer<OP,T>::op>(red.val, red);
+    bool blah = grid_reduce<Reducer<OP,T>::op>(red);
     if ( blah )
     {
       *red.cudaval = red.val;
