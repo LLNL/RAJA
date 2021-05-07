@@ -33,6 +33,7 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
       invoke( t, loop_body, ii );
     }
 
+    printf("forallp_cuda_kernel\n");
     resolve<RAJA::cuda_exec<256>>(t);
   }
 
@@ -58,6 +59,9 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
 
     size_t shmem = 1000;
 
+    std::cout << "check\n";
+    printf("forall_param\n");
+
     //
     // Launch the kernels
     //
@@ -72,6 +76,7 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
         cudastuff.stream   //stream
     );
 
+    //resolve<RAJA::cuda_exec<256>>(f_params);
   }
 
 } //  namespace detail

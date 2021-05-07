@@ -10,8 +10,10 @@
 namespace detail {
 using cuda_dim_t = dim3;
 
-  template<typename EXEC_POL, typename OP, typename T>
-  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::cuda_exec<256>> >
+  template<typename EXEC_POL,
+           typename OP,
+           typename T>
+  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::cuda_exec<256> > >
   init(Reducer<OP, T>& red, const RAJA::cuda::detail::cudaInfo & cs) {
     cudaMallocManaged( (void**)(&(red.cudaval)), sizeof(T));//, cudaHostAllocPortable );
     *red.cudaval = Reducer<OP,T>::op::identity();
@@ -165,6 +167,7 @@ using cuda_dim_t = dim3;
     if ( blah )
     {
       *red.cudaval = red.val;
+      printf("device cudaval %f\n", (double)(*red.cudaval));
     }
 #endif
   }

@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     std::cout << "ma : " << ma <<"\n";
   }
 #endif
-
+#if 0
 #if defined(RAJA_ENABLE_OPENMP)
   {
     std::cout << "OMP Reduction NEW\n";
@@ -90,6 +90,7 @@ int main(int argc, char *argv[])
     std::cout << "m : "  << m  <<"\n";
     std::cout << "ma : " << ma <<"\n";
   }
+#endif
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -143,7 +144,7 @@ int main(int argc, char *argv[])
     std::cout << "ma : " << ma <<"\n";
   }
 #endif
-
+#if 0
   {
     std::cout << "Sequential Reduction NEW\n";
 
@@ -168,7 +169,7 @@ int main(int argc, char *argv[])
     std::cout << "m : "  << m  <<"\n";
     //std::cout << "ma : " << ma <<"\n";
   }
-
+#endif
   {
     std::cout << "Basic Reduction RAJA\n";
     RAJA::ReduceSum<RAJA::seq_reduce, double> rr(0);
