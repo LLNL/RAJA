@@ -66,7 +66,7 @@ ENV GTEST_COLOR=1
 COPY --chown=axom:axom . /home/axom/workspace
 WORKDIR /home/axom/workspace
 RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 ..
-RUN cd build && make -j 16
+RUN cd build && make -j 2
 
 FROM axom/compilers:rocm AS hip
 ENV GTEST_COLOR=1
