@@ -118,8 +118,6 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
         cudastuff.stream   //stream
     );
 
-    resolve<EXEC_POL>(f_params);
-
   }
 
 } //  namespace detail

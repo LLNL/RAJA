@@ -89,7 +89,34 @@ int main(int argc, char *argv[])
 
 #if defined(RAJA_ENABLE_CUDA)
   {
-    std::cout << "CUDA Reduction NEW\n";
+    std::cout << "CUDA Reduction NEW Single\n";
+
+    RAJA::Timer t;
+    t.reset();
+    t.start();
+
+    forall_param<RAJA::cuda_exec<256>>(N,
+                 //[=] RAJA_HOST_DEVICE (int i, double &r_, double &m_, double &ma_) {
+                 [=] RAJA_HOST_DEVICE (int i, double &r_) {
+                   r_ += a[i] * b[i];
+                 },
+                 Reduce<RAJA::operators::plus>(&r));
+                 //Reduce<RAJA::operators::plus>(&r),
+                 //Reduce<RAJA::operators::minimum>(&m),
+                 //Reduce<RAJA::operators::maximum>(&ma)
+                 //);
+    t.stop();
+    
+    std::cout << "t : " << t.elapsed() << "\n";
+    std::cout << "r : " << r << "\n";
+    //std::cout << "m : "  << m  <<"\n";
+    //std::cout << "ma : " << ma <<"\n";
+  }
+#endif
+
+#if defined(RAJA_ENABLE_CUDA)
+  {
+    std::cout << "CUDA Reduction NEW Multi\n";
 
     RAJA::Timer t;
     t.reset();
@@ -98,8 +125,6 @@ int main(int argc, char *argv[])
     forall_param<RAJA::cuda_exec<256>>(N,
                  [=] RAJA_HOST_DEVICE (int i, double &r_, double &m_, double &ma_) {
                    r_ += a[i] * b[i];
-                   m_ = a[i] < m_ ? a[i] : m_;
-                   ma_ = a[i] > ma_ ? a[i] : ma_;
                  },
                  Reduce<RAJA::operators::plus>(&r),
                  Reduce<RAJA::operators::minimum>(&m),
