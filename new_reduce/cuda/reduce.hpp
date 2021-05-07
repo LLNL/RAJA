@@ -22,12 +22,6 @@ using cuda_dim_t = dim3;
     red.device_count = RAJA::cuda::device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
   }
 
-  // Combine
-  template<typename EXEC_POL, typename OP, typename T>
-  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::cuda_exec<256>> >
-  combine(Reducer<OP, T>& out, const Reducer<OP, T>& in) {
-    out.val = typename Reducer<OP,T>::op{}(out.val, in.val);
-  }
 
   //! reduce values in block into thread 0
   template <typename Combiner, typename T>
@@ -151,18 +145,15 @@ using cuda_dim_t = dim3;
     return lastBlock && threadId == 0;
   }
 
-  // Resolve
+  // Combine
   template<typename EXEC_POL, typename OP, typename T>
   RAJA_HOST_DEVICE
   camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::cuda_exec<256>> >
-  resolve(Reducer<OP, T>& red) {
+  combine(Reducer<OP, T>& red) {
 
   // TODO : Check if we still need this?
 #if !defined(RAJA_DEVICE_CODE)
-    cudaDeviceSynchronize();
-    *red.target = *red.cudaval; 
 #else
-
     bool blah = grid_reduce<Reducer<OP,T>::op>(red);
     if ( blah )
     {
@@ -170,6 +161,14 @@ using cuda_dim_t = dim3;
       printf("device cudaval %f\n", (double)(*red.cudaval));
     }
 #endif
+  }
+  
+  // Resolve
+  template<typename EXEC_POL, typename OP, typename T>
+  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::cuda_exec<256>> >
+  resolve(Reducer<OP, T>& red) {
+    cudaDeviceSynchronize();
+    *red.target = *red.cudaval; 
   }
 
 } //  namespace detail

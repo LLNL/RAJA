@@ -33,8 +33,8 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
       invoke( t, loop_body, ii );
     }
 
-    printf("forallp_cuda_kernel\n");
-    resolve<RAJA::cuda_exec<256>>(t);
+    //printf("forallp_cuda_kernel\n");
+    combine<RAJA::cuda_exec<256>>(t);
   }
 
   template <typename EXEC_POL, typename B, typename... Params>
@@ -75,8 +75,9 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
         shmem,
         cudastuff.stream   //stream
     );
+    cudaDeviceSynchronize();
 
-    //resolve<RAJA::cuda_exec<256>>(f_params);
+    resolve<RAJA::cuda_exec<256>>(f_params);
   }
 
 } //  namespace detail

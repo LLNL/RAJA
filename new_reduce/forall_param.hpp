@@ -61,6 +61,11 @@ namespace detail
     friend void constexpr detail_combine(EXEC_POL, FORALL_PARAMS_T& out, const FORALL_PARAMS_T& in, camp::idx_seq<Seq...>) {
       CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(out.param_tup), camp::get<Seq>(in.param_tup)));
     }
+    template<typename EXEC_POL, camp::idx_t... Seq>
+    RAJA_HOST_DEVICE
+    friend void constexpr detail_combine(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
+      CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup)));
+    }
     // Resolve
     template<typename EXEC_POL, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
@@ -88,6 +93,11 @@ namespace detail
     RAJA_HOST_DEVICE
     friend void constexpr combine(FORALL_PARAMS_T& out, const FORALL_PARAMS_T& in) {
       detail_combine(EXEC_POL(), out, in, params_seq{} );
+    }
+    template<typename EXEC_POL>
+    RAJA_HOST_DEVICE
+    friend void constexpr combine(FORALL_PARAMS_T& f_params) {
+      detail_combine(EXEC_POL(), f_params, params_seq{} );
     }
     // Resolve
     template<typename EXEC_POL>
