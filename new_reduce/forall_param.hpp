@@ -33,6 +33,36 @@ namespace detail
         typename camp::decay<Params>::params_seq(),
         camp::forward<Ts>(extra)...);
   }
+#if defined(RAJA_ENABLE_CUDA)
+  //
+  //
+  // Invoke Forall with Params.
+  //
+  //
+  CAMP_SUPPRESS_HD_WARN
+  template <typename Fn,
+            camp::idx_t... Sequence,
+            typename Params,
+            typename... Ts>
+  CAMP_HOST_DEVICE constexpr auto cuda_invoke_with_order(Params&& params,
+                                                    Fn&& f,
+                                                    camp::idx_seq<Sequence...>,
+                                                    Ts&&... extra)
+  {
+    return f(extra..., ( params.template cuda_get_param_ref<Sequence>() )...);
+  }
+
+  CAMP_SUPPRESS_HD_WARN
+  template <typename Params, typename Fn, typename... Ts>
+  CAMP_HOST_DEVICE constexpr auto cuda_invoke(Params&& params, Fn&& f, Ts&&... extra)
+  {
+    return cuda_invoke_with_order(
+        camp::forward<Params>(params),
+        camp::forward<Fn>(f),
+        typename camp::decay<Params>::params_seq(),
+        camp::forward<Ts>(extra)...);
+  }
+#endif
 
   //
   //
@@ -50,6 +80,12 @@ namespace detail
     constexpr auto m_param_refs(camp::idx_seq<Seq...>) -> decltype( camp::make_tuple( (&camp::get<Seq>(param_tup).val)...) ) {
       return camp::make_tuple( (&camp::get<Seq>(param_tup).val)...) ;
     }
+#if defined(RAJA_ENABLE_CUDA)
+    template<camp::idx_t... Seq>
+    constexpr auto cuda_m_param_refs(camp::idx_seq<Seq...>) -> decltype( camp::make_tuple( (camp::get<Seq>(param_tup).cudaval)...) ) {
+      return camp::make_tuple( (camp::get<Seq>(param_tup).cudaval)...) ;
+    }
+#endif
 
     // Init
     template<typename EXEC_POL, camp::idx_t... Seq, typename ...Args>
@@ -64,7 +100,9 @@ namespace detail
     template<typename EXEC_POL, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
     friend void constexpr detail_combine(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
-      CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup)));
+      camp::make_tuple( (combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ))... );
+      //CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup)));
+      //CAMP_EXPAND(printf("Seq : %d\n", Seq));
     }
     // Resolve
     template<typename EXEC_POL, camp::idx_t... Seq>
@@ -83,6 +121,12 @@ namespace detail
     constexpr auto get_param_ref() -> decltype(*camp::get<Idx>(m_param_refs(params_seq{}))) {
       return (*camp::get<Idx>(m_param_refs(params_seq{})));
     }
+#if defined(RAJA_ENABLE_CUDA)
+    template<camp::idx_t Idx>
+    constexpr auto cuda_get_param_ref() -> decltype(*camp::get<Idx>(cuda_m_param_refs(params_seq{}))) {
+      return (*camp::get<Idx>(cuda_m_param_refs(params_seq{})));
+    }
+#endif
 
     // Init
     template<typename EXEC_POL, typename ...Args>

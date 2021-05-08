@@ -16,10 +16,15 @@ using cuda_dim_t = dim3;
   camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::cuda_exec<256> > >
   init(Reducer<OP, T>& red, const RAJA::cuda::detail::cudaInfo & cs) {
     cudaMallocManaged( (void**)(&(red.cudaval)), sizeof(T));//, cudaHostAllocPortable );
+    int numThreads = cs.blockDim.x * cs.blockDim.y * cs.blockDim.z;
+    printf("num threads : %d\n", numThreads);
+
     *red.cudaval = Reducer<OP,T>::op::identity();
 
     red.device_mem.allocate(cs.gridDim.x * cs.gridDim.y * cs.gridDim.z);
     red.device_count = RAJA::cuda::device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
+    printf("host cudaval %p\n", (red.cudaval));
+    printf("host val %p\n\n", (&red.val));
   }
 
 
@@ -42,7 +47,7 @@ using cuda_dim_t = dim3;
       // reduce each warp
       for (int i = 1; i < RAJA::policy::cuda::WARP_SIZE; i *= 2) {
         T rhs = RAJA::cuda::impl::shfl_xor_sync(temp, i);
-        Combiner{}(temp, rhs);
+        temp = Combiner{}(temp, rhs);
       }
 
     } else {
@@ -109,7 +114,7 @@ using cuda_dim_t = dim3;
     int threadId = threadIdx.x + blockDim.x * threadIdx.y +
                    (blockDim.x * blockDim.y) * threadIdx.z;
 
-    T temp = block_reduce<Combiner>(red.val, T()); // RCC change this back to identity!
+    T temp = block_reduce<Combiner>(*(red.cudaval), T()); // RCC change this back to identity!
 
     // one thread per block writes to device_mem
     bool lastBlock = false;
@@ -131,14 +136,17 @@ using cuda_dim_t = dim3;
       temp = T(); // RCC change this back to identity!
 
       for (int i = threadId; i < numBlocks; i += numThreads) {
-        Combiner{}(temp, red.device_mem.get(i));
+        //printf("device mem %f\n", (double)(red.device_mem.get(i)));
+        temp = Combiner{}(temp, red.device_mem.get(i));
       }
 
       temp = block_reduce<Combiner>(temp, T()); // RCC change this back to identity!
 
       // one thread returns value
       if (threadId == 0) {
-        red.val = temp;
+        //printf("temp val : %f\n", (double)temp);
+        //printf("num threads : %d\n", numThreads);
+        *(red.cudaval) = temp;
       }
     }
 
@@ -148,7 +156,7 @@ using cuda_dim_t = dim3;
   // Combine
   template<typename EXEC_POL, typename OP, typename T>
   RAJA_HOST_DEVICE
-  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::cuda_exec<256>> >
+  camp::concepts::enable_if_t<bool, std::is_same< EXEC_POL, RAJA::cuda_exec<256>> >
   combine(Reducer<OP, T>& red) {
 
   // TODO : Check if we still need this?
@@ -157,8 +165,8 @@ using cuda_dim_t = dim3;
     bool blah = grid_reduce<Reducer<OP,T>::op>(red);
     if ( blah )
     {
-      *red.cudaval = red.val;
-      printf("device cudaval %f\n", (double)(*red.cudaval));
+      printf("device cudaval %p\n", (red.cudaval));
+      printf("device cudaval %f\n\n", (double)(*red.cudaval));
     }
 #endif
   }
@@ -168,7 +176,11 @@ using cuda_dim_t = dim3;
   camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::cuda_exec<256>> >
   resolve(Reducer<OP, T>& red) {
     cudaDeviceSynchronize();
-    *red.target = *red.cudaval; 
+    //cudaMemcpy(red.target, red.cudaval, sizeof(T), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&red.val, red.cudaval, sizeof(T), cudaMemcpyDeviceToHost);
+    printf("host cudaval %p\n", (red.cudaval));
+    printf("host val %p\n\n", (&red.val));
+    *red.target = red.val; 
   }
 
 } //  namespace detail

@@ -30,7 +30,7 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
     Ts ii = static_cast<Ts>(RAJA::policy::cuda::impl::getGlobalIdx_1D_1D());
     if ( ii < extra )
     {
-      invoke( t, loop_body, ii );
+      cuda_invoke( t, loop_body, ii );
     }
 
     //printf("forallp_cuda_kernel\n");
@@ -75,7 +75,6 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
         shmem,
         cudastuff.stream   //stream
     );
-    cudaDeviceSynchronize();
 
     resolve<RAJA::cuda_exec<256>>(f_params);
   }
