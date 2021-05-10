@@ -14,7 +14,7 @@ class CounterPlugin :
   public RAJA::util::PluginStrategy
 {
   public:
-  void preCapture(const RAJA::util::PluginContext& p) override {
+  void RAJASHAREDDLL_API preCapture(const RAJA::util::PluginContext& p) override {
     if (p.platform == RAJA::Platform::host) 
     {
       std::cout << " [CounterPlugin]: Capturing host kernel for the " << ++host_capture_counter << " time!" << std::endl;
@@ -25,7 +25,7 @@ class CounterPlugin :
     }
   }
 
-  void preLaunch(const RAJA::util::PluginContext& p) override {
+  void RAJASHAREDDLL_API preLaunch(const RAJA::util::PluginContext& p) override {
     if (p.platform == RAJA::Platform::host)
     {
       std::cout << " [CounterPlugin]: Launching host kernel for the " << ++host_launch_counter << " time!" << std::endl;
