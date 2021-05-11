@@ -16,7 +16,7 @@ class CounterPlugin :
   public RAJA::util::PluginStrategy
 {
   public:
-  void RAJASHAREDDLL_API preCapture(const RAJA::util::PluginContext& p) override {
+  void preCapture(const RAJA::util::PluginContext& p) override {
     ASSERT_NE(plugin_test_data, nullptr);
     ASSERT_NE(plugin_test_resource, nullptr);
 
@@ -30,7 +30,7 @@ class CounterPlugin :
     plugin_test_resource->memcpy(plugin_test_data, &data, sizeof(CounterData));
   }
 
-  void RAJASHAREDDLL_API postCapture(const RAJA::util::PluginContext& p) override {
+  void postCapture(const RAJA::util::PluginContext& p) override {
     ASSERT_NE(plugin_test_data, nullptr);
     ASSERT_NE(plugin_test_resource, nullptr);
 
@@ -44,7 +44,7 @@ class CounterPlugin :
     plugin_test_resource->memcpy(plugin_test_data, &data, sizeof(CounterData));
   }
 
-  void RAJASHAREDDLL_API preLaunch(const RAJA::util::PluginContext& p) override {
+  void preLaunch(const RAJA::util::PluginContext& p) override {
     ASSERT_NE(plugin_test_data, nullptr);
     ASSERT_NE(plugin_test_resource, nullptr);
 
@@ -58,7 +58,7 @@ class CounterPlugin :
     plugin_test_resource->memcpy(plugin_test_data, &data, sizeof(CounterData));
   }
 
-  void RAJASHAREDDLL_API postLaunch(const RAJA::util::PluginContext& p) override {
+  void postLaunch(const RAJA::util::PluginContext& p) override {
     ASSERT_NE(plugin_test_data, nullptr);
     ASSERT_NE(plugin_test_resource, nullptr);
 
