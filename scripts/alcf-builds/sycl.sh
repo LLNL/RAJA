@@ -33,14 +33,13 @@ cmake \
   -DENABLE_TARGET_OPENMP=Off \
   -DENABLE_ALL_WARNINGS=Off \
   -DENABLE_SYCL=On \
-  -DCMAKE_LINKER=dpcpp \
+  -DCMAKE_LINKER=clang++ \
+  -DCMAKE_CXX_STANDARD=17 \
   -DENABLE_TESTS=Off \
-  -DENABLE_EXAMPLES=Off \
-  -DCMAKE_INSTALL_PREFIX=/home/bhomerding/EQSIM_work/pushOut/RAJAPerf/tpl/RAJA/install/raja \
+  -DENABLE_EXAMPLES=On \
   "$@" \
   ..
 
-make -j 16
-make install
+make -j 8
 
 #-DCMAKE_INSTALL_PREFIX=/home/bhomerding/install/raja.${DATE} \

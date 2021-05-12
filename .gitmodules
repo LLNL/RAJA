@@ -6,8 +6,7 @@
 	url = https://github.com/NVlabs/cub.git
 [submodule "include/camp"]
 	path = tpl/camp
-	url = https://github.com/homerdin/camp
-	branch = sycl_be
+	url = https://github.com/LLNL/camp
 [submodule "tpl/rocPRIM"]
 	path = tpl/rocPRIM
 	url = https://github.com/ROCmSoftwarePlatform/rocPRIM.git
