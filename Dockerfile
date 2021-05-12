@@ -68,6 +68,13 @@ WORKDIR /home/axom/workspace
 RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 ..
 RUN cd build && make -j 2
 
+FROM axom/compilers:nvcc-10.2 AS nvcc10-debug
+ENV GTEST_COLOR=1
+COPY --chown=axom:axom . /home/axom/workspace
+WORKDIR /home/axom/workspace
+RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 ..
+RUN cd build && make -j 2
+
 FROM axom/compilers:rocm AS hip
 ENV GTEST_COLOR=1
 COPY --chown=axom:axom . /home/axom/workspace
