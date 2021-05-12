@@ -57,6 +57,8 @@ jobs:
         docker_target: clang9-debug
       nvcc10:
         docker_target: nvcc10
+      nvcc10-debug:
+        docker_target: nvcc10-debug
       hip:
         docker_target: hip
 #      sycl:
