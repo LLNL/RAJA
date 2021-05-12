@@ -7,12 +7,20 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-#
-## NOTE: After building code, you need to load the cuda 11 module to run
-##       your code or RAJA tests
-#
+if [ "$1" == "" ]; then
+  echo
+  echo "You must pass a compiler version number to script. For example,"
+  echo "    blueos_pgi.sh 21.1"
+  exit
+fi
 
-BUILD_SUFFIX=lc_blueos-nvcc11-xl_2020.11.12
+COMP_VER=$1
+
+BUILD_SUFFIX=lc_blueos-pgi-${COMP_VER}
+
+echo
+echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo
 
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
@@ -21,14 +29,10 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/xl/xl-2020.11.12/bin/xlc++_r \
-  -C ../host-configs/lc-builds/blueos/nvcc_xl_X.cmake \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/pgi/pgi-${COMP_VER}/bin/pgc++ \
+  -DCMAKE_C_COMPILER=/usr/tce/packages/pgi/pgi-${COMP_VER}/bin/pgcc \
+  -C ../host-configs/lc-builds/blueos/pgi_X.cmake \
   -DENABLE_OPENMP=On \
-  -DENABLE_CUDA=On \
-  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-11.1.1 \
-  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-11.1.1/bin/nvcc \
-  -DCUDA_ARCH=sm_70 \
-  -DCMAKE_CUDA_STANDARD="14" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

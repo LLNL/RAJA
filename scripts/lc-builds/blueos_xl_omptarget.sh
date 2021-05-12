@@ -7,7 +7,20 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-BUILD_SUFFIX=lc_blueos-nvcc10-xl_2020.10.09
+if [ "$1" == "" ]; then
+  echo
+  echo "You must pass a compiler version number to script. For example,"
+  echo "    blueos_xl_omptarget.sh 2021.03.31"
+  exit
+fi
+
+COMP_VER=$1
+
+BUILD_SUFFIX=lc_blueos-xl-${COMP_VER}
+
+echo
+echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo
 
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
@@ -16,13 +29,12 @@ module load cmake/3.14.5
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/xl/xl-2020.10.09/bin/xlc++_r \
-  -C ../host-configs/lc-builds/blueos/nvcc_xl_X.cmake \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/xl/xl-${COMP_VER}/bin/xlc++_r \
+  -DBLT_CXX_STD=c++11 \
+  -C ../host-configs/lc-builds/blueos/xl_X.cmake \
   -DENABLE_OPENMP=On \
-  -DENABLE_CUDA=On \
-  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-10.2.89 \
-  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-10.2.89/bin/nvcc \
-  -DCUDA_ARCH=sm_70 \
+  -DENABLE_TARGET_OPENMP=On \
+  -DOpenMP_CXX_FLAGS="-qoffload;-qsmp=omp;-qnoeh;-qalias=noansi" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
