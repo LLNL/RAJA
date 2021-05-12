@@ -22,6 +22,7 @@ using VectorTestTypes = ::testing::Types<
   >;
 
 
+#if 0
 struct storage_policy{};
 
 TEST(foobar, TestBlock)
@@ -99,8 +100,9 @@ TEST(foobar, TestBlock)
 
 
 }
+#endif
 
-#if 0
+#if 1
 
 template <typename Policy>
 class VectorTest : public ::testing::Test

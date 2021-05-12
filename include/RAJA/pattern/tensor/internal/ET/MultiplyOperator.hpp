@@ -44,7 +44,7 @@ namespace RAJA
      */
     template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE, class ENABLE = void>
     struct MultiplyOperator
-#if 0
+#if 1
     {
 
         using result_type = typename LEFT_OPERAND_TYPE::result_type;
@@ -55,7 +55,7 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         void print_ast() {
-          printf("Elemental");
+          printf("Elemental(%d,%d)", (int)s_num_dims, (int)RIGHT_OPERAND_TYPE::s_num_dims);
         }
 
 
@@ -83,11 +83,11 @@ namespace RAJA
         /*!
          * Evaluate operands and perform element-wise multiply add
          */
-        template<typename STORAGE, typename TILE_TYPE, typename ADD_OPERAND_TYPE>
+        template<typename TILE_TYPE, typename ADD_OPERAND_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        auto multiply_add(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, ADD_OPERAND_TYPE const &add) ->
+        auto multiply_add(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, ADD_OPERAND_TYPE const &add) ->
           decltype(left.eval(tile).multiply_add(right.eval(tile), add.eval(tile)))
         {
           return left.eval(tile).multiply_add(right.eval(tile), add.eval(tile));
@@ -97,11 +97,11 @@ namespace RAJA
         /*!
          * Evaluate operands and perform element-wise multiply subtract
          */
-        template<typename STORAGE, typename TILE_TYPE, typename SUBTRACT_OPERAND_TYPE>
+        template<typename TILE_TYPE, typename SUBTRACT_OPERAND_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
         static
-        auto multiply_subtract(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, SUBTRACT_OPERAND_TYPE const &subtract) ->
+        auto multiply_subtract(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, SUBTRACT_OPERAND_TYPE const &subtract) ->
           decltype(left.eval(tile).multiply_subtract(right.eval(tile), subtract.eval(tile)))
         {
           return left.eval(tile).multiply_subtract(right.eval(tile), subtract.eval(tile));
@@ -147,9 +147,9 @@ namespace RAJA
         RAJA_HOST_DEVICE
         static
         auto multiply(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right) ->
-          decltype(right.eval(tile) * left.eval(tile))
+          decltype(right.eval(tile).scale(left.eval(tile)))
         {
-          return right.eval(tile) * left.eval(tile);
+          return right.eval(tile).scale(left.eval(tile));
         }
 
 
@@ -295,28 +295,33 @@ namespace RAJA
       /*!
        * Evaluate operands and perform element-wise multiply
        */
-      template<typename STORAGE, typename TILE_TYPE>
+      template<typename TILE_TYPE>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
-      void multiply(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right){
+      result_type multiply(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right){
         // clear result
-        result.broadcast(element_type(0));
+        result_type result(element_type(0));
 
         // multiply left and right into result
         multiply_into_result(result, tile, left, right);
+
+        return result;
       }
 
-      template<typename STORAGE, typename TILE_TYPE, typename ADD_TYPE>
+      template<typename TILE_TYPE, typename ADD_TYPE>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
-      void multiply_add(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, ADD_TYPE const &add){
+      result_type multiply_add(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, ADD_TYPE const &add){
+
         // evaluate add into result
-        add.eval(result, tile);
+        result_type result = add.eval(tile);
 
         // multiply left and right into result
         multiply_into_result(result, tile, left, right);
+
+        return result;
       }
 
     private:
@@ -326,7 +331,7 @@ namespace RAJA
       static
       void multiply_into_result(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &et_left, RIGHT_OPERAND_TYPE const &et_right)
       {
-        using LHS_STORAGE = typename LEFT_OPERAND_TYPE::result_type;
+        //using LHS_STORAGE = typename LEFT_OPERAND_TYPE::result_type;
 
         // get tile size from matrix type
         index_type tile_size = left_type::result_type::s_dim_elem(1);
@@ -350,12 +355,10 @@ namespace RAJA
 
           // evaluate both sides of operator
           left_tile.m_begin[1] = k;
-          LHS_STORAGE left;
-          et_left.eval(left, left_tile);
+          auto left = et_left.eval(left_tile);
 
           right_tile.m_begin[0] = k;
-          STORAGE right;
-          et_right.eval(right, right_tile);
+          auto right = et_right.eval(right_tile);
 
           // accumulate product
           left.right_multiply_vector_accumulate(result, right);
@@ -365,14 +368,12 @@ namespace RAJA
           auto &left_part_tile = make_tensor_tile_partial(left_tile);
           left_part_tile.m_begin[1] = k;
           left_part_tile.m_size[1] = k_size-k;
-          LHS_STORAGE left;
-          et_left.eval(left, left_part_tile);
+          auto left = et_left.eval(left_part_tile);
 
           auto &right_part_tile = make_tensor_tile_partial(right_tile);
           right_part_tile.m_begin[0] = k;
           right_part_tile.m_size[0] = k_size-k;
-          STORAGE right;
-          et_right.eval(right, right_part_tile);
+          auto right = et_right.eval(right_part_tile);
 
           // accumulate product of partial tile
           left.right_multiply_vector_accumulate(result, right);
@@ -429,28 +430,32 @@ namespace RAJA
       /*!
        * Evaluate operands and perform element-wise multiply
        */
-      template<typename STORAGE, typename TILE_TYPE>
+      template<typename TILE_TYPE>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
-      void multiply(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right){
+      result_type multiply(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right){
         // clear result
-        result.broadcast(element_type(0));
+        result_type result(element_type(0));
 
         // multiply left and right into result
         multiply_into_result(result, tile, left, right);
+
+        return result;
       }
 
-      template<typename STORAGE, typename TILE_TYPE, typename ADD_TYPE>
+      template<typename TILE_TYPE, typename ADD_TYPE>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
-      void multiply_add(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, ADD_TYPE const &add){
+      result_type multiply_add(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, ADD_TYPE const &add){
         // evaluate add into result
-        add.eval(result, tile);
+        result_type result = add.eval(tile);
 
         // multiply left and right into result
         multiply_into_result(result, tile, left, right);
+
+        return result;
       }
 
     private:
@@ -460,7 +465,7 @@ namespace RAJA
       static
       void multiply_into_result(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &et_left, RIGHT_OPERAND_TYPE const &et_right)
       {
-        using RHS_STORAGE = typename RIGHT_OPERAND_TYPE::result_type;
+        //using RHS_STORAGE = typename RIGHT_OPERAND_TYPE::result_type;
 
         // get tile size from matrix type
         index_type tile_size = right_type::result_type::s_dim_elem(1);
@@ -484,12 +489,10 @@ namespace RAJA
 
           // evaluate both sides of operator
           right_tile.m_begin[0] = k;
-          RHS_STORAGE right;
-          et_right.eval(right, right_tile);
+          auto right = et_right.eval(right_tile);
 
           left_tile.m_begin[0] = k;
-          STORAGE left;
-          et_left.eval(left, left_tile);
+          auto left = et_left.eval(left_tile);
 
           // accumulate product
           right.left_multiply_vector_accumulate(result, left);
@@ -500,14 +503,12 @@ namespace RAJA
           auto &right_part_tile = make_tensor_tile_partial(right_tile);
           right_part_tile.m_begin[0] = k;
           right_part_tile.m_size[0] = k_size-k;
-          RHS_STORAGE right;
-          et_right.eval(right, right_tile);
+          auto right = et_right.eval(right_part_tile);
 
           auto &left_part_tile = make_tensor_tile_partial(left_tile);
           left_part_tile.m_begin[0] = k;
           left_part_tile.m_size[0] = k_size-k;
-          STORAGE left;
-          et_left.eval(left, left_tile);
+          auto left = et_left.eval(left_part_tile);
 
           // compute product into x of partial tile
           right.left_multiply_vector_accumulate(result, left);
@@ -530,7 +531,7 @@ namespace RAJA
     template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
     struct MultiplyOperator<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE,
     typename std::enable_if<
-    std::is_base_of<TensorRegisterConcreteBase, typename LEFT_OPERAND_TYPE::tensor_type>::value &&
+    //std::is_base_of<TensorRegisterConcreteBase, typename LEFT_OPERAND_TYPE::tensor_type>::value &&
     LEFT_OPERAND_TYPE::s_num_dims == 2 && RIGHT_OPERAND_TYPE::s_num_dims==2>::type>
     {
 

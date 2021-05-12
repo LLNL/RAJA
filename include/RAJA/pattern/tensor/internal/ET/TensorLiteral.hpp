@@ -61,11 +61,11 @@ namespace RAJA
         {}
 
 
-        template<typename STORAGE, typename TILE_TYPE>
+        template<typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        void eval(STORAGE &result, TILE_TYPE const &) const {
-          result = m_value;
+        result_type eval(TILE_TYPE const &) const {
+          return result_type(m_value);
         }
 
         RAJA_INLINE

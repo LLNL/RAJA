@@ -60,12 +60,12 @@ namespace RAJA
           return m_tensor.getDimSize(dim);
         }
 
-        template<typename STORAGE, typename TILE_TYPE>
+        template<typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        void eval(STORAGE &result, TILE_TYPE const &tile) const {
-          m_tensor.eval(result, tile);
-          result.inplace_scale(-1);
+        result_type eval(TILE_TYPE const &tile) const
+        {
+          return m_tensor.eval(tile).scale(-1);
         }
 
         RAJA_INLINE

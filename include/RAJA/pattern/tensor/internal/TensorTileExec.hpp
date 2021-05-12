@@ -146,11 +146,9 @@ namespace RAJA
     RAJA_HOST_DEVICE
     void tensorTileExec_expanded(TILE_TYPE const &orig_tile, BODY && body, camp::idx_seq<IDX_SEQ...> const &, camp::idx_seq<DIM_SEQ...> const &)
     {
-      //std::string foo = RAJA::sum<std::string>(std::to_string(DIM_SEQ)...);
-      //printf("TENSOR TILE: ndims=%d: %s\n", (int)sizeof...(DIM_SEQ), foo.c_str());
-//      printf("TENSOR TILE:\n");
+
       // tile over full rows and columns
-      //tile_type tile{{0,0},{row_tile_size, col_tile_size}};
+      // tile_type tile{{0,0},{row_tile_size, col_tile_size}};
       TILE_TYPE tile {
         {orig_tile.m_begin[IDX_SEQ]...},
         {STORAGE::s_dim_elem(IDX_SEQ)...},
@@ -163,10 +161,12 @@ namespace RAJA
       // they do postamble execution
       auto &full_tile = make_tensor_tile_full(tile);
 
-      // Do all of the tiling loops
-
+      // Do all of the tiling loops in layout order, this may improve
+      // cache performance
+      using layout_order = typename STORAGE::layout_type::seq_t;
       using tensor_tile_exec_t =
-          TensorTileExec<STORAGE, camp::idx_seq<DIM_SEQ...>>;
+             TensorTileExec<STORAGE, layout_order>;
+
 
       tensor_tile_exec_t::exec(orig_tile, full_tile, body);
 

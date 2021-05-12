@@ -85,7 +85,7 @@ namespace RAJA
       TensorRegister(RHS const &rhs)
       {
         // evaluate a single tile of the ET, storing in this TensorRegister
-        rhs.eval(*this, base_type::s_get_default_tile());
+        *this = rhs.eval(base_type::s_get_default_tile());
       }
 
 

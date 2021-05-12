@@ -60,10 +60,10 @@ namespace RAJA
           return m_tensor.getDimSize(dim);
         }
 
-        template<typename STORAGE, typename TILE_TYPE>
+        template<typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        void eval(STORAGE &result, TILE_TYPE const &tile) const {
+        result_type eval(TILE_TYPE const &tile) const {
           // transpose which tile we are returning
           TILE_TYPE trans_tile{
             {tile.m_begin[1], tile.m_begin[0]},
@@ -71,8 +71,7 @@ namespace RAJA
           };
 
           // evaluate and return the transposed tile
-          m_tensor.eval(result, trans_tile);
-          result.inplace_transpose();
+          return m_tensor.eval(trans_tile).transpose();
         }
 
         RAJA_INLINE

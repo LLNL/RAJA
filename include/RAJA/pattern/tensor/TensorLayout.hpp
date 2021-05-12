@@ -30,6 +30,9 @@ namespace RAJA
   template<camp::idx_t ... DIM_SEQ>
   struct TensorLayout : public camp::idx_seq<DIM_SEQ...>
   {
+
+      using seq_t = camp::idx_seq<DIM_SEQ...>;
+
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
@@ -53,6 +56,8 @@ namespace RAJA
   template<camp::idx_t S2, camp::idx_t S1>
   struct TensorLayout<S2, S1> : public camp::idx_seq<S2, S1>
   {
+      using seq_t = camp::idx_seq<S2, S1>;
+
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static

@@ -7,26 +7,24 @@
 
 // Place the following line before including RAJA to enable
 // statistics on the Vector abstractions
-//#define RAJA_ENABLE_VECTOR_STATS
+#define RAJA_ENABLE_VECTOR_STATS
 
 // Un-comment the following line to run correctness checks on each variant
 //#define DEBUG_LTIMES
 
 #include "RAJA/config.hpp"
 
-#define VARIANT_C                    0
-#define VARIANT_C_VIEWS              0
-#define VARIANT_RAJA_SEQ             0
-#define VARIANT_RAJA_SEQ_ARGS        0
-#define VARIANT_RAJA_TEAMS_SEQ       0
-#define VARIANT_RAJA_VECTOR          0
+#define VARIANT_C                    1
+#define VARIANT_C_VIEWS              1
+#define VARIANT_RAJA_SEQ             1
+#define VARIANT_RAJA_SEQ_ARGS        1
+#define VARIANT_RAJA_TEAMS_SEQ       1
+#define VARIANT_RAJA_VECTOR          1
 #define VARIANT_RAJA_MATRIX          1
-#define VARIANT_RAJA_TEAMS_MATRIX    0
-#define VARIANT_RAJA_SEQ_SHMEM       0
-#define VARIANT_RAJA_MATRIX_SHMEM    0
+#define VARIANT_RAJA_SEQ_SHMEM       1
 
 #if defined(RAJA_ENABLE_OPENMP)
-#define VARIANT_RAJA_OPENMP          0
+#define VARIANT_RAJA_OPENMP          1
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -134,11 +132,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int num_m = 25 + (rand()/RAND_MAX);
   const int num_g = 48 + (rand()/RAND_MAX);
   const int num_d = 80 + (rand()/RAND_MAX);
-
-//  const int num_m = 8 + (rand()/RAND_MAX);
-//  const int num_g = 8 + (rand()/RAND_MAX);
-//  const int num_d = 8 + (rand()/RAND_MAX);
-
 
 #ifdef DEBUG_LTIMES
   const int num_iter = 1 + (rand()/RAND_MAX);;
@@ -626,12 +619,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-//  using matrix_t = RAJA::MatrixRegister<double, ColMajorLayout>;
+  using matrix_t = RAJA::MatrixRegister<double, ColMajorLayout>;
 
-  using matrix_t = RAJA::TensorBlock<RAJA::avx2_register, double,
-      ColMajorLayout,
-      camp::idx_seq<32,32>,
-      int>;
 
 
 	std::cout << "matrix size: " << matrix_t::s_dim_elem(0) <<
@@ -660,8 +649,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       auto cols_d = ColD::all();
       auto rows_d = toRowIndex(cols_d);
 
-        phi(rows_m, g, cols_z) =
-            L(rows_m, cols_d) * psi(rows_d, g, cols_z) + phi(rows_m, g, cols_z);
+        phi(rows_m, g, cols_z) +=
+            L(rows_m, cols_d) * psi(rows_d, g, cols_z);
 
     });
 
@@ -711,20 +700,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   LView L(L_data,
           RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
 
-  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
+  std::array<RAJA::idx_t, 3> psi_perm {{1, 0, 2}};
   PsiView psi(psi_data,
               RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
 
-  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
+  std::array<RAJA::idx_t, 3> phi_perm {{1, 0, 2}};
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-//    using matrix_t = RAJA::MatrixRegister<double, RowMajorLayout>;
-
-    using matrix_t = RAJA::TensorBlock<RAJA::avx2_register, double,
-        RowMajorLayout,
-        camp::idx_seq<32,32>,
-        int>;
+    using matrix_t = RAJA::MatrixRegister<double, RowMajorLayout>;
 
 
     std::cout << "matrix size: " << matrix_t::s_dim_elem(0) <<
@@ -753,8 +737,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         auto cols_d = ColD::all();
         auto rows_d = toRowIndex(cols_d);
 
-          phi(rows_m, g, cols_z) =
-              L(rows_m, cols_d) * psi(rows_d, g, cols_z) + phi(rows_m, g, cols_z);
+          phi(rows_m, g, cols_z) +=
+              L(rows_m, cols_d) * psi(rows_d, g, cols_z);
 
       });
 
@@ -780,106 +764,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 }
 #endif
 
-//----------------------------------------------------------------------------//
-
-#if VARIANT_RAJA_TEAMS_MATRIX
-{
-  std::cout << "\n Running RAJA Teams column-major matrix version of LTimes...\n";
-
-  std::memset(phi_data, 0, phi_size * sizeof(double));
-
-  //
-  // View types and Views/Layouts for indexing into arrays
-  //
-  // L(m, d) : 1 -> d is stride-1 dimension
-  using LView = TypedView<double, Layout<2, int, 0>, IM, ID>;
-
-  // psi(d, g, z) : 2 -> z is stride-1 dimension
-  using PsiView = TypedView<double, Layout<3, int, 0>, ID, IG, IZ>;
-
-  // phi(m, g, z) : 2 -> z is stride-1 dimension
-  using PhiView = TypedView<double, Layout<3, int, 0>, IM, IG, IZ>;
-
-  std::array<RAJA::idx_t, 2> L_perm {{1, 0}};
-  LView L(L_data,
-          RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
-
-  std::array<RAJA::idx_t, 3> psi_perm {{1, 2, 0}};
-  PsiView psi(psi_data,
-              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
-
-  std::array<RAJA::idx_t, 3> phi_perm {{1, 2, 0}};
-  PhiView phi(phi_data,
-              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
-
-  using matrix_t = RAJA::MatrixRegister<double, RAJA::ColMajorLayout>;
-
-
-  //using RowM = RAJA::RowIndex<IM, matrix_t>;
-  using RowM = RAJA::RowIndex<IM, matrix_t>;
-
-  using ColD = RAJA::ColIndex<ID, matrix_t>;
-  using ColZ = RAJA::ColIndex<IZ, matrix_t>;
-
-  using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
-  using pol_g = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
-  using pol_z = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>>;
-  using pol_m = RAJA::expt::LoopPolicy<matrix_row_exec<matrix_t>>;
-  using pol_d = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>>;
-
-
-
-
-#ifdef RAJA_ENABLE_VECTOR_STATS
-  RAJA::tensor_stats::resetVectorStats();
-#endif
-
-
-  RAJA::Timer timer;
-  timer.start();
-
-
-  for (int iter = 0;iter < num_iter;++ iter){
-    RAJA::expt::launch<pol_launch>(RAJA::expt::HOST, RAJA::expt::Resources(), [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx){
-
-      RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
-#if 0
-
-        phi(rowM, g, colZ) += L(rowM, colD) * psi(toRow(colD), g, colZ);
-
-#else
-        RAJA::expt::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](ColZ z){
-          RAJA::expt::loop<pol_m>(ctx, RAJA::TypedRangeSegment<IM>(0, num_m), [&](RowM m){
-
-            RAJA::expt::loop<pol_d>(ctx, RAJA::TypedRangeSegment<ID>(0, num_d), [&](ColD d){
-              phi(m,g,z) += L(m, d) * psi(toRowIndex(d), g, z);
-            });
-
-          });
-        });
-#endif
-      });
-
-    });
-  }
-
-  timer.stop();
-  double t = timer.elapsed();
-  double gflop_rate = total_flops / t / 1.0e9;
-  std::cout << "  RAJA Teams column-major matrix version of LTimes run time (sec.): "
-            << t <<", GFLOPS/sec: " << gflop_rate << std::endl;
-
-#ifdef RAJA_ENABLE_VECTOR_STATS
-  RAJA::tensor_stats::printVectorStats();
-#endif
-
-#if defined(DEBUG_LTIMES)
-  checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
-#endif
-
-
-}
-#endif
 
 //----------------------------------------------------------------------------//
 #if VARIANT_RAJA_SEQ_SHMEM
@@ -1089,233 +973,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-#if VARIANT_RAJA_MATRIX_SHMEM
-{
-  std::cout << "\n Running RAJA column-major matrix shmem version of LTimes...\n";
-
-  std::memset(phi_data, 0, phi_size * sizeof(double));
-
-  //
-  // View types and Views/Layouts for indexing into arrays
-  //
-  // L(m, d) : 1 -> d is stride-1 dimension
-  using LView = TypedView<double, Layout<2, int, 0>, IM, ID>;
-
-  // psi(d, g, z) : 2 -> z is stride-1 dimension
-  using PsiView = TypedView<double, Layout<3, int, 0>, ID, IG, IZ>;
-
-  // phi(m, g, z) : 2 -> z is stride-1 dimension
-  using PhiView = TypedView<double, Layout<3, int, 0>, IM, IG, IZ>;
-
-  std::array<RAJA::idx_t, 2> L_perm {{1, 0}};
-  LView L(L_data,
-          RAJA::make_permuted_layout({{num_m, num_d}}, L_perm));
-
-  std::array<RAJA::idx_t, 3> psi_perm {{2, 1, 0}};
-  PsiView psi(psi_data,
-              RAJA::make_permuted_layout({{num_d, num_g, num_z}}, psi_perm));
-
-  std::array<RAJA::idx_t, 3> phi_perm {{2, 1, 0}};
-  PhiView phi(phi_data,
-              RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
-
-  constexpr size_t tile_m = 32;
-  constexpr size_t tile_d = 64;
-  constexpr size_t tile_z = 16;
-  constexpr size_t tile_g = 0;
-
-  using matrix_t = RAJA::RegisterMatrix<double, RAJA::MATRIX_COL_MAJOR>;
-
-
-  using RowM = RAJA::RowIndex<IM, matrix_t>;
-  using RowD = RAJA::RowIndex<ID, matrix_t>;
-  using ColD = RAJA::ColIndex<ID, matrix_t>;
-  using ColZ = RAJA::ColIndex<IZ, matrix_t>;
-
-  using RAJA::statement::Param;
-
-  using EXECPOL =
-    RAJA::KernelPolicy<
-
-
-
-      statement::For<2, loop_exec,  // g
-
-      // Create memory tiles
-      statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1,2>,
-
-      // Tile outer m,d loops
-      statement::Tile<0, tile_fixed<tile_m>, loop_exec,  // m
-        statement::Tile<1, tile_fixed<tile_d>, loop_exec,  // d
-
-
-            // Load L(m,d) for m,d tile into shmem
-            statement::For<0, matrix_row_exec<matrix_t>,  // m
-              statement::For<1, matrix_col_exec<matrix_t>,  // d
-                statement::Lambda<0, Segs<0, 1>,
-                                     Params<0>,
-                                     Offsets<0, 1>>
-              >
-            >,
-
-
-            // Run inner z loops with z loop tiled
-              statement::Tile<3, tile_fixed<tile_z>, loop_exec,  // z
-
-
-                  // Load psi into shmem
-                  statement::For<1, matrix_row_exec<matrix_t>,  // d
-                    statement::For<3, matrix_col_exec<matrix_t>,  // z
-                      statement::Lambda<1, Segs<1, 2, 3>,
-                                           Params<1>,
-                                           Offsets<1, 2, 3>>
-                    >
-                  >,
-
-                  // Compute phi
-                  statement::For<0, matrix_row_exec<matrix_t>,  // m
-
-                    // Load phi into shmem
-                    statement::For<3, matrix_col_exec<matrix_t>,  // z
-                      statement::Lambda<2, Segs<0, 2, 3>,
-                                           Params<2>,
-                                           Offsets<0, 2, 3>>
-                    >,
-
-                    // Compute phi in shmem
-                    statement::For<1, matrix_col_exec<matrix_t>,  // d
-                      statement::For<3, matrix_col_exec<matrix_t>,  // z
-                        statement::Lambda<3, Params<0, 1, 2>,
-                                             Offsets<0, 1, 2, 3>>
-                      >
-                    >,
-
-                    // Store phi
-                    statement:: For<3, matrix_col_exec<matrix_t>,  // z
-                      statement::Lambda<4, Segs<0, 2, 3>,
-                                           Params<2>,
-                                           Offsets<0, 2, 3>>
-                    >
-                  >  // m
-
-                >  // Tile z
-              >  // g
-
-
-        >  // Tile d
-      >  // Tile m
-
-
-
-      > // LocalMemory
-    >; // KernelPolicy
-
-
-
-  //
-  // Define statically dimensioned local arrays used in kernel
-  //
-
-  using shmem_L_t = RAJA::TypedLocalArray<double,
-                        RAJA::PERM_JI,
-                        RAJA::SizeList<tile_m, tile_d>,
-                        IM, ID>;
-  shmem_L_t shmem_L;
-
-
-  using shmem_psi_t = RAJA::TypedLocalArray<double,
-                        RAJA::PERM_JKI,
-                        RAJA::SizeList<tile_d, tile_g, tile_z>,
-                        ID, IG, IZ>;
-  shmem_psi_t shmem_psi;
-
-
-  using shmem_phi_t = RAJA::TypedLocalArray<double,
-                        RAJA::PERM_JKI,
-                        RAJA::SizeList<tile_m, tile_g, tile_z>,
-                        IM, IG, IZ>;
-  shmem_phi_t shmem_phi;
-
-#ifdef RAJA_ENABLE_VECTOR_STATS
-  RAJA::tensor_stats::resetVectorStats();
-#endif
-
-  RAJA::Timer timer;
-  timer.start();
-
-  for (int iter = 0;iter < num_iter;++ iter)
-  RAJA::kernel_param<EXECPOL>(
-
-    RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
-                     RAJA::TypedRangeSegment<ID>(0, num_d),
-                     RAJA::TypedRangeSegment<IG>(0, num_g),
-                     RAJA::TypedRangeSegment<IZ>(0, num_z)),
-    // For kernel_param, second arg is a tuple of data objects used in lambdas.
-    // They are the last args in all lambdas (after indices).
-    RAJA::make_tuple( shmem_L,
-                      shmem_psi,
-                      shmem_phi),
-
-
-    // Lambda<0> : Load L into shmem
-    [=] (RowM m, ColD d,
-         shmem_L_t& sh_L,
-         RowM tm, ColD td)
-    {
-      sh_L(tm, td) = L(m, d);
-    },
-
-    // Lambda<1> : Load psi into shmem
-    [=] (RowD d, IG g, ColZ z,
-         shmem_psi_t& sh_psi,
-         RowD td, IG tg, ColZ tz)
-    {
-      sh_psi(td, tg, tz) = psi(d, g, z);
-    },
-
-    // Lambda<2> : Load phi into shmem
-    [=] (RowM m, IG g, ColZ z,
-         shmem_phi_t& sh_phi,
-         RowM tm, IG tg, ColZ tz)
-    {
-      sh_phi(tm, tg, tz) = phi(m, g, z);
-    },
-
-    // Lambda<3> : Compute phi in shmem
-    [=] (shmem_L_t& sh_L, shmem_psi_t& sh_psi, shmem_phi_t& sh_phi,
-        RowM tm, ColD td, IG tg, ColZ tz)
-    {
-      sh_phi(tm, tg, tz) = sh_L(tm, td) * sh_psi(toRowIndex(td), tg, tz) + sh_phi(tm, tg, tz);
-    },
-
-    // Lambda<4> : Store phi
-    [=] (RowM m, IG g, ColZ z,
-         shmem_phi_t& sh_phi,
-         RowM tm, IG tg, ColZ tz)
-    {
-      phi(m, g, z) = sh_phi(tm, tg, tz);
-    }
-
-  );
-
-  timer.stop();
-  double t = timer.elapsed();
-  double gflop_rate = total_flops / t / 1.0e9;
-  std::cout << "  RAJA column-major matrix shmem version of LTimes run time (sec.): "
-            << timer.elapsed() <<", GFLOPS/sec: " << gflop_rate << std::endl;
-
-#ifdef RAJA_ENABLE_VECTOR_STATS
-  RAJA::tensor_stats::printVectorStats();
-#endif
-
-#if defined(DEBUG_LTIMES)
-  checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
-#endif
-}
-
-
-#endif
-//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP) && (VARIANT_RAJA_OPENMP)
 {

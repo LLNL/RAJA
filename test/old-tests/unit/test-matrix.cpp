@@ -14,6 +14,7 @@
 
 using MatrixTestTypes = ::testing::Types<
 
+    // These tests use the platform default SIMD architecture
     RAJA::MatrixRegister<double, RAJA::ColMajorLayout>,
     RAJA::MatrixRegister<double, RAJA::RowMajorLayout>,
     RAJA::MatrixRegister<float, RAJA::ColMajorLayout>,
@@ -23,6 +24,7 @@ using MatrixTestTypes = ::testing::Types<
     RAJA::MatrixRegister<int, RAJA::ColMajorLayout>,
     RAJA::MatrixRegister<int, RAJA::RowMajorLayout>,
 
+    // Tests tests force the use of scalar math
     RAJA::MatrixRegister<double, RAJA::ColMajorLayout, RAJA::scalar_register>,
     RAJA::MatrixRegister<double, RAJA::RowMajorLayout, RAJA::scalar_register>
 
@@ -946,8 +948,8 @@ TYPED_TEST_P(MatrixTest, ETMatrixMatrixMultiply)
       for(camp::idx_t k = 0;k < N; ++ k){
         result += data1[i][k] * data2[k][j];
       }
+
       ASSERT_SCALAR_EQ(data3[i][j], result);
-      //printf("(%d,%d): val=%e, exp=%e\n",(int)i, (int)j, (double)data3[i][j], (double)result);
     }
   }
 
@@ -959,7 +961,7 @@ TYPED_TEST_P(MatrixTest, ETMatrixMatrixMultiplyAdd)
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
 
-  static const int Nmax = matrix_t::vector_type::s_num_elem * 4;
+  static const int Nmax = matrix_t::vector_type::s_num_elem * 2;
 
   static const int N = Nmax;
 
@@ -999,7 +1001,7 @@ TYPED_TEST_P(MatrixTest, ETMatrixMatrixMultiplyAdd)
   // Perform view3 = 2.0 * view1 * view2 + view1;
   auto rows = Row::range(0,N);
   auto cols = Col::range(0,N);
-  view3(rows, cols) = 2.0 * view1(rows, cols) * view2(rows, cols) + view1(rows, cols);
+  view3(rows, cols) = view1(rows, cols) * view2(rows, cols) + view1(rows, cols);
 
 
   // Check that data1==data2
@@ -1008,7 +1010,7 @@ TYPED_TEST_P(MatrixTest, ETMatrixMatrixMultiplyAdd)
       element_t result = data1[i][j];
 
       for(camp::idx_t k = 0;k < N; ++ k){
-        result += 2.0 * data1[i][k] * data2[k][j];
+        result += data1[i][k] * data2[k][j];
       }
       ASSERT_SCALAR_EQ(data3[i][j], result);
       //printf("(%d,%d): val=%e, exp=%e\n",(int)i, (int)j, (double)data3[i][j], (double)result);

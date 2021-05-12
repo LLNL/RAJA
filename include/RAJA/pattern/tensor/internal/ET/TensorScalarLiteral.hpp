@@ -65,9 +65,8 @@ namespace RAJA
         template<typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        constexpr
-        element_type eval(TILE_TYPE const &) const noexcept {
-          return element_type(m_value);
+        element_type eval(TILE_TYPE const &) const {
+          return m_value;
         }
 
         RAJA_INLINE
