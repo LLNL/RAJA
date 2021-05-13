@@ -81,7 +81,6 @@ jobs:
     inputs:
       command: build
       dockerFile: 'azure/Dockerfile'
-      buildContext: '.'
       arguments: '--target $(docker_target)'
   - script: |
       CID=$(docker create llnl/raja:$(Build.BuildId))
