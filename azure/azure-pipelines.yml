@@ -77,7 +77,7 @@ jobs:
       command: build
       dockerFile: azure/Dockerfile
       arguments: '--target $(docker_target)'
-      workingDirectory: $(Agent.SourcesDirectory)
+      workingDirectory: $(Agent.SourcesDirectory)/../
   - script: |
       CID=$(docker create llnl/raja:$(Build.BuildId))
       echo ${CID}
