@@ -76,6 +76,7 @@ jobs:
       echo $PWD
       ls
     displayname: 'Print dir.'
+    condition: true
   - task: Docker@1
     inputs:
       command: build
