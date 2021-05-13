@@ -75,7 +75,7 @@ jobs:
   - script: |
       echo $PWD
       ls
-    displayname: 'Print dir.'
+    displayName: 'Print dir.'
     condition: true
   - task: Docker@1
     inputs:
