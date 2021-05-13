@@ -80,8 +80,8 @@ jobs:
   - task: Docker@1
     inputs:
       command: build
-      dockerFile: '/home/vsts/work/1/s/azure/Dockerfile'
-      buildContext: '/home/vsts/work/1/s'
+      dockerFile: 'azure/Dockerfile'
+      buildContext: '.'
       arguments: '--target $(docker_target)'
   - script: |
       CID=$(docker create llnl/raja:$(Build.BuildId))
