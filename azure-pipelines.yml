@@ -72,6 +72,10 @@ jobs:
   - checkout: self
     clean: boolean
     submodules: recursive
+  -script: |
+      echo $PWD
+      ls
+    displayname: 'Print dir.'
   - task: Docker@1
     inputs:
       command: build
