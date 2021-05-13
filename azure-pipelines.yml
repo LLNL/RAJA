@@ -72,7 +72,7 @@ jobs:
   - checkout: self
     clean: boolean
     submodules: recursive
-  -script: |
+  - script: |
       echo $PWD
       ls
     displayname: 'Print dir.'
