@@ -62,7 +62,7 @@ Notable changes include:
         passed more seamlessly to the List Segment constructor.
 
   * Build changes/improvements:
-      * Update BLT to newer develop branch commit (SHA-1: b7e2bdc)
+      * Update BLT to latest release, v0.4.0.
       * Support for building RAJA as a shared library on Windows has been added.
       * A build sysstem adjustment was made to address an issue when RAJA is 
         built with an external version of camp (e.g., through Spack).
@@ -82,6 +82,10 @@ Notable changes include:
       * An issue was fixed to appease the MSVC 2019 compiler.
 
   * Bug fixes/improvements:
+      * A runtime bug resulting from defaulted View constructors not being 
+        implemented correctly in CUDA 10.1 is fixed. This fixes an issue
+        with CHAI managed arrays not having their copy constructor being 
+        triggered properly.
       * IndexSet utility methods for collecting indices into a separate 
         container now work with any index type. 
       * The volatile qualifier was removed from a type conversion function used
