@@ -78,6 +78,7 @@ jobs:
       dockerFile: azure/Dockerfile
       arguments: '--target $(docker_target)'
   - script: |
+      echo $PWD && ls 
       CID=$(docker create llnl/raja:$(Build.BuildId))
       echo ${CID}
       docker cp ${CID}:/home/axom/workspace/build local-build
