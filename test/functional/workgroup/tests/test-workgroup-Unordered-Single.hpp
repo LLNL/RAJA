@@ -48,6 +48,8 @@ void testWorkGroupUnorderedSingle(IndexType begin, IndexType end)
                   Allocator
                 >;
 
+  using resource_type = typename WorkSite_type::resource_type;
+
   ASSERT_GE(begin, (IndexType)0);
   ASSERT_GE(end, begin);
   IndexType N = end + begin;
@@ -93,7 +95,7 @@ void testWorkGroupUnorderedSingle(IndexType begin, IndexType end)
 
   WorkSite_type site = group.run();
 
-  camp::resources::Event e = site.get_event();
+  auto e = resource_type::get_default().get_event();
   e.wait();
 
   {

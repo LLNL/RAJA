@@ -404,10 +404,6 @@ public:
   WorkSite(WorkSite&&) = default;
   WorkSite& operator=(WorkSite&&) = default;
 
-  RAJA::resources::EventProxy<resource_type> get_event() {
-    return RAJA::resources::EventProxy<resource_type>(&m_resource);
-  }
-
   void clear()
   {
     // resources is about to be released
@@ -420,12 +416,10 @@ public:
   }
 
 private:
-  resource_type m_resource;
   per_run_storage m_run_storage;
 
-  explicit WorkSite(resource_type& r, per_run_storage&& run_storage)
-    : m_resource(r)
-    , m_run_storage(std::move(run_storage))
+  explicit WorkSite(per_run_storage&& run_storage)
+    : m_run_storage(std::move(run_storage))
   { }
 };
 
@@ -483,7 +477,7 @@ WorkGroup<
   util::callPreLaunchPlugins(context);
 
   // move any per run storage into worksite
-  worksite_type site(r, m_runner.run(m_storage, r, std::forward<Args>(args)...));
+  worksite_type site(m_runner.run(m_storage, r, std::forward<Args>(args)...));
 
   util::callPostLaunchPlugins(context);
 

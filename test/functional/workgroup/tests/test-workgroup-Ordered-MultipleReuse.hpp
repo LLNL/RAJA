@@ -52,6 +52,8 @@ void testWorkGroupOrderedMultiple(
                   Allocator
                 >;
 
+  using resource_type = typename WorkGroup_type::resource_type;
+
   ASSERT_GT(min_end, max_begin);
   IndexType N = min_end + max_begin;
 
@@ -224,7 +226,7 @@ void testWorkGroupOrderedMultiple(
 
       site = group.run();
 
-      camp::resources::Event e = site.get_event();
+      auto e = resource_type::get_default().get_event();
       e.wait();
 
       // check_test_data(type1(5), type2(7), type3(11));
