@@ -40,7 +40,7 @@ cmake \
   -DCMAKE_C_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/clang \
   -DCMAKE_CXX_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/clang++ \
   -DHIP_HIPCC_FLAGS=--offload-arch=${COMP_ARCH} \
-  -C ../host-configs/lc-builds/toss3/hip.cmake \
+  -C ../host-configs/lc-builds/toss3/hip_link_${COMP_VER}.cmake \
   -DENABLE_HIP=ON \
   -DENABLE_OPENMP=OFF \
   -DENABLE_CUDA=OFF \
