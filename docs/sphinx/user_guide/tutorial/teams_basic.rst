@@ -25,7 +25,7 @@ inside an execution space. The execution space is launched using the
 ``RAJA::expt::launch`` method::
 
   RAJA::expt::launch<launch_policy>(RAJA::expt::ExecPlace ,
-  RAJA::expt::Resources(RAJA::expt::Teams(Nteams,Nteams),
+  RAJA::expt::Grid(RAJA::expt::Teams(Nteams,Nteams),
                         RAJA::expt::Threads(Nthreads,Nthreads)),
   [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 

@@ -127,16 +127,16 @@ struct Lanes {
   constexpr Lanes(int i) : value(i) {}
 };
 
-struct Resources {
+struct Grid {
 public:
   Teams teams;
   Threads threads;
   Lanes lanes;
 
   RAJA_INLINE
-  Resources() = default;
+  Grid() = default;
 
-  Resources(Teams in_teams, Threads in_threads)
+  Grid(Teams in_teams, Threads in_threads)
       : teams(in_teams), threads(in_threads){};
 
 private:
@@ -154,13 +154,13 @@ private:
 };
 
 
-class LaunchContext : public Resources
+class LaunchContext : public Grid
 {
 public:
   ExecPlace exec_place;
 
-  LaunchContext(Resources const &base, ExecPlace place)
-      : Resources(base), exec_place(place)
+  LaunchContext(Grid const &base, ExecPlace place)
+      : Grid(base), exec_place(place)
   {
   }
 
@@ -179,7 +179,7 @@ template <typename LAUNCH_POLICY>
 struct LaunchExecute;
 
 template <typename POLICY_LIST, typename BODY>
-void launch(ExecPlace place, Resources const &team_resources, BODY const &body)
+void launch(ExecPlace place, Grid const &team_resources, BODY const &body)
 {
   switch (place) {
     case HOST: {
@@ -202,11 +202,11 @@ void launch(ExecPlace place, Resources const &team_resources, BODY const &body)
 
 ///Prototype for
 #if 0
-template <typename POLICY_LIST, typename BODY>
-void launch(ExecPlace place, RAJA::resources::Resource &res,
-            Resources const &team_resources, BODY const &body)
-{
-  switch (place) {
+  template <typename POLICY_LIST, typename BODY>
+  void launch(ExecPlace place, RAJA::resources::Resource &res,
+              Resources const &team_resources, BODY const &body)
+  {
+    switch (place) {
     case HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
       using Res = typename resources::get_resource<typename POLICY_LIST::host_policy_t>::type;
@@ -224,8 +224,8 @@ void launch(ExecPlace place, RAJA::resources::Resource &res,
 #endif
     default:
       RAJA_ABORT_OR_THROW("Unknown launch place or device is not enabled");
+    }
   }
-}
 #endif
 
 
