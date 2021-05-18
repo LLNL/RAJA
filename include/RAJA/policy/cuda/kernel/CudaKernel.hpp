@@ -377,14 +377,12 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads>,StmtList,Da
   }
 
   static void launch(Data &&data,
-                     internal::LaunchDims launch_dims,
-                     size_t shmem,
-                     cudaStream_t stream)
+                     RAJA::cuda::detail::LaunchInfo const& launch_info)
   {
     auto func = kernelGetter_t::get();
 
     void *args[] = {(void*)&data};
-    RAJA::cuda::launch((const void*)func, launch_dims.blocks, launch_dims.threads, args, shmem, stream);
+    RAJA::cuda::launch((const void*)func, launch_info, args);
   }
 };
 
@@ -484,7 +482,6 @@ struct StatementExecutor<
       // Setup shared memory buffers
       //
       int shmem = 0;
-      cudaStream_t stream = res.get_stream();
 
 
       //
@@ -567,24 +564,38 @@ struct StatementExecutor<
         RAJA_ABORT_OR_THROW("RAJA::kernel exceeds max num threads");
       }
 
+      //
+      // Gather or compute launch info
+      //   the number of blocks
+      //   the size of each block
+      //   the size of dynamic shared memory
+      //   the stream
+      //
+      RAJA::cuda::detail::LaunchInfo launch_info{
+            launch_dims.blocks,
+            launch_dims.threads,
+            static_cast<size_t>(shmem),
+            res.get_stream()
+          };
+
       {
         //
         // Privatize the LoopData, using make_launch_body to setup reductions
         //
         auto cuda_data = RAJA::cuda::make_launch_body(
-            launch_dims.blocks, launch_dims.threads, shmem, stream, data);
+            launch_info, data);
 
 
         //
         // Launch the kernels
         //
-        launch_t::launch(std::move(cuda_data), launch_dims, shmem, stream);
+        launch_t::launch(std::move(cuda_data), launch_info);
       }
 
       //
       // Synchronize
       //
-      if (!launch_t::async) { RAJA::cuda::synchronize(stream); }
+      if (!launch_t::async) { RAJA::cuda::synchronize(launch_info.stream); }
     }
   }
 };

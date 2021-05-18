@@ -21,4 +21,8 @@ raja_add_test(
   NAME test-span
   SOURCES test-span.cpp)
 
+raja_add_test(
+  NAME test-Allocator
+  SOURCES test-Allocator.cpp)
+
 add_subdirectory(operator)

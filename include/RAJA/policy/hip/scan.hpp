@@ -83,7 +83,7 @@ inclusive_inplace(
 
   // Allocate temporary storage
   d_temp_storage =
-      hip::device_mempool_type::getInstance().malloc<unsigned char>(
+      hip::get_device_allocator().allocate<unsigned char>(
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
@@ -104,7 +104,7 @@ inclusive_inplace(
                                              stream));
 #endif
   // Free temporary storage
-  hip::device_mempool_type::getInstance().free(d_temp_storage);
+  hip::get_device_allocator().deallocate(d_temp_storage);
 
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
@@ -158,7 +158,7 @@ exclusive_inplace(
 #endif
   // Allocate temporary storage
   d_temp_storage =
-      hip::device_mempool_type::getInstance().malloc<unsigned char>(
+      hip::get_device_allocator().allocate<unsigned char>(
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
@@ -181,7 +181,7 @@ exclusive_inplace(
                                              stream));
 #endif
   // Free temporary storage
-  hip::device_mempool_type::getInstance().free(d_temp_storage);
+  hip::get_device_allocator().deallocate(d_temp_storage);
 
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
@@ -233,7 +233,7 @@ inclusive(
 #endif
   // Allocate temporary storage
   d_temp_storage =
-      hip::device_mempool_type::getInstance().malloc<unsigned char>(
+      hip::get_device_allocator().allocate<unsigned char>(
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
@@ -254,7 +254,7 @@ inclusive(
                                              stream));
 #endif
   // Free temporary storage
-  hip::device_mempool_type::getInstance().free(d_temp_storage);
+  hip::get_device_allocator().deallocate(d_temp_storage);
 
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
@@ -310,7 +310,7 @@ exclusive(
 #endif
   // Allocate temporary storage
   d_temp_storage =
-      hip::device_mempool_type::getInstance().malloc<unsigned char>(
+      hip::get_device_allocator().allocate<unsigned char>(
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
@@ -333,7 +333,7 @@ exclusive(
                                              stream));
 #endif
   // Free temporary storage
-  hip::device_mempool_type::getInstance().free(d_temp_storage);
+  hip::get_device_allocator().deallocate(d_temp_storage);
 
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);

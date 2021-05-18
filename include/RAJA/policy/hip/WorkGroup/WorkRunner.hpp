@@ -300,37 +300,44 @@ struct WorkRunner<
     Iterator end = std::end(storage);
     IndexType num_loops = std::distance(begin, end);
 
+    index_type average_iterations = m_total_iterations / static_cast<index_type>(num_loops);
+    constexpr index_type block_size = static_cast<index_type>(BLOCK_SIZE);
+
+    //
+    // Gather or compute launch info
+    //   the number of blocks
+    //   the size of each block
+    //   the size of dynamic shared memory
+    //   the stream
+    //
+    RAJA::hip::detail::LaunchInfo launch_info{
+          hip_dim_t{ static_cast<hip_dim_member_t>((average_iterations + block_size - 1) / block_size),
+                     static_cast<hip_dim_member_t>(num_loops),
+                     static_cast<hip_dim_member_t>(1) },
+          hip_dim_t{ static_cast<hip_dim_member_t>(block_size),
+                     static_cast<hip_dim_member_t>(1),
+                     static_cast<hip_dim_member_t>(1) },
+          0,
+          0
+        };
+
     // Only launch kernel if we have something to iterate over
-    if (num_loops > 0 && BLOCK_SIZE > 0) {
+    constexpr hip_dim_member_t zero = 0;
+    if ( launch_info.gridDim.x  > zero && launch_info.gridDim.y  > zero && launch_info.gridDim.z  > zero &&
+         launch_info.blockDim.x > zero && launch_info.blockDim.y > zero && launch_info.blockDim.z > zero ) {
 
-      index_type average_iterations = m_total_iterations / static_cast<index_type>(num_loops);
-
-      //
-      // Compute the number of blocks
-      //
-      constexpr index_type block_size = static_cast<index_type>(BLOCK_SIZE);
-      hip_dim_t blockSize{static_cast<hip_dim_member_t>(block_size), 1, 1};
-      hip_dim_t gridSize{static_cast<hip_dim_member_t>((average_iterations + block_size - 1) / block_size),
-                          static_cast<hip_dim_member_t>(num_loops),
-                          1};
 
       RAJA_FT_BEGIN;
-
-      //
-      // Setup shared memory buffers
-      //
-      size_t shmem = 0;
-      hipStream_t stream = 0;
 
       {
         //
         // Launch the kernel
         //
         void* func_args[] = { (void*)&begin, (void*)&args... };
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, func_args, shmem, stream);
+        RAJA::hip::launch((const void*)func, launch_info, func_args);
       }
 
-      if (!Async) { RAJA::hip::synchronize(stream); }
+      if (!Async) { RAJA::hip::synchronize(launch_info.stream); }
 
       RAJA_FT_END;
     }
