@@ -79,7 +79,8 @@ raja_add_executable(
 
 raja_add_executable(
   NAME tut_halo-exchange
-  SOURCES tut_halo-exchange.cpp)
+  SOURCES tut_halo-exchange.cpp
+          halo-exchange/lists.cpp)
 
 raja_add_executable(
   NAME pi-reduce_vs_atomic
