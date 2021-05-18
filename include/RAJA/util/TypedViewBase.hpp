@@ -368,13 +368,44 @@ class ViewBase {
 
   public:
 
+
+    /*
+     * Defaulted operators (AJK):
+     *
+     * OpenMP Target currently needs the View classes to be trivially copyable,
+     * which means that we need to use the default ctor's and assignment
+     * operators.
+     *
+     * These defaulted operators cause issues with some versions of CUDA, so
+     * in the case that CUDA is enabled, we switch to explicitly defined
+     * operators.
+     */
+#if (defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_CLANG_CUDA))
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    constexpr ViewBase(){};
+
+    RAJA_HOST_DEVICE
+    RAJA_INLINE ViewBase(ViewBase const &c)
+      : m_layout(c.m_layout), m_data(c.m_data)
+    {
+    }
+
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    ViewBase &operator=(ViewBase const &c)
+    {
+      m_layout = c.m_layout;
+      m_data = c.m_data;
+    }
+#else
     constexpr ViewBase() = default;
     RAJA_INLINE constexpr ViewBase(ViewBase const &) = default;
     RAJA_INLINE constexpr ViewBase(ViewBase &&) = default;
     RAJA_INLINE ViewBase& operator=(ViewBase const &) = default;
     RAJA_INLINE ViewBase& operator=(ViewBase &&) = default;
 
-
+#endif
 
     RAJA_HOST_DEVICE
     RAJA_INLINE
