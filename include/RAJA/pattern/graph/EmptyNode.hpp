@@ -73,7 +73,7 @@ struct EmptyArgs : NodeArgs
 }  // namespace detail
 
 
-detail::EmptyArgs Empty()
+RAJA_INLINE detail::EmptyArgs Empty()
 {
   return detail::EmptyArgs();
 }

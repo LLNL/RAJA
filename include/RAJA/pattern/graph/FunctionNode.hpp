@@ -106,7 +106,7 @@ struct FunctionArgs : NodeArgs
 
 
 template < typename Func >
-detail::FunctionArgs<camp::decay<Func>>
+RAJA_INLINE detail::FunctionArgs<camp::decay<Func>>
 Function(Func&& func)
 {
   return detail::FunctionArgs<camp::decay<Func>>(std::forward<Func>(func));
