@@ -75,6 +75,7 @@ namespace internal {
       using self_type = TensorRegisterStoreRef<REF_TYPE>;
       REF_TYPE m_ref;
 
+      RAJA_SUPPRESS_HD_WARN
       template<typename RHS>
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -145,14 +146,23 @@ namespace internal {
         return TensorRegisterStoreRef<REF_TYPE>{ref};
       }
 
+      RAJA_SUPPRESS_HD_WARN
       template<typename REF_TYPE>
       RAJA_HOST_DEVICE
       RAJA_INLINE
       static
       self_type
       s_load_ref(REF_TYPE const &ref) {
-//        printf("TensorRegister Load: "); ref.m_tile.print();
+
         self_type value;
+//#ifdef __CUDA_ARCH__
+//if(threadIdx.x == 1){
+//        printf("TensorRegister Load: "); ref.print();
+//
+//        value.load_ref(ref);
+//}
+//#endif
+
         value.load_ref(ref);
         return value;
       }
@@ -197,12 +207,20 @@ namespace internal {
       }
 
 
-      TensorRegisterBase() = default;
-      ~TensorRegisterBase() = default;
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      TensorRegisterBase(){}
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      ~TensorRegisterBase(){}
 
 
 
-      TensorRegisterBase(TensorRegisterBase const &) = default;
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      TensorRegisterBase(TensorRegisterBase const &){}
 
       RAJA_INLINE
       RAJA_HOST_DEVICE
@@ -214,6 +232,7 @@ namespace internal {
       /*!
        * @brief Broadcast scalar value to first N register elements
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &broadcast_n(element_type const &value, camp::idx_t N){
@@ -226,6 +245,7 @@ namespace internal {
       /*!
        * @brief Extracts a scalar value and broadcasts to a new register
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type get_and_broadcast(int i) const {
@@ -238,6 +258,7 @@ namespace internal {
        * @brief Set entire vector to a single scalar value
        * @param value Value to set all vector elements to
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type const &operator=(element_type value)
@@ -250,6 +271,7 @@ namespace internal {
        * @brief Set entire vector to a single scalar value
        * @param value Value to set all vector elements to
        */
+      RAJA_SUPPRESS_HD_WARN
       template<typename T2>
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -264,6 +286,7 @@ namespace internal {
        * @param x Vector to copy
        * @return Value of (*this)
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type const &operator=(self_type const &x)
@@ -281,6 +304,7 @@ namespace internal {
        * @param x Vector to add to this register
        * @return Value of (*this)+x
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type operator+(self_type const &x) const
@@ -294,6 +318,7 @@ namespace internal {
        * @param x Vector to add to this register
        * @return Value of (*this)+x
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &operator+=(self_type const &x)
@@ -303,9 +328,38 @@ namespace internal {
       }
 
       /*!
+       * @brief Add vector to a scalar
+       * @param x scalar to add to this register
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type operator+(element_type const &x) const
+      {
+        return getThis()->add(x);
+      }
+
+
+      /*!
+       * @brief Add a scalar to this vector
+       * @param x scalar to add to this register
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator+=(element_type x)
+      {
+        *getThis() = getThis()->add(x);
+        return *getThis();
+      }
+
+      /*!
        * @brief Negate the value of this vector
        * @return Value of -(*this)
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type operator-() const
@@ -315,9 +369,10 @@ namespace internal {
 
       /*!
        * @brief Subtract two vector registers
-       * @param x Vector to subctract from this register
+       * @param x Vector to subtract from this register
        * @return Value of (*this)+x
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type operator-(self_type const &x) const
@@ -330,6 +385,7 @@ namespace internal {
        * @param x Vector to subtract from this register
        * @return Value of (*this)+x
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &operator-=(self_type const &x)
@@ -339,8 +395,35 @@ namespace internal {
       }
 
       /*!
+       * @brief Subtract scalar from this register
+       * @param x Vector to subtract from this register
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type operator-(element_type const &x) const
+      {
+        return getThis()->subtract(x);
+      }
+
+      /*!
+       * @brief Subtract a scalar from this vector
+       * @param x Vector to subtract from this register
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator-=(element_type const &x)
+      {
+        *getThis() = getThis()->subtract(x);
+        return *getThis();
+      }
+
+      /*!
        * @brief Multiply two vector registers, element wise
-       * @param x Vector to subctract from this register
+       * @param x Vector to subtract from this register
        * @return Value of (*this)+x
        */
       template<typename RHS>
@@ -368,9 +451,10 @@ namespace internal {
 
       /*!
        * @brief Divide two vector registers, element wise
-       * @param x Vector to subctract from this register
+       * @param x Vector to subtract from this register
        * @return Value of (*this)+x
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type operator/(self_type const &x) const
@@ -383,9 +467,38 @@ namespace internal {
        * @param x Vector to divide by
        * @return Value of (*this)+x
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &operator/=(self_type const &x)
+      {
+        *getThis() = getThis()->divide(x);
+        return *getThis();
+      }
+
+
+      /*!
+       * @brief Divide by a scalar, element wise
+       * @param x Scalar to divide by
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type operator/(element_type const &x) const
+      {
+        return getThis()->divide(x);
+      }
+
+      /*!
+       * @brief Divide this vector by another vector
+       * @param x Scalar to divide by
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator/=(element_type const &x)
       {
         *getThis() = getThis()->divide(x);
         return *getThis();
@@ -398,6 +511,7 @@ namespace internal {
        * @param n Number of elements to divide
        * @return Value of (*this)+x
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type divide_n(self_type const &b, camp::idx_t n) const {
@@ -409,10 +523,28 @@ namespace internal {
       }
 
       /*!
+       * @brief Divide n elements of this vector by a scalar
+       * @param x Scalar to divide by
+       * @param n Number of elements to divide
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type divide_n(element_type const &b, camp::idx_t n) const {
+        self_type q(*getThis());
+        for(camp::idx_t i = 0;i < n;++i){
+          q.set(getThis()->get(i) / b, i);
+        }
+        return q;
+      }
+
+      /*!
        * @brief Dot product of two vectors
        * @param x Other vector to dot with this vector
        * @return Value of (*this) dot x
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_INLINE
       RAJA_HOST_DEVICE
       element_type dot(self_type const &x) const
@@ -429,6 +561,7 @@ namespace internal {
        * @param c Sum operand
        * @return Value of (*this)*b+c
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type multiply_add(self_type const &b, self_type const &c) const
@@ -445,6 +578,7 @@ namespace internal {
        * @param c Subtraction operand
        * @return Value of (*this)*b-c
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type multiply_subtract(self_type const &b, self_type const &c) const
@@ -455,6 +589,7 @@ namespace internal {
       /*!
        * Multiply this tensor by a scalar value
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type scale(element_type c) const
@@ -466,6 +601,7 @@ namespace internal {
       /*!
        * In-place add operation
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type &inplace_add(self_type x){
@@ -476,6 +612,7 @@ namespace internal {
       /*!
        * In-place sbutract operation
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type &inplace_subtract(self_type x){
@@ -486,6 +623,7 @@ namespace internal {
       /*!
        * In-place multiply operation
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type &inplace_multiply(self_type x){
@@ -496,6 +634,7 @@ namespace internal {
       /*!
        * In-place multiply-add operation
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type &inplace_multiply_add(self_type x, self_type y){
@@ -506,6 +645,7 @@ namespace internal {
       /*!
        * In-place multiply-subtract operation
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type &inplace_multiply_subtract(self_type x, self_type y){
@@ -516,6 +656,7 @@ namespace internal {
       /*!
        * In-place divide operation
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type &inplace_divide(self_type x){
@@ -526,6 +667,7 @@ namespace internal {
       /*!
        * In-place scaling operation
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type &inplace_scale(element_type x){

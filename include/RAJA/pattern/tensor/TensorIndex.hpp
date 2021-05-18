@@ -60,6 +60,14 @@ namespace RAJA
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
+      TensorIndex(RAJA::TypedRangeSegment<IDX> const &seg) :
+      m_index(*seg.begin()), m_length(seg.size())
+      {}
+
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      constexpr
       TensorIndex(index_type value, value_type length) : m_index(value), m_length(length) {}
 
       template<typename T, camp::idx_t D>

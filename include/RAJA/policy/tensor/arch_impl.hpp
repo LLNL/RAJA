@@ -45,6 +45,10 @@
 #include<RAJA/policy/tensor/arch/avx.hpp>
 #endif
 
+#if defined(RAJA_CUDA_ACTIVE)
+#include<RAJA/policy/tensor/arch/cuda.hpp>
+#endif
+
 
 // The scalar register is always supported (doesn't require any SIMD/SIMT)
 #include<RAJA/policy/tensor/arch/scalar/scalar.hpp>

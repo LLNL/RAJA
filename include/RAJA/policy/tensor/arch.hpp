@@ -41,6 +41,7 @@ namespace RAJA
 //////////////////////////////////////////////////////////////////////
 //
 
+
 #ifdef __AVX512F__
 struct avx512_register {};
 #ifndef RAJA_TENSOR_REGISTER_TYPE
@@ -65,6 +66,15 @@ struct avx_register {};
 #endif
 
 
+#if defined(RAJA_CUDA_ACTIVE)
+
+/*!
+ * A CUDA warp distributed vector register
+ */
+
+struct cuda_warp_register {};
+
+#endif
 
 // The scalar register is always supported (doesn't require any SIMD/SIMT)
 struct scalar_register {};

@@ -47,8 +47,7 @@ namespace RAJA
         static constexpr camp::idx_t s_num_dims = NUM_DIMS;
         static constexpr TensorTileSize s_tensor_size = TENSOR_SIZE;
 
-//        TensorTile(self_type const &) = default;
-//
+
         template<typename I, TensorTileSize S>
         void copy(TensorTile<I, S, NUM_DIMS> const &c)
         {

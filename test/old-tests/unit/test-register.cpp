@@ -589,7 +589,7 @@ INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, RegisterTest, RegisterTestTypes);
 #if defined(RAJA_ENABLE_CUDA)
 
 
-GPU_TEST(RegisterTestCuda, CudaWarp32)
+GPU_TEST(RegisterTestCuda, CudaWarpRegister)
 {
   using namespace RAJA::statement;
 
@@ -621,34 +621,36 @@ GPU_TEST(RegisterTestCuda, CudaWarp32)
   cudaErrchk(cudaDeviceSynchronize());
 
 
-  //using register_t = RAJA::VectorRegister<RAJA::cuda_warp_register<5>, element_t, 32>;
-
-  using vector_t = RAJA::CudaWarpFixedVector<element_t, 32, 5>;
+  using vector_t = RAJA::VectorRegister<double, RAJA::cuda_warp_register>;
 
   using Pol = RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
       RAJA::statement::Tile<0, RAJA::tile_fixed<32>, RAJA::cuda_block_x_loop,
-      RAJA::statement::For<0, RAJA::cuda_warp_vector_loop<vector_t>,
+      RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
           RAJA::statement::Lambda<0>
             >
           >
         >
        >;
 
-  auto data_view = RAJA::make_view<int>(data);
 
   RAJA::kernel<Pol>(
 
       RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N*32)),
 
-      [=] __device__(RAJA::VectorIndex<int, vector_t> i){
-        auto value = data_view(i);
+      [=] __device__(int i){
+        // limit i to increments of 32
+        i -= i & 0x1F;
 
-        element_t s = value.sum();
+        // load vector
+        vector_t v;
+        v.load_packed(data+i);
 
-        if(vector_t::is_root()){
-           result[(*i)>>5] = s;
-        }
+        // scale by 2
+        v = v.scale(2.0);
+
+        // store in result
+        v.store_packed(result+i);
 
       });
 
@@ -657,92 +659,13 @@ GPU_TEST(RegisterTestCuda, CudaWarp32)
 
 
   for(int i = 0;i < N;++ i){
-    element_t expected = data[i*32];
-    for(int j = 1;j <32;++ j){
-      expected += data[i*32+j];
-    }
-    ASSERT_SCALAR_EQ(expected, result[i]);
+    ASSERT_SCALAR_EQ(data[i]*2.0, result[i]);
   }
 
 
 
 }
 
-
-GPU_TEST(RegisterTestCuda, CudaWarp16)
-{
-  using namespace RAJA::statement;
-
-  using element_t = double;
-  size_t N = 2;
-
-  element_t *data = nullptr;
-
-  cudaErrchk(cudaMallocManaged(&data,
-                    sizeof(element_t) * N*32,
-                    cudaMemAttachGlobal));
-
-  element_t *result = nullptr;
-
-  cudaErrchk(cudaMallocManaged(&result,
-                    sizeof(element_t) * N*2,
-                    cudaMemAttachGlobal));
-
-  cudaErrchk(cudaDeviceSynchronize());
-
-  for(int i = 0;i < N*32;++ i){
-    data[i] = 1000*NO_OPT_RAND;
-  }
-
-  for(int i = 0;i < N*2;++ i){
-    result[i] = 0.0;
-  }
-
-  cudaErrchk(cudaDeviceSynchronize());
-
-
-  using register_t = RAJA::VectorRegister<RAJA::cuda_warp_register<4>, element_t>;
-
-
-  using Pol = RAJA::KernelPolicy<
-      RAJA::statement::CudaKernel<
-      RAJA::statement::Tile<0, RAJA::tile_fixed<32>, RAJA::cuda_block_x_loop,
-      RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
-          RAJA::statement::Lambda<0>
-            >
-          >
-        >
-       >;
-
-  RAJA::kernel<Pol>(
-
-      RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N*32)),
-
-      [=] __device__(int i0){
-        int i = (i0>>4)<<4;
-        register_t value;
-        value.load_packed(data + i);
-        element_t s = value.sum();
-        if(register_t::is_root()){
-           result[i0>>4] = s;
-        }
-      });
-
-
-  cudaErrchk(cudaDeviceSynchronize());
-
-
-  for(int i = 0;i < N*2;++ i){
-    element_t expected = data[i*16];
-    for(int j = 1;j <16;++ j){
-      expected += data[i*16+j];
-    }
-    ASSERT_SCALAR_EQ(expected, result[i]);
-  }
-
-
-
-}
 
 
 #endif // RAJA_ENABLE_CUDA

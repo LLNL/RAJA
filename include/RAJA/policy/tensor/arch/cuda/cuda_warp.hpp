@@ -16,49 +16,51 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include<RAJA/config.hpp>
+#include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/util/BitMask.hpp"
+#include "RAJA/pattern/tensor/internal/VectorRegisterBase.hpp"
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/Operators.hpp"
 
 #ifdef RAJA_ENABLE_CUDA
 
-#ifndef RAJA_policy_cuda_register_cuda_warp_HPP
-#define RAJA_policy_cuda_register_cuda_warp_HPP
+#include "RAJA/policy/cuda/reduce.hpp"
+
+#ifndef RAJA_policy_tensor_arch_cuda_cuda_warp_register_HPP
+#define RAJA_policy_tensor_arch_cuda_cuda_warp_register_HPP
 
 
 
 namespace RAJA {
 
-  /*!
-   * A warp distributed vector.
-   */
-	template<int LANE_BITS>
-  struct cuda_warp_register {
-	    static_assert(LANE_BITS >= 1 && LANE_BITS <= 5, "Invalid number of lanes");
-	};
 
 
-
-  template<int LANE_BITS, typename ELEMENT_TYPE, int SKEW>
-  class Register<cuda_warp_register<LANE_BITS>, ELEMENT_TYPE, SKEW> :
-    public internal::RegisterBase<Register<cuda_warp_register<LANE_BITS>, ELEMENT_TYPE, SKEW>>
+  template<typename ELEMENT_TYPE>
+  class TensorRegister<cuda_warp_register, ELEMENT_TYPE,
+                       VectorLayout,
+                       camp::idx_seq<32>,
+                       camp::make_idx_seq_t<32> >:
+    public internal::VectorRegisterBase<TensorRegister<
+                      cuda_warp_register,
+                      ELEMENT_TYPE, VectorLayout,
+                      camp::idx_seq<32>,
+                      camp::make_idx_seq_t<32> > >
   {
     public:
-      using register_policy = cuda_warp_register<LANE_BITS>;
-      using self_type = Register<cuda_warp_register<LANE_BITS>, ELEMENT_TYPE, SKEW>;
+      using register_policy = cuda_warp_register;
+      using self_type = TensorRegister<cuda_warp_register, ELEMENT_TYPE,
+          VectorLayout,
+          camp::idx_seq<32>,
+          camp::make_idx_seq_t<32> >;
       using element_type = ELEMENT_TYPE;
-      using register_type = element_type;
-
-      using bitmask_t = BitMask<LANE_BITS, 0>;
+      using register_type = ELEMENT_TYPE;
 
 		private:
       element_type m_value;
 
-
 		public:
 
-      static constexpr int s_num_elem = 1<<(LANE_BITS);
+      static constexpr int s_num_elem = 32;
 
       /*!
        * @brief Default constructor, zeros register contents
@@ -66,7 +68,7 @@ namespace RAJA {
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      Register() : m_value(element_type(0)) {
+      TensorRegister() : m_value(element_type(0)) {
       }
 
       /*!
@@ -75,7 +77,7 @@ namespace RAJA {
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      explicit Register(element_type const &c) : m_value(c) {}
+      explicit TensorRegister(element_type const &c) : m_value(c) {}
 
 
       /*!
@@ -84,7 +86,7 @@ namespace RAJA {
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      Register(self_type const &c) : m_value(c.m_value) {}
+      TensorRegister(self_type const &c) : m_value(c.m_value) {}
 
 
       /*!
@@ -98,7 +100,7 @@ namespace RAJA {
       }
 
       /*!
-       * @brief Gets our lane after our bitmask has been applied
+       * @brief Gets our warp lane
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
@@ -106,11 +108,11 @@ namespace RAJA {
       static
       int get_lane() {
 #ifdef __CUDA_ARCH__
-        return bitmask_t::maskValue(threadIdx.x);
+        return threadIdx.x;
 //        int lane;
 //        //asm volatile ("mov.s32 %0, %laneid;" : "=r"(lane));
 //        asm ("mov.s32 %0, %laneid;" : "=r"(lane));
-//        return bitmask_t::maskValue(lane);
+//        return lane;
 #else
         return 0;
 #endif
@@ -134,13 +136,16 @@ namespace RAJA {
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type &load_packed(element_type const *ptr){
+
+
+
         auto lane = get_lane();
-        if(lane < s_num_elem){
-          m_value = ptr[lane];
-        }
-        else{
-          m_value = element_type(0);
-        }
+
+
+//        printf("load_packed(lane=%d, %p)\n", (int)lane, ptr); return *this;
+
+        m_value = ptr[lane];
+
         return *this;
       }
 
@@ -153,6 +158,7 @@ namespace RAJA {
       RAJA_HOST_DEVICE
       self_type &load_packed_n(element_type const *ptr, int N){
         auto lane = get_lane();
+//        printf("load_packed_n(lane=%d, %p, n=%d)\n", (int)lane, ptr, N);return *this;
         if(lane < N){
           m_value = ptr[lane];
         }
@@ -169,13 +175,13 @@ namespace RAJA {
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type &load_strided(element_type const *ptr, int stride){
+
         auto lane = get_lane();
-        if(lane < s_num_elem){
-          m_value = ptr[stride*lane];
-        }
-        else{
-          m_value = element_type(0);
-        }
+
+//        printf("load_strided(lane=%d, stride=%d, %p)\n", (int)lane, (int)stride, ptr);return *this;
+
+        m_value = ptr[stride*lane];
+
         return *this;
       }
 
@@ -189,6 +195,9 @@ namespace RAJA {
       RAJA_HOST_DEVICE
       self_type &load_strided_n(element_type const *ptr, int stride, int N){
         auto lane = get_lane();
+
+//        printf("load_strided_n(lane=%d, stride=%d, n=%d, %p)\n", (int)lane, (int)stride, N, ptr);return *this;
+
         if(lane < N){
           m_value = ptr[stride*lane];
         }
@@ -206,10 +215,13 @@ namespace RAJA {
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type const &store_packed(element_type *ptr) const{
+
         auto lane = get_lane();
-        if(lane < s_num_elem){
-          ptr[lane] = m_value;
-        }
+
+//        printf("store_packed(lane=%d, %p)\n", (int)lane, ptr);return *this;
+
+        ptr[lane] = m_value;
+
         return *this;
       }
 
@@ -221,6 +233,9 @@ namespace RAJA {
       RAJA_HOST_DEVICE
       self_type const &store_packed_n(element_type *ptr, int N) const{
         auto lane = get_lane();
+
+//        printf("store_packed_n(lane=%d, %p, n=%d)\n", (int)lane, ptr, N);return *this;
+
         if(lane < N){
           ptr[lane] = m_value;
         }
@@ -234,10 +249,13 @@ namespace RAJA {
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type const &store_strided(element_type *ptr, int stride) const{
+
         auto lane = get_lane();
-        if(lane < s_num_elem){
-          ptr[lane*stride] = m_value;
-        }
+
+//        printf("store_strided(lane=%d, stride=%d, %p)\n", (int)lane, (int)stride, ptr);return *this;
+
+        ptr[lane*stride] = m_value;
+
         return *this;
       }
 
@@ -249,7 +267,13 @@ namespace RAJA {
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type const &store_strided_n(element_type *ptr, int stride, int N) const{
+
+
         auto lane = get_lane();
+
+//        printf("store_strided_n(lane=%d, stride=%d, n=%d, %p)\n", (int)lane, (int)stride, N, ptr);return *this;
+
+
         if(lane < N){
           ptr[lane*stride] = m_value;
         }
@@ -265,10 +289,14 @@ namespace RAJA {
        */
       constexpr
       RAJA_INLINE
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       element_type get(int i) const
 			{
-        return  __shfl_sync(0xffffffff, m_value, i, 1 << LANE_BITS);
+#ifdef __CUDA_ARCH__
+        return  __shfl_sync(0xffffffff, m_value, i, 32);
+#else
+        return m_value;
+#endif
 			}
 
       /*!
@@ -277,19 +305,23 @@ namespace RAJA {
        * @param value Value of scalar to set
        */
       RAJA_INLINE
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       self_type &set(int i, element_type value)
 			{
+#ifdef __CUDA_ARCH__
 				auto lane = get_lane();
       	if(lane == i){
 					m_value = value;
 				}
-      	return *this;
+#else
+        m_value = value;
+#endif
+        return *this;
 			}
 
 
-      RAJA_DEVICE
-      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      RAJA_HOST_DEVICE
       self_type &broadcast(element_type const &a){
         m_value = a;
         return *this;
@@ -299,56 +331,80 @@ namespace RAJA {
        * @brief Extracts a scalar value and broadcasts to a new register
        */
       RAJA_HOST_DEVICE
-      RAJA_INLINE
+      RAJA_HOST_DEVICE
       self_type get_and_broadcast(int i) const {
+#ifdef __CUDA_ARCH__
         self_type x;
-        x.m_value = __shfl_sync(0xffffffff, m_value, i, 1 << LANE_BITS);
+        x.m_value = __shfl_sync(0xffffffff, m_value, i, 32);
         return x;
+#else
+        return self_type(m_value);
+#endif
       }
 
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &copy(self_type const &src){
         m_value = src.m_value;
         return *this;
       }
 
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type add(self_type const &b) const {
         return self_type(m_value + b.m_value);
       }
 
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type add(element_type b) const {
+        return self_type(m_value + b);
+      }
+
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type subtract(self_type const &b) const {
         return self_type(m_value - b.m_value);
       }
 
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type multiply(self_type const &b) const {
         return self_type(m_value * b.m_value);
       }
 
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &b, int N = s_num_elem) const {
+      self_type divide(self_type const &b) const {
+        return self_type(m_value / b.m_value);
+      }
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type divide_n(self_type const &b, int N) const {
         return get_lane() < N ? self_type(m_value / b.m_value) : self_type(element_type(0));
       }
 
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type fused_multiply_add(self_type const &b, self_type const &c) const
       {
+#ifdef __CUDA_ARCH__
         return self_type(fma(m_value, b.m_value, c.m_value));
+#else
+        return m_value*c.m_value + c.m_value;
+#endif
       }
 
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
       {
+#ifdef __CUDA_ARCH__
         return self_type(fma(m_value, b.m_value, -c.m_value));
+#else
+        return m_value*c.m_value - c.m_value;
+#endif
       }
 
 
@@ -357,16 +413,20 @@ namespace RAJA {
        * @return Sum of the values of the vectors scalar elements
        */
       RAJA_INLINE
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       element_type sum(int N = s_num_elem) const
       {
+#ifdef __CUDA_ARCH__
 				// Allreduce sum
 				using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::plus>;
-			
+
 				auto ident = element_type();
 				auto lane = get_lane();
 				auto value = lane < N ? m_value : ident;
-				return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, LANE_BITS, element_type>(value);
+				return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, 5, element_type>(value);
+#else
+				return N > 0 ? m_value : element_type(0);
+#endif
       }
 
 
@@ -376,16 +436,20 @@ namespace RAJA {
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       element_type max(int N = s_num_elem) const
       {
+#ifdef __CUDA_ARCH__
         // Allreduce maximum
         using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::maximum>;
 
         auto ident = element_type();
         auto lane = get_lane();
         auto value = lane < N ? m_value : ident;
-        return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, LANE_BITS, element_type>(value);
+        return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, 5, element_type>(value);
+#else
+        return N > 0 ? m_value : element_type();
+#endif
       }
 
       /*!
@@ -393,7 +457,7 @@ namespace RAJA {
        * @return Vector of the element-wise max values
        */
       RAJA_INLINE
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       self_type vmax(self_type a) const
       {
         return self_type{RAJA::max(m_value, a.m_value)};
@@ -404,16 +468,21 @@ namespace RAJA {
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       element_type min(int N = s_num_elem) const
       {
+#ifdef __CUDA_ARCH__
         // Allreduce minimum
         using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::minimum>;
 
         auto ident = element_type();
         auto lane = get_lane();
         auto value = lane < N ? m_value : ident;
-        return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, LANE_BITS, element_type>(value);
+        return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, 5, element_type>(value);
+        return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, 5, element_type>(value);
+#else
+        return N > 0 ? m_value : element_type();
+#endif
       }
 
       /*!
@@ -421,7 +490,7 @@ namespace RAJA {
        * @return Vector of the element-wise max values
        */
       RAJA_INLINE
-      RAJA_DEVICE
+      RAJA_HOST_DEVICE
       self_type vmin(self_type a) const
       {
         return self_type{RAJA::min(m_value, a.m_value)};

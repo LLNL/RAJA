@@ -39,7 +39,7 @@ namespace RAJA
       public:
         using self_type = TensorNegate<ET_TYPE>;
         using rhs_type = ET_TYPE;
-        using tensor_type = typename ET_TYPE::result_type;;
+        using tensor_type = typename ET_TYPE::result_type;
         using element_type = typename tensor_type::element_type;
         using index_type = typename ET_TYPE::index_type;
 

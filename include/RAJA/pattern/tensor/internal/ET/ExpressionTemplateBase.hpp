@@ -96,6 +96,7 @@ namespace RAJA
           return 0;
         }
 
+        RAJA_SUPPRESS_HD_WARN
         template<typename RHS>
         RAJA_INLINE
         RAJA_HOST_DEVICE
@@ -104,6 +105,7 @@ namespace RAJA
           return TensorAdd<self_type, normalize_operand_t<RHS>>(*getThis(), normalizeOperand(rhs));
         }
 
+        RAJA_SUPPRESS_HD_WARN
         template<typename RHS>
         RAJA_INLINE
         RAJA_HOST_DEVICE
@@ -112,6 +114,7 @@ namespace RAJA
           return TensorSubtract<self_type, normalize_operand_t<RHS>>(*getThis(), normalizeOperand(rhs));
         }
 
+        RAJA_SUPPRESS_HD_WARN
         RAJA_INLINE
         RAJA_HOST_DEVICE
         TensorNegate<self_type>
@@ -119,6 +122,7 @@ namespace RAJA
           return TensorNegate<self_type>(*getThis());
         }
 
+        RAJA_SUPPRESS_HD_WARN
         template<typename RHS>
         RAJA_INLINE
         RAJA_HOST_DEVICE
@@ -127,6 +131,7 @@ namespace RAJA
           return TensorMultiply<self_type, normalize_operand_t<RHS>>(*getThis(), normalizeOperand(rhs));
         }
 
+        RAJA_SUPPRESS_HD_WARN
         template<typename RHS>
         RAJA_INLINE
         RAJA_HOST_DEVICE
@@ -135,7 +140,7 @@ namespace RAJA
           return TensorDivide<self_type, normalize_operand_t<RHS>>(*getThis(), normalizeOperand(rhs));
         }
 
-
+        RAJA_SUPPRESS_HD_WARN
         RAJA_INLINE
         RAJA_HOST_DEVICE
         TensorTranspose<self_type>

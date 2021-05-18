@@ -54,7 +54,10 @@ namespace RAJA
 
     public:
 
-      TensorRegister() = default;
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      TensorRegister(){}
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -62,8 +65,6 @@ namespace RAJA
         m_values{(VAL_SEQ >= 0) ? vector_type(c) : vector_type(c)...}
       {}
 
-//      TensorRegister(self_type const &c) = default;
-//      TensorRegister(self_type && c) = default;
 
       RAJA_INLINE
       RAJA_HOST_DEVICE
@@ -148,8 +149,12 @@ namespace RAJA
         return *this;
       }
 
-
-      TensorRegister &operator=(self_type const &c) = default;
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      TensorRegister &operator=(self_type const &c){
+        camp::sink( (m_values[VAL_SEQ] = c.m_values[VAL_SEQ])...);
+        return *this;
+      }
 
 //      /*
 //       * Overload for:    assignment of ET to a TensorRegister
@@ -223,6 +228,7 @@ namespace RAJA
        */
       template<typename POINTER_TYPE, typename INDEX_TYPE, internal::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
       RAJA_INLINE
+      RAJA_HOST_DEVICE
       self_type &load_ref(internal::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 2, STRIDE_ONE_DIM> const &ref){
 
         auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0] +
@@ -263,6 +269,7 @@ namespace RAJA
        */
       template<typename POINTER_TYPE, typename INDEX_TYPE, internal::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
       RAJA_INLINE
+      RAJA_HOST_DEVICE
       self_type const &store_ref(internal::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE,2, STRIDE_ONE_DIM> const &ref) const {
 
         auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0] +

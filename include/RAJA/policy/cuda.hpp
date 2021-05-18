@@ -31,7 +31,6 @@
 #include "RAJA/policy/cuda/forall.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/reduce.hpp"
-#include "RAJA/policy/cuda/register.hpp"
 #include "RAJA/policy/cuda/scan.hpp"
 #include "RAJA/policy/cuda/sort.hpp"
 #include "RAJA/policy/cuda/kernel.hpp"

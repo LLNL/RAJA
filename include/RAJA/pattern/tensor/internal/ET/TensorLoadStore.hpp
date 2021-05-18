@@ -70,8 +70,13 @@ namespace RAJA
            * eval_lhs() produces a new TensorLoadStore.
            *
            */
-//          printf("Starting tile:"); tile.print();
-
+//#ifdef __CUDA_ARCH__
+//          if(threadIdx.x==1){
+//            printf("Starting tile:"); tile.print();
+//          }
+//#endif
+//          m_lhs.eval_lhs(tile);
+//          m_rhs.eval(tile);
           m_lhs.eval_lhs(tile) = m_rhs.eval(tile);
 
 
@@ -119,7 +124,10 @@ namespace RAJA
         {
         }
 
-        TensorLoadStore(self_type const &rhs) = default;
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        TensorLoadStore(self_type const &rhs) : m_ref(rhs.m_ref)
+        {}
 
 
         RAJA_INLINE
@@ -129,14 +137,7 @@ namespace RAJA
           m_ref.m_tile.print();
         }
 
-//        RAJA_HOST_DEVICE
-//        RAJA_INLINE
-//        static
-//        constexpr
-//        decltype(TENSOR_TYPE::s_create_temporary()) s_create_temporary() {
-//          return TENSOR_TYPE::s_create_temporary();
-//        }
-
+//        RAJA_SUPPRESS_HD_WARN
         RAJA_HOST_DEVICE
         RAJA_INLINE
         self_type &operator=(self_type const &rhs)
@@ -145,6 +146,7 @@ namespace RAJA
           return *this;
         }
 
+//        RAJA_SUPPRESS_HD_WARN
         template<typename RHS>
         RAJA_HOST_DEVICE
         RAJA_INLINE
@@ -157,6 +159,7 @@ namespace RAJA
         }
 
 
+        RAJA_SUPPRESS_HD_WARN
         template<typename RHS>
         RAJA_HOST_DEVICE
         RAJA_INLINE
@@ -167,6 +170,7 @@ namespace RAJA
           return *this;
         }
 
+        RAJA_SUPPRESS_HD_WARN
         template<typename RHS>
         RAJA_HOST_DEVICE
         RAJA_INLINE
@@ -176,6 +180,7 @@ namespace RAJA
           return *this;
         }
 
+        RAJA_SUPPRESS_HD_WARN
         template<typename RHS>
         RAJA_HOST_DEVICE
         RAJA_INLINE
@@ -185,6 +190,7 @@ namespace RAJA
           return *this;
         }
 
+        RAJA_SUPPRESS_HD_WARN
         template<typename RHS>
         RAJA_HOST_DEVICE
         RAJA_INLINE
@@ -194,6 +200,7 @@ namespace RAJA
           return *this;
         }
 
+        RAJA_SUPPRESS_HD_WARN
         template<typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
@@ -203,6 +210,7 @@ namespace RAJA
           return tensor_type::s_load_ref(merge_ref_tile(m_ref, tile));
         }
 
+        RAJA_SUPPRESS_HD_WARN
         template<typename TILE_TYPE>
         RAJA_INLINE
         RAJA_HOST_DEVICE
@@ -245,6 +253,7 @@ namespace RAJA
           rhs.print_ast();
           printf(")\n");
 #endif
+
           tensorTileExec<tensor_type>(m_ref.m_tile,
               makeTensorStoreFunctor<tensor_type>(*this, rhs));
         }

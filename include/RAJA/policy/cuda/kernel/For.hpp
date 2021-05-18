@@ -792,88 +792,88 @@ struct CudaStatementExecutor<
  * Executor for vector loops inside of a CudaKernel.
  *
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename TENSOR_TYPE,
-          camp::idx_t TENSOR_DIM,
-          typename... EnclosedStmts,
-          typename Types>
-struct CudaStatementExecutor<
-    Data,
-    statement::For<ArgumentId, RAJA::policy::vector::tensor_exec<cuda_warp_loop, TENSOR_TYPE, TENSOR_DIM>, EnclosedStmts...>,
-    Types> {
-
-  using stmt_list_t = StatementList<EnclosedStmts...>;
-
-  // compute the vector index type and new LoopTypes
-  using value_type = camp::at_v<typename Data::index_types_t, ArgumentId>;
-  using vector_type = typename TENSOR_TYPE::vector_type;
-
-  using tensor_index_type = TensorIndex<value_type, TENSOR_TYPE, TENSOR_DIM>;
-  using NewTypes = setSegmentType<Types, ArgumentId, tensor_index_type>;
-
-  using enclosed_stmts_t =
-      CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
-
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
-  {
-    auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
-    auto end = camp::get<ArgumentId>(data.segment_tuple).end();
-    auto distance = segment_length<ArgumentId>(data);
-    using diff_t = decltype(distance);
-
-    diff_t distance_simd = distance - (distance%TENSOR_TYPE::s_num_elem);
-    diff_t distance_remainder = distance - distance_simd;
-
-    // Streaming loop for complete vector widths
-    camp::get<ArgumentId>(data.vector_sizes) = TENSOR_TYPE::s_num_elem;
-    for (diff_t i = 0; i < distance_simd; i+=TENSOR_TYPE::s_num_elem) {
-      // Assign i to the argument
-      // Note: this is independent of warp lane... each lane gets SAME index!
-      data.template assign_offset<ArgumentId>(i);
-
-      // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-    }
-
-    // Postamble for remaining elements
-    if(distance_remainder > 0){
-      camp::get<ArgumentId>(data.vector_sizes) = distance_remainder;
-
-      data.template assign_offset<ArgumentId>(distance_simd);
-
-      // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-    }
-
-  }
-
-
-
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
-  {
-    // Get enclosed statements
-    LaunchDims dims = enclosed_stmts_t::calculateDimensions(data);
-
-    // we always get EXACTLY one warp by allocating one warp in the X
-    // dimension
-    int len = RAJA::policy::cuda::WARP_SIZE;
-
-    // request one thread per element in the segment
-    set_cuda_dim<0>(dims.threads, len);
-
-    // since we are direct-mapping, we REQUIRE len
-    set_cuda_dim<0>(dims.min_threads, len);
-
-    return(dims);
-  }
-
-};
+//template <typename Data,
+//          camp::idx_t ArgumentId,
+//          typename TENSOR_TYPE,
+//          camp::idx_t TENSOR_DIM,
+//          typename... EnclosedStmts,
+//          typename Types>
+//struct CudaStatementExecutor<
+//    Data,
+//    statement::For<ArgumentId, RAJA::policy::vector::tensor_exec<cuda_warp_loop, TENSOR_TYPE, TENSOR_DIM>, EnclosedStmts...>,
+//    Types> {
+//
+//  using stmt_list_t = StatementList<EnclosedStmts...>;
+//
+//  // compute the vector index type and new LoopTypes
+//  using value_type = camp::at_v<typename Data::index_types_t, ArgumentId>;
+//  using vector_type = typename TENSOR_TYPE::vector_type;
+//
+//  using tensor_index_type = TensorIndex<value_type, TENSOR_TYPE, TENSOR_DIM>;
+//  using NewTypes = setSegmentType<Types, ArgumentId, tensor_index_type>;
+//
+//  using enclosed_stmts_t =
+//      CudaStatementListExecutor<Data, stmt_list_t, NewTypes>;
+//
+//  static
+//  inline
+//  RAJA_DEVICE
+//  void exec(Data &data, bool thread_active)
+//  {
+//    auto begin = camp::get<ArgumentId>(data.segment_tuple).begin();
+//    auto end = camp::get<ArgumentId>(data.segment_tuple).end();
+//    auto distance = segment_length<ArgumentId>(data);
+//    using diff_t = decltype(distance);
+//
+//    diff_t distance_simd = distance - (distance%TENSOR_TYPE::s_num_elem);
+//    diff_t distance_remainder = distance - distance_simd;
+//
+//    // Streaming loop for complete vector widths
+//    camp::get<ArgumentId>(data.vector_sizes) = TENSOR_TYPE::s_num_elem;
+//    for (diff_t i = 0; i < distance_simd; i+=TENSOR_TYPE::s_num_elem) {
+//      // Assign i to the argument
+//      // Note: this is independent of warp lane... each lane gets SAME index!
+//      data.template assign_offset<ArgumentId>(i);
+//
+//      // execute enclosed statements
+//      enclosed_stmts_t::exec(data, thread_active);
+//    }
+//
+//    // Postamble for remaining elements
+//    if(distance_remainder > 0){
+//      camp::get<ArgumentId>(data.vector_sizes) = distance_remainder;
+//
+//      data.template assign_offset<ArgumentId>(distance_simd);
+//
+//      // execute enclosed statements
+//      enclosed_stmts_t::exec(data, thread_active);
+//    }
+//
+//  }
+//
+//
+//
+//  static
+//  inline
+//  LaunchDims calculateDimensions(Data const &data)
+//  {
+//    // Get enclosed statements
+//    LaunchDims dims = enclosed_stmts_t::calculateDimensions(data);
+//
+//    // we always get EXACTLY one warp by allocating one warp in the X
+//    // dimension
+//    int len = RAJA::policy::cuda::WARP_SIZE;
+//
+//    // request one thread per element in the segment
+//    set_cuda_dim<0>(dims.threads, len);
+//
+//    // since we are direct-mapping, we REQUIRE len
+//    set_cuda_dim<0>(dims.min_threads, len);
+//
+//    return(dims);
+//  }
+//
+//};
 
 
 

@@ -13,11 +13,15 @@
 #include "gtest/gtest.h"
 #include "RAJA_gtest.hpp"
 
+#if 1
+
 using VectorTestTypes = ::testing::Types<
 
   // Test automatically wrapped types, since the specific register
   // implementations are tested elsewhere
-  //RAJA::VectorRegister<double>,
+  RAJA::VectorRegister<int>,
+  RAJA::VectorRegister<long>,
+  RAJA::VectorRegister<float>,
   RAJA::VectorRegister<double>
   >;
 
@@ -102,7 +106,6 @@ TEST(foobar, TestBlock)
 }
 #endif
 
-#if 1
 
 template <typename Policy>
 class VectorTest : public ::testing::Test
@@ -271,16 +274,16 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
     C[i] = 0.0;
   }
 
-  RAJA::View<double, RAJA::Layout<1>> X(A, N);
-  RAJA::View<double, RAJA::Layout<1>> Y(B, N);
-  RAJA::View<double, RAJA::Layout<1>> Z(C, N);
+  RAJA::View<element_t, RAJA::Layout<1>> X(A, N);
+  RAJA::View<element_t, RAJA::Layout<1>> Y(B, N);
+  RAJA::View<element_t, RAJA::Layout<1>> Z(C, N);
 
 
   using idx_t = RAJA::VectorIndex<int, vector_t>;
 
   auto all = idx_t::all();
 
-  Z[all] = 3.0 + (X[all]*(5.0/Y[all])) + 9.0;
+  Z[all] = 3 + (X[all]*(5/Y[all])) + 9;
 
 //  for(size_t i = 0;i < N; ++ i){
 //    printf("%lf ", (double)C[i]);
@@ -288,7 +291,7 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
 //  printf("\n\n");
 
   for(size_t i = 0;i < N;i ++){
-    ASSERT_SCALAR_EQ(3.0+(A[i]*(5.0/B[i]))+9.0, C[i]);
+    ASSERT_SCALAR_EQ(element_t(3+(A[i]*(5/B[i]))+9), C[i]);
   }
 
 
@@ -298,14 +301,14 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
 
   // evaluate on a subrange [N/2, N)
   auto some = idx_t::range(N/2, N);
-  Z[some] = 3.0 + (X[some]*(5.0/Y[some])) + 9.0;
+  Z[some] = 3.+ (X[some]*(5/Y[some])) + 9;
 
 
   for(size_t i = 0;i < N/2;i ++){
     ASSERT_SCALAR_EQ(0, C[i]);
   }
   for(size_t i = N/2;i < N;i ++){
-    ASSERT_SCALAR_EQ(3.0+(A[i]*(5.0/B[i]))+9.0, C[i]);
+    ASSERT_SCALAR_EQ(element_t(3+(A[i]*(5/B[i]))+9), C[i]);
   }
 
 
@@ -318,12 +321,12 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
   RAJA::forall<RAJA::vector_exec<vector_t>>(RAJA::TypedRangeSegment<int>(0,N/2),
       [=](idx_t i){
 
-     Z[i] = 3.0 + (X[i]*(5.0/Y[i])) + 9.0;
+     Z[i] = 3 + (X[i]*(5/Y[i])) + 9;
   });
 
 
   for(size_t i = 0;i < N/2;i ++){
-    ASSERT_SCALAR_EQ(3.0+(A[i]*(5.0/B[i]))+9.0, C[i]);
+    ASSERT_SCALAR_EQ(element_t(3+(A[i]*(5/B[i]))+9), C[i]);
   }
   for(size_t i = N/2;i < N;i ++){
     ASSERT_SCALAR_EQ(0, C[i]);
@@ -363,9 +366,9 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
     C[i] = 0.0;
   }
 
-  RAJA::View<double, RAJA::Layout<2>> X(A, N, M);
-  RAJA::View<double, RAJA::Layout<2>> Y(B, N, M);
-  RAJA::View<double, RAJA::Layout<2>> Z(C, N, M);
+  RAJA::View<element_t, RAJA::Layout<2>> X(A, N, M);
+  RAJA::View<element_t, RAJA::Layout<2>> Y(B, N, M);
+  RAJA::View<element_t, RAJA::Layout<2>> Z(C, N, M);
 
   using idx_t = RAJA::VectorIndex<index_t, vector_t>;
   auto all = idx_t::all();
@@ -495,3 +498,84 @@ REGISTER_TYPED_TEST_SUITE_P(VectorTest, GetSet, MinMaxSumDot, FmaFms, ForallVect
 INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, VectorTest, VectorTestTypes);
 
 #endif
+
+#if defined(RAJA_ENABLE_CUDA)
+
+
+GPU_TEST(VectorTestCuda, CudaWarpVector)
+{
+  using namespace RAJA::statement;
+
+  using element_t = double;
+  size_t N = 32*5;
+
+  element_t *A = nullptr;
+  cudaErrchk(cudaMallocManaged(&A,
+                    sizeof(element_t) * N,
+                    cudaMemAttachGlobal));
+
+  element_t *B = nullptr;
+
+  cudaErrchk(cudaMallocManaged(&B,
+                    sizeof(element_t) * N,
+                    cudaMemAttachGlobal));
+
+
+  element_t *C = nullptr;
+
+  cudaErrchk(cudaMallocManaged(&C,
+                    sizeof(element_t) * N,
+                    cudaMemAttachGlobal));
+
+  cudaErrchk(cudaDeviceSynchronize());
+
+
+  for(size_t i = 0;i < N; ++ i){
+    A[i] = (element_t)(NO_OPT_RAND*1000.0);
+    B[i] = (element_t)(NO_OPT_RAND*1000.0);
+    C[i] = 0.0;
+  }
+
+  RAJA::View<element_t, RAJA::Layout<1, int, 0>> X(A, N);
+  RAJA::View<element_t, RAJA::Layout<1, int, 0>> Y(B, N);
+  RAJA::View<element_t, RAJA::Layout<1, int, 0>> Z(C, N);
+
+
+  cudaErrchk(cudaDeviceSynchronize());
+
+
+  using vector_t = RAJA::VectorRegister<double, RAJA::cuda_warp_register>;
+  using idx_t = RAJA::VectorIndex<int, vector_t>;
+  auto all = idx_t::all();
+
+  using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t, RAJA::expt::cuda_launch_t<true , 512> >;
+
+  RAJA::expt::launch<pol_launch>(
+      RAJA::expt::DEVICE,
+      RAJA::expt::Resources(RAJA::expt::Teams(1),
+                            RAJA::expt::Threads(32)),
+      [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
+  {
+
+
+    Z[all] = 3 + (X[all]*(5/Y[all])) + 9;
+
+  });
+
+
+  cudaErrchk(cudaDeviceSynchronize());
+
+
+  for(size_t i = 0;i < N;i ++){
+    ASSERT_SCALAR_EQ(element_t(3+(A[i]*(5/B[i]))+9), C[i]);
+  }
+
+
+
+
+}
+
+
+
+#endif // RAJA_ENABLE_CUDA
+

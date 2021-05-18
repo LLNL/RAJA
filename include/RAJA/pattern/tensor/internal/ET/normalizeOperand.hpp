@@ -73,6 +73,7 @@ namespace RAJA
      */
     template<typename RHS>
     RAJA_INLINE
+    RAJA_HOST_DEVICE
     auto normalizeOperand(RHS const &rhs) ->
     typename NormalizeOperandHelper<RHS>::return_type
     {

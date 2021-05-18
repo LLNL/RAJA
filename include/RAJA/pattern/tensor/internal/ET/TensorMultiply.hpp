@@ -107,6 +107,7 @@ namespace RAJA
         /*!
          * operator+ overload that forms a FMA contraction
          */
+        RAJA_SUPPRESS_HD_WARN
         template<typename ADD>
         RAJA_INLINE
         RAJA_HOST_DEVICE

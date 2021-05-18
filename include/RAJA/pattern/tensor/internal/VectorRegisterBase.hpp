@@ -90,6 +90,7 @@ namespace internal {
        * @brief Performs load specified by TensorRef object.
        */
       template<typename POINTER_TYPE, typename INDEX_TYPE, internal::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &load_ref(internal::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM> const &ref){
 
@@ -139,6 +140,7 @@ namespace internal {
        * @brief Performs load specified by TensorRef object.
        */
       template<typename POINTER_TYPE, typename INDEX_TYPE, internal::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
+      RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type const &store_ref(internal::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM> const &ref) const {
 
