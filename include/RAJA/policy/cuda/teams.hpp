@@ -31,10 +31,6 @@ namespace RAJA
 namespace expt
 {
 
-template <bool async, int num_threads = 0>
-struct cuda_launch_t {
-};
-
 template <typename BODY>
 __global__ void launch_global_fcn(LaunchContext ctx, BODY body_in)
 {

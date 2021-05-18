@@ -20,6 +20,8 @@
 #define RAJA_pattern_teams_loop_HPP
 
 #include "RAJA/pattern/teams/teams_core.hpp"
+
+#include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/policy/loop/policy.hpp"
 
 
@@ -28,9 +30,6 @@ namespace RAJA
 
 namespace expt
 {
-
-struct seq_launch_t {
-};
 
 template <>
 struct LaunchExecute<RAJA::expt::null_launch_t> {

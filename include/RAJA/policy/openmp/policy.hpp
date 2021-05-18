@@ -108,6 +108,16 @@ struct omp_parallel_region
                                             Platform::host> {
 };
 
+///
+///  Struct supporting OpenMP parallel region for Teams
+///
+struct omp_launch_t
+    : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                            Pattern::region,
+                                            Launch::undefined,
+                                            Platform::host> {
+};
+
 
 ///
 ///  Struct supporting OpenMP 'for nowait schedule( )'
@@ -352,6 +362,11 @@ using policy::omp::omp_for_runtime_exec;
 /// Type aliases for omp parallel region
 ///
 using policy::omp::omp_parallel_region;
+
+namespace expt
+{
+  using policy::omp::omp_launch_t;
+}
 
 ///
 /// Type aliases for omp reductions

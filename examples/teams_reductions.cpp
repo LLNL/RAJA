@@ -149,6 +149,7 @@ int main(int argc, char *argv[])
   const int TEAM_SZ = 256;
   const int GRID_SZ = RAJA_DIVIDE_CEILING_INT(N,TEAM_SZ);
 
+#if 0
   RAJA::resources::Host res_host;
   RAJA::resources::Cuda res_gpu;
 
@@ -171,6 +172,7 @@ int main(int argc, char *argv[])
          });
        
     });
+#endif
 
 
 

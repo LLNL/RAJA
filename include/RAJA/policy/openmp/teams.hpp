@@ -28,9 +28,6 @@ namespace RAJA
 namespace expt
 {
 
-struct omp_launch_t {
-};
-
 template <>
 struct LaunchExecute<RAJA::expt::omp_launch_t> {
   template <typename BODY>
