@@ -64,12 +64,13 @@ matrix:
     - IMG=nvcc10.2
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On -DENABLE_WARNINGS=On -DENABLE_WARNINGS_AS_ERRORS=On -DENABLE_TBB=On"
     - DO_TEST=no
-  - compiler: clang9-cuda9.1
-    env:
-    - COMPILER=clang++-9
-    - IMG=clang9
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=Off -DENABLE_CLANG_CUDA=On -DBLT_CLANG_CUDA_ARCH=sm_60 -DENABLE_CUDA=On -DCUDA_ARCH=sm_60 -DCUDA_TOOLKIT_ROOT_DIR:PATH='/usr/lib/cuda'"
-    - DO_TEST=no
+# Disable Clang Cuda until we update some things
+#  - compiler: clang9-cuda9.1
+#    env:
+#    - COMPILER=clang++-9
+#    - IMG=clang9
+#    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=Off -DENABLE_CLANG_CUDA=On -DBLT_CLANG_CUDA_ARCH=sm_60 -DENABLE_CUDA=On -DCUDA_ARCH=sm_60 -DCUDA_TOOLKIT_ROOT_DIR:PATH='/usr/lib/cuda' "
+#    - DO_TEST=no
   - compiler: hip
     env:
       - COMPILER=g++

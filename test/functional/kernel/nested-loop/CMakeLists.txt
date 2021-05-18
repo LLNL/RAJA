@@ -58,6 +58,7 @@ if(RAJA_ENABLE_TARGET_OPENMP)
     set(NESTED_LOOP_BACKEND OpenMPTarget)
     set(NESTED_LOOPTYPES Basic MultiLambdaParam)
 
+    set(RESOURCE "-")
     foreach( NESTED_LOOP_TYPE ${NESTED_LOOPTYPES} )
       configure_file( test-kernel-nested-loop.cpp.in
                       test-kernel-nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )

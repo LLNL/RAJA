@@ -2048,7 +2048,7 @@ GPU_TEST(Kernel, CudaExec1c)
 
   // Loop Fusion
   using Pol = KernelPolicy<
-      CudaKernelExt<cuda_explicit_launch<false, 5, 3>,
+      CudaKernelExt<cuda_explicit_launch<false, 5, 3, 1>,
            statement::Tile<2, tile_fixed<2>, cuda_block_z_loop,
                     For<0, cuda_block_x_loop,
                         For<1, cuda_block_y_loop,
@@ -2585,6 +2585,58 @@ GPU_TEST(Kernel, CudaExec_fixedspillexec)
   // Loop Fusion
   using Pol = KernelPolicy<CudaKernelFixed<1024,
       statement::Tile<0, tile_fixed<1024>, cuda_block_x_loop,
+        For<0, cuda_thread_x_direct,
+          Lambda<0>
+        >
+      >
+    >
+  >;
+
+
+  long *x = nullptr;
+  cudaErrchk(cudaMallocManaged(&x, (N+M) * sizeof(long)));
+  long *y = x;
+
+  RAJA::ReduceSum<cuda_reduce, long> trip_count(0);
+
+  kernel<Pol>(
+
+      RAJA::make_tuple(RangeSegment(0, N)),
+
+      [=] __device__(Index_type i) {
+        constexpr long M = (long)32; // M must be constexpr on the device
+        long a[M];
+        for (int j = 0; j < M; ++j) {
+          a[j] = x[i+j];
+          y[i+j] = a[j];
+        }
+        trip_count += 1;
+        for (int j = 0; j < M; ++j) {
+          x[i+j] = a[j];
+        }
+      });
+
+  cudaErrchk(cudaDeviceSynchronize());
+
+
+  long result = (long)trip_count;
+
+  ASSERT_EQ(result, N);
+
+  cudaErrchk(cudaFree(x));
+}
+
+GPU_TEST(Kernel, CudaExec_fixedsmspillexec)
+{
+  using namespace RAJA;
+
+
+  constexpr long N = (long)2048;
+  constexpr long M = (long)32;
+
+  // Loop Fusion
+  using Pol = KernelPolicy<CudaKernelFixedSM<512, 3,
+      statement::Tile<0, tile_fixed<512>, cuda_block_x_loop,
         For<0, cuda_thread_x_direct,
           Lambda<0>
         >
