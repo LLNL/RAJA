@@ -132,7 +132,7 @@ public:
   Teams teams;
   Threads threads;
   Lanes lanes;
-  const char *kernel_name;
+  const char *kernel_name{nullptr};
 
   RAJA_INLINE
   Resources() = default;

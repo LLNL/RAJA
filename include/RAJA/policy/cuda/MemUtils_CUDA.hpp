@@ -210,9 +210,13 @@ RAJA_INLINE
 void launch(const void* func, cuda_dim_t gridDim, cuda_dim_t blockDim, void** args, size_t shmem,
             cudaStream_t stream, const char *name = nullptr)
 {
+#if defined(RAJA_ENABLE_NV_TOOLS_EXT)
   if(name) nvtxRangePushA(name);
+#endif
   cudaErrchk(cudaLaunchKernel(func, gridDim, blockDim, args, shmem, stream));
+#if defined(RAJA_ENABLE_NV_TOOLS_EXT)
   if(name) nvtxRangePop();
+#endif
   launch(stream);
 }
 
