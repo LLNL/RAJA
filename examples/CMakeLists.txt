@@ -50,10 +50,6 @@ raja_add_executable(
   SOURCES teams_reductions.cpp)
 
 raja_add_executable(
-  NAME name_kernel
-  SOURCES name_kernel.cpp kernel-name-plugin.cpp)
-
-raja_add_executable(
   NAME tut_scan
   SOURCES tut_scan.cpp)
 
