@@ -51,7 +51,7 @@ namespace internal {
       using layout_type = TensorLayout<0>;
 
 
-      static constexpr camp::idx_t s_num_elem = sizeof...(VAL_SEQ);
+      static constexpr camp::idx_t s_num_elem = SIZE;
 
     private:
 

@@ -10,7 +10,7 @@
 //#define RAJA_ENABLE_VECTOR_STATS
 
 // Un-comment the following line to run correctness checks on each variant
-#define DEBUG_LTIMES
+//#define DEBUG_LTIMES
 
 #include "RAJA/config.hpp"
 
@@ -20,7 +20,7 @@
 #define VARIANT_RAJA_SEQ_ARGS        0
 #define VARIANT_RAJA_TEAMS_SEQ       0
 #define VARIANT_RAJA_VECTOR          0
-#define VARIANT_RAJA_MATRIX          0
+#define VARIANT_RAJA_MATRIX          1
 #define VARIANT_RAJA_SEQ_SHMEM       0
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -144,8 +144,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // and we're not really measuring performance here
   const long num_z = 128 + (rand()/RAND_MAX);
 #else
-  const int num_iter = 100 + (rand()/RAND_MAX);
-  const int num_z = 64*1024 + (rand()/RAND_MAX);
+  const int num_iter = 10 + (rand()/RAND_MAX);
+  const int num_z = 32*1024 + (rand()/RAND_MAX);
 
 //  const int num_z = 32 + (rand()/RAND_MAX);
 #endif

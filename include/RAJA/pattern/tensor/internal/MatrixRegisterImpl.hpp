@@ -48,8 +48,10 @@ namespace RAJA
       using transpose_tensor_type = TensorRegister<REGISTER_POLICY, T, TensorLayout<!ROW_ORD, !COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>, camp::idx_seq<VAL_SEQ... >>;
 
     private:
+      static constexpr camp::idx_t s_num_vectors =
+          layout_type::is_row_major() ? ROW_SIZE : COL_SIZE;
 
-      vector_type m_values[sizeof...(VAL_SEQ)];
+      vector_type m_values[s_num_vectors];
 
 
     public:
@@ -61,18 +63,19 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      TensorRegister(element_type c) :
-        m_values{(VAL_SEQ >= 0) ? vector_type(c) : vector_type(c)...}
-      {}
+      TensorRegister(element_type c)
+      {
+        broadcast(c);
+      }
 
 
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
       TensorRegister(self_type const &c) :
-        base_type(c),
-        m_values{c.m_values[VAL_SEQ]...}
+        base_type(c)
       {
+        copy(c);
       }
 
       /*
@@ -97,7 +100,7 @@ namespace RAJA
       TensorRegister(vector_type reg0, REGS const &... regs) :
         m_values{reg0, regs...}
       {
-        static_assert(1+sizeof...(REGS) == sizeof...(VAL_SEQ),
+        static_assert(1+sizeof...(REGS) == s_num_vectors,
             "Incompatible number of registers");
       }
 
@@ -152,25 +155,8 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       TensorRegister &operator=(self_type const &c){
-        camp::sink( (m_values[VAL_SEQ] = c.m_values[VAL_SEQ])...);
-        return *this;
+        return copy(c);
       }
-
-//      /*
-//       * Overload for:    assignment of ET to a TensorRegister
-//
-//       */
-//      template<typename RHS,
-//        typename std::enable_if<std::is_base_of<RAJA::internal::ET::TensorExpressionConcreteBase, RHS>::value, bool>::type = true>
-//      RAJA_INLINE
-//      RAJA_HOST_DEVICE
-//      self_type const &operator=(RHS const &rhs)
-//      {
-//        // evaluate a single tile of the ET, storing in this TensorRegister
-//        copy( rhs.eval(base_type::s_get_default_tile()) );
-//
-//        return *this;
-//      }
 
 
       /*!
@@ -200,8 +186,10 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &copy(self_type const &v){
-        camp::sink((m_values[VAL_SEQ] = v.m_values[VAL_SEQ])...);
+      self_type &copy(self_type const &c){
+        for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+          m_values[i] = c.m_values[i];
+        }
         return *this;
       }
 
@@ -214,9 +202,10 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &clear(){
-        camp::sink(
-            m_values[VAL_SEQ].broadcast(0)...
-        );
+        for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+          m_values[i] = vector_type(0);
+        }
+
 
         return *this;
       }
@@ -323,14 +312,14 @@ namespace RAJA
             threadIdx.x, threadIdx.y, row_stride, col_stride);
 #endif
         if(layout_type::is_row_major()){
-          camp::sink(
-              m_values[VAL_SEQ].load_packed(ptr+VAL_SEQ*row_stride)...
-          );
+          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+            m_values[i].load_packed(ptr+i*row_stride);
+          }
         }
         else{
-          camp::sink(
-              m_values[VAL_SEQ].load_packed(ptr+VAL_SEQ*col_stride)...
-          );
+          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+            m_values[i].load_packed(ptr+i*col_stride);
+          }
         }
 
         return *this;
@@ -349,14 +338,14 @@ namespace RAJA
             threadIdx.x, threadIdx.y, row_stride, col_stride);
 #endif
         if(layout_type::is_row_major()){
-          camp::sink(
-              m_values[VAL_SEQ].load_strided(ptr+VAL_SEQ*row_stride, col_stride)...
-          );
+          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+            m_values[i].load_strided(ptr+i*row_stride, col_stride);
+          }
         }
         else{
-          camp::sink(
-              m_values[VAL_SEQ].load_strided(ptr+VAL_SEQ*col_stride, row_stride)...
-          );
+          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+            m_values[i].load_strided(ptr+i*col_stride, row_stride);
+          }
         }
 
         return *this;
@@ -377,18 +366,20 @@ namespace RAJA
 #endif
 
         if(layout_type::is_row_major()){
-          camp::sink(
-              (VAL_SEQ < num_rows
-              ?  m_values[VAL_SEQ].load_packed_n(ptr+VAL_SEQ*row_stride, num_cols)
-              :  m_values[VAL_SEQ].broadcast(0))... // clear to len N
-          );
+          for(camp::idx_t i = 0;i < num_rows;++ i){
+            m_values[i].load_packed_n(ptr+i*row_stride, num_cols);
+          }
+          for(camp::idx_t i = num_rows;i < s_num_vectors;++ i){
+            m_values[i] = vector_type(0); // clear remainder
+          }
         }
         else{
-          camp::sink(
-              (VAL_SEQ < num_cols
-              ?  m_values[VAL_SEQ].load_packed_n(ptr+VAL_SEQ*col_stride, num_rows)
-              :  m_values[VAL_SEQ].broadcast(0))... // clear to len N
-          );
+          for(camp::idx_t i = 0;i < num_cols;++ i){
+            m_values[i].load_packed_n(ptr+i*col_stride, num_rows);
+          }
+          for(camp::idx_t i = num_cols;i < s_num_vectors;++ i){
+            m_values[i] = vector_type(0); // clear remainder
+          }
         }
 
         return *this;
@@ -407,19 +398,22 @@ namespace RAJA
         printf("th%d,%d: load_strided_nm, stride=%d,%d, nm=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, col_stride, num_rows, num_cols);
 #endif
+
         if(layout_type::is_row_major()){
-          camp::sink(
-              (VAL_SEQ < num_rows
-              ?  m_values[VAL_SEQ].load_strided_n(ptr+VAL_SEQ*row_stride, col_stride, num_cols)
-              :  m_values[VAL_SEQ].broadcast(0))... // clear to len N
-          );
+          for(camp::idx_t i = 0;i < num_rows;++ i){
+            m_values[i].load_strided_n(ptr+i*row_stride, col_stride, num_cols);
+          }
+          for(camp::idx_t i = num_rows;i < s_num_vectors;++ i){
+            m_values[i] = vector_type(0); // clear remainder
+          }
         }
         else{
-          camp::sink(
-              (VAL_SEQ < num_cols
-              ?  m_values[VAL_SEQ].load_strided_n(ptr+VAL_SEQ*col_stride, row_stride, num_rows)
-              :  m_values[VAL_SEQ].broadcast(0))... // clear to len N
-          );
+          for(camp::idx_t i = 0;i < num_cols;++ i){
+            m_values[i].load_strided_n(ptr+i*col_stride, row_stride, num_rows);
+          }
+          for(camp::idx_t i = num_cols;i < s_num_vectors;++ i){
+            m_values[i] = vector_type(0); // clear remainder
+          }
         }
 
         return *this;
@@ -441,15 +435,16 @@ namespace RAJA
         printf("th%d,%d: store_packed, stride=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, 1);
 #endif
+
         if(layout_type::is_row_major()){
-          camp::sink(
-              m_values[VAL_SEQ].store_packed(ptr+VAL_SEQ*row_stride)...
-          );
+          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+            m_values[i].store_packed(ptr+i*row_stride);
+          }
         }
         else{
-          camp::sink(
-              m_values[VAL_SEQ].store_packed(ptr+VAL_SEQ*col_stride)...
-          );
+          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+            m_values[i].store_packed(ptr+i*col_stride);
+          }
         }
 
         return *this;
@@ -467,17 +462,16 @@ namespace RAJA
         printf("th%d,%d: store_strided, stride=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, col_stride);
 #endif
+
         if(layout_type::is_row_major()){
-          // store all rows width a column stride
-          camp::sink(
-              m_values[VAL_SEQ].store_strided(ptr+VAL_SEQ*row_stride, col_stride)...
-          );
+          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+            m_values[i].store_strided(ptr+i*row_stride, col_stride);
+          }
         }
         else{
-          // store all rows width a column stride
-          camp::sink(
-              m_values[VAL_SEQ].store_strided(ptr+VAL_SEQ*col_stride, row_stride)...
-          );
+          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+            m_values[i].store_strided(ptr+i*col_stride, row_stride);
+          }
         }
 
 
@@ -497,19 +491,16 @@ namespace RAJA
         printf("th%d,%d: RM store_packed_nm, stride=%d,%d, nm=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, 1, num_rows, num_cols);
 #endif
+
         if(layout_type::is_row_major()){
-          camp::sink(
-              (VAL_SEQ < num_rows
-              ?  m_values[VAL_SEQ].store_packed_n(ptr+VAL_SEQ*row_stride, num_cols)
-              :  m_values[VAL_SEQ])... // NOP, but has same as above type
-          );
+          for(camp::idx_t i = 0;i < num_rows;++ i){
+            m_values[i].store_packed_n(ptr+i*row_stride, num_cols);
+          }
         }
-        else {
-          camp::sink(
-              (VAL_SEQ < num_cols
-              ?  m_values[VAL_SEQ].store_packed_n(ptr+VAL_SEQ*col_stride, num_rows)
-              :  m_values[VAL_SEQ])... // NOP, but has same as above type
-          );
+        else{
+          for(camp::idx_t i = 0;i < num_cols;++ i){
+            m_values[i].store_packed_n(ptr+i*col_stride, num_rows);
+          }
         }
 
         return *this;
@@ -528,19 +519,16 @@ namespace RAJA
         printf("th%d,%d: RM store_strided_nm, stride=%d,%d, nm=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, col_stride, num_rows, num_cols);
 #endif
+
         if(layout_type::is_row_major()){
-          camp::sink(
-              (VAL_SEQ < num_rows
-              ?  m_values[VAL_SEQ].store_strided_n(ptr+VAL_SEQ*row_stride, col_stride, num_cols)
-              :  m_values[VAL_SEQ])... // NOP, but has same as above type
-          );
+          for(camp::idx_t i = 0;i < num_rows;++ i){
+            m_values[i].store_strided_n(ptr+i*row_stride, col_stride, num_cols);
+          }
         }
-        else {
-          camp::sink(
-              (VAL_SEQ < num_cols
-              ?  m_values[VAL_SEQ].store_strided_n(ptr+VAL_SEQ*col_stride, row_stride, num_rows)
-              :  m_values[VAL_SEQ])... // NOP, but has same as above type
-          );
+        else{
+          for(camp::idx_t i = 0;i < num_cols;++ i){
+            m_values[i].store_strided_n(ptr+i*col_stride, row_stride, num_rows);
+          }
         }
 
         return *this;
@@ -555,7 +543,9 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &broadcast(element_type v){
-        camp::sink((m_values[VAL_SEQ].broadcast(v))...);
+        for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+          m_values[i].broadcast(v);
+        }
         return *this;
       }
 
@@ -583,12 +573,16 @@ namespace RAJA
 
           auto const &vals = result.m_values;
 
-          result = self_type((
-             ((VAL_SEQ>>lvl)&0x1) == 0 ?
-                 vals[VAL_SEQ - (VAL_SEQ&(1<<lvl))].transpose_shuffle_left(lvl, vals[VAL_SEQ - (VAL_SEQ&(1<<lvl)) + (1<<lvl)]) :
-                 vals[VAL_SEQ - (VAL_SEQ&(1<<lvl))].transpose_shuffle_right(lvl, vals[VAL_SEQ - (VAL_SEQ&(1<<lvl)) + (1<<lvl)])
-          )...);
-
+          self_type tmp;
+          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+            if(((i>>lvl)&0x1) == 0){
+              tmp.m_values[i] = vals[i - (i&(1<<lvl))].transpose_shuffle_left(lvl, vals[i - (i&(1<<lvl)) + (1<<lvl)]);
+            }
+            else{
+              tmp.m_values[i] = vals[i - (i&(1<<lvl))].transpose_shuffle_right(lvl, vals[i - (i&(1<<lvl)) + (1<<lvl)]);
+            }
+          }
+          result = tmp;
         }
 
         return result;
@@ -629,15 +623,17 @@ namespace RAJA
       vector_type right_multiply_vector(vector_type v) const {
         if(layout_type::is_row_major()){
           vector_type result;
-          camp::sink(
-              result.set(v.dot(m_values[VAL_SEQ]), VAL_SEQ)...
-              );
-
+          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+            result.set(v.dot(m_values[i]), i);
+          }
           return result;
         }
         else{
-          return
-                RAJA::sum<vector_type>(( m_values[VAL_SEQ] * v.get(VAL_SEQ))...);
+          vector_type result(0);
+          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+            result +=  m_values[i] * v.get(i);
+          }
+          return result;
         }
       }
 
@@ -647,18 +643,19 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       vector_type left_multiply_vector(vector_type v) const {
-
         if(layout_type::is_column_major()){
           vector_type result;
-          camp::sink(
-              result.set(v.dot(m_values[VAL_SEQ]), VAL_SEQ)...
-              );
-
+          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+            result.set(v.dot(m_values[i]), i);
+          }
           return result;
         }
         else{
-          return
-                RAJA::sum<vector_type>(( m_values[VAL_SEQ] * v.get(VAL_SEQ))...);
+          vector_type result(0);
+          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+            result +=  m_values[i] * v.get(i);
+          }
+          return result;
         }
       }
 
@@ -671,14 +668,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       void right_multiply_vector_accumulate(vector_type &acc, vector_type v) const {
-        if(layout_type::is_row_major()){
-          acc.inplace_add(vector_type{v.dot(m_values[VAL_SEQ])...});
-        }
-        else{
-          acc.inplace_add(
-              RAJA::sum<vector_type>(( m_values[VAL_SEQ] * v.get(VAL_SEQ))...)
-          );
-        }
+        acc.inplace_add(right_multiply_vector(v));
       }
 
       /*!
@@ -689,14 +679,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       void left_multiply_vector_accumulate(vector_type &acc, vector_type v) const {
-        if(layout_type::is_column_major()){
-          acc.inplace_add(vector_type{v.dot(m_values[VAL_SEQ])...});
-        }
-        else{
-          acc.inplace_add(
-              RAJA::sum<vector_type>(( m_values[VAL_SEQ] * v.get(VAL_SEQ))...)
-          );
-        }
+        acc.inplace_add(left_multiply_vector(v));
       }
 
 
@@ -706,9 +689,11 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type multiply(self_type mat) const {
-        return self_type(
-            (m_values[VAL_SEQ])*(mat.m_values[VAL_SEQ]) ...
-        );
+        self_type result;
+        for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+          result.m_values[i] = m_values[i].multiply(mat.m_values[i]);
+        }
+        return result;
       }
 
       /*!
@@ -717,9 +702,11 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type multiply_add(self_type mat, self_type add) const {
-        return self_type(
-            m_values[VAL_SEQ].multiply_add(mat.m_values[VAL_SEQ], add) ...
-        );
+        self_type result;
+        for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+          result.m_values[i] = m_values[i].multiply_add(mat.m_values[i], add.m_values[i]);
+        }
+        return result;
       }
 
 
@@ -763,33 +750,31 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type add(self_type mat) const {
-        return self_type(
-            (m_values[VAL_SEQ])+(mat.m_values[VAL_SEQ]) ...
-        );
+        self_type result;
+        for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+          result.m_values[i] = m_values[i].add(mat.m_values[i]);
+        }
+        return result;
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type subtract(self_type mat) const {
-        return self_type(
-            (m_values[VAL_SEQ])-(mat.m_values[VAL_SEQ]) ...
-        );
+        self_type result;
+        for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+          result.m_values[i] = m_values[i].subtract(mat.m_values[i]);
+        }
+        return result;
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type divide(self_type mat) const {
-        return self_type(
-            (m_values[VAL_SEQ].divide(mat.m_values[VAL_SEQ])) ...
-        );
-      }
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type divide_n(self_type mat, camp::idx_t N) const {
-        return self_type(
-            (m_values[VAL_SEQ].divide_n(mat.m_values[VAL_SEQ], N)) ...
-        );
+        self_type result;
+        for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+          result.m_values[i] = m_values[i].divide(mat.m_values[i]);
+        }
+        return result;
       }
 
 
