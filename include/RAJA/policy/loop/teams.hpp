@@ -56,6 +56,19 @@ struct LoopExecute<loop_exec, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+    for (int i = 0; i < len; i++) {
+
+      body(*(segment.begin() + i));
+    }
+  }
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
       LaunchContext const RAJA_UNUSED_ARG(&ctx),
       SEGMENT const &segment,
       BODY const &body)

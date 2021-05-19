@@ -174,23 +174,64 @@ public:
   }
 };
 
-
 template <typename LAUNCH_POLICY>
 struct LaunchExecute;
 
 template <typename POLICY_LIST, typename BODY>
-void launch(ExecPlace place, Grid const &team_resources, BODY const &body)
+void launch(ExecPlace place, Grid const &grid, BODY const &body)
 {
   switch (place) {
     case HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      launch_t::exec(LaunchContext(team_resources, HOST), body);
+      launch_t::exec(LaunchContext(grid, HOST), body);
       break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
     case DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      launch_t::exec(LaunchContext(team_resources, DEVICE), body);
+      launch_t::exec(LaunchContext(grid, DEVICE), body);
+      break;
+    }
+#endif
+    default:
+      RAJA_ABORT_OR_THROW("Unknown launch place or device is not enabled");
+  }
+}
+
+struct TeamResources
+{
+
+  RAJA::resources::Host &host; //host resource
+
+#if defined(RAJA_ENABLE_CUDA)
+  RAJA::resources::Cuda &cuda; //cuda resource
+#endif
+
+#if defined(RAJA_ENABLE_CUDA)
+  TeamResources(RAJA::resources::Host &host_,
+                RAJA::resources::Cuda &cuda_)
+    :host(host_), cuda(cuda_) {};
+#else
+  TeamResources(RAJA::resources::Host &host_)
+    :host(host_) {};
+#endif
+};
+
+
+//Launch API which takes team resource struct
+template <typename POLICY_LIST, typename BODY>
+void launch(ExecPlace place, TeamResources &res, Grid const &grid, BODY const &body)
+{
+  switch (place) {
+    case HOST: {
+      using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
+      launch_t::exec(res, LaunchContext(grid, HOST), body);
+      break;
+    }
+#ifdef RAJA_DEVICE_ACTIVE
+    case DEVICE: {
+      using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
+      launch_t::exec(res, LaunchContext(grid, DEVICE), body);
       break;
     }
 #endif
@@ -204,7 +245,7 @@ void launch(ExecPlace place, Grid const &team_resources, BODY const &body)
 #if 0
   template <typename POLICY_LIST, typename BODY>
   void launch(ExecPlace place, RAJA::resources::Resource &res,
-              Resources const &team_resources, BODY const &body)
+              Grid const &grid, BODY const &body)
   {
     switch (place) {
     case HOST: {
@@ -212,13 +253,13 @@ void launch(ExecPlace place, Grid const &team_resources, BODY const &body)
       using Res = typename resources::get_resource<typename POLICY_LIST::host_policy_t>::type;
       Res *r = res.try_get<Res>(); // or get<Res>()
       if(r == nullptr) {/*throw error \n*/};
-      launch_t::exec(r, LaunchContext(team_resources, HOST), body);
+      launch_t::exec(r, LaunchContext(grid, HOST), body);
       break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
     case DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      launch_t::exec(LaunchContext(team_resources, DEVICE), body);
+      launch_t::exec(LaunchContext(grid, DEVICE), body);
       break;
     }
 #endif
@@ -241,6 +282,19 @@ struct LoopExecute;
 
 template <typename POLICY, typename SEGMENT>
 struct LoopICountExecute;
+
+//Loop method with no context
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename SEGMENT,
+          typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void loop(SEGMENT const &segment,
+                                       BODY const &body)
+{
+
+  LoopExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(segment,
+                                                       body);
+}
 
 template <typename POLICY_LIST,
           typename CONTEXT,

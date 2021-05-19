@@ -151,9 +151,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
 
 
+    RAJA::resources::Host host;
+    RAJA::resources::Cuda device;
+
+    RAJA::expt::TeamResources team_res(host, device);
+
     RAJA::View<int, RAJA::Layout<2>> D(Ddat, N_tri, N_tri);
 
-    RAJA::expt::launch<launch_policy>(select_cpu_or_gpu,
+    RAJA::expt::launch<launch_policy>(select_cpu_or_gpu, team_res,
        RAJA::expt::Grid(RAJA::expt::Teams(N_tri), RAJA::expt::Threads(N_tri)),
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
