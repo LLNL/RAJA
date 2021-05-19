@@ -26,7 +26,7 @@ namespace RAJA
 {
 
   template<typename T, typename LAYOUT, typename REGISTER_POLICY = RAJA::default_register>
-  using MatrixRegister =
+  using SquareMatrixRegister =
       TensorRegister<REGISTER_POLICY,
                      T,
                      LAYOUT,

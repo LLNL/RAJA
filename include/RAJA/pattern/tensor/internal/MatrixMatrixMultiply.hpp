@@ -39,10 +39,10 @@ namespace internal {
 
   template<typename T, typename LAYOUT, typename REGISTER_POLICY>
   struct MatrixMatrixMultiplyHelper<
-    MatrixRegister<T, LAYOUT, REGISTER_POLICY>,
-    MatrixRegister<T, LAYOUT, REGISTER_POLICY>>
+    SquareMatrixRegister<T, LAYOUT, REGISTER_POLICY>,
+    SquareMatrixRegister<T, LAYOUT, REGISTER_POLICY>>
     {
-      using matrix_type = MatrixRegister<T, LAYOUT, REGISTER_POLICY>;
+      using matrix_type = SquareMatrixRegister<T, LAYOUT, REGISTER_POLICY>;
       using vector_type = typename matrix_type::vector_type;
       using result_type = matrix_type;
 

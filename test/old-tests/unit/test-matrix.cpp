@@ -15,18 +15,18 @@
 using MatrixTestTypes = ::testing::Types<
 
     // These tests use the platform default SIMD architecture
-    RAJA::MatrixRegister<double, RAJA::ColMajorLayout>,
-    RAJA::MatrixRegister<double, RAJA::RowMajorLayout>,
-    RAJA::MatrixRegister<float, RAJA::ColMajorLayout>,
-    RAJA::MatrixRegister<float, RAJA::RowMajorLayout>,
-    RAJA::MatrixRegister<long, RAJA::ColMajorLayout>,
-    RAJA::MatrixRegister<long, RAJA::RowMajorLayout>,
-    RAJA::MatrixRegister<int, RAJA::ColMajorLayout>,
-    RAJA::MatrixRegister<int, RAJA::RowMajorLayout>,
+    RAJA::SquareMatrixRegister<double, RAJA::ColMajorLayout>,
+    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout>,
+    RAJA::SquareMatrixRegister<float, RAJA::ColMajorLayout>,
+    RAJA::SquareMatrixRegister<float, RAJA::RowMajorLayout>,
+    RAJA::SquareMatrixRegister<long, RAJA::ColMajorLayout>,
+    RAJA::SquareMatrixRegister<long, RAJA::RowMajorLayout>,
+    RAJA::SquareMatrixRegister<int, RAJA::ColMajorLayout>,
+    RAJA::SquareMatrixRegister<int, RAJA::RowMajorLayout>,
 
     // Tests tests force the use of scalar math
-    RAJA::MatrixRegister<double, RAJA::ColMajorLayout, RAJA::scalar_register>,
-    RAJA::MatrixRegister<double, RAJA::RowMajorLayout, RAJA::scalar_register>
+    RAJA::SquareMatrixRegister<double, RAJA::ColMajorLayout, RAJA::scalar_register>,
+    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout, RAJA::scalar_register>
 
   >;
 

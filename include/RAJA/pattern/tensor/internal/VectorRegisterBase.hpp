@@ -76,7 +76,7 @@ namespace internal {
        */
       template<typename T2, typename L, typename RP>
       self_type
-      operator*(MatrixRegister<T2, L, RP> const &y) const
+      operator*(SquareMatrixRegister<T2, L, RP> const &y) const
       {
         return y.left_vector_multiply(*getThis());
       }

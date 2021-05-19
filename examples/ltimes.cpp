@@ -626,7 +626,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  using matrix_t = RAJA::MatrixRegister<double, ColMajorLayout>;
+  using matrix_t = RAJA::SquareMatrixRegister<double, ColMajorLayout>;
 
 
 
@@ -715,7 +715,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-    using matrix_t = RAJA::MatrixRegister<double, RowMajorLayout>;
+    using matrix_t = RAJA::SquareMatrixRegister<double, RowMajorLayout>;
 
 
     std::cout << "matrix size: " << matrix_t::s_dim_elem(0) <<
@@ -1312,7 +1312,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk( cudaMemcpy( dphi_data, phi_data, phi_size * sizeof(double),
                           cudaMemcpyHostToDevice ) );
 
-  using matrix_t = RAJA::MatrixRegister<double, ColMajorLayout, RAJA::cuda_warp_register>;
+  using matrix_t = RAJA::SquareMatrixRegister<double, ColMajorLayout, RAJA::cuda_warp_register>;
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
   using ColD = RAJA::ColIndex<ID, matrix_t>;
