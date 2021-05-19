@@ -55,7 +55,7 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
 
     resources::Cuda cuda_res = resources::Cuda::get_default();
     /* Use the zero stream until resource is better supported */
-    cudaStream_t stream = 0;//cuda_res.get_stream();
+    cudaStream_t stream = cuda_res.get_stream();
 
     //
     // Compute the number of blocks and threads
