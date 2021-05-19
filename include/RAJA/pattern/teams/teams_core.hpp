@@ -132,15 +132,12 @@ public:
   Teams teams;
   Threads threads;
   Lanes lanes;
-  const char *kernel_name = nullptr;
+  const char *kernel_name;
 
   RAJA_INLINE
   Resources() = default;
 
-  Resources(Teams in_teams, Threads in_threads)
-      : teams(in_teams), threads(in_threads){};
-
-  Resources(Teams in_teams, Threads in_threads, const char *in_kernel_name)
+  Resources(Teams in_teams, Threads in_threads, const char *in_kernel_name = nullptr)
     : teams(in_teams), threads(in_threads), kernel_name(in_kernel_name){};
 
 private:

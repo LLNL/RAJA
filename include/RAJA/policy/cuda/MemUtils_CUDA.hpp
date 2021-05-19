@@ -207,19 +207,12 @@ void launch(cudaStream_t stream)
 
 //! Launch kernel and indicate stream is asynchronous
 RAJA_INLINE
-void launch(const void* func, cuda_dim_t gridDim, cuda_dim_t blockDim, void** args, size_t shmem, cudaStream_t stream)
-{
-  cudaErrchk(cudaLaunchKernel(func, gridDim, blockDim, args, shmem, stream));
-  launch(stream);
-}
-
-RAJA_INLINE
 void launch(const void* func, cuda_dim_t gridDim, cuda_dim_t blockDim, void** args, size_t shmem,
-            cudaStream_t stream, const char *name)
+            cudaStream_t stream, const char *name = nullptr)
 {
-  nvtxRangePushA(name);
+  if(name) nvtxRangePushA(name);
   cudaErrchk(cudaLaunchKernel(func, gridDim, blockDim, args, shmem, stream));
-  nvtxRangePop();
+  if(name) nvtxRangePop();
   launch(stream);
 }
 
