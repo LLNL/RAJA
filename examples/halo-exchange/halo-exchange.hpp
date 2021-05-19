@@ -13,6 +13,13 @@
 
 #include "RAJA/RAJA.hpp"
 
+
+/*
+  Policies
+*/
+using raja_forall_sequential_policy = RAJA::loop_exec;
+using raja_forall_parallel_policy = RAJA::loop_exec;
+
 /*
   num_neighbors - specifies the number of neighbors that each process would be
                   communicating with in 3D halo exchange

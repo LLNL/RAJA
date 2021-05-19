@@ -133,3 +133,5 @@ raja_add_executable(
   SOURCES resource-kernel.cpp)
 
 add_subdirectory(plugin)
+add_subdirectory(halo-exchange)
+
