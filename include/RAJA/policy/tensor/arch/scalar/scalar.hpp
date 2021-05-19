@@ -39,12 +39,12 @@ namespace RAJA
    * whatever registers it deems appropriate.
    */
   template<typename T>
-  class TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>, camp::idx_seq<0>> :
-      public internal::VectorRegisterBase<TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>, camp::idx_seq<0>>>
+  class TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>> :
+      public internal::VectorRegisterBase<TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>>>
   {
     public:
       using register_policy = scalar_register;
-      using self_type = TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>, camp::idx_seq<0>>;
+      using self_type = TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>>;
       using element_type = T;
       using register_type = T;
 

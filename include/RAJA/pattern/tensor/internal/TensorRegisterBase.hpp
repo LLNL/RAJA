@@ -99,12 +99,12 @@ namespace internal {
   template<typename Derived>
   class TensorRegisterBase;
 
-  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename camp::idx_t ... SIZES, camp::idx_t ... VAL_SEQ>
-  class TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, LAYOUT, camp::idx_seq<SIZES...>, camp::idx_seq<VAL_SEQ...>>> :
+  template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename camp::idx_t ... SIZES>
+  class TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, LAYOUT, camp::idx_seq<SIZES...>>> :
     public TensorRegisterConcreteBase
   {
     public:
-      using self_type = TensorRegister<REGISTER_POLICY, T, LAYOUT, camp::idx_seq<SIZES...>, camp::idx_seq<VAL_SEQ...>>;
+      using self_type = TensorRegister<REGISTER_POLICY, T, LAYOUT, camp::idx_seq<SIZES...>>;
       using element_type = camp::decay<T>;
 
       static constexpr camp::idx_t s_num_dims = sizeof...(SIZES);
@@ -275,7 +275,7 @@ namespace internal {
       template<typename T2>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator=(TensorRegister<scalar_register, T2, ScalarLayout, camp::idx_seq<>, camp::idx_seq<>> const &value)
+      self_type const &operator=(TensorRegister<scalar_register, T2, ScalarLayout, camp::idx_seq<>> const &value)
       {
         getThis()->broadcast(value.get(0));
         return *getThis();

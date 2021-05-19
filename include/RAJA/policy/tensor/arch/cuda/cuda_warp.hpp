@@ -38,20 +38,17 @@ namespace RAJA {
   template<typename ELEMENT_TYPE>
   class TensorRegister<cuda_warp_register, ELEMENT_TYPE,
                        VectorLayout,
-                       camp::idx_seq<32>,
-                       camp::make_idx_seq_t<32> >:
+                       camp::idx_seq<32>>:
     public internal::VectorRegisterBase<TensorRegister<
                       cuda_warp_register,
                       ELEMENT_TYPE, VectorLayout,
-                      camp::idx_seq<32>,
-                      camp::make_idx_seq_t<32> > >
+                      camp::idx_seq<32> > >
   {
     public:
       using register_policy = cuda_warp_register;
       using self_type = TensorRegister<cuda_warp_register, ELEMENT_TYPE,
           VectorLayout,
-          camp::idx_seq<32>,
-          camp::make_idx_seq_t<32> >;
+          camp::idx_seq<32> >;
       using element_type = ELEMENT_TYPE;
       using register_type = ELEMENT_TYPE;
 

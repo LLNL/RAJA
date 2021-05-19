@@ -33,12 +33,12 @@ namespace RAJA
 {
 
   template<>
-  class TensorRegister<avx2_register, long, VectorLayout, camp::idx_seq<4>, camp::idx_seq<0,1,2,3>> :
-    public internal::VectorRegisterBase<TensorRegister<avx2_register, long, VectorLayout, camp::idx_seq<4>, camp::idx_seq<0,1,2,3>>>
+  class TensorRegister<avx2_register, long, VectorLayout, camp::idx_seq<4>> :
+    public internal::VectorRegisterBase<TensorRegister<avx2_register, long, VectorLayout, camp::idx_seq<4>>>
   {
     public:
       using register_policy = avx2_register;
-      using self_type = TensorRegister<avx2_register, long, VectorLayout, camp::idx_seq<4>, camp::idx_seq<0,1,2,3>>;
+      using self_type = TensorRegister<avx2_register, long, VectorLayout, camp::idx_seq<4>>;
       using element_type = long;
       using register_type = __m256i;
 

@@ -242,8 +242,7 @@ namespace RAJA
                            ELEMENT_TYPE,
                            TensorLayout<LAYOUT...>,
                            camp::idx_seq<
-                              (0*LAYOUT+RegisterTraits<REGISTER_POLICY,ELEMENT_TYPE>::s_num_elem)...>,
-                           camp::make_idx_seq_t<RegisterTraits<REGISTER_POLICY,ELEMENT_TYPE>::s_num_elem>>;
+                              (0*LAYOUT+RegisterTraits<REGISTER_POLICY,ELEMENT_TYPE>::s_num_elem)...>>;
 
       static constexpr camp::idx_t s_num_dims = sizeof...(DIM_SIZES);
 

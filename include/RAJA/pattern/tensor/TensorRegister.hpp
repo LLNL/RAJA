@@ -35,8 +35,7 @@ namespace RAJA
   template<typename REGISTER_POLICY,
            typename T,
            typename LAYOUT,
-           typename SIZES,
-           typename VAL_SEQ>
+           typename SIZES>
   class TensorRegister;
 
 
