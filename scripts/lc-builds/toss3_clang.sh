@@ -32,6 +32,8 @@ cmake \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/clang/clang-${COMP_VER}/bin/clang++ \
   -C ../host-configs/lc-builds/toss3/clang_X.cmake \
   -DENABLE_OPENMP=On \
+	-DENABLE_BLAS=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   .. 
+  

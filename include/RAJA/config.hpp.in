@@ -340,6 +340,11 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_NO_SIMD RAJA_PRAGMA(simd_level(0))
 #endif
 
+// Detect altivec, but disable if NVCC is being used due to some bad interactions
+#if defined(__ALTIVEC__) && (__ALTIVEC__ == 1) && !defined(__NVCC__)
+#define RAJA_ALTIVEC
+#endif
+
 
 #elif defined(RAJA_COMPILER_CLANG)
 //
@@ -372,6 +377,11 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_NO_SIMD  RAJA_PRAGMA(clang loop vectorize(disable))
 #endif
 
+// Detect altivec, but only seems to work since Clang 9
+#if defined(__ALTIVEC__) && (__clang_major__ >= 9 ) && (__ALTIVEC__ == 1)
+#define RAJA_ALTIVEC
+#endif
+
 
 // This is the same as undefined compiler, but squelches the warning message
 #elif defined(RAJA_COMPILER_MSVC)
@@ -381,7 +391,6 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_ALIGN_DATA(d) d
 #define RAJA_SIMD
 #define RAJA_NO_SIMD
-
 
 #else
 

@@ -50,7 +50,7 @@ struct null_launch_t {
 template <typename HOST_POLICY
 #if defined(RAJA_DEVICE_ACTIVE)
           ,
-          typename DEVICE_POLICY
+          typename DEVICE_POLICY = HOST_POLICY
 #endif
           >
 struct LoopPolicy {
@@ -63,7 +63,7 @@ struct LoopPolicy {
 template <typename HOST_POLICY
 #if defined(RAJA_DEVICE_ACTIVE)
           ,
-          typename DEVICE_POLICY
+          typename DEVICE_POLICY = HOST_POLICY
 #endif
           >
 struct LaunchPolicy {
@@ -213,6 +213,7 @@ struct LoopExecute;
 template <typename POLICY, typename SEGMENT>
 struct LoopICountExecute;
 
+RAJA_SUPPRESS_HD_WARN
 template <typename POLICY_LIST,
           typename CONTEXT,
           typename SEGMENT,
@@ -241,6 +242,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const &ctx,
                                                           body);
 }
 
+RAJA_SUPPRESS_HD_WARN
 template <typename POLICY_LIST,
           typename CONTEXT,
           typename SEGMENT,
@@ -257,6 +259,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
                                                        body);
 }
 
+RAJA_SUPPRESS_HD_WARN
 template <typename POLICY_LIST,
           typename CONTEXT,
           typename SEGMENT,

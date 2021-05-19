@@ -14,7 +14,7 @@
 
 #include "RAJA/RAJA.hpp"
 
-#include "gtest/gtest.h"
+#include "RAJA_gtest.hpp"
 
 //
 // Unroll types for gtest testing::Types

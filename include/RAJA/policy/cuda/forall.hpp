@@ -266,6 +266,8 @@ RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda &
 
 }  // namespace policy
 
+
+
 }  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_CUDA guard

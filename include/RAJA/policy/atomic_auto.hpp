@@ -23,6 +23,9 @@
 #include "RAJA/util/macros.hpp"
 
 #include "RAJA/policy/sequential/atomic.hpp"
+#include "RAJA/policy/cuda/atomic.hpp"
+#include "RAJA/policy/openmp/atomic.hpp"
+#include "RAJA/policy/hip/atomic.hpp"
 
 /*!
  * Provides priority between atomic policies that should do the "right thing"

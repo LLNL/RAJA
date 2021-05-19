@@ -20,7 +20,7 @@
 #define RAJA_pattern_kernel_internal_LoopTypes_HPP
 
 #include "RAJA/config.hpp"
-
+#include "RAJA/pattern/kernel/internal/Template.hpp"
 #include "camp/camp.hpp"
 
 
@@ -28,35 +28,6 @@ namespace RAJA
 {
 namespace internal
 {
-
-namespace detail
-{
-// Helper class to convert a camp::idx_t into some type T
-// used in template expansion in ListOfNHelper
-template <typename T, camp::idx_t>
-struct SeqToType
-{
-  using type = T;
-};
-
-template <typename T, typename SEQ>
-struct ListOfNHelper;
-
-template <typename T, camp::idx_t ... SEQ>
-struct ListOfNHelper<T, camp::idx_seq<SEQ...> >
-{
-  using type = camp::list<typename SeqToType<T, SEQ>::type...>;
-};
-} // namespace detail
-
-/*
- *  This creates a camp::list with N types, each one being T.
- *
- *  That is, list_of_n<T, 4>  ==  camp::list<T, T, T, T>
- *
- */
-template <typename T, camp::idx_t N>
-using list_of_n = typename detail::ListOfNHelper<T, camp::make_idx_seq_t<N>>::type;
 
 
 template <typename SegmentTypes,
@@ -115,7 +86,7 @@ using setSegmentType =
 
 template<typename Types, camp::idx_t Segment, typename Data>
 using setSegmentTypeFromData =
-    setSegmentType<Types, Segment, camp::at_v<typename camp::decay<Data>::index_tuple_t::TList, Segment>>;
+    setSegmentType<Types, Segment, camp::at_v<typename camp::decay<Data>::index_types_t, Segment>>;
 
 
 }  // end namespace internal
