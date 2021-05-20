@@ -127,6 +127,10 @@ if(NOT DEFINED BLT_CXX_STD)
       endif()
     endforeach(flag_var)
   endif()
+else() #check BLT_CXX_STD is high enough by disallowing the only invalid option
+  if("${BLT_CXX_STD}" STREQUAL "c++98")
+    message(FATAL_ERROR "RAJA requires minimum C++ standard of c++11")
+  endif()
 endif(NOT DEFINED BLT_CXX_STD)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
