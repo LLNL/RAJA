@@ -103,6 +103,7 @@ if (ENABLE_CUDA)
       set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -mno-float128")
     endif ()
   endif ()
+  set(CUDA_SEPARABLE_COMPILATION ON CACHE BOOL "")
 endif()
 
 # Detect C++ standard and add appropriate flag _before_ loading BLT
