@@ -132,9 +132,6 @@ void Schedule::beginCommunication()
 void Schedule::finalizeCommunication()
 {
   // performLocalCopies();
-
-  loop_synchronize();
-
   processCompletedCommunications();
 }
 
@@ -162,6 +159,8 @@ void Schedule::postReceives()
 
     void* buffer = loop_allocate_buffer(byte_count);
     m_buffers[mi->first] = Buffer{buffer, fusible_byte_count, byte_count};
+
+    // irecv one
   }
 }
 
@@ -197,11 +196,7 @@ Schedule::postSends()
 
   if (m_pack_fuser != nullptr) {
     loop_fuser_run(m_pack_fuser);
-  }
-
-  loop_synchronize();
-
-  if (m_pack_fuser != nullptr) {
+    loop_synchronize();
     loop_fuser_clear(m_pack_fuser);
   }
 
@@ -227,7 +222,11 @@ Schedule::postSends()
       pack->packStream(outgoing_stream);
     }
 
-    loop_synchronize();
+    if (!mi->second.transactions.empty()) {
+      loop_synchronize();
+    }
+
+    // isend one
   }
 }
 
@@ -242,11 +241,7 @@ Schedule::postSends()
 
 //   if (m_local_fuser != nullptr) {
 //     loop_fuser_run(m_local_fuser);
-//   }
-
-//   loop_synchronize();
-
-//   if (m_local_fuser != nullptr) {
+//     loop_synchronize();
 //     loop_fuser_clear(m_local_fuser);
 //   }
 // }
@@ -254,6 +249,8 @@ Schedule::postSends()
 void Schedule::processCompletedCommunications()
 {
   if (m_unpack_in_deterministic_order) {
+
+    // wait recv all
 
     for (auto& recv_data : m_recv_sets) {
 
@@ -271,8 +268,6 @@ void Schedule::processCompletedCommunications()
         recv->unpackStream(incoming_stream);
       }
 
-      loop_synchronize();
-
     }
 
   } else {
@@ -280,6 +275,8 @@ void Schedule::processCompletedCommunications()
     for (size_t counter = m_recv_sets.size();
          counter > 0u;
          --counter) {
+
+      // wait recv one
 
       // TODO: Make general this assumes senders in [1,m_recv_sets.size()]
       const int sender = counter;
@@ -299,8 +296,6 @@ void Schedule::processCompletedCommunications()
         recv->unpackStream(incoming_stream);
       }
 
-      loop_synchronize();
-
     }
 
   }
@@ -314,6 +309,8 @@ void Schedule::processCompletedCommunications()
   if (m_recv_fuser != nullptr) {
     loop_fuser_clear(m_recv_fuser);
   }
+
+  // wait send all
 
   for (auto& bufferData : m_buffers) {
 
