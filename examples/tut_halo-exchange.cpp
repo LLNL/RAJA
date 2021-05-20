@@ -9,12 +9,11 @@
 #include <cstring>
 #include <iostream>
 #include <new>
-#include <limits>
 #include <vector>
 
 #include "halo-exchange/halo-exchange.hpp"
 
-#include "RAJA/util/Timer.hpp"
+#include "RAJA/RAJA.hpp"
 
 #include "memoryManager.hpp"
 
@@ -187,7 +186,7 @@ int main(int argc, char **argv)
                              (argc != 7) ? 100 : std::atoi(argv[3]) };
   const int halo_width =     (argc != 7) ?   1 : std::atoi(argv[4]);
   const int num_vars   =     (argc != 7) ?   3 : std::atoi(argv[5]);
-  const int num_cycles =     (argc != 7) ?   3 : std::atoi(argv[6]);
+  const int num_cycles =     (argc != 7) ? 128 : std::atoi(argv[6]);
   // _halo_exchange_input_params_end
 
   std::cout << "grid dimensions "     << grid_dims[0]
@@ -248,14 +247,12 @@ int main(int argc, char **argv)
   using range_segment = RAJA::TypedRangeSegment<int>;
 
 
-  auto timer = RAJA::Timer();
+  TimerStats timer;
 
 
 //----------------------------------------------------------------------------//
   {
     std::cout << "\n Running C-style halo exchange...\n";
-
-    double minCycle = std::numeric_limits<double>::max();
 
 
     std::vector<double*> buffers(num_neighbors, nullptr);
@@ -330,10 +327,6 @@ int main(int argc, char **argv)
 
       }
       timer.stop();
-
-      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
-      if (tCycle < minCycle) minCycle = tCycle;
-      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -342,7 +335,11 @@ int main(int argc, char **argv)
 
     }
 
-    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
+    std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
+    std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
+    std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
+    std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+    timer.reset();
 
     // copy result of exchange for reference later
     for (int v = 0; v < num_vars; ++v) {
@@ -363,7 +360,6 @@ int main(int argc, char **argv)
   {
     std::cout << "\n Running RAJA loop forall halo exchange...\n";
 
-    double minCycle = std::numeric_limits<double>::max();
 
     // _halo_exchange_loop_forall_policies_start
     using forall_policy = RAJA::loop_exec;
@@ -441,10 +437,6 @@ int main(int argc, char **argv)
 
       }
       timer.stop();
-
-      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
-      if (tCycle < minCycle) minCycle = tCycle;
-      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -453,7 +445,11 @@ int main(int argc, char **argv)
 
     }
 
-    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
+    std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
+    std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
+    std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
+    std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+    timer.reset();
 
     // check results against reference copy
     checkResult(vars, vars_ref, var_size, num_vars);
@@ -469,7 +465,6 @@ int main(int argc, char **argv)
   {
   std::cout << "\n Running RAJA loop workgroup halo exchange...\n";
 
-    double minCycle = std::numeric_limits<double>::max();
 
     // _halo_exchange_loop_workgroup_policies_start
     using forall_policy = RAJA::loop_exec;
@@ -578,10 +573,6 @@ int main(int argc, char **argv)
 
       }
       timer.stop();
-
-      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
-      if (tCycle < minCycle) minCycle = tCycle;
-      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -590,7 +581,11 @@ int main(int argc, char **argv)
 
     }
 
-    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
+    std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
+    std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
+    std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
+    std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+    timer.reset();
 
     // check results against reference copy
     checkResult(vars, vars_ref, var_size, num_vars);
@@ -609,7 +604,6 @@ int main(int argc, char **argv)
   {
     std::cout << "\n Running RAJA Openmp forall halo exchange...\n";
 
-    double minCycle = std::numeric_limits<double>::max();
 
     // _halo_exchange_openmp_forall_policies_start
     using forall_policy = RAJA::omp_parallel_for_exec;
@@ -687,10 +681,6 @@ int main(int argc, char **argv)
 
       }
       timer.stop();
-
-      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
-      if (tCycle < minCycle) minCycle = tCycle;
-      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -699,7 +689,11 @@ int main(int argc, char **argv)
 
     }
 
-    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
+    std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
+    std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
+    std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
+    std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+    timer.reset();
 
     // check results against reference copy
     checkResult(vars, vars_ref, var_size, num_vars);
@@ -713,7 +707,6 @@ int main(int argc, char **argv)
   {
     std::cout << "\n Running RAJA OpenMP workgroup halo exchange...\n";
 
-    double minCycle = std::numeric_limits<double>::max();
 
     // _halo_exchange_openmp_workgroup_policies_start
     using forall_policy = RAJA::omp_parallel_for_exec;
@@ -822,10 +815,6 @@ int main(int argc, char **argv)
 
       }
       timer.stop();
-
-      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
-      if (tCycle < minCycle) minCycle = tCycle;
-      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -834,7 +823,11 @@ int main(int argc, char **argv)
 
     }
 
-    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
+    std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
+    std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
+    std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
+    std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+    timer.reset();
 
     // check results against reference copy
     checkResult(vars, vars_ref, var_size, num_vars);
@@ -854,8 +847,6 @@ int main(int argc, char **argv)
 //----------------------------------------------------------------------------//
   {
     std::cout << "\n Running RAJA Cuda forall halo exchange...\n";
-
-    double minCycle = std::numeric_limits<double>::max();
 
 
     std::vector<double*> cuda_vars(num_vars, nullptr);
@@ -961,10 +952,6 @@ int main(int argc, char **argv)
 
       }
       timer.stop();
-
-      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
-      if (tCycle < minCycle) minCycle = tCycle;
-      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -989,7 +976,11 @@ int main(int argc, char **argv)
     }
 
 
-    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
+    std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
+    std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
+    std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
+    std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+    timer.reset();
 
     // check results against reference copy
     checkResult(vars, vars_ref, var_size, num_vars);
@@ -1002,8 +993,6 @@ int main(int argc, char **argv)
 //----------------------------------------------------------------------------//
   {
     std::cout << "\n Running RAJA Cuda workgroup halo exchange...\n";
-
-    double minCycle = std::numeric_limits<double>::max();
 
 
     std::vector<double*> cuda_vars(num_vars, nullptr);
@@ -1140,10 +1129,6 @@ int main(int argc, char **argv)
 
       }
       timer.stop();
-
-      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
-      if (tCycle < minCycle) minCycle = tCycle;
-      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -1168,7 +1153,11 @@ int main(int argc, char **argv)
     }
 
 
-    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
+    std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
+    std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
+    std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
+    std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+    timer.reset();
 
     // check results against reference copy
     checkResult(vars, vars_ref, var_size, num_vars);
@@ -1188,8 +1177,6 @@ int main(int argc, char **argv)
 //----------------------------------------------------------------------------//
   {
     std::cout << "\n Running RAJA Hip forall halo exchange...\n";
-
-    double minCycle = std::numeric_limits<double>::max();
 
 
     std::vector<double*> hip_vars(num_vars, nullptr);
@@ -1295,10 +1282,6 @@ int main(int argc, char **argv)
 
       }
       timer.stop();
-
-      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
-      if (tCycle < minCycle) minCycle = tCycle;
-      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -1323,7 +1306,11 @@ int main(int argc, char **argv)
     }
 
 
-    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
+    std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
+    std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
+    std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
+    std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+    timer.reset();
 
     // check results against reference copy
     checkResult(vars, vars_ref, var_size, num_vars);
@@ -1336,8 +1323,6 @@ int main(int argc, char **argv)
 //----------------------------------------------------------------------------//
   {
     std::cout << "\n Running RAJA Hip workgroup halo exchange...\n";
-
-    double minCycle = std::numeric_limits<double>::max();
 
 
     std::vector<double*> hip_vars(num_vars, nullptr);
@@ -1478,10 +1463,6 @@ int main(int argc, char **argv)
 
       }
       timer.stop();
-
-      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
-      if (tCycle < minCycle) minCycle = tCycle;
-      timer.reset();
     }
 
     for (int l = 0; l < num_neighbors; ++l) {
@@ -1506,7 +1487,11 @@ int main(int argc, char **argv)
     }
 
 
-    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
+    std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
+    std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
+    std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
+    std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+    timer.reset();
 
     // check results against reference copy
     checkResult(vars, vars_ref, var_size, num_vars);

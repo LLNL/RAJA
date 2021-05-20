@@ -7,7 +7,7 @@
 
 #include "CopyTransaction.hpp"
 
-#include "halo-exchange.hpp"
+#include "loop.hpp"
 
 
 size_t CopyTransaction::computeIncomingMessageSize()
@@ -27,9 +27,7 @@ void CopyTransaction::packStream(MessageStream& stream)
   const double* var     = m_var;
         double* buf     = stream.getWriteBuffer<double>(len);
 
-  RAJA::forall<raja_forall_sequential_policy>(
-      RAJA::TypedRangeSegment<int>(0, len),
-      [=] RAJA_HOST_DEVICE (int i) {
+  loop(len, [=] RAJA_HOST_DEVICE (int i) {
     buf[i] = var[indices[i]];
   });
 }
@@ -41,9 +39,7 @@ void CopyTransaction::unpackStream(MessageStream& stream)
         double* var     = m_var;
   const double* buf     = stream.getReadBuffer<double>(len);
 
-  RAJA::forall<raja_forall_sequential_policy>(
-      RAJA::TypedRangeSegment<int>(0, len),
-      [=] RAJA_HOST_DEVICE (int i) {
+  loop(len, [=] RAJA_HOST_DEVICE (int i) {
     var[indices[i]] = buf[i];
   });
 }

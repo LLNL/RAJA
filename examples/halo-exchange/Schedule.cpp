@@ -9,7 +9,7 @@
 #include <cassert>
 
 #include "Schedule.hpp"
-#include "../memoryManager.hpp"
+#include "loop.hpp"
 
 
 void Schedule::addTransaction(std::unique_ptr<Transaction>&& transaction)
@@ -62,7 +62,7 @@ void Schedule::finalizeCommunication()
 {
   // performLocalCopies();
 
-  // parallel_synchronize();
+  loop_synchronize();
 
   processCompletedCommunications();
 }
@@ -87,7 +87,7 @@ void Schedule::postReceives()
       byte_count += recv->computeIncomingMessageSize();
     }
 
-    void* buffer = memoryManager::allocate<char>(byte_count);
+    void* buffer = loop_allocate_buffer(byte_count);
     m_buffers[mi->first] = Buffer{buffer, byte_count};
   }
 }
@@ -126,7 +126,7 @@ Schedule::postSends()
       pack->packStream(outgoing_stream);
     }
 
-    // parallel_synchronize();
+    loop_synchronize();
   }
 }
 
@@ -154,9 +154,9 @@ void Schedule::processCompletedCommunications()
         recv->unpackStream(incoming_stream);
       }
 
-      // parallel_synchronize();
+      loop_synchronize();
 
-      memoryManager::deallocate(buffer.buffer);
+      loop_deallocate_buffer(buffer.buffer);
       buffer.buffer = nullptr;
       buffer.size = 0;
 
@@ -182,9 +182,9 @@ void Schedule::processCompletedCommunications()
         recv->unpackStream(incoming_stream);
       }
 
-      // parallel_synchronize();
+      loop_synchronize();
 
-      memoryManager::deallocate(buffer.buffer);
+      loop_deallocate_buffer(buffer.buffer);
       buffer.buffer = nullptr;
       buffer.size = 0;
 

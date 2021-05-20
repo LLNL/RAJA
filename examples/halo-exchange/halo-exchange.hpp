@@ -10,15 +10,10 @@
 
 #include <cstdlib>
 #include <vector>
+#include <limits>
 
-#include "RAJA/RAJA.hpp"
+#include "RAJA/util/Timer.hpp"
 
-
-/*
-  Policies
-*/
-using raja_forall_sequential_policy = RAJA::loop_exec;
-using raja_forall_parallel_policy = RAJA::loop_exec;
 
 /*
   num_neighbors - specifies the number of neighbors that each process would be
@@ -39,5 +34,62 @@ extern void create_unpack_lists(std::vector<int*>& unpack_index_lists,
                                 const int* grid_dims);
 extern void destroy_pack_lists(std::vector<int*>& pack_index_lists);
 extern void destroy_unpack_lists(std::vector<int*>& unpack_index_lists);
+
+
+struct TimerStats
+{
+  void start()
+  {
+    m_timer.start();
+  }
+
+  void stop()
+  {
+    m_timer.stop();
+    RAJA::Timer::ElapsedType tCycle = m_timer.elapsed();
+    m_timer.reset();
+
+    m_num += 1u;
+    m_tot += tCycle;
+    if (tCycle < m_min) m_min = tCycle;
+    if (tCycle > m_max) m_max = tCycle;
+  }
+
+  void reset()
+  {
+    m_timer.reset();
+    m_num = 0u;
+    m_tot = 0.0;
+    m_min = std::numeric_limits<double>::max();
+    m_max = std::numeric_limits<double>::min();
+  }
+
+  size_t get_num() const
+  {
+    return m_num;
+  }
+
+  double get_avg() const
+  {
+    return (m_num > 0u) ? m_tot / m_num : 0.0;
+  }
+
+  double get_min() const
+  {
+    return (m_num > 0u) ? m_min : 0.0;
+  }
+
+  double get_max() const
+  {
+    return (m_num > 0u) ? m_max : 0.0;
+  }
+
+private:
+  RAJA::Timer m_timer;
+  size_t m_num = 0u;
+  double m_tot = 0.0;
+  double m_min = std::numeric_limits<double>::max();
+  double m_max = std::numeric_limits<double>::min();
+};
 
 #endif // RAJA_EXAMPLES_HALOEXCHANGE_HALOEXCHANGE_HPP

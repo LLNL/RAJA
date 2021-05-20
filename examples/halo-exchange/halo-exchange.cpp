@@ -16,6 +16,7 @@
 #include "Schedule.hpp"
 #include "CopyTransaction.hpp"
 #include "../memoryManager.hpp"
+#include "loop.hpp"
 
 #include "RAJA/util/Timer.hpp"
 
@@ -36,20 +37,6 @@
  * If CUDA is enabled, CUDA unified memory is used.
  */
 
-/*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block when using forall
-  CUDA_WORKGROUP_BLOCK_SIZE - specifies the number of threads in a CUDA thread block when using workgroup
-*/
-#if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
-const int CUDA_WORKGROUP_BLOCK_SIZE = 1024;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-const int HIP_BLOCK_SIZE = 256;
-const int HIP_WORKGROUP_BLOCK_SIZE = 1024;
-#endif
-
 
 //
 // Functions for checking and printing results
@@ -58,112 +45,6 @@ void checkResult(std::vector<double*> const& vars, std::vector<double*> const& v
                  int var_size, int num_vars);
 void printResult(std::vector<double*> const& vars, int var_size, int num_vars);
 
-
-
-template < typename T >
-struct memory_manager_allocator
-{
-  using value_type = T;
-
-  memory_manager_allocator() = default;
-
-  template < typename U >
-  constexpr memory_manager_allocator(memory_manager_allocator<U> const&) noexcept
-  { }
-
-  /*[[nodiscard]]*/
-  value_type* allocate(size_t num)
-  {
-    if (num > std::numeric_limits<size_t>::max() / sizeof(value_type)) {
-      throw std::bad_alloc();
-    }
-
-    value_type *ptr = memoryManager::allocate<value_type>(num);
-
-    if (!ptr) {
-      throw std::bad_alloc();
-    }
-
-    return ptr;
-  }
-
-  void deallocate(value_type* ptr, size_t) noexcept
-  {
-    value_type* ptrc = static_cast<value_type*>(ptr);
-    memoryManager::deallocate(ptrc);
-  }
-};
-
-template <typename T, typename U>
-bool operator==(memory_manager_allocator<T> const&, memory_manager_allocator<U> const&)
-{
-  return true;
-}
-
-template <typename T, typename U>
-bool operator!=(memory_manager_allocator<T> const& lhs, memory_manager_allocator<U> const& rhs)
-{
-  return !(lhs == rhs);
-}
-
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-
-template < typename T >
-struct pinned_allocator
-{
-  using value_type = T;
-
-  pinned_allocator() = default;
-
-  template < typename U >
-  constexpr pinned_allocator(pinned_allocator<U> const&) noexcept
-  { }
-
-  /*[[nodiscard]]*/
-  value_type* allocate(size_t num)
-  {
-    if (num > std::numeric_limits<size_t>::max() / sizeof(value_type)) {
-      throw std::bad_alloc();
-    }
-
-    value_type *ptr = nullptr;
-#if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaMallocHost((void **)&ptr, num*sizeof(value_type)));
-#elif defined(RAJA_ENABLE_HIP)
-    hipErrchk(hipHostMalloc((void **)&ptr, num*sizeof(value_type)));
-#endif
-
-    if (!ptr) {
-      throw std::bad_alloc();
-    }
-
-    return ptr;
-  }
-
-  void deallocate(value_type* ptr, size_t) noexcept
-  {
-#if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaFreeHost(ptr));
-#elif defined(RAJA_ENABLE_HIP)
-    hipErrchk(hipHostFree(ptr));
-#endif
-  }
-};
-
-template <typename T, typename U>
-bool operator==(pinned_allocator<T> const&, pinned_allocator<U> const&)
-{
-  return true;
-}
-
-template <typename T, typename U>
-bool operator!=(pinned_allocator<T> const& lhs, pinned_allocator<U> const& rhs)
-{
-  return !(lhs == rhs);
-}
-
-
-#endif
 
 int main(int argc, char **argv)
 {
@@ -176,7 +57,6 @@ int main(int argc, char **argv)
     std::exit(1);
   }
 
-  // _halo_exchange_input_params_start
   //
   // Define grid dimensions
   // Define halo width
@@ -188,8 +68,7 @@ int main(int argc, char **argv)
                              (argc != 7) ? 100 : std::atoi(argv[3]) };
   const int halo_width =     (argc != 7) ?   1 : std::atoi(argv[4]);
   const int num_vars   =     (argc != 7) ?   3 : std::atoi(argv[5]);
-  const int num_cycles =     (argc != 7) ?   3 : std::atoi(argv[6]);
-  // _halo_exchange_input_params_end
+  const int num_cycles =     (argc != 7) ? 128 : std::atoi(argv[6]);
 
   std::cout << "grid dimensions "     << grid_dims[0]
             << " x "                  << grid_dims[1]
@@ -214,7 +93,6 @@ int main(int argc, char **argv)
                        grid_plus_halo_dims[1] *
                        grid_plus_halo_dims[2] ;
 
-  // _halo_exchange_vars_allocate_start
   //
   // Allocate grid variables and reference grid variables used to check
   // correctness.
@@ -226,10 +104,8 @@ int main(int argc, char **argv)
     vars[v]     = memoryManager::allocate<double>(var_size);
     vars_ref[v] = memoryManager::allocate<double>(var_size);
   }
-  // _halo_exchange_vars_allocate_end
 
 
-  // _halo_exchange_index_list_generate_start
   //
   // Generate index lists for packing and unpacking
   //
@@ -240,7 +116,6 @@ int main(int argc, char **argv)
   std::vector<int*> unpack_index_lists(num_neighbors, nullptr);
   std::vector<int > unpack_index_list_lengths(num_neighbors, 0);
   create_unpack_lists(unpack_index_lists, unpack_index_list_lengths, halo_width, grid_dims);
-  // _halo_exchange_index_lisgeneratete_end
 
 
   //
@@ -249,20 +124,56 @@ int main(int argc, char **argv)
   using range_segment = RAJA::TypedRangeSegment<int>;
 
 
-  const int my_rank = 0;
+  TimerStats timer;
 
-  auto populate_schedule = [&](Schedule& schedule) {
 
+//----------------------------------------------------------------------------//
+  for (int p = static_cast<int>(LoopPattern::seq);
+       p < static_cast<int>(LoopPattern::End); ++p) {
+
+    LoopPattern pattern = static_cast<LoopPattern>(p);
+
+    SetLoopPatternScope sepc(pattern);
+
+    std::cout << "\n Running " << get_loop_pattern_name() << " halo exchange...\n";
+
+
+    // allocate per pattern memory
+    RAJA::resources::Resource res = get_loop_pattern_resource();
+
+    std::vector<double*> pattern_vars(num_vars, nullptr);
+    std::vector<int*>    pattern_pack_index_lists(num_neighbors, nullptr);
+    std::vector<int*>    pattern_unpack_index_lists(num_neighbors, nullptr);
+
+    for (int v = 0; v < num_vars; ++v) {
+      pattern_vars[v] = res.allocate<double>(var_size);
+    }
+
+    for (int l = 0; l < num_neighbors; ++l) {
+      int pack_len = pack_index_list_lengths[l];
+      pattern_pack_index_lists[l] = res.allocate<int>(pack_len);
+      res.memcpy(pattern_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int));
+
+      int unpack_len = unpack_index_list_lengths[l];
+      pattern_unpack_index_lists[l] = res.allocate<int>(unpack_len);
+      res.memcpy(pattern_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int));
+    }
+
+
+    const int my_rank = 0;
+    Schedule schedule(my_rank);
+
+    // populate schedule
     for (int l = 0; l < num_neighbors; ++l) {
 
       int neighbor_rank = l + 1;
 
-      for (double* var : vars) {
+      for (double* var : pattern_vars) {
 
-        int* pack_list = pack_index_lists[l];
+        int* pack_list = pattern_pack_index_lists[l];
         int  pack_len  = pack_index_list_lengths[l];
 
-        int* recv_list = unpack_index_lists[l];
+        int* recv_list = pattern_unpack_index_lists[l];
         int  recv_len  = unpack_index_list_lengths[l];
 
         std::unique_ptr<Transaction> recv(
@@ -284,22 +195,6 @@ int main(int argc, char **argv)
 
     }
 
-  };
-
-
-  auto timer = RAJA::Timer();
-
-
-//----------------------------------------------------------------------------//
-  {
-    std::cout << "\n Running C-style halo exchange...\n";
-
-    double minCycle = std::numeric_limits<double>::max();
-
-    Schedule schedule(my_rank);
-
-    populate_schedule(schedule);
-
     for (int c = 0; c < num_cycles; ++c ) {
       timer.start();
       {
@@ -307,142 +202,50 @@ int main(int argc, char **argv)
         // set vars
         for (int v = 0; v < num_vars; ++v) {
 
-          double* var = vars[v];
+          double* var = pattern_vars[v];
 
-          for (int i = 0; i < var_size; i++) {
+          loop(var_size, [=] RAJA_HOST_DEVICE (int i) {
             var[i] = i + v;
-          }
+          });
         }
 
         schedule.communicate();
 
       }
       timer.stop();
-
-      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
-      if (tCycle < minCycle) minCycle = tCycle;
-      timer.reset();
     }
 
-    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
-
-    // copy result of exchange for reference later
+    // deallocate per pattern memory
     for (int v = 0; v < num_vars; ++v) {
+      res.memcpy(vars[v], pattern_vars[v], var_size * sizeof(double));
+      res.deallocate(pattern_vars[v]);
+    }
 
-      double* var     = vars[v];
-      double* var_ref = vars_ref[v];
+    for (int l = 0; l < num_neighbors; ++l) {
+      res.deallocate(pattern_pack_index_lists[l]);
+      res.deallocate(pattern_unpack_index_lists[l]);
+    }
 
-      for (int i = 0; i < var_size; i++) {
-        var_ref[i] = var[i];
+
+    std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
+    std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
+    std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
+    std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+    timer.reset();
+
+    if (pattern == LoopPattern::seq) {
+      // copy result of exchange for reference later
+      for (int v = 0; v < num_vars; ++v) {
+        res.memcpy(vars_ref[v], vars[v], var_size * sizeof(double));
       }
+    } else {
+      // check results against reference copy
+      checkResult(vars, vars_ref, var_size, num_vars);
+      //printResult(vars, var_size, num_vars);
     }
   }
 
 #if 0
-
-//----------------------------------------------------------------------------//
-// Separate packing/unpacking loops using forall
-//----------------------------------------------------------------------------//
-  {
-    std::cout << "\n Running RAJA loop forall halo exchange...\n";
-
-    double minCycle = std::numeric_limits<double>::max();
-
-    // _halo_exchange_loop_forall_policies_start
-    using forall_policy = RAJA::loop_exec;
-    // _halo_exchange_loop_forall_policies_end
-
-    std::vector<double*> buffers(num_neighbors, nullptr);
-
-    for (int l = 0; l < num_neighbors; ++l) {
-
-      int buffer_len = num_vars * pack_index_list_lengths[l];
-
-      buffers[l] = memoryManager::allocate<double>(buffer_len);
-
-    }
-
-    for (int c = 0; c < num_cycles; ++c ) {
-      timer.start();
-      {
-
-      // set vars
-      for (int v = 0; v < num_vars; ++v) {
-
-        double* var = vars[v];
-
-        RAJA::forall<forall_policy>(range_segment(0, var_size), [=] (int i) {
-          var[i] = i + v;
-        });
-      }
-
-      // _halo_exchange_loop_forall_packing_start
-      for (int l = 0; l < num_neighbors; ++l) {
-
-        double* buffer = buffers[l];
-        int* list = pack_index_lists[l];
-        int  len  = pack_index_list_lengths[l];
-
-        // pack
-        for (int v = 0; v < num_vars; ++v) {
-
-          double* var = vars[v];
-
-          RAJA::forall<forall_policy>(range_segment(0, len), [=] (int i) {
-            buffer[i] = var[list[i]];
-          });
-
-          buffer += len;
-        }
-
-        // send single message
-      }
-      // _halo_exchange_loop_forall_packing_end
-
-      // _halo_exchange_loop_forall_unpacking_start
-      for (int l = 0; l < num_neighbors; ++l) {
-
-        // recv single message
-
-        double* buffer = buffers[l];
-        int* list = unpack_index_lists[l];
-        int  len  = unpack_index_list_lengths[l];
-
-        // unpack
-        for (int v = 0; v < num_vars; ++v) {
-
-          double* var = vars[v];
-
-          RAJA::forall<forall_policy>(range_segment(0, len), [=] (int i) {
-            var[list[i]] = buffer[i];
-          });
-
-          buffer += len;
-        }
-      }
-      // _halo_exchange_loop_forall_unpacking_end
-
-      }
-      timer.stop();
-
-      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
-      if (tCycle < minCycle) minCycle = tCycle;
-      timer.reset();
-    }
-
-    for (int l = 0; l < num_neighbors; ++l) {
-
-      memoryManager::deallocate(buffers[l]);
-
-    }
-
-    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
-
-    // check results against reference copy
-    checkResult(vars, vars_ref, var_size, num_vars);
-    //printResult(vars, var_size, num_vars);
-  }
-
 
 //----------------------------------------------------------------------------//
 // RAJA::WorkGroup with allows deferred execution
@@ -580,114 +383,10 @@ int main(int argc, char **argv)
     //printResult(vars, var_size, num_vars);
   }
 
-
 //----------------------------------------------------------------------------//
 
 
 #if defined(RAJA_ENABLE_OPENMP)
-
-//----------------------------------------------------------------------------//
-// Separate packing/unpacking loops using forall
-//----------------------------------------------------------------------------//
-  {
-    std::cout << "\n Running RAJA Openmp forall halo exchange...\n";
-
-    double minCycle = std::numeric_limits<double>::max();
-
-    // _halo_exchange_openmp_forall_policies_start
-    using forall_policy = RAJA::omp_parallel_for_exec;
-    // _halo_exchange_openmp_forall_policies_end
-
-    std::vector<double*> buffers(num_neighbors, nullptr);
-
-    for (int l = 0; l < num_neighbors; ++l) {
-
-      int buffer_len = num_vars * pack_index_list_lengths[l];
-
-      buffers[l] = memoryManager::allocate<double>(buffer_len);
-
-    }
-
-    for (int c = 0; c < num_cycles; ++c ) {
-      timer.start();
-      {
-
-      // set vars
-      for (int v = 0; v < num_vars; ++v) {
-
-        double* var = vars[v];
-
-        RAJA::forall<forall_policy>(range_segment(0, var_size), [=] (int i) {
-          var[i] = i + v;
-        });
-      }
-
-      // _halo_exchange_openmp_forall_packing_start
-      for (int l = 0; l < num_neighbors; ++l) {
-
-        double* buffer = buffers[l];
-        int* list = pack_index_lists[l];
-        int  len  = pack_index_list_lengths[l];
-
-        // pack
-        for (int v = 0; v < num_vars; ++v) {
-
-          double* var = vars[v];
-
-          RAJA::forall<forall_policy>(range_segment(0, len), [=] (int i) {
-            buffer[i] = var[list[i]];
-          });
-
-          buffer += len;
-        }
-
-        // send single message
-      }
-      // _halo_exchange_openmp_forall_packing_end
-
-      // _halo_exchange_openmp_forall_unpacking_start
-      for (int l = 0; l < num_neighbors; ++l) {
-
-        // recv single message
-
-        double* buffer = buffers[l];
-        int* list = unpack_index_lists[l];
-        int  len  = unpack_index_list_lengths[l];
-
-        // unpack
-        for (int v = 0; v < num_vars; ++v) {
-
-          double* var = vars[v];
-
-          RAJA::forall<forall_policy>(range_segment(0, len), [=] (int i) {
-            var[list[i]] = buffer[i];
-          });
-
-          buffer += len;
-        }
-      }
-      // _halo_exchange_openmp_forall_unpacking_end
-
-      }
-      timer.stop();
-
-      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
-      if (tCycle < minCycle) minCycle = tCycle;
-      timer.reset();
-    }
-
-    for (int l = 0; l < num_neighbors; ++l) {
-
-      memoryManager::deallocate(buffers[l]);
-
-    }
-
-    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
-
-    // check results against reference copy
-    checkResult(vars, vars_ref, var_size, num_vars);
-    //printResult(vars, var_size, num_vars);
-  }
 
 
 //----------------------------------------------------------------------------//
@@ -826,159 +525,10 @@ int main(int argc, char **argv)
 
 #endif
 
-
 //----------------------------------------------------------------------------//
 
 
 #if defined(RAJA_ENABLE_CUDA)
-
-//----------------------------------------------------------------------------//
-// Separate packing/unpacking loops using forall
-//----------------------------------------------------------------------------//
-  {
-    std::cout << "\n Running RAJA Cuda forall halo exchange...\n";
-
-    double minCycle = std::numeric_limits<double>::max();
-
-
-    std::vector<double*> cuda_vars(num_vars, nullptr);
-    std::vector<int*>    cuda_pack_index_lists(num_neighbors, nullptr);
-    std::vector<int*>    cuda_unpack_index_lists(num_neighbors, nullptr);
-
-    for (int v = 0; v < num_vars; ++v) {
-      cuda_vars[v] = memoryManager::allocate_gpu<double>(var_size);
-    }
-
-    for (int l = 0; l < num_neighbors; ++l) {
-      int pack_len = pack_index_list_lengths[l];
-      cuda_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
-      cudaErrchk(cudaMemcpy( cuda_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int), cudaMemcpyDefault ));
-
-      int unpack_len = unpack_index_list_lengths[l];
-      cuda_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
-      cudaErrchk(cudaMemcpy( cuda_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int), cudaMemcpyDefault ));
-    }
-
-    std::swap(vars,               cuda_vars);
-    std::swap(pack_index_lists,   cuda_pack_index_lists);
-    std::swap(unpack_index_lists, cuda_unpack_index_lists);
-
-
-    // _halo_exchange_cuda_forall_policies_start
-    using forall_policy = RAJA::cuda_exec_async<CUDA_BLOCK_SIZE>;
-    // _halo_exchange_cuda_forall_policies_end
-
-    std::vector<double*> buffers(num_neighbors, nullptr);
-
-    for (int l = 0; l < num_neighbors; ++l) {
-
-      int buffer_len = num_vars * pack_index_list_lengths[l];
-
-      buffers[l] = memoryManager::allocate_gpu<double>(buffer_len);
-
-    }
-
-    for (int c = 0; c < num_cycles; ++c ) {
-      timer.start();
-      {
-
-      // set vars
-      for (int v = 0; v < num_vars; ++v) {
-
-        double* var = vars[v];
-
-        RAJA::forall<forall_policy>(range_segment(0, var_size), [=] RAJA_DEVICE (int i) {
-          var[i] = i + v;
-        });
-      }
-
-      // _halo_exchange_cuda_forall_packing_start
-      for (int l = 0; l < num_neighbors; ++l) {
-
-        double* buffer = buffers[l];
-        int* list = pack_index_lists[l];
-        int  len  = pack_index_list_lengths[l];
-
-        // pack
-        for (int v = 0; v < num_vars; ++v) {
-
-          double* var = vars[v];
-
-          RAJA::forall<forall_policy>(range_segment(0, len), [=] RAJA_DEVICE (int i) {
-            buffer[i] = var[list[i]];
-          });
-
-          buffer += len;
-        }
-
-        cudaErrchk(cudaDeviceSynchronize());
-
-        // send single message
-      }
-      // _halo_exchange_cuda_forall_packing_end
-
-      // _halo_exchange_cuda_forall_unpacking_start
-      for (int l = 0; l < num_neighbors; ++l) {
-
-        // recv single message
-
-        double* buffer = buffers[l];
-        int* list = unpack_index_lists[l];
-        int  len  = unpack_index_list_lengths[l];
-
-        // unpack
-        for (int v = 0; v < num_vars; ++v) {
-
-          double* var = vars[v];
-
-          RAJA::forall<forall_policy>(range_segment(0, len), [=] RAJA_DEVICE (int i) {
-            var[list[i]] = buffer[i];
-          });
-
-          buffer += len;
-        }
-      }
-
-      cudaErrchk(cudaDeviceSynchronize());
-      // _halo_exchange_cuda_forall_unpacking_end
-
-      }
-      timer.stop();
-
-      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
-      if (tCycle < minCycle) minCycle = tCycle;
-      timer.reset();
-    }
-
-    for (int l = 0; l < num_neighbors; ++l) {
-
-      memoryManager::deallocate_gpu(buffers[l]);
-
-    }
-
-
-    std::swap(vars,               cuda_vars);
-    std::swap(pack_index_lists,   cuda_pack_index_lists);
-    std::swap(unpack_index_lists, cuda_unpack_index_lists);
-
-    for (int v = 0; v < num_vars; ++v) {
-      cudaErrchk(cudaMemcpy( vars[v], cuda_vars[v], var_size * sizeof(double), cudaMemcpyDefault ));
-      memoryManager::deallocate_gpu(cuda_vars[v]);
-    }
-
-    for (int l = 0; l < num_neighbors; ++l) {
-      memoryManager::deallocate_gpu(cuda_pack_index_lists[l]);
-      memoryManager::deallocate_gpu(cuda_unpack_index_lists[l]);
-    }
-
-
-    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
-
-    // check results against reference copy
-    checkResult(vars, vars_ref, var_size, num_vars);
-    //printResult(vars, var_size, num_vars);
-  }
-
 
 //----------------------------------------------------------------------------//
 // RAJA::WorkGroup with cuda_work allows deferred kernel fusion execution
@@ -1160,159 +710,10 @@ int main(int argc, char **argv)
 
 #endif
 
-
 //----------------------------------------------------------------------------//
 
 
 #if defined(RAJA_ENABLE_HIP)
-
-//----------------------------------------------------------------------------//
-// Separate packing/unpacking loops using forall
-//----------------------------------------------------------------------------//
-  {
-    std::cout << "\n Running RAJA Hip forall halo exchange...\n";
-
-    double minCycle = std::numeric_limits<double>::max();
-
-
-    std::vector<double*> hip_vars(num_vars, nullptr);
-    std::vector<int*>    hip_pack_index_lists(num_neighbors, nullptr);
-    std::vector<int*>    hip_unpack_index_lists(num_neighbors, nullptr);
-
-    for (int v = 0; v < num_vars; ++v) {
-      hip_vars[v] = memoryManager::allocate_gpu<double>(var_size);
-    }
-
-    for (int l = 0; l < num_neighbors; ++l) {
-      int pack_len = pack_index_list_lengths[l];
-      hip_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
-      hipErrchk(hipMemcpy( hip_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int), hipMemcpyHostToDevice ));
-
-      int unpack_len = unpack_index_list_lengths[l];
-      hip_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
-      hipErrchk(hipMemcpy( hip_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int), hipMemcpyHostToDevice ));
-    }
-
-    std::swap(vars,               hip_vars);
-    std::swap(pack_index_lists,   hip_pack_index_lists);
-    std::swap(unpack_index_lists, hip_unpack_index_lists);
-
-
-    // _halo_exchange_hip_forall_policies_start
-    using forall_policy = RAJA::hip_exec_async<HIP_BLOCK_SIZE>;
-    // _halo_exchange_hip_forall_policies_end
-
-    std::vector<double*> buffers(num_neighbors, nullptr);
-
-    for (int l = 0; l < num_neighbors; ++l) {
-
-      int buffer_len = num_vars * pack_index_list_lengths[l];
-
-      buffers[l] = memoryManager::allocate_gpu<double>(buffer_len);
-
-    }
-
-    for (int c = 0; c < num_cycles; ++c ) {
-      timer.start();
-      {
-
-      // set vars
-      for (int v = 0; v < num_vars; ++v) {
-
-        double* var = vars[v];
-
-        RAJA::forall<forall_policy>(range_segment(0, var_size), [=] RAJA_DEVICE (int i) {
-          var[i] = i + v;
-        });
-      }
-
-      // _halo_exchange_hip_forall_packing_start
-      for (int l = 0; l < num_neighbors; ++l) {
-
-        double* buffer = buffers[l];
-        int* list = pack_index_lists[l];
-        int  len  = pack_index_list_lengths[l];
-
-        // pack
-        for (int v = 0; v < num_vars; ++v) {
-
-          double* var = vars[v];
-
-          RAJA::forall<forall_policy>(range_segment(0, len), [=] RAJA_DEVICE (int i) {
-            buffer[i] = var[list[i]];
-          });
-
-          buffer += len;
-        }
-
-        hipErrchk(hipDeviceSynchronize());
-
-        // send single message
-      }
-      // _halo_exchange_hip_forall_packing_end
-
-      // _halo_exchange_hip_forall_unpacking_start
-      for (int l = 0; l < num_neighbors; ++l) {
-
-        // recv single message
-
-        double* buffer = buffers[l];
-        int* list = unpack_index_lists[l];
-        int  len  = unpack_index_list_lengths[l];
-
-        // unpack
-        for (int v = 0; v < num_vars; ++v) {
-
-          double* var = vars[v];
-
-          RAJA::forall<forall_policy>(range_segment(0, len), [=] RAJA_DEVICE (int i) {
-            var[list[i]] = buffer[i];
-          });
-
-          buffer += len;
-        }
-      }
-
-      hipErrchk(hipDeviceSynchronize());
-      // _halo_exchange_hip_forall_unpacking_end
-
-      }
-      timer.stop();
-
-      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
-      if (tCycle < minCycle) minCycle = tCycle;
-      timer.reset();
-    }
-
-    for (int l = 0; l < num_neighbors; ++l) {
-
-      memoryManager::deallocate_gpu(buffers[l]);
-
-    }
-
-
-    std::swap(vars,               hip_vars);
-    std::swap(pack_index_lists,   hip_pack_index_lists);
-    std::swap(unpack_index_lists, hip_unpack_index_lists);
-
-    for (int v = 0; v < num_vars; ++v) {
-      hipErrchk(hipMemcpy( vars[v], hip_vars[v], var_size * sizeof(double), hipMemcpyDeviceToHost ));
-      memoryManager::deallocate_gpu(hip_vars[v]);
-    }
-
-    for (int l = 0; l < num_neighbors; ++l) {
-      memoryManager::deallocate_gpu(hip_pack_index_lists[l]);
-      memoryManager::deallocate_gpu(hip_unpack_index_lists[l]);
-    }
-
-
-    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
-
-    // check results against reference copy
-    checkResult(vars, vars_ref, var_size, num_vars);
-    //printResult(vars, var_size, num_vars);
-  }
-
 
 //----------------------------------------------------------------------------//
 // RAJA::WorkGroup with hip_work allows deferred kernel fusion execution
@@ -1497,7 +898,6 @@ int main(int argc, char **argv)
   }
 
 #endif
-
 
 //----------------------------------------------------------------------------//
 
