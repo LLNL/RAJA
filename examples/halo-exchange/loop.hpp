@@ -14,77 +14,6 @@
 #include "../memoryManager.hpp"
 
 
-/*
-  Policies
-*/
-using loop_raja_forall_seq_policy = RAJA::loop_exec;
-#if defined(RAJA_ENABLE_OPENMP)
-using loop_raja_forall_omp_policy = RAJA::omp_parallel_for_exec;
-#endif
-#if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
-using loop_raja_forall_cuda_policy = RAJA::cuda_exec_async<CUDA_BLOCK_SIZE>;
-#endif
-#if defined(RAJA_ENABLE_HIP)
-const int HIP_BLOCK_SIZE = 256;
-using loop_raja_forall_hip_policy = RAJA::hip_exec_async<HIP_BLOCK_SIZE>;
-#endif
-
-namespace detail
-{
-
-template < typename workgroup_policy, typename allocator >
-struct LoopFuser
-{
-  using workpool = RAJA::WorkPool< workgroup_policy,
-                                   int,
-                                   RAJA::xargs<>,
-                                   allocator >;
-
-  using workgroup = RAJA::WorkGroup< workgroup_policy,
-                                     int,
-                                     RAJA::xargs<>,
-                                     allocator >;
-
-  using worksite = RAJA::WorkSite< workgroup_policy,
-                                   int,
-                                   RAJA::xargs<>,
-                                   allocator >;
-
-  LoopFuser(allocator const& aloc)
-    : m_pool(aloc)
-    , m_group(m_pool.instantiate())
-    , m_site(m_group.run())
-  { }
-
-  template < typename segment, typename loop_body >
-  void enqueue(segment&& seg, loop_body&& body)
-  {
-    m_pool.enqueue(std::forward<segment>(seg), std::forward<loop_body>(body));
-  }
-
-  void run()
-  {
-    m_group = m_pool.instantiate();
-    m_site = m_group.run();
-  }
-
-  void clear()
-  {
-    m_pool.clear();
-    m_group.clear();
-    m_site.clear();
-  }
-
-private:
-  workpool m_pool;
-  workgroup m_group;
-  worksite m_site;
-};
-
-} // namespace detail
-
-
 enum struct LoopPattern : int
 {
   invalid = 0
@@ -307,9 +236,77 @@ inline hip_pinned_allocator<char>& getHipBufferAllocator()
 }
 #endif
 
+template < typename workgroup_policy, typename allocator >
+struct LoopFuser
+{
+  using workpool = RAJA::WorkPool< workgroup_policy,
+                                   int,
+                                   RAJA::xargs<>,
+                                   allocator >;
+
+  using workgroup = RAJA::WorkGroup< workgroup_policy,
+                                     int,
+                                     RAJA::xargs<>,
+                                     allocator >;
+
+  using worksite = RAJA::WorkSite< workgroup_policy,
+                                   int,
+                                   RAJA::xargs<>,
+                                   allocator >;
+
+  LoopFuser(allocator const& aloc)
+    : m_pool(aloc)
+    , m_group(m_pool.instantiate())
+    , m_site(m_group.run())
+  { }
+
+  template < typename segment, typename loop_body >
+  void enqueue(segment&& seg, loop_body&& body)
+  {
+    m_pool.enqueue(std::forward<segment>(seg), std::forward<loop_body>(body));
+  }
+
+  void run()
+  {
+    m_group = m_pool.instantiate();
+    m_site = m_group.run();
+  }
+
+  void clear()
+  {
+    m_pool.clear();
+    m_group.clear();
+    m_site.clear();
+  }
+
+private:
+  workpool m_pool;
+  workgroup m_group;
+  worksite m_site;
+};
+
 } // namespace detail
 
 
+/*
+  Policies RAJA forall
+*/
+using loop_raja_forall_seq_policy = RAJA::loop_exec;
+#if defined(RAJA_ENABLE_OPENMP)
+using loop_raja_forall_omp_policy = RAJA::omp_parallel_for_exec;
+#endif
+#if defined(RAJA_ENABLE_CUDA)
+const int CUDA_BLOCK_SIZE = 256;
+using loop_raja_forall_cuda_policy = RAJA::cuda_exec_async<CUDA_BLOCK_SIZE>;
+#endif
+#if defined(RAJA_ENABLE_HIP)
+const int HIP_BLOCK_SIZE = 256;
+using loop_raja_forall_hip_policy = RAJA::hip_exec_async<HIP_BLOCK_SIZE>;
+#endif
+
+/*
+  Policies/types RAJA WorkGroup
+*/
 using loop_raja_fuser_seq_type = detail::LoopFuser<
     RAJA::WorkGroupPolicy< RAJA::loop_work,
                            RAJA::ordered,
