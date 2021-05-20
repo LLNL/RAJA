@@ -27,7 +27,7 @@ void CopyTransaction::packStream(MessageStream& stream)
   const double* var     = m_var;
         double* buf     = stream.getWriteBuffer<double>(len);
 
-  loop(len, [=] RAJA_HOST_DEVICE (int i) {
+  fusible_loop(m_fuser, len, [=] RAJA_HOST_DEVICE (int i) {
     buf[i] = var[indices[i]];
   });
 }
@@ -39,7 +39,7 @@ void CopyTransaction::unpackStream(MessageStream& stream)
         double* var     = m_var;
   const double* buf     = stream.getReadBuffer<double>(len);
 
-  loop(len, [=] RAJA_HOST_DEVICE (int i) {
+  fusible_loop(m_fuser, len, [=] RAJA_HOST_DEVICE (int i) {
     var[indices[i]] = buf[i];
   });
 }

@@ -14,13 +14,13 @@
 #include "MessageStream.hpp"
 
 
-struct CopyTransaction : Transaction
+struct CopyTransaction : FusibleTransaction
 {
   CopyTransaction(int source_processor,
                   int destination_processor,
                   double* var,
                   const int* indices, int len)
-    : Transaction(source_processor, destination_processor)
+    : FusibleTransaction(source_processor, destination_processor)
     , m_var(var)
     , m_indices(indices),     m_len(len)
   { }

@@ -49,4 +49,23 @@ private:
   int m_destination_processor;
 };
 
+
+struct FusibleTransaction : Transaction
+{
+  using Transaction::Transaction;
+
+  FusibleTransaction(FusibleTransaction const&) = delete;
+  FusibleTransaction& operator=(FusibleTransaction const&) = delete;
+
+  virtual ~FusibleTransaction() = default;
+
+  void set_fuser(void* fuser)
+  {
+    m_fuser = fuser;
+  }
+
+protected:
+  void* m_fuser = nullptr;
+};
+
 #endif // RAJA_EXAMPLES_HALOEXCHANGE_TRANSACTION_HPP

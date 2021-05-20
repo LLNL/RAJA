@@ -26,11 +26,15 @@ struct Schedule
   Schedule(const Schedule&) = delete;
   Schedule& operator=(const Schedule&) = delete;
 
-  ~Schedule() = default;
+  ~Schedule();
 
   void addTransaction(std::unique_ptr<Transaction>&& transaction);
 
   void appendTransaction(std::unique_ptr<Transaction>&& transaction);
+
+  void addTransaction(std::unique_ptr<FusibleTransaction>&& transaction);
+
+  void appendTransaction(std::unique_ptr<FusibleTransaction>&& transaction);
 
   void communicate();
 
@@ -44,14 +48,28 @@ struct Schedule
   }
 
 private:
-  using TransactionSet  = std::list< std::unique_ptr<Transaction> >;
+  struct TransactionSet
+  {
+    std::list< std::unique_ptr<Transaction> >        transactions;
+    std::list< std::unique_ptr<FusibleTransaction> > fusible_transactions;
+  };
   using TransactionSets = std::map<int, TransactionSet>;
   // TransactionSet  m_local_set;
   TransactionSets m_send_sets;
   TransactionSets m_recv_sets;
 
-  struct Buffer { void* buffer; size_t size; };
-  using BufferSet  = std::map<int, Buffer>;
+  // void* m_local_fuser = nullptr;
+  void* m_pack_fuser = nullptr;
+  void* m_recv_fuser = nullptr;
+
+
+  struct Buffer
+  {
+    void* buffer;
+    size_t fusible_size;
+    size_t size;
+  };
+  using BufferSet = std::map<int, Buffer>;
   BufferSet m_buffers;
 
   const int m_my_rank;
