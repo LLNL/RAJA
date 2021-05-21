@@ -28,6 +28,11 @@ struct Schedule
 
   ~Schedule();
 
+  int get_my_rank() const
+  {
+    return m_my_rank;
+  }
+
   void addTransaction(std::unique_ptr<Transaction>&& transaction);
 
   void appendTransaction(std::unique_ptr<Transaction>&& transaction);

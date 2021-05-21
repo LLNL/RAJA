@@ -17,6 +17,7 @@
 #include "CopyTransaction.hpp"
 #include "../memoryManager.hpp"
 #include "loop.hpp"
+#include "Item.hpp"
 
 #include "RAJA/util/Timer.hpp"
 
@@ -164,39 +165,17 @@ int main(int argc, char **argv)
     Schedule schedule(my_rank);
 
     // populate schedule
-    for (int l = 0; l < num_neighbors; ++l) {
 
-      int neighbor_rank = l + 1;
+    for (double* var : pattern_vars) {
 
-      for (double* var : pattern_vars) {
+      Item item(Order::unordered, Order::unordered,
+                var,
+                pattern_pack_index_lists,
+                pack_index_list_lengths,
+                pattern_unpack_index_lists,
+                unpack_index_list_lengths);
 
-        int* pack_list = pattern_pack_index_lists[l];
-        int  pack_len  = pack_index_list_lengths[l];
-
-        int* recv_list = pattern_unpack_index_lists[l];
-        int  recv_len  = unpack_index_list_lengths[l];
-
-        CopyTransaction* recv =
-            new CopyTransaction(neighbor_rank,
-                                my_rank,
-                                var,
-                                recv_list, recv_len);
-
-        CopyTransaction* pack =
-            new CopyTransaction(my_rank,
-                                neighbor_rank,
-                                var,
-                                pack_list, pack_len);
-
-        if (get_loop_pattern_fusible()) {
-          schedule.appendTransaction(std::unique_ptr<FusibleTransaction>(recv));
-          schedule.appendTransaction(std::unique_ptr<FusibleTransaction>(pack));
-        } else {
-          schedule.appendTransaction(std::unique_ptr<Transaction>(recv));
-          schedule.appendTransaction(std::unique_ptr<Transaction>(pack));
-        }
-
-      }
+      item.populate(schedule);
 
     }
 
