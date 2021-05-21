@@ -48,10 +48,44 @@ namespace RAJA
       using transpose_tensor_type = TensorRegister<REGISTER_POLICY, T, TensorLayout<!ROW_ORD, !COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>>;
 
     private:
-      static constexpr camp::idx_t s_num_vectors =
-          layout_type::is_row_major() ? ROW_SIZE : COL_SIZE;
 
-      vector_type m_values[s_num_vectors];
+      static constexpr camp::idx_t s_register_width =
+          RegisterTraits<REGISTER_POLICY,T>::s_num_elem;
+
+      // Number of registers that completely contain this matrix
+      // this is regarless of the layout, just how many registers are needed
+      // to fit all of the coefficients
+      static constexpr camp::idx_t s_num_registers =
+          (ROW_SIZE*COL_SIZE) / s_register_width;
+
+      // We only allow matrix sizes that exactly fit in some number of registers
+      static_assert((ROW_SIZE*COL_SIZE) == s_num_registers*s_register_width,
+          "Matrix must exactly fit into an integer number of registers");
+
+
+      // Matrix size for the within-register dimension
+      // for row-major, this is the number of columns
+      // for column-major, this is the nubmer of rows
+      static constexpr camp::idx_t s_reg_matrix_size =
+          layout_type::is_row_major() ? COL_SIZE : ROW_SIZE;
+
+      // Number of segments each register is broken into
+      // If a register is big enough that it represents more than 1 row or
+      // column, then this is the number of rows or columns it represents
+      // If multiple registers are needed for a given dimension, then this
+      // number is zero (OR DO WE WANT 1???)
+      static constexpr camp::idx_t s_segments_per_register =
+          s_register_width / s_reg_matrix_size;
+
+
+      // Number of registers for each register dimension
+      // If we need more than 1 register to represent  a row or column, then
+      // this is the number of registers needed.
+      static constexpr camp::idx_t s_registers_per_dim =
+          s_reg_matrix_size / s_register_width;
+
+
+      vector_type m_registers[s_num_registers];
 
 
     public:
@@ -79,7 +113,6 @@ namespace RAJA
 
       /*
        * Overload for:    assignment of ET to a TensorRegister
-
        */
       template<typename RHS,
         typename std::enable_if<std::is_base_of<RAJA::internal::ET::TensorExpressionConcreteBase, RHS>::value, bool>::type = true>
@@ -97,9 +130,9 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       TensorRegister(vector_type reg0, REGS const &... regs) :
-        m_values{reg0, regs...}
+        m_registers{reg0, regs...}
       {
-        static_assert(1+sizeof...(REGS) == s_num_vectors,
+        static_assert(1+sizeof...(REGS) == s_num_registers,
             "Incompatible number of registers");
       }
 
@@ -135,8 +168,8 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       static
-      constexpr camp::idx_t s_dim_elem(camp::idx_t ){
-        return vector_type::s_num_elem;
+      constexpr camp::idx_t s_dim_elem(camp::idx_t dim){
+        return dim == 0 ? ROW_SIZE : COL_SIZE;
       }
 
       /*!
@@ -181,13 +214,13 @@ namespace RAJA
 
 
       /*!
-       * Copy contents of another matrix operator
+       * Copy contents of another matrix
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &copy(self_type const &c){
-        for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-          m_values[i] = c.m_values[i];
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          m_registers[i] = c.m_registers[i];
         }
         return *this;
       }
@@ -196,13 +229,13 @@ namespace RAJA
 
 
       /*!
-       * Resizes matrix to specified size, and sets all elements to zero
+       * Sets all elements to zero
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &clear(){
-        for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-          m_values[i] = vector_type(0);
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          m_registers[i] = vector_type(0);
         }
 
 
@@ -291,7 +324,6 @@ namespace RAJA
           }
         }
         return *this;
-        return *this;
       }
 
 
@@ -299,7 +331,11 @@ namespace RAJA
       /*!
        * Loads a dense full matrix from memory.
        *
-       * Column entries must be stride-1, rows may be any striding
+       * For row-major, column entries must be stride-1
+       * For column-major, row entries must be stride-1
+       *
+       * Non-stride-1 dimension can have any striding... so this is can
+       * be a "semi-dense" matrix.
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -310,14 +346,56 @@ namespace RAJA
         printf("th%d,%d: load_packed, stride=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, col_stride);
 #endif
-        if(layout_type::is_row_major()){
-          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-            m_values[i].load_packed(ptr+i*row_stride);
+        // if it's dense in columns and rows, just do a dense load
+        if((layout_type::is_row_major()&&(row_stride==ROW_SIZE)) ||
+           (layout_type::is_column_major()&&(col_stride==COL_SIZE))){
+
+          for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
+            m_registers[reg].load_packed(ptr + reg*s_register_width);
+          }
+
+        }
+        // Do semi-dense load for row-major
+        else if(layout_type::is_row_major()){
+
+          // one or more registers per column
+          if(s_registers_per_dim){
+            for(camp::idx_t row = 0;row < ROW_SIZE;++ row){
+              for(camp::idx_t dimreg = 0;dimreg < s_registers_per_dim;++ dimreg){
+
+                camp::idx_t reg = dimreg + row*s_registers_per_dim;
+
+                camp::idx_t offset = row*row_stride + dimreg*s_register_width;
+
+                m_registers[reg].load_packed(ptr + offset);
+
+              }
+            }
+          }
+          // more than one column per register
+          else{
+            // yikes!
           }
         }
+        // Do semi-dense load for column-major
         else{
-          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-            m_values[i].load_packed(ptr+i*col_stride);
+          // one or more registers per row
+          if(s_registers_per_dim){
+            for(camp::idx_t col = 0;col < COL_SIZE;++ col){
+              for(camp::idx_t dimreg = 0;dimreg < s_registers_per_dim;++ dimreg){
+
+                camp::idx_t reg = dimreg + col*s_registers_per_dim;
+
+                camp::idx_t offset = col*col_stride + dimreg*s_register_width;
+
+                m_registers[reg].load_packed(ptr + offset);
+
+              }
+            }
+          }
+          // more than one row per register
+          else{
+            // yikes!
           }
         }
 
@@ -337,13 +415,13 @@ namespace RAJA
             threadIdx.x, threadIdx.y, row_stride, col_stride);
 #endif
         if(layout_type::is_row_major()){
-          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-            m_values[i].load_strided(ptr+i*row_stride, col_stride);
+          for(camp::idx_t i = 0;i < s_num_registers;++ i){
+            m_registers[i].load_strided(ptr+i*row_stride, col_stride);
           }
         }
         else{
-          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-            m_values[i].load_strided(ptr+i*col_stride, row_stride);
+          for(camp::idx_t i = 0;i < s_num_registers;++ i){
+            m_registers[i].load_strided(ptr+i*col_stride, row_stride);
           }
         }
 
@@ -366,18 +444,18 @@ namespace RAJA
 
         if(layout_type::is_row_major()){
           for(camp::idx_t i = 0;i < num_rows;++ i){
-            m_values[i].load_packed_n(ptr+i*row_stride, num_cols);
+            m_registers[i].load_packed_n(ptr+i*row_stride, num_cols);
           }
-          for(camp::idx_t i = num_rows;i < s_num_vectors;++ i){
-            m_values[i] = vector_type(0); // clear remainder
+          for(camp::idx_t i = num_rows;i < s_num_registers;++ i){
+            m_registers[i] = vector_type(0); // clear remainder
           }
         }
         else{
           for(camp::idx_t i = 0;i < num_cols;++ i){
-            m_values[i].load_packed_n(ptr+i*col_stride, num_rows);
+            m_registers[i].load_packed_n(ptr+i*col_stride, num_rows);
           }
-          for(camp::idx_t i = num_cols;i < s_num_vectors;++ i){
-            m_values[i] = vector_type(0); // clear remainder
+          for(camp::idx_t i = num_cols;i < s_num_registers;++ i){
+            m_registers[i] = vector_type(0); // clear remainder
           }
         }
 
@@ -400,18 +478,18 @@ namespace RAJA
 
         if(layout_type::is_row_major()){
           for(camp::idx_t i = 0;i < num_rows;++ i){
-            m_values[i].load_strided_n(ptr+i*row_stride, col_stride, num_cols);
+            m_registers[i].load_strided_n(ptr+i*row_stride, col_stride, num_cols);
           }
-          for(camp::idx_t i = num_rows;i < s_num_vectors;++ i){
-            m_values[i] = vector_type(0); // clear remainder
+          for(camp::idx_t i = num_rows;i < s_num_registers;++ i){
+            m_registers[i] = vector_type(0); // clear remainder
           }
         }
         else{
           for(camp::idx_t i = 0;i < num_cols;++ i){
-            m_values[i].load_strided_n(ptr+i*col_stride, row_stride, num_rows);
+            m_registers[i].load_strided_n(ptr+i*col_stride, row_stride, num_rows);
           }
-          for(camp::idx_t i = num_cols;i < s_num_vectors;++ i){
-            m_values[i] = vector_type(0); // clear remainder
+          for(camp::idx_t i = num_cols;i < s_num_registers;++ i){
+            m_registers[i] = vector_type(0); // clear remainder
           }
         }
 
@@ -436,13 +514,13 @@ namespace RAJA
 #endif
 
         if(layout_type::is_row_major()){
-          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-            m_values[i].store_packed(ptr+i*row_stride);
+          for(camp::idx_t i = 0;i < s_num_registers;++ i){
+            m_registers[i].store_packed(ptr+i*row_stride);
           }
         }
         else{
-          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-            m_values[i].store_packed(ptr+i*col_stride);
+          for(camp::idx_t i = 0;i < s_num_registers;++ i){
+            m_registers[i].store_packed(ptr+i*col_stride);
           }
         }
 
@@ -463,13 +541,13 @@ namespace RAJA
 #endif
 
         if(layout_type::is_row_major()){
-          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-            m_values[i].store_strided(ptr+i*row_stride, col_stride);
+          for(camp::idx_t i = 0;i < s_num_registers;++ i){
+            m_registers[i].store_strided(ptr+i*row_stride, col_stride);
           }
         }
         else{
-          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-            m_values[i].store_strided(ptr+i*col_stride, row_stride);
+          for(camp::idx_t i = 0;i < s_num_registers;++ i){
+            m_registers[i].store_strided(ptr+i*col_stride, row_stride);
           }
         }
 
@@ -493,12 +571,12 @@ namespace RAJA
 
         if(layout_type::is_row_major()){
           for(camp::idx_t i = 0;i < num_rows;++ i){
-            m_values[i].store_packed_n(ptr+i*row_stride, num_cols);
+            m_registers[i].store_packed_n(ptr+i*row_stride, num_cols);
           }
         }
         else{
           for(camp::idx_t i = 0;i < num_cols;++ i){
-            m_values[i].store_packed_n(ptr+i*col_stride, num_rows);
+            m_registers[i].store_packed_n(ptr+i*col_stride, num_rows);
           }
         }
 
@@ -521,12 +599,12 @@ namespace RAJA
 
         if(layout_type::is_row_major()){
           for(camp::idx_t i = 0;i < num_rows;++ i){
-            m_values[i].store_strided_n(ptr+i*row_stride, col_stride, num_cols);
+            m_registers[i].store_strided_n(ptr+i*row_stride, col_stride, num_cols);
           }
         }
         else{
           for(camp::idx_t i = 0;i < num_cols;++ i){
-            m_values[i].store_strided_n(ptr+i*col_stride, row_stride, num_rows);
+            m_registers[i].store_strided_n(ptr+i*col_stride, row_stride, num_rows);
           }
         }
 
@@ -542,8 +620,8 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &broadcast(element_type v){
-        for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-          m_values[i].broadcast(v);
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          m_registers[i].broadcast(v);
         }
         return *this;
       }
@@ -570,15 +648,15 @@ namespace RAJA
           // At this level, we do block transposes of NxN sub-matrices, where
           // N = 1<<lvl
 
-          auto const &vals = result.m_values;
+          auto const &vals = result.m_registers;
 
           self_type tmp;
-          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
+          for(camp::idx_t i = 0;i < s_num_registers;++ i){
             if(((i>>lvl)&0x1) == 0){
-              tmp.m_values[i] = vals[i - (i&(1<<lvl))].transpose_shuffle_left(lvl, vals[i - (i&(1<<lvl)) + (1<<lvl)]);
+              tmp.m_registers[i] = vals[i - (i&(1<<lvl))].transpose_shuffle_left(lvl, vals[i - (i&(1<<lvl)) + (1<<lvl)]);
             }
             else{
-              tmp.m_values[i] = vals[i - (i&(1<<lvl))].transpose_shuffle_right(lvl, vals[i - (i&(1<<lvl)) + (1<<lvl)]);
+              tmp.m_registers[i] = vals[i - (i&(1<<lvl))].transpose_shuffle_right(lvl, vals[i - (i&(1<<lvl)) + (1<<lvl)]);
             }
           }
           result = tmp;
@@ -622,15 +700,15 @@ namespace RAJA
       vector_type right_multiply_vector(vector_type v) const {
         if(layout_type::is_row_major()){
           vector_type result;
-          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-            result.set(v.dot(m_values[i]), i);
+          for(camp::idx_t i = 0;i < s_num_registers;++ i){
+            result.set(v.dot(m_registers[i]), i);
           }
           return result;
         }
         else{
           vector_type result(0);
-          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-            result +=  m_values[i] * v.get(i);
+          for(camp::idx_t i = 0;i < s_num_registers;++ i){
+            result +=  m_registers[i] * v.get(i);
           }
           return result;
         }
@@ -644,15 +722,15 @@ namespace RAJA
       vector_type left_multiply_vector(vector_type v) const {
         if(layout_type::is_column_major()){
           vector_type result;
-          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-            result.set(v.dot(m_values[i]), i);
+          for(camp::idx_t i = 0;i < s_num_registers;++ i){
+            result.set(v.dot(m_registers[i]), i);
           }
           return result;
         }
         else{
           vector_type result(0);
-          for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-            result +=  m_values[i] * v.get(i);
+          for(camp::idx_t i = 0;i < s_num_registers;++ i){
+            result +=  m_registers[i] * v.get(i);
           }
           return result;
         }
@@ -689,8 +767,8 @@ namespace RAJA
       RAJA_INLINE
       self_type multiply(self_type mat) const {
         self_type result;
-        for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-          result.m_values[i] = m_values[i].multiply(mat.m_values[i]);
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          result.m_registers[i] = m_registers[i].multiply(mat.m_registers[i]);
         }
         return result;
       }
@@ -702,8 +780,8 @@ namespace RAJA
       RAJA_INLINE
       self_type multiply_add(self_type mat, self_type add) const {
         self_type result;
-        for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-          result.m_values[i] = m_values[i].multiply_add(mat.m_values[i], add.m_values[i]);
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          result.m_registers[i] = m_registers[i].multiply_add(mat.m_registers[i], add.m_registers[i]);
         }
         return result;
       }
@@ -750,8 +828,8 @@ namespace RAJA
       RAJA_INLINE
       self_type add(self_type mat) const {
         self_type result;
-        for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-          result.m_values[i] = m_values[i].add(mat.m_values[i]);
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          result.m_registers[i] = m_registers[i].add(mat.m_registers[i]);
         }
         return result;
       }
@@ -760,8 +838,8 @@ namespace RAJA
       RAJA_INLINE
       self_type subtract(self_type mat) const {
         self_type result;
-        for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-          result.m_values[i] = m_values[i].subtract(mat.m_values[i]);
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          result.m_registers[i] = m_registers[i].subtract(mat.m_registers[i]);
         }
         return result;
       }
@@ -770,8 +848,8 @@ namespace RAJA
       RAJA_INLINE
       self_type divide(self_type mat) const {
         self_type result;
-        for(camp::idx_t i = 0;i < s_num_vectors;++ i){
-          result.m_values[i] = m_values[i].divide(mat.m_values[i]);
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          result.m_registers[i] = m_registers[i].divide(mat.m_registers[i]);
         }
         return result;
       }
@@ -782,10 +860,10 @@ namespace RAJA
       RAJA_INLINE
       self_type &set(element_type val, int row, int col){
         if(layout_type::is_row_major()){
-          m_values[row].set(val, col);
+          m_registers[row].set(val, col);
         }
         else{
-          m_values[col].set(val, row);
+          m_registers[col].set(val, row);
         }
         return *this;
       }
@@ -794,22 +872,22 @@ namespace RAJA
       RAJA_INLINE
       element_type get(int row, int col) const {
         return layout_type::is_row_major() ?
-             m_values[row].get(col) :
-             m_values[col].get(row);
+             m_registers[row].get(col) :
+             m_registers[col].get(row);
       }
 
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       vector_type &vec(int i){
-        return m_values[i];
+        return m_registers[i];
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
       vector_type const &vec(int i) const{
-        return m_values[i];
+        return m_registers[i];
       }
 
 

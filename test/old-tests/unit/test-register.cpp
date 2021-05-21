@@ -14,31 +14,31 @@
 
 using RegisterTestTypes = ::testing::Types<
 
-#ifdef __AVX__
-    RAJA::VectorRegister<double, RAJA::avx_register>,
-    RAJA::VectorRegister<float, RAJA::avx_register>,
-    RAJA::VectorRegister<int, RAJA::avx_register>,
-    RAJA::VectorRegister<long, RAJA::avx_register>,
-#endif
-
-#ifdef __AVX2__
+//#ifdef __AVX__
+//    RAJA::VectorRegister<double, RAJA::avx_register>,
+//    RAJA::VectorRegister<float, RAJA::avx_register>,
+//    RAJA::VectorRegister<int, RAJA::avx_register>,
+//    RAJA::VectorRegister<long, RAJA::avx_register>,
+//#endif
+//
+//#ifdef __AVX2__
     RAJA::VectorRegister<double, RAJA::avx2_register>,
-    RAJA::VectorRegister<float, RAJA::avx2_register>,
-    RAJA::VectorRegister<int, RAJA::avx2_register>,
-    RAJA::VectorRegister<long, RAJA::avx2_register>,
-#endif
-
-#ifdef __AVX512__
-    RAJA::VectorRegister<double, RAJA::avx512_register>,
-    RAJA::VectorRegister<float, RAJA::avx512_register>,
-    RAJA::VectorRegister<int, RAJA::avx512_register>,
-    RAJA::VectorRegister<long, RAJA::avx512_register>,
-#endif
-
-    // scalar_register is supported on all platforms
-    RAJA::VectorRegister<double, RAJA::scalar_register>,
-    RAJA::VectorRegister<float, RAJA::scalar_register>,
-    RAJA::VectorRegister<int, RAJA::scalar_register>,
+//    RAJA::VectorRegister<float, RAJA::avx2_register>,
+//    RAJA::VectorRegister<int, RAJA::avx2_register>,
+//    RAJA::VectorRegister<long, RAJA::avx2_register>,
+//#endif
+//
+//#ifdef __AVX512__
+//    RAJA::VectorRegister<double, RAJA::avx512_register>,
+//    RAJA::VectorRegister<float, RAJA::avx512_register>,
+//    RAJA::VectorRegister<int, RAJA::avx512_register>,
+//    RAJA::VectorRegister<long, RAJA::avx512_register>,
+//#endif
+//
+//    // scalar_register is supported on all platforms
+//    RAJA::VectorRegister<double, RAJA::scalar_register>,
+//    RAJA::VectorRegister<float, RAJA::scalar_register>,
+//    RAJA::VectorRegister<int, RAJA::scalar_register>,
     RAJA::VectorRegister<long, RAJA::scalar_register>
   >;
 
@@ -187,6 +187,126 @@ TYPED_TEST_P(RegisterTest, VectorRegisterLoad)
   }
 }
 
+TYPED_TEST_P(RegisterTest, Gather)
+{
+
+  using register_t = TypeParam;
+
+  using int_vector_type = typename register_t::int_vector_type;
+
+  using element_t = typename register_t::element_type;
+  static constexpr camp::idx_t num_elem = register_t::s_num_elem;
+
+  element_t A[num_elem*num_elem];
+  for(camp::idx_t i = 0;i < num_elem*num_elem;++ i){
+    A[i] = 3*i+13;
+//    printf("A[%d]=%d\n", (int)i, (int)A[i]);
+  }
+
+  // create an index vector to point at sub elements of A
+  int_vector_type idx;
+  for(camp::idx_t i = 0;i < num_elem;++ i){
+    int j = num_elem-1-i;
+    idx.set(j*j, i);
+//    printf("idx[%d]=%d\n", (int)i, (int)(j*j));
+  }
+
+  // Gather elements from A into a register using the idx offsets
+  register_t x;
+  x.gather(&A[0], idx);
+
+  // check
+  for(camp::idx_t i = 0;i < num_elem;++ i){
+    int j = num_elem-1-i;
+//    printf("i=%d, j=%d, A[%d]=%d, x.get(i)=%d\n",
+//        (int)i, (int)j, (int)(j*j), (int)A[j*j], (int)x.get(i));
+    ASSERT_SCALAR_EQ(A[j*j], x.get(i));
+  }
+
+
+  // Gather all but one elements from A into a register using the idx offsets
+  register_t y;
+  y.gather_n(&A[0], idx, num_elem-1);
+
+  // check
+  for(camp::idx_t i = 0;i < num_elem-1;++ i){
+    int j = num_elem-1-i;
+    ASSERT_SCALAR_EQ(A[j*j], y.get(i));
+  }
+  ASSERT_SCALAR_EQ(0, y.get(num_elem-1));
+
+
+}
+
+TYPED_TEST_P(RegisterTest, Scatter)
+{
+
+  using register_t = TypeParam;
+
+  using int_vector_type = typename register_t::int_vector_type;
+
+  using element_t = typename register_t::element_type;
+  static constexpr camp::idx_t num_elem = register_t::s_num_elem;
+
+  element_t A[num_elem*num_elem];
+  for(camp::idx_t i = 0;i < num_elem*num_elem;++ i){
+    A[i] = 0;
+  }
+
+  // create an index vector to point at sub elements of A
+  int_vector_type idx;
+  for(camp::idx_t i = 0;i < num_elem;++ i){
+    int j = num_elem-1-i;
+    idx.set(j*j, i);
+  }
+
+  // Create a vector of values
+  register_t x;
+  for(camp::idx_t i = 0;i < num_elem;++ i){
+    x.set(i+1, i);
+  }
+
+  // Scatter the values of x into A[] using idx as the offsets
+  x.scatter(&A[0], idx);
+
+  // check
+  for(camp::idx_t i = 0;i < num_elem*num_elem;++ i){
+//    printf("A[%d]=%d\n", (int)i, (int)A[i]);
+    // if the index i is in idx, check that A contains the right value
+    for(camp::idx_t j = 0;j < num_elem;++ j){
+      if(idx.get(j) == i){
+        // check
+        ASSERT_SCALAR_EQ(A[i], element_t(j+1));
+        // and set to zero (for the next assert, and to clear for next test)
+        A[i] = 0;
+      }
+    }
+    // otherwise A should contain zero
+    ASSERT_SCALAR_EQ(A[i], element_t(0));
+  }
+
+
+  // Scatter all but one of the values of x into A[] using idx as the offsets
+  x.scatter_n(&A[0], idx, num_elem-1);
+
+  // check
+  for(camp::idx_t i = 0;i < num_elem*num_elem;++ i){
+//    printf("A[%d]=%d\n", (int)i, (int)A[i]);
+    // if the index i is in idx, check that A contains the right value
+    for(camp::idx_t j = 0;j < num_elem-1;++ j){
+      if(idx.get(j) == i){
+        // check
+        ASSERT_SCALAR_EQ(A[i], element_t(j+1));
+        // and set to zero (for the next assert, and to clear for next test)
+        A[i] = 0;
+      }
+    }
+    // otherwise A should contain zero
+    ASSERT_SCALAR_EQ(A[i], element_t(0));
+  }
+
+
+}
 
 
 TYPED_TEST_P(RegisterTest, VectorRegisterAdd)
@@ -571,8 +691,10 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMin)
 //REGISTER_TYPED_TEST_SUITE_P(RegisterTest, VectorRegisterSubtract);
 
 REGISTER_TYPED_TEST_SUITE_P(RegisterTest,
-    VectorRegisterSetGet,
+                                       VectorRegisterSetGet,
                                        VectorRegisterLoad,
+                                       Gather,
+                                       Scatter,
                                        VectorRegisterAdd,
                                        VectorRegisterSubtract,
                                        VectorRegisterMultiply,

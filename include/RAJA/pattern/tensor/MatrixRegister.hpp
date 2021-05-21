@@ -33,7 +33,13 @@ namespace RAJA
                      camp::idx_seq<RegisterTraits<REGISTER_POLICY,T>::s_num_elem,
                                    RegisterTraits<REGISTER_POLICY,T>::s_num_elem>>;
 
-
+  template<typename T, typename LAYOUT, camp::idx_t ROWS, camp::idx_t COLS,
+           typename REGISTER_POLICY = RAJA::default_register>
+  using RectMatrixRegister =
+      TensorRegister<REGISTER_POLICY,
+                     T,
+                     LAYOUT,
+                     camp::idx_seq<ROWS,COLS>>;
 
 
 }  // namespace RAJA

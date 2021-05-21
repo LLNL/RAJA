@@ -52,6 +52,9 @@ namespace RAJA {
       using element_type = ELEMENT_TYPE;
       using register_type = ELEMENT_TYPE;
 
+      using int_vector_type = TensorRegister<cuda_warp_register, int, VectorLayout, camp::idx_seq<32>>;
+
+
 		private:
       element_type m_value;
 

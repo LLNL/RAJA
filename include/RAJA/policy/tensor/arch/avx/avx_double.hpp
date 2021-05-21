@@ -42,6 +42,8 @@ namespace RAJA
       using element_type = double;
       using register_type = __m256d;
 
+      using int_vector_type = TensorRegister<avx_register, long, VectorLayout, camp::idx_seq<4>>;
+
 
     private:
       register_type m_value;

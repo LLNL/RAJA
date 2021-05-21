@@ -42,6 +42,7 @@ namespace RAJA
       using element_type = double;
       using register_type = __m256d;
 
+      using int_vector_type = TensorRegister<avx2_register, long, VectorLayout, camp::idx_seq<4>>;
 
     private:
       register_type m_value;
@@ -117,7 +118,14 @@ namespace RAJA
       TensorRegister(element_type const &c) : m_value(_mm256_set1_pd(c)) {}
 
 
-
+      /*!
+       * @brief Returns underlying SIMD register.
+       */
+      RAJA_INLINE
+      constexpr
+      register_type get_register() const {
+        return m_value;
+      }
 
 
 
@@ -182,6 +190,48 @@ namespace RAJA
         return *this;
       }
 
+      /*!
+       * @brief Generic gather operation for full vector.
+       *
+       * Must provide another register containing offsets of all values
+       * to be loaded relative to supplied pointer.
+       *
+       * Offsets are element-wise, not byte-wise.
+       *
+       */
+      RAJA_INLINE
+      self_type &gather(element_type const *ptr, int_vector_type offsets){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_strided_n ++;
+#endif
+        m_value = _mm256_i64gather_pd(ptr,
+                                      offsets.get_register(),
+                                      sizeof(element_type));
+        return *this;
+      }
+
+      /*!
+       * @brief Generic gather operation for n-length subvector.
+       *
+       * Must provide another register containing offsets of all values
+       * to be loaded relative to supplied pointer.
+       *
+       * Offsets are element-wise, not byte-wise.
+       *
+       */
+      RAJA_INLINE
+      self_type &gather_n(element_type const *ptr, int_vector_type offsets, camp::idx_t N){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_strided_n ++;
+#endif
+        m_value = _mm256_mask_i64gather_pd(_mm256_setzero_pd(),
+                                      ptr,
+                                      offsets.get_register(),
+                                      _mm256_castsi256_pd(createMask(N)),
+                                      sizeof(element_type));
+        return *this;
+      }
+
 
       /*!
        * @brief Store entire register to consecutive memory locations
@@ -236,6 +286,47 @@ namespace RAJA
 #endif
         for(camp::idx_t i = 0;i < N;++ i){
           ptr[i*stride] = m_value[i];
+        }
+        return *this;
+      }
+
+
+      /*!
+       * @brief Generic scatter operation for full vector.
+       *
+       * Must provide another register containing offsets of all values
+       * to be stored relative to supplied pointer.
+       *
+       * Offsets are element-wise, not byte-wise.
+       *
+       */
+      RAJA_INLINE
+      self_type const &scatter(element_type *ptr, int_vector_type offsets) const {
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_strided_n ++;
+#endif
+        for(camp::idx_t i = 0;i < s_num_elem;++ i){
+          ptr[offsets.get(i)] = m_value[i];
+        }
+        return *this;
+      }
+
+      /*!
+       * @brief Generic scatter operation for n-length subvector.
+       *
+       * Must provide another register containing offsets of all values
+       * to be stored relative to supplied pointer.
+       *
+       * Offsets are element-wise, not byte-wise.
+       *
+       */
+      RAJA_INLINE
+      self_type const &scatter_n(element_type *ptr, int_vector_type offsets, camp::idx_t N) const {
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_strided_n ++;
+#endif
+        for(camp::idx_t i = 0;i < N;++ i){
+          ptr[offsets.get(i)] = m_value[i];
         }
         return *this;
       }

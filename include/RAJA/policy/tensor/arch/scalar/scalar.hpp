@@ -48,6 +48,7 @@ namespace RAJA
       using element_type = T;
       using register_type = T;
 
+      using int_vector_type = TensorRegister<scalar_register, long, VectorLayout, camp::idx_seq<1>>;
 
 
     private:
@@ -154,6 +155,44 @@ namespace RAJA
 
 
       /*!
+       * @brief Generic gather operation for full vector.
+       *
+       * Must provide another register containing offsets of all values
+       * to be loaded relative to supplied pointer.
+       *
+       * Offsets are element-wise, not byte-wise.
+       *
+       */
+      RAJA_INLINE
+      self_type &gather(element_type const *ptr, int_vector_type offsets){
+
+        m_value = ptr[offsets.get(0)];
+
+        return *this;
+      }
+
+      /*!
+       * @brief Generic gather operation for n-length subvector.
+       *
+       * Must provide another register containing offsets of all values
+       * to be loaded relative to supplied pointer.
+       *
+       * Offsets are element-wise, not byte-wise.
+       *
+       */
+      RAJA_INLINE
+      self_type &gather_n(element_type const *ptr, int_vector_type offsets, camp::idx_t N){
+        if(N > 0){
+          m_value = ptr[offsets.get(0)];
+        }
+        else{
+          m_value = element_type(0);
+        }
+        return *this;
+      }
+
+
+      /*!
        * @brief Store entire register to consecutive memory locations
        *
        */
@@ -202,6 +241,40 @@ namespace RAJA
         return *this;
       }
 
+
+      /*!
+       * @brief Generic scatter operation for full vector.
+       *
+       * Must provide another register containing offsets of all values
+       * to be stored relative to supplied pointer.
+       *
+       * Offsets are element-wise, not byte-wise.
+       *
+       */
+      RAJA_INLINE
+      self_type const &scatter(element_type *ptr, int_vector_type offsets) const {
+
+        ptr[offsets.get(0)] = m_value;
+
+        return *this;
+      }
+
+      /*!
+       * @brief Generic scatter operation for n-length subvector.
+       *
+       * Must provide another register containing offsets of all values
+       * to be stored relative to supplied pointer.
+       *
+       * Offsets are element-wise, not byte-wise.
+       *
+       */
+      RAJA_INLINE
+      self_type const &scatter_n(element_type *ptr, int_vector_type offsets, camp::idx_t N) const {
+        if(N > 0){
+          ptr[offsets.get(0)] = m_value;
+        }
+        return *this;
+      }
 
 
       /*!

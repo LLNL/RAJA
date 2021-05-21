@@ -42,6 +42,8 @@ namespace RAJA
       using element_type = float;
       using register_type = __m256;
 
+      using int_vector_type = TensorRegister<avx2_register, int, VectorLayout, camp::idx_seq<8>>;
+
 
     private:
       register_type m_value;
@@ -153,6 +155,14 @@ namespace RAJA
       RAJA_INLINE
       TensorRegister(element_type const &c) : m_value(_mm256_set1_ps(c)) {}
 
+      /*!
+       * @brief Returns underlying SIMD register.
+       */
+      RAJA_INLINE
+      constexpr
+      register_type get_register() const {
+        return m_value;
+      }
 
       /*!
        * @brief Load a full register from a stride-one memory location
