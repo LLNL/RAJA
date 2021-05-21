@@ -24,10 +24,11 @@ enum struct Order
 
 struct Item
 {
-  Item(Order pack_order, Order unpack_order,
-       double* var,
+  Item(double* var,
+       Order pack_order,
        std::vector<int*>& pack_index_lists,
        std::vector<int >& pack_index_list_lengths,
+       Order unpack_order,
        std::vector<int*>& unpack_index_lists,
        std::vector<int >& unpack_index_list_lengths);
 
@@ -39,11 +40,11 @@ struct Item
   void populate(Schedule& schedule);
 
 private:
-  Order m_pack_order;
-  Order m_unpack_order;
   double* m_var;
+  Order m_pack_order;
   std::vector<int*> m_pack_index_lists;
   std::vector<int > m_pack_index_list_lengths;
+  Order m_unpack_order;
   std::vector<int*> m_unpack_index_lists;
   std::vector<int > m_unpack_index_list_lengths;
 };

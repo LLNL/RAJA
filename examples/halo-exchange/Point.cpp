@@ -13,10 +13,23 @@
 
 
 // adds an item and returns the id of that item
-size_t Point::addItem(std::unique_ptr<Item>&& item)
+size_t Point::addItem(double* var,
+                      Order pack_order,
+                      std::vector<int*>& pack_index_lists,
+                      std::vector<int >& pack_index_list_lengths,
+                      Order unpack_order,
+                      std::vector<int*>& unpack_index_lists,
+                      std::vector<int >& unpack_index_list_lengths)
 {
   size_t id = m_items.size();
-  m_items.emplace_back(new ItemNode{std::move(item)});
+  m_items.emplace_back(
+      new ItemNode(var,
+                   pack_order,
+                   pack_index_lists,
+                   pack_index_list_lengths,
+                   unpack_order,
+                   unpack_index_lists,
+                   unpack_index_list_lengths));
   return id;
 }
 
@@ -70,7 +83,7 @@ void Point::createSchedule()
       }
     }
 
-    node->item->populate(*m_schedule);
+    node->item.populate(*m_schedule);
 
   }
 

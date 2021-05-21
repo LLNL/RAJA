@@ -156,15 +156,13 @@ int main(int argc, char **argv)
 
     for (double* var : pattern_vars) {
 
-      std::unique_ptr<Item> item(
-          new Item(Order::unordered, Order::unordered,
-                   var,
-                   pattern_pack_index_lists,
-                   pack_index_list_lengths,
-                   pattern_unpack_index_lists,
-                   unpack_index_list_lengths));
-
-      point.addItem(std::move(item));
+      point.addItem(var,
+                    Order::unordered,
+                    pattern_pack_index_lists,
+                    pack_index_list_lengths,
+                    Order::unordered,
+                    pattern_unpack_index_lists,
+                    unpack_index_list_lengths);
 
     }
 

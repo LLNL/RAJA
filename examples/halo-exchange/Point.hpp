@@ -28,7 +28,13 @@ struct Point
   ~Point() = default;
 
   // adds an item and returns the id of that item
-  size_t addItem(std::unique_ptr<Item>&& item);
+  size_t addItem(double* var,
+                 Order pack_order,
+                 std::vector<int*>& pack_index_lists,
+                 std::vector<int >& pack_index_list_lengths,
+                 Order unpack_order,
+                 std::vector<int*>& unpack_index_lists,
+                 std::vector<int >& unpack_index_list_lengths);
 
   // adds edge a -> b in graph
   void addDependency(size_t id_a, size_t id_b);
@@ -55,11 +61,12 @@ struct Point
 private:
   struct ItemNode
   {
-    ItemNode(std::unique_ptr<Item>&& item_)
-      : item(std::move(item_))
+    template < typename... Args >
+    ItemNode(Args&&... args)
+      : item(std::forward<Args>(args)...)
     { }
 
-    std::unique_ptr<Item> item;
+    Item item;
     std::set<size_t> dependent_items;
     size_t num_parents = 0;
     size_t num = 0;

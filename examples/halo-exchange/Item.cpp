@@ -12,17 +12,18 @@
 #include "CopyTransaction.hpp"
 
 
-Item::Item(Order pack_order, Order unpack_order,
-     double* var,
-     std::vector<int*>& pack_index_lists,
-     std::vector<int >& pack_index_list_lengths,
-     std::vector<int*>& unpack_index_lists,
-     std::vector<int >& unpack_index_list_lengths)
-  : m_pack_order(pack_order)
-  , m_unpack_order(unpack_order)
-  , m_var(var)
+Item::Item(double* var,
+           Order pack_order,
+           std::vector<int*>& pack_index_lists,
+           std::vector<int >& pack_index_list_lengths,
+           Order unpack_order,
+           std::vector<int*>& unpack_index_lists,
+           std::vector<int >& unpack_index_list_lengths)
+  : m_var(var)
+  , m_pack_order(pack_order)
   , m_pack_index_lists(pack_index_lists)
   , m_pack_index_list_lengths(pack_index_list_lengths)
+  , m_unpack_order(unpack_order)
   , m_unpack_index_lists(unpack_index_lists)
   , m_unpack_index_list_lengths(unpack_index_list_lengths)
 {
