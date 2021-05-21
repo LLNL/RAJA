@@ -12,12 +12,12 @@
 #include <limits>
 #include <vector>
 
-#include "halo-exchange.hpp"
-#include "Schedule.hpp"
-#include "CopyTransaction.hpp"
 #include "../memoryManager.hpp"
-#include "loop.hpp"
+#include "halo-exchange.hpp"
+#include "Point.hpp"
 #include "Item.hpp"
+#include "Schedule.hpp"
+#include "loop.hpp"
 
 #include "RAJA/util/Timer.hpp"
 
@@ -26,16 +26,6 @@
  *  Halo exchange Example
  *
  *  Packs and Unpacks data from 3D variables as is done in a halo exchange.
- *  It illustrates how to use the workgroup set of constructs.
- *
- *  RAJA features shown:
- *    - `WorkPool` template object
- *    - `WorkGroup` template object
- *    - `WorkSite` template object
- *    -  Index range segment
- *    -  WorkGroup policies
- *
- * If CUDA is enabled, CUDA unified memory is used.
  */
 
 
@@ -160,24 +150,25 @@ int main(int argc, char **argv)
       res.memcpy(pattern_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int));
     }
 
+    Point point;
 
-    const int my_rank = 0;
-    Schedule schedule(my_rank);
-
-    // populate schedule
+    // populate point
 
     for (double* var : pattern_vars) {
 
-      Item item(Order::unordered, Order::unordered,
-                var,
-                pattern_pack_index_lists,
-                pack_index_list_lengths,
-                pattern_unpack_index_lists,
-                unpack_index_list_lengths);
+      std::unique_ptr<Item> item(
+          new Item(Order::unordered, Order::unordered,
+                   var,
+                   pattern_pack_index_lists,
+                   pack_index_list_lengths,
+                   pattern_unpack_index_lists,
+                   unpack_index_list_lengths));
 
-      item.populate(schedule);
+      point.addItem(std::move(item));
 
     }
+
+    point.createSchedule();
 
     for (int c = 0; c < num_cycles; ++c ) {
       timer.start();
@@ -193,11 +184,13 @@ int main(int argc, char **argv)
           });
         }
 
-        schedule.communicate();
+        point.getSchedule().communicate();
 
       }
       timer.stop();
     }
+
+    point.clear();
 
     // deallocate per pattern memory
     for (int v = 0; v < num_vars; ++v) {

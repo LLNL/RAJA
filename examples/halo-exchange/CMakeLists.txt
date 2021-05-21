@@ -10,5 +10,6 @@ raja_add_executable(
   SOURCES halo-exchange.cpp
           lists.cpp
           Item.cpp
+          Point.cpp
           Schedule.cpp
           CopyTransaction.cpp)
