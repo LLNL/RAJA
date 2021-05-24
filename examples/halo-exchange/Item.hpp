@@ -21,6 +21,16 @@ enum struct Order
   unordered
 };
 
+inline const char* get_order_name(Order o)
+{
+  switch (o) {
+    case Order::ordered:     return "ordered";
+    case Order::reorderable: return "reorderable";
+    case Order::unordered:   return "unordered";
+    default:          return "invalid";
+  }
+}
+
 
 struct Item
 {
@@ -38,6 +48,26 @@ struct Item
   ~Item() = default;
 
   void populate(Schedule& schedule);
+
+  Order getPackOrder() const
+  {
+    return m_pack_order;
+  }
+
+  Order getUnpackOrder() const
+  {
+    return m_unpack_order;
+  }
+
+  void setPackOrder(Order order)
+  {
+    m_pack_order = order;
+  }
+
+  void setUnpackOrder(Order order)
+  {
+    m_unpack_order = order;
+  }
 
 private:
   double* m_var;

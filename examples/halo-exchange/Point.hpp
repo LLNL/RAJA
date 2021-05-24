@@ -20,6 +20,8 @@
 
 struct Point
 {
+  using item_id_type = size_t;
+
   Point() = default;
 
   Point(Point const&) = delete;
