@@ -109,13 +109,109 @@ int main(int argc, char **argv)
   create_unpack_lists(unpack_index_lists, unpack_index_list_lengths, halo_width, grid_dims);
 
 
-  //
-  // Convenience type alias to reduce typing
-  //
-  using range_segment = RAJA::TypedRangeSegment<int>;
-
-
   TimerStats timer;
+
+
+//----------------------------------------------------------------------------//
+  {
+    std::cout << "\n Running Simple C-style halo exchange...\n"
+              << "   ordering: pack   " << get_order_name(Order::ordered) << "\n"
+              << "             unpack " << get_order_name(Order::ordered) << "\n"
+              << "             item   " << get_order_name(Order::ordered) << "\n";
+
+
+    std::vector<double*> buffers(num_neighbors, nullptr);
+
+    for (int l = 0; l < num_neighbors; ++l) {
+
+      int buffer_len = num_vars * pack_index_list_lengths[l];
+
+      buffers[l] = memoryManager::allocate<double>(buffer_len);
+
+    }
+
+    for (int c = 0; c < num_cycles; ++c ) {
+      timer.start();
+      {
+        // set vars
+        for (int v = 0; v < num_vars; ++v) {
+
+          double* var = vars[v];
+
+          for (int i = 0; i < var_size; i++) {
+            var[i] = i + v;
+          }
+        }
+
+        for (int l = 0; l < num_neighbors; ++l) {
+
+          double* buffer = buffers[l];
+          int* list = pack_index_lists[l];
+          int  len  = pack_index_list_lengths[l];
+
+          // pack
+          for (int v = 0; v < num_vars; ++v) {
+
+            double* var = vars[v];
+
+            for (int i = 0; i < len; i++) {
+              buffer[i] = var[list[i]];
+            }
+
+            buffer += len;
+          }
+
+          // send single message
+        }
+
+        for (int l = 0; l < num_neighbors; ++l) {
+
+          // recv single message
+
+          double* buffer = buffers[l];
+          int* list = unpack_index_lists[l];
+          int  len  = unpack_index_list_lengths[l];
+
+          // unpack
+          for (int v = 0; v < num_vars; ++v) {
+
+            double* var = vars[v];
+
+            for (int i = 0; i < len; i++) {
+              var[list[i]] = buffer[i];
+            }
+
+            buffer += len;
+          }
+        }
+
+      }
+      timer.stop();
+    }
+
+    for (int l = 0; l < num_neighbors; ++l) {
+
+      memoryManager::deallocate(buffers[l]);
+
+    }
+
+    std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
+    std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
+    std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
+    std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+    timer.reset();
+
+    // copy result of exchange for reference later
+    for (int v = 0; v < num_vars; ++v) {
+
+      double* var     = vars[v];
+      double* var_ref = vars_ref[v];
+
+      for (int i = 0; i < var_size; i++) {
+        var_ref[i] = var[i];
+      }
+    }
+  }
 
 
 //----------------------------------------------------------------------------//
@@ -126,94 +222,106 @@ int main(int argc, char **argv)
 
     SetLoopPatternScope sepc(pattern);
 
-    std::cout << "\n Running " << get_loop_pattern_name() << " halo exchange...\n";
+    for (int ordering = 0; ordering < 2; ++ordering) {
+
+      const Order order_pack   = ordering == 0 ? Order::reorderable : Order::unordered;
+      const Order order_unpack = ordering == 0 ? Order::ordered     : Order::unordered;
+      const Order order_items  = ordering == 0 ? Order::ordered     : Order::unordered;
 
 
-    // allocate per pattern memory
-    RAJA::resources::Resource res = get_loop_pattern_resource();
+      std::cout << "\n Running Generalized " << get_loop_pattern_name() << " halo exchange...\n"
+                << "   ordering: pack   " << get_order_name(order_pack) << "\n"
+                << "             unpack " << get_order_name(order_unpack) << "\n"
+                << "             item   " << get_order_name(order_items) << "\n";
 
-    std::vector<double*> pattern_vars(num_vars, nullptr);
-    std::vector<int*>    pattern_pack_index_lists(num_neighbors, nullptr);
-    std::vector<int*>    pattern_unpack_index_lists(num_neighbors, nullptr);
 
-    for (int v = 0; v < num_vars; ++v) {
-      pattern_vars[v] = res.allocate<double>(var_size);
-    }
+      // allocate per pattern memory
+      RAJA::resources::Resource res = get_loop_pattern_resource();
 
-    for (int l = 0; l < num_neighbors; ++l) {
-      int pack_len = pack_index_list_lengths[l];
-      pattern_pack_index_lists[l] = res.allocate<int>(pack_len);
-      res.memcpy(pattern_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int));
+      std::vector<double*> pattern_vars(num_vars, nullptr);
+      std::vector<int*>    pattern_pack_index_lists(num_neighbors, nullptr);
+      std::vector<int*>    pattern_unpack_index_lists(num_neighbors, nullptr);
 
-      int unpack_len = unpack_index_list_lengths[l];
-      pattern_unpack_index_lists[l] = res.allocate<int>(unpack_len);
-      res.memcpy(pattern_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int));
-    }
+      for (int v = 0; v < num_vars; ++v) {
+        pattern_vars[v] = res.allocate<double>(var_size);
+      }
 
-    Point point;
+      for (int l = 0; l < num_neighbors; ++l) {
+        int pack_len = pack_index_list_lengths[l];
+        pattern_pack_index_lists[l] = res.allocate<int>(pack_len);
+        res.memcpy(pattern_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int));
 
-    // populate point
+        int unpack_len = unpack_index_list_lengths[l];
+        pattern_unpack_index_lists[l] = res.allocate<int>(unpack_len);
+        res.memcpy(pattern_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int));
+      }
 
-    for (double* var : pattern_vars) {
+      Point point;
 
-      point.addItem(var,
-                    Order::unordered,
-                    pattern_pack_index_lists,
-                    pack_index_list_lengths,
-                    Order::unordered,
-                    pattern_unpack_index_lists,
-                    unpack_index_list_lengths);
-
-    }
-
-    point.createSchedule();
-
-    for (int c = 0; c < num_cycles; ++c ) {
-      timer.start();
+      // populate point
       {
+        std::vector<typename Point::item_id_type> item_ids;
 
-        // set vars
-        for (int v = 0; v < num_vars; ++v) {
+        for (size_t v = 0; v < pattern_vars.size(); ++v) {
 
-          double* var = pattern_vars[v];
+          item_ids.emplace_back(
+              point.addItem(pattern_vars[v],
+                            order_pack,
+                            pattern_pack_index_lists,
+                            pack_index_list_lengths,
+                            order_unpack,
+                            pattern_unpack_index_lists,
+                            unpack_index_list_lengths));
 
-          loop(var_size, [=] RAJA_HOST_DEVICE (int i) {
-            var[i] = i + v;
-          });
+          if (order_items == Order::ordered && v > 0u) {
+            point.addDependency(item_ids[v-1], item_ids[v]);
+          }
+
         }
 
-        point.getSchedule().communicate();
-
+        point.createSchedule();
       }
-      timer.stop();
-    }
 
-    point.clear();
+      for (int c = 0; c < num_cycles; ++c ) {
+        timer.start();
+        {
 
-    // deallocate per pattern memory
-    for (int v = 0; v < num_vars; ++v) {
-      res.memcpy(vars[v], pattern_vars[v], var_size * sizeof(double));
-      res.deallocate(pattern_vars[v]);
-    }
+          // set vars
+          for (int v = 0; v < num_vars; ++v) {
 
-    for (int l = 0; l < num_neighbors; ++l) {
-      res.deallocate(pattern_pack_index_lists[l]);
-      res.deallocate(pattern_unpack_index_lists[l]);
-    }
+            double* var = pattern_vars[v];
 
+            loop(var_size, [=] RAJA_HOST_DEVICE (int i) {
+              var[i] = i + v;
+            });
+          }
 
-    std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
-    std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
-    std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
-    std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
-    timer.reset();
+          point.getSchedule().communicate();
 
-    if (pattern == LoopPattern::seq) {
-      // copy result of exchange for reference later
+        }
+        timer.stop();
+      }
+
+      point.clear();
+
+      // deallocate per pattern memory
       for (int v = 0; v < num_vars; ++v) {
-        res.memcpy(vars_ref[v], vars[v], var_size * sizeof(double));
+        res.memcpy(vars[v], pattern_vars[v], var_size * sizeof(double));
+        res.deallocate(pattern_vars[v]);
       }
-    } else {
+
+      for (int l = 0; l < num_neighbors; ++l) {
+        res.deallocate(pattern_pack_index_lists[l]);
+        res.deallocate(pattern_unpack_index_lists[l]);
+      }
+
+
+      std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
+      std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
+      std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
+      std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+      timer.reset();
+
       // check results against reference copy
       checkResult(vars, vars_ref, var_size, num_vars);
       //printResult(vars, var_size, num_vars);
