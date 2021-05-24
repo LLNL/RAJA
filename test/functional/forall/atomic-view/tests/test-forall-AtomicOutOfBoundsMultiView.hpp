@@ -12,6 +12,8 @@
 #ifndef __TEST_FORALL_ATOMICOUTOFBOUNDS_MULTIVIEW_HPP__
 #define __TEST_FORALL_ATOMICOUTOFBOUNDS_MULTIVIEW_HPP__
 
+#include <cmath>
+
 template <typename ExecPolicy,
           typename AtomicPolicy,
           typename WORKINGRES,
