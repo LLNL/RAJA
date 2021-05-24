@@ -75,7 +75,8 @@ private:
     size_t size;
   };
   using BufferSet = std::map<int, Buffer>;
-  BufferSet m_buffers;
+  BufferSet m_pack_buffers;
+  BufferSet m_recv_buffers;
 
   const int m_my_rank;
 

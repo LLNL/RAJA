@@ -158,7 +158,7 @@ void Schedule::postReceives()
     }
 
     void* buffer = loop_allocate_buffer(byte_count);
-    m_buffers[mi->first] = Buffer{buffer, fusible_byte_count, byte_count};
+    m_recv_buffers[mi->first] = Buffer{buffer, fusible_byte_count, byte_count};
 
     // irecv one
   }
@@ -178,9 +178,10 @@ Schedule::postSends()
       byte_count += pack->computeIncomingMessageSize();
     }
 
-    Buffer& buffer = m_buffers[send_data.first];
-    assert(buffer.fusible_size == fusible_byte_count);
+    // because communication is fake send and recv buffers are the same
+    Buffer& buffer = m_recv_buffers[send_data.first];
     assert(buffer.size == byte_count);
+    m_pack_buffers[send_data.first] = Buffer{buffer.buffer, fusible_byte_count, byte_count};
 
     // Pack outgoing data into a message.
     MessageStream outgoing_stream(
@@ -210,7 +211,7 @@ Schedule::postSends()
       mi = m_send_sets.begin();
     }
 
-    Buffer& buffer = m_buffers[mi->first];
+    Buffer& buffer = m_pack_buffers[mi->first];
 
     // Pack outgoing data into a message.
     MessageStream outgoing_stream(
@@ -254,7 +255,7 @@ void Schedule::processCompletedCommunications()
 
     for (auto& recv_data : m_recv_sets) {
 
-      Buffer& buffer = m_buffers[recv_data.first];
+      Buffer& buffer = m_recv_buffers[recv_data.first];
 
       MessageStream incoming_stream(
           MessageStream::Read,
@@ -282,7 +283,7 @@ void Schedule::processCompletedCommunications()
       const int sender = counter;
       assert(m_my_rank == 0);
 
-      Buffer& buffer = m_buffers[sender];
+      Buffer& buffer = m_recv_buffers[sender];
 
       MessageStream incoming_stream(
           MessageStream::Read,
@@ -312,11 +313,20 @@ void Schedule::processCompletedCommunications()
 
   // wait send all
 
-  for (auto& bufferData : m_buffers) {
+  for (auto& bufferData : m_recv_buffers) {
 
     Buffer& buffer = bufferData.second;
 
     loop_deallocate_buffer(buffer.buffer);
+    buffer.buffer = nullptr;
+    buffer.fusible_size = 0;
+    buffer.size = 0;
+  }
+
+  for (auto& bufferData : m_pack_buffers) {
+
+    Buffer& buffer = bufferData.second;
+
     buffer.buffer = nullptr;
     buffer.fusible_size = 0;
     buffer.size = 0;
