@@ -716,7 +716,7 @@ explanation along with examples of how they are used can be found in
 
   * ``statement::CudaKernelFixedSM<num_threads, min_blocks_per_sm, EnclosedStatements>`` similar to CudaKernelFixed but enables a minimum number of blocks per sm (specified by min_blocks_per_sm), this can help increase occupancy. This kernel launch is synchronous.
 
-  * ``statement::CudaKernelFixedSMASync<num_threads, min_blocks_per_sm, EnclosedStatements>`` asynchronous version of CudaKernelFixedSM.
+  * ``statement::CudaKernelFixedSMAsync<num_threads, min_blocks_per_sm, EnclosedStatements>`` asynchronous version of CudaKernelFixedSM.
 
   * ``statement::CudaKernelOcc<EnclosedStatements>`` similar to CudaKernel but uses the CUDA occupancy calculator to determine the optimal number of threads/blocks. Statement is intended for RAJA::cuda_block_{xyz}_loop policies. This kernel launch is synchronous.
 

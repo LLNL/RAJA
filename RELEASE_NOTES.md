@@ -24,13 +24,17 @@ Notable changes include:
       * Deprecated sort and scan methods taking iterators have been removed,
         Now, these methods take RAJA span arguments. For example,
         (begin, end) args are replaced with RAJA::make_span(begin, N), where
-        N is (end - begin).  Please see the RAJA User Guide documentation for
+        N = end - begin.  Please see the RAJA User Guide documentation for
         scan and sort operations for details and usage examples.
       * Sort and scan methods now accept an optional resource argument.
       * Methods were added to the RAJA::kernel API to accept a resource 
         argument; specifically 'kernel_resource' and 'kernel_param_resource'.
         These kernel methods return an Event object similar to the RAJA::forall
         interface.
+      * Kernel launch methods for the RAJA "teams" interface now use the 
+        CAMP default resource based on the specified execution back-end.
+        Future work will expand the interface to allow users to pass a
+        resource object.
       * OpenMP CPU multithreading policies have been reworked so that usage
         involving OpenMP scheduling are consistent. Specification of a chunk
         size for scheduling policies is optional, which is consistent with
@@ -60,9 +64,16 @@ Notable changes include:
       * The ListSegment constructor takes a resource by value now, previously
         taken by reference, which allows more resource argument types to be 
         passed more seamlessly to the List Segment constructor.
+      * 'CudaKernelFixedSM' and 'CudaKernelFixedSMAsync' methods were added
+        which allow users to specify the minimum number of thread blocks to 
+        launch per SM. This resulted in a performance improvement for an
+        application use case. Future work will expand this concept to other GPU
+        kernel execution methods in RAJA.
 
   * Build changes/improvements:
       * Update BLT to latest release, v0.4.0.
+      * The RAJA_CXX_STANDARD_FLAG CMake variable was removed. The BLT_CXX_STD
+        variable is now used instead. 
       * Support for building RAJA as a shared library on Windows has been added.
       * A build sysstem adjustment was made to address an issue when RAJA is 
         built with an external version of camp (e.g., through Spack).
@@ -77,7 +88,7 @@ Notable changes include:
         another BLT project. For example, it provides the ability to disable 
         RAJA tests and examples at a more fine granularity.
       * A build system bug was fixed so that targets for third-party 
-        dependencies provided by BLT (e.g. CUDA and HIP) are exported properly.
+        dependencies provided by BLT (e.g., CUDA and HIP) are exported properly.
         This allows non-BLT projects to use the imported RAJA target.
       * An issue was fixed to appease the MSVC 2019 compiler.
 
