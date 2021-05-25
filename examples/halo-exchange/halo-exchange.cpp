@@ -229,7 +229,7 @@ int main(int argc, char **argv)
       const Order order_unpack_items        = ordering == 0 ? Order::ordered     : Order::unordered;
 
 
-      std::cout << "\n Running Generalized " << get_loop_pattern_name() << " halo exchange...\n"
+      std::cout << "\n Running Schedule " << get_loop_pattern_name() << " halo exchange...\n"
                 << "   ordering: pack:   items " << get_order_name(order_pack_items) << ", transactions " << get_order_name(order_pack_transactions) << "\n"
                 << "             unpack: items " << get_order_name(order_unpack_items) << ", transactions " << get_order_name(order_unpack_transactions) << "\n";
 
@@ -299,6 +299,124 @@ int main(int argc, char **argv)
           }
 
           point.getSchedule().communicate();
+
+        }
+        timer.stop();
+      }
+
+      point.clear();
+
+      // deallocate per pattern memory
+      for (int v = 0; v < num_vars; ++v) {
+        res.memcpy(vars[v], pattern_vars[v], var_size * sizeof(double));
+        res.deallocate(pattern_vars[v]);
+      }
+
+      for (int l = 0; l < num_neighbors; ++l) {
+        res.deallocate(pattern_pack_index_lists[l]);
+        res.deallocate(pattern_unpack_index_lists[l]);
+      }
+
+
+      std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
+      std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
+      std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
+      std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+      timer.reset();
+
+      // check results against reference copy
+      checkResult(vars, vars_ref, var_size, num_vars);
+      //printResult(vars, var_size, num_vars);
+    }
+  }
+
+
+//----------------------------------------------------------------------------//
+  for (int p = static_cast<int>(LoopPattern::seq);
+       p < static_cast<int>(LoopPattern::End); ++p) {
+
+    LoopPattern pattern = static_cast<LoopPattern>(p);
+
+    SetLoopPatternScope sepc(pattern);
+
+    for (int ordering = 0; ordering < 2; ++ordering) {
+
+      const Order order_pack_transactions   =                                      Order::unordered;
+      const Order order_unpack_transactions = ordering == 0 ? Order::ordered     : Order::unordered;
+      const Order order_pack_items          =                                      Order::unordered;
+      const Order order_unpack_items        = ordering == 0 ? Order::ordered     : Order::unordered;
+
+
+      std::cout << "\n Running GraphSchedule " << get_loop_pattern_name() << " halo exchange...\n"
+                << "   ordering: pack:   items " << get_order_name(order_pack_items) << ", transactions " << get_order_name(order_pack_transactions) << "\n"
+                << "             unpack: items " << get_order_name(order_unpack_items) << ", transactions " << get_order_name(order_unpack_transactions) << "\n";
+
+
+      // allocate per pattern memory
+      RAJA::resources::Resource res = get_loop_pattern_resource();
+
+      std::vector<double*> pattern_vars(num_vars, nullptr);
+      std::vector<int*>    pattern_pack_index_lists(num_neighbors, nullptr);
+      std::vector<int*>    pattern_unpack_index_lists(num_neighbors, nullptr);
+
+      for (int v = 0; v < num_vars; ++v) {
+        pattern_vars[v] = res.allocate<double>(var_size);
+      }
+
+      for (int l = 0; l < num_neighbors; ++l) {
+        int pack_len = pack_index_list_lengths[l];
+        pattern_pack_index_lists[l] = res.allocate<int>(pack_len);
+        res.memcpy(pattern_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int));
+
+        int unpack_len = unpack_index_list_lengths[l];
+        pattern_unpack_index_lists[l] = res.allocate<int>(unpack_len);
+        res.memcpy(pattern_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int));
+      }
+
+      Point point;
+
+      // populate point
+      {
+        std::vector<typename Point::item_id_type> item_ids;
+
+        for (size_t v = 0; v < pattern_vars.size(); ++v) {
+
+          item_ids.emplace_back(
+              point.addItem(pattern_vars[v],
+                            order_pack_transactions,
+                            pattern_pack_index_lists,
+                            pack_index_list_lengths,
+                            order_unpack_transactions,
+                            pattern_unpack_index_lists,
+                            unpack_index_list_lengths));
+
+          if (order_pack_items != Order::unordered && v > 0u) {
+            point.addPackDependency(item_ids[v-1], item_ids[v]);
+          }
+          if (order_unpack_items != Order::unordered && v > 0u) {
+            point.addUnpackDependency(item_ids[v-1], item_ids[v]);
+          }
+
+        }
+
+        point.createGraphSchedule();
+      }
+
+      for (int c = 0; c < num_cycles; ++c ) {
+        timer.start();
+        {
+
+          // set vars
+          for (int v = 0; v < num_vars; ++v) {
+
+            double* var = pattern_vars[v];
+
+            loop(var_size, [=] RAJA_HOST_DEVICE (int i) {
+              var[i] = i + v;
+            });
+          }
+
+          point.getGraphSchedule().communicate();
 
         }
         timer.stop();

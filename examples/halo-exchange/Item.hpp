@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "Schedule.hpp"
+#include "GraphSchedule.hpp"
 
 
 enum struct Order
@@ -48,6 +49,8 @@ struct Item
   ~Item() = default;
 
   void populate(Schedule& schedule);
+
+  void populate(GraphSchedule& graphSchedule);
 
   Order getPackTransactionOrder() const
   {

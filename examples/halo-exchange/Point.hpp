@@ -15,6 +15,7 @@
 #include <set>
 
 #include "Schedule.hpp"
+#include "GraphSchedule.hpp"
 #include "Item.hpp"
 
 
@@ -56,9 +57,23 @@ struct Point
     return *m_schedule;
   }
 
+  void createGraphSchedule();
+
+  void destroyGraphSchedule()
+  {
+    m_graphSchedule.reset();
+  }
+
+  GraphSchedule& getGraphSchedule()
+  {
+    assert(m_graphSchedule);
+    return *m_graphSchedule;
+  }
+
   void clear()
   {
     destroySchedule();
+    destroyGraphSchedule();
     m_items.clear();
   }
 
@@ -83,6 +98,7 @@ private:
 
   std::vector< std::unique_ptr<ItemNode> > m_items;
   std::unique_ptr< Schedule > m_schedule;
+  std::unique_ptr< GraphSchedule > m_graphSchedule;
   int m_my_rank = 0;
 };
 

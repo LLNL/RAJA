@@ -75,3 +75,49 @@ void Item::populate(Schedule& schedule)
 
   }
 }
+
+void Item::populate(GraphSchedule& graphSchedule)
+{
+  int num_neighbors = m_pack_index_lists.size();
+
+  assert(num_neighbors == m_pack_index_list_lengths.size());
+  assert(num_neighbors == m_unpack_index_lists.size());
+  assert(num_neighbors == m_unpack_index_list_lengths.size());
+
+  for (int l = 0; l < num_neighbors; ++l) {
+
+    int neighbor_rank = l + 1;
+
+    int* pack_list = m_pack_index_lists[l];
+    int  pack_len  = m_pack_index_list_lengths[l];
+
+    CopyTransaction* pack =
+        new CopyTransaction(graphSchedule.get_my_rank(),
+                            neighbor_rank,
+                            m_var,
+                            pack_list, pack_len);
+
+    if (m_pack_transaction_order == Order::unordered && get_loop_pattern_fusible()) {
+      graphSchedule.appendTransaction(std::unique_ptr<FusibleTransaction>(pack));
+    } else {
+      graphSchedule.appendTransaction(std::unique_ptr<Transaction>(pack));
+    }
+
+
+    int* recv_list = m_unpack_index_lists[l];
+    int  recv_len  = m_unpack_index_list_lengths[l];
+
+    CopyTransaction* recv =
+        new CopyTransaction(neighbor_rank,
+                            graphSchedule.get_my_rank(),
+                            m_var,
+                            recv_list, recv_len);
+
+    if (m_unpack_transaction_order == Order::unordered && get_loop_pattern_fusible()) {
+      graphSchedule.appendTransaction(std::unique_ptr<FusibleTransaction>(recv));
+    } else {
+      graphSchedule.appendTransaction(std::unique_ptr<Transaction>(recv));
+    }
+
+  }
+}

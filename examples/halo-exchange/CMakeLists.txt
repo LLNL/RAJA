@@ -12,4 +12,5 @@ raja_add_executable(
           Item.cpp
           Point.cpp
           Schedule.cpp
+          GraphSchedule.cpp
           CopyTransaction.cpp)
