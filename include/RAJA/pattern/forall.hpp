@@ -218,7 +218,7 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(Res &r,
                                                 LoopBody loop_body)
 {
   // no need for icount variant here
-  auto segIterRes = resources::get_resource<SegmentIterPolicy>::type::get_default();
+  auto &segIterRes = resources::get_resource<SegmentIterPolicy>::type::get_default();
   wrap::forall(segIterRes, SegmentIterPolicy(), iset, [=, &r](int segID) {
     iset.segmentCall(segID,
                      detail::CallForallIcount(iset.getStartingIcount(segID)),
@@ -240,7 +240,7 @@ RAJA_INLINE resources::EventProxy<Res> forall(Res &r,
                                          const TypedIndexSet<SegmentTypes...>& iset,
                                          LoopBody loop_body)
 {
-  auto segIterRes = resources::get_resource<SegmentIterPolicy>::type::get_default();
+  auto &segIterRes = resources::get_resource<SegmentIterPolicy>::type::get_default();
   wrap::forall(segIterRes, SegmentIterPolicy(), iset, [=, &r](int segID) {
     iset.segmentCall(segID, detail::CallForall{}, SegmentExecPolicy(), loop_body, r);
   });
@@ -277,7 +277,7 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
                                                      IdxSet&& c,
                                                      LoopBody&& loop_body)
 {
-  auto r = Res::get_default();
+  auto &r = Res::get_default();
   return forall_Icount(std::forward<ExecutionPolicy>(p),
                        r,
                        std::forward<IdxSet>(c),
@@ -326,7 +326,7 @@ RAJA_INLINE concepts::enable_if_t<
     type_traits::is_indexset_policy<ExecutionPolicy>>
 forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
-  auto r = Res::get_default();
+  auto &r = Res::get_default();
   return forall(std::forward<ExecutionPolicy>(p),
                 r,
                 std::forward<IdxSet>(c),
@@ -378,7 +378,7 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
 
-  auto r = Res::get_default();
+  auto &r = Res::get_default();
 
   // plugins handled in multipolicy policy_invoker
   forall_impl(r,
@@ -409,7 +409,7 @@ forall_Icount(ExecutionPolicy&& p,
               IndexType icount,
               LoopBody&& loop_body)
 {
-  auto r = Res::get_default();
+  auto &r = Res::get_default();
   return forall_Icount(std::forward<ExecutionPolicy>(p),
                        r,
                        std::forward<Container>(c),
@@ -470,7 +470,7 @@ RAJA_INLINE concepts::enable_if_t<
     type_traits::is_range<Container>>
 forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
-  auto r = Res::get_default();
+  auto &r = Res::get_default();
   return forall(std::forward<ExecutionPolicy>(p),
                 r,
                 std::forward<Container>(c),
@@ -519,7 +519,7 @@ template <typename ExecutionPolicy, typename... Args,
           typename Res = typename resources::get_resource<ExecutionPolicy>::type >
 RAJA_INLINE resources::EventProxy<Res> forall(Args&&... args)
 {
-  Res r = Res::get_default();
+  Res &r = Res::get_default();
   return forall<ExecutionPolicy>(r, std::forward<Args>(args)...);
 }
 template <typename ExecutionPolicy, typename Res, typename... Args>
@@ -538,7 +538,7 @@ template <typename ExecutionPolicy, typename... Args,
           typename Res = typename resources::get_resource<ExecutionPolicy>::type >
 RAJA_INLINE resources::EventProxy<Res> forall_Icount(Args&&... args)
 {
-  Res r = Res::get_default();
+  Res &r = Res::get_default();
   return forall_Icount<ExecutionPolicy>(r, std::forward<Args>(args)...);
 }
 template <typename ExecutionPolicy, typename Res, typename... Args>
