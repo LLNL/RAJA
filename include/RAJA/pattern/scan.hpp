@@ -59,7 +59,7 @@ inclusive_scan_inplace(ExecPolicy&& p,
                        Container&& c,
                        Function binop = Function{})
 {
-  auto r = Res::get_default();
+  auto &r = Res::get_default();
   return inclusive_scan_inplace(std::forward<ExecPolicy>(p),
                                 r,
                                 std::forward<Container>(c),
@@ -122,7 +122,7 @@ exclusive_scan_inplace(ExecPolicy&& p,
                        Function binop = Function{},
                        T value = Function::identity())
 {
-  auto r = Res::get_default();
+  auto &r = Res::get_default();
   return exclusive_scan_inplace(std::forward<ExecPolicy>(p),
                                 r,
                                 std::forward<Container>(c),
@@ -193,7 +193,7 @@ inclusive_scan(ExecPolicy&& p,
                OutContainer&& out,
                Function binop = Function{})
 {
-  auto r = Res::get_default();
+  auto &r = Res::get_default();
   return inclusive_scan(std::forward<ExecPolicy>(p),
                         r,
                         std::forward<InContainer>(in),
@@ -270,7 +270,7 @@ exclusive_scan(ExecPolicy&& p,
                Function binop = Function{},
                T value = Function::identity())
 {
-  auto r = Res::get_default();
+  auto &r = Res::get_default();
   return exclusive_scan(std::forward<ExecPolicy>(p),
                         r,
                         std::forward<InContainer>(in),
@@ -332,7 +332,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>>
 exclusive_scan(Args&&... args)
 {
-  Res r = Res::get_default();
+  Res &r = Res::get_default();
   return exclusive_scan<ExecPolicy>(r, std::forward<Args>(args)...);
 }
 ///
@@ -360,7 +360,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>>
 inclusive_scan(Args&&... args)
 {
-  Res r = Res::get_default();
+  Res &r = Res::get_default();
   return inclusive_scan<ExecPolicy>(r, std::forward<Args>(args)...);
 }
 ///
@@ -388,7 +388,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>>
 exclusive_scan_inplace(Args&&... args)
 {
-  Res r = Res::get_default();
+  Res &r = Res::get_default();
   return exclusive_scan_inplace<ExecPolicy>(r, std::forward<Args>(args)...);
 }
 ///
@@ -416,7 +416,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>>
 inclusive_scan_inplace(Args&&... args)
 {
-  Res r = Res::get_default();
+  Res &r = Res::get_default();
   return inclusive_scan_inplace<ExecPolicy>(r, std::forward<Args>(args)...);
 }
 ///
