@@ -59,7 +59,7 @@ void ForallAtomicOutOfBoundsMultiViewTestImpl( IdxType N )
 
 
   // Need gtest death test to avoid complete failure due to eventual seg fault
-  #if defined(RAJA_ENABLE_OPENMP_TARGET) || defined(RAJA_COMPILER_XLC)
+  #if defined(RAJA_ENABLE_TARGET_OPENMP)
   EXPECT_DEATH_IF_SUPPORTED( (sum_atomic_view(0,-1) = (T)0), "" );
   #else
   EXPECT_THROW( (sum_atomic_view(0,-1) = (T)0), std::runtime_error );
