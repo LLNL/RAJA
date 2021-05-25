@@ -115,9 +115,8 @@ int main(int argc, char **argv)
 //----------------------------------------------------------------------------//
   {
     std::cout << "\n Running Simple C-style halo exchange...\n"
-              << "   ordering: pack   " << get_order_name(Order::ordered) << "\n"
-              << "             unpack " << get_order_name(Order::ordered) << "\n"
-              << "             item   " << get_order_name(Order::ordered) << "\n";
+                << "   ordering: pack:   items " << get_order_name(Order::ordered) << ", transactions " << get_order_name(Order::ordered) << "\n"
+                << "             unpack: items " << get_order_name(Order::ordered) << ", transactions " << get_order_name(Order::ordered) << "\n";
 
 
     std::vector<double*> buffers(num_neighbors, nullptr);
@@ -224,15 +223,15 @@ int main(int argc, char **argv)
 
     for (int ordering = 0; ordering < 2; ++ordering) {
 
-      const Order order_pack   = ordering == 0 ? Order::reorderable : Order::unordered;
-      const Order order_unpack = ordering == 0 ? Order::ordered     : Order::unordered;
-      const Order order_items  = ordering == 0 ? Order::ordered     : Order::unordered;
+      const Order order_pack_transactions   =                                      Order::unordered;
+      const Order order_unpack_transactions = ordering == 0 ? Order::ordered     : Order::unordered;
+      const Order order_pack_items          =                                      Order::unordered;
+      const Order order_unpack_items        = ordering == 0 ? Order::ordered     : Order::unordered;
 
 
       std::cout << "\n Running Generalized " << get_loop_pattern_name() << " halo exchange...\n"
-                << "   ordering: pack   " << get_order_name(order_pack) << "\n"
-                << "             unpack " << get_order_name(order_unpack) << "\n"
-                << "             item   " << get_order_name(order_items) << "\n";
+                << "   ordering: pack:   items " << get_order_name(order_pack_items) << ", transactions " << get_order_name(order_pack_transactions) << "\n"
+                << "             unpack: items " << get_order_name(order_unpack_items) << ", transactions " << get_order_name(order_unpack_transactions) << "\n";
 
 
       // allocate per pattern memory
@@ -266,15 +265,18 @@ int main(int argc, char **argv)
 
           item_ids.emplace_back(
               point.addItem(pattern_vars[v],
-                            order_pack,
+                            order_pack_transactions,
                             pattern_pack_index_lists,
                             pack_index_list_lengths,
-                            order_unpack,
+                            order_unpack_transactions,
                             pattern_unpack_index_lists,
                             unpack_index_list_lengths));
 
-          if (order_items == Order::ordered && v > 0u) {
-            point.addDependency(item_ids[v-1], item_ids[v]);
+          if (order_pack_items != Order::unordered && v > 0u) {
+            point.addPackDependency(item_ids[v-1], item_ids[v]);
+          }
+          if (order_unpack_items != Order::unordered && v > 0u) {
+            point.addUnpackDependency(item_ids[v-1], item_ids[v]);
           }
 
         }

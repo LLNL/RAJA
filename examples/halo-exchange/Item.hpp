@@ -35,10 +35,10 @@ inline const char* get_order_name(Order o)
 struct Item
 {
   Item(double* var,
-       Order pack_order,
+       Order pack_transaction_order,
        std::vector<int*>& pack_index_lists,
        std::vector<int >& pack_index_list_lengths,
-       Order unpack_order,
+       Order unpack_transaction_order,
        std::vector<int*>& unpack_index_lists,
        std::vector<int >& unpack_index_list_lengths);
 
@@ -49,32 +49,32 @@ struct Item
 
   void populate(Schedule& schedule);
 
-  Order getPackOrder() const
+  Order getPackTransactionOrder() const
   {
-    return m_pack_order;
+    return m_pack_transaction_order;
   }
 
-  Order getUnpackOrder() const
+  Order getUnpackTransactionOrder() const
   {
-    return m_unpack_order;
+    return m_unpack_transaction_order;
   }
 
-  void setPackOrder(Order order)
+  void setPackTransactionOrder(Order order)
   {
-    m_pack_order = order;
+    m_pack_transaction_order = order;
   }
 
-  void setUnpackOrder(Order order)
+  void setUnpackTransactionOrder(Order order)
   {
-    m_unpack_order = order;
+    m_unpack_transaction_order = order;
   }
 
 private:
   double* m_var;
-  Order m_pack_order;
+  Order m_pack_transaction_order;
   std::vector<int*> m_pack_index_lists;
   std::vector<int > m_pack_index_list_lengths;
-  Order m_unpack_order;
+  Order m_unpack_transaction_order;
   std::vector<int*> m_unpack_index_lists;
   std::vector<int > m_unpack_index_list_lengths;
 };

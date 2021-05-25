@@ -31,15 +31,17 @@ struct Point
 
   // adds an item and returns the id of that item
   size_t addItem(double* var,
-                 Order pack_order,
+                 Order pack_transaction_order,
                  std::vector<int*>& pack_index_lists,
                  std::vector<int >& pack_index_list_lengths,
-                 Order unpack_order,
+                 Order unpack_transaction_order,
                  std::vector<int*>& unpack_index_lists,
                  std::vector<int >& unpack_index_list_lengths);
 
   // adds edge a -> b in graph
   void addDependency(size_t id_a, size_t id_b);
+  void addPackDependency(size_t id_a, size_t id_b);
+  void addUnpackDependency(size_t id_a, size_t id_b);
 
   void createSchedule();
 
@@ -61,6 +63,12 @@ struct Point
   }
 
 private:
+  struct Connectivity
+  {
+    std::set<size_t> dependent_items;
+    size_t num_parents = 0;
+    size_t num = 0;
+  };
   struct ItemNode
   {
     template < typename... Args >
@@ -69,9 +77,8 @@ private:
     { }
 
     Item item;
-    std::set<size_t> dependent_items;
-    size_t num_parents = 0;
-    size_t num = 0;
+    Connectivity pack_connectivity;
+    Connectivity unpack_connectivity;
   };
 
   std::vector< std::unique_ptr<ItemNode> > m_items;
