@@ -337,7 +337,7 @@ public:
   inline worksite_type run(resource_type& r, Args...);
 
   worksite_type run(Args... args) {
-    auto r = resource_type::get_default();
+    auto& r = resource_type::get_default();
     return run(r, std::move(args)...);
   }
 
