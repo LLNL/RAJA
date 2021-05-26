@@ -41,9 +41,7 @@ namespace graph
 
 struct EmptyNode : Node
 {
-  EmptyNode()
-  {
-  }
+  EmptyNode() = default;
 
   virtual ~EmptyNode() = default;
 

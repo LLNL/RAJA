@@ -104,12 +104,12 @@ void testWorkGroupNodeOrderedMultiple(
 
   RAJA::expt::graph::DAG g;
   WorkGroupNode_type& node =
-      g >> RAJA::expt::graph::WorkGroup<
-             RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-             IndexType,
-             RAJA::xargs<>,
-             Allocator
-           >(Allocator{});
+      g.add_node(RAJA::expt::graph::WorkGroup<
+                   RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                   IndexType,
+                   RAJA::xargs<>,
+                   Allocator
+                 >(Allocator{}));
 
   for (IndexType pr = 0; pr < pool_reuse; pr++) {
 

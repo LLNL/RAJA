@@ -68,12 +68,12 @@ void testWorkGroupNodeOrderedSingle(IndexType begin, IndexType end)
 
   RAJA::expt::graph::DAG g;
   WorkGroupNode_type& node =
-      g >> RAJA::expt::graph::WorkGroup<
-             RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-             IndexType,
-             RAJA::xargs<>,
-             Allocator
-           >(Allocator{});
+      g.add_node(RAJA::expt::graph::WorkGroup<
+                   RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                   IndexType,
+                   RAJA::xargs<>,
+                   Allocator
+                 >(Allocator{}));
 
   IndexType test_val(5);
 

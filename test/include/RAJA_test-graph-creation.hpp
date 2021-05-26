@@ -61,7 +61,7 @@ struct RandomGraph
   //   Ex. a >> b, b >> c, a >> c where a >> c is unnecessary
   template < typename NodeArg >
   auto add_node(int node_id, std::vector<int> const& edges_to_node, NodeArg&& arg)
-    -> decltype(camp::val<graph_type&>() >> std::forward<NodeArg>(arg))
+    -> decltype(camp::val<graph_type&>().add_node(std::forward<NodeArg>(arg)))
   {
     assert(node_id < m_num_nodes);
     assert(node_id == static_cast<int>(m_nodes.size()));
@@ -71,7 +71,7 @@ struct RandomGraph
     if (num_edges_to_node == 0) {
 
       // connect node to graph
-      auto& n = m_g >> std::forward<NodeArg>(arg);
+      auto& n = m_g.add_node(std::forward<NodeArg>(arg));
 
       m_nodes.emplace_back(&n);
       return n;
@@ -80,12 +80,12 @@ struct RandomGraph
 
       // create edges
       // first creating node from an existing node
-      auto& n = *m_nodes[edges_to_node[0]] >> std::forward<NodeArg>(arg);
+      auto& n = m_nodes[edges_to_node[0]]->add_child(std::forward<NodeArg>(arg));
       m_edges.emplace(edges_to_node[0], node_id);
 
       // then adding other edges
       for (int i = 1; i < num_edges_to_node; ++i) {
-        *m_nodes[edges_to_node[i]] >> n;
+        m_nodes[edges_to_node[i]]->add_child(n);
         m_edges.emplace(edges_to_node[i], node_id);
       }
 

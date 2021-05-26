@@ -67,11 +67,13 @@ struct DAG
   }
 
   template < typename node_args>
-  auto operator>>(node_args&& rhs)
+  auto add_node(node_args&& rhs)
     -> concepts::enable_if_t<decltype(*std::forward<node_args>(rhs).toNode()),
                              std::is_base_of<detail::NodeArgs, camp::decay<node_args>>>
   {
-    return *insert_node(std::forward<node_args>(rhs).toNode());
+    auto node = std::forward<node_args>(rhs).toNode();
+    insert_node(node);
+    return *node;
   }
 
   template < typename GraphPolicy, typename GraphResource >
@@ -107,13 +109,10 @@ private:
 
   std::vector<base_node_type*> m_children;
 
-  template < typename node_type >
-  concepts::enable_if_t<node_type*, std::is_base_of<base_node_type, node_type>>
-  insert_node(node_type* node)
+  void insert_node(base_node_type* node)
   {
     m_children.emplace_back(node);
     node->m_parent_count += 1;
-    return node;
   }
 
   // traverse nodes in an order consistent with the DAG, calling enter_func

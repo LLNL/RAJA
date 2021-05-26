@@ -68,7 +68,7 @@ TEST( GraphBasicExecUnitTest, OneNodeExec )
   // default constructor
   graph_type g;
 
-  g >> RAJA::expt::graph::Empty();
+  g.add_node(RAJA::expt::graph::Empty());
 
   ASSERT_FALSE( g.empty() );
 
@@ -104,11 +104,11 @@ TEST( GraphBasicExecUnitTest, FourNodeExec )
    *    3
    */
 
-  auto& n0 = g  >> RAJA::expt::graph::Function([&](){ order[0] = count++; });
-  auto& n1 = n0 >> RAJA::expt::graph::Function([&](){ order[1] = count++; });
-  auto& n2 = n0 >> RAJA::expt::graph::Function([&](){ order[2] = count++; });
-  auto& n3 = n1 >> RAJA::expt::graph::Function([&](){ order[3] = count++; });
-  n2 >> n3;
+  auto& n0 = g.add_node(RAJA::expt::graph::Function([&](){ order[0] = count++; }));
+  auto& n1 = n0.add_child(RAJA::expt::graph::Function([&](){ order[1] = count++; }));
+  auto& n2 = n0.add_child(RAJA::expt::graph::Function([&](){ order[2] = count++; }));
+  auto& n3 = n1.add_child(RAJA::expt::graph::Function([&](){ order[3] = count++; }));
+  n2.add_child(n3);
 
   ASSERT_FALSE( g.empty() );
 
@@ -159,38 +159,38 @@ TEST( GraphBasicExecUnitTest, TwentyNodeExec )
    *  4   5   6 7 8   9
    */
 
-  auto& n0  = g   >> RAJA::expt::graph::Function([&](){ order[0]  = count++; });
-  auto& n1  = g   >> RAJA::expt::graph::Function([&](){ order[1]  = count++; });
-  auto& n2  = g   >> RAJA::expt::graph::Function([&](){ order[2]  = count++; });
-  auto& n3  = g   >> RAJA::expt::graph::Function([&](){ order[3]  = count++; });
+  auto& n0  = g.add_node(RAJA::expt::graph::Function([&](){ order[0]  = count++; }));
+  auto& n1  = g.add_node(RAJA::expt::graph::Function([&](){ order[1]  = count++; }));
+  auto& n2  = g.add_node(RAJA::expt::graph::Function([&](){ order[2]  = count++; }));
+  auto& n3  = g.add_node(RAJA::expt::graph::Function([&](){ order[3]  = count++; }));
 
-  auto& n4  = n0  >> RAJA::expt::graph::Function([&](){ order[4]  = count++; });
-  auto& n5  = n0  >> RAJA::expt::graph::Function([&](){ order[5]  = count++; });
-              n1  >> n5;
-  auto& n6  = n1  >> RAJA::expt::graph::Function([&](){ order[6]  = count++; });
-  auto& n7  = n2  >> RAJA::expt::graph::Function([&](){ order[7]  = count++; });
-              n3  >> n7;
-  auto& n8  = n3  >> RAJA::expt::graph::Function([&](){ order[8]  = count++; });
+  auto& n4  = n0.add_child(RAJA::expt::graph::Function([&](){ order[4]  = count++; }));
+  auto& n5  = n0.add_child(RAJA::expt::graph::Function([&](){ order[5]  = count++; }));
+              n1.add_child(n5);
+  auto& n6  = n1.add_child(RAJA::expt::graph::Function([&](){ order[6]  = count++; }));
+  auto& n7  = n2.add_child(RAJA::expt::graph::Function([&](){ order[7]  = count++; }));
+              n3.add_child(n7);
+  auto& n8  = n3.add_child(RAJA::expt::graph::Function([&](){ order[8]  = count++; }));
 
-  auto& n9  = n4  >> RAJA::expt::graph::Function([&](){ order[9]  = count++; });
-              n5  >> n9;
-  auto& n10 = n5  >> RAJA::expt::graph::Function([&](){ order[10] = count++; });
-              n6  >> n10;
-  auto& n11 = n5  >> RAJA::expt::graph::Function([&](){ order[11] = count++; });
-              n6  >> n11;
-  auto& n12 = n7  >> RAJA::expt::graph::Function([&](){ order[12] = count++; });
-              n8  >> n12;
-  auto& n13 = n7  >> RAJA::expt::graph::Function([&](){ order[13] = count++; });
-              n8  >> n13;
+  auto& n9  = n4.add_child(RAJA::expt::graph::Function([&](){ order[9]  = count++; }));
+              n5.add_child(n9);
+  auto& n10 = n5.add_child(RAJA::expt::graph::Function([&](){ order[10] = count++; }));
+              n6.add_child(n10);
+  auto& n11 = n5.add_child(RAJA::expt::graph::Function([&](){ order[11] = count++; }));
+              n6.add_child(n11);
+  auto& n12 = n7.add_child(RAJA::expt::graph::Function([&](){ order[12] = count++; }));
+              n8.add_child(n12);
+  auto& n13 = n7.add_child(RAJA::expt::graph::Function([&](){ order[13] = count++; }));
+              n8.add_child(n13);
 
-              n9  >> RAJA::expt::graph::Function([&](){ order[14]  = count++; });
-  auto& n15 = n9  >> RAJA::expt::graph::Function([&](){ order[15]  = count++; });
-              n10 >> n15;
-              n11 >> RAJA::expt::graph::Function([&](){ order[16]  = count++; });
-  auto& n17 = n11 >> RAJA::expt::graph::Function([&](){ order[17]  = count++; });
-              n12 >> n17;
-              n12 >> RAJA::expt::graph::Function([&](){ order[18]  = count++; });
-              n13 >> RAJA::expt::graph::Function([&](){ order[19]  = count++; });
+              n9.add_child(RAJA::expt::graph::Function([&](){ order[14]  = count++; }));
+  auto& n15 = n9.add_child(RAJA::expt::graph::Function([&](){ order[15]  = count++; }));
+              n10.add_child(n15);
+              n11.add_child(RAJA::expt::graph::Function([&](){ order[16]  = count++; }));
+  auto& n17 = n11.add_child(RAJA::expt::graph::Function([&](){ order[17]  = count++; }));
+              n12.add_child(n17);
+              n12.add_child(RAJA::expt::graph::Function([&](){ order[18]  = count++; }));
+              n13.add_child(RAJA::expt::graph::Function([&](){ order[19]  = count++; }));
 
   ASSERT_FALSE( g.empty() );
 

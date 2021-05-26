@@ -52,17 +52,20 @@ struct Node
   template < typename node_type >
   concepts::enable_if_t<node_type&,
                         std::is_base_of<Node, node_type>>
-  operator>>(node_type& rhs)
+  add_child(node_type& rhs)
   {
-    return *add_child(&rhs);
+    add_child(&rhs);
+    return rhs;
   }
 
   template < typename node_args>
-  auto operator>>(node_args&& rhs)
+  auto add_child(node_args&& rhs)
     -> concepts::enable_if_t<decltype(*std::forward<node_args>(rhs).toNode()),
                              std::is_base_of<detail::NodeArgs, camp::decay<node_args>>>
   {
-    return *add_child(std::forward<node_args>(rhs).toNode());
+    auto node = std::forward<node_args>(rhs).toNode();
+    add_child(node);
+    return *node;
   }
 
 protected:
@@ -72,6 +75,16 @@ private:
   friend struct DAG;
   template < typename, typename >
   friend struct DAGExec;
+
+  int m_parent_count = 0;
+  int m_count = 0;
+  std::vector<Node*> m_children;
+
+  void add_child(Node* node)
+  {
+    m_children.emplace_back(node);
+    node->m_parent_count += 1;
+  }
 
   template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
   void forward_traverse(Examine_Func&& examine_func,
@@ -90,19 +103,6 @@ private:
       }
       std::forward<Exit_Func>(exit_func)(this);
     }
-  }
-
-  int m_parent_count = 0;
-  int m_count = 0;
-  std::vector<Node*> m_children;
-
-  template < typename node_type >
-  concepts::enable_if_t<node_type*, std::is_base_of<Node, node_type>>
-  add_child(node_type* node)
-  {
-    m_children.emplace_back(node);
-    node->m_parent_count += 1;
-    return node;
   }
 };
 

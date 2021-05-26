@@ -35,9 +35,9 @@ void ForallNodeRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
   std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
 
   RAJA::expt::graph::DAG g;
-  g >> RAJA::expt::graph::Forall(EXEC_POLICY(), r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+  g.add_node(RAJA::expt::graph::Forall(EXEC_POLICY(), r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     working_array[RAJA::stripIndexType(idx - rbegin)] = idx;
-  });
+  }));
   RAJA::expt::graph::DAGExec<GRAPH_POLICY, WORKING_RES> ge =
       g.template instantiate<GRAPH_POLICY, WORKING_RES>();
   ge.exec(res);
