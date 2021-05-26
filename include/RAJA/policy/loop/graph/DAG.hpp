@@ -20,6 +20,8 @@
 
 #include "RAJA/config.hpp"
 
+#include <memory>
+
 #include "RAJA/pattern/graph/DAG.hpp"
 #include "RAJA/pattern/graph/Node.hpp"
 
@@ -32,31 +34,42 @@ namespace expt
 namespace graph
 {
 
-namespace detail
-{
-
 template < typename GraphResource >
 struct DAGExec<loop_graph, GraphResource>
+    : detail::DAGExecBase<loop_graph, GraphResource>
 {
-  resources::EventProxy<GraphResource> operator()(
-      DAG<loop_graph, GraphResource>& dag, GraphResource& gr)
+  resources::EventProxy<GraphResource> exec(GraphResource& gr)
   {
+    gr.wait();
     // exec all nodes in a correct order
-    dag.forward_traverse(
-          [](Node<GraphResource>*) {
+    m_dag->forward_traverse(
+          [](Node*) {
             // do nothing
           },
-          [&](Node<GraphResource>* node) {
-            node->exec(gr);
+          [&](Node* node) {
+            node->exec(/*gr*/);
           },
-          [](Node<GraphResource>*) {
+          [](Node*) {
             // do nothing
           });
     return resources::EventProxy<GraphResource>(&gr);
   }
-};
 
-}  // namespace detail
+  resources::EventProxy<GraphResource> exec()
+  {
+    auto& gr = GraphResource::get_default();
+    return exec(gr);
+  }
+
+private:
+  friend DAG;
+
+  DAGExec(DAG* dag)
+    : m_dag(dag)
+  { }
+
+  DAG* m_dag;
+};
 
 }  // namespace graph
 

@@ -39,27 +39,24 @@ namespace expt
 namespace graph
 {
 
-template < typename GraphResource,
-           typename WORKGROUP_POLICY_T,
+template < typename WORKGROUP_POLICY_T,
            typename INDEX_T,
            typename EXTRA_ARGS_T,
            typename ALLOCATOR_T>
 struct WorkGroupNode;
 
-template < typename GraphResource,
-           typename EXEC_POLICY_T,
+template < typename EXEC_POLICY_T,
            typename ORDER_POLICY_T,
            typename STORAGE_POLICY_T,
            typename INDEX_T,
            typename ... Args,
            typename ALLOCATOR_T>
-struct WorkGroupNode<GraphResource,
-                     WorkGroupPolicy<EXEC_POLICY_T,
+struct WorkGroupNode<WorkGroupPolicy<EXEC_POLICY_T,
                                      ORDER_POLICY_T,
                                      STORAGE_POLICY_T>,
                      INDEX_T,
                      xargs<Args...>,
-                     ALLOCATOR_T> : Node<GraphResource>
+                     ALLOCATOR_T> : Node
 {
   using exec_policy = EXEC_POLICY_T;
   using order_policy = ORDER_POLICY_T;
@@ -74,7 +71,6 @@ struct WorkGroupNode<GraphResource,
   using worksite_type  = typename workpool_type::worksite_type;
 
   using ExecutionResource = typename workpool_type::resource_type ;
-  using same_resources = std::is_same<GraphResource, ExecutionResource>;
 
   WorkGroupNode(Allocator const& aloc)
     : m_pool(aloc)
@@ -134,10 +130,10 @@ struct WorkGroupNode<GraphResource,
   virtual ~WorkGroupNode() = default;
 
 protected:
-  resources::EventProxy<GraphResource> exec(GraphResource& gr) override
+  void exec() override
   {
     instantiate();
-    return exec_impl(same_resources(), gr);
+    return exec_impl();
   }
 
 private:
@@ -148,30 +144,18 @@ private:
   bool m_instantiated;
 
   template < camp::idx_t ... Is >
-  resources::EventProxy<ExecutionResource>
-  exec_impl_helper(ExecutionResource& er, camp::idx_seq<Is...>)
+  void exec_impl_helper(ExecutionResource& er, camp::idx_seq<Is...>)
   {
     m_site = m_group.run(er, RAJA::get<Is>(m_args)...);
-
-    return m_site.get_event();
   }
 
-  resources::EventProxy<ExecutionResource>
-  exec_impl(std::true_type, ExecutionResource& er)
+  void exec_impl()
   {
-    return exec_impl_helper(er, camp::make_idx_seq_t<sizeof...(Args)>());
-  }
+    ExecutionResource& er = ExecutionResource::get_default();
 
-  resources::EventProxy<GraphResource>
-  exec_impl(std::false_type, GraphResource& gr)
-  {
-    ExecutionResource er = ExecutionResource::get_default();
-    gr.wait();
+    exec_impl_helper(er, camp::make_idx_seq_t<sizeof...(Args)>());
 
-    resources::Event ee = exec_impl(std::true_type(), er);
-    gr.wait_for(&ee);
-
-    return resources::EventProxy<GraphResource>(&gr);
+    er.wait();
   }
 };
 
@@ -205,18 +189,16 @@ struct WorkGroupArgs<WorkGroupPolicy<EXEC_POLICY_T,
   using xarg_type = xargs<Args...>;
   using Allocator = ALLOCATOR_T;
 
-  template < typename GraphResource >
-  using node_type = WorkGroupNode<GraphResource, policy, index_type, xarg_type, Allocator>;
+  using node_type = WorkGroupNode<policy, index_type, xarg_type, Allocator>;
 
   WorkGroupArgs(Allocator const& aloc)
     : m_aloc(aloc)
   {
   }
 
-  template < typename GraphResource >
-  node_type<GraphResource>* toNode()
+  node_type* toNode()
   {
-    return new node_type<GraphResource>{ std::move(m_aloc) };
+    return new node_type{ std::move(m_aloc) };
   }
 
   Allocator m_aloc;

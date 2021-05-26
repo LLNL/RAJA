@@ -41,11 +41,13 @@ void ForallNodeRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
     idx += stride;
   }
 
-  RAJA::expt::graph::DAG<GRAPH_POLICY, WORKING_RES> g;
+  RAJA::expt::graph::DAG g;
   g >> RAJA::expt::graph::Forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     working_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
   });
-  g.exec(res);
+  RAJA::expt::graph::DAGExec<GRAPH_POLICY, WORKING_RES> ge =
+      g.template instantiate<GRAPH_POLICY, WORKING_RES>();
+  ge.exec(res);
 
   res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
   res.wait();

@@ -32,29 +32,19 @@ namespace expt
 namespace graph
 {
 
-template < typename, typename >
 struct DAG;
-
-namespace detail {
 
 template < typename, typename >
 struct DAGExec;
 
-struct NodeArgs
-{ };
+namespace detail {
 
-template < typename node_type, typename node_args >
-RAJA_INLINE node_type*
-make_Node(node_args&& arg);
+struct NodeArgs { };
 
 }
 
-template < typename GraphResource >
 struct Node
 {
-  static_assert(type_traits::is_resource<GraphResource>::value,
-                "GraphResource is not a resource");
-
   Node() = default;
 
   virtual ~Node() = default;
@@ -69,20 +59,19 @@ struct Node
 
   template < typename node_args>
   auto operator>>(node_args&& rhs)
-    -> concepts::enable_if_t<decltype(*std::forward<node_args>(rhs).template toNode<GraphResource>()),
+    -> concepts::enable_if_t<decltype(*std::forward<node_args>(rhs).toNode()),
                              std::is_base_of<detail::NodeArgs, camp::decay<node_args>>>
   {
-    return *add_child(std::forward<node_args>(rhs).template toNode<GraphResource>());
+    return *add_child(std::forward<node_args>(rhs).toNode());
   }
 
 protected:
-  virtual resources::EventProxy<GraphResource> exec(GraphResource&) = 0;
+  virtual void exec() = 0;
 
 private:
-  template < typename, typename >
   friend struct DAG;
   template < typename, typename >
-  friend struct detail::DAGExec;
+  friend struct DAGExec;
 
   template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
   void forward_traverse(Examine_Func&& examine_func,
@@ -93,7 +82,7 @@ private:
     if (++m_count == m_parent_count) {
       m_count = 0;
       std::forward<Enter_Func>(enter_func)(this);
-      for (Node<GraphResource>* child : m_children)
+      for (Node* child : m_children)
       {
         child->forward_traverse(std::forward<Examine_Func>(examine_func),
                                 std::forward<Enter_Func>(enter_func),

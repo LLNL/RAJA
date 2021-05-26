@@ -13,7 +13,8 @@
 template <typename GRAPH_POLICY, typename WORKING_RES>
 void MixedNodesTestImpl(int node_size)
 {
-  using graph_type = RAJA::expt::graph::DAG<GRAPH_POLICY, WORKING_RES>;
+  using graph_type = RAJA::expt::graph::DAG;
+  using graph_exec_type = RAJA::expt::graph::DAGExec<GRAPH_POLICY, WORKING_RES>;
 
   auto r = WORKING_RES::get_default();
 
@@ -365,7 +366,8 @@ void MixedNodesTestImpl(int node_size)
   hip_res.wait();
 #endif
 
-  g.graph().exec(r);
+  graph_exec_type ge = g.graph().template instantiate<GRAPH_POLICY, WORKING_RES>();
+  ge.exec(r);
   r.wait();
 
 

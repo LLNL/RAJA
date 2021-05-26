@@ -61,11 +61,13 @@ void ForallNodeListSegmentTestImpl(INDEX_TYPE N)
     test_array[ RAJA::stripIndexType(idx_array[i]) ] = idx_array[i];
   }
 
-  RAJA::expt::graph::DAG<GRAPH_POLICY, WORKING_RES> g;
+  RAJA::expt::graph::DAG g;
   g >> RAJA::expt::graph::Forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     working_array[RAJA::stripIndexType(idx)] = idx;
   });
-  g.exec(res);
+  RAJA::expt::graph::DAGExec<GRAPH_POLICY, WORKING_RES> ge =
+      g.template instantiate<GRAPH_POLICY, WORKING_RES>();
+  ge.exec(res);
 
   res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
   res.wait();

@@ -37,12 +37,10 @@ namespace expt
 namespace graph
 {
 
-template < typename GraphResource,
-           typename ExecutionPolicy, typename Container, typename LoopBody >
-struct ForallNode : Node<GraphResource>
+template < typename ExecutionPolicy, typename Container, typename LoopBody >
+struct ForallNode : Node
 {
   using ExecutionResource = typename resources::get_resource<ExecutionPolicy>::type;
-  using same_resources = std::is_same<GraphResource, ExecutionResource>;
 
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
@@ -58,9 +56,9 @@ struct ForallNode : Node<GraphResource>
   virtual ~ForallNode() = default;
 
 protected:
-  resources::EventProxy<GraphResource> exec(GraphResource& gr) override
+  void exec() override
   {
-    return exec_impl(same_resources(), gr);
+    return exec_impl();
   }
 
 private:
@@ -68,9 +66,10 @@ private:
   Container m_container;
   LoopBody m_body;
 
-  resources::EventProxy<ExecutionResource>
-  exec_impl(std::true_type, ExecutionResource& er)
+  void exec_impl()
   {
+    ExecutionResource& er = ExecutionResource::get_default();
+
     util::PluginContext context{util::make_context<ExecutionPolicy>()};
     util::callPreLaunchPlugins(context);
 
@@ -81,19 +80,7 @@ private:
 
     util::callPostLaunchPlugins(context);
 
-    return resources::EventProxy<ExecutionResource>(&er);
-  }
-
-  resources::EventProxy<GraphResource>
-  exec_impl(std::false_type, GraphResource& gr)
-  {
-    ExecutionResource er = ExecutionResource::get_default();;
-    gr.wait();
-
-    resources::Event ee = exec_impl(std::true_type(), er);
-    gr.wait_for(&ee);
-
-    return resources::EventProxy<GraphResource>(&gr);
+    er.wait();
   }
 };
 
@@ -103,8 +90,7 @@ namespace detail {
 template < typename ExecutionPolicy, typename Container, typename LoopBody >
 struct ForallArgs : NodeArgs
 {
-  template < typename GraphResource >
-  using node_type = ForallNode<GraphResource, ExecutionPolicy, Container, LoopBody>;
+  using node_type = ForallNode<ExecutionPolicy, Container, LoopBody>;
 
   template < typename EP_arg, typename CO_arg, typename LB_arg >
   ForallArgs(EP_arg&& p, CO_arg&& c, LB_arg&& loop_body)
@@ -114,8 +100,7 @@ struct ForallArgs : NodeArgs
   {
   }
 
-  template < typename GraphResource >
-  node_type<GraphResource>* toNode()
+  node_type* toNode()
   {
     util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
     util::callPreCapturePlugins(context);
@@ -125,9 +110,9 @@ struct ForallArgs : NodeArgs
 
     util::callPostCapturePlugins(context);
 
-    return new node_type<GraphResource>{ std::move(m_policy),
-                                         std::move(m_container),
-                                         std::move(body) };
+    return new node_type{ std::move(m_policy),
+                          std::move(m_container),
+                          std::move(body) };
   }
 
   ExecutionPolicy m_policy;

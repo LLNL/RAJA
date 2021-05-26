@@ -30,7 +30,6 @@ template <typename GraphPolicy,
 void testWorkGroupNodeOrderedSingle(IndexType begin, IndexType end)
 {
   using WorkGroupNode_type = RAJA::expt::graph::WorkGroupNode<
-                  WORKING_RES,
                   RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
                   IndexType,
                   RAJA::xargs<>,
@@ -67,7 +66,7 @@ void testWorkGroupNodeOrderedSingle(IndexType begin, IndexType end)
     }
   }
 
-  RAJA::expt::graph::DAG<GraphPolicy, WORKING_RES> g;
+  RAJA::expt::graph::DAG g;
   WorkGroupNode_type& node =
       g >> RAJA::expt::graph::WorkGroup<
              RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
@@ -89,7 +88,9 @@ void testWorkGroupNodeOrderedSingle(IndexType begin, IndexType end)
     });
   }
 
-  g.exec(res);
+  RAJA::expt::graph::DAGExec<GraphPolicy, WORKING_RES> ge =
+      g.template instantiate<GraphPolicy, WORKING_RES>();
+  ge.exec(res);
 
   {
     res.memcpy(check_array, working_array, sizeof(IndexType) * N);

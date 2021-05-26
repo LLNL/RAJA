@@ -36,19 +36,11 @@ namespace expt
 namespace graph
 {
 
-template < typename GraphPolicy, typename GraphResource >
-struct DAG;
-
 namespace detail
 {
 
 template < typename GraphPolicy, typename GraphResource >
-struct DAGExec;
-
-}  // namespace detail
-
-template < typename GraphPolicy, typename GraphResource >
-struct DAG
+struct DAGExecBase
 {
   static_assert(type_traits::is_execution_policy<GraphPolicy>::value,
                 "GraphPolicy is not a policy");
@@ -56,8 +48,16 @@ struct DAG
                 "GraphPolicy is not a graph policy");
   static_assert(type_traits::is_resource<GraphResource>::value,
                 "GraphResource is not a resource");
+};
 
-  using base_node_type = Node<GraphResource>;
+} // namespace detail
+
+template < typename GraphPolicy, typename GraphResource >
+struct DAGExec;
+
+struct DAG
+{
+  using base_node_type = Node;
 
   DAG() = default;
 
@@ -68,21 +68,16 @@ struct DAG
 
   template < typename node_args>
   auto operator>>(node_args&& rhs)
-    -> concepts::enable_if_t<decltype(*std::forward<node_args>(rhs).template toNode<GraphResource>()),
+    -> concepts::enable_if_t<decltype(*std::forward<node_args>(rhs).toNode()),
                              std::is_base_of<detail::NodeArgs, camp::decay<node_args>>>
   {
-    return *insert_node(std::forward<node_args>(rhs).template toNode<GraphResource>());
+    return *insert_node(std::forward<node_args>(rhs).toNode());
   }
 
-  resources::EventProxy<GraphResource> exec(GraphResource& gr)
+  template < typename GraphPolicy, typename GraphResource >
+  DAGExec<GraphPolicy, GraphResource> instantiate()
   {
-    return detail::DAGExec<GraphPolicy, GraphResource>{}(*this, gr);
-  }
-
-  resources::EventProxy<GraphResource> exec()
-  {
-    auto gr = GraphResource::get_default();
-    return exec(gr);
+    return {this};
   }
 
   void clear()
@@ -107,7 +102,8 @@ struct DAG
   }
 
 private:
-  friend detail::DAGExec<GraphPolicy, GraphResource>;
+  template < typename, typename >
+  friend struct DAGExec;
 
   std::vector<base_node_type*> m_children;
 

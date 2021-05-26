@@ -33,7 +33,6 @@ void testWorkGroupNodeOrderedMultiple(
     IndexType pool_reuse, IndexType group_reuse)
 {
   using WorkGroupNode_type = RAJA::expt::graph::WorkGroupNode<
-                  WORKING_RES,
                   RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
                   IndexType,
                   RAJA::xargs<>,
@@ -103,7 +102,7 @@ void testWorkGroupNodeOrderedMultiple(
                                 &check_array3,
                                 &test_array3);
 
-  RAJA::expt::graph::DAG<GraphPolicy, WORKING_RES> g;
+  RAJA::expt::graph::DAG g;
   WorkGroupNode_type& node =
       g >> RAJA::expt::graph::WorkGroup<
              RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
@@ -218,7 +217,9 @@ void testWorkGroupNodeOrderedMultiple(
       }
 
       node.set_args();
-      camp::resources::Event e = g.exec();
+      RAJA::expt::graph::DAGExec<GraphPolicy, WORKING_RES> ge =
+          g.template instantiate<GraphPolicy, WORKING_RES>();
+      camp::resources::Event e = ge.exec();
       e.wait();
 
       // check_test_data(type1(5), type2(7), type3(11));

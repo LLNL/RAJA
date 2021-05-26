@@ -24,7 +24,7 @@ TEST( GraphBasicConstructorUnitTest, BasicConstructors )
 {
   using GraphPolicy = RAJA::loop_graph;
   using GraphResource = RAJA::resources::Host;
-  using graph_type = RAJA::expt::graph::DAG<GraphPolicy, GraphResource>;
+  using graph_type = RAJA::expt::graph::DAG;
 
   // default constructor
   graph_type g;
@@ -39,7 +39,8 @@ TEST( GraphBasicExecUnitTest, EmptyExec )
 {
   using GraphPolicy = RAJA::loop_graph;
   using GraphResource = RAJA::resources::Host;
-  using graph_type = RAJA::expt::graph::DAG<GraphPolicy, GraphResource>;
+  using graph_type = RAJA::expt::graph::DAG;
+  using graph_exec_type = RAJA::expt::graph::DAGExec<GraphPolicy, GraphResource>;
 
   auto r = GraphResource::get_default();
 
@@ -47,7 +48,8 @@ TEST( GraphBasicExecUnitTest, EmptyExec )
   graph_type g;
 
   // empty exec
-  g.exec(r);
+  graph_exec_type ge = g.template instantiate<GraphPolicy, GraphResource>();
+  ge.exec(r);
   r.wait();
 
   ASSERT_TRUE( g.empty() );
@@ -58,7 +60,8 @@ TEST( GraphBasicExecUnitTest, OneNodeExec )
 {
   using GraphPolicy = RAJA::loop_graph;
   using GraphResource = RAJA::resources::Host;
-  using graph_type = RAJA::expt::graph::DAG<GraphPolicy, GraphResource>;
+  using graph_type = RAJA::expt::graph::DAG;
+  using graph_exec_type = RAJA::expt::graph::DAGExec<GraphPolicy, GraphResource>;
 
   auto r = GraphResource::get_default();
 
@@ -70,7 +73,8 @@ TEST( GraphBasicExecUnitTest, OneNodeExec )
   ASSERT_FALSE( g.empty() );
 
   // 1-node exec
-  RAJA::resources::Event e = g.exec(r);
+  graph_exec_type ge = g.template instantiate<GraphPolicy, GraphResource>();
+  RAJA::resources::Event e = ge.exec(r);
   e.wait();
 
   ASSERT_FALSE( g.empty() );
@@ -81,7 +85,8 @@ TEST( GraphBasicExecUnitTest, FourNodeExec )
 {
   using GraphPolicy = RAJA::loop_graph;
   using GraphResource = RAJA::resources::Host;
-  using graph_type = RAJA::expt::graph::DAG<GraphPolicy, GraphResource>;
+  using graph_type = RAJA::expt::graph::DAG;
+  using graph_exec_type = RAJA::expt::graph::DAGExec<GraphPolicy, GraphResource>;
 
   auto r = GraphResource::get_default();
 
@@ -114,7 +119,8 @@ TEST( GraphBasicExecUnitTest, FourNodeExec )
   ASSERT_EQ(order[3], -1);
 
   // 4-node diamond DAG exec
-  g.exec(r);
+  graph_exec_type ge = g.template instantiate<GraphPolicy, GraphResource>();
+  ge.exec(r);
   r.wait();
 
   ASSERT_FALSE( g.empty() );
@@ -131,7 +137,8 @@ TEST( GraphBasicExecUnitTest, TwentyNodeExec )
 {
   using GraphPolicy = RAJA::loop_graph;
   using GraphResource = RAJA::resources::Host;
-  using graph_type = RAJA::expt::graph::DAG<GraphPolicy, GraphResource>;
+  using graph_type = RAJA::expt::graph::DAG;
+  using graph_exec_type = RAJA::expt::graph::DAGExec<GraphPolicy, GraphResource>;
 
   auto r = GraphResource::get_default();
 
@@ -197,7 +204,8 @@ TEST( GraphBasicExecUnitTest, TwentyNodeExec )
   ASSERT_EQ(order[18], -1); ASSERT_EQ(order[19], -1);
 
   // 8-node DAG exec
-  g.exec(r);
+  graph_exec_type ge = g.template instantiate<GraphPolicy, GraphResource>();
+  ge.exec(r);
   r.wait();
 
   ASSERT_FALSE( g.empty() );
@@ -224,7 +232,8 @@ TEST( GraphBasicExecUnitTest, RandomExec )
 {
   using GraphPolicy = RAJA::loop_graph;
   using GraphResource = RAJA::resources::Host;
-  using graph_type = RAJA::expt::graph::DAG<GraphPolicy, GraphResource>;
+  using graph_type = RAJA::expt::graph::DAG;
+  using graph_exec_type = RAJA::expt::graph::DAGExec<GraphPolicy, GraphResource>;
 
   auto r = GraphResource::get_default();
 
@@ -272,7 +281,8 @@ TEST( GraphBasicExecUnitTest, RandomExec )
   }
 
   // DAG exec
-  g.graph().exec(r);
+  graph_exec_type ge = g.graph().template instantiate<GraphPolicy, GraphResource>();
+  ge.exec(r);
   r.wait();
 
   // check graph has executed
