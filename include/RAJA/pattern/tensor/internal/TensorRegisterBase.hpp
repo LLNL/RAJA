@@ -109,7 +109,11 @@ namespace internal {
 
       static constexpr camp::idx_t s_num_dims = sizeof...(SIZES);
 
+      static constexpr camp::idx_t s_num_registers = RAJA::product<camp::idx_t>(SIZES...);
+
       using index_type = camp::idx_t;
+
+      using register_type = Register<T, REGISTER_POLICY>;
     private:
 
       RAJA_HOST_DEVICE
@@ -125,14 +129,69 @@ namespace internal {
         return static_cast<self_type const *>(this);
       }
 
+    protected:
+
+      register_type m_registers[s_num_registers];
+
     public:
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      TensorRegisterBase(){}
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      TensorRegisterBase(element_type c)
+      {
+        broadcast(c);
+      }
+
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      TensorRegisterBase(self_type const &c)
+      {
+        copy(c);
+      }
+
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      ~TensorRegisterBase(){}
+
+
+      /*
+       * Overload for:    assignment of ET to a TensorRegister
+       */
+      template<typename RHS,
+        typename std::enable_if<std::is_base_of<RAJA::internal::ET::TensorExpressionConcreteBase, RHS>::value, bool>::type = true>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      TensorRegisterBase(RHS const &rhs)
+      {
+        // evaluate a single tile of the ET, storing in this TensorRegister
+        *this = rhs.eval(self_type::s_get_default_tile());
+      }
+
+
+      template<typename ... REGS>
+      explicit
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      TensorRegisterBase(register_type reg0, REGS const &... regs) :
+        m_registers{reg0, regs...}
+      {
+        static_assert(1+sizeof...(REGS) == s_num_registers,
+            "Incompatible number of registers");
+      }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       static
       constexpr
       bool is_root() {
-        return true;
+        return register_type::is_root();
       }
 
 
@@ -155,13 +214,6 @@ namespace internal {
       s_load_ref(REF_TYPE const &ref) {
 
         self_type value;
-//#ifdef __CUDA_ARCH__
-//if(threadIdx.x == 1){
-//        printf("TensorRegister Load: "); ref.print();
-//
-//        value.load_ref(ref);
-//}
-//#endif
 
         value.load_ref(ref);
         return value;
@@ -207,26 +259,51 @@ namespace internal {
       }
 
 
+
+
+
+
+      /*!
+       * Copy contents of another tensor
+       */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      constexpr
-      TensorRegisterBase(){}
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      ~TensorRegisterBase(){}
-
-
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      TensorRegisterBase(TensorRegisterBase const &){}
-
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      TensorRegisterBase(self_type const &){
+      self_type &copy(self_type const &c){
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          m_registers[i] = c.vec(i);
+        }
+        return *getThis();
       }
 
+
+
+
+      /*!
+       * Sets all elements to zero
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &clear(){
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          m_registers[i] = register_type(0);
+        }
+
+
+        return *getThis();
+      }
+
+
+      /*!
+       * Copy contents of another matrix operator
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &broadcast(element_type v){
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          m_registers[i].broadcast(v);
+        }
+        return *getThis();
+      }
 
 
       /*!
@@ -253,6 +330,85 @@ namespace internal {
         x.broadcast(getThis()->get(i));
         return x;
       }
+
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type add(self_type const &mat) const {
+        self_type result;
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          result.vec(i) = m_registers[i].add(mat.vec(i));
+        }
+        return result;
+      }
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type subtract(self_type const &mat) const {
+        self_type result;
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          result.vec(i) = m_registers[i].subtract(mat.vec(i));
+        }
+        return result;
+      }
+
+
+      /*!
+       * element-wise multiplication
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type multiply(self_type const &x) const {
+        self_type result;
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          result.vec(i) = m_registers[i].multiply(x.vec(i));
+        }
+        return result;
+      }
+
+      /*!
+       * element-wise fused multiply add
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type multiply_add(self_type const &x, self_type const &add) const {
+        self_type result;
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          result.vec(i) = m_registers[i].multiply_add(x.vec(i), add.vec(i));
+        }
+        return result;
+      }
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type divide(self_type const &mat) const {
+        self_type result;
+        for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
+          result.vec(reg) = m_registers[reg].divide(mat.vec(reg));
+        }
+        return result;
+      }
+
+
+
+      /*!
+       * @brief Dot product of two vectors
+       * @param x Other vector to dot with this vector
+       * @return Value of (*this) dot x
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      element_type dot(self_type const &x) const
+      {
+        element_type result(0);
+
+        for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
+          result += m_registers[reg].multiply(x.vec(reg)).sum();
+        }
+
+        return result;
+      }
+
 
       /*!
        * @brief Set entire vector to a single scalar value
@@ -506,68 +662,49 @@ namespace internal {
 
 
       /*!
-       * @brief Divide n elements of this vector by another vector
-       * @param x Vector to divide by
-       * @param n Number of elements to divide
-       * @return Value of (*this)+x
+       * @brief Returns element wise minimum value tensor
        */
-      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide_n(self_type const &b, camp::idx_t n) const {
-        self_type q(*getThis());
-        for(camp::idx_t i = 0;i < n;++i){
-          q.set(getThis()->get(i) / b.get(i), i);
+      self_type vmin(self_type x) const {
+        self_type result;
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          result.vec(i) = m_registers[i].vmin(x.vec(i));
         }
-        return q;
+        return result;
       }
 
+
       /*!
-       * @brief Divide n elements of this vector by a scalar
-       * @param x Scalar to divide by
-       * @param n Number of elements to divide
-       * @return Value of (*this)+x
+       * @brief Returns element wise maximum value tensor
        */
-      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide_n(element_type const &b, camp::idx_t n) const {
-        self_type q(*getThis());
-        for(camp::idx_t i = 0;i < n;++i){
-          q.set(getThis()->get(i) / b, i);
+      self_type vmax(self_type x) const {
+        self_type result;
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          result.vec(i) = m_registers[i].vmax(x.vec(i));
         }
-        return q;
+        return result;
       }
 
-      /*!
-       * @brief Dot product of two vectors
-       * @param x Other vector to dot with this vector
-       * @return Value of (*this) dot x
-       */
-      RAJA_SUPPRESS_HD_WARN
-      RAJA_INLINE
+
+
       RAJA_HOST_DEVICE
-      element_type dot(self_type const &x) const
-      {
-        return getThis()->multiply(x).sum();
+      RAJA_INLINE
+      register_type &vec(int i){
+        return m_registers[i];
       }
 
-      /*!
-       * @brief Fused multiply add: fma(b, c) = (*this)*b+c
-       *
-       * Derived types can override this to implement intrinsic FMA's
-       *
-       * @param b Second product operand
-       * @param c Sum operand
-       * @return Value of (*this)*b+c
-       */
-      RAJA_SUPPRESS_HD_WARN
-      RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type multiply_add(self_type const &b, self_type const &c) const
-      {
-        return (self_type(*getThis()) * self_type(b)) + self_type(c);
+      RAJA_INLINE
+      constexpr
+      register_type const &vec(int i) const{
+        return m_registers[i];
       }
+
+
+
 
       /*!
        * @brief Fused multiply subtract: fms(b, c) = (*this)*b-c

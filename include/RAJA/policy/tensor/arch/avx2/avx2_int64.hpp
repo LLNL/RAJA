@@ -22,7 +22,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/pattern/tensor/internal/VectorRegisterBase.hpp"
+#include "RAJA/pattern/tensor/internal/RegisterBase.hpp"
 
 // Include SIMD intrinsics header file
 #include <immintrin.h>
@@ -33,16 +33,18 @@ namespace RAJA
 {
 
   template<>
-  class TensorRegister<avx2_register, long, VectorLayout, camp::idx_seq<4>> :
-    public internal::VectorRegisterBase<TensorRegister<avx2_register, long, VectorLayout, camp::idx_seq<4>>>
+  class Register<long, avx2_register> :
+    public internal::RegisterBase<Register<long, avx2_register>>
   {
     public:
+      using base_type = internal::RegisterBase<Register<long, avx2_register>>;
+
       using register_policy = avx2_register;
-      using self_type = TensorRegister<avx2_register, long, VectorLayout, camp::idx_seq<4>>;
+      using self_type = Register<long, avx2_register>;
       using element_type = long;
       using register_type = __m256i;
 
-      using int_vector_type = TensorRegister<avx2_register, long, VectorLayout, camp::idx_seq<4>>;
+      using int_vector_type = Register<long, avx2_register>;
 
     private:
       register_type m_value;
@@ -85,14 +87,14 @@ namespace RAJA
        * @brief Default constructor, zeros register contents
        */
       RAJA_INLINE
-      TensorRegister() : m_value(_mm256_setzero_si256()) {
+      Register() : m_value(_mm256_setzero_si256()) {
       }
 
       /*!
        * @brief Construct register with explicit values
        */
       RAJA_INLINE
-      TensorRegister(element_type x0,
+      Register(element_type x0,
                      element_type x1,
                      element_type x2,
                      element_type x3) :
@@ -103,16 +105,14 @@ namespace RAJA
        * @brief Copy constructor from underlying simd register
        */
       RAJA_INLINE
-      constexpr
-      explicit TensorRegister(register_type const &c) : m_value(c) {}
+      explicit Register(register_type const &c) : m_value(c) {}
 
 
       /*!
        * @brief Copy constructor
        */
       RAJA_INLINE
-      constexpr
-      TensorRegister(self_type const &c) : m_value(c.m_value) {}
+      Register(self_type const &c) : base_type(c), m_value(c.m_value) {}
 
       /*!
        * @brief Copy assignment constructor
@@ -129,7 +129,7 @@ namespace RAJA
        * Sets all elements to same value (broadcast).
        */
       RAJA_INLINE
-      TensorRegister(element_type const &c) : m_value(_mm256_set1_epi64x(c)) {}
+      Register(element_type const &c) : m_value(_mm256_set1_epi64x(c)) {}
 
 
       /*!
@@ -170,7 +170,7 @@ namespace RAJA
        *
        */
       RAJA_INLINE
-      self_type &load_strided(element_type const *ptr, camp::idx_t stride){
+      self_type &load_strided(long const *ptr, camp::idx_t stride){
         m_value = _mm256_i64gather_epi64(reinterpret_cast<long long const *>(ptr),
                                       createStridedOffsets(stride),
                                       sizeof(element_type));
@@ -188,6 +188,48 @@ namespace RAJA
         m_value = _mm256_mask_i64gather_epi64(_mm256_set1_epi64x(0),
                                       reinterpret_cast<long long const *>(ptr),
                                       createStridedOffsets(stride),
+                                      createMask(N),
+                                      sizeof(element_type));
+        return *this;
+      }
+
+      /*!
+       * @brief Generic gather operation for full vector.
+       *
+       * Must provide another register containing offsets of all values
+       * to be loaded relative to supplied pointer.
+       *
+       * Offsets are element-wise, not byte-wise.
+       *
+       */
+      RAJA_INLINE
+      self_type &gather(element_type const *ptr, int_vector_type offsets){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_strided_n ++;
+#endif
+        m_value = _mm256_i64gather_epi64(reinterpret_cast<long long const *>(ptr),
+                                      offsets.get_register(),
+                                      sizeof(element_type));
+        return *this;
+      }
+
+      /*!
+       * @brief Generic gather operation for n-length subvector.
+       *
+       * Must provide another register containing offsets of all values
+       * to be loaded relative to supplied pointer.
+       *
+       * Offsets are element-wise, not byte-wise.
+       *
+       */
+      RAJA_INLINE
+      self_type &gather_n(element_type const *ptr, int_vector_type offsets, camp::idx_t N){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_strided_n ++;
+#endif
+        m_value = _mm256_mask_i64gather_epi64(_mm256_setzero_si256(),
+                                      reinterpret_cast<long long const *>(ptr),
+                                      offsets.get_register(),
                                       createMask(N),
                                       sizeof(element_type));
         return *this;
@@ -238,6 +280,7 @@ namespace RAJA
         }
         return *this;
       }
+
 
 
 

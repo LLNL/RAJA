@@ -22,7 +22,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/pattern/tensor/internal/VectorRegisterBase.hpp"
+#include "RAJA/pattern/tensor/internal/RegisterBase.hpp"
 
 // Include SIMD intrinsics header file
 #include <immintrin.h>
@@ -34,16 +34,16 @@ namespace RAJA
 
 
   template<>
-  class TensorRegister<avx512_register, double, VectorLayout, camp::idx_seq<8>> :
-    public internal::VectorRegisterBase<TensorRegister<avx512_register, double, VectorLayout, camp::idx_seq<8>>>
+  class Register<double, avx512_register> :
+    public internal::RegisterBase<Register<double, avx512_register>>
   {
     public:
       using register_policy = avx512_register;
-      using self_type = TensorRegister<avx512_register, double, VectorLayout, camp::idx_seq<8>>;
+      using self_type = Register<double, avx512_register>;
       using element_type = double;
       using register_type = __m512d;
 
-      using int_vector_type = TensorRegister<avx512_register, long, VectorLayout, camp::idx_seq<8>>;
+      using int_vector_type = Register<long, avx512_register>;
 
 
     private:
@@ -83,23 +83,21 @@ namespace RAJA
        */
 			// AVX512F
       RAJA_INLINE
-      TensorRegister() : m_value(_mm512_setzero_pd()) {
+      Register() : base_type(), m_value(_mm512_setzero_pd()) {
       }
 
       /*!
        * @brief Copy constructor from underlying simd register
        */
       RAJA_INLINE
-      constexpr
-      explicit TensorRegister(register_type const &c) : m_value(c) {}
+      explicit Register(register_type const &c) : base_type(), m_value(c) {}
 
 
       /*!
        * @brief Copy constructor
        */
       RAJA_INLINE
-      constexpr
-      TensorRegister(self_type const &c) : m_value(c.m_value) {}
+      Register(self_type const &c) : base_type(), m_value(c.m_value) {}
 
       /*!
        * @brief Copy assignment constructor
@@ -116,7 +114,7 @@ namespace RAJA
        */
 			// AVX512F
       RAJA_INLINE
-      TensorRegister(element_type const &c) : m_value(_mm512_set1_pd(c)) {}
+      Register(element_type const &c) : base_type(), m_value(_mm512_set1_pd(c)) {}
 
 
       /*!

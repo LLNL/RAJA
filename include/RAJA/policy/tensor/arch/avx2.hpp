@@ -20,6 +20,9 @@
 #ifndef RAJA_policy_vector_register_avx2_HPP
 #define RAJA_policy_vector_register_avx2_HPP
 
+#include<RAJA/policy/tensor/arch.hpp>
+
+
 namespace RAJA {
 
   template<typename T>

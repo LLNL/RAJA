@@ -36,31 +36,31 @@ namespace RAJA
 
 
 
-  template<typename T>
-  class TensorRegister<scalar_register, T, ScalarLayout, camp::idx_seq<>> :
-    public VectorRegister<T, scalar_register>
-  {
-    public:
-      using self_type = TensorRegister<scalar_register, T, ScalarLayout, camp::idx_seq<>>;
-      using base_type = VectorRegister<T, scalar_register>;
-      using register_policy = scalar_register;
-      using element_type = T;
-      using register_type = T;
-
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      TensorRegister(element_type const &v) :
-        base_type(v){}
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      operator T() const {
-        return base_type::get(0);
-      }
-
-
-  };
+//  template<typename T>
+//  class TensorRegister<scalar_register, T, ScalarLayout, camp::idx_seq<>> :
+//    public VectorRegister<T, scalar_register>
+//  {
+//    public:
+//      using self_type = TensorRegister<scalar_register, T, ScalarLayout, camp::idx_seq<>>;
+//      using base_type = VectorRegister<T, scalar_register>;
+//      using register_policy = scalar_register;
+//      using element_type = T;
+//      using register_type = T;
+//
+//
+//      RAJA_HOST_DEVICE
+//      RAJA_INLINE
+//      TensorRegister(element_type const &v) :
+//        base_type(v){}
+//
+//      RAJA_HOST_DEVICE
+//      RAJA_INLINE
+//      operator T() const {
+//        return base_type::get(0);
+//      }
+//
+//
+//  };
 
 } // namespace RAJA
 

@@ -12,6 +12,74 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
 
+
+
+TEST(TensorMatrix, MatrixRegisterMap)
+{
+  RAJA::internal::MatrixRegisterMap<RAJA::ColMajorLayout, 4,4, 16> m1;
+
+  printf("4x4 in 16-elem register:\n");
+  printf("register map:\n");
+  for(int row = 0;row < 4;++ row){
+    for(int col = 0;col < 4;++ col){
+      printf("%2d ", (int)m1.to_register(row, col));
+    }
+    printf("\n");
+  }
+
+  printf("lane map:\n");
+  for(int row = 0;row < 4;++ row){
+    for(int col = 0;col < 4;++ col){
+      printf("%2d ", (int)m1.to_lane(row, col));
+    }
+    printf("\n");
+  }
+  printf("\n");
+
+  RAJA::internal::MatrixRegisterMap<RAJA::ColMajorLayout, 4,8, 8> m2;
+
+  printf("4x8 in 8-elem register:\n");
+  printf("register map:\n");
+  for(int row = 0;row < 4;++ row){
+    for(int col = 0;col < 8;++ col){
+      printf("%2d ", (int)m2.to_register(row, col));
+    }
+    printf("\n");
+  }
+
+  printf("lane map:\n");
+  for(int row = 0;row < 4;++ row){
+    for(int col = 0;col < 8;++ col){
+      printf("%2d ", (int)m2.to_lane(row, col));
+    }
+    printf("\n");
+  }
+  printf("\n");
+
+
+  RAJA::internal::MatrixRegisterMap<RAJA::ColMajorLayout, 8,4, 8> m3;
+
+  printf("8x4 in 8-elem register:\n");
+  printf("register map:\n");
+  for(int row = 0;row < 8;++ row){
+    for(int col = 0;col < 4;++ col){
+      printf("%2d ", (int)m3.to_register(row, col));
+    }
+    printf("\n");
+  }
+
+  printf("lane map:\n");
+  for(int row = 0;row < 8;++ row){
+    for(int col = 0;col < 4;++ col){
+      printf("%2d ", (int)m3.to_lane(row, col));
+    }
+    printf("\n");
+  }
+  printf("\n");
+}
+
+
+#if 0
 using MatrixTestTypes = ::testing::Types<
 
     // These tests use the platform default SIMD architecture
@@ -1137,3 +1205,4 @@ INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, MatrixTest, MatrixTestTypes);
 
 
 
+#endif

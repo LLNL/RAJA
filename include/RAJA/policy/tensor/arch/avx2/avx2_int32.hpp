@@ -22,7 +22,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/pattern/tensor/internal/VectorRegisterBase.hpp"
+#include "RAJA/pattern/tensor/internal/RegisterBase.hpp"
 
 // Include SIMD intrinsics header file
 #include <immintrin.h>
@@ -34,16 +34,18 @@ namespace RAJA
 
 
   template<>
-  class TensorRegister<avx2_register, int, VectorLayout, camp::idx_seq<8>> :
-    public internal::VectorRegisterBase<TensorRegister<avx2_register, int, VectorLayout, camp::idx_seq<8>>>
+  class Register<int, avx2_register> :
+    public internal::RegisterBase<Register<int, avx2_register>>
   {
     public:
+      using base_type = internal::RegisterBase<Register<int, avx2_register>>;
+
       using register_policy = avx2_register;
-      using self_type = TensorRegister<avx2_register, int, VectorLayout, camp::idx_seq<8>>;
+      using self_type = Register<int, avx2_register>;
       using element_type = int;
       using register_type = __m256i;
 
-      using int_vector_type = TensorRegister<avx2_register, int, VectorLayout, camp::idx_seq<8>>;
+      using int_vector_type = Register<int, avx2_register>;
 
 
     private:
@@ -108,14 +110,14 @@ namespace RAJA
        * @brief Default constructor, zeros register contents
        */
       RAJA_INLINE
-      TensorRegister() : m_value(_mm256_setzero_si256()) {
+      Register() : m_value(_mm256_setzero_si256()) {
       }
 
       /*!
        * @brief Construct register with explicit values
        */
       RAJA_INLINE
-      TensorRegister(element_type x0,
+      Register(element_type x0,
                      element_type x1,
                      element_type x2,
                      element_type x3,
@@ -130,16 +132,14 @@ namespace RAJA
        * @brief Copy constructor from underlying simd register
        */
       RAJA_INLINE
-      constexpr
-      explicit TensorRegister(register_type const &c) : m_value(c) {}
+      explicit Register(register_type const &c) : m_value(c) {}
 
 
       /*!
        * @brief Copy constructor
        */
       RAJA_INLINE
-      constexpr
-      TensorRegister(self_type const &c) : m_value(c.m_value) {}
+      Register(self_type const &c) : base_type(c), m_value(c.m_value) {}
 
       /*!
        * @brief Copy assignment constructor
@@ -156,7 +156,7 @@ namespace RAJA
        * Sets all elements to same value (broadcast).
        */
       RAJA_INLINE
-      TensorRegister(element_type const &c) : m_value(_mm256_set1_epi32(c)) {}
+      Register(element_type const &c) : m_value(_mm256_set1_epi32(c)) {}
 
 
       /*!

@@ -14,32 +14,37 @@
 
 using RegisterTestTypes = ::testing::Types<
 
+    RAJA::VectorRegister<double>,
+    RAJA::VectorRegister<float>,
+    RAJA::VectorRegister<int>,
+    RAJA::VectorRegister<long>,
+
 //#ifdef __AVX__
-//    RAJA::VectorRegister<double, RAJA::avx_register>,
-//    RAJA::VectorRegister<float, RAJA::avx_register>,
-//    RAJA::VectorRegister<int, RAJA::avx_register>,
-//    RAJA::VectorRegister<long, RAJA::avx_register>,
+//    RAJA::Register<double, RAJA::avx_register>,
+//    RAJA::Register<float, RAJA::avx_register>,
+//    RAJA::Register<int, RAJA::avx_register>,
+//    RAJA::Register<long, RAJA::avx_register>,
 //#endif
 //
 //#ifdef __AVX2__
-    RAJA::VectorRegister<double, RAJA::avx2_register>,
-//    RAJA::VectorRegister<float, RAJA::avx2_register>,
-//    RAJA::VectorRegister<int, RAJA::avx2_register>,
-//    RAJA::VectorRegister<long, RAJA::avx2_register>,
+//    RAJA::Register<double, RAJA::avx2_register>,
+//    RAJA::Register<float, RAJA::avx2_register>,
+//    RAJA::Register<int, RAJA::avx2_register>,
+//    RAJA::Register<long, RAJA::avx2_register>,
 //#endif
 //
 //#ifdef __AVX512__
-//    RAJA::VectorRegister<double, RAJA::avx512_register>,
-//    RAJA::VectorRegister<float, RAJA::avx512_register>,
-//    RAJA::VectorRegister<int, RAJA::avx512_register>,
-//    RAJA::VectorRegister<long, RAJA::avx512_register>,
+//    RAJA::Register<double, RAJA::avx512_register>,
+//    RAJA::Register<float, RAJA::avx512_register>,
+//    RAJA::Register<int, RAJA::avx512_register>,
+//    RAJA::Register<long, RAJA::avx512_register>,
 //#endif
 //
 //    // scalar_register is supported on all platforms
-//    RAJA::VectorRegister<double, RAJA::scalar_register>,
-//    RAJA::VectorRegister<float, RAJA::scalar_register>,
-//    RAJA::VectorRegister<int, RAJA::scalar_register>,
-    RAJA::VectorRegister<long, RAJA::scalar_register>
+//    RAJA::Register<double, RAJA::scalar_register>,
+//    RAJA::Register<float, RAJA::scalar_register>,
+//    RAJA::Register<int, RAJA::scalar_register>,
+    RAJA::Register<long, RAJA::scalar_register>
   >;
 
 
@@ -67,7 +72,7 @@ TYPED_TEST_SUITE_P(RegisterTest);
  * things, like constexpr out all of the intrinsics.
  */
 
-TYPED_TEST_P(RegisterTest, VectorRegisterSetGet)
+TYPED_TEST_P(RegisterTest, RegisterSetGet)
 {
 
   using register_t = TypeParam;
@@ -129,7 +134,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSetGet)
 }
 
 
-TYPED_TEST_P(RegisterTest, VectorRegisterLoad)
+TYPED_TEST_P(RegisterTest, RegisterLoad)
 {
 
   using register_t = TypeParam;
@@ -309,7 +314,7 @@ TYPED_TEST_P(RegisterTest, Scatter)
 }
 
 
-TYPED_TEST_P(RegisterTest, VectorRegisterAdd)
+TYPED_TEST_P(RegisterTest, RegisterAdd)
 {
 
   using register_t = TypeParam;
@@ -367,7 +372,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterAdd)
 
 
 
-TYPED_TEST_P(RegisterTest, VectorRegisterSubtract)
+TYPED_TEST_P(RegisterTest, RegisterSubtract)
 {
 
   using register_t = TypeParam;
@@ -421,7 +426,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterSubtract)
   }
 }
 
-TYPED_TEST_P(RegisterTest, VectorRegisterMultiply)
+TYPED_TEST_P(RegisterTest, RegisterMultiply)
 {
 
   using register_t = TypeParam;
@@ -474,7 +479,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMultiply)
   }
 }
 
-TYPED_TEST_P(RegisterTest, VectorRegisterDivide)
+TYPED_TEST_P(RegisterTest, RegisterDivide)
 {
 
   using register_t = TypeParam;
@@ -486,7 +491,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterDivide)
   register_t x, y;
 
   for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(NO_OPT_RAND*1000.0);
+    A[i] = (element_t)(NO_OPT_RAND*1000.0)+1.0;
     B[i] = (element_t)(NO_OPT_RAND*1000.0)+1.0;
     x.set(A[i], i);
     y.set(B[i], i);
@@ -528,7 +533,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterDivide)
   }
 }
 
-TYPED_TEST_P(RegisterTest, VectorRegisterDotProduct)
+TYPED_TEST_P(RegisterTest, RegisterDotProduct)
 {
 
   using register_t = TypeParam;
@@ -611,7 +616,7 @@ TYPED_TEST_P(RegisterTest, VectorFMS)
 
 }
 
-TYPED_TEST_P(RegisterTest, VectorRegisterMax)
+TYPED_TEST_P(RegisterTest, RegisterMax)
 {
   using register_t = TypeParam;
 
@@ -648,7 +653,7 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMax)
   }
 }
 
-TYPED_TEST_P(RegisterTest, VectorRegisterMin)
+TYPED_TEST_P(RegisterTest, RegisterMin)
 {
   using register_t = TypeParam;
 
@@ -688,22 +693,22 @@ TYPED_TEST_P(RegisterTest, VectorRegisterMin)
 
 
 
-//REGISTER_TYPED_TEST_SUITE_P(RegisterTest, VectorRegisterSubtract);
+//REGISTER_TYPED_TEST_SUITE_P(RegisterTest, RegisterSubtract);
 
 REGISTER_TYPED_TEST_SUITE_P(RegisterTest,
-                                       VectorRegisterSetGet,
-                                       VectorRegisterLoad,
+                                       RegisterSetGet,
+                                       RegisterLoad,
                                        Gather,
                                        Scatter,
-                                       VectorRegisterAdd,
-                                       VectorRegisterSubtract,
-                                       VectorRegisterMultiply,
-                                       VectorRegisterDivide,
-                                       VectorRegisterDotProduct,
+                                       RegisterAdd,
+                                       RegisterSubtract,
+                                       RegisterMultiply,
+                                       RegisterDivide,
+                                       RegisterDotProduct,
                                        VectorFMA,
                                        VectorFMS,
-                                       VectorRegisterMax,
-                                       VectorRegisterMin);
+                                       RegisterMax,
+                                       RegisterMin);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, RegisterTest, RegisterTestTypes);
 
@@ -743,7 +748,7 @@ GPU_TEST(RegisterTestCuda, CudaWarpRegister)
   cudaErrchk(cudaDeviceSynchronize());
 
 
-  using vector_t = RAJA::VectorRegister<double, RAJA::cuda_warp_register>;
+  using vector_t = RAJA::Register<double, RAJA::cuda_warp_register>;
 
   using Pol = RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<

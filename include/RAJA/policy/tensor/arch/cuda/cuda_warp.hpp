@@ -18,7 +18,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/pattern/tensor/internal/VectorRegisterBase.hpp"
+#include "RAJA/pattern/tensor/internal/RegisterBase.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/Operators.hpp"
 
@@ -36,23 +36,25 @@ namespace RAJA {
 
 
   template<typename ELEMENT_TYPE>
-  class TensorRegister<cuda_warp_register, ELEMENT_TYPE,
+  class Register<cuda_warp_register, ELEMENT_TYPE,
                        VectorLayout,
                        camp::idx_seq<32>>:
-    public internal::VectorRegisterBase<TensorRegister<
+    public internal::RegisterBase<Register<
                       cuda_warp_register,
                       ELEMENT_TYPE, VectorLayout,
                       camp::idx_seq<32> > >
   {
     public:
+      using base_type = internal::RegisterBase<Register<ELEMENT_TYPE, cuda_warp_register>>;
+
       using register_policy = cuda_warp_register;
-      using self_type = TensorRegister<cuda_warp_register, ELEMENT_TYPE,
+      using self_type = Register<cuda_warp_register, ELEMENT_TYPE,
           VectorLayout,
           camp::idx_seq<32> >;
       using element_type = ELEMENT_TYPE;
       using register_type = ELEMENT_TYPE;
 
-      using int_vector_type = TensorRegister<cuda_warp_register, int, VectorLayout, camp::idx_seq<32>>;
+      using int_vector_type = Register<int, cuda_warp_register>;
 
 
 		private:
@@ -68,7 +70,7 @@ namespace RAJA {
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      TensorRegister() : m_value(element_type(0)) {
+      Register() : base_type(), m_value(element_type(0)) {
       }
 
       /*!
@@ -77,7 +79,7 @@ namespace RAJA {
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      explicit TensorRegister(element_type const &c) : m_value(c) {}
+      explicit Register(element_type const &c) : base_type(), m_value(c) {}
 
 
       /*!
@@ -86,7 +88,7 @@ namespace RAJA {
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      TensorRegister(self_type const &c) : m_value(c.m_value) {}
+      Register(self_type const &c) : base_type(), m_value(c.m_value) {}
 
 
       /*!

@@ -1,0 +1,655 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   RAJA header file defining SIMD/SIMT register operations.
+ *
+ ******************************************************************************
+ */
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_pattern_tensor_RegisterBase_HPP
+#define RAJA_pattern_tensor_RegisterBase_HPP
+
+#include "RAJA/config.hpp"
+
+#include "RAJA/util/macros.hpp"
+
+#include "camp/camp.hpp"
+#include "RAJA/pattern/tensor/TensorLayout.hpp"
+#include "RAJA/pattern/tensor/internal/TensorRef.hpp"
+
+namespace RAJA
+{
+
+  struct scalar_register;
+
+
+  template<typename T, typename REGISTER_POLICY>
+  class Register;
+
+  namespace internal {
+    class RegisterConcreteBase {};
+  }
+
+
+  /*
+   * Overload for:    arithmetic + TensorRegister
+
+   */
+  template<typename LEFT, typename RIGHT,
+    typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
+    typename std::enable_if<std::is_base_of<internal::RegisterConcreteBase, RIGHT>::value, bool>::type = true>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  RIGHT operator+(LEFT const &lhs, RIGHT const &rhs)
+  {
+    return RIGHT(lhs).add(rhs);
+  }
+
+  /*
+   * Overload for:    arithmetic - TensorRegister
+
+   */
+  template<typename LEFT, typename RIGHT,
+    typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
+    typename std::enable_if<std::is_base_of<internal::RegisterConcreteBase, RIGHT>::value, bool>::type = true>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  RIGHT operator-(LEFT const &lhs, RIGHT const &rhs)
+  {
+    return RIGHT(lhs).subtract(rhs);
+  }
+
+  /*
+   * Overload for:    arithmetic * TensorRegister
+
+   */
+  template<typename LEFT, typename RIGHT,
+    typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
+    typename std::enable_if<std::is_base_of<internal::RegisterConcreteBase, RIGHT>::value, bool>::type = true>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  RIGHT operator*(LEFT const &lhs, RIGHT const &rhs)
+  {
+    return rhs.scale(lhs);
+  }
+
+  /*
+   * Overload for:    arithmetic / TensorRegister
+
+   */
+  template<typename LEFT, typename RIGHT,
+    typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
+    typename std::enable_if<std::is_base_of<internal::RegisterConcreteBase, RIGHT>::value, bool>::type = true>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  RIGHT operator/(LEFT const &lhs, RIGHT const &rhs)
+  {
+    return RIGHT(lhs).divide(rhs);
+  }
+
+
+
+namespace internal {
+
+  namespace ET
+  {
+    class TensorExpressionConcreteBase;
+  } // namespace ET
+
+
+
+  /*!
+   * TensorRegister base class that provides some default behaviors and simplifies
+   * the implementation of new register types.
+   *
+   * This uses CRTP to provide static polymorphism
+   */
+  template<typename Derived>
+  class RegisterBase;
+
+  template<typename T, typename REGISTER_POLICY>
+  class RegisterBase<Register<T, REGISTER_POLICY>> :
+    public RegisterConcreteBase
+  {
+    public:
+      using self_type = Register<T, REGISTER_POLICY>;
+      using element_type = camp::decay<T>;
+
+      using index_type = camp::idx_t;
+
+    private:
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type *getThis(){
+        return static_cast<self_type *>(this);
+      }
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      self_type const *getThis() const{
+        return static_cast<self_type const *>(this);
+      }
+
+    public:
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static
+      constexpr
+      bool is_root() {
+        return true;
+      }
+
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      RegisterBase(){}
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      ~RegisterBase(){}
+
+
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      RegisterBase(RegisterBase const &){}
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      constexpr
+      RegisterBase(self_type const &){
+      }
+
+
+
+      /*!
+       * @brief Broadcast scalar value to first N register elements
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static
+      self_type s_broadcast_n(element_type const &value, camp::idx_t N){
+        self_type x;
+        for(camp::idx_t i = 0;i < N;++ i){
+          x.set(value, i);
+        }
+        return x;
+      }
+
+      /*!
+       * @brief Extracts a scalar value and broadcasts to a new register
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type get_and_broadcast(int i) const {
+        self_type x;
+        x.broadcast(getThis()->get(i));
+        return x;
+      }
+
+
+      /*!
+       * @brief Generic gather operation for full vector.
+       *
+       * Must provide another register containing offsets of all values
+       * to be loaded relative to supplied pointer.
+       *
+       * Offsets are element-wise, not byte-wise.
+       *
+       */
+      template<typename T2>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &gather(element_type const *ptr, Register<T2, REGISTER_POLICY> offsets){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_strided_n ++;
+#endif
+        for(camp::idx_t i = 0;i < self_type::s_num_elem;++ i){
+          getThis()->set(ptr[offsets.get(i)], i);
+        }
+        return *getThis();
+      }
+
+      /*!
+       * @brief Generic gather operation for n-length subvector.
+       *
+       * Must provide another register containing offsets of all values
+       * to be loaded relative to supplied pointer.
+       *
+       * Offsets are element-wise, not byte-wise.
+       *
+       */
+      template<typename T2>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &gather_n(element_type const *ptr, Register<T2, REGISTER_POLICY> const &offsets, camp::idx_t N){
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_strided_n ++;
+#endif
+          for(camp::idx_t i = 0;i < N;++ i){
+            getThis()->set(ptr[offsets.get(i)], i);
+          }
+          return *getThis();
+      }
+
+
+      /*!
+       * @brief Generic scatter operation for full vector.
+       *
+       * Must provide another register containing offsets of all values
+       * to be stored relative to supplied pointer.
+       *
+       * Offsets are element-wise, not byte-wise.
+       *
+       */
+      template<typename T2>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type const &scatter(element_type *ptr, Register<T2, REGISTER_POLICY> const &offsets) const {
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_strided_n ++;
+#endif
+        for(camp::idx_t i = 0;i < self_type::s_num_elem;++ i){
+          ptr[offsets.get(i)] = getThis()->get(i);
+        }
+        return *getThis();
+      }
+
+      /*!
+       * @brief Generic scatter operation for n-length subvector.
+       *
+       * Must provide another register containing offsets of all values
+       * to be stored relative to supplied pointer.
+       *
+       * Offsets are element-wise, not byte-wise.
+       *
+       */
+      template<typename T2>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type const &scatter_n(element_type *ptr, Register<T2, REGISTER_POLICY> const &offsets, camp::idx_t N) const {
+#ifdef RAJA_ENABLE_VECTOR_STATS
+          RAJA::tensor_stats::num_vector_load_strided_n ++;
+#endif
+        for(camp::idx_t i = 0;i < N;++ i){
+          ptr[offsets.get(i)] = getThis()->get(i);
+        }
+        return *getThis();
+      }
+
+
+      /*!
+       * @brief Set entire register to a single scalar value
+       * @param value Value to set all register elements to
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type const &operator=(element_type value)
+      {
+        getThis()->broadcast(value);
+        return *getThis();
+      }
+
+      /*!
+       * @brief Set entire register to a single scalar value
+       * @param value Value to set all register elements to
+       */
+      RAJA_SUPPRESS_HD_WARN
+      template<typename T2>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type const &operator=(Register<T2, scalar_register> const &value)
+      {
+        getThis()->broadcast(value.get(0));
+        return *getThis();
+      }
+
+      /*!
+       * @brief Assign one register to another
+       * @param x register to copy
+       * @return Value of (*this)
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type const &operator=(self_type const &x)
+      {
+        getThis()->copy(x);
+        return *getThis();
+      }
+
+
+
+
+
+      /*!
+       * @brief Add two registers
+       * @param x register to add
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type operator+(self_type const &x) const
+      {
+        return getThis()->add(x);
+      }
+
+
+      /*!
+       * @brief Add a register to this register
+       * @param x register to add
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator+=(self_type const &x)
+      {
+        *getThis() = getThis()->add(x);
+        return *getThis();
+      }
+
+      /*!
+       * @brief Add scalar to this register
+       * @param x scalar to add to this register
+       * @return Value of (*this)+x
+       *
+       * This broadcasts the scalar to all lanes, then adds to this register
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type operator+(element_type const &x) const
+      {
+        return getThis()->add(x);
+      }
+
+
+      /*!
+       * @brief Add a scalar to this register
+       * @param x scalar to add to this register
+       * @return Value of (*this)+x
+       *
+       * This broadcasts the scalar to all lanes, then adds to this register
+       *
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator+=(element_type x)
+      {
+        *getThis() = getThis()->add(x);
+        return *getThis();
+      }
+
+      /*!
+       * @brief Negate the value of this register
+       * @return Value of -(*this)
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type operator-() const
+      {
+        return self_type(0).subtract(*getThis());
+      }
+
+      /*!
+       * @brief Subtract two register registers
+       * @param x register to subtract from this register
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type operator-(self_type const &x) const
+      {
+        return getThis()->subtract(x);
+      }
+
+      /*!
+       * @brief Subtract a register from this register
+       * @param x register to subtract from this register
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator-=(self_type const &x)
+      {
+        *getThis() = getThis()->subtract(x);
+        return *getThis();
+      }
+
+      /*!
+       * @brief Subtract scalar from this register
+       * @param x register to subtract from this register
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type operator-(element_type const &x) const
+      {
+        return getThis()->subtract(x);
+      }
+
+      /*!
+       * @brief Subtract a scalar from this register
+       * @param x register to subtract from this register
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator-=(element_type const &x)
+      {
+        *getThis() = getThis()->subtract(x);
+        return *getThis();
+      }
+
+      /*!
+       * @brief Multiply two register registers, element wise
+       * @param x register to subtract from this register
+       * @return Value of (*this)+x
+       */
+      template<typename RHS>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type operator*(RHS const &rhs) const
+      {
+        return getThis()->multiply(rhs);
+      }
+
+      /*!
+       * @brief Multiply a register with this register
+       * @param x register to multiple with this register
+       * @return Value of (*this)+x
+       */
+      template<typename RHS>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator*=(RHS const &rhs)
+      {
+        *getThis() = getThis()->multiply(rhs);
+        return *getThis();
+      }
+
+      /*!
+       * @brief Divide two register registers, element wise
+       * @param x register to subtract from this register
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type operator/(self_type const &x) const
+      {
+        return getThis()->divide(x);
+      }
+
+      /*!
+       * @brief Divide this register by another register
+       * @param x register to divide by
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator/=(self_type const &x)
+      {
+        *getThis() = getThis()->divide(x);
+        return *getThis();
+      }
+
+
+      /*!
+       * @brief Divide by a scalar, element wise
+       * @param x Scalar to divide by
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type operator/(element_type const &x) const
+      {
+        return getThis()->divide(x);
+      }
+
+      /*!
+       * @brief Divide this register by another register
+       * @param x Scalar to divide by
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &operator/=(element_type const &x)
+      {
+        *getThis() = getThis()->divide(x);
+        return *getThis();
+      }
+
+
+      /*!
+       * @brief Divide n elements of this register by another register
+       * @param x register to divide by
+       * @param n Number of elements to divide
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type divide_n(self_type const &b, camp::idx_t n) const {
+        self_type q(*getThis());
+        for(camp::idx_t i = 0;i < n;++i){
+          q.set(getThis()->get(i) / b.get(i), i);
+        }
+        return q;
+      }
+
+      /*!
+       * @brief Divide n elements of this register by a scalar
+       * @param x Scalar to divide by
+       * @param n Number of elements to divide
+       * @return Value of (*this)+x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type divide_n(element_type const &b, camp::idx_t n) const {
+        self_type q(*getThis());
+        for(camp::idx_t i = 0;i < n;++i){
+          q.set(getThis()->get(i) / b, i);
+        }
+        return q;
+      }
+
+      /*!
+       * @brief Dot product of two registers
+       * @param x Other register to dot with this register
+       * @return Value of (*this) dot x
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      element_type dot(self_type const &x) const
+      {
+        return getThis()->multiply(x).sum();
+      }
+
+      /*!
+       * @brief Fused multiply add: fma(b, c) = (*this)*b+c
+       *
+       * Derived types can override this to implement intrinsic FMA's
+       *
+       * @param b Second product operand
+       * @param c Sum operand
+       * @return Value of (*this)*b+c
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type multiply_add(self_type const &b, self_type const &c) const
+      {
+        return (self_type(*getThis()) * self_type(b)) + self_type(c);
+      }
+
+      /*!
+       * @brief Fused multiply subtract: fms(b, c) = (*this)*b-c
+       *
+       * Derived types can override this to implement intrinsic FMS's
+       *
+       * @param b Second product operand
+       * @param c Subtraction operand
+       * @return Value of (*this)*b-c
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type multiply_subtract(self_type const &b, self_type const &c) const
+      {
+        return getThis()->multiply_add(b, -c);
+      }
+
+      /*!
+       * Multiply this tensor by a scalar value
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type scale(element_type c) const
+      {
+        return getThis()->multiply(self_type(c));
+      }
+
+
+
+  };
+
+} //namespace internal
+
+
+}  // namespace RAJA
+
+
+
+#endif

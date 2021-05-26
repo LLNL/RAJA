@@ -22,7 +22,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/pattern/tensor/internal/VectorRegisterBase.hpp"
+#include "RAJA/pattern/tensor/internal/RegisterBase.hpp"
 
 // Include SIMD intrinsics header file
 #include <immintrin.h>
@@ -33,16 +33,18 @@ namespace RAJA
 {
 
   template<>
-  class TensorRegister<avx2_register, double, VectorLayout, camp::idx_seq<4>> :
-    public internal::VectorRegisterBase<TensorRegister<avx2_register, double, VectorLayout, camp::idx_seq<4>>>
+  class Register<double, avx2_register> :
+    public internal::RegisterBase<Register<double, avx2_register>>
   {
     public:
+      using base_type = internal::RegisterBase<Register<double, avx2_register>>;
+
       using register_policy = avx2_register;
-      using self_type = TensorRegister<avx2_register, double, VectorLayout, camp::idx_seq<4>>;
+      using self_type = Register<double, avx2_register>;
       using element_type = double;
       using register_type = __m256d;
 
-      using int_vector_type = TensorRegister<avx2_register, long, VectorLayout, camp::idx_seq<4>>;
+      using int_vector_type = Register<long, avx2_register>;
 
     private:
       register_type m_value;
@@ -71,14 +73,14 @@ namespace RAJA
        * @brief Default constructor, zeros register contents
        */
       RAJA_INLINE
-      TensorRegister() : m_value(_mm256_setzero_pd()) {
+      Register() : m_value(_mm256_setzero_pd()) {
       }
 
       /*!
        * @brief Construct register with explicit values
        */
       RAJA_INLINE
-      TensorRegister(element_type x0,
+      Register(element_type x0,
                      element_type x1,
                      element_type x2,
                      element_type x3) :
@@ -90,16 +92,14 @@ namespace RAJA
        * @brief Copy constructor from underlying simd register
        */
       RAJA_INLINE
-      constexpr
-      explicit TensorRegister(register_type const &c) : m_value(c) {}
+      explicit Register(register_type const &c) : m_value(c) {}
 
 
       /*!
        * @brief Copy constructor
        */
       RAJA_INLINE
-      constexpr
-      TensorRegister(self_type const &c) : m_value(c.m_value) {}
+      Register(self_type const &c) : base_type(c), m_value(c.m_value) {}
 
       /*!
        * @brief Copy assignment constructor
@@ -115,7 +115,7 @@ namespace RAJA
        * Sets all elements to same value (broadcast).
        */
       RAJA_INLINE
-      TensorRegister(element_type const &c) : m_value(_mm256_set1_pd(c)) {}
+      Register(element_type const &c) : m_value(_mm256_set1_pd(c)) {}
 
 
       /*!
@@ -291,45 +291,6 @@ namespace RAJA
       }
 
 
-      /*!
-       * @brief Generic scatter operation for full vector.
-       *
-       * Must provide another register containing offsets of all values
-       * to be stored relative to supplied pointer.
-       *
-       * Offsets are element-wise, not byte-wise.
-       *
-       */
-      RAJA_INLINE
-      self_type const &scatter(element_type *ptr, int_vector_type offsets) const {
-#ifdef RAJA_ENABLE_VECTOR_STATS
-          RAJA::tensor_stats::num_vector_load_strided_n ++;
-#endif
-        for(camp::idx_t i = 0;i < s_num_elem;++ i){
-          ptr[offsets.get(i)] = m_value[i];
-        }
-        return *this;
-      }
-
-      /*!
-       * @brief Generic scatter operation for n-length subvector.
-       *
-       * Must provide another register containing offsets of all values
-       * to be stored relative to supplied pointer.
-       *
-       * Offsets are element-wise, not byte-wise.
-       *
-       */
-      RAJA_INLINE
-      self_type const &scatter_n(element_type *ptr, int_vector_type offsets, camp::idx_t N) const {
-#ifdef RAJA_ENABLE_VECTOR_STATS
-          RAJA::tensor_stats::num_vector_load_strided_n ++;
-#endif
-        for(camp::idx_t i = 0;i < N;++ i){
-          ptr[offsets.get(i)] = m_value[i];
-        }
-        return *this;
-      }
 
       /*!
        * @brief Get scalar value from vector register

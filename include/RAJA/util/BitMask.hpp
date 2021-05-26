@@ -24,6 +24,19 @@
 namespace RAJA
 {
 
+  template<camp::idx_t N>
+  struct LogBase2
+  {
+      static constexpr camp::idx_t value = LogBase2<(N>>1)>::value + 1;
+      static constexpr bool is_exact = ((1<<value) == N);
+  };
+
+  template<>
+  struct LogBase2<0>
+  {
+      static constexpr camp::idx_t value = -1;
+      static constexpr bool is_exact = true;
+  };
 
   /*!
    * A bit-masking operator

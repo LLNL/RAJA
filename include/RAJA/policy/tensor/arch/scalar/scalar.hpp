@@ -18,7 +18,7 @@
 #ifndef RAJA_policy_vector_register_scalar_HPP
 #define RAJA_policy_vector_register_scalar_HPP
 
-#include "RAJA/pattern/tensor/internal/VectorRegisterBase.hpp"
+#include "RAJA/pattern/tensor/internal/RegisterBase.hpp"
 
 namespace RAJA
 {
@@ -39,16 +39,18 @@ namespace RAJA
    * whatever registers it deems appropriate.
    */
   template<typename T>
-  class TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>> :
-      public internal::VectorRegisterBase<TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>>>
+  class Register<T, scalar_register> :
+      public internal::RegisterBase<Register<T, scalar_register>>
   {
     public:
+      using base_type = internal::RegisterBase<Register<T, scalar_register>>;
+
       using register_policy = scalar_register;
-      using self_type = TensorRegister<scalar_register, T, VectorLayout, camp::idx_seq<1>>;
+      using self_type = Register<T, scalar_register>;
       using element_type = T;
       using register_type = T;
 
-      using int_vector_type = TensorRegister<scalar_register, long, VectorLayout, camp::idx_seq<1>>;
+      using int_vector_type = Register<long, scalar_register>;
 
 
     private:
@@ -64,7 +66,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
-      TensorRegister() : m_value(0) {
+      Register() : base_type(), m_value(0) {
       }
 
       /*!
@@ -73,7 +75,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
-      TensorRegister(element_type const &c) : m_value(c) {}
+      Register(element_type const &c) : base_type(), m_value(c) {}
 
 
       /*!
@@ -82,7 +84,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
-      TensorRegister(self_type const &c) : m_value(c.m_value) {}
+      Register(self_type const &c) : base_type(), m_value(c.m_value) {}
 
 
       /*!
