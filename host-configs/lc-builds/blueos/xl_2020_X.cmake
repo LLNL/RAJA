@@ -7,9 +7,9 @@
 
 set(RAJA_COMPILER "RAJA_COMPILER_XLC" CACHE STRING "")
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++14 -std=c++11 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qsmp=omp -qhot -qsuppress=1500-029 -qsuppress=1500-036" CACHE STRING "")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -std=c++14 -std=c++11 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qsmp=omp -qhot -qsuppress=1500-029 -qsuppress=1500-036" CACHE STRING "")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -std=c++14 -std=c++11 -qsmp=omp:noopt " CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++14 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qsmp=omp -qhot -qsuppress=1500-029 -qsuppress=1500-036" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -std=c++14 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qsmp=omp -qhot -qsuppress=1500-029 -qsuppress=1500-036" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -std=c++14 -qsmp=omp:noopt " CACHE STRING "")
 set(CMAKE_EXE_LINKER_FLAGS "-qpic,-Wl,-z,muldefs" CACHE STRING "")
 
 # Suppressed XLC warnings:
