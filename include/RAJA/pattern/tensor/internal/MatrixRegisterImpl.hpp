@@ -784,7 +784,7 @@ namespace RAJA
        *
        */
       RAJA_INLINE
-      std::string toString(bool one_line=false) const {
+      std::string to_string(bool one_line=false) const {
         std::string s = "Matrix(" + std::to_string(register_type::s_num_elem) +
             "x" + std::to_string(register_type::s_num_elem);
         if(!one_line){

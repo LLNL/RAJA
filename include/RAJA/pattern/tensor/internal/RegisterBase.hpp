@@ -641,7 +641,46 @@ namespace internal {
         return getThis()->multiply(self_type(c));
       }
 
+      /*!
+       * Minimum value across first N lanes of register
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      element_type min_n(camp::idx_t N) const
+      {
+        return getThis()->min(N);
+      }
 
+      /*!
+       * Maximum value across first N lanes of register
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      element_type max_n(camp::idx_t N) const
+      {
+        return getThis()->max(N);
+      }
+
+      /*!
+       * @brief Converts to vector to a string
+       *
+       *
+       */
+      RAJA_INLINE
+      std::string to_string() const {
+        std::string s = "Register(" + std::to_string(self_type::s_num_elem) + ")[ ";
+
+        //
+        for(camp::idx_t i = 0;i < self_type::s_num_elem; ++ i){
+          s += std::to_string(getThis()->get(i));
+        }
+
+        s += " ]\n";
+
+        return s;
+      }
 
   };
 

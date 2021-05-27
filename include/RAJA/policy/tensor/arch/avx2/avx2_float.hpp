@@ -61,7 +61,7 @@ namespace RAJA
             N >= 4 ? -1 : 0,
             N >= 3 ? -1 : 0,
             N >= 2 ? -1 : 0,
-            -1);
+            N >= 1 ? -1 : 0);
       }
 
       RAJA_INLINE

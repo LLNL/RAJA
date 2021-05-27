@@ -182,10 +182,10 @@ TYPED_TEST_P(VectorTest, MinMaxSumDot)
     vec.load_packed_n(&A[0], N);
 
     // check min
-    ASSERT_SCALAR_EQ(vec.min(N), (element_t)0);
+    ASSERT_SCALAR_EQ(vec.min_n(N), (element_t)0);
 
     // check max
-    ASSERT_SCALAR_EQ(vec.max(N), (element_t)(N-1));
+    ASSERT_SCALAR_EQ(vec.max_n(N), (element_t)(N-1));
 
     // compute expected values
     element_t ex_sum(0);

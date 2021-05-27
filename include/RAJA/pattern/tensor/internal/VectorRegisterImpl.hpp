@@ -355,6 +355,10 @@ namespace RAJA
           else{
             m_registers[reg].load_packed_n(ptr+reg*s_register_num_elem,
                                            N-reg*s_register_num_elem);
+
+            for(camp::idx_t r = reg+1;r < s_num_full_registers;++ r){
+              m_registers[r].broadcast(0);
+            }
             return *this;
           }
 
@@ -383,6 +387,9 @@ namespace RAJA
             m_registers[reg].load_strided_n(ptr+reg*s_register_num_elem*stride,
                                             stride,
                                             N-reg*s_register_num_elem);
+            for(camp::idx_t r = reg+1;r < s_num_full_registers;++ r){
+              m_registers[r].broadcast(0);
+            }
             return *this;
           }
 
@@ -434,7 +441,9 @@ namespace RAJA
           }
           else{
             m_registers[reg].gather_n(ptr, offsets.vec(reg), N-reg*s_register_num_elem);
-
+            for(camp::idx_t r = reg+1;r < s_num_full_registers;++ r){
+              m_registers[r].broadcast(0);
+            }
             return *this;
           }
 
@@ -500,7 +509,7 @@ namespace RAJA
 
         }
         if(s_num_partial_lanes){
-          m_registers[s_num_full_registers].load_packed_n(
+          m_registers[s_num_full_registers].store_packed_n(
               ptr+s_num_full_registers*s_register_num_elem,
               N-s_num_full_registers*s_register_num_elem);
         }
@@ -594,13 +603,16 @@ namespace RAJA
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type divide(self_type const &mat) const {
+      self_type divide(self_type const &den) const {
+        printf("divide:\n");
+        printf(" numerator:   %s", this->to_string().c_str());
+        printf(" denominator: %s", den.to_string().c_str());
         self_type result;
         for(camp::idx_t reg = 0;reg < s_num_full_registers;++ reg){
-          result.vec(reg) = m_registers[reg].divide(mat.vec(reg));
+          result.vec(reg) = m_registers[reg].divide(den.vec(reg));
         }
         if(s_num_partial_lanes){
-          result.vec(s_num_full_registers) = m_registers[s_num_full_registers].divide_n(mat.vec(s_num_full_registers), s_num_partial_lanes);
+          result.vec(s_num_full_registers) = m_registers[s_num_full_registers].divide_n(den.vec(s_num_full_registers), s_num_partial_lanes);
         }
         return result;
       }
@@ -649,7 +661,7 @@ namespace RAJA
       {
         // special case where there's just one parital register
         if(s_num_full_registers == 0){
-          return m_registers[0].min(s_num_partial_lanes);
+          return m_registers[0].min_n(s_num_partial_lanes);
         }
 
         element_type result = m_registers[0].min();
@@ -657,7 +669,33 @@ namespace RAJA
           result = RAJA::min<element_type>(result, m_registers[i].min());
         }
         if(s_num_partial_lanes){
-          result = RAJA::min<element_type>(result, m_registers[s_num_full_registers].min());
+          result = RAJA::min<element_type>(result, m_registers[s_num_full_registers].min_n(s_num_partial_lanes));
+        }
+        return result;
+      }
+
+      /*!
+       * @brief Returns the smallest element over the first N lanes
+       */
+      RAJA_INLINE
+      element_type min_n(int N) const
+      {
+        // special case where there's just one parital register
+        if(N < s_register_num_elem){
+          return m_registers[0].min_n(N);
+        }
+
+        element_type result = m_registers[0].min();
+        for(camp::idx_t reg = 1;reg < s_num_full_registers;++ reg){
+          if(N >= reg*s_register_num_elem + s_register_num_elem){
+            result = RAJA::min<element_type>(result, m_registers[reg].min());
+          }
+          else{
+            return RAJA::min<element_type>(result, m_registers[reg].min_n(N-reg*s_register_num_elem));
+          }
+        }
+        if(s_num_partial_lanes){
+          result = RAJA::min<element_type>(result, m_registers[s_num_full_registers].min_n(N-s_num_full_registers*s_register_num_elem));
         }
         return result;
       }
@@ -671,7 +709,7 @@ namespace RAJA
       {
         // special case where there's just one parital register
         if(s_num_full_registers == 0){
-          return m_registers[0].max(s_num_partial_lanes);
+          return m_registers[0].max_n(s_num_partial_lanes);
         }
 
         element_type result = m_registers[0].max();
@@ -679,9 +717,50 @@ namespace RAJA
           result = RAJA::max<element_type>(result, m_registers[i].max());
         }
         if(s_num_partial_lanes){
-          result = RAJA::max<element_type>(result, m_registers[s_num_full_registers].max());
+          result = RAJA::max<element_type>(result, m_registers[s_num_full_registers].max_n(s_num_partial_lanes));
         }
         return result;
+      }
+
+      /*!
+       * @brief Returns the largest element over the first N lanes
+       */
+      RAJA_INLINE
+      element_type max_n(int N) const
+      {
+        // special case where there's just one parital register
+        if(N < s_register_num_elem){
+          return m_registers[0].max_n(N);
+        }
+
+        element_type result = m_registers[0].max();
+        for(camp::idx_t reg = 1;reg < s_num_full_registers;++ reg){
+          if(N >= reg*s_register_num_elem + s_register_num_elem){
+            result = RAJA::min<element_type>(result, m_registers[reg].max());
+          }
+          else{
+            return RAJA::min<element_type>(result, m_registers[reg].max_n(N-reg*s_register_num_elem));
+          }
+        }
+        if(s_num_partial_lanes){
+          result = RAJA::min<element_type>(result, m_registers[s_num_full_registers].max_n(N-s_num_full_registers*s_register_num_elem));
+        }
+        return result;
+      }
+
+      /*!
+       * @brief Returns the sum of all elements
+       */
+      RAJA_INLINE
+      element_type sum() const
+      {
+        // first do a vector sum of all registers
+        register_type s = m_registers[0];
+        for(camp::idx_t i = 1;i < s_num_registers;++ i){
+          s += m_registers[i];
+        }
+        // then a horizontal sum of result
+        return s.sum();
       }
 
 
@@ -781,6 +860,36 @@ namespace RAJA
         return m_registers[to_register(idx)].get(to_lane(idx));
       }
 
+
+
+      /*!
+       * @brief Converts to vector to a string
+       *
+       *
+       */
+      RAJA_INLINE
+      std::string to_string() const {
+        std::string s = "Vector(" + std::to_string(s_num_elem) + ")[ ";
+
+        //
+        for(camp::idx_t i = 0;i < s_num_elem; ++ i){
+          s += std::to_string(this->get(i)) + " ";
+        }
+
+        camp::idx_t physical_size = s_num_registers * s_register_num_elem;
+        if(s_num_elem < physical_size){
+          s += "{";
+          for(camp::idx_t i = s_num_elem;i < physical_size; ++ i){
+            s += std::to_string(this->get(i)) + " ";
+          }
+          s += "}";
+        }
+
+
+        s += " ]\n";
+
+        return s;
+      }
 
 
   };

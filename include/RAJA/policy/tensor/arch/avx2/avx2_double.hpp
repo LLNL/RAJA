@@ -437,7 +437,7 @@ namespace RAJA
           // use the third element TWICE, so we effectively remove the 4th
           // lane
           // A = { v[1], v[0], v[2], v[2] }
-          register_type a = _mm256_shuffle_pd(m_value, m_value, 0xD);
+          register_type a = _mm256_shuffle_pd(m_value, m_value, 0x3);
 
           // take the maximum value of each lane
           // B = { max{v[0], v[1]},

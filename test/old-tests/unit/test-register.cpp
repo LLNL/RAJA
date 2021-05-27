@@ -14,10 +14,15 @@
 
 using RegisterTestTypes = ::testing::Types<
 
-    RAJA::VectorRegister<double>,
-    RAJA::VectorRegister<float>,
-    RAJA::VectorRegister<int>,
-    RAJA::VectorRegister<long>,
+//    RAJA::VectorRegister<double, RAJA::avx2_register, 8>,
+    RAJA::VectorRegister<double, RAJA::avx_register, 5>,
+    RAJA::VectorRegister<double, RAJA::avx_register, 6>,
+    RAJA::VectorRegister<double, RAJA::avx_register, 7>,
+    RAJA::VectorRegister<double, RAJA::avx_register, 8>,
+    RAJA::VectorRegister<double, RAJA::avx_register, 9>
+//    RAJA::VectorRegister<float>,
+//    RAJA::VectorRegister<int>,
+//    RAJA::VectorRegister<long>,
 
 //#ifdef __AVX__
 //    RAJA::Register<double, RAJA::avx_register>,
@@ -44,7 +49,7 @@ using RegisterTestTypes = ::testing::Types<
 //    RAJA::Register<double, RAJA::scalar_register>,
 //    RAJA::Register<float, RAJA::scalar_register>,
 //    RAJA::Register<int, RAJA::scalar_register>,
-    RAJA::Register<long, RAJA::scalar_register>
+//    RAJA::Register<long, RAJA::scalar_register>
   >;
 
 
@@ -628,8 +633,8 @@ TYPED_TEST_P(RegisterTest, RegisterMax)
     register_t x, y;
 
     for(size_t i = 0;i < num_elem; ++ i){
-      A[i] = (element_t)(NO_OPT_RAND*1000.0);
-      B[i] = (element_t)(NO_OPT_RAND*1000.0);
+      A[i] = -(element_t)(NO_OPT_RAND*1000.0);
+      B[i] = -(element_t)(NO_OPT_RAND*1000.0);
       x.set(A[i], i);
       y.set(B[i], i);
     }
@@ -639,6 +644,8 @@ TYPED_TEST_P(RegisterTest, RegisterMax)
     for(size_t i = 1;i < num_elem;++ i){
       expected = expected > A[i] ? expected : A[i];
     }
+
+//    printf("X=%s", x.to_string().c_str());
 
     ASSERT_SCALAR_EQ(x.max(), expected);
 
@@ -676,6 +683,9 @@ TYPED_TEST_P(RegisterTest, RegisterMin)
     for(size_t i = 1;i < num_elem;++ i){
       expected = expected < A[i] ? expected : A[i];
     }
+
+//    printf("X=%s", x.to_string().c_str());
+
 
     ASSERT_SCALAR_EQ(x.min(), expected);
 
