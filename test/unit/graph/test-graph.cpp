@@ -16,6 +16,7 @@
 #include "RAJA_test-graph-creation.hpp"
 
 #include <vector>
+#include <limits>
 
 
 // Basic Constructors
@@ -87,6 +88,7 @@ TEST( GraphBasicExecUnitTest, FourNodeExec )
   using GraphResource = RAJA::resources::Host;
   using graph_type = RAJA::expt::graph::DAG;
   using graph_exec_type = RAJA::expt::graph::DAGExec<GraphPolicy, GraphResource>;
+  using node_id = typename graph_type::node_id_type;
 
   auto r = GraphResource::get_default();
 
@@ -104,11 +106,14 @@ TEST( GraphBasicExecUnitTest, FourNodeExec )
    *    3
    */
 
-  auto& n0 = g.add_node(RAJA::expt::graph::Function([&](){ order[0] = count++; }));
-  auto& n1 = n0.add_child(RAJA::expt::graph::Function([&](){ order[1] = count++; }));
-  auto& n2 = n0.add_child(RAJA::expt::graph::Function([&](){ order[2] = count++; }));
-  auto& n3 = n1.add_child(RAJA::expt::graph::Function([&](){ order[3] = count++; }));
-  n2.add_child(n3);
+  node_id n0 = g.add_node(RAJA::expt::graph::Function([&](){ order[0] = count++; }));
+  node_id n1 = g.add_node(RAJA::expt::graph::Function([&](){ order[1] = count++; }));
+  node_id n2 = g.add_node(RAJA::expt::graph::Function([&](){ order[2] = count++; }));
+  node_id n3 = g.add_node(RAJA::expt::graph::Function([&](){ order[3] = count++; }));
+  g.add_edge(n0, n1);
+  g.add_edge(n0, n2);
+  g.add_edge(n1, n3);
+  g.add_edge(n2, n3);
 
   ASSERT_FALSE( g.empty() );
 
@@ -139,6 +144,7 @@ TEST( GraphBasicExecUnitTest, TwentyNodeExec )
   using GraphResource = RAJA::resources::Host;
   using graph_type = RAJA::expt::graph::DAG;
   using graph_exec_type = RAJA::expt::graph::DAGExec<GraphPolicy, GraphResource>;
+  using node_id = typename graph_type::node_id_type;
 
   auto r = GraphResource::get_default();
 
@@ -159,38 +165,58 @@ TEST( GraphBasicExecUnitTest, TwentyNodeExec )
    *  4   5   6 7 8   9
    */
 
-  auto& n0  = g.add_node(RAJA::expt::graph::Function([&](){ order[0]  = count++; }));
-  auto& n1  = g.add_node(RAJA::expt::graph::Function([&](){ order[1]  = count++; }));
-  auto& n2  = g.add_node(RAJA::expt::graph::Function([&](){ order[2]  = count++; }));
-  auto& n3  = g.add_node(RAJA::expt::graph::Function([&](){ order[3]  = count++; }));
+  node_id n0  = g.add_node(RAJA::expt::graph::Function([&](){ order[0]  = count++; }));
+  node_id n1  = g.add_node(RAJA::expt::graph::Function([&](){ order[1]  = count++; }));
+  node_id n2  = g.add_node(RAJA::expt::graph::Function([&](){ order[2]  = count++; }));
+  node_id n3  = g.add_node(RAJA::expt::graph::Function([&](){ order[3]  = count++; }));
 
-  auto& n4  = n0.add_child(RAJA::expt::graph::Function([&](){ order[4]  = count++; }));
-  auto& n5  = n0.add_child(RAJA::expt::graph::Function([&](){ order[5]  = count++; }));
-              n1.add_child(n5);
-  auto& n6  = n1.add_child(RAJA::expt::graph::Function([&](){ order[6]  = count++; }));
-  auto& n7  = n2.add_child(RAJA::expt::graph::Function([&](){ order[7]  = count++; }));
-              n3.add_child(n7);
-  auto& n8  = n3.add_child(RAJA::expt::graph::Function([&](){ order[8]  = count++; }));
+  node_id n4  = g.add_node(RAJA::expt::graph::Function([&](){ order[4]  = count++; }));
+  node_id n5  = g.add_node(RAJA::expt::graph::Function([&](){ order[5]  = count++; }));
+  node_id n6  = g.add_node(RAJA::expt::graph::Function([&](){ order[6]  = count++; }));
+  node_id n7  = g.add_node(RAJA::expt::graph::Function([&](){ order[7]  = count++; }));
+  node_id n8  = g.add_node(RAJA::expt::graph::Function([&](){ order[8]  = count++; }));
 
-  auto& n9  = n4.add_child(RAJA::expt::graph::Function([&](){ order[9]  = count++; }));
-              n5.add_child(n9);
-  auto& n10 = n5.add_child(RAJA::expt::graph::Function([&](){ order[10] = count++; }));
-              n6.add_child(n10);
-  auto& n11 = n5.add_child(RAJA::expt::graph::Function([&](){ order[11] = count++; }));
-              n6.add_child(n11);
-  auto& n12 = n7.add_child(RAJA::expt::graph::Function([&](){ order[12] = count++; }));
-              n8.add_child(n12);
-  auto& n13 = n7.add_child(RAJA::expt::graph::Function([&](){ order[13] = count++; }));
-              n8.add_child(n13);
+  node_id n9  = g.add_node(RAJA::expt::graph::Function([&](){ order[9]  = count++; }));
+  node_id n10 = g.add_node(RAJA::expt::graph::Function([&](){ order[10] = count++; }));
+  node_id n11 = g.add_node(RAJA::expt::graph::Function([&](){ order[11] = count++; }));
+  node_id n12 = g.add_node(RAJA::expt::graph::Function([&](){ order[12] = count++; }));
+  node_id n13 = g.add_node(RAJA::expt::graph::Function([&](){ order[13] = count++; }));
 
-              n9.add_child(RAJA::expt::graph::Function([&](){ order[14]  = count++; }));
-  auto& n15 = n9.add_child(RAJA::expt::graph::Function([&](){ order[15]  = count++; }));
-              n10.add_child(n15);
-              n11.add_child(RAJA::expt::graph::Function([&](){ order[16]  = count++; }));
-  auto& n17 = n11.add_child(RAJA::expt::graph::Function([&](){ order[17]  = count++; }));
-              n12.add_child(n17);
-              n12.add_child(RAJA::expt::graph::Function([&](){ order[18]  = count++; }));
-              n13.add_child(RAJA::expt::graph::Function([&](){ order[19]  = count++; }));
+  node_id n14 = g.add_node(RAJA::expt::graph::Function([&](){ order[14]  = count++; }));
+  node_id n15 = g.add_node(RAJA::expt::graph::Function([&](){ order[15]  = count++; }));
+  node_id n16 = g.add_node(RAJA::expt::graph::Function([&](){ order[16]  = count++; }));
+  node_id n17 = g.add_node(RAJA::expt::graph::Function([&](){ order[17]  = count++; }));
+  node_id n18 = g.add_node(RAJA::expt::graph::Function([&](){ order[18]  = count++; }));
+  node_id n19 = g.add_node(RAJA::expt::graph::Function([&](){ order[19]  = count++; }));
+
+
+  g.add_edge(n0, n4);
+  g.add_edge(n0, n5);
+  g.add_edge(n1, n5);
+  g.add_edge(n1, n6);
+  g.add_edge(n2, n7);
+  g.add_edge(n3, n7);
+  g.add_edge(n3, n8);
+
+  g.add_edge(n4, n9);
+  g.add_edge(n5, n9);
+  g.add_edge(n5, n10);
+  g.add_edge(n5, n11);
+  g.add_edge(n6, n10);
+  g.add_edge(n6, n11);
+  g.add_edge(n7, n12);
+  g.add_edge(n7, n13);
+  g.add_edge(n8, n12);
+  g.add_edge(n8, n13);
+
+  g.add_edge(n9, n14);
+  g.add_edge(n9, n15);
+  g.add_edge(n10, n15);
+  g.add_edge(n11, n16);
+  g.add_edge(n11, n17);
+  g.add_edge(n12, n17);
+  g.add_edge(n12, n18);
+  g.add_edge(n13, n19);
 
   ASSERT_FALSE( g.empty() );
 
@@ -241,13 +267,13 @@ TEST( GraphBasicExecUnitTest, RandomExec )
 
   RandomGraph<graph_type> g(seed);
 
-  const int num_nodes = g.num_nodes();
+  const size_t num_nodes = g.num_nodes();
 
-  int count = 0;
-  std::vector<int> order(num_nodes, -1);
+  size_t count = 0;
+  std::vector<size_t> order(num_nodes, std::numeric_limits<size_t>::max());
 
   // add nodes
-  for (int node_id = 0; node_id < num_nodes; ++node_id) {
+  for (size_t node_id = 0; node_id < num_nodes; ++node_id) {
 
     auto edges_to_node = g.get_dependencies(node_id);
 
@@ -267,8 +293,8 @@ TEST( GraphBasicExecUnitTest, RandomExec )
 
   // check graph has not executed
   ASSERT_EQ(count, 0);
-  for (int i = 0; i < num_nodes; ++i) {
-    ASSERT_EQ(order[i],  -1);
+  for (size_t i = 0; i < num_nodes; ++i) {
+    ASSERT_EQ(order[i],  std::numeric_limits<size_t>::max());
   }
 
   // check graph edges are valid

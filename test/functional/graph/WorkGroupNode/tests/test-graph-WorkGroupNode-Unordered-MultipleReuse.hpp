@@ -103,7 +103,7 @@ void testWorkGroupNodeUnorderedMultiple(
 
 
   RAJA::expt::graph::DAG g;
-  WorkGroupNode_type& node =
+  RAJA::expt::graph::DAG::Node<WorkGroupNode_type> node =
       g.add_node(RAJA::expt::graph::WorkGroup<
                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
                    IndexType,
@@ -111,7 +111,7 @@ void testWorkGroupNodeUnorderedMultiple(
                    Allocator
                  >(Allocator{}));
 
-  node.reserve(num1+num2+num3, 1024ull*1024ull);
+  node.node->reserve(num1+num2+num3, 1024ull*1024ull);
 
   for (IndexType pr = 0; pr < pool_reuse; pr++) {
 
@@ -123,7 +123,7 @@ void testWorkGroupNodeUnorderedMultiple(
     {
       for (IndexType j = IndexType(0); j < num1; j++) {
         type1* working_ptr1 = working_array1 + N * j;
-        node.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin1[j], end1[j] },
+        node.node->enqueue(RAJA::TypedRangeSegment<IndexType>{ begin1[j], end1[j] },
             [=] RAJA_HOST_DEVICE (IndexType i) {
           working_ptr1[i] += type1(i) + test_val1;
         });
@@ -131,7 +131,7 @@ void testWorkGroupNodeUnorderedMultiple(
 
       for (IndexType j = IndexType(0); j < num2; j++) {
         type2* working_ptr2 = working_array2 + N * j;
-        node.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin2[j], end2[j] },
+        node.node->enqueue(RAJA::TypedRangeSegment<IndexType>{ begin2[j], end2[j] },
             [=] RAJA_HOST_DEVICE (IndexType i) {
           working_ptr2[i] += type2(i) + test_val2;
         });
@@ -139,14 +139,14 @@ void testWorkGroupNodeUnorderedMultiple(
 
       for (IndexType j = IndexType(0); j < num3; j++) {
         type3* working_ptr3 = working_array3 + N * j;
-        node.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin3[j], end3[j] },
+        node.node->enqueue(RAJA::TypedRangeSegment<IndexType>{ begin3[j], end3[j] },
             [=] RAJA_HOST_DEVICE (IndexType i) {
           working_ptr3[i] += type3(i) + test_val3;
         });
       }
     }
 
-    node.instantiate();
+    node.node->instantiate();
 
     for (IndexType gr = 0; gr < group_reuse; gr++) {
 
@@ -262,7 +262,7 @@ void testWorkGroupNodeUnorderedMultiple(
       }
     }
 
-    node.clear();
+    node.node->clear();
   }
 
 

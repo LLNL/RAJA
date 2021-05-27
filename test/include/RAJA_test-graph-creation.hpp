@@ -24,26 +24,26 @@
 template < typename graph_type >
 struct RandomGraph
 {
-  using base_node_type = typename graph_type::base_node_type;
+  using node_id_type = typename graph_type::node_id_type;
 
-  static const int graph_min_nodes = 0;
-  static const int graph_max_nodes = 1024;
+  static const size_t graph_min_nodes = 0;
+  static const size_t graph_max_nodes = 1024;
 
   RandomGraph(unsigned seed)
     : m_rng(seed)
-    , m_num_nodes(std::uniform_int_distribution<int>(graph_min_nodes, graph_max_nodes)(m_rng))
+    , m_num_nodes(std::uniform_int_distribution<size_t>(graph_min_nodes, graph_max_nodes)(m_rng))
   {
 
   }
 
-  std::vector<int> get_dependencies(int node_id)
+  std::vector<size_t> get_dependencies(size_t node_id)
   {
     assert(node_id < m_num_nodes);
 
-    int num_edges_to_node = std::uniform_int_distribution<int>(0, node_id)(m_rng);
+    size_t num_edges_to_node = std::uniform_int_distribution<size_t>(0, node_id)(m_rng);
 
     // create a list of numbers from [0, node_id)
-    std::vector<int> edges_to_node(node_id);
+    std::vector<size_t> edges_to_node(node_id);
     std::iota(edges_to_node.begin(), edges_to_node.end(), 0);
     // randomly reorder the list
     std::shuffle(edges_to_node.begin(), edges_to_node.end(), m_rng);
@@ -60,46 +60,31 @@ struct RandomGraph
   // the required ordering
   //   Ex. a >> b, b >> c, a >> c where a >> c is unnecessary
   template < typename NodeArg >
-  auto add_node(int node_id, std::vector<int> const& edges_to_node, NodeArg&& arg)
-    -> decltype(camp::val<graph_type&>().add_node(std::forward<NodeArg>(arg)))
+  auto add_node(size_t node_id, std::vector<size_t> const& edges_to_node, NodeArg&& arg)
+      -> decltype(camp::val<graph_type>().add_node(std::forward<NodeArg>(arg)))
   {
     assert(node_id < m_num_nodes);
-    assert(node_id == static_cast<int>(m_nodes.size()));
+    assert(node_id == m_nodes.size());
 
-    int num_edges_to_node = edges_to_node.size();
+    // add node to graph
+    auto n = m_g.add_node(std::forward<NodeArg>(arg));
 
-    if (num_edges_to_node == 0) {
-
-      // connect node to graph
-      auto& n = m_g.add_node(std::forward<NodeArg>(arg));
-
-      m_nodes.emplace_back(&n);
-      return n;
-
-    } else {
-
-      // create edges
-      // first creating node from an existing node
-      auto& n = m_nodes[edges_to_node[0]]->add_child(std::forward<NodeArg>(arg));
-      m_edges.emplace(edges_to_node[0], node_id);
-
-      // then adding other edges
-      for (int i = 1; i < num_edges_to_node; ++i) {
-        m_nodes[edges_to_node[i]]->add_child(n);
-        m_edges.emplace(edges_to_node[i], node_id);
-      }
-
-      m_nodes.emplace_back(&n);
-      return n;
+    // add edges
+    for (size_t edge_to_node : edges_to_node) {
+      m_g.add_edge(m_nodes[edge_to_node], n);
+      m_edges.emplace(edge_to_node, node_id);
     }
+
+    m_nodes.emplace_back(n.id);
+    return n;
   }
 
-  int num_nodes() const
+  size_t num_nodes() const
   {
     return m_num_nodes;
   }
 
-  std::unordered_multimap<int, int> const& edges() const
+  std::unordered_multimap<size_t, size_t> const& edges() const
   {
     return m_edges;
   }
@@ -119,10 +104,10 @@ struct RandomGraph
 private:
   std::mt19937 m_rng;
 
-  int m_num_nodes;
+  size_t m_num_nodes;
 
-  std::unordered_multimap<int, int> m_edges;
-  std::vector<base_node_type*> m_nodes;
+  std::unordered_multimap<size_t, size_t> m_edges;
+  std::vector<node_id_type> m_nodes;
 
   graph_type m_g;
 };

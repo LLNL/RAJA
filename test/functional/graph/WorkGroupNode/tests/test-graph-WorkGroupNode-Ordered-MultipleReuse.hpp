@@ -103,7 +103,7 @@ void testWorkGroupNodeOrderedMultiple(
                                 &test_array3);
 
   RAJA::expt::graph::DAG g;
-  WorkGroupNode_type& node =
+  RAJA::expt::graph::DAG::Node<WorkGroupNode_type> node =
       g.add_node(RAJA::expt::graph::WorkGroup<
                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
                    IndexType,
@@ -121,11 +121,11 @@ void testWorkGroupNodeOrderedMultiple(
     {
       for (IndexType j = IndexType(0); j < num1; j++) {
         type1* working_ptr1 = working_array1 + N * j;
-        node.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin1[j], end1[j] },
+        node.node->enqueue(RAJA::TypedRangeSegment<IndexType>{ begin1[j], end1[j] },
             [=] RAJA_HOST_DEVICE (IndexType i) {
           working_ptr1[i] += type1(i);
         });
-        node.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin1[j], end1[j] },
+        node.node->enqueue(RAJA::TypedRangeSegment<IndexType>{ begin1[j], end1[j] },
             [=] RAJA_HOST_DEVICE (IndexType i) {
           working_ptr1[i] += test_val1;
         });
@@ -133,11 +133,11 @@ void testWorkGroupNodeOrderedMultiple(
 
       for (IndexType j = IndexType(0); j < num2; j++) {
         type2* working_ptr2 = working_array2 + N * j;
-        node.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin2[j], end2[j] },
+        node.node->enqueue(RAJA::TypedRangeSegment<IndexType>{ begin2[j], end2[j] },
             [=] RAJA_HOST_DEVICE (IndexType i) {
           working_ptr2[i] += type2(i);
         });
-        node.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin2[j], end2[j] },
+        node.node->enqueue(RAJA::TypedRangeSegment<IndexType>{ begin2[j], end2[j] },
             [=] RAJA_HOST_DEVICE (IndexType i) {
           working_ptr2[i] += test_val2;
         });
@@ -145,21 +145,21 @@ void testWorkGroupNodeOrderedMultiple(
 
       for (IndexType j = IndexType(0); j < num3; j++) {
         type3* working_ptr3 = working_array3 + N * j;
-        node.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin3[j], end3[j] },
+        node.node->enqueue(RAJA::TypedRangeSegment<IndexType>{ begin3[j], end3[j] },
             [=] RAJA_HOST_DEVICE (IndexType i) {
           working_ptr3[i] += type3(i);
         });
-        node.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin3[j], end3[j] },
+        node.node->enqueue(RAJA::TypedRangeSegment<IndexType>{ begin3[j], end3[j] },
             [=] RAJA_HOST_DEVICE (IndexType i) {
           working_ptr3[i] += test_val3;
         });
       }
     }
 
-    ASSERT_EQ(node.num_loops(), 2*(num1+num2+num3));
-    ASSERT_GE(node.storage_bytes(), 2*(num1+num2+num3));
+    ASSERT_EQ(node.node->num_loops(), 2*(num1+num2+num3));
+    ASSERT_GE(node.node->storage_bytes(), 2*(num1+num2+num3));
 
-    node.instantiate();
+    node.node->instantiate();
 
     for (IndexType gr = 0; gr < group_reuse; gr++) {
 
@@ -216,7 +216,7 @@ void testWorkGroupNodeOrderedMultiple(
         }
       }
 
-      node.set_args();
+      node.node->set_args();
       RAJA::expt::graph::DAGExec<GraphPolicy, WORKING_RES> ge =
           g.template instantiate<GraphPolicy, WORKING_RES>();
       camp::resources::Event e = ge.exec();
@@ -277,7 +277,7 @@ void testWorkGroupNodeOrderedMultiple(
       }
     }
 
-    node.clear();
+    node.node->clear();
   }
 
 

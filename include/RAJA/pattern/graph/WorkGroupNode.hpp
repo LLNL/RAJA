@@ -56,7 +56,7 @@ struct WorkGroupNode<WorkGroupPolicy<EXEC_POLICY_T,
                                      STORAGE_POLICY_T>,
                      INDEX_T,
                      xargs<Args...>,
-                     ALLOCATOR_T> : Node
+                     ALLOCATOR_T> : detail::NodeData
 {
   using exec_policy = EXEC_POLICY_T;
   using order_policy = ORDER_POLICY_T;
@@ -159,8 +159,8 @@ private:
   }
 };
 
-
-namespace detail {
+namespace detail
+{
 
 template < typename WORKGROUP_POLICY_T,
            typename INDEX_T,

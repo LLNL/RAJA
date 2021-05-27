@@ -22,6 +22,7 @@
 
 #include <utility>
 #include <vector>
+#include <memory>
 
 #include "RAJA/util/macros.hpp"
 
@@ -57,62 +58,81 @@ struct DAGExec;
 
 struct DAG
 {
-  using base_node_type = Node;
+  using node_id_type = size_t;
+
+  template < typename node_type >
+  struct Node
+  {
+    node_id_type id;
+    node_type* node;
+
+    operator node_id_type() const
+    {
+      return id;
+    }
+  };
 
   DAG() = default;
 
   bool empty() const
   {
-    return m_children.empty();
+    return m_node_connections.empty();
   }
 
   template < typename node_args>
   auto add_node(node_args&& rhs)
-    -> concepts::enable_if_t<decltype(*std::forward<node_args>(rhs).toNode()),
-                             std::is_base_of<detail::NodeArgs, camp::decay<node_args>>>
+    -> Node<typename std::remove_pointer<
+              decltype(std::forward<node_args>(rhs).toNode())>::type>
   {
     auto node = std::forward<node_args>(rhs).toNode();
-    insert_node(node);
-    return *node;
+    node_id_type node_id = insert_node(node);
+    return {node_id, node};
+  }
+
+  void add_edge(node_id_type id_a, node_id_type id_b)
+  {
+#if defined(RAJA_BOUNDS_CHECK_INTERNAL)
+    if(id_a >= m_node_connections.size()) {
+      printf("Error! DAG::add_edge id_a %zu is not valid.\n", id_a);
+      RAJA_ABORT_OR_THROW("Invalid node id error\n");
+    }
+    if(id_b >= m_node_connections.size()) {
+      printf("Error! DAG::add_edge id_b %zu is not valid.\n", id_b);
+      RAJA_ABORT_OR_THROW("Invalid node id error\n");
+    }
+#endif
+    m_node_connections[id_a].add_child(m_node_connections[id_b]);
   }
 
   template < typename GraphPolicy, typename GraphResource >
   DAGExec<GraphPolicy, GraphResource> instantiate()
   {
-    return {this};
+    return {*this};
   }
 
   void clear()
   {
-    // destroy all nodes in a safe order
-    forward_traverse(
-        [](base_node_type*) {
-          // do nothing
-        },
-        [](base_node_type*) {
-          // do nothing
-        },
-        [](base_node_type* node) {
-          delete node;
-        });
-    m_children.clear();
+    m_node_connections.clear();
+    m_node_data = std::make_shared<node_data_container>();
   }
 
-  ~DAG()
-  {
-    clear();
-  }
+  ~DAG() = default;
 
 private:
   template < typename, typename >
   friend struct DAGExec;
 
-  std::vector<base_node_type*> m_children;
+  using node_data_container = std::vector<std::unique_ptr<detail::NodeData>>;
 
-  void insert_node(base_node_type* node)
+  std::vector<detail::NodeConnections> m_node_connections;
+  std::shared_ptr<node_data_container> m_node_data = std::make_shared<node_data_container>();
+
+  node_id_type insert_node(detail::NodeData* node_data)
   {
-    m_children.emplace_back(node);
-    node->m_parent_count += 1;
+    node_id_type node_id = m_node_data->size();
+    m_node_data->emplace_back(node_data);
+    m_node_connections.emplace_back(node_id);
+    return node_id;
   }
 
   // traverse nodes in an order consistent with the DAG, calling enter_func
@@ -126,11 +146,12 @@ private:
                         Enter_Func&& enter_func,
                         Exit_Func&& exit_func)
   {
-    for (base_node_type* child : m_children)
+    for (detail::NodeConnections& child : m_node_connections)
     {
-      child->forward_traverse(std::forward<Examine_Func>(examine_func),
-                              std::forward<Enter_Func>(enter_func),
-                              std::forward<Exit_Func>(exit_func));
+      child.forward_traverse(m_node_connections.data(),
+                             std::forward<Examine_Func>(examine_func),
+                             std::forward<Enter_Func>(enter_func),
+                             std::forward<Exit_Func>(exit_func));
     }
   }
 };

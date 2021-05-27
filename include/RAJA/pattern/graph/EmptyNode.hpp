@@ -39,7 +39,7 @@ namespace expt
 namespace graph
 {
 
-struct EmptyNode : Node
+struct EmptyNode : detail::NodeData
 {
   EmptyNode() = default;
 
@@ -51,8 +51,8 @@ protected:
   }
 };
 
-
-namespace detail {
+namespace detail
+{
 
 struct EmptyArgs : NodeArgs
 {

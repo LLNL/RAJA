@@ -36,7 +36,7 @@ namespace graph
 {
 
 template < typename function_type >
-struct FunctionNode : Node
+struct FunctionNode : detail::NodeData
 {
   using ExecutionResource = resources::Host;
 
@@ -58,8 +58,8 @@ private:
   function_type m_function;
 };
 
-
-namespace detail {
+namespace detail
+{
 
 template < typename function_type >
 struct FunctionArgs : NodeArgs

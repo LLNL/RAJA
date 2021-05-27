@@ -41,17 +41,9 @@ struct DAGExec<loop_graph, GraphResource>
   resources::EventProxy<GraphResource> exec(GraphResource& gr)
   {
     gr.wait();
-    // exec all nodes in a correct order
-    m_dag->forward_traverse(
-          [](Node*) {
-            // do nothing
-          },
-          [&](Node* node) {
-            node->exec(/*gr*/);
-          },
-          [](Node*) {
-            // do nothing
-          });
+    for (detail::NodeExec& ne : m_node_execs) {
+      ne.exec(/*gr*/);
+    }
     return resources::EventProxy<GraphResource>(&gr);
   }
 
@@ -64,11 +56,28 @@ struct DAGExec<loop_graph, GraphResource>
 private:
   friend DAG;
 
-  DAGExec(DAG* dag)
-    : m_dag(dag)
-  { }
+  using node_data_container = typename DAG::node_data_container;
 
-  DAG* m_dag;
+  std::vector<detail::NodeExec> m_node_execs;
+  std::shared_ptr<node_data_container> m_node_data;
+
+  DAGExec(DAG& dag)
+    : m_node_data(dag.m_node_data)
+  {
+    // populate m_node_execs in a correct order
+    dag.forward_traverse(
+          [](detail::NodeConnections&) {
+            // do nothing
+          },
+          [&](detail::NodeConnections& node) {
+            node_data_container& container = *m_node_data;
+            detail::NodeData* data = container[node.get_node_id()].get();
+            m_node_execs.emplace_back(data);
+          },
+          [](detail::NodeConnections&) {
+            // do nothing
+          });
+  }
 };
 
 }  // namespace graph

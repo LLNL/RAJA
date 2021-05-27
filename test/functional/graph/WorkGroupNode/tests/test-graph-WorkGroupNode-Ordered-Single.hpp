@@ -67,7 +67,7 @@ void testWorkGroupNodeOrderedSingle(IndexType begin, IndexType end)
   }
 
   RAJA::expt::graph::DAG g;
-  WorkGroupNode_type& node =
+  RAJA::expt::graph::DAG::Node<WorkGroupNode_type> node =
       g.add_node(RAJA::expt::graph::WorkGroup<
                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
                    IndexType,
@@ -78,11 +78,11 @@ void testWorkGroupNodeOrderedSingle(IndexType begin, IndexType end)
   IndexType test_val(5);
 
   {
-    node.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+    node.node->enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
         [=] RAJA_HOST_DEVICE (IndexType i) {
       working_array[i] += i;
     });
-    node.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+    node.node->enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
         [=] RAJA_HOST_DEVICE (IndexType i) {
       working_array[i] += test_val;
     });

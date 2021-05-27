@@ -38,7 +38,7 @@ namespace graph
 {
 
 template < typename ExecutionPolicy, typename Container, typename LoopBody >
-struct ForallNode : Node
+struct ForallNode : detail::NodeData
 {
   using ExecutionResource = typename resources::get_resource<ExecutionPolicy>::type;
 
@@ -84,8 +84,8 @@ private:
   }
 };
 
-
-namespace detail {
+namespace detail
+{
 
 template < typename ExecutionPolicy, typename Container, typename LoopBody >
 struct ForallArgs : NodeArgs
