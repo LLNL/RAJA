@@ -21,6 +21,7 @@
 #include "RAJA/pattern/tensor/internal/ET/ExpressionTemplateBase.hpp"
 #include "RAJA/pattern/tensor/internal/ET/BinaryOperator.hpp"
 #include "RAJA/pattern/tensor/internal/ET/BlockLiteral.hpp"
+#include "RAJA/pattern/tensor/internal/ET/TensorDivide.hpp"
 #include "RAJA/pattern/tensor/internal/ET/TensorLiteral.hpp"
 #include "RAJA/pattern/tensor/internal/ET/TensorLoadStore.hpp"
 #include "RAJA/pattern/tensor/internal/ET/TensorMultiply.hpp"

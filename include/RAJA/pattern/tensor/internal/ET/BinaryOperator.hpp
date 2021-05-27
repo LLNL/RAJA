@@ -48,7 +48,6 @@ namespace RAJA
 
         using operator_traits = OperatorTraits<LEFT_OPERAND, RIGHT_OPERAND>;
         using result_type = typename operator_traits::result_type;
-        using tile_type = typename operator_traits::tile_type;
 
         static constexpr camp::idx_t s_num_dims =
             operator_traits::s_num_dims;
@@ -136,20 +135,20 @@ namespace RAJA
     }
 
 
-    /*
-     * Overload for:    arithmetic / tensorexpression
-
-     */
-    template<typename LEFT_OPERAND, typename RIGHT_OPERAND,
-      typename std::enable_if<std::is_arithmetic<LEFT_OPERAND>::value, bool>::type = true,
-      typename std::enable_if<std::is_base_of<TensorExpressionConcreteBase, RIGHT_OPERAND>::value, bool>::type = true>
-    RAJA_INLINE
-    RAJA_HOST_DEVICE
-    auto operator/(LEFT_OPERAND const &left, RIGHT_OPERAND const &right) ->
-    TensorDivide<typename NormalizeOperandHelper<LEFT_OPERAND>::return_type, RIGHT_OPERAND>
-    {
-      return TensorDivide<typename NormalizeOperandHelper<LEFT_OPERAND>::return_type, RIGHT_OPERAND>(NormalizeOperandHelper<LEFT_OPERAND>::normalize(left), right);
-    }
+//    /*
+//     * Overload for:    arithmetic / tensorexpression
+//
+//     */
+//    template<typename LEFT_OPERAND, typename RIGHT_OPERAND,
+//      typename std::enable_if<std::is_arithmetic<LEFT_OPERAND>::value, bool>::type = true,
+//      typename std::enable_if<std::is_base_of<TensorExpressionConcreteBase, RIGHT_OPERAND>::value, bool>::type = true>
+//    RAJA_INLINE
+//    RAJA_HOST_DEVICE
+//    auto operator/(LEFT_OPERAND const &left, RIGHT_OPERAND const &right) ->
+//    TensorDivide<typename NormalizeOperandHelper<LEFT_OPERAND>::return_type, RIGHT_OPERAND>
+//    {
+//      return TensorDivide<typename NormalizeOperandHelper<LEFT_OPERAND>::return_type, RIGHT_OPERAND>(NormalizeOperandHelper<LEFT_OPERAND>::normalize(left), right);
+//    }
 
 
   } // namespace ET

@@ -71,26 +71,6 @@ namespace RAJA
     };
 
 
-    struct TensorOperatorDivide
-    {
-
-      template<typename LEFT, typename RIGHT>
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      static
-      auto eval(LEFT const &left, RIGHT const &right) ->
-        decltype(left / right)
-      {
-        return left / right;
-      }
-
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      static
-      void print_ast(){
-        printf("Divide");
-      }
-    };
 
 
 
@@ -102,9 +82,6 @@ namespace RAJA
 
     template<typename LHS, typename RHS>
     using TensorSubtract = TensorBinaryOperator<TensorOperatorSubtract, LHS, RHS>;
-
-    template<typename LHS, typename RHS>
-    using TensorDivide = TensorBinaryOperator<TensorOperatorDivide, LHS, RHS>;
 
 
 
@@ -121,7 +98,6 @@ namespace RAJA
     struct OperatorTraits {
 
         using result_type = typename LHS_TYPE::result_type;
-        using tile_type = typename LHS_TYPE::tile_type;
         static constexpr camp::idx_t s_num_dims = LHS_TYPE::s_num_dims;
 
         RAJA_INLINE
@@ -150,7 +126,6 @@ namespace RAJA
     {
 
         using result_type = typename RHS_TYPE::result_type;
-        using tile_type = typename RHS_TYPE::tile_type;
         static constexpr camp::idx_t s_num_dims = RHS_TYPE::s_num_dims;
 
         RAJA_INLINE
@@ -178,7 +153,6 @@ namespace RAJA
     {
 
         using result_type = typename LHS_TYPE::result_type;
-        using tile_type = typename LHS_TYPE::tile_type;
         static constexpr camp::idx_t s_num_dims = LHS_TYPE::s_num_dims;
 
         RAJA_INLINE

@@ -604,9 +604,6 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type divide(self_type const &den) const {
-        printf("divide:\n");
-        printf(" numerator:   %s", this->to_string().c_str());
-        printf(" denominator: %s", den.to_string().c_str());
         self_type result;
         for(camp::idx_t reg = 0;reg < s_num_full_registers;++ reg){
           result.vec(reg) = m_registers[reg].divide(den.vec(reg));
@@ -694,7 +691,7 @@ namespace RAJA
             return RAJA::min<element_type>(result, m_registers[reg].min_n(N-reg*s_register_num_elem));
           }
         }
-        if(s_num_partial_lanes){
+        if(N-s_num_full_registers*s_register_num_elem > 0){
           result = RAJA::min<element_type>(result, m_registers[s_num_full_registers].min_n(N-s_num_full_registers*s_register_num_elem));
         }
         return result;
@@ -736,14 +733,14 @@ namespace RAJA
         element_type result = m_registers[0].max();
         for(camp::idx_t reg = 1;reg < s_num_full_registers;++ reg){
           if(N >= reg*s_register_num_elem + s_register_num_elem){
-            result = RAJA::min<element_type>(result, m_registers[reg].max());
+            result = RAJA::max<element_type>(result, m_registers[reg].max());
           }
           else{
-            return RAJA::min<element_type>(result, m_registers[reg].max_n(N-reg*s_register_num_elem));
+            return RAJA::max<element_type>(result, m_registers[reg].max_n(N-reg*s_register_num_elem));
           }
         }
-        if(s_num_partial_lanes){
-          result = RAJA::min<element_type>(result, m_registers[s_num_full_registers].max_n(N-s_num_full_registers*s_register_num_elem));
+        if(N-s_num_full_registers*s_register_num_elem > 0){
+          result = RAJA::max<element_type>(result, m_registers[s_num_full_registers].max_n(N-s_num_full_registers*s_register_num_elem));
         }
         return result;
       }

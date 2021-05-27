@@ -44,11 +44,9 @@ namespace RAJA
      */
     template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE, class ENABLE = void>
     struct MultiplyOperator
-#if 1
     {
 
         using result_type = typename LEFT_OPERAND_TYPE::result_type;
-        using tile_type = typename LEFT_OPERAND_TYPE::tile_type;
         static constexpr camp::idx_t s_num_dims = LEFT_OPERAND_TYPE::s_num_dims;
 
         RAJA_INLINE
@@ -108,11 +106,9 @@ namespace RAJA
         }
 
 
-    }
-#endif
-;
+    };
 
-#if 1
+
     /*!
      * Specialization that provides multiplying a scalar * tensor
      */
@@ -122,7 +118,6 @@ namespace RAJA
     {
 
         using result_type = typename RIGHT_OPERAND_TYPE::result_type;
-        using tile_type = typename RIGHT_OPERAND_TYPE::tile_type;
         static constexpr camp::idx_t s_num_dims = RIGHT_OPERAND_TYPE::s_num_dims;
 
         RAJA_INLINE
@@ -192,7 +187,6 @@ namespace RAJA
     {
 
         using result_type = typename LEFT_OPERAND_TYPE::result_type;
-        using tile_type = typename LEFT_OPERAND_TYPE::tile_type;
         static constexpr camp::idx_t s_num_dims = LEFT_OPERAND_TYPE::s_num_dims;
 
         RAJA_INLINE
@@ -272,9 +266,6 @@ namespace RAJA
 
       using left_type = LEFT_OPERAND_TYPE;
       using right_type = RIGHT_OPERAND_TYPE;
-      using element_type = typename LEFT_OPERAND_TYPE::element_type;
-      using index_type = typename LEFT_OPERAND_TYPE::index_type;
-      using tile_type = typename LEFT_OPERAND_TYPE::tile_type;
       using result_type = typename RIGHT_OPERAND_TYPE::result_type;
       static constexpr camp::idx_t s_num_dims = 1;
 
@@ -300,8 +291,9 @@ namespace RAJA
       RAJA_HOST_DEVICE
       static
       result_type multiply(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right){
+
         // clear result
-        result_type result(element_type(0));
+        result_type result(0);
 
         // multiply left and right into result
         multiply_into_result(result, tile, left, right);
@@ -334,8 +326,8 @@ namespace RAJA
         //using LHS_STORAGE = typename LEFT_OPERAND_TYPE::result_type;
 
         // get tile size from matrix type
-        index_type tile_size = left_type::result_type::s_dim_elem(1);
-        index_type k_size = et_left.getDimSize(1);
+        auto tile_size = left_type::result_type::s_dim_elem(1);
+        auto k_size = et_left.getDimSize(1);
         // TODO: check that left and right are compatible
         // m_left.getDimSize(1) == m_right.getDimSize(0)
         // how do we provide checking for this kind of error?
@@ -350,7 +342,7 @@ namespace RAJA
         right_tile.m_size[0] = tile_size;
 
         // Do full tiles in k
-        index_type k = 0;
+        decltype(k_size) k = 0;
         for(;k+tile_size <= k_size; k+= tile_size){
 
           // evaluate both sides of operator
@@ -407,9 +399,6 @@ namespace RAJA
 
       using left_type = LEFT_OPERAND_TYPE;
       using right_type = RIGHT_OPERAND_TYPE;
-      using element_type = typename LEFT_OPERAND_TYPE::element_type;
-      using index_type = typename LEFT_OPERAND_TYPE::index_type;
-      using tile_type = typename RIGHT_OPERAND_TYPE::tile_type;
       using result_type = typename LEFT_OPERAND_TYPE::result_type;
       static constexpr camp::idx_t s_num_dims = 1;
 
@@ -436,7 +425,7 @@ namespace RAJA
       static
       result_type multiply(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right){
         // clear result
-        result_type result(element_type(0));
+        result_type result(0);
 
         // multiply left and right into result
         multiply_into_result(result, tile, left, right);
@@ -468,8 +457,8 @@ namespace RAJA
         //using RHS_STORAGE = typename RIGHT_OPERAND_TYPE::result_type;
 
         // get tile size from matrix type
-        index_type tile_size = right_type::result_type::s_dim_elem(1);
-        index_type k_size = et_right.getDimSize(1);
+        auto tile_size = right_type::result_type::s_dim_elem(1);
+        auto k_size = et_right.getDimSize(1);
         // TODO: check that left and right are compatible
         // m_left.getDimSize(1) == m_right.getDimSize(0)
         // how do we provide checking for this kind of error?
@@ -484,7 +473,7 @@ namespace RAJA
         left_tile.m_size[0] = tile_size;
 
         // Do full tiles in k
-        index_type k = 0;
+        decltype(k_size) k = 0;
         for(;k+tile_size <= k_size; k+= tile_size){
 
           // evaluate both sides of operator
@@ -527,19 +516,14 @@ namespace RAJA
      * multiplication.
      *
      */
-#if 1
     template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
     struct MultiplyOperator<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE,
     typename std::enable_if<
-    //std::is_base_of<TensorRegisterConcreteBase, typename LEFT_OPERAND_TYPE::tensor_type>::value &&
     LEFT_OPERAND_TYPE::s_num_dims == 2 && RIGHT_OPERAND_TYPE::s_num_dims==2>::type>
     {
 
       using left_type = LEFT_OPERAND_TYPE;
       using right_type = RIGHT_OPERAND_TYPE;
-      using element_type = typename LEFT_OPERAND_TYPE::element_type;
-//      using index_type = typename LEFT_OPERAND_TYPE::index_type;
-      using tile_type = typename LEFT_OPERAND_TYPE::tile_type;
       using result_type = typename RIGHT_OPERAND_TYPE::result_type;
       static constexpr camp::idx_t s_num_dims = 2;
 
@@ -685,22 +669,17 @@ namespace RAJA
     };
 
 
-#endif
-
-#endif
 
 
 
-    template<typename OPERAND_TYPE>
-    class RestrictExtents : public TensorExpressionBase<RestrictExtents<OPERAND_TYPE>> {
+    template<typename OPERAND_TYPE, typename TILE_TYPE>
+    class RestrictExtents : public TensorExpressionBase<RestrictExtents<OPERAND_TYPE, TILE_TYPE>> {
       public:
-        using self_type = RestrictExtents<OPERAND_TYPE>;
+        using self_type = RestrictExtents<OPERAND_TYPE, TILE_TYPE>;
         using operand_type = OPERAND_TYPE;
-        using element_type = typename OPERAND_TYPE::element_type;
-        using index_type = typename OPERAND_TYPE::index_type;
-        using tensor_type = typename OPERAND_TYPE::tensor_type;
         using result_type = typename OPERAND_TYPE::result_type;
-        using tile_type = typename OPERAND_TYPE::tile_type;
+        using index_type = typename TILE_TYPE::index_type;
+        using tile_type = TILE_TYPE;
         static constexpr camp::idx_t s_num_dims = OPERAND_TYPE::s_num_dims;
 
       private:
@@ -731,10 +710,10 @@ namespace RAJA
         }
 
 
-        template<typename TILE_TYPE>
+        template<typename TILE_TYPE2>
         RAJA_INLINE
         RAJA_HOST_DEVICE
-        auto eval(TILE_TYPE const &tile) const ->
+        auto eval(TILE_TYPE2 const &tile) const ->
           decltype(m_operand.eval(tile))
         {
           return m_operand.eval(tile);
@@ -752,11 +731,11 @@ namespace RAJA
     };
 
     template<typename OPERAND, typename TILE>
-    RestrictExtents<OPERAND> restrictExtents(OPERAND const &operand, TILE const &tile){
+    RestrictExtents<OPERAND, TILE> restrictExtents(OPERAND const &operand, TILE const &tile){
       using tile_type = typename OPERAND::tile_type;
       tile_type new_tile;
       new_tile.copy(tile);
-      return RestrictExtents<OPERAND>(operand, new_tile);
+      return RestrictExtents<OPERAND, TILE>(operand, new_tile);
     }
 
 
@@ -777,9 +756,6 @@ namespace RAJA
     {
         using left_type = LEFT_OPERAND_TYPE;
         using right_type = RIGHT_OPERAND_TYPE;
-        using element_type = typename LEFT_OPERAND_TYPE::element_type;
-  //      using index_type = typename LEFT_OPERAND_TYPE::index_type;
-        using tile_type = typename LEFT_OPERAND_TYPE::tile_type;
         using result_type = typename RIGHT_OPERAND_TYPE::result_type;
         static constexpr camp::idx_t s_num_dims = 2;
 

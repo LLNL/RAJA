@@ -52,6 +52,9 @@ namespace RAJA
     template<typename LHS_TYPE, typename RHS_TYPE>
     class TensorMultiply;
 
+    template<typename LHS_TYPE, typename RHS_TYPE>
+    class TensorDivide;
+
     template<typename TENSOR_TYPE>
     class TensorNegate;
 

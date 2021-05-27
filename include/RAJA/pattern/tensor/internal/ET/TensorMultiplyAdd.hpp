@@ -49,11 +49,8 @@ namespace RAJA
         using left_operand_type = LEFT_OPERAND_TYPE;
         using right_operand_type = RIGHT_OPERAND_TYPE;
         using add_operand_type = ADD_OPERAND_TYPE;
-        using element_type = typename LEFT_OPERAND_TYPE::element_type;
-        using index_type = typename LEFT_OPERAND_TYPE::index_type;
         using multiply_op = MultiplyOperator<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE>;
         using result_type = typename multiply_op::result_type;
-        using tile_type = typename multiply_op::tile_type;
         static constexpr camp::idx_t s_num_dims = multiply_op::s_num_dims;
 
       private:

@@ -22,7 +22,11 @@ using VectorTestTypes = ::testing::Types<
   RAJA::VectorRegister<int>,
   RAJA::VectorRegister<long>,
   RAJA::VectorRegister<float>,
-  RAJA::VectorRegister<double>
+  RAJA::VectorRegister<double>,
+  RAJA::VectorRegister<int, RAJA::avx2_register, 9>,
+  RAJA::VectorRegister<long, RAJA::avx2_register, 5>,
+  RAJA::VectorRegister<float, RAJA::avx2_register, 9>,
+  RAJA::VectorRegister<double, RAJA::avx2_register, 5>
   >;
 
 
@@ -259,7 +263,7 @@ TYPED_TEST_P(VectorTest, ForallVectorRef1d)
   using element_t = typename vector_t::element_type;
 
 
-  size_t N = 10*vector_t::s_num_elem;
+  size_t N = 10*vector_t::s_num_elem+1;
   // If we are not using fixed vectors, add some random number of elements
   // to the array to test some postamble code generation.
     //N += (size_t)(100*NO_OPT_RAND);
@@ -350,8 +354,8 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
   using element_t = typename vector_t::element_type;
 
 
-  index_t N = 3*vector_t::s_num_elem;
-  index_t M = 4*vector_t::s_num_elem;
+  index_t N = 3*vector_t::s_num_elem+1;
+  index_t M = 4*vector_t::s_num_elem+1;
   // If we are not using fixed vectors, add some random number of elements
   // to the array to test some postamble code generation.
   N += (size_t)(10*NO_OPT_RAND);
@@ -407,7 +411,7 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
   }
 
 
-
+#if 1
 
   //
   // Test with kernel, using tensor_exec policy
@@ -484,7 +488,7 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
   }
 
 
-
+#endif
 
 
   delete[] A;
@@ -493,7 +497,13 @@ TYPED_TEST_P(VectorTest, ForallVectorRef2d)
 }
 
 
-REGISTER_TYPED_TEST_SUITE_P(VectorTest, GetSet, MinMaxSumDot, FmaFms, ForallVectorRef1d, ForallVectorRef2d);
+REGISTER_TYPED_TEST_SUITE_P(VectorTest,
+    GetSet,
+    MinMaxSumDot,
+    FmaFms,
+    ForallVectorRef1d,
+    ForallVectorRef2d
+    );
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, VectorTest, VectorTestTypes);
 
