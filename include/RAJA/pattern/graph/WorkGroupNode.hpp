@@ -45,6 +45,68 @@ template < typename WORKGROUP_POLICY_T,
            typename ALLOCATOR_T>
 struct WorkGroupNode;
 
+namespace detail
+{
+
+template < typename WORKGROUP_POLICY_T,
+           typename INDEX_T,
+           typename EXTRA_ARGS_T,
+           typename ALLOCATOR_T>
+struct WorkGroupArgs;
+
+template < typename EXEC_POLICY_T,
+           typename ORDER_POLICY_T,
+           typename STORAGE_POLICY_T,
+           typename INDEX_T,
+           typename ... Args,
+           typename ALLOCATOR_T>
+struct WorkGroupArgs<WorkGroupPolicy<EXEC_POLICY_T,
+                                     ORDER_POLICY_T,
+                                     STORAGE_POLICY_T>,
+                     INDEX_T,
+                     xargs<Args...>,
+                     ALLOCATOR_T> : NodeArgs
+{
+  using exec_policy = EXEC_POLICY_T;
+  using order_policy = ORDER_POLICY_T;
+  using storage_policy = STORAGE_POLICY_T;
+  using policy = WorkGroupPolicy<exec_policy, order_policy, storage_policy>;
+  using index_type = INDEX_T;
+  using xarg_type = xargs<Args...>;
+  using Allocator = ALLOCATOR_T;
+
+  using node_type = WorkGroupNode<policy, index_type, xarg_type, Allocator>;
+
+  WorkGroupArgs(Allocator const& aloc)
+    : m_aloc(aloc)
+  {
+  }
+
+  Allocator m_aloc;
+};
+
+}  // namespace detail
+
+// policy by template
+template < typename WORKGROUP_POLICY_T,
+           typename INDEX_T,
+           typename EXTRA_ARGS_T,
+           typename ALLOCATOR_T >
+RAJA_INLINE concepts::enable_if_t<
+      detail::WorkGroupArgs<WORKGROUP_POLICY_T,
+                            INDEX_T,
+                            EXTRA_ARGS_T,
+                            ALLOCATOR_T>,
+      type_traits::is_WorkGroup_policy<WORKGROUP_POLICY_T>>
+WorkGroup(ALLOCATOR_T const& aloc)
+{
+  return detail::WorkGroupArgs<WORKGROUP_POLICY_T,
+                               INDEX_T,
+                               EXTRA_ARGS_T,
+                               ALLOCATOR_T>(
+      aloc);
+}
+
 template < typename EXEC_POLICY_T,
            typename ORDER_POLICY_T,
            typename STORAGE_POLICY_T,
@@ -70,7 +132,8 @@ struct WorkGroupNode<WorkGroupPolicy<EXEC_POLICY_T,
   using workgroup_type = typename workpool_type::workgroup_type;
   using worksite_type  = typename workpool_type::worksite_type;
 
-  using ExecutionResource = typename workpool_type::resource_type ;
+  using resource = typename workpool_type::resource_type;
+  using args_type = detail::WorkGroupArgs<policy, INDEX_T, xarg_type, ALLOCATOR_T>;
 
   WorkGroupNode(Allocator const& aloc)
     : m_pool(aloc)
@@ -80,6 +143,52 @@ struct WorkGroupNode<WorkGroupPolicy<EXEC_POLICY_T,
     , m_instantiated(true)
   {
   }
+
+  WorkGroupNode() = delete;
+
+  WorkGroupNode(WorkGroupNode const&) = delete;
+  WorkGroupNode(WorkGroupNode&&) = delete;
+
+  WorkGroupNode& operator=(WorkGroupNode const&) = delete;
+  WorkGroupNode& operator=(WorkGroupNode&&) = delete;
+
+  WorkGroupNode(args_type const& args)
+    : m_pool(args.m_aloc)
+    , m_group(m_pool.instantiate())
+    , m_site(m_group.run(Args()...))
+    , m_args(Args()...)
+    , m_instantiated(true)
+  {
+  }
+  WorkGroupNode(args_type&& args)
+    : m_pool(std::move(args.m_aloc))
+    , m_group(m_pool.instantiate())
+    , m_site(m_group.run(Args()...))
+    , m_args(Args()...)
+    , m_instantiated(true)
+  {
+  }
+
+  WorkGroupNode& operator=(args_type const& args)
+  {
+    m_pool = workpool_type(args.m_aloc);
+    m_group = m_pool.instantiate();
+    m_site = m_group.run(Args()...);
+    m_args = camp::tuple<Args...>(Args()...);
+    m_instantiated = true;
+    return *this;
+  }
+  WorkGroupNode& operator=(args_type&& args)
+  {
+    m_pool = workpool_type(std::move(args.m_aloc));
+    m_group = m_pool.instantiate();
+    m_site = m_group.run(Args()...);
+    m_args = camp::tuple<Args...>(Args()...);
+    m_instantiated = true;
+    return *this;
+  }
+
+  virtual ~WorkGroupNode() = default;
 
   size_t num_loops() const
   {
@@ -127,8 +236,6 @@ struct WorkGroupNode<WorkGroupPolicy<EXEC_POLICY_T,
     m_site = m_group.run(Args()...);
   }
 
-  virtual ~WorkGroupNode() = default;
-
 protected:
   void exec() override
   {
@@ -144,87 +251,20 @@ private:
   bool m_instantiated;
 
   template < camp::idx_t ... Is >
-  void exec_impl_helper(ExecutionResource& er, camp::idx_seq<Is...>)
+  void exec_impl_helper(resource& er, camp::idx_seq<Is...>)
   {
     m_site = m_group.run(er, RAJA::get<Is>(m_args)...);
   }
 
   void exec_impl()
   {
-    ExecutionResource& er = ExecutionResource::get_default();
+    resource& er = resource::get_default();
 
     exec_impl_helper(er, camp::make_idx_seq_t<sizeof...(Args)>());
 
     er.wait();
   }
 };
-
-namespace detail
-{
-
-template < typename WORKGROUP_POLICY_T,
-           typename INDEX_T,
-           typename EXTRA_ARGS_T,
-           typename ALLOCATOR_T>
-struct WorkGroupArgs;
-
-template < typename EXEC_POLICY_T,
-           typename ORDER_POLICY_T,
-           typename STORAGE_POLICY_T,
-           typename INDEX_T,
-           typename ... Args,
-           typename ALLOCATOR_T>
-struct WorkGroupArgs<WorkGroupPolicy<EXEC_POLICY_T,
-                                     ORDER_POLICY_T,
-                                     STORAGE_POLICY_T>,
-                     INDEX_T,
-                     xargs<Args...>,
-                     ALLOCATOR_T> : NodeArgs
-{
-  using exec_policy = EXEC_POLICY_T;
-  using order_policy = ORDER_POLICY_T;
-  using storage_policy = STORAGE_POLICY_T;
-  using policy = WorkGroupPolicy<exec_policy, order_policy, storage_policy>;
-  using index_type = INDEX_T;
-  using xarg_type = xargs<Args...>;
-  using Allocator = ALLOCATOR_T;
-
-  using node_type = WorkGroupNode<policy, index_type, xarg_type, Allocator>;
-
-  WorkGroupArgs(Allocator const& aloc)
-    : m_aloc(aloc)
-  {
-  }
-
-  node_type* toNode()
-  {
-    return new node_type{ std::move(m_aloc) };
-  }
-
-  Allocator m_aloc;
-};
-
-}  // namespace detail
-
-// policy by template
-template < typename WORKGROUP_POLICY_T,
-           typename INDEX_T,
-           typename EXTRA_ARGS_T,
-           typename ALLOCATOR_T >
-RAJA_INLINE concepts::enable_if_t<
-      detail::WorkGroupArgs<WORKGROUP_POLICY_T,
-                            INDEX_T,
-                            EXTRA_ARGS_T,
-                            ALLOCATOR_T>,
-      type_traits::is_WorkGroup_policy<WORKGROUP_POLICY_T>>
-WorkGroup(ALLOCATOR_T const& aloc)
-{
-  return detail::WorkGroupArgs<WORKGROUP_POLICY_T,
-                               INDEX_T,
-                               EXTRA_ARGS_T,
-                               ALLOCATOR_T>(
-      aloc);
-}
 
 }  // namespace graph
 

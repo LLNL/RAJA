@@ -39,9 +39,50 @@ namespace expt
 namespace graph
 {
 
+struct EmptyNode;
+
+namespace detail
+{
+
+struct EmptyArgs : NodeArgs
+{
+  using node_type = EmptyNode;
+};
+
+}  // namespace detail
+
+RAJA_INLINE detail::EmptyArgs Empty()
+{
+  return detail::EmptyArgs();
+}
+
 struct EmptyNode : detail::NodeData
 {
-  EmptyNode() = default;
+  using args_type = detail::EmptyArgs;
+
+  EmptyNode() = delete;
+
+  EmptyNode(EmptyNode const&) = delete;
+  EmptyNode(EmptyNode&&) = delete;
+
+  EmptyNode& operator=(EmptyNode const&) = delete;
+  EmptyNode& operator=(EmptyNode&&) = delete;
+
+  EmptyNode(args_type const&)
+  {
+  }
+  EmptyNode(args_type&&)
+  {
+  }
+
+  EmptyNode& operator=(args_type const&)
+  {
+    return *this;
+  }
+  EmptyNode& operator=(args_type&&)
+  {
+    return *this;
+  }
 
   virtual ~EmptyNode() = default;
 
@@ -50,27 +91,6 @@ protected:
   {
   }
 };
-
-namespace detail
-{
-
-struct EmptyArgs : NodeArgs
-{
-  using node_type = EmptyNode;
-
-  node_type* toNode()
-  {
-    return new node_type();
-  }
-};
-
-}  // namespace detail
-
-
-RAJA_INLINE detail::EmptyArgs Empty()
-{
-  return detail::EmptyArgs();
-}
 
 }  // namespace graph
 

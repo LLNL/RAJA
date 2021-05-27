@@ -35,18 +35,82 @@ namespace expt
 namespace graph
 {
 
-template < typename function_type >
-struct FunctionNode : detail::NodeData
+template < typename FunctionBody >
+struct FunctionNode;
+
+namespace detail
 {
-  using ExecutionResource = resources::Host;
+
+template < typename FunctionBody >
+struct FunctionArgs : NodeArgs
+{
+  using node_type = FunctionNode<FunctionBody>;
 
   template < typename Func >
-  FunctionNode(Func&& func)
+  FunctionArgs(Func&& func)
     : m_function(std::forward<Func>(func))
   {
   }
 
+  FunctionBody m_function;
+};
+
+}  // namespace detail
+
+template < typename Func >
+RAJA_INLINE detail::FunctionArgs<camp::decay<Func>>
+Function(Func&& func)
+{
+  return detail::FunctionArgs<camp::decay<Func>>(std::forward<Func>(func));
+}
+
+template < typename FunctionBody >
+struct FunctionNode : detail::NodeData
+{
+  using function_type = FunctionBody;
+  using resource = resources::Host;
+  using args_type = detail::FunctionArgs<FunctionBody>;
+
+  FunctionNode() = delete;
+
+  FunctionNode(FunctionNode const&) = delete;
+  FunctionNode(FunctionNode&&) = delete;
+
+  FunctionNode& operator=(FunctionNode const&) = delete;
+  FunctionNode& operator=(FunctionNode&&) = delete;
+
+  FunctionNode(args_type const& args)
+    : m_function(args.m_function)
+  {
+  }
+  FunctionNode(args_type&& args)
+    : m_function(std::move(args.m_function))
+  {
+  }
+
+  FunctionNode& operator=(args_type const& args)
+  {
+    m_function = args.m_function;
+    return *this;
+  }
+  FunctionNode& operator=(args_type&& args)
+  {
+    m_function = std::move(args.m_function);
+    return *this;
+  }
+
   virtual ~FunctionNode() = default;
+
+  FunctionBody const& get_function() const
+  {
+    return m_function;
+  }
+
+  template < typename Func >
+  void set_function(Func&& func)
+  {
+    m_function = std::forward<Func>(func);
+  }
 
 protected:
   void exec() override
@@ -55,40 +119,8 @@ protected:
   }
 
 private:
-  function_type m_function;
+  FunctionBody m_function;
 };
-
-namespace detail
-{
-
-template < typename function_type >
-struct FunctionArgs : NodeArgs
-{
-  using node_type = FunctionNode<function_type>;
-
-  template < typename Func >
-  FunctionArgs(Func&& func)
-    : m_function(std::forward<Func>(func))
-  {
-  }
-
-  node_type* toNode()
-  {
-    return new node_type{ std::move(m_function) };
-  }
-
-  function_type m_function;
-};
-
-}  // namespace detail
-
-
-template < typename Func >
-RAJA_INLINE detail::FunctionArgs<camp::decay<Func>>
-Function(Func&& func)
-{
-  return detail::FunctionArgs<camp::decay<Func>>(std::forward<Func>(func));
-}
 
 }  // namespace graph
 

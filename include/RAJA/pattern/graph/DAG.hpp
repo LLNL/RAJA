@@ -80,11 +80,12 @@ struct DAG
   }
 
   template < typename node_args>
-  auto add_node(node_args&& rhs)
-    -> Node<typename std::remove_pointer<
-              decltype(std::forward<node_args>(rhs).toNode())>::type>
+  auto add_node(node_args&& args)
+    -> Node<typename camp::decay<node_args>::node_type>
   {
-    auto node = std::forward<node_args>(rhs).toNode();
+    using node_type = typename camp::decay<node_args>::node_type;
+    auto node = new node_type(std::forward<node_args>(args));
+    // store node in unique_ptr in container, get id
     node_id_type node_id = insert_node(node);
     return {node_id, node};
   }
