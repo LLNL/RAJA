@@ -58,7 +58,7 @@ using cuda_dim_t = dim3;
         T rhs = RAJA::cuda::impl::shfl_sync(temp, srcLane);
         // only add from threads that exist (don't double count own value)
         if (srcLane < numThreads) {
-          Combiner{}(temp, rhs);
+          temp = Combiner{}(temp, rhs);
         }
       }
     }
@@ -91,7 +91,7 @@ using cuda_dim_t = dim3;
 
         for (int i = 1; i < RAJA::policy::cuda::WARP_SIZE; i *= 2) {
           T rhs = RAJA::cuda::impl::shfl_xor_sync(temp, i);
-          Combiner{}(temp, rhs);
+          temp = Combiner{}(temp, rhs);
         }
       }
 
@@ -114,7 +114,7 @@ using cuda_dim_t = dim3;
     int threadId = threadIdx.x + blockDim.x * threadIdx.y +
                    (blockDim.x * blockDim.y) * threadIdx.z;
 
-    T temp = block_reduce<Combiner>(*(red.cudaval), T()); // RCC change this back to identity!
+    T temp = block_reduce<Combiner>(*(red.cudaval), Combiner::identity());
 
     // one thread per block writes to device_mem
     bool lastBlock = false;
@@ -133,18 +133,18 @@ using cuda_dim_t = dim3;
 
     // last block accumulates values from device_mem
     if (lastBlock) {
-      temp = T(); // RCC change this back to identity!
+      temp = Combiner::identity();
 
       for (int i = threadId; i < numBlocks; i += numThreads) {
         //printf("device mem %f\n", (double)(red.device_mem.get(i)));
         temp = Combiner{}(temp, red.device_mem.get(i));
       }
 
-      temp = block_reduce<Combiner>(temp, T()); // RCC change this back to identity!
+      temp = block_reduce<Combiner>(temp, Combiner::identity());
 
       // one thread returns value
       if (threadId == 0) {
-        //printf("temp val : %f\n", (double)temp);
+        printf("temp val : %f\n", (double)temp);
         //printf("num threads : %d\n", numThreads);
         *(red.cudaval) = temp;
       }
@@ -156,19 +156,19 @@ using cuda_dim_t = dim3;
   // Combine
   template<typename EXEC_POL, typename OP, typename T>
   RAJA_HOST_DEVICE
-  camp::concepts::enable_if_t<bool, std::is_same< EXEC_POL, RAJA::cuda_exec<256>> >
+  camp::concepts::enable_if<std::is_same< EXEC_POL, RAJA::cuda_exec<256>> >
   combine(Reducer<OP, T>& red) {
 
   // TODO : Check if we still need this?
-#if !defined(RAJA_DEVICE_CODE)
-#else
+//#if !defined(RAJA_DEVICE_CODE)
+//#else
     bool blah = grid_reduce<Reducer<OP,T>::op>(red);
     if ( blah )
     {
       printf("device cudaval %p\n", (red.cudaval));
       printf("device cudaval %f\n\n", (double)(*red.cudaval));
     }
-#endif
+//#endif
   }
   
   // Resolve

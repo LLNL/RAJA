@@ -7,6 +7,12 @@
 #include "new_reduce/reduce_basic.hpp"
 #include "new_reduce/forall_param.hpp"
 
+#if defined(RAJA_ENABLE_CUDA)
+#define DeviceMallocManaged cudaMallocManaged
+#elif defined(RAJA_ENABLE_HIP)
+#define DeviceMallocManaged hipMallocManaged
+#endif
+
 int main(int argc, char *argv[])
 {
   if (argc < 2) {
@@ -20,16 +26,16 @@ int main(int argc, char *argv[])
   double m = 5000;
   double ma = 0;
 
-#if defined(RAJA_ENABLE_CUDA)
-  cudaMallocManaged( (void**)(&r), sizeof(double));//, cudaHostAllocPortable );
-  cudaMallocManaged( (void**)(&m), sizeof(double));//, cudaHostAllocPortable );
-  cudaMallocManaged( (void**)(&ma), sizeof(double));//, cudaHostAllocPortable );
+#if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP)
+  DeviceMallocManaged( (void**)(&r), sizeof(double));
+  DeviceMallocManaged( (void**)(&m), sizeof(double));
+  DeviceMallocManaged( (void**)(&ma), sizeof(double));
 
   double *a = new double[N]();
   double *b = new double[N]();
 
-  cudaMallocManaged( (void**)(&a), N*sizeof(double));//, cudaHostAllocPortable );
-  cudaMallocManaged( (void**)(&b), N*sizeof(double));//, cudaHostAllocPortable );
+  DeviceMallocManaged( (void**)(&a), N*sizeof(double));
+  DeviceMallocManaged( (void**)(&b), N*sizeof(double));
 #else
   double *a = new double[N]();
   double *b = new double[N]();
@@ -64,7 +70,8 @@ int main(int argc, char *argv[])
     std::cout << "ma : " << ma <<"\n";
   }
 #endif
-#if 0
+
+#if 1
 #if defined(RAJA_ENABLE_OPENMP)
   {
     std::cout << "OMP Reduction NEW\n";
@@ -91,7 +98,9 @@ int main(int argc, char *argv[])
     std::cout << "ma : " << ma <<"\n";
   }
 #endif
+#endif
 
+#if 1
 #if defined(RAJA_ENABLE_CUDA)
   {
     std::cout << "CUDA Reduction NEW Single\n";
@@ -101,25 +110,19 @@ int main(int argc, char *argv[])
     t.start();
 
     forall_param<RAJA::cuda_exec<256>>(N,
-                 //[=] RAJA_HOST_DEVICE (int i, double &r_, double &m_, double &ma_) {
                  [=] RAJA_HOST_DEVICE (int i, double &r_) {
                    r_ += a[i] * b[i];
                  },
                  Reduce<RAJA::operators::plus>(&r));
-                 //Reduce<RAJA::operators::plus>(&r),
-                 //Reduce<RAJA::operators::minimum>(&m),
-                 //Reduce<RAJA::operators::maximum>(&ma)
-                 //);
     t.stop();
     
     std::cout << "t : " << t.elapsed() << "\n";
     std::cout << "r : " << r << "\n";
-    //std::cout << "m : "  << m  <<"\n";
-    //std::cout << "ma : " << ma <<"\n";
   }
 #endif
 #endif
 
+#if 1
 #if defined(RAJA_ENABLE_CUDA)
   {
     std::cout << "CUDA Reduction NEW Multi\n";
@@ -131,6 +134,8 @@ int main(int argc, char *argv[])
     forall_param<RAJA::cuda_exec<256>>(N,
                  [=] RAJA_HOST_DEVICE (int i, double &r_, double &m_, double &ma_) {
                    r_ += a[i] * b[i];
+                   m_ = a[i] < m_ ? a[i] : m_;
+                   ma_ = a[i] > m_ ? a[i] : m_;
                  },
                  Reduce<RAJA::operators::plus>(&r),
                  Reduce<RAJA::operators::minimum>(&m),
@@ -144,6 +149,8 @@ int main(int argc, char *argv[])
     std::cout << "ma : " << ma <<"\n";
   }
 #endif
+#endif
+
 #if 0
   {
     std::cout << "Sequential Reduction NEW\n";

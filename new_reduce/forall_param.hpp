@@ -89,25 +89,26 @@ namespace detail
 
     // Init
     template<typename EXEC_POL, camp::idx_t... Seq, typename ...Args>
-    friend void constexpr detail_init(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>, Args&& ...args) {
+    static void constexpr detail_init(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>, Args&& ...args) {
       CAMP_EXPAND(init<EXEC_POL>( camp::get<Seq>(f_params.param_tup), std::forward<Args>(args)... ));
     }
     template<typename EXEC_POL, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
-    friend void constexpr detail_combine(EXEC_POL, FORALL_PARAMS_T& out, const FORALL_PARAMS_T& in, camp::idx_seq<Seq...>) {
+    static void constexpr detail_combine(EXEC_POL, FORALL_PARAMS_T& out, const FORALL_PARAMS_T& in, camp::idx_seq<Seq...>) {
       CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(out.param_tup), camp::get<Seq>(in.param_tup)));
     }
+
     template<typename EXEC_POL, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
-    friend void constexpr detail_combine(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
-      camp::make_tuple( (combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ))... );
-      //CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup)));
-      //CAMP_EXPAND(printf("Seq : %d\n", Seq));
+    static void constexpr detail_combine(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
+      CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup)));
+      CAMP_EXPAND(printf("Seq : %d\n", (int)Seq));
     }
+    
     // Resolve
     template<typename EXEC_POL, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
-    friend void constexpr detail_resolve(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
+    static void constexpr detail_resolve(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
       CAMP_EXPAND(resolve<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
 
@@ -141,7 +142,7 @@ namespace detail
     template<typename EXEC_POL>
     RAJA_HOST_DEVICE
     friend void constexpr combine(FORALL_PARAMS_T& f_params) {
-      detail_combine(EXEC_POL(), f_params, params_seq{} );
+      detail_combine(EXEC_POL(), f_params, camp::make_idx_seq_t< camp::tuple_size<FORALL_PARAMS_T::Base>::value >{});
     }
     // Resolve
     template<typename EXEC_POL>

@@ -35,6 +35,10 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
 
     //printf("forallp_cuda_kernel\n");
     combine<RAJA::cuda_exec<256>>(t);
+    
+    //combine<RAJA::cuda_exec<256>>(camp::get<0>(t.param_tup));
+    //combine<RAJA::cuda_exec<256>>(camp::get<1>(t.param_tup));
+    //combine<RAJA::cuda_exec<256>>(camp::get<2>(t.param_tup));
   }
 
   template <typename EXEC_POL, typename B, typename... Params>
@@ -57,15 +61,14 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
 
     init<EXEC_POL>(f_params, cudastuff);
 
-    size_t shmem = 1000;
+    printf("----------\n");
 
-    std::cout << "check\n";
-    printf("forall_param\n");
+    size_t shmem = 1000;
 
     //
     // Launch the kernels
     //
-    size_t blocksz = 256;
+    //size_t blocksz = 256;
     void *args[] = {(void*)&N, (void*)&body, (void*)&f_params};
     RAJA::cuda::launch(
         (const void*)func,
@@ -75,6 +78,9 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
         shmem,
         cudastuff.stream   //stream
     );
+
+    cudaDeviceSynchronize(); // TODO : remove, this is only here for printing degub info.
+    printf("----------\n");
 
     resolve<RAJA::cuda_exec<256>>(f_params);
   }
