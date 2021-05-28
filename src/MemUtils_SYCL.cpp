@@ -63,8 +63,7 @@ cl::sycl::queue* getQueue() {
     return app_q->get<camp::resources::Sycl>().get_queue();
   }
 
-  std::cout << "NOT USING Application QUEUE" << std::endl;
-  return &g_status.qu;
+  return NULL;
 }
 
 }  // namespace detail

@@ -113,6 +113,11 @@ RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl 
     sycl_dim_t gridSize = impl::getGridDim(static_cast<size_t>(len), BlockSize);
 
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+    // Global resource was not set, use the resource that was passed to forall
+    // Determine if the default SYCL res is being used
+    if (!q) { 
+      q = sycl_res.get_queue();
+    }
 
     q->submit([&](cl::sycl::handler& h) {
 
@@ -162,10 +167,14 @@ RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &
     sycl_dim_t gridSize = impl::getGridDim(static_cast<size_t>(len), BlockSize);
 
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+    // Global resource was not set, use the resource that was passed to forall
+    // Determine if the default SYCL res is being used
+    if (!q) { 
+      q = sycl_res.get_queue();
+    }
     LOOP_BODY* lbody;
     Iterator* beg;
     RAJA_FT_BEGIN;
-
     //
     // Setup shared memory buffers
     // Kernel body is nontrivially copyable, create space on device and copy to
@@ -196,6 +205,8 @@ RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &
 
     RAJA_FT_END;
   }
+
+  
 
   return resources::EventProxy<resources::Sycl>(&sycl_res);
 }
