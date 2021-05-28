@@ -46,7 +46,8 @@ user specified name::
      GPU activities:  100.00%  2.0307ms         1  2.0307ms  2.0307ms  2.0307ms  _ZN4RAJA4expt17launch_global_fcnIZ4mainEUlNS0_13LaunchContextEE_EEvS2_T_
           API calls:  100.00%  27.030us         1  27.030us  27.030us  27.030us  cudaLaunchKernel
 
-As future work we plan to add support to other profiling tools. Enabling NVTX profiling
+As future work we plan to add support to other profiling tools; API changes may occur 
+based on user feedback and integration with other tools. Enabling NVTX profiling
 with RAJA Teams requires RAJA to be configured with ENABLE_NV_TOOLS_EXT=ON.
 
 The file RAJA/examples/teams_reductions.cpp contains a complete working example code.
