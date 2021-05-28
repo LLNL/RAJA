@@ -26,13 +26,13 @@ gcc_8_3_1:
 
 xl_16_1_1_7:
   variables:
-    SPEC: "%xl@16.1.1.7 cxxflags='-qthreaded -std=c++14 -O3 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -std=c++11 -qsuppress=1500-029 -qsuppress=1500-036'"
+    SPEC: "%xl@16.1.1.7 cxxflags='-qthreaded -std=c++14 -O3 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036'"
     DEFAULT_TIME: 50
   extends: .build_and_test_on_lassen
 
 xl_16_1_1_7_gcc_8_3_1:
   variables:
-    SPEC: "%xl@16.1.1.7 cxxflags='--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -qthreaded -std=c++14 -O3 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -std=c++11 -qsuppress=1500-029 -qsuppress=1500-036' cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
+    SPEC: "%xl@16.1.1.7 cxxflags='--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -qthreaded -std=c++14 -O3 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036' cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
     DEFAULT_TIME: 50
   extends: .build_and_test_on_lassen
 
@@ -53,6 +53,20 @@ ibm_clang_9_gcc_8_cuda:
 gcc_8_3_1_cuda:
   variables:
     SPEC: "+cuda %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.168"
+  extends: .build_and_test_on_lassen
+
+xl_16_1_1_7_cuda:
+  variables:
+    SPEC: "+cuda %xl@16.1.1.7 cuda_arch=70 ^cuda@10.1.168 ^cmake@3.14.5"
+    DEFAULT_TIME: 60
+  allow_failure: true
+  extends: .build_and_test_on_lassen
+
+xl_16_1_1_7_gcc_8_3_1_cuda_11:
+  variables:
+    SPEC: "+cuda %xl@16.1.1.7 cuda_arch=70 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 ^cuda@11.0.2 ^cmake@3.14.5"
+    DEFAULT_TIME: 60
+  allow_failure: true
   extends: .build_and_test_on_lassen
 
 ##########
