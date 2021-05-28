@@ -22,6 +22,7 @@
 
 #include <cstdlib>
 #include <stdexcept>
+#include <stdio.h>
 
 #if defined(RAJA_ENABLE_HIP)
 #include <hip/hip_runtime.h>
@@ -126,7 +127,12 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
 RAJA_HOST_DEVICE
 inline void RAJA_ABORT_OR_THROW(const char *str)
 {
-#if defined(__CUDA_ARCH__)
+  printf ( "%s\n", str );
+#if defined(RAJA_ENABLE_TARGET_OPENMP) && (_OPENMP >= 201511)
+  // seg faulting here instead of calling std::abort for omp target
+  const char * errtemp = nullptr;
+  errtemp = str;
+#elif defined(__CUDA_ARCH__)
   asm ("trap;");
 
 #elif defined(__HIP_DEVICE_COMPILE__)
@@ -134,6 +140,7 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
 
 #else
 #ifdef RAJA_COMPILER_MSVC
+  fflush(stdout);
   char *value;
   size_t len;
   bool no_except = false;
@@ -146,6 +153,7 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
   bool no_except = std::getenv("RAJA_NO_EXCEPT") != nullptr;
 #endif
 
+  fflush(stdout);
   if (no_except) {
     std::abort();
   } else {

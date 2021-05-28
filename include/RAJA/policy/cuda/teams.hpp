@@ -92,7 +92,9 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+        {
+          RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream, ctx.kernel_name);
+        }
       }
 
       if (!async) { RAJA::cuda::synchronize(stream); }
