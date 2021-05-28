@@ -90,12 +90,16 @@ struct FunctionNode : detail::NodeData
 
   FunctionNode& operator=(args_type const& args)
   {
-    m_function = args.m_function;
+    // non-mutable lambdas are not assignable
+    m_function.~FunctionBody();
+    new(&m_function) FunctionBody(args.m_function);
     return *this;
   }
   FunctionNode& operator=(args_type&& args)
   {
-    m_function = std::move(args.m_function);
+    // non-mutable lambdas are not assignable
+    m_function.~FunctionBody();
+    new(&m_function) FunctionBody(std::move(args.m_function));
     return *this;
   }
 
@@ -104,12 +108,6 @@ struct FunctionNode : detail::NodeData
   FunctionBody const& get_function() const
   {
     return m_function;
-  }
-
-  template < typename Func >
-  void set_function(Func&& func)
-  {
-    m_function = std::forward<Func>(func);
   }
 
 protected:

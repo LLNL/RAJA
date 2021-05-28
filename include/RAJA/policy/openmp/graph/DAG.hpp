@@ -40,16 +40,32 @@ template < typename GraphResource >
 struct DAGExec<omp_task_atomic_graph, GraphResource>
     : detail::DAGExecBase<omp_task_atomic_graph, GraphResource>
 {
+  DAGExec() = default;
+
+  DAGExec(DAGExec const&) = default;
+  DAGExec(DAGExec&&) = default;
+
+  DAGExec& operator=(DAGExec const&) = default;
+  DAGExec& operator=(DAGExec&&) = default;
+
+
+  bool empty() const
+  {
+    return !m_node_data;
+  }
+
   resources::EventProxy<GraphResource> exec(GraphResource& gr)
   {
-    gr.wait();
+    if (!empty()) {
+      gr.wait();
 #pragma omp parallel default(none) shared(gr)
 #pragma omp single nowait
-    {
-      for (NodeExecConnections* connections : m_first_node_execs) {
-        exec_traverse(connections, gr);
-      }
-    } // end omp parallel
+      {
+        for (NodeExecConnections* connections : m_first_node_execs) {
+          exec_traverse(connections, gr);
+        }
+      } // end omp parallel
+    }
     return resources::EventProxy<GraphResource>(&gr);
   }
 
@@ -137,27 +153,42 @@ template < typename GraphResource >
 struct DAGExec<omp_task_depend_graph, GraphResource>
     : detail::DAGExecBase<omp_task_depend_graph, GraphResource>
 {
+  DAGExec() = default;
+
+  DAGExec(DAGExec const&) = default;
+  DAGExec(DAGExec&&) = default;
+
+  DAGExec& operator=(DAGExec const&) = default;
+  DAGExec& operator=(DAGExec&&) = default;
+
+  bool empty() const
+  {
+    return !m_node_data;
+  }
+
   resources::EventProxy<GraphResource> exec(GraphResource& gr)
   {
-    gr.wait();
+    if (!empty()) {
+      gr.wait();
 #pragma omp parallel default(none) shared(gr)
 #pragma omp single nowait
-    {
-      for (NodeExecConnections& connections : m_node_execs) {
-        detail::NodeExec* node_exec = &connections;
-        detail::NodeData* node_data = node_exec->m_nodeData;
+      {
+        for (NodeExecConnections& connections : m_node_execs) {
+          detail::NodeExec* node_exec = &connections;
+          detail::NodeData* node_data = node_exec->m_nodeData;
 
-        size_t num_children = connections->m_children.size();
-        detail::NodeData** child_data = connections->m_children.data();
+          size_t num_children = connections->m_children.size();
+          detail::NodeData** child_data = connections->m_children.data();
 
 #pragma omp task default(none) firstprivate(node_exec) /*shared(gr)*/ \
                  depend(in:node_data[0:1]) \
                  depend(iterator(size_t it = 0:num_children), out:child_data[it][0:1])
-        {
-          node_exec->exec(/*gr*/);
-        } // end omp task
-      }
-    } // end omp parallel
+          {
+            node_exec->exec(/*gr*/);
+          } // end omp task
+        }
+      } // end omp parallel
+    }
     return resources::EventProxy<GraphResource>(&gr);
   }
 

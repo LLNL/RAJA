@@ -146,15 +146,19 @@ struct ForallNode : detail::NodeData
   ForallNode& operator=(args_type const& args)
   {
     m_policy = args.m_policy;
-    m_container = args.m_container;
-    m_body = args.m_body;
+    m_container.~Container();
+    new(&m_container) Container(args.m_container);
+    m_body.~LoopBody();
+    new(&m_body) LoopBody(args.m_body);
     return *this;
   }
   ForallNode& operator=(args_type&& args)
   {
     m_policy = std::move(args.m_policy);
-    m_container = std::move(args.m_container);
-    m_body = std::move(args.m_body);
+    m_container.~Container();
+    new(&m_container) Container(std::move(args.m_container));
+    m_body.~LoopBody();
+    new(&m_body) LoopBody(std::move(args.m_body));
     return *this;
   }
 
@@ -165,32 +169,14 @@ struct ForallNode : detail::NodeData
     return m_policy;
   }
 
-  template < typename EP_arg >
-  void set_exec_policy(EP_arg&& p)
-  {
-    m_policy = std::forward<EP_arg>(p);
-  }
-
   Container const& get_segment() const
   {
     return m_container;
   }
 
-  template < typename CO_arg >
-  void set_segment(CO_arg&& c)
-  {
-    m_container = std::forward<CO_arg>(c);
-  }
-
   LoopBody const& get_loop_body() const
   {
     return m_body;
-  }
-
-  template < typename LB_arg >
-  void set_loop_body(LB_arg&& loop_body)
-  {
-    m_body = std::forward<LB_arg>(loop_body);
   }
 
 protected:

@@ -17,6 +17,7 @@
 
 #include <vector>
 #include <limits>
+#include <cstdio>
 
 
 // Basic Constructors
@@ -326,5 +327,191 @@ TEST( GraphBasicExecUnitTest, RandomExec )
     ASSERT_LE(0, order[edge.second]);
     ASSERT_LT(order[edge.second], num_nodes);
     ASSERT_LT(order[edge.first], order[edge.second]);
+  }
+}
+
+
+TEST( GraphMultipleExecUnitTest, OneNodeExec )
+{
+  using GraphPolicy = RAJA::loop_graph;
+  using GraphResource = RAJA::resources::Host;
+  using graph_type = RAJA::expt::graph::DAG;
+  using graph_exec_type = RAJA::expt::graph::DAGExec<GraphPolicy, GraphResource>;
+
+  auto r = GraphResource::get_default();
+
+  // default constructor
+  graph_type g;
+  graph_exec_type ge;
+
+  ASSERT_TRUE( g.empty() );
+  ASSERT_TRUE( ge.empty() );
+
+  graph_type::GenericNodeView generic_node_view;
+  graph_type::NodeView<RAJA::expt::graph::EmptyNode> node_view;
+
+  ASSERT_FALSE( generic_node_view );
+  ASSERT_FALSE( node_view );
+
+  for (int i = 0; i < 5; ++i) {
+
+    // create node or reassign node contents
+    {
+      auto node_args = RAJA::expt::graph::Empty();
+
+      if (!node_view) {
+        ASSERT_EQ( i, 0 );
+        node_view = g.add_node(std::move(node_args));
+        generic_node_view = node_view;
+      } else if (i == 1) {
+        node_view.reset(std::move(node_args));
+      } else if (i == 2) {
+        node_view.reset(node_args);
+      } else if (i == 3) {
+        generic_node_view.reset(std::move(node_args));
+      } else /*if (i == 4)*/ {
+        generic_node_view.reset(node_args);
+      }
+
+      ASSERT_TRUE( generic_node_view );
+      ASSERT_TRUE( node_view );
+    }
+
+    ASSERT_FALSE( g.empty() );
+
+    // instantiate graph once
+    if (ge.empty() || i % 2 == 0) {
+      ge = g.template instantiate<GraphPolicy, GraphResource>();
+    }
+    ASSERT_FALSE( ge.empty() );
+
+    // 1-node exec
+    RAJA::resources::Event e = ge.exec(r);
+    e.wait();
+
+    ASSERT_FALSE( g.empty() );
+  }
+}
+
+TEST( GraphMultipleExecUnitTest, FourNodeExec )
+{
+  using GraphPolicy = RAJA::loop_graph;
+  using GraphResource = RAJA::resources::Host;
+  using graph_type = RAJA::expt::graph::DAG;
+  using graph_exec_type = RAJA::expt::graph::DAGExec<GraphPolicy, GraphResource>;
+  using node_id = typename graph_type::node_id_type;
+
+  auto r = GraphResource::get_default();
+
+  // default constructor
+  graph_type g;
+  graph_exec_type ge;
+
+  ASSERT_TRUE( g.empty() );
+  ASSERT_TRUE( ge.empty() );
+
+  graph_type::GenericNodeView node0_view;
+  graph_type::GenericNodeView node1_view;
+  graph_type::GenericNodeView node2_view;
+  graph_type::GenericNodeView node3_view;
+
+  ASSERT_FALSE( node0_view );
+  ASSERT_FALSE( node1_view );
+  ASSERT_FALSE( node2_view );
+  ASSERT_FALSE( node3_view );
+
+  int orders[3][4]{{-1, -1, -1, -1}, {-1, -1, -1, -1}, {-1, -1, -1, -1}};
+
+  for (int i = 0; i < 3; ++i) {
+
+    int count = 0;
+    int* count_ptr = &count;
+    int* order = orders[i];
+
+    // create node or reassign node contents
+    {
+      auto node0_args = RAJA::expt::graph::Function([=](){ order[0] = (*count_ptr)++; });
+      auto node1_args = RAJA::expt::graph::Function([=](){ order[1] = (*count_ptr)++; });
+      auto node2_args = RAJA::expt::graph::Function([=](){ order[2] = (*count_ptr)++; });
+      auto node3_args = RAJA::expt::graph::Function([=](){ order[3] = (*count_ptr)++; });
+
+      if (!node0_view) {
+
+        ASSERT_FALSE( node0_view );
+        ASSERT_FALSE( node1_view );
+        ASSERT_FALSE( node2_view );
+        ASSERT_FALSE( node3_view );
+
+        /*
+         *    0
+         *   / \
+         *  1   2
+         *   \ /
+         *    3
+         */
+        node0_view = g.add_node(          node0_args );
+        node1_view = g.add_node(          node1_args );
+        node2_view = g.add_node(std::move(node2_args));
+        node3_view = g.add_node(std::move(node3_args));
+        g.add_edge(node0_view, node1_view);
+        g.add_edge(node0_view, node2_view);
+        g.add_edge(node1_view, node3_view);
+        g.add_edge(node2_view, node3_view);
+
+      } else {
+
+        node0_view.reset(          node0_args );
+        node1_view.reset(std::move(node1_args));
+        node2_view.reset(          node2_args );
+        node3_view.reset(std::move(node3_args));
+      }
+
+      ASSERT_TRUE( node0_view );
+      ASSERT_TRUE( node1_view );
+      ASSERT_TRUE( node2_view );
+      ASSERT_TRUE( node3_view );
+    }
+
+    ASSERT_FALSE( g.empty() );
+
+    ASSERT_EQ(count, 0);
+    for (int j = 0; j < 3; ++j) {
+      ASSERT_EQ(orders[j][0], -1);
+      ASSERT_EQ(orders[j][1], -1);
+      ASSERT_EQ(orders[j][2], -1);
+      ASSERT_EQ(orders[j][3], -1);
+    }
+
+    // instantiate graph once
+    if (ge.empty() || i % 2 == 0) {
+      ge = g.template instantiate<GraphPolicy, GraphResource>();
+    }
+    ASSERT_FALSE( ge.empty() );
+
+    // 4-node diamond DAG exec
+    ge.exec(r);
+    r.wait();
+
+    ASSERT_FALSE( g.empty() );
+
+    ASSERT_EQ(count, 4);
+    ASSERT_LT(order[0], order[1]);
+    ASSERT_LT(order[0], order[2]);
+    ASSERT_LT(order[1], order[3]);
+    ASSERT_LT(order[2], order[3]);
+    for (int j = 0; j < 3; ++j) {
+      if (i != j) {
+        ASSERT_EQ(orders[j][0], -1);
+        ASSERT_EQ(orders[j][1], -1);
+        ASSERT_EQ(orders[j][2], -1);
+        ASSERT_EQ(orders[j][3], -1);
+      }
+    }
+
+    // reset orders
+    order[0] = -1;
+    order[1] = -1;
+    order[2] = -1;
+    order[3] = -1;
   }
 }

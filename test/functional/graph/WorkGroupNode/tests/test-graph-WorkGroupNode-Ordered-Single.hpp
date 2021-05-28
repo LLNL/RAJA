@@ -67,7 +67,7 @@ void testWorkGroupNodeOrderedSingle(IndexType begin, IndexType end)
   }
 
   RAJA::expt::graph::DAG g;
-  RAJA::expt::graph::DAG::Node<WorkGroupNode_type> node =
+  RAJA::expt::graph::DAG::NodeView<WorkGroupNode_type> node =
       g.add_node(RAJA::expt::graph::WorkGroup<
                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
                    IndexType,

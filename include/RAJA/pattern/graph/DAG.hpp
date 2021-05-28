@@ -21,8 +21,11 @@
 #include "RAJA/config.hpp"
 
 #include <utility>
+#include <limits>
 #include <vector>
 #include <memory>
+#include <stdexcept>
+#include <string>
 
 #include "RAJA/util/macros.hpp"
 
@@ -59,18 +62,169 @@ struct DAGExec;
 struct DAG
 {
   using node_id_type = size_t;
+  static const node_id_type invalid_id = std::numeric_limits<size_t>::max();
+
+  struct GenericNodeView;
 
   template < typename node_type >
-  struct Node
+  struct NodeView
   {
-    node_id_type id;
-    node_type* node;
+    using args_type = typename node_type::args_type;
 
-    operator node_id_type() const
+    node_id_type id = invalid_id;
+    node_type* node = nullptr;
+
+    NodeView() = default;
+
+    NodeView(node_id_type id_, node_type* node_) noexcept
+      : id(id_)
+      , node(node_)
+    {
+    }
+
+    NodeView(NodeView const&) = default;
+    NodeView(NodeView&&) = default;
+
+    NodeView& operator=(NodeView const&) = default;
+    NodeView& operator=(NodeView&&) = default;
+
+    ~NodeView() = default;
+
+    bool try_reset(args_type const& args) noexcept
+    {
+      if (*this) {
+        (*node) = args;
+        return true;
+      }
+      return false;
+    }
+    bool try_reset(args_type&& args) noexcept
+    {
+      if (*this) {
+        (*node) = std::move(args);
+        return true;
+      }
+      return false;
+    }
+
+    void reset(args_type const& args)
+    {
+      if (!try_reset(args)) {
+        throw std::runtime_error("NodeView::reset failed, no node to reset");
+      }
+    }
+    void reset(args_type&& args)
+    {
+      if (!try_reset(std::move(args))) {
+        throw std::runtime_error("NodeView::reset failed, no node to reset");
+      }
+    }
+
+    operator GenericNodeView() const noexcept
+    {
+      return {id, node};
+    }
+
+    operator node_id_type() const noexcept
     {
       return id;
     }
+
+    explicit operator bool() const noexcept
+    {
+      return id != invalid_id && node != nullptr;
+    }
   };
+
+  struct GenericNodeView
+  {
+    node_id_type id = invalid_id;
+    detail::NodeData* node = nullptr;
+
+    GenericNodeView() = default;
+
+    GenericNodeView(node_id_type id_, detail::NodeData* node_) noexcept
+      : id(id_)
+      , node(node_)
+    {
+    }
+
+    GenericNodeView(GenericNodeView const&) = default;
+    GenericNodeView(GenericNodeView&&) = default;
+
+    GenericNodeView& operator=(GenericNodeView const&) = default;
+    GenericNodeView& operator=(GenericNodeView&&) = default;
+
+    ~GenericNodeView() = default;
+
+    template < typename node_type >
+    NodeView<node_type> try_get() const noexcept
+    {
+      node_type* typed_node = nullptr;
+      if (*this) {
+        typed_node = dynamic_cast<node_type*>(node);
+      }
+      if (typed_node != nullptr) {
+        return {id, typed_node};
+      } else {
+        return {};
+      }
+    }
+
+    template < typename node_type >
+    NodeView<node_type> get() const
+    {
+      NodeView<node_type> typed_node_view = try_get<node_type>();
+
+      if (*this && !typed_node_view) {
+        throw std::runtime_error("GenericNodeView::get failed to convert to node_type");
+      }
+
+      return typed_node_view;
+    }
+
+    template < typename node_args >
+    bool try_reset(node_args&& args) noexcept
+    {
+      if (*this) {
+        using node_type = typename camp::decay<node_args>::node_type;
+        NodeView<node_type> typed_node_view = try_get<node_type>();
+        if (typed_node_view) {
+          return typed_node_view.try_reset(std::forward<node_args>(args));
+        }
+      }
+      return false;
+    }
+
+    template < typename node_args >
+    void reset(node_args&& args)
+    {
+      if (*this) {
+        using node_type = typename camp::decay<node_args>::node_type;
+        NodeView<node_type> typed_node_view = get<node_type>();
+        typed_node_view.reset(std::forward<node_args>(args));
+      } else {
+        throw std::runtime_error("GenericNodeView::reset failed, this has no node");
+      }
+    }
+
+    operator node_id_type() const noexcept
+    {
+      return id;
+    }
+
+    explicit operator bool() const noexcept
+    {
+      return id != invalid_id && node != nullptr;
+    }
+  };
+
+
+  template < typename node_args >
+  using node_type = typename camp::decay<node_args>::node_type;
+
+  template < typename node_args >
+  using node_view = NodeView< node_type<node_args> >;
 
   DAG() = default;
 
@@ -80,11 +234,9 @@ struct DAG
   }
 
   template < typename node_args>
-  auto add_node(node_args&& args)
-    -> Node<typename camp::decay<node_args>::node_type>
+  node_view<node_args> add_node(node_args&& args)
   {
-    using node_type = typename camp::decay<node_args>::node_type;
-    auto node = new node_type(std::forward<node_args>(args));
+    auto node = new node_type<node_args>(std::forward<node_args>(args));
     // store node in unique_ptr in container, get id
     node_id_type node_id = insert_node(node);
     return {node_id, node};
@@ -94,12 +246,18 @@ struct DAG
   {
 #if defined(RAJA_BOUNDS_CHECK_INTERNAL)
     if(id_a >= m_node_connections.size()) {
-      printf("Error! DAG::add_edge id_a %zu is not valid.\n", id_a);
-      RAJA_ABORT_OR_THROW("Invalid node id error\n");
+      std::string err;
+      err += "Error! DAG::add_edge id_a ";
+      err += std::to_string(id_a);
+      err += " is not valid.";
+      throw std::runtime_error(std::move(err));
     }
     if(id_b >= m_node_connections.size()) {
-      printf("Error! DAG::add_edge id_b %zu is not valid.\n", id_b);
-      RAJA_ABORT_OR_THROW("Invalid node id error\n");
+      std::string err;
+      err += "Error! DAG::add_edge id_b ";
+      err += std::to_string(id_b);
+      err += " is not valid.";
+      throw std::runtime_error(std::move(err));
     }
 #endif
     m_node_connections[id_a].add_child(m_node_connections[id_b]);

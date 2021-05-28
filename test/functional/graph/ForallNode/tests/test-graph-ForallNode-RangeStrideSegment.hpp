@@ -23,43 +23,60 @@ void ForallNodeRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
 
-  allocateForallTestData<INDEX_TYPE>(N,
-                                     working_res,
-                                     &working_array,
-                                     &check_array,
-                                     &test_array);
-
-  for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
-    test_array[RAJA::stripIndexType(i)] = INDEX_TYPE(0);
-  }
-
-  res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
-
-  INDEX_TYPE idx = first;
-  for (INDEX_TYPE i = INDEX_TYPE(0); i < N; ++i) {
-    test_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
-    idx += stride;
-  }
-
   RAJA::expt::graph::DAG g;
-  g.add_node(RAJA::expt::graph::Forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-    working_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
-  }));
-  RAJA::expt::graph::DAGExec<GRAPH_POLICY, WORKING_RES> ge =
-      g.template instantiate<GRAPH_POLICY, WORKING_RES>();
-  ge.exec(res);
+  RAJA::expt::graph::DAGExec<GRAPH_POLICY, WORKING_RES> ge;
+  RAJA::expt::graph::DAG::GenericNodeView node_view;
 
-  res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
-  res.wait();
+  for (int i = 0; i < 2; ++i) {
 
-  for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
-    ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
+    allocateForallTestData<INDEX_TYPE>(N,
+                                       working_res,
+                                       &working_array,
+                                       &check_array,
+                                       &test_array);
+
+    for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
+      test_array[RAJA::stripIndexType(i)] = INDEX_TYPE(0);
+    }
+
+    res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
+
+    INDEX_TYPE idx = first;
+    for (INDEX_TYPE i = INDEX_TYPE(0); i < N; ++i) {
+      test_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
+      idx += stride;
+    }
+
+    {
+      auto node_args = RAJA::expt::graph::Forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+        working_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
+      });
+
+      if (!node_view) {
+        node_view = g.add_node(std::move(node_args));
+      } else {
+        node_view.reset(std::move(node_args));
+      }
+    }
+
+    if (ge.empty()) {
+      ge = g.template instantiate<GRAPH_POLICY, WORKING_RES>();
+    }
+
+    ge.exec(res);
+
+    res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
+    res.wait();
+
+    for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
+      ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
+    }
+
+    deallocateForallTestData<INDEX_TYPE>(working_res,
+                                         working_array,
+                                         check_array,
+                                         test_array);
   }
-
-  deallocateForallTestData<INDEX_TYPE>(working_res,
-                                       working_array,
-                                       check_array,
-                                       test_array);
 }
 
 
