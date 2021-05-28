@@ -60,7 +60,7 @@ namespace statement
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
 struct SyclKernelExtNonTrivial
-    : public internal::Statement<sycl_exec<0>, EnclosedStmts...> {
+    : public internal::Statement<sycl_launch<0>, EnclosedStmts...> {
 };
 
 /*
@@ -78,7 +78,7 @@ using SyclKernelNonTrivial =
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
 struct SyclKernelExt
-    : public internal::Statement<sycl_exec<0>, EnclosedStmts...> {
+    : public internal::Statement<sycl_launch<0>, EnclosedStmts...> {
 };
 
 /*
@@ -109,7 +109,7 @@ namespace internal
  * This is annotated to guarantee that device code generated
  * can be launched by a kernel with BlockSize number of threads.
  *
- * This launcher is used by the SyclKerelFixed policies.
+ * This launcher is used by the SyclKernel policies.
  */
 template <typename Data, typename Exec>
 void SyclKernelLauncher(Data data, cl::sycl::nd_item<3> item)

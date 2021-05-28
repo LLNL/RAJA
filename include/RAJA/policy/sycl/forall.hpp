@@ -124,7 +124,7 @@ RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl 
       h.parallel_for( cl::sycl::nd_range<1>{gridSize, blockSize},
                       [=]  (cl::sycl::nd_item<1> it) {
 
-        size_t ii = it.get_global_id(0);
+        IndexType ii = it.get_global_id(0);
         if (ii < len) {
           loop_body(begin[ii]);
         }

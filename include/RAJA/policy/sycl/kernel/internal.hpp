@@ -50,16 +50,15 @@ struct LaunchDims {
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  LaunchDims() : group{0,0,0}, // min_group{0},
+  LaunchDims() : group{0,0,0},
                  local{1,1,1},
-                 global{1,1,1} {}//, min_local{0} {}
+                 global{1,1,1} {}
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  LaunchDims(LaunchDims const &c) :
-  group(c.group),//   min_group(c.min_group),
-  local(c.local),//, min_local(c.min_local)
-  global(c.global)
+  LaunchDims(LaunchDims const &c) : group(c.group),
+                                    local(c.local),
+                                    global(c.global)
   {
   }
 
@@ -112,7 +111,7 @@ struct LaunchDims {
 
     // Note: Work group allowable sizes depend on the device
     //       Could query the device to set them
-    //       For now, error on bad work group sizei
+    //       For now, error on bad work group size
 
     cl::sycl::range<3> ret_th = {launch_local.x, launch_local.y, launch_local.z};
     cl::sycl::range<3> ret_gl = {launch_global.x, launch_global.y, launch_global.z};
