@@ -22,6 +22,7 @@
 
 #include <utility>
 #include <vector>
+#include <list>
 
 namespace RAJA
 {
@@ -92,27 +93,56 @@ struct NodeConnections
     node.m_parent_count += 1;
   }
 
-  template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
-  void forward_traverse(NodeConnections* connections,
-                        Examine_Func&& examine_func,
-                        Enter_Func&& enter_func,
-                        Exit_Func&& exit_func)
+  bool traversal_examine()
   {
-    std::forward<Examine_Func>(examine_func)(*this);
     if (m_count == m_parent_count) {
       m_count = 0;
-      std::forward<Enter_Func>(enter_func)(*this);
-      for (size_t child_id : m_children)
-      {
-        NodeConnections& child = connections[child_id];
-        child.m_count += 1;
-        child.forward_traverse(connections,
-                               std::forward<Examine_Func>(examine_func),
-                               std::forward<Enter_Func>(enter_func),
-                               std::forward<Exit_Func>(exit_func));
-      }
-      std::forward<Exit_Func>(exit_func)(*this);
+      return true;
     }
+    return false;
+  }
+
+  template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
+  void forward_depth_first_traversal(NodeConnections* connections,
+                                     Examine_Func&& examine_func,
+                                     Enter_Func&& enter_func,
+                                     Exit_Func&& exit_func)
+  {
+    std::forward<Enter_Func>(enter_func)(*this);
+    for (size_t child_id : m_children)
+    {
+      NodeConnections& child = connections[child_id];
+      child.m_count += 1;
+      std::forward<Examine_Func>(examine_func)(child);
+      if (child.traversal_examine()) {
+        child.forward_depth_first_traversal(
+            connections,
+            std::forward<Examine_Func>(examine_func),
+            std::forward<Enter_Func>(enter_func),
+            std::forward<Exit_Func>(exit_func));
+      }
+    }
+    std::forward<Exit_Func>(exit_func)(*this);
+  }
+
+  template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
+  void forward_breadth_first_traversal(std::list<detail::NodeConnections*>& queue,
+                                       NodeConnections* connections,
+                                       Examine_Func&& examine_func,
+                                       Enter_Func&& enter_func,
+                                       Exit_Func&& exit_func)
+  {
+    std::forward<Enter_Func>(enter_func)(*this);
+    for (size_t child_id : m_children)
+    {
+      NodeConnections& child = connections[child_id];
+      child.m_count += 1;
+      std::forward<Examine_Func>(examine_func)(child);
+      if (child.traversal_examine()) {
+        queue.emplace_back(&child);
+      }
+    }
+    std::forward<Exit_Func>(exit_func)(*this);
   }
 
   int m_parent_count = 0;

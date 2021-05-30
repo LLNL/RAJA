@@ -82,7 +82,7 @@ private:
   {
     m_node_execs.reserve(dag.m_node_connections.size());
     // populate m_node_execs in a correct order
-    dag.forward_traverse(
+    dag.forward_depth_first_traversal(
           [](detail::NodeConnections&) {
             // do nothing
           },

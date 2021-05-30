@@ -226,7 +226,7 @@ private:
     : m_node_data(dag.m_node_data)
   {
     // populate m_node_execs in a correct order
-    dag.forward_traverse(
+    dag.forward_breadth_first_traversal(
           [](detail::NodeConnections&) {
             // do nothing
           },

@@ -23,6 +23,7 @@
 #include <utility>
 #include <limits>
 #include <vector>
+#include <list>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -294,23 +295,58 @@ private:
     return node_id;
   }
 
-  // traverse nodes in an order consistent with the DAG, calling enter_func
-  // when traversing a node before traversing any of the node's children and
-  // calling exit_func after looking, but not necessarily traversing each of
-  // the node's children. NOTE that exit_function is not necessarily called
-  // after exit_function is called on each of the node's children. NOTE that a
+  // Depth first traversal of nodes in an order consistent with the DAG,
+  // calling enter_func when traversing a node before traversing any of the
+  // node's children and calling exit_func after examining all of the node's
+  // children. NOTE that exit_function is not necessarily called after
+  // exit_function is called on each of the node's children. NOTE that a
   // node is not used again after exit_function is called on it.
   template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
-  void forward_traverse(Examine_Func&& examine_func,
-                        Enter_Func&& enter_func,
-                        Exit_Func&& exit_func)
+  void forward_depth_first_traversal(Examine_Func&& examine_func,
+                                     Enter_Func&& enter_func,
+                                     Exit_Func&& exit_func)
   {
     for (detail::NodeConnections& child : m_node_connections)
     {
-      child.forward_traverse(m_node_connections.data(),
-                             std::forward<Examine_Func>(examine_func),
-                             std::forward<Enter_Func>(enter_func),
-                             std::forward<Exit_Func>(exit_func));
+      if (child.m_parent_count == 0) {
+        std::forward<Examine_Func>(examine_func)(child);
+        child.forward_depth_first_traversal(
+            m_node_connections.data(),
+            std::forward<Examine_Func>(examine_func),
+            std::forward<Enter_Func>(enter_func),
+            std::forward<Exit_Func>(exit_func));
+      }
+    }
+  }
+
+  // Breadth first traversal of nodes in an order consistent with the DAG,
+  // calling enter_func when traversing a node before traversing any of the
+  // node's children and calling exit_func after examining all of the node's
+  // children. NOTE that exit_function is called before exit_function is
+  // called on each of the node's children. NOTE that a node is not used
+  // again after exit_function is called on it.
+  template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
+  void forward_breadth_first_traversal(Examine_Func&& examine_func,
+                                       Enter_Func&& enter_func,
+                                       Exit_Func&& exit_func)
+  {
+    std::list<detail::NodeConnections*> queue;
+    for (detail::NodeConnections& child : m_node_connections)
+    {
+      if (child.m_parent_count == 0) {
+        std::forward<Examine_Func>(examine_func)(child);
+        queue.emplace_back(&child);
+      }
+    }
+    while (!queue.empty())
+    {
+      detail::NodeConnections* child = queue.front();
+      queue.pop_front();
+      child->forward_breadth_first_traversal(
+          queue, m_node_connections.data(),
+          std::forward<Examine_Func>(examine_func),
+          std::forward<Enter_Func>(enter_func),
+          std::forward<Exit_Func>(exit_func));
     }
   }
 };
