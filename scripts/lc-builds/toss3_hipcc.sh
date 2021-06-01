@@ -35,12 +35,13 @@ mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
+  -DROCM_ROOT_DIR="/opt/rocm-${COMP_VER}" \
   -DHIP_ROOT_DIR="/opt/rocm-${COMP_VER}/hip" \
   -DHIP_CLANG_PATH=/opt/rocm-${COMP_VER}/llvm/bin \
   -DCMAKE_C_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/clang \
   -DCMAKE_CXX_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/clang++ \
   -DHIP_HIPCC_FLAGS=--offload-arch=${COMP_ARCH} \
-  -C ../host-configs/lc-builds/toss3/hip_link_${COMP_VER}.cmake \
+  -C ../host-configs/lc-builds/toss3/hip_link_X.cmake \
   -DENABLE_HIP=ON \
   -DENABLE_OPENMP=OFF \
   -DENABLE_CUDA=OFF \
