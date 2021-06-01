@@ -81,7 +81,7 @@ inclusive_inplace(
     }
   }
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -129,7 +129,7 @@ exclusive_inplace(
     }
   }
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!

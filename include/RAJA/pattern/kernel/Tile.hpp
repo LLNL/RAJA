@@ -242,7 +242,7 @@ struct StatementExecutor<
                 EnclosedStmts...> tile_wrapper(data);
 
     // Loop over tiles, executing enclosed statement list
-    auto &r = resources::get_resource<EPol>::type::get_default();
+    auto r = resources::get_resource<EPol>::type::get_default();
     forall_impl(r, EPol{}, tiled_iterable, tile_wrapper);
 
     // Set range back to original values
@@ -276,7 +276,7 @@ struct StatementExecutor<
                 EnclosedStmts...> tile_wrapper(data);
 
     // Loop over tiles, executing enclosed statement list
-    auto &r = resources::get_resource<EPol>::type::get_default();
+    auto r = resources::get_resource<EPol>::type::get_default();
     forall_impl(r, EPol{}, tiled_iterable, tile_wrapper);
     
     // Set range back to original values

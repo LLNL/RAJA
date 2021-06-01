@@ -216,7 +216,7 @@ RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip &hi
     RAJA_FT_END;
   }
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 //

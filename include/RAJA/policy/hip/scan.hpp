@@ -109,7 +109,7 @@ inclusive_inplace(
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -186,7 +186,7 @@ exclusive_inplace(
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -259,7 +259,7 @@ inclusive(
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -338,7 +338,7 @@ exclusive(
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 }  // namespace scan

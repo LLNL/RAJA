@@ -60,7 +60,7 @@ inclusive_inplace(
     *i = agg;
   }
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -93,7 +93,7 @@ exclusive_inplace(
     agg = f(agg, t);
   }
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -123,7 +123,7 @@ inclusive(
     *out++ = agg;
   }
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -158,7 +158,7 @@ exclusive(
     *o = agg;
   }
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 }  // namespace scan

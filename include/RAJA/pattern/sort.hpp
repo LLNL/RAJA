@@ -58,7 +58,7 @@ sort(ExecPolicy&& p,
      Container&& c,
      Compare comp = Compare{})
 {
-  Res &r = Res::get_default();
+  Res r = Res::get_default();
   return sort(std::forward<ExecPolicy>(p),
               r,
               std::forward<Container>(c),
@@ -96,7 +96,7 @@ sort(ExecPolicy&& p,
     return impl::sort::unstable(r, std::forward<ExecPolicy>(p),
                                 begin_it, end_it, comp);
   } else {
-    return resources::EventProxy<Res>(&r);
+    return resources::EventProxy<Res>(r);
   }
 }
 
@@ -124,7 +124,7 @@ stable_sort(ExecPolicy&& p,
             Container&& c,
             Compare comp = Compare{})
 {
-  Res &r = Res::get_default();
+  Res r = Res::get_default();
   return stable_sort(std::forward<ExecPolicy>(p),
                      r,
                      std::forward<Container>(c),
@@ -161,7 +161,7 @@ stable_sort(ExecPolicy&& p,
     return impl::sort::stable(r, std::forward<ExecPolicy>(p),
                               begin_it, end_it, comp);
   } else {
-    return resources::EventProxy<Res>(&r);
+    return resources::EventProxy<Res>(r);
   }
 }
 
@@ -193,7 +193,7 @@ sort_pairs(ExecPolicy&& p,
            ValContainer&& vals,
            Compare comp = Compare{})
 {
-  Res &r = Res::get_default();
+  Res r = Res::get_default();
   return sort_pairs(std::forward<ExecPolicy>(p),
                     r,
                     std::forward<KeyContainer>(keys),
@@ -237,7 +237,7 @@ sort_pairs(ExecPolicy&& p,
     return impl::sort::unstable_pairs(r, std::forward<ExecPolicy>(p),
                                       begin_key, end_key, begin(vals), comp);
   } else {
-    return resources::EventProxy<Res>(&r);
+    return resources::EventProxy<Res>(r);
   }
 }
 
@@ -269,7 +269,7 @@ stable_sort_pairs(ExecPolicy&& p,
                   ValContainer&& vals,
                   Compare comp = Compare{})
 {
-  Res &r = Res::get_default();
+  Res r = Res::get_default();
   return stable_sort_pairs(std::forward<ExecPolicy>(p),
                            r,
                            std::forward<KeyContainer>(keys),
@@ -313,7 +313,7 @@ stable_sort_pairs(ExecPolicy&& p,
     return impl::sort::stable_pairs(r, std::forward<ExecPolicy>(p),
                                     begin_key, end_key, begin(vals), comp);
   } else {
-    return resources::EventProxy<Res>(&r);
+    return resources::EventProxy<Res>(r);
   }
 }
 
@@ -333,7 +333,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>>
 sort(Args &&... args)
 {
-  Res &r = Res::get_default();
+  Res r = Res::get_default();
   return sort<ExecPolicy>(r, std::forward<Args>(args)...);
 }
 ///
@@ -359,7 +359,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>>
 stable_sort(Args &&... args)
 {
-  Res &r = Res::get_default();
+  Res r = Res::get_default();
   return stable_sort<ExecPolicy>(r, std::forward<Args>(args)...);
 }
 ///
@@ -385,7 +385,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>>
 sort_pairs(Args &&... args)
 {
-  Res &r = Res::get_default();
+  Res r = Res::get_default();
   return sort_pairs<ExecPolicy>(r, std::forward<Args>(args)...);
 }
 ///
@@ -411,7 +411,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>>
 stable_sort_pairs(Args &&... args)
 {
-  Res &r = Res::get_default();
+  Res r = Res::get_default();
   return stable_sort_pairs<ExecPolicy>(r, std::forward<Args>(args)...);
 }
 ///

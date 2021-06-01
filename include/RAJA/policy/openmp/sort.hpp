@@ -203,7 +203,7 @@ unstable(
 {
   detail::openmp::sort(detail::UnstableSorter{}, begin, end, comp);
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -221,7 +221,7 @@ stable(
 {
   detail::openmp::sort(detail::StableSorter{}, begin, end, comp);
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -243,7 +243,7 @@ unstable_pairs(
   using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
   detail::openmp::sort(detail::UnstableSorter{}, begin, end, RAJA::compare_first<zip_ref>(comp));
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -265,7 +265,7 @@ stable_pairs(
   using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
   detail::openmp::sort(detail::StableSorter{}, begin, end, RAJA::compare_first<zip_ref>(comp));
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 }  // namespace sort

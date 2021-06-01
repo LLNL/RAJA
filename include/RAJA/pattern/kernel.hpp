@@ -149,7 +149,7 @@ RAJA_INLINE resources::EventProxy<Resource> kernel_param_resource(SegmentTuple &
 
   util::callPostLaunchPlugins(context);
 
-  return resources::EventProxy<Resource>(&resource);
+  return resources::EventProxy<Resource>(resource);
 }
 
 template <typename PolicyType,
@@ -174,7 +174,7 @@ RAJA_INLINE resources::EventProxy<resources::resource_from_pol_t<PolicyType>> ke
                                                                                            ParamTuple &&params,
                                                                                            Bodies &&... bodies)
 {
-  auto &res = resources::get_default_resource<PolicyType>();
+  auto res = resources::get_default_resource<PolicyType>();
   return RAJA::kernel_param_resource<PolicyType>(std::forward<SegmentTuple>(segments),
                                                  std::forward<ParamTuple>(params),
                                                  res,
@@ -185,7 +185,7 @@ template <typename PolicyType, typename SegmentTuple, typename... Bodies>
 RAJA_INLINE resources::EventProxy<resources::resource_from_pol_t<PolicyType>> kernel(SegmentTuple &&segments,
                                                                                      Bodies &&... bodies)
 {
-  auto &res = resources::get_default_resource<PolicyType>();
+  auto res = resources::get_default_resource<PolicyType>();
   return RAJA::kernel_param_resource<PolicyType>(std::forward<SegmentTuple>(segments),
                                                  RAJA::make_tuple(),
                                                  res,

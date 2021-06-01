@@ -124,7 +124,7 @@ inclusive_inplace(
                                                     std::distance(begin, end)},
                      adapter);
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -152,7 +152,7 @@ exclusive_inplace(
                                                     std::distance(begin, end)},
                      adapter);
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -180,7 +180,7 @@ inclusive(
                                                     std::distance(begin, end)},
                      adapter);
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -213,7 +213,7 @@ exclusive(
                                                     std::distance(begin, end)},
                      adapter);
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 }  // namespace scan

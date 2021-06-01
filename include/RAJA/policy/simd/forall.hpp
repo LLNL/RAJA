@@ -59,7 +59,7 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(RAJA::resources::
     loop_body(*(begin + i));
   }
 
-  return RAJA::resources::EventProxy<resources::Host>(&host_res);
+  return RAJA::resources::EventProxy<resources::Host>(host_res);
 }
 
 }  // namespace simd

@@ -65,7 +65,7 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     body(*(begin_it + i));
   }
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 }  // namespace sequential

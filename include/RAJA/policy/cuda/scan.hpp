@@ -83,7 +83,7 @@ inclusive_inplace(
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 /*!
@@ -138,7 +138,7 @@ exclusive_inplace(
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 /*!
@@ -191,7 +191,7 @@ inclusive(
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 /*!
@@ -248,7 +248,7 @@ exclusive(
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 }  // namespace scan

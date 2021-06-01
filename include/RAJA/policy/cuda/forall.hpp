@@ -218,7 +218,7 @@ RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda &
     RAJA_FT_END;
   }
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 
@@ -259,7 +259,7 @@ RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda &
   }  // iterate over segments of index set
 
   if (!Async) RAJA::cuda::synchronize();
-  return resources::EventProxy<resources::Cuda>(&r);
+  return resources::EventProxy<resources::Cuda>(r);
 }
 
 }  // namespace cuda

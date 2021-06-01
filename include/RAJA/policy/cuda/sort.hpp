@@ -69,7 +69,7 @@ stable(
       camp::is_same<Compare, operators::greater<iterval>>>::value,
       "stable_sort<cuda_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 /*!
@@ -138,7 +138,7 @@ stable(
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 /*!
@@ -207,7 +207,7 @@ stable(
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 
@@ -239,7 +239,7 @@ unstable(
       camp::is_same<Compare, operators::greater<iterval>>>::value,
       "sort<cuda_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 /*!
@@ -310,7 +310,7 @@ stable_pairs(
       camp::is_same<Compare, operators::greater<K>>>::value,
       "stable_sort_pairs<cuda_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 /*!
@@ -393,7 +393,7 @@ stable_pairs(
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 /*!
@@ -476,7 +476,7 @@ stable_pairs(
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 
@@ -513,7 +513,7 @@ unstable_pairs(
       camp::is_same<Compare, operators::greater<K>>>::value,
       "sort_pairs<cuda_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 /*!

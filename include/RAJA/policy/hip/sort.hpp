@@ -96,7 +96,7 @@ stable(
                     camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>::value,
                 "RAJA stable_sort<hip_exec> is only implemented for pointers to arithmetic types and RAJA::operators::less and RAJA::operators::greater.");
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -185,7 +185,7 @@ stable(
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -274,7 +274,7 @@ stable(
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 
@@ -304,7 +304,7 @@ unstable(
                     camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>::value,
                 "RAJA sort<hip_exec> is only implemented for pointers to arithmetic types and RAJA::operators::less and RAJA::operators::greater.");
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -375,7 +375,7 @@ stable_pairs(
       camp::is_same<Compare, operators::greater<K>>>::value,
       "stable_sort_pairs<hip_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -480,7 +480,7 @@ stable_pairs(
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -585,7 +585,7 @@ stable_pairs(
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 
@@ -622,7 +622,7 @@ unstable_pairs(
       camp::is_same<Compare, operators::greater<K>>>::value,
       "sort_pairs<hip_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
