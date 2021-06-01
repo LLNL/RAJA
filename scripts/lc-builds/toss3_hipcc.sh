@@ -7,24 +7,29 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-if [[ $# -ne 2 ]]; then
+if [[ $# -lt 2 ]]; then
   echo
-  echo "You must pass 2 arguments to the script (in this order): "
+  echo "You must pass 2 or more arguments to the script (in this order): "
   echo "   1) compiler version number"
   echo "   2) HIP compute architecture"
+  echo "   3...) optional arguments to cmake"
   echo
   echo "For example: "
   echo "    toss3_hipcc.sh 4.1.0 gfx906"
+  echo "    toss3_hipcc.sh 4.1.0 gfx906 -DBLT_CXX_STD=c++11"
   exit
 fi
 
 COMP_VER=$1
 COMP_ARCH=$2
+shift 2
 
 BUILD_SUFFIX=lc_toss3-hipcc-${COMP_VER}-${COMP_ARCH}
 
 echo
 echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo "Configuration extra arguments:"
+echo "   $@"
 echo
 
 rm -rf build_${BUILD_SUFFIX} >/dev/null
