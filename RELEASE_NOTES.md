@@ -1,4 +1,3 @@
-
 [comment]: # (#################################################################)
 [comment]: # (Copyright 2016-21, Lawrence Livermore National Security, LLC)
 [comment]: # (and RAJA project contributors. See the RAJA/COPYRIGHT file)
@@ -21,6 +20,12 @@ Notable changes include:
   * New features / API changes:
       * Various enhancements to the experimental RAJA "teams" capability,
         including documentation and complete code examples illustrating usage.
+      * The RAJA "teams" interface was expanded to allow users to label
+        kernels with name strings to easily attribute execution timings and 
+        other details to specific kernels with NVIDIA profiling tools, 
+        for example. Usage information is available in the RAJA User Guide.
+        Kernel naming will be available for all other RAJA kernel execution
+        methods in a future release.
       * Deprecated sort and scan methods taking iterators have been removed,
         Now, these methods take RAJA span arguments. For example,
         (begin, end) args are replaced with RAJA::make_span(begin, N), where
