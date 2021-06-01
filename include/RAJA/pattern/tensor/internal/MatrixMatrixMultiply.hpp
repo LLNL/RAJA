@@ -43,10 +43,10 @@ namespace internal {
     SquareMatrixRegister<T, LAYOUT, REGISTER_POLICY>>
     {
       using matrix_type = SquareMatrixRegister<T, LAYOUT, REGISTER_POLICY>;
-      using vector_type = typename matrix_type::vector_type;
+      using vector_type = typename matrix_type::register_type;
       using result_type = matrix_type;
 
-      static constexpr camp::idx_t N = matrix_type::vector_type::s_num_elem;
+      static constexpr camp::idx_t N = matrix_type::register_type::s_num_elem;
 
 
       RAJA_HOST_DEVICE

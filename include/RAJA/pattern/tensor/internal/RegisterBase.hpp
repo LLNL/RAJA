@@ -25,6 +25,8 @@
 #include "camp/camp.hpp"
 #include "RAJA/pattern/tensor/TensorLayout.hpp"
 #include "RAJA/pattern/tensor/internal/TensorRef.hpp"
+#include "RAJA/util/BitMask.hpp"
+
 
 namespace RAJA
 {
@@ -100,15 +102,9 @@ namespace RAJA
 
 namespace internal {
 
-  namespace ET
-  {
-    class TensorExpressionConcreteBase;
-  } // namespace ET
-
-
 
   /*!
-   * TensorRegister base class that provides some default behaviors and simplifies
+   * Register base class that provides some default behaviors and simplifies
    * the implementation of new register types.
    *
    * This uses CRTP to provide static polymorphism
@@ -664,6 +660,132 @@ namespace internal {
       }
 
       /*!
+       * Provides vector-level building block for matrix transpose operations.
+       *
+       * This is a non-optimized reference version which will be used if
+       * no architecture specialized version is supplied
+       *
+       * This is a permute-and-shuffle left operation
+       *
+       *           X=   x0  x1  x2  x3  x4  x5  x6  x7...
+       *           Y=   y0  y1  y2  y3  y4  y5  y6  y7...
+       *
+       *  lvl=0    Z=   x0  y0  x2  y2  x4  y4  x6  y6...
+       *  lvl=1    Z=   x0  x1  y0  y1  x4  x5  y4  y5...
+       *  lvl=2    Z=   x0  x1  x2  x3  y0  y1  y2  y3...
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type transpose_shuffle_left(camp::idx_t lvl, self_type const &y) const
+      {
+        auto const &x = *getThis();
+
+        self_type z;
+
+        for(camp::idx_t i = 0;i < self_type::s_num_elem;++ i){
+
+          // extract value x or y
+          camp::idx_t xy_select = (i >> lvl) & 0x1;
+
+
+          z.set(xy_select == 0 ? x.get(i) : y.get(i - (1<<lvl)), i);
+        }
+
+        return z;
+      }
+
+
+      /*!
+       * Provides vector-level building block for matrix transpose operations.
+       *
+       * This is a non-optimized reference version which will be used if
+       * no architecture specialized version is supplied
+       *
+       * This is a permute-and-shuffle right operation
+       *
+       *           X=   x0  x1  x2  x3  x4  x5  x6  x7...
+       *           Y=   y0  y1  y2  y3  y4  y5  y6  y7...
+       *
+       *  lvl=0    Z=   x1  y1  x3  y3  x5  y5  x7  y7...
+       *  lvl=1    Z=   x2  x3  y2  y3  x6  x7  y6  y7...
+       *  lvl=2    Z=   x4  x5  x6  x7  y4  y5  y6  y7...
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type transpose_shuffle_right(int lvl, self_type const &y) const
+      {
+        auto const &x = *getThis();
+
+        self_type z;
+
+        camp::idx_t i0 = 1<<lvl;
+
+        for(camp::idx_t i = 0;i < self_type::s_num_elem;++ i){
+
+          // extract value x or y
+          camp::idx_t xy_select = (i >> lvl) & 0x1;
+
+          z.set(xy_select == 0 ? x.get(i0 + i) : y.get(i0 + i - (1<<lvl)), i);
+        }
+
+        return z;
+      }
+
+
+      /*!
+       * Sum across segments, with segment size defined by segbits
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type segmented_sum(camp::idx_t segbits) const
+      {
+        self_type result(0);
+
+        // default implementation is dumb, just sum each value into
+        // appropriate segment lane
+        for(camp::idx_t i = 0;i < self_type::s_num_elem; ++ i){
+          auto value = getThis()->get(i) + result.get(i >> segbits);
+          result.set(value, i >> segbits);
+        }
+
+        return result;
+      }
+
+      /*!
+       * Segmented dot product performs dot products
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type segmented_dot(camp::idx_t segbits, self_type const &x) const
+      {
+        return getThis()->multiply(x).segmented_sum(segbits);
+      }
+
+      /*!
+       * Segmented dot product performs dot products
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type segmented_explode(camp::idx_t segbits, camp::idx_t segment) const
+      {
+        self_type result;
+
+        // default implementation is dumb, just sum each value into
+        // appropriate segment lane
+        for(camp::idx_t i = 0;i < self_type::s_num_elem; ++ i){
+          int seg = i>>segbits;
+
+          int off = (self_type::s_num_elem>>segbits)*segment + seg;
+
+          result.set(getThis()->get(off), i);
+        }
+
+        return result;
+      }
+
+
+
+      /*!
        * @brief Converts to vector to a string
        *
        *
@@ -674,7 +796,7 @@ namespace internal {
 
         //
         for(camp::idx_t i = 0;i < self_type::s_num_elem; ++ i){
-          s += std::to_string(getThis()->get(i));
+          s += std::to_string(getThis()->get(i)) + " ";
         }
 
         s += " ]\n";

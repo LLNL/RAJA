@@ -772,76 +772,17 @@ namespace RAJA
 
 
       /*!
-       * Provides vector-level building block for matrix transpose operations.
-       *
-       * This is a non-optimized reference version which will be used if
-       * no architecture specialized version is supplied
-       *
-       * This is a permute-and-shuffle left operation
-       *
-       *           X=   x0  x1  x2  x3  x4  x5  x6  x7...
-       *           Y=   y0  y1  y2  y3  y4  y5  y6  y7...
-       *
-       *  lvl=0    Z=   x0  y0  x2  y2  x4  y4  x6  y6...
-       *  lvl=1    Z=   x0  x1  y0  y1  x4  x5  y4  y5...
-       *  lvl=2    Z=   x0  x1  x2  x3  y0  y1  y2  y3...
+       * @brief The dot product of two vectors
        */
-//      RAJA_INLINE
-//      RAJA_HOST_DEVICE
-//      self_type transpose_shuffle_left(camp::idx_t lvl, self_type const &y) const
-//      {
-//        auto const &x = *this;
-//
-//        self_type z;
-//
-//        for(camp::idx_t i = 0;i < s_num_elem;++ i){
-//
-//          // extract value x or y
-//          camp::idx_t xy_select = (i >> lvl) & 0x1;
-//
-//
-//          z.set(xy_select == 0 ? x.get(i) : y.get(i - (1<<lvl)), i);
-//        }
-//
-//        return z;
-//      }
-
-
-      /*!
-       * Provides vector-level building block for matrix transpose operations.
-       *
-       * This is a non-optimized reference version which will be used if
-       * no architecture specialized version is supplied
-       *
-       * This is a permute-and-shuffle right operation
-       *
-       *           X=   x0  x1  x2  x3  x4  x5  x6  x7...
-       *           Y=   y0  y1  y2  y3  y4  y5  y6  y7...
-       *
-       *  lvl=0    Z=   x1  y1  x3  y3  x5  y5  x7  y7...
-       *  lvl=1    Z=   x2  x3  y2  y3  x6  x7  y6  y7...
-       *  lvl=2    Z=   x4  x5  x6  x7  y4  y5  y6  y7...
-       */
-//      RAJA_INLINE
-//      RAJA_HOST_DEVICE
-//      self_type transpose_shuffle_right(int lvl, self_type const &y) const
-//      {
-//        auto const &x = *this;
-//
-//        self_type z;
-//
-//        camp::idx_t i0 = 1<<lvl;
-//
-//        for(camp::idx_t i = 0;i < s_num_elem;++ i){
-//
-//          // extract value x or y
-//          camp::idx_t xy_select = (i >> lvl) & 0x1;
-//
-//          z.set(xy_select == 0 ? x.get(i0 + i) : y.get(i0 + i - (1<<lvl)), i);
-//        }
-//
-//        return z;
-//      }
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      element_type dot(self_type const &x) const {
+        element_type dp(0);
+        for(camp::idx_t i = 0;i < s_num_registers;++ i){
+          dp += m_registers[i].dot(x.vec(i));
+        }
+        return dp;
+      }
 
 
       RAJA_HOST_DEVICE

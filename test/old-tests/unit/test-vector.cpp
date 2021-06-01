@@ -22,11 +22,7 @@ using VectorTestTypes = ::testing::Types<
   RAJA::VectorRegister<int>,
   RAJA::VectorRegister<long>,
   RAJA::VectorRegister<float>,
-  RAJA::VectorRegister<double>,
-  RAJA::VectorRegister<int, RAJA::avx2_register, 9>,
-  RAJA::VectorRegister<long, RAJA::avx2_register, 5>,
-  RAJA::VectorRegister<float, RAJA::avx2_register, 9>,
-  RAJA::VectorRegister<double, RAJA::avx2_register, 5>
+  RAJA::VectorRegister<double>
   >;
 
 

@@ -114,12 +114,18 @@ namespace RAJA
     public:
       using self_type = TensorRegister<REGISTER_POLICY, T, TensorLayout<ROW_ORD, COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>>;
       using base_type = internal::TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, TensorLayout<ROW_ORD, COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>>>;
-      using register_type = VectorRegister<T, REGISTER_POLICY>;
+      using register_type = Register<T, REGISTER_POLICY>;
+      using row_vector_type = VectorRegister<T, REGISTER_POLICY, ROW_SIZE>;
+      using column_vector_type = VectorRegister<T, REGISTER_POLICY, COL_SIZE>;
       using register_policy = REGISTER_POLICY;
       using element_type = T;
       using layout_type = TensorLayout<ROW_ORD, COL_ORD>;
 
       using transpose_tensor_type = TensorRegister<REGISTER_POLICY, T, TensorLayout<!ROW_ORD, !COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>>;
+
+      static constexpr camp::idx_t s_num_rows = ROW_SIZE;
+      static constexpr camp::idx_t s_num_columns = COL_SIZE;
+
 
     private:
 
@@ -132,11 +138,50 @@ namespace RAJA
       // Number of registers that completely contain this matrix
       static constexpr camp::idx_t s_num_registers = register_map::s_num_registers;
 
+
       using base_type::m_registers;
 
     public:
 
 
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      TensorRegister() : base_type() {}
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      TensorRegister(element_type c) : base_type(c)
+      {
+        this->broadcast(c);
+      }
+
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      TensorRegister(self_type const &c) : base_type(c)
+      {
+        this->copy(c);
+      }
+
+
+      /*
+       * Overload for:    assignment of ET to a TensorRegister
+       */
+      template<typename RHS,
+        typename std::enable_if<std::is_base_of<RAJA::internal::ET::TensorExpressionConcreteBase, RHS>::value, bool>::type = true>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      TensorRegister(RHS const &rhs)
+      {
+        // evaluate a single tile of the ET, storing in this TensorRegister
+        *this = rhs.eval(base_type::s_get_default_tile());
+      }
+
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      ~TensorRegister(){}
 
 
       /*!
@@ -176,14 +221,14 @@ namespace RAJA
       RAJA_INLINE
       self_type &operator=(element_type value)
       {
-        broadcast(value);
+        this->broadcast(value);
         return *this;
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &operator=(self_type const &c){
-        return copy(c);
+        return this->copy(c);
       }
 
 
@@ -656,19 +701,19 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      register_type right_multiply_vector(register_type v) const {
+      row_vector_type right_multiply_vector(column_vector_type v) const {
         if(layout_type::is_row_major()){
           register_type result;
-          for(camp::idx_t i = 0;i < s_num_registers;++ i){
-            result.set(v.dot(m_registers[i]), i);
-          }
+//          for(camp::idx_t i = 0;i < s_num_rows;++ i){
+//            result.set(v.dot(m_registers[i]), i);
+//          }
           return result;
         }
         else{
           register_type result(0);
-          for(camp::idx_t i = 0;i < s_num_registers;++ i){
-            result +=  m_registers[i] * v.get(i);
-          }
+//          for(camp::idx_t i = 0;i < s_num_cols;++ i){
+//            result +=  m_registers[i] * v.get(i);
+//          }
           return result;
         }
       }
@@ -678,7 +723,7 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      register_type left_multiply_vector(register_type v) const {
+      column_vector_type left_multiply_vector(row_vector_type v) const {
         if(layout_type::is_column_major()){
           register_type result;
           for(camp::idx_t i = 0;i < s_num_registers;++ i){
