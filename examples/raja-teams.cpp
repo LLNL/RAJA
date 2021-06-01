@@ -88,6 +88,7 @@ using threads_x = RAJA::expt::LoopPolicy<RAJA::loop_exec
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
+#if 0//COMMENT OUT SINCE IT DOES NOT WORK. 
   // Resource object for host
   camp::resources::Host host_res;
 
@@ -192,6 +193,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
   }  // Execution places loop
-
+#endif
 
 }  // Main

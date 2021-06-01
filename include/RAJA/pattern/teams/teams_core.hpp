@@ -220,9 +220,17 @@ struct TeamResources
 
 
 //Launch API which takes team resource struct
-template <typename POLICY_LIST, typename BODY>
-void launch(ExecPlace place, TeamResources &res, Grid const &grid, BODY const &body)
+template <typename POLICY_LIST, typename BODY, typename Res>
+void launch(Res &res, Grid const &grid, BODY const &body)
 {
+
+  ExecPlace place; 
+  if(res.get_platform() == camp::resources::v1::Platform::host) {
+    place = RAJA::expt::HOST;
+  }else{
+    place = RAJA::expt::DEVICE;
+  }
+
   switch (place) {
     case HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
