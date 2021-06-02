@@ -32,7 +32,7 @@ namespace omp
 ///
 
 template <size_t ThreadsPerTeam, typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Omp> forall_impl(resources::Omp &omp_res,
+RAJA_INLINE resources::EventProxy<resources::Omp> forall_impl(resources::Omp omp_res,
                                                               const omp_target_parallel_for_exec<ThreadsPerTeam>&,
                                                               Iterable&& iter,
                                                               Func&& loop_body)
@@ -72,7 +72,7 @@ RAJA_INLINE resources::EventProxy<resources::Omp> forall_impl(resources::Omp &om
 }
 
 template <typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Omp> forall_impl(resources::Omp &omp_res,
+RAJA_INLINE resources::EventProxy<resources::Omp> forall_impl(resources::Omp omp_res,
                                                               const omp_target_parallel_for_exec_nt&,
                                                               Iterable&& iter,
                                                               Func&& loop_body)

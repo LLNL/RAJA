@@ -53,7 +53,7 @@ namespace loop
 
 
 template <typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(RAJA::resources::Host & host_res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(RAJA::resources::Host host_res,
                                                     const loop_exec &,
                                                     Iterable &&iter,
                                                     Func &&body)

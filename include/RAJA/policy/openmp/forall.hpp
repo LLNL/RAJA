@@ -55,7 +55,7 @@ namespace omp
 /// OpenMP parallel policy implementation
 ///
 template <typename Iterable, typename Func, typename InnerPolicy>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
                                                     const omp_parallel_exec<InnerPolicy>&,
                                                     Iterable&& iter,
                                                     Func&& loop_body)
@@ -289,7 +289,7 @@ namespace internal
 } // end namespace internal
 
 template <typename Schedule, typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host& host_res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
                                                                const omp_for_schedule_exec<Schedule>&,
                                                                Iterable&& iter,
                                                                Func&& loop_body)
@@ -299,7 +299,7 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host& 
 }
 
 template <typename Schedule, typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host& host_res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
                                                                const omp_for_nowait_schedule_exec<Schedule>&,
                                                                Iterable&& iter,
                                                                Func&& loop_body)

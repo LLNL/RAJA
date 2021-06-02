@@ -46,7 +46,7 @@ namespace simd
 
 
 template <typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(RAJA::resources::Host &host_res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(RAJA::resources::Host host_res,
                                                                const simd_exec &,
                                                                Iterable &&iter,
                                                                Func &&loop_body)

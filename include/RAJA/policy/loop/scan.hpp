@@ -45,7 +45,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_loop_policy<ExecPolicy>>
 inclusive_inplace(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy &,
     Iter begin,
     Iter end,
@@ -70,7 +70,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_loop_policy<ExecPolicy>>
 exclusive_inplace(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy &,
     Iter begin,
     Iter end,
@@ -103,7 +103,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_loop_policy<ExecPolicy>>
 inclusive(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy &,
     const Iter begin,
     const Iter end,
@@ -134,7 +134,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_loop_policy<ExecPolicy>>
 exclusive(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy &,
     const Iter begin,
     const Iter end,

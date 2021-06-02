@@ -158,7 +158,7 @@ __launch_bounds__(BlockSize, 1) __global__
 //
 
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda &cuda_res,
+RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda cuda_res,
                                                     cuda_exec<BlockSize, Async>,
                                                     Iterable&& iter,
                                                     LoopBody&& loop_body)
@@ -244,7 +244,7 @@ template <typename LoopBody,
           size_t BlockSize,
           bool Async,
           typename... SegmentTypes>
-RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda &r,
+RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda r,
                                                     ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
                                                     const TypedIndexSet<SegmentTypes...>& iset,
                                                     LoopBody&& loop_body)

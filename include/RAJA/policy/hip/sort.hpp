@@ -82,7 +82,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                           camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
                           camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
 stable(
-    resources::Hip& hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async>,
     Iter,
     Iter,
@@ -107,7 +107,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                       std::is_pointer<Iter>>
 stable(
-    resources::Hip& hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async>,
     Iter begin,
     Iter end,
@@ -196,7 +196,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                       std::is_pointer<Iter>>
 stable(
-    resources::Hip& hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async>,
     Iter begin,
     Iter end,
@@ -290,7 +290,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                           camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
                           camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
 unstable(
-    resources::Hip& hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async>,
     Iter,
     Iter,
@@ -315,7 +315,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                       std::is_pointer<Iter>>
 unstable(
-    resources::Hip& hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async> p,
     Iter begin,
     Iter end,
@@ -332,7 +332,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                       std::is_pointer<Iter>>
 unstable(
-    resources::Hip& hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async> p,
     Iter begin,
     Iter end,
@@ -356,7 +356,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                           camp::is_same<Compare, operators::less<RAJA::detail::IterVal<KeyIter>>>,
                           camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<KeyIter>>>>>>>
 stable_pairs(
-    resources::Hip& hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async>,
     KeyIter,
     KeyIter,
@@ -388,7 +388,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       std::is_pointer<KeyIter>,
                       std::is_pointer<ValIter>>
 stable_pairs(
-    resources::Hip& hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async>,
     KeyIter keys_begin,
     KeyIter keys_end,
@@ -493,7 +493,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       std::is_pointer<KeyIter>,
                       std::is_pointer<ValIter>>
 stable_pairs(
-    resources::Hip& hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async>,
     KeyIter keys_begin,
     KeyIter keys_end,
@@ -603,7 +603,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                           camp::is_same<Compare, operators::less<RAJA::detail::IterVal<KeyIter>>>,
                           camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<KeyIter>>>>>>>
 unstable_pairs(
-    resources::Hip& hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async>,
     KeyIter,
     KeyIter,
@@ -635,7 +635,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       std::is_pointer<KeyIter>,
                       std::is_pointer<ValIter>>
 unstable_pairs(
-    resources::Hip& hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async> p,
     KeyIter keys_begin,
     KeyIter keys_end,
@@ -655,7 +655,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       std::is_pointer<KeyIter>,
                       std::is_pointer<ValIter>>
 unstable_pairs(
-    resources::Hip& hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async> p,
     KeyIter keys_begin,
     KeyIter keys_end,

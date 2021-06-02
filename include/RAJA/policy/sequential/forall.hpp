@@ -54,7 +54,7 @@ namespace sequential
 //
 
 template <typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
                                                                const seq_exec &,
                                                                Iterable &&iter,
                                                                Func &&body)

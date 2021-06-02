@@ -195,7 +195,7 @@ template <typename ExecPolicy, typename Iter, typename Compare>
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_openmp_policy<ExecPolicy>>
 unstable(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy&,
     Iter begin,
     Iter end,
@@ -213,7 +213,7 @@ template <typename ExecPolicy, typename Iter, typename Compare>
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_openmp_policy<ExecPolicy>>
 stable(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy&,
     Iter begin,
     Iter end,
@@ -231,7 +231,7 @@ template <typename ExecPolicy, typename KeyIter, typename ValIter, typename Comp
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_openmp_policy<ExecPolicy>>
 unstable_pairs(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy&,
     KeyIter keys_begin,
     KeyIter keys_end,
@@ -253,7 +253,7 @@ template <typename ExecPolicy, typename KeyIter, typename ValIter, typename Comp
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_openmp_policy<ExecPolicy>>
 stable_pairs(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy&,
     KeyIter keys_begin,
     KeyIter keys_end,
