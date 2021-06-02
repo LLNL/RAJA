@@ -271,18 +271,6 @@ inline namespace policy_by_value_interface
  *
  ******************************************************************************
  */
-template <typename ExecutionPolicy, typename IdxSet, typename LoopBody,
-          typename Res = typename resources::get_resource<ExecutionPolicy>::type >
-RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
-                                                     IdxSet&& c,
-                                                     LoopBody&& loop_body)
-{
-  auto r = Res::get_default();
-  return forall_Icount(std::forward<ExecutionPolicy>(p),
-                       r,
-                       std::forward<IdxSet>(c),
-                       std::forward<LoopBody>(loop_body));
-}
 template <typename ExecutionPolicy, typename Res, typename IdxSet, typename LoopBody>
 RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
                                                      Res &r,
@@ -303,13 +291,27 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
 
   util::callPreLaunchPlugins(context);
 
-  RAJA::resources::EventProxy<Res> e = wrap::forall_Icount(r,
-                                  std::forward<ExecutionPolicy>(p),
-                                  std::forward<IdxSet>(c),
-                                  std::move(body));
+  RAJA::resources::EventProxy<Res> e = wrap::forall_Icount(
+      r,
+      std::forward<ExecutionPolicy>(p),
+      std::forward<IdxSet>(c),
+      std::move(body));
 
   util::callPostLaunchPlugins(context);
   return e;
+}
+template <typename ExecutionPolicy, typename IdxSet, typename LoopBody,
+          typename Res = typename resources::get_resource<ExecutionPolicy>::type >
+RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
+                                                     IdxSet&& c,
+                                                     LoopBody&& loop_body)
+{
+  auto r = Res::get_default();
+  return policy_by_value_interface::forall_Icount(
+      std::forward<ExecutionPolicy>(p),
+      r,
+      std::forward<IdxSet>(c),
+      std::forward<LoopBody>(loop_body));
 }
 
 /*!
@@ -319,19 +321,6 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
  *
  ******************************************************************************
  */
-template <typename ExecutionPolicy, typename IdxSet, typename LoopBody,
-          typename Res = typename resources::get_resource<ExecutionPolicy>::type >
-RAJA_INLINE concepts::enable_if_t<
-    resources::EventProxy<Res>,
-    type_traits::is_indexset_policy<ExecutionPolicy>>
-forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
-{
-  auto r = Res::get_default();
-  return forall(std::forward<ExecutionPolicy>(p),
-                r,
-                std::forward<IdxSet>(c),
-                std::forward<LoopBody>(loop_body));
-}
 template <typename ExecutionPolicy, typename Res, typename IdxSet, typename LoopBody>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<Res>,
@@ -352,13 +341,28 @@ forall(ExecutionPolicy&& p, Res &r, IdxSet&& c, LoopBody&& loop_body)
 
   util::callPreLaunchPlugins(context);
 
-  resources::EventProxy<Res> e = wrap::forall(r,
-                                         std::forward<ExecutionPolicy>(p),
-                                         std::forward<IdxSet>(c),
-                                         std::move(body));
+  resources::EventProxy<Res> e = wrap::forall(
+      r,
+      std::forward<ExecutionPolicy>(p),
+      std::forward<IdxSet>(c),
+      std::move(body));
 
   util::callPostLaunchPlugins(context);
   return e;
+}
+template <typename ExecutionPolicy, typename IdxSet, typename LoopBody,
+          typename Res = typename resources::get_resource<ExecutionPolicy>::type >
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<Res>,
+    type_traits::is_indexset_policy<ExecutionPolicy>>
+forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
+{
+  auto r = Res::get_default();
+  return policy_by_value_interface::forall(
+      std::forward<ExecutionPolicy>(p),
+      r,
+      std::forward<IdxSet>(c),
+      std::forward<LoopBody>(loop_body));
 }
 
 /*!
@@ -395,28 +399,6 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
  ******************************************************************************
  */
 template <typename ExecutionPolicy,
-          typename Container,
-          typename IndexType,
-          typename LoopBody,
-          typename Res = typename resources::get_resource<ExecutionPolicy>::type >
-RAJA_INLINE concepts::enable_if_t<
-    resources::EventProxy<Res>,
-    type_traits::is_range<Container>,
-    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
-    type_traits::is_integral<IndexType>>
-forall_Icount(ExecutionPolicy&& p,
-              Container&& c,
-              IndexType icount,
-              LoopBody&& loop_body)
-{
-  auto r = Res::get_default();
-  return forall_Icount(std::forward<ExecutionPolicy>(p),
-                       r,
-                       std::forward<Container>(c),
-                       icount,
-                       std::forward<LoopBody>(loop_body));
-}
-template <typename ExecutionPolicy,
           typename Res,
           typename Container,
           typename IndexType,
@@ -444,14 +426,38 @@ forall_Icount(ExecutionPolicy&& p,
 
   util::callPreLaunchPlugins(context);
 
-  resources::EventProxy<Res> e =  wrap::forall_Icount(r,
-                                                 std::forward<ExecutionPolicy>(p),
-                                                 std::forward<Container>(c),
-                                                 icount,
-                                                 std::move(body));
+  resources::EventProxy<Res> e = wrap::forall_Icount(
+      r,
+      std::forward<ExecutionPolicy>(p),
+      std::forward<Container>(c),
+      icount,
+      std::move(body));
 
   util::callPostLaunchPlugins(context);
   return e;
+}
+template <typename ExecutionPolicy,
+          typename Container,
+          typename IndexType,
+          typename LoopBody,
+          typename Res = typename resources::get_resource<ExecutionPolicy>::type >
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<Res>,
+    type_traits::is_range<Container>,
+    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+    type_traits::is_integral<IndexType>>
+forall_Icount(ExecutionPolicy&& p,
+              Container&& c,
+              IndexType icount,
+              LoopBody&& loop_body)
+{
+  auto r = Res::get_default();
+  return policy_by_value_interface::forall_Icount(
+      std::forward<ExecutionPolicy>(p),
+      r,
+      std::forward<Container>(c),
+      icount,
+      std::forward<LoopBody>(loop_body));
 }
 
 /*!
@@ -461,22 +467,6 @@ forall_Icount(ExecutionPolicy&& p,
  *
  ******************************************************************************
  */
-template <typename ExecutionPolicy, typename Container, typename LoopBody,
-          typename Res = typename resources::get_resource<ExecutionPolicy>::type >
-RAJA_INLINE concepts::enable_if_t<
-    resources::EventProxy<Res>,
-    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
-    concepts::negate<type_traits::is_multi_policy<ExecutionPolicy>>,
-    type_traits::is_range<Container>>
-forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
-{
-  auto r = Res::get_default();
-  return forall(std::forward<ExecutionPolicy>(p),
-                r,
-                std::forward<Container>(c),
-                std::forward<LoopBody>(loop_body));
-}
-
 template <typename ExecutionPolicy, typename Res, typename Container, typename LoopBody>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<Res>,
@@ -498,13 +488,30 @@ forall(ExecutionPolicy&& p, Res &r, Container&& c, LoopBody&& loop_body)
 
   util::callPreLaunchPlugins(context);
 
-  resources::EventProxy<Res> e =  wrap::forall(r,
-                                          std::forward<ExecutionPolicy>(p),
-                                          std::forward<Container>(c),
-                                          std::move(body));
+  resources::EventProxy<Res> e =  wrap::forall(
+      r,
+      std::forward<ExecutionPolicy>(p),
+      std::forward<Container>(c),
+      std::move(body));
 
   util::callPostLaunchPlugins(context);
   return e;
+}
+template <typename ExecutionPolicy, typename Container, typename LoopBody,
+          typename Res = typename resources::get_resource<ExecutionPolicy>::type >
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<Res>,
+    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+    concepts::negate<type_traits::is_multi_policy<ExecutionPolicy>>,
+    type_traits::is_range<Container>>
+forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
+{
+  auto r = Res::get_default();
+  return policy_by_value_interface::forall(
+      std::forward<ExecutionPolicy>(p),
+      r,
+      std::forward<Container>(c),
+      std::forward<LoopBody>(loop_body));
 }
 
 }  // end inline namespace policy_by_value_interface
@@ -515,17 +522,20 @@ forall(ExecutionPolicy&& p, Res &r, Container&& c, LoopBody&& loop_body)
  *
  * this reduces implementation overhead and perfectly forwards all arguments
  */
-template <typename ExecutionPolicy, typename... Args, 
+template <typename ExecutionPolicy, typename... Args,
           typename Res = typename resources::get_resource<ExecutionPolicy>::type >
 RAJA_INLINE resources::EventProxy<Res> forall(Args&&... args)
 {
   Res r = Res::get_default();
-  return forall<ExecutionPolicy>(r, std::forward<Args>(args)...);
+  return policy_by_value_interface::forall(
+      ExecutionPolicy(), r, std::forward<Args>(args)...);
 }
 template <typename ExecutionPolicy, typename Res, typename... Args>
-RAJA_INLINE concepts::enable_if_t<resources::EventProxy<Res>, type_traits::is_resource<Res>> forall(Res &r, Args&&... args)
+RAJA_INLINE concepts::enable_if_t<resources::EventProxy<Res>, type_traits::is_resource<Res>>
+forall(Res &r, Args&&... args)
 {
-  return policy_by_value_interface::forall(ExecutionPolicy(), r, std::forward<Args>(args)...);
+  return policy_by_value_interface::forall(
+      ExecutionPolicy(), r, std::forward<Args>(args)...);
 }
 
 /*!
@@ -534,17 +544,20 @@ RAJA_INLINE concepts::enable_if_t<resources::EventProxy<Res>, type_traits::is_re
  *
  * this reduces implementation overhead and perfectly forwards all arguments
  */
-template <typename ExecutionPolicy, typename... Args, 
+template <typename ExecutionPolicy, typename... Args,
           typename Res = typename resources::get_resource<ExecutionPolicy>::type >
 RAJA_INLINE resources::EventProxy<Res> forall_Icount(Args&&... args)
 {
   Res r = Res::get_default();
-  return forall_Icount<ExecutionPolicy>(r, std::forward<Args>(args)...);
+  return policy_by_value_interface::forall_Icount(
+      ExecutionPolicy(), r, std::forward<Args>(args)...);
 }
 template <typename ExecutionPolicy, typename Res, typename... Args>
-RAJA_INLINE concepts::enable_if_t<resources::EventProxy<Res>, type_traits::is_resource<Res>> forall_Icount(Res &r, Args&&... args)
+RAJA_INLINE concepts::enable_if_t<resources::EventProxy<Res>, type_traits::is_resource<Res>>
+forall_Icount(Res &r, Args&&... args)
 {
-  return policy_by_value_interface::forall_Icount(ExecutionPolicy(), r, std::forward<Args>(args)...);
+  return policy_by_value_interface::forall_Icount(
+      ExecutionPolicy(), r, std::forward<Args>(args)...);
 }
 
 namespace detail
