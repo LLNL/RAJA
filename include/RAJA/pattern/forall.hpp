@@ -307,7 +307,7 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
                                                      LoopBody&& loop_body)
 {
   auto r = Res::get_default();
-  return policy_by_value_interface::forall_Icount(
+  return ::RAJA::policy_by_value_interface::forall_Icount(
       std::forward<ExecutionPolicy>(p),
       r,
       std::forward<IdxSet>(c),
@@ -358,7 +358,7 @@ RAJA_INLINE concepts::enable_if_t<
 forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
   auto r = Res::get_default();
-  return policy_by_value_interface::forall(
+  return ::RAJA::policy_by_value_interface::forall(
       std::forward<ExecutionPolicy>(p),
       r,
       std::forward<IdxSet>(c),
@@ -452,7 +452,7 @@ forall_Icount(ExecutionPolicy&& p,
               LoopBody&& loop_body)
 {
   auto r = Res::get_default();
-  return policy_by_value_interface::forall_Icount(
+  return ::RAJA::policy_by_value_interface::forall_Icount(
       std::forward<ExecutionPolicy>(p),
       r,
       std::forward<Container>(c),
@@ -507,7 +507,7 @@ RAJA_INLINE concepts::enable_if_t<
 forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
   auto r = Res::get_default();
-  return policy_by_value_interface::forall(
+  return ::RAJA::policy_by_value_interface::forall(
       std::forward<ExecutionPolicy>(p),
       r,
       std::forward<Container>(c),
@@ -527,14 +527,14 @@ template <typename ExecutionPolicy, typename... Args,
 RAJA_INLINE resources::EventProxy<Res> forall(Args&&... args)
 {
   Res r = Res::get_default();
-  return policy_by_value_interface::forall(
+  return ::RAJA::policy_by_value_interface::forall(
       ExecutionPolicy(), r, std::forward<Args>(args)...);
 }
 template <typename ExecutionPolicy, typename Res, typename... Args>
 RAJA_INLINE concepts::enable_if_t<resources::EventProxy<Res>, type_traits::is_resource<Res>>
 forall(Res &r, Args&&... args)
 {
-  return policy_by_value_interface::forall(
+  return ::RAJA::policy_by_value_interface::forall(
       ExecutionPolicy(), r, std::forward<Args>(args)...);
 }
 
@@ -549,14 +549,14 @@ template <typename ExecutionPolicy, typename... Args,
 RAJA_INLINE resources::EventProxy<Res> forall_Icount(Args&&... args)
 {
   Res r = Res::get_default();
-  return policy_by_value_interface::forall_Icount(
+  return ::RAJA::policy_by_value_interface::forall_Icount(
       ExecutionPolicy(), r, std::forward<Args>(args)...);
 }
 template <typename ExecutionPolicy, typename Res, typename... Args>
 RAJA_INLINE concepts::enable_if_t<resources::EventProxy<Res>, type_traits::is_resource<Res>>
 forall_Icount(Res &r, Args&&... args)
 {
-  return policy_by_value_interface::forall_Icount(
+  return ::RAJA::policy_by_value_interface::forall_Icount(
       ExecutionPolicy(), r, std::forward<Args>(args)...);
 }
 

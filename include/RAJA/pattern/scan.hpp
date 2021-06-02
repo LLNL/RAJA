@@ -89,7 +89,7 @@ inclusive_scan_inplace(ExecPolicy&& p,
                        Function binop = Function{})
 {
   auto r = Res::get_default();
-  return policy_by_value_interface::inclusive_scan_inplace(
+  return ::RAJA::policy_by_value_interface::inclusive_scan_inplace(
       std::forward<ExecPolicy>(p),
       r,
       std::forward<Container>(c),
@@ -155,7 +155,7 @@ exclusive_scan_inplace(ExecPolicy&& p,
                        T value = Function::identity())
 {
   auto r = Res::get_default();
-  return policy_by_value_interface::exclusive_scan_inplace(
+  return ::RAJA::policy_by_value_interface::exclusive_scan_inplace(
       std::forward<ExecPolicy>(p),
       r,
       std::forward<Container>(c),
@@ -231,7 +231,7 @@ inclusive_scan(ExecPolicy&& p,
                Function binop = Function{})
 {
   auto r = Res::get_default();
-  return policy_by_value_interface::inclusive_scan(
+  return ::RAJA::policy_by_value_interface::inclusive_scan(
       std::forward<ExecPolicy>(p),
       r,
       std::forward<InContainer>(in),
@@ -311,7 +311,7 @@ exclusive_scan(ExecPolicy&& p,
                T value = Function::identity())
 {
   auto r = Res::get_default();
-  return policy_by_value_interface::exclusive_scan(
+  return ::RAJA::policy_by_value_interface::exclusive_scan(
       std::forward<ExecPolicy>(p),
       r,
       std::forward<InContainer>(in),
@@ -337,7 +337,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
 exclusive_scan(Args&&... args)
 {
   Res r = Res::get_default();
-  return policy_by_value_interface::exclusive_scan<ExecPolicy>(
+  return ::RAJA::policy_by_value_interface::exclusive_scan<ExecPolicy>(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 ///
@@ -348,7 +348,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_resource<Res>>
 exclusive_scan(Res& r, Args&&... args)
 {
-  return policy_by_value_interface::exclusive_scan(
+  return ::RAJA::policy_by_value_interface::exclusive_scan(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 
@@ -366,7 +366,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
 inclusive_scan(Args&&... args)
 {
   Res r = Res::get_default();
-  return policy_by_value_interface::inclusive_scan<ExecPolicy>(
+  return ::RAJA::policy_by_value_interface::inclusive_scan<ExecPolicy>(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 ///
@@ -377,7 +377,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_resource<Res>>
 inclusive_scan(Res& r, Args&&... args)
 {
-  return policy_by_value_interface::inclusive_scan(
+  return ::RAJA::policy_by_value_interface::inclusive_scan(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 
@@ -395,7 +395,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
 exclusive_scan_inplace(Args&&... args)
 {
   Res r = Res::get_default();
-  return policy_by_value_interface::exclusive_scan_inplace<ExecPolicy>(
+  return ::RAJA::policy_by_value_interface::exclusive_scan_inplace<ExecPolicy>(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 ///
@@ -406,7 +406,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_resource<Res>>
 exclusive_scan_inplace(Res& r, Args&&... args)
 {
-  return policy_by_value_interface::exclusive_scan_inplace(
+  return ::RAJA::policy_by_value_interface::exclusive_scan_inplace(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 
@@ -424,7 +424,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
 inclusive_scan_inplace(Args&&... args)
 {
   Res r = Res::get_default();
-  return policy_by_value_interface::inclusive_scan_inplace<ExecPolicy>(
+  return ::RAJA::policy_by_value_interface::inclusive_scan_inplace<ExecPolicy>(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 ///
@@ -435,7 +435,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_resource<Res>>
 inclusive_scan_inplace(Res& r, Args&&... args)
 {
-  return policy_by_value_interface::inclusive_scan_inplace(
+  return ::RAJA::policy_by_value_interface::inclusive_scan_inplace(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 

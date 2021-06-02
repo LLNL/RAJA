@@ -94,7 +94,7 @@ sort(ExecPolicy&& p,
      Compare comp = Compare{})
 {
   Res r = Res::get_default();
-  return policy_by_value_interface::sort(
+  return ::RAJA::policy_by_value_interface::sort(
       std::forward<ExecPolicy>(p),
       r,
       std::forward<Container>(c),
@@ -161,7 +161,7 @@ stable_sort(ExecPolicy&& p,
             Compare comp = Compare{})
 {
   Res r = Res::get_default();
-  return policy_by_value_interface::stable_sort(
+  return ::RAJA::policy_by_value_interface::stable_sort(
       std::forward<ExecPolicy>(p),
       r,
       std::forward<Container>(c),
@@ -237,7 +237,7 @@ sort_pairs(ExecPolicy&& p,
            Compare comp = Compare{})
 {
   Res r = Res::get_default();
-  return policy_by_value_interface::sort_pairs(
+  return ::RAJA::policy_by_value_interface::sort_pairs(
       std::forward<ExecPolicy>(p),
       r,
       std::forward<KeyContainer>(keys),
@@ -314,7 +314,7 @@ stable_sort_pairs(ExecPolicy&& p,
                   Compare comp = Compare{})
 {
   Res r = Res::get_default();
-  return policy_by_value_interface::stable_sort_pairs(
+  return ::RAJA::policy_by_value_interface::stable_sort_pairs(
       std::forward<ExecPolicy>(p),
       r,
       std::forward<KeyContainer>(keys),
@@ -339,7 +339,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
 sort(Args &&... args)
 {
   Res r = Res::get_default();
-  return policy_by_value_interface::sort<ExecPolicy>(
+  return ::RAJA::policy_by_value_interface::sort<ExecPolicy>(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 ///
@@ -349,7 +349,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_resource<Res>>
 sort(Res& r, Args &&... args)
 {
-  return policy_by_value_interface::sort(
+  return ::RAJA::policy_by_value_interface::sort(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 
@@ -366,7 +366,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
 stable_sort(Args &&... args)
 {
   Res r = Res::get_default();
-  return policy_by_value_interface::stable_sort<ExecPolicy>(
+  return ::RAJA::policy_by_value_interface::stable_sort<ExecPolicy>(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 ///
@@ -376,7 +376,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_resource<Res>>
 stable_sort(Res& r, Args &&... args)
 {
-  return policy_by_value_interface::stable_sort(
+  return ::RAJA::policy_by_value_interface::stable_sort(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 
@@ -393,7 +393,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
 sort_pairs(Args &&... args)
 {
   Res r = Res::get_default();
-  return policy_by_value_interface::sort_pairs<ExecPolicy>(
+  return ::RAJA::policy_by_value_interface::sort_pairs<ExecPolicy>(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 ///
@@ -403,7 +403,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_resource<Res>>
 sort_pairs(Res& r, Args &&... args)
 {
-  return policy_by_value_interface::sort_pairs(
+  return ::RAJA::policy_by_value_interface::sort_pairs(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 
@@ -420,7 +420,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
 stable_sort_pairs(Args &&... args)
 {
   Res r = Res::get_default();
-  return policy_by_value_interface::stable_sort_pairs<ExecPolicy>(
+  return ::RAJA::policy_by_value_interface::stable_sort_pairs<ExecPolicy>(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 ///
@@ -430,7 +430,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_resource<Res>>
 stable_sort_pairs(Res& r, Args &&... args)
 {
-  return policy_by_value_interface::stable_sort_pairs(
+  return ::RAJA::policy_by_value_interface::stable_sort_pairs(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 
