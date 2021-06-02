@@ -126,7 +126,7 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, nthreads>> {
 
     auto func = launch_global_fcn_fixed<BODY, nthreads>;
 
-    resources::Cuda &cuda_res = resources::Cuda::get_default();
+    resources::Cuda cuda_res = resources::Cuda::get_default();
     cudaStream_t stream = cuda_res.get_stream();
 
     //
