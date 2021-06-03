@@ -236,6 +236,13 @@ if (ENABLE_TBB)
     tbb)
 endif ()
 
+if (RAJA_ENABLE_DESUL_ATOMICS)
+  add_subdirectory(tpl/desul)
+  set(raja_depends
+    ${raja_depends}
+    desul_atomics)
+endif ()
+
 if (NOT TARGET camp)
   set(EXTERNAL_CAMP_SOURCE_DIR "" CACHE FILEPATH "build with a specific external
 camp source repository")
