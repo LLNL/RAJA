@@ -149,15 +149,13 @@ struct WorkRunner<
  * A body and segment holder for storing loops that will be executed
  * on the device
  */
-template <typename Segment_type, typename LoopBody,
+template <typename Holder,
           typename index_type, typename ... Args>
-struct HoldCudaDeviceXThreadblockLoop
+struct CudaDeviceXThreadblockLoopWorkCaller : Holder
 {
-  template < typename segment_in, typename body_in >
-  HoldCudaDeviceXThreadblockLoop(segment_in&& segment, body_in&& body)
-    : m_segment(std::forward<segment_in>(segment))
-    , m_body(std::forward<body_in>(body))
-  { }
+  using base = Holder;
+
+  using base::base;
 
   RAJA_DEVICE RAJA_INLINE void operator()(Args... args) const
   {
@@ -165,17 +163,13 @@ struct HoldCudaDeviceXThreadblockLoop
     // TODO:: decide whether or not to privatize the loop body
     const index_type i_begin = threadIdx.x + blockIdx.x * blockDim.x;
     const index_type stride  = blockDim.x * gridDim.x;
-    const auto begin = m_segment.begin();
-    const auto end   = m_segment.end();
+    const auto begin = this->m_segment.begin();
+    const auto end   = this->m_segment.end();
     const index_type len(end - begin);
     for ( index_type i = i_begin; i < len; i += stride ) {
-      m_body(begin[i], std::forward<Args>(args)...);
+      this->m_body(begin[i], std::forward<Args>(args)...);
     }
   }
-
-private:
-  Segment_type m_segment;
-  LoopBody m_body;
 };
 
 template < size_t BLOCK_SIZE,
@@ -236,10 +230,12 @@ struct WorkRunner<
     return *this;
   }
 
-  // The type  that will hold the segment and loop body in work storage
-  template < typename ITERABLE, typename LOOP_BODY >
-  using holder_type = HoldCudaDeviceXThreadblockLoop<ITERABLE, LOOP_BODY,
-                                 index_type, Args...>;
+  // The type that will hold the segment and loop body in work storage
+  template < typename segment_type, typename loop_type >
+  using holder_type = WorkHolder<segment_type, loop_type>;
+  template < typename segment_type, typename loop_type >
+  using caller_type = CudaDeviceXThreadblockLoopWorkCaller<
+      holder_type<segment_type, loop_type>, index_type, Args...>;
 
   // The policy indicating where the call function is invoked
   // in this case the values are called on the device
@@ -255,7 +251,7 @@ struct WorkRunner<
     using ITERABLE  = camp::decay<Iterable>;
     using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
-    using holder = holder_type<ITERABLE, LOOP_BODY>;
+    using holder = caller_type<ITERABLE, LOOP_BODY>;
 
     // using true_value_type = typename WorkContainer::template true_value_type<holder>;
 

@@ -102,36 +102,49 @@ struct HoldBodyArgs_device : HoldBodyArgs_base<LoopBody, Args...>
   }
 };
 
+
 /*!
- * A body and segment holder for storing loops that will be executed as foralls
+ * A body and segment holder for storing loops.
  */
-template <typename ExecutionPolicy, typename Segment_type, typename LoopBody,
-          typename index_type, typename ... Args>
-struct HoldForall
+template <typename Segment_type, typename LoopBody>
+struct WorkHolder
 {
-  using resource_type = typename resources::get_resource<ExecutionPolicy>::type;
-  using HoldBodyArgs = typename std::conditional<
-      !type_traits::is_device_exec_policy<ExecutionPolicy>::value,
-      HoldBodyArgs_host<LoopBody, index_type, Args...>,
-      HoldBodyArgs_device<LoopBody, index_type, Args...> >::type;
+  using body_type = LoopBody;
+  using segment_type = Segment_type;
 
   template < typename segment_in, typename body_in >
-  HoldForall(segment_in&& segment, body_in&& body)
+  WorkHolder(segment_in&& segment, body_in&& body)
     : m_segment(std::forward<segment_in>(segment))
     , m_body(std::forward<body_in>(body))
   { }
+
+  Segment_type m_segment;
+  LoopBody m_body;
+};
+
+/*!
+ * A body and segment holder for storing loops that will be executed as foralls
+ */
+template <typename Holder, typename ExecutionPolicy,
+          typename index_type, typename ... Args>
+struct ForallWorkCaller : Holder
+{
+  using base = Holder;
+  using resource_type = typename resources::get_resource<ExecutionPolicy>::type;
+  using HoldBodyArgs = typename std::conditional<
+      !type_traits::is_device_exec_policy<ExecutionPolicy>::value,
+      HoldBodyArgs_host<typename base::body_type, index_type, Args...>,
+      HoldBodyArgs_device<typename base::body_type, index_type, Args...> >::type;
+
+  using base::base;
 
   RAJA_INLINE void operator()(resource_type& r, Args... args) const
   {
     wrap::forall(r,
                  ExecutionPolicy(),
-                 m_segment,
-                 HoldBodyArgs{m_body, std::forward<Args>(args)...});
+                 this->m_segment,
+                 HoldBodyArgs{this->m_body, std::forward<Args>(args)...});
   }
-
-private:
-  Segment_type m_segment;
-  LoopBody m_body;
 };
 
 
@@ -174,10 +187,13 @@ struct WorkRunnerForallOrdered_base
   WorkRunnerForallOrdered_base(WorkRunnerForallOrdered_base &&) = default;
   WorkRunnerForallOrdered_base& operator=(WorkRunnerForallOrdered_base &&) = default;
 
-  // The type  that will hold the segment and loop body in work storage
+  // The type that will hold the segment and loop body in work storage
   template < typename segment_type, typename loop_type >
-  using holder_type = HoldForall<forall_exec_policy, segment_type, loop_type,
-                                 index_type, Args...>;
+  using holder_type = WorkHolder<segment_type, loop_type>;
+  template < typename segment_type, typename loop_type >
+  using caller_type = ForallWorkCaller<holder_type<segment_type, loop_type>,
+                                 forall_exec_policy, index_type, Args...>;
+
 
   // The policy indicating where the call function is invoked
   // in this case the values are called on the host in a loop
@@ -188,7 +204,7 @@ struct WorkRunnerForallOrdered_base
   template < typename WorkContainer, typename segment_T, typename loop_T >
   inline void enqueue(WorkContainer& storage, segment_T&& seg, loop_T&& loop)
   {
-    using holder = holder_type<camp::decay<segment_T>, camp::decay<loop_T>>;
+    using holder = caller_type<camp::decay<segment_T>, camp::decay<loop_T>>;
 
     storage.template emplace<holder>(
         get_Vtable<holder, vtable_type>(vtable_exec_policy{}),
