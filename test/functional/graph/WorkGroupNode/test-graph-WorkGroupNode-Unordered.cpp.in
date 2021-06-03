@@ -1,0 +1,30 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+///
+/// Source file containing tests for RAJA WorkGroupNode unordered execution.
+///
+
+#include "RAJA_test-graph-execpol.hpp"
+
+#include "test-graph-WorkGroupNode-Unordered-@SUBTESTNAME@.hpp"
+
+using @BACKEND@BasicWorkGroupNodeUnordered@SUBTESTNAME@Types =
+  Test< camp::cartesian_product< @GRAPHBACKEND@GraphExecPols,
+                                 @BACKEND@ExecPolicyList,
+                                 @BACKEND@OrderPolicyList,
+                                 @BACKEND@StoragePolicyList,
+                                 IndexTypeTypeList,
+                                 @BACKEND@AllocatorList,
+                                 @BACKEND@ResourceList > >::Types;
+
+REGISTER_TYPED_TEST_SUITE_P(WorkGroupNodeBasicUnordered@SUBTESTNAME@FunctionalTest,
+                            BasicWorkGroupNodeUnordered@SUBTESTNAME@);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@BasicTest,
+                               WorkGroupNodeBasicUnordered@SUBTESTNAME@FunctionalTest,
+                               @BACKEND@BasicWorkGroupNodeUnordered@SUBTESTNAME@Types);

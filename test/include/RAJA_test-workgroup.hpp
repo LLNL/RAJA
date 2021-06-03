@@ -30,6 +30,10 @@ struct ResourceAllocator
 
     std_allocator() = default;
 
+    std_allocator(Resource& res)
+      : m_res(res)
+    { }
+
     std_allocator(std_allocator const&) = default;
     std_allocator(std_allocator &&) = default;
 
@@ -80,7 +84,7 @@ struct ResourceAllocator
     }
 
   private:
-    Resource m_res;
+    Resource m_res = Resource::get_default();
   };
 };
 

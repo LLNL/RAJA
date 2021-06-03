@@ -23,15 +23,15 @@
 #include "RAJA/policy/PolicyBase.hpp"
 
 #if defined(RAJA_COMPILER_MSVC)
-typedef enum omp_sched_t { 
-    // schedule kinds 
-    omp_sched_static = 0x1, 
-    omp_sched_dynamic = 0x2, 
-    omp_sched_guided = 0x3, 
-    omp_sched_auto = 0x4, 
-    
-    // schedule modifier 
-    omp_sched_monotonic = 0x80000000u 
+typedef enum omp_sched_t {
+    // schedule kinds
+    omp_sched_static = 0x1,
+    omp_sched_dynamic = 0x2,
+    omp_sched_guided = 0x3,
+    omp_sched_auto = 0x4,
+
+    // schedule modifier
+    omp_sched_monotonic = 0x80000000u
 } omp_sched_t;
 #else
 #include <omp.h>
@@ -99,7 +99,7 @@ struct Runtime : private internal::Schedule<static_cast<omp_sched_t>(-1), defaul
 //
 
 ///
-///  Struct supporting OpenMP parallel region. 
+///  Struct supporting OpenMP parallel region.
 ///
 struct omp_parallel_region
     : make_policy_pattern_launch_platform_t<Policy::openmp,
@@ -139,7 +139,7 @@ struct omp_for_schedule_exec : make_policy_pattern_launch_platform_t<Policy::ope
         "Schedule type must be one of: Auto|Runtime|Static|Dynamic|Guided");
 };
 
- 
+
 ///
 ///  Internal type aliases supporting 'omp for schedule( )' for specific
 ///  schedule types.
@@ -164,14 +164,14 @@ using omp_for_runtime_exec = omp_for_schedule_exec<omp::Runtime>;
 
 ///
 ///  Internal type aliases supporting 'omp for schedule( ) nowait' for specific
-///  schedule types. 
+///  schedule types.
 ///
 ///  IMPORTANT: We only provide a nowait policy option for static scheduling
 ///             since that is the only scheduling case that can be used with
-///             nowait and be correct in general. Paraphrasing the OpenMP 
+///             nowait and be correct in general. Paraphrasing the OpenMP
 ///             standard:
-///             
-///             Programs that depend on which thread executes a particular 
+///
+///             Programs that depend on which thread executes a particular
 ///             iteration under any circumstance other than static schedule
 ///             are non-conforming.
 ///
@@ -191,7 +191,7 @@ using omp_parallel_exec = make_policy_pattern_launch_platform_t<Policy::openmp,
                                             wrapper<InnerPolicy>>;
 
 ///
-///  Internal type aliases supporting 'omp parallel for schedule( )' for 
+///  Internal type aliases supporting 'omp parallel for schedule( )' for
 ///  specific schedule types.
 ///
 using omp_parallel_for_exec = omp_parallel_exec<omp_for_exec>;
@@ -256,6 +256,29 @@ struct omp_work : make_policy_pattern_launch_platform_t<Policy::openmp,
 };
 
 ///
+/// graph execution policies
+///
+#if defined(RAJA_ENABLE_OPENMP_TASK) && defined(RAJA_ENABLE_OPENMP_ATOMIC_CAPTURE)
+
+struct omp_task_atomic_graph : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                                                     Pattern::graph,
+                                                                     Launch::sync,
+                                                                     Platform::host> {
+};
+
+#endif
+
+#if defined(RAJA_ENABLE_OPENMP_TASK_DEPEND) && defined(RAJA_ENABLE_OPENMP_ITERATOR)
+
+struct omp_task_depend_graph : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                                                     Pattern::graph,
+                                                                     Launch::sync,
+                                                                     Platform::host> {
+};
+
+#endif
+
+///
 ///////////////////////////////////////////////////////////////////////
 ///
 /// Reduction execution policies
@@ -309,7 +332,7 @@ using policy::omp::omp_parallel_for_segit;
 using policy::omp::omp_parallel_segit;
 
 ///
-/// Type alias for omp parallel region containing an inner 'omp for' loop 
+/// Type alias for omp parallel region containing an inner 'omp for' loop
 /// execution policy. Inner policy types follow.
 ///
 using policy::omp::omp_parallel_exec;
@@ -320,7 +343,7 @@ using policy::omp::omp_parallel_exec;
 using policy::omp::omp_for_exec;
 
 ///
-/// Type aliases for 'omp for' and 'omp for nowait' loop execution with a 
+/// Type aliases for 'omp for' and 'omp for nowait' loop execution with a
 /// scheduling policy within an omp_parallel_exec construct
 /// Scheduling policies are near the top of this file and include:
 /// RAJA::policy::omp::{Auto, Static, Dynamic, Guided, Runtime}
@@ -335,7 +358,7 @@ using policy::omp::omp_for_schedule_exec;
 using policy::omp::omp_for_nowait_schedule_exec;
 
 ///
-/// Type aliases for 'omp for' and 'omp for nowait' loop execution with a 
+/// Type aliases for 'omp for' and 'omp for nowait' loop execution with a
 /// static scheduling policy within an omp_parallel_exec construct
 ///
 using policy::omp::omp_for_static_exec;
@@ -367,6 +390,14 @@ using policy::omp::omp_synchronize;
 
 ///
 using policy::omp::omp_work;
+
+///
+#if defined(RAJA_ENABLE_OPENMP_TASK) && defined(RAJA_ENABLE_OPENMP_ATOMIC_CAPTURE)
+using policy::omp::omp_task_atomic_graph;
+#endif
+#if defined(RAJA_ENABLE_OPENMP_TASK_DEPEND) && defined(RAJA_ENABLE_OPENMP_ITERATOR)
+using policy::omp::omp_task_depend_graph;
+#endif
 
 }  // namespace RAJA
 

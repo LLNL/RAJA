@@ -53,7 +53,8 @@ void testWorkGroupOrderedSingle(IndexType begin, IndexType end)
   ASSERT_GE(end, begin);
   IndexType N = end + begin;
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  WORKING_RES res = WORKING_RES::get_default();
+  camp::resources::Resource working_res{res};
 
   IndexType* working_array;
   IndexType* check_array;
@@ -71,7 +72,7 @@ void testWorkGroupOrderedSingle(IndexType begin, IndexType end)
       test_array[i] = IndexType(0);
     }
 
-    working_res.memcpy(working_array, test_array, sizeof(IndexType) * N);
+    res.memcpy(working_array, test_array, sizeof(IndexType) * N);
 
     for (IndexType i = begin; i < end; ++i) {
       test_array[ i ] = IndexType(i);
@@ -95,10 +96,11 @@ void testWorkGroupOrderedSingle(IndexType begin, IndexType end)
 
   WorkGroup_type group = pool.instantiate();
 
-  WorkSite_type site = group.run();
+  WorkSite_type site = group.run(res);
 
   {
-    working_res.memcpy(check_array, working_array, sizeof(IndexType) * N);
+    res.memcpy(check_array, working_array, sizeof(IndexType) * N);
+    res.wait();
 
     for (IndexType i = IndexType(0); i < begin; i++) {
       ASSERT_EQ(test_array[i], check_array[i]);

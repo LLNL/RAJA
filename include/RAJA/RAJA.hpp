@@ -146,6 +146,12 @@
 #include "RAJA/pattern/WorkGroup.hpp"
 
 //
+// graph constructs
+//
+#include "RAJA/pattern/graph.hpp"
+#include "RAJA/policy/graph.hpp"
+
+//
 // Reduction objects
 //
 #include "RAJA/pattern/reduce.hpp"

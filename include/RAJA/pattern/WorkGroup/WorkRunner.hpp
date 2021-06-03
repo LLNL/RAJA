@@ -109,6 +109,7 @@ template <typename ExecutionPolicy, typename Segment_type, typename LoopBody,
           typename index_type, typename ... Args>
 struct HoldForall
 {
+  using resource_type = typename resources::get_resource<ExecutionPolicy>::type;
   using HoldBodyArgs = typename std::conditional<
       !type_traits::is_device_exec_policy<ExecutionPolicy>::value,
       HoldBodyArgs_host<LoopBody, index_type, Args...>,
@@ -120,9 +121,9 @@ struct HoldForall
     , m_body(std::forward<body_in>(body))
   { }
 
-  RAJA_INLINE void operator()(Args... args) const
+  RAJA_INLINE void operator()(resource_type& r, Args... args) const
   {
-    wrap::forall(resources::get_resource<ExecutionPolicy>::type::get_default(),
+    wrap::forall(r,
                  ExecutionPolicy(),
                  m_segment,
                  HoldBodyArgs{m_body, std::forward<Args>(args)...});
@@ -160,9 +161,10 @@ struct WorkRunnerForallOrdered_base
   using order_policy = ORDER_POLICY_T;
   using Allocator = ALLOCATOR_T;
   using index_type = INDEX_T;
+  using resource_type = typename resources::get_resource<FORALL_EXEC_POLICY>::type;
 
   using forall_exec_policy = FORALL_EXEC_POLICY;
-  using vtable_type = Vtable<void, Args...>;
+  using vtable_type = Vtable<void, resource_type&, Args...>;
 
   WorkRunnerForallOrdered_base() = default;
 
@@ -230,7 +232,9 @@ struct WorkRunnerForallOrdered
 
   // run the loops using forall in the order that they were enqueued
   template < typename WorkContainer >
-  typename base::per_run_storage run(WorkContainer const& storage, Args... args) const
+  typename base::per_run_storage run(WorkContainer const& storage,
+                                     typename base::resource_type& r,
+                                     Args... args) const
   {
     using value_type = typename WorkContainer::value_type;
 
@@ -238,7 +242,7 @@ struct WorkRunnerForallOrdered
 
     auto end = storage.end();
     for (auto iter = storage.begin(); iter != end; ++iter) {
-      value_type::call(&*iter, args...);
+      value_type::call(&*iter, r, args...);
     }
 
     return run_storage;
@@ -274,7 +278,9 @@ struct WorkRunnerForallReverse
 
   // run the loops using forall in the reverse order to the order they were enqueued
   template < typename WorkContainer >
-  typename base::per_run_storage run(WorkContainer const& storage, Args... args) const
+  typename base::per_run_storage run(WorkContainer const& storage,
+                                     typename base::resource_type& r,
+                                     Args... args) const
   {
     using value_type = typename WorkContainer::value_type;
 
@@ -282,7 +288,7 @@ struct WorkRunnerForallReverse
 
     auto begin = storage.begin();
     for (auto iter = storage.end(); iter != begin; --iter) {
-      value_type::call(&*(iter-1), args...);
+      value_type::call(&*(iter-1), r, args...);
     }
 
     return run_storage;
