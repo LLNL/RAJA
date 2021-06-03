@@ -13,77 +13,77 @@
 #include "RAJA_gtest.hpp"
 
 
-
-TEST(TensorMatrix, MatrixRegisterMap)
-{
-  RAJA::internal::MatrixRegisterMap<RAJA::ColMajorLayout, 4,4, 16> m1;
-
-  printf("4x4 in 16-elem register:\n");
-  printf("register map:\n");
-  for(int row = 0;row < 4;++ row){
-    for(int col = 0;col < 4;++ col){
-      printf("%2d ", (int)m1.to_register(row, col));
-    }
-    printf("\n");
-  }
-
-  printf("lane map:\n");
-  for(int row = 0;row < 4;++ row){
-    for(int col = 0;col < 4;++ col){
-      printf("%2d ", (int)m1.to_lane(row, col));
-    }
-    printf("\n");
-  }
-  printf("\n");
-
-  RAJA::internal::MatrixRegisterMap<RAJA::ColMajorLayout, 4,8, 8> m2;
-
-  printf("4x8 in 8-elem register:\n");
-  printf("register map:\n");
-  for(int row = 0;row < 4;++ row){
-    for(int col = 0;col < 8;++ col){
-      printf("%2d ", (int)m2.to_register(row, col));
-    }
-    printf("\n");
-  }
-
-  printf("lane map:\n");
-  for(int row = 0;row < 4;++ row){
-    for(int col = 0;col < 8;++ col){
-      printf("%2d ", (int)m2.to_lane(row, col));
-    }
-    printf("\n");
-  }
-  printf("\n");
-
-
-  RAJA::internal::MatrixRegisterMap<RAJA::ColMajorLayout, 8,4, 8> m3;
-
-  printf("8x4 in 8-elem register:\n");
-  printf("register map:\n");
-  for(int row = 0;row < 8;++ row){
-    for(int col = 0;col < 4;++ col){
-      printf("%2d ", (int)m3.to_register(row, col));
-    }
-    printf("\n");
-  }
-
-  printf("lane map:\n");
-  for(int row = 0;row < 8;++ row){
-    for(int col = 0;col < 4;++ col){
-      printf("%2d ", (int)m3.to_lane(row, col));
-    }
-    printf("\n");
-  }
-  printf("\n");
-}
+//
+//TEST(TensorMatrix, MatrixRegisterMap)
+//{
+//  RAJA::internal::MatrixRegisterMap<RAJA::ColMajorLayout, 4,4, 16> m1;
+//
+//  printf("4x4 in 16-elem register:\n");
+//  printf("register map:\n");
+//  for(int row = 0;row < 4;++ row){
+//    for(int col = 0;col < 4;++ col){
+//      printf("%2d ", (int)m1.to_register(row, col));
+//    }
+//    printf("\n");
+//  }
+//
+//  printf("lane map:\n");
+//  for(int row = 0;row < 4;++ row){
+//    for(int col = 0;col < 4;++ col){
+//      printf("%2d ", (int)m1.to_lane(row, col));
+//    }
+//    printf("\n");
+//  }
+//  printf("\n");
+//
+//  RAJA::internal::MatrixRegisterMap<RAJA::ColMajorLayout, 4,8, 8> m2;
+//
+//  printf("4x8 in 8-elem register:\n");
+//  printf("register map:\n");
+//  for(int row = 0;row < 4;++ row){
+//    for(int col = 0;col < 8;++ col){
+//      printf("%2d ", (int)m2.to_register(row, col));
+//    }
+//    printf("\n");
+//  }
+//
+//  printf("lane map:\n");
+//  for(int row = 0;row < 4;++ row){
+//    for(int col = 0;col < 8;++ col){
+//      printf("%2d ", (int)m2.to_lane(row, col));
+//    }
+//    printf("\n");
+//  }
+//  printf("\n");
+//
+//
+//  RAJA::internal::MatrixRegisterMap<RAJA::ColMajorLayout, 8,4, 8> m3;
+//
+//  printf("8x4 in 8-elem register:\n");
+//  printf("register map:\n");
+//  for(int row = 0;row < 8;++ row){
+//    for(int col = 0;col < 4;++ col){
+//      printf("%2d ", (int)m3.to_register(row, col));
+//    }
+//    printf("\n");
+//  }
+//
+//  printf("lane map:\n");
+//  for(int row = 0;row < 8;++ row){
+//    for(int col = 0;col < 4;++ col){
+//      printf("%2d ", (int)m3.to_lane(row, col));
+//    }
+//    printf("\n");
+//  }
+//  printf("\n");
+//}
 
 
 using MatrixTestTypes = ::testing::Types<
 
 //    // These tests use the platform default SIMD architecture
 //    RAJA::SquareMatrixRegister<double, RAJA::ColMajorLayout>,
-//    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout>,
+    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout>,
 //    RAJA::SquareMatrixRegister<float, RAJA::ColMajorLayout>,
 //    RAJA::SquareMatrixRegister<float, RAJA::RowMajorLayout>,
 //    RAJA::SquareMatrixRegister<long, RAJA::ColMajorLayout>,
@@ -409,51 +409,70 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
 
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
-  using vector_t = typename matrix_t::register_type;
+  using col_vector_t = typename matrix_t::column_vector_type;
+  using row_vector_t = typename matrix_t::row_vector_type;
+  static constexpr camp::idx_t num_rows = matrix_t::s_num_rows;
+  static constexpr camp::idx_t num_columns = matrix_t::s_num_columns;
 
   // initialize a matrix and vector
   matrix_t m;
-  vector_t v;
-  for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
-    for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
+  for(camp::idx_t j = 0;j < num_columns; ++ j){
+    for(camp::idx_t i = 0;i < num_rows; ++ i){
       m.set(element_t(NO_OPT_ZERO + 5+i+j*j), i,j);
     }
-    v.set(NO_OPT_ZERO + 3 + j*2, j);
   }
 
 
   {
+    col_vector_t v;
+    for(camp::idx_t i = 0;i < num_rows; ++ i){
+      v.set(NO_OPT_ZERO + 3 + i*2, i);
+    }
+
+
     // matrix vector product
     // note mv is not necessarily the same type as v
     auto mv = m.right_multiply_vector(v);
 
+    printf("m: %s", m.to_string().c_str());
+    printf("v: %s", v.to_string().c_str());
+    printf("mv: %s", mv.to_string().c_str());
+
     // check result
-    for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_rows; ++ i){
       element_t expected(0);
 
-      for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
+      for(camp::idx_t j = 0;j < num_columns; ++ j){
         expected += m.get(i,j)*v.get(j);
       }
+
+      printf("mv: i=%d, val=%lf, %s", (int)i, (double)mv.get(0), mv.to_string().c_str());
 
       ASSERT_SCALAR_EQ(mv.get(i), expected);
     }
   }
 
-  {
-    // matrix vector product
-    auto mv = m.left_multiply_vector(v);
-
-    // check result
-    for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
-      element_t expected(0);
-
-      for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
-        expected += m.get(i,j)*v.get(i);
-      }
-
-      ASSERT_SCALAR_EQ(mv.get(j), expected);
-    }
-  }
+//  {
+//
+//    row_vector_t v;
+//    for(camp::idx_t j = 0;j < num_columns; ++ j){
+//      v.set(NO_OPT_ZERO + 3 + j*2, j);
+//    }
+//
+//    // matrix vector product
+//    auto mv = m.left_multiply_vector(v);
+//
+//    // check result
+//    for(camp::idx_t j = 0;j < num_columns; ++ j){
+//      element_t expected(0);
+//
+//      for(camp::idx_t i = 0;i < num_rows; ++ i){
+//        expected += m.get(i,j)*v.get(i);
+//      }
+//
+//      ASSERT_SCALAR_EQ(mv.get(j), expected);
+//    }
+//  }
 }
 
 #if 0

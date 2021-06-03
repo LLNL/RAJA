@@ -30,79 +30,6 @@
 namespace RAJA
 {
 
-  namespace internal {
-
-    /**
-     * This is a helper class that provides mapping from matrix indices to
-     * elements in a register.
-     */
-    template<typename LAYOUT, camp::idx_t ROW_SIZE, camp::idx_t COL_SIZE, camp::idx_t REGISTER_SIZE>
-    class MatrixRegisterMap {
-      public:
-        using layout_type = LAYOUT;
-
-        // number of values in one register
-        static constexpr camp::idx_t s_elements_per_register = REGISTER_SIZE;
-
-        // number of registers to hold entire matrix
-        static constexpr camp::idx_t s_num_registers =
-            (ROW_SIZE*COL_SIZE) / s_elements_per_register;
-
-        // We only allow matrix sizes that exactly fit in some number of registers
-        static_assert((ROW_SIZE*COL_SIZE) == s_num_registers*s_elements_per_register,
-            "Matrix must exactly fit into an integer number of registers");
-
-//        // Matrix size for the within-register dimension
-//        // for row-major, regdim is the columns
-//        // for column-major, regdim is the rows
-//        static constexpr camp::idx_t s_elements_per_regdim =
-//            layout_type::is_row_major() ? COL_SIZE : ROW_SIZE;
-//
-//        // Number of registers per regdim, if there are 1 or more registers
-//        // If a register is split over multiple regdims, this is zero
-//        static constexpr camp::idx_t s_registers_per_regdim =
-//            s_elements_per_regdim / s_elements_per_register;
-//
-//        // Number of regdim per register, if there are 1 or more regdim
-//        // If multiple registers are used for a regdim, this is zero
-//        static constexpr camp::idx_t s_regdim_per_register =
-//            s_elements_per_register / s_elements_per_regdim;
-
-
-        using log_base2_t = RAJA::LogBase2<s_elements_per_register>;
-
-        static constexpr camp::idx_t s_shift_per_register =
-            log_base2_t::value;
-
-        static constexpr camp::idx_t s_mask_per_register =
-            (1<<log_base2_t::value)-1;
-
-
-
-      public:
-        template<typename IDX>
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        constexpr
-        static
-        auto to_register(IDX row, IDX col) -> IDX {
-          return layout_type::is_row_major() ?
-              (row*IDX(COL_SIZE) + col) >> IDX(s_shift_per_register) :
-              (col*IDX(ROW_SIZE) + row) >> IDX(s_shift_per_register);
-        }
-
-        template<typename IDX>
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        constexpr
-        static
-        auto to_lane(IDX row, IDX col) -> IDX {
-          return layout_type::is_row_major() ?
-              (row*IDX(COL_SIZE) + col) & IDX(s_mask_per_register) :
-              (col*IDX(ROW_SIZE) + row) & IDX(s_mask_per_register);
-        }
-    };
-  }
 
   /*
    * 2D (Matrix) specialization of TensorRegister
@@ -129,15 +56,55 @@ namespace RAJA
 
     private:
 
-      static constexpr camp::idx_t s_register_width =
+      static constexpr camp::idx_t s_elements_per_register =
           RegisterTraits<REGISTER_POLICY,T>::s_num_elem;
 
-      // provides a mapping of indices to registers
-      using register_map = internal::MatrixRegisterMap<layout_type, ROW_SIZE, COL_SIZE, s_register_width>;
+      // number of registers to hold entire matrix
+      static constexpr camp::idx_t s_num_registers =
+          (ROW_SIZE*COL_SIZE) / s_elements_per_register;
 
-      // Number of registers that completely contain this matrix
-      static constexpr camp::idx_t s_num_registers = register_map::s_num_registers;
+      // We only allow matrix sizes that exactly fit in some number of registers
+      static_assert((ROW_SIZE*COL_SIZE) == s_num_registers*s_elements_per_register,
+          "Matrix must exactly fit into an integer number of registers");
 
+      using log_base2_t = RAJA::LogBase2<s_elements_per_register>;
+
+      static constexpr camp::idx_t s_shift_per_register =
+          log_base2_t::value;
+
+      static constexpr camp::idx_t s_mask_per_register =
+          (1<<log_base2_t::value)-1;
+
+
+      static constexpr camp::idx_t s_minor_dim_elements =
+          layout_type::is_row_major() ? s_num_columns : s_num_rows;
+
+      static constexpr camp::idx_t s_segbits = RAJA::LogBase2<s_minor_dim_elements>::value;
+
+      static constexpr camp::idx_t s_segments = 1;
+
+
+      template<typename IDX>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      constexpr
+      static
+      auto to_register(IDX row, IDX col) -> IDX {
+        return layout_type::is_row_major() ?
+            (row*IDX(COL_SIZE) + col) >> IDX(s_shift_per_register) :
+            (col*IDX(ROW_SIZE) + row) >> IDX(s_shift_per_register);
+      }
+
+      template<typename IDX>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      constexpr
+      static
+      auto to_lane(IDX row, IDX col) -> IDX {
+        return layout_type::is_row_major() ?
+            (row*IDX(COL_SIZE) + col) & IDX(s_mask_per_register) :
+            (col*IDX(ROW_SIZE) + row) & IDX(s_mask_per_register);
+      }
 
       using base_type::m_registers;
 
@@ -365,7 +332,7 @@ namespace RAJA
            (layout_type::is_column_major()&&(col_stride==COL_SIZE))){
 
           for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
-            m_registers[reg].load_packed(ptr + reg*s_register_width);
+            m_registers[reg].load_packed(ptr + reg*s_elements_per_register);
           }
 
         }
@@ -379,7 +346,7 @@ namespace RAJA
 
 //                camp::idx_t reg = dimreg + row*s_registers_per_dim;
 
-                camp::idx_t offset = row*row_stride;// + dimreg*s_register_width;
+                camp::idx_t offset = row*row_stride;// + dimreg*s_elements_per_register;
 
                 m_registers[row].load_packed(ptr + offset);
 
@@ -400,7 +367,7 @@ namespace RAJA
 
 //                camp::idx_t reg = dimreg + col*s_registers_per_dim;
 
-                camp::idx_t offset = col*col_stride; // + dimreg*s_register_width;
+                camp::idx_t offset = col*col_stride; // + dimreg*s_elements_per_register;
 
                 m_registers[col].load_packed(ptr + offset);
 
@@ -702,20 +669,8 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       row_vector_type right_multiply_vector(column_vector_type v) const {
-        if(layout_type::is_row_major()){
-          register_type result;
-//          for(camp::idx_t i = 0;i < s_num_rows;++ i){
-//            result.set(v.dot(m_registers[i]), i);
-//          }
-          return result;
-        }
-        else{
-          register_type result(0);
-//          for(camp::idx_t i = 0;i < s_num_cols;++ i){
-//            result +=  m_registers[i] * v.get(i);
-//          }
-          return result;
-        }
+        row_vector_type result(0);
+        return right_multiply_vector_accumulate(v, result);
       }
 
       /*!
@@ -725,17 +680,17 @@ namespace RAJA
       RAJA_INLINE
       column_vector_type left_multiply_vector(row_vector_type v) const {
         if(layout_type::is_column_major()){
-          register_type result;
-          for(camp::idx_t i = 0;i < s_num_registers;++ i){
-            result.set(v.dot(m_registers[i]), i);
-          }
+          column_vector_type result;
+//          for(camp::idx_t i = 0;i < s_num_registers;++ i){
+//            result.set(v.dot(m_registers[i]), i);
+//          }
           return result;
         }
         else{
-          register_type result(0);
-          for(camp::idx_t i = 0;i < s_num_registers;++ i){
-            result +=  m_registers[i] * v.get(i);
-          }
+          column_vector_type result(0);
+//          for(camp::idx_t i = 0;i < s_num_registers;++ i){
+//            result +=  m_registers[i] * v.get(i);
+//          }
           return result;
         }
       }
@@ -748,8 +703,73 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void right_multiply_vector_accumulate(register_type &acc, register_type v) const {
-        acc.inplace_add(right_multiply_vector(v));
+      row_vector_type right_multiply_vector_accumulate(column_vector_type const &v, row_vector_type result) const {
+        if(layout_type::is_row_major()){
+//          for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
+//
+//            auto tmp =
+//                m_registers[reg].segmented_dot(s_segbits, v.get_register(0));
+//
+//            printf("rmultvec(reg=%d): segbits=%d, tmp=%s", (int)reg, (int)s_segbits, tmp.to_string().c_str());
+//
+//                result.get_register(reg) += tmp;
+//
+//          }
+
+          camp::idx_t output_segment_size =  s_elements_per_register/(1<<s_segbits);
+          camp::idx_t num_output_vec_segments = s_num_rows / output_segment_size;
+
+          printf("s_segbits=%d\n", (int)s_segbits);
+          printf("s_num_rows=%d\n", (int)s_num_rows);
+          printf("s_num_columns=%d\n", (int)s_num_columns);
+
+          printf("output_segment_size=%d\n", (int)output_segment_size);
+          printf("num_output_vec_segments=%d\n", (int)num_output_vec_segments);
+
+          // loop over chunks of result that we are going to compute
+          for(camp::idx_t output_vec_segment = 0;output_vec_segment < num_output_vec_segments;++ output_vec_segment){
+
+            printf("output_vec_segment=%d\n", (int)output_vec_segment);
+
+            // localize the output_vec_segment to a specific output register and register segment
+            camp::idx_t output_reg = output_vec_segment*output_segment_size/s_elements_per_register;
+            camp::idx_t output_reg_segment = output_vec_segment - output_reg*s_elements_per_register/output_segment_size;
+
+            printf("  output_reg=%d\n", (int)output_reg);
+            printf("  output_reg_segment=%d\n", (int)output_reg_segment);
+
+
+            // loop over registers in each row
+//            for(camp::idx_t row_register = 0;row_register < s_num_registers;++ row_register){
+
+            camp::idx_t row_register = output_vec_segment;
+
+              printf("  row_register=%d\n", (int)row_register);
+
+              auto v_segment = v.get_register(0).segmented_broadcast(0, output_reg_segment);
+
+
+              printf("    v_segment=%s", v_segment.to_string().c_str());
+
+
+              auto dp = m_registers[row_register].segmented_dot(s_segbits, output_reg_segment, v_segment);
+
+              printf("    dp=%s", dp.to_string().c_str());
+
+              result.get_register(output_reg) += dp;
+
+
+
+//            } // row register
+
+          } // output segment
+        }
+        else{
+//          for(camp::idx_t i = 0;i < s_num_cols;++ i){
+//            result +=  m_registers[i] * v.get(i);
+//          }
+        }
+        return result;
       }
 
       /*!
@@ -809,14 +829,14 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &set(element_type val, int row, int col){
-        m_registers[register_map::to_register(row, col)].set(val, register_map::to_lane(row,col));
+        m_registers[to_register(row, col)].set(val, to_lane(row,col));
         return *this;
       }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
       element_type get(int row, int col) const {
-        return m_registers[register_map::to_register(row, col)].get(register_map::to_lane(row,col));
+        return m_registers[to_register(row, col)].get(to_lane(row,col));
       }
 
 

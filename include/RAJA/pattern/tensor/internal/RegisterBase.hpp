@@ -733,19 +733,74 @@ namespace internal {
 
 
       /*!
-       * Sum across segments, with segment size defined by segbits
+       * Computes the number of segments for a given segbits
+       *
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type segmented_sum(camp::idx_t segbits) const
+      constexpr
+      camp::idx_t calc_num_segments(camp::idx_t segbits) const
+      {
+        return self_type::s_num_elem >> segbits;
+      }
+
+      /*!
+       * Computes the number of segments
+       *
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      constexpr
+      camp::idx_t calc_segment_size(camp::idx_t segbits) const
+      {
+        return 1 << segbits;
+      }
+
+
+      /*!
+       * Sum across segments, with segment size defined by segbits
+       *
+       * Note: segment size is 1<<segbits elements
+       *       number of segments is s_num_elem>>seg_bits
+       *
+       *
+       *
+       *
+       *  Example:
+       *
+       *  Given input vector  X = x0, x1, x2, x3, x4, x5, x6, x7
+       *
+       *  segbits=0 is equivalent to the input vector,  since there are 8
+       *      outputs, there is only 1 output segment
+       *
+       *      Result= x0, x1, x2, x3, x4, x5, x6, x7
+       *
+       *  segbits=1 sums neighboring pairs of values.  There are 4 output,
+       *      so there are possible output segments.
+       *
+       *      output_segment=0:
+       *      Result= x0+x1, x2+x3, x4+x5, x6+x7, 0, 0, 0, 0
+       *
+       *      output_segment=1:
+       *      Result= 0, 0, 0, 0, x0+x1, x2+x3, x4+x5, x6+x7
+       *
+       *  and so on up to segbits=3, which is a full sum of x0..x7, and the
+       *      output_segment denotes the vector position of the sum
+       *
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type segmented_sum(camp::idx_t segbits, camp::idx_t output_segment) const
       {
         self_type result(0);
 
         // default implementation is dumb, just sum each value into
         // appropriate segment lane
+        int output_offset = output_segment * self_type::s_num_elem>>segbits;
+
         for(camp::idx_t i = 0;i < self_type::s_num_elem; ++ i){
-          auto value = getThis()->get(i) + result.get(i >> segbits);
-          result.set(value, i >> segbits);
+          auto value = getThis()->get(i) + result.get((i >> segbits)+output_offset);
+          result.set(value, (i >> segbits)+output_offset);
         }
 
         return result;
@@ -753,20 +808,91 @@ namespace internal {
 
       /*!
        * Segmented dot product performs dot products
+       * Note: segment size is 1<<segbits elements
+       *       number of segments is s_num_elem>>seg_bits
+       *
+       *
+       *  Example:
+       *
+       *  Given input vector  X = x0, x1, x2, x3, x4, x5, x6, x7
+       *                      Y = y0, y1, y2, y3, y4, y5, y6, y7
+       *
+       *
+       *  segbits=0 is equivalent to a vector multiply,  since there are 8
+       *      outputs, there is only 1 output segment
+       *
+       *      Result= x0*y0, x1*y1, x2*y2, x3*y3, x4*y4, x5*y5, x6*y6, x7*y7
+       *
+       *  segbits=1 sums neighboring pairs of products.  There are 4 output,
+       *      so there are possible output segments.
+       *
+       *      output_segment=0:
+       *      Result= x0*y0+x1*y1, x2*y2+x3*y3, x4*y4+x5*y5, x6*y6+x7*y7, 0, 0, 0, 0
+       *
+       *      output_segment=1:
+       *      Result= 0, 0, 0, 0, x0*y0+x1*y1, x2*y2+x3*y3, x4*y4+x5*y5, x6*y6+x7*y7
+       *
+       *  and so on up to segbits=3, which is a full dot-product of x and y, and the
+       *      output_segment denotes the vector position of the result
+       *
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type segmented_dot(camp::idx_t segbits, self_type const &x) const
+      self_type segmented_dot(camp::idx_t segbits, camp::idx_t output_segment, self_type const &x) const
       {
-        return getThis()->multiply(x).segmented_sum(segbits);
+        return getThis()->multiply(x).segmented_sum(segbits, output_segment);
       }
 
       /*!
-       * Segmented dot product performs dot products
+       * Segmented broadcast copies a segment to all output segments of a vector
+       *
+       * Note: segment size is 1<<segbits elements
+       *       number of segments is s_num_elem>>seg_bits
+       *
+       *
+       *  Example:
+       *
+       *  Given input vector  X = x0, x1, x2, x3, x4, x5, x6, x7
+       *
+       *  segbits=0 means the input segment size is 1, so this selects the
+       *      value at x[input_segmnet] and broadcasts it to the rest of the
+       *      vector
+       *
+       *      input segments allowed are from 0 to 7, inclusive
+       *
+       *      input_segment=0
+       *      Result= x0, x0, x0, x0, x0, x0, x0, x0
+       *
+       *      input_segment=5
+       *      Result= x5, x5, x5, x5, x5, x5, x5, x5
+       *
+       *  segbits=1 means that the input segments are each pair of x values:
+       *
+       *      input segments allowed are from 0 to 3, inclusive
+       *
+       *      output_segment=0:
+       *      Result= x0, x1, x0, x1, x0, x1, x0, x1
+       *
+       *      output_segment=1:
+       *      Result= x2, x3, x2, x3, x2, x3, x2, x3
+       *
+       *      output_segment=3:
+       *      Result= x6, x7, x6, x7, x6, x7, x6, x7
+       *
+       *  and so on up to segbits=2, the input segments are 4 wide:
+       *
+       *      input segments allowed are from 0 or 1
+       *
+       *      output_segment=0:
+       *      Result= x0, x1, x2, x3, x0, x1, x2, x3
+       *
+       *      output_segment=1:
+       *      Result= x4, x5, x6, x7, x4, x5, x6, x7
+       *
        */
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type segmented_explode(camp::idx_t segbits, camp::idx_t segment) const
+      self_type segmented_broadcast(camp::idx_t segbits, camp::idx_t input_segment) const
       {
         self_type result;
 
@@ -775,7 +901,7 @@ namespace internal {
         for(camp::idx_t i = 0;i < self_type::s_num_elem; ++ i){
           int seg = i>>segbits;
 
-          int off = (self_type::s_num_elem>>segbits)*segment + seg;
+          int off = (self_type::s_num_elem>>segbits)*input_segment + seg;
 
           result.set(getThis()->get(off), i);
         }

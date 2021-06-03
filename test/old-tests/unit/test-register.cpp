@@ -720,7 +720,7 @@ TYPED_TEST_P(RegisterTest, SegmentedSum)
   // run segmented dot products for all segments allowed by the vector
   for(int segbits = 0;(1<<segbits) <= num_elem;++ segbits){
 
-    register_t s = x.segmented_sum(segbits);
+    register_t s = x.segmented_sum(segbits,0);
 
 
     // Compute expected values
@@ -761,31 +761,41 @@ TYPED_TEST_P(RegisterTest, SegmentedDotProduct)
   printf("x: %s", x.to_string().c_str());
   printf("y: %s", y.to_string().c_str());
 
+
   // run segmented dot products for all segments allowed by the vector
   for(int segbits = 0;(1<<segbits) <= num_elem;++ segbits){
 
-    register_t dp = x.segmented_dot(segbits, y);
+    int num_output_segments = 1<<segbits;
+
+    for(int output_segment = 0;output_segment < num_output_segments;++output_segment){
+
+      int offset = output_segment * num_elem/(1<<segbits);
+
+      register_t dp = x.segmented_dot(segbits, output_segment, y);
 
 
-    // Compute expected values
-    for(size_t i = 0;i < num_elem; ++ i){
-      R[i] = 0;
-    }
-    for(size_t i = 0;i < num_elem; ++ i){
-      R[i>>segbits] += A[i]*B[i];
-    }
+      // Compute expected values
+      for(size_t i = 0;i < num_elem; ++ i){
+        R[i] = 0;
+      }
+      for(size_t i = 0;i < num_elem; ++ i){
+        R[(i>>segbits) + offset] += A[i]*B[i];
+      }
 
-    printf("xdoty: segbits=%d, %s", segbits, dp.to_string().c_str());
+      printf("xdoty: segbits=%d, oseg=%d, %s", segbits, output_segment, dp.to_string().c_str());
 
-    for(size_t i = 0;i < num_elem; ++ i){
-      ASSERT_SCALAR_EQ(R[i], dp.get(i));
-    }
+      for(size_t i = 0;i < num_elem; ++ i){
+        printf("i=%d, R=%lf, dp=%lf\n", (int)i, (double)R[i], (double)dp.get(i));
+        ASSERT_SCALAR_EQ(R[i], dp.get(i));
+      }
 
-  }
+    } // output_segment
+
+  } // segbits
 
 }
 
-TYPED_TEST_P(RegisterTest, SegmentedExplode)
+TYPED_TEST_P(RegisterTest, SegmentedBroadcast)
 {
   using register_t = TypeParam;
 
@@ -807,12 +817,12 @@ TYPED_TEST_P(RegisterTest, SegmentedExplode)
 
     int num_segments = (1<<segbits);
 
-    for(int segment = 0;segment < num_segments;++ segment){
+    for(int input_segment = 0;input_segment < num_segments;++ input_segment){
 
-      register_t ex = x.segmented_explode(segbits, segment);
+      register_t ex = x.segmented_broadcast(segbits, input_segment);
 
       // Compute expected values
-      printf("explode: segbits=%d, segment=%d\n", segbits, segment);
+      printf("explode: segbits=%d, input_segment=%d\n", segbits, input_segment);
       printf("  R:  ");
       for(camp::idx_t i = 0;i < num_elem; ++ i){
         int seg = i>>segbits;
@@ -857,7 +867,7 @@ REGISTER_TYPED_TEST_SUITE_P( RegisterTest,
                              Min,
                              SegmentedSum,
                              SegmentedDotProduct,
-                             SegmentedExplode);
+                             SegmentedBroadcast);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, RegisterTest, RegisterTestTypes);
 

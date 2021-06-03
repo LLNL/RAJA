@@ -704,6 +704,19 @@ namespace internal {
       }
 
 
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      register_type &get_register(int reg){
+        return m_registers[reg];
+      }
+
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      constexpr
+      register_type const &get_register(int reg) const{
+        return m_registers[reg];
+      }
+
 
 
       /*!
