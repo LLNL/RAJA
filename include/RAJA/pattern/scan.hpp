@@ -47,26 +47,6 @@ inline namespace policy_by_value_interface
 ******************************************************************************
 */
 template <typename ExecPolicy,
-          typename Container,
-          typename Function = operators::plus<RAJA::detail::ContainerVal<Container>>,
-          typename Res = typename resources::get_resource<ExecPolicy>::type>
-RAJA_INLINE
-concepts::enable_if_t<resources::EventProxy<Res>,
-                      type_traits::is_execution_policy<ExecPolicy>,
-                      type_traits::is_range<Container>,
-                      concepts::negate<std::is_constructible<camp::resources::Resource, Container>>>
-inclusive_scan_inplace(ExecPolicy&& p,
-                       Container&& c,
-                       Function binop = Function{})
-{
-  auto r = Res::get_default();
-  return inclusive_scan_inplace(std::forward<ExecPolicy>(p),
-                                r,
-                                std::forward<Container>(c),
-                                binop);
-}
-///
-template <typename ExecPolicy,
           typename Res,
           typename Container,
           typename Function = operators::plus<RAJA::detail::ContainerVal<Container>>>
@@ -94,6 +74,27 @@ inclusive_scan_inplace(ExecPolicy&& p,
   return impl::scan::inclusive_inplace(r, std::forward<ExecPolicy>(p),
                                        begin(c), end(c), binop);
 }
+///
+template <typename ExecPolicy,
+          typename Container,
+          typename Function = operators::plus<RAJA::detail::ContainerVal<Container>>,
+          typename Res = typename resources::get_resource<ExecPolicy>::type>
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<Res>,
+                      type_traits::is_execution_policy<ExecPolicy>,
+                      type_traits::is_range<Container>,
+                      concepts::negate<std::is_constructible<camp::resources::Resource, Container>>>
+inclusive_scan_inplace(ExecPolicy&& p,
+                       Container&& c,
+                       Function binop = Function{})
+{
+  auto r = Res::get_default();
+  return ::RAJA::policy_by_value_interface::inclusive_scan_inplace(
+      std::forward<ExecPolicy>(p),
+      r,
+      std::forward<Container>(c),
+      binop);
+}
 
 /*!
 ******************************************************************************
@@ -107,29 +108,6 @@ inclusive_scan_inplace(ExecPolicy&& p,
 *
 ******************************************************************************
 */
-template <typename ExecPolicy,
-          typename Container,
-          typename T = RAJA::detail::ContainerVal<Container>,
-          typename Function = operators::plus<T>,
-          typename Res = typename resources::get_resource<ExecPolicy>::type>
-RAJA_INLINE
-concepts::enable_if_t<resources::EventProxy<Res>,
-                      type_traits::is_execution_policy<ExecPolicy>,
-                      type_traits::is_range<Container>,
-                      concepts::negate<std::is_constructible<camp::resources::Resource, Container>>>
-exclusive_scan_inplace(ExecPolicy&& p,
-                       Container&& c,
-                       Function binop = Function{},
-                       T value = Function::identity())
-{
-  auto r = Res::get_default();
-  return exclusive_scan_inplace(std::forward<ExecPolicy>(p),
-                                r,
-                                std::forward<Container>(c),
-                                binop,
-                                value);
-}
-///
 template <typename ExecPolicy,
           typename Res,
           typename Container,
@@ -160,6 +138,30 @@ exclusive_scan_inplace(ExecPolicy&& p,
   return impl::scan::exclusive_inplace(r, std::forward<ExecPolicy>(p),
                                        begin(c), end(c), binop, value);
 }
+///
+template <typename ExecPolicy,
+          typename Container,
+          typename T = RAJA::detail::ContainerVal<Container>,
+          typename Function = operators::plus<T>,
+          typename Res = typename resources::get_resource<ExecPolicy>::type>
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<Res>,
+                      type_traits::is_execution_policy<ExecPolicy>,
+                      type_traits::is_range<Container>,
+                      concepts::negate<std::is_constructible<camp::resources::Resource, Container>>>
+exclusive_scan_inplace(ExecPolicy&& p,
+                       Container&& c,
+                       Function binop = Function{},
+                       T value = Function::identity())
+{
+  auto r = Res::get_default();
+  return ::RAJA::policy_by_value_interface::exclusive_scan_inplace(
+      std::forward<ExecPolicy>(p),
+      r,
+      std::forward<Container>(c),
+      binop,
+      value);
+}
 
 /*!
 ******************************************************************************
@@ -177,30 +179,6 @@ exclusive_scan_inplace(ExecPolicy&& p,
 *begin))}
 ******************************************************************************
 */
-template <typename ExecPolicy,
-          typename InContainer,
-          typename OutContainer,
-          typename Function = operators::plus<RAJA::detail::ContainerVal<InContainer>>,
-          typename Res = typename resources::get_resource<ExecPolicy>::type>
-RAJA_INLINE
-concepts::enable_if_t<resources::EventProxy<Res>,
-                      type_traits::is_execution_policy<ExecPolicy>,
-                      type_traits::is_range<InContainer>,
-                      concepts::negate<std::is_constructible<camp::resources::Resource, InContainer>>,
-                      type_traits::is_range<OutContainer>>
-inclusive_scan(ExecPolicy&& p,
-               InContainer&& in,
-               OutContainer&& out,
-               Function binop = Function{})
-{
-  auto r = Res::get_default();
-  return inclusive_scan(std::forward<ExecPolicy>(p),
-                        r,
-                        std::forward<InContainer>(in),
-                        std::forward<OutContainer>(out),
-                        binop);
-}
-///
 template <typename ExecPolicy,
           typename Res,
           typename InContainer,
@@ -235,6 +213,31 @@ inclusive_scan(ExecPolicy&& p,
   return impl::scan::inclusive(r, std::forward<ExecPolicy>(p),
                                begin(in), end(in), begin(out), binop);
 }
+///
+template <typename ExecPolicy,
+          typename InContainer,
+          typename OutContainer,
+          typename Function = operators::plus<RAJA::detail::ContainerVal<InContainer>>,
+          typename Res = typename resources::get_resource<ExecPolicy>::type>
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<Res>,
+                      type_traits::is_execution_policy<ExecPolicy>,
+                      type_traits::is_range<InContainer>,
+                      concepts::negate<std::is_constructible<camp::resources::Resource, InContainer>>,
+                      type_traits::is_range<OutContainer>>
+inclusive_scan(ExecPolicy&& p,
+               InContainer&& in,
+               OutContainer&& out,
+               Function binop = Function{})
+{
+  auto r = Res::get_default();
+  return ::RAJA::policy_by_value_interface::inclusive_scan(
+      std::forward<ExecPolicy>(p),
+      r,
+      std::forward<InContainer>(in),
+      std::forward<OutContainer>(out),
+      binop);
+}
 
 /*!
 ******************************************************************************
@@ -252,33 +255,6 @@ inclusive_scan(ExecPolicy&& p,
 *begin))}
 ******************************************************************************
 */
-template <typename ExecPolicy,
-          typename InContainer,
-          typename OutContainer,
-          typename T = RAJA::detail::ContainerVal<InContainer>,
-          typename Function = operators::plus<T>,
-          typename Res = typename resources::get_resource<ExecPolicy>::type>
-RAJA_INLINE
-concepts::enable_if_t<resources::EventProxy<Res>,
-                      type_traits::is_execution_policy<ExecPolicy>,
-                      type_traits::is_range<InContainer>,
-                      concepts::negate<std::is_constructible<camp::resources::Resource, InContainer>>,
-                      type_traits::is_range<OutContainer>>
-exclusive_scan(ExecPolicy&& p,
-               InContainer&& in,
-               OutContainer&& out,
-               Function binop = Function{},
-               T value = Function::identity())
-{
-  auto r = Res::get_default();
-  return exclusive_scan(std::forward<ExecPolicy>(p),
-                        r,
-                        std::forward<InContainer>(in),
-                        std::forward<OutContainer>(out),
-                        binop,
-                        value);
-}
-///
 template <typename ExecPolicy,
           typename Res,
           typename InContainer,
@@ -315,6 +291,34 @@ exclusive_scan(ExecPolicy&& p,
   return impl::scan::exclusive(r, std::forward<ExecPolicy>(p),
                                begin(in), end(in), begin(out), binop, value);
 }
+///
+template <typename ExecPolicy,
+          typename InContainer,
+          typename OutContainer,
+          typename T = RAJA::detail::ContainerVal<InContainer>,
+          typename Function = operators::plus<T>,
+          typename Res = typename resources::get_resource<ExecPolicy>::type>
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<Res>,
+                      type_traits::is_execution_policy<ExecPolicy>,
+                      type_traits::is_range<InContainer>,
+                      concepts::negate<std::is_constructible<camp::resources::Resource, InContainer>>,
+                      type_traits::is_range<OutContainer>>
+exclusive_scan(ExecPolicy&& p,
+               InContainer&& in,
+               OutContainer&& out,
+               Function binop = Function{},
+               T value = Function::identity())
+{
+  auto r = Res::get_default();
+  return ::RAJA::policy_by_value_interface::exclusive_scan(
+      std::forward<ExecPolicy>(p),
+      r,
+      std::forward<InContainer>(in),
+      std::forward<OutContainer>(out),
+      binop,
+      value);
+}
 
 }  // end inline namespace policy_by_value_interface
 
@@ -333,7 +337,8 @@ concepts::enable_if_t<resources::EventProxy<Res>,
 exclusive_scan(Args&&... args)
 {
   Res r = Res::get_default();
-  return exclusive_scan<ExecPolicy>(r, std::forward<Args>(args)...);
+  return ::RAJA::policy_by_value_interface::exclusive_scan<ExecPolicy>(
+      ExecPolicy(), r, std::forward<Args>(args)...);
 }
 ///
 template <typename ExecPolicy, typename Res, typename... Args>
@@ -343,7 +348,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_resource<Res>>
 exclusive_scan(Res& r, Args&&... args)
 {
-  return policy_by_value_interface::exclusive_scan(
+  return ::RAJA::policy_by_value_interface::exclusive_scan(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 
@@ -361,7 +366,8 @@ concepts::enable_if_t<resources::EventProxy<Res>,
 inclusive_scan(Args&&... args)
 {
   Res r = Res::get_default();
-  return inclusive_scan<ExecPolicy>(r, std::forward<Args>(args)...);
+  return ::RAJA::policy_by_value_interface::inclusive_scan<ExecPolicy>(
+      ExecPolicy(), r, std::forward<Args>(args)...);
 }
 ///
 template <typename ExecPolicy, typename Res, typename... Args>
@@ -371,7 +377,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_resource<Res>>
 inclusive_scan(Res& r, Args&&... args)
 {
-  return policy_by_value_interface::inclusive_scan(
+  return ::RAJA::policy_by_value_interface::inclusive_scan(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 
@@ -389,7 +395,8 @@ concepts::enable_if_t<resources::EventProxy<Res>,
 exclusive_scan_inplace(Args&&... args)
 {
   Res r = Res::get_default();
-  return exclusive_scan_inplace<ExecPolicy>(r, std::forward<Args>(args)...);
+  return ::RAJA::policy_by_value_interface::exclusive_scan_inplace<ExecPolicy>(
+      ExecPolicy(), r, std::forward<Args>(args)...);
 }
 ///
 template <typename ExecPolicy, typename Res, typename... Args>
@@ -399,7 +406,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_resource<Res>>
 exclusive_scan_inplace(Res& r, Args&&... args)
 {
-  return policy_by_value_interface::exclusive_scan_inplace(
+  return ::RAJA::policy_by_value_interface::exclusive_scan_inplace(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 
@@ -417,7 +424,8 @@ concepts::enable_if_t<resources::EventProxy<Res>,
 inclusive_scan_inplace(Args&&... args)
 {
   Res r = Res::get_default();
-  return inclusive_scan_inplace<ExecPolicy>(r, std::forward<Args>(args)...);
+  return ::RAJA::policy_by_value_interface::inclusive_scan_inplace<ExecPolicy>(
+      ExecPolicy(), r, std::forward<Args>(args)...);
 }
 ///
 template <typename ExecPolicy, typename Res, typename... Args>
@@ -427,7 +435,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_resource<Res>>
 inclusive_scan_inplace(Res& r, Args&&... args)
 {
-  return policy_by_value_interface::inclusive_scan_inplace(
+  return ::RAJA::policy_by_value_interface::inclusive_scan_inplace(
       ExecPolicy(), r, std::forward<Args>(args)...);
 }
 
