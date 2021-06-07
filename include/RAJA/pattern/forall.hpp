@@ -408,7 +408,7 @@ RAJA_INLINE concepts::enable_if_t<
     type_traits::is_range<Container>,
     type_traits::is_integral<IndexType>>
 forall_Icount(ExecutionPolicy&& p,
-              Res& r,
+              Res r,
               Container&& c,
               IndexType icount,
               LoopBody&& loop_body)

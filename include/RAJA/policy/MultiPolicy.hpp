@@ -97,13 +97,13 @@ template <typename Res,
           typename Body,
           typename Selector,
           typename... Policies>
-RAJA_INLINE resources::EventProxy<Res> forall_impl(Res &r,
+RAJA_INLINE resources::EventProxy<Res> forall_impl(Res r,
                                   MultiPolicy<Selector, Policies...> p,
                                   Iterable &&iter,
                                   Body &&body)
 {
   p.invoke(iter, body);
-  return resources::EventProxy<Res>(&r);
+  return resources::EventProxy<Res>(r);
 }
 
 }  // end namespace multi
