@@ -57,7 +57,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       std::is_constructible<camp::resources::Resource, Res>,
                       type_traits::is_range<Container>>
 inclusive_scan_inplace(ExecPolicy&& p,
-                       Res& r,
+                       Res r,
                        Container&& c,
                        Function binop = Function{})
 {
@@ -120,7 +120,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       std::is_constructible<camp::resources::Resource, Res>,
                       type_traits::is_range<Container>>
 exclusive_scan_inplace(ExecPolicy&& p,
-                       Res& r,
+                       Res r,
                        Container&& c,
                        Function binop = Function{},
                        T value = Function::identity())
@@ -192,7 +192,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_range<InContainer>,
                       type_traits::is_range<OutContainer>>
 inclusive_scan(ExecPolicy&& p,
-               Res& r,
+               Res r,
                InContainer&& in,
                OutContainer&& out,
                Function binop = Function{})
@@ -269,7 +269,7 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_range<InContainer>,
                       type_traits::is_range<OutContainer>>
 exclusive_scan(ExecPolicy&& p,
-               Res& r,
+               Res r,
                InContainer&& in,
                OutContainer&& out,
                Function binop = Function{},
@@ -346,7 +346,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>>
-exclusive_scan(Res& r, Args&&... args)
+exclusive_scan(Res r, Args&&... args)
 {
   return ::RAJA::policy_by_value_interface::exclusive_scan(
       ExecPolicy(), r, std::forward<Args>(args)...);
@@ -375,7 +375,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>>
-inclusive_scan(Res& r, Args&&... args)
+inclusive_scan(Res r, Args&&... args)
 {
   return ::RAJA::policy_by_value_interface::inclusive_scan(
       ExecPolicy(), r, std::forward<Args>(args)...);
@@ -404,7 +404,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>>
-exclusive_scan_inplace(Res& r, Args&&... args)
+exclusive_scan_inplace(Res r, Args&&... args)
 {
   return ::RAJA::policy_by_value_interface::exclusive_scan_inplace(
       ExecPolicy(), r, std::forward<Args>(args)...);
@@ -433,7 +433,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>>
-inclusive_scan_inplace(Res& r, Args&&... args)
+inclusive_scan_inplace(Res r, Args&&... args)
 {
   return ::RAJA::policy_by_value_interface::inclusive_scan_inplace(
       ExecPolicy(), r, std::forward<Args>(args)...);
