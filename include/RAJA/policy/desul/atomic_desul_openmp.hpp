@@ -18,6 +18,8 @@
 
 #include "desul/atomics.hpp"
 
+#include <type_traits>
+
 // Default desul options for RAJA
 using raja_default_desul_order = desul::MemoryOrderRelaxed;
 using raja_default_desul_scope = desul::MemoryScopeDevice;
@@ -39,11 +41,10 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T
 atomicAdd(omp_atomic, T volatile *acc, T value) {
-  (void)acc;
-  (void)value;
-  T ret;
-  //return desul::atomic_add_fetch(acc, value, raja_default_desul_order{}, raja_default_desul_scope{});
-  return ret;
+  return desul::atomic_fetch_add(const_cast<T*>(acc)
+                                , value
+                                , raja_default_desul_order{}
+                                , raja_default_desul_scope{});
 }
 
 RAJA_SUPPRESS_HD_WARN
@@ -51,11 +52,10 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T
 atomicSub(omp_atomic, T volatile *acc, T value) {
-  (void)acc;
-  (void)value;
-  T ret;
-  //desul::atomic_sub(...);
-  return ret;
+  return desul::atomic_fetch_sub(const_cast<T*>(acc)
+                                , value
+                                , raja_default_desul_order{}
+                                , raja_default_desul_scope{});
 }
 
 RAJA_SUPPRESS_HD_WARN
@@ -63,11 +63,10 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicMin(omp_atomic, T volatile *acc, T value)
 {
-  (void)acc;
-  (void)value;
-  T ret;
-  //desul::atomic_(...);
-  return ret;
+  return desul::atomic_fetch_min(const_cast<T*>(acc)
+                                , value
+                                , raja_default_desul_order{}
+                                , raja_default_desul_scope{});
 }
 
 RAJA_SUPPRESS_HD_WARN
@@ -75,11 +74,10 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicMax(omp_atomic, T volatile *acc, T value)
 {
-  (void)acc;
-  (void)value;
-  T ret;
-  //desul::atomic_(...);
-  return ret;
+  return desul::atomic_fetch_max(const_cast<T*>(acc)
+                                , value
+                                , raja_default_desul_order{}
+                                , raja_default_desul_scope{});
 }
 
 
@@ -88,10 +86,9 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicInc(omp_atomic, T volatile *acc)
 {
-  (void)acc;
-  T ret;
-  //desul::atomic_(...);
-  return ret;
+  return desul::atomic_fetch_inc(const_cast<T*>(acc)
+                                , raja_default_desul_order{}
+                                , raja_default_desul_scope{});
 }
 
 
@@ -100,11 +97,10 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicInc(omp_atomic, T volatile *acc, T val)
 {
-  (void)acc;
-  (void)val;
-  T ret;
-  //desul::atomic_(...);
-  return ret;
+  return desul::atomic_fetch_add(const_cast<T*>(acc)
+                                , val
+                                , raja_default_desul_order{}
+                                , raja_default_desul_scope{});
 }
 
 
@@ -113,10 +109,9 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicDec(omp_atomic, T volatile *acc)
 {
-  (void)acc;
-  T ret;
-  //desul::atomic_(...);
-  return ret;
+  return desul::atomic_fetch_dec(const_cast<T*>(acc)
+                                , raja_default_desul_order{}
+                                , raja_default_desul_scope{});
 }
 
 
@@ -125,11 +120,10 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicDec(omp_atomic, T volatile *acc, T val)
 {
-  (void)acc;
-  (void)val;
-  T ret;
-  //desul::atomic_(...);
-  return ret;
+  return desul::atomic_fetch_sub(const_cast<T*>(acc)
+                                , val
+                                , raja_default_desul_order{}
+                                , raja_default_desul_scope{});
 }
 
 RAJA_SUPPRESS_HD_WARN
@@ -137,11 +131,10 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicAnd(omp_atomic, T volatile *acc, T value)
 {
-  (void)acc;
-  (void)value;
-  T ret;
-  //desul::atomic_(...);
-  return ret;
+  return desul::atomic_fetch_and(const_cast<T*>(acc)
+                                , value
+                                , raja_default_desul_order{}
+                                , raja_default_desul_scope{});
 }
 
 RAJA_SUPPRESS_HD_WARN
@@ -149,11 +142,10 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicOr(omp_atomic, T volatile *acc, T value)
 {
-  (void)acc;
-  (void)value;
-  T ret;
-  //desul::atomic_(...);
-  return ret;
+  return desul::atomic_fetch_or(const_cast<T*>(acc)
+                                , value
+                                , raja_default_desul_order{}
+                                , raja_default_desul_scope{});
 }
 
 RAJA_SUPPRESS_HD_WARN
@@ -161,11 +153,10 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicXor(omp_atomic, T volatile *acc, T value)
 {
-  (void)acc;
-  (void)value;
-  T ret;
-  //desul::atomic_(...);
-  return ret;
+  return desul::atomic_fetch_xor(const_cast<T*>(acc)
+                                , value
+                                , raja_default_desul_order{}
+                                , raja_default_desul_scope{});
 }
 
 RAJA_SUPPRESS_HD_WARN
@@ -175,9 +166,8 @@ RAJA_INLINE T atomicExchange(omp_atomic, T volatile *acc, T value)
 {
   (void)acc;
   (void)value;
-  T ret;
-  //desul::atomic_(...);
-  return ret;
+  //desul::atomic_(...);  Not sure which desul function to call here.
+  return T{0};
 }
 
 RAJA_SUPPRESS_HD_WARN
@@ -185,11 +175,11 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicCAS(omp_atomic, T volatile *acc, T compare, T value)
 {
-  (void)acc;
-  (void)value;
-  T ret;
-  //desul::atomic_(...);
-  return ret;
+  return desul::atomic_compare_exchange(const_cast<T*>(acc)
+                                , compare
+                                , value
+                                , raja_default_desul_order{}
+                                , raja_default_desul_scope{});
 }
 
 #endif  // not defined RAJA_COMPILER_MSVC
