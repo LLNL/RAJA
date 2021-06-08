@@ -334,10 +334,10 @@ public:
   WorkGroup(WorkGroup&&) = default;
   WorkGroup& operator=(WorkGroup&&) = default;
 
-  inline worksite_type run(resource_type& r, Args...);
+  inline worksite_type run(resource_type r, Args...);
 
   worksite_type run(Args... args) {
-    auto& r = resource_type::get_default();
+    auto r = resource_type::get_default();
     return run(r, std::move(args)...);
   }
 
@@ -470,7 +470,7 @@ WorkGroup<
                           WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T>,
                           INDEX_T,
                           xargs<Args...>,
-                          ALLOCATOR_T>::resource_type& r,
+                          ALLOCATOR_T>::resource_type r,
                       Args... args)
 {
   util::PluginContext context{util::make_context<EXEC_POLICY_T>()};

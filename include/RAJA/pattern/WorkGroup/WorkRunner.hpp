@@ -121,7 +121,7 @@ struct HoldForall
     , m_body(std::forward<body_in>(body))
   { }
 
-  RAJA_INLINE void operator()(resource_type& r, Args... args) const
+  RAJA_INLINE void operator()(resource_type r, Args... args) const
   {
     wrap::forall(r,
                  ExecutionPolicy(),
@@ -164,7 +164,7 @@ struct WorkRunnerForallOrdered_base
   using resource_type = typename resources::get_resource<FORALL_EXEC_POLICY>::type;
 
   using forall_exec_policy = FORALL_EXEC_POLICY;
-  using vtable_type = Vtable<void, resource_type&, Args...>;
+  using vtable_type = Vtable<void, resource_type, Args...>;
 
   WorkRunnerForallOrdered_base() = default;
 
@@ -233,7 +233,7 @@ struct WorkRunnerForallOrdered
   // run the loops using forall in the order that they were enqueued
   template < typename WorkContainer >
   typename base::per_run_storage run(WorkContainer const& storage,
-                                     typename base::resource_type& r,
+                                     typename base::resource_type r,
                                      Args... args) const
   {
     using value_type = typename WorkContainer::value_type;
@@ -279,7 +279,7 @@ struct WorkRunnerForallReverse
   // run the loops using forall in the reverse order to the order they were enqueued
   template < typename WorkContainer >
   typename base::per_run_storage run(WorkContainer const& storage,
-                                     typename base::resource_type& r,
+                                     typename base::resource_type r,
                                      Args... args) const
   {
     using value_type = typename WorkContainer::value_type;

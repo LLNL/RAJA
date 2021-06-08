@@ -71,7 +71,7 @@ struct WorkRunner<
   ///
   template < typename WorkContainer >
   per_run_storage run(WorkContainer const& storage,
-                      typename base::resource_type& r, Args... args) const
+                      typename base::resource_type r, Args... args) const
   {
     per_run_storage run_storage =
         base::run(storage, r, std::forward<Args>(args)...);
@@ -127,7 +127,7 @@ struct WorkRunner<
   ///
   template < typename WorkContainer >
   per_run_storage run(WorkContainer const& storage,
-                      typename base::resource_type& r, Args... args) const
+                      typename base::resource_type r, Args... args) const
   {
     per_run_storage run_storage =
         base::run(storage, r, std::forward<Args>(args)...);
@@ -284,7 +284,7 @@ struct WorkRunner<
   using per_run_storage = int;
 
   template < typename WorkContainer >
-  per_run_storage run(WorkContainer const& storage, resource_type& r, Args... args) const
+  per_run_storage run(WorkContainer const& storage, resource_type r, Args... args) const
   {
     using Iterator  = camp::decay<decltype(std::begin(storage))>;
     using IndexType = camp::decay<decltype(std::distance(std::begin(storage), std::end(storage)))>;
