@@ -15,6 +15,8 @@ if [ "$1" == "" ]; then
 fi
 
 COMP_VER=$1
+shift 1
+
 COMP_MAJOR_VER=${COMP_VER:0:2}
 GCC_HEADER_VER=7
 USE_TBB=On
@@ -33,6 +35,8 @@ BUILD_SUFFIX=lc_toss3-icpc-${COMP_VER}
 
 echo
 echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo "Configuration extra arguments:"
+echo "   $@"
 echo
 
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
@@ -56,8 +60,3 @@ cmake \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
-
-echo
-echo "**********************************************************************"
-echo "cd into directory ${BUILD_SUFFIX} and run make to build RAJA"
-echo "**********************************************************************"

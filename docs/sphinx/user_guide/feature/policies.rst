@@ -582,11 +582,11 @@ auto_atomic               seq_exec,     Atomic operation *compatible* with loop
 Here is an example illustrating use of the ``cuda_atomic_explicit`` policy::
 
   auto kernel = [=] RAJA_HOST_DEVICE (RAJA::Index_type i) {
-
     RAJA::atomicAdd< RAJA::cuda_atomic_explicit<omp_atomic> >(&sum, 1);
-
   };
-  RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment seg(0, N), kernel);
+
+  RAJA::forall< RAJA::cuda_exec<BLOCK_SIZE> >(RAJA::RangeSegment seg(0, N), kernel);
+
   RAJA::forall< RAJA::omp_parallel_for_exec >(RAJA::RangeSegment seg(0, N),
       kernel);
 
@@ -597,7 +597,7 @@ used and the OpenMP version of the atomic operation is applied.
 
 Here is an example illustrating use of the ``auto_atomic`` policy::
 
-  RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment seg(0, N),
+  RAJA::forall< RAJA::cuda_execBLOCK_SIZE> >(RAJA::RangeSegment seg(0, N),
     [=] RAJA_DEVICE (RAJA::Index_type i) {
 
     RAJA::atomicAdd< RAJA::auto_atomic >(&sum, 1);

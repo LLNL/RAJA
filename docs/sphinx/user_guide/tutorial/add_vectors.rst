@@ -95,8 +95,6 @@ policy:
 Note that the CUDA execution policy type accepts a template argument 
 ``CUDA_BLOCK_SIZE``, which specifies that each CUDA thread block launched 
 to execute the kernel will have the given number threads in the block.
-The thread block size parameter is optional; if not provided, the RAJA policy 
-provides a default of 256, which is a reasonable choice for most cases. 
 
 Since the lambda defining the loop body will be passed to a device kernel, 
 it must be decorated with the ``__device__`` attribute when it is defined. 
