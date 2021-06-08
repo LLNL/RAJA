@@ -53,6 +53,8 @@ set(ENABLE_GTEST_DEATH_TESTS On CACHE BOOL "Enable tests asserting failure.")
 ##       work as intended. BLT has variables defined for these and we use
 ##       the same names with 'RAJA_' prepended to them.
 
+option(ENABLE_NV_TOOLS_EXT "Build with NV_TOOLS_EXT support" Off)
+
 option(ENABLE_TBB "Build TBB support" Off)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
@@ -203,6 +205,11 @@ if (ENABLE_CUDA)
   set(raja_depends
     ${raja_depends}
     cuda)
+  if(ENABLE_NV_TOOLS_EXT)
+    set(raja_depends
+      ${raja_depends}
+      nvtoolsext)
+  endif ()
 endif ()
 
 if (ENABLE_EXTERNAL_CUB)
