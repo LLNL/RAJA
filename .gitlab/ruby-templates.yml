@@ -27,7 +27,7 @@ allocate_resources (on ruby):
   variables:
     GIT_STRATEGY: none
   extends: .on_ruby
-  stage: q_allocate_resources
+  stage: r_allocate_resources
   script:
     - salloc -N 1 -c 36 -p pdebug -t 45 --no-shell --job-name=${ALLOC_NAME}
 
@@ -38,7 +38,7 @@ release_resources (on ruby):
   variables:
     GIT_STRATEGY: none
   extends: .on_ruby
-  stage: q_release_resources
+  stage: r_release_resources
   script:
     - export JOBID=$(squeue -h --name=${ALLOC_NAME} --format=%A)
     - ([[ -n "${JOBID}" ]] && scancel ${JOBID})
@@ -47,7 +47,7 @@ release_resources (on ruby):
 # Generic ruby build job, extending build script
 .build_and_test_on_ruby:
   extends: [.build_toss_3_x86_64_ib_script, .on_ruby]
-  stage: q_build_and_test
+  stage: r_build_and_test
 
 .build_and_test_on_ruby_advanced:
   extends: [.build_and_test_on_ruby, .advanced_pipeline]

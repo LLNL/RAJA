@@ -42,12 +42,12 @@ variables:
 # Normally, stages are blocking in Gitlab. However, using the keyword "needs" we
 # can express dependencies between job that break the ordering of stages, in
 # favor of a DAG.
-# In practice q_*, l_* and b_* stages are independently run and start immediately.
+# In practice r_*, l_* and b_* stages are independently run and start immediately.
 
 stages:
-  - q_allocate_resources
-  - q_build_and_test
-  - q_release_resources
+  - r_allocate_resources
+  - r_build_and_test
+  - r_release_resources
   - l_build_and_test
   - b_build_and_test
   - c_build_and_test
