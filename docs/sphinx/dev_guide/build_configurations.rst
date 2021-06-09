@@ -189,7 +189,8 @@ You can reproduce these builds locally for testing with the following steps:
        $ DOCKER_BUILDKIT=1 docker build --target ${TARGET} --no-cache
 
      Here, ${TARGET} is replaced with one of the names following "AS" in the
-     `RAJA Dockerfile <https://github.com/LLNL/RAJA/blob/Develop/Dockerfile>`_ 
+     `RAJA Dockerfile <https://github.com/LLNL/RAJA/blob/develop/Dockerfile>`_ 
+
 
   #. To get dropped into a terminal in the Docker image, run the following:
 
