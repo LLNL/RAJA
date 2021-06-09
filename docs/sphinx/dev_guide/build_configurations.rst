@@ -26,8 +26,7 @@ ways to build and test important configurations in a reproducible manner:
 
 Each of these specifies compiler versions and options, a build target 
 (Release, Debug, etc.), RAJA features to enable (OpenMP, CUDA, etc.), 
-and paths to required tool chains, such as CUDA, ROCm, etc.
-
+and paths to required tool chains, such as CUDA, ROCm, etc.  
 They are described briefly in the following sections.
 
 
@@ -56,7 +55,6 @@ compiler version. For example,
   $ ./scripts/lc-builds/blueos_nvcc_gcc.sh 10.2.89 sm_70 8.3.1
 
 When a script is run, it creates a uniquely-named build directory in the 
-
 top-level RAJA directory and runs CMake with arguments contained in the script 
 to create a build environment in the new directory. One then goes into that 
 directory and runs make to build RAJA, its tests, example codes, etc.  
