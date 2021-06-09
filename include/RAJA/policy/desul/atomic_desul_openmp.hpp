@@ -162,15 +162,10 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicExchange(omp_atomic, T volatile *acc, T value)
 {
-  (void) acc;
-  (void) value;
-  return T{0};
-  /*
   return desul::atomic_exchange(const_cast<T*>(acc)
                                 , value
                                 , raja_default_desul_order{}
                                 , raja_default_desul_scope{});
-  */
 }
 
 RAJA_SUPPRESS_HD_WARN
