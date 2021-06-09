@@ -16,7 +16,7 @@
 
 template<typename T>
 void allocateForallTestData(size_t N,
-                            camp::resources::Resource& work_res,
+                            camp::resources::Resource work_res,
                             T** work_array,
                             T** check_array,
                             T** test_array)
@@ -33,7 +33,7 @@ void allocateForallTestData(size_t N,
 template<typename T,
          typename std::enable_if<std::is_base_of<RAJA::IndexValueBase, camp::type::ptr::rem<T>>::value>::type* = nullptr>
 void allocateForallTestData(T N,
-                            camp::resources::Resource& work_res,
+                            camp::resources::Resource work_res,
                             T** work_array,
                             T** check_array,
                             T** test_array)
@@ -47,7 +47,7 @@ void allocateForallTestData(T N,
 }
 
 template<typename T>
-void deallocateForallTestData(camp::resources::Resource& work_res,
+void deallocateForallTestData(camp::resources::Resource work_res,
                               T* work_array,
                               T* check_array,
                               T* test_array)
