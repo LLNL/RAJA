@@ -15,4 +15,4 @@
 	url = https://github.com/LLNL/radiuss-spack-configs
 [submodule "tpl/desul"]
 	path = tpl/desul
-	url = https://github.com/JohnHynes/desul
+	url = https://github.com/desul/desul.git

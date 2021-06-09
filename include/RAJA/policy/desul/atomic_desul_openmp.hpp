@@ -18,8 +18,6 @@
 
 #include "desul/atomics.hpp"
 
-#include <type_traits>
-
 // Default desul options for RAJA
 using raja_default_desul_order = desul::MemoryOrderRelaxed;
 using raja_default_desul_scope = desul::MemoryScopeDevice;
@@ -164,10 +162,15 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicExchange(omp_atomic, T volatile *acc, T value)
 {
-  (void)acc;
-  (void)value;
-  //desul::atomic_(...);  Not sure which desul function to call here.
+  (void) acc;
+  (void) value;
   return T{0};
+  /*
+  return desul::atomic_exchange(const_cast<T*>(acc)
+                                , value
+                                , raja_default_desul_order{}
+                                , raja_default_desul_scope{});
+  */
 }
 
 RAJA_SUPPRESS_HD_WARN
@@ -175,10 +178,11 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicCAS(omp_atomic, T volatile *acc, T compare, T value)
 {
-  return desul::atomic_compare_exchange(const_cast<T*>(acc)
+  return desul::atomic_compare_exchange_strong(const_cast<T*>(acc)
                                 , compare
                                 , value
-                                , raja_default_desul_order{}
+                                , raja_default_desul_order{} // success order
+                                , raja_default_desul_order{} // failure order
                                 , raja_default_desul_scope{});
 }
 
