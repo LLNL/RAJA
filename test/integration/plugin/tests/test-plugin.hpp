@@ -25,7 +25,7 @@ camp::resources::Resource* plugin_test_resource = nullptr;
 
 struct SetupPluginVars
 {
-  SetupPluginVars(camp::resources::Resource const& test_resource)
+  SetupPluginVars(camp::resources::Resource const test_resource)
     : m_test_resource(test_resource)
   {
     // ASSERT_EQ(plugin_test_data, nullptr);
