@@ -88,7 +88,6 @@ using threads_x = RAJA::expt::LoopPolicy<RAJA::loop_exec
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-#if 0//COMMENT OUT SINCE IT DOES NOT WORK. 
   // Resource object for host
   camp::resources::Host host_res;
 
@@ -152,15 +151,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
 
 
-    RAJA::resources::Host host;
-    RAJA::resources::Cuda device;
-
-    RAJA::expt::TeamResources team_res(host, device);
-
     RAJA::View<int, RAJA::Layout<2>> D(Ddat, N_tri, N_tri);
 
-    RAJA::expt::launch<launch_policy>(select_cpu_or_gpu, team_res,
-       RAJA::expt::Grid(RAJA::expt::Teams(N_tri), RAJA::expt::Threads(N_tri)),
+    RAJA::expt::launch<launch_policy>(select_cpu_or_gpu,
+       RAJA::expt::Resources(RAJA::expt::Teams(N_tri), RAJA::expt::Threads(N_tri)),
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
          RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {
@@ -193,6 +187,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
   }  // Execution places loop
-#endif
+
 
 }  // Main

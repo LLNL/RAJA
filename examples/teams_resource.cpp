@@ -65,6 +65,7 @@ using reduce_policy = RAJA::omp_reduce;
 using reduce_policy = RAJA::seq_reduce;
 #endif
 
+// Helper function to retrieve a resource based on the run-time policy
 template<typename T, typename U>
 RAJA::resources::Resource Get_Runtime_Resource(T host_res, U device_res, RAJA::expt::ExecPlace device){
   if(device == RAJA::expt::DEVICE) {return RAJA::resources::Resource(device_res);}
@@ -158,7 +159,7 @@ int main(int argc, char *argv[])
   RAJA::resources::Host host_res;
   RAJA::resources::Cuda device_res;
 
-  //Get typed erased resource
+  //Get typed erased resource - will internally store if we are running on the host or device
   RAJA::resources::Resource res = Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
 
   RAJA::expt::launch<launch_policy>

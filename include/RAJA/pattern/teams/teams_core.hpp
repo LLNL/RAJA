@@ -199,26 +199,6 @@ void launch(ExecPlace place, Grid const &grid, BODY const &body)
   }
 }
 
-struct TeamResources
-{
-
-  RAJA::resources::Host &host; //host resource
-
-#if defined(RAJA_ENABLE_CUDA)
-  RAJA::resources::Cuda &cuda; //cuda resource
-#endif
-
-#if defined(RAJA_ENABLE_CUDA)
-  TeamResources(RAJA::resources::Host &host_,
-                RAJA::resources::Cuda &cuda_)
-    :host(host_), cuda(cuda_) {};
-#else
-  TeamResources(RAJA::resources::Host &host_)
-    :host(host_) {};
-#endif
-};
-
-
 //Launch API which takes team resource struct
 template <typename POLICY_LIST, typename BODY>
 resources::EventProxy<resources::Resource>
@@ -250,36 +230,6 @@ launch(RAJA::resources::Resource res, Grid const &grid, BODY const &body)
   //Should not get here;
   return resources::EventProxy<resources::Resource>(res);
 }
-
-
-///Prototype for
-#if 0
-  template <typename POLICY_LIST, typename BODY>
-  void launch(ExecPlace place, RAJA::resources::Resource &res,
-              Grid const &grid, BODY const &body)
-  {
-    switch (place) {
-    case HOST: {
-      using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      using Res = typename resources::get_resource<typename POLICY_LIST::host_policy_t>::type;
-      Res *r = res.try_get<Res>(); // or get<Res>()
-      if(r == nullptr) {/*throw error \n*/};
-      launch_t::exec(r, LaunchContext(grid, HOST), body);
-      break;
-    }
-#ifdef RAJA_DEVICE_ACTIVE
-    case DEVICE: {
-      using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      launch_t::exec(LaunchContext(grid, DEVICE), body);
-      break;
-    }
-#endif
-    default:
-      RAJA_ABORT_OR_THROW("Unknown launch place or device is not enabled");
-    }
-  }
-#endif
-
 
 template<typename POLICY_LIST>
 #if defined(RAJA_DEVICE_CODE)
