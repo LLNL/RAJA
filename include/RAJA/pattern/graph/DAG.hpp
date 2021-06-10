@@ -308,7 +308,7 @@ private:
   {
     for (detail::NodeConnections& child : m_node_connections)
     {
-      if (child.m_parent_count == 0) {
+      if (child.m_parents.size() == 0) {
         std::forward<Examine_Func>(examine_func)(child);
         child.forward_depth_first_traversal(
             m_node_connections.data(),
@@ -333,7 +333,7 @@ private:
     std::list<detail::NodeConnections*> queue;
     for (detail::NodeConnections& child : m_node_connections)
     {
-      if (child.m_parent_count == 0) {
+      if (child.m_parents.size() == 0) {
         std::forward<Examine_Func>(examine_func)(child);
         queue.emplace_back(&child);
       }

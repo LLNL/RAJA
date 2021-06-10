@@ -84,7 +84,7 @@ private:
   {
     NodeExecConnections(detail::NodeConnections& connections, node_data_container& container)
       : detail::NodeExec(container[connections.get_node_id()].get())
-      , m_parent_count(connections.m_parent_count)
+      , m_parent_count(connections.m_parents.size())
       , m_count(connections.m_count)
     {
       m_children.reserve(connections.m_children.size());
@@ -100,8 +100,8 @@ private:
       }
     }
 
-    int m_parent_count;
-    int m_count;
+    size_t m_parent_count;
+    size_t m_count;
     std::vector<NodeExecConnections*> m_children;
   };
 
@@ -111,10 +111,10 @@ private:
     {
       connections->exec(/*gr*/);
       for (NodeExecConnections* child : connections->m_children) {
-        int node_count;
+        size_t node_count;
 #pragma omp atomic capture
         node_count = ++child->m_count;
-        if (node_count == child->m_parent_count) {
+        if (node_count == child->parents.size()) {
           child->m_count = 0;
           exec_traverse(child, gr);
         }
@@ -138,7 +138,7 @@ private:
     for (size_t i = 0; i < dag.m_node_connections.size(); ++i) {
       detail::NodeConnections& connections = dag.m_node_connections[i];
       m_node_execs[i].add_children(connections, m_node_execs.data());
-      if (m_node_execs[i].m_parent_count == 0) {
+      if (m_node_execs[i].m_parents.size() == 0) {
         m_first_node_execs.emplace_back(&m_node_execs[i]);
       }
     }

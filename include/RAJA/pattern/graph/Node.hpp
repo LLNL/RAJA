@@ -90,12 +90,12 @@ struct NodeConnections
   void add_child(NodeConnections& node)
   {
     m_children.emplace_back(node.get_node_id());
-    node.m_parent_count += 1;
+    node.m_parents.emplace_back(get_node_id());
   }
 
   bool traversal_examine()
   {
-    if (m_count == m_parent_count) {
+    if (m_count == m_parents.size()) {
       m_count = 0;
       return true;
     }
@@ -145,8 +145,8 @@ struct NodeConnections
     std::forward<Exit_Func>(exit_func)(*this);
   }
 
-  int m_parent_count = 0;
-  int m_count = 0;
+  size_t m_count = 0;
+  std::vector<size_t> m_parents;
   std::vector<size_t> m_children;
   size_t m_node_id;
 };
