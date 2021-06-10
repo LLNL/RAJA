@@ -52,11 +52,11 @@ struct LaunchExecute<RAJA::expt::seq_launch_t> {
 
   template <typename BODY>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource &res, LaunchContext const &ctx, BODY const &body)
+  exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY const &body)
   {
     body(ctx);
 
-    return resources::EventProxy<resources::Resource>(&res);
+    return resources::EventProxy<resources::Resource>(res);
   }
 
 };

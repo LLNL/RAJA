@@ -44,7 +44,7 @@ struct LaunchExecute<RAJA::expt::omp_launch_t> {
 
   template <typename BODY>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource &res, LaunchContext const &ctx, BODY const &body)
+  exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY const &body)
   {
     RAJA::region<RAJA::omp_parallel_region>([&]() {
       using RAJA::internal::thread_privatize;
@@ -52,7 +52,7 @@ struct LaunchExecute<RAJA::expt::omp_launch_t> {
       loop_body.get_priv()(ctx);
     });
 
-    return resources::EventProxy<resources::Resource>(&res);
+    return resources::EventProxy<resources::Resource>(res);
   }
 
 };

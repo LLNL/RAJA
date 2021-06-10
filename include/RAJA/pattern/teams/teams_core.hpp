@@ -222,7 +222,7 @@ struct TeamResources
 //Launch API which takes team resource struct
 template <typename POLICY_LIST, typename BODY>
 resources::EventProxy<resources::Resource>
-launch(RAJA::resources::Resource &res, Grid const &grid, BODY const &body)
+launch(RAJA::resources::Resource res, Grid const &grid, BODY const &body)
 {
 
   ExecPlace place;
@@ -248,7 +248,7 @@ launch(RAJA::resources::Resource &res, Grid const &grid, BODY const &body)
     }
   }
   //Should not get here;
-  return resources::EventProxy<resources::Resource>(&res);
+  return resources::EventProxy<resources::Resource>(res);
 }
 
 
