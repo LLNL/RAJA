@@ -105,7 +105,8 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
   }
 
   template <typename BODY_IN>
-static void exec(RAJA::resources::Resource &res, LaunchContext const &ctx, BODY_IN &&body_in)
+ static resources::EventProxy<resources::Resource>
+   exec(RAJA::resources::Resource &res, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -164,8 +165,8 @@ static void exec(RAJA::resources::Resource &res, LaunchContext const &ctx, BODY_
 
     //resources::resource out_res(&cuda_res);
     //return out_res;
-      //return resources::EventProxy<resources::Cuda>(&cuda_res);
-
+    return resources::EventProxy<resources::Resource>(&res);
+    //return resources::EventProxy(eventProxy);
   }
 
 
