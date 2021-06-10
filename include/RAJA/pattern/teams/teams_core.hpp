@@ -138,7 +138,7 @@ public:
   Grid() = default;
 
   Grid(Teams in_teams, Threads in_threads, const char *in_kernel_name = nullptr)
-    : teams(in_teams), threads(in_threads), kernel_name(in_kernel_name){};  
+    : teams(in_teams), threads(in_threads), kernel_name(in_kernel_name){};
 
 private:
   RAJA_HOST_DEVICE
@@ -225,7 +225,7 @@ resources::EventProxy<resources::Resource>
 launch(RAJA::resources::Resource &res, Grid const &grid, BODY const &body)
 {
 
-  ExecPlace place; 
+  ExecPlace place;
   if(res.get_platform() == camp::resources::v1::Platform::host) {
     place = RAJA::expt::HOST;
   }else{
@@ -242,12 +242,14 @@ launch(RAJA::resources::Resource &res, Grid const &grid, BODY const &body)
     case DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
       return launch_t::exec(res, LaunchContext(grid, DEVICE), body);
-      break;
     }
 #endif
-    default:
+    default: {
       RAJA_ABORT_OR_THROW("Unknown launch place or device is not enabled");
+    }
   }
+  //Should not get here;
+  return resources::EventProxy<resources::Resource>(&res);
 }
 
 
