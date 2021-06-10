@@ -105,17 +105,19 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
   }
 
   template <typename BODY_IN>
-  static void exec(TeamResources &res, LaunchContext const &ctx, BODY_IN &&body_in)
+static void exec(RAJA::resources::Resource &res, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
     auto func = launch_global_fcn<BODY>;
 
-    resources::Cuda &cuda_res = res.cuda; 
-      //resources::Cuda::get_default();
-    /* Use the zero stream until resource is better supported */
+    //Get concrete resource
+    resources::Cuda cuda_res = res.get<RAJA::resources::Cuda>();
+    
+    //Get Stream
     cudaStream_t stream = cuda_res.get_stream();
 
+#if 1
     //
     // Compute the number of blocks and threads
     //
@@ -158,12 +160,13 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
 
       RAJA_FT_END;
     }
+#endif
 
     //resources::resource out_res(&cuda_res);
     //return out_res;
       //return resources::EventProxy<resources::Cuda>(&cuda_res);
-  }
 
+  }
 
 
 

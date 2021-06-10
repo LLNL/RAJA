@@ -157,11 +157,13 @@ int main(int argc, char *argv[])
 
   RAJA::resources::Host host_res;
   RAJA::resources::Cuda device_res;
-  
+
+  //Get typed erased resource
   RAJA::resources::Resource res = Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
 
 
-#if 0
+  res.get<RAJA::resources::Cuda>();
+
   RAJA::expt::launch<launch_policy>
     (res,
      RAJA::expt::Grid(RAJA::expt::Teams(GRID_SZ),
@@ -171,9 +173,6 @@ int main(int argc, char *argv[])
      {
 
     });
-
-
-#endif
 
 
   std::cout << "\tsum = " << kernel_sum.get() << std::endl;

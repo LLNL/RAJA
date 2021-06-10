@@ -220,8 +220,8 @@ struct TeamResources
 
 
 //Launch API which takes team resource struct
-template <typename POLICY_LIST, typename BODY, typename Res>
-void launch(Res &res, Grid const &grid, BODY const &body)
+template <typename POLICY_LIST, typename BODY>
+void launch(RAJA::resources::Resource &res, Grid const &grid, BODY const &body)
 {
 
   ExecPlace place; 
@@ -234,7 +234,7 @@ void launch(Res &res, Grid const &grid, BODY const &body)
   switch (place) {
     case HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      launch_t::exec(res, LaunchContext(grid, HOST), body);
+      //launch_t::exec(res, LaunchContext(grid, HOST), body);
       break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
