@@ -65,12 +65,21 @@ using reduce_policy = RAJA::omp_reduce;
 using reduce_policy = RAJA::seq_reduce;
 #endif
 
-// Helper function to retrieve a resource based on the run-time policy
+// Helper function to retrieve a resource based on the run-time policy - if a device is active
+#if defined(RAJA_DEVICE_ACTIVE)
 template<typename T, typename U>
 RAJA::resources::Resource Get_Runtime_Resource(T host_res, U device_res, RAJA::expt::ExecPlace device){
   if(device == RAJA::expt::DEVICE) {return RAJA::resources::Resource(device_res);}
-  else{ return RAJA::resources::Resource(host_res);}
+  else { return RAJA::resources::Resource(host_res); }
 }
+#else
+template<typename T>
+RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::expt::ExecPlace device){
+  if(device == RAJA::expt::DEVICE) {RAJA_ABORT_OR_THROW("Device is not enabled");}
+
+  return RAJA::resources::Resource(host_res);
+}
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -157,10 +166,19 @@ int main(int argc, char *argv[])
 
 
   RAJA::resources::Host host_res;
+#if defined(RAJA_ENABLE_CUDA)
   RAJA::resources::Cuda device_res;
+#endif
+#if defined(RAJA_ENABLE_HIP)
+  RAJA::resources::Hip device_res;
+#endif
 
   //Get typed erased resource - will internally store if we are running on the host or device
+#if defined(RAJA_DEVICE_ACTIVE)
   RAJA::resources::Resource res = Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
+#else
+  RAJA::resources::Resource res = Get_Host_Resource(host_res, select_cpu_or_gpu);
+#endif
 
   RAJA::expt::launch<launch_policy>
     (res, RAJA::expt::Grid(RAJA::expt::Teams(GRID_SZ),
