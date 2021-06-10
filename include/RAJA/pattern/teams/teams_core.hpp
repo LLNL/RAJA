@@ -235,13 +235,12 @@ launch(RAJA::resources::Resource &res, Grid const &grid, BODY const &body)
   switch (place) {
     case HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      //launch_t::exec(res, LaunchContext(grid, HOST), body);
-      break;
+      return launch_t::exec(res, LaunchContext(grid, HOST), body); break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
     case DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      return launch_t::exec(res, LaunchContext(grid, DEVICE), body);
+      return launch_t::exec(res, LaunchContext(grid, DEVICE), body); break;
     }
 #endif
     default: {

@@ -1,4 +1,3 @@
-
 /*!
  ******************************************************************************
  *
@@ -44,11 +43,22 @@ struct LaunchExecute<RAJA::expt::null_launch_t> {
 
 template <>
 struct LaunchExecute<RAJA::expt::seq_launch_t> {
+
   template <typename BODY>
   static void exec(LaunchContext const &ctx, BODY const &body)
   {
     body(ctx);
   }
+
+  template <typename BODY>
+  static resources::EventProxy<resources::Resource>
+  exec(RAJA::resources::Resource &res, LaunchContext const &ctx, BODY const &body)
+  {
+    body(ctx);
+
+    return resources::EventProxy<resources::Resource>(&res);
+  }
+
 };
 
 template <typename SEGMENT>

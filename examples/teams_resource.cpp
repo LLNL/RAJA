@@ -65,6 +65,11 @@ using reduce_policy = RAJA::omp_reduce;
 using reduce_policy = RAJA::seq_reduce;
 #endif
 
+template<typename T, typename U>
+RAJA::resources::Resource Get_Runtime_Resource(T host_res, U device_res, RAJA::expt::ExecPlace device){
+  if(device == RAJA::expt::DEVICE) {return RAJA::resources::Resource(device_res);}
+  else{ return RAJA::resources::Resource(host_res);}
+}
 
 int main(int argc, char *argv[])
 {
@@ -149,14 +154,18 @@ int main(int argc, char *argv[])
   const int TEAM_SZ = 256;
   const int GRID_SZ = RAJA_DIVIDE_CEILING_INT(N,TEAM_SZ);
 
+
+  RAJA::resources::Host host_res;
+  RAJA::resources::Cuda device_res;
+
+  //Get typed erased resource
+  RAJA::resources::Resource res = Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
+
   RAJA::expt::launch<launch_policy>
-    (select_cpu_or_gpu,
-     RAJA::expt::Resources(RAJA::expt::Teams(GRID_SZ),
+    (res, RAJA::expt::Grid(RAJA::expt::Teams(GRID_SZ),
                            RAJA::expt::Threads(TEAM_SZ),
                            "Reduction Kernel"),
-     [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) 
-     {
-
+     [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx)  {
        RAJA::expt::loop<loop_pol>(ctx, arange, [&] (int i) {
            
            kernel_sum += a[i];
@@ -167,8 +176,8 @@ int main(int argc, char *argv[])
            kernel_minloc.minloc(a[i], i);
            kernel_maxloc.maxloc(a[i], i);
          });
-       
     });
+
 
   std::cout << "\tsum = " << kernel_sum.get() << std::endl;
   std::cout << "\tmin = " << kernel_min.get() << std::endl;
