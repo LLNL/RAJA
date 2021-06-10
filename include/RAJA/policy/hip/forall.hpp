@@ -156,7 +156,7 @@ __launch_bounds__(BlockSize, 1) __global__
 //
 
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip &hip_res,
+RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip hip_res,
                                                     hip_exec<BlockSize, Async>,
                                                     Iterable&& iter,
                                                     LoopBody&& loop_body)
@@ -216,7 +216,7 @@ RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip &hi
     RAJA_FT_END;
   }
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 //

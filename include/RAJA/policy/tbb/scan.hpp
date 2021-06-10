@@ -109,7 +109,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_tbb_policy<ExecPolicy>>
 inclusive_inplace(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy&,
     Iter begin,
     Iter end,
@@ -124,7 +124,7 @@ inclusive_inplace(
                                                     std::distance(begin, end)},
                      adapter);
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -136,7 +136,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_tbb_policy<ExecPolicy>>
 exclusive_inplace(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy&,
     Iter begin,
     Iter end,
@@ -152,7 +152,7 @@ exclusive_inplace(
                                                     std::distance(begin, end)},
                      adapter);
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -164,7 +164,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_tbb_policy<ExecPolicy>>
 inclusive(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy&,
     const Iter begin,
     const Iter end,
@@ -180,7 +180,7 @@ inclusive(
                                                     std::distance(begin, end)},
                      adapter);
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -196,7 +196,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_tbb_policy<ExecPolicy>>
 exclusive(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy&,
     const Iter begin,
     const Iter end,
@@ -213,7 +213,7 @@ exclusive(
                                                     std::distance(begin, end)},
                      adapter);
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 }  // namespace scan

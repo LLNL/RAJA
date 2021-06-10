@@ -55,7 +55,7 @@ namespace omp
 /// OpenMP parallel policy implementation
 ///
 template <typename Iterable, typename Func, typename InnerPolicy>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
                                                     const omp_parallel_exec<InnerPolicy>&,
                                                     Iterable&& iter,
                                                     Func&& loop_body)
@@ -65,7 +65,7 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &
     auto body = thread_privatize(loop_body);
     forall_impl(host_res, InnerPolicy{}, iter, body.get_priv());
   });
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 
@@ -289,23 +289,23 @@ namespace internal
 } // end namespace internal
 
 template <typename Schedule, typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host& host_res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
                                                                const omp_for_schedule_exec<Schedule>&,
                                                                Iterable&& iter,
                                                                Func&& loop_body)
 {
   internal::forall_impl(Schedule{}, std::forward<Iterable>(iter), std::forward<Func>(loop_body));
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 template <typename Schedule, typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host& host_res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
                                                                const omp_for_nowait_schedule_exec<Schedule>&,
                                                                Iterable&& iter,
                                                                Func&& loop_body)
 {
   internal::forall_impl_nowait(Schedule{}, std::forward<Iterable>(iter), std::forward<Func>(loop_body));
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 //
