@@ -276,6 +276,50 @@ struct LoopExecute<hip_global_thread<DIM0, DIM1, DIM2>, SEGMENT> {
 };
 
 /*
+Reshape threads in a block into a 1D iteration space
+*/
+struct flatten_block_threads_direct;
+struct flatten_block_threads_loop;
+
+template<typename SEGMENT>
+struct LoopExecute<flatten_block_threads_direct, SEGMENT>
+{
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const int len = segment.end() - segment.begin();
+    {
+      const int tid = threadIdx.x + blockDim.x*(threadidx.y + blockDim.y*threadIdx.z);
+
+      if (tid < len) body(*(segment.begin() + tid));
+    }
+  }
+};
+
+template<typename SEGMENT>
+struct LoopExecute<flatten_block_threads_loop, SEGMENT>
+{
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const int len = segment.end() - segment.begin();
+    {
+      for(int tid = threadIdx.x + blockDim.x*(threadidx.y + blockDim.y*threadIdx.z);
+          tid < len;
+          tid += blockDim.x * blockDim.y * blockDim.z){
+          body(*(segment.begin() + ti));
+      }
+    }
+  }
+};
+
+/*
   HIP thread loops with block strides
 */
 template <typename SEGMENT, int DIM>
