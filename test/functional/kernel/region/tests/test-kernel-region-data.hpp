@@ -10,9 +10,9 @@
 
 template <typename T>
 void allocRegionTestData(int N,
-                         camp::resources::Resource& work_res,
+                         camp::resources::Resource work_res,
                          T** work1, T** work2, T** work3,
-                         camp::resources::Resource& host_res,
+                         camp::resources::Resource host_res,
                          T** check)
 {
   *work1 = work_res.allocate<T>(N);
@@ -23,9 +23,9 @@ void allocRegionTestData(int N,
 }
 
 template <typename T>
-void deallocRegionTestData(camp::resources::Resource& work_res,
+void deallocRegionTestData(camp::resources::Resource work_res,
                            T* work1, T* work2, T* work3,
-                           camp::resources::Resource& host_res,
+                           camp::resources::Resource host_res,
                            T* check)
 {
   work_res.deallocate(work1);
