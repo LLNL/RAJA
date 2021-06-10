@@ -45,7 +45,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_loop_policy<ExecPolicy>>
 inclusive_inplace(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy &,
     Iter begin,
     Iter end,
@@ -58,7 +58,7 @@ inclusive_inplace(
     *i = agg;
   }
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -70,7 +70,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_loop_policy<ExecPolicy>>
 exclusive_inplace(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy &,
     Iter begin,
     Iter end,
@@ -91,7 +91,7 @@ exclusive_inplace(
     agg = f(agg, t);
   }
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -103,7 +103,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_loop_policy<ExecPolicy>>
 inclusive(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy &,
     const Iter begin,
     const Iter end,
@@ -118,7 +118,7 @@ inclusive(
     *out++ = agg;
   }
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -134,7 +134,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_loop_policy<ExecPolicy>>
 exclusive(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy &,
     const Iter begin,
     const Iter end,
@@ -151,7 +151,7 @@ exclusive(
     *o = agg;
   }
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 }  // namespace scan

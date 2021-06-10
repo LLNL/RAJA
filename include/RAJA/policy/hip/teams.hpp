@@ -101,7 +101,7 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
     }
 
   }
-    // return resources::EventProxy<resources::Hip>(&hip_res);
+    // return resources::EventProxy<resources::Hip>(hip_res);
 };
 
 template <typename BODY, int num_threads>
@@ -170,7 +170,7 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
       RAJA_FT_END;
     }
 
-    // return resources::EventProxy<resources::Hip>(&hip_res);
+    // return resources::EventProxy<resources::Hip>(hip_res);
   }
 };
 

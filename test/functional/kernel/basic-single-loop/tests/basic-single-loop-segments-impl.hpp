@@ -37,7 +37,7 @@ template <typename IDX_TYPE, typename EXEC_POLICY, typename WORKING_RES,
 void KernelBasicSingleLoopTestImpl(const SEG_TYPE& seg, 
                                    const std::vector<IDX_TYPE>& seg_idx,
                                    WORKING_RES working_res,
-                                   camp::resources::Resource& erased_working_res)
+                                   camp::resources::Resource erased_working_res)
 {
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
   IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
