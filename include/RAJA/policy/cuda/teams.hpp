@@ -294,7 +294,7 @@ struct LoopExecute<flatten_block_threads_direct, SEGMENT>
   {
     const int len = segment.end() - segment.begin();
     {
-      const int tid = threadIdx.x + blockDim.x*(threadidx.y + blockDim.y*threadIdx.z);
+      const int tid = threadIdx.x + blockDim.x*(threadIdx.y + blockDim.y*threadIdx.z);
 
       if (tid < len) body(*(segment.begin() + tid));
     }
@@ -312,7 +312,7 @@ struct LoopExecute<flatten_block_threads_loop, SEGMENT>
   {
     const int len = segment.end() - segment.begin();
     {
-      for(int tid = threadIdx.x + blockDim.x*(threadidx.y + blockDim.y*threadIdx.z);
+      for(int tid = threadIdx.x + blockDim.x*(threadIdx.y + blockDim.y*threadIdx.z);
           tid < len;
           tid += blockDim.x * blockDim.y * blockDim.z){
           body(*(segment.begin() + ti));
