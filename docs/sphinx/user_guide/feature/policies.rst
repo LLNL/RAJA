@@ -468,6 +468,20 @@ Finally
 
  ======================================== ============= ========================
 
+There is a notable constraint to using the sycl policies.
+
+.. note:: SYCL kernels impose the restriction that kernel parameters must
+          be trivially copyable.  The sycl_exec_nontrivial and
+          SyclKernelNonTrivial policies provide a workaround to this
+          constraint given the non trivially copyable data is safe to 
+          memcpy to the device. 
+
+          The non trivial policies incur some additional overhead, but 
+          will function whether data is trivially copyable or not.  
+          Beginning with non trivial polices will help accerate development
+          of a working RAJA SYCL application.
+
+
 OpenMP Target Offload Policies 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
