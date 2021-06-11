@@ -408,61 +408,61 @@ Finally
                                                         in a GPU kernel launched
                                                         with given work group
                                                         size.
- sycl_global_1<WORK_GROUP_SIZE>           kernel (For)  Map loop iterates
+ sycl_global_0<WORK_GROUP_SIZE>           kernel (For)  Map loop iterates
                                                         directly to GPU global
                                                         ids in first
                                                         dimension, one iterate 
                                                         per work item. Group
                                                         execution into work
                                                         groups of given size. 
- sycl_global_2<WORK_GROUP_SIZE>           kernel (For)  Same as above, but map
+ sycl_global_1<WORK_GROUP_SIZE>           kernel (For)  Same as above, but map
                                                         to global ids in second
                                                         dim
- sycl_global_3<WORK_GROUP_SIZE>           kernel (For)  Same as above, but map
+ sycl_global_2<WORK_GROUP_SIZE>           kernel (For)  Same as above, but map
                                                         to global ids in third 
                                                         dim
- sycl_local_1_direct                      kernel (For)  Map loop iterates
+ sycl_local_0_direct                      kernel (For)  Map loop iterates
                                                         directly to GPU work
                                                         items in first
                                                         dimension, one iterate 
                                                         per work item (see note 
                                                         below about limitations)
- sycl_local_2_direct                      kernel (For)  Same as above, but map
+ sycl_local_1_direct                      kernel (For)  Same as above, but map
                                                         to work items in second
                                                         dim
- sycl_local_3_direct                      kernel (For)  Same as above, but map
+ sycl_local_2_direct                      kernel (For)  Same as above, but map
                                                         to work items in third 
                                                         dim
- sycl_local_1_loop                        kernel (For)  Similar to 
+ sycl_local_0_loop                        kernel (For)  Similar to 
                                                         local-1-direct policy, 
                                                         but use a work 
                                                         group-stride loop which
                                                         doesn't limit number of
                                                         loop iterates
- sycl_local_2_loop                        kernel (For)  Same as above, but for
+ sycl_local_1_loop                        kernel (For)  Same as above, but for
                                                         work items in second 
                                                         dimension
- sycl_local_3_loop                        kernel (For)  Same as above, but for
+ sycl_local_2_loop                        kernel (For)  Same as above, but for
                                                         work items in third 
                                                         dimension
- sycl_group_1_direct                      kernel (For)  Map loop iterates
+ sycl_group_0_direct                      kernel (For)  Map loop iterates
                                                         directly to GPU group
                                                         ids in first dimension, 
                                                         one iterate per group
- sycl_group_2_direct                      kernel (For)  Same as above, but map
+ sycl_group_1_direct                      kernel (For)  Same as above, but map
                                                         to groups in second 
                                                         dimension
- sycl_group_3_direct                      kernel (For)  Same as above, but map
+ sycl_group_2_direct                      kernel (For)  Same as above, but map
                                                         to groups in third 
                                                         dimension
- sycl_group_1_loop                        kernel (For)  Similar to 
+ sycl_group_0_loop                        kernel (For)  Similar to 
                                                         group-1-direct policy, 
                                                         but use a group-stride 
                                                         loop.
- sycl_group_2_loop                        kernel (For)  Same as above, but use
+ sycl_group_1_loop                        kernel (For)  Same as above, but use
                                                         groups in second 
                                                         dimension
- sycl_group_3_loop                        kernel (For)  Same as above, but use
+ sycl_group_2_loop                        kernel (For)  Same as above, but use
                                                         groups in third 
                                                         dimension
 
