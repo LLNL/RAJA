@@ -107,7 +107,7 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
 
     auto func = launch_global_fcn<BODY>;
 
-    resources::Hip hip_res = res.get<RAJA::resources::Cuda>();
+    resources::Hip hip_res = res.get<RAJA::resources::Hip>();
     /* Use the zero stream until resource is better supported */
     hipStream_t stream = hip_res.get_stream();
 
@@ -236,7 +236,7 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
 
     auto func = launch_global_fcn<BODY>;
 
-    resources::Hip hip_res = res.get<RAJA::resources::Cuda>();
+    resources::Hip hip_res = res.get<RAJA::resources::Hip>();
     /* Use the zero stream until resource is better supported */
     hipStream_t stream = hip_res.get_stream();
 
