@@ -6,16 +6,16 @@
 ##############################################################################
 
 ####
-# This is the shared configuration of jobs for quartz
+# This is the shared configuration of jobs for ruby
 
 ####
 # In pre-build phase, allocate a node for builds
-.on_quartz:
+.on_ruby:
   tags:
     - shell
-    - quartz
+    - ruby
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /_qnone/ || $ON_QUARTZ == "OFF"' #run except if ...
+    - if: '$CI_COMMIT_BRANCH =~ /_qnone/ || $ON_RUBY == "OFF"' #run except if ...
       when: never
     - if: '$CI_JOB_NAME =~ /release_resources/'
       when: always
@@ -23,32 +23,32 @@
 
 ####
 # In pre-build phase, allocate a node for builds
-allocate_resources (on quartz):
+allocate_resources (on ruby):
   variables:
     GIT_STRATEGY: none
-  extends: .on_quartz
-  stage: q_allocate_resources
+  extends: .on_ruby
+  stage: r_allocate_resources
   script:
     - salloc -N 1 -c 36 -p pdebug -t 45 --no-shell --job-name=${ALLOC_NAME}
 
 ####
 # In post-build phase, deallocate resources
 # Note : make sure this is run even on build phase failure
-release_resources (on quartz):
+release_resources (on ruby):
   variables:
     GIT_STRATEGY: none
-  extends: .on_quartz
-  stage: q_release_resources
+  extends: .on_ruby
+  stage: r_release_resources
   script:
     - export JOBID=$(squeue -h --name=${ALLOC_NAME} --format=%A)
     - ([[ -n "${JOBID}" ]] && scancel ${JOBID})
 
 ####
-# Generic quartz build job, extending build script
-.build_and_test_on_quartz:
-  extends: [.build_toss_3_x86_64_ib_script, .on_quartz]
-  stage: q_build_and_test
+# Generic ruby build job, extending build script
+.build_and_test_on_ruby:
+  extends: [.build_toss_3_x86_64_ib_script, .on_ruby]
+  stage: r_build_and_test
 
-.build_and_test_on_quartz_advanced:
-  extends: [.build_and_test_on_quartz, .advanced_pipeline]
+.build_and_test_on_ruby_advanced:
+  extends: [.build_and_test_on_ruby, .advanced_pipeline]
 
