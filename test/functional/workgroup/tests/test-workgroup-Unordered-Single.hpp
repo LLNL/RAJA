@@ -95,7 +95,7 @@ void testWorkGroupUnorderedSingle(IndexType begin, IndexType end)
 
   WorkSite_type site = group.run();
 
-  auto e = resource_type::get_default().get_event();
+  auto e = site.get_resource().get_event();
   e.wait();
 
   {
