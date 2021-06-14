@@ -48,7 +48,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_openmp_policy<Policy>>
 inclusive_inplace(
-    resources::Host& host_res,
+    resources::Host host_res,
     const Policy&,
     Iter begin,
     Iter end,
@@ -81,7 +81,7 @@ inclusive_inplace(
     }
   }
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -93,7 +93,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_openmp_policy<Policy>>
 exclusive_inplace(
-    resources::Host& host_res,
+    resources::Host host_res,
     const Policy&,
     Iter begin,
     Iter end,
@@ -129,7 +129,7 @@ exclusive_inplace(
     }
   }
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -141,7 +141,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_openmp_policy<Policy>>
 inclusive(
-    resources::Host& host_res,
+    resources::Host host_res,
     const Policy& exec,
     Iter begin,
     Iter end,
@@ -166,7 +166,7 @@ RAJA_INLINE
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_openmp_policy<Policy>>
 exclusive(
-    resources::Host& host_res,
+    resources::Host host_res,
     const Policy& exec,
     Iter begin,
     Iter end,
