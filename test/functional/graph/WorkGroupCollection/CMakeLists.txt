@@ -17,12 +17,12 @@ macro( buildunitworkgrouptest TESTNAME SUBTESTNAMES BACKENDS )
   foreach( GRAPHBACKEND ${GRAPH_BACKENDS} )
     foreach( BACKEND ${BACKENDS} )
       foreach( SUBTESTNAME ${SUBTESTNAMES} )
-        configure_file( test-graph-WorkGroupNode-${TESTNAME}.cpp.in
-                        test-graph-${GRAPHBACKEND}-WorkGroupNode-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
-        raja_add_test( NAME test-graph-${GRAPHBACKEND}-WorkGroupNode-${TESTNAME}-${SUBTESTNAME}-${BACKEND}
-                       SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-graph-${GRAPHBACKEND}-WorkGroupNode-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
+        configure_file( test-graph-WorkGroupCollection-${TESTNAME}.cpp.in
+                        test-graph-${GRAPHBACKEND}-WorkGroupCollection-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
+        raja_add_test( NAME test-graph-${GRAPHBACKEND}-WorkGroupCollection-${TESTNAME}-${SUBTESTNAME}-${BACKEND}
+                       SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-graph-${GRAPHBACKEND}-WorkGroupCollection-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
 
-        target_include_directories(test-graph-${GRAPHBACKEND}-WorkGroupNode-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.exe
+        target_include_directories(test-graph-${GRAPHBACKEND}-WorkGroupCollection-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.exe
                                    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
       endforeach()
     endforeach()

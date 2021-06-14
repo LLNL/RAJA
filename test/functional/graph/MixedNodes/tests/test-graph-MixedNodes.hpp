@@ -130,19 +130,21 @@ void MixedNodesTestImpl(int node_size)
         size_t* previous = node_previous[node_id];
         size_t* my_data  = node_data[node_id];
         using Allocator = typename detail::ResourceAllocator<camp::resources::Host>::template std_allocator<char>;
-        auto n = g.add_node(node_id, edges_to_node,
-            RAJA::expt::graph::WorkGroup<
-             RAJA::WorkGroupPolicy<RAJA::loop_work, RAJA::ordered, RAJA::constant_stride_array_of_objects>,
-             int,
-             RAJA::xargs<>,
-             Allocator
-           >(Allocator(host_res)));
+        auto c = g.add_collection(node_id, edges_to_node,
+            RAJA::expt::graph::WorkGroup< RAJA::loop_work,
+                                          RAJA::ordered,
+                                          int,
+                                          RAJA::xargs<>,
+                                          Allocator
+                                        >(Allocator(host_res)));
         for (size_t e = 0; e < num_edges_to_node; ++e) {
           size_t other_id = previous[e];
           size_t* other_data = node_data[other_id];
-          n.node->enqueue(seg, [=](int i){
+          g.add_collection_node(node_id, edges_to_node,
+              c, RAJA::expt::graph::FusibleForall<RAJA::loop_exec>(
+                seg, [=](int i){
             my_data[i] += other_data[i];
-          });
+          }));
         }
       }
 #if defined(RAJA_ENABLE_OPENMP)
@@ -164,19 +166,21 @@ void MixedNodesTestImpl(int node_size)
         size_t* previous = node_previous[node_id];
         size_t* my_data  = node_data[node_id];
         using Allocator = typename detail::ResourceAllocator<camp::resources::Host>::template std_allocator<char>;
-        auto n = g.add_node(node_id, edges_to_node,
-            RAJA::expt::graph::WorkGroup<
-             RAJA::WorkGroupPolicy<RAJA::omp_work, RAJA::ordered, RAJA::constant_stride_array_of_objects>,
-             int,
-             RAJA::xargs<>,
-             Allocator
-           >(Allocator(host_res)));
+        auto c = g.add_collection(node_id, edges_to_node,
+            RAJA::expt::graph::WorkGroup< RAJA::omp_work,
+                                          RAJA::ordered,
+                                          int,
+                                          RAJA::xargs<>,
+                                          Allocator
+                                        >(Allocator(host_res)));
         for (size_t e = 0; e < num_edges_to_node; ++e) {
           size_t other_id = previous[e];
           size_t* other_data = node_data[other_id];
-          n.node->enqueue(seg, [=](int i){
+          g.add_collection_node(node_id, edges_to_node,
+              c, RAJA::expt::graph::FusibleForall<RAJA::omp_parallel_exec<RAJA::omp_for_exec>>(
+                seg, [=](int i){
             my_data[i] += other_data[i];
-          });
+          }));
         }
       }
 #endif
@@ -199,19 +203,21 @@ void MixedNodesTestImpl(int node_size)
         size_t* previous = node_previous[node_id];
         size_t* my_data  = node_data[node_id];
         using Allocator = typename detail::ResourceAllocator<camp::resources::Host>::template std_allocator<char>;
-        auto n = g.add_node(node_id, edges_to_node,
-            RAJA::expt::graph::WorkGroup<
-             RAJA::WorkGroupPolicy<RAJA::tbb_work, RAJA::ordered, RAJA::constant_stride_array_of_objects>,
-             int,
-             RAJA::xargs<>,
-             Allocator
-           >(Allocator(host_res)));
+        auto c = g.add_collection(node_id, edges_to_node,
+            RAJA::expt::graph::WorkGroup< RAJA::tbb_work,
+                                          RAJA::ordered,
+                                          int,
+                                          RAJA::xargs<>,
+                                          Allocator
+                                        >(Allocator(host_res)));
         for (size_t e = 0; e < num_edges_to_node; ++e) {
           size_t other_id = previous[e];
           size_t* other_data = node_data[other_id];
-          n.node->enqueue(seg, [=](int i){
+          g.add_collection_node(node_id, edges_to_node,
+              c, RAJA::expt::graph::FusibleForall<RAJA::tbb_for_exec>(
+                seg, [=](int i){
             my_data[i] += other_data[i];
-          });
+          }));
         }
       }
 #endif
@@ -234,19 +240,21 @@ void MixedNodesTestImpl(int node_size)
         size_t* previous = node_previous[node_id];
         size_t* my_data  = node_data[node_id];
         using Allocator = typename detail::ResourceAllocator<camp::resources::Omp>::template std_allocator<char>;
-        auto n = g.add_node(node_id, edges_to_node,
-            RAJA::expt::graph::WorkGroup<
-             RAJA::WorkGroupPolicy<RAJA::omp_target_work, RAJA::ordered, RAJA::constant_stride_array_of_objects>,
-             int,
-             RAJA::xargs<>,
-             Allocator
-           >(Allocator(omp_res)));
+        auto c = g.add_collection(node_id, edges_to_node,
+            RAJA::expt::graph::WorkGroup< RAJA::omp_target_work,
+                                          RAJA::ordered,
+                                          int,
+                                          RAJA::xargs<>,
+                                          Allocator
+                                        >(Allocator(omp_res)));
         for (size_t e = 0; e < num_edges_to_node; ++e) {
           size_t other_id = previous[e];
           size_t* other_data = node_data[other_id];
-          n.node->enqueue(seg, [=](int i){
+          g.add_collection_node(node_id, edges_to_node,
+              c, RAJA::expt::graph::FusibleForall<RAJA::omp_target_parallel_for_exec_nt>(
+                seg, [=](int i){
             my_data[i] += other_data[i];
-          });
+          }));
         }
       }
 #endif
@@ -269,21 +277,21 @@ void MixedNodesTestImpl(int node_size)
         size_t* previous = node_previous[node_id];
         size_t* my_data  = node_data[node_id];
         using Allocator = typename detail::ResourceAllocator<camp::resources::Cuda>::template std_allocator<char>;
-        auto n = g.add_node(node_id, edges_to_node,
-            RAJA::expt::graph::WorkGroup<
-             RAJA::WorkGroupPolicy<RAJA::cuda_work_async<1024>,
-                                   RAJA::unordered_cuda_loop_y_block_iter_x_threadblock_average,
-                                   RAJA::constant_stride_array_of_objects>,
-             int,
-             RAJA::xargs<>,
-             Allocator
-           >(Allocator(cuda_res)));
+        auto c = g.add_collection(node_id, edges_to_node,
+            RAJA::expt::graph::WorkGroup< RAJA::cuda_work_async<1024>,
+                                          RAJA::unordered_cuda_loop_y_block_iter_x_threadblock_average,
+                                          int,
+                                          RAJA::xargs<>,
+                                          Allocator
+                                        >(Allocator(cuda_res)));
         for (size_t e = 0; e < num_edges_to_node; ++e) {
           size_t other_id = previous[e];
           size_t* other_data = node_data[other_id];
-          n.node->enqueue(seg, [=]RAJA_DEVICE(int i){
+          g.add_collection_node(node_id, edges_to_node,
+              c, RAJA::expt::graph::FusibleForall<RAJA::cuda_exec_async<128>>(
+                seg, [=]RAJA_DEVICE(int i){
             my_data[i] += other_data[i];
-          });
+          }));
         }
       }
 #endif
@@ -306,25 +314,25 @@ void MixedNodesTestImpl(int node_size)
         size_t* previous = node_previous[node_id];
         size_t* my_data  = node_data[node_id];
         using Allocator = typename detail::ResourceAllocator<camp::resources::Hip>::template std_allocator<char>;
-        auto n = g.add_node(node_id, edges_to_node,
-            RAJA::expt::graph::WorkGroup<
-             RAJA::WorkGroupPolicy<RAJA::hip_work_async<1024>,
+        auto c = g.add_collection(node_id, edges_to_node,
+            RAJA::expt::graph::WorkGroup< RAJA::hip_work_async<1024>,
 #if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
-                                   RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
+                                          RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
 #else
-                                   RAJA::ordered,
+                                          RAJA::ordered,
 #endif
-                                   RAJA::constant_stride_array_of_objects>,
-             int,
-             RAJA::xargs<>,
-             Allocator
-           >(Allocator(hip_res)));
+                                          int,
+                                          RAJA::xargs<>,
+                                          Allocator
+                                        >(Allocator(hip_res)));
         for (size_t e = 0; e < num_edges_to_node; ++e) {
           size_t other_id = previous[e];
           size_t* other_data = node_data[other_id];
-          n.node->enqueue(seg, [=]RAJA_DEVICE(int i){
+          g.add_collection_node(node_id, edges_to_node,
+              c, RAJA::expt::graph::FusibleForall<RAJA::hip_exec_async<128>>(
+                seg, [=]RAJA_DEVICE(int i){
             my_data[i] += other_data[i];
-          });
+          }));
         }
       }
 #endif

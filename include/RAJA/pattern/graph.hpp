@@ -19,10 +19,12 @@
 #define RAJA_pattern_graph_HPP
 
 #include "RAJA/pattern/graph/Node.hpp"
+#include "RAJA/pattern/graph/Collection.hpp"
 #include "RAJA/pattern/graph/DAG.hpp"
 #include "RAJA/pattern/graph/EmptyNode.hpp"
 #include "RAJA/pattern/graph/FunctionNode.hpp"
 #include "RAJA/pattern/graph/ForallNode.hpp"
-#include "RAJA/pattern/graph/WorkGroupNode.hpp"
+#include "RAJA/pattern/graph/FusibleForallNode.hpp"
+#include "RAJA/pattern/graph/WorkGroupCollection.hpp"
 
 #endif /* RAJA_pattern_graph_HPP */

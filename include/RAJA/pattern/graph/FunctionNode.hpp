@@ -23,7 +23,6 @@
 #include <utility>
 #include <type_traits>
 
-#include "RAJA/pattern/graph/DAG.hpp"
 #include "RAJA/pattern/graph/Node.hpp"
 
 namespace RAJA

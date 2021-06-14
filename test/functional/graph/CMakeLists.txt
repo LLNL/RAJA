@@ -31,7 +31,7 @@ endif()
 
 add_subdirectory(ForallNode)
 
-add_subdirectory(WorkGroupNode)
+add_subdirectory(WorkGroupCollection)
 
 add_subdirectory(MixedNodes)
 

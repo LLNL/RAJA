@@ -83,7 +83,7 @@ private:
   struct NodeExecConnections : detail::NodeExec
   {
     NodeExecConnections(detail::NodeConnections& connections, node_data_container& container)
-      : detail::NodeExec(container[connections.get_node_id()].get())
+      : detail::NodeExec(container.node_data[connections.get_node_id()].get())
       , m_parent_count(connections.m_parents.size())
       , m_count(connections.m_count)
     {
@@ -114,7 +114,7 @@ private:
         size_t node_count;
 #pragma omp atomic capture
         node_count = ++child->m_count;
-        if (node_count == child->parents.size()) {
+        if (node_count == child->m_parent_count) {
           child->m_count = 0;
           exec_traverse(child, gr);
         }
@@ -138,7 +138,7 @@ private:
     for (size_t i = 0; i < dag.m_node_connections.size(); ++i) {
       detail::NodeConnections& connections = dag.m_node_connections[i];
       m_node_execs[i].add_children(connections, m_node_execs.data());
-      if (m_node_execs[i].m_parents.size() == 0) {
+      if (m_node_execs[i].m_parent_count == 0) {
         m_first_node_execs.emplace_back(&m_node_execs[i]);
       }
     }
@@ -207,10 +207,10 @@ private:
   struct NodeExecConnections : detail::NodeExec
   {
     NodeExecConnections(detail::NodeConnections& connections, node_data_container& container)
-      : detail::NodeExec(container[connections.get_node_id()].get())
+      : detail::NodeExec(container.node_data[connections.get_node_id()].get())
     {
       for (size_t child_id : connections.m_children) {
-        m_children.emplace_back(container[child_id].get());
+        m_children.emplace_back(container.node_data[child_id].get());
       }
     }
 
@@ -231,7 +231,6 @@ private:
             // do nothing
           },
           [&](detail::NodeConnections& node_connections) {
-            node_data_container& container = *m_node_data;
             m_node_execs.emplace_back(node_connections, m_node_data);
           },
           [](detail::NodeConnections&) {

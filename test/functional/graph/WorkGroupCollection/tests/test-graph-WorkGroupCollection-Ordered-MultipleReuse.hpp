@@ -6,37 +6,39 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Header file containing tests for RAJA WorGroupNode unordered runs.
+/// Header file containing tests for RAJA WorGroupCollection ordered runs.
 ///
 
-#ifndef __TEST_GRAPH_WORKGROUPNODE_UNORDERED_MULTIPLEREUSE__
-#define __TEST_GRAPH_WORKGROUPNODE_UNORDERED_MULTIPLEREUSE__
+#ifndef __TEST_GRAPH_WORKGROUPCOLLECTION_ORDERED_MULTIPLEREUSE__
+#define __TEST_GRAPH_WORKGROUPCOLLECTION_ORDERED_MULTIPLEREUSE__
 
 #include "RAJA_test-workgroup.hpp"
 #include "RAJA_test-forall-data.hpp"
 
 #include <random>
+#include <vector>
 
 
 template <typename GraphPolicy,
-          typename ExecPolicy,
+          typename WorkGroupExecPolicy,
           typename OrderPolicy,
-          typename StoragePolicy,
           typename IndexType,
           typename Allocator,
-          typename WORKING_RES
+          typename WORKING_RES,
+          typename ForallExecPolicy
           >
-void testWorkGroupNodeUnorderedMultiple(
+void testWorkGroupCollectionOrderedMultiple(
     std::mt19937& rng, IndexType max_begin, IndexType min_end,
     IndexType num1, IndexType num2, IndexType num3,
     IndexType pool_reuse, IndexType group_reuse)
 {
-  using WorkGroupNode_type = RAJA::expt::graph::WorkGroupNode<
-                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                  IndexType,
-                  RAJA::xargs<>,
-                  Allocator
-                >;
+  using WorkGroupCollection_type = RAJA::expt::graph::WorkGroupCollection<
+                                     WorkGroupExecPolicy,
+                                     OrderPolicy,
+                                     IndexType,
+                                     RAJA::xargs<>,
+                                     Allocator
+                                   >;
 
   ASSERT_GT(min_end, max_begin);
   IndexType N = min_end + max_begin;
@@ -101,17 +103,16 @@ void testWorkGroupNodeUnorderedMultiple(
                                 &check_array3,
                                 &test_array3);
 
-
   RAJA::expt::graph::DAG g;
-  RAJA::expt::graph::DAG::NodeView<WorkGroupNode_type> node =
-      g.add_node(RAJA::expt::graph::WorkGroup<
-                   RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                   IndexType,
-                   RAJA::xargs<>,
-                   Allocator
-                 >(Allocator{}));
+  RAJA::expt::graph::DAG::CollectionView<WorkGroupCollection_type> collection =
+      g.add_collection(RAJA::expt::graph::WorkGroup< WorkGroupExecPolicy,
+                                                     OrderPolicy,
+                                                     IndexType,
+                                                     RAJA::xargs<>,
+                                                     Allocator
+                                                   >(Allocator{}));
 
-  node.node->reserve(num1+num2+num3, 1024ull*1024ull);
+  std::vector<RAJA::expt::graph::DAG::GenericNodeView> nodes(2*(num1+num2+num3));
 
   for (IndexType pr = 0; pr < pool_reuse; pr++) {
 
@@ -123,30 +124,69 @@ void testWorkGroupNodeUnorderedMultiple(
     {
       for (IndexType j = IndexType(0); j < num1; j++) {
         type1* working_ptr1 = working_array1 + N * j;
-        node.node->enqueue(RAJA::TypedRangeSegment<IndexType>{ begin1[j], end1[j] },
+        auto args10 = ::RAJA::expt::graph::FusibleForall<ForallExecPolicy>(
+            RAJA::TypedRangeSegment<IndexType>{ begin1[j], end1[j] },
             [=] RAJA_HOST_DEVICE (IndexType i) {
-          working_ptr1[i] += type1(i) + test_val1;
+          working_ptr1[i] += type1(i);
         });
+        auto args11 = ::RAJA::expt::graph::FusibleForall(ForallExecPolicy{},
+            RAJA::TypedRangeSegment<IndexType>{ begin1[j], end1[j] },
+            [=] RAJA_HOST_DEVICE (IndexType i) {
+          working_ptr1[i] += test_val1;
+        });
+        if (!nodes[2*(j)]) {
+          nodes[2*(j)+0] = g.add_node(collection, std::move(args10));
+          nodes[2*(j)+1] = g.add_node(collection, std::move(args11));
+        } else {
+          nodes[2*(j)+0].reset(std::move(args10));
+          nodes[2*(j)+1].reset(std::move(args11));
+        }
       }
 
       for (IndexType j = IndexType(0); j < num2; j++) {
         type2* working_ptr2 = working_array2 + N * j;
-        node.node->enqueue(RAJA::TypedRangeSegment<IndexType>{ begin2[j], end2[j] },
+        auto args20 = ::RAJA::expt::graph::FusibleForall<ForallExecPolicy>(
+            RAJA::TypedRangeSegment<IndexType>{ begin2[j], end2[j] },
             [=] RAJA_HOST_DEVICE (IndexType i) {
-          working_ptr2[i] += type2(i) + test_val2;
+          working_ptr2[i] += type2(i);
         });
+        auto args21 = ::RAJA::expt::graph::FusibleForall(ForallExecPolicy{},
+            RAJA::TypedRangeSegment<IndexType>{ begin2[j], end2[j] },
+            [=] RAJA_HOST_DEVICE (IndexType i) {
+          working_ptr2[i] += test_val2;
+        });
+        if (!nodes[2*(j+num1)]) {
+          nodes[2*(j+num1)+0] = g.add_node(collection, std::move(args20));
+          nodes[2*(j+num1)+1] = g.add_node(collection, std::move(args21));
+        } else {
+          nodes[2*(j+num1)+0].reset(std::move(args20));
+          nodes[2*(j+num1)+1].reset(std::move(args21));
+        }
       }
 
       for (IndexType j = IndexType(0); j < num3; j++) {
         type3* working_ptr3 = working_array3 + N * j;
-        node.node->enqueue(RAJA::TypedRangeSegment<IndexType>{ begin3[j], end3[j] },
+        auto args30 = ::RAJA::expt::graph::FusibleForall<ForallExecPolicy>(
+            RAJA::TypedRangeSegment<IndexType>{ begin3[j], end3[j] },
             [=] RAJA_HOST_DEVICE (IndexType i) {
-          working_ptr3[i] += type3(i) + test_val3;
+          working_ptr3[i] += type3(i);
         });
+        auto args31 = ::RAJA::expt::graph::FusibleForall(ForallExecPolicy{},
+            RAJA::TypedRangeSegment<IndexType>{ begin3[j], end3[j] },
+            [=] RAJA_HOST_DEVICE (IndexType i) {
+          working_ptr3[i] += test_val3;
+        });
+        if (!nodes[2*(j+num1+num2)]) {
+          nodes[2*(j+num1+num2)+0] = g.add_node(collection, std::move(args30));
+          nodes[2*(j+num1+num2)+1] = g.add_node(collection, std::move(args31));
+        } else {
+          nodes[2*(j+num1+num2)+0].reset(std::move(args30));
+          nodes[2*(j+num1+num2)+1].reset(std::move(args31));
+        }
       }
     }
 
-    node.node->instantiate();
+    ASSERT_EQ(collection->num_nodes(), 2*(num1+num2+num3));
 
     for (IndexType gr = 0; gr < group_reuse; gr++) {
 
@@ -205,7 +245,9 @@ void testWorkGroupNodeUnorderedMultiple(
 
       RAJA::expt::graph::DAGExec<GraphPolicy, WORKING_RES> ge =
           g.template instantiate<GraphPolicy, WORKING_RES>();
-      ge.exec(res);
+      // collection.set_args(ge);
+      camp::resources::Event e = ge.exec();
+      e.wait();
 
       // check_test_data(type1(5), type2(7), type3(11));
       {
@@ -261,8 +303,6 @@ void testWorkGroupNodeUnorderedMultiple(
         }
       }
     }
-
-    node.node->clear();
   }
 
 
@@ -284,22 +324,22 @@ void testWorkGroupNodeUnorderedMultiple(
 
 
 template <typename T>
-class WorkGroupNodeBasicUnorderedMultipleReuseFunctionalTest : public ::testing::Test
+class WorkGroupCollectionBasicOrderedMultipleReuseFunctionalTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_SUITE_P(WorkGroupNodeBasicUnorderedMultipleReuseFunctionalTest);
+TYPED_TEST_SUITE_P(WorkGroupCollectionBasicOrderedMultipleReuseFunctionalTest);
 
 
-TYPED_TEST_P(WorkGroupNodeBasicUnorderedMultipleReuseFunctionalTest, BasicWorkGroupNodeUnorderedMultipleReuse)
+TYPED_TEST_P(WorkGroupCollectionBasicOrderedMultipleReuseFunctionalTest, BasicWorkGroupCollectionOrderedMultipleReuse)
 {
   using GRAPH_POLICY = typename camp::at<TypeParam, camp::num<0>>::type;
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WorkGroupExecPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
   using OrderPolicy = typename camp::at<TypeParam, camp::num<2>>::type;
-  using StoragePolicy = typename camp::at<TypeParam, camp::num<3>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<4>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
-  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<6>>::type;
+  using IndexType = typename camp::at<TypeParam, camp::num<3>>::type;
+  using Allocator = typename camp::at<TypeParam, camp::num<4>>::type;
+  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<5>>::type;
+  using ForallExecPolicy = typename camp::at<TypeParam, camp::num<6>>::type;
 
   std::mt19937 rng(std::random_device{}());
   using dist_type = std::uniform_int_distribution<IndexType>;
@@ -311,8 +351,8 @@ TYPED_TEST_P(WorkGroupNodeBasicUnorderedMultipleReuseFunctionalTest, BasicWorkGr
   IndexType pool_reuse  = dist_type(IndexType(0), IndexType(8))(rng);
   IndexType group_reuse = dist_type(IndexType(0), IndexType(8))(rng);
 
-  testWorkGroupNodeUnorderedMultiple< GRAPH_POLICY, ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(
+  testWorkGroupCollectionOrderedMultiple< GRAPH_POLICY, WorkGroupExecPolicy, OrderPolicy, IndexType, Allocator, WORKING_RESOURCE, ForallExecPolicy >(
       rng, IndexType(96), IndexType(4000), num1, num2, num3, pool_reuse, group_reuse);
 }
 
-#endif  //__TEST_GRAPH_WORKGROUPNODE_UNORDERED_MULTIPLEREUSE__
+#endif  //__TEST_GRAPH_WORKGROUPCOLLECTION_ORDERED_MULTIPLEREUSE__

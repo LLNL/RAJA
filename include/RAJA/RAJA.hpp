@@ -148,8 +148,8 @@
 //
 // graph constructs
 //
-#include "RAJA/pattern/graph.hpp"
 #include "RAJA/policy/graph.hpp"
+#include "RAJA/pattern/graph.hpp"
 
 //
 // Reduction objects

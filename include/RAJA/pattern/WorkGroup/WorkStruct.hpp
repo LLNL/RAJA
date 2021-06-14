@@ -52,6 +52,12 @@ struct WorkStruct<size, Vtable<VtableID, CallArgs...>>
 {
   using vtable_type = Vtable<VtableID, CallArgs...>;
 
+  template < typename holder >
+  static holder* get_holder(WorkStruct* value_ptr)
+  {
+    return reinterpret_cast<holder*>(&value_ptr->obj);
+  }
+
   // construct a WorkStruct with a value of type holder from the args and
   // check a variety of constraints at compile time
   template < typename holder, typename ... holder_ctor_args >

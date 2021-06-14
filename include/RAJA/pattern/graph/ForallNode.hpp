@@ -25,7 +25,6 @@
 
 #include "RAJA/pattern/forall.hpp"
 
-#include "RAJA/pattern/graph/DAG.hpp"
 #include "RAJA/pattern/graph/Node.hpp"
 
 namespace RAJA

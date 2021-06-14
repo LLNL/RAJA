@@ -6,11 +6,11 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Header file containing tests for RAJA WorGroupNode ordered runs.
+/// Header file containing tests for RAJA WorGroupCollection ordered runs.
 ///
 
-#ifndef __TEST_GRAPH_WORKGROUPNODE_ORDERED_SINGLE__
-#define __TEST_GRAPH_WORKGROUPNODE_ORDERED_SINGLE__
+#ifndef __TEST_GRAPH_WORKGROUPCOLLECTION_ORDERED_SINGLE__
+#define __TEST_GRAPH_WORKGROUPCOLLECTION_ORDERED_SINGLE__
 
 #include "RAJA_test-workgroup.hpp"
 #include "RAJA_test-forall-data.hpp"
@@ -20,17 +20,19 @@
 
 
 template <typename GraphPolicy,
-          typename ExecPolicy,
+          typename WorkGroupExecPolicy,
           typename OrderPolicy,
-          typename StoragePolicy,
           typename IndexType,
           typename Allocator,
-          typename WORKING_RES
+          typename WORKING_RES,
+          typename ForallExecPolicy
           >
-void testWorkGroupNodeOrderedSingle(IndexType begin, IndexType end)
+void testWorkGroupCollectionOrderedSingle(IndexType begin, IndexType end)
 {
-  using WorkGroupNode_type = RAJA::expt::graph::WorkGroupNode<
-                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+  using WorkGroupCollection_type =
+      RAJA::expt::graph::WorkGroupCollection<
+                  WorkGroupExecPolicy,
+                  OrderPolicy,
                   IndexType,
                   RAJA::xargs<>,
                   Allocator
@@ -67,25 +69,27 @@ void testWorkGroupNodeOrderedSingle(IndexType begin, IndexType end)
   }
 
   RAJA::expt::graph::DAG g;
-  RAJA::expt::graph::DAG::NodeView<WorkGroupNode_type> node =
-      g.add_node(RAJA::expt::graph::WorkGroup<
-                   RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                   IndexType,
-                   RAJA::xargs<>,
-                   Allocator
-                 >(Allocator{}));
+  RAJA::expt::graph::DAG::CollectionView<WorkGroupCollection_type> collection =
+      g.add_collection(RAJA::expt::graph::WorkGroup<WorkGroupExecPolicy,
+                                                    OrderPolicy,
+                                                    IndexType,
+                                                    RAJA::xargs<>,
+                                                    Allocator>
+                                          (Allocator{}));
 
   IndexType test_val(5);
 
   {
-    node.node->enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+    g.add_node(collection, RAJA::expt::graph::FusibleForall<ForallExecPolicy>(
+        RAJA::TypedRangeSegment<IndexType>{ begin, end },
         [=] RAJA_HOST_DEVICE (IndexType i) {
       working_array[i] += i;
-    });
-    node.node->enqueue(RAJA::TypedRangeSegment<IndexType>{ begin, end },
+    }));
+    g.add_node(collection, RAJA::expt::graph::FusibleForall(ForallExecPolicy{},
+        RAJA::TypedRangeSegment<IndexType>{ begin, end },
         [=] RAJA_HOST_DEVICE (IndexType i) {
       working_array[i] += test_val;
-    });
+    }));
   }
 
   RAJA::expt::graph::DAGExec<GraphPolicy, WORKING_RES> ge =
@@ -116,22 +120,22 @@ void testWorkGroupNodeOrderedSingle(IndexType begin, IndexType end)
 
 
 template <typename T>
-class WorkGroupNodeBasicOrderedSingleFunctionalTest : public ::testing::Test
+class WorkGroupCollectionBasicOrderedSingleFunctionalTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_SUITE_P(WorkGroupNodeBasicOrderedSingleFunctionalTest);
+TYPED_TEST_SUITE_P(WorkGroupCollectionBasicOrderedSingleFunctionalTest);
 
 
-TYPED_TEST_P(WorkGroupNodeBasicOrderedSingleFunctionalTest, BasicWorkGroupNodeOrderedSingle)
+TYPED_TEST_P(WorkGroupCollectionBasicOrderedSingleFunctionalTest, BasicWorkGroupCollectionOrderedSingle)
 {
   using GRAPH_POLICY = typename camp::at<TypeParam, camp::num<0>>::type;
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WorkGroupExecPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
   using OrderPolicy = typename camp::at<TypeParam, camp::num<2>>::type;
-  using StoragePolicy = typename camp::at<TypeParam, camp::num<3>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<4>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
-  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<6>>::type;
+  using IndexType = typename camp::at<TypeParam, camp::num<3>>::type;
+  using Allocator = typename camp::at<TypeParam, camp::num<4>>::type;
+  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<5>>::type;
+  using ForallExecPolicy = typename camp::at<TypeParam, camp::num<6>>::type;
 
   std::mt19937 rng(std::random_device{}());
   using dist_type = std::uniform_int_distribution<IndexType>;
@@ -145,9 +149,9 @@ TYPED_TEST_P(WorkGroupNodeBasicOrderedSingleFunctionalTest, BasicWorkGroupNodeOr
   IndexType b3 = dist_type(e2, IndexType(1023))(rng);
   IndexType e3 = dist_type(b3, IndexType(1024))(rng);
 
-  testWorkGroupNodeOrderedSingle< GRAPH_POLICY, ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b1, e1);
-  testWorkGroupNodeOrderedSingle< GRAPH_POLICY, ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b2, e2);
-  testWorkGroupNodeOrderedSingle< GRAPH_POLICY, ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(b3, e3);
+  testWorkGroupCollectionOrderedSingle< GRAPH_POLICY, WorkGroupExecPolicy, OrderPolicy, IndexType, Allocator, WORKING_RESOURCE, ForallExecPolicy >(b1, e1);
+  testWorkGroupCollectionOrderedSingle< GRAPH_POLICY, WorkGroupExecPolicy, OrderPolicy, IndexType, Allocator, WORKING_RESOURCE, ForallExecPolicy >(b2, e2);
+  testWorkGroupCollectionOrderedSingle< GRAPH_POLICY, WorkGroupExecPolicy, OrderPolicy, IndexType, Allocator, WORKING_RESOURCE, ForallExecPolicy >(b3, e3);
 }
 
-#endif  //__TEST_GRAPH_WORKGROUPNODE_ORDERED_SINGLE__
+#endif  //__TEST_GRAPH_WORKGROUPCOLLECTION_ORDERED_SINGLE__

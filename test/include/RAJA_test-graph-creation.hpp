@@ -24,7 +24,7 @@
 template < typename graph_type >
 struct RandomGraph
 {
-  using node_id_type = typename graph_type::node_id_type;
+  using id_type = typename graph_type::id_type;
 
   static const size_t graph_min_nodes = 0;
   static const size_t graph_max_nodes = 1024;
@@ -60,7 +60,8 @@ struct RandomGraph
   // the required ordering
   //   Ex. a >> b, b >> c, a >> c where a >> c is unnecessary
   template < typename NodeArg >
-  auto add_node(size_t node_id, std::vector<size_t> const& edges_to_node, NodeArg&& arg)
+  auto add_node(size_t node_id, std::vector<size_t> const& edges_to_node,
+                NodeArg&& arg)
       -> decltype(camp::val<graph_type>().add_node(std::forward<NodeArg>(arg)))
   {
     assert(node_id < m_num_nodes);
@@ -71,11 +72,57 @@ struct RandomGraph
 
     // add edges
     for (size_t edge_to_node : edges_to_node) {
-      m_g.add_edge(m_nodes[edge_to_node], n);
+      for (id_type from_node_id : m_nodes[edge_to_node]) {
+        m_g.add_edge(from_node_id, n);
+      }
       m_edges.emplace(edge_to_node, node_id);
     }
 
-    m_nodes.emplace_back(n.id);
+    m_nodes.emplace_back();
+    m_nodes.back().emplace_back(n.id);
+    return n;
+  }
+
+  // add collection as a node
+  template < typename CollectionArg >
+  auto add_collection(size_t node_id, std::vector<size_t> const& edges_to_node,
+                      CollectionArg&& arg)
+      -> decltype(camp::val<graph_type>().add_collection(std::forward<CollectionArg>(arg)))
+  {
+    assert(node_id < m_num_nodes);
+    assert(node_id == m_nodes.size());
+
+    // add collection to graph
+    auto c = m_g.add_collection(std::forward<CollectionArg>(arg));
+
+    // add edges for collection in this graph representation
+    for (size_t edge_to_node : edges_to_node) {
+      m_edges.emplace(edge_to_node, node_id);
+    }
+
+    m_nodes.emplace_back();
+    return c;
+  }
+
+  template < typename CollectionView, typename NodeArg >
+  auto add_collection_node(size_t node_id, std::vector<size_t> const& edges_to_node,
+                           CollectionView& cv, NodeArg&& arg)
+      -> decltype(camp::val<graph_type>().add_node(cv, std::forward<NodeArg>(arg)))
+  {
+    assert(node_id < m_num_nodes);
+    assert(node_id == m_nodes.size()-1);
+
+    // add node to graph
+    auto n = m_g.add_node(cv, std::forward<NodeArg>(arg));
+
+    // add edges for node in real graph
+    for (size_t edge_to_node : edges_to_node) {
+      for (id_type from_node_id : m_nodes[edge_to_node]) {
+        m_g.add_edge(from_node_id, n);
+      }
+    }
+
+    m_nodes.back().emplace_back(n.id);
     return n;
   }
 
@@ -107,7 +154,7 @@ private:
   size_t m_num_nodes;
 
   std::unordered_multimap<size_t, size_t> m_edges;
-  std::vector<node_id_type> m_nodes;
+  std::vector<std::vector<id_type>> m_nodes;
 
   graph_type m_g;
 };

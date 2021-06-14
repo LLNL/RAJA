@@ -6,25 +6,26 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA WorkGroupNode unordered execution.
+/// Source file containing tests for RAJA WorkGroupCollection unordered execution.
 ///
 
 #include "RAJA_test-graph-execpol.hpp"
+#include "RAJA_test-forall-execpol.hpp"
 
-#include "test-graph-WorkGroupNode-Unordered-@SUBTESTNAME@.hpp"
+#include "test-graph-WorkGroupCollection-Unordered-@SUBTESTNAME@.hpp"
 
-using @BACKEND@BasicWorkGroupNodeUnordered@SUBTESTNAME@Types =
+using @BACKEND@BasicWorkGroupCollectionUnordered@SUBTESTNAME@Types =
   Test< camp::cartesian_product< @GRAPHBACKEND@GraphExecPols,
                                  @BACKEND@ExecPolicyList,
                                  @BACKEND@OrderPolicyList,
-                                 @BACKEND@StoragePolicyList,
                                  IndexTypeTypeList,
                                  @BACKEND@AllocatorList,
-                                 @BACKEND@ResourceList > >::Types;
+                                 @BACKEND@ResourceList,
+                                 @BACKEND@ForallExecPols > >::Types;
 
-REGISTER_TYPED_TEST_SUITE_P(WorkGroupNodeBasicUnordered@SUBTESTNAME@FunctionalTest,
-                            BasicWorkGroupNodeUnordered@SUBTESTNAME@);
+REGISTER_TYPED_TEST_SUITE_P(WorkGroupCollectionBasicUnordered@SUBTESTNAME@FunctionalTest,
+                            BasicWorkGroupCollectionUnordered@SUBTESTNAME@);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@BasicTest,
-                               WorkGroupNodeBasicUnordered@SUBTESTNAME@FunctionalTest,
-                               @BACKEND@BasicWorkGroupNodeUnordered@SUBTESTNAME@Types);
+                               WorkGroupCollectionBasicUnordered@SUBTESTNAME@FunctionalTest,
+                               @BACKEND@BasicWorkGroupCollectionUnordered@SUBTESTNAME@Types);

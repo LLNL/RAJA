@@ -31,6 +31,7 @@
 #include "RAJA/util/macros.hpp"
 
 #include "RAJA/pattern/graph/Node.hpp"
+#include "RAJA/pattern/graph/Collection.hpp"
 
 namespace RAJA
 {
@@ -62,8 +63,8 @@ struct DAGExec;
 
 struct DAG
 {
-  using node_id_type = size_t;
-  static const node_id_type invalid_id = std::numeric_limits<size_t>::max();
+  using id_type = size_t;
+  static const id_type invalid_id = std::numeric_limits<size_t>::max();
 
   struct GenericNodeView;
 
@@ -72,12 +73,12 @@ struct DAG
   {
     using args_type = typename node_type::args_type;
 
-    node_id_type id = invalid_id;
+    id_type id = invalid_id;
     node_type* node = nullptr;
 
     NodeView() = default;
 
-    NodeView(node_id_type id_, node_type* node_) noexcept
+    NodeView(id_type id_, node_type* node_) noexcept
       : id(id_)
       , node(node_)
     {
@@ -121,12 +122,22 @@ struct DAG
       }
     }
 
+    node_type& operator*() const noexcept
+    {
+      return *node;
+    }
+
+    node_type* operator->() const noexcept
+    {
+      return node;
+    }
+
     operator GenericNodeView() const noexcept
     {
       return {id, node};
     }
 
-    operator node_id_type() const noexcept
+    operator id_type() const noexcept
     {
       return id;
     }
@@ -139,12 +150,12 @@ struct DAG
 
   struct GenericNodeView
   {
-    node_id_type id = invalid_id;
+    id_type id = invalid_id;
     detail::NodeData* node = nullptr;
 
     GenericNodeView() = default;
 
-    GenericNodeView(node_id_type id_, detail::NodeData* node_) noexcept
+    GenericNodeView(id_type id_, detail::NodeData* node_) noexcept
       : id(id_)
       , node(node_)
     {
@@ -209,7 +220,7 @@ struct DAG
       }
     }
 
-    operator node_id_type() const noexcept
+    operator id_type() const noexcept
     {
       return id;
     }
@@ -220,12 +231,129 @@ struct DAG
     }
   };
 
-
   template < typename node_args >
   using node_type = typename camp::decay<node_args>::node_type;
 
   template < typename node_args >
   using node_view = NodeView< node_type<node_args> >;
+
+
+  struct GenericCollectionView;
+
+  template < typename collection_type >
+  struct CollectionView
+  {
+    using args_type = typename collection_type::args_type;
+
+    id_type id = invalid_id;
+    collection_type* collection = nullptr;
+
+    CollectionView() = default;
+
+    CollectionView(id_type id_, collection_type* collection_) noexcept
+      : id(id_)
+      , collection(collection_)
+    {
+    }
+
+    CollectionView(CollectionView const&) = default;
+    CollectionView(CollectionView&&) = default;
+
+    CollectionView& operator=(CollectionView const&) = default;
+    CollectionView& operator=(CollectionView&&) = default;
+
+    ~CollectionView() = default;
+
+    collection_type& operator*() const noexcept
+    {
+      return *collection;
+    }
+
+    collection_type* operator->() const noexcept
+    {
+      return collection;
+    }
+
+    operator GenericCollectionView() const noexcept
+    {
+      return {id, collection};
+    }
+
+    operator id_type() const noexcept
+    {
+      return id;
+    }
+
+    explicit operator bool() const noexcept
+    {
+      return id != invalid_id && collection != nullptr;
+    }
+  };
+
+  struct GenericCollectionView
+  {
+    id_type id = invalid_id;
+    detail::Collection* collection = nullptr;
+
+    GenericCollectionView() = default;
+
+    GenericCollectionView(id_type id_, detail::Collection* collection_) noexcept
+      : id(id_)
+      , collection(collection_)
+    {
+    }
+
+    GenericCollectionView(GenericCollectionView const&) = default;
+    GenericCollectionView(GenericCollectionView&&) = default;
+
+    GenericCollectionView& operator=(GenericCollectionView const&) = default;
+    GenericCollectionView& operator=(GenericCollectionView&&) = default;
+
+    ~GenericCollectionView() = default;
+
+    template < typename collection_type >
+    CollectionView<collection_type> try_get() const noexcept
+    {
+      collection_type* typed_collection = nullptr;
+      if (*this) {
+        typed_collection = dynamic_cast<collection_type*>(collection);
+      }
+      if (typed_collection != nullptr) {
+        return {id, typed_collection};
+      } else {
+        return {};
+      }
+    }
+
+    template < typename collection_type >
+    CollectionView<collection_type> get() const
+    {
+      CollectionView<collection_type> typed_collection_view = try_get<collection_type>();
+
+      if (*this && !typed_collection_view) {
+        throw std::runtime_error("GenericCollectionView::get failed to convert to collection_type");
+      }
+
+      return typed_collection_view;
+    }
+
+    operator id_type() const noexcept
+    {
+      return id;
+    }
+
+    explicit operator bool() const noexcept
+    {
+      return id != invalid_id && collection != nullptr;
+    }
+  };
+
+  template < typename collection_args >
+  using collection_type = typename ::camp::decay<collection_args>::collection_type;
+
+  template < typename collection_args >
+  using collection_view = CollectionView< collection_type<collection_args> >;
+
 
   DAG() = default;
 
@@ -234,16 +362,37 @@ struct DAG
     return m_node_connections.empty();
   }
 
-  template < typename node_args>
+  template < typename collection_args >
+  collection_view<collection_args> add_collection(collection_args&& args)
+  {
+    auto collection = new collection_type<collection_args>(invalid_id, std::move(args));
+    // store collection in unique_ptr in container, get id
+    id_type collection_id = insert_collection(collection);
+    return {collection_id, collection};
+  }
+
+  template < typename collection_type, typename node_args >
+  node_view<node_args> add_node(CollectionView<collection_type> const& collection_view,
+                                node_args&& args)
+  {
+    auto node = new node_type<node_args>(
+        *collection_view,
+        std::forward<node_args>(args));
+    // store node in unique_ptr in container, get id
+    id_type node_id = insert_node(node);
+    return {node_id, node};
+  }
+
+  template < typename node_args >
   node_view<node_args> add_node(node_args&& args)
   {
     auto node = new node_type<node_args>(std::forward<node_args>(args));
     // store node in unique_ptr in container, get id
-    node_id_type node_id = insert_node(node);
+    id_type node_id = insert_node(node);
     return {node_id, node};
   }
 
-  void add_edge(node_id_type id_a, node_id_type id_b)
+  void add_edge(id_type id_a, id_type id_b)
   {
 #if defined(RAJA_BOUNDS_CHECK_INTERNAL)
     if(id_a >= m_node_connections.size()) {
@@ -282,15 +431,27 @@ private:
   template < typename, typename >
   friend struct DAGExec;
 
-  using node_data_container = std::vector<std::unique_ptr<detail::NodeData>>;
+  struct node_data_container
+  {
+    std::vector<std::unique_ptr<detail::Collection>> collections;
+    std::vector<std::unique_ptr<detail::NodeData>> node_data;
+  };
 
   std::vector<detail::NodeConnections> m_node_connections;
   std::shared_ptr<node_data_container> m_node_data = std::make_shared<node_data_container>();
 
-  node_id_type insert_node(detail::NodeData* node_data)
+  id_type insert_collection(detail::Collection* collection)
   {
-    node_id_type node_id = m_node_data->size();
-    m_node_data->emplace_back(node_data);
+    id_type collection_id = m_node_data->collections.size();
+    m_node_data->collections.emplace_back(collection);
+    collection->set_my_id(collection_id);
+    return collection_id;
+  }
+
+  id_type insert_node(detail::NodeData* node_data)
+  {
+    id_type node_id = m_node_data->node_data.size();
+    m_node_data->node_data.emplace_back(node_data);
     m_node_connections.emplace_back(node_id);
     return node_id;
   }

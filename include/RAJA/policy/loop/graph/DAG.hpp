@@ -88,7 +88,7 @@ private:
           },
           [&](detail::NodeConnections& node) {
             node_data_container& container = *m_node_data;
-            detail::NodeData* data = container[node.get_node_id()].get();
+            detail::NodeData* data = container.node_data[node.get_node_id()].get();
             m_node_execs.emplace_back(data);
           },
           [](detail::NodeConnections&) {
