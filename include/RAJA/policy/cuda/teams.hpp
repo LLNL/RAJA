@@ -93,11 +93,9 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
         //
         void *args[] = {(void*)&ctx, (void*)&body};
         {
-          RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream, ctx.kernel_name);
+          RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream, async, ctx.kernel_name);
         }
       }
-
-      if (!async) { RAJA::cuda::synchronize(stream); }
 
       RAJA_FT_END;
     }
@@ -164,10 +162,8 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, nthreads>> {
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream, async);
       }
-
-      if (!async) { RAJA::cuda::synchronize(stream); }
 
       RAJA_FT_END;
     }

@@ -146,7 +146,14 @@ extern hipInfo tl_status;
 #pragma omp threadprivate(tl_status)
 #endif
 
+// stream to synchronization status: true synchronized, false running
 extern std::unordered_map<hipStream_t, bool> g_stream_info_map;
+
+RAJA_INLINE
+void synchronize_impl(hipStream_t stream)
+{
+  hipErrchk(hipStreamSynchronize(stream));
+}
 
 }  // namespace detail
 
@@ -180,7 +187,7 @@ void synchronize(hipStream_t stream)
   if (iter != detail::g_stream_info_map.end()) {
     if (!iter->second) {
       iter->second = true;
-      hipErrchk(hipStreamSynchronize(stream));
+      detail::synchronize_impl(stream);
     }
   } else {
     fprintf(stderr, "Cannot synchronize unknown stream.\n");
@@ -188,27 +195,31 @@ void synchronize(hipStream_t stream)
   }
 }
 
-//! Indicate stream is asynchronous
+//! Indicate stream synchronization status
 RAJA_INLINE
-void launch(hipStream_t stream)
+void launch(hipStream_t stream, bool async = true)
 {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
   lock_guard<omp::mutex> lock(detail::g_status.lock);
 #endif
   auto iter = detail::g_stream_info_map.find(stream);
   if (iter != detail::g_stream_info_map.end()) {
-    iter->second = false;
+    iter->second = !async;
   } else {
-    detail::g_stream_info_map.emplace(stream, false);
+    detail::g_stream_info_map.emplace(stream, !async);
+  }
+  if (!async) {
+    detail::synchronize_impl(stream);
   }
 }
 
-//! Launch kernel and indicate stream is asynchronous
+//! Launch kernel and indicate stream synchronization status
 RAJA_INLINE
-void launch(const void* func, hip_dim_t gridDim, hip_dim_t blockDim, void** args, size_t shmem, hipStream_t stream)
+void launch(const void* func, hip_dim_t gridDim, hip_dim_t blockDim, void** args, size_t shmem,
+            hipStream_t stream, bool async = true, const char *name = nullptr)
 {
   hipErrchk(hipLaunchKernel(func, dim3(gridDim), dim3(blockDim), args, shmem, stream));
-  launch(stream);
+  launch(stream, async);
 }
 
 //! Indicate stream is asynchronous

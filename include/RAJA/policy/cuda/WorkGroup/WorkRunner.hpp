@@ -328,10 +328,8 @@ struct WorkRunner<
         // Launch the kernel
         //
         void* func_args[] = { (void*)&begin, (void*)&args... };
-        RAJA::cuda::launch((const void*)func, gridSize, blockSize, func_args, shmem, stream);
+        RAJA::cuda::launch((const void*)func, gridSize, blockSize, func_args, shmem, stream, Async);
       }
-
-      if (!Async) { RAJA::cuda::synchronize(stream); }
 
       RAJA_FT_END;
     }

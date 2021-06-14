@@ -148,7 +148,14 @@ extern cudaInfo tl_status;
 #pragma omp threadprivate(tl_status)
 #endif
 
+// stream to synchronization status: true synchronized, false running
 extern std::unordered_map<cudaStream_t, bool> g_stream_info_map;
+
+RAJA_INLINE
+void synchronize_impl(cudaStream_t stream)
+{
+  cudaErrchk(cudaStreamSynchronize(stream));
+}
 
 }  // namespace detail
 
@@ -182,7 +189,7 @@ void synchronize(cudaStream_t stream)
   if (iter != detail::g_stream_info_map.end()) {
     if (!iter->second) {
       iter->second = true;
-      cudaErrchk(cudaStreamSynchronize(stream));
+      detail::synchronize_impl(stream);
     }
   } else {
     fprintf(stderr, "Cannot synchronize unknown stream.\n");
@@ -190,25 +197,28 @@ void synchronize(cudaStream_t stream)
   }
 }
 
-//! Indicate stream is asynchronous
+//! Indicate stream synchronization status
 RAJA_INLINE
-void launch(cudaStream_t stream)
+void launch(cudaStream_t stream, bool async = true)
 {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
   lock_guard<omp::mutex> lock(detail::g_status.lock);
 #endif
   auto iter = detail::g_stream_info_map.find(stream);
   if (iter != detail::g_stream_info_map.end()) {
-    iter->second = false;
+    iter->second = !async;
   } else {
-    detail::g_stream_info_map.emplace(stream, false);
+    detail::g_stream_info_map.emplace(stream, !async);
+  }
+  if (!async) {
+    detail::synchronize_impl(stream);
   }
 }
 
-//! Launch kernel and indicate stream is asynchronous
+//! Launch kernel and indicate stream synchronization status
 RAJA_INLINE
 void launch(const void* func, cuda_dim_t gridDim, cuda_dim_t blockDim, void** args, size_t shmem,
-            cudaStream_t stream, const char *name = nullptr)
+            cudaStream_t stream, bool async = true, const char *name = nullptr)
 {
 #if defined(RAJA_ENABLE_NV_TOOLS_EXT)
   if(name) nvtxRangePushA(name);
@@ -217,7 +227,7 @@ void launch(const void* func, cuda_dim_t gridDim, cuda_dim_t blockDim, void** ar
 #if defined(RAJA_ENABLE_NV_TOOLS_EXT)
   if(name) nvtxRangePop();
 #endif
-  launch(stream);
+  launch(stream, async);
 }
 
 //! Check for errors

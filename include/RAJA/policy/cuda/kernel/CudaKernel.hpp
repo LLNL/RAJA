@@ -404,7 +404,7 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads, blocks_per_
     auto func = kernelGetter_t::get();
 
     void *args[] = {(void*)&data};
-    RAJA::cuda::launch((const void*)func, launch_dims.blocks, launch_dims.threads, args, shmem, stream);
+    RAJA::cuda::launch((const void*)func, launch_dims.blocks, launch_dims.threads, args, shmem, stream, true);
   }
 };
 

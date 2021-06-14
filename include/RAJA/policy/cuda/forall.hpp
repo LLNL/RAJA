@@ -210,10 +210,8 @@ RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda c
       // Launch the kernels
       //
       void *args[] = {(void*)&body, (void*)&begin, (void*)&len};
-      RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+      RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream, Async);
     }
-
-    if (!Async) { RAJA::cuda::synchronize(stream); }
 
     RAJA_FT_END;
   }

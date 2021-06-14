@@ -208,10 +208,8 @@ RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip hip
       // Launch the kernels
       //
       void *args[] = {(void*)&body, (void*)&begin, (void*)&len};
-      RAJA::hip::launch((const void*)func, gridSize, BlockSize, args, shmem, stream);
+      RAJA::hip::launch((const void*)func, gridSize, BlockSize, args, shmem, stream, Async);
     }
-
-    if (!Async) { RAJA::hip::synchronize(stream); }
 
     RAJA_FT_END;
   }
