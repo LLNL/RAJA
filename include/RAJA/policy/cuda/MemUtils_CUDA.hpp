@@ -34,6 +34,7 @@
 #include "RAJA/util/basic_mempool.hpp"
 #include "RAJA/util/mutex.hpp"
 #include "RAJA/util/types.hpp"
+#include "RAJA/util/macros.hpp"
 
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
@@ -192,8 +193,7 @@ void synchronize(cudaStream_t stream)
       detail::synchronize_impl(stream);
     }
   } else {
-    fprintf(stderr, "Cannot synchronize unknown stream.\n");
-    std::abort();
+    RAJA_ABORT_OR_THROW("Cannot synchronize unknown stream.");
   }
 }
 

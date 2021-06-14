@@ -32,6 +32,7 @@
 #include "RAJA/util/basic_mempool.hpp"
 #include "RAJA/util/mutex.hpp"
 #include "RAJA/util/types.hpp"
+#include "RAJA/util/macros.hpp"
 
 #include "RAJA/policy/hip/policy.hpp"
 #include "RAJA/policy/hip/raja_hiperrchk.hpp"
@@ -190,8 +191,7 @@ void synchronize(hipStream_t stream)
       detail::synchronize_impl(stream);
     }
   } else {
-    fprintf(stderr, "Cannot synchronize unknown stream.\n");
-    std::abort();
+    RAJA_ABORT_OR_THROW("Cannot synchronize unknown stream.");
   }
 }
 
