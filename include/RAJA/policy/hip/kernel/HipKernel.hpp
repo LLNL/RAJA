@@ -367,7 +367,7 @@ struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data
     auto func = kernelGetter_t::get();
 
     void *args[] = {(void*)&data};
-    RAJA::hip::launch((const void*)func, launch_dims.blocks, launch_dims.threads, args, shmem, stream, true);
+    RAJA::hip::launch((const void*)func, launch_dims.blocks, launch_dims.threads, args, shmem, stream, async);
   }
 };
 
@@ -562,11 +562,6 @@ struct StatementExecutor<
         //
         launch_t::launch(std::move(hip_data), launch_dims, shmem, stream);
       }
-
-      //
-      // Synchronize
-      //
-      if (!launch_t::async) { RAJA::hip::synchronize(stream); }
     }
   }
 };

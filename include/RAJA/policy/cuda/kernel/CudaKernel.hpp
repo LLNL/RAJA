@@ -404,7 +404,7 @@ struct CudaLaunchHelper<cuda_launch<async0, num_blocks, num_threads, blocks_per_
     auto func = kernelGetter_t::get();
 
     void *args[] = {(void*)&data};
-    RAJA::cuda::launch((const void*)func, launch_dims.blocks, launch_dims.threads, args, shmem, stream, true);
+    RAJA::cuda::launch((const void*)func, launch_dims.blocks, launch_dims.threads, args, shmem, stream, async);
   }
 };
 
@@ -600,11 +600,6 @@ struct StatementExecutor<
         //
         launch_t::launch(std::move(cuda_data), launch_dims, shmem, stream);
       }
-
-      //
-      // Synchronize
-      //
-      if (!launch_t::async) { RAJA::cuda::synchronize(stream); }
     }
   }
 };
