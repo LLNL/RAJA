@@ -76,7 +76,9 @@ Notable changes include:
         kernel execution methods in RAJA.
 
   * Build changes/improvements:
-      * Update BLT to latest release, v0.4.0.
+      * Update BLT submodule to latest release, v0.4.0.
+      * Update camp submodule to latest master, which includes changes needed
+        for recent developments.
       * The RAJA_CXX_STANDARD_FLAG CMake variable was removed. The BLT_CXX_STD
         variable is now used instead. 
       * Support for building RAJA as a shared library on Windows has been added.
@@ -96,6 +98,7 @@ Notable changes include:
         dependencies provided by BLT (e.g., CUDA and HIP) are exported properly.
         This allows non-BLT projects to use the imported RAJA target.
       * An issue was fixed to appease the MSVC 2019 compiler.
+      * Improvements to build system to address HIP linking issues.
 
   * Bug fixes/improvements:
       * A runtime bug resulting from defaulted View constructors not being 
@@ -107,7 +110,8 @@ Notable changes include:
       * The volatile qualifier was removed from a type conversion function used
         in RAJA atomics. This fixes a performance issue with HIP where the 
         value was written to stack memory during type conversion.
-      * Numerous improvements and fixes (formatting, typos, etc.) in User Guide.
+      * Numerous improvements, updates, and fixes (formatting, typos, etc.) 
+        in RAJA User Guide.
 
 
 Version v0.13.0 -- Release date 2020-10-30
