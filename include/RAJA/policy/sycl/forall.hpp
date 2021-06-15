@@ -134,7 +134,7 @@ RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl 
     if (!Async) { q->wait(); }
   }
 
-  return resources::EventProxy<resources::Sycl>(&sycl_res);
+  return resources::EventProxy<resources::Sycl>(sycl_res);
 }
 
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
@@ -208,7 +208,7 @@ RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &
 
   
 
-  return resources::EventProxy<resources::Sycl>(&sycl_res);
+  return resources::EventProxy<resources::Sycl>(sycl_res);
 }
 
 
@@ -276,7 +276,7 @@ RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &
     q->wait();
   }
 
-  return resources::EventProxy<resources::Sycl>(&r);
+  return resources::EventProxy<resources::Sycl>(r);
 }
 
 }  // namespace sycl
