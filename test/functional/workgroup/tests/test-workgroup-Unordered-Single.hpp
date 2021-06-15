@@ -49,6 +49,8 @@ void testWorkGroupUnorderedSingle(IndexType begin, IndexType end)
                 >;
 
   using resource_type = typename WorkSite_type::resource_type;
+  static_assert(std::is_same<WORKING_RES, resource_type>::value,
+                "Expected same resource types");
 
   ASSERT_GE(begin, (IndexType)0);
   ASSERT_GE(end, begin);
