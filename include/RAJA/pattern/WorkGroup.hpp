@@ -431,6 +431,7 @@ private:
 
   explicit WorkSite(resource_type r, per_run_storage&& run_storage)
     : m_run_storage(std::move(run_storage))
+    , m_resource(r)
   { }
 };
 
