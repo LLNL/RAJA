@@ -9,8 +9,8 @@
 /// Header file containing basic functional tests for atomic operations with forall.
 ///
 
-#ifndef __TEST_FORALL_ATOMIC_BASIC_HPP__
-#define __TEST_FORALL_ATOMIC_BASIC_HPP__
+#ifndef __TEST_FORALL_ATOMIC_BASIC_UNSIGNED_HPP__
+#define __TEST_FORALL_ATOMIC_BASIC_UNSIGNED_HPP__
 
 #include <numeric>
 
@@ -51,17 +51,16 @@ struct RSMultiplexer < IdxType, RAJA::TypedListSegment<IdxType> >
 };
 // end segment multiplexer
 
-
 template <typename ExecPolicy,
           typename AtomicPolicy,
           typename WORKINGRES,
           typename IdxType,
           typename SegmentType,
           typename T>
-void ForallAtomicBasicTestImpl( IdxType seglimit )
+void ForallAtomicBasicUnsignedTestImpl( IdxType seglimit )
 {
   // initialize an array
-  const int len = 8;
+  const int len = 2;
 
   camp::resources::Resource work_res{WORKINGRES()};
 
@@ -88,27 +87,14 @@ void ForallAtomicBasicTestImpl( IdxType seglimit )
   hipErrchk(hipDeviceSynchronize());
 #endif
 
-  // use atomic add to reduce the array
   test_array[0] = (T)0;
-  test_array[1] = (T)seglimit;
-  test_array[2] = (T)seglimit;
-  test_array[3] = (T)0;
-  test_array[4] = (T)0;
-  test_array[5] = (T)seglimit + 1;
-  test_array[6] = (T)seglimit;
-  test_array[7] = (T)0;
+  test_array[1] = (T)0;
 
   work_res.memcpy( work_array, test_array, sizeof(T) * len );
 
-  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
-    RAJA::atomicAdd<AtomicPolicy>(work_array + 0, (T)1);
-    RAJA::atomicSub<AtomicPolicy>(work_array + 1, (T)1);
-    RAJA::atomicMin<AtomicPolicy>(work_array + 2, (T)i);
-    RAJA::atomicMax<AtomicPolicy>(work_array + 3, (T)i);
-    RAJA::atomicInc<AtomicPolicy>(work_array + 4);
-    RAJA::atomicDec<AtomicPolicy>(work_array + 5);
-    RAJA::atomicExchange<AtomicPolicy>(work_array + 6, (T)i);
-    RAJA::atomicCAS<AtomicPolicy>(work_array + 7, (T)i, (T)(i+1));
+  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType RAJA_UNUSED_ARG(i)) {
+    RAJA::atomicInc<AtomicPolicy>(work_array + 5, (T)16);
+    RAJA::atomicDec<AtomicPolicy>(work_array + 7, (T)16);
   });
 
   work_res.memcpy( check_array, work_array, sizeof(T) * len );
@@ -121,16 +107,8 @@ void ForallAtomicBasicTestImpl( IdxType seglimit )
   hipErrchk(hipDeviceSynchronize());
 #endif
 
-  EXPECT_EQ((T)seglimit, check_array[0]);
-  EXPECT_EQ((T)0, check_array[1]);
-  EXPECT_EQ((T)0, check_array[2]);
-  EXPECT_EQ((T)seglimit - 1, check_array[3]);
-  EXPECT_EQ((T)seglimit, check_array[4]);
-  EXPECT_EQ((T)1, check_array[5]);
-  EXPECT_LE((T)0, check_array[6]);
-  EXPECT_GT((T)seglimit, check_array[6]);
-  EXPECT_LT((T)0, check_array[7]);
-  EXPECT_GE((T)seglimit, check_array[7]);
+  EXPECT_EQ((T)4, check_array[5]);
+  EXPECT_EQ((T)13, check_array[7]);
 
   deallocateForallTestData<T>(  work_res,
                                 work_array,
@@ -138,13 +116,13 @@ void ForallAtomicBasicTestImpl( IdxType seglimit )
                                 test_array );
 }
 
-TYPED_TEST_SUITE_P(ForallAtomicBasicTest);
+TYPED_TEST_SUITE_P(ForallAtomicBasicUnsignedTest);
 template <typename T>
-class ForallAtomicBasicTest : public ::testing::Test
+class ForallAtomicBasicUnsignedTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(ForallAtomicBasicTest, AtomicBasicForall)
+TYPED_TEST_P(ForallAtomicBasicUnsignedTest, AtomicBasicUnsignedForall)
 {
   using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -152,18 +130,18 @@ TYPED_TEST_P(ForallAtomicBasicTest, AtomicBasicForall)
   using IdxType = typename camp::at<TypeParam, camp::num<3>>::type;
   using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallAtomicBasicTestImpl<AExec, APol, ResType, 
-                            IdxType, RAJA::TypedRangeSegment<IdxType>, 
-                            DType>( 10000 );
-  ForallAtomicBasicTestImpl<AExec, APol, ResType, 
-                            IdxType, RAJA::TypedRangeStrideSegment<IdxType>, 
-                            DType>( 10000 );
-  ForallAtomicBasicTestImpl<AExec, APol, ResType, 
-                            IdxType, RAJA::TypedListSegment<IdxType>, 
-                            DType>( 10000 );
+  ForallAtomicBasicUnsignedTestImpl<AExec, APol, ResType, 
+                                    IdxType, RAJA::TypedRangeSegment<IdxType>, 
+                                    DType>( 10000 );
+  ForallAtomicBasicUnsignedTestImpl<AExec, APol, ResType, 
+                                    IdxType, RAJA::TypedRangeStrideSegment<IdxType>, 
+                                    DType>( 10000 );
+  ForallAtomicBasicUnsignedTestImpl<AExec, APol, ResType, 
+                                    IdxType, RAJA::TypedListSegment<IdxType>, 
+                                    DType>( 10000 );
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallAtomicBasicTest,
-                            AtomicBasicForall);
+REGISTER_TYPED_TEST_SUITE_P(ForallAtomicBasicUnsignedTest,
+                            AtomicBasicUnsignedForall);
 
-#endif  //__TEST_FORALL_ATOMIC_BASIC_HPP__
+#endif  //__TEST_FORALL_ATOMIC_BASIC_UNSIGNED_HPP__

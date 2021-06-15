@@ -32,4 +32,12 @@ using AtomicDataTypeList =
 #endif
               double >;
 
+using AtomicDataUnsignedTypeList =
+  camp::list< RAJA::Index_type,
+#if defined(RAJA_TEST_EXHAUSTIVE)
+              unsigned long,
+              unsigned long long,
+#endif
+              unsigned >;
+
 #endif // __RAJA_test_atomic_types_HPP__
