@@ -93,8 +93,8 @@ void ForallAtomicBasicUnsignedTestImpl( IdxType seglimit )
   work_res.memcpy( work_array, test_array, sizeof(T) * len );
 
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType RAJA_UNUSED_ARG(i)) {
-    RAJA::atomicInc<AtomicPolicy>(work_array + 5, (T)16);
-    RAJA::atomicDec<AtomicPolicy>(work_array + 7, (T)16);
+    RAJA::atomicInc<AtomicPolicy>(work_array + 0, (T)16);
+    RAJA::atomicDec<AtomicPolicy>(work_array + 1, (T)16);
   });
 
   work_res.memcpy( check_array, work_array, sizeof(T) * len );
@@ -107,8 +107,8 @@ void ForallAtomicBasicUnsignedTestImpl( IdxType seglimit )
   hipErrchk(hipDeviceSynchronize());
 #endif
 
-  EXPECT_EQ((T)4, check_array[5]);
-  EXPECT_EQ((T)13, check_array[7]);
+  EXPECT_EQ((T)4, check_array[0]);
+  EXPECT_EQ((T)13, check_array[1]);
 
   deallocateForallTestData<T>(  work_res,
                                 work_array,
