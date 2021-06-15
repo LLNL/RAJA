@@ -18,6 +18,10 @@
 #ifndef policy_sycl_HPP
 #define policy_sycl_HPP
 
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_SYCL)
+
 #include <CL/sycl.hpp>
 
 #include "RAJA/policy/PolicyBase.hpp"
@@ -232,5 +236,7 @@ void set_sycl_dim(dim_t &d, int value)
 } // namespace internal
 
 }  // namespace RAJA
+
+#endif // RAJA_ENABLE_SYCL
 
 #endif
