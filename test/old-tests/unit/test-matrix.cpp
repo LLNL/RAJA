@@ -83,7 +83,9 @@ using MatrixTestTypes = ::testing::Types<
 
 //    // These tests use the platform default SIMD architecture
 //    RAJA::SquareMatrixRegister<double, RAJA::ColMajorLayout>,
-    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout>,
+//    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout>,
+//    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4, 2>
+RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2, 4>
 //    RAJA::SquareMatrixRegister<float, RAJA::ColMajorLayout>,
 //    RAJA::SquareMatrixRegister<float, RAJA::RowMajorLayout>,
 //    RAJA::SquareMatrixRegister<long, RAJA::ColMajorLayout>,
@@ -93,7 +95,7 @@ using MatrixTestTypes = ::testing::Types<
 //
 //    // Tests tests force the use of scalar math
 //    RAJA::SquareMatrixRegister<double, RAJA::ColMajorLayout, RAJA::scalar_register>,
-    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout, RAJA::scalar_register>
+//    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout, RAJA::scalar_register>
 
   >;
 
@@ -174,11 +176,11 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
   using element_t = typename matrix_t::element_type;
 
   // Row-Major data
-  element_t data1[matrix_t::register_type::s_num_elem][matrix_t::register_type::s_num_elem];
+  element_t data1[matrix_t::s_num_rows][matrix_t::s_num_columns];
 
   // Fill data
-  for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
       data1[i][j] = i*j*j;
     }
   }
@@ -186,15 +188,15 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
   // Load data
   matrix_t m1;
   if(matrix_t::layout_type::is_row_major()){
-    m1.load_packed(&data1[0][0], matrix_t::register_type::s_num_elem, 1);
+    m1.load_packed(&data1[0][0], matrix_t::s_num_rows, 1);
   }
   else{
-    m1.load_strided(&data1[0][0], matrix_t::register_type::s_num_elem, 1);
+    m1.load_strided(&data1[0][0], matrix_t::s_num_rows, 1);
   }
 
   // Check contents
-  for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
       ASSERT_SCALAR_EQ(m1.get(i,j), data1[i][j]);
     }
   }
@@ -202,11 +204,11 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
 
 
   // Column-Major data
-  element_t data2[matrix_t::register_type::s_num_elem][matrix_t::register_type::s_num_elem];
+  element_t data2[matrix_t::s_num_columns][matrix_t::s_num_rows];
 
   // Fill data
-  for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
       data2[j][i] = i*j*j;
     }
   }
@@ -214,15 +216,16 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
   // Load data
   matrix_t m2;
   if(matrix_t::layout_type::is_column_major()){
-    m2.load_packed(&data2[0][0], 1, matrix_t::register_type::s_num_elem);
+    m2.load_packed(&data2[0][0], 1, matrix_t::s_num_rows);
   }
   else{
-    m2.load_strided(&data2[0][0], 1, matrix_t::register_type::s_num_elem);
+    m2.load_strided(&data2[0][0], 1, matrix_t::s_num_rows);
   }
+  printf("m2=%s\n", m2.to_string().c_str());
 
   // Check contents
-  for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
       ASSERT_SCALAR_EQ(m2.get(i,j), data2[j][i]);
     }
   }
@@ -241,43 +244,65 @@ TYPED_TEST_P(MatrixTest, MatrixStore)
 
   // Fill data
   matrix_t m;
-  for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
-      m.set(i*j*j, i,j);
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+      m.set(i*matrix_t::s_num_columns + j, i,j);
     }
   }
 
 
 
   // Store to a Row-Major data buffer
-  element_t data1[matrix_t::register_type::s_num_elem][matrix_t::register_type::s_num_elem];
+  element_t data1[matrix_t::s_num_rows][matrix_t::s_num_columns];
   if(matrix_t::layout_type::is_row_major()){
-    m.store_packed(&data1[0][0], matrix_t::register_type::s_num_elem, 1);
+    printf("store_packed\n");
+    m.store_packed(&data1[0][0], matrix_t::s_num_rows, 1);
   }
   else{
-    m.store_strided(&data1[0][0], matrix_t::register_type::s_num_elem, 1);
+    printf("store_strided\n");
+    m.store_strided(&data1[0][0], matrix_t::s_num_rows, 1);
   }
 
   // Check contents
-  for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
+  printf("m=%s\n", m.to_string().c_str());
+  printf("data1:\n");
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+      printf("%lf ", data1[i][j]);
+    }
+    printf("\n");
+  }
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
       ASSERT_SCALAR_EQ(m.get(i,j), data1[i][j]);
     }
   }
 
   // Store to a Column-Major data buffer
-  element_t data2[matrix_t::register_type::s_num_elem][matrix_t::register_type::s_num_elem];
+  element_t data2[matrix_t::s_num_columns][matrix_t::s_num_rows];
 
   if(matrix_t::layout_type::is_column_major()){
-    m.store_packed(&data2[0][0], 1, matrix_t::register_type::s_num_elem);
+    printf("store_packed\n");
+
+    m.store_packed(&data2[0][0], 1, matrix_t::s_num_rows);
   }
   else{
-    m.store_strided(&data2[0][0], 1, matrix_t::register_type::s_num_elem);
+    printf("store_strided\n");
+
+    m.store_strided(&data2[0][0], 1, matrix_t::s_num_rows);
+  }
+
+  printf("data2:\n");
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+      printf("%lf ", data2[j][i]);
+    }
+    printf("\n");
   }
 
   // Check contents
-  for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
       ASSERT_SCALAR_EQ(m.get(i,j), data2[j][i]);
     }
   }
@@ -293,17 +318,17 @@ TYPED_TEST_P(MatrixTest, MatrixViewLoad)
   using element_t = typename matrix_t::element_type;
 
   // Row-Major data
-  element_t data1[matrix_t::register_type::s_num_elem][matrix_t::register_type::s_num_elem];
+  element_t data1[matrix_t::s_num_rows][matrix_t::s_num_columns];
 
   // Fill data
-  for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
-      data1[i][j] = i*j*j;
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+      data1[i][j] = i*matrix_t::s_num_columns + j;
     }
   }
 
   // Create a view of the data
-  RAJA::View<element_t, RAJA::Layout<2, int>> view1(&data1[0][0], matrix_t::register_type::s_num_elem, matrix_t::register_type::s_num_elem);
+  RAJA::View<element_t, RAJA::Layout<2, int>> view1(&data1[0][0], matrix_t::s_num_rows, matrix_t::s_num_columns);
 
   // Load data
   auto rows = RAJA::RowIndex<int, matrix_t>::all();
@@ -311,33 +336,33 @@ TYPED_TEST_P(MatrixTest, MatrixViewLoad)
   matrix_t m1 = view1(rows, cols);
 
   // Check contents
-  for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
       ASSERT_SCALAR_EQ(m1.get(i,j), data1[i][j]);
     }
   }
 
 
   // Column-Major data
-  element_t data2[matrix_t::register_type::s_num_elem][matrix_t::register_type::s_num_elem];
+  element_t data2[matrix_t::s_num_columns][matrix_t::s_num_rows];
 
   // Fill data
-  for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
-      data2[j][i] = i*j*j;
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+      data2[j][i] = i*matrix_t::s_num_columns + j;
     }
   }
 
   // Create a view of the data
   RAJA::View<element_t, RAJA::Layout<2, int>> view2(
-      &data2[0][0], RAJA::make_permuted_layout<2, int>({{matrix_t::register_type::s_num_elem, matrix_t::register_type::s_num_elem}}, {{1,0}}));
+      &data2[0][0], RAJA::make_permuted_layout<2, int>({{matrix_t::s_num_rows, matrix_t::s_num_columns}}, {{1,0}}));
 
   // Load data
   matrix_t m2 = view2(rows, cols);
 
   // Check contents
-  for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
       ASSERT_SCALAR_EQ(m2.get(i,j), data2[j][i]);
     }
   }
@@ -350,12 +375,11 @@ TYPED_TEST_P(MatrixTest, MatrixViewStore)
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
 
-  static constexpr camp::idx_t num_elem = matrix_t::register_type::s_num_elem;
 
   // Fill data
   matrix_t m;
-  for(camp::idx_t i = 0;i < num_elem; ++ i){
-    for(camp::idx_t j = 0;j < num_elem; ++ j){
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
       m.set(i*j*j, i,j);
     }
   }
@@ -363,19 +387,19 @@ TYPED_TEST_P(MatrixTest, MatrixViewStore)
 
 
   // Create a Row-Major data buffer
-  element_t data1[num_elem][num_elem];
+  element_t data1[matrix_t::s_num_rows][matrix_t::s_num_columns];
 
   // Create a view of the data
-  RAJA::View<element_t, RAJA::Layout<2, int>> view1(&data1[0][0], num_elem, num_elem);
+  RAJA::View<element_t, RAJA::Layout<2, int>> view1(&data1[0][0], matrix_t::s_num_rows, matrix_t::s_num_columns);
 
   // Store using view
-  RAJA::RowIndex<int, matrix_t> rows(0, num_elem);
-  RAJA::ColIndex<int, matrix_t> cols(0, num_elem);
+  RAJA::RowIndex<int, matrix_t> rows(0, matrix_t::s_num_rows);
+  RAJA::ColIndex<int, matrix_t> cols(0, matrix_t::s_num_columns);
   view1(rows, cols) = m;
 
   // Check contents
-  for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
       ASSERT_SCALAR_EQ(m.get(i,j), data1[i][j]);
     }
   }
@@ -384,18 +408,18 @@ TYPED_TEST_P(MatrixTest, MatrixViewStore)
 
 
   // Create a Column-Major data buffer
-  element_t data2[matrix_t::register_type::s_num_elem][matrix_t::register_type::s_num_elem];
+  element_t data2[matrix_t::s_num_columns][matrix_t::s_num_rows];
 
   // Create a view of the data
   RAJA::View<element_t, RAJA::Layout<2, int>> view2(
-      &data2[0][0], RAJA::make_permuted_layout<2, int>({{matrix_t::register_type::s_num_elem, matrix_t::register_type::s_num_elem}}, {{1,0}}));
+      &data2[0][0], RAJA::make_permuted_layout<2, int>({{matrix_t::s_num_rows, matrix_t::s_num_columns}}, {{1,0}}));
 
   // Store using view
   view2(rows, cols) = m;
 
   // Check contents
-  for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
       ASSERT_SCALAR_EQ(m.get(i,j), data2[j][i]);
     }
   }

@@ -494,16 +494,59 @@ namespace RAJA
             threadIdx.x, threadIdx.y, row_stride, 1);
 #endif
 
-        if(layout_type::is_row_major()){
-          for(camp::idx_t i = 0;i < s_num_registers;++ i){
-            m_registers[i].store_packed(ptr+i*row_stride);
+        // if it's dense in columns and rows, just do a dense load
+        if((layout_type::is_row_major()&&(row_stride==ROW_SIZE)) ||
+           (layout_type::is_column_major()&&(col_stride==COL_SIZE))){
+
+          for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
+            m_registers[reg].store_packed(ptr + reg*s_elements_per_register);
+          }
+
+        }
+        // Do semi-dense load for row-major
+        else if(layout_type::is_row_major()){
+
+          // one or more registers per column
+          if(true){  //s_registers_per_dim){
+            for(camp::idx_t row = 0;row < ROW_SIZE;++ row){
+//              for(camp::idx_t dimreg = 0;dimreg < s_registers_per_dim;++ dimreg){
+
+//                camp::idx_t reg = dimreg + row*s_registers_per_dim;
+
+                camp::idx_t offset = row*row_stride;// + dimreg*s_elements_per_register;
+
+                m_registers[row].store_packed(ptr + offset);
+
+//              }
+            }
+          }
+          // more than one column per register
+          else{
+            // yikes!
           }
         }
+        // Do semi-dense load for column-major
         else{
-          for(camp::idx_t i = 0;i < s_num_registers;++ i){
-            m_registers[i].store_packed(ptr+i*col_stride);
+          // one or more registers per row
+          if(true){ //s_registers_per_dim){
+            for(camp::idx_t col = 0;col < COL_SIZE;++ col){
+//              for(camp::idx_t dimreg = 0;dimreg < s_registers_per_dim;++ dimreg){
+
+//                camp::idx_t reg = dimreg + col*s_registers_per_dim;
+
+                camp::idx_t offset = col*col_stride; // + dimreg*s_elements_per_register;
+
+                m_registers[col].store_packed(ptr + offset);
+
+//              }
+            }
+          }
+          // more than one row per register
+          else{
+            // yikes!
           }
         }
+
 
         return *this;
       }
@@ -850,8 +893,8 @@ namespace RAJA
        */
       RAJA_INLINE
       std::string to_string(bool one_line=false) const {
-        std::string s = "Matrix(" + std::to_string(register_type::s_num_elem) +
-            "x" + std::to_string(register_type::s_num_elem);
+        std::string s = "Matrix(" + std::to_string(s_num_rows) +
+            "x" + std::to_string(s_num_columns);
         if(!one_line){
           s +=")\n";
         }
@@ -860,7 +903,7 @@ namespace RAJA
         s += "[ ";
 
         //
-        for(camp::idx_t r = 0;r < register_type::s_num_elem; ++ r){
+        for(camp::idx_t r = 0;r < s_num_rows; ++ r){
           if(r > 0){
             s += ", ";
             if(!one_line){
@@ -868,7 +911,7 @@ namespace RAJA
             }
           }
           s += "[";
-          for(camp::idx_t c = 0;c < register_type::s_num_elem; ++ c){
+          for(camp::idx_t c = 0;c < s_num_columns; ++ c){
             if(c > 0){
               s += ", ";
             }
