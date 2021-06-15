@@ -127,6 +127,9 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
 RAJA_HOST_DEVICE
 inline void RAJA_ABORT_OR_THROW(const char *str)
 {
+#if defined(RAJA_ENABLE_SYCL)
+  // do nothing for SYCL until linking issues resolved
+#else
   printf ( "%s\n", str );
 #if defined(RAJA_ENABLE_TARGET_OPENMP) && (_OPENMP >= 201511)
   // seg faulting here instead of calling std::abort for omp target
@@ -160,6 +163,7 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
     throw std::runtime_error(str);
   }
 #endif
+#endif  // end RAJA_ENABLE_SYCL
 }
 
 //! Macros for marking deprecated features in RAJA
