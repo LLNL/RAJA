@@ -169,8 +169,6 @@ RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda c
 
   auto func = impl::forall_cuda_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
 
-  cudaStream_t stream = cuda_res.get_stream();
-
   //
   // Compute the requested iteration space size
   //
@@ -204,13 +202,13 @@ RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda c
       // Privatize the loop_body, using make_launch_body to setup reductions
       //
       LOOP_BODY body = RAJA::cuda::make_launch_body(
-          gridSize, blockSize, shmem, stream, std::forward<LoopBody>(loop_body));
+          gridSize, blockSize, shmem, cuda_res, std::forward<LoopBody>(loop_body));
 
       //
       // Launch the kernels
       //
       void *args[] = {(void*)&body, (void*)&begin, (void*)&len};
-      RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream, Async);
+      RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, cuda_res, Async);
     }
 
     RAJA_FT_END;
@@ -242,10 +240,11 @@ template <typename LoopBody,
           size_t BlockSize,
           bool Async,
           typename... SegmentTypes>
-RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda r,
-                                                    ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-                                                    const TypedIndexSet<SegmentTypes...>& iset,
-                                                    LoopBody&& loop_body)
+RAJA_INLINE resources::EventProxy<resources::Cuda>
+forall_impl(resources::Cuda r,
+            ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
+            const TypedIndexSet<SegmentTypes...>& iset,
+            LoopBody&& loop_body)
 {
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi) {
@@ -256,7 +255,7 @@ RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda r
                      loop_body);
   }  // iterate over segments of index set
 
-  if (!Async) RAJA::cuda::synchronize();
+  if (!Async) RAJA::cuda::synchronize(r);
   return resources::EventProxy<resources::Cuda>(r);
 }
 

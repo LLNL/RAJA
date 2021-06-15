@@ -135,7 +135,7 @@ stable(
 
   cuda::device_mempool_type::getInstance().free(d_out);
 
-  cuda::launch(stream, Async);
+  cuda::launch(cuda_res, Async);
 
   return resources::EventProxy<resources::Cuda>(cuda_res);
 }
@@ -203,7 +203,7 @@ stable(
 
   cuda::device_mempool_type::getInstance().free(d_out);
 
-  cuda::launch(stream, Async);
+  cuda::launch(cuda_res, Async);
 
   return resources::EventProxy<resources::Cuda>(cuda_res);
 }
@@ -388,7 +388,7 @@ stable_pairs(
   cuda::device_mempool_type::getInstance().free(d_keys_out);
   cuda::device_mempool_type::getInstance().free(d_vals_out);
 
-  cuda::launch(stream, Async);
+  cuda::launch(cuda_res, Async);
 
   return resources::EventProxy<resources::Cuda>(cuda_res);
 }
@@ -470,7 +470,7 @@ stable_pairs(
   cuda::device_mempool_type::getInstance().free(d_keys_out);
   cuda::device_mempool_type::getInstance().free(d_vals_out);
 
-  cuda::launch(stream, Async);
+  cuda::launch(cuda_res, Async);
 
   return resources::EventProxy<resources::Cuda>(cuda_res);
 }

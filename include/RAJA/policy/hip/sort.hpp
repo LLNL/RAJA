@@ -182,7 +182,7 @@ stable(
 
   hip::device_mempool_type::getInstance().free(d_out);
 
-  hip::launch(stream, Async);
+  hip::launch(hip_res, Async);
 
   return resources::EventProxy<resources::Hip>(hip_res);
 }
@@ -270,7 +270,7 @@ stable(
 
   hip::device_mempool_type::getInstance().free(d_out);
 
-  hip::launch(stream, Async);
+  hip::launch(hip_res, Async);
 
   return resources::EventProxy<resources::Hip>(hip_res);
 }
@@ -475,7 +475,7 @@ stable_pairs(
   hip::device_mempool_type::getInstance().free(d_keys_out);
   hip::device_mempool_type::getInstance().free(d_vals_out);
 
-  hip::launch(stream, Async);
+  hip::launch(hip_res, Async);
 
   return resources::EventProxy<resources::Hip>(hip_res);
 }
@@ -579,7 +579,7 @@ stable_pairs(
   hip::device_mempool_type::getInstance().free(d_keys_out);
   hip::device_mempool_type::getInstance().free(d_vals_out);
 
-  hip::launch(stream, Async);
+  hip::launch(hip_res, Async);
 
   return resources::EventProxy<resources::Hip>(hip_res);
 }

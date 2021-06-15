@@ -80,7 +80,7 @@ inclusive_inplace(
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 
-  cuda::launch(stream, Async);
+  cuda::launch(cuda_res, Async);
 
   return resources::EventProxy<resources::Cuda>(cuda_res);
 }
@@ -134,7 +134,7 @@ exclusive_inplace(
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 
-  cuda::launch(stream, Async);
+  cuda::launch(cuda_res, Async);
 
   return resources::EventProxy<resources::Cuda>(cuda_res);
 }
@@ -186,7 +186,7 @@ inclusive(
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 
-  cuda::launch(stream, Async);
+  cuda::launch(cuda_res, Async);
 
   return resources::EventProxy<resources::Cuda>(cuda_res);
 }
@@ -242,7 +242,7 @@ exclusive(
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 
-  cuda::launch(stream, Async);
+  cuda::launch(cuda_res, Async);
 
   return resources::EventProxy<resources::Cuda>(cuda_res);
 }

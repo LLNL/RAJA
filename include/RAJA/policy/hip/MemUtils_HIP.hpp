@@ -33,6 +33,7 @@
 #include "RAJA/util/mutex.hpp"
 #include "RAJA/util/types.hpp"
 #include "RAJA/util/macros.hpp"
+#include "RAJA/util/resource.hpp"
 
 #include "RAJA/policy/hip/policy.hpp"
 #include "RAJA/policy/hip/raja_hiperrchk.hpp"
@@ -151,14 +152,14 @@ extern hipInfo tl_status;
 extern std::unordered_map<hipStream_t, bool> g_stream_info_map;
 
 RAJA_INLINE
-void synchronize_impl(hipStream_t stream)
+void synchronize_impl(::RAJA::resources::Hip res)
 {
-  hipErrchk(hipStreamSynchronize(stream));
+  res.wait();
 }
 
 }  // namespace detail
 
-//! Ensure all streams in use are synchronized wrt raja kernel launches
+//! Ensure all resources in use are synchronized wrt raja kernel launches
 RAJA_INLINE
 void synchronize()
 {
@@ -177,52 +178,52 @@ void synchronize()
   }
 }
 
-//! Ensure stream is synchronized wrt raja kernel launches
+//! Ensure resource is synchronized wrt raja kernel launches
 RAJA_INLINE
-void synchronize(hipStream_t stream)
+void synchronize(::RAJA::resources::Hip res)
 {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
   lock_guard<omp::mutex> lock(detail::g_status.lock);
 #endif
-  auto iter = detail::g_stream_info_map.find(stream);
+  auto iter = detail::g_stream_info_map.find(res.get_stream());
   if (iter != detail::g_stream_info_map.end()) {
     if (!iter->second) {
       iter->second = true;
-      detail::synchronize_impl(stream);
+      detail::synchronize_impl(res);
     }
   } else {
-    RAJA_ABORT_OR_THROW("Cannot synchronize unknown stream.");
+    RAJA_ABORT_OR_THROW("Cannot synchronize unknown resource.");
   }
 }
 
-//! Indicate stream synchronization status
+//! Indicate resource synchronization status
 RAJA_INLINE
-void launch(hipStream_t stream, bool async = true)
+void launch(::RAJA::resources::Hip res, bool async = true)
 {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
   lock_guard<omp::mutex> lock(detail::g_status.lock);
 #endif
-  auto iter = detail::g_stream_info_map.find(stream);
+  auto iter = detail::g_stream_info_map.find(res.get_stream());
   if (iter != detail::g_stream_info_map.end()) {
     iter->second = !async;
   } else {
-    detail::g_stream_info_map.emplace(stream, !async);
+    detail::g_stream_info_map.emplace(res.get_stream(), !async);
   }
   if (!async) {
-    detail::synchronize_impl(stream);
+    detail::synchronize_impl(res);
   }
 }
 
-//! Launch kernel and indicate stream synchronization status
+//! Launch kernel and indicate resource synchronization status
 RAJA_INLINE
 void launch(const void* func, hip_dim_t gridDim, hip_dim_t blockDim, void** args, size_t shmem,
-            hipStream_t stream, bool async = true, const char *name = nullptr)
+            ::RAJA::resources::Hip res, bool async = true, const char *name = nullptr)
 {
-  hipErrchk(hipLaunchKernel(func, dim3(gridDim), dim3(blockDim), args, shmem, stream));
-  launch(stream, async);
+  hipErrchk(hipLaunchKernel(func, dim3(gridDim), dim3(blockDim), args, shmem, res.get_stream()));
+  launch(res, async);
 }
 
-//! Indicate stream is asynchronous
+//! Check for errors
 RAJA_INLINE
 void peekAtLastError() { hipErrchk(hipPeekAtLastError()); }
 
@@ -248,13 +249,13 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
     hip_dim_t gridDim,
     hip_dim_t blockDim,
     size_t RAJA_UNUSED_ARG(dynamic_smem),
-    hipStream_t stream,
+    ::RAJA::resources::Hip res,
     LOOP_BODY&& loop_body)
 {
   detail::SetterResetter<bool> setup_reducers_srer(
       detail::tl_status.setup_reducers, true);
 
-  detail::tl_status.stream = stream;
+  detail::tl_status.stream = res.get_stream();
   detail::tl_status.gridDim = gridDim;
   detail::tl_status.blockDim = blockDim;
 

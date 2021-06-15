@@ -106,7 +106,7 @@ inclusive_inplace(
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
 
-  hip::launch(stream, Async);
+  hip::launch(hip_res, Async);
 
   return resources::EventProxy<resources::Hip>(hip_res);
 }
@@ -182,7 +182,7 @@ exclusive_inplace(
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
 
-  hip::launch(stream, Async);
+  hip::launch(hip_res, Async);
 
   return resources::EventProxy<resources::Hip>(hip_res);
 }
@@ -254,7 +254,7 @@ inclusive(
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
 
-  hip::launch(stream, Async);
+  hip::launch(hip_res, Async);
 
   return resources::EventProxy<resources::Hip>(hip_res);
 }
@@ -332,7 +332,7 @@ exclusive(
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
 
-  hip::launch(stream, Async);
+  hip::launch(hip_res, Async);
 
   return resources::EventProxy<resources::Hip>(hip_res);
 }

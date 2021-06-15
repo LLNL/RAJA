@@ -80,8 +80,7 @@ struct WorkRunner<
 
     // Only synchronize if we had something to iterate over
     if (num_loops > 0 && BLOCK_SIZE > 0) {
-      cudaStream_t stream = r.get_stream();
-      if (!Async) { RAJA::cuda::synchronize(stream); }
+      if (!Async) { RAJA::cuda::synchronize(r); }
     }
 
     return run_storage;
@@ -136,8 +135,7 @@ struct WorkRunner<
 
     // Only synchronize if we had something to iterate over
     if (num_loops > 0 && BLOCK_SIZE > 0) {
-      cudaStream_t stream = r.get_stream();
-      if (!Async) { RAJA::cuda::synchronize(stream); }
+      if (!Async) { RAJA::cuda::synchronize(r); }
     }
 
     return run_storage;
@@ -321,14 +319,13 @@ struct WorkRunner<
       // Setup shared memory buffers
       //
       size_t shmem = 0;
-      cudaStream_t stream = r.get_stream();
 
       {
         //
         // Launch the kernel
         //
         void* func_args[] = { (void*)&begin, (void*)&args... };
-        RAJA::cuda::launch((const void*)func, gridSize, blockSize, func_args, shmem, stream, Async);
+        RAJA::cuda::launch((const void*)func, gridSize, blockSize, func_args, shmem, r, Async);
       }
 
       RAJA_FT_END;
