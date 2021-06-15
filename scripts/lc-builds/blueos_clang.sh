@@ -17,11 +17,14 @@ if [ "$1" == "" ]; then
 fi
 
 COMP_VER=$1
+shift 1
 
 BUILD_SUFFIX=lc_blueos-clang-${COMP_VER}
 
 echo
 echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo "Configuration extra arguments:"
+echo "   $@"
 echo
 
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
@@ -36,4 +39,4 @@ cmake \
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
-  .. 
+  ..

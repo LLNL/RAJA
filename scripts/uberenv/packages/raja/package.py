@@ -231,6 +231,10 @@ class Raja(CMakePackage, CudaPackage):
                 cfg.write(cmake_cache_entry("BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
                 "/usr/tce/packages/gcc/gcc-4.9.3/lib64;/usr/tce/packages/gcc/gcc-4.9.3/gnu/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3;/usr/tce/packages/gcc/gcc-4.9.3/gnu/lib64;/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/x86_64-unknown-linux-gnu/4.9.3"))
 
+        compilers_using_cxx14 = ["intel-17", "intel-18", "xl"]
+        if any(compiler in cpp_compiler for compiler in compilers_using_cxx14):
+            cfg.write(cmake_cache_entry("BLT_CXX_STD", "c++14"))
+
         if "+cuda" in spec:
             cfg.write("#------------------{0}\n".format("-" * 60))
             cfg.write("# Cuda\n")
@@ -245,9 +249,19 @@ class Raja(CMakePackage, CudaPackage):
             cfg.write(cmake_cache_entry("CMAKE_CUDA_COMPILER",
                                         cudacompiler))
 
-            cuda_release_flags = "-O3 -Xcompiler -Ofast -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
-            cuda_reldebinf_flags = "-O3 -g -Xcompiler -Ofast -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
-            cuda_debug_flags = "-O0 -g -Xcompiler -O0 -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
+            if ("xl" in cpp_compiler):
+                cfg.write(cmake_cache_entry("CMAKE_CUDA_FLAGS", "-Xcompiler -O3 -Xcompiler -qxlcompatmacros -Xcompiler -qalias=noansi " + 
+                                            "-Xcompiler -qsmp=omp -Xcompiler -qhot -Xcompiler -qnoeh -Xcompiler -qsuppress=1500-029 " +
+                                            "-Xcompiler -qsuppress=1500-036 -Xcompiler -qsuppress=1500-030"))
+                cuda_release_flags = "-O3"
+                cuda_reldebinf_flags = "-O3 -g"
+                cuda_debug_flags = "-O0 -g"
+
+                cfg.write(cmake_cache_string("BLT_CXX_STD", "c++14"))
+            else:
+                cuda_release_flags = "-O3 -Xcompiler -Ofast -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
+                cuda_reldebinf_flags = "-O3 -g -Xcompiler -Ofast -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
+                cuda_debug_flags = "-O0 -g -Xcompiler -O0 -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
    
             cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_RELEASE", cuda_release_flags))
             cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_RELWITHDEBINFO", cuda_reldebinf_flags))
@@ -277,6 +291,7 @@ class Raja(CMakePackage, CudaPackage):
                                         '--amdgpu-target=gfx906'))
             cfg.write(cmake_cache_entry("HIP_RUNTIME_INCLUDE_DIRS",
                                         "{0}/include;{0}/../hsa/include".format(hip_root)))
+            hip_link_flags = "-Wl,--disable-new-dtags -L{0}/lib -L{0}/../lib64 -L{0}/../lib -Wl,-rpath,{0}/lib:{0}/../lib:{0}/../lib64 -lamdhip64 -lhsakmt -lhsa-runtime64".format(hip_root)
             if ('%gcc' in spec) or (using_toolchain):
                 if ('%gcc' in spec):
                     gcc_bin = os.path.dirname(self.compiler.cxx)
@@ -286,7 +301,9 @@ class Raja(CMakePackage, CudaPackage):
                 cfg.write(cmake_cache_entry("HIP_CLANG_FLAGS",
                 "--gcc-toolchain={0}".format(gcc_prefix))) 
                 cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS",
-                "-Wl,-rpath {}/lib64".format(gcc_prefix)))
+                hip_link_flags + " -Wl,-rpath {}/lib64".format(gcc_prefix)))
+            else:
+                cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
 
         else:
             cfg.write(cmake_cache_option("ENABLE_HIP", False))

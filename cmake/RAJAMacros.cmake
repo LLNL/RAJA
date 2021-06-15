@@ -101,6 +101,48 @@ macro(raja_add_plugin_library)
 
 endmacro(raja_add_plugin_library)
 
+# Allows strings embedded in test files to used to process ctest results.
+# Only works for new testing framework/structure (no effect on old tests).
+# Borrowed heavily from CAMP.
+function(raja_set_failtest TESTNAME)
+  set(test_name ${TESTNAME})
+
+  # Chopping off backend from test name
+  string(REGEX REPLACE "\-Sequential|\-OpenMP|\-OpenMPTarget|\-TBB|\-CUDA|\-HIP" "" test_nobackend ${test_name})
+
+  # Finding test source code
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/${test_nobackend}.hpp")
+    list(APPEND TEST_LIST "${CMAKE_CURRENT_SOURCE_DIR}/tests/${test_nobackend}.hpp")
+    list(REMOVE_DUPLICATES TEST_LIST)
+  endif()
+
+  list(GET TEST_LIST 0 source_file)
+
+  if(EXISTS ${source_file})
+    set(test_regex  ".*(WILL_FAIL|PASS_REGEX|FAIL_REGEX):?[ ]*(.*)[ ]*")
+
+    file(STRINGS ${source_file} test_lines REGEX "${test_regex}")
+
+    # Search test source code for fail string
+    foreach(line ${test_lines})
+      if(NOT line MATCHES "${test_regex}")
+        continue()
+      endif()
+
+      if(CMAKE_MATCH_1 STREQUAL "WILL_FAIL")
+        set_property( TARGET ${test_name}.exe   # TARGET more conformant to BLT
+                      APPEND PROPERTY WILL_FAIL )
+      elseif(CMAKE_MATCH_1 STREQUAL "PASS_REGEX")
+        set_property( TARGET ${test_name}.exe
+                      APPEND PROPERTY PASS_REGULAR_EXPRESSION "${CMAKE_MATCH_2}")
+      elseif(CMAKE_MATCH_1 STREQUAL "FAIL_REGEX")
+        set_property( TARGET ${test_name}.exe
+                      APPEND PROPERTY FAIL_REGULAR_EXPRESSION "${CMAKE_MATCH_2}")
+      endif()
+    endforeach()
+  endif()
+endfunction()
+
 macro(raja_add_test)
   set(options )
   set(singleValueArgs NAME)
@@ -110,6 +152,8 @@ macro(raja_add_test)
     "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
   list (APPEND arg_DEPENDS_ON gtest ${CMAKE_THREAD_LIBS_INIT})
+
+  set(original_test_name ${arg_NAME})
 
   raja_add_executable(
     NAME ${arg_NAME}.exe
@@ -121,6 +165,8 @@ macro(raja_add_test)
     NAME ${arg_NAME}
     #COMMAND ${TEST_DRIVER} $<TARGET_FILE:${arg_NAME}>)
     COMMAND ${TEST_DRIVER} ${arg_NAME})
+
+  raja_set_failtest(${original_test_name})
 endmacro(raja_add_test)
 
 macro(raja_add_reproducer)

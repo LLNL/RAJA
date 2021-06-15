@@ -55,7 +55,7 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
 
     resources::Cuda cuda_res = resources::Cuda::get_default();
     /* Use the zero stream until resource is better supported */
-    cudaStream_t stream = 0;//cuda_res.get_stream();
+    cudaStream_t stream = cuda_res.get_stream();
 
     //
     // Compute the number of blocks and threads
@@ -92,7 +92,9 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+        {
+          RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream, ctx.kernel_name);
+        }
       }
 
       if (!async) { RAJA::cuda::synchronize(stream); }
@@ -100,7 +102,7 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
       RAJA_FT_END;
     }
 
-    // return resources::EventProxy<resources::Cuda>(&cuda_res);
+    // return resources::EventProxy<resources::Cuda>(cuda_res);
   }
 };
 
@@ -170,7 +172,7 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, nthreads>> {
       RAJA_FT_END;
     }
 
-    // return resources::EventProxy<resources::Cuda>(&cuda_res);
+    // return resources::EventProxy<resources::Cuda>(cuda_res);
   }
 };
 

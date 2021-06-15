@@ -55,7 +55,7 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
 
     resources::Hip hip_res = resources::Hip::get_default();
     /* Use the zero stream until resource is better supported */
-    hipStream_t stream = 0;//hip_res.get_stream();
+    hipStream_t stream = hip_res.get_stream();
 
     //
     // Compute the number of blocks and threads
@@ -101,7 +101,7 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
     }
 
   }
-    // return resources::EventProxy<resources::Hip>(&hip_res);
+    // return resources::EventProxy<resources::Hip>(hip_res);
 };
 
 template <typename BODY, int num_threads>
@@ -170,7 +170,7 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
       RAJA_FT_END;
     }
 
-    // return resources::EventProxy<resources::Hip>(&hip_res);
+    // return resources::EventProxy<resources::Hip>(hip_res);
   }
 };
 

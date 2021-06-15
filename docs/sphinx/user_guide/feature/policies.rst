@@ -669,11 +669,11 @@ auto_atomic               seq_exec,     Atomic operation *compatible* with loop
 Here is an example illustrating use of the ``cuda_atomic_explicit`` policy::
 
   auto kernel = [=] RAJA_HOST_DEVICE (RAJA::Index_type i) {
-
     RAJA::atomicAdd< RAJA::cuda_atomic_explicit<omp_atomic> >(&sum, 1);
-
   };
-  RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment seg(0, N), kernel);
+
+  RAJA::forall< RAJA::cuda_exec<BLOCK_SIZE> >(RAJA::RangeSegment seg(0, N), kernel);
+
   RAJA::forall< RAJA::omp_parallel_for_exec >(RAJA::RangeSegment seg(0, N),
       kernel);
 
@@ -684,7 +684,7 @@ used and the OpenMP version of the atomic operation is applied.
 
 Here is an example illustrating use of the ``auto_atomic`` policy::
 
-  RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment seg(0, N),
+  RAJA::forall< RAJA::cuda_execBLOCK_SIZE> >(RAJA::RangeSegment seg(0, N),
     [=] RAJA_DEVICE (RAJA::Index_type i) {
 
     RAJA::atomicAdd< RAJA::auto_atomic >(&sum, 1);
@@ -800,6 +800,10 @@ explanation along with examples of how they are used can be found in
   * ``statement::CudaKernelFixed<num_threads, EnclosedStatements>`` similar to CudaKernel but enables a fixed number of threads (specified by num_threads). This kernel launch is synchronous.
 
   * ``statement::CudaKernelFixedAsync<num_threads, EnclosedStatements>`` asynchronous version of CudaKernelFixed.
+
+  * ``statement::CudaKernelFixedSM<num_threads, min_blocks_per_sm, EnclosedStatements>`` similar to CudaKernelFixed but enables a minimum number of blocks per sm (specified by min_blocks_per_sm), this can help increase occupancy. This kernel launch is synchronous.
+
+  * ``statement::CudaKernelFixedSMASync<num_threads, min_blocks_per_sm, EnclosedStatements>`` asynchronous version of CudaKernelFixedSM.
 
   * ``statement::CudaKernelOcc<EnclosedStatements>`` similar to CudaKernel but uses the CUDA occupancy calculator to determine the optimal number of threads/blocks. Statement is intended for RAJA::cuda_block_{xyz}_loop policies. This kernel launch is synchronous.
 

@@ -7,21 +7,29 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-if [[ $# -ne 2 ]]; then
+if [[ $# -lt 3 ]]; then
   echo
-  echo "You must pass to the script a compiler version number for nvcc followed"
-  echo "by a version number for gcc. For example,"
-  echo "    blueos_nvcc_gcc.sh 10.2.89 8.3.1"
+  echo "You must pass 3 arguments to the script (in this order): "
+  echo "   1) compiler version number for nvcc"
+  echo "   2) CUDA compute architecture"
+  echo "   3) compiler version number for gcc. "
+  echo
+  echo "For example: "
+  echo "    blueos_nvcc_gcc.sh 10.2.89 sm_70 8.3.1"
   exit
 fi
 
 COMP_NVCC_VER=$1
-COMP_GCC_VER=$2
+COMP_ARCH=$2
+COMP_GCC_VER=$3
+shift 3
 
-BUILD_SUFFIX=lc_blueos-nvcc${COMP_NVCC_VER}-gcc${COMP_GCC_VER}
+BUILD_SUFFIX=lc_blueos-nvcc${COMP_NVCC_VER}-${COMP_ARCH}-gcc${COMP_GCC_VER}
 
 echo
 echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo "Configuration extra arguments:"
+echo "   $@"
 echo
 
 rm -rf build_${BUILD_SUFFIX} >/dev/null
@@ -32,13 +40,12 @@ module load cmake/3.14.5
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/gcc/gcc-${COMP_GCC_VER}/bin/g++ \
-  -DBLT_CXX_STD=c++11 \
   -C ../host-configs/lc-builds/blueos/nvcc_gcc_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
   -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-${COMP_NVCC_VER} \
   -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-${COMP_NVCC_VER}/bin/nvcc \
-  -DCUDA_ARCH=sm_70 \
+  -DCUDA_ARCH=${COMP_ARCH} \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
