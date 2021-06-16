@@ -28,7 +28,7 @@ template <typename INDEX_TYPE,
 void buildIndexSet( 
   RAJA::TypedIndexSet< RANGE_TYPE, RANGESTRIDE_TYPE, LIST_TYPE >& iset, 
   std::vector<INDEX_TYPE>& indices_out,
-  camp::resources::Resource& working_res )
+  camp::resources::Resource working_res )
 {
   //
   //  Build vector of integers for creating List segments.

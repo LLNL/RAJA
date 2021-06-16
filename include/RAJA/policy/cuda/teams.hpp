@@ -102,7 +102,7 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
       RAJA_FT_END;
     }
 
-    // return resources::EventProxy<resources::Cuda>(&cuda_res);
+    // return resources::EventProxy<resources::Cuda>(cuda_res);
   }
 };
 
@@ -172,7 +172,7 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, nthreads>> {
       RAJA_FT_END;
     }
 
-    // return resources::EventProxy<resources::Cuda>(&cuda_res);
+    // return resources::EventProxy<resources::Cuda>(cuda_res);
   }
 };
 

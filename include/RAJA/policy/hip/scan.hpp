@@ -51,7 +51,7 @@ template <size_t BLOCK_SIZE, bool Async, typename InputIter, typename Function>
 RAJA_INLINE
 resources::EventProxy<resources::Hip>
 inclusive_inplace(
-    resources::Hip &hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async>,
     InputIter begin,
     InputIter end,
@@ -109,7 +109,7 @@ inclusive_inplace(
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -124,7 +124,7 @@ template <size_t BLOCK_SIZE,
 RAJA_INLINE
 resources::EventProxy<resources::Hip>
 exclusive_inplace(
-    resources::Hip &hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async>,
     InputIter begin,
     InputIter end,
@@ -186,7 +186,7 @@ exclusive_inplace(
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -201,7 +201,7 @@ template <size_t BLOCK_SIZE,
 RAJA_INLINE
 resources::EventProxy<resources::Hip>
 inclusive(
-    resources::Hip &hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async>,
     InputIter begin,
     InputIter end,
@@ -259,7 +259,7 @@ inclusive(
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -275,7 +275,7 @@ template <size_t BLOCK_SIZE,
 RAJA_INLINE
 resources::EventProxy<resources::Hip>
 exclusive(
-    resources::Hip &hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async>,
     InputIter begin,
     InputIter end,
@@ -338,7 +338,7 @@ exclusive(
   hip::launch(stream);
   if (!Async) hip::synchronize(stream);
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 }  // namespace scan

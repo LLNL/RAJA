@@ -69,21 +69,21 @@ testing process. These can be viewed by looking at files in the RAJA
 
   $ ls -c1 .gitlab/*jobs.yml
   .gitlab/lassen-jobs.yml
-  .gitlab/quartz-jobs.yml
+  .gitlab/ruby-jobs.yml
 
-lists the yaml files containing the Gitlab CI jobs for the lassen and quartz
+lists the yaml files containing the Gitlab CI jobs for the lassen and ruby 
 machines.
 
 Then, executing a command such as:
 
 .. code-block:: bash
 
-  $ git grep -h "SPEC" .gitlab/quartz-jobs.yml | grep "gcc"
+  $ git grep -h "SPEC" .gitlab/ruby-jobs.yml | grep "gcc"
       SPEC: "%gcc@4.9.3"
       SPEC: "%gcc@6.1.0"
       SPEC: "%gcc@7.3.0"
       SPEC: "%gcc@8.1.0"
 
-will list the specs vetted on the quartz platform.
+will list the specs vetted on the ruby platform.
 
 More details to come...
