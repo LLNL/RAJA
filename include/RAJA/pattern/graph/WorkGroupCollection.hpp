@@ -164,9 +164,9 @@ protected:
   using vtable_exec_policy = typename workrunner_type::vtable_exec_policy;
   using vtable_type = typename workrunner_type::vtable_type;
   template < typename Container, typename LoopBody >
-  using runner_holder_type = typename workrunner_type::holder_type<Container, LoopBody>;
+  using runner_holder_type = typename workrunner_type::template holder_type<Container, LoopBody>;
   template < typename Container, typename LoopBody >
-  using runner_caller_type = typename workrunner_type::caller_type<Container, LoopBody>;
+  using runner_caller_type = typename workrunner_type::template caller_type<Container, LoopBody>;
 
   using storage_type = ::RAJA::detail::WorkStorage<storage_policy,
                                                    Allocator,
