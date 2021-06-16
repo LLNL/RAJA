@@ -211,19 +211,19 @@ private:
 
   void exec_impl()
   {
-    resource& er = resource::get_default();
+    resource r = resource::get_default();
 
     ::RAJA::util::PluginContext context{::RAJA::util::make_context<ExecutionPolicy>()};
     ::RAJA::util::callPreLaunchPlugins(context);
 
-    ::RAJA::wrap::forall(er,
+    ::RAJA::wrap::forall(r,
                          m_policy,
                          m_holder->m_segment,
                          m_holder->m_body);
 
     ::RAJA::util::callPostLaunchPlugins(context);
 
-    er.wait();
+    r.wait();
   }
 };
 

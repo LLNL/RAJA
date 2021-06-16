@@ -191,19 +191,19 @@ private:
 
   void exec_impl()
   {
-    resource& er = resource::get_default();
+    resource r = resource::get_default();
 
     util::PluginContext context{util::make_context<ExecutionPolicy>()};
     util::callPreLaunchPlugins(context);
 
-    wrap::forall(er,
+    wrap::forall(r,
                  m_policy,
                  m_container,
                  m_body);
 
     util::callPostLaunchPlugins(context);
 
-    er.wait();
+    r.wait();
   }
 };
 
