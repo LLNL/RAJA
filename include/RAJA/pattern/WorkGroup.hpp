@@ -214,6 +214,18 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
   using workgroup_type = WorkGroup<policy, index_type, xarg_type, Allocator>;
   using worksite_type = WorkSite<policy, index_type, xarg_type, Allocator>;
 
+private:
+  using workrunner_type = detail::WorkRunner<
+      exec_policy, order_policy, Allocator, index_type, Args...>;
+  using storage_type = detail::WorkStorage<
+      storage_policy, Allocator, typename workrunner_type::vtable_type>;
+
+  friend workgroup_type;
+  friend worksite_type;
+
+public:
+  using resource_type = typename workrunner_type::resource_type;
+
   explicit WorkPool(Allocator const& aloc)
     : m_storage(aloc)
   { }
@@ -275,14 +287,6 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
   }
 
 private:
-  using workrunner_type = detail::WorkRunner<
-      exec_policy, order_policy, Allocator, index_type, Args...>;
-  using storage_type = detail::WorkStorage<
-      storage_policy, Allocator, typename workrunner_type::vtable_type>;
-
-  friend workgroup_type;
-  friend worksite_type;
-
   storage_type m_storage;
   size_t m_max_num_loops = 0;
   size_t m_max_storage_bytes = 0;
@@ -314,13 +318,28 @@ struct WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
   using workpool_type = WorkPool<policy, index_type, xarg_type, Allocator>;
   using worksite_type = WorkSite<policy, index_type, xarg_type, Allocator>;
 
+private:
+  using storage_type = typename workpool_type::storage_type;
+  using workrunner_type = typename workpool_type::workrunner_type;
+
+  friend workpool_type;
+  friend worksite_type;
+
+public:
+  using resource_type = typename workpool_type::resource_type;
+
   WorkGroup(WorkGroup const&) = delete;
   WorkGroup& operator=(WorkGroup const&) = delete;
 
   WorkGroup(WorkGroup&&) = default;
   WorkGroup& operator=(WorkGroup&&) = default;
 
-  inline worksite_type run(Args...);
+  inline worksite_type run(resource_type r, Args...);
+
+  worksite_type run(Args... args) {
+    auto r = resource_type::get_default();
+    return run(r, std::move(args)...);
+  }
 
   void clear()
   {
@@ -336,12 +355,6 @@ struct WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
   }
 
 private:
-  using storage_type = typename workpool_type::storage_type;
-  using workrunner_type = typename workpool_type::workrunner_type;
-
-  friend workpool_type;
-  friend worksite_type;
-
   storage_type m_storage;
   workrunner_type m_runner;
 
@@ -375,11 +388,26 @@ struct WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
   using workpool_type = WorkPool<policy, index_type, xarg_type, Allocator>;
   using workgroup_type = WorkGroup<policy, index_type, xarg_type, Allocator>;
 
+private:
+  using workrunner_type = typename workgroup_type::workrunner_type;
+  using per_run_storage = typename workrunner_type::per_run_storage;
+
+  friend workpool_type;
+  friend workgroup_type;
+
+public:
+  using resource_type = typename workpool_type::resource_type;
+
   WorkSite(WorkSite const&) = delete;
   WorkSite& operator=(WorkSite const&) = delete;
 
   WorkSite(WorkSite&&) = default;
   WorkSite& operator=(WorkSite&&) = default;
+
+  resource_type get_resource() const
+  {
+    return m_resource;
+  }
 
   void clear()
   {
@@ -393,16 +421,12 @@ struct WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
   }
 
 private:
-  using workrunner_type = typename workgroup_type::workrunner_type;
-  using per_run_storage = typename workrunner_type::per_run_storage;
-
-  friend workpool_type;
-  friend workgroup_type;
-
   per_run_storage m_run_storage;
+  resource_type m_resource;
 
-  explicit WorkSite(per_run_storage&& run_storage)
+  explicit WorkSite(resource_type r, per_run_storage&& run_storage)
     : m_run_storage(std::move(run_storage))
+    , m_resource(r)
   { }
 };
 
@@ -449,13 +473,18 @@ WorkGroup<
     WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T>,
     INDEX_T,
     xargs<Args...>,
-    ALLOCATOR_T>::run(Args... args)
+    ALLOCATOR_T>::run(typename WorkGroup<
+                          WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T>,
+                          INDEX_T,
+                          xargs<Args...>,
+                          ALLOCATOR_T>::resource_type r,
+                      Args... args)
 {
   util::PluginContext context{util::make_context<EXEC_POLICY_T>()};
   util::callPreLaunchPlugins(context);
 
   // move any per run storage into worksite
-  worksite_type site(m_runner.run(m_storage, std::forward<Args>(args)...));
+  worksite_type site(r, m_runner.run(m_storage, r, std::forward<Args>(args)...));
 
   util::callPostLaunchPlugins(context);
 

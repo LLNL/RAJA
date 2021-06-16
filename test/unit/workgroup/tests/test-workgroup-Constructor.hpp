@@ -57,6 +57,15 @@ void testWorkGroupConstructorSingle(RAJA::xargs<Xargs...>)
                   >
         site = group.run(Xargs{}...);
 
+    using resource_type = typename RAJA::WorkPool<
+                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                    IndexType,
+                    RAJA::xargs<Xargs...>,
+                    Allocator
+                  >::resource_type;
+    auto e = resource_type::get_default().get_event();
+    e.wait();
+
     pool.clear();
     group.clear();
     site.clear();
