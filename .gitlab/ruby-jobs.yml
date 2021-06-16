@@ -18,7 +18,7 @@ clang_9:
 gcc_8_1_0:
   variables:
     SPEC: "%gcc@8.1.0"
-    DEFAULT_TIME: 50
+    DEFAULT_TIME: 60
   extends: .build_and_test_on_ruby
 
 icpc_17_0_2:
@@ -44,5 +44,5 @@ icpc_19_1_0:
 gcc_4_9_3:
   variables:
     SPEC: "%gcc@4.9.3"
-    DEFAULT_TIME: 50
+    DEFAULT_TIME: 60
   extends: .build_and_test_on_ruby
