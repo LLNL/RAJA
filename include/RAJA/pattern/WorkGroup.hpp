@@ -334,10 +334,10 @@ public:
   WorkGroup(WorkGroup&&) = default;
   WorkGroup& operator=(WorkGroup&&) = default;
 
-  inline worksite_type run(resource_type& r, Args...);
+  inline worksite_type run(resource_type r, Args...);
 
   worksite_type run(Args... args) {
-    auto& r = resource_type::get_default();
+    auto r = resource_type::get_default();
     return run(r, std::move(args)...);
   }
 
@@ -404,6 +404,11 @@ public:
   WorkSite(WorkSite&&) = default;
   WorkSite& operator=(WorkSite&&) = default;
 
+  resource_type get_resource() const
+  {
+    return m_resource;
+  }
+
   void clear()
   {
     // resources is about to be released
@@ -417,9 +422,11 @@ public:
 
 private:
   per_run_storage m_run_storage;
+  resource_type m_resource;
 
-  explicit WorkSite(per_run_storage&& run_storage)
+  explicit WorkSite(resource_type r, per_run_storage&& run_storage)
     : m_run_storage(std::move(run_storage))
+    , m_resource(r)
   { }
 };
 
@@ -470,14 +477,14 @@ WorkGroup<
                           WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T>,
                           INDEX_T,
                           xargs<Args...>,
-                          ALLOCATOR_T>::resource_type& r,
+                          ALLOCATOR_T>::resource_type r,
                       Args... args)
 {
   util::PluginContext context{util::make_context<EXEC_POLICY_T>()};
   util::callPreLaunchPlugins(context);
 
   // move any per run storage into worksite
-  worksite_type site(m_runner.run(m_storage, r, std::forward<Args>(args)...));
+  worksite_type site(r, m_runner.run(m_storage, r, std::forward<Args>(args)...));
 
   util::callPostLaunchPlugins(context);
 

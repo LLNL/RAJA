@@ -49,6 +49,8 @@ void testWorkGroupUnorderedSingle(IndexType begin, IndexType end)
                 >;
 
   using resource_type = typename WorkSite_type::resource_type;
+  static_assert(std::is_same<WORKING_RES, resource_type>::value,
+                "Expected same resource types");
 
   ASSERT_GE(begin, (IndexType)0);
   ASSERT_GE(end, begin);
@@ -95,7 +97,7 @@ void testWorkGroupUnorderedSingle(IndexType begin, IndexType end)
 
   WorkSite_type site = group.run();
 
-  auto e = resource_type::get_default().get_event();
+  auto e = site.get_resource().get_event();
   e.wait();
 
   {
