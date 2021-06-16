@@ -50,7 +50,7 @@ struct DAGExec<seq_graph, GraphResource>
     return !m_node_data;
   }
 
-  resources::EventProxy<GraphResource> exec(GraphResource& gr)
+  resources::EventProxy<GraphResource> exec(GraphResource gr)
   {
     if (!empty()) {
       gr.wait();
@@ -58,12 +58,12 @@ struct DAGExec<seq_graph, GraphResource>
         ne.exec(/*gr*/);
       }
     }
-    return resources::EventProxy<GraphResource>(&gr);
+    return resources::EventProxy<GraphResource>(gr);
   }
 
   resources::EventProxy<GraphResource> exec()
   {
-    auto& gr = GraphResource::get_default();
+    auto gr = GraphResource::get_default();
     return exec(gr);
   }
 

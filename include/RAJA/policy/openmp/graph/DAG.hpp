@@ -54,7 +54,7 @@ struct DAGExec<omp_task_atomic_graph, GraphResource>
     return !m_node_data;
   }
 
-  resources::EventProxy<GraphResource> exec(GraphResource& gr)
+  resources::EventProxy<GraphResource> exec(GraphResource gr)
   {
     if (!empty()) {
       gr.wait();
@@ -66,12 +66,12 @@ struct DAGExec<omp_task_atomic_graph, GraphResource>
         }
       } // end omp parallel
     }
-    return resources::EventProxy<GraphResource>(&gr);
+    return resources::EventProxy<GraphResource>(gr);
   }
 
   resources::EventProxy<GraphResource> exec()
   {
-    auto& gr = GraphResource::get_default();
+    auto gr = GraphResource::get_default();
     return exec(gr);
   }
 
@@ -105,7 +105,7 @@ private:
     std::vector<NodeExecConnections*> m_children;
   };
 
-  static void exec_traverse(NodeExecConnections* connections, GraphResource& gr)
+  static void exec_traverse(NodeExecConnections* connections, GraphResource gr)
   {
 #pragma omp task default(none) firstprivate(connections) shared(gr)
     {
@@ -166,7 +166,7 @@ struct DAGExec<omp_task_depend_graph, GraphResource>
     return !m_node_data;
   }
 
-  resources::EventProxy<GraphResource> exec(GraphResource& gr)
+  resources::EventProxy<GraphResource> exec(GraphResource gr)
   {
     if (!empty()) {
       gr.wait();
@@ -189,12 +189,12 @@ struct DAGExec<omp_task_depend_graph, GraphResource>
         }
       } // end omp parallel
     }
-    return resources::EventProxy<GraphResource>(&gr);
+    return resources::EventProxy<GraphResource>(gr);
   }
 
   resources::EventProxy<GraphResource> exec()
   {
-    auto& gr = GraphResource::get_default();
+    auto gr = GraphResource::get_default();
     return exec(gr);
   }
 
