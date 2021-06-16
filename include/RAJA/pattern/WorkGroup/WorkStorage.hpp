@@ -197,9 +197,16 @@ class WorkStorage;
 template < typename ALLOCATOR_T, typename Vtable_T >
 class WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, Vtable_T>
 {
-public:
   using allocator_traits_type = std::allocator_traits<ALLOCATOR_T>;
-
+  using propagate_on_container_copy_assignment =
+      typename allocator_traits_type::propagate_on_container_copy_assignment;
+  using propagate_on_container_move_assignment =
+      typename allocator_traits_type::propagate_on_container_move_assignment;
+  using propagate_on_container_swap            =
+      typename allocator_traits_type::propagate_on_container_swap;
+  static_assert(std::is_same<typename allocator_traits_type::value_type, char>::value,
+      "WorkStorage expects an allocator for 'char's.");
+public:
   using storage_policy = RAJA::array_of_pointers;
   using vtable_type = Vtable_T;
 
@@ -215,22 +222,13 @@ public:
   using pointer = value_type*;
   using const_pointer = const value_type*;
 
+private:
   // struct used in storage vector to retain pointer and allocation size
   struct pointer_and_size
   {
     pointer ptr;
     size_type size;
   };
-
-private:
-  using propagate_on_container_copy_assignment =
-      typename allocator_traits_type::propagate_on_container_copy_assignment;
-  using propagate_on_container_move_assignment =
-      typename allocator_traits_type::propagate_on_container_move_assignment;
-  using propagate_on_container_swap            =
-      typename allocator_traits_type::propagate_on_container_swap;
-  static_assert(std::is_same<typename allocator_traits_type::value_type, char>::value,
-      "WorkStorage expects an allocator for 'char's.");
 
 public:
 
@@ -339,28 +337,18 @@ public:
     return storage_size_nbytes;
   }
 
-  void insert(pointer_and_size&& value_and_size_ptr)
-  {
-    m_vec.emplace_back(std::move(value_and_size_ptr));
-  }
-
   template < typename holder, typename ... holder_ctor_args >
   void emplace(const vtable_type* vtable, holder_ctor_args&&... ctor_args)
   {
-    insert(create_value<holder>(m_aloc,
+    m_vec.emplace_back(create_value<holder>(
         vtable, std::forward<holder_ctor_args>(ctor_args)...));
-  }
-
-  void forget()
-  {
-    m_vec.clear();
   }
 
   // destroy all stored loops, deallocates all storage
   void clear()
   {
     while (!m_vec.empty()) {
-      destroy_value(m_aloc, m_vec.back());
+      destroy_value(m_vec.back());
       m_vec.pop_back();
     }
     m_vec.shrink_to_fit();
@@ -369,32 +357,6 @@ public:
   ~WorkStorage()
   {
     clear();
-  }
-
-  // allocate and construct value in storage
-  template < typename holder, typename ... holder_ctor_args >
-  static pointer_and_size create_value(allocator_type& aloc,
-                                       const vtable_type* vtable,
-                                       holder_ctor_args&&... ctor_args)
-  {
-    const size_type value_size = sizeof(true_value_type<holder>);
-
-    pointer value_ptr = reinterpret_cast<pointer>(
-        allocator_traits_type::allocate(aloc, value_size));
-
-    value_type::template construct<holder>(
-        value_ptr, vtable, std::forward<holder_ctor_args>(ctor_args)...);
-
-    return pointer_and_size{value_ptr, value_size};
-  }
-
-  // destroy and deallocate value
-  static void destroy_value(allocator_type& aloc,
-                            pointer_and_size value_and_size_ptr)
-  {
-    value_type::destroy(value_and_size_ptr.ptr);
-    allocator_traits_type::deallocate(aloc,
-        reinterpret_cast<char*>(value_and_size_ptr.ptr), value_and_size_ptr.size);
   }
 
 private:
@@ -426,6 +388,22 @@ private:
     }
   }
 
+  // allocate and construct value in storage
+  template < typename holder, typename ... holder_ctor_args >
+  pointer_and_size create_value(const vtable_type* vtable,
+                                holder_ctor_args&&... ctor_args)
+  {
+    const size_type value_size = sizeof(true_value_type<holder>);
+
+    pointer value_ptr = reinterpret_cast<pointer>(
+        allocator_traits_type::allocate(m_aloc, value_size));
+
+    value_type::template construct<holder>(
+        value_ptr, vtable, std::forward<holder_ctor_args>(ctor_args)...);
+
+    return pointer_and_size{value_ptr, value_size};
+  }
+
   // allocate and move construct object as copy of other value and
   // destroy and deallocate other value
   pointer_and_size move_destroy_value(WorkStorage&& rhs,
@@ -440,6 +418,14 @@ private:
         reinterpret_cast<char*>(other_value_and_size.ptr), other_value_and_size.size);
 
     return pointer_and_size{value_ptr, other_value_and_size.size};
+  }
+
+  // destroy and deallocate value
+  void destroy_value(pointer_and_size value_and_size_ptr)
+  {
+    value_type::destroy(value_and_size_ptr.ptr);
+    allocator_traits_type::deallocate(m_aloc,
+        reinterpret_cast<char*>(value_and_size_ptr.ptr), value_and_size_ptr.size);
   }
 };
 

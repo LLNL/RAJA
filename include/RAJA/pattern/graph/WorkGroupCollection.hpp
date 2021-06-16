@@ -73,6 +73,172 @@ struct WorkGroupCollectionArgs : ::RAJA::expt::graph::detail::CollectionArgs
   ALLOCATOR_T m_aloc;
 };
 
+// based on WorkStorage<RAJA::array_of_pointers
+// but allows external storage of items
+template < typename ALLOCATOR_T, typename Vtable_T >
+struct WorkCollectionStorage
+{
+  using vtable_type = Vtable_T;
+
+  template < typename holder >
+  using true_value_type = ::RAJA::detail::WorkStruct<sizeof(holder), vtable_type>;
+
+  using value_type = ::RAJA::detail::GenericWorkStruct<vtable_type>;
+  using allocator_type = ALLOCATOR_T;
+  using size_type = std::size_t;
+  using difference_type = std::ptrdiff_t;
+  using reference = value_type&;
+  using const_reference = const value_type&;
+  using pointer = value_type*;
+  using const_pointer = const value_type*;
+
+  // struct used in storage vector to retain pointer and allocation size
+  struct pointer_and_size
+  {
+    pointer ptr;
+    size_type size;
+  };
+
+private:
+  using allocator_traits_type = std::allocator_traits<ALLOCATOR_T>;
+  using pointer_and_size_allocator =
+      typename allocator_traits_type::template rebind_alloc<pointer_and_size>;
+  static_assert(std::is_same<typename allocator_traits_type::value_type, char>::value,
+      "WorkCollectionStorage expects an allocator for 'char's.");
+
+public:
+
+  // iterator base class for accessing stored WorkStructs outside of the container
+  struct const_iterator_base
+  {
+    using value_type = const typename WorkCollectionStorage::value_type;
+    using pointer = typename WorkCollectionStorage::const_pointer;
+    using reference = typename WorkCollectionStorage::const_reference;
+    using difference_type = typename WorkCollectionStorage::difference_type;
+    using iterator_category = std::random_access_iterator_tag;
+
+    const_iterator_base(const pointer_and_size* ptrptr)
+      : m_ptrptr(ptrptr)
+    { }
+
+    RAJA_HOST_DEVICE reference operator*() const
+    {
+      return *(m_ptrptr->ptr);
+    }
+
+    RAJA_HOST_DEVICE const_iterator_base& operator+=(difference_type n)
+    {
+      m_ptrptr += n;
+      return *this;
+    }
+
+    RAJA_HOST_DEVICE friend inline difference_type operator-(
+        const_iterator_base const& lhs_iter, const_iterator_base const& rhs_iter)
+    {
+      return lhs_iter.m_ptrptr - rhs_iter.m_ptrptr;
+    }
+
+    RAJA_HOST_DEVICE friend inline bool operator==(
+        const_iterator_base const& lhs_iter, const_iterator_base const& rhs_iter)
+    {
+      return lhs_iter.m_ptrptr == rhs_iter.m_ptrptr;
+    }
+
+    RAJA_HOST_DEVICE friend inline bool operator<(
+        const_iterator_base const& lhs_iter, const_iterator_base const& rhs_iter)
+    {
+      return lhs_iter.m_ptrptr < rhs_iter.m_ptrptr;
+    }
+
+  private:
+    const pointer_and_size* m_ptrptr;
+  };
+
+  using const_iterator = ::RAJA::detail::random_access_iterator<const_iterator_base>;
+
+  WorkCollectionStorage() = delete;
+
+  WorkCollectionStorage(WorkCollectionStorage const&) = delete;
+  WorkCollectionStorage& operator=(WorkCollectionStorage const&) = delete;
+  WorkCollectionStorage(WorkCollectionStorage&& rhs) = delete;
+  WorkCollectionStorage& operator=(WorkCollectionStorage&& rhs) = delete;
+
+  explicit WorkCollectionStorage(allocator_type const& aloc)
+    : m_vec(0, aloc)
+  { }
+
+  ~WorkCollectionStorage() = default;
+
+  // reserve may be used to allocate enough memory to store num_loops
+  // and loop_storage_size is ignored in this version because each
+  // object has its own allocation
+  void reserve(size_type num_loops)
+  {
+    m_vec.reserve(num_loops);
+  }
+
+  // number of loops stored
+  size_type size() const
+  {
+    return m_vec.size();
+  }
+
+  const_iterator begin() const
+  {
+    return const_iterator(m_vec.begin());
+  }
+
+  const_iterator end() const
+  {
+    return const_iterator(m_vec.end());
+  }
+
+  void insert(pointer_and_size const& value_and_size_ptr)
+  {
+    m_vec.emplace_back(value_and_size_ptr);
+  }
+  ///
+  void insert(pointer_and_size&& value_and_size_ptr)
+  {
+    m_vec.emplace_back(std::move(value_and_size_ptr));
+  }
+
+  void clear()
+  {
+    m_vec.clear();
+  }
+
+  // allocate and construct value in storage
+  template < typename holder, typename ... holder_ctor_args >
+  static pointer_and_size create_value(allocator_type& aloc,
+                                       const vtable_type* vtable,
+                                       holder_ctor_args&&... ctor_args)
+  {
+    const size_type value_size = sizeof(true_value_type<holder>);
+
+    pointer value_ptr = reinterpret_cast<pointer>(
+        allocator_traits_type::allocate(aloc, value_size));
+
+    value_type::template construct<holder>(
+        value_ptr, vtable, std::forward<holder_ctor_args>(ctor_args)...);
+
+    return pointer_and_size{value_ptr, value_size};
+  }
+
+  // destroy and deallocate value
+  static void destroy_value(allocator_type& aloc,
+                            pointer_and_size value_and_size_ptr)
+  {
+    value_type::destroy(value_and_size_ptr.ptr);
+    allocator_traits_type::deallocate(aloc,
+        reinterpret_cast<char*>(value_and_size_ptr.ptr), value_and_size_ptr.size);
+  }
+
+private:
+  RAJAVec<pointer_and_size,
+          pointer_and_size_allocator> m_vec;
+};
+
 }  // namespace detail
 
 
@@ -163,14 +329,14 @@ protected:
   // The policy indicating where the call function is invoked
   using vtable_exec_policy = typename workrunner_type::vtable_exec_policy;
   using vtable_type = typename workrunner_type::vtable_type;
+
   template < typename Container, typename LoopBody >
   using runner_holder_type = typename workrunner_type::template holder_type<Container, LoopBody>;
   template < typename Container, typename LoopBody >
   using runner_caller_type = typename workrunner_type::template caller_type<Container, LoopBody>;
 
-  using storage_type = ::RAJA::detail::WorkStorage<storage_policy,
-                                                   Allocator,
-                                                   vtable_type>;
+  using storage_type = ::RAJA::expt::graph::detail::WorkCollectionStorage<Allocator,
+                                                                          vtable_type>;
 
   using pointer_and_size = typename storage_type::pointer_and_size;
   using value_type = typename storage_type::value_type;
