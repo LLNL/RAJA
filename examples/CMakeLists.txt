@@ -135,4 +135,8 @@ raja_add_executable(
   NAME resource-kernel
   SOURCES resource-kernel.cpp)
 
+raja_add_executable(
+  NAME resource-teams
+  SOURCES resource-teams.cpp)
+
 add_subdirectory(plugin)

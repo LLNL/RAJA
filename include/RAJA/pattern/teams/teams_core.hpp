@@ -199,6 +199,23 @@ void launch(ExecPlace place, Grid const &grid, BODY const &body)
   }
 }
 
+// Helper function to retrieve a resource based on the run-time policy - if a device is active
+#if defined(RAJA_DEVICE_ACTIVE)
+template<typename T, typename U>
+RAJA::resources::Resource Get_Runtime_Resource(T host_res, U device_res, RAJA::expt::ExecPlace device){
+  if(device == RAJA::expt::DEVICE) {return RAJA::resources::Resource(device_res);}
+  else { return RAJA::resources::Resource(host_res); }
+}
+#else
+template<typename T>
+RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::expt::ExecPlace device){
+  if(device == RAJA::expt::DEVICE) {RAJA_ABORT_OR_THROW("Device is not enabled");}
+
+  return RAJA::resources::Resource(host_res);
+}
+#endif
+
+
 //Launch API which takes team resource struct
 template <typename POLICY_LIST, typename BODY>
 resources::EventProxy<resources::Resource>

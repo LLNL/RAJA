@@ -14,7 +14,7 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Reduction Example
+ *  Reduction Example using RAJA Teams
  *
  *  This example illustrates use of the RAJA reduction types: min, max,
  *  sum, min-loc, and max-loc.

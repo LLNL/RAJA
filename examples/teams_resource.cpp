@@ -14,26 +14,23 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Reduction Example
+ *  Teams run-time resource execution
  *
- *  This example illustrates use of the RAJA reduction types: min, max,
- *  sum, min-loc, and max-loc.
+ *  This example revisits the reductions example
+ *  and illustrates how to incorporate RAJA
+ *  resource constructs and maintain runtime
+ *  selection
  *
  *  RAJA features shown:
  *    - `launch' loop iteration template method
- *    -  Index range segment
  *    -  Execution policies
  *    -  Reduction types
+ *    -  Resource constructs
  *
  */
 
-#if defined(RAJA_ENABLE_OPENMP)
-using host_launch = RAJA::expt::omp_launch_t;
-using host_loop = RAJA::omp_for_exec;
-#else
 using host_launch = RAJA::expt::seq_launch_t;
 using host_loop = RAJA::loop_exec;
-#endif
 
 #if defined(RAJA_ENABLE_CUDA)
 using device_launch = RAJA::expt::cuda_launch_t<true>;
@@ -59,26 +56,8 @@ using loop_pol = RAJA::expt::LoopPolicy<host_loop
 using reduce_policy = RAJA::cuda_reduce;
 #elif defined(RAJA_ENABLE_HIP)
 using reduce_policy = RAJA::hip_reduce;
-#elif defined(RAJA_ENABLE_OPENMP)
-using reduce_policy = RAJA::omp_reduce;
 #else
 using reduce_policy = RAJA::seq_reduce;
-#endif
-
-// Helper function to retrieve a resource based on the run-time policy - if a device is active
-#if defined(RAJA_DEVICE_ACTIVE)
-template<typename T, typename U>
-RAJA::resources::Resource Get_Runtime_Resource(T host_res, U device_res, RAJA::expt::ExecPlace device){
-  if(device == RAJA::expt::DEVICE) {return RAJA::resources::Resource(device_res);}
-  else { return RAJA::resources::Resource(host_res); }
-}
-#else
-template<typename T>
-RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::expt::ExecPlace device){
-  if(device == RAJA::expt::DEVICE) {RAJA_ABORT_OR_THROW("Device is not enabled");}
-
-  return RAJA::resources::Resource(host_res);
-}
 #endif
 
 int main(int argc, char *argv[])
@@ -173,25 +152,26 @@ int main(int argc, char *argv[])
   RAJA::resources::Hip device_res;
 #endif
 
-  //Get typed erased resource - will internally store if we are running on the host or device
+  //Get typed erased resource - it will internally store if we are running on the host or device
 #if defined(RAJA_DEVICE_ACTIVE)
-  RAJA::resources::Resource res = Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
+  RAJA::resources::Resource res = RAJA::expt::Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
 #else
-  RAJA::resources::Resource res = Get_Host_Resource(host_res, select_cpu_or_gpu);
+  RAJA::resources::Resource res = RAJA::expt::Get_Host_Resource(host_res, select_cpu_or_gpu);
 #endif
 
+  //How the kernel executes now depends on how the resource is constructed (host or device)
   RAJA::expt::launch<launch_policy>
     (res, RAJA::expt::Grid(RAJA::expt::Teams(GRID_SZ),
                            RAJA::expt::Threads(TEAM_SZ),
                            "Reduction Kernel"),
      [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx)  {
        RAJA::expt::loop<loop_pol>(ctx, arange, [&] (int i) {
-           
+
            kernel_sum += a[i];
-           
+
            kernel_min.min(a[i]);
            kernel_max.max(a[i]);
-           
+
            kernel_minloc.minloc(a[i], i);
            kernel_maxloc.maxloc(a[i], i);
          });
