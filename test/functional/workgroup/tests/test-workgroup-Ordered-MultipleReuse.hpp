@@ -52,6 +52,8 @@ void testWorkGroupOrderedMultiple(
                   Allocator
                 >;
 
+  using resource_type = typename WorkGroup_type::resource_type;
+
   ASSERT_GT(min_end, max_begin);
   IndexType N = min_end + max_begin;
 
@@ -78,8 +80,8 @@ void testWorkGroupOrderedMultiple(
     }
   }
 
-
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  WORKING_RES res = WORKING_RES::get_default();
+  camp::resources::Resource working_res{res};
 
   using type1 = IndexType;
   using type2 = size_t;
@@ -193,11 +195,11 @@ void testWorkGroupOrderedMultiple(
         }
 
 
-        working_res.memcpy(working_array1, test_array1, sizeof(type1) * N * num1);
+        res.memcpy(working_array1, test_array1, sizeof(type1) * N * num1);
 
-        working_res.memcpy(working_array2, test_array2, sizeof(type2) * N * num2);
+        res.memcpy(working_array2, test_array2, sizeof(type2) * N * num2);
 
-        working_res.memcpy(working_array3, test_array3, sizeof(type3) * N * num3);
+        res.memcpy(working_array3, test_array3, sizeof(type3) * N * num3);
 
 
         for (IndexType j = IndexType(0); j < num1; j++) {
@@ -224,13 +226,18 @@ void testWorkGroupOrderedMultiple(
 
       site = group.run();
 
+      auto e = resource_type::get_default().get_event();
+      e.wait();
+
       // check_test_data(type1(5), type2(7), type3(11));
       {
-        working_res.memcpy(check_array1, working_array1, sizeof(type1) * N * num1);
+        res.memcpy(check_array1, working_array1, sizeof(type1) * N * num1);
 
-        working_res.memcpy(check_array2, working_array2, sizeof(type2) * N * num2);
+        res.memcpy(check_array2, working_array2, sizeof(type2) * N * num2);
 
-        working_res.memcpy(check_array3, working_array3, sizeof(type3) * N * num3);
+        res.memcpy(check_array3, working_array3, sizeof(type3) * N * num3);
+
+        res.wait();
 
 
         for (IndexType j = IndexType(0); j < num1; j++) {
