@@ -119,57 +119,121 @@ struct NodeConnections
     node.m_parents.emplace_back(get_node_id());
   }
 
-  bool traversal_examine()
+  struct forward_depth_first_traversal
   {
-    if (m_count == m_parents.size()) {
-      m_count = 0;
-      return true;
-    }
-    return false;
-  }
-
-  template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
-  void forward_depth_first_traversal(NodeConnections* connections,
-                                     Examine_Func&& examine_func,
-                                     Enter_Func&& enter_func,
-                                     Exit_Func&& exit_func)
-  {
-    std::forward<Enter_Func>(enter_func)(*this);
-    for (id_type child_id : m_children)
+    template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
+    void operator()(std::vector<NodeConnections>& connections,
+                    Examine_Func&& examine_func,
+                    Enter_Func&& enter_func,
+                    Exit_Func&& exit_func)
     {
-      NodeConnections& child = connections[child_id];
-      child.m_count += 1;
-      std::forward<Examine_Func>(examine_func)(child);
-      if (child.traversal_examine()) {
-        child.forward_depth_first_traversal(
-            connections,
-            std::forward<Examine_Func>(examine_func),
-            std::forward<Enter_Func>(enter_func),
-            std::forward<Exit_Func>(exit_func));
+      for (detail::NodeConnections& child : connections)
+      {
+        if (child.m_parents.size() == 0) {
+          std::forward<Examine_Func>(examine_func)(child);
+          traverse(child,
+                   connections,
+                   std::forward<Examine_Func>(examine_func),
+                   std::forward<Enter_Func>(enter_func),
+                   std::forward<Exit_Func>(exit_func));
+        }
       }
     }
-    std::forward<Exit_Func>(exit_func)(*this);
-  }
 
-  template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
-  void forward_breadth_first_traversal(std::list<detail::NodeConnections*>& queue,
-                                       NodeConnections* connections,
-                                       Examine_Func&& examine_func,
-                                       Enter_Func&& enter_func,
-                                       Exit_Func&& exit_func)
-  {
-    std::forward<Enter_Func>(enter_func)(*this);
-    for (id_type child_id : m_children)
+  private:
+    bool examine(NodeConnections& node)
     {
-      NodeConnections& child = connections[child_id];
-      child.m_count += 1;
-      std::forward<Examine_Func>(examine_func)(child);
-      if (child.traversal_examine()) {
-        queue.emplace_back(&child);
+      if (node.m_count == node.m_parents.size()) {
+        node.m_count = 0;
+        return true;
+      }
+      return false;
+    }
+
+    template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
+    void traverse(NodeConnections& node,
+                  std::vector<NodeConnections>& connections,
+                  Examine_Func&& examine_func,
+                  Enter_Func&& enter_func,
+                  Exit_Func&& exit_func)
+    {
+      std::forward<Enter_Func>(enter_func)(node);
+      for (id_type child_id : node.m_children)
+      {
+        NodeConnections& child = connections[child_id];
+        child.m_count += 1;
+        std::forward<Examine_Func>(examine_func)(child);
+        if (examine(child)) {
+          traverse(child,
+                   connections,
+                   std::forward<Examine_Func>(examine_func),
+                   std::forward<Enter_Func>(enter_func),
+                   std::forward<Exit_Func>(exit_func));
+        }
+      }
+      std::forward<Exit_Func>(exit_func)(node);
+    }
+  };
+
+
+  struct forward_breadth_first_traversal
+  {
+    template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
+    void operator()(std::vector<NodeConnections>& connections,
+                    Examine_Func&& examine_func,
+                    Enter_Func&& enter_func,
+                    Exit_Func&& exit_func)
+    {
+      for (detail::NodeConnections& child : m_node_connections)
+      {
+        if (child.m_parents.size() == 0) {
+          std::forward<Examine_Func>(examine_func)(child);
+          queue.emplace_back(&child);
+        }
+      }
+      while (!queue.empty())
+      {
+        detail::NodeConnections* child = queue.front();
+        queue.pop_front();
+        traverse(*child,
+                 m_node_connections.data(),
+                 std::forward<Examine_Func>(examine_func),
+                 std::forward<Enter_Func>(enter_func),
+                 std::forward<Exit_Func>(exit_func));
       }
     }
-    std::forward<Exit_Func>(exit_func)(*this);
-  }
+  private:
+    std::list<detail::NodeConnections*> queue;
+
+    bool examine(NodeConnections& node)
+    {
+      if (node.m_count == node.m_parents.size()) {
+        node.m_count = 0;
+        return true;
+      }
+      return false;
+    }
+
+    template < typename Examine_Func, typename Enter_Func, typename Exit_Func >
+    void traverse(NodeConnections& node,
+                  std::vector<NodeConnections>& connections,
+                  Examine_Func&& examine_func,
+                  Enter_Func&& enter_func,
+                  Exit_Func&& exit_func)
+    {
+      std::forward<Enter_Func>(enter_func)(node);
+      for (id_type child_id : node.m_children)
+      {
+        NodeConnections& child = connections[child_id];
+        child.m_count += 1;
+        std::forward<Examine_Func>(examine_func)(child);
+        if (examine(child)) {
+          queue.emplace_back(&child);
+        }
+      }
+      std::forward<Exit_Func>(exit_func)(node);
+    }
+  };
 
   size_t m_count = 0;
   std::vector<id_type> m_parents;

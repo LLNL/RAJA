@@ -475,17 +475,11 @@ private:
                                      Enter_Func&& enter_func,
                                      Exit_Func&& exit_func)
   {
-    for (detail::NodeConnections& child : m_node_connections)
-    {
-      if (child.m_parents.size() == 0) {
-        std::forward<Examine_Func>(examine_func)(child);
-        child.forward_depth_first_traversal(
-            m_node_connections.data(),
-            std::forward<Examine_Func>(examine_func),
-            std::forward<Enter_Func>(enter_func),
-            std::forward<Exit_Func>(exit_func));
-      }
-    }
+    typename detail::NodeConnections::forward_depth_first_traversal traversal;
+    traversal(m_node_connections,
+              std::forward<Examine_Func>(examine_func),
+              std::forward<Enter_Func>(enter_func),
+              std::forward<Exit_Func>(exit_func));
   }
 
   // Breadth first traversal of nodes in an order consistent with the DAG,
@@ -499,24 +493,11 @@ private:
                                        Enter_Func&& enter_func,
                                        Exit_Func&& exit_func)
   {
-    std::list<detail::NodeConnections*> queue;
-    for (detail::NodeConnections& child : m_node_connections)
-    {
-      if (child.m_parents.size() == 0) {
-        std::forward<Examine_Func>(examine_func)(child);
-        queue.emplace_back(&child);
-      }
-    }
-    while (!queue.empty())
-    {
-      detail::NodeConnections* child = queue.front();
-      queue.pop_front();
-      child->forward_breadth_first_traversal(
-          queue, m_node_connections.data(),
-          std::forward<Examine_Func>(examine_func),
-          std::forward<Enter_Func>(enter_func),
-          std::forward<Exit_Func>(exit_func));
-    }
+    typename detail::NodeConnections::forward_breadth_first_traversal traversal;
+    traversal(m_node_connections,
+              std::forward<Examine_Func>(examine_func),
+              std::forward<Enter_Func>(enter_func),
+              std::forward<Exit_Func>(exit_func));
   }
 };
 
