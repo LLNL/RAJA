@@ -54,8 +54,6 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
     auto func = launch_global_fcn<BODY>;
 
     resources::Hip hip_res = resources::Hip::get_default();
-    /* Use the zero stream until resource is better supported */
-    hipStream_t stream = hip_res.get_stream();
 
     //
     // Compute the number of blocks and threads
@@ -86,16 +84,14 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
         BODY body = RAJA::hip::make_launch_body(
-            gridSize, blockSize, shmem, stream, std::forward<BODY_IN>(body_in));
+            gridSize, blockSize, shmem, hip_res, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, hip_res, async);
       }
-
-      if (!async) { RAJA::hip::synchronize(stream); }
 
       RAJA_FT_END;
     }
@@ -125,7 +121,6 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
     auto func = launch_global_fcn_fixed<BODY, nthreads>;
 
     resources::Hip hip_res = resources::Hip::get_default();
-    hipStream_t stream = hip_res.get_stream();
 
     //
     // Compute the number of blocks and threads
@@ -156,16 +151,14 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
         BODY body = RAJA::hip::make_launch_body(
-            gridSize, blockSize, shmem, stream, std::forward<BODY_IN>(body_in));
+            gridSize, blockSize, shmem, hip_res, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, hip_res, async);
       }
-
-      if (!async) { RAJA::hip::synchronize(stream); }
 
       RAJA_FT_END;
     }
