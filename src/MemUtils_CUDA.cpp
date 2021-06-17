@@ -51,8 +51,7 @@ cudaInfo tl_status;
 #endif
 
 //! State of raja cuda stream synchronization for cuda reducer objects
-std::unordered_map<cudaStream_t, bool> g_stream_info_map{
-    {cudaStream_t(0), true}};
+std::unordered_map<cudaStream_t, bool> g_stream_info_map;
 
 
 }  // namespace detail
