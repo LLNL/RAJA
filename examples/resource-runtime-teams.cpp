@@ -19,7 +19,7 @@
  *  This example revisits the reductions example
  *  and illustrates how to incorporate RAJA
  *  resource constructs and maintain runtime
- *  selection
+ *  execution policy selection
  *
  *  RAJA features shown:
  *    - `launch' loop iteration template method

@@ -261,19 +261,6 @@ struct LoopExecute;
 template <typename POLICY, typename SEGMENT>
 struct LoopICountExecute;
 
-//Loop method with no context
-template <typename POLICY_LIST,
-          typename CONTEXT,
-          typename SEGMENT,
-          typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void loop(SEGMENT const &segment,
-                                       BODY const &body)
-{
-
-  LoopExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(segment,
-                                                       body);
-}
-
 template <typename POLICY_LIST,
           typename CONTEXT,
           typename SEGMENT,
