@@ -32,10 +32,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                                  RAJA::expt::cuda_launch_t<true>>;
 
   using teams_x = RAJA::expt::LoopPolicy<RAJA::loop_exec,
-                                         RAJA::cuda_block_x_direct>;
+                                         RAJA::cuda_block_x_loop>;
 
   using threads_x = RAJA::expt::LoopPolicy<RAJA::loop_exec,
-                                           RAJA::cuda_thread_x_direct>;
+                                           RAJA::cuda_thread_x_loop>;
 
   RAJA::forall<RAJA::loop_exec>(def_host_res, n_range,
     [=, &def_cuda_res](int i){
@@ -44,7 +44,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
       RAJA::resources::Event e = 
         RAJA::expt::launch<launch_policy>(res_cuda,
-        RAJA::expt::Grid(RAJA::expt::Teams(M),
+        RAJA::expt::Grid(RAJA::expt::Teams(1024),
                          RAJA::expt::Threads(1), "RAJA Teams kernel"), 
       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx)  {
 
