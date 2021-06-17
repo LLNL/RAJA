@@ -31,6 +31,8 @@
 namespace RAJA
 {
 
+
+
   struct scalar_register;
 
 
@@ -40,6 +42,31 @@ namespace RAJA
   namespace internal {
     class RegisterConcreteBase {};
   }
+
+
+  template<typename T, typename REGISTER_POLICY>
+  struct RegisterTraits;
+
+  template<typename REGISTER_POLICY>
+  struct RegisterTraits<int, REGISTER_POLICY>{
+      using int_vector_type = Register<int, REGISTER_POLICY>;
+  };
+
+  template<typename REGISTER_POLICY>
+  struct RegisterTraits<long, REGISTER_POLICY>{
+      using int_vector_type = Register<long, REGISTER_POLICY>;
+  };
+
+  template<typename REGISTER_POLICY>
+  struct RegisterTraits<float, REGISTER_POLICY>{
+      using int_vector_type = Register<int, REGISTER_POLICY>;
+  };
+
+  template<typename REGISTER_POLICY>
+  struct RegisterTraits<double, REGISTER_POLICY>{
+      using int_vector_type = Register<long, REGISTER_POLICY>;
+  };
+
 
 
   /*
@@ -121,6 +148,8 @@ namespace internal {
       using element_type = camp::decay<T>;
 
       using index_type = camp::idx_t;
+
+      using int_vector_type = typename RegisterTraits<T, REGISTER_POLICY>::int_vector_type;
 
     private:
 
@@ -739,7 +768,8 @@ namespace internal {
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      camp::idx_t calc_num_segments(camp::idx_t segbits) const
+      static
+      camp::idx_t s_calc_num_segments(camp::idx_t segbits)
       {
         return self_type::s_num_elem >> segbits;
       }
@@ -751,11 +781,39 @@ namespace internal {
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      camp::idx_t calc_segment_size(camp::idx_t segbits) const
+      static
+      camp::idx_t s_calc_segment_size(camp::idx_t segbits)
       {
         return 1 << segbits;
       }
 
+      /*!
+       * Provides gather/scatter indices for segmented loads and stores
+       *
+       * THe number of segment bits (segbits) is specified, as well as the
+       * stride between elements in a segment (stride_inner),
+       * and the stride between segments (stride_outer)
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      int_vector_type s_segmented_offsets(camp::idx_t segbits, camp::idx_t stride_inner, camp::idx_t stride_outer)
+      {
+        int_vector_type result(0);
+
+        camp::idx_t num_segments = s_calc_num_segments(segbits);
+        camp::idx_t seg_size = s_calc_segment_size(segbits);
+
+        camp::idx_t lane = 0;
+        for(camp::idx_t seg = 0;seg < num_segments; ++ seg){
+          for(camp::idx_t i = 0;i < seg_size; ++ i){
+            result.set(seg*stride_outer + i*stride_inner, lane);
+            lane ++;
+          }
+        }
+
+        return result;
+      }
 
       /*!
        * Sum across segments, with segment size defined by segbits

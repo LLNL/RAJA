@@ -85,7 +85,9 @@ using MatrixTestTypes = ::testing::Types<
 //    RAJA::SquareMatrixRegister<double, RAJA::ColMajorLayout>,
 //    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout>,
 //    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4, 2>
-RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2, 4>
+    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 2, 4>
+
+//RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2, 4>
 //    RAJA::SquareMatrixRegister<float, RAJA::ColMajorLayout>,
 //    RAJA::SquareMatrixRegister<float, RAJA::RowMajorLayout>,
 //    RAJA::SquareMatrixRegister<long, RAJA::ColMajorLayout>,
@@ -149,8 +151,8 @@ TYPED_TEST_P(MatrixTest, MatrixGetSet)
   using element_t = typename matrix_t::element_type;
 
   matrix_t m;
-  for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
       m.set(element_t(NO_OPT_ZERO + i+j*j), i,j);
       ASSERT_SCALAR_EQ(m.get(i,j), element_t(i+j*j));
     }
@@ -161,8 +163,8 @@ TYPED_TEST_P(MatrixTest, MatrixGetSet)
   m2 = m;
 
   // Check values are same as m
-  for(camp::idx_t i = 0;i < matrix_t::register_type::s_num_elem; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::register_type::s_num_elem; ++ j){
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
       ASSERT_SCALAR_EQ(m2.get(i,j), element_t(i+j*j));
     }
   }
@@ -181,23 +183,65 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
   // Fill data
   for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-      data1[i][j] = i*j*j;
+      data1[i][j] = i*matrix_t::s_num_columns+j;
     }
   }
 
   // Load data
   matrix_t m1;
   if(matrix_t::layout_type::is_row_major()){
-    m1.load_packed(&data1[0][0], matrix_t::s_num_rows, 1);
+    printf("load_packed\n");
+
+    m1.load_packed(&data1[0][0], matrix_t::s_num_columns, 1);
   }
   else{
-    m1.load_strided(&data1[0][0], matrix_t::s_num_rows, 1);
+    printf("load_strided\n");
+
+    m1.load_strided(&data1[0][0], matrix_t::s_num_columns, 1);
   }
+
+  printf("m1=%s\n", m1.to_string().c_str());
+
 
   // Check contents
   for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
       ASSERT_SCALAR_EQ(m1.get(i,j), data1[i][j]);
+    }
+  }
+
+
+
+  // Row-Major data sub-slice
+  element_t data1sub[matrix_t::s_num_rows*2][matrix_t::s_num_columns*2];
+
+  // Fill data
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows*2; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns*2; ++ j){
+      data1sub[i][j] = i*matrix_t::s_num_columns*2+j;
+    }
+  }
+
+  // Load data
+  matrix_t m1sub;
+  if(matrix_t::layout_type::is_row_major()){
+    printf("load_packed\n");
+
+    m1sub.load_packed(&data1sub[0][0], matrix_t::s_num_columns*2, 1);
+  }
+  else{
+    printf("load_strided\n");
+
+    m1sub.load_strided(&data1sub[0][0], matrix_t::s_num_columns*2, 1);
+  }
+
+  printf("m1sub=%s\n", m1sub.to_string().c_str());
+
+
+  // Check contents
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+      ASSERT_SCALAR_EQ(m1sub.get(i,j), data1sub[i][j]);
     }
   }
 
@@ -209,16 +253,20 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
   // Fill data
   for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-      data2[j][i] = i*j*j;
+      data2[j][i] = i*matrix_t::s_num_columns+j;
     }
   }
 
   // Load data
   matrix_t m2;
   if(matrix_t::layout_type::is_column_major()){
+    printf("load_packed\n");
+
     m2.load_packed(&data2[0][0], 1, matrix_t::s_num_rows);
   }
   else{
+    printf("load_strided\n");
+
     m2.load_strided(&data2[0][0], 1, matrix_t::s_num_rows);
   }
   printf("m2=%s\n", m2.to_string().c_str());
@@ -229,6 +277,41 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
       ASSERT_SCALAR_EQ(m2.get(i,j), data2[j][i]);
     }
   }
+
+
+  // Column-Major data sub-slice
+  element_t data2sub[matrix_t::s_num_columns*2][matrix_t::s_num_rows*2];
+
+  // Fill data
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows*2; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns*2; ++ j){
+      data2sub[j][i] = i*matrix_t::s_num_columns*2+j;
+    }
+  }
+
+  // Load data
+  matrix_t m2sub;
+  if(matrix_t::layout_type::is_column_major()){
+    printf("load_packed\n");
+
+    m2sub.load_packed(&data2sub[0][0], 1, matrix_t::s_num_rows*2);
+  }
+  else{
+    printf("load_strided\n");
+
+    m2sub.load_strided(&data2sub[0][0], 1, matrix_t::s_num_rows*2);
+  }
+
+  printf("m2sub=%s\n", m2sub.to_string().c_str());
+
+
+  // Check contents
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+      ASSERT_SCALAR_EQ(m2sub.get(i,j), data2sub[j][i]);
+    }
+  }
+
 
 
 }
@@ -256,11 +339,11 @@ TYPED_TEST_P(MatrixTest, MatrixStore)
   element_t data1[matrix_t::s_num_rows][matrix_t::s_num_columns];
   if(matrix_t::layout_type::is_row_major()){
     printf("store_packed\n");
-    m.store_packed(&data1[0][0], matrix_t::s_num_rows, 1);
+    m.store_packed(&data1[0][0], matrix_t::s_num_columns, 1);
   }
   else{
     printf("store_strided\n");
-    m.store_strided(&data1[0][0], matrix_t::s_num_rows, 1);
+    m.store_strided(&data1[0][0], matrix_t::s_num_columns, 1);
   }
 
   // Check contents
