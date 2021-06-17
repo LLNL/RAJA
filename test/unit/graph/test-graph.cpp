@@ -89,7 +89,7 @@ TEST( GraphBasicExecUnitTest, FourNodeExec )
   using GraphResource = RAJA::resources::Host;
   using graph_type = RAJA::expt::graph::DAG;
   using graph_exec_type = RAJA::expt::graph::DAGExec<GraphPolicy, GraphResource>;
-  using node_id = typename graph_type::id_type;
+  using node_id = RAJA::expt::graph::id_type;
 
   auto r = GraphResource::get_default();
 
@@ -145,7 +145,7 @@ TEST( GraphBasicExecUnitTest, TwentyNodeExec )
   using GraphResource = RAJA::resources::Host;
   using graph_type = RAJA::expt::graph::DAG;
   using graph_exec_type = RAJA::expt::graph::DAGExec<GraphPolicy, GraphResource>;
-  using node_id = typename graph_type::id_type;
+  using node_id = RAJA::expt::graph::id_type;
 
   auto r = GraphResource::get_default();
 
@@ -399,7 +399,7 @@ TEST( GraphMultipleExecUnitTest, FourNodeExec )
   using GraphResource = RAJA::resources::Host;
   using graph_type = RAJA::expt::graph::DAG;
   using graph_exec_type = RAJA::expt::graph::DAGExec<GraphPolicy, GraphResource>;
-  using node_id = typename graph_type::id_type;
+  using node_id = RAJA::expt::graph::id_type;
 
   auto r = GraphResource::get_default();
 

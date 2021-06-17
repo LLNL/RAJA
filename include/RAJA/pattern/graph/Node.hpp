@@ -21,6 +21,7 @@
 #include "RAJA/config.hpp"
 
 #include <utility>
+#include <limits>
 #include <vector>
 #include <list>
 
@@ -33,6 +34,9 @@ namespace expt
 
 namespace graph
 {
+
+using id_type = size_t;
+const id_type invalid_id = std::numeric_limits<size_t>::max();
 
 struct DAG;
 
@@ -76,14 +80,14 @@ struct NodeExec
 
 struct NodeConnections
 {
-  NodeConnections(size_t node_id)
+  NodeConnections(id_type node_id)
     : m_node_id(node_id)
   {
   }
 
   ~NodeConnections() = default;
 
-  size_t get_node_id() const
+  id_type get_node_id() const
   {
     return m_node_id;
   }
@@ -110,7 +114,7 @@ struct NodeConnections
                                      Exit_Func&& exit_func)
   {
     std::forward<Enter_Func>(enter_func)(*this);
-    for (size_t child_id : m_children)
+    for (id_type child_id : m_children)
     {
       NodeConnections& child = connections[child_id];
       child.m_count += 1;
@@ -134,7 +138,7 @@ struct NodeConnections
                                        Exit_Func&& exit_func)
   {
     std::forward<Enter_Func>(enter_func)(*this);
-    for (size_t child_id : m_children)
+    for (id_type child_id : m_children)
     {
       NodeConnections& child = connections[child_id];
       child.m_count += 1;
@@ -147,9 +151,9 @@ struct NodeConnections
   }
 
   size_t m_count = 0;
-  std::vector<size_t> m_parents;
-  std::vector<size_t> m_children;
-  size_t m_node_id;
+  std::vector<id_type> m_parents;
+  std::vector<id_type> m_children;
+  id_type m_node_id = invalid_id;
 };
 
 } // namespace detail

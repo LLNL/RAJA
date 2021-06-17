@@ -21,7 +21,6 @@
 #include "RAJA/config.hpp"
 
 #include <utility>
-#include <limits>
 #include <vector>
 #include <list>
 #include <memory>
@@ -63,9 +62,6 @@ struct DAGExec;
 
 struct DAG
 {
-  using id_type = size_t;
-  static const id_type invalid_id = std::numeric_limits<size_t>::max();
-
   struct GenericNodeView;
 
   template < typename node_type >
