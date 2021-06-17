@@ -361,6 +361,39 @@ TYPED_TEST_P(MatrixTest, MatrixStore)
     }
   }
 
+
+
+  // Row-Major data sub-slice
+  element_t data1sub[matrix_t::s_num_rows*2][matrix_t::s_num_columns*2];
+
+  if(matrix_t::layout_type::is_row_major()){
+    printf("store_packed\n");
+    m.store_packed(&data1sub[0][0], matrix_t::s_num_columns*2, 1);
+  }
+  else{
+    printf("store_strided\n");
+    m.store_strided(&data1sub[0][0], matrix_t::s_num_columns*2, 1);
+  }
+
+  // Check contents
+  printf("data1sub:\n");
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+      printf("%lf ", data1sub[i][j]);
+    }
+    printf("\n");
+  }
+  // Check contents
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+      ASSERT_SCALAR_EQ(m.get(i,j), data1sub[i][j]);
+    }
+  }
+
+
+
+
+
   // Store to a Column-Major data buffer
   element_t data2[matrix_t::s_num_columns][matrix_t::s_num_rows];
 
@@ -387,6 +420,35 @@ TYPED_TEST_P(MatrixTest, MatrixStore)
   for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
       ASSERT_SCALAR_EQ(m.get(i,j), data2[j][i]);
+    }
+  }
+
+
+
+  // Column-Major data sub-slice
+  element_t data2sub[matrix_t::s_num_columns*2][matrix_t::s_num_rows*2];
+
+  if(matrix_t::layout_type::is_column_major()){
+    printf("store_packed\n");
+    m.store_packed(&data2sub[0][0], 1, matrix_t::s_num_rows*2);
+  }
+  else{
+    printf("store_strided\n");
+    m.store_strided(&data2sub[0][0], 1, matrix_t::s_num_rows*2);
+  }
+
+  // Check contents
+  printf("data2sub:\n");
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+      printf("%lf ", data2sub[j][i]);
+    }
+    printf("\n");
+  }
+  // Check contents
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+      ASSERT_SCALAR_EQ(m.get(i,j), data2sub[j][i]);
     }
   }
 
