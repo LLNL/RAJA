@@ -199,6 +199,12 @@ struct WorkRunnerForallOrdered_base
   // in this case the values are called on the host in a loop
   using vtable_exec_policy = RAJA::loop_work;
 
+  // some runners need to know how many iterations and loops
+  // are enqueued
+  void addLoopIterations(index_type)
+  {
+  }
+
   // runner interfaces with storage to enqueue so the runner can get
   // information from the segment and loop at enqueue time
   template < typename WorkContainer, typename segment_T, typename loop_T >

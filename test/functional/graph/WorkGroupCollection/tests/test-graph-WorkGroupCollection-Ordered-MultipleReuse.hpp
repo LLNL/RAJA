@@ -135,8 +135,8 @@ void testWorkGroupCollectionOrderedMultiple(
           working_ptr1[i] += test_val1;
         });
         if (!nodes[2*(j)]) {
-          nodes[2*(j)+0] = g.add_node(collection, std::move(args10));
-          nodes[2*(j)+1] = g.add_node(collection, std::move(args11));
+          nodes[2*(j)+0] = g.add_collection_node(collection, std::move(args10));
+          nodes[2*(j)+1] = g.add_collection_node(collection, std::move(args11));
         } else {
           nodes[2*(j)+0].reset(std::move(args10));
           nodes[2*(j)+1].reset(std::move(args11));
@@ -156,8 +156,8 @@ void testWorkGroupCollectionOrderedMultiple(
           working_ptr2[i] += test_val2;
         });
         if (!nodes[2*(j+num1)]) {
-          nodes[2*(j+num1)+0] = g.add_node(collection, std::move(args20));
-          nodes[2*(j+num1)+1] = g.add_node(collection, std::move(args21));
+          nodes[2*(j+num1)+0] = g.add_collection_node(collection, std::move(args20));
+          nodes[2*(j+num1)+1] = g.add_collection_node(collection, std::move(args21));
         } else {
           nodes[2*(j+num1)+0].reset(std::move(args20));
           nodes[2*(j+num1)+1].reset(std::move(args21));
@@ -177,8 +177,8 @@ void testWorkGroupCollectionOrderedMultiple(
           working_ptr3[i] += test_val3;
         });
         if (!nodes[2*(j+num1+num2)]) {
-          nodes[2*(j+num1+num2)+0] = g.add_node(collection, std::move(args30));
-          nodes[2*(j+num1+num2)+1] = g.add_node(collection, std::move(args31));
+          nodes[2*(j+num1+num2)+0] = g.add_collection_node(collection, std::move(args30));
+          nodes[2*(j+num1+num2)+1] = g.add_collection_node(collection, std::move(args31));
         } else {
           nodes[2*(j+num1+num2)+0].reset(std::move(args30));
           nodes[2*(j+num1+num2)+1].reset(std::move(args31));

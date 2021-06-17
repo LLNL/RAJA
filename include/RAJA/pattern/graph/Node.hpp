@@ -87,11 +87,30 @@ struct NodeConnections
   {
   }
 
+  NodeConnections(id_type node_id,
+                  id_type collection_id,
+                  id_type collection_inner_id)
+    : m_node_id(node_id)
+    , m_collection_id(collection_id)
+    , m_collection_inner_id(collection_inner_id)
+  {
+  }
+
   ~NodeConnections() = default;
 
   id_type get_node_id() const
   {
     return m_node_id;
+  }
+
+  id_type get_collection_id() const
+  {
+    return m_collection_id;
+  }
+
+  id_type get_collection_inner_id() const
+  {
+    return m_collection_inner_id;
   }
 
   void add_child(NodeConnections& node)
@@ -156,6 +175,8 @@ struct NodeConnections
   std::vector<id_type> m_parents;
   std::vector<id_type> m_children;
   id_type m_node_id = invalid_id;
+  id_type m_collection_id = invalid_id;
+  id_type m_collection_inner_id = invalid_id;
 };
 
 } // namespace detail

@@ -241,6 +241,13 @@ struct WorkRunner<
   // in this case the values are called on the device
   using vtable_exec_policy = exec_policy;
 
+  // runner needs to know how many iterations and loops
+  // are enqueued
+  void addLoopIterations(index_type len)
+  {
+    m_total_iterations += len;
+  }
+
   // runner interfaces with storage to enqueue so the runner can get
   // information from the segment and loop at enqueue time
   template < typename WorkContainer, typename Iterable, typename LoopBody >
@@ -262,7 +269,7 @@ struct WorkRunner<
     // Only launch kernel if we have something to iterate over
     if (len > 0 && BLOCK_SIZE > 0) {
 
-      m_total_iterations += len;
+      addLoopIterations(len);
 
       //
       // TODO: Privatize the loop_body, using make_launch_body to setup reductions

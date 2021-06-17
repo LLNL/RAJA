@@ -148,18 +148,22 @@ struct FusibleForallNode : ::RAJA::expt::graph::detail::NodeData
   FusibleForallNode& operator=(FusibleForallNode&&) = delete;
 
   template < typename Fuser >
-  FusibleForallNode(Fuser& fuser, args_type const& args)
+  FusibleForallNode(Fuser& fuser, id_type& collection_inner_id, args_type const& args)
     : m_policy(args.m_policy)
-    , m_holder(fuser.emplace(args.m_container, args.m_body))
-    , m_fuser_id(fuser.get_my_id())
+    , m_holder(nullptr)
   {
+    auto holder_and_inner_id = fuser.emplace(args.m_container, args.m_body);
+    m_holder = holder_and_inner_id.first;
+    collection_inner_id = holder_and_inner_id.second;
   }
   template < typename Fuser >
-  FusibleForallNode(Fuser& fuser, args_type&& args)
+  FusibleForallNode(Fuser& fuser, id_type& collection_inner_id, args_type&& args)
     : m_policy(std::move(args.m_policy))
-    , m_holder(fuser.emplace(std::move(args.m_container), std::move(args.m_body)))
-    , m_fuser_id(fuser.get_my_id())
+    , m_holder(nullptr)
   {
+    auto holder_and_inner_id = fuser.emplace(std::move(args.m_container), std::move(args.m_body));
+    m_holder = holder_and_inner_id.first;
+    collection_inner_id = holder_and_inner_id.second;
   }
 
   FusibleForallNode& operator=(args_type const& args)
@@ -214,8 +218,7 @@ protected:
 
 private:
   ExecutionPolicy m_policy;
-  holder_type* m_holder; // this object does not own (fuser owns)
-  size_t m_fuser_id;
+  holder_type* m_holder; // this object does not own holder (fuser owns)
 
   void exec_impl()
   {

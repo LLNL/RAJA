@@ -29,6 +29,8 @@
 
 #include "RAJA/pattern/graph/Collection.hpp"
 
+#include "RAJA/util/camp_aliases.hpp"
+
 namespace RAJA
 {
 
@@ -40,6 +42,9 @@ namespace graph
 
 template < typename ExecutionPolicy, typename Container, typename LoopBody >
 struct FusibleForallNode;
+
+template < typename GraphPolicy, typename GraphResource >
+struct DAGExec;
 
 template < typename EXEC_POLICY_T,
            typename ORDER_POLICY_T,
@@ -284,7 +289,7 @@ struct WorkGroupCollection<EXEC_POLICY_T,
   using index_type = INDEX_T;
   using xarg_type = xargs<Args...>;
   using Allocator = ALLOCATOR_T;
-  using resource_type = typename ::RAJA::resources::get_resource<exec_policy>::type;
+  using resource = typename ::RAJA::resources::get_resource<exec_policy>::type;
 
   using args_type = ::RAJA::expt::graph::detail::WorkGroupCollectionArgs<
                                                      exec_policy,
@@ -314,11 +319,19 @@ struct WorkGroupCollection<EXEC_POLICY_T,
     }
   }
 
+  detail::CollectionNodeData* newExecNode() override
+  {
+    return new ExecNode(this);
+  }
+
   // make_FusedNode()
 
 protected:
   template < typename, typename, typename >
   friend struct FusibleForallNode;
+
+  template < typename, typename >
+  friend struct DAGExec;
 
   using workrunner_type = ::RAJA::detail::WorkRunner<exec_policy,
                                                      order_policy,
@@ -328,7 +341,9 @@ protected:
 
   // The policy indicating where the call function is invoked
   using vtable_exec_policy = typename workrunner_type::vtable_exec_policy;
+  // cuda thinks this is incomplete generating device code
   using vtable_type = typename workrunner_type::vtable_type;
+  // using vtable_type = RAJA::detail::Vtable<exec_policy, Args...>;
 
   template < typename Container, typename LoopBody >
   using runner_holder_type = typename workrunner_type::template holder_type<Container, LoopBody>;
@@ -341,6 +356,53 @@ protected:
   using pointer_and_size = typename storage_type::pointer_and_size;
   using value_type = typename storage_type::value_type;
 
+  struct ExecNode : detail::CollectionNodeData
+  {
+    ExecNode(WorkGroupCollection* collection)
+      : m_collection(collection)
+      , m_storage(collection->m_aloc)
+      , m_runner()
+      , m_run_storage()
+      , m_args(Args{}...)
+    {
+    }
+
+    void enqueue(detail::NodeData* node,
+                 id_type collection_inner_id) override
+    {
+      m_storage.insert(m_collection->m_values[collection_inner_id]);
+      m_runner.addLoopIterations(node->get_num_iterations());
+    }
+
+    size_t get_num_iterations() const override
+    {
+      return 0;
+    }
+
+    void exec() override
+    {
+      exec_impl(camp::make_idx_seq_t<sizeof...(Args)>{});
+    }
+
+  private:
+    using per_run_storage = typename workrunner_type::per_run_storage;
+
+    WorkGroupCollection* m_collection;
+    storage_type         m_storage;
+    workrunner_type      m_runner;
+    per_run_storage      m_run_storage;
+    RAJA::tuple<Args...> m_args;
+
+    template < camp::idx_t ... Is >
+    void exec_impl(camp::idx_seq<Is...>)
+    {
+      resource r = resource::get_default();
+
+      m_run_storage = m_runner.run(m_storage, r, RAJA::get<Is>(m_args)...);
+
+      r.wait();
+    }
+  };
 
 
   std::vector<pointer_and_size> m_values;
@@ -351,7 +413,8 @@ protected:
   // Note that this object owns the storage not instances of storage_type, so
   // where storage_type is created take care to avoid double freeing the items.
   template < typename Container, typename LoopBody >
-  runner_holder_type<::camp::decay<Container>, ::camp::decay<LoopBody>>*
+  std::pair<runner_holder_type<::camp::decay<Container>, ::camp::decay<LoopBody>>*,
+            id_type>
   emplace(Container&& c, LoopBody&& body)
   {
     using holder = runner_caller_type<::camp::decay<Container>, ::camp::decay<LoopBody>>;
@@ -361,11 +424,14 @@ protected:
 
     pointer_and_size value = storage_type::template create_value<holder>(
         m_aloc, vtable, std::forward<Container>(c), std::forward<LoopBody>(body));
+
+    id_type inner_id = m_values.size();
     m_values.emplace_back(std::move(value));
 
     m_num_nodes = m_values.size();
 
-    return value_type::template get_holder<holder>(m_values.back().ptr);
+    return {value_type::template get_holder<holder>(m_values.back().ptr),
+            inner_id};
   }
 };
 

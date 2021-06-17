@@ -131,7 +131,7 @@ void testWorkGroupCollectionUnorderedMultiple(
           working_ptr1[i] += type1(i) + test_val1;
         });
         if (!nodes[j]) {
-          nodes[j] = g.add_node(collection, std::move(args1));
+          nodes[j] = g.add_collection_node(collection, std::move(args1));
         } else {
           nodes[j].reset(std::move(args1));
         }
@@ -145,7 +145,7 @@ void testWorkGroupCollectionUnorderedMultiple(
           working_ptr2[i] += type2(i) + test_val2;
         });
         if (!nodes[j+num1]) {
-          nodes[j+num1] = g.add_node(collection, std::move(args2));
+          nodes[j+num1] = g.add_collection_node(collection, std::move(args2));
         } else {
           nodes[j+num1].reset(std::move(args2));
         }
@@ -159,7 +159,7 @@ void testWorkGroupCollectionUnorderedMultiple(
           working_ptr3[i] += type3(i) + test_val3;
         });
         if (!nodes[j+num1+num2]) {
-          nodes[j+num1+num2] = g.add_node(collection, std::move(args3));
+          nodes[j+num1+num2] = g.add_collection_node(collection, std::move(args3));
         } else {
           nodes[j+num1+num2].reset(std::move(args3));
         }

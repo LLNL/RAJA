@@ -80,12 +80,12 @@ void testWorkGroupCollectionOrderedSingle(IndexType begin, IndexType end)
   IndexType test_val(5);
 
   {
-    g.add_node(collection, RAJA::expt::graph::FusibleForall<ForallExecPolicy>(
+    g.add_collection_node(collection, RAJA::expt::graph::FusibleForall<ForallExecPolicy>(
         RAJA::TypedRangeSegment<IndexType>{ begin, end },
         [=] RAJA_HOST_DEVICE (IndexType i) {
       working_array[i] += i;
     }));
-    g.add_node(collection, RAJA::expt::graph::FusibleForall(ForallExecPolicy{},
+    g.add_collection_node(collection, RAJA::expt::graph::FusibleForall(ForallExecPolicy{},
         RAJA::TypedRangeSegment<IndexType>{ begin, end },
         [=] RAJA_HOST_DEVICE (IndexType i) {
       working_array[i] += test_val;

@@ -24,7 +24,7 @@
 template < typename graph_type >
 struct RandomGraph
 {
-  using id_type = typename graph_type::id_type;
+  using id_type = RAJA::expt::graph::id_type;
 
   static const size_t graph_min_nodes = 0;
   static const size_t graph_max_nodes = 1024;
@@ -107,13 +107,13 @@ struct RandomGraph
   template < typename CollectionView, typename NodeArg >
   auto add_collection_node(size_t node_id, std::vector<size_t> const& edges_to_node,
                            CollectionView& cv, NodeArg&& arg)
-      -> decltype(camp::val<graph_type>().add_node(cv, std::forward<NodeArg>(arg)))
+      -> decltype(camp::val<graph_type>().add_collection_node(cv, std::forward<NodeArg>(arg)))
   {
     assert(node_id < m_num_nodes);
     assert(node_id == m_nodes.size()-1);
 
     // add node to graph
-    auto n = m_g.add_node(cv, std::forward<NodeArg>(arg));
+    auto n = m_g.add_collection_node(cv, std::forward<NodeArg>(arg));
 
     // add edges for node in real graph
     for (size_t edge_to_node : edges_to_node) {

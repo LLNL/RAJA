@@ -368,14 +368,16 @@ struct DAG
   }
 
   template < typename collection_type, typename node_args >
-  node_view<node_args> add_node(CollectionView<collection_type> const& collection_view,
-                                node_args&& args)
+  node_view<node_args> add_collection_node(
+      CollectionView<collection_type> const& collection_view,
+      node_args&& args)
   {
+    id_type collection_inner_id = invalid_id;
     auto node = new node_type<node_args>(
-        *collection_view,
+        *collection_view, collection_inner_id,
         std::forward<node_args>(args));
     // store node in unique_ptr in container, get id
-    id_type node_id = insert_node(node);
+    id_type node_id = insert_collection_node(node, collection_view.id, collection_inner_id);
     return {node_id, node};
   }
 
@@ -442,6 +444,16 @@ private:
     m_node_data->collections.emplace_back(collection);
     collection->set_my_id(collection_id);
     return collection_id;
+  }
+
+  id_type insert_collection_node(detail::NodeData* node_data,
+                                 id_type collection_id,
+                                 id_type collection_inner_id)
+  {
+    id_type node_id = m_node_data->node_data.size();
+    m_node_data->node_data.emplace_back(node_data);
+    m_node_connections.emplace_back(node_id, collection_id, collection_inner_id);
+    return node_id;
   }
 
   id_type insert_node(detail::NodeData* node_data)

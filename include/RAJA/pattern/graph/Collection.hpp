@@ -34,6 +34,11 @@ namespace detail
 
 struct CollectionArgs { };
 
+struct CollectionNodeData : NodeData
+{
+  virtual void enqueue(NodeData* node, id_type collection_inner_id) = 0;
+};
+
 struct Collection
 {
   Collection() = delete;
@@ -50,6 +55,8 @@ struct Collection
   }
 
   virtual ~Collection() = default;
+
+  virtual detail::CollectionNodeData* newExecNode() = 0;
 
   size_t get_my_id() const
   {
