@@ -27,6 +27,7 @@
 #include "RAJA/policy/hip/policy.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/policy/openmp_target/policy.hpp"
+#include "RAJA/internal/get_platform.hpp"
 
 namespace RAJA
 {
