@@ -44,7 +44,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
       RAJA::resources::Event e = 
         RAJA::expt::launch<launch_policy>(res_cuda,
-        RAJA::expt::Grid(RAJA::expt::Teams(1024),
+        RAJA::expt::Grid(RAJA::expt::Teams(64),
                          RAJA::expt::Threads(1), "RAJA Teams kernel"), 
       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx)  {
 
