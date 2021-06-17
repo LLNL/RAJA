@@ -73,12 +73,17 @@ private:
   using node_data_container = typename DAG::node_data_container;
 
   std::vector<detail::NodeExec> m_node_execs;
+  std::vector<std::unique_ptr<detail::CollectionNodeData>> m_collection_execs;
   std::shared_ptr<node_data_container> m_node_data;
 
   DAGExec(DAG& dag)
     : m_node_data(dag.m_node_data)
   {
     m_node_execs.reserve(dag.m_node_connections.size());
+    m_collection_execs.reserve(m_node_data->collections.size());
+    for (auto& collection : m_node_data->collections) {
+      m_collection_execs.emplace_back(collection->newExecNode());
+    }
     // populate m_node_execs in a correct order
     dag.forward_depth_first_traversal(
           [](detail::NodeConnections&) {

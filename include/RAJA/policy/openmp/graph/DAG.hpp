@@ -124,6 +124,7 @@ private:
 
   std::vector<NodeExecConnections*> m_first_node_execs;
   std::vector<NodeExecConnections> m_node_execs;
+  std::vector<std::unique_ptr<detail::CollectionNodeData>> m_collection_execs;
   std::shared_ptr<node_data_container> m_node_data;
 
   DAGExec(DAG& dag)
@@ -133,6 +134,10 @@ private:
     m_node_execs.reserve(dag.m_node_connections.size());
     for (detail::NodeConnections& connections : dag.m_node_connections) {
       m_node_execs.emplace_back(connections, *m_node_data);
+    }
+    m_collection_execs.reserve(m_node_data->collections.size());
+    for (auto& collection : m_node_data->collections) {
+      m_collection_execs.emplace_back(collection->newExecNode());
     }
     // add children in second pass as child pointers point into same array
     for (size_t i = 0; i < dag.m_node_connections.size(); ++i) {
@@ -220,11 +225,17 @@ private:
   };
 
   std::vector<NodeExecConnections> m_node_execs;
+  std::vector<std::unique_ptr<detail::CollectionNodeData>> m_collection_execs;
   std::shared_ptr<node_data_container> m_node_data;
 
   DAGExec(DAG& dag)
     : m_node_data(dag.m_node_data)
   {
+    m_node_execs.reserve(dag.m_node_connections.size());
+    m_collection_execs.reserve(m_node_data->collections.size());
+    for (auto& collection : m_node_data->collections) {
+      m_collection_execs.emplace_back(collection->newExecNode());
+    }
     // populate m_node_execs in a correct order
     dag.forward_breadth_first_traversal(
           [](detail::NodeConnections&) {
