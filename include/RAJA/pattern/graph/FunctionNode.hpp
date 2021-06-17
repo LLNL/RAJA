@@ -104,6 +104,11 @@ struct FunctionNode : detail::NodeData
 
   virtual ~FunctionNode() = default;
 
+  size_t get_num_iterations() const override
+  {
+    return 1;
+  }
+
   FunctionBody const& get_function() const
   {
     return m_function;

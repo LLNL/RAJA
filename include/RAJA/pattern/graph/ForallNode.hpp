@@ -163,6 +163,14 @@ struct ForallNode : detail::NodeData
 
   virtual ~ForallNode() = default;
 
+  size_t get_num_iterations() const override
+  {
+    using std::begin;
+    using std::end;
+    using std::distance;
+    return distance(begin(m_container), end(m_container));
+  }
+
   ExecutionPolicy const& get_exec_policy() const
   {
     return m_policy;

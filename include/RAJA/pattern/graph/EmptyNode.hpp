@@ -81,6 +81,11 @@ struct EmptyNode : detail::NodeData
 
   virtual ~EmptyNode() = default;
 
+  size_t get_num_iterations() const override
+  {
+    return 0;
+  }
+
 protected:
   void exec() override
   {

@@ -183,6 +183,14 @@ struct FusibleForallNode : ::RAJA::expt::graph::detail::NodeData
 
   virtual ~FusibleForallNode() = default;
 
+  size_t get_num_iterations() const override
+  {
+    using std::begin;
+    using std::end;
+    using std::distance;
+    return distance(begin(m_holder->m_segment), end(m_holder->m_segment));
+  }
+
   ExecutionPolicy const& get_exec_policy() const
   {
     return m_policy;

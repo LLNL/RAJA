@@ -55,6 +55,8 @@ struct NodeData
 
   virtual ~NodeData() = default;
 
+  virtual size_t get_num_iterations() const = 0;
+
 protected:
   friend NodeExec;
 
