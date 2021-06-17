@@ -167,8 +167,6 @@ RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip hip
 
   auto func = impl::forall_hip_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
 
-  hipStream_t stream = hip_res.get_stream();
-
   //
   // Compute the requested iteration space size
   //
@@ -201,17 +199,15 @@ RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip hip
       // Privatize the loop_body, using make_launch_body to setup reductions
       //
       LOOP_BODY body = RAJA::hip::make_launch_body(
-          gridSize, blockSize, shmem, stream, std::forward<LoopBody>(loop_body));
+          gridSize, blockSize, shmem, hip_res, std::forward<LoopBody>(loop_body));
 
 
       //
       // Launch the kernels
       //
       void *args[] = {(void*)&body, (void*)&begin, (void*)&len};
-      RAJA::hip::launch((const void*)func, gridSize, BlockSize, args, shmem, stream);
+      RAJA::hip::launch((const void*)func, gridSize, BlockSize, args, shmem, hip_res, Async);
     }
-
-    if (!Async) { RAJA::hip::synchronize(stream); }
 
     RAJA_FT_END;
   }
@@ -241,19 +237,23 @@ template <typename LoopBody,
           size_t BlockSize,
           bool Async,
           typename... SegmentTypes>
-RAJA_INLINE void forall_impl(ExecPolicy<seq_segit, hip_exec<BlockSize, Async>>,
-                             const TypedIndexSet<SegmentTypes...>& iset,
-                             LoopBody&& loop_body)
+RAJA_INLINE resources::EventProxy<resources::Hip>
+forall_impl(resources::Hip r,
+            ExecPolicy<seq_segit, hip_exec<BlockSize, Async>>,
+            const TypedIndexSet<SegmentTypes...>& iset,
+            LoopBody&& loop_body)
 {
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi) {
-    iset.segmentCall(isi,
+    iset.segmentCall(r,
+                     isi,
                      detail::CallForall(),
                      hip_exec<BlockSize, true>(),
                      loop_body);
   }  // iterate over segments of index set
 
-  if (!Async) RAJA::hip::synchronize();
+  if (!Async) RAJA::hip::synchronize(r);
+  return resources::EventProxy<resources::Hip>(r);
 }
 
 }  // namespace hip

@@ -254,6 +254,11 @@ public:
   template < typename segment_T, typename loop_T >
   inline void enqueue(segment_T&& seg, loop_T&& loop_body)
   {
+    {
+      // ignore zero length loops
+      using std::begin; using std::end;
+      if (begin(seg) == end(seg)) return;
+    }
     if (m_storage.begin() == m_storage.end()) {
       // perform auto-reserve on reuse
       reserve(m_max_num_loops, m_max_storage_bytes);
