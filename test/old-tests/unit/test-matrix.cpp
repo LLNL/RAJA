@@ -82,10 +82,10 @@
 using MatrixTestTypes = ::testing::Types<
 
 //    // These tests use the platform default SIMD architecture
-//    RAJA::SquareMatrixRegister<double, RAJA::ColMajorLayout>,
+//    RAJA::SquareMatrixRegister<double, RAJA::ColMajorLayout>
 //    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout>,
-//    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4, 2>
-    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 2, 4>
+    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2, 2>
+//    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4, 2>
 
 //RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2, 4>
 //    RAJA::SquareMatrixRegister<float, RAJA::ColMajorLayout>,
@@ -587,15 +587,15 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
   matrix_t m;
   for(camp::idx_t j = 0;j < num_columns; ++ j){
     for(camp::idx_t i = 0;i < num_rows; ++ i){
-      m.set(element_t(NO_OPT_ZERO + 5+i+j*j), i,j);
+      m.set(element_t(NO_OPT_ZERO + i*num_columns + j + 1), i,j);
     }
   }
 
 
   {
-    col_vector_t v;
-    for(camp::idx_t i = 0;i < num_rows; ++ i){
-      v.set(NO_OPT_ZERO + 3 + i*2, i);
+    row_vector_t v;
+    for(camp::idx_t i = 0;i < num_columns; ++ i){
+      v.set(NO_OPT_ZERO + i + 1, i);
     }
 
 
@@ -615,7 +615,7 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
         expected += m.get(i,j)*v.get(j);
       }
 
-      printf("mv: i=%d, val=%lf, %s", (int)i, (double)mv.get(0), mv.to_string().c_str());
+      printf("mv: i=%d, val=%lf, expected=%lf\n", (int)i, (double)mv.get(i), (double)expected);
 
       ASSERT_SCALAR_EQ(mv.get(i), expected);
     }

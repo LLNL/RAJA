@@ -800,6 +800,20 @@ namespace RAJA
 
 
 
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      register_type segmented_broadcast(camp::idx_t segbits, camp::idx_t segment) const {
+        // compute the register to point at
+        camp::idx_t reg = segment >> segbits;
+
+        // compute wich segment within the register we're pointing at
+        camp::idx_t seg = segment & ( (1<<segbits) - 1);
+
+        // return the segmented broadcast of our register
+        return m_registers[reg].segmented_broadcast(segbits, seg);
+      }
+
+
       /*!
        * @brief Converts to vector to a string
        *

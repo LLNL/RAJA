@@ -42,8 +42,8 @@ namespace RAJA
       using self_type = TensorRegister<REGISTER_POLICY, T, TensorLayout<ROW_ORD, COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>>;
       using base_type = internal::TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, TensorLayout<ROW_ORD, COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>>>;
       using register_type = Register<T, REGISTER_POLICY>;
-      using row_vector_type = VectorRegister<T, REGISTER_POLICY, ROW_SIZE>;
-      using column_vector_type = VectorRegister<T, REGISTER_POLICY, COL_SIZE>;
+      using row_vector_type = VectorRegister<T, REGISTER_POLICY, COL_SIZE>;
+      using column_vector_type = VectorRegister<T, REGISTER_POLICY, ROW_SIZE>;
       using register_policy = REGISTER_POLICY;
       using element_type = T;
       using layout_type = TensorLayout<ROW_ORD, COL_ORD>;
@@ -65,7 +65,7 @@ namespace RAJA
 
       // We only allow matrix sizes that exactly fit in some number of registers
       static_assert((ROW_SIZE*COL_SIZE) == s_num_registers*s_elements_per_register,
-          "Matrix must exactly fit into an integer number of registers");
+          "MatrixRegister must be dimensioned to exactly fit an integer number of registers");
 
       using log_base2_t = RAJA::LogBase2<s_elements_per_register>;
 
@@ -79,6 +79,9 @@ namespace RAJA
       static constexpr camp::idx_t s_minor_dim_elements =
           layout_type::is_row_major() ? s_num_columns : s_num_rows;
 
+      // number of (full) registers that span the minor dim
+      // if a single register is split across multiple rows or columns, then
+      // this is 0
       static constexpr camp::idx_t s_minor_dim_registers =
           s_minor_dim_elements / s_elements_per_register;
 
@@ -88,7 +91,6 @@ namespace RAJA
 
       static constexpr camp::idx_t s_segbits = RAJA::LogBase2<s_minor_dim_elements>::value;
 
-      static constexpr camp::idx_t s_segments = 1;
 
 
       template<typename IDX>
@@ -337,7 +339,7 @@ namespace RAJA
         // if it's dense in columns and rows, just do a dense load
         if((layout_type::is_row_major()&&(row_stride==COL_SIZE)) ||
            (layout_type::is_column_major()&&(col_stride==ROW_SIZE))){
-
+          printf("load_packed dense\n");
           for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
             m_registers[reg].load_packed(ptr + reg*s_elements_per_register);
           }
@@ -348,12 +350,17 @@ namespace RAJA
 
           // one or more registers per column
           if(s_minor_dim_registers){
+            camp::idx_t reg = 0;
             for(camp::idx_t row = 0;row < ROW_SIZE;++ row){
+              for(camp::idx_t colreg = 0;colreg < s_minor_dim_registers; ++ colreg){
 
-              camp::idx_t offset = row*row_stride;
+                camp::idx_t offset = row*row_stride + colreg*s_elements_per_register;
 
-              m_registers[row].load_packed(ptr + offset);
+                m_registers[reg].load_packed(ptr + offset);
 
+                reg ++;
+
+              }
             }
           }
           // more than one column per register
@@ -366,16 +373,23 @@ namespace RAJA
         else{
           // one or more registers per row
           if(s_minor_dim_registers){
+            printf("load_packed semi-dense col-major\n");
+            camp::idx_t reg = 0;
             for(camp::idx_t col = 0;col < COL_SIZE;++ col){
+              for(camp::idx_t rowreg = 0;rowreg < s_minor_dim_registers; ++ rowreg){
 
-              camp::idx_t offset = col*col_stride;
+                camp::idx_t offset = col*col_stride + rowreg*s_elements_per_register;
 
-              m_registers[col].load_packed(ptr + offset);
+                m_registers[reg].load_packed(ptr + offset);
 
+                reg ++;
+
+              }
             }
           }
           // more than one column per register
           else{
+            printf("load_packed strided col-major\n");
             // default to strided operation
             return load_strided(ptr, row_stride, col_stride);
           }
@@ -425,7 +439,9 @@ namespace RAJA
           if(s_minor_dim_registers){
             for(camp::idx_t i = 0;i < s_num_registers;++ i){
               camp::idx_t col = i / (s_minor_dim_registers ? s_minor_dim_registers : 1);
-              camp::idx_t row = s_elements_per_register * (i - (row*s_minor_dim_registers));
+              camp::idx_t row = s_elements_per_register * (i - (col*s_minor_dim_registers));
+              printf("m_registers[%d].load_strided(ptr+%d, %d)\n",
+                  (int)i, (int)(row*row_stride+col*col_stride), (int)row_stride);
               m_registers[i].load_strided(ptr+row*row_stride+col*col_stride, row_stride);
             }
           }
@@ -563,7 +579,7 @@ namespace RAJA
           if(s_minor_dim_registers){
             for(camp::idx_t i = 0;i < s_num_registers;++ i){
               camp::idx_t col = i / (s_minor_dim_registers ? s_minor_dim_registers : 1);
-              camp::idx_t row = s_elements_per_register * (i - (row*s_minor_dim_registers));
+              camp::idx_t row = s_elements_per_register * (i - (col*s_minor_dim_registers));
               m_registers[i].store_packed(ptr+row*row_stride+col*col_stride);
             }
           }
@@ -620,7 +636,7 @@ namespace RAJA
           if(s_minor_dim_registers){
             for(camp::idx_t i = 0;i < s_num_registers;++ i){
               camp::idx_t col = i / (s_minor_dim_registers ? s_minor_dim_registers : 1);
-              camp::idx_t row = s_elements_per_register * (i - (row*s_minor_dim_registers));
+              camp::idx_t row = s_elements_per_register * (i - (col*s_minor_dim_registers));
               m_registers[i].store_strided(ptr+row*row_stride+col*col_stride, row_stride);
             }
           }
@@ -773,8 +789,8 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      row_vector_type right_multiply_vector(column_vector_type v) const {
-        row_vector_type result(0);
+      column_vector_type right_multiply_vector(row_vector_type v) const {
+        column_vector_type result(0);
         return right_multiply_vector_accumulate(v, result);
       }
 
@@ -783,21 +799,9 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      column_vector_type left_multiply_vector(row_vector_type ) const {
-        if(layout_type::is_column_major()){
-          column_vector_type result;
-//          for(camp::idx_t i = 0;i < s_num_registers;++ i){
-//            result.set(v.dot(m_registers[i]), i);
-//          }
-          return result;
-        }
-        else{
-          column_vector_type result(0);
-//          for(camp::idx_t i = 0;i < s_num_registers;++ i){
-//            result +=  m_registers[i] * v.get(i);
-//          }
-          return result;
-        }
+      row_vector_type left_multiply_vector(column_vector_type v) const {
+        row_vector_type result(0);
+        return left_multiply_vector_accumulate(v, result);
       }
 
 
@@ -808,71 +812,106 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      row_vector_type right_multiply_vector_accumulate(column_vector_type const &v, row_vector_type result) const {
+      column_vector_type right_multiply_vector_accumulate(row_vector_type const &v, column_vector_type add) const {
+
+        column_vector_type result = add;
+
         if(layout_type::is_row_major()){
-//          for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
-//
-//            auto tmp =
-//                m_registers[reg].segmented_dot(s_segbits, v.get_register(0));
-//
-//            printf("rmultvec(reg=%d): segbits=%d, tmp=%s", (int)reg, (int)s_segbits, tmp.to_string().c_str());
-//
-//                result.get_register(reg) += tmp;
-//
-//          }
 
-          camp::idx_t output_segment_size =  s_elements_per_register/(1<<s_segbits);
-          camp::idx_t num_output_vec_segments = s_num_rows / output_segment_size;
+          // 1 register is split over multiple rows
+          if(s_minor_dim_registers == 0){
 
-          printf("s_segbits=%d\n", (int)s_segbits);
-          printf("s_num_rows=%d\n", (int)s_num_rows);
-          printf("s_num_columns=%d\n", (int)s_num_columns);
+            // start by broadcasting the first segment in v across all of v
+            // we will use this term for all registers in the matrix
+            auto vv = v.segmented_broadcast(s_segbits, 0);
+            printf("v=%s\n", v.to_string().c_str());
+            printf("vv=%s\n", vv.to_string().c_str());
 
-          printf("output_segment_size=%d\n", (int)output_segment_size);
-          printf("num_output_vec_segments=%d\n", (int)num_output_vec_segments);
+            // loop over output segments, which is also the number of
+            // registers in the matrix (no kidding!)
+            for(camp::idx_t outseg = 0;outseg < s_num_registers;++ outseg){
 
-          // loop over chunks of result that we are going to compute
-          for(camp::idx_t output_vec_segment = 0;output_vec_segment < num_output_vec_segments;++ output_vec_segment){
+              // compute which result register we are accumulating into
+              camp::idx_t result_reg = outseg >> s_segbits;
 
-            printf("output_vec_segment=%d\n", (int)output_vec_segment);
+              // compute which segment within result_reg we are accumulating into
+              camp::idx_t result_seg = outseg - (result_reg<<s_segbits);
 
-            // localize the output_vec_segment to a specific output register and register segment
-            camp::idx_t output_reg = output_vec_segment*output_segment_size/s_elements_per_register;
-            camp::idx_t output_reg_segment = output_vec_segment - output_reg*s_elements_per_register/output_segment_size;
+              // compute segmented dot product to get output segment
+              auto value = m_registers[outseg].segmented_dot(s_segbits, result_seg, vv);
 
-            printf("  output_reg=%d\n", (int)output_reg);
-            printf("  output_reg_segment=%d\n", (int)output_reg_segment);
+              printf("outseg=%d, result_reg=%d, result_seg=%d\n", (int)outseg, (int)result_reg, (int)result_seg);
 
+              printf("value=%s\n", value.to_string().c_str());
 
-            // loop over registers in each row
-//            for(camp::idx_t row_register = 0;row_register < s_num_registers;++ row_register){
+              // accumulate result
+              result.get_register(result_reg) += value;
+            }
 
-            camp::idx_t row_register = output_vec_segment;
+          }
+          // one or more registers per row
+          else{
 
-              printf("  row_register=%d\n", (int)row_register);
+            // Loop over rows
+            camp::idx_t reg = 0;
+            for(camp::idx_t row = 0;row < s_num_rows;++ row){
 
-              auto v_segment = v.get_register(0).segmented_broadcast(0, output_reg_segment);
+              // compute partial dot products for all registers in this row
+              auto rowsum = register_type(0);
+              for(camp::idx_t colreg = 0;colreg < s_minor_dim_registers;++ colreg){
 
+                rowsum = m_registers[reg].multiply_add(v.get_register(colreg), rowsum);
+                reg ++;
 
-              printf("    v_segment=%s", v_segment.to_string().c_str());
+              } // rowreg
 
+              // finish dot product by taking sum of rowsum
+              auto value = result.get(row) + rowsum.sum();
+              result.set(value, row);
 
-              auto dp = m_registers[row_register].segmented_dot(s_segbits, output_reg_segment, v_segment);
+            } // col
+          }
 
-              printf("    dp=%s", dp.to_string().c_str());
-
-              result.get_register(output_reg) += dp;
-
-
-
-//            } // row register
-
-          } // output segment
         }
         else{
-//          for(camp::idx_t i = 0;i < s_num_cols;++ i){
-//            result +=  m_registers[i] * v.get(i);
-//          }
+
+
+          // 1 register is split over multiple columns
+          if(s_minor_dim_registers == 0){
+            auto &mv = result.get_register(0);
+
+            // Loop over registers, which are also the segments in v
+            for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
+              auto v_seg = v.segmented_broadcast(s_segbits, reg);
+              mv = m_registers[reg].multiply_add(v_seg, mv);
+            }
+
+            // Now sum segments in mv together to form final result
+            mv = mv.segmented_sum_segments(s_segbits);
+
+          }
+          // one or more registers per column
+          else{
+
+            // Loop over columns (which is also registers)
+            camp::idx_t reg = 0;
+            for(camp::idx_t col = 0;col < s_num_columns;++ col){
+
+              // extract column value from v
+              auto v_col = register_type(v.get(col));
+
+              // apply v_col to entire column (1 or more registers)
+              for(camp::idx_t rowreg = 0;rowreg < s_minor_dim_registers;++ rowreg){
+
+                auto &mv = result.get_register(rowreg);
+                mv = m_registers[reg].multiply_add(v_col, mv);
+
+                reg ++;
+
+              } // rowreg
+            } // col
+          }
+
         }
         return result;
       }
@@ -884,8 +923,8 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      void left_multiply_vector_accumulate(register_type &acc, register_type v) const {
-        acc.inplace_add(left_multiply_vector(v));
+      row_vector_type left_multiply_vector_accumulate(column_vector_type const &v, row_vector_type result) const {
+        return result;
       }
 
 

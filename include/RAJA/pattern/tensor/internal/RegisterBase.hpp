@@ -865,6 +865,43 @@ namespace internal {
       }
 
       /*!
+       * Sum segments together, with segment size defined by segbits
+       *
+       * Note: result is always in segment 0, rest of the result is zeroed
+       *
+       *  Example:
+       *
+       *  Given input vector  X = x0, x1, x2, x3, x4, x5, x6, x7
+       *
+       *  segbits=0 is equivalent to a vector sum
+       *
+       *      Result= x0+x1+x2+x3+x4+x5+x6+x7, 0, 0, 0, 0, 0, 0, 0
+       *
+       *  segbits=1 sums each pair.
+       *
+       *      Result= x0+x2+x4+x6, x1+x3+x5+x7, 0, 0, 0, 0, 0, 0
+       *
+       *
+       *  and so on up to segbits=3, which produces the original vector
+       *
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type segmented_sum_segments(camp::idx_t segbits) const
+      {
+        self_type result(0);
+
+        camp::idx_t mask = (1<<segbits)-1;
+
+        for(camp::idx_t i = 0;i < self_type::s_num_elem; ++ i){
+          auto value = getThis()->get(i) + result.get(i&mask);
+          result.set(value, i&mask);
+        }
+
+        return result;
+      }
+
+      /*!
        * Segmented dot product performs dot products
        * Note: segment size is 1<<segbits elements
        *       number of segments is s_num_elem>>seg_bits
@@ -954,12 +991,14 @@ namespace internal {
       {
         self_type result;
 
+        camp::idx_t mask = (1<<segbits)-1;
+        camp::idx_t offset = input_segment << segbits;
+
         // default implementation is dumb, just sum each value into
         // appropriate segment lane
         for(camp::idx_t i = 0;i < self_type::s_num_elem; ++ i){
-          int seg = i>>segbits;
 
-          int off = (self_type::s_num_elem>>segbits)*input_segment + seg;
+          auto off = (i&mask) + offset;
 
           result.set(getThis()->get(off), i);
         }
