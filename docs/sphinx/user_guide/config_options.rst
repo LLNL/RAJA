@@ -130,6 +130,7 @@ and their default settings:
       ENABLE_TBB                Off
       ENABLE_CUDA               Off
       ENABLE_HIP                Off
+      ENABLE_SYCL               Off
       =======================   ============================================
 
      Other compilation options are available via the following:
