@@ -23,13 +23,14 @@
 
 ####
 # In pre-build phase, allocate a node for builds
+# NOTE: Not specifying 'salloc -c 56' should allocate the max number of CPU cores
 allocate_resources (on ruby):
   variables:
     GIT_STRATEGY: none
   extends: .on_ruby
   stage: r_allocate_resources
   script:
-    - salloc -N 1 -c 36 -p pdebug -t 45 --no-shell --job-name=${ALLOC_NAME}
+    - salloc -N 1 -p pdebug -t 45 --no-shell --job-name=${ALLOC_NAME}
 
 ####
 # In post-build phase, deallocate resources

@@ -112,6 +112,7 @@ then
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
     # If building, then delete everything first
+    # NOTE: 'cmake --build . -j 12' is an attempt to reduce individual build resources
     rm -rf ${build_dir} 2>/dev/null
     mkdir -p ${build_dir} && cd ${build_dir}
 
@@ -119,7 +120,7 @@ then
     cmake \
       -C ${hostconfig_path} \
       ${project_dir}
-    cmake --build . -j 32
+    cmake --build . -j 12
     date
 fi
 
