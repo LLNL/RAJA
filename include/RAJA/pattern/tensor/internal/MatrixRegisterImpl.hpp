@@ -83,7 +83,13 @@ namespace RAJA
       // if a single register is split across multiple rows or columns, then
       // this is 0
       static constexpr camp::idx_t s_minor_dim_registers =
-          s_minor_dim_elements / s_elements_per_register;
+              s_minor_dim_elements / s_elements_per_register;
+
+      static_assert(s_minor_dim_registers >0  ||  log_base2_t::is_exact,
+          "Minor dimension smaller than a vector need to be a power of two fraction");
+
+      static_assert(s_minor_dim_registers == 0 || (s_minor_dim_elements % s_elements_per_register == 0),
+          "Minor dimensions greater than a vector length must be an integer number of vectors");
 
 
       static constexpr camp::idx_t s_major_dim_per_register =
@@ -812,11 +818,203 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      column_vector_type right_multiply_vector_accumulate(row_vector_type const &v, column_vector_type add) const {
-
-        column_vector_type result = add;
+      column_vector_type right_multiply_vector_accumulate(row_vector_type const &v, column_vector_type result) const {
 
         if(layout_type::is_row_major()){
+
+          // 1 register is split over multiple rows
+          if(s_minor_dim_registers == 0){
+
+            // start by broadcasting the first segment in v across all of v
+            // we will use this term for all registers in the matrix
+            auto vv = v.segmented_broadcast(s_segbits, 0);
+            printf("v=%s\n", v.to_string().c_str());
+            printf("vv=%s\n", vv.to_string().c_str());
+
+            // loop over output segments, which is also the number of
+            // registers in the matrix (no kidding!)
+            for(camp::idx_t outseg = 0;outseg < s_num_registers;++ outseg){
+
+              // compute which result register we are accumulating into
+              camp::idx_t result_reg = outseg >> s_segbits;
+
+              // compute which segment within result_reg we are accumulating into
+              camp::idx_t result_seg = outseg - (result_reg<<s_segbits);
+
+              // compute segmented dot product to get output segment
+              auto value = m_registers[outseg].segmented_dot(s_segbits, result_seg, vv);
+
+              printf("outseg=%d, result_reg=%d, result_seg=%d\n", (int)outseg, (int)result_reg, (int)result_seg);
+
+              printf("value=%s\n", value.to_string().c_str());
+
+              // accumulate result
+              result.get_register(result_reg) += value;
+            }
+
+          }
+          // one or more registers per row
+          else{
+
+            // Loop over rows
+            camp::idx_t reg = 0;
+            for(camp::idx_t row = 0;row < s_num_rows;++ row){
+
+              printf("row=%d\n", (int)row);
+
+
+              // compute partial dot products for all registers in this row
+              auto rowsum = register_type(0);
+              for(camp::idx_t colreg = 0;colreg < s_minor_dim_registers;++ colreg){
+
+                rowsum = m_registers[reg].multiply_add(v.get_register(colreg), rowsum);
+
+                printf("  colreg=%d, reg=%d\n", (int)colreg, (int)reg);
+                printf("  m_registers[reg]=%s",m_registers[reg].to_string().c_str());
+                printf("  v.get_register(colreg)=%s",v.get_register(colreg).to_string().c_str());
+                printf("  rowsum=%s",rowsum.to_string().c_str());
+
+                reg ++;
+
+              } // rowreg
+
+              // finish dot product by taking sum of rowsum
+              auto value = result.get(row) + rowsum.sum();
+              result.set(value, row);
+              printf("  value=%lf\n", (double)value);
+
+            } // col
+          }
+
+        }
+        else{
+
+
+          // 1 register is split over multiple columns
+          if(s_minor_dim_registers == 0){
+            auto &mv = result.get_register(0);
+
+
+            printf("v=%s\n", v.to_string().c_str());
+            printf("mv=%s\n", mv.to_string().c_str());
+
+
+            // Loop over registers, which are also the segments in v
+            for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
+              auto v_seg = v.segmented_broadcast_inner(s_segbits, reg);
+
+              printf("reg=%d, v_seg=%s\n", (int)reg, v_seg.to_string().c_str());
+              printf("        m_reg=%s\n", m_registers[reg].to_string().c_str());
+
+              mv = m_registers[reg].multiply_add(v_seg, mv);
+
+              printf("        mv=%s\n", mv.to_string().c_str());
+            }
+
+            // Now sum segments in mv together to form final result
+            mv = mv.segmented_sum_segments(s_segbits);
+
+            printf("mv summed=%s\n", mv.to_string().c_str());
+
+
+          }
+          // one or more registers per column
+          else{
+
+            // Loop over columns (which is also registers)
+            camp::idx_t reg = 0;
+            for(camp::idx_t col = 0;col < s_num_columns;++ col){
+
+              // extract column value from v
+              auto v_col = register_type(v.get(col));
+
+              // apply v_col to entire column (1 or more registers)
+              for(camp::idx_t rowreg = 0;rowreg < s_minor_dim_registers;++ rowreg){
+
+                auto &mv = result.get_register(rowreg);
+                mv = m_registers[reg].multiply_add(v_col, mv);
+
+                reg ++;
+
+              } // rowreg
+            } // col
+          }
+
+        }
+        return result;
+      }
+
+      /*!
+       * Matrix vector product with accumulation into another vector
+       *
+       * acc += v * (this)
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      row_vector_type left_multiply_vector_accumulate(column_vector_type const &v, row_vector_type result) const {
+
+        if(layout_type::is_row_major()){
+
+
+          // 1 register is split over multiple columns
+          if(s_minor_dim_registers == 0){
+            auto &vm = result.get_register(0);
+
+            printf("v=%s\n", v.to_string().c_str());
+
+
+            // Loop over registers, which are also the segments in v
+            for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
+              auto v_seg = v.segmented_broadcast_inner(s_segbits, reg);
+
+              printf("reg=%d, v_seg=%s\n", (int)reg, v_seg.to_string().c_str());
+
+              vm = m_registers[reg].multiply_add(v_seg, vm);
+
+              printf("        vm=%s\n", vm.to_string().c_str());
+            }
+
+            // Now sum segments in mv together to form final result
+            vm = vm.segmented_sum_segments(s_segbits);
+
+            printf("vm summed=%s\n", vm.to_string().c_str());
+
+
+          }
+          // one or more registers per column
+          else{
+
+            // Loop over rows (which is also registers)
+            camp::idx_t reg = 0;
+            for(camp::idx_t row = 0;row < s_num_rows;++ row){
+
+              // extract row value from v
+              auto v_row = register_type(v.get(row));
+
+              printf("row=%d, v_row=%s\n", (int)row, v_row.to_string().c_str());
+
+
+              // apply v_row to entire column (1 or more registers)
+              for(camp::idx_t colreg = 0;colreg < s_minor_dim_registers;++ colreg){
+
+
+
+                auto &mv = result.get_register(colreg);
+
+                printf("  colreg=%d, reg=%d, mv_col=%s\n", (int)colreg, (int)reg, mv.to_string().c_str());
+
+
+                mv = m_registers[reg].multiply_add(v_row, mv);
+
+                reg ++;
+
+              } // rowreg
+            } // col
+          }
+
+
+        }
+        else{
 
           // 1 register is split over multiple rows
           if(s_minor_dim_registers == 0){
@@ -872,58 +1070,8 @@ namespace RAJA
             } // col
           }
 
-        }
-        else{
-
-
-          // 1 register is split over multiple columns
-          if(s_minor_dim_registers == 0){
-            auto &mv = result.get_register(0);
-
-            // Loop over registers, which are also the segments in v
-            for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
-              auto v_seg = v.segmented_broadcast(s_segbits, reg);
-              mv = m_registers[reg].multiply_add(v_seg, mv);
-            }
-
-            // Now sum segments in mv together to form final result
-            mv = mv.segmented_sum_segments(s_segbits);
-
-          }
-          // one or more registers per column
-          else{
-
-            // Loop over columns (which is also registers)
-            camp::idx_t reg = 0;
-            for(camp::idx_t col = 0;col < s_num_columns;++ col){
-
-              // extract column value from v
-              auto v_col = register_type(v.get(col));
-
-              // apply v_col to entire column (1 or more registers)
-              for(camp::idx_t rowreg = 0;rowreg < s_minor_dim_registers;++ rowreg){
-
-                auto &mv = result.get_register(rowreg);
-                mv = m_registers[reg].multiply_add(v_col, mv);
-
-                reg ++;
-
-              } // rowreg
-            } // col
-          }
 
         }
-        return result;
-      }
-
-      /*!
-       * Matrix vector product with accumulation into another vector
-       *
-       * acc += v * (this)
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      row_vector_type left_multiply_vector_accumulate(column_vector_type const &v, row_vector_type result) const {
         return result;
       }
 

@@ -84,7 +84,7 @@ using MatrixTestTypes = ::testing::Types<
 //    // These tests use the platform default SIMD architecture
 //    RAJA::SquareMatrixRegister<double, RAJA::ColMajorLayout>
 //    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout>,
-    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2, 2>
+    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4, 4>
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4, 2>
 
 //RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2, 4>
@@ -578,7 +578,7 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
 
   using matrix_t = TypeParam;
   using element_t = typename matrix_t::element_type;
-  using col_vector_t = typename matrix_t::column_vector_type;
+  using column_vector_t = typename matrix_t::column_vector_type;
   using row_vector_t = typename matrix_t::row_vector_type;
   static constexpr camp::idx_t num_rows = matrix_t::s_num_rows;
   static constexpr camp::idx_t num_columns = matrix_t::s_num_columns;
@@ -621,27 +621,27 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
     }
   }
 
-//  {
-//
-//    row_vector_t v;
-//    for(camp::idx_t j = 0;j < num_columns; ++ j){
-//      v.set(NO_OPT_ZERO + 3 + j*2, j);
-//    }
-//
-//    // matrix vector product
-//    auto mv = m.left_multiply_vector(v);
-//
-//    // check result
-//    for(camp::idx_t j = 0;j < num_columns; ++ j){
-//      element_t expected(0);
-//
-//      for(camp::idx_t i = 0;i < num_rows; ++ i){
-//        expected += m.get(i,j)*v.get(i);
-//      }
-//
-//      ASSERT_SCALAR_EQ(mv.get(j), expected);
-//    }
-//  }
+  {
+
+    column_vector_t v;
+    for(camp::idx_t j = 0;j < num_rows; ++ j){
+      v.set(NO_OPT_ZERO + j + 1, j);
+    }
+
+    // matrix vector product
+    auto vm = m.left_multiply_vector(v);
+
+    // check result
+    for(camp::idx_t j = 0;j < num_columns; ++ j){
+      element_t expected(0);
+
+      for(camp::idx_t i = 0;i < num_rows; ++ i){
+        expected += m.get(i,j)*v.get(i);
+      }
+
+      ASSERT_SCALAR_EQ(vm.get(j), expected);
+    }
+  }
 }
 
 #if 0

@@ -1007,6 +1007,62 @@ namespace internal {
       }
 
 
+      /*!
+       * Segmented broadcast spreads a segment to all output segments of a vector
+       *
+       * Note: segment size is 1<<segbits elements
+       *       number of segments is s_num_elem>>seg_bits
+       *
+       *
+       *  Example:
+       *
+       *  Given input vector  X = x0, x1, x2, x3, x4, x5, x6, x7
+       *
+       *  segbits=0 means the input segment size is 1, so this selects the
+       *      value at x[input_segmnet] and broadcasts it to the rest of the
+       *      vector
+       *
+       *      input segments allowed are from 0 to 7, inclusive
+       *
+       *      input_segment=0
+       *      Result= x0, x0, x0, x0, x0, x0, x0, x0
+       *
+       *      input_segment=5
+       *      Result= x5, x5, x5, x5, x5, x5, x5, x5
+       *
+       *  segbits=1 means that the input segments are each pair of x values:
+       *
+       *      input segments allowed are from 0 to 3, inclusive
+       *
+       *      output_segment=0:
+       *      Result= x0, x0, x0, x0, x1, x1, x1, x1
+       *
+       *      output_segment=1:
+       *      Result= x2, x2, x2, x2, x3, x3, x3, x3
+       *
+       *      output_segment=3:
+       *      Result= x6, x6, x6, x6, x7, x7, x7, x7
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type segmented_broadcast_inner(camp::idx_t segbits, camp::idx_t input_segment) const
+      {
+        self_type result;
+
+        camp::idx_t offset = input_segment << segbits;
+
+        // default implementation is dumb, just sum each value into
+        // appropriate segment lane
+        for(camp::idx_t i = 0;i < self_type::s_num_elem; ++ i){
+
+          auto off = (i>>segbits) + offset;
+
+          result.set(getThis()->get(off), i);
+        }
+
+        return result;
+      }
+
 
       /*!
        * @brief Converts to vector to a string
