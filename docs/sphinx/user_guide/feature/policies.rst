@@ -533,7 +533,7 @@ cuda/hip_reduce         any CUDA/HIP  Parallel reduction in a CUDA/HIP kernel
                                       reduction value is finalized).
 cuda/hip_reduce_atomic  any CUDA/HIP  Same as above, but reduction may use CUDA
                         policy        atomic operations.
-======================= ============= ===========================================
+======================= ============= ==========================================
 
 .. note:: RAJA reductions used with SIMD execution policies are not
           guaranteed to generate correct results at present.
