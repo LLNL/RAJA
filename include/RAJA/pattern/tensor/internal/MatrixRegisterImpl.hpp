@@ -54,7 +54,7 @@ namespace RAJA
       static constexpr camp::idx_t s_num_columns = COL_SIZE;
 
 
-    private:
+
 
       static constexpr camp::idx_t s_elements_per_register =
           RegisterTraits<REGISTER_POLICY,T>::s_num_elem;
@@ -97,7 +97,7 @@ namespace RAJA
 
       static constexpr camp::idx_t s_segbits = RAJA::LogBase2<s_minor_dim_elements>::value;
 
-
+    private:
 
       template<typename IDX>
       RAJA_INLINE

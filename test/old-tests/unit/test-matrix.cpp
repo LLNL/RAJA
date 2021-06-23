@@ -84,7 +84,7 @@ using MatrixTestTypes = ::testing::Types<
 //    // These tests use the platform default SIMD architecture
 //    RAJA::SquareMatrixRegister<double, RAJA::ColMajorLayout>
 //    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout>,
-    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4, 4>
+    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout,4, 4>
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4, 2>
 
 //RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2, 4>
@@ -120,7 +120,7 @@ protected:
 };
 TYPED_TEST_SUITE_P(MatrixTest);
 
-#if 1
+#if 0
 /*
  * We are using ((double)rand()/RAND_MAX) for input values so the compiler cannot do fancy
  * things, like constexpr out all of the intrinsics.
@@ -644,72 +644,65 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
   }
 }
 
-#if 0
+#endif
 
 TYPED_TEST_P(MatrixTest, MatrixMatrix)
 {
 
+  static constexpr camp::idx_t N = TypeParam::s_num_rows;
+  static constexpr camp::idx_t M = TypeParam::s_num_columns;
+  using element_t = typename TypeParam::element_type;
+  using layout_t = typename TypeParam::layout_type;
+
   using A_t = TypeParam;
-  using B_t = TypeParam;
-  using element_t = typename A_t::element_type;
-
-  camp::idx_t size_a0 = 1;
-  camp::idx_t size_b0 = 1;
+  using B_t = RAJA::RectMatrixRegister<element_t, layout_t, M, N>;
+  using C_t = RAJA::RectMatrixRegister<element_t, layout_t, N, N>;
 
 
-  // Loop over different sizes of matrices A and B
-  //
-  // A = size_a x size_b
-  // B = size_b x size_a
-  // C = size_a x size_a
-  for(camp::idx_t size_a = size_a0;size_a <= A_t::register_type::s_num_elem;size_a ++){
-    for(camp::idx_t size_b = size_b0;size_b <= A_t::register_type::s_num_elem;size_b ++){
 
-      // initialize two matrices
-      A_t A;
-      A.clear();
+  // initialize two matrices
+  A_t A;
+  A.clear();
 
-      for(camp::idx_t j = 0;j < size_b; ++ j){
-        for(camp::idx_t i = 0;i < size_a; ++ i){
-          A.set(element_t(NO_OPT_ZERO + i+j*j), i,j);
-        }
-      }
+  for(camp::idx_t j = 0;j < M; ++ j){
+    for(camp::idx_t i = 0;i < N; ++ i){
+      A.set(element_t(NO_OPT_ZERO + i*M+j), i,j);
+    }
+  }
 
-      B_t B;
-      B.clear();
-      for(camp::idx_t j = 0;j < size_a; ++ j){
-        for(camp::idx_t i = 0;i < size_b; ++ i){
-          B.set(element_t(NO_OPT_ZERO + i*i+2*j), i,j);
-        }
-      }
-
-
-      // matrix matrix product
-      auto C = A*B;
-
-
-      // check result
-      for(camp::idx_t i = 0;i < size_a; ++ i){
-
-        for(camp::idx_t j = 0;j < size_a; ++ j){
-
-          // do dot product to compute C(i,j)
-          element_t expected(0);
-          for(camp::idx_t k = 0;k < size_b; ++ k){
-            expected += A.get(i, k) * B.get(k,j);
-          }
-
-          ASSERT_SCALAR_EQ(C.get(i,j), expected);
-        }
-      }
-
-
+  B_t B;
+  B.clear();
+  for(camp::idx_t j = 0;j < M; ++ j){
+    for(camp::idx_t i = 0;i < N; ++ i){
+      B.set(element_t(NO_OPT_ZERO + j*N+i), i,j);
     }
   }
 
 
+  // matrix matrix product
+  C_t C = A.matrix_multiply(B);
+
+
+  // check result
+  for(camp::idx_t i = 0;i < N; ++ i){
+
+    for(camp::idx_t j = 0;j < N; ++ j){
+
+      // dot product to compute C(i,j)
+      element_t expected(0);
+      for(camp::idx_t k = 0;k < M; ++ k){
+        expected += A.get(i, k) * B.get(k,j);
+      }
+
+      ASSERT_SCALAR_EQ(C.get(i,j), expected);
+    }
+  }
+
 
 }
+
+#if 0
+
 TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
 {
 
@@ -1364,14 +1357,14 @@ TYPED_TEST_P(MatrixTest, ETMatrixTransposeNegate)
 
 
 REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
-                                          MatrixCtor,
-                                          MatrixGetSet,
-                                          MatrixLoad,
-                                          MatrixStore,
-                                          MatrixViewLoad,
-                                          MatrixViewStore,
-                                          MatrixVector
-//                                          MatrixMatrix,
+//                                          MatrixCtor,
+//                                          MatrixGetSet,
+//                                          MatrixLoad,
+//                                          MatrixStore,
+//                                          MatrixViewLoad,
+//                                          MatrixViewStore,
+//                                          MatrixVector,
+                                          MatrixMatrix
 //                                          MatrixMatrixAccumulate,
 //                                          MatrixTranspose,
 //
@@ -1390,4 +1383,4 @@ INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, MatrixTest, MatrixTestTypes);
 
 
 
-#endif
+
