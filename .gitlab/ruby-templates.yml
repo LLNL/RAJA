@@ -31,6 +31,7 @@ allocate_resources (on ruby):
   stage: r_allocate_resources
   script:
     - salloc -N 1 -p pdebug -t 45 --no-shell --job-name=${ALLOC_NAME}
+    
 
 ####
 # In post-build phase, deallocate resources
@@ -52,4 +53,3 @@ release_resources (on ruby):
 
 .build_and_test_on_ruby_advanced:
   extends: [.build_and_test_on_ruby, .advanced_pipeline]
-
