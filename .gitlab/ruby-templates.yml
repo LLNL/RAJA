@@ -31,7 +31,6 @@ allocate_resources (on ruby):
   stage: r_allocate_resources
   script:
     - salloc -N 1 -p pdebug -t 45 --no-shell --job-name=${ALLOC_NAME}
-    
 
 ####
 # In post-build phase, deallocate resources
