@@ -40,7 +40,13 @@
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
-#include "RAJA/policy/cuda/atomic.hpp"
+
+#if defined(RAJA_ENABLE_DESUL_ATOMICS)
+    #include "RAJA/policy/desul/atomic_desul_cuda.hpp"
+#else
+    #include "RAJA/policy/cuda/atomic.hpp"
+#endif
+
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
@@ -60,7 +66,7 @@ template <typename T>
 struct atomic<sum<T>> {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomicAdd<T>(RAJA::cuda_atomic{}, &val, v);
+    RAJA::atomicAdd(RAJA::cuda_atomic{}, &val, v);
   }
 };
 
@@ -68,7 +74,7 @@ template <typename T>
 struct atomic<min<T>> {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomicMin<T>(RAJA::cuda_atomic{}, &val, v);
+    RAJA::atomicMin(RAJA::cuda_atomic{}, &val, v);
   }
 };
 
@@ -76,7 +82,7 @@ template <typename T>
 struct atomic<max<T>> {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomicMax<T>(RAJA::cuda_atomic{}, &val, v);
+    RAJA::atomicMax(RAJA::cuda_atomic{}, &val, v);
   }
 };
 
