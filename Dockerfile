@@ -89,6 +89,6 @@ ENV GTEST_COLOR=1
 COPY --chown=axom:axom . /home/axom/workspace
 WORKDIR /home/axom/workspace
 RUN /bin/bash -c 'source /opt/intel/oneapi/setvars.sh && mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=dpcpp -DENABLE_SYCL=On -DENABLE_OPENMP=OFF -DENABLE_ALL_WARNINGS=Off -DBLT_CXX_STD=c++17 ..'
-RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh && cd build && make -j"
+RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh && cd build && make -j 16"
 RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh && cd build && ctest -T test --output-on-failure"
 
