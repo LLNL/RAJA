@@ -27,7 +27,7 @@
 namespace RAJA
 {
 
-using loop_atomic = seq_atomic;
+// Delete?
 
 }  // namespace RAJA
 

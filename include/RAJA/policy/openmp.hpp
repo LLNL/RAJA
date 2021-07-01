@@ -29,9 +29,7 @@
 #include <iostream>
 #include <thread>
 
-#if defined(RAJA_ENABLE_DESUL_ATOMICS)
-    #include "RAJA/policy/desul/atomic_desul_openmp.hpp"
-#else
+#if !defined(RAJA_ENABLE_DESUL_ATOMICS)
     #include "RAJA/policy/openmp/atomic.hpp"
 #endif
 

@@ -139,6 +139,10 @@ struct omp_for_schedule_exec : make_policy_pattern_launch_platform_t<Policy::ope
         "Schedule type must be one of: Auto|Runtime|Static|Dynamic|Guided");
 };
 
+///
+///  Struct defining an alias for openmp atomics
+///
+struct omp_atomic {};
  
 ///
 ///  Internal type aliases supporting 'omp for schedule( )' for specific
@@ -287,6 +291,11 @@ struct omp_synchronize : make_policy_pattern_launch_t<Policy::openmp,
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
+
+///
+/// Type alias for atomics
+///
+using policy::omp::omp_atomic;
 
 ///
 /// Type aliases to simplify common omp parallel for loop execution

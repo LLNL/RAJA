@@ -42,9 +42,9 @@
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 
 #if defined(RAJA_ENABLE_DESUL_ATOMICS)
-    #include "RAJA/policy/desul/atomic_desul_cuda.hpp"
+  #include "RAJA/policy/desul/atomic.hpp"
 #else
-    #include "RAJA/policy/cuda/atomic.hpp"
+  #include "RAJA/policy/cuda/atomic.hpp"
 #endif
 
 #include "RAJA/policy/cuda/policy.hpp"

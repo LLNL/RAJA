@@ -41,10 +41,6 @@ using omp_atomic = builtin_atomic;
 #else  // not defined RAJA_COMPILER_MSVC
 
 
-struct omp_atomic {
-};
-
-
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
 RAJA_HOST_DEVICE
