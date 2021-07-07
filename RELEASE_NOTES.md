@@ -9,7 +9,7 @@
 Version vxx.yy.zz -- Release date 20yy-mm-dd
 ============================================
 
-Version v0.14.0 -- Release date 2021-05-dd
+Version v0.14.0 -- Release date 2021-07-dd
 ============================================
 
 This release contains new features, bug fixes, and build improvements. Please
@@ -40,6 +40,7 @@ Notable changes include:
         CAMP default resource based on the specified execution back-end.
         Future work will expand the interface to allow users to pass a
         resource object.
+      * RAJA resource support added to RAJA workgroup and worksite constructs.
       * OpenMP CPU multithreading policies have been reworked so that usage
         involving OpenMP scheduling are consistent. Specification of a chunk
         size for scheduling policies is optional, which is consistent with
@@ -105,6 +106,11 @@ Notable changes include:
         implemented correctly in CUDA 10.1 is fixed. This fixes an issue
         with CHAI managed arrays not having their copy constructor being 
         triggered properly.
+      * Fix bug that caused a CUDA or Hip synchronization error when a zero
+        length loop was enqueued in a workgroup.
+      * Fixed issue where the RAJA non-resource API returns an EventProxy object
+        with a dangling resource pointer, by getting a reference to the 
+        default resource for the execution context.
       * IndexSet utility methods for collecting indices into a separate 
         container now work with any index type. 
       * The volatile qualifier was removed from a type conversion function used

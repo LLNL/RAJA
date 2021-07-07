@@ -277,10 +277,10 @@ policies have the prefix ``hip_``.
  cuda/hip_exec<BLOCK_SIZE>                forall,       Execute loop iterations
                                           scan,         in a GPU kernel launched
                                           sort          with given thread-block
-                                                        size. If block size not
-                                                        given, the default
-                                                        of 256 threads/block is 
-                                                        used. 
+                                                        size. Note that the 
+                                                        thread-block size must
+                                                        be provided, there is
+                                                        no default provided.
  cuda/hip_thread_x_direct                 kernel (For)  Map loop iterates
                                                         directly to GPU threads
                                                         in x-dimension, one
