@@ -194,8 +194,6 @@ RAJA_INLINE T atomicCAS(omp_atomic, T volatile *acc, T compare, T value)
   return RAJA::atomicCAS(builtin_atomic{}, acc, compare, value);
 }
 
-#endif  // not defined RAJA_COMPILER_MSVC
-
 
 }  // namespace RAJA
 
