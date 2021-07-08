@@ -145,6 +145,9 @@ struct omp_for_schedule_exec : make_policy_pattern_launch_platform_t<Policy::ope
 
 #if defined(RAJA_COMPILER_MSVC)
 
+// Rely on builtin_atomic when OpenMP can't do the job
+#include "RAJA/policy/atomic_builtin.hpp"
+
 // For MS Visual C, just default to builtin_atomic for everything
 using omp_atomic = builtin_atomic;
 
