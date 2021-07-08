@@ -75,6 +75,7 @@ option(RAJA_ENABLE_BOUNDS_CHECK "Enable bounds checking in RAJA::Views/Layouts" 
 option(RAJA_TEST_EXHAUSTIVE "Build RAJA exhaustive tests" Off)
 option(RAJA_TEST_OPENMP_TARGET_SUBSET "Build subset of RAJA OpenMP target tests when it is enabled" On)
 option(RAJA_ENABLE_RUNTIME_PLUGINS "Enable support for loading plugins at runtime" Off)
+option(RAJA_ENABLE_DESUL_ATOMICS "Enable support of desul atomics" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
@@ -134,6 +135,11 @@ else() #check BLT_CXX_STD is high enough by disallowing the only invalid option
     message(FATAL_ERROR "RAJA requires minimum C++ standard of c++11")
   endif()
 endif(NOT DEFINED BLT_CXX_STD)
+if (RAJA_ENABLE_DESUL_ATOMICS)
+  if("${BLT_CXX_STD}" STREQUAL "c++11")
+    message(FATAL_ERROR "RAJA_ENABLE_DESUL_ATOMICS requires minimum C++ standard of c++14")
+  endif()
+endif()
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 

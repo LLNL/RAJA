@@ -6,6 +6,10 @@
 ###############################################################################
 
 raja_add_test(
+  NAME test-atomic-incdec
+  SOURCES test-atomic-incdec.cpp)
+
+raja_add_test(
   NAME test-atomic-ref-constructor
   SOURCES test-atomic-ref-constructor.cpp)
 
