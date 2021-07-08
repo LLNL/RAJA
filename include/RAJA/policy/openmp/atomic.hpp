@@ -31,16 +31,6 @@
 namespace RAJA
 {
 
-#if defined(RAJA_COMPILER_MSVC)
-
-
-// For MS Visual C, just default to builtin_atomic for everything
-using omp_atomic = builtin_atomic;
-
-
-#else  // not defined RAJA_COMPILER_MSVC
-
-
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
 RAJA_HOST_DEVICE

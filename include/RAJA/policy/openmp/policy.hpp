@@ -142,7 +142,17 @@ struct omp_for_schedule_exec : make_policy_pattern_launch_platform_t<Policy::ope
 ///
 ///  Struct defining an alias for openmp atomics
 ///
+
+#if defined(RAJA_COMPILER_MSVC)
+
+// For MS Visual C, just default to builtin_atomic for everything
+using omp_atomic = builtin_atomic;
+
+#else  // not defined RAJA_COMPILER_MSVC
+
 struct omp_atomic {};
+
+#endif
  
 ///
 ///  Internal type aliases supporting 'omp for schedule( )' for specific
