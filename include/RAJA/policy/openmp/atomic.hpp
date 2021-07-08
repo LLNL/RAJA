@@ -22,6 +22,8 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 
+#include "RAJA/policy/openmp/policy.hpp"
+
 // rely on builtin_atomic when OpenMP can't do the job
 #include "RAJA/policy/atomic_builtin.hpp"
 
