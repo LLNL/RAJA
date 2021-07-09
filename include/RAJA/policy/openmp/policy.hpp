@@ -140,24 +140,6 @@ struct omp_for_schedule_exec : make_policy_pattern_launch_platform_t<Policy::ope
 };
 
 ///
-///  Struct defining an alias for openmp atomics
-///
-
-#if defined(RAJA_COMPILER_MSVC)
-
-// Rely on builtin_atomic when OpenMP can't do the job
-#include "RAJA/policy/atomic_builtin.hpp"
-
-// For MS Visual C, just default to builtin_atomic for everything
-using omp_atomic = builtin_atomic;
-
-#else  // not defined RAJA_COMPILER_MSVC
-
-struct omp_atomic {};
-
-#endif
- 
-///
 ///  Internal type aliases supporting 'omp for schedule( )' for specific
 ///  schedule types.
 ///
@@ -308,7 +290,19 @@ struct omp_synchronize : make_policy_pattern_launch_t<Policy::openmp,
 ///
 /// Type alias for atomics
 ///
-using policy::omp::omp_atomic;
+#if defined(RAJA_COMPILER_MSVC)
+
+// Rely on builtin_atomic when OpenMP can't do the job
+#include "RAJA/policy/atomic_builtin.hpp"
+
+// For MS Visual C, just default to builtin_atomic for everything
+using omp_atomic = builtin_atomic;
+
+#else  // not defined RAJA_COMPILER_MSVC
+
+struct omp_atomic {};
+
+#endif
 
 ///
 /// Type aliases to simplify common omp parallel for loop execution
