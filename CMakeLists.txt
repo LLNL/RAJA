@@ -190,7 +190,7 @@ if (RAJA_ENABLE_RUNTIME_PLUGINS)
     src/KokkosPluginLoader.cpp)
 endif ()
 
-set (raja_depends)
+set (raja_depends isl)
 
 if (ENABLE_OPENMP)
   set (raja_depends

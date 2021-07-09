@@ -37,6 +37,7 @@
 #include "RAJA/util/Registry.hpp"
 
 
+
 //
 // Generic iteration templates require specializations defined
 // in the files included below.
@@ -178,6 +179,8 @@
 #include "RAJA/util/PluginLinker.hpp"
 #endif
 
+
+#include "RAJA/loopchain/LoopChain.hpp"
 #include "RAJA/pattern/sort.hpp"
 
 #endif  // closing endif for header file include guard

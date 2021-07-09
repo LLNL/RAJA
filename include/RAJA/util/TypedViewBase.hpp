@@ -26,7 +26,7 @@
 
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
-
+#include "RAJA/loopchain/SymExec.hpp"
 namespace RAJA
 {
 
@@ -373,6 +373,39 @@ class ViewBase {
       return ShiftedView(m_data, shift_layout);
     }
 
+
+  //RAJALC
+  template <typename... Args>
+  void sym_eval(std::vector<SymIterator>&) const {}
+
+  template <typename... Args>
+  void sym_eval(std::vector<SymIterator>& allIterators, SymIterator sym_iterator, Args... args) const
+  {
+     allIterators.push_back(sym_iterator);
+     sym_eval(allIterators, args...);
+  }
+
+  template <typename... Args>
+  void sym_eval(std::vector<SymIterator>& allIterators, int sym_int, Args... args) const {
+    SymIterator result = SymIterator("0") + sym_int;
+    allIterators.push_back(result);
+    sym_eval(allIterators, args...);
+  }
+
+
+
+  template <typename... Args>
+  SymAccessList operator () (SymIterator symIterator, Args... args) const
+  {
+    std::vector<SymIterator> allIterators;
+
+    sym_eval(allIterators, symIterator, args...);
+    SymAccess thisAccess = SymAccess(m_data, allIterators);
+    SymAccessList l = SymAccessList(thisAccess);
+    return l ;
+  }
+
+  //END RAJALC
 };
 
 
@@ -452,6 +485,37 @@ class TypedViewBase<ValueType, PointerType, LayoutType, camp::list<IndexTypes...
       return ShiftedView(Base::get_data(), shift_layout);
     }
 
+  //RAJALC
+  template <typename... Args>
+  void sym_eval(std::vector<SymIterator>&) const {}
+
+  template <typename... Args>
+  void sym_eval(std::vector<SymIterator>& allIterators, SymIterator sym_iterator, Args... args) const
+  {
+     allIterators.push_back(sym_iterator);
+     sym_eval(allIterators, args...);
+  }
+
+  template <typename... Args>
+  void sym_eval(std::vector<SymIterator>& allIterators, int sym_int, Args... args) const {
+    SymIterator result = SymIterator("0") + sym_int;
+    allIterators.push_back(result);
+    sym_eval(allIterators, args...);
+  }
+
+
+
+  template <typename... Args>
+  SymAccessList operator () (SymIterator symIterator, Args... args) const
+  {
+    std::vector<SymIterator> allIterators;
+
+    sym_eval(allIterators, symIterator, args...);
+    SymAccess thisAccess = SymAccess(Base::m_data, allIterators);
+    SymAccessList l = SymAccessList(thisAccess);
+    return l ;
+  }
+  //END RAJALC
 };
 
 
