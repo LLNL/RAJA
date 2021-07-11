@@ -41,11 +41,11 @@ using launch_policy = RAJA::expt::LaunchPolicy<
     RAJA::expt::seq_launch_t
 #if defined(RAJA_ENABLE_CUDA)
     ,
-    RAJA::expt::cuda_launch_t<true>
+    RAJA::expt::cuda_launch_t<false>
 #endif
 #if defined(RAJA_ENABLE_HIP)
     ,
-    RAJA::expt::hip_launch_t<true>
+    RAJA::expt::hip_launch_t<false>
 #endif
     >;
 
@@ -357,11 +357,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                               RAJA::expt::omp_launch_t
 #if defined(RAJA_ENABLE_CUDA)
                               ,
-                              RAJA::expt::cuda_launch_t<true>
+                              RAJA::expt::cuda_launch_t<false>
 #endif
 #if defined(RAJA_ENABLE_HIP)
                               ,
-                              RAJA::expt::hip_launch_t<true>
+                              RAJA::expt::hip_launch_t<false>
 #endif
                               >;
 
