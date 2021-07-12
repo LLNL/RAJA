@@ -181,6 +181,7 @@ set (raja_sources
   src/LockFreeIndexSetBuilders.cpp
   src/MemUtils_CUDA.cpp
   src/MemUtils_HIP.cpp
+  src/MemUtils_SYCL.cpp
   src/PluginStrategy.cpp)
 
 if (RAJA_ENABLE_RUNTIME_PLUGINS)
@@ -240,6 +241,12 @@ if (ENABLE_EXTERNAL_ROCPRIM)
   set(raja_depends
     ${raja_depends}
     rocPRIM)
+endif ()
+
+if (ENABLE_SYCL)
+  set (raja_depends
+    ${raja_depends}
+    sycl)
 endif ()
 
 if (ENABLE_TBB)
