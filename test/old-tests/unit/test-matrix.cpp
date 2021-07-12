@@ -84,7 +84,8 @@ using MatrixTestTypes = ::testing::Types<
 //    // These tests use the platform default SIMD architecture
 //    RAJA::SquareMatrixRegister<double, RAJA::ColMajorLayout>
 //    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout>,
-    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout,4, 4>
+//    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 2,4>
+      RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 4, 4>
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4, 2>
 
 //RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2, 4>
@@ -672,15 +673,19 @@ TYPED_TEST_P(MatrixTest, MatrixMatrix)
 
   B_t B;
   B.clear();
-  for(camp::idx_t j = 0;j < M; ++ j){
-    for(camp::idx_t i = 0;i < N; ++ i){
-      B.set(element_t(NO_OPT_ZERO + j*N+i), i,j);
+  for(camp::idx_t j = 0;j < N; ++ j){
+    for(camp::idx_t i = 0;i < M; ++ i){
+      B.set(element_t(NO_OPT_ZERO + i*N+j), i,j);
     }
   }
 
+  printf("A:\n%s\n", A.to_string().c_str());
+  printf("B:\n%s\n", B.to_string().c_str());
 
   // matrix matrix product
   C_t C = A.matrix_multiply(B);
+
+  printf("C:\n%s\n", C.to_string().c_str());
 
 
   // check result

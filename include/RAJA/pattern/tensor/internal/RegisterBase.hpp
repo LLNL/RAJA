@@ -865,6 +865,56 @@ namespace internal {
       }
 
       /*!
+       * Sum across segments, with segment size defined by segbits
+       *
+       * Note: segment size is 1<<segbits elements
+       *       number of segments is s_num_elem>>seg_bits
+       *
+       *
+       *
+       *
+       *  Example:
+       *
+       *  Given input vector  X = x0, x1, x2, x3, x4, x5, x6, x7
+       *
+       *  segbits=0 is equivalent to the input vector,  since there are 8
+       *      outputs, there is only 1 output segment
+       *
+       *      Result= x0, x1, x2, x3, x4, x5, x6, x7
+       *
+       *  segbits=1 sums neighboring pairs of values.  There are 4 output,
+       *      so there are possible output segments.
+       *
+       *      output_segment=0:
+       *      Result= x0+x4, x1+x5, x2+x6, x3+x7, 0, 0, 0, 0
+       *
+       *      output_segment=1:
+       *      Result= 0, 0, 0, 0, x0+x4, x1+x5, x2+x6, x3+x7
+       *
+       *  and so on up to segbits=3, which is a full sum of x0..x7, and the
+       *      output_segment denotes the vector position of the sum
+       *
+       */
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type segmented_sum_outer(camp::idx_t segbits, camp::idx_t output_segment) const
+      {
+        self_type result(0);
+
+        // default implementation is dumb, just sum each value into
+        // appropriate segment lane
+        int output_offset = output_segment * (1<<segbits);
+
+        for(camp::idx_t i = 0;i < self_type::s_num_elem; ++ i){
+          camp::idx_t output_i = output_offset + i%(1<<segbits);
+          auto value = getThis()->get(i) + result.get(output_i);
+          result.set(value, output_i);
+        }
+
+        return result;
+      }
+
+      /*!
        * Sum segments together, with segment size defined by segbits
        *
        * Note: result is always in segment 0, rest of the result is zeroed
@@ -1049,13 +1099,36 @@ namespace internal {
       {
         self_type result;
 
-        camp::idx_t offset = input_segment << segbits;
+        camp::idx_t offset = input_segment * (self_type::s_num_elem >> segbits);
 
         // default implementation is dumb, just sum each value into
         // appropriate segment lane
         for(camp::idx_t i = 0;i < self_type::s_num_elem; ++ i){
 
           auto off = (i>>segbits) + offset;
+
+          result.set(getThis()->get(off), i);
+        }
+
+        return result;
+      }
+
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      self_type rotate_elements_left(camp::idx_t distance) const
+      {
+        self_type result;
+
+        if(distance == 0){
+          return *getThis();
+        }
+
+        // default implementation is dumb, just sum each value into
+        // appropriate segment lane
+        for(camp::idx_t i = 0;i < self_type::s_num_elem; ++ i){
+
+          auto off = (i+distance)%self_type::s_num_elem;
 
           result.set(getThis()->get(off), i);
         }

@@ -1132,7 +1132,29 @@ namespace RAJA
       }
 
 
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      register_type extract_diagonal_register(camp::idx_t starting_column, camp::idx_t segbits, camp::idx_t segment) const {
 
+        register_type result(0);
+
+        camp::idx_t num_rows = register_type::s_num_elem >> segbits;
+        camp::idx_t num_repeats = 1 << segbits;
+
+        camp::idx_t col0 = (starting_column + num_rows*segment)%s_num_columns;
+        camp::idx_t row0 = num_rows*segment;
+
+        for(camp::idx_t i = 0;i < num_rows;++i){
+          camp::idx_t col = (col0 + i) % s_num_columns;
+          camp::idx_t row = row0 + i;
+          auto value = get(row,col);
+          for(camp::idx_t j = 0;j < num_repeats;++j){
+            result.set(value, (i<<segbits) + j);
+          }
+        }
+
+        return result;
+      }
 
 
       /*!

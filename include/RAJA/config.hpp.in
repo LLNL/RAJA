@@ -429,6 +429,10 @@ T * align_hint(T * x)
 #endif
 }
 
+#ifndef RAJA_UNROLL
+#define RAJA_UNROLL RAJA_PRAGMA(unroll)
+#endif
+
 }  // closing brace for RAJA namespace
 
 #endif // closing endif for header file include guard
