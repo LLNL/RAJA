@@ -94,8 +94,14 @@ using MatrixTestTypes = ::testing::Types<
     RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,2>,
     RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,4>,
     RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,8>,
-    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2,4>
+    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2,4>,
 
+    RAJA::RectMatrixRegister<float, RAJA::ColMajorLayout, 16,4>,
+    RAJA::RectMatrixRegister<float, RAJA::ColMajorLayout, 4,4>,
+    RAJA::RectMatrixRegister<float, RAJA::ColMajorLayout, 4,16>,
+    RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 8,4>,
+    RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 4,4>,
+    RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 4,8>
 //      RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 4, 4>
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4, 2>
 

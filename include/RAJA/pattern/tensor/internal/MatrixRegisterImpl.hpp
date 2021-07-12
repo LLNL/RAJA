@@ -827,7 +827,7 @@ namespace RAJA
 
             // start by broadcasting the first segment in v across all of v
             // we will use this term for all registers in the matrix
-            auto vv = v.segmented_broadcast_inner(s_segbits, 0);
+            auto vv = v.get_register(0).segmented_broadcast_inner(s_segbits, 0);
 
             // loop over output segments, which is also the number of
             // registers in the matrix (no kidding!)
@@ -883,9 +883,12 @@ namespace RAJA
 
             // Loop over registers, which are also the segments in v
             RAJA_UNROLL
-            for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
-              auto v_seg = v.segmented_broadcast_outer(s_segbits, reg);
-              mv = m_registers[reg].multiply_add(v_seg, mv);
+            for(camp::idx_t m_reg = 0;m_reg < s_num_registers;++ m_reg){
+              camp::idx_t v_reg = m_reg >> s_segbits;
+              camp::idx_t v_seg = m_reg & ( (1<<s_segbits) - 1);
+
+              auto v_tmp = v.get_register(v_reg).segmented_broadcast_outer(s_segbits, v_seg);
+              mv = m_registers[m_reg].multiply_add(v_tmp, mv);
 
             }
 
@@ -939,10 +942,12 @@ namespace RAJA
 
             // Loop over registers, which are also the segments in v
             RAJA_UNROLL
-            for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
+            for(camp::idx_t m_reg = 0;m_reg < s_num_registers;++ m_reg){
+              camp::idx_t v_reg = m_reg >> s_segbits;
+              camp::idx_t v_seg = m_reg & ( (1<<s_segbits) - 1);
 
-              auto v_seg = v.segmented_broadcast_outer(s_segbits, reg);
-              vm = m_registers[reg].multiply_add(v_seg, vm);
+              auto v_tmp = v.get_register(v_reg).segmented_broadcast_outer(s_segbits, v_seg);
+              vm = m_registers[m_reg].multiply_add(v_tmp, vm);
 
             }
 
@@ -985,7 +990,7 @@ namespace RAJA
 
             // start by broadcasting the first segment in v across all of v
             // we will use this term for all registers in the matrix
-            auto vv = v.segmented_broadcast_inner(s_segbits, 0);
+            auto vv = v.get_register(0).segmented_broadcast_inner(s_segbits, 0);
 
             // loop over output segments, which is also the number of
             // registers in the matrix (no kidding!)
