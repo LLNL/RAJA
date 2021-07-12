@@ -154,7 +154,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::View<int, RAJA::Layout<2>> D(Ddat, N_tri, N_tri);
 
     RAJA::expt::launch<launch_policy>(select_cpu_or_gpu,
-       RAJA::expt::Resources(RAJA::expt::Teams(N_tri), RAJA::expt::Threads(N_tri)),
+       RAJA::expt::Grid(RAJA::expt::Teams(N_tri), RAJA::expt::Threads(N_tri)),
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
          RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {

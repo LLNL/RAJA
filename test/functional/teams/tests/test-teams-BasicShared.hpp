@@ -39,7 +39,7 @@ void TeamsBasicSharedTestImpl()
 
 
   RAJA::expt::launch<LAUNCH_POLICY>(select_cpu_or_gpu,
-    RAJA::expt::Resources(RAJA::expt::Teams(N), RAJA::expt::Threads(N)),
+    RAJA::expt::Grid(RAJA::expt::Teams(N), RAJA::expt::Threads(N)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
           RAJA::expt::loop<TEAM_POLICY>(ctx, RAJA::RangeSegment(0, N), [&](int r) {

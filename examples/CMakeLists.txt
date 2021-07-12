@@ -50,6 +50,10 @@ raja_add_executable(
   SOURCES teams_reductions.cpp)
 
 raja_add_executable(
+  NAME resource-runtime-teams
+  SOURCES resource-runtime-teams.cpp)
+
+raja_add_executable(
   NAME tut_scan
   SOURCES tut_scan.cpp)
 
@@ -130,5 +134,9 @@ raja_add_executable(
 raja_add_executable(
   NAME resource-kernel
   SOURCES resource-kernel.cpp)
+
+raja_add_executable(
+  NAME resource-teams
+  SOURCES resource-teams.cpp)
 
 add_subdirectory(plugin)

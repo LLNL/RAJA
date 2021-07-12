@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
   // __compute_grid_end
  
   RAJA::expt::launch<launch_policy>(select_cpu_or_gpu,
-  RAJA::expt::Resources(RAJA::expt::Teams(Nteams,Nteams),
+  RAJA::expt::Grid(RAJA::expt::Teams(Nteams,Nteams),
                         RAJA::expt::Threads(Nthreads,Nthreads)),
   [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
    // _team_loops_start

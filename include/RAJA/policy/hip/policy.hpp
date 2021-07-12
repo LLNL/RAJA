@@ -77,6 +77,13 @@ struct hip_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::hip> {
 };
 
+template <bool Async, int num_threads = 0>
+struct hip_launch_t : public RAJA::make_policy_pattern_launch_platform_t<
+                       RAJA::Policy::hip,
+                       RAJA::Pattern::region,
+                       detail::get_launch<Async>::value,
+                       RAJA::Platform::hip> {
+};
 
 
 //
@@ -220,8 +227,10 @@ using policy::hip::hip_thread_masked_loop;
 
 using policy::hip::hip_synchronize;
 
-
-
+namespace expt
+{
+  using policy::hip::hip_launch_t;
+}
 
 /*!
  * Maps segment indices to HIP threads.
