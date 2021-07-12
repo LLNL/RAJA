@@ -975,7 +975,9 @@ namespace RAJA
           }
 
 
-        }
+        } // row-major
+
+        // Column-major:
         else{
 
           // 1 register is split over multiple rows
@@ -1006,31 +1008,33 @@ namespace RAJA
           }
           // one or more registers per row
           else{
-
+//printf("WAHHO: s_minor_dim_registers=%d\n", (int)s_minor_dim_registers);
             // Loop over rows
             camp::idx_t reg = 0;
             RAJA_UNROLL
-            for(camp::idx_t row = 0;row < s_num_rows;++ row){
+            for(camp::idx_t col = 0;col < s_num_columns;++ col){
 
               // compute partial dot products for all registers in this row
               auto rowsum = register_type(0);
               RAJA_UNROLL
-              for(camp::idx_t colreg = 0;colreg < s_minor_dim_registers;++ colreg){
+              for(camp::idx_t rowreg = 0;rowreg < s_minor_dim_registers;++ rowreg){
 
-                rowsum = m_registers[reg].multiply_add(v.get_register(colreg), rowsum);
+//                printf("row=%d, rowreg=%d, reg=%d\n", (int)col, (int)rowreg, (int)reg);
+
+                rowsum = m_registers[reg].multiply_add(v.get_register(rowreg), rowsum);
                 reg ++;
 
               } // rowreg
 
               // finish dot product by taking sum of rowsum
-              auto value = result.get(row) + rowsum.sum();
-              result.set(value, row);
+              auto value = result.get(col) + rowsum.sum();
+              result.set(value, col);
 
             } // col
           }
 
 
-        }
+        } // col-major
         return result;
       }
 

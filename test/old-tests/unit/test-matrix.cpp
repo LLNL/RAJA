@@ -84,12 +84,18 @@ using MatrixTestTypes = ::testing::Types<
 //    // These tests use the platform default SIMD architecture
 //    RAJA::SquareMatrixRegister<double, RAJA::ColMajorLayout>
 //    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout>,
+
+    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,4>,
     RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,2>,
     RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4,4>,
+    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4,8>,
     RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 2,4>,
+    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,4>,
     RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,2>,
     RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,4>,
+    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,8>,
     RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2,4>
+
 //      RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 4, 4>
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4, 2>
 
@@ -637,6 +643,8 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
     // matrix vector product
     auto vm = m.left_multiply_vector(v);
 
+//    printf("vm: %s", vm.to_string().c_str());
+
     // check result
     for(camp::idx_t j = 0;j < num_columns; ++ j){
       element_t expected(0);
@@ -644,6 +652,9 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
       for(camp::idx_t i = 0;i < num_rows; ++ i){
         expected += m.get(i,j)*v.get(i);
       }
+
+//      printf("vm: j=%d, val=%lf, expected=%lf\n", (int)j, (double)vm.get(j), (double)expected);
+
 
       ASSERT_SCALAR_EQ(vm.get(j), expected);
     }
