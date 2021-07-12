@@ -84,8 +84,13 @@ using MatrixTestTypes = ::testing::Types<
 //    // These tests use the platform default SIMD architecture
 //    RAJA::SquareMatrixRegister<double, RAJA::ColMajorLayout>
 //    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout>,
-//    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 2,4>
-      RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 4, 4>
+    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,2>,
+    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4,4>,
+    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 2,4>,
+    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,2>,
+    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,4>,
+    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2,4>
+//      RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 4, 4>
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4, 2>
 
 //RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2, 4>
@@ -572,7 +577,7 @@ TYPED_TEST_P(MatrixTest, MatrixViewStore)
 
 
 }
-
+#endif
 
 TYPED_TEST_P(MatrixTest, MatrixVector)
 {
@@ -604,9 +609,9 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
     // note mv is not necessarily the same type as v
     auto mv = m.right_multiply_vector(v);
 
-    printf("m: %s", m.to_string().c_str());
-    printf("v: %s", v.to_string().c_str());
-    printf("mv: %s", mv.to_string().c_str());
+//    printf("m: %s", m.to_string().c_str());
+//    printf("v: %s", v.to_string().c_str());
+//    printf("mv: %s", mv.to_string().c_str());
 
     // check result
     for(camp::idx_t i = 0;i < num_rows; ++ i){
@@ -616,7 +621,7 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
         expected += m.get(i,j)*v.get(j);
       }
 
-      printf("mv: i=%d, val=%lf, expected=%lf\n", (int)i, (double)mv.get(i), (double)expected);
+//      printf("mv: i=%d, val=%lf, expected=%lf\n", (int)i, (double)mv.get(i), (double)expected);
 
       ASSERT_SCALAR_EQ(mv.get(i), expected);
     }
@@ -645,8 +650,8 @@ TYPED_TEST_P(MatrixTest, MatrixVector)
   }
 }
 
-#endif
-
+//#endif
+//#if 0
 TYPED_TEST_P(MatrixTest, MatrixMatrix)
 {
 
@@ -679,13 +684,13 @@ TYPED_TEST_P(MatrixTest, MatrixMatrix)
     }
   }
 
-  printf("A:\n%s\n", A.to_string().c_str());
-  printf("B:\n%s\n", B.to_string().c_str());
+//  printf("A:\n%s\n", A.to_string().c_str());
+//  printf("B:\n%s\n", B.to_string().c_str());
 
   // matrix matrix product
   C_t C = A.matrix_multiply(B);
 
-  printf("C:\n%s\n", C.to_string().c_str());
+//  printf("C:\n%s\n", C.to_string().c_str());
 
 
   // check result
@@ -1368,7 +1373,7 @@ REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
 //                                          MatrixStore,
 //                                          MatrixViewLoad,
 //                                          MatrixViewStore,
-//                                          MatrixVector,
+                                          MatrixVector,
                                           MatrixMatrix
 //                                          MatrixMatrixAccumulate,
 //                                          MatrixTranspose,

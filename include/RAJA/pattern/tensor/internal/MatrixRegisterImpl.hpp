@@ -827,12 +827,11 @@ namespace RAJA
 
             // start by broadcasting the first segment in v across all of v
             // we will use this term for all registers in the matrix
-            auto vv = v.segmented_broadcast(s_segbits, 0);
-            printf("v=%s\n", v.to_string().c_str());
-            printf("vv=%s\n", vv.to_string().c_str());
+            auto vv = v.segmented_broadcast_inner(s_segbits, 0);
 
             // loop over output segments, which is also the number of
             // registers in the matrix (no kidding!)
+            RAJA_UNROLL
             for(camp::idx_t outseg = 0;outseg < s_num_registers;++ outseg){
 
               // compute which result register we are accumulating into
@@ -844,10 +843,6 @@ namespace RAJA
               // compute segmented dot product to get output segment
               auto value = m_registers[outseg].segmented_dot(s_segbits, result_seg, vv);
 
-              printf("outseg=%d, result_reg=%d, result_seg=%d\n", (int)outseg, (int)result_reg, (int)result_seg);
-
-              printf("value=%s\n", value.to_string().c_str());
-
               // accumulate result
               result.get_register(result_reg) += value;
             }
@@ -858,22 +853,15 @@ namespace RAJA
 
             // Loop over rows
             camp::idx_t reg = 0;
+            RAJA_UNROLL
             for(camp::idx_t row = 0;row < s_num_rows;++ row){
-
-              printf("row=%d\n", (int)row);
-
 
               // compute partial dot products for all registers in this row
               auto rowsum = register_type(0);
+              RAJA_UNROLL
               for(camp::idx_t colreg = 0;colreg < s_minor_dim_registers;++ colreg){
 
                 rowsum = m_registers[reg].multiply_add(v.get_register(colreg), rowsum);
-
-                printf("  colreg=%d, reg=%d\n", (int)colreg, (int)reg);
-                printf("  m_registers[reg]=%s",m_registers[reg].to_string().c_str());
-                printf("  v.get_register(colreg)=%s",v.get_register(colreg).to_string().c_str());
-                printf("  rowsum=%s",rowsum.to_string().c_str());
-
                 reg ++;
 
               } // rowreg
@@ -881,7 +869,6 @@ namespace RAJA
               // finish dot product by taking sum of rowsum
               auto value = result.get(row) + rowsum.sum();
               result.set(value, row);
-              printf("  value=%lf\n", (double)value);
 
             } // col
           }
@@ -894,28 +881,16 @@ namespace RAJA
           if(s_minor_dim_registers == 0){
             auto &mv = result.get_register(0);
 
-
-            printf("v=%s\n", v.to_string().c_str());
-            printf("mv=%s\n", mv.to_string().c_str());
-
-
             // Loop over registers, which are also the segments in v
+            RAJA_UNROLL
             for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
-              auto v_seg = v.segmented_broadcast_inner(s_segbits, reg);
-
-              printf("reg=%d, v_seg=%s\n", (int)reg, v_seg.to_string().c_str());
-              printf("        m_reg=%s\n", m_registers[reg].to_string().c_str());
-
+              auto v_seg = v.segmented_broadcast_outer(s_segbits, reg);
               mv = m_registers[reg].multiply_add(v_seg, mv);
 
-              printf("        mv=%s\n", mv.to_string().c_str());
             }
 
             // Now sum segments in mv together to form final result
-            mv = mv.segmented_sum_segments(s_segbits);
-
-            printf("mv summed=%s\n", mv.to_string().c_str());
-
+            mv = mv.segmented_sum_outer(s_segbits, 0);
 
           }
           // one or more registers per column
@@ -923,12 +898,14 @@ namespace RAJA
 
             // Loop over columns (which is also registers)
             camp::idx_t reg = 0;
+            RAJA_UNROLL
             for(camp::idx_t col = 0;col < s_num_columns;++ col){
 
               // extract column value from v
               auto v_col = register_type(v.get(col));
 
               // apply v_col to entire column (1 or more registers)
+              RAJA_UNROLL
               for(camp::idx_t rowreg = 0;rowreg < s_minor_dim_registers;++ rowreg){
 
                 auto &mv = result.get_register(rowreg);
@@ -960,25 +937,17 @@ namespace RAJA
           if(s_minor_dim_registers == 0){
             auto &vm = result.get_register(0);
 
-            printf("v=%s\n", v.to_string().c_str());
-
-
             // Loop over registers, which are also the segments in v
+            RAJA_UNROLL
             for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
-              auto v_seg = v.segmented_broadcast_inner(s_segbits, reg);
 
-              printf("reg=%d, v_seg=%s\n", (int)reg, v_seg.to_string().c_str());
-
+              auto v_seg = v.segmented_broadcast_outer(s_segbits, reg);
               vm = m_registers[reg].multiply_add(v_seg, vm);
 
-              printf("        vm=%s\n", vm.to_string().c_str());
             }
 
             // Now sum segments in mv together to form final result
-            vm = vm.segmented_sum_segments(s_segbits);
-
-            printf("vm summed=%s\n", vm.to_string().c_str());
-
+            vm = vm.segmented_sum_outer(s_segbits, 0);
 
           }
           // one or more registers per column
@@ -986,24 +955,17 @@ namespace RAJA
 
             // Loop over rows (which is also registers)
             camp::idx_t reg = 0;
+            RAJA_UNROLL
             for(camp::idx_t row = 0;row < s_num_rows;++ row){
 
               // extract row value from v
               auto v_row = register_type(v.get(row));
 
-              printf("row=%d, v_row=%s\n", (int)row, v_row.to_string().c_str());
-
-
               // apply v_row to entire column (1 or more registers)
+              RAJA_UNROLL
               for(camp::idx_t colreg = 0;colreg < s_minor_dim_registers;++ colreg){
 
-
-
                 auto &mv = result.get_register(colreg);
-
-                printf("  colreg=%d, reg=%d, mv_col=%s\n", (int)colreg, (int)reg, mv.to_string().c_str());
-
-
                 mv = m_registers[reg].multiply_add(v_row, mv);
 
                 reg ++;
@@ -1021,12 +983,11 @@ namespace RAJA
 
             // start by broadcasting the first segment in v across all of v
             // we will use this term for all registers in the matrix
-            auto vv = v.segmented_broadcast(s_segbits, 0);
-            printf("v=%s\n", v.to_string().c_str());
-            printf("vv=%s\n", vv.to_string().c_str());
+            auto vv = v.segmented_broadcast_inner(s_segbits, 0);
 
             // loop over output segments, which is also the number of
             // registers in the matrix (no kidding!)
+            RAJA_UNROLL
             for(camp::idx_t outseg = 0;outseg < s_num_registers;++ outseg){
 
               // compute which result register we are accumulating into
@@ -1038,10 +999,6 @@ namespace RAJA
               // compute segmented dot product to get output segment
               auto value = m_registers[outseg].segmented_dot(s_segbits, result_seg, vv);
 
-              printf("outseg=%d, result_reg=%d, result_seg=%d\n", (int)outseg, (int)result_reg, (int)result_seg);
-
-              printf("value=%s\n", value.to_string().c_str());
-
               // accumulate result
               result.get_register(result_reg) += value;
             }
@@ -1052,10 +1009,12 @@ namespace RAJA
 
             // Loop over rows
             camp::idx_t reg = 0;
+            RAJA_UNROLL
             for(camp::idx_t row = 0;row < s_num_rows;++ row){
 
               // compute partial dot products for all registers in this row
               auto rowsum = register_type(0);
+              RAJA_UNROLL
               for(camp::idx_t colreg = 0;colreg < s_minor_dim_registers;++ colreg){
 
                 rowsum = m_registers[reg].multiply_add(v.get_register(colreg), rowsum);

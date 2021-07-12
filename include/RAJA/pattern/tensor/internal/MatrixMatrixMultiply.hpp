@@ -132,7 +132,7 @@ namespace internal {
               camp::idx_t a_reg = a_segment / a_segments_per_register;
               camp::idx_t a_reg_segment = a_segment % a_segments_per_register;
 
-              register_type a_tmp = A.get_register(a_reg).segmented_broadcast_inner(bc_segbits, a_reg_segment);
+              register_type a_tmp = A.get_register(a_reg).segmented_broadcast_outer(bc_segbits, a_reg_segment);
 
               c_tmp = a_tmp.multiply_add(B.get_register(b_reg), c_tmp);
 
@@ -249,7 +249,7 @@ namespace internal {
                 camp::idx_t b_reg = b_segment / b_segments_per_register;
                 camp::idx_t b_reg_segment = b_segment % b_segments_per_register;
 
-                register_type b_tmp = B.get_register(b_reg).segmented_broadcast_inner(ac_segbits, b_reg_segment);
+                register_type b_tmp = B.get_register(b_reg).segmented_broadcast_outer(ac_segbits, b_reg_segment);
 
                 c_tmp = b_tmp.multiply_add(A.get_register(a_reg), c_tmp);
 
