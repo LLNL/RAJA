@@ -51,8 +51,7 @@ hipInfo tl_status;
 #endif
 
 //! State of raja hip stream synchronization for hip reducer objects
-std::unordered_map<hipStream_t, bool> g_stream_info_map{
-    {hipStream_t(0), true}};
+std::unordered_map<hipStream_t, bool> g_stream_info_map;
 
 
 }  // namespace detail

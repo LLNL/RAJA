@@ -81,7 +81,7 @@ template <typename ExecPolicy, typename Iter, typename Compare>
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_loop_policy<ExecPolicy>>
 unstable(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy&,
     Iter begin,
     Iter end,
@@ -89,7 +89,7 @@ unstable(
 {
   detail::UnstableSorter{}(begin, end, comp);
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -99,7 +99,7 @@ template <typename ExecPolicy, typename Iter, typename Compare>
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_loop_policy<ExecPolicy>>
 stable(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy&,
     Iter begin,
     Iter end,
@@ -107,7 +107,7 @@ stable(
 {
   detail::StableSorter{}(begin, end, comp);
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -117,7 +117,7 @@ template <typename ExecPolicy, typename KeyIter, typename ValIter, typename Comp
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_loop_policy<ExecPolicy>>
 unstable_pairs(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy&,
     KeyIter keys_begin,
     KeyIter keys_end,
@@ -129,7 +129,7 @@ unstable_pairs(
   using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
   detail::UnstableSorter{}(begin, end, RAJA::compare_first<zip_ref>(comp));
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -139,7 +139,7 @@ template <typename ExecPolicy, typename KeyIter, typename ValIter, typename Comp
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_loop_policy<ExecPolicy>>
 stable_pairs(
-    resources::Host& host_res,
+    resources::Host host_res,
     const ExecPolicy&,
     KeyIter keys_begin,
     KeyIter keys_end,
@@ -151,7 +151,7 @@ stable_pairs(
   using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
   detail::StableSorter{}(begin, end, RAJA::compare_first<zip_ref>(comp));
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 }  // namespace sort
