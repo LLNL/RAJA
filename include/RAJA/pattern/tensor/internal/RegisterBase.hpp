@@ -762,6 +762,33 @@ namespace internal {
 
 
 
+      /*!
+       * Provides gather/scatter indices for segmented loads and stores
+       *
+       * THe number of segment bits (segbits) is specified, as well as the
+       * stride between elements in a segment (stride_inner),
+       * and the stride between segments (stride_outer)
+       */
+      RAJA_INLINE
+      static
+      int_vector_type s_segmented_offsets(camp::idx_t segbits, camp::idx_t stride_inner, camp::idx_t stride_outer)
+      {
+        int_vector_type result;
+
+        camp::idx_t num_segments = self_type::s_num_elem >> segbits;
+        camp::idx_t seg_size = 1 << segbits;
+
+        camp::idx_t lane = 0;
+        for(camp::idx_t seg = 0;seg < num_segments; ++ seg){
+          for(camp::idx_t i = 0;i < seg_size; ++ i){
+            result.set(seg*stride_outer + i*stride_inner, lane);
+            lane ++;
+          }
+        }
+
+        return result;
+      }
+
 
       /*!
        * Sum elements within each segment, with segment size defined by segbits.
@@ -797,7 +824,6 @@ namespace internal {
        *
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
       self_type segmented_sum_inner(camp::idx_t segbits, camp::idx_t output_segment) const
       {
         self_type result(0);
@@ -846,7 +872,6 @@ namespace internal {
        *
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
       self_type segmented_sum_outer(camp::idx_t segbits, camp::idx_t output_segment) const
       {
         self_type result(0);
@@ -951,7 +976,6 @@ namespace internal {
        *
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
       self_type segmented_broadcast_inner(camp::idx_t segbits, camp::idx_t input_segment) const
       {
         self_type result;
@@ -1009,7 +1033,6 @@ namespace internal {
        *      Result= x6, x6, x6, x6, x7, x7, x7, x7
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
       self_type segmented_broadcast_outer(camp::idx_t segbits, camp::idx_t input_segment) const
       {
         self_type result;

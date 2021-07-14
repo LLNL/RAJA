@@ -720,7 +720,7 @@ TYPED_TEST_P(RegisterTest, SegmentedSum)
   // run segmented dot products for all segments allowed by the vector
   for(int segbits = 0;(1<<segbits) <= num_elem;++ segbits){
 
-    register_t s = x.segmented_sum(segbits,0);
+    register_t s = x.segmented_sum_outer(segbits,0);
 
 
     // Compute expected values

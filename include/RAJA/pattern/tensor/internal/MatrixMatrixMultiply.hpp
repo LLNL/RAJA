@@ -80,67 +80,84 @@ namespace internal {
       static constexpr camp::idx_t s_B_minor_dim_registers = right_type::s_minor_dim_registers;
       static constexpr camp::idx_t s_C_minor_dim_registers = result_type::s_minor_dim_registers;
 
-
+      /*
+       * Matrix B (and C) has 1 more more registers per row
+       *
+       */
+      template<typename dummy = void>
       RAJA_HOST_DEVICE
       static
       RAJA_INLINE
-      void multiply_accumulate(left_type const &A, right_type const &B, result_type &C){
+      typename std::enable_if<(s_C_minor_dim_registers != 0), dummy>::type
+      multiply_accumulate(left_type const &A, right_type const &B, result_type &C)
+      {
 
 #if defined(RAJA_ENABLE_VECTOR_STATS) && !defined(__CUDA_ARCH__)
         RAJA::tensor_stats::num_matrix_mm_multacc_row_row ++;
 #endif
 
-        // Matrix B (and C) has 1 more more registers per row
-        if(s_C_minor_dim_registers > 0){
+        constexpr camp::idx_t num_bc_reg_per_row = s_C_minor_dim_registers;
 
-          constexpr camp::idx_t num_bc_reg_per_row = s_C_minor_dim_registers;
+        RAJA_UNROLL
+        for(camp::idx_t c_reg = 0;c_reg < result_type::s_num_registers;++ c_reg){
+          camp::idx_t bc_col_reg = c_reg % num_bc_reg_per_row;
+          camp::idx_t ac_row = c_reg / num_bc_reg_per_row;
 
           RAJA_UNROLL
-          for(camp::idx_t c_reg = 0;c_reg < result_type::s_num_registers;++ c_reg){
-            camp::idx_t bc_col_reg = c_reg % num_bc_reg_per_row;
-            camp::idx_t ac_row = c_reg / num_bc_reg_per_row;
+          for(camp::idx_t a_col = 0;a_col < M_SIZE;++ a_col){
+            camp::idx_t b_reg = a_col * num_bc_reg_per_row + bc_col_reg;
 
-            RAJA_UNROLL
-            for(camp::idx_t a_col = 0;a_col < M_SIZE;++ a_col){
-              camp::idx_t b_reg = a_col * num_bc_reg_per_row + bc_col_reg;
-
-              C.get_register(c_reg) =
-                  register_type(A.get(ac_row, a_col)).multiply_add(
-                      B.get_register(b_reg),
-                      C.get_register(c_reg));
-            }
+            C.get_register(c_reg) =
+                register_type(A.get(ac_row, a_col)).multiply_add(
+                    B.get_register(b_reg),
+                    C.get_register(c_reg));
           }
-
         }
-        // Matrix B (and C) have less than one register per row
-        else{
 
-          constexpr camp::idx_t bc_segbits = result_type::s_segbits;
-          constexpr camp::idx_t a_segments_per_register = 1<<bc_segbits;
+      }
+
+      /*
+       * Matrix B (and C) have less than one register per row
+       *
+       */
+      template<typename dummy = void>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      static
+      typename std::enable_if<(s_C_minor_dim_registers == 0), dummy>::type
+      multiply_accumulate(left_type const &A, right_type const &B, result_type &C)
+      {
+
+
+        constexpr camp::idx_t bc_segbits = result_type::s_segbits;
+        constexpr camp::idx_t a_segments_per_register = 1<<bc_segbits;
+
+        RAJA_UNROLL
+        for(camp::idx_t ac_row = 0;ac_row < N_SIZE;++ ac_row){
+          camp::idx_t c_reg     = ac_row / result_type::s_major_dim_per_register;
+          camp::idx_t c_segment = ac_row % result_type::s_major_dim_per_register;
+          register_type c_tmp;
 
           RAJA_UNROLL
-          for(camp::idx_t ac_row = 0;ac_row < N_SIZE;++ ac_row){
-            camp::idx_t c_reg     = ac_row / result_type::s_major_dim_per_register;
-            camp::idx_t c_segment = ac_row % result_type::s_major_dim_per_register;
-            register_type c_tmp(0);
-
-            RAJA_UNROLL
-            for(camp::idx_t b_reg = 0;b_reg < right_type::s_num_registers;++ b_reg){
+          for(camp::idx_t b_reg = 0;b_reg < right_type::s_num_registers;++ b_reg){
 
 
-              camp::idx_t a_segment = ac_row*right_type::s_num_registers + b_reg;
-              camp::idx_t a_reg = a_segment / a_segments_per_register;
-              camp::idx_t a_reg_segment = a_segment % a_segments_per_register;
+            camp::idx_t a_segment = ac_row*right_type::s_num_registers + b_reg;
+            camp::idx_t a_reg = a_segment / a_segments_per_register;
+            camp::idx_t a_reg_segment = a_segment % a_segments_per_register;
 
-              register_type a_tmp = A.get_register(a_reg).segmented_broadcast_outer(bc_segbits, a_reg_segment);
+            register_type a_tmp = A.get_register(a_reg).segmented_broadcast_outer(bc_segbits, a_reg_segment);
 
+            if(b_reg == 0){
+              c_tmp = a_tmp.multiply(B.get_register(b_reg));
+            }
+            else{
               c_tmp = a_tmp.multiply_add(B.get_register(b_reg), c_tmp);
-
             }
 
-            C.get_register(c_reg) += c_tmp.segmented_sum_outer(bc_segbits, c_segment);
-
           }
+
+          C.get_register(c_reg) += c_tmp.segmented_sum_outer(bc_segbits, c_segment);
 
         }
 
@@ -173,6 +190,16 @@ namespace internal {
                       camp::idx_seq<M2_SIZE, O_SIZE>> >
       {
 
+      using self_type = MatrixMatrixMultiplyHelper<
+          TensorRegister<REGISTER_POLICY,
+                         T,
+                         ColMajorLayout,
+                         camp::idx_seq<N_SIZE, M_SIZE>>,
+           TensorRegister<REGISTER_POLICY,
+                          T,
+                          ColMajorLayout,
+                          camp::idx_seq<M2_SIZE, O_SIZE>> >;
+
         static_assert(M_SIZE == M2_SIZE, "Matrices are not compatible for multiplication");
 
         using left_type = TensorRegister<REGISTER_POLICY,
@@ -198,77 +225,100 @@ namespace internal {
         static constexpr camp::idx_t s_C_minor_dim_registers = result_type::s_minor_dim_registers;
 
 
+
+        /*
+         * Matrix A (and C) has 1 more more registers per column
+         *
+         */
+        template<typename dummy = void>
         RAJA_HOST_DEVICE
         static
         RAJA_INLINE
-        void multiply_accumulate(left_type const &A, right_type const &B, result_type &C){
+        typename std::enable_if<(s_C_minor_dim_registers != 0), dummy>::type
+        multiply_accumulate(left_type const &A, right_type const &B, result_type &C)
+        {
 
   #if defined(RAJA_ENABLE_VECTOR_STATS) && !defined(__CUDA_ARCH__)
           RAJA::tensor_stats::num_matrix_mm_multacc_row_row ++;
   #endif
 
-          // Matrix A (and C) has 1 more more registers per column
-          if(s_C_minor_dim_registers > 0){
 
-            constexpr camp::idx_t num_ac_reg_per_col = s_C_minor_dim_registers;
+          constexpr camp::idx_t num_ac_reg_per_col = s_C_minor_dim_registers;
 
-            RAJA_UNROLL
-            for(camp::idx_t c_reg = 0;c_reg < result_type::s_num_registers;++ c_reg){
-              camp::idx_t ac_row_reg = c_reg % num_ac_reg_per_col;
-              camp::idx_t bc_col = c_reg / num_ac_reg_per_col;
-
-              RAJA_UNROLL
-              for(camp::idx_t b_row = 0;b_row < M_SIZE;++ b_row){
-                camp::idx_t a_reg = b_row * num_ac_reg_per_col + ac_row_reg;
-
-                C.get_register(c_reg) =
-                    register_type(B.get(b_row, bc_col)).multiply_add(
-                        A.get_register(a_reg),
-                        C.get_register(c_reg));
-              }
-            }
-
-          }
-          // Matrix A (and C) have less than one register per column
-          else{
-
-            constexpr camp::idx_t ac_segbits = result_type::s_segbits;
-            constexpr camp::idx_t b_segments_per_register = 1<<ac_segbits;
+          RAJA_UNROLL
+          for(camp::idx_t c_reg = 0;c_reg < result_type::s_num_registers;++ c_reg){
+            camp::idx_t ac_row_reg = c_reg % num_ac_reg_per_col;
+            camp::idx_t bc_col = c_reg / num_ac_reg_per_col;
 
             RAJA_UNROLL
-            for(camp::idx_t bc_col = 0;bc_col < N_SIZE;++ bc_col){
-              camp::idx_t c_reg     = bc_col / result_type::s_major_dim_per_register;
-              camp::idx_t c_segment = bc_col % result_type::s_major_dim_per_register;
-              register_type c_tmp(0);
+            for(camp::idx_t b_row = 0;b_row < M_SIZE;++ b_row){
+              camp::idx_t a_reg = b_row * num_ac_reg_per_col + ac_row_reg;
 
-              RAJA_UNROLL
-              for(camp::idx_t a_reg = 0;a_reg < right_type::s_num_registers;++ a_reg){
-
-
-                camp::idx_t b_segment = bc_col*right_type::s_num_registers + a_reg;
-                camp::idx_t b_reg = b_segment / b_segments_per_register;
-                camp::idx_t b_reg_segment = b_segment % b_segments_per_register;
-
-                register_type b_tmp = B.get_register(b_reg).segmented_broadcast_outer(ac_segbits, b_reg_segment);
-
-                c_tmp = b_tmp.multiply_add(A.get_register(a_reg), c_tmp);
-
-              }
-
-              C.get_register(c_reg) += c_tmp.segmented_sum_outer(ac_segbits, c_segment);
-
+              C.get_register(c_reg) =
+                  register_type(B.get(b_row, bc_col)).multiply_add(
+                      A.get_register(a_reg),
+                      C.get_register(c_reg));
             }
-
           }
+
 
         }
+
+        /*
+         * Matrix A (and C) have less than one register per column
+         *
+         */
+        template<typename dummy = void>
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+        static
+        typename std::enable_if<(s_C_minor_dim_registers == 0), dummy>::type
+        multiply_accumulate(left_type const &A, right_type const &B, result_type &C)
+        {
+
+          constexpr camp::idx_t ac_segbits = result_type::s_segbits;
+          constexpr camp::idx_t b_segments_per_register = 1<<ac_segbits;
+
+          RAJA_UNROLL
+          for(camp::idx_t bc_col = 0;bc_col < N_SIZE;++ bc_col){
+            camp::idx_t c_reg     = bc_col / result_type::s_major_dim_per_register;
+            camp::idx_t c_segment = bc_col % result_type::s_major_dim_per_register;
+            register_type c_tmp;
+
+            RAJA_UNROLL
+            for(camp::idx_t a_reg = 0;a_reg < right_type::s_num_registers;++ a_reg){
+
+
+              camp::idx_t b_segment = bc_col*right_type::s_num_registers + a_reg;
+              camp::idx_t b_reg = b_segment / b_segments_per_register;
+              camp::idx_t b_reg_segment = b_segment % b_segments_per_register;
+
+              register_type b_tmp = B.get_register(b_reg).segmented_broadcast_outer(ac_segbits, b_reg_segment);
+
+              if(a_reg == 0){
+                c_tmp = b_tmp.multiply(A.get_register(a_reg));
+              }
+              else{
+                c_tmp = b_tmp.multiply_add(A.get_register(a_reg), c_tmp);
+              }
+
+            }
+
+            C.get_register(c_reg) += c_tmp.segmented_sum_outer(ac_segbits, c_segment);
+
+          }
+
+
+        }
+
 
         RAJA_HOST_DEVICE
         static
         RAJA_INLINE
         void multiply(left_type const &A, right_type const &B, result_type &C){
+          self_type s;
           C = result_type(0);
-          multiply_accumulate(A, B, C);
+          s.multiply_accumulate(A, B, C);
         }
     };
 

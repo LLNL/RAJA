@@ -11,6 +11,7 @@
 
 // Un-comment the following line to run correctness checks on each variant
 //#define DEBUG_LTIMES
+#define DEBUG_MATRIX_LOAD_STORE
 
 #include "RAJA/config.hpp"
 
@@ -20,7 +21,7 @@
 #define VARIANT_RAJA_SEQ_ARGS        0
 #define VARIANT_RAJA_TEAMS_SEQ       0
 #define VARIANT_RAJA_VECTOR          0
-#define VARIANT_RAJA_MATRIX          1
+#define VARIANT_RAJA_MATRIX          0
 #define VARIANT_RAJA_SEQ_SHMEM       0
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -129,13 +130,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Define array dimensions, allocate arrays, define Layouts and Views, etc.
   // Note: rand()/RAND_MAX is always zero, but forces the compiler to not
   // optimize out these values as compile time constants
-  const int num_m = 25 + (rand()/RAND_MAX);
-  const int num_g = 48 + (rand()/RAND_MAX);
-  const int num_d = 80 + (rand()/RAND_MAX);
+//  const int num_m = 25 + (rand()/RAND_MAX);
+//  const int num_g = 48 + (rand()/RAND_MAX);
+//  const int num_d = 80 + (rand()/RAND_MAX);
 
-//  const int num_m = 32 + (rand()/RAND_MAX);
-//  const int num_g = 1 + (rand()/RAND_MAX);
-//  const int num_d = 32 + (rand()/RAND_MAX);
+  const int num_m = 32 + (rand()/RAND_MAX);
+  const int num_g = 1 + (rand()/RAND_MAX);
+  const int num_d = 32 + (rand()/RAND_MAX);
 
 
 #ifdef DEBUG_LTIMES
@@ -144,10 +145,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // and we're not really measuring performance here
   const long num_z = 128 + (rand()/RAND_MAX);
 #else
-  const int num_iter = 10 + (rand()/RAND_MAX);
-  const int num_z = 32*1024 + (rand()/RAND_MAX);
+//  const int num_iter = 10 + (rand()/RAND_MAX);
+//  const int num_z = 32*1024 + (rand()/RAND_MAX);
 
 //  const int num_z = 32 + (rand()/RAND_MAX);
+
+  const int num_iter = 1 + (rand()/RAND_MAX);
+  const int num_z = 32 + (rand()/RAND_MAX);
 #endif
 
 
@@ -1292,6 +1296,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
+#ifdef __CUDA_ARCH__
+#define RAJA_GET_POLICY(POL) typename POL::device_policy_t
+#else
+#define RAJA_GET_POLICY(POL) typename POL::host_policy_t
+#endif
+
+
 #if VARIANT_CUDA_TEAMS_MATRIX
 {
   std::cout << "\n Running RAJA CUDA Teams+Matrix version of LTimes...\n";
@@ -1312,13 +1323,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk( cudaMemcpy( dphi_data, phi_data, phi_size * sizeof(double),
                           cudaMemcpyHostToDevice ) );
 
-  using matrix_t = RAJA::SquareMatrixRegister<double, ColMajorLayout, RAJA::cuda_warp_register>;
 
-  using RowM = RAJA::RowIndex<IM, matrix_t>;
-  using ColD = RAJA::ColIndex<ID, matrix_t>;
-  using ColZ = RAJA::ColIndex<IZ, matrix_t>;
+  using matrix_host_t = RAJA::SquareMatrixRegister<double, ColMajorLayout>;
+  using matrix_device_t = RAJA::RectMatrixRegister<double, ColMajorLayout, 8, 8, RAJA::cuda_warp_register>;
 
-  using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t, RAJA::expt::cuda_launch_t<true , 512> >;
+  using matrix_hd_t = RAJA::expt::LaunchPolicy<matrix_host_t, matrix_device_t>;
+
+
+  using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t, RAJA::expt::cuda_launch_t<true , 256> >;
   using pol_g = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_block_x_loop>;
   //using pol_z = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>, cuda_thread_y_matrix_col_loop<matrix_t> >;
   //using pol_z = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>, cuda_thread_y_matrix_col_loop<matrix_t> >;
@@ -1367,27 +1379,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                               RAJA::expt::Threads(32, 1, 1)),
         [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
     {
+
+
+      using matrix_t = RAJA_GET_POLICY(matrix_hd_t);
+
+      using RowM = RAJA::RowIndex<IM, matrix_t>;
+      using ColD = RAJA::ColIndex<ID, matrix_t>;
+      using ColZ = RAJA::ColIndex<IZ, matrix_t>;
+
       RAJA::expt::loop<pol_g>(ctx, seg_g, [&](IG g){
-        //RAJA::expt::loop<pol_z>(ctx, seg_z, [&](ColZ z){
-//        RAJA::expt::tile<pol_z>(ctx, seg_z, [&](ColZ z){
-//          RAJA::expt::loop<pol_m>(ctx, seg_m, [&](RowM m){
-//            RAJA::expt::loop<pol_d>(ctx, seg_d, [&](ColD d){
 
-              //phi(m,g,z) += L(m, d) * psi(toRowIndex(d), g, z);
+        phi(RowM::all(),g, ColZ::all()) +=
+            L(RowM::all(), ColD::all()) * psi(toRowIndex(ColD::all()), g, ColZ::all());
 
-
-//#ifdef __CUDA_ARCH__
-//        printf("block=%d, thread=%d, g=%d\n", blockIdx.x, threadIdx.x, (int)*g);
-//#endif
-
-//        phi(RowM::all(),g, ColZ::all()) = L(RowM::all(), ColD::all());
-              phi(RowM::all(),g, ColZ::all()) +=
-                  L(RowM::all(), ColD::all()) * psi(toRowIndex(ColD::all()), g, ColZ::all());
-
-//            });
-//
-//          });
-//        });
       });
 
     });
