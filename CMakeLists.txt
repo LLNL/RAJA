@@ -76,6 +76,7 @@ option(RAJA_TEST_EXHAUSTIVE "Build RAJA exhaustive tests" Off)
 option(RAJA_TEST_OPENMP_TARGET_SUBSET "Build subset of RAJA OpenMP target tests when it is enabled" On)
 option(RAJA_ENABLE_RUNTIME_PLUGINS "Enable support for loading plugins at runtime" Off)
 option(RAJA_ENABLE_DESUL_ATOMICS "Enable support of desul atomics" Off)
+set(DESUL_ENABLE_TESTS Off CACHE BOOL "")
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
