@@ -70,7 +70,7 @@ namespace RAJA {
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      Register() : base_type(), m_value(element_type(0)) {
+      Register() : base_type(), m_value() {
       }
 
       /*!
@@ -104,22 +104,26 @@ namespace RAJA {
       /*!
        * @brief Gets our warp lane
        */
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      constexpr
-      static
-      int get_lane() {
-#ifdef __CUDA_ARCH__
-        return threadIdx.x;
+//      RAJA_INLINE
+//      RAJA_DEVICE
+//      constexpr
+//      static
+//      int get_lane() {
+////#ifdef __CUDA_ARCH__
+//#if 1
+//        return threadIdx.x;
+//#else
 //        int lane;
 //        //asm volatile ("mov.s32 %0, %laneid;" : "=r"(lane));
 //        asm ("mov.s32 %0, %laneid;" : "=r"(lane));
 //        return lane;
-#else
-        return 0;
-#endif
-      }
+//#endif
+////#else
+////        return 0;
+////#endif
+//      }
 
+#define get_lane()  threadIdx.x
 
       RAJA_HOST_DEVICE
       RAJA_INLINE

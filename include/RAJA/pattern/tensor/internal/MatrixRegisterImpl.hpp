@@ -483,19 +483,78 @@ namespace RAJA
 #endif
 
         if(layout_type::is_row_major()){
-          for(camp::idx_t i = 0;i < num_rows;++ i){
+          for(int i = 0;i < num_rows;++ i){
             m_registers[i].load_packed_n(ptr+i*row_stride, num_cols);
           }
-          for(camp::idx_t i = num_rows;i < s_num_registers;++ i){
+          for(int i = num_rows;i < s_num_registers;++ i){
             m_registers[i] = register_type(0); // clear remainder
           }
         }
         else{
-          for(camp::idx_t i = 0;i < num_cols;++ i){
+          for(int i = 0;i < num_cols;++ i){
             m_registers[i].load_packed_n(ptr+i*col_stride, num_rows);
           }
-          for(camp::idx_t i = num_cols;i < s_num_registers;++ i){
+          for(int i = num_cols;i < s_num_registers;++ i){
             m_registers[i] = register_type(0); // clear remainder
+          }
+        }
+
+        if(layout_type::is_row_major()){
+
+          // one or more registers per column
+          if(s_minor_dim_registers){
+
+            for(camp::idx_t row = 0;row < num_rows;++ row){
+              for(camp::idx_t colreg = 0;colreg < s_minor_dim_registers; ++ colreg){
+
+                camp::idx_t reg = row*s_minor_dim_registers + colreg;
+
+                camp::idx_t col0 = colreg*s_elements_per_register;
+                camp::idx_t offset = row*row_stride + col0;
+
+                // loading a complete register
+                if(col0+s_elements_per_register <= num_cols){
+                  m_registers[reg].load_packed(ptr + offset);
+                }
+
+                // partial register at end of row
+                else{
+                  m_registers[reg].load_packed_n(ptr + offset, s_elements_per_register - col0);
+
+                  break; // end this row
+                }
+              }
+            }
+          }
+          // more than one column per register
+          else{
+            // default to strided operation
+            return load_strided_nm(ptr, row_stride, col_stride, num_rows, num_cols);
+          }
+        }
+        // Do semi-dense load for column-major
+        else{
+          // one or more registers per row
+          if(s_minor_dim_registers){
+//            printf("load_packed semi-dense col-major\n");
+            camp::idx_t reg = 0;
+            for(camp::idx_t col = 0;col < COL_SIZE;++ col){
+              for(camp::idx_t rowreg = 0;rowreg < s_minor_dim_registers; ++ rowreg){
+
+                camp::idx_t offset = col*col_stride + rowreg*s_elements_per_register;
+
+                m_registers[reg].load_packed(ptr + offset);
+
+                reg ++;
+
+              }
+            }
+          }
+          // more than one column per register
+          else{
+//            printf("load_packed strided col-major\n");
+            // default to strided operation
+            return load_strided_nm(ptr, row_stride, col_stride, num_rows, num_cols);
           }
         }
 
@@ -515,21 +574,53 @@ namespace RAJA
         printf("th%d,%d: load_strided_nm, stride=%d,%d, nm=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, col_stride, num_rows, num_cols);
 #endif
+        printf("BLASSA\n");
 
         if(layout_type::is_row_major()){
-          for(camp::idx_t i = 0;i < num_rows;++ i){
-            m_registers[i].load_strided_n(ptr+i*row_stride, col_stride, num_cols);
+          // one or more registers per row
+          if(s_minor_dim_registers){
+            for(camp::idx_t i = 0;i < s_num_registers;++ i){
+              camp::idx_t row = i / (s_minor_dim_registers ? s_minor_dim_registers : 1);
+              camp::idx_t col = s_elements_per_register * (i - (row*s_minor_dim_registers));
+              m_registers[i].load_strided(ptr+row*row_stride+col*col_stride, col_stride);
+            }
           }
-          for(camp::idx_t i = num_rows;i < s_num_registers;++ i){
-            m_registers[i] = register_type(0); // clear remainder
+          // less than one register per row
+          else
+          {
+            // compute gather offsets
+            auto offsets = register_type::s_segmented_offsets(s_segbits, col_stride, row_stride);
+
+            for(camp::idx_t i = 0;i < s_num_registers;++ i){
+              m_registers[i].gather(ptr + i * row_stride*s_major_dim_per_register, offsets);
+            }
           }
         }
+
+        // column major
         else{
-          for(camp::idx_t i = 0;i < num_cols;++ i){
-            m_registers[i].load_strided_n(ptr+i*col_stride, row_stride, num_rows);
+
+          // one or more registers per column
+          if(s_minor_dim_registers){
+            for(camp::idx_t i = 0;i < s_num_registers;++ i){
+              camp::idx_t col = i / (s_minor_dim_registers ? s_minor_dim_registers : 1);
+              camp::idx_t row = s_elements_per_register * (i - (col*s_minor_dim_registers));
+//              printf("m_registers[%d].load_strided(ptr+%d, %d)\n",
+//                  (int)i, (int)(row*row_stride+col*col_stride), (int)row_stride);
+              m_registers[i].load_strided(ptr+row*row_stride+col*col_stride, row_stride);
+            }
           }
-          for(camp::idx_t i = num_cols;i < s_num_registers;++ i){
-            m_registers[i] = register_type(0); // clear remainder
+          // less than one register per column
+          else
+          {
+            // compute gather offsets
+            auto offsets = register_type::s_segmented_offsets(s_segbits, row_stride, col_stride);
+//            printf("row_stride=%d, col_stride=%d\n", (int)row_stride, (int)col_stride);
+//            printf("offsets=%s\n", offsets.to_string().c_str());
+
+            for(camp::idx_t i = 0;i < s_num_registers;++ i){
+              m_registers[i].gather(ptr + i * col_stride*s_major_dim_per_register, offsets);
+            }
           }
         }
 

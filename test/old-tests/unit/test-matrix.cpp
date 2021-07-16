@@ -85,23 +85,23 @@ using MatrixTestTypes = ::testing::Types<
 //    RAJA::SquareMatrixRegister<double, RAJA::ColMajorLayout>
 //    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout>,
 
-    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,4>,
+//    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,4>,
     RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,2>,
-    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4,4>,
-    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4,8>,
-    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 2,4>,
-    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,4>,
+//    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4,4>,
+//    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4,8>,
+//    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 2,4>,
+//    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,4>,
     RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,2>,
-    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,4>,
-    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,8>,
-    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2,4>,
-
-    RAJA::RectMatrixRegister<float, RAJA::ColMajorLayout, 16,4>,
+//    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,4>,
+//    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,8>,
+//    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2,4>,
+//
+//    RAJA::RectMatrixRegister<float, RAJA::ColMajorLayout, 16,4>,
     RAJA::RectMatrixRegister<float, RAJA::ColMajorLayout, 4,4>,
-    RAJA::RectMatrixRegister<float, RAJA::ColMajorLayout, 4,16>,
-    RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 8,4>,
-    RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 4,4>,
-    RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 4,8>
+//    RAJA::RectMatrixRegister<float, RAJA::ColMajorLayout, 4,16>,
+//    RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 8,4>,
+    RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 4,4>
+//    RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 4,8>
 //      RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 4, 4>
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4, 2>
 
@@ -189,6 +189,8 @@ TYPED_TEST_P(MatrixTest, MatrixGetSet)
 
 }
 
+#endif
+
 TYPED_TEST_P(MatrixTest, MatrixLoad)
 {
 
@@ -218,7 +220,7 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
     m1.load_strided(&data1[0][0], matrix_t::s_num_columns, 1);
   }
 
-  printf("m1=%s\n", m1.to_string().c_str());
+//  printf("m1=%s\n", m1.to_string().c_str());
 
 
   // Check contents
@@ -253,7 +255,7 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
     m1sub.load_strided(&data1sub[0][0], matrix_t::s_num_columns*2, 1);
   }
 
-  printf("m1sub=%s\n", m1sub.to_string().c_str());
+//  printf("m1sub=%s\n", m1sub.to_string().c_str());
 
 
   // Check contents
@@ -262,6 +264,38 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
       ASSERT_SCALAR_EQ(m1sub.get(i,j), data1sub[i][j]);
     }
   }
+
+
+  // Load data using _nm methods
+  matrix_t m1subnm;
+  if(matrix_t::layout_type::is_row_major()){
+    printf("load_packed_nm\n");
+
+    m1subnm.load_packed_nm(&data1sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
+  }
+  else{
+    printf("load_strided_nm\n");
+
+    m1subnm.load_strided_nm(&data1sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
+  }
+
+  printf("m1subnm=%s\n", m1subnm.to_string().c_str());
+
+
+  // Check contents
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+      if(i < matrix_t::s_num_rows-1 &&
+         j < matrix_t::s_num_columns-1)
+      {
+        ASSERT_SCALAR_EQ(m1subnm.get(i,j), data1sub[j][i]);
+      }
+      else{
+        ASSERT_SCALAR_EQ(m1subnm.get(i,j), element_t(0.0));
+      }
+    }
+  }
+
 
 
 
@@ -287,7 +321,7 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
 
     m2.load_strided(&data2[0][0], 1, matrix_t::s_num_rows);
   }
-  printf("m2=%s\n", m2.to_string().c_str());
+//  printf("m2=%s\n", m2.to_string().c_str());
 
   // Check contents
   for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
@@ -320,7 +354,7 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
     m2sub.load_strided(&data2sub[0][0], 1, matrix_t::s_num_rows*2);
   }
 
-  printf("m2sub=%s\n", m2sub.to_string().c_str());
+//  printf("m2sub=%s\n", m2sub.to_string().c_str());
 
 
   // Check contents
@@ -330,10 +364,40 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
     }
   }
 
+  // Load data using _nm methods
+  matrix_t m2subnm;
+  if(matrix_t::layout_type::is_column_major()){
+    printf("load_packed_nm\n");
+
+    m2subnm.load_packed_nm(&data2sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
+  }
+  else{
+    printf("load_strided_nm\n");
+
+    m2subnm.load_strided_nm(&data2sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
+  }
+
+  printf("m2subnm=%s\n", m2subnm.to_string().c_str());
+
+
+  // Check contents
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+      if(i < matrix_t::s_num_rows-1 &&
+         j < matrix_t::s_num_columns-1)
+      {
+        ASSERT_SCALAR_EQ(m2subnm.get(i,j), data2sub[j][i]);
+      }
+      else{
+        ASSERT_SCALAR_EQ(m2subnm.get(i,j), element_t(0.0));
+      }
+    }
+  }
 
 
 }
 
+#if 0
 
 
 TYPED_TEST_P(MatrixTest, MatrixStore)
@@ -1386,7 +1450,7 @@ TYPED_TEST_P(MatrixTest, ETMatrixTransposeNegate)
 REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
 //                                          MatrixCtor,
 //                                          MatrixGetSet,
-//                                          MatrixLoad,
+                                          MatrixLoad,
 //                                          MatrixStore,
 //                                          MatrixViewLoad,
 //                                          MatrixViewStore,

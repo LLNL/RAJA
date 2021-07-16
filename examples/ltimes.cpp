@@ -11,7 +11,7 @@
 
 // Un-comment the following line to run correctness checks on each variant
 //#define DEBUG_LTIMES
-#define DEBUG_MATRIX_LOAD_STORE
+//#define DEBUG_MATRIX_LOAD_STORE
 
 #include "RAJA/config.hpp"
 
@@ -39,6 +39,7 @@
 #define RAJA_HIP_KERNEL              1
 #define RAJA_HIP_KERNEL_SHMEM        1
 #endif
+
 
 
 extern "C" {
@@ -1324,14 +1325,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                           cudaMemcpyHostToDevice ) );
 
 
-  using matrix_host_t = RAJA::SquareMatrixRegister<double, ColMajorLayout>;
-  using matrix_device_t = RAJA::RectMatrixRegister<double, ColMajorLayout, 8, 8, RAJA::cuda_warp_register>;
+  using matrix_host_t = RAJA::SquareMatrixRegister<double, RowMajorLayout>;
+  using matrix_device_t = RAJA::RectMatrixRegister<double, RowMajorLayout, 8, 8, RAJA::cuda_warp_register>;
 
   using matrix_hd_t = RAJA::expt::LaunchPolicy<matrix_host_t, matrix_device_t>;
 
 
-  using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t, RAJA::expt::cuda_launch_t<true , 256> >;
-  using pol_g = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_block_x_loop>;
+  using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t, RAJA::expt::cuda_launch_t<true , 1024> >;
+  using pol_g = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_block_x_direct>;
   //using pol_z = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>, cuda_thread_y_matrix_col_loop<matrix_t> >;
   //using pol_z = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>, cuda_thread_y_matrix_col_loop<matrix_t> >;
 //  using pol_m = RAJA::expt::LoopPolicy<matrix_row_exec<matrix_t>, cuda_warp_matrix_row_loop<matrix_t> >;
@@ -1387,7 +1388,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       using ColD = RAJA::ColIndex<ID, matrix_t>;
       using ColZ = RAJA::ColIndex<IZ, matrix_t>;
 
-      RAJA::expt::loop<pol_g>(ctx, seg_g, [&](IG g){
+      //RAJA::expt::loop<pol_g>(ctx, seg_g, [&](IG g){
+      RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
+
+        //phi(RowM::all(),g, ColZ::all()) = psi(toRowIndex(ColD::all()), g, ColZ::all());
+//        phi(RowM::range(IM(0),IM(32)),g, ColZ::range(IZ(0),IZ(32))) = psi(toRowIndex(ColD::range(ID(0),ID(32))), g, ColZ::range(IZ(0),IZ(32)));
+
 
         phi(RowM::all(),g, ColZ::all()) +=
             L(RowM::all(), ColD::all()) * psi(toRowIndex(ColD::all()), g, ColZ::all());
