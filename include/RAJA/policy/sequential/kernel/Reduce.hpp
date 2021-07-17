@@ -29,7 +29,7 @@ namespace internal
 //
 // Executor that handles reductions for
 //
-template <template <typename...> class ReduceOperator,
+template <template <typename, typename, typename> class ReduceOperator,
           typename ParamId,
           typename... EnclosedStmts,
           typename Types>

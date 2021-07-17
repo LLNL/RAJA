@@ -35,7 +35,7 @@ namespace internal
 // Executor that handles reductions across a single HIP thread block
 //
 template <typename Data,
-          template <typename...> class ReduceOperator,
+          template <typename, typename, typename> class ReduceOperator,
           typename ParamId,
           typename... EnclosedStmts,
           typename Types>
@@ -94,7 +94,7 @@ struct HipStatementExecutor<Data,
 // Executor that handles reductions across a single HIP thread warp
 //
 template <typename Data,
-          template <typename...> class ReduceOperator,
+          template <typename, typename, typename> class ReduceOperator,
           typename ParamId,
           typename... EnclosedStmts,
           typename Types>
