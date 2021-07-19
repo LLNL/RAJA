@@ -277,10 +277,10 @@ policies have the prefix ``hip_``.
  cuda/hip_exec<BLOCK_SIZE>                forall,       Execute loop iterations
                                           scan,         in a GPU kernel launched
                                           sort          with given thread-block
-                                                        size. If block size not
-                                                        given, the default
-                                                        of 256 threads/block is 
-                                                        used. 
+                                                        size. Note that the 
+                                                        thread-block size must
+                                                        be provided, there is
+                                                        no default provided.
  cuda/hip_thread_x_direct                 kernel (For)  Map loop iterates
                                                         directly to GPU threads
                                                         in x-dimension, one
@@ -533,7 +533,7 @@ cuda/hip_reduce         any CUDA/HIP  Parallel reduction in a CUDA/HIP kernel
                                       reduction value is finalized).
 cuda/hip_reduce_atomic  any CUDA/HIP  Same as above, but reduction may use CUDA
                         policy        atomic operations.
-======================= ============= ===========================================
+======================= ============= ==========================================
 
 .. note:: RAJA reductions used with SIMD execution policies are not
           guaranteed to generate correct results at present.
@@ -716,7 +716,7 @@ explanation along with examples of how they are used can be found in
 
   * ``statement::CudaKernelFixedSM<num_threads, min_blocks_per_sm, EnclosedStatements>`` similar to CudaKernelFixed but enables a minimum number of blocks per sm (specified by min_blocks_per_sm), this can help increase occupancy. This kernel launch is synchronous.
 
-  * ``statement::CudaKernelFixedSMASync<num_threads, min_blocks_per_sm, EnclosedStatements>`` asynchronous version of CudaKernelFixedSM.
+  * ``statement::CudaKernelFixedSMAsync<num_threads, min_blocks_per_sm, EnclosedStatements>`` asynchronous version of CudaKernelFixedSM.
 
   * ``statement::CudaKernelOcc<EnclosedStatements>`` similar to CudaKernel but uses the CUDA occupancy calculator to determine the optimal number of threads/blocks. Statement is intended for RAJA::cuda_block_{xyz}_loop policies. This kernel launch is synchronous.
 
