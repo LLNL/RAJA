@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -18,21 +18,21 @@ namespace util {
 class PluginStrategy
 {
   public:
-    PluginStrategy();
+    RAJASHAREDDLL_API PluginStrategy();
 
     virtual ~PluginStrategy() = default;
 
-    virtual void init(const PluginOptions& p);
+    virtual RAJASHAREDDLL_API void init(const PluginOptions& p);
 
-    virtual void preCapture(const PluginContext& p);
+    virtual RAJASHAREDDLL_API void preCapture(const PluginContext& p);
 
-    virtual void postCapture(const PluginContext& p);
+    virtual RAJASHAREDDLL_API void postCapture(const PluginContext& p);
 
-    virtual void preLaunch(const PluginContext& p);
+    virtual RAJASHAREDDLL_API void preLaunch(const PluginContext& p);
 
-    virtual void postLaunch(const PluginContext& p);
+    virtual RAJASHAREDDLL_API void postLaunch(const PluginContext& p);
 
-    virtual void finalize();
+    virtual RAJASHAREDDLL_API void finalize();
 };
 
 using PluginRegistry = Registry<PluginStrategy>;

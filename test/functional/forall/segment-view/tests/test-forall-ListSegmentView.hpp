@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -68,8 +68,14 @@ void ForallListSegmentViewTestImpl(INDEX_TYPE N)
   #endif
   static_assert(IS_TRIVIALLY_COPYABLE(layout_type),
                 "These layouts should always be triviallly copyable");
+
+  // AJK: see ViewBase Ctor notes in RAJA/Util/TypedViewBase.hpp
+#if (!defined(RAJA_ENABLE_CUDA) && !defined(RAJA_ENABLE_CLANG_CUDA))
   static_assert(IS_TRIVIALLY_COPYABLE(view_type),
                 "These views should always be triviallly copyable");
+#endif
+
+
 #endif
   
   RAJA::Layout<1> layout(N);

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,4 +16,8 @@ raja_add_reproducer(
 raja_add_reproducer(
   NAME reproducer-openmptarget-issue2
   SOURCES reproducer-openmptarget-issue2.cpp)
+
+raja_add_reproducer(
+  NAME reproducer-openmptarget-issue3
+  SOURCES reproducer-openmptarget-issue3.cpp)
 

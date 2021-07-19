@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -89,9 +89,10 @@ and their default settings:
       ======================   ======================
       Variable                 Default
       ======================   ======================
-      ENABLE_TESTS             On 
-      ENABLE_EXAMPLES          On 
-      ENABLE_EXERCISES         On 
+      RAJA_ENABLE_TESTS        On 
+      RAJA_ENABLE_EXAMPLES     On 
+      RAJA_ENABLE_EXERCISES    On 
+      RAJA_ENABLE_BENCHMARKS   Off
       ======================   ======================
 
      RAJA can also be configured to build with compiler warnings reported as
@@ -121,32 +122,47 @@ and their default settings:
      Variables that control which RAJA programming model back-ends are enabled
      are (names are descriptive of what they enable):
 
-      ======================   ============================================
-      Variable                 Default
-      ======================   ============================================
-      ENABLE_OPENMP            On 
-      ENABLE_TARGET_OPENMP     Off (when on, ENABLE_OPENMP must also be on)
-      ENABLE_TBB               Off 
-      ENABLE_CUDA              Off 
-      ENABLE_HIP               Off 
-      ======================   ============================================
+      =======================   ============================================
+      Variable                  Default
+      =======================   ============================================
+      ENABLE_OPENMP             On
+      ENABLE_TARGET_OPENMP      Off (when on, ENABLE_OPENMP must also be on)
+      ENABLE_TBB                Off
+      ENABLE_CUDA               Off
+      ENABLE_HIP                Off
+      =======================   ============================================
 
      Other compilation options are available via the following:
 
-      ======================   ==========================================
-      Variable                 Default
-      ======================   ==========================================
-      ENABLE_CLANG_CUDA        Off (when on, ENABLE_CUDA must also be on)
-      ENABLE_CUB               On (when CUDA enabled)
-      CUDA_ARCH                sm_35 (set based on hardware support)
-      ======================   ==========================================
+      =======================   ==========================================
+      Variable                  Default
+      =======================   ==========================================
+      ENABLE_CLANG_CUDA         Off (when on, ENABLE_CUDA must also be on)
+      ENABLE_EXTERNAL_CUB       Off (when CUDA enabled)
+      CUDA_ARCH                 sm_35 (set based on hardware support)
+      ENABLE_EXTERNAL_ROCPRIM   Off (when HIP enabled)
+      =======================   ==========================================
 
       Turning the 'ENABLE_CLANG_CUDA' variable on will build CUDA code with
       the native support in the Clang compiler.
 
-      The 'ENABLE_CUB' variable is used to enable NVIDIA CUB library support
-      for RAJA CUDA scans. Since the CUB library is included in RAJA as a
-      Git submodule, users should not have to set this in most cases.
+      The 'ENABLE_EXTERNAL_CUB' variable is used to require the use of an
+      external install of the NVIDIA CUB support library. Even when Off the CUB
+      library included in the CUDA toolkit will still be used if available.
+      Starting with CUDA 11, CUB is installed as part of the CUDA toolkit and
+      the NVIDIA THRUST library requires that install of CUB. We recommended
+      projects use the CUB included with the CUDA toolkit for compatibility with
+      THRUST and applications using THRUST. Users should take note of the CUB
+      install used by RAJA to ensure they use the same include directories when
+      configuring their application.
+
+      The 'ENABLE_EXTERNAL_ROCPRIM' variable is used to require an external
+      install of the AMD rocPRIM support library. Even when Off the rocPRIM
+      library included in the ROCM install will be used when available. We
+      recommend projects use the rocPRIM included with the ROCM install when
+      available. Users should take note of the rocPRIM install used by RAJA to
+      ensure they use the same include directories when configuring their
+      application.
 
 .. note:: See :ref:`getting-started-label` for more information about
           setting other options for RAJA back-ends.

@@ -1,17 +1,9 @@
 ###############################################################################
-# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
-
-raja_add_test(
-  NAME test-kernel-lambda-args
-  SOURCES test-kernel-lambda-args.cpp)
-
-raja_add_test(
-  NAME test-kernel-dynamic-tile
-  SOURCES test-kernel-dynamic-tile.cpp)
 
 raja_add_test(
   NAME test-kernel
@@ -30,7 +22,3 @@ add_subdirectory(cpu)
 if(ENABLE_CUDA)
   add_subdirectory(cuda)
 endif(ENABLE_CUDA)
-
-if(ENABLE_TARGET_OPENMP)
-  add_subdirectory(omp-target)
-endif(ENABLE_TARGET_OPENMP)

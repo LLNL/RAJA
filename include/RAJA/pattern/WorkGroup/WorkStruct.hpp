@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -47,10 +47,10 @@ struct WorkStruct;
 template < typename Vtable_T >
 using GenericWorkStruct = WorkStruct<alignof(std::max_align_t), Vtable_T>;
 
-template < size_t size, typename ... CallArgs >
-struct WorkStruct<size, Vtable<CallArgs...>>
+template < size_t size, typename VtableID, typename ... CallArgs >
+struct WorkStruct<size, Vtable<VtableID, CallArgs...>>
 {
-  using vtable_type = Vtable<CallArgs...>;
+  using vtable_type = Vtable<VtableID, CallArgs...>;
 
   // construct a WorkStruct with a value of type holder from the args and
   // check a variety of constraints at compile time

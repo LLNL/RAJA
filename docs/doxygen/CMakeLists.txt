@@ -1,25 +1,23 @@
 ###############################################################################
-# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-set(DOXYGEN_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/_build")
-set(DOXYGEN_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
+#------------------------------------------------------------------------------
+# Doxygen documentation targets
+#------------------------------------------------------------------------------
 
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in 
-  ${DOXYGEN_BUILD_DIR}/Doxyfile 
-  @ONLY)
+blt_add_doxygen_target( raja_doxygen )
 
-add_custom_target(raja-doxygen
-  ${DOXYGEN_EXECUTABLE} 
-  ${DOXYGEN_BUILD_DIR}/Doxyfile
-  COMMENT "Building API documentation with Doxygen")
+# Required directory for doxygen to generate output to
+add_custom_target( build_doxygen_output_dir
+                   ALL
+                   COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/html
+                 )
 
-install(DIRECTORY ${DOXYGEN_HTML_DIR}
-  DESTINATION "docs/doxygen/" OPTIONAL)
+add_dependencies( raja_doxygen build_doxygen_output_dir )
 
-add_dependencies(raja-docs
-  raja-doxygen)
+add_dependencies(raja_docs
+  raja_doxygen)

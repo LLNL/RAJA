@@ -1,5 +1,5 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,7 +9,7 @@
 # This file allows RAJA to be automatically detected by other libraries
 # using CMake.  To build with RAJA, you can do one of two things:
 #
-#   1. Set the RAJA_DIR environment variable to the root of the Caliper
+#   1. Set the RAJA_DIR environment variable to the root directory of the RAJA
 #      installation.  If you loaded RAJA through a dotkit, this may already
 #      be set, and RAJA will be autodetected by CMake.
 #
@@ -34,9 +34,13 @@ if (NOT RAJA_CONFIG_LOADED)
   set(RAJA_CONFIG_LOADED TRUE)
 
   if (NOT DEFINED camp_DIR)
-    set(camp_DIR @CMAKE_INSTALL_PREFIX@/lib/cmake/camp)
+    if (EXISTS @EXTERNAL_CAMP_INSTALL_DIR@)
+      set(camp_DIR @EXTERNAL_CAMP_INSTALL_DIR@)
+    else ()
+      set(camp_DIR @CMAKE_INSTALL_PREFIX@/lib/cmake/camp)
+    endif ()
   endif ()
-  find_package(camp REQUIRED)
+  find_package(camp REQUIRED PATHS ${camp_DIR} NO_DEFAULT_PATH)
   include(@CMAKE_INSTALL_PREFIX@/share/raja/cmake/RAJA.cmake)
 endif()
 

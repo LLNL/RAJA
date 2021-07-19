@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,6 +26,7 @@
 
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
+#include "RAJA/util/TypedViewBase.hpp"
 
 namespace RAJA
 {
@@ -48,69 +49,25 @@ struct add_offset<RAJA::TypedLayout<IdxLin,camp::tuple<DimTypes...>>>
 template <typename ValueType,
           typename LayoutType,
           typename PointerType = ValueType *>
-struct View {
-  using value_type = ValueType;
-  using pointer_type = PointerType;
-  using layout_type = LayoutType;
-  using nc_value_type = camp::decay<value_type>;
-  using nc_pointer_type = 
-    camp::type::ptr::add< // adds *
-      camp::type::cv::rem<
-        camp::type::ptr::rem<pointer_type>  // removes *
-      >
-    >;
-  using NonConstView = View<nc_value_type, layout_type, nc_pointer_type>;
+using View =
+    internal::ViewBase<ValueType, ValueType *, LayoutType>;
 
-  layout_type const layout;
-  pointer_type data;
 
-  template <typename... Args>
-  RAJA_INLINE constexpr View(pointer_type data_ptr, Args... dim_sizes)
-      : layout(dim_sizes...), data(data_ptr)
-  {
-  }
 
-  RAJA_INLINE constexpr View(pointer_type data_ptr, layout_type &&layout)
-      : layout(layout), data(data_ptr)
-  {
-  }
+template <typename ValueType, typename LayoutType, typename... IndexTypes>
+using TypedView =
+    internal::TypedViewBase<ValueType, ValueType *, LayoutType, camp::list<IndexTypes...> >;
 
-  constexpr View() = delete;
-  RAJA_INLINE constexpr View(View const &) = default;
-  RAJA_INLINE constexpr View(View &&) = default;
-  RAJA_INLINE View& operator=(View const &) = default;
-  RAJA_INLINE View& operator=(View &&) = default;
 
-  template <bool IsConstView = std::is_const<value_type>::value>
-  RAJA_INLINE constexpr View(
-      typename std::enable_if<IsConstView, NonConstView>::type const &rhs)
-      : layout(rhs.layout), data(rhs.data)
-  {
-  }
 
-  RAJA_INLINE void set_data(pointer_type data_ptr) { data = data_ptr; }
 
-  template <size_t n_dims=layout_type::n_dims, typename IdxLin = Index_type>
-  RAJA_INLINE RAJA::View<ValueType, typename add_offset<layout_type>::type>
-  shift(const std::array<IdxLin, n_dims>& shift)
-  {
-    static_assert(n_dims==layout_type::n_dims, "Dimension mismatch in view shift");
 
-    typename add_offset<layout_type>::type shift_layout(layout);
-    shift_layout.shift(shift);
-
-    return RAJA::View<ValueType, typename add_offset<layout_type>::type>(data, shift_layout);
-  }
-
-  // making this specifically typed would require unpacking the layout,
-  // this is easier to maintain
-  template <typename... Args>
-  RAJA_HOST_DEVICE RAJA_INLINE value_type &operator()(Args... args) const
-  {
-    auto idx = stripIndexType(layout(args...));
-    return data[idx];
-  }
-};
+template <typename IndexType, typename ValueType>
+RAJA_INLINE View<ValueType, Layout<1, IndexType, 0> > make_view(
+    ValueType *ptr)
+{
+  return View<ValueType, Layout<1, IndexType, 0> >(ptr, 1);
+}
 
 
 // select certain indices from a tuple, given a curated index sequence
@@ -274,52 +231,6 @@ struct MultiView {
     return data[pidx][idx];
   }
 };
-
-template <typename ValueType,
-          typename PointerType,
-          typename LayoutType,
-          typename... IndexTypes>
-struct TypedViewBase {
-  using Base = View<ValueType, LayoutType, PointerType>;
-
-  Base base_;
-
-  template <typename... Args>
-  RAJA_INLINE constexpr TypedViewBase(PointerType data_ptr, Args... dim_sizes)
-      : base_(data_ptr, dim_sizes...)
-  {
-  }
-
-  template <typename CLayoutType>
-  RAJA_INLINE constexpr TypedViewBase(PointerType data_ptr,
-                                      CLayoutType &&layout)
-      : base_(data_ptr, std::forward<CLayoutType>(layout))
-  {
-  }
-
-  RAJA_INLINE void set_data(PointerType data_ptr) { base_.set_data(data_ptr); }
-
-  template <size_t n_dims=Base::layout_type::n_dims, typename IdxLin = Index_type>
-  RAJA_INLINE RAJA::TypedViewBase<ValueType, ValueType *, typename add_offset<LayoutType>::type, IndexTypes...>
-  shift(const std::array<IdxLin, n_dims>& shift)
-  {
-    static_assert(n_dims==Base::layout_type::n_dims, "Dimension mismatch in view shift");
-
-    typename add_offset<LayoutType>::type shift_layout(base_.layout);
-    shift_layout.shift(shift);
-
-    return RAJA::TypedViewBase<ValueType, ValueType *, typename add_offset<LayoutType>::type, IndexTypes...>(base_.data, shift_layout);
-  }
-
-  RAJA_HOST_DEVICE RAJA_INLINE ValueType &operator()(IndexTypes... args) const
-  {
-    return base_.operator()(stripIndexType(args)...);
-  }
-};
-
-template <typename ValueType, typename LayoutType, typename... IndexTypes>
-using TypedView =
-    TypedViewBase<ValueType, ValueType *, LayoutType, IndexTypes...>;
 
 template <typename ViewType, typename AtomicPolicy = RAJA::auto_atomic>
 struct AtomicViewWrapper {

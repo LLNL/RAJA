@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -65,32 +65,17 @@ using OpenMPKernelRegionExecPols =
 
     RAJA::KernelPolicy<
       RAJA::statement::Region<RAJA::omp_parallel_region,
-        RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
+        RAJA::statement::For<0, RAJA::omp_for_nowait_static_exec< >,
           RAJA::statement::Lambda<0>
         >,
-        RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
+        RAJA::statement::For<0, RAJA::omp_for_nowait_static_exec< >,
           RAJA::statement::Lambda<1>
         >,
-        RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
-          RAJA::statement::Lambda<2>
-        >
-      >
-    >,
-
-    RAJA::KernelPolicy<
-      RAJA::statement::Region<RAJA::omp_parallel_region,
-        RAJA::statement::For<0, RAJA::omp_for_exec,
-          RAJA::statement::Lambda<0>
-        >,
-        RAJA::statement::For<0, RAJA::omp_for_exec,
-          RAJA::statement::Lambda<1>
-        >,
-        RAJA::statement::For<0, RAJA::omp_for_exec,
+        RAJA::statement::For<0, RAJA::omp_for_nowait_static_exec< >,
           RAJA::statement::Lambda<2>
         >
       >
     >
-
   >;
 
 #endif  // RAJA_ENABLE_OPENMP

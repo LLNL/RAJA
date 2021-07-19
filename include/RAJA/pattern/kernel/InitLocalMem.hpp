@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -64,7 +64,7 @@ struct StatementExecutor<statement::InitLocalMem<RAJA::cpu_tile_mem,camp::idx_se
   
   //Execute statement list
   template<class Data>
-  static void RAJA_INLINE initMem(Data && data)
+  static void RAJA_INLINE exec_expanded(Data && data)
   {
     execute_statement_list<camp::list<EnclosedStmts...>, Types>(data);
   }
@@ -72,35 +72,37 @@ struct StatementExecutor<statement::InitLocalMem<RAJA::cpu_tile_mem,camp::idx_se
   //Intialize local array
   //Identifies type + number of elements needed
   template<camp::idx_t Pos, camp::idx_t... others, class Data>
-  static void RAJA_INLINE initMem(Data && data)
+  static void RAJA_INLINE exec_expanded(Data && data)
   {
-    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::element_t;
-    const camp::idx_t NumElem = camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::NumElem;
-    
-    varType Array[NumElem];
-    camp::get<Pos>(data.param_tuple).m_arrayPtr = Array;
-    initMem<others...>(data);
+    using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::value_type;
+
+    // Initialize memory
+#ifdef RAJA_COMPILER_MSVC
+    // MSVC doesn't like taking a pointer to stack allocated data?!?!
+    varType *ptr = new varType[camp::get<Pos>(data.param_tuple).size()];
+    camp::get<Pos>(data.param_tuple).set_data(ptr);
+#else
+    varType Array[camp::get<Pos>(data.param_tuple).size()];
+    camp::get<Pos>(data.param_tuple).set_data(&Array[0]);
+#endif
+
+    // Initialize others and execute
+    exec_expanded<others...>(data);
+
+    // Cleanup and return
+    camp::get<Pos>(data.param_tuple).set_data(nullptr);
+#ifdef RAJA_COMPILER_MSVC
+    delete[] ptr;
+#endif
   }
   
-  //Set pointer to null
-  template<class Data>
-  static void RAJA_INLINE setPtrToNull(Data &&) {}
-  
-  template<camp::idx_t Pos, camp::idx_t... others, class Data>
-  static void RAJA_INLINE setPtrToNull(Data && data)
-  {
-    camp::get<Pos>(data.param_tuple).m_arrayPtr = nullptr;
-    setPtrToNull<others...>(data);
-  }
+
   
   template<typename Data>
   static RAJA_INLINE void exec(Data &&data)
   {
-    //Initalize local arrays + execute statements
-    initMem<Indices...>(data);
-    
-    //set array pointers to null
-    setPtrToNull<Indices...>(data);
+    //Initalize local arrays + execute statements + cleanup
+    exec_expanded<Indices...>(data);
   }
   
 };

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -18,7 +18,7 @@
 //Launch policies
 #if defined(RAJA_ENABLE_CUDA)
 using seq_cuda_policies = camp::list<
-  RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t,RAJA::expt::cuda_launch_t<false>>,
+  RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t,RAJA::expt::cuda_launch_t<true>>,
   RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::cuda_block_x_direct>,
   RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::cuda_thread_x_loop>>;
 
@@ -28,7 +28,7 @@ using Sequential_launch_policies = camp::list<
 
 #elif defined(RAJA_ENABLE_HIP)
 using seq_hip_policies = camp::list<
-  RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t,RAJA::expt::hip_launch_t<false>>,
+  RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t,RAJA::expt::hip_launch_t<true>>,
   RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::hip_block_x_direct>,
   RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::hip_thread_x_loop>>;
 

@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -37,34 +37,6 @@ namespace RAJA
 namespace detail
 {
 
-/*!
- * Functor that returns a*b[i] for all i!=exlcude_i,
- * and returns a for i==exclude_i.
- *
- * This allows Layout to more efficiently compute layouts where a single
- * dimension is stride-1.  Also, it allows compilers to better reason about
- * loop optimizations.
- */
-template <ptrdiff_t i, ptrdiff_t exclude_i>
-struct ConditionalMultiply {
-
-  template <typename A, typename B>
-  static RAJA_INLINE RAJA_HOST_DEVICE constexpr A multiply(A a, B b)
-  {
-    // regular product term
-    return a * b;
-  }
-};
-
-template <ptrdiff_t i>
-struct ConditionalMultiply<i, i> {
-  template <typename A, typename B>
-  static RAJA_INLINE RAJA_HOST_DEVICE constexpr A multiply(A a, B)
-  {
-    // assume b[i]==1
-    return a;
-  }
-};
 
 
 template <typename Range,
@@ -104,7 +76,7 @@ public:
 
   static constexpr size_t n_dims = sizeof...(RangeInts);
   static constexpr IdxLin limit = RAJA::operators::limits<IdxLin>::max();
-  static constexpr ptrdiff_t stride1_dim = StrideOneDim;
+  static constexpr ptrdiff_t stride_one_dim = StrideOneDim;
 
   IdxLin sizes[n_dims] = {0};
   IdxLin strides[n_dims] = {0};
@@ -211,13 +183,12 @@ public:
     BoundsCheck<0>(indices...);
 #endif
     // dot product of strides and indices
-#ifdef RAJA_COMPILER_INTEL
-    // Intel compiler has issues with Condition
-    return sum<IdxLin>((indices * strides[RangeInts])...);
-#else
-    return sum<IdxLin>
-      (((IdxLin) detail::ConditionalMultiply<RangeInts, stride1_dim>::multiply(IdxLin(indices), strides[RangeInts]) )...);
-#endif
+    return sum<IdxLin>(
+      (RangeInts==stride_one_dim ?   // Is this dimension stride-one?
+         indices :  // it's stride one, so dont bother with multiple
+         strides[RangeInts]*indices // it's not stride one
+			)...
+    );
   }
 
 
@@ -261,6 +232,14 @@ public:
     // replacing 1 for any zero-sized dimensions
     return foldl(RAJA::operators::multiplies<IdxLin>(),
                          (sizes[RangeInts] == IdxLin(0) ? IdxLin(1) : sizes[RangeInts])...);
+  }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_stride() const {
+    return strides[DIM];
   }
 };
 
@@ -420,6 +399,8 @@ RAJA_INLINE TypedLayout<IdxLin, IdxTuple, s1_dim> make_stride_one(
   // Use non-typed layout to initialize new typed layout
   return TypedLayout<IdxLin, IdxTuple, s1_dim>(b);
 }
+
+
 
 
 }  // namespace RAJA

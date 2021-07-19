@@ -3,7 +3,8 @@
 "package_version" : "develop",
 "package_final_phase" : "hostconfig",
 "package_source_dir" : "../..",
-"spack_url": "https://github.com/spack/spack",
-"spack_commit": "bc53bb9b7cbf250c98cfe77d334ed30d6b958c21",
+"spack_url": "https://github.com/davidbeckingsale/spack",
+"spack_branch": "feature/allow-untested-cuda-versions",
+"spack_commit": "f96e256bee1948aa030916aae0c1b2645230fb9f",
 "spack_activate" : {}
 }

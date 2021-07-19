@@ -28,6 +28,7 @@ struct PolicySort
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
+  using supports_resource = std::true_type;
 
   std::string m_name;
 
@@ -57,6 +58,7 @@ struct PolicySortPairs
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
+  using supports_resource = std::true_type;
 
   std::string m_name;
 

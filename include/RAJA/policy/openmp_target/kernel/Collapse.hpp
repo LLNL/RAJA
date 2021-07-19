@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -23,9 +23,6 @@ struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
   {
     auto l0 = segment_length<Arg0>(data);
     auto l1 = segment_length<Arg1>(data);
-
-    auto i0 = l0;
-    auto i1 = l1;
 
     // Set the argument types for this loop
     using NewTypes0 = setSegmentTypeFromData<Types, Arg0, Data>;
@@ -61,10 +58,6 @@ struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
     auto l0 = segment_length<Arg0>(data);
     auto l1 = segment_length<Arg1>(data);
     auto l2 = segment_length<Arg2>(data);
-
-    auto i0 = l0;
-    auto i1 = l1;
-    auto i2 = l2;
 
     // Set the argument types for this loop
     using NewTypes0 = setSegmentTypeFromData<Types, Arg0, Data>;
@@ -106,11 +99,6 @@ struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
     auto l1 = segment_length<Arg1>(data);
     auto l2 = segment_length<Arg2>(data);
     auto l3 = segment_length<Arg3>(data);
-
-    auto i0 = l0;
-    auto i1 = l1;
-    auto i2 = l2;
-    auto i3 = l3;
 
     // Set the argument types for this loop
     using NewTypes0 = setSegmentTypeFromData<Types, Arg0, Data>;

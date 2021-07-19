@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -51,8 +51,7 @@ cudaInfo tl_status;
 #endif
 
 //! State of raja cuda stream synchronization for cuda reducer objects
-std::unordered_map<cudaStream_t, bool> g_stream_info_map{
-    {cudaStream_t(0), true}};
+std::unordered_map<cudaStream_t, bool> g_stream_info_map;
 
 
 }  // namespace detail

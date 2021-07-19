@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -11,7 +11,8 @@ find_path(CUB_INCLUDE_DIRS
   NAMES cub/cub.cuh
   HINTS
     ${CUB_DIR}/
-    ${CUB_DIR}/include)
+    ${CUB_DIR}/include
+    ${CUDA_TOOLKIT_ROOT_DIR}/include)
 
 find_package_handle_standard_args(
   CUB

@@ -13,7 +13,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -40,7 +40,7 @@ template <typename A, typename B>
 RAJA_INLINE RAJA_HOST_DEVICE constexpr B reinterp_A_as_B(A const &val)
 {
   static_assert(sizeof(A) == sizeof(B), "A and B must be same size");
-  return reinterpret_cast<B const volatile &>(val);
+  return reinterpret_cast<B const &>(val);
 }
 
 template <typename A, typename B>

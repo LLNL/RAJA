@@ -1,0 +1,171 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-index-types.hpp"
+#include "RAJA_test-kernel-tile-size.hpp"
+
+// for data types
+#include "RAJA_test-reduce-types.hpp"
+#include "RAJA_test-forall-data.hpp"
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-kernel-tile-@TILE_TYPE@.hpp"
+
+
+//
+// Exec pols for kernel tile tests
+//
+
+using SequentialKernelTileExecPols =
+  camp::list<
+
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::loop_exec,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
+            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
+              RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
+                RAJA::statement::Lambda<0>
+              >
+            >,
+
+            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
+              RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
+                RAJA::statement::Lambda<1>
+              >
+            >
+          >
+        >
+      >
+    >
+
+  >;
+
+#if defined(RAJA_ENABLE_OPENMP)
+
+using OpenMPKernelTileExecPols =
+  camp::list<
+
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::omp_parallel_for_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::loop_exec,
+          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
+            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
+              RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
+                RAJA::statement::Lambda<0>
+              >
+            >,
+
+            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
+              RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
+                RAJA::statement::Lambda<1>
+              >
+            >
+          >
+        >
+      >
+    >
+
+  >;
+
+#endif  // RAJA_ENABLE_OPENMP
+
+// Dynamic tiling not yet implemented for Cuda or Hip
+#if defined(RAJA_ENABLE_CUDA)
+
+using CudaKernelTileExecPols =
+  camp::list<
+
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::cuda_block_x_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::cuda_block_y_direct,
+            RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2>,
+              RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::cuda_thread_x_loop,
+                RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::cuda_thread_y_direct,
+                  RAJA::statement::Lambda<0>
+                >
+              >,
+
+              RAJA::statement::CudaSyncThreads,
+  
+              RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::cuda_thread_x_loop,
+                RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::cuda_thread_y_direct,
+                  RAJA::statement::Lambda<1>
+                >
+              >,
+
+              RAJA::statement::CudaSyncThreads
+            >
+          >
+        >
+      >
+    >
+
+  >;
+
+#endif  // RAJA_ENABLE_CUDA
+
+#if defined(RAJA_ENABLE_HIP)
+
+using HipKernelTileExecPols =
+  camp::list<
+
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+        RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::hip_block_x_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::hip_block_y_direct,
+            RAJA::statement::InitLocalMem<RAJA::hip_shared_mem, RAJA::ParamList<2>,
+              RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::hip_thread_x_loop,
+                RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::hip_thread_y_direct,
+                  RAJA::statement::Lambda<0>
+                >
+              >,
+
+              RAJA::statement::HipSyncThreads,
+  
+              RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::hip_thread_x_loop,
+                RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::hip_thread_y_direct,
+                  RAJA::statement::Lambda<1>
+                >
+              >,
+
+              RAJA::statement::HipSyncThreads
+            >
+          >
+        >
+      >
+    >
+
+  >;
+
+#endif  // RAJA_ENABLE_HIP
+
+//
+// Cartesian product of types used in parameterized tests
+//
+using @TILE_BACKEND@KernelTileTypes =
+  Test< camp::cartesian_product<IdxTypeList,
+                                ReduceDataTypeList,
+                                @TILE_BACKEND@ResourceList,
+                                @TILE_BACKEND@KernelTileExecPols>>::Types;
+
+//
+// Instantiate parameterized test
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@TILE_BACKEND@,
+                               KernelTile@TILE_TYPE@Test,
+                               @TILE_BACKEND@KernelTileTypes);

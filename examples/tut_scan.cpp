@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -18,7 +18,7 @@
  *  Scan Example
  *
  *  Example shows how to perform RAJA inclusive and exclusive scan operations
- *  for integer arrays, including in-place, using different operators. 
+ *  for integer arrays, including in-place, using different operators.
  *  Other array data types, operators, etc. are similar
  *
  *  RAJA features shown:
@@ -68,15 +68,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
 // Allocate and initialize vector data
 //
-  int* in = memoryManager::allocate<int>(N); 
-  int* out = memoryManager::allocate<int>(N); 
+  int* in = memoryManager::allocate<int>(N);
+  int* out = memoryManager::allocate<int>(N);
 
   std::iota(in, in + N, -1);
 
   // _scan_array_init_end
 
   std::cout << "\n in values...\n";
-  printArray(in, N);  
+  printArray(in, N);
   std::cout << "\n";
 
 
@@ -88,11 +88,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running sequential inclusive_scan (default)...\n";
 
   // _scan_inclusive_seq_start
-  RAJA::inclusive_scan<RAJA::seq_exec>(in, in + N, out);
+  RAJA::inclusive_scan<RAJA::seq_exec>(RAJA::make_span(in, N),
+                                       RAJA::make_span(out, N));
   // _scan_inclusive_seq_end
 
   checkInclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
-  printArray(out, N);  
+  printArray(out, N);
   std::cout << "\n";
 
 //----------------------------------------------------------------------------//
@@ -102,12 +103,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _scan_inclusive_seq_plus_start
-  RAJA::inclusive_scan<RAJA::seq_exec>(in, in + N, out,
+  RAJA::inclusive_scan<RAJA::seq_exec>(RAJA::make_span(in, N),
+                                       RAJA::make_span(out, N),
                                        RAJA::operators::plus<int>{});
   // _scan_inclusive_seq_plus_end
 
   checkInclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
-  printArray(out, N);  
+  printArray(out, N);
   std::cout << "\n";
 
 //----------------------------------------------------------------------------//
@@ -117,12 +119,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _scan_exclusive_seq_plus_start
-  RAJA::exclusive_scan<RAJA::seq_exec>(in, in + N, out,
+  RAJA::exclusive_scan<RAJA::seq_exec>(RAJA::make_span(in, N),
+                                       RAJA::make_span(out, N),
                                        RAJA::operators::plus<int>{});
   // _scan_exclusive_seq_plus_end
 
   checkExclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
-  printArray(out, N);  
+  printArray(out, N);
   std::cout << "\n";
 
 //----------------------------------------------------------------------------//
@@ -132,7 +135,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _scan_inclusive_inplace_seq_min_start
-  RAJA::inclusive_scan_inplace<RAJA::seq_exec>(out, out + N,
+  RAJA::inclusive_scan_inplace<RAJA::seq_exec>(RAJA::make_span(out, N),
                                                RAJA::operators::minimum<int>{});
   // _scan_inclusive_inplace_seq_min_end
 
@@ -147,7 +150,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _scan_exclusive_inplace_seq_max_start
-  RAJA::exclusive_scan_inplace<RAJA::seq_exec>(out, out + N,
+  RAJA::exclusive_scan_inplace<RAJA::seq_exec>(RAJA::make_span(out, N),
                                                RAJA::operators::maximum<int>{});
   // _scan_exclusive_inplace_seq_max_end
 
@@ -165,7 +168,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running OpenMP inclusive_scan (plus)...\n";
 
   // _scan_inclusive_omp_plus_start
-  RAJA::inclusive_scan<RAJA::omp_parallel_for_exec>(in, in + N, out,
+  RAJA::inclusive_scan<RAJA::omp_parallel_for_exec>(RAJA::make_span(in, N),
+                                                    RAJA::make_span(out, N),
                                                     RAJA::operators::plus<int>{});
   // _scan_inclusive_omp_plus_end
 
@@ -180,7 +184,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _scan_exclusive_inplace_omp_plus_start
-  RAJA::exclusive_scan_inplace<RAJA::omp_parallel_for_exec>(out, out + N,
+  RAJA::exclusive_scan_inplace<RAJA::omp_parallel_for_exec>(RAJA::make_span(out, N),
                                                             RAJA::operators::plus<int>{});
   // _scan_exclusive_inplace_omp_plus_end
 
@@ -203,8 +207,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _scan_inclusive_inplace_cuda_plus_start
-  RAJA::inclusive_scan_inplace<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(out, out + N,
-                                       RAJA::operators::plus<int>{});
+  RAJA::inclusive_scan_inplace<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::make_span(out, N),
+                                                                 RAJA::operators::plus<int>{});
   // _scan_inclusive_inplace_cuda_plus_end
 
   checkInclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
@@ -218,8 +222,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _scan_exclusive_cuda_plus_start
-  RAJA::exclusive_scan<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(in, in + N, out,
-                                       RAJA::operators::plus<int>{});
+  RAJA::exclusive_scan<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::make_span(in, N),
+                                                         RAJA::make_span(out, N),
+                                                         RAJA::operators::plus<int>{});
   // _scan_exclusive_cuda_plus_end
 
   checkExclusiveScanResult<RAJA::operators::plus<int>>(in, out, N);
@@ -244,8 +249,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
 
-  RAJA::inclusive_scan_inplace<RAJA::hip_exec<HIP_BLOCK_SIZE>>(d_out, d_out + N,
-                                       RAJA::operators::plus<int>{});
+  RAJA::inclusive_scan_inplace<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::make_span(d_out, N),
+                                                               RAJA::operators::plus<int>{});
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
 
@@ -259,8 +264,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
 
   std::cout << "\n Running HIP exclusive_scan (plus)...\n";
-  RAJA::exclusive_scan<RAJA::hip_exec<HIP_BLOCK_SIZE>>(d_in, d_in + N, d_out,
-                                       RAJA::operators::plus<int>{});
+  RAJA::exclusive_scan<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::make_span(d_in, N),
+                                                       RAJA::make_span(d_out, N),
+                                                       RAJA::operators::plus<int>{});
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
 
@@ -298,7 +304,7 @@ void checkInclusiveScanResult(const T* in, const T* out, int N)
     val = Function()(val, in[i]);
     if (out[i] != val) {
       std::cout << "\n\t result -- WRONG\n";
-      std::cout << "\t" << out[i] << " != " << val 
+      std::cout << "\t" << out[i] << " != " << val
                 << " (at index " << i << ")\n";
     }
   }
@@ -315,7 +321,7 @@ void checkExclusiveScanResult(const T* in, const T* out, int N)
   for (int i = 0; i < N; ++i) {
     if (out[i] != val) {
       std::cout << "\n\t result -- WRONG\n";
-      std::cout << "\t" << out[i] << " != " << val 
+      std::cout << "\t" << out[i] << " != " << val
                 << " (at index " << i << ")\n";
     }
     val = Function()(val, in[i]);

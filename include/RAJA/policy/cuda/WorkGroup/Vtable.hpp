@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -47,7 +47,7 @@ __global__ void get_Vtable_cuda_device_call_global(
 inline void* get_Vtable_cuda_device_call_ptrptr()
 {
   void* ptrptr = nullptr;
-  cudaErrchk(cudaMallocHost(&ptrptr, sizeof(typename Vtable<>::call_sig)));
+  cudaErrchk(cudaMallocHost(&ptrptr, sizeof(typename Vtable<void>::call_sig)));
   return ptrptr;
 }
 

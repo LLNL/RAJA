@@ -14,7 +14,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -54,7 +54,7 @@ namespace sequential
 //
 
 template <typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
                                                                const seq_exec &,
                                                                Iterable &&iter,
                                                                Func &&body)
@@ -65,7 +65,7 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     body(*(begin_it + i));
   }
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 }  // namespace sequential

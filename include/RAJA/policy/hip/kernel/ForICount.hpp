@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -117,7 +117,8 @@ struct HipStatementExecutor<
   void exec(Data &data, bool thread_active)
   {
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i = get_hip_dim<0>(dim3(threadIdx.x,threadIdx.y,threadIdx.z));
+    diff_t i = get_hip_dim<0>(threadIdx);
+
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -465,21 +466,20 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           int ThreadDim,
-          int MinThreads,
           typename... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::hip_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>,
+    statement::ForICount<ArgumentId, ParamId, RAJA::hip_thread_xyz_loop<ThreadDim>, EnclosedStmts...>,
     Types>
     : public HipStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::hip_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>,
+        statement::For<ArgumentId, RAJA::hip_thread_xyz_loop<ThreadDim>, EnclosedStmts...>,
         Types> {
 
   using Base = HipStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::hip_thread_xyz_loop<ThreadDim, MinThreads>, EnclosedStmts...>,
+        statement::For<ArgumentId, RAJA::hip_thread_xyz_loop<ThreadDim>, EnclosedStmts...>,
         Types>;
 
   using typename Base::enclosed_stmts_t;

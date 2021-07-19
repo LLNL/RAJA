@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -236,7 +236,7 @@ using policy::cuda::cuda_synchronize;
  * For example, a segment of size 2000 will not fit, and trigger a runtime
  * error.
  */
-template<int dim>
+template<int ... dim>
 struct cuda_thread_xyz_direct{};
 
 using cuda_thread_x_direct = cuda_thread_xyz_direct<0>;
@@ -248,19 +248,19 @@ using cuda_thread_z_direct = cuda_thread_xyz_direct<2>;
  * Maps segment indices to CUDA threads.
  * Uses block-stride looping to exceed the maximum number of physical threads
  */
-template<int dim, int min_threads>
+template<int ... dim>
 struct cuda_thread_xyz_loop{};
 
-using cuda_thread_x_loop = cuda_thread_xyz_loop<0, 1>;
-using cuda_thread_y_loop = cuda_thread_xyz_loop<1, 1>;
-using cuda_thread_z_loop = cuda_thread_xyz_loop<2, 1>;
+using cuda_thread_x_loop = cuda_thread_xyz_loop<0>;
+using cuda_thread_y_loop = cuda_thread_xyz_loop<1>;
+using cuda_thread_z_loop = cuda_thread_xyz_loop<2>;
 
 /*!
  * Maps segment indices to CUDA blocks.
  * This is the lowest overhead mapping, but requires that there are enough
  * physical blocks to fit all of the direct map requests.
  */
-template<int dim>
+template<int ... dim>
 struct cuda_block_xyz_direct{};
 
 using cuda_block_x_direct = cuda_block_xyz_direct<0>;
@@ -272,7 +272,7 @@ using cuda_block_z_direct = cuda_block_xyz_direct<2>;
  * Maps segment indices to CUDA blocks.
  * Uses grid-stride looping to exceed the maximum number of blocks
  */
-template<int dim>
+template<int ... dim>
 struct cuda_block_xyz_loop{};
 
 using cuda_block_x_loop = cuda_block_xyz_loop<0>;

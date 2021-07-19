@@ -1,3 +1,4 @@
+
 /*!
  ******************************************************************************
  *
@@ -10,7 +11,7 @@
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -115,6 +116,18 @@ struct HipStatementExecutor<
   }
 };
 
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename TPol,
+          typename... EnclosedStmts,
+          typename Types>
+struct HipStatementExecutor<
+    Data,
+  statement::Tile<ArgumentId, TPol, loop_exec, EnclosedStmts...>, Types>
+: HipStatementExecutor<Data, statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types>
+{
+
+};
 
 /*!
  * A specialized RAJA::kernel hip_impl executor for statement::Tile
@@ -405,14 +418,13 @@ template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
           int ThreadDim,
-          int MinThreads,
           typename ... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<
   Data,
   statement::Tile<ArgumentId,
                   RAJA::tile_fixed<chunk_size>,
-                  hip_thread_xyz_loop<ThreadDim, MinThreads>,
+                  hip_thread_xyz_loop<ThreadDim>,
                   EnclosedStmts ...>, Types>{
 
   using stmt_list_t = StatementList<EnclosedStmts ...>;
@@ -470,11 +482,11 @@ struct HipStatementExecutor<
     if(num_threads * chunk_size < len){
       num_threads++;
     }
-    num_threads = std::max(num_threads, (diff_t)MinThreads);
+    num_threads = std::max(num_threads, (diff_t)1);
 
     LaunchDims dims;
     set_hip_dim<ThreadDim>(dims.threads, num_threads);
-    set_hip_dim<ThreadDim>(dims.min_threads, MinThreads);
+    set_hip_dim<ThreadDim>(dims.min_threads, 1);
 
     // privatize data, so we can mess with the segments
     using data_t = camp::decay<Data>;

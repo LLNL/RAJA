@@ -1,0 +1,121 @@
+variables:
+  DO_BUILD: 'yes'
+  DO_TEST: 'yes'
+  DO_INSTALL: 'yes'
+  COMPILER: 'g++'
+
+jobs:
+- job: Windows #temporarily commenting out until cmake/azure version issue resolved
+  strategy:
+    matrix:
+      shared:
+        SHARED_ARGS: '-DBUILD_SHARED_LIBS=On -DCMAKE_CXX_FLAGS="/DRAJASHAREDDLL_EXPORTS" '
+      static:
+        SHARED_ARGS: '-DBUILD_SHARED_LIBS=Off'
+  pool:
+    vmImage: 'windows-2019'
+  variables:
+    CMAKE_EXTRA_FLAGS: '-DENABLE_WARNINGS_AS_ERRORS=Off -DBLT_CXX_STD="" -DCMAKE_CXX_STANDARD=17'
+  steps:
+  - checkout: self
+    clean: boolean
+    submodules: recursive
+  - task: CMake@1
+    inputs:
+      workingDir: 'build'
+      cmakeArgs: '$(CMAKE_EXTRA_FLAGS) $(SHARED_ARGS) ../'
+  - task: CMake@1
+    inputs:
+      workingDir: 'build'
+      cmakeArgs: '--build . --config Release --verbose'
+#   - task: CmdLine@2
+#     inputs:
+#       script: 'ctest.exe -T test -C Release'
+#       workingDirectory: 'build'
+#     condition: eq( variables['Agent.OS'], 'Windows_NT')
+#   - task: PublishTestResults@2
+#     inputs:
+#       testResultsFormat: 'cTest'
+#       testResultsFiles: '**/Test.xml'
+- job: Docker
+  timeoutInMinutes: 360
+  strategy:
+    matrix: 
+      gcc5: 
+        docker_target: gcc5
+      gcc5-debug: 
+        docker_target: gcc5-debug
+      gcc6:
+        docker_target: gcc6
+      gcc7:
+        docker_target: gcc7
+      gcc8:
+        docker_target: gcc8
+      clang9:
+        docker_target: clang9
+      clang9-debug:
+        docker_target: clang9-debug
+      nvcc10:
+        docker_target: nvcc10
+      nvcc10-debug:
+        docker_target: nvcc10-debug
+      hip:
+        docker_target: hip
+#      sycl:
+#        docker_target: sycl
+  pool:
+    vmImage: 'ubuntu-latest'
+  variables:
+    DOCKER_BUILDKIT: '1'
+    CMAKE_EXTRA_FLAGS: '-DENABLE_DEVELOPER_BENCHMARKS=On -DENABLE_DEVELOPER_DEFAULTS=On -DCMAKE_CXX_STANDARD=11'
+  steps:
+  - checkout: self
+    clean: boolean
+    submodules: recursive
+  - task: Docker@1
+    inputs:
+      command: build
+      dockerFile: 'Dockerfile'
+      arguments: '--target $(docker_target)'
+  - script: |
+      CID=$(docker create llnl/raja:$(Build.BuildId))
+      echo ${CID}
+      docker cp ${CID}:/home/axom/workspace/build local-build
+      docker rm ${CID}
+    displayName: 'Copy test artifacts'
+    condition: ne( variables['docker_target'], 'nvcc')
+  - script: |
+      bash <(curl -s https://raw.githubusercontent.com/codecov/codecov-bash/0b376529f626b50b7d4a9fb734e0e50d28b9b91e/codecov) >& /dev/null
+    displayName: 'Upload code coverage'
+    condition: eq( variables['docker_target'], 'gcc')
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'cTest'
+      testResultsFiles: '**/Test.xml'
+- job: Mac 
+  pool:
+    vmImage: 'macOS-latest'
+  variables:
+    CMAKE_EXTRA_FLAGS: '-DENABLE_OPENMP=Off'
+  steps:
+  - checkout: self
+    clean: boolean
+    submodules: recursive
+  - task: CMake@1
+    inputs:
+      workingDir: 'build'
+      cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../'
+  - script: |
+      cd build
+      make
+    displayName: 'OSX Build'
+    condition: eq( variables['Agent.OS'], 'Darwin')
+#  - script: |
+#      cd build
+#      ctest -T test --output-on-failure
+#    displayName: 'OSX Test'
+#    condition: eq( variables['Agent.OS'], 'Darwin')
+#  - task: PublishTestResults@2
+#    inputs:
+#      testResultsFormat: 'cTest'
+#      testResultsFiles: '**/Test.xml'
