@@ -251,6 +251,7 @@ namespace internal {
         return *getThis();
       }
 
+
       /*!
        * @brief Generic gather operation for n-length subvector.
        *
@@ -272,6 +273,75 @@ namespace internal {
           }
           return *getThis();
       }
+
+
+      /*!
+       * @brief Generic segmented load operation used for loading sub-matrices
+       * from larger arrays.
+       *
+       * The default operation combines the s_segmented_offsets and gather
+       * operations.
+       *
+       *
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &segmented_load(element_type const *ptr, camp::idx_t segbits, camp::idx_t stride_inner, camp::idx_t stride_outer){
+        getThis()->gather(ptr, self_type::s_segmented_offsets(segbits, stride_inner, stride_outer));
+        return *getThis();
+      }
+
+      /*!
+       * @brief Generic segmented load operation used for loading sub-matrices
+       * from larger arrays where we load partial segments.
+       *
+       *
+       *
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type &segmented_load_nm(element_type const *ptr, camp::idx_t segbits,
+          camp::idx_t stride_inner, camp::idx_t stride_outer,
+          camp::idx_t num_inner, camp::idx_t num_outer)
+      {
+
+        camp::idx_t num_segments = self_type::s_num_elem >> segbits;
+        camp::idx_t seg_size = 1 << segbits;
+
+        camp::idx_t lane = 0;
+        for(camp::idx_t seg = 0;seg < num_segments; ++ seg){
+          for(camp::idx_t i = 0;i < seg_size; ++ i){
+//            printf("segmented_load_nm: seg=%d of %d, i=%d of %d, lane=%d, ninner=%d, nouter=%d\n",
+//                (int)seg,
+//                (int)num_segments,
+//                (int)i,
+//                (int)seg_size,
+//                (int)lane,
+//                (int)num_inner,
+//                (int)num_outer);
+
+            if(seg >= num_outer || i >= num_inner){
+              getThis()->set(element_type(0), lane);
+            }
+            else{
+
+              camp::idx_t offset = seg*stride_outer + i*stride_inner;
+
+              element_type value = ptr[offset];
+
+              getThis()->set(value, lane);
+
+            }
+
+            lane ++;
+          }
+        }
+
+        return *getThis();
+      }
+
+
+
 
 
       /*!
@@ -326,7 +396,7 @@ namespace internal {
       RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator=(element_type value)
+      self_type &operator=(element_type value)
       {
         getThis()->broadcast(value);
         return *getThis();
@@ -340,7 +410,7 @@ namespace internal {
       template<typename T2>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator=(Register<T2, scalar_register> const &value)
+      self_type &operator=(Register<T2, scalar_register> const &value)
       {
         getThis()->broadcast(value.get(0));
         return *getThis();
@@ -354,7 +424,7 @@ namespace internal {
       RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator=(self_type const &x)
+      self_type &operator=(self_type const &x)
       {
         getThis()->copy(x);
         return *getThis();
@@ -921,6 +991,7 @@ namespace internal {
        *      output_segment denotes the vector position of the result
        *
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_INLINE
       RAJA_HOST_DEVICE
       self_type segmented_dot(camp::idx_t segbits, camp::idx_t output_segment, self_type const &x) const

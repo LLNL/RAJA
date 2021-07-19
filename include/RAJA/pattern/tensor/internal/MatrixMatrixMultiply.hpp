@@ -132,23 +132,28 @@ namespace internal {
         constexpr camp::idx_t bc_segbits = result_type::s_segbits;
         constexpr camp::idx_t a_segments_per_register = 1<<bc_segbits;
 
-        RAJA_UNROLL
+        C.get_register(0) = A.get_register(0).multiply(B.get_register(0));
+//        RAJA_UNROLL
         for(camp::idx_t ac_row = 0;ac_row < N_SIZE;++ ac_row){
+
           camp::idx_t c_reg     = ac_row / result_type::s_major_dim_per_register;
           camp::idx_t c_segment = ac_row % result_type::s_major_dim_per_register;
           register_type c_tmp;
 
-          RAJA_UNROLL
+//          RAJA_UNROLL
           for(camp::idx_t b_reg = 0;b_reg < right_type::s_num_registers;++ b_reg){
+
 
 
             camp::idx_t a_segment = ac_row*right_type::s_num_registers + b_reg;
             camp::idx_t a_reg = a_segment / a_segments_per_register;
             camp::idx_t a_reg_segment = a_segment % a_segments_per_register;
 
-            register_type a_tmp = A.get_register(a_reg).segmented_broadcast_outer(bc_segbits, a_reg_segment);
+            auto a_tmp = A.get_register(a_reg).segmented_broadcast_outer(bc_segbits, a_reg_segment);
+
 
             if(b_reg == 0){
+
               c_tmp = a_tmp.multiply(B.get_register(b_reg));
             }
             else{
@@ -316,9 +321,8 @@ namespace internal {
         static
         RAJA_INLINE
         void multiply(left_type const &A, right_type const &B, result_type &C){
-          self_type s;
           C = result_type(0);
-          s.multiply_accumulate(A, B, C);
+          self_type::multiply_accumulate(A, B, C);
         }
     };
 

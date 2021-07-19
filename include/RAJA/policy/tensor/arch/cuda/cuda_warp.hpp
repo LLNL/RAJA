@@ -68,25 +68,27 @@ namespace RAJA {
        * @brief Default constructor, zeros register contents
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       constexpr
-      Register() : base_type(), m_value() {
+      Register() : base_type(), m_value(0) {
+
       }
+
 
       /*!
        * @brief Copy constructor from raw value
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       constexpr
-      explicit Register(element_type const &c) : base_type(), m_value(c) {}
+      explicit Register(element_type c) : base_type(), m_value(c) {}
 
 
       /*!
        * @brief Copy constructor
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       constexpr
       Register(self_type const &c) : base_type(), m_value(c.m_value) {}
 
@@ -95,35 +97,30 @@ namespace RAJA {
        * @brief Copy assignment operator
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       self_type &operator=(self_type const &c){
         m_value = c.m_value;
+        return *this;
+      }
+
+      RAJA_INLINE
+      RAJA_DEVICE
+      self_type &operator=(element_type c){
+        m_value = c;
         return *this;
       }
 
       /*!
        * @brief Gets our warp lane
        */
-//      RAJA_INLINE
-//      RAJA_DEVICE
-//      constexpr
-//      static
-//      int get_lane() {
-////#ifdef __CUDA_ARCH__
-//#if 1
-//        return threadIdx.x;
-//#else
-//        int lane;
-//        //asm volatile ("mov.s32 %0, %laneid;" : "=r"(lane));
-//        asm ("mov.s32 %0, %laneid;" : "=r"(lane));
-//        return lane;
-//#endif
-////#else
-////        return 0;
-////#endif
-//      }
+      RAJA_INLINE
+      RAJA_DEVICE
+      constexpr
+      static
+      int get_lane() {
+        return threadIdx.x;
+      }
 
-#define get_lane()  threadIdx.x
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -153,7 +150,7 @@ namespace RAJA {
        *
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       self_type &load_packed(element_type const *ptr){
 
 
@@ -174,7 +171,7 @@ namespace RAJA {
        *
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       self_type &load_packed_n(element_type const *ptr, int N){
         auto lane = get_lane();
 //        printf("load_packed_n(lane=%d, %p, n=%d)\n", (int)lane, ptr, N);return *this;
@@ -192,7 +189,7 @@ namespace RAJA {
        *
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       self_type &load_strided(element_type const *ptr, int stride){
 
         auto lane = get_lane();
@@ -211,7 +208,7 @@ namespace RAJA {
        *
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       self_type &load_strided_n(element_type const *ptr, int stride, int N){
         auto lane = get_lane();
 
@@ -237,7 +234,7 @@ namespace RAJA {
        *
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       self_type &gather(element_type const *ptr, int_vector_type offsets){
 
         m_value = ptr[offsets.get_raw_value()];
@@ -255,7 +252,7 @@ namespace RAJA {
        *
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       self_type &gather_n(element_type const *ptr, int_vector_type offsets, camp::idx_t N){
         if(get_lane() < N){
           m_value = ptr[offsets.get_raw_value()];
@@ -269,12 +266,66 @@ namespace RAJA {
 
 
       /*!
+       * @brief Generic segmented load operation used for loading sub-matrices
+       * from larger arrays.
+       *
+       * The default operation combines the s_segmented_offsets and gather
+       * operations.
+       *
+       *
+       */
+      RAJA_DEVICE
+      RAJA_INLINE
+      self_type &segmented_load(element_type const *ptr, camp::idx_t segbits, camp::idx_t stride_inner, camp::idx_t stride_outer){
+        auto lane = get_lane();
+
+        // compute segment and segment_size
+        auto seg = lane >> segbits;
+        auto i = lane & ((1<<segbits)-1);
+
+        m_value = ptr[seg*stride_outer + i*stride_inner];
+
+        return *this;
+      }
+
+      /*!
+       * @brief Generic segmented load operation used for loading sub-matrices
+       * from larger arrays where we load partial segments.
+       *
+       *
+       *
+       */
+      RAJA_DEVICE
+      RAJA_INLINE
+      self_type &segmented_load_nm(element_type const *ptr, camp::idx_t segbits,
+          camp::idx_t stride_inner, camp::idx_t stride_outer,
+          camp::idx_t num_inner, camp::idx_t num_outer)
+      {
+        auto lane = get_lane();
+
+        // compute segment and segment_size
+        auto seg = lane >> segbits;
+        auto i = lane & ((1<<segbits)-1);
+
+        if(seg >= num_outer || i >= num_inner){
+          m_value = element_type(0);
+        }
+        else{
+          m_value = ptr[seg*stride_outer + i*stride_inner];
+        }
+
+        return *this;
+      }
+
+
+      /*!
        * @brief Store entire register to consecutive memory locations
        *
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       self_type const &store_packed(element_type *ptr) const{
+//        printf("store_packed");
 
         auto lane = get_lane();
 
@@ -290,8 +341,10 @@ namespace RAJA {
        *
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       self_type const &store_packed_n(element_type *ptr, int N) const{
+//        printf("store_packed_n");
+
         auto lane = get_lane();
 
 //        printf("store_packed_n(lane=%d, %p, n=%d)\n", (int)lane, ptr, N);return *this;
@@ -307,8 +360,9 @@ namespace RAJA {
        *
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       self_type const &store_strided(element_type *ptr, int stride) const{
+//        printf("store_strided");
 
         auto lane = get_lane();
 
@@ -325,9 +379,10 @@ namespace RAJA {
        *
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       self_type const &store_strided_n(element_type *ptr, int stride, int N) const{
 
+//        printf("store_strided_n");
 
         auto lane = get_lane();
 
@@ -351,9 +406,10 @@ namespace RAJA {
        *
        */
       template<typename T2>
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
       self_type const &scatter(element_type *ptr, T2 const &offsets) const {
+//        printf("scatter");
 
         ptr[offsets.get_raw_value()] = m_value;
 
@@ -371,11 +427,42 @@ namespace RAJA {
        *
        */
       template<typename T2>
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
       self_type const &scatter_n(element_type *ptr, T2 const &offsets, camp::idx_t N) const {
+//        printf("scatter_n");
         if(get_lane() < N){
           ptr[offsets.get_raw_value()] = m_value;
+        }
+
+        return *this;
+      }
+
+      /*!
+       * @brief Generic segmented load operation used for loading sub-matrices
+       * from larger arrays where we load partial segments.
+       *
+       *
+       *
+       */
+      RAJA_DEVICE
+      RAJA_INLINE
+      self_type &segmented_store_nm(element_type const *ptr, camp::idx_t segbits,
+          camp::idx_t stride_inner, camp::idx_t stride_outer,
+          camp::idx_t num_inner, camp::idx_t num_outer) const
+      {
+//        printf("segmented_store_nm");
+        auto lane = get_lane();
+
+        // compute segment and segment_size
+        auto seg = lane >> segbits;
+        auto i = lane & ((1<<segbits)-1);
+
+        if(seg >= num_outer || i >= num_inner){
+          // nop
+        }
+        else{
+          ptr[seg*stride_outer + i*stride_inner] = m_value;
         }
 
         return *this;
@@ -389,14 +476,10 @@ namespace RAJA {
        */
       constexpr
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       element_type get(int i) const
 			{
-#ifdef __CUDA_ARCH__
         return  __shfl_sync(0xffffffff, m_value, i, 32);
-#else
-        return m_value;
-#endif
 			}
 
       /*!
@@ -405,17 +488,13 @@ namespace RAJA {
        * @param value Value of scalar to set
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       self_type &set(int i, element_type value)
 			{
-#ifdef __CUDA_ARCH__
 				auto lane = get_lane();
       	if(lane == i){
 					m_value = value;
 				}
-#else
-        m_value = value;
-#endif
         return *this;
 			}
 
@@ -470,6 +549,11 @@ namespace RAJA {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type multiply(self_type const &b) const {
+//        printf("MULT\n");
+//        auto y = m_value * b.m_value;
+//        auto x = self_type(y*y*y*get_lane());
+//        printf("AFTER\n");
+//        return x;
         return self_type(m_value * b.m_value);
       }
 
@@ -485,26 +569,18 @@ namespace RAJA {
         return get_lane() < N ? self_type(m_value / b.m_value) : self_type(element_type(0));
       }
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
-      self_type fused_multiply_add(self_type const &b, self_type const &c) const
+      self_type multiply_add(self_type const &b, self_type const &c) const
       {
-#ifdef __CUDA_ARCH__
         return self_type(fma(m_value, b.m_value, c.m_value));
-#else
-        return m_value*c.m_value + c.m_value;
-#endif
       }
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
-      self_type fused_multiply_subtract(self_type const &b, self_type const &c) const
+      self_type multiply_subtract(self_type const &b, self_type const &c) const
       {
-#ifdef __CUDA_ARCH__
         return self_type(fma(m_value, b.m_value, -c.m_value));
-#else
-        return m_value*c.m_value - c.m_value;
-#endif
       }
 
 
@@ -613,14 +689,13 @@ namespace RAJA {
       {
         int_vector_type result;
 
-//        int lane = get_lane();
-//
-//        int segment = (lane<<segbits) / self_type::s_num_elem;
-//        int inner = lane - (segment*self_type::s_num_elem);
-//
-//        result.get_raw_value() = segment*stride_outer + inner*stride_inner;
+        auto lane = get_lane();
 
-        result.get_raw_value() = 0;
+        // compute segment and segment_size
+        auto seg = lane >> segbits;
+        auto i = lane & ((1<<segbits)-1);
+
+        result.get_raw_value() = seg*stride_outer + i*stride_inner;
 
         return result;
       }

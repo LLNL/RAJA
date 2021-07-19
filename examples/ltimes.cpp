@@ -10,7 +10,7 @@
 //#define RAJA_ENABLE_VECTOR_STATS
 
 // Un-comment the following line to run correctness checks on each variant
-//#define DEBUG_LTIMES
+#define DEBUG_LTIMES
 //#define DEBUG_MATRIX_LOAD_STORE
 
 #include "RAJA/config.hpp"
@@ -144,15 +144,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int num_iter = 1 + (rand()/RAND_MAX);;
   // use a decreased number of zones since this will take a lot longer
   // and we're not really measuring performance here
-  const long num_z = 128 + (rand()/RAND_MAX);
+  const long num_z = 32 + (rand()/RAND_MAX);
 #else
-//  const int num_iter = 10 + (rand()/RAND_MAX);
-//  const int num_z = 32*1024 + (rand()/RAND_MAX);
+  const int num_iter = 10 + (rand()/RAND_MAX);
+  const int num_z = 32*1024 + (rand()/RAND_MAX);
 
 //  const int num_z = 32 + (rand()/RAND_MAX);
 
-  const int num_iter = 1 + (rand()/RAND_MAX);
-  const int num_z = 32 + (rand()/RAND_MAX);
+//  const int num_iter = 1 + (rand()/RAND_MAX);
+//  const int num_z = 32 + (rand()/RAND_MAX);
 #endif
 
 
@@ -1333,6 +1333,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t, RAJA::expt::cuda_launch_t<true , 1024> >;
   using pol_g = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_block_x_direct>;
+//  using pol_z = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_thread_y_direct>;
+
   //using pol_z = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>, cuda_thread_y_matrix_col_loop<matrix_t> >;
   //using pol_z = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>, cuda_thread_y_matrix_col_loop<matrix_t> >;
 //  using pol_m = RAJA::expt::LoopPolicy<matrix_row_exec<matrix_t>, cuda_warp_matrix_row_loop<matrix_t> >;
@@ -1391,13 +1393,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //RAJA::expt::loop<pol_g>(ctx, seg_g, [&](IG g){
       RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
 
+//        RAJA::expt::tile<pol_z>(ctx, 32, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](RAJA::TypedRangeSegment<IZ> tz){
+
+
         //phi(RowM::all(),g, ColZ::all()) = psi(toRowIndex(ColD::all()), g, ColZ::all());
 //        phi(RowM::range(IM(0),IM(32)),g, ColZ::range(IZ(0),IZ(32))) = psi(toRowIndex(ColD::range(ID(0),ID(32))), g, ColZ::range(IZ(0),IZ(32)));
 
 
-        phi(RowM::all(),g, ColZ::all()) +=
-            L(RowM::all(), ColD::all()) * psi(toRowIndex(ColD::all()), g, ColZ::all());
+          phi(RowM::all(), g, ColZ::all()) +=
+              L(RowM::all(), ColD::all()) * psi(toRowIndex(ColD::all()), g, ColZ::all());
 
+//        });
       });
 
     });

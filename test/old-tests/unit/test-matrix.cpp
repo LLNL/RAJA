@@ -91,16 +91,16 @@ using MatrixTestTypes = ::testing::Types<
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4,8>,
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 2,4>,
 //    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,4>,
-    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,2>,
+//    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,2>,
 //    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,4>,
 //    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,8>,
 //    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2,4>,
 //
 //    RAJA::RectMatrixRegister<float, RAJA::ColMajorLayout, 16,4>,
-    RAJA::RectMatrixRegister<float, RAJA::ColMajorLayout, 4,4>,
+//    RAJA::RectMatrixRegister<float, RAJA::ColMajorLayout, 4,4>,
 //    RAJA::RectMatrixRegister<float, RAJA::ColMajorLayout, 4,16>,
 //    RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 8,4>,
-    RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 4,4>
+//    RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 4,4>
 //    RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 4,8>
 //      RAJA::RectMatrixRegister<float, RAJA::RowMajorLayout, 4, 4>
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4, 2>
@@ -118,6 +118,52 @@ using MatrixTestTypes = ::testing::Types<
 //    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout, RAJA::scalar_register>
 
   >;
+
+
+template<typename MAT>
+struct TestHelper {
+
+    template<typename BODY>
+    static
+    void exec(BODY const &body){
+      BODY();
+    }
+};
+
+#ifdef RAJA_ENABLE_CUDA
+
+template <typename BODY>
+__global__
+void test_launcher(BODY body_in)
+{
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(body_in);
+  auto& body = privatizer.get_priv();
+  body();
+}
+
+template<typename T, typename LAYOUT, typename SIZE>
+struct TestHelper<RAJA::TensorRegister<RAJA::cuda_warp_register, T, LAYOUT, SIZE>>
+{
+    template<typename BODY>
+    static
+    void exec(BODY const &body){
+      cudaDeviceSynchronize();
+
+      test_launcher<<<1,32>>>(body);
+
+      cudaDeviceSynchronize();
+
+    }
+};
+#endif
+
+
+template<typename MAT, typename BODY>
+void do_work(BODY const &body){
+  TestHelper<MAT>::exec(body);
+}
+
 
 
 template <typename NestedPolicy>
@@ -210,12 +256,12 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
   // Load data
   matrix_t m1;
   if(matrix_t::layout_type::is_row_major()){
-    printf("load_packed\n");
+//    printf("load_packed\n");
 
     m1.load_packed(&data1[0][0], matrix_t::s_num_columns, 1);
   }
   else{
-    printf("load_strided\n");
+//    printf("load_strided\n");
 
     m1.load_strided(&data1[0][0], matrix_t::s_num_columns, 1);
   }
@@ -245,12 +291,12 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
   // Load data
   matrix_t m1sub;
   if(matrix_t::layout_type::is_row_major()){
-    printf("load_packed\n");
+//    printf("load_packed\n");
 
     m1sub.load_packed(&data1sub[0][0], matrix_t::s_num_columns*2, 1);
   }
   else{
-    printf("load_strided\n");
+//    printf("load_strided\n");
 
     m1sub.load_strided(&data1sub[0][0], matrix_t::s_num_columns*2, 1);
   }
@@ -269,17 +315,17 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
   // Load data using _nm methods
   matrix_t m1subnm;
   if(matrix_t::layout_type::is_row_major()){
-    printf("load_packed_nm\n");
+//    printf("load_packed_nm\n");
 
     m1subnm.load_packed_nm(&data1sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
   }
   else{
-    printf("load_strided_nm\n");
+//    printf("load_strided_nm\n");
 
     m1subnm.load_strided_nm(&data1sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
   }
 
-  printf("m1subnm=%s\n", m1subnm.to_string().c_str());
+//  printf("m1subnm=%s\n", m1subnm.to_string().c_str());
 
 
   // Check contents
@@ -312,12 +358,12 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
   // Load data
   matrix_t m2;
   if(matrix_t::layout_type::is_column_major()){
-    printf("load_packed\n");
+//    printf("load_packed\n");
 
     m2.load_packed(&data2[0][0], 1, matrix_t::s_num_rows);
   }
   else{
-    printf("load_strided\n");
+//    printf("load_strided\n");
 
     m2.load_strided(&data2[0][0], 1, matrix_t::s_num_rows);
   }
@@ -344,12 +390,12 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
   // Load data
   matrix_t m2sub;
   if(matrix_t::layout_type::is_column_major()){
-    printf("load_packed\n");
+//    printf("load_packed\n");
 
     m2sub.load_packed(&data2sub[0][0], 1, matrix_t::s_num_rows*2);
   }
   else{
-    printf("load_strided\n");
+//    printf("load_strided\n");
 
     m2sub.load_strided(&data2sub[0][0], 1, matrix_t::s_num_rows*2);
   }
@@ -367,17 +413,17 @@ TYPED_TEST_P(MatrixTest, MatrixLoad)
   // Load data using _nm methods
   matrix_t m2subnm;
   if(matrix_t::layout_type::is_column_major()){
-    printf("load_packed_nm\n");
+//    printf("load_packed_nm\n");
 
     m2subnm.load_packed_nm(&data2sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
   }
   else{
-    printf("load_strided_nm\n");
+//    printf("load_strided_nm\n");
 
     m2subnm.load_strided_nm(&data2sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
   }
 
-  printf("m2subnm=%s\n", m2subnm.to_string().c_str());
+//  printf("m2subnm=%s\n", m2subnm.to_string().c_str());
 
 
   // Check contents

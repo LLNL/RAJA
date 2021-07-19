@@ -604,7 +604,6 @@ namespace RAJA
       static
       void multiply_into_result(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &et_left, RIGHT_OPERAND_TYPE const &et_right)
       {
-
         // get tile size from matrix type
         auto tile_size = result_type::s_dim_elem(1);
         auto k_size = et_left.getDimSize(1);
@@ -641,6 +640,7 @@ namespace RAJA
 //          printf("        right:"); right_tile.print();
 
           // accumulate product
+
           left.matrix_multiply_accumulate(result, right);
         }
         // remainder tile in k

@@ -53,8 +53,8 @@ namespace RAJA
 //                      (int)DIM0, (int)tile.m_begin[DIM0],
 //                      (int)(tile.m_begin[DIM0] + tile.m_size[DIM0]));
 //        printf("  DIM %d\n", (int)DIM0);
-        auto const &orig_begin = otile.m_begin[DIM0];
-        auto const &orig_size =  otile.m_size[DIM0];
+        auto const orig_begin = otile.m_begin[DIM0];
+        auto const orig_size =  otile.m_size[DIM0];
 
 
 //        printf("%*sDIM%d orig_begin=%d, orig_size=%d\n", (int)RAJA::tensor_stats::indent*2, "", (int)DIM0, (int)orig_begin, (int)orig_size);
