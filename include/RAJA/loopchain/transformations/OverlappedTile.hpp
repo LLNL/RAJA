@@ -189,7 +189,8 @@ auto overlap_amount_tuples(camp::tuple<KernelTypes...> knlTuple, camp::idx_seq<I
 }//overlap_amount_tuples
 
 //adds the overlap amonut to the begining of the segment
-auto add_overlap(auto segment, auto originalSegment, std::size_t overlapAmount) {
+template <typename T1, typename T2>
+auto add_overlap(T1 segment, T2 originalSegment, std::size_t overlapAmount) {
 
   auto beg = *(segment.begin());
   auto end = *(segment.end());
@@ -206,14 +207,16 @@ auto add_overlap(auto segment, auto originalSegment, std::size_t overlapAmount) 
   }
 }
 
-template <camp::idx_t...Is>
-auto overlap_segment_tuple(auto segmentTuple, auto originalSegmentTuple, auto overlap, camp::idx_seq<Is...>) {
+template <typename T1, typename T2, typename T3, camp::idx_t...Is>
+auto overlap_segment_tuple(T1 segmentTuple, T2 originalSegmentTuple, T3  overlap, camp::idx_seq<Is...>) {
 
   return make_tuple((add_overlap(camp::get<Is>(segmentTuple), camp::get<Is>(originalSegmentTuple), camp::get<Is>(overlap)))...);
 
 
 }
-auto overlap_segment_tuple(auto segmentTuple, auto originalSegmentTuple, auto overlap ) {
+
+template <typename T1, typename T2, typename T3>
+auto overlap_segment_tuple(T1 segmentTuple, T2 originalSegmentTuple, T3 overlap ) {
   return overlap_segment_tuple(segmentTuple, originalSegmentTuple, overlap, idx_seq_for(overlap));
 }
 
@@ -237,7 +240,8 @@ auto overlapped_tile_no_fuse_executor(camp::tuple<KernelTypes...> knlTuple,
 
   return f;
 }
-auto overlapped_tile_no_fuse_executor(auto knlTuple, auto overlaps) {
+template <typename T1, typename T2>
+auto overlapped_tile_no_fuse_executor(T1 knlTuple, T2 overlaps) {
   return overlapped_tile_no_fuse_executor(knlTuple, overlaps, idx_seq_for(knlTuple));
 } //overlap_executor
 
@@ -260,8 +264,8 @@ auto overlapped_tile_policy() {
   }
 }
 //creates the kernel which tiles the overlapping region of the kernels in the tuple
-template <camp::idx_t TileSize, camp::idx_t...Is>
-auto overlapped_tile_no_fuse_kernel(auto knlTuple, auto overlapAmountTuples, camp::idx_seq<Is...> knlSeq) {
+template <typename T1, typename T2, camp::idx_t TileSize, camp::idx_t...Is>
+auto overlapped_tile_no_fuse_kernel(T1 knlTuple, T2 overlapAmountTuples, camp::idx_seq<Is...> knlSeq) {
 
   //std::cout << "overlapped_tile_no_fuse_kernel\n";
   

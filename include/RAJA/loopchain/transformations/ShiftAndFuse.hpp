@@ -35,7 +35,9 @@ auto can_fuse(KernelTypes... knls);
 //Analysis Definitions
 
 //returns the constraints on the shift values created from the dependences between the two kernels. The kernel id values are used in the shift amounts
-std::string shift_constraints_for_pair(auto knl1, auto knl2, auto id1, auto id2 ) {
+//
+template <typename T1, typename T2, typename T3, typename T4>
+std::string shift_constraints_for_pair(T1 knl1, T2 knl2, T3 id1, T4 id2 ) {
 
   constexpr int numDims = knl1.numArgs;
   
@@ -107,8 +109,8 @@ std::string shift_constraints_for_pair(auto knl1, auto knl2, auto id1, auto id2 
 
 // Recurses across the pairs of kernels to generate and concatenate 
 // the constraints between each pair. 
-template <camp::idx_t KnlId1, camp::idx_t KnlId2, camp::idx_t NumKnls>
-auto shift_constraints_helper(isl_ctx * ctx, auto knlTuple) {
+template <typename T, camp::idx_t KnlId1, camp::idx_t KnlId2, camp::idx_t NumKnls>
+auto shift_constraints_helper(isl_ctx * ctx, T knlTuple) {
 
   if constexpr (KnlId1 == NumKnls) {
     //base case
@@ -269,8 +271,8 @@ auto shift_amount_tuples(camp::tuple<KernelTypes...> knlTuple, camp::idx_seq<Is.
 }//shift_amount_tuples
 
 
-template <camp::idx_t...Is>
-auto zip_shift(auto knlTuple, auto shiftAmountTuple, camp::idx_seq<Is...>) {
+template <typename T1, typename T2, camp::idx_t...Is>
+auto zip_shift(T1 knlTuple, T2 shiftAmountTuple, camp::idx_seq<Is...>) {
   return make_tuple(shift(camp::get<Is>(knlTuple), camp::get<Is>(shiftAmountTuple))...);
 }
 

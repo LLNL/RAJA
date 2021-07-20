@@ -20,13 +20,14 @@ struct LoopChain;
 template <camp::idx_t MainKnlIdx, typename...KnlTupleType>
 auto fused_kernels(camp::tuple<KnlTupleType...> knlTuple);
 
-isl_union_set * fused_iterspace(isl_ctx * ctx, auto iterspaceTuple);
+template <typename T>
+isl_union_set * fused_iterspace(isl_ctx * ctx, T iterspaceTuple);
 
-template <camp::idx_t... Dims>
-auto fused_iterspace_low_bounds(isl_ctx * ctx, auto iterspaceTuple, camp::idx_seq<Dims...>);
+template <typename T, camp::idx_t... Dims>
+auto fused_iterspace_low_bounds(isl_ctx * ctx, T iterspaceTuple, camp::idx_seq<Dims...>);
 
-template <camp::idx_t... Dims>
-auto fused_iterspace_upper_bounds(isl_ctx * ctx, auto iterspaceTuple, camp::idx_seq<Dims...>);
+template <typename T, camp::idx_t... Dims>
+auto fused_iterspace_upper_bounds(isl_ctx * ctx, T iterspaceTuple, camp::idx_seq<Dims...>);
 
 template <typename...Knls>
 auto chain(Knls...knls); 

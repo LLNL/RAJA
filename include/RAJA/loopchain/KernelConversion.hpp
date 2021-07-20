@@ -14,7 +14,6 @@ namespace RAJA {
 template <typename T>
 T get_array_name(SymAccess a);
 
-
 template <camp::idx_t Dim>
 auto points_to_segment(isl_point * minPoint, isl_point * maxPoint) {
 
@@ -34,6 +33,7 @@ auto points_to_segments(isl_point * minPoint, isl_point * maxPoint, camp::idx_se
   return make_tuple((points_to_segment<Dims>(minPoint, maxPoint))...);
 
 }// points_to_segments
+
 template <camp::idx_t NumDims>
 auto iterspace_to_segments(isl_ctx * ctx, isl_union_set * iterspace) {
   
@@ -71,8 +71,8 @@ auto iterspace_to_segments(isl_ctx * ctx, isl_union_set * iterspace) {
 
 } //iterspace_to_segments
 
-template <camp::idx_t Idx>
-std::string bound_from_segment(auto segment) {
+template <camp::idx_t Idx, typename Segment>
+std::string bound_from_segment(Segment segment) {
   
   auto low = *segment.begin();
   auto high = *segment.end();
@@ -84,15 +84,15 @@ std::string bound_from_segment(auto segment) {
   return str;
 }
 
-template <camp::idx_t I>
-std::string bounds_from_segment(auto segmentTuple, camp::idx_seq<I>) {
+template <typename T, camp::idx_t I>
+std::string bounds_from_segment(T segmentTuple, camp::idx_seq<I>) {
 
   return bound_from_segment<I>(camp::get<I>(segmentTuple));
   
 }
 
-template <camp::idx_t I, camp::idx_t...Is>
-std::string bounds_from_segment(auto segmentTuple, camp::idx_seq<I, Is...>) {
+template <typename T, camp::idx_t I, camp::idx_t...Is>
+std::string bounds_from_segment(T segmentTuple, camp::idx_seq<I, Is...>) {
   std::string rest;
   if constexpr (sizeof...(Is) > 0) {
     rest = bounds_from_segment<Is...>(segmentTuple, camp::idx_seq<Is...>{});
@@ -126,8 +126,8 @@ std::string range_vector(T numElements, camp::idx_t loopNum) {
 //Returns the iteration space polyhedron of knl. 
 //Does so without the loop number in the chain, 
 //so that must be prepended if necessary.
-template <camp::idx_t LoopNum>
-isl_union_set * iterspace_from_knl(isl_ctx * ctx, auto knl) {
+template <typename T, camp::idx_t LoopNum>
+isl_union_set * iterspace_from_knl(isl_ctx * ctx, T knl) {
 
 
   auto segments = knl.segments;
@@ -146,8 +146,8 @@ isl_union_set * iterspace_from_knl(isl_ctx * ctx, auto knl) {
 
 } // iterspace_from_knl
 
-template <camp::idx_t LoopNum>
-isl_union_map * read_relation_from_knl(isl_ctx * ctx, auto knl) {
+template <typename T, camp::idx_t LoopNum>
+isl_union_map * read_relation_from_knl(isl_ctx * ctx, T knl) {
 
   //isl_printer* p = isl_printer_to_file(ctx, stdout);
 
@@ -178,8 +178,8 @@ isl_union_map * read_relation_from_knl(isl_ctx * ctx, auto knl) {
   
 } // read_relation_from_knl
 
-template <camp::idx_t LoopNum>
-isl_union_map * write_relation_from_knl(isl_ctx * ctx, auto knl) {
+template <typename T, camp::idx_t LoopNum>
+isl_union_map * write_relation_from_knl(isl_ctx * ctx, T knl) {
 
   //isl_printer* p = isl_printer_to_file(ctx, stdout);
 
@@ -213,10 +213,10 @@ isl_union_map * write_relation_from_knl(isl_ctx * ctx, auto knl) {
 
 //returns a relation between the iteration spaces of the two knls mapping instances of knl1 to 
 //instances of knl2 where knl1 instance writes and knl2 instance reads the same location
-template <camp::idx_t LoopNum1, camp::idx_t LoopNum2>
+template <camp::idx_t LoopNum1, camp::idx_t LoopNum2, typename T1, typename T2>
 isl_union_map * flow_dep_relation_from_knls(isl_ctx * ctx,
-                                            auto knl1, 
-                                            auto knl2) {
+                                            T1 knl1, 
+                                            T2 knl2) {
 
   isl_union_map * knl1Writes = write_relation_from_knl<LoopNum1>(ctx, knl1);
   isl_union_map * knl2Reads = read_relation_from_knl<LoopNum2>(ctx, knl2);
@@ -236,10 +236,10 @@ isl_union_map * flow_dep_relation_from_knls(isl_ctx * ctx,
 
 //returns a relation between the iteration spaces of the two knls mapping instances of knl1 to 
 //instances of knl2 where knl1 instance reads and knl2 instance writes the same location
-template <camp::idx_t LoopNum1, camp::idx_t LoopNum2>
+template <camp::idx_t LoopNum1, camp::idx_t LoopNum2, typename T1, typename T2 >
 isl_union_map * anti_dep_relation_from_knls(isl_ctx * ctx,
-                                            auto knl1, 
-                                            auto knl2) {
+                                            T1 knl1, 
+                                            T2 knl2) {
 
   isl_union_map * knl1Reads = read_relation_from_knl<LoopNum1>(ctx, knl1);
   isl_union_map * knl2Writes = write_relation_from_knl<LoopNum2>(ctx, knl2);
@@ -252,10 +252,10 @@ isl_union_map * anti_dep_relation_from_knls(isl_ctx * ctx,
 
 //returns a relation between the iteration spaces of the two knls mapping instances of knl1 to 
 //instances of knl2 where knl1 instance writes and knl2 instance writes the same location
-template <camp::idx_t LoopNum1, camp::idx_t LoopNum2>
+template <camp::idx_t LoopNum1, camp::idx_t LoopNum2,  typename T1, typename T2 >
 isl_union_map * output_dep_relation_from_knls(isl_ctx * ctx,
-                                            auto knl1, 
-                                            auto knl2) {
+                                            T1 knl1, 
+                                            T2 knl2) {
 
   isl_union_map * knl1Writes = write_relation_from_knl<LoopNum1>(ctx, knl1);
   isl_union_map * knl2Writes = write_relation_from_knl<LoopNum2>(ctx, knl2);
@@ -267,10 +267,10 @@ isl_union_map * output_dep_relation_from_knls(isl_ctx * ctx,
 } // output_dep_relation_from_knls
 
 //returns a relation between the iteration spaces of the two knls mapping instances of knl1 to instances of knl2 where there is a data dependence of some sort between the two instances.
-template <camp::idx_t LoopNum1, camp::idx_t LoopNum2>
+template <camp::idx_t LoopNum1, camp::idx_t LoopNum2, typename T1, typename T2 >
 isl_union_map * data_dep_relation_from_knls(isl_ctx * ctx,
-                                            auto knl1, 
-                                            auto knl2) {
+                                            T1 knl1, 
+                                            T2 knl2) {
 
   isl_union_map * raw = flow_dep_relation_from_knls<LoopNum1,LoopNum2>(ctx, knl1, knl2);
   isl_union_map * war = anti_dep_relation_from_knls<LoopNum1,LoopNum2>(ctx, knl1, knl2);
@@ -307,8 +307,8 @@ std::string original_schedule_range(T numDims, T loopNum) {
 
 // Returns the schedule for the loop executed sequentially. For example,
 // a double nested loop will give [i,j] -> [loopNum, i, 0, j, 0]
-template <camp::idx_t LoopNum>
-isl_union_map * original_schedule(isl_ctx * ctx, auto knl) {
+template <typename T, camp::idx_t LoopNum>
+isl_union_map * original_schedule(isl_ctx * ctx, T knl) {
 
   isl_union_set * iterspace = iterspace_from_knl<LoopNum>(ctx, knl);
 
@@ -346,8 +346,8 @@ std::string fused_schedule_range(T numDims, T loopNum) {
 
 // Returns the schedule for the loop executed sequentially. For example,
 // a double nested loop will give [i,j] -> [0, i, 0, j, loopNum]
-template <camp::idx_t LoopNum>
-isl_union_map * fused_schedule(isl_ctx * ctx, auto knl) {
+template <typename T, camp::idx_t LoopNum>
+isl_union_map * fused_schedule(isl_ctx * ctx, T knl) {
 
   isl_union_set * iterspace = iterspace_from_knl<LoopNum>(ctx, knl);
 
@@ -385,19 +385,20 @@ isl_union_map * deprel_from_knls_helper(isl_ctx * ctx, camp::tuple<KnlTypes...> 
   }
 }
 
-template <camp::idx_t...Is>
-auto dependence_relation_from_kernels(isl_ctx * ctx, auto knlTuple, camp::idx_seq<Is...> knl) {
+template <typename T, camp::idx_t...Is>
+auto dependence_relation_from_kernels(isl_ctx * ctx, T knlTuple, camp::idx_seq<Is...> knl) {
   constexpr auto NumKnls = sizeof...(Is); 
   return deprel_from_knls_helper<1,1,NumKnls>(ctx, knlTuple);
 } //dependence_relation_from_kernels
 
-auto dependence_relation_from_kernels(isl_ctx * ctx, auto knlTuple) {
+template <typename T>
+auto dependence_relation_from_kernels(isl_ctx * ctx, T knlTuple) {
   return dependence_relation_from_kernels(ctx, knlTuple, idx_seq_for(knlTuple));
 } //dependence_relation_from_kernels
 
 
-template <camp::idx_t...Is>
-auto original_schedule_from_kernels(isl_ctx * ctx, auto knlTuple, camp::idx_seq<Is...> knl) {
+template <typename T, camp::idx_t...Is>
+auto original_schedule_from_kernels(isl_ctx * ctx, T knlTuple, camp::idx_seq<Is...> knl) {
 
   //First, collect all dependences among the kernels.  
   
