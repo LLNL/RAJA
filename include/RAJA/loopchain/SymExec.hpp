@@ -27,15 +27,16 @@ struct SymIterator {
   SymIterator(std::string str) : name(str), idx(0) {
     accesses = std::make_shared<std::vector<SymAccess>>();
   }
-
+/*
   SymIterator(long int num) : name("placeholder"), idx(num) {
     accesses = std::make_shared<std::vector<SymAccess>>();
   }
-
+*/
   SymIterator(const SymIterator & other) : name(other.name), idx(other.idx) {
     accesses = other.accesses;
   }
 
+  SymIterator& operator=(const SymIterator& other) = default;
 
   bool operator == (const int) {
     return 0;
