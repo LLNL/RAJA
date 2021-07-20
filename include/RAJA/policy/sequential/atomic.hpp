@@ -25,10 +25,6 @@
 namespace RAJA
 {
 
-struct seq_atomic {
-};
-
-
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
 RAJA_HOST_DEVICE

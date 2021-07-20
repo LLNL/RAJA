@@ -567,20 +567,6 @@ RAJA_INLINE __device__ unsigned long long hip_atomicCAS<unsigned long long>(
 
 
 /*!
- * Hip atomic policy for using hip atomics on the device and
- * the provided host_policy on the host
- */
-template<typename host_policy>
-struct hip_atomic_explicit{};
-
-/*!
- * Default hip atomic policy uses hip atomics on the device and non-atomics
- * on the host
- */
-using hip_atomic = hip_atomic_explicit<loop_atomic>;
-
-
-/*!
  * Catch-all policy passes off to HIP's builtin atomics.
  *
  * This catch-all will only work for types supported by the compiler.

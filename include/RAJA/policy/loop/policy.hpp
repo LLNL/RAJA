@@ -70,10 +70,21 @@ struct loop_work : make_policy_pattern_launch_platform_t<Policy::loop,
 ///
 using loop_reduce = seq_reduce;
 
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Atomic execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+using loop_atomic = seq_atomic;
+
 }  // end namespace loop
 
 }  // end namespace policy
 
+using policy::loop::loop_atomic;
 using policy::loop::loop_exec;
 using policy::loop::loop_reduce;
 using policy::loop::loop_segit;

@@ -20,7 +20,10 @@
 #ifndef RAJA_sequential_HPP
 #define RAJA_sequential_HPP
 
-#include "RAJA/policy/sequential/atomic.hpp"
+#if !defined(RAJA_ENABLE_DESUL_ATOMICS)
+    #include "RAJA/policy/sequential/atomic.hpp"
+#endif
+
 #include "RAJA/policy/sequential/forall.hpp"
 #include "RAJA/policy/sequential/kernel.hpp"
 #include "RAJA/policy/sequential/policy.hpp"

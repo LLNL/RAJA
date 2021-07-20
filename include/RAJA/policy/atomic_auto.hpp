@@ -22,7 +22,9 @@
 
 #include "RAJA/util/macros.hpp"
 
-#include "RAJA/policy/sequential/atomic.hpp"
+#if !defined(RAJA_ENABLE_DESUL_ATOMICS)
+    #include "RAJA/policy/sequential/atomic.hpp"
+#endif
 
 /*!
  * Provides priority between atomic policies that should do the "right thing"
