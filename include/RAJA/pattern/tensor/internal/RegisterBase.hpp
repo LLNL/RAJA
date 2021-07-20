@@ -284,6 +284,7 @@ namespace internal {
        *
        *
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type &segmented_load(element_type const *ptr, camp::idx_t segbits, camp::idx_t stride_inner, camp::idx_t stride_outer){

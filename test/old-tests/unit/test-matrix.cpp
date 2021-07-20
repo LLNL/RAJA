@@ -81,12 +81,16 @@
 
 using MatrixTestTypes = ::testing::Types<
 
+#ifdef RAJA_ENABLE_CUDA
+    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,4, RAJA::cuda_warp_register>,
+#endif
+
 //    // These tests use the platform default SIMD architecture
 //    RAJA::SquareMatrixRegister<double, RAJA::ColMajorLayout>
 //    RAJA::SquareMatrixRegister<double, RAJA::RowMajorLayout>,
 
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,4>,
-    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,2>,
+    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,2>
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4,4>,
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4,8>,
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 2,4>,
@@ -120,13 +124,13 @@ using MatrixTestTypes = ::testing::Types<
   >;
 
 
-template<typename MAT>
-struct TestHelper {
+template<typename POL>
+struct TensorTestHelper {
 
     template<typename BODY>
     static
     void exec(BODY const &body){
-      BODY();
+      body();
     }
 };
 
@@ -142,9 +146,11 @@ void test_launcher(BODY body_in)
   body();
 }
 
-template<typename T, typename LAYOUT, typename SIZE>
-struct TestHelper<RAJA::TensorRegister<RAJA::cuda_warp_register, T, LAYOUT, SIZE>>
+template<>
+struct TensorTestHelper<RAJA::cuda_warp_register>
 {
+
+    RAJA_SUPPRESS_HD_WARN
     template<typename BODY>
     static
     void exec(BODY const &body){
@@ -159,10 +165,44 @@ struct TestHelper<RAJA::TensorRegister<RAJA::cuda_warp_register, T, LAYOUT, SIZE
 #endif
 
 
-template<typename MAT, typename BODY>
-void do_work(BODY const &body){
-  TestHelper<MAT>::exec(body);
+template<typename POL, typename BODY>
+void tensor_do(BODY const &body){
+  TensorTestHelper<POL>::exec(body);
 }
+
+
+
+#ifdef RAJA_ENABLE_CUDA
+
+template<typename T>
+T* tensor_malloc(size_t len){
+  T *ptr;
+
+  cudaMallocManaged(&ptr, len);
+
+  return ptr;
+}
+
+template<typename T>
+void tensor_free(T *ptr){
+  cudaFree(ptr);
+}
+
+#else
+
+template<typename T>
+T* tensor_malloc(size_t len){
+  return new T[len];
+}
+
+template<typename T>
+void tensor_free(T *ptr){
+  delete[] ptr;
+}
+
+#endif
+
+
 
 
 
@@ -237,208 +277,234 @@ TYPED_TEST_P(MatrixTest, MatrixGetSet)
 
 #endif
 
-TYPED_TEST_P(MatrixTest, MatrixLoad)
+GPU_TYPED_TEST_P(MatrixTest, MatrixLoad)
 {
 
   using matrix_t = TypeParam;
+  using policy_t = typename matrix_t::register_policy;
   using element_t = typename matrix_t::element_type;
 
-  // Row-Major data
-  element_t data1[matrix_t::s_num_rows][matrix_t::s_num_columns];
+  //
+  // Allocate Row-Major data
+  //
+  element_t *data1_ptr = tensor_malloc<element_t>(matrix_t::s_num_rows*matrix_t::s_num_columns);
+  RAJA::View<element_t, RAJA::Layout<2>> data1(data1_ptr, matrix_t::s_num_rows, matrix_t::s_num_columns);
+
+  element_t *data2_ptr = tensor_malloc<element_t>(matrix_t::s_num_rows*matrix_t::s_num_columns);
+  RAJA::View<element_t, RAJA::Layout<2>> data2(data2_ptr, matrix_t::s_num_rows, matrix_t::s_num_columns);
 
   // Fill data
   for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-      data1[i][j] = i*matrix_t::s_num_columns+j;
+      data1(i,j) = i*matrix_t::s_num_columns+j;
     }
   }
 
-  // Load data
-  matrix_t m1;
-  if(matrix_t::layout_type::is_row_major()){
-//    printf("load_packed\n");
-
-    m1.load_packed(&data1[0][0], matrix_t::s_num_columns, 1);
-  }
-  else{
-//    printf("load_strided\n");
-
-    m1.load_strided(&data1[0][0], matrix_t::s_num_columns, 1);
-  }
-
-//  printf("m1=%s\n", m1.to_string().c_str());
-
-
-  // Check contents
-  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-      ASSERT_SCALAR_EQ(m1.get(i,j), data1[i][j]);
+  //
+  // Do operation
+  //
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+    matrix_t m1;
+    if(matrix_t::layout_type::is_row_major()){
+      m1.load_packed(data1_ptr, matrix_t::s_num_columns, 1);
     }
-  }
-
-
-
-  // Row-Major data sub-slice
-  element_t data1sub[matrix_t::s_num_rows*2][matrix_t::s_num_columns*2];
-
-  // Fill data
-  for(camp::idx_t i = 0;i < matrix_t::s_num_rows*2; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::s_num_columns*2; ++ j){
-      data1sub[i][j] = i*matrix_t::s_num_columns*2+j;
+    else{
+      m1.load_strided(data1_ptr, matrix_t::s_num_columns, 1);
     }
-  }
 
-  // Load data
-  matrix_t m1sub;
-  if(matrix_t::layout_type::is_row_major()){
-//    printf("load_packed\n");
-
-    m1sub.load_packed(&data1sub[0][0], matrix_t::s_num_columns*2, 1);
-  }
-  else{
-//    printf("load_strided\n");
-
-    m1sub.load_strided(&data1sub[0][0], matrix_t::s_num_columns*2, 1);
-  }
-
-//  printf("m1sub=%s\n", m1sub.to_string().c_str());
-
-
-  // Check contents
-  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-      ASSERT_SCALAR_EQ(m1sub.get(i,j), data1sub[i][j]);
-    }
-  }
-
-
-  // Load data using _nm methods
-  matrix_t m1subnm;
-  if(matrix_t::layout_type::is_row_major()){
-//    printf("load_packed_nm\n");
-
-    m1subnm.load_packed_nm(&data1sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
-  }
-  else{
-//    printf("load_strided_nm\n");
-
-    m1subnm.load_strided_nm(&data1sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
-  }
-
-//  printf("m1subnm=%s\n", m1subnm.to_string().c_str());
-
-
-  // Check contents
-  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-      if(i < matrix_t::s_num_rows-1 &&
-         j < matrix_t::s_num_columns-1)
-      {
-        ASSERT_SCALAR_EQ(m1subnm.get(i,j), data1sub[j][i]);
-      }
-      else{
-        ASSERT_SCALAR_EQ(m1subnm.get(i,j), element_t(0.0));
+    // write out to a second view so we can check it on the host
+    // on GPU's we'll write way too much, but it should stil be correct
+    for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+      for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+        data2(i,j) = m1.get(i,j);
       }
     }
-  }
+
+  });
 
 
-
-
-  // Column-Major data
-  element_t data2[matrix_t::s_num_columns][matrix_t::s_num_rows];
-
-  // Fill data
+  //
+  // Check results
+  //
   for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-      data2[j][i] = i*matrix_t::s_num_columns+j;
-    }
-  }
-
-  // Load data
-  matrix_t m2;
-  if(matrix_t::layout_type::is_column_major()){
-//    printf("load_packed\n");
-
-    m2.load_packed(&data2[0][0], 1, matrix_t::s_num_rows);
-  }
-  else{
-//    printf("load_strided\n");
-
-    m2.load_strided(&data2[0][0], 1, matrix_t::s_num_rows);
-  }
-//  printf("m2=%s\n", m2.to_string().c_str());
-
-  // Check contents
-  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-      ASSERT_SCALAR_EQ(m2.get(i,j), data2[j][i]);
+      ASSERT_SCALAR_EQ(data1(i,j), data2(i,j));
+      printf("%d,%d:  %lf, %lf\n", (int)i, (int)j, data1(i,j), data2(i,j));
     }
   }
 
 
-  // Column-Major data sub-slice
-  element_t data2sub[matrix_t::s_num_columns*2][matrix_t::s_num_rows*2];
-
-  // Fill data
-  for(camp::idx_t i = 0;i < matrix_t::s_num_rows*2; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::s_num_columns*2; ++ j){
-      data2sub[j][i] = i*matrix_t::s_num_columns*2+j;
-    }
-  }
-
-  // Load data
-  matrix_t m2sub;
-  if(matrix_t::layout_type::is_column_major()){
-//    printf("load_packed\n");
-
-    m2sub.load_packed(&data2sub[0][0], 1, matrix_t::s_num_rows*2);
-  }
-  else{
-//    printf("load_strided\n");
-
-    m2sub.load_strided(&data2sub[0][0], 1, matrix_t::s_num_rows*2);
-  }
-
-//  printf("m2sub=%s\n", m2sub.to_string().c_str());
+  tensor_free(data1_ptr);
+  tensor_free(data2_ptr);
 
 
-  // Check contents
-  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-      ASSERT_SCALAR_EQ(m2sub.get(i,j), data2sub[j][i]);
-    }
-  }
-
-  // Load data using _nm methods
-  matrix_t m2subnm;
-  if(matrix_t::layout_type::is_column_major()){
-//    printf("load_packed_nm\n");
-
-    m2subnm.load_packed_nm(&data2sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
-  }
-  else{
-//    printf("load_strided_nm\n");
-
-    m2subnm.load_strided_nm(&data2sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
-  }
-
-//  printf("m2subnm=%s\n", m2subnm.to_string().c_str());
+//
+//
+//  // Row-Major data sub-slice
+//  element_t data1sub[matrix_t::s_num_rows*2][matrix_t::s_num_columns*2];
+//
+//  // Fill data
+//  for(camp::idx_t i = 0;i < matrix_t::s_num_rows*2; ++ i){
+//    for(camp::idx_t j = 0;j < matrix_t::s_num_columns*2; ++ j){
+//      data1sub[i][j] = i*matrix_t::s_num_columns*2+j;
+//    }
+//  }
 
 
-  // Check contents
-  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-      if(i < matrix_t::s_num_rows-1 &&
-         j < matrix_t::s_num_columns-1)
-      {
-        ASSERT_SCALAR_EQ(m2subnm.get(i,j), data2sub[j][i]);
-      }
-      else{
-        ASSERT_SCALAR_EQ(m2subnm.get(i,j), element_t(0.0));
-      }
-    }
-  }
+
+
+//
+//  // Load data
+//  matrix_t m1sub;
+//  if(matrix_t::layout_type::is_row_major()){
+////    printf("load_packed\n");
+//
+//    m1sub.load_packed(&data1sub[0][0], matrix_t::s_num_columns*2, 1);
+//  }
+//  else{
+////    printf("load_strided\n");
+//
+//    m1sub.load_strided(&data1sub[0][0], matrix_t::s_num_columns*2, 1);
+//  }
+//
+////  printf("m1sub=%s\n", m1sub.to_string().c_str());
+//
+//
+//  // Check contents
+//  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+//    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+//      ASSERT_SCALAR_EQ(m1sub.get(i,j), data1sub[i][j]);
+//    }
+//  }
+//
+//
+//  // Load data using _nm methods
+//  matrix_t m1subnm;
+//  if(matrix_t::layout_type::is_row_major()){
+////    printf("load_packed_nm\n");
+//
+//    m1subnm.load_packed_nm(&data1sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
+//  }
+//  else{
+////    printf("load_strided_nm\n");
+//
+//    m1subnm.load_strided_nm(&data1sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
+//  }
+//
+////  printf("m1subnm=%s\n", m1subnm.to_string().c_str());
+//
+//
+//  // Check contents
+//  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+//    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+//      if(i < matrix_t::s_num_rows-1 &&
+//         j < matrix_t::s_num_columns-1)
+//      {
+//        ASSERT_SCALAR_EQ(m1subnm.get(i,j), data1sub[j][i]);
+//      }
+//      else{
+//        ASSERT_SCALAR_EQ(m1subnm.get(i,j), element_t(0.0));
+//      }
+//    }
+//  }
+//
+//
+//
+//
+//  // Column-Major data
+//  element_t data2[matrix_t::s_num_columns][matrix_t::s_num_rows];
+//
+//  // Fill data
+//  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+//    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+//      data2[j][i] = i*matrix_t::s_num_columns+j;
+//    }
+//  }
+//
+//  // Load data
+//  matrix_t m2;
+//  if(matrix_t::layout_type::is_column_major()){
+////    printf("load_packed\n");
+//
+//    m2.load_packed(&data2[0][0], 1, matrix_t::s_num_rows);
+//  }
+//  else{
+////    printf("load_strided\n");
+//
+//    m2.load_strided(&data2[0][0], 1, matrix_t::s_num_rows);
+//  }
+////  printf("m2=%s\n", m2.to_string().c_str());
+//
+//  // Check contents
+//  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+//    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+//      ASSERT_SCALAR_EQ(m2.get(i,j), data2[j][i]);
+//    }
+//  }
+//
+//
+//  // Column-Major data sub-slice
+//  element_t data2sub[matrix_t::s_num_columns*2][matrix_t::s_num_rows*2];
+//
+//  // Fill data
+//  for(camp::idx_t i = 0;i < matrix_t::s_num_rows*2; ++ i){
+//    for(camp::idx_t j = 0;j < matrix_t::s_num_columns*2; ++ j){
+//      data2sub[j][i] = i*matrix_t::s_num_columns*2+j;
+//    }
+//  }
+//
+//  // Load data
+//  matrix_t m2sub;
+//  if(matrix_t::layout_type::is_column_major()){
+////    printf("load_packed\n");
+//
+//    m2sub.load_packed(&data2sub[0][0], 1, matrix_t::s_num_rows*2);
+//  }
+//  else{
+////    printf("load_strided\n");
+//
+//    m2sub.load_strided(&data2sub[0][0], 1, matrix_t::s_num_rows*2);
+//  }
+//
+////  printf("m2sub=%s\n", m2sub.to_string().c_str());
+//
+//
+//  // Check contents
+//  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+//    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+//      ASSERT_SCALAR_EQ(m2sub.get(i,j), data2sub[j][i]);
+//    }
+//  }
+//
+//  // Load data using _nm methods
+//  matrix_t m2subnm;
+//  if(matrix_t::layout_type::is_column_major()){
+////    printf("load_packed_nm\n");
+//
+//    m2subnm.load_packed_nm(&data2sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
+//  }
+//  else{
+////    printf("load_strided_nm\n");
+//
+//    m2subnm.load_strided_nm(&data2sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
+//  }
+//
+////  printf("m2subnm=%s\n", m2subnm.to_string().c_str());
+//
+//
+//  // Check contents
+//  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+//    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+//      if(i < matrix_t::s_num_rows-1 &&
+//         j < matrix_t::s_num_columns-1)
+//      {
+//        ASSERT_SCALAR_EQ(m2subnm.get(i,j), data2sub[j][i]);
+//      }
+//      else{
+//        ASSERT_SCALAR_EQ(m2subnm.get(i,j), element_t(0.0));
+//      }
+//    }
+//  }
 
 
 }
@@ -699,7 +765,7 @@ TYPED_TEST_P(MatrixTest, MatrixViewStore)
 
 
 }
-#endif
+//#endif
 
 TYPED_TEST_P(MatrixTest, MatrixVector)
 {
@@ -838,7 +904,7 @@ TYPED_TEST_P(MatrixTest, MatrixMatrix)
 
 }
 
-#if 0
+//#if 0
 
 TYPED_TEST_P(MatrixTest, MatrixMatrixAccumulate)
 {
@@ -1496,12 +1562,12 @@ TYPED_TEST_P(MatrixTest, ETMatrixTransposeNegate)
 REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
 //                                          MatrixCtor,
 //                                          MatrixGetSet,
-                                          MatrixLoad,
+                                          MatrixLoad
 //                                          MatrixStore,
 //                                          MatrixViewLoad,
 //                                          MatrixViewStore,
-                                          MatrixVector,
-                                          MatrixMatrix
+//                                          MatrixVector,
+//                                          MatrixMatrix
 //                                          MatrixMatrixAccumulate,
 //                                          MatrixTranspose,
 //

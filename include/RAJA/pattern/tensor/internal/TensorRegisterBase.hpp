@@ -114,6 +114,9 @@ namespace internal {
       using index_type = camp::idx_t;
 
       using register_type = Register<T, REGISTER_POLICY>;
+
+      using register_policy = REGISTER_POLICY;
+
     private:
 
       RAJA_HOST_DEVICE
