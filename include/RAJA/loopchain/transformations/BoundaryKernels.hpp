@@ -45,7 +45,7 @@ auto high_boundary_end_dims(SegmentTuple knlSegments, SegmentTuple sharedSegment
 template <camp::idx_t I,typename...SegmentTypes,  camp::idx_t...Is>
 auto high_boundary_decomp_piece(camp::tuple<SegmentTypes...> knlSegments,
                                camp::tuple<SegmentTypes...> sharedSegments,
-                               camp::idx_seq<Is...> seq) {
+                               camp::idx_seq<Is...>) {
   //For the dimensions up to the piece number, we start at the shared start and go to the shared end
   auto startDims = tuple_slice<0,I>(sharedSegments);
 
@@ -118,7 +118,7 @@ auto low_boundary_start_dims(SegmentTuple knlSegments, SegmentTuple sharedSegmen
 template <camp::idx_t I, typename...SegmentTypes, camp::idx_t...Is>
 auto low_boundary_decomp_piece(camp::tuple<SegmentTypes...> knlSegments,
                                camp::tuple<SegmentTypes...> sharedSegments,
-                               camp::idx_seq<Is...> seq) {
+                               camp::idx_seq<Is...>) {
   //For the dimensions up to the piece number, we start at the shared start and go to the original end
   auto startSeq = idx_seq_from_to<0,I>();
   auto startDims = low_boundary_start_dims(knlSegments, sharedSegments, startSeq);
@@ -163,7 +163,7 @@ auto low_boundary_knls_for_knl(KernelWrapper<KPol,SegmentTuple,Bodies...> knl,
 // This function generates the kernels that execute the iterations that will be
 // executed before the shared iterations
 template <typename...KernelTypes, camp::idx_t...Is>
-auto low_boundary_knls(camp::tuple<KernelTypes...> knlTuple, camp::idx_seq<Is...> seq) {
+auto low_boundary_knls(camp::tuple<KernelTypes...> knlTuple, camp::idx_seq<Is...>) {
 
   auto segmentTuples = make_tuple(camp::get<Is>(knlTuple).segments...);
   auto sharedIterSpaceTuple = intersect_segment_tuples(segmentTuples);

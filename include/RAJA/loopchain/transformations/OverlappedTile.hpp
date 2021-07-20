@@ -7,6 +7,7 @@
 #include "RAJA/loopchain/KernelWrapper.hpp"
 #include "RAJA/loopchain/Chain.hpp"
 #include "RAJA/loopchain/transformations/Common.hpp"
+#include "RAJA/pattern/kernel/OverlappedTile.hpp"
 namespace RAJA {
 
 
