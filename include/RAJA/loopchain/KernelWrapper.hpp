@@ -35,7 +35,6 @@ struct KernelWrapper {
     segments(_segments), bodies(_bodies...) {
      overlapAmounts = std::vector<camp::idx_t>();
      tileSizes = std::vector<camp::idx_t>();
-     accesses = _execute_symbolically();
   }
   
   KernelWrapper(const KernelWrapper &) = default;
@@ -85,7 +84,7 @@ struct KernelWrapper {
     function(camp::get<Is>(iterators)...);
   }  
   std::vector<SymAccess> execute_symbolically() {
-    return accesses;
+    return _execute_symbolically();
   }
   std::vector<SymAccess> _execute_symbolically() {
     auto iterators = make_iterator_tuple(camp::make_idx_seq_t<numArgs>());
