@@ -224,29 +224,73 @@ protected:
 };
 TYPED_TEST_SUITE_P(MatrixTest);
 
-#if 0
 /*
  * We are using ((double)rand()/RAND_MAX) for input values so the compiler cannot do fancy
  * things, like constexpr out all of the intrinsics.
  */
 
-TYPED_TEST_P(MatrixTest, MatrixCtor)
+GPU_TYPED_TEST_P(MatrixTest, MatrixCtor)
 {
 
   using matrix_t = TypeParam;
+  using policy_t = typename matrix_t::register_policy;
   using element_t = typename matrix_t::element_type;
 
-  matrix_t m_empty;
-  ASSERT_SCALAR_EQ(m_empty.get(0,0), element_t(0));
 
-  matrix_t m_bcast(element_t(1));
-  ASSERT_SCALAR_EQ(m_bcast.get(0,0), element_t(1));
+  //
+  // Allocate Data
+  //
+  element_t *data1_ptr = tensor_malloc<element_t>(matrix_t::s_num_rows*matrix_t::s_num_columns);
+  RAJA::View<element_t, RAJA::Layout<2>> data1(data1_ptr, matrix_t::s_num_rows, matrix_t::s_num_columns);
 
-  matrix_t m_copy(m_bcast);
-  ASSERT_SCALAR_EQ(m_copy.get(0,0), element_t(1));
+  element_t *data2_ptr = tensor_malloc<element_t>(matrix_t::s_num_rows*matrix_t::s_num_columns);
+  RAJA::View<element_t, RAJA::Layout<2>> data2(data2_ptr, matrix_t::s_num_rows, matrix_t::s_num_columns);
 
+
+
+  //
+  // Do Operation: broadcast-ctor and copy-ctor
+  //
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    // create a matrix that contains all 3's
+    matrix_t m1(element_t(3));
+
+    // copy to another matrix
+    matrix_t m2(m1);
+
+    // write out both matrices
+    for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+      for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+        data1(i,j) = m1.get(i,j);
+        data2(i,j) = m2.get(i,j);
+      }
+    }
+
+  });
+
+
+  //
+  // Check results
+  //
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+      ASSERT_SCALAR_EQ(3, data1(i,j));
+      ASSERT_SCALAR_EQ(3, data2(i,j));
+//      printf("%d,%d:  %lf, %lf\n", (int)i, (int)j, data1(i,j), data2(i,j));
+    }
+  }
+
+
+  //
+  // Free data
+  //
+  tensor_free(data1_ptr);
 
 }
+
+
+#if 0
 
 TYPED_TEST_P(MatrixTest, MatrixGetSet)
 {
@@ -277,7 +321,7 @@ TYPED_TEST_P(MatrixTest, MatrixGetSet)
 
 #endif
 
-GPU_TYPED_TEST_P(MatrixTest, MatrixLoad)
+GPU_TYPED_TEST_P(MatrixTest, MatrixLoad_RowMajor)
 {
 
   using matrix_t = TypeParam;
@@ -285,38 +329,38 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixLoad)
   using element_t = typename matrix_t::element_type;
 
   //
-  // Allocate Row-Major data
+  // Allocate Row-Major Data
   //
-  element_t *data1_ptr = tensor_malloc<element_t>(matrix_t::s_num_rows*matrix_t::s_num_columns);
-  RAJA::View<element_t, RAJA::Layout<2>> data1(data1_ptr, matrix_t::s_num_rows, matrix_t::s_num_columns);
+  element_t *data1_ptr = tensor_malloc<element_t>(4*matrix_t::s_num_rows*matrix_t::s_num_columns);
+  RAJA::View<element_t, RAJA::Layout<2>> data1(data1_ptr, 2*matrix_t::s_num_rows, 2*matrix_t::s_num_columns);
 
   element_t *data2_ptr = tensor_malloc<element_t>(matrix_t::s_num_rows*matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data2(data2_ptr, matrix_t::s_num_rows, matrix_t::s_num_columns);
 
   // Fill data
-  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-      data1(i,j) = i*matrix_t::s_num_columns+j;
+  for(camp::idx_t i = 0;i < 2*matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < 2*matrix_t::s_num_columns; ++ j){
+      data1(i,j) = 2*i*matrix_t::s_num_columns+j;
     }
   }
 
   //
-  // Do operation
+  // Do Operation: Full load
   //
   tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
-    matrix_t m1;
+    matrix_t m;
     if(matrix_t::layout_type::is_row_major()){
-      m1.load_packed(data1_ptr, matrix_t::s_num_columns, 1);
+      m.load_packed(data1_ptr, 2*matrix_t::s_num_columns, 1);
     }
     else{
-      m1.load_strided(data1_ptr, matrix_t::s_num_columns, 1);
+      m.load_strided(data1_ptr, 2*matrix_t::s_num_columns, 1);
     }
 
     // write out to a second view so we can check it on the host
     // on GPU's we'll write way too much, but it should stil be correct
     for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
       for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-        data2(i,j) = m1.get(i,j);
+        data2(i,j) = m.get(i,j);
       }
     }
 
@@ -329,185 +373,208 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixLoad)
   for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
       ASSERT_SCALAR_EQ(data1(i,j), data2(i,j));
-      printf("%d,%d:  %lf, %lf\n", (int)i, (int)j, data1(i,j), data2(i,j));
+//      printf("%d,%d:  %lf, %lf\n", (int)i, (int)j, data1(i,j), data2(i,j));
     }
   }
 
 
+
+  //
+  // Loop over all possible sub-matrix sizes using the load_*_nm routines
+  //
+  for(camp::idx_t n_size = 0;n_size <= matrix_t::s_num_rows; ++ n_size){
+    for(camp::idx_t m_size = 0;m_size <= matrix_t::s_num_columns; ++ m_size){
+//      printf("Running %d x %d\n", (int)n_size, (int)m_size);
+      //
+      // Clear data2
+      //
+      for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+        for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+          data2(i,j) = -1;
+        }
+      }
+
+
+      //
+      // Do Operation: Full load
+      //
+      tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+        matrix_t m;
+        if(matrix_t::layout_type::is_row_major()){
+          m.load_packed_nm(data1_ptr, 2*matrix_t::s_num_columns, 1, n_size, m_size);
+        }
+        else{
+          m.load_strided_nm(data1_ptr, 2*matrix_t::s_num_columns, 1, n_size, m_size);
+        }
+
+        // write out to a second view so we can check it on the host
+        // on GPU's we'll write way too much, but it should stil be correct
+        for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+          for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+            data2(i,j) = m.get(i,j);
+          }
+        }
+
+      });
+
+      //
+      // Check results
+      //
+      for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+        for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+//          printf("%d,%d:  %lf, %lf\n", (int)i, (int)j, data1(i,j), data2(i,j));
+          if(i < n_size && j < m_size){
+            ASSERT_SCALAR_EQ(data1(i,j), data2(i,j));
+          }
+          else{
+            ASSERT_SCALAR_EQ(element_t(0), data2(i,j));
+          }
+        }
+      }
+
+
+    }
+  }
+
+
+  //
+  // Free data
+  //
   tensor_free(data1_ptr);
   tensor_free(data2_ptr);
-
-
-//
-//
-//  // Row-Major data sub-slice
-//  element_t data1sub[matrix_t::s_num_rows*2][matrix_t::s_num_columns*2];
-//
-//  // Fill data
-//  for(camp::idx_t i = 0;i < matrix_t::s_num_rows*2; ++ i){
-//    for(camp::idx_t j = 0;j < matrix_t::s_num_columns*2; ++ j){
-//      data1sub[i][j] = i*matrix_t::s_num_columns*2+j;
-//    }
-//  }
-
-
-
-
-//
-//  // Load data
-//  matrix_t m1sub;
-//  if(matrix_t::layout_type::is_row_major()){
-////    printf("load_packed\n");
-//
-//    m1sub.load_packed(&data1sub[0][0], matrix_t::s_num_columns*2, 1);
-//  }
-//  else{
-////    printf("load_strided\n");
-//
-//    m1sub.load_strided(&data1sub[0][0], matrix_t::s_num_columns*2, 1);
-//  }
-//
-////  printf("m1sub=%s\n", m1sub.to_string().c_str());
-//
-//
-//  // Check contents
-//  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
-//    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-//      ASSERT_SCALAR_EQ(m1sub.get(i,j), data1sub[i][j]);
-//    }
-//  }
-//
-//
-//  // Load data using _nm methods
-//  matrix_t m1subnm;
-//  if(matrix_t::layout_type::is_row_major()){
-////    printf("load_packed_nm\n");
-//
-//    m1subnm.load_packed_nm(&data1sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
-//  }
-//  else{
-////    printf("load_strided_nm\n");
-//
-//    m1subnm.load_strided_nm(&data1sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
-//  }
-//
-////  printf("m1subnm=%s\n", m1subnm.to_string().c_str());
-//
-//
-//  // Check contents
-//  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
-//    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-//      if(i < matrix_t::s_num_rows-1 &&
-//         j < matrix_t::s_num_columns-1)
-//      {
-//        ASSERT_SCALAR_EQ(m1subnm.get(i,j), data1sub[j][i]);
-//      }
-//      else{
-//        ASSERT_SCALAR_EQ(m1subnm.get(i,j), element_t(0.0));
-//      }
-//    }
-//  }
-//
-//
-//
-//
-//  // Column-Major data
-//  element_t data2[matrix_t::s_num_columns][matrix_t::s_num_rows];
-//
-//  // Fill data
-//  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
-//    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-//      data2[j][i] = i*matrix_t::s_num_columns+j;
-//    }
-//  }
-//
-//  // Load data
-//  matrix_t m2;
-//  if(matrix_t::layout_type::is_column_major()){
-////    printf("load_packed\n");
-//
-//    m2.load_packed(&data2[0][0], 1, matrix_t::s_num_rows);
-//  }
-//  else{
-////    printf("load_strided\n");
-//
-//    m2.load_strided(&data2[0][0], 1, matrix_t::s_num_rows);
-//  }
-////  printf("m2=%s\n", m2.to_string().c_str());
-//
-//  // Check contents
-//  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
-//    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-//      ASSERT_SCALAR_EQ(m2.get(i,j), data2[j][i]);
-//    }
-//  }
-//
-//
-//  // Column-Major data sub-slice
-//  element_t data2sub[matrix_t::s_num_columns*2][matrix_t::s_num_rows*2];
-//
-//  // Fill data
-//  for(camp::idx_t i = 0;i < matrix_t::s_num_rows*2; ++ i){
-//    for(camp::idx_t j = 0;j < matrix_t::s_num_columns*2; ++ j){
-//      data2sub[j][i] = i*matrix_t::s_num_columns*2+j;
-//    }
-//  }
-//
-//  // Load data
-//  matrix_t m2sub;
-//  if(matrix_t::layout_type::is_column_major()){
-////    printf("load_packed\n");
-//
-//    m2sub.load_packed(&data2sub[0][0], 1, matrix_t::s_num_rows*2);
-//  }
-//  else{
-////    printf("load_strided\n");
-//
-//    m2sub.load_strided(&data2sub[0][0], 1, matrix_t::s_num_rows*2);
-//  }
-//
-////  printf("m2sub=%s\n", m2sub.to_string().c_str());
-//
-//
-//  // Check contents
-//  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
-//    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-//      ASSERT_SCALAR_EQ(m2sub.get(i,j), data2sub[j][i]);
-//    }
-//  }
-//
-//  // Load data using _nm methods
-//  matrix_t m2subnm;
-//  if(matrix_t::layout_type::is_column_major()){
-////    printf("load_packed_nm\n");
-//
-//    m2subnm.load_packed_nm(&data2sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
-//  }
-//  else{
-////    printf("load_strided_nm\n");
-//
-//    m2subnm.load_strided_nm(&data2sub[0][0], 1, matrix_t::s_num_rows*2, matrix_t::s_num_rows-1, matrix_t::s_num_columns-1);
-//  }
-//
-////  printf("m2subnm=%s\n", m2subnm.to_string().c_str());
-//
-//
-//  // Check contents
-//  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
-//    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-//      if(i < matrix_t::s_num_rows-1 &&
-//         j < matrix_t::s_num_columns-1)
-//      {
-//        ASSERT_SCALAR_EQ(m2subnm.get(i,j), data2sub[j][i]);
-//      }
-//      else{
-//        ASSERT_SCALAR_EQ(m2subnm.get(i,j), element_t(0.0));
-//      }
-//    }
-//  }
-
-
 }
+
+
+
+
+GPU_TYPED_TEST_P(MatrixTest, MatrixLoad_ColMajor)
+{
+
+  using matrix_t = TypeParam;
+  using policy_t = typename matrix_t::register_policy;
+  using element_t = typename matrix_t::element_type;
+
+  //
+  // Allocate Row-Major data
+  //
+  element_t *data1_ptr = tensor_malloc<element_t>(4*matrix_t::s_num_columns*matrix_t::s_num_rows);
+  RAJA::View<element_t, RAJA::Layout<2>> data1(data1_ptr, 2*matrix_t::s_num_columns, 2*matrix_t::s_num_rows);
+
+  element_t *data2_ptr = tensor_malloc<element_t>(matrix_t::s_num_columns*matrix_t::s_num_rows);
+  RAJA::View<element_t, RAJA::Layout<2>> data2(data2_ptr, matrix_t::s_num_columns, matrix_t::s_num_rows);
+
+  // Fill data
+  for(camp::idx_t i = 0;i < 2*matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < 2*matrix_t::s_num_columns; ++ j){
+      data1(j,i) = 2*i*matrix_t::s_num_columns+j;
+    }
+  }
+
+  //
+  // Do operation
+  //
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+    matrix_t m;
+
+    if(matrix_t::layout_type::is_column_major()){
+      m.load_packed(data1_ptr, 1, 2*matrix_t::s_num_rows);
+    }
+    else{
+      m.load_strided(data1_ptr, 1, 2*matrix_t::s_num_rows);
+    }
+
+    // write out to a second view so we can check it on the host
+    // on GPU's we'll write way too much, but it should stil be correct
+    for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+      for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+        data2(j,i) = m.get(i,j);
+      }
+    }
+
+  });
+
+
+  //
+  // Check results
+  //
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+      ASSERT_SCALAR_EQ(data1(j,i), data2(j,i));
+//      printf("%d,%d:  %lf, %lf\n", (int)i, (int)j, data1(j,i), data2(j,i));
+    }
+  }
+
+
+
+  //
+  // Loop over all possible sub-matrix sizes using the load_*_nm routines
+  //
+  for(camp::idx_t n_size = 0;n_size <= matrix_t::s_num_rows; ++ n_size){
+    for(camp::idx_t m_size = 0;m_size <= matrix_t::s_num_columns; ++ m_size){
+//      printf("Running %d x %d\n", (int)n_size, (int)m_size);
+      //
+      // Clear data2
+      //
+      for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+        for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+          data2(j,i) = -1;
+        }
+      }
+
+
+      //
+      // Do Operation: Full load
+      //
+      tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+        matrix_t m;
+        if(matrix_t::layout_type::is_column_major()){
+          m.load_packed_nm(data1_ptr, 1, 2*matrix_t::s_num_rows, n_size, m_size);
+        }
+        else{
+          m.load_strided_nm(data1_ptr, 1, 2*matrix_t::s_num_rows, n_size, m_size);
+        }
+
+        // write out to a second view so we can check it on the host
+        // on GPU's we'll write way too much, but it should stil be correct
+        for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+          for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+            data2(j,i) = m.get(i,j);
+          }
+        }
+
+      });
+
+      //
+      // Check results
+      //
+      for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+        for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+//          printf("%d,%d:  %lf, %lf\n", (int)i, (int)j, data1(i,j), data2(i,j));
+          if(i < n_size && j < m_size){
+            ASSERT_SCALAR_EQ(data1(j,i), data2(j,i));
+          }
+          else{
+            ASSERT_SCALAR_EQ(element_t(0), data2(j,i));
+          }
+        }
+      }
+
+
+    }
+  }
+
+
+  //
+  // Free data
+  //
+  tensor_free(data1_ptr);
+  tensor_free(data2_ptr);
+}
+
+
+
+
+
 
 #if 0
 
@@ -1560,9 +1627,10 @@ TYPED_TEST_P(MatrixTest, ETMatrixTransposeNegate)
 
 
 REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
-//                                          MatrixCtor,
+                                          MatrixCtor,
 //                                          MatrixGetSet,
-                                          MatrixLoad
+    MatrixLoad_RowMajor,
+    MatrixLoad_ColMajor
 //                                          MatrixStore,
 //                                          MatrixViewLoad,
 //                                          MatrixViewStore,
