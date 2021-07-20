@@ -124,7 +124,7 @@ auto overlap_constraints_helper(isl_ctx * ctx, camp::tuple<KernelTypes...> knlTu
 }
 
 template <typename...KernelTypes, camp::idx_t...Is>
-auto overlap_constraints(isl_ctx * ctx, camp::tuple<KernelTypes...> knlTuple, camp::idx_seq<Is...> seq) {
+auto overlap_constraints(isl_ctx * ctx, camp::tuple<KernelTypes...> knlTuple, camp::idx_seq<Is...>) {
   return overlap_constraints_helper<0,1,sizeof...(Is)>(ctx, knlTuple);
 }
 //performs the ISL calculation to determine the size of the overlaps for each tile.
@@ -224,7 +224,7 @@ auto overlap_segment_tuple(T1 segmentTuple, T2 originalSegmentTuple, T3 overlap 
 template <typename...KernelTypes, typename OverlapTupleType, camp::idx_t...Is>
 auto overlapped_tile_no_fuse_executor(camp::tuple<KernelTypes...> knlTuple, 
                                       OverlapTupleType overlaps, 
-                                      camp::idx_seq<Is...> seq) {
+                                      camp::idx_seq<Is...>) {
 
   auto segments = make_tuple(camp::get<Is>(knlTuple).segments...);
   auto entireRangeSegment = intersect_segment_tuples(segments);
@@ -266,7 +266,7 @@ auto overlapped_tile_policy() {
 }
 //creates the kernel which tiles the overlapping region of the kernels in the tuple
 template <typename T1, typename T2, camp::idx_t TileSize, camp::idx_t...Is>
-auto overlapped_tile_no_fuse_kernel(T1 knlTuple, T2 overlapAmountTuples, camp::idx_seq<Is...> knlSeq) {
+auto overlapped_tile_no_fuse_kernel(T1 knlTuple, T2 overlapAmountTuples, camp::idx_seq<Is...>) {
 
   //std::cout << "overlapped_tile_no_fuse_kernel\n";
   

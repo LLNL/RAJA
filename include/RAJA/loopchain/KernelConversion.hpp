@@ -386,7 +386,7 @@ isl_union_map * deprel_from_knls_helper(isl_ctx * ctx, camp::tuple<KnlTypes...> 
 }
 
 template <typename T, camp::idx_t...Is>
-auto dependence_relation_from_kernels(isl_ctx * ctx, T knlTuple, camp::idx_seq<Is...> knl) {
+auto dependence_relation_from_kernels(isl_ctx * ctx, T knlTuple, camp::idx_seq<Is...>) {
   constexpr auto NumKnls = sizeof...(Is); 
   return deprel_from_knls_helper<1,1,NumKnls>(ctx, knlTuple);
 } //dependence_relation_from_kernels
@@ -398,7 +398,7 @@ auto dependence_relation_from_kernels(isl_ctx * ctx, T knlTuple) {
 
 
 template <typename T, camp::idx_t...Is>
-auto original_schedule_from_kernels(isl_ctx * ctx, T knlTuple, camp::idx_seq<Is...> knl) {
+auto original_schedule_from_kernels(isl_ctx *, T, camp::idx_seq<Is...>) {
 
   //First, collect all dependences among the kernels.  
   

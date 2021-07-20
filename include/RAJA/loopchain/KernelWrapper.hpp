@@ -158,10 +158,18 @@ struct KernelWrapper {
   }
 
   RAJA_INLINE
-  void operator() (SegmentTuple segs) {
-    //TODO: Enable the kernel to be executed with a different segment
+  void operator() (SegmentTuple segs) const {
+    auto seq = camp::make_idx_seq_t<sizeof...(Bodies)>{};
+    call_helper(segs, seq);
   }
-
+  
+  
+  template <camp::idx_t... Is>
+  RAJA_INLINE
+  void call_helper(SegmentTuple segs, camp::idx_seq<Is...>) const {
+   
+    RAJA::kernel<KernelPol>(segs, camp::get<Is>(bodies)...);
+  }
 
   template <camp::idx_t I, camp::idx_t...Is>
   std::string segment_string_helper(camp::idx_seq<I, Is...>) {
