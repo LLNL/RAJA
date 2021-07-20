@@ -11,9 +11,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g" CACHE STRING "")
 
-set(HIP_COMMON_OPT_FLAGS )
-set(HIP_COMMON_DEBUG_FLAGS)
-set(HOST_OPT_FLAGS)
+set(HIP_COMMON_OPT_FLAGS "-std=c++17" CACHE STRING "")
+set(HIP_COMMON_DEBUG_FLAGS "-std=c++17" CACHE STRING "")
+set(HOST_OPT_FLAGS "-std=c++17" CACHE STRING "")
 
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,--disable-new-dtags -L/opt/rocm-4.1.0/hip/lib -L/opt/rocm-4.1.0/lib -L/opt/rocm-4.1.0/lib64 -Wl,-rpath,/opt/rocm-4.1.0/hip/lib:/opt/rocm-4.1.0/lib:/opt/rocm-4.1.0/lib64 -lamdhip64 -lhsakmt -lhsa-runtime64" CACHE PATH "")
 

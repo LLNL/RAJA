@@ -64,6 +64,37 @@ namespace detail
   }
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+  //
+  //
+  // Invoke Forall with Params.
+  //
+  //
+  CAMP_SUPPRESS_HD_WARN
+  template <typename Fn,
+            camp::idx_t... Sequence,
+            typename Params,
+            typename... Ts>
+  CAMP_HOST_DEVICE constexpr auto hip_invoke_with_order(Params&& params,
+                                                    Fn&& f,
+                                                    camp::idx_seq<Sequence...>,
+                                                    Ts&&... extra)
+  {
+    return f(extra..., ( params.template hip_get_param_ref<Sequence>() )...);
+  }
+
+  CAMP_SUPPRESS_HD_WARN
+  template <typename Params, typename Fn, typename... Ts>
+  CAMP_HOST_DEVICE constexpr auto hip_invoke(Params&& params, Fn&& f, Ts&&... extra)
+  {
+    return hip_invoke_with_order(
+        camp::forward<Params>(params),
+        camp::forward<Fn>(f),
+        typename camp::decay<Params>::params_seq(),
+        camp::forward<Ts>(extra)...);
+  }
+#endif
+
   //
   //
   // Forall param type thing..
@@ -87,6 +118,13 @@ namespace detail
     }
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+    template<camp::idx_t... Seq>
+    constexpr auto hip_m_param_refs(camp::idx_seq<Seq...>) -> decltype( camp::make_tuple( (camp::get<Seq>(param_tup).hipval)...) ) {
+      return camp::make_tuple( (camp::get<Seq>(param_tup).hipval)...) ;
+    }
+#endif
+
     // Init
     template<typename EXEC_POL, camp::idx_t... Seq, typename ...Args>
     static void constexpr detail_init(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>, Args&& ...args) {
@@ -102,7 +140,7 @@ namespace detail
     RAJA_HOST_DEVICE
     static void constexpr detail_combine(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
       CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup)));
-      CAMP_EXPAND(printf("Seq : %d\n", (int)Seq));
+      //CAMP_EXPAND(printf("Seq : %d\n", (int)Seq));
     }
     
     // Resolve
@@ -126,6 +164,13 @@ namespace detail
     template<camp::idx_t Idx>
     constexpr auto cuda_get_param_ref() -> decltype(*camp::get<Idx>(cuda_m_param_refs(params_seq{}))) {
       return (*camp::get<Idx>(cuda_m_param_refs(params_seq{})));
+    }
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+    template<camp::idx_t Idx>
+    constexpr auto hip_get_param_ref() -> decltype(*camp::get<Idx>(hip_m_param_refs(params_seq{}))) {
+      return (*camp::get<Idx>(hip_m_param_refs(params_seq{})));
     }
 #endif
 
@@ -158,6 +203,7 @@ namespace detail
 #include "openmp/forall.hpp"
 #include "omp-target/forall.hpp"
 #include "cuda/forall.hpp"
+#include "hip/forall.hpp"
 
 template<typename ExecPol, typename B, typename... Params>
 void forall_param(int N, const B& body, Params... params) {

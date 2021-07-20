@@ -26,6 +26,13 @@ namespace detail
     RAJA::detail::SoAPtr<T, RAJA::cuda::device_mempool_type> device_mem;
     unsigned int * device_count = nullptr;
 #endif
+
+#if defined(RAJA_ENABLE_HIP)
+    // HIP related attributes.
+    T * hipval = nullptr;
+    RAJA::detail::SoAPtr<T, RAJA::hip::device_mempool_type> device_mem;
+    unsigned int * device_count = nullptr;
+#endif
   };
 
 } //  namespace detail
@@ -34,6 +41,7 @@ namespace detail
 #include "openmp/reduce.hpp"
 #include "omp-target/reduce.hpp"
 #include "cuda/reduce.hpp"
+#include "hip/reduce.hpp"
 
 template <template <typename, typename, typename> class Op, typename T>
 auto constexpr Reduce(T *target)
@@ -42,7 +50,7 @@ auto constexpr Reduce(T *target)
 }
 
 template <typename T>
-auto constexpr ReduceLoc(ValLocMin<T> *target)
+auto constexpr ReduceLoc(ValLocMin<T> *target) 
 {
   using R = ValLocMin<T>;
   return detail::Reducer<RAJA::operators::minimum<R,R,R>, R>(target);

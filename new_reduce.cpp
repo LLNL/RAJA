@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
-#if 1
+#if 0
 #if defined(RAJA_ENABLE_CUDA)
   {
     std::cout << "CUDA Reduction NEW Multi\n";
@@ -147,6 +147,28 @@ int main(int argc, char *argv[])
     std::cout << "r : " << r << "\n";
     std::cout << "m : "  << m  <<"\n";
     std::cout << "ma : " << ma <<"\n";
+  }
+#endif
+#endif
+
+#if 1
+#if defined(RAJA_ENABLE_HIP)
+  {
+    std::cout << "HIP Reduction NEW Single\n";
+
+    RAJA::Timer t;
+    t.reset();
+    t.start();
+
+    forall_param<RAJA::hip_exec<256>>(N,
+                 [=] RAJA_HOST_DEVICE (int i, double &r_) {
+                   r_ += a[i] * b[i];
+                 },
+                 Reduce<RAJA::operators::plus>(&r));
+    t.stop();
+    
+    std::cout << "t : " << t.elapsed() << "\n";
+    std::cout << "r : " << r << "\n";
   }
 #endif
 #endif
