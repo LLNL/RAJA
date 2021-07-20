@@ -23,7 +23,7 @@ auto intersect_segment_tuples(SegmentTupleTypes... segmentTuples);
 
 // given a tuple of segments, returns one segment that contained by all the segments within the tuple
 template <typename...SegmentTypes, camp::idx_t...Is>
-auto intersect_segments(camp::tuple<SegmentTypes...> segments, camp::idx_seq<Is...> seq) {
+auto intersect_segments(camp::tuple<SegmentTypes...> segments, camp::idx_seq<Is...>) {
   auto highestLow = vmax((*((camp::get<Is>(segments)).begin()))...);
   auto lowestHigh = vmin((*((camp::get<Is>(segments)).end()))...);
 
@@ -129,7 +129,7 @@ std::string segment_to_constraints(SegmentType segment, camp::idx_t idx) {
 
 
 template <camp::idx_t I, camp::idx_t...Is, typename... SegmentTypes>
-auto segment_tuple_to_constraints(camp::tuple<SegmentTypes...> segmentTuple, camp::idx_seq<I, Is...> seq) {
+auto segment_tuple_to_constraints(camp::tuple<SegmentTypes...> segmentTuple, camp::idx_seq<I, Is...>) {
    std::string rest;
   if constexpr (sizeof...(Is) > 0) {
     rest = segment_tuple_to_constraints<Is...>(segmentTuple, camp::idx_seq<Is...>{});

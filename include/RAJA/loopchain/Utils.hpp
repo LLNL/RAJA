@@ -35,7 +35,7 @@ auto idx_seq_shift(camp::idx_seq<Is...>) {
 // idx_seq_for: Returns the idx seq for a tuple
 
 template <typename... ElemTypes>
-auto idx_seq_for(camp::tuple<ElemTypes...> t) {
+auto idx_seq_for(camp::tuple<ElemTypes...>) {
   return camp::make_idx_seq_t<sizeof...(ElemTypes)>{};
 }
 
