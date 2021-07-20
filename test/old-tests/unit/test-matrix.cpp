@@ -18,7 +18,7 @@ using MatrixTestTypes = ::testing::Types<
 
 #ifdef RAJA_ENABLE_CUDA
     RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,4, RAJA::cuda_warp_register>,
-    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,4, RAJA::cuda_warp_register>,
+//    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,4, RAJA::cuda_warp_register>,
 #endif
 
 //    // These tests use the platform default SIMD architecture
@@ -68,6 +68,8 @@ struct TensorTestHelper {
     void exec(BODY const &body){
       body();
     }
+
+    static constexpr bool is_device = false;
 };
 
 #ifdef RAJA_ENABLE_CUDA
@@ -97,6 +99,8 @@ struct TensorTestHelper<RAJA::cuda_warp_register>
       cudaDeviceSynchronize();
 
     }
+
+    static constexpr bool is_device = true;
 };
 #endif
 
@@ -110,48 +114,68 @@ void tensor_do(BODY const &body){
 
 #ifdef RAJA_ENABLE_CUDA
 
-template<typename T>
+template<typename POL, typename T>
 T* tensor_malloc(size_t len){
-  T *ptr;
+  if(TensorTestHelper<POL>::is_device){
+    T *ptr;
 
-  cudaErrchk(cudaMalloc(&ptr, len*sizeof(T)));
+    cudaErrchk(cudaMalloc(&ptr, len*sizeof(T)));
 
-  return ptr;
+    return ptr;
+  }
+  else{
+    return new T[len];
+  }
 }
 
-template<typename T>
+template<typename POL, typename T>
 void tensor_free(T *ptr){
-  cudaErrchk(cudaFree(ptr));
+  if(TensorTestHelper<POL>::is_device){
+    cudaErrchk(cudaFree(ptr));
+  }
+  else{
+    delete[] ptr;
+  }
 }
 
-template<typename T>
+template<typename POL, typename T>
 void tensor_copy_to_device(T *d_ptr, std::vector<T> const &h_vec){
-  cudaErrchk(cudaMemcpy(d_ptr, h_vec.data(), h_vec.size()*sizeof(T), cudaMemcpyHostToDevice));
+  if(TensorTestHelper<POL>::is_device){
+    cudaErrchk(cudaMemcpy(d_ptr, h_vec.data(), h_vec.size()*sizeof(T), cudaMemcpyHostToDevice));
+  }
+  else{
+    memcpy(d_ptr, h_vec.data(), h_vec.size()*sizeof(T));
+  }
 }
 
-template<typename T>
+template<typename POL, typename T>
 void tensor_copy_to_host(std::vector<T> &h_vec, T const *d_ptr){
-  cudaErrchk(cudaMemcpy(h_vec.data(), d_ptr, h_vec.size()*sizeof(T), cudaMemcpyDeviceToHost));
+  if(TensorTestHelper<POL>::is_device){
+    cudaErrchk(cudaMemcpy(h_vec.data(), d_ptr, h_vec.size()*sizeof(T), cudaMemcpyDeviceToHost));
+  }
+  else{
+    memcpy(h_vec.data(), d_ptr, h_vec.size()*sizeof(T));
+  }
 }
 
 #else
 
-template<typename T>
+template<typename POL, typename T>
 T* tensor_malloc(size_t len){
   return new T[len];
 }
 
-template<typename T>
+template<typename POL, typename T>
 void tensor_free(T *ptr){
   delete[] ptr;
 }
 
-template<typename T>
+template<typename POL, typename T>
 void tensor_copy_to_device(T *d_ptr, std::vector<T> const &h_vec){
   memcpy(d_ptr, h_vec.data(), h_vec.size()*sizeof(T));
 }
 
-template<typename T>
+template<typename POL, typename T>
 void tensor_copy_to_host(std::vector<T> &h_vec, T const *d_ptr){
   memcpy(h_vec.data(), d_ptr, h_vec.size()*sizeof(T));
 }
@@ -161,9 +185,9 @@ void tensor_copy_to_host(std::vector<T> &h_vec, T const *d_ptr){
 
 
 // Sugar to make things cleaner
-template<typename T>
+template<typename POL, typename T>
 T* tensor_malloc(std::vector<T> const &vec){
-  return tensor_malloc<T>(vec.size());
+  return tensor_malloc<POL,T>(vec.size());
 }
 
 
@@ -205,14 +229,14 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixCtor)
   std::vector<element_t> data1_vec(matrix_t::s_num_rows*matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data1_h(data1_vec.data(), matrix_t::s_num_rows, matrix_t::s_num_columns);
 
-  element_t *data1_ptr = tensor_malloc(data1_vec);
+  element_t *data1_ptr = tensor_malloc<policy_t>(data1_vec);
   RAJA::View<element_t, RAJA::Layout<2>> data1_d(data1_ptr, matrix_t::s_num_rows, matrix_t::s_num_columns);
 
 
   std::vector<element_t> data2_vec(matrix_t::s_num_rows*matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data2_h(data2_vec.data(), matrix_t::s_num_rows, matrix_t::s_num_columns);
 
-  element_t *data2_ptr = tensor_malloc(data2_vec);
+  element_t *data2_ptr = tensor_malloc<policy_t>(data2_vec);
   RAJA::View<element_t, RAJA::Layout<2>> data2_d(data2_ptr, matrix_t::s_num_rows, matrix_t::s_num_columns);
 
 
@@ -239,8 +263,8 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixCtor)
   });
 
   // copy data back to host
-  tensor_copy_to_host(data1_vec, data1_ptr);
-  tensor_copy_to_host(data2_vec, data2_ptr);
+  tensor_copy_to_host<policy_t>(data1_vec, data1_ptr);
+  tensor_copy_to_host<policy_t>(data2_vec, data2_ptr);
 
 
   //
@@ -258,8 +282,8 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixCtor)
   //
   // Free data
   //
-  tensor_free(data1_ptr);
-  tensor_free(data2_ptr);
+  tensor_free<policy_t>(data1_ptr);
+  tensor_free<policy_t>(data2_ptr);
 
 }
 
@@ -311,7 +335,7 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixLoad_RowMajor)
   std::vector<element_t> data1_vec(4*matrix_t::s_num_rows*matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data1_h(data1_vec.data(), 2*matrix_t::s_num_rows, 2*matrix_t::s_num_columns);
 
-  element_t *data1_ptr = tensor_malloc(data1_vec);
+  element_t *data1_ptr = tensor_malloc<policy_t>(data1_vec);
   RAJA::View<element_t, RAJA::Layout<2>> data1_d(data1_ptr, 2*matrix_t::s_num_rows, 2*matrix_t::s_num_columns);
 
 
@@ -320,7 +344,7 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixLoad_RowMajor)
   std::vector<element_t> data2_vec(matrix_t::s_num_rows*matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data2_h(data2_vec.data(), matrix_t::s_num_rows, matrix_t::s_num_columns);
 
-  element_t *data2_ptr = tensor_malloc(data2_vec);
+  element_t *data2_ptr = tensor_malloc<policy_t>(data2_vec);
   RAJA::View<element_t, RAJA::Layout<2>> data2_d(data2_ptr, matrix_t::s_num_rows, matrix_t::s_num_columns);
 
 
@@ -332,7 +356,7 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixLoad_RowMajor)
     }
   }
 
-  tensor_copy_to_device(data1_ptr, data1_vec);
+  tensor_copy_to_device<policy_t>(data1_ptr, data1_vec);
 
 
   //
@@ -357,7 +381,7 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixLoad_RowMajor)
 
   });
 
-  tensor_copy_to_host(data2_vec, data2_ptr);
+  tensor_copy_to_host<policy_t>(data2_vec, data2_ptr);
 
 
   //
@@ -386,7 +410,7 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixLoad_RowMajor)
           data2_h(i,j) = -1;
         }
       }
-      tensor_copy_to_device(data2_ptr, data2_vec);
+      tensor_copy_to_device<policy_t>(data2_ptr, data2_vec);
 
 
       //
@@ -411,7 +435,7 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixLoad_RowMajor)
 
       });
 
-      tensor_copy_to_host(data2_vec, data2_ptr);
+      tensor_copy_to_host<policy_t>(data2_vec, data2_ptr);
 
 
       //
@@ -437,8 +461,8 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixLoad_RowMajor)
   //
   // Free data
   //
-  tensor_free(data1_ptr);
-  tensor_free(data2_ptr);
+  tensor_free<policy_t>(data1_ptr);
+  tensor_free<policy_t>(data2_ptr);
 }
 
 
@@ -460,7 +484,7 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixLoad_ColMajor)
   std::vector<element_t> data1_vec(4*matrix_t::s_num_rows*matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data1_h(data1_vec.data(), 2*matrix_t::s_num_columns, 2*matrix_t::s_num_rows);
 
-  element_t *data1_ptr = tensor_malloc(data1_vec);
+  element_t *data1_ptr = tensor_malloc<policy_t>(data1_vec);
   RAJA::View<element_t, RAJA::Layout<2>> data1_d(data1_ptr, 2*matrix_t::s_num_columns, 2*matrix_t::s_num_rows);
 
 
@@ -469,7 +493,7 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixLoad_ColMajor)
   std::vector<element_t> data2_vec(matrix_t::s_num_rows*matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data2_h(data2_vec.data(), matrix_t::s_num_columns, matrix_t::s_num_rows);
 
-  element_t *data2_ptr = tensor_malloc(data2_vec);
+  element_t *data2_ptr = tensor_malloc<policy_t>(data2_vec);
   RAJA::View<element_t, RAJA::Layout<2>> data2_d(data2_ptr, matrix_t::s_num_columns, matrix_t::s_num_rows);
 
 
@@ -480,7 +504,7 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixLoad_ColMajor)
     }
   }
 
-  tensor_copy_to_device(data1_ptr, data1_vec);
+  tensor_copy_to_device<policy_t>(data1_ptr, data1_vec);
 
 
   //
@@ -506,7 +530,7 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixLoad_ColMajor)
 
   });
 
-  tensor_copy_to_host(data2_vec, data2_ptr);
+  tensor_copy_to_host<policy_t>(data2_vec, data2_ptr);
 
 
   //
@@ -536,7 +560,7 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixLoad_ColMajor)
         }
       }
 
-      tensor_copy_to_device(data2_ptr, data2_vec);
+      tensor_copy_to_device<policy_t>(data2_ptr, data2_vec);
 
 
       //
@@ -561,7 +585,7 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixLoad_ColMajor)
 
       });
 
-      tensor_copy_to_host(data2_vec, data2_ptr);
+      tensor_copy_to_host<policy_t>(data2_vec, data2_ptr);
 
 
       //
@@ -587,10 +611,153 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixLoad_ColMajor)
   //
   // Free data
   //
-  tensor_free(data1_ptr);
-  tensor_free(data2_ptr);
+  tensor_free<policy_t>(data1_ptr);
+  tensor_free<policy_t>(data2_ptr);
 }
 
+
+
+GPU_TYPED_TEST_P(MatrixTest, MatrixStore_RowMajor)
+{
+
+  using matrix_t = TypeParam;
+  using policy_t = typename matrix_t::register_policy;
+  using element_t = typename matrix_t::element_type;
+
+  //
+  // Allocate Row-Major Data
+  //
+
+  // alloc data1 - matrix data will be generated on device, stored into data1
+
+  std::vector<element_t> data1_vec(4*matrix_t::s_num_rows*matrix_t::s_num_columns);
+  RAJA::View<element_t, RAJA::Layout<2>> data1_h(data1_vec.data(), 2*matrix_t::s_num_rows, 2*matrix_t::s_num_columns);
+
+  element_t *data1_ptr = tensor_malloc<policy_t>(data1_vec);
+  RAJA::View<element_t, RAJA::Layout<2>> data1_d(data1_ptr, 2*matrix_t::s_num_rows, 2*matrix_t::s_num_columns);
+
+
+  // alloc data2 - reference data to compare with data1 on host
+
+  std::vector<element_t> data2_vec(matrix_t::s_num_rows*matrix_t::s_num_columns);
+  RAJA::View<element_t, RAJA::Layout<2>> data2_h(data2_vec.data(), matrix_t::s_num_rows, matrix_t::s_num_columns);
+
+
+  // Fill reference data
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+      data2_h(i,j) = 2*i*matrix_t::s_num_columns+j;
+    }
+  }
+
+
+  //
+  // Do Operation: Full store
+  //
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    // fill out matrix
+    matrix_t m(-1.0);
+
+    for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+      for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+        m.set(2*i*matrix_t::s_num_columns+j, i, j);
+      }
+    }
+
+    // Store matrix to memory
+    if(matrix_t::layout_type::is_row_major()){
+      m.store_packed(data1_ptr, 2*matrix_t::s_num_columns, 1);
+    }
+    else{
+      m.store_strided(data1_ptr, 2*matrix_t::s_num_columns, 1);
+    }
+
+
+  });
+
+  tensor_copy_to_host<policy_t>(data1_vec, data1_ptr);
+
+
+  //
+  // Check results
+  //
+  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+//      ASSERT_SCALAR_EQ(data1_h(i,j), data2_h(i,j));
+      printf("%d,%d:  %lf, %lf\n", (int)i, (int)j, data1_h(i,j), data2_h(i,j));
+    }
+  }
+
+//
+//
+//  //
+//  // Loop over all possible sub-matrix sizes using the load_*_nm routines
+//  //
+//  for(camp::idx_t n_size = 0;n_size <= matrix_t::s_num_rows; ++ n_size){
+//    for(camp::idx_t m_size = 0;m_size <= matrix_t::s_num_columns; ++ m_size){
+////      printf("Running %d x %d\n", (int)n_size, (int)m_size);
+//      //
+//      // Clear data2
+//      //
+//      for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+//        for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+//          data2_h(i,j) = -1;
+//        }
+//      }
+//      tensor_copy_to_device<policy_t>(data2_ptr, data2_vec);
+//
+//
+//      //
+//      // Do Operation: Full load
+//      //
+//      tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+//        matrix_t m;
+//        if(matrix_t::layout_type::is_row_major()){
+//          m.load_packed_nm(data1_ptr, 2*matrix_t::s_num_columns, 1, n_size, m_size);
+//        }
+//        else{
+//          m.load_strided_nm(data1_ptr, 2*matrix_t::s_num_columns, 1, n_size, m_size);
+//        }
+//
+//        // write out to a second view so we can check it on the host
+//        // on GPU's we'll write way too much, but it should stil be correct
+//        for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+//          for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+//            data2_d(i,j) = m.get(i,j);
+//          }
+//        }
+//
+//      });
+//
+//      tensor_copy_to_host<policy_t>(data2_vec, data2_ptr);
+//
+//
+//      //
+//      // Check results
+//      //
+//      for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
+//        for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
+////          printf("%d,%d:  %lf, %lf\n", (int)i, (int)j, data1(i,j), data2(i,j));
+//          if(i < n_size && j < m_size){
+//            ASSERT_SCALAR_EQ(data1_h(i,j), data2_h(i,j));
+//          }
+//          else{
+//            ASSERT_SCALAR_EQ(element_t(0), data2_h(i,j));
+//          }
+//        }
+//      }
+//
+//
+//    }
+//  }
+
+
+  //
+  // Free data
+  //
+  tensor_free<policy_t>(data1_ptr);
+}
 
 
 
@@ -1649,9 +1816,9 @@ TYPED_TEST_P(MatrixTest, ETMatrixTransposeNegate)
 REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
                                           MatrixCtor,
 //                                          MatrixGetSet,
-    MatrixLoad_RowMajor,
-    MatrixLoad_ColMajor
-//                                          MatrixStore,
+                                          MatrixLoad_RowMajor,
+                                          MatrixLoad_ColMajor,
+                                          MatrixStore_RowMajor
 //                                          MatrixViewLoad,
 //                                          MatrixViewStore,
 //                                          MatrixVector,

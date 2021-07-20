@@ -698,6 +698,7 @@ namespace RAJA
        *
        * Column entries must be stride-1, rows may be any striding
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type const &store_packed(element_type *ptr,
@@ -756,6 +757,7 @@ namespace RAJA
       /*!
        * Store a strided full matrix to memory
        */
+      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type const &store_strided(element_type *ptr,
@@ -819,8 +821,8 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type const &store_packed_nm(element_type *ptr,
-          int row_stride, int col_stride,
-          int num_rows, int num_cols) const
+          int row_stride, int /*col_stride*/,
+          int /*num_rows*/, int num_cols) const
       {
 #if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
         printf("th%d,%d: RM store_packed_nm, stride=%d,%d, nm=%d,%d\n",
@@ -849,7 +851,7 @@ namespace RAJA
       RAJA_INLINE
       self_type const &store_strided_nm(element_type *ptr,
           int row_stride, int col_stride,
-          int num_rows, int num_cols) const
+          int /*num_rows*/, int num_cols) const
       {
 #if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
         printf("th%d,%d: RM store_strided_nm, stride=%d,%d, nm=%d,%d\n",
@@ -1242,6 +1244,13 @@ namespace RAJA
       RAJA_INLINE
       self_type &set(element_type val, int row, int col){
         m_registers[to_register(row, col)].set(val, to_lane(row,col));
+#ifdef __CUDA_ARCH__
+        printf("row=%d, col=%d: thrd.d=%d, reg=%d, lane=%d\n",
+            (int)row, (int)col,
+            (int)threadIdx.x,
+            (int)to_register(row, col),
+            (int)to_lane(row,col));
+#endif
         return *this;
       }
 
