@@ -391,6 +391,59 @@ namespace internal {
 
 
       /*!
+       * @brief Generic segmented load operation used for loading sub-matrices
+       * from larger arrays.
+       *
+       * The default operation combines the s_segmented_offsets and gather
+       * operations.
+       *
+       *
+       */
+      RAJA_SUPPRESS_HD_WARN
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type const &segmented_store(element_type *ptr, camp::idx_t segbits, camp::idx_t stride_inner, camp::idx_t stride_outer) const {
+        getThis()->scatter(ptr, self_type::s_segmented_offsets(segbits, stride_inner, stride_outer));
+        return *getThis();
+      }
+
+      /*!
+       * @brief Generic segmented load operation used for loading sub-matrices
+       * from larger arrays where we load partial segments.
+       *
+       *
+       *
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type const &segmented_store_nm(element_type *ptr, camp::idx_t segbits,
+          camp::idx_t stride_inner, camp::idx_t stride_outer,
+          camp::idx_t num_inner, camp::idx_t num_outer) const
+      {
+
+        camp::idx_t num_segments = self_type::s_num_elem >> segbits;
+        camp::idx_t seg_size = 1 << segbits;
+
+        camp::idx_t lane = 0;
+        for(camp::idx_t seg = 0;seg < num_segments; ++ seg){
+          for(camp::idx_t i = 0;i < seg_size; ++ i){
+
+            if(!(seg >= num_outer || i >= num_inner)){
+
+              camp::idx_t offset = seg*stride_outer + i*stride_inner;
+
+              ptr[offset] = getThis()->get(lane);
+
+            }
+
+            lane ++;
+          }
+        }
+
+        return *getThis();
+      }
+
+      /*!
        * @brief Set entire register to a single scalar value
        * @param value Value to set all register elements to
        */

@@ -147,19 +147,6 @@ namespace RAJA
       }
 
 
-      /*
-       * Overload for:    assignment of ET to a TensorRegister
-       */
-      template<typename RHS,
-        typename std::enable_if<std::is_base_of<RAJA::internal::ET::TensorExpressionConcreteBase, RHS>::value, bool>::type = true>
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      TensorRegister(RHS const &rhs)
-      {
-        // evaluate a single tile of the ET, storing in this TensorRegister
-        *this = rhs.eval(base_type::s_get_default_tile());
-      }
-
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -475,23 +462,6 @@ namespace RAJA
 #endif
 
         if(layout_type::is_row_major()){
-          for(int i = 0;i < num_rows;++ i){
-            m_registers[i].load_packed_n(ptr+i*row_stride, num_cols);
-          }
-          for(int i = num_rows;i < s_num_registers;++ i){
-            m_registers[i] = register_type(0); // clear remainder
-          }
-        }
-        else{
-          for(int i = 0;i < num_cols;++ i){
-            m_registers[i].load_packed_n(ptr+i*col_stride, num_rows);
-          }
-          for(int i = num_cols;i < s_num_registers;++ i){
-            m_registers[i] = register_type(0); // clear remainder
-          }
-        }
-
-        if(layout_type::is_row_major()){
 
           // one or more registers per column
           if(s_minor_dim_registers){
@@ -781,11 +751,9 @@ namespace RAJA
           // less than one register per row
           else
           {
-            // compute gather offsets
-            auto offsets = register_type::s_segmented_offsets(s_segbits, col_stride, row_stride);
-
             for(camp::idx_t i = 0;i < s_num_registers;++ i){
-              m_registers[i].scatter(ptr + i * row_stride*s_major_dim_per_register, offsets);
+              element_type *ptr_i = ptr + i * row_stride*s_major_dim_per_register;
+              m_registers[i].segmented_store(ptr_i, s_segbits, col_stride, row_stride);
             }
           }
         }
@@ -803,11 +771,9 @@ namespace RAJA
           // less than one register per column
           else
           {
-            // compute gather offsets
-            auto offsets = register_type::s_segmented_offsets(s_segbits, row_stride, col_stride);
-
             for(camp::idx_t i = 0;i < s_num_registers;++ i){
-              m_registers[i].scatter(ptr + i * col_stride*s_major_dim_per_register, offsets);
+              element_type *ptr_i = ptr + i * col_stride*s_major_dim_per_register;
+              m_registers[i].segmented_store(ptr_i, s_segbits, row_stride, col_stride);
             }
           }
         }
@@ -821,25 +787,85 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type const &store_packed_nm(element_type *ptr,
-          int row_stride, int /*col_stride*/,
-          int /*num_rows*/, int num_cols) const
+          int row_stride, int col_stride,
+          int num_rows, int num_cols) const
       {
 #if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
         printf("th%d,%d: RM store_packed_nm, stride=%d,%d, nm=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, 1, num_rows, num_cols);
 #endif
 
-//        if(layout_type::is_row_major()){
-//          for(camp::idx_t i = 0;i < num_rows;++ i){
-        for(camp::idx_t i = 0;i < s_num_registers;++ i){
-          m_registers[i].store_packed_n(ptr+i*row_stride, num_cols);
+
+        if(layout_type::is_row_major()){
+
+          // one or more registers per column
+          if(s_minor_dim_registers){
+
+            for(camp::idx_t row = 0;row < num_rows;++ row){
+              for(camp::idx_t colreg = 0;colreg < s_minor_dim_registers; ++ colreg){
+
+                camp::idx_t reg = row*s_minor_dim_registers + colreg;
+
+                camp::idx_t col0 = colreg*s_elements_per_register;
+                camp::idx_t offset = row*row_stride + col0;
+
+                // store a complete register
+                if(col0+s_elements_per_register <= num_cols){
+                  m_registers[reg].store_packed(ptr + offset);
+                }
+
+                // partial register at end of row
+                else{
+                  m_registers[reg].store_packed_n(ptr + offset, num_cols - col0);
+
+                  break; // end this row
+                }
+              }
+            }
+
           }
-//        }
-//        else{
-//          for(camp::idx_t i = 0;i < num_cols;++ i){
-//            m_registers[i].store_packed_n(ptr+i*col_stride, num_rows);
-//          }
-//        }
+          // more than one column per register
+          else{
+            // default to strided operation
+            return store_strided_nm(ptr, row_stride, col_stride, num_rows, num_cols);
+          }
+        }
+        // Do semi-dense store for column-major
+        else{
+
+          // one or more registers per column
+          if(s_minor_dim_registers){
+
+            for(camp::idx_t col = 0;col < num_cols;++ col){
+              for(camp::idx_t rowreg = 0;rowreg < s_minor_dim_registers; ++ rowreg){
+
+                camp::idx_t reg = col*s_minor_dim_registers + rowreg;
+
+                camp::idx_t row0 = rowreg*s_elements_per_register;
+                camp::idx_t offset = col*col_stride + row0;
+
+                // loading a complete register
+                if(row0+s_elements_per_register <= num_rows){
+                  m_registers[reg].store_packed(ptr + offset);
+                }
+
+                // partial register at end of column
+                else{
+                  m_registers[reg].store_packed_n(ptr + offset, num_rows - row0);
+
+                  break; // end this column
+                }
+              }
+            }
+
+          }
+          // more than one column per register
+          else{
+
+            // default to strided operation
+            return store_strided_nm(ptr, row_stride, col_stride, num_rows, num_cols);
+          }
+        }
 
         return *this;
       }
@@ -851,25 +877,86 @@ namespace RAJA
       RAJA_INLINE
       self_type const &store_strided_nm(element_type *ptr,
           int row_stride, int col_stride,
-          int /*num_rows*/, int num_cols) const
+          int num_rows, int num_cols) const
       {
 #if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
         printf("th%d,%d: RM store_strided_nm, stride=%d,%d, nm=%d,%d\n",
             threadIdx.x, threadIdx.y, row_stride, col_stride, num_rows, num_cols);
 #endif
 
-//        if(layout_type::is_row_major()){
-//          for(camp::idx_t i = 0;i < num_rows;++ i){
-        for(camp::idx_t i = 0;i < s_num_registers;++ i){
-          m_registers[i].store_strided_n(ptr+i*row_stride, col_stride, num_cols);
+
+        if(layout_type::is_row_major()){
+          // one or more registers per row
+          if(s_minor_dim_registers){
+
+            for(camp::idx_t i = 0;i < s_num_registers;++ i){
+              camp::idx_t row = i / (s_minor_dim_registers ? s_minor_dim_registers : 1);
+              if(row < num_rows){
+                camp::idx_t col = s_elements_per_register * (i - (row*s_minor_dim_registers));
+
+
+                camp::idx_t reg_num_cols = s_elements_per_register;
+                if(reg_num_cols+col > num_cols){
+                  reg_num_cols = num_cols-col;
+                  m_registers[i].store_strided_n(ptr+row*row_stride+col*col_stride, col_stride, reg_num_cols);
+                }
+                else{
+                  m_registers[i].store_strided(ptr+row*row_stride+col*col_stride, col_stride);
+                }
+
+
+              }
+            }
+          }
+          // less than one register per row
+          else
+          {
+
+            for(camp::idx_t i = 0;i < s_num_registers;++ i){
+              // figure out how many rows get loaded in this register
+              camp::idx_t reg_num_rows = num_rows - i*s_major_dim_per_register;
+              reg_num_rows = reg_num_rows > s_major_dim_per_register ? s_major_dim_per_register : reg_num_rows;
+
+              element_type *ptr_i = ptr + i * row_stride*s_major_dim_per_register;
+              m_registers[i].segmented_store_nm(ptr_i, s_segbits, col_stride, row_stride, num_cols, reg_num_rows);
+            }
+          }
         }
-//          }
-//        }
-//        else{
-//          for(camp::idx_t i = 0;i < num_cols;++ i){
-//            m_registers[i].store_strided_n(ptr+i*col_stride, row_stride, num_rows);
-//          }
-//        }
+
+        // column major
+        else{
+
+          // one or more registers per column
+          if(s_minor_dim_registers){
+            for(camp::idx_t i = 0;i < s_num_registers;++ i){
+              camp::idx_t col = i / (s_minor_dim_registers ? s_minor_dim_registers : 1);
+              if(col < num_cols){
+                camp::idx_t row = s_elements_per_register * (i - (col*s_minor_dim_registers));
+
+                camp::idx_t reg_num_rows = s_elements_per_register;
+                if(reg_num_rows+row > num_rows){
+                  reg_num_rows = num_rows-row;
+                  m_registers[i].store_strided_n(ptr+row*row_stride+col*col_stride, row_stride, reg_num_rows);
+                }
+                else{
+                  m_registers[i].store_strided(ptr+row*row_stride+col*col_stride, row_stride);
+                }
+              }
+            }
+          }
+          // less than one register per column
+          else
+          {
+            for(camp::idx_t i = 0;i < s_num_registers;++ i){
+              // figure out how many columns get loaded in this register
+              camp::idx_t reg_num_cols = num_cols - i*s_major_dim_per_register;
+              reg_num_cols = reg_num_cols > s_major_dim_per_register ? s_major_dim_per_register : reg_num_cols;
+
+              element_type *ptr_i = ptr + i * col_stride*s_major_dim_per_register;
+              m_registers[i].segmented_store_nm(ptr_i, s_segbits, row_stride, col_stride, num_rows, reg_num_cols);
+            }
+          }
+        }
 
         return *this;
       }

@@ -439,15 +439,32 @@ namespace RAJA {
       }
 
       /*!
-       * @brief Generic segmented load operation used for loading sub-matrices
-       * from larger arrays where we load partial segments.
-       *
-       *
+       * @brief Generic segmented store operation used for storing sub-matrices
+       * to larger arrays.
        *
        */
       RAJA_DEVICE
       RAJA_INLINE
-      self_type &segmented_store_nm(element_type const *ptr, camp::idx_t segbits,
+      self_type const &segmented_store(element_type *ptr, camp::idx_t segbits, camp::idx_t stride_inner, camp::idx_t stride_outer) const {
+        auto lane = get_lane();
+
+        // compute segment and segment_size
+        auto seg = lane >> segbits;
+        auto i = lane & ((1<<segbits)-1);
+
+        ptr[seg*stride_outer + i*stride_inner] = m_value;
+
+        return *this;
+      }
+
+      /*!
+       * @brief Generic segmented store operation used for storing sub-matrices
+       * to larger arrays where we store partial segments.
+       *
+       */
+      RAJA_DEVICE
+      RAJA_INLINE
+      self_type const &segmented_store_nm(element_type *ptr, camp::idx_t segbits,
           camp::idx_t stride_inner, camp::idx_t stride_outer,
           camp::idx_t num_inner, camp::idx_t num_outer) const
       {
@@ -549,11 +566,6 @@ namespace RAJA {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type multiply(self_type const &b) const {
-//        printf("MULT\n");
-//        auto y = m_value * b.m_value;
-//        auto x = self_type(y*y*y*get_lane());
-//        printf("AFTER\n");
-//        return x;
         return self_type(m_value * b.m_value);
       }
 
