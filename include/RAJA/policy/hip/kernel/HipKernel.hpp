@@ -362,12 +362,12 @@ struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data
   static void launch(Data &&data,
                      internal::LaunchDims launch_dims,
                      size_t shmem,
-                     hipStream_t stream)
+                     RAJA::resources::Hip res)
   {
     auto func = kernelGetter_t::get();
 
     void *args[] = {(void*)&data};
-    RAJA::hip::launch((const void*)func, launch_dims.blocks, launch_dims.threads, args, shmem, stream);
+    RAJA::hip::launch((const void*)func, launch_dims.blocks, launch_dims.threads, args, shmem, res, async);
   }
 };
 
@@ -449,6 +449,9 @@ struct StatementExecutor<
     using launch_t = HipLaunchHelper<LaunchConfig, stmt_list_t, data_t, Types>;
 
 
+    RAJA::resources::Hip res = data.get_resource();
+
+
     //
     // Compute the requested kernel dimensions
     //
@@ -464,7 +467,6 @@ struct StatementExecutor<
       // Setup shared memory buffers
       //
       int shmem = 0;
-      hipStream_t stream = 0;
 
 
       //
@@ -551,19 +553,14 @@ struct StatementExecutor<
         // Privatize the LoopData, using make_launch_body to setup reductions
         //
         auto hip_data = RAJA::hip::make_launch_body(
-            launch_dims.blocks, launch_dims.threads, shmem, stream, data);
+            launch_dims.blocks, launch_dims.threads, shmem, res, data);
 
 
         //
         // Launch the kernels
         //
-        launch_t::launch(std::move(hip_data), launch_dims, shmem, stream);
+        launch_t::launch(std::move(hip_data), launch_dims, shmem, res);
       }
-
-      //
-      // Synchronize
-      //
-      if (!launch_t::async) { RAJA::hip::synchronize(stream); }
     }
   }
 };

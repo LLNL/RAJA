@@ -11,7 +11,8 @@ find_path(CUB_INCLUDE_DIRS
   NAMES cub/cub.cuh
   HINTS
     ${CUB_DIR}/
-    ${CUB_DIR}/include)
+    ${CUB_DIR}/include
+    ${CUDA_TOOLKIT_ROOT_DIR}/include)
 
 find_package_handle_standard_args(
   CUB

@@ -14,9 +14,9 @@ template <typename WORKING_RES, typename LAUNCH_POLICY, typename TEAM_POLICY, ty
 void TeamsBasicSharedTestImpl()
 {
 
-  int N = 100;
+  int N = 1000;
 
-  camp::resources::Resource working_res{WORKING_RES()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
   int* working_array;
   int* check_array;
   int* test_array;

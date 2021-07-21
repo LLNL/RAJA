@@ -59,6 +59,7 @@ set(RAJA_ENABLE_OPENMP ${ENABLE_OPENMP})
 set(RAJA_ENABLE_TARGET_OPENMP ${ENABLE_TARGET_OPENMP})
 set(RAJA_ENABLE_TBB ${ENABLE_TBB})
 set(RAJA_ENABLE_CUDA ${ENABLE_CUDA})
+set(RAJA_ENABLE_NV_TOOLS_EXT ${ENABLE_NV_TOOLS_EXT})
 set(RAJA_ENABLE_CLANG_CUDA ${ENABLE_CLANG_CUDA})
 set(RAJA_ENABLE_HIP ${ENABLE_HIP})
 set(RAJA_ENABLE_CUB ${ENABLE_CUB})
@@ -71,7 +72,7 @@ configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hpp.in
 
 # Configure CMake config
 configure_file(${PROJECT_SOURCE_DIR}/share/raja/cmake/RAJA-config.cmake.in
-  ${PROJECT_BINARY_DIR}/share/raja/cmake/raja-config.cmake)
+  ${PROJECT_BINARY_DIR}/share/raja/cmake/raja-config.cmake @ONLY)
 
 install(FILES ${PROJECT_BINARY_DIR}/share/raja/cmake/raja-config.cmake
   DESTINATION share/raja/cmake/)
@@ -86,6 +87,16 @@ if(PKG_CONFIG_FOUND)
   foreach(INCDIR ${INCLUDE_DIRECTORIES} ${CUDA_INCLUDE_DIRS})
     set(PC_C_FLAGS "${PC_C_FLAGS} -I${INCDIR}")
   endforeach()
+  if(ENABLE_EXTERNAL_ROCPRIM)
+    foreach(INCDIR ${ROCPRIM_INCLUDE_DIRS})
+      set(PC_C_FLAGS "${PC_C_FLAGS} -I${INCDIR}")
+    endforeach()
+  endif()
+  if(ENABLE_EXTERNAL_CUB)
+    foreach(INCDIR ${CUB_INCLUDE_DIRS})
+      set(PC_C_FLAGS "${PC_C_FLAGS} -I${INCDIR}")
+    endforeach()
+  endif()
   if(ENABLE_CUDA)
     foreach(FLAG ${RAJA_NVCC_FLAGS})
       set(PC_C_FLAGS "${PC_C_FLAGS} ${FLAG}")

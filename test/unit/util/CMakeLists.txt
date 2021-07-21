@@ -14,13 +14,11 @@ raja_add_test(
   SOURCES test-integral-limits.cpp)
 
 raja_add_test(
-  NAME test-operators
-  SOURCES test-operators.cpp)
-
-raja_add_test(
   NAME test-timer
   SOURCES test-timer.cpp)
 
 raja_add_test(
   NAME test-span
   SOURCES test-span.cpp)
+
+add_subdirectory(operator)
