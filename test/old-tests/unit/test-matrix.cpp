@@ -672,8 +672,6 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixStore_RowMajor)
     else{
       m.store_strided(data1_ptr, 2*matrix_t::s_num_columns, 1);
     }
-
-
   });
 
   tensor_copy_to_host<policy_t>(data1_vec, data1_ptr);
@@ -684,8 +682,8 @@ GPU_TYPED_TEST_P(MatrixTest, MatrixStore_RowMajor)
   //
   for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
     for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-//      ASSERT_SCALAR_EQ(data1_h(i,j), data2_h(i,j));
-      printf("%d,%d:  %lf, %lf\n", (int)i, (int)j, data1_h(i,j), data2_h(i,j));
+      ASSERT_SCALAR_EQ(data1_h(i,j), data2_h(i,j));
+//      printf("%d,%d:  %lf, %lf\n", (int)i, (int)j, data1_h(i,j), data2_h(i,j));
     }
   }
 

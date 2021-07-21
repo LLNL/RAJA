@@ -1244,13 +1244,6 @@ namespace RAJA
       RAJA_INLINE
       self_type &set(element_type val, int row, int col){
         m_registers[to_register(row, col)].set(val, to_lane(row,col));
-#ifdef __CUDA_ARCH__
-        printf("row=%d, col=%d: thrd.d=%d, reg=%d, lane=%d\n",
-            (int)row, (int)col,
-            (int)threadIdx.x,
-            (int)to_register(row, col),
-            (int)to_lane(row,col));
-#endif
         return *this;
       }
 

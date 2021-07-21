@@ -489,7 +489,7 @@ namespace RAJA {
        */
       RAJA_INLINE
       RAJA_DEVICE
-      self_type &set(int i, element_type value)
+      self_type &set(element_type value, int i)
 			{
 				auto lane = get_lane();
       	if(lane == i){
