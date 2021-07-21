@@ -27,7 +27,8 @@
 namespace RAJA
 {
 
-// Delete?
+// backwards compatability
+using loop_atomic = policy::loop::loop_atomic;
 
 }  // namespace RAJA
 
