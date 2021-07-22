@@ -963,7 +963,90 @@ namespace RAJA
 
 
 
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type divide_nm(self_type const &mat, int num_rows, int num_cols) const {
+        self_type result;
+//        for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
+//          result.vec(reg) = m_registers[reg].divide(mat.vec(reg));
+//        }
 
+        if(layout_type::is_row_major()){
+          // one or more registers per row
+          if(s_minor_dim_registers){
+
+            for(camp::idx_t i = 0;i < s_num_registers;++ i){
+              camp::idx_t row = i / (s_minor_dim_registers ? s_minor_dim_registers : 1);
+              if(row < num_rows){
+                camp::idx_t col = s_elements_per_register * (i - (row*s_minor_dim_registers));
+
+
+                camp::idx_t reg_num_cols = s_elements_per_register;
+                if(reg_num_cols+col > num_cols){
+                  reg_num_cols = num_cols-col;
+                  result.m_registers[i] = m_registers[i].divide_n(mat.m_registers[i], reg_num_cols);
+                }
+                else{
+                  result.m_registers[i] = m_registers[i].divide(mat.m_registers[i]);
+                }
+
+
+              }
+            }
+          }
+          // less than one register per row
+          else
+          {
+
+//            for(camp::idx_t i = 0;i < s_num_registers;++ i){
+//              // figure out how many rows get loaded in this register
+//              camp::idx_t reg_num_rows = num_rows - i*s_major_dim_per_register;
+//              reg_num_rows = reg_num_rows > s_major_dim_per_register ? s_major_dim_per_register : reg_num_rows;
+//
+//              element_type *ptr_i = ptr + i * row_stride*s_major_dim_per_register;
+//              m_registers[i].segmented_store_nm(ptr_i, s_segbits, col_stride, row_stride, num_cols, reg_num_rows);
+//            }
+          }
+        }
+
+        // column major
+        else{
+
+          // one or more registers per column
+          if(s_minor_dim_registers){
+            for(camp::idx_t i = 0;i < s_num_registers;++ i){
+              camp::idx_t col = i / (s_minor_dim_registers ? s_minor_dim_registers : 1);
+              if(col < num_cols){
+                camp::idx_t row = s_elements_per_register * (i - (col*s_minor_dim_registers));
+
+                camp::idx_t reg_num_rows = s_elements_per_register;
+                if(reg_num_rows+row > num_rows){
+                  reg_num_rows = num_rows-row;
+                  result.m_registers[i] = m_registers[i].divide_n(mat.m_registers[i], reg_num_rows);
+                }
+                else{
+                  result.m_registers[i] = m_registers[i].divide(mat.m_registers[i]);
+                }
+              }
+            }
+          }
+          // less than one register per column
+          else
+          {
+//            for(camp::idx_t i = 0;i < s_num_registers;++ i){
+//              // figure out how many columns get loaded in this register
+//              camp::idx_t reg_num_cols = num_cols - i*s_major_dim_per_register;
+//              reg_num_cols = reg_num_cols > s_major_dim_per_register ? s_major_dim_per_register : reg_num_cols;
+//
+//              element_type *ptr_i = ptr + i * col_stride*s_major_dim_per_register;
+//              m_registers[i].segmented_store_nm(ptr_i, s_segbits, row_stride, col_stride, num_rows, reg_num_cols);
+//            }
+          }
+        }
+
+
+        return result;
+      }
 
 
 

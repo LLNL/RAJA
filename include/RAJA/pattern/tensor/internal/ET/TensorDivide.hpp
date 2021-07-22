@@ -35,118 +35,242 @@ namespace RAJA
   {
 
     template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE, class ENABLE = void>
-    struct DivideOperator
+    struct DivideOperator;
+
+
+
+    /*!
+     * Specialization that provides dividing a scalar by a vector
+     */
+    template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
+    struct DivideOperator<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE,
+    typename std::enable_if<LEFT_OPERAND_TYPE::s_num_dims == 0 && RIGHT_OPERAND_TYPE::s_num_dims == 1>::type>
     {
-        using result_type = typename LEFT_OPERAND_TYPE::result_type;
-        static constexpr camp::idx_t s_num_dims = LEFT_OPERAND_TYPE::s_num_dims;
 
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        static
-        int getDimSize(int dim, LEFT_OPERAND_TYPE const &, RIGHT_OPERAND_TYPE const &right) {
-          return right.getDimSize(dim);
+      using result_type = typename RIGHT_OPERAND_TYPE::result_type;
+      static constexpr camp::idx_t s_num_dims = RIGHT_OPERAND_TYPE::s_num_dims;
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      int getDimSize(int dim, LEFT_OPERAND_TYPE const &, RIGHT_OPERAND_TYPE const &right) {
+        return right.getDimSize(dim);
+      }
+
+      /*!
+       * Evaluate operands and perform element-wise divide
+       */
+      template<typename TILE_TYPE>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      result_type divide(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right)
+      {
+        result_type numerator(left.eval(tile));
+
+        if(tile.s_tensor_size == TENSOR_FULL){
+          return numerator.divide(right.eval(tile));
         }
 
-        /*!
-         * Evaluate operands and perform element-wise divide
-         */
-        template<typename TILE_TYPE>
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        static
-        auto divide(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right) ->
-          decltype(left.eval(tile) / right.eval(tile))
-        {
-          if(tile.s_tensor_size == TENSOR_FULL){
-            return left.eval(tile).divide(right.eval(tile));
-          }
-          else{
-            return left.eval(tile).divide_n(right.eval(tile), tile.m_size[0]);
-          }
-        }
+        return numerator.divide_n(right.eval(tile), tile.m_size[0]);
+
+      }
     };
 
 
     /*!
-     * Specialization that provides dividing a scalar by a tensor
+     * Specialization that provides dividing a vector by a scalar
      */
     template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
     struct DivideOperator<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE,
-    typename std::enable_if<LEFT_OPERAND_TYPE::s_num_dims == 0>::type>
+    typename std::enable_if<LEFT_OPERAND_TYPE::s_num_dims == 1 && RIGHT_OPERAND_TYPE::s_num_dims == 0>::type>
     {
+      using result_type = typename LEFT_OPERAND_TYPE::result_type;
+      static constexpr camp::idx_t s_num_dims = LEFT_OPERAND_TYPE::s_num_dims;
 
-//    template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
-//    struct DivideOperator
-//    {
-        using result_type = typename RIGHT_OPERAND_TYPE::result_type;
-        static constexpr camp::idx_t s_num_dims = RIGHT_OPERAND_TYPE::s_num_dims;
 
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        static
-        int getDimSize(int dim, LEFT_OPERAND_TYPE const &, RIGHT_OPERAND_TYPE const &right) {
-          return right.getDimSize(dim);
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      int getDimSize(int dim, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &) {
+        return left.getDimSize(dim);
+      }
+
+      /*!
+       * Evaluate operands and perform element-wise divide
+       */
+      template<typename TILE_TYPE>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      result_type divide(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right)
+      {
+        result_type denominator(right.eval(tile));
+
+        if(tile.s_tensor_size == TENSOR_FULL){
+          return left.eval(tile).divide(denominator);
         }
-
-        /*!
-         * Evaluate operands and perform element-wise divide
-         */
-        template<typename TILE_TYPE>
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        static
-        result_type divide(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right)
-        {
-          result_type numerator(left.eval(tile));
-
-          if(tile.s_tensor_size == TENSOR_FULL){
-            return numerator.divide(right.eval(tile));
-          }
-
-          return numerator.divide_n(right.eval(tile), tile.m_size[0]);
-
+        else{
+          return left.eval(tile).divide_n(denominator, tile.m_size[0]);
         }
+      }
     };
 
 
     /*!
-     * Specialization that provides dividing a tensor by a scalar
+     * Specialization that provides dividing a vector by a vector
      */
     template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
     struct DivideOperator<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE,
-    typename std::enable_if<RIGHT_OPERAND_TYPE::s_num_dims == 0>::type>
+    typename std::enable_if<LEFT_OPERAND_TYPE::s_num_dims == 1 && RIGHT_OPERAND_TYPE::s_num_dims == 1>::type>
     {
-        using result_type = typename LEFT_OPERAND_TYPE::result_type;
-        static constexpr camp::idx_t s_num_dims = LEFT_OPERAND_TYPE::s_num_dims;
+      using result_type = typename LEFT_OPERAND_TYPE::result_type;
+      static constexpr camp::idx_t s_num_dims = LEFT_OPERAND_TYPE::s_num_dims;
 
 
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        static
-        int getDimSize(int dim, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &) {
-          return left.getDimSize(dim);
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      int getDimSize(int dim, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &) {
+        return left.getDimSize(dim);
+      }
+
+      /*!
+       * Evaluate operands and perform element-wise divide
+       */
+      template<typename TILE_TYPE>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      result_type divide(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right)
+      {
+        if(tile.s_tensor_size == TENSOR_FULL){
+          return left.eval(tile).divide(right.eval(tile));
         }
-
-        /*!
-         * Evaluate operands and perform element-wise divide
-         */
-        template<typename TILE_TYPE>
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        static
-        result_type divide(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right)
-        {
-          result_type denominator(right.eval(tile));
-
-          if(tile.s_tensor_size == TENSOR_FULL){
-            return left.eval(tile).divide(denominator);
-          }
-          else{
-            return left.eval(tile).divide_n(denominator, tile.m_size[0]);
-          }
+        else{
+          return left.eval(tile).divide_n(right.eval(tile), tile.m_size[0]);
         }
+      }
     };
 
+
+
+
+
+
+    /*!
+     * Specialization that provides dividing a scalar by a matrix
+     */
+    template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
+    struct DivideOperator<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE,
+    typename std::enable_if<LEFT_OPERAND_TYPE::s_num_dims == 0 && RIGHT_OPERAND_TYPE::s_num_dims == 2>::type>
+    {
+
+      using result_type = typename RIGHT_OPERAND_TYPE::result_type;
+      static constexpr camp::idx_t s_num_dims = RIGHT_OPERAND_TYPE::s_num_dims;
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      int getDimSize(int dim, LEFT_OPERAND_TYPE const &, RIGHT_OPERAND_TYPE const &right) {
+        return right.getDimSize(dim);
+      }
+
+      /*!
+       * Evaluate operands and perform element-wise divide
+       */
+      template<typename TILE_TYPE>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      result_type divide(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right)
+      {
+        result_type numerator(left.eval(tile));
+
+        if(tile.s_tensor_size == TENSOR_FULL){
+          return numerator.divide(right.eval(tile));
+        }
+
+        return numerator.divide_nm(right.eval(tile), tile.m_size[0], tile.m_size[1]);
+
+      }
+    };
+
+
+    /*!
+     * Specialization that provides dividing a vector by a scalar
+     */
+    template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
+    struct DivideOperator<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE,
+    typename std::enable_if<LEFT_OPERAND_TYPE::s_num_dims == 2 && RIGHT_OPERAND_TYPE::s_num_dims == 0>::type>
+    {
+      using result_type = typename LEFT_OPERAND_TYPE::result_type;
+      static constexpr camp::idx_t s_num_dims = LEFT_OPERAND_TYPE::s_num_dims;
+
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      int getDimSize(int dim, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &) {
+        return left.getDimSize(dim);
+      }
+
+      /*!
+       * Evaluate operands and perform element-wise divide
+       */
+      template<typename TILE_TYPE>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      result_type divide(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right)
+      {
+        result_type denominator(right.eval(tile));
+
+        if(tile.s_tensor_size == TENSOR_FULL){
+          return left.eval(tile).divide(denominator);
+        }
+        else{
+          return left.eval(tile).divide_nm(denominator, tile.m_size[0], tile.m_size[1]);
+        }
+      }
+    };
+
+
+    /*!
+     * Specialization that provides dividing a vector by a vector
+     */
+    template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
+    struct DivideOperator<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE,
+    typename std::enable_if<LEFT_OPERAND_TYPE::s_num_dims == 2 && RIGHT_OPERAND_TYPE::s_num_dims == 2>::type>
+    {
+      using result_type = typename LEFT_OPERAND_TYPE::result_type;
+      static constexpr camp::idx_t s_num_dims = LEFT_OPERAND_TYPE::s_num_dims;
+
+
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      int getDimSize(int dim, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &) {
+        return left.getDimSize(dim);
+      }
+
+      /*!
+       * Evaluate operands and perform element-wise divide
+       */
+      template<typename TILE_TYPE>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      result_type divide(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right)
+      {
+        if(tile.s_tensor_size == TENSOR_FULL){
+          return left.eval(tile).divide(right.eval(tile));
+        }
+        else{
+          return left.eval(tile).divide_nm(right.eval(tile), tile.m_size[0], tile.m_size[1]);
+        }
+      }
+    };
 
 
     template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
