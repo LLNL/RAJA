@@ -66,7 +66,7 @@ template <typename T>
 struct atomic<sum<T>> {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomicAdd(RAJA::cuda_atomic{}, &val, v);
+    RAJA::atomicAdd<T>(RAJA::cuda_atomic{}, &val, v);
   }
 };
 
@@ -74,7 +74,7 @@ template <typename T>
 struct atomic<min<T>> {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomicMin(RAJA::cuda_atomic{}, &val, v);
+    RAJA::atomicMin<T>(RAJA::cuda_atomic{}, &val, v);
   }
 };
 
@@ -82,7 +82,7 @@ template <typename T>
 struct atomic<max<T>> {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomicMax(RAJA::cuda_atomic{}, &val, v);
+    RAJA::atomicMax<T>(RAJA::cuda_atomic{}, &val, v);
   }
 };
 

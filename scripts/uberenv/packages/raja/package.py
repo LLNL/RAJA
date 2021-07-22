@@ -81,6 +81,7 @@ class Raja(CMakePackage, CudaPackage):
     variant('hip', default=False, description='Build with HIP support')
     variant('tests', default='basic', values=('none', 'basic', 'benchmarks'),
             multi=False, description='Tests to run')
+    variant('desul', default=False, description='Build Desul Atomics backend')
 
     depends_on('cmake@3.8:', type='build')
     depends_on('cmake@3.9:', when='+cuda', type='build')
@@ -321,6 +322,7 @@ class Raja(CMakePackage, CudaPackage):
         # shared vs static libs
         cfg.write(cmake_cache_option("BUILD_SHARED_LIBS","+shared" in spec))
         cfg.write(cmake_cache_option("ENABLE_OPENMP","+openmp" in spec))
+        cfg.write(cmake_cache_option("RAJA_ENABLE_DESUL_ATOMICS","+desul" in spec))
 
         # Note 1: Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS
         # which is used by the spack compiler wrapper.  This can go away when
