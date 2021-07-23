@@ -78,7 +78,6 @@ option(RAJA_ENABLE_RUNTIME_PLUGINS "Enable support for loading plugins at runtim
 
 option(RAJA_ENABLE_DESUL_ATOMICS "Enable support of desul atomics" Off)
 set(DESUL_ENABLE_TESTS Off CACHE BOOL "")
-message(STATUS "Desul Atomics support is ${RAJA_ENABLE_DESUL_ATOMICS}")
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
@@ -257,6 +256,7 @@ if (ENABLE_TBB)
     tbb)
 endif ()
 
+message(STATUS "Desul Atomics support is ${RAJA_ENABLE_DESUL_ATOMICS}")
 if (RAJA_ENABLE_DESUL_ATOMICS)
   add_subdirectory(tpl/desul)
   set(raja_depends
