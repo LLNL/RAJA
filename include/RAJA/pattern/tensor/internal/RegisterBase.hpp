@@ -1015,6 +1015,38 @@ namespace internal {
 
 
 
+      RAJA_INLINE
+      self_type segmented_divide_nm(self_type den, camp::idx_t segbits, camp::idx_t num_inner, camp::idx_t num_outer) const
+      {
+        self_type result;
+
+        camp::idx_t num_segments = self_type::s_num_elem >> segbits;
+        camp::idx_t seg_size = 1 << segbits;
+
+        camp::idx_t lane = 0;
+        for(camp::idx_t seg = 0;seg < num_segments; ++ seg){
+          for(camp::idx_t i = 0;i < seg_size; ++ i){
+
+            if(seg >= num_outer || i >= num_inner){
+              result.set(element_type(0), lane);
+            }
+            else{
+
+              element_type div = getThis()->get(lane) / den.get(lane);
+
+              result.set(div, lane);
+
+            }
+
+            lane ++;
+          }
+        }
+
+        return result;
+      }
+
+
+
       /*!
        * Segmented dot product performs dot products
        * Note: segment size is 1<<segbits elements

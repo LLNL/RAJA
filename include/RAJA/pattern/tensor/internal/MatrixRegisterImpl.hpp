@@ -962,7 +962,7 @@ namespace RAJA
       }
 
 
-
+      RAJA_SUPPRESS_HD_WARN
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type divide_nm(self_type const &mat, int num_rows, int num_cols) const {
@@ -998,14 +998,13 @@ namespace RAJA
           else
           {
 
-//            for(camp::idx_t i = 0;i < s_num_registers;++ i){
-//              // figure out how many rows get loaded in this register
-//              camp::idx_t reg_num_rows = num_rows - i*s_major_dim_per_register;
-//              reg_num_rows = reg_num_rows > s_major_dim_per_register ? s_major_dim_per_register : reg_num_rows;
-//
-//              element_type *ptr_i = ptr + i * row_stride*s_major_dim_per_register;
-//              m_registers[i].segmented_store_nm(ptr_i, s_segbits, col_stride, row_stride, num_cols, reg_num_rows);
-//            }
+            for(camp::idx_t i = 0;i < s_num_registers;++ i){
+              // figure out how many rows get loaded in this register
+              camp::idx_t reg_num_rows = num_rows - i*s_major_dim_per_register;
+              reg_num_rows = reg_num_rows > s_major_dim_per_register ? s_major_dim_per_register : reg_num_rows;
+
+              result.m_registers[i] = m_registers[i].segmented_divide_nm(mat.m_registers[i], s_segbits, num_cols, reg_num_rows);
+            }
           }
         }
 
@@ -1033,14 +1032,13 @@ namespace RAJA
           // less than one register per column
           else
           {
-//            for(camp::idx_t i = 0;i < s_num_registers;++ i){
-//              // figure out how many columns get loaded in this register
-//              camp::idx_t reg_num_cols = num_cols - i*s_major_dim_per_register;
-//              reg_num_cols = reg_num_cols > s_major_dim_per_register ? s_major_dim_per_register : reg_num_cols;
-//
-//              element_type *ptr_i = ptr + i * col_stride*s_major_dim_per_register;
-//              m_registers[i].segmented_store_nm(ptr_i, s_segbits, row_stride, col_stride, num_rows, reg_num_cols);
-//            }
+            for(camp::idx_t i = 0;i < s_num_registers;++ i){
+              // figure out how many columns get loaded in this register
+              camp::idx_t reg_num_cols = num_cols - i*s_major_dim_per_register;
+              reg_num_cols = reg_num_cols > s_major_dim_per_register ? s_major_dim_per_register : reg_num_cols;
+
+              result.m_registers[i] = m_registers[i].segmented_divide_nm(mat.m_registers[i], s_segbits, num_rows, reg_num_cols);
+            }
           }
         }
 

@@ -35,7 +35,8 @@ using MatrixTestTypes = ::testing::Types<
 //    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,4>,
 //    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,2>,
 //    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,4>,
-    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,8>,
+//    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,8>,
+//    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2,2>,
     RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2,4>
 //
 //    RAJA::RectMatrixRegister<float, RAJA::ColMajorLayout, 16,4>,

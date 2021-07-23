@@ -569,7 +569,7 @@ namespace RAJA {
         return self_type(m_value * b.m_value);
       }
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
       self_type divide(self_type const &b) const {
         return self_type(m_value / b.m_value);
@@ -751,15 +751,6 @@ namespace RAJA {
       self_type segmented_sum_inner(camp::idx_t segbits, camp::idx_t output_segment) const
       {
 
-//        // default implementation is dumb, just sum each value into
-//        // appropriate segment lane
-//        int output_offset = output_segment * self_type::s_num_elem>>segbits;
-//
-//        for(camp::idx_t i = 0;i < self_type::s_num_elem; ++ i){
-//          auto value = getThis()->get(i) + result.get((i >> segbits)+output_offset);
-//          result.set(value, (i >> segbits)+output_offset);
-//        }
-
         // First: tree reduce values within each segment
         element_type x = m_value;
         RAJA_UNROLL
@@ -851,6 +842,27 @@ namespace RAJA {
         return result;
       }
 
+      RAJA_INLINE
+      RAJA_DEVICE
+      self_type segmented_divide_nm(self_type den, camp::idx_t segbits, camp::idx_t num_inner, camp::idx_t num_outer) const
+      {
+        self_type result;
+
+        auto lane = get_lane();
+
+        // compute segment and segment_size
+        auto seg = lane >> segbits;
+        auto i = lane & ((1<<segbits)-1);
+
+        if(seg >= num_outer || i >= num_inner){
+          // nop
+        }
+        else{
+          result.get_raw_value() = m_value / den.get_raw_value();
+        }
+
+        return result;
+      }
 
 
       /*!

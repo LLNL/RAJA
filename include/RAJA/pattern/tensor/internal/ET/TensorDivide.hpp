@@ -218,6 +218,7 @@ namespace RAJA
       /*!
        * Evaluate operands and perform element-wise divide
        */
+      RAJA_SUPPRESS_HD_WARN
       template<typename TILE_TYPE>
       RAJA_INLINE
       RAJA_HOST_DEVICE
