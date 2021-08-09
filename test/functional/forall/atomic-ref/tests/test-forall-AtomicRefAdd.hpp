@@ -140,9 +140,9 @@ void ForallAtomicRefAddTestImpl( IdxType N )
 
   camp::resources::Resource host_res{camp::resources::Host()};
 
-  T * count   = work_res.allocate<T>(1);
-  T * list    = work_res.allocate<T>(N);
-  bool * hit  = work_res.allocate<bool>(N);
+  T * count   = work_res.allocate<T>(1, camp::resources::MemoryAccess::Managed);
+  T * list    = work_res.allocate<T>(N, camp::resources::MemoryAccess::Managed);
+  bool * hit  = work_res.allocate<bool>(N, camp::resources::MemoryAccess::Managed);
 
   T * hcount   = host_res.allocate<T>(1);
   T * hlist    = host_res.allocate<T>(N);
@@ -165,9 +165,9 @@ void ForallAtomicRefAddTestImpl( IdxType N )
   testAtomicRefAdd<ExecPolicy, AtomicPolicy, IdxType, T, 
                      FetchAddCountOp>(seg, count, list, hit, hcount, hlist, hhit, &work_res, N);
 
-  work_res.deallocate( count );
-  work_res.deallocate( list );
-  work_res.deallocate( hit );
+  work_res.deallocate( count, camp::resources::MemoryAccess::Managed );
+  work_res.deallocate( list, camp::resources::MemoryAccess::Managed );
+  work_res.deallocate( hit, camp::resources::MemoryAccess::Managed );
   host_res.deallocate( hcount );
   host_res.deallocate( hlist );
   host_res.deallocate( hhit ); 
