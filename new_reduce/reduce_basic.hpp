@@ -30,7 +30,8 @@ namespace detail
 
 #if defined(RAJA_ENABLE_HIP)
     // HIP related attributes.
-    T * hipval = nullptr;
+    T * hiptarget = nullptr;
+    T hipval = op::identity;
     RAJA::detail::SoAPtr<T, RAJA::hip::device_mempool_type> device_mem;
     unsigned int * device_count = nullptr;
 #endif

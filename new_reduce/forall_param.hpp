@@ -120,8 +120,8 @@ namespace detail
 
 #if defined(RAJA_ENABLE_HIP)
     template<camp::idx_t... Seq>
-    constexpr auto hip_m_param_refs(camp::idx_seq<Seq...>) -> decltype( camp::make_tuple( (camp::get<Seq>(param_tup).hipval)...) ) {
-      return camp::make_tuple( (camp::get<Seq>(param_tup).hipval)...) ;
+    constexpr auto hip_m_param_refs(camp::idx_seq<Seq...>) -> decltype( camp::make_tuple( (&camp::get<Seq>(param_tup).hipval)...) ) {
+      return camp::make_tuple( (&camp::get<Seq>(param_tup).hipval)...) ;
     }
 #endif
 
@@ -140,7 +140,6 @@ namespace detail
     RAJA_HOST_DEVICE
     static void constexpr detail_combine(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
       CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
-      //CAMP_EXPAND(printf("Seq : %d\n", (int)Seq));
     }
     
     // Resolve

@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
-#if 0
+#if 1
   {
     std::cout << "Sequential Reduction NEW\n";
 
@@ -181,21 +181,20 @@ int main(int argc, char *argv[])
     t.start();
 
     forall_param<RAJA::seq_exec>(N,
-                 [=](int i, double &r_, double &m_) {
-                 //[=](int i, double &r_, double &m_, double &ma_) {
+                 [=](int i, double &r_, double &m_, double &ma_) {
                    r_ += a[i] * b[i];
                    m_ = a[i] < m_ ? a[i] : m_;
-                   //ma_ = a[i] > m_ ? a[i] : m_;
+                   ma_ = a[i] > m_ ? a[i] : m_;
                  },
                  Reduce<RAJA::operators::plus>(&r),
-                 Reduce<RAJA::operators::minimum>(&m));//,
-                 //Reduce<RAJA::operators::maximum>(&ma));
+                 Reduce<RAJA::operators::minimum>(&m),
+                 Reduce<RAJA::operators::maximum>(&ma));
     t.stop();
     
     std::cout << "t : " << t.elapsed() << "\n";
     std::cout << "r : " << r << "\n";
     std::cout << "m : "  << m  <<"\n";
-    //std::cout << "ma : " << ma <<"\n";
+    std::cout << "ma : " << ma <<"\n";
   }
 #endif
   {

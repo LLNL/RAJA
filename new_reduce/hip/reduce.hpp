@@ -10,24 +10,9 @@
 namespace detail {
 using hip_dim_t = dim3;
 
-  template<typename EXEC_POL,
-           typename OP,
-           typename T>
-  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::hip_exec<256> > >
-  init(Reducer<OP, T>& red, const RAJA::hip::detail::hipInfo & cs) {
-    hipMallocManaged( (void**)(&(red.hipval)), sizeof(T));//, hipHostAllocPortable );
-    int numThreads = cs.blockDim.x * cs.blockDim.y * cs.blockDim.z;
-    printf("num threads : %d\n", numThreads);
-
-    *red.hipval = Reducer<OP,T>::op::identity();
-
-    red.device_mem.allocate(cs.gridDim.x * cs.gridDim.y * cs.gridDim.z);
-    red.device_count = RAJA::hip::device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
-    printf("host hipval %p\n", (red.hipval));
-    printf("host val %p\n\n", (&red.val));
-  }
-
-
+// ----------------------------------------------------------------------------
+//                               BLOCK REDUCE
+// ----------------------------------------------------------------------------
   //! reduce values in block into thread 0
   template <typename Combiner, typename T>
   RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
@@ -63,6 +48,9 @@ using hip_dim_t = dim3;
       }
     }
 
+    static_assert(RAJA::policy::hip::MAX_WARPS <= RAJA::policy::hip::WARP_SIZE,
+                 "Max Warps must be less than or equal to Warp Size for this algorithm to work");
+
     // reduce per warp values
     if (numThreads > RAJA::policy::hip::WARP_SIZE) {
 
@@ -89,7 +77,7 @@ using hip_dim_t = dim3;
           temp = identity;
         }
 
-        for (int i = 1; i < RAJA::policy::hip::WARP_SIZE; i *= 2) {
+        for (int i = 1; i < RAJA::policy::hip::MAX_WARPS; i *= 2) {
           T rhs = RAJA::hip::impl::shfl_xor_sync(temp, i);
           temp = Combiner{}(temp, rhs);
         }
@@ -101,10 +89,12 @@ using hip_dim_t = dim3;
     return temp;
   }
 
-  template <typename Combiner, typename OP, typename T>
+// ----------------------------------------------------------------------------
+//                               GRID REDUCE
+// ----------------------------------------------------------------------------
+  template <typename OP, typename T>
   RAJA_DEVICE RAJA_INLINE bool grid_reduce(Reducer<OP, T>& red) {
 
-    printf( "RCC grid_reduce\n" );
     int numBlocks = gridDim.x * gridDim.y * gridDim.z;
     int numThreads = blockDim.x * blockDim.y * blockDim.z;
     unsigned int wrap_around = numBlocks - 1;
@@ -126,7 +116,6 @@ using hip_dim_t = dim3;
       // increment counter, (wraps back to zero if old count == wrap_around)
       unsigned int old_count = ::atomicInc(red.device_count, wrap_around);
       lastBlock = (old_count == wrap_around);
-      //printf("gridreduce after blockred temp %f\n", temp);
     }
 
     // returns non-zero value if any thread passes in a non-zero value
@@ -134,53 +123,57 @@ using hip_dim_t = dim3;
 
     // last block accumulates values from device_mem
     if (lastBlock) {
-      temp = Combiner::identity();
+      temp = OP::identity();
 
       for (int i = threadId; i < numBlocks; i += numThreads) {
-        //printf("device mem %f\n", (double)(red.device_mem.get(i)));
-        temp = Combiner{}(temp, red.device_mem.get(i));
+        temp = OP{}(temp, red.device_mem.get(i));
       }
 
-      temp = block_reduce<Combiner>(temp, Combiner::identity());
+      temp = block_reduce<OP>(temp, OP::identity());
 
       // one thread returns value
       if (threadId == 0) {
-        printf("temp val : %f\n", (double)temp);
-        //printf("num threads : %d\n", numThreads);
-        *(red.hipval) = temp;
+        *(red.hiptarget) = temp;
       }
     }
 
     return lastBlock && threadId == 0;
   }
 
-  // Combine
+// ----------------------------------------------------------------------------
+//                                    INIT
+// ----------------------------------------------------------------------------
+  template<typename EXEC_POL,
+           typename OP,
+           typename T>
+  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::hip_exec<256> > >
+  init(Reducer<OP, T>& red, const RAJA::hip::detail::hipInfo & cs) {
+    hipMallocManaged( (void**)(&(red.hiptarget)), sizeof(T));//, hipHostAllocPortable );
+    int numThreads = cs.blockDim.x * cs.blockDim.y * cs.blockDim.z;
+
+    red.device_mem.allocate(cs.gridDim.x * cs.gridDim.y * cs.gridDim.z);
+    red.device_count = RAJA::hip::device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
+  }
+
+// ----------------------------------------------------------------------------
+//                                   COMBINE
+// ----------------------------------------------------------------------------
   template<typename EXEC_POL, typename OP, typename T>
   RAJA_HOST_DEVICE
   camp::concepts::enable_if<std::is_same< EXEC_POL, RAJA::hip_exec<256>> >
   combine(Reducer<OP, T>& red) {
 
-  // TODO : Check if we still need this?
-//#if !defined(RAJA_DEVICE_CODE)
-//#else
-    bool blah = grid_reduce<typename Reducer<OP,T>::op>(red);
-    if ( blah )
-    {
-      printf("device hipval %p\n", (red.hipval));
-      printf("device hipval %f\n\n", (double)(*red.hipval));
-    }
-//#endif
+    bool blah = grid_reduce(red);
   }
   
-  // Resolve
+// ----------------------------------------------------------------------------
+//                                   RESOLVE
+// ----------------------------------------------------------------------------
   template<typename EXEC_POL, typename OP, typename T>
   camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::hip_exec<256>> >
   resolve(Reducer<OP, T>& red) {
     hipDeviceSynchronize();
-    //hipMemcpy(red.target, red.hipval, sizeof(T), hipMemcpyDeviceToHost);
-    hipMemcpy(&red.val, red.hipval, sizeof(T), hipMemcpyDeviceToHost);
-    printf("host hipval %p\n", (red.hipval));
-    printf("host val %p\n\n", (&red.val));
+    hipMemcpy(&red.val, red.hiptarget, sizeof(T), hipMemcpyDeviceToHost);
     *red.target = red.val; 
   }
 

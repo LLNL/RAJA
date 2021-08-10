@@ -55,8 +55,6 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
 
     init<EXEC_POL>(f_params, cudastuff);
 
-    printf("----------\n");
-
     size_t shmem = 1000;
 
     //
@@ -72,9 +70,6 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
         shmem,
         cudastuff.stream   //stream
     );
-
-    cudaDeviceSynchronize(); // TODO : remove, this is only here for printing degub info.
-    printf("----------\n");
 
     resolve<RAJA::cuda_exec<256>>(f_params);
   }

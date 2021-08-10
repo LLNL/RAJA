@@ -32,13 +32,7 @@ using hip_dim_member_t = camp::decay<decltype(std::declval<hip_dim_t>().x)>;
     {
       hip_invoke( t, loop_body, ii );
     }
-
-    //printf("forallp_hip_kernel\n");
     combine<RAJA::hip_exec<256>>(t);
-    
-    //combine<RAJA::hip_exec<256>>(camp::get<0>(t.param_tup));
-    //combine<RAJA::hip_exec<256>>(camp::get<1>(t.param_tup));
-    //combine<RAJA::hip_exec<256>>(camp::get<2>(t.param_tup));
   }
 
   template <typename EXEC_POL, typename B, typename... Params>
@@ -61,8 +55,6 @@ using hip_dim_member_t = camp::decay<decltype(std::declval<hip_dim_t>().x)>;
 
     init<EXEC_POL>(f_params, hipstuff);
 
-    printf("----------\n");
-
     size_t shmem = 1000;
 
     //
@@ -78,9 +70,6 @@ using hip_dim_member_t = camp::decay<decltype(std::declval<hip_dim_t>().x)>;
         shmem,
         hipstuff.stream   //stream
     );
-
-    hipDeviceSynchronize(); // TODO : remove, this is only here for printing degub info.
-    printf("----------\n");
 
     resolve<RAJA::hip_exec<256>>(f_params);
   }
