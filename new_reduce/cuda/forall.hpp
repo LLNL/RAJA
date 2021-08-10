@@ -32,13 +32,7 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
     {
       cuda_invoke( t, loop_body, ii );
     }
-
-    //printf("forallp_cuda_kernel\n");
     combine<RAJA::cuda_exec<256>>(t);
-    
-    //combine<RAJA::cuda_exec<256>>(camp::get<0>(t.param_tup));
-    //combine<RAJA::cuda_exec<256>>(camp::get<1>(t.param_tup));
-    //combine<RAJA::cuda_exec<256>>(camp::get<2>(t.param_tup));
   }
 
   template <typename EXEC_POL, typename B, typename... Params>

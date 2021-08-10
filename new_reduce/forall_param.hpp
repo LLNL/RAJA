@@ -113,8 +113,8 @@ namespace detail
     }
 #if defined(RAJA_ENABLE_CUDA)
     template<camp::idx_t... Seq>
-    constexpr auto cuda_m_param_refs(camp::idx_seq<Seq...>) -> decltype( camp::make_tuple( (camp::get<Seq>(param_tup).cudaval)...) ) {
-      return camp::make_tuple( (camp::get<Seq>(param_tup).cudaval)...) ;
+    constexpr auto cuda_m_param_refs(camp::idx_seq<Seq...>) -> decltype( camp::make_tuple( (&camp::get<Seq>(param_tup).cudaval)...) ) {
+      return camp::make_tuple( (&camp::get<Seq>(param_tup).cudaval)...) ;
     }
 #endif
 
@@ -139,7 +139,7 @@ namespace detail
     template<typename EXEC_POL, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
     static void constexpr detail_combine(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
-      CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup)));
+      CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
       //CAMP_EXPAND(printf("Seq : %d\n", (int)Seq));
     }
     

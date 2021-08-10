@@ -83,7 +83,6 @@ int main(int argc, char *argv[])
     forall_param<RAJA::omp_parallel_for_exec>(N,
                  [=](int i, double &r_, double &m_, double &ma_) {
                    r_ += a[i] * b[i];
-
                    m_ = a[i] < m_ ? a[i] : m_;
                    ma_ = a[i] > m_ ? a[i] : m_;
                  },
@@ -122,7 +121,7 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
-#if 0
+#if 1
 #if defined(RAJA_ENABLE_CUDA)
   {
     std::cout << "CUDA Reduction NEW Multi\n";
