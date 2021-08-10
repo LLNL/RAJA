@@ -94,7 +94,7 @@ void testAtomicRefAdd(RAJA::TypedRangeSegment<IdxType> seg,
 
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
       list[i] = countop.max + (T)1;
-      hhit[i] = false;
+      hit[i] = false;
       });
 
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
@@ -144,13 +144,13 @@ void ForallAtomicRefAddTestImpl( IdxType N )
 
   camp::resources::Resource host_res{camp::resources::Host()};
 
-  T * count   = work_res.allocate<T>(RAJA::stripIndexType(1));
-  T * list    = work_res.allocate<T>(RAJA::stripIndexType(N));
-  bool * hit  = work_res.allocate<bool>(RAJA::stripIndexType(N));
+  T * count   = work_res.allocate<T>(1);
+  T * list    = work_res.allocate<T>(N);
+  bool * hit  = work_res.allocate<bool>(N);
 
-  T * hcount   = host_res.allocate<T>(RAJA::stripIndexType(1));
-  T * hlist    = host_res.allocate<T>(RAJA::stripIndexType(N));
-  bool * hhit  = host_res.allocate<bool>(RAJA::stripIndexType(N));
+  T * hcount   = host_res.allocate<T>(1);
+  T * hlist    = host_res.allocate<T>(N);
+  bool * hhit  = host_res.allocate<bool>(N);
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
