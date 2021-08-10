@@ -94,6 +94,15 @@ struct hip_work : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::hip> {
 };
 
+#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+struct unordered_hip_loop_y_block_iter_x_threadblock_average
+    : public RAJA::make_policy_pattern_platform_t<
+                       RAJA::Policy::hip,
+                       RAJA::Pattern::workgroup_order,
+                       RAJA::Platform::hip> {
+};
+#endif
+
 
 ///
 ///////////////////////////////////////////////////////////////////////
@@ -202,6 +211,10 @@ using policy::hip::hip_work;
 template <size_t BLOCK_SIZE>
 using hip_work_async = policy::hip::hip_work<BLOCK_SIZE, true>;
 
+#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+using policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average;
+#endif
+
 using policy::hip::hip_reduce_base;
 using policy::hip::hip_reduce;
 using policy::hip::hip_reduce_atomic;
@@ -251,7 +264,7 @@ using hip_thread_z_loop = hip_thread_xyz_loop<2>;
 
 
 /*!
- * Maps segment indices to CUDA blocks.
+ * Maps segment indices to HIP blocks.
  * This is the lowest overhead mapping, but requires that there are enough
  * physical blocks to fit all of the direct map requests.
  */
