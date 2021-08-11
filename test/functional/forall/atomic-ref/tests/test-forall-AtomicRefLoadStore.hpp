@@ -15,7 +15,7 @@
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct LoadOtherOp : all_op {
   LoadOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dother(dcount), hother(hcount), min((T)seg.size()), max(min),
+    : dother(dcount), min((T)seg.size()), max(min),
     final_min(min), final_max(min)
   {
     hcount[0] = min;
@@ -25,14 +25,13 @@ struct LoadOtherOp : all_op {
     T operator()(IdxType RAJA_UNUSED_ARG(i)) const
     { return dother.load(); }
   RAJA::AtomicRef<T, AtomicPolicy> dother;
-  RAJA::AtomicRef<T, AtomicPolicy> hother;
   T min, max, final_min, final_max;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct OperatorTOtherOp : all_op {
   OperatorTOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> RAJA_UNUSED_ARG(seg))
-    : dother(dcount), hother(hcount), min(T(0)), max(min),
+    : dother(dcount), min(T(0)), max(min),
     final_min(min), final_max(min)
   {
     hcount[0] = min;
@@ -42,14 +41,13 @@ struct OperatorTOtherOp : all_op {
     T operator()(IdxType RAJA_UNUSED_ARG(i)) const
     { return dother; }
   RAJA::AtomicRef<T, AtomicPolicy> dother;
-  RAJA::AtomicRef<T, AtomicPolicy> hother;
   T min, max, final_min, final_max;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct StoreOtherOp : all_op {
   StoreOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dother(dcount), hother(hcount), min((T)0), max((T)seg.size() - (T)1),
+    : dother(dcount), min((T)0), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   {
     hcount[0] = (T)seg.size();
@@ -59,14 +57,13 @@ struct StoreOtherOp : all_op {
     T operator()(IdxType i) const
     { dother.store((T)i); return (T)i; }
   RAJA::AtomicRef<T, AtomicPolicy> dother;
-  RAJA::AtomicRef<T, AtomicPolicy> hother;
   T min, max, final_min, final_max;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct AssignOtherOp : all_op {
   AssignOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dother(dcount), hother(hcount), min(T(0)), max((T)seg.size() - (T)1),
+    : dother(dcount), min(T(0)), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   {
     hcount[0] = (T)seg.size();
@@ -76,7 +73,6 @@ struct AssignOtherOp : all_op {
     T operator()(IdxType i) const
     { return (dother = (T)i); }
   RAJA::AtomicRef<T, AtomicPolicy> dother;
-  RAJA::AtomicRef<T, AtomicPolicy> hother;
   T min, max, final_min, final_max;
 };
 

@@ -15,7 +15,7 @@
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct PreDecCountOp {
   PreDecCountOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dcounter(dcount), hcounter(hcount), min((T)0), max((T)seg.size()-(T)1), final((T)0)
+    : dcounter(dcount), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   {
     hcount[0] = (T)seg.size();
     work_res.memcpy(dcount, hcount, sizeof(T));
@@ -25,14 +25,13 @@ struct PreDecCountOp {
       return (--dcounter);
     }
   RAJA::AtomicRef<T, AtomicPolicy> dcounter;
-  RAJA::AtomicRef<T, AtomicPolicy> hcounter;
   T min, max, final;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct PostDecCountOp {
   PostDecCountOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dcounter(dcount), hcounter(hcount), min((T)0), max((T)seg.size()-(T)1), final((T)0)
+    : dcounter(dcount), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   {
     hcount[0] = (T)seg.size();
     work_res.memcpy(dcount, hcount, sizeof(T));
@@ -42,14 +41,13 @@ struct PostDecCountOp {
       return (dcounter--) - (T)1;
     }
   RAJA::AtomicRef<T, AtomicPolicy> dcounter;
-  RAJA::AtomicRef<T, AtomicPolicy> hcounter;
   T min, max, final;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct SubEqCountOp {
   SubEqCountOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dcounter(dcount), hcounter(hcount), min((T)0), max((T)seg.size()-(T)1), final((T)0)
+    : dcounter(dcount), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   {
     hcount[0] = (T)seg.size();
     work_res.memcpy(dcount, hcount, sizeof(T));
@@ -59,14 +57,13 @@ struct SubEqCountOp {
       return (dcounter -= (T)1);
     }
   RAJA::AtomicRef<T, AtomicPolicy> dcounter;
-  RAJA::AtomicRef<T, AtomicPolicy> hcounter;
   T min, max, final;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct FetchSubCountOp {
   FetchSubCountOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dcounter(dcount), hcounter(hcount), min((T)0), max((T)seg.size()-(T)1), final((T)0)
+    : dcounter(dcount), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   {
     hcount[0] = (T)seg.size();
     work_res.memcpy(dcount, hcount, sizeof(T));
@@ -76,7 +73,6 @@ struct FetchSubCountOp {
       return dcounter.fetch_sub((T)1) - (T)1;
     }
   RAJA::AtomicRef<T, AtomicPolicy> dcounter;
-  RAJA::AtomicRef<T, AtomicPolicy> hcounter;
   T min, max, final;
 };
 

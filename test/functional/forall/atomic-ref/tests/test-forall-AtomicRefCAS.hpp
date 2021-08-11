@@ -15,7 +15,7 @@
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct CASOtherOp : all_op {
   CASOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dother(dcount), hother(hcount), min((T)0), max((T)seg.size() - (T)1),
+    : dother(dcount), min((T)0), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   {
     hcount[0] = (T)0;
@@ -31,14 +31,13 @@ struct CASOtherOp : all_op {
       return received;
     }
   RAJA::AtomicRef<T, AtomicPolicy> dother;
-  RAJA::AtomicRef<T, AtomicPolicy> hother;
   T min, max, final_min, final_max;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct CompareExchangeWeakOtherOp : all_op {
   CompareExchangeWeakOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dother(dcount), hother(hcount), min((T)0), max((T)seg.size() - (T)1),
+    : dother(dcount), min((T)0), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   {
     hcount[0] = (T)0;
@@ -52,14 +51,13 @@ struct CompareExchangeWeakOtherOp : all_op {
       return expect;
     }
   RAJA::AtomicRef<T, AtomicPolicy> dother;
-  RAJA::AtomicRef<T, AtomicPolicy> hother;
   T min, max, final_min, final_max;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct CompareExchangeStrongOtherOp : all_op {
   CompareExchangeStrongOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dother(dcount), hother(hcount), min((T)0), max((T)seg.size() - (T)1),
+    : dother(dcount), min((T)0), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   {
     hcount[0] = (T)0;
@@ -73,7 +71,6 @@ struct CompareExchangeStrongOtherOp : all_op {
       return expect;
     }
   RAJA::AtomicRef<T, AtomicPolicy> dother;
-  RAJA::AtomicRef<T, AtomicPolicy> hother;
   T min, max, final_min, final_max;
 };
 
