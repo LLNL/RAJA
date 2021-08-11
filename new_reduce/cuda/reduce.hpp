@@ -6,6 +6,7 @@
 
 #include <cuda.h>
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
+#include "../util/policy.hpp"
 
 namespace detail {
 using cuda_dim_t = dim3;
@@ -105,7 +106,7 @@ using cuda_dim_t = dim3;
     int threadId = threadIdx.x + blockDim.x * threadIdx.y +
                    (blockDim.x * blockDim.y) * threadIdx.z;
 
-    T temp = block_reduce<OP>(red.cudaval, OP::identity());
+    T temp = block_reduce<OP>(red.val, OP::identity());
 
     // one thread per block writes to device_mem
     bool lastBlock = false;
@@ -133,7 +134,7 @@ using cuda_dim_t = dim3;
 
       // one thread returns value
       if (threadId == 0) {
-        *(red.cudatarget) = temp;
+        *(red.devicetarget) = temp;
       }
     }
 
@@ -146,9 +147,10 @@ using cuda_dim_t = dim3;
   template<typename EXEC_POL,
            typename OP,
            typename T>
-  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::cuda_exec<256> > >
-  init(Reducer<OP, T>& red, const RAJA::cuda::detail::cudaInfo & cs) {
-    cudaMallocManaged( (void**)(&(red.cudatarget)), sizeof(T));//, cudaHostAllocPortable );
+  camp::concepts::enable_if< is_cuda_policy< EXEC_POL > >
+  init(Reducer<OP, T>& red, const RAJA::cuda::detail::cudaInfo & cs)
+  {
+    cudaMallocManaged( (void**)(&(red.devicetarget)), sizeof(T));//, cudaHostAllocPortable );
     int numThreads = cs.blockDim.x * cs.blockDim.y * cs.blockDim.z;
 
     red.device_mem.allocate(cs.gridDim.x * cs.gridDim.y * cs.gridDim.z);
@@ -160,9 +162,9 @@ using cuda_dim_t = dim3;
 // ----------------------------------------------------------------------------
   template<typename EXEC_POL, typename OP, typename T>
   RAJA_HOST_DEVICE
-  camp::concepts::enable_if<std::is_same< EXEC_POL, RAJA::cuda_exec<256>> >
-  combine(Reducer<OP, T>& red) {
-
+  camp::concepts::enable_if< is_cuda_policy< EXEC_POL > >
+  combine(Reducer<OP, T>& red)
+  {
     bool blah = grid_reduce(red);
   }
   
@@ -170,11 +172,11 @@ using cuda_dim_t = dim3;
 //                                   RESOLVE
 // ----------------------------------------------------------------------------
   template<typename EXEC_POL, typename OP, typename T>
-  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::cuda_exec<256>> >
-  resolve(Reducer<OP, T>& red) {
+  camp::concepts::enable_if< is_cuda_policy< EXEC_POL > >
+  resolve(Reducer<OP, T>& red)
+  {
     cudaDeviceSynchronize();
-    cudaMemcpy(&red.val, red.cudatarget, sizeof(T), cudaMemcpyDeviceToHost);
-    *red.target = red.val; 
+    cudaMemcpy(red.target, red.devicetarget, sizeof(T), cudaMemcpyDeviceToHost);
   }
 
 } //  namespace detail

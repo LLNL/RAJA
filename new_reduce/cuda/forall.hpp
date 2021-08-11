@@ -17,7 +17,8 @@ namespace detail {
 using cuda_dim_t = dim3;
 using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
 
-  template <size_t BlockSize,
+  template <typename EXEC_POL,
+            size_t BlockSize,
             typename Ts,
             typename LOOP_BODY,
             typename Fps>
@@ -25,53 +26,52 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
       void forallp_cuda_kernel(
                               Ts extra,
                               LOOP_BODY loop_body,
-                              Fps t)
+                              Fps f_params)
   {
-    Ts ii = static_cast<Ts>(RAJA::policy::cuda::impl::getGlobalIdx_1D_1D());
-    if ( ii < extra )
+    Ts global_idx = static_cast<Ts>(RAJA::policy::cuda::impl::getGlobalIdx_1D_1D());
+    if ( global_idx < extra )
     {
-      cuda_invoke( t, loop_body, ii );
+      invoke( f_params, loop_body, global_idx );
     }
-    combine<RAJA::cuda_exec<256>>(t);
+    combine<EXEC_POL>(f_params);
   }
 
-  template <typename EXEC_POL, typename B, typename... Params>
-  std::enable_if_t< std::is_same< EXEC_POL, RAJA::cuda_exec<256>>::value >
-  forall_param(EXEC_POL&&, int N, B const &body, Params... params)
+  template <size_t BlockSize, bool Async, typename B, typename... Params>
+  void forall_param(RAJA::cuda_exec<BlockSize, Async>&&, int N, B const &body, Params... params)
   {
+    using EXEC_POL = RAJA::cuda_exec<BlockSize, Async>;
     FORALL_PARAMS_T<Params...> f_params(params...);
 
     auto func = forallp_cuda_kernel<
-      256 /*BlockSize*/,
+      EXEC_POL,
+      BlockSize,
       int,
       camp::decay<B>,
       camp::decay<decltype(f_params)>
       >;
 
-    RAJA::cuda::detail::cudaInfo cudastuff;
-    cudastuff.gridDim = RAJA::policy::cuda::impl::getGridDim(static_cast<cuda_dim_member_t>(N), 256);
-    cudastuff.blockDim = cuda_dim_t{256, 1, 1};
-    cudastuff.stream = 0;
-
-    init<EXEC_POL>(f_params, cudastuff);
+    RAJA::cuda::detail::cudaInfo launch_info;
+    launch_info.gridDim = RAJA::policy::cuda::impl::getGridDim(static_cast<cuda_dim_member_t>(N), BlockSize);
+    launch_info.blockDim = cuda_dim_t{BlockSize, 1, 1};
+    launch_info.stream = 0;
+    init<EXEC_POL>(f_params, launch_info);
 
     size_t shmem = 1000;
 
     //
     // Launch the kernels
     //
-    //size_t blocksz = 256;
     void *args[] = {(void*)&N, (void*)&body, (void*)&f_params};
     RAJA::cuda::launch(
         (const void*)func,
-        cudastuff.gridDim,  //gridSize,
-        cudastuff.blockDim, //blockSize,
+        launch_info.gridDim,  //gridSize,
+        launch_info.blockDim, //blockSize,
         args,
         shmem,
-        cudastuff.stream   //stream
+        launch_info.stream   //stream
     );
 
-    resolve<RAJA::cuda_exec<256>>(f_params);
+    resolve<EXEC_POL>(f_params);
   }
 
 } //  namespace detail

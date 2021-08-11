@@ -1,7 +1,9 @@
 #ifndef FORALL_PARAM_HPP
 #define FORALL_PARAM_HPP
 
+// Used in omp reduction
 int use_dev = 1;
+
 namespace detail
 {
 
@@ -33,67 +35,6 @@ namespace detail
         typename camp::decay<Params>::params_seq(),
         camp::forward<Ts>(extra)...);
   }
-#if defined(RAJA_ENABLE_CUDA)
-  //
-  //
-  // Invoke Forall with Params.
-  //
-  //
-  CAMP_SUPPRESS_HD_WARN
-  template <typename Fn,
-            camp::idx_t... Sequence,
-            typename Params,
-            typename... Ts>
-  CAMP_HOST_DEVICE constexpr auto cuda_invoke_with_order(Params&& params,
-                                                    Fn&& f,
-                                                    camp::idx_seq<Sequence...>,
-                                                    Ts&&... extra)
-  {
-    return f(extra..., ( params.template cuda_get_param_ref<Sequence>() )...);
-  }
-
-  CAMP_SUPPRESS_HD_WARN
-  template <typename Params, typename Fn, typename... Ts>
-  CAMP_HOST_DEVICE constexpr auto cuda_invoke(Params&& params, Fn&& f, Ts&&... extra)
-  {
-    return cuda_invoke_with_order(
-        camp::forward<Params>(params),
-        camp::forward<Fn>(f),
-        typename camp::decay<Params>::params_seq(),
-        camp::forward<Ts>(extra)...);
-  }
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-  //
-  //
-  // Invoke Forall with Params.
-  //
-  //
-  CAMP_SUPPRESS_HD_WARN
-  template <typename Fn,
-            camp::idx_t... Sequence,
-            typename Params,
-            typename... Ts>
-  CAMP_HOST_DEVICE constexpr auto hip_invoke_with_order(Params&& params,
-                                                    Fn&& f,
-                                                    camp::idx_seq<Sequence...>,
-                                                    Ts&&... extra)
-  {
-    return f(extra..., ( params.template hip_get_param_ref<Sequence>() )...);
-  }
-
-  CAMP_SUPPRESS_HD_WARN
-  template <typename Params, typename Fn, typename... Ts>
-  CAMP_HOST_DEVICE constexpr auto hip_invoke(Params&& params, Fn&& f, Ts&&... extra)
-  {
-    return hip_invoke_with_order(
-        camp::forward<Params>(params),
-        camp::forward<Fn>(f),
-        typename camp::decay<Params>::params_seq(),
-        camp::forward<Ts>(extra)...);
-  }
-#endif
 
   //
   //
@@ -107,45 +48,35 @@ namespace detail
     Base param_tup;
 
   private:
+
     template<camp::idx_t... Seq>
-    constexpr auto m_param_refs(camp::idx_seq<Seq...>) -> decltype( camp::make_tuple( (&camp::get<Seq>(param_tup).val)...) ) {
+    constexpr auto m_param_refs( camp::idx_seq<Seq...>) -> decltype( camp::make_tuple( (&camp::get<Seq>(param_tup).val)...) ) {
       return camp::make_tuple( (&camp::get<Seq>(param_tup).val)...) ;
     }
-#if defined(RAJA_ENABLE_CUDA)
-    template<camp::idx_t... Seq>
-    constexpr auto cuda_m_param_refs(camp::idx_seq<Seq...>) -> decltype( camp::make_tuple( (&camp::get<Seq>(param_tup).cudaval)...) ) {
-      return camp::make_tuple( (&camp::get<Seq>(param_tup).cudaval)...) ;
-    }
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-    template<camp::idx_t... Seq>
-    constexpr auto hip_m_param_refs(camp::idx_seq<Seq...>) -> decltype( camp::make_tuple( (&camp::get<Seq>(param_tup).hipval)...) ) {
-      return camp::make_tuple( (&camp::get<Seq>(param_tup).hipval)...) ;
-    }
-#endif
 
     // Init
     template<typename EXEC_POL, camp::idx_t... Seq, typename ...Args>
-    static void constexpr detail_init(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>, Args&& ...args) {
+    static void constexpr detail_init(EXEC_POL, camp::idx_seq<Seq...>, FORALL_PARAMS_T& f_params, Args&& ...args) {
       CAMP_EXPAND(init<EXEC_POL>( camp::get<Seq>(f_params.param_tup), std::forward<Args>(args)... ));
     }
+
+    // Combine
     template<typename EXEC_POL, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
-    static void constexpr detail_combine(EXEC_POL, FORALL_PARAMS_T& out, const FORALL_PARAMS_T& in, camp::idx_seq<Seq...>) {
+    static void constexpr detail_combine(EXEC_POL, camp::idx_seq<Seq...>, FORALL_PARAMS_T& out, const FORALL_PARAMS_T& in ) {
       CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(out.param_tup), camp::get<Seq>(in.param_tup)));
     }
 
     template<typename EXEC_POL, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
-    static void constexpr detail_combine(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
+    static void constexpr detail_combine(EXEC_POL, camp::idx_seq<Seq...>, FORALL_PARAMS_T& f_params ) {
       CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
     
     // Resolve
     template<typename EXEC_POL, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
-    static void constexpr detail_resolve(EXEC_POL, FORALL_PARAMS_T& f_params, camp::idx_seq<Seq...>) {
+    static void constexpr detail_resolve(EXEC_POL, camp::idx_seq<Seq...>, FORALL_PARAMS_T& f_params ) {
       CAMP_EXPAND(resolve<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
 
@@ -156,43 +87,28 @@ namespace detail
     };
 
     template<camp::idx_t Idx>
-    constexpr auto get_param_ref() -> decltype(*camp::get<Idx>(m_param_refs(params_seq{}))) {
-      return (*camp::get<Idx>(m_param_refs(params_seq{})));
+    constexpr auto get_param_ref() -> decltype(*camp::get<Idx>( m_param_refs(params_seq{}) )) {
+      return (*camp::get<Idx>( m_param_refs(params_seq{}) ));
     }
-#if defined(RAJA_ENABLE_CUDA)
-    template<camp::idx_t Idx>
-    constexpr auto cuda_get_param_ref() -> decltype(*camp::get<Idx>(cuda_m_param_refs(params_seq{}))) {
-      return (*camp::get<Idx>(cuda_m_param_refs(params_seq{})));
-    }
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-    template<camp::idx_t Idx>
-    constexpr auto hip_get_param_ref() -> decltype(*camp::get<Idx>(hip_m_param_refs(params_seq{}))) {
-      return (*camp::get<Idx>(hip_m_param_refs(params_seq{})));
-    }
-#endif
 
     // Init
     template<typename EXEC_POL, typename ...Args>
     friend void constexpr init( FORALL_PARAMS_T& f_params, Args&& ...args) {
-      detail_init(EXEC_POL(), f_params, params_seq{}, std::forward<Args>(args)... );
+      detail_init(EXEC_POL(), params_seq{}, f_params, std::forward<Args>(args)... );
     }
-    template<typename EXEC_POL>
+
+    // Combine
+    template<typename EXEC_POL, typename ...Args>
     RAJA_HOST_DEVICE
-    friend void constexpr combine(FORALL_PARAMS_T& out, const FORALL_PARAMS_T& in) {
-      detail_combine(EXEC_POL(), out, in, params_seq{} );
+    friend void constexpr combine(FORALL_PARAMS_T& f_params, Args&& ...args) {
+      detail_combine(EXEC_POL(), params_seq{}, f_params, std::forward<Args>(args)... );
     }
-    template<typename EXEC_POL>
-    RAJA_HOST_DEVICE
-    friend void constexpr combine(FORALL_PARAMS_T& f_params) {
-      detail_combine(EXEC_POL(), f_params, camp::make_idx_seq_t< camp::tuple_size<FORALL_PARAMS_T::Base>::value >{});
-    }
+
     // Resolve
-    template<typename EXEC_POL>
+    template<typename EXEC_POL, typename ...Args>
     RAJA_HOST_DEVICE
-    friend void constexpr resolve( FORALL_PARAMS_T& f_params ) {
-      detail_resolve(EXEC_POL(), f_params, params_seq{} );
+    friend void constexpr resolve( FORALL_PARAMS_T& f_params, Args&& ...args) {
+      detail_resolve(EXEC_POL(), params_seq{}, f_params , std::forward<Args>(args)... );
     }
   };
 

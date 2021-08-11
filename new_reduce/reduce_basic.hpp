@@ -3,6 +3,12 @@
 
 #include "util/valloc.hpp"
 
+#if defined(RAJA_ENABLE_CUDA)
+#define DEVICE cuda
+#elif defined(RAJA_ENABLE_HIP)
+#define DEVICE hip
+#endif
+
 namespace detail
 {
 
@@ -20,24 +26,15 @@ namespace detail
     T *target = nullptr;
     T val = op::identity();
 
-#if defined(RAJA_ENABLE_CUDA)
-    // CUDA related attributes.
-    T * cudatarget = nullptr;
-    T cudaval = op::identity();
-    RAJA::detail::SoAPtr<T, RAJA::cuda::device_mempool_type> device_mem;
-    unsigned int * device_count = nullptr;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-    // HIP related attributes.
-    T * hiptarget = nullptr;
-    T hipval = op::identity;
-    RAJA::detail::SoAPtr<T, RAJA::hip::device_mempool_type> device_mem;
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+    // Device related attributes.
+    T * devicetarget = nullptr;
+    RAJA::detail::SoAPtr<T, RAJA::DEVICE::device_mempool_type> device_mem;
     unsigned int * device_count = nullptr;
 #endif
   };
 
-} //  namespace detail
+} // namespace detail
 
 #include "sequential/reduce.hpp"
 #include "openmp/reduce.hpp"
