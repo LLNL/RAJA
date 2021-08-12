@@ -80,8 +80,7 @@ struct WorkRunner<
 
     // Only synchronize if we had something to iterate over
     if (num_loops > 0 && BLOCK_SIZE > 0) {
-      hipStream_t stream = r.get_stream();
-      if (!Async) { RAJA::hip::synchronize(stream); }
+      if (!Async) { RAJA::hip::synchronize(r); }
     }
 
     return run_storage;
@@ -136,8 +135,7 @@ struct WorkRunner<
 
     // Only synchronize if we had something to iterate over
     if (num_loops > 0 && BLOCK_SIZE > 0) {
-      hipStream_t stream = r.get_stream();
-      if (!Async) { RAJA::hip::synchronize(stream); }
+      if (!Async) { RAJA::hip::synchronize(r); }
     }
 
     return run_storage;
@@ -326,17 +324,14 @@ struct WorkRunner<
       // Setup shared memory buffers
       //
       size_t shmem = 0;
-      hipStream_t stream = r.get_stream();
 
       {
         //
         // Launch the kernel
         //
         void* func_args[] = { (void*)&begin, (void*)&args... };
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, func_args, shmem, stream);
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, func_args, shmem, r, Async);
       }
-
-      if (!Async) { RAJA::hip::synchronize(stream); }
 
       RAJA_FT_END;
     }

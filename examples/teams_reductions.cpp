@@ -36,10 +36,10 @@ using host_loop = RAJA::loop_exec;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using device_launch = RAJA::expt::cuda_launch_t<true>;
+using device_launch = RAJA::expt::cuda_launch_t<false>;
 using device_loop = RAJA::expt::cuda_global_thread_x;
 #elif defined(RAJA_ENABLE_HIP)
-using device_launch = RAJA::expt::hip_launch_t<true>;
+using device_launch = RAJA::expt::hip_launch_t<false>;
 using device_loop = RAJA::expt::hip_global_thread_x;
 #endif
 
