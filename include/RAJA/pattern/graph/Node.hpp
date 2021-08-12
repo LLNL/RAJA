@@ -184,7 +184,7 @@ struct NodeConnections
                     Enter_Func&& enter_func,
                     Exit_Func&& exit_func)
     {
-      for (detail::NodeConnections& child : m_node_connections)
+      for (detail::NodeConnections& child : connections)
       {
         if (child.m_parents.size() == 0) {
           std::forward<Examine_Func>(examine_func)(child);
@@ -196,7 +196,7 @@ struct NodeConnections
         detail::NodeConnections* child = queue.front();
         queue.pop_front();
         traverse(*child,
-                 m_node_connections.data(),
+                 connections,
                  std::forward<Examine_Func>(examine_func),
                  std::forward<Enter_Func>(enter_func),
                  std::forward<Exit_Func>(exit_func));
