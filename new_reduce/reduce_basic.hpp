@@ -21,7 +21,7 @@ namespace detail
   struct Reducer {
     using op = Op;
     using val_type = T;
-    Reducer() {}
+    RAJA_HOST_DEVICE Reducer() {}
     Reducer(T *target_in) : target(target_in), val(op::identity()) {}
     T *target = nullptr;
     T val = op::identity();

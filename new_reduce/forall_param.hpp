@@ -75,7 +75,6 @@ namespace detail
     
     // Resolve
     template<typename EXEC_POL, camp::idx_t... Seq>
-    RAJA_HOST_DEVICE
     static void constexpr detail_resolve(EXEC_POL, camp::idx_seq<Seq...>, FORALL_PARAMS_T& f_params ) {
       CAMP_EXPAND(resolve<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
@@ -106,7 +105,6 @@ namespace detail
 
     // Resolve
     template<typename EXEC_POL, typename ...Args>
-    RAJA_HOST_DEVICE
     friend void constexpr resolve( FORALL_PARAMS_T& f_params, Args&& ...args) {
       detail_resolve(EXEC_POL(), params_seq{}, f_params , std::forward<Args>(args)... );
     }

@@ -151,8 +151,6 @@ using cuda_dim_t = dim3;
   init(Reducer<OP, T>& red, const RAJA::cuda::detail::cudaInfo & cs)
   {
     cudaMallocManaged( (void**)(&(red.devicetarget)), sizeof(T));//, cudaHostAllocPortable );
-    int numThreads = cs.blockDim.x * cs.blockDim.y * cs.blockDim.z;
-
     red.device_mem.allocate(cs.gridDim.x * cs.gridDim.y * cs.gridDim.z);
     red.device_count = RAJA::cuda::device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
   }
