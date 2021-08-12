@@ -37,7 +37,8 @@ struct Point
                  std::vector<int >& pack_index_list_lengths,
                  Order unpack_transaction_order,
                  std::vector<int*>& unpack_index_lists,
-                 std::vector<int >& unpack_index_list_lengths);
+                 std::vector<int >& unpack_index_list_lengths,
+                 TransactionType transaction_type);
 
   // adds edge a -> b in graph
   void addDependency(size_t id_a, size_t id_b);

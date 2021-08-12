@@ -1,0 +1,45 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#include "SumTransaction.hpp"
+
+#include "loop.hpp"
+
+
+size_t SumTransaction::computeIncomingMessageSize()
+{
+  return MessageStream::getSizeof<double>(m_len);
+}
+
+size_t SumTransaction::computeOutgoingMessageSize()
+{
+  return MessageStream::getSizeof<double>(m_len);
+}
+
+void SumTransaction::packStream(MessageStream& stream)
+{
+  const int     len     = m_len;
+  const    int* indices = m_indices;
+  const double* var     = m_var;
+        double* buf     = stream.getWriteBuffer<double>(len);
+
+  fusible_loop(m_fuser, len, [=] RAJA_HOST_DEVICE (int i) {
+    buf[i] = var[indices[i]];
+  });
+}
+
+void SumTransaction::unpackStream(MessageStream& stream)
+{
+  const int     len     = m_len;
+  const    int* indices = m_indices;
+        double* var     = m_var;
+  const double* buf     = stream.getReadBuffer<double>(len);
+
+  fusible_loop(m_fuser, len, [=] RAJA_HOST_DEVICE (int i) {
+    var[indices[i]] += buf[i];
+  });
+}

@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 
   if (argc != 1 && argc != 7) {
     std::cerr << "Usage: tut_halo-exchange "
-              << "[grid_x grid_y grid_z halo_width num_vars num_cycles]\n";
+              << "[grid_x grid_y grid_z halo_width num_vars num_cycles transaction_type(c or s]\n";
     std::exit(1);
   }
 
@@ -60,6 +60,8 @@ int main(int argc, char **argv)
   const int halo_width =     (argc != 7) ?   1 : std::atoi(argv[4]);
   const int num_vars   =     (argc != 7) ?   3 : std::atoi(argv[5]);
   const int num_cycles =     (argc != 7) ? 128 : std::atoi(argv[6]);
+  // TODO transaction type should be an arg
+  const TransactionType transaction_type = TransactionType::sum;
 
   std::cout << "grid dimensions "     << grid_dims[0]
             << " x "                  << grid_dims[1]
@@ -90,10 +92,14 @@ int main(int argc, char **argv)
   //
   std::vector<double*> vars    (num_vars, nullptr);
   std::vector<double*> vars_ref(num_vars, nullptr);
+  std::vector<double*> sums    (num_vars, nullptr);
+  std::vector<double*> sums_ref(num_vars, nullptr);
 
   for (int v = 0; v < num_vars; ++v) {
     vars[v]     = memoryManager::allocate<double>(var_size);
     vars_ref[v] = memoryManager::allocate<double>(var_size);
+    sums[v]     = memoryManager::allocate<double>(var_size);
+    sums_ref[v] = memoryManager::allocate<double>(var_size);
   }
 
 
@@ -212,6 +218,106 @@ int main(int argc, char **argv)
     }
   }
 
+//----------------------------------------------------------------------------//
+  {
+    std::cout << "\n Running Simple C-style halo sum accumulation...\n"
+                << "   ordering: pack:   items " << get_order_name(Order::ordered) << ", transactions " << get_order_name(Order::ordered) << "\n"
+                << "             unpack: items " << get_order_name(Order::ordered) << ", transactions " << get_order_name(Order::ordered) << "\n";
+
+
+    std::vector<double*> buffers(num_neighbors, nullptr);
+
+    for (int l = 0; l < num_neighbors; ++l) {
+
+      int buffer_len = num_vars * pack_index_list_lengths[l];
+
+      buffers[l] = memoryManager::allocate<double>(buffer_len);
+
+    }
+
+    for (int c = 0; c < num_cycles; ++c ) {
+      timer.start();
+      {
+        // set vars
+        for (int v = 0; v < num_vars; ++v) {
+
+          double* var = sums[v];
+
+          for (int i = 0; i < var_size; i++) {
+            var[i] = i + v;
+          }
+        }
+
+        for (int l = 0; l < num_neighbors; ++l) {
+
+          double* buffer = buffers[l];
+          int* list = pack_index_lists[l];
+          int  len  = pack_index_list_lengths[l];
+
+          // pack
+          for (int v = 0; v < num_vars; ++v) {
+
+            double* var = sums[v];
+
+            for (int i = 0; i < len; i++) {
+              buffer[i] = var[list[i]];
+            }
+
+            buffer += len;
+          }
+
+          // send single message
+        }
+
+        for (int l = 0; l < num_neighbors; ++l) {
+
+          // recv single message
+
+          double* buffer = buffers[l];
+          int* list = unpack_index_lists[l];
+          int  len  = unpack_index_list_lengths[l];
+
+          // unpack
+          for (int v = 0; v < num_vars; ++v) {
+
+            double* var = sums[v];
+
+            for (int i = 0; i < len; i++) {
+              var[list[i]] += buffer[i];
+            }
+
+            buffer += len;
+          }
+        }
+
+      }
+      timer.stop();
+    }
+
+    for (int l = 0; l < num_neighbors; ++l) {
+
+      memoryManager::deallocate(buffers[l]);
+
+    }
+
+    std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
+    std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
+    std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
+    std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+    timer.reset();
+
+    // copy result of exchange for reference later
+    for (int v = 0; v < num_vars; ++v) {
+
+      double* sum     = sums[v];
+      double* sum_ref = sums_ref[v];
+
+      for (int i = 0; i < var_size; i++) {
+        sum_ref[i] = sum[i];
+      }
+    }
+  }
+
 
 //----------------------------------------------------------------------------//
   for (int p = static_cast<int>(LoopPattern::seq);
@@ -270,7 +376,8 @@ int main(int argc, char **argv)
                             pack_index_list_lengths,
                             order_unpack_transactions,
                             pattern_unpack_index_lists,
-                            unpack_index_list_lengths));
+                            unpack_index_list_lengths,
+                            transaction_type));
 
           if (order_pack_items != Order::unordered && v > 0u) {
             point.addPackDependency(item_ids[v-1], item_ids[v]);
@@ -325,7 +432,14 @@ int main(int argc, char **argv)
       timer.reset();
 
       // check results against reference copy
-      checkResult(vars, vars_ref, var_size, num_vars);
+      if (transaction_type == TransactionType::copy)
+      {
+        checkResult(vars, vars_ref, var_size, num_vars);
+      }
+      else
+      {
+        checkResult(sums, sums_ref, var_size, num_vars);
+      }
       //printResult(vars, var_size, num_vars);
     }
   }
@@ -388,7 +502,8 @@ int main(int argc, char **argv)
                             pack_index_list_lengths,
                             order_unpack_transactions,
                             pattern_unpack_index_lists,
-                            unpack_index_list_lengths));
+                            unpack_index_list_lengths,
+                            transaction_type));
 
           if (order_pack_items != Order::unordered && v > 0u) {
             point.addPackDependency(item_ids[v-1], item_ids[v]);
@@ -443,7 +558,14 @@ int main(int argc, char **argv)
       timer.reset();
 
       // check results against reference copy
-      checkResult(vars, vars_ref, var_size, num_vars);
+      if (transaction_type == TransactionType::copy)
+      {
+        checkResult(vars, vars_ref, var_size, num_vars);
+      }
+      else
+      {
+        checkResult(sums, sums_ref, var_size, num_vars);
+      } 
       //printResult(vars, var_size, num_vars);
     }
   }

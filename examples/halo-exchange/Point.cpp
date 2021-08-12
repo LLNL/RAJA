@@ -20,7 +20,8 @@ size_t Point::addItem(double* var,
                       std::vector<int >& pack_index_list_lengths,
                       Order unpack_transaction_order,
                       std::vector<int*>& unpack_index_lists,
-                      std::vector<int >& unpack_index_list_lengths)
+                      std::vector<int >& unpack_index_list_lengths,
+                      TransactionType transaction_type)
 {
   size_t id = m_items.size();
   m_items.emplace_back(
@@ -30,7 +31,8 @@ size_t Point::addItem(double* var,
                    pack_index_list_lengths,
                    unpack_transaction_order,
                    unpack_index_lists,
-                   unpack_index_list_lengths));
+                   unpack_index_list_lengths,
+                   transaction_type));
   return id;
 }
 
