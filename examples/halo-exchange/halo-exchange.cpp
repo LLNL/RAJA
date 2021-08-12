@@ -11,6 +11,7 @@
 #include <new>
 #include <limits>
 #include <vector>
+#include <cmath>
 
 #include "../memoryManager.hpp"
 #include "halo-exchange.hpp"
@@ -61,7 +62,8 @@ int main(int argc, char **argv)
   const int num_vars   =     (argc != 7) ?   3 : std::atoi(argv[5]);
   const int num_cycles =     (argc != 7) ? 128 : std::atoi(argv[6]);
   // TODO transaction type should be an arg
-  const TransactionType transaction_type = TransactionType::sum;
+  const TransactionType transaction_type = TransactionType::copy;
+  //const TransactionType transaction_type = TransactionType::sum;
 
   std::cout << "grid dimensions "     << grid_dims[0]
             << " x "                  << grid_dims[1]
@@ -114,6 +116,11 @@ int main(int argc, char **argv)
   std::vector<int > unpack_index_list_lengths(num_neighbors, 0);
   create_unpack_lists(unpack_index_lists, unpack_index_list_lengths, halo_width, grid_dims);
 
+  if (transaction_type == TransactionType::sum)
+  { 
+    unpack_index_lists.swap(pack_index_lists);
+    unpack_index_list_lengths.swap(pack_index_list_lengths);
+  }
 
   TimerStats timer;
 
@@ -244,7 +251,7 @@ int main(int argc, char **argv)
           double* var = sums[v];
 
           for (int i = 0; i < var_size; i++) {
-            var[i] = i + v;
+            var[i] = sqrt(i + v);
           }
         }
 
