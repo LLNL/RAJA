@@ -15,64 +15,64 @@
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct PreDecCountOp {
   PreDecCountOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dcounter(dcount), min((T)0), max((T)seg.size()-(T)1), final((T)0)
+    : counter(dcount), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   {
     hcount[0] = (T)seg.size();
     work_res.memcpy(dcount, hcount, sizeof(T));
   }
   RAJA_HOST_DEVICE
     T operator()(IdxType RAJA_UNUSED_ARG(i)) const {
-      return (--dcounter);
+      return (--counter);
     }
-  RAJA::AtomicRef<T, AtomicPolicy> dcounter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct PostDecCountOp {
   PostDecCountOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dcounter(dcount), min((T)0), max((T)seg.size()-(T)1), final((T)0)
+    : counter(dcount), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   {
     hcount[0] = (T)seg.size();
     work_res.memcpy(dcount, hcount, sizeof(T));
   }
   RAJA_HOST_DEVICE
     T operator()(IdxType RAJA_UNUSED_ARG(i)) const {
-      return (dcounter--) - (T)1;
+      return (counter--) - (T)1;
     }
-  RAJA::AtomicRef<T, AtomicPolicy> dcounter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct SubEqCountOp {
   SubEqCountOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dcounter(dcount), min((T)0), max((T)seg.size()-(T)1), final((T)0)
+    : counter(dcount), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   {
     hcount[0] = (T)seg.size();
     work_res.memcpy(dcount, hcount, sizeof(T));
   }
   RAJA_HOST_DEVICE
     T operator()(IdxType RAJA_UNUSED_ARG(i)) const {
-      return (dcounter -= (T)1);
+      return (counter -= (T)1);
     }
-  RAJA::AtomicRef<T, AtomicPolicy> dcounter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct FetchSubCountOp {
   FetchSubCountOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dcounter(dcount), min((T)0), max((T)seg.size()-(T)1), final((T)0)
+    : counter(dcount), min((T)0), max((T)seg.size()-(T)1), final((T)0)
   {
     hcount[0] = (T)seg.size();
     work_res.memcpy(dcount, hcount, sizeof(T));
   }
   RAJA_HOST_DEVICE
     T operator()(IdxType RAJA_UNUSED_ARG(i)) const {
-      return dcounter.fetch_sub((T)1) - (T)1;
+      return counter.fetch_sub((T)1) - (T)1;
     }
-  RAJA::AtomicRef<T, AtomicPolicy> dcounter;
+  RAJA::AtomicRef<T, AtomicPolicy> counter;
   T min, max, final;
 };
 
