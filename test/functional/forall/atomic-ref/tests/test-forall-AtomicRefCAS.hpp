@@ -15,7 +15,7 @@
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct CASOtherOp : all_op {
   CASOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dother(dcount), min((T)0), max((T)seg.size() - (T)1),
+    : other(dcount), min((T)0), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   {
     hcount[0] = (T)0;
@@ -25,19 +25,19 @@ struct CASOtherOp : all_op {
     T operator()(IdxType i) const
     {
       T received, expect = (T)0;
-      while ((received = dother.CAS(expect, (T)i)) != expect) {
+      while ((received = other.CAS(expect, (T)i)) != expect) {
         expect = received;
       }
       return received;
     }
-  RAJA::AtomicRef<T, AtomicPolicy> dother;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct CompareExchangeWeakOtherOp : all_op {
   CompareExchangeWeakOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dother(dcount), min((T)0), max((T)seg.size() - (T)1),
+    : other(dcount), min((T)0), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   {
     hcount[0] = (T)0;
@@ -47,17 +47,17 @@ struct CompareExchangeWeakOtherOp : all_op {
     T operator()(IdxType i) const
     {
       T expect = (T)0;
-      while (!dother.compare_exchange_weak(expect, (T)i)) {}
+      while (!other.compare_exchange_weak(expect, (T)i)) {}
       return expect;
     }
-  RAJA::AtomicRef<T, AtomicPolicy> dother;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct CompareExchangeStrongOtherOp : all_op {
   CompareExchangeStrongOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dother(dcount), min((T)0), max((T)seg.size() - (T)1),
+    : other(dcount), min((T)0), max((T)seg.size() - (T)1),
     final_min(min), final_max(max)
   {
     hcount[0] = (T)0;
@@ -67,10 +67,10 @@ struct CompareExchangeStrongOtherOp : all_op {
     T operator()(IdxType i) const
     {
       T expect = (T)0;
-      while (!dother.compare_exchange_strong(expect, (T)i)) {}
+      while (!other.compare_exchange_strong(expect, (T)i)) {}
       return expect;
     }
-  RAJA::AtomicRef<T, AtomicPolicy> dother;
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 

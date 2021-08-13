@@ -15,7 +15,7 @@
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct AndEqOtherOp : int_op {
   AndEqOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dother(dcount), min(T(0)), max((T)seg.size()),
+    : other(dcount), min(T(0)), max((T)seg.size()),
     final_min(min), final_max(min)
   {
     hcount[0] = np2m1((T)seg.size());
@@ -23,15 +23,15 @@ struct AndEqOtherOp : int_op {
   }
   RAJA_HOST_DEVICE
     T operator()(IdxType i) const
-    { return dother &= (T)i; }
-  RAJA::AtomicRef<T, AtomicPolicy> dother;
+    { return other &= (T)i; }
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct FetchAndOtherOp : int_op {
   FetchAndOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dother(dcount), min(T(0)), max(np2m1((T)seg.size())),
+    : other(dcount), min(T(0)), max(np2m1((T)seg.size())),
     final_min(min), final_max(min)
   {
     hcount[0] = max;
@@ -39,15 +39,15 @@ struct FetchAndOtherOp : int_op {
   }
   RAJA_HOST_DEVICE
     T operator()(IdxType i) const
-    { return dother.fetch_and((T)i); }
-  RAJA::AtomicRef<T, AtomicPolicy> dother;
+    { return other.fetch_and((T)i); }
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct OrEqOtherOp : int_op {
   OrEqOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dother(dcount), min(T(0)), max(np2m1((T)seg.size())),
+    : other(dcount), min(T(0)), max(np2m1((T)seg.size())),
     final_min(max), final_max(max)
   {
     hcount[0] = T(0);
@@ -55,15 +55,15 @@ struct OrEqOtherOp : int_op {
   }
   RAJA_HOST_DEVICE
     T operator()(IdxType i) const
-    { return dother |= (T)i; }
-  RAJA::AtomicRef<T, AtomicPolicy> dother;
+    { return other |= (T)i; }
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct FetchOrOtherOp : int_op {
   FetchOrOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dother(dcount), min(T(0)), max(np2m1((T)seg.size())),
+    : other(dcount), min(T(0)), max(np2m1((T)seg.size())),
     final_min(max), final_max(max)
   {
     hcount[0] = T(0);
@@ -71,15 +71,15 @@ struct FetchOrOtherOp : int_op {
   }
   RAJA_HOST_DEVICE
     T operator()(IdxType i) const
-    { return dother.fetch_or((T)i); }
-  RAJA::AtomicRef<T, AtomicPolicy> dother;
+    { return other.fetch_or((T)i); }
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct XorEqOtherOp : int_op {
   XorEqOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dother(dcount), min(T(0)), max(np2m1((T)seg.size())),
+    : other(dcount), min(T(0)), max(np2m1((T)seg.size())),
     final_min(min), final_max(min)
   {
     hcount[0] = T(0);
@@ -90,15 +90,15 @@ struct XorEqOtherOp : int_op {
   }
   RAJA_HOST_DEVICE
     T operator()(IdxType i) const
-    { return dother ^= (T)i; }
-  RAJA::AtomicRef<T, AtomicPolicy> dother;
+    { return other ^= (T)i; }
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct FetchXorOtherOp : int_op {
   FetchXorOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
-    : dother(dcount), min(T(0)), max(np2m1((T)seg.size())),
+    : other(dcount), min(T(0)), max(np2m1((T)seg.size())),
     final_min(min), final_max(min)
   {
     hcount[0] = T(0);
@@ -109,8 +109,8 @@ struct FetchXorOtherOp : int_op {
   }
   RAJA_HOST_DEVICE
     T operator()(IdxType i) const
-    { return dother.fetch_xor((T)i); }
-  RAJA::AtomicRef<T, AtomicPolicy> dother;
+    { return other.fetch_xor((T)i); }
+  RAJA::AtomicRef<T, AtomicPolicy> other;
   T min, max, final_min, final_max;
 };
 
