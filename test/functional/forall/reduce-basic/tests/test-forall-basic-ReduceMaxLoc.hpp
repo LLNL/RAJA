@@ -18,7 +18,7 @@ template <typename IDX_TYPE, typename DATA_TYPE,
           typename EXEC_POLICY, typename REDUCE_POLICY>
 void ForallReduceMaxLocBasicTestImpl(const SEG_TYPE& seg,
                                      const std::vector<IDX_TYPE>& seg_idx,
-                                     camp::resources::Resource& working_res)
+                                     camp::resources::Resource working_res)
 {
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
   IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );

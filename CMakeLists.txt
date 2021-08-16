@@ -49,11 +49,11 @@ set(ENABLE_COPY_HEADERS Off CACHE BOOL "")
 set(ENABLE_WARNINGS_AS_ERRORS Off CACHE BOOL "")
 set(ENABLE_GTEST_DEATH_TESTS On CACHE BOOL "Enable tests asserting failure.")
 
-set(RAJA_CXX_STANDARD_FLAG "default" CACHE STRING "Specific c++ standard flag to use, default attempts to autodetect the highest available")
-
-## NOTE: CMake-dependent options are placed AFTER BLT is loaded so they 
+## NOTE: CMake-dependent options are placed AFTER BLT is loaded so they
 ##       work as intended. BLT has variables defined for these and we use
 ##       the same names with 'RAJA_' prepended to them.
+
+option(ENABLE_NV_TOOLS_EXT "Build with NV_TOOLS_EXT support" Off)
 
 option(ENABLE_TBB "Build TBB support" Off)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
@@ -109,27 +109,31 @@ endif()
 set(COMPILERS_KNOWN_TO_CMAKE33 AppleClang Clang GNU MSVC)
 
 include(CheckCXXCompilerFlag)
-if(RAJA_CXX_STANDARD_FLAG MATCHES default)
+if(NOT DEFINED BLT_CXX_STD)
   if("cxx_std_17" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
-    #TODO set BLT_CXX_STANDARD
-    set(CMAKE_CXX_STANDARD 17)
+    set(BLT_CXX_STD c++17 CACHE STRING "Version of C++ standard")
+    message("Using C++ standard: ${BLT_CXX_STD}")
   elseif("cxx_std_14" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
-    set(CMAKE_CXX_STANDARD 14)
+    set(BLT_CXX_STD c++14 CACHE STRING "Version of C++ standard")
+    message("Using C++ standard: ${BLT_CXX_STD}")
   elseif("${CMAKE_CXX_COMPILER_ID}" IN_LIST COMPILERS_KNOWN_TO_CMAKE33)
-    set(CMAKE_CXX_STANDARD 14)
+    set(BLT_CXX_STD c++14 CACHE STRING "Version of C++ standard")
+    message("Using C++ standard: ${BLT_CXX_STD}")
   else() #cmake has no idea what to do, do it ourselves...
-    foreach(flag_var "-std=c++17" "-std=c++1z" "-std=c++14" "-std=c++1y" "-std=c++11")
-      CHECK_CXX_COMPILER_FLAG(${flag_var} COMPILER_SUPPORTS_${flag_var})
+    foreach(flag_var "c++17" "c++14" "c++11")
+      CHECK_CXX_COMPILER_FLAG("-std=${flag_var}" COMPILER_SUPPORTS_${flag_var})
       if(COMPILER_SUPPORTS_${flag_var})
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag_var}")
+        set(BLT_CXX_STD ${flag_var} CACHE STRING "Version of C++ standard")
+        message("Using C++ standard: ${BLT_CXX_STD}")
         break()
       endif()
     endforeach(flag_var)
   endif()
-else(RAJA_CXX_STANDARD_FLAG MATCHES default)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${RAJA_CXX_STANDARD_FLAG}")
-  message("Using C++ standard flag: ${RAJA_CXX_STANDARD_FLAG}")
-endif(RAJA_CXX_STANDARD_FLAG MATCHES default)
+else() #check BLT_CXX_STD is high enough by disallowing the only invalid option
+  if("${BLT_CXX_STD}" STREQUAL "c++98")
+    message(FATAL_ERROR "RAJA requires minimum C++ standard of c++11")
+  endif()
+endif(NOT DEFINED BLT_CXX_STD)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -198,10 +202,27 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION V
   message(WARNING "RAJA::simd_exec support requires Intel-17 or greater")
 endif()
 
+if(ENABLE_CUDA)
+  if("${CUDA_VERSION_STRING}" VERSION_LESS "9.2")
+    message(FATAL_ERROR "Trying to use CUDA version ${CUDA_VERSION_STRING}. RAJA dependency Googletest requires CUDA version 9.2.x or newer.")
+  endif()
+endif()
+
+if(ENABLE_HIP)
+  if("${HIP_VERSION_STRING}" VERSION_LESS "3.5")
+    message(FATAL_ERROR "Trying to use HIP/ROCm version ${HIP_VERSION_STRING}. RAJA requires HIP/ROCm version 3.5 or newer. ")
+  endif()
+endif()
+
 if (ENABLE_CUDA)
   set(raja_depends
     ${raja_depends}
     cuda)
+  if(ENABLE_NV_TOOLS_EXT)
+    set(raja_depends
+      ${raja_depends}
+      nvtoolsext)
+  endif ()
 endif ()
 
 if (ENABLE_EXTERNAL_CUB)

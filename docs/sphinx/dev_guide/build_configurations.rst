@@ -26,8 +26,7 @@ ways to build and test important configurations in a reproducible manner:
 
 Each of these specifies compiler versions and options, a build target 
 (Release, Debug, etc.), RAJA features to enable (OpenMP, CUDA, etc.), 
-and paths to required tool chains, such as CUDA, ROCm, etc.
-
+and paths to required tool chains, such as CUDA, ROCm, etc.  
 They are described briefly in the following sections.
 
 
@@ -39,16 +38,32 @@ The build scripts in the RAJA ``scripts`` directory are used mostly by RAJA
 developers to quickly create a build environment to compile and run tests
 during code development. 
 
-Each script can be executed from the top-level RAJA directory. When a script
-is run, it creates a uniquely-named build directory in RAJA and runs CMake 
-with arguments contained in the script to create a build environment in the
-new directory. One then goes into the directory and runs make to build RAJA, 
-its tests, example codes, etc.  For example,
+Each script is executed from the top-level RAJA directory. THe scripts for
+CPU-only platforms require an argument that indicate the compiler version.
+For example,
 
 .. code-block:: bash
 
-  $ ./scripts/lc-builds/toss3_clang10.0.1.sh
-  $ cd build_lc_toss3-clang-10.0.1
+  $ ./scripts/lc-builds/toss3_clang.sh 10.0.1
+
+Scripts for GPU-enabled platforms require three arguments: the device
+compiler version, followed by the compute architecture, followed by the host
+compiler version. For example,
+
+.. code-block:: bash
+
+  $ ./scripts/lc-builds/blueos_nvcc_gcc.sh 10.2.89 sm_70 8.3.1
+
+When a script is run, it creates a uniquely-named build directory in the 
+top-level RAJA directory and runs CMake with arguments contained in the script 
+to create a build environment in the new directory. One then goes into that 
+directory and runs make to build RAJA, its tests, example codes, etc.  
+For example,
+
+.. code-block:: bash
+
+  $ ./scripts/lc-builds/blueos_nvcc_gcc.sh 10.2.89 sm_70 8.3.1
+  $ cd build_lc_blueos-nvcc10.2.89-sm_70-gcc8.3.1
   $ make -j
   $ make test
 
@@ -153,3 +168,38 @@ corresponding to the OS version (`compilers.yaml`), and a commented section to
 illustrate how to add `CMake` as an external package. You may install CMake 
 with `Homebrew <https://brew.sh>`_, for example, and follow the process 
 outlined above after it is installed.
+
+============================
+Reproducing Docker Builds
+============================
+
+RAJA uses docker container images that it shares with other LLNL GitHub projects
+for CI testing on GitHub. Currently, we use Travis for Linux builds and Appveyor
+for Windows. Soon we will switch over to using Azure Pipelines so we can do CI
+testing for Linux, Windows, and MacOS in a single tool. 
+
+You can reproduce these builds locally for testing with the following steps:
+
+  #. Run the command to build a local Docker image:
+
+     .. code-block:: bash
+
+       $ DOCKER_BUILDKIT=1 docker build --target ${TARGET} --no-cache
+
+     Here, ${TARGET} is replaced with one of the names following "AS" in the
+     `RAJA Dockerfile <https://github.com/LLNL/RAJA/blob/develop/Dockerfile>`_ 
+
+
+  #. To get dropped into a terminal in the Docker image, run the following:
+
+     .. code-block:: bash
+     
+       $ docker run -it axom/compilers:${COMPILER} /bin/bash
+
+     Here, ${COMPILER} is replaced with the compiler you want (see the 
+     aforementioned Dockerfile).
+ 
+Then, you can build, run tests, edit files, etc. in the Docker image. Note that
+the docker command has a '-v' argument that you can use to mount your local 
+directory in the image; e.g., -v `pwd`:/opt/RAJA would mount the pwd as 
+/opt/RAJA in the image.

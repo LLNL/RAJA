@@ -185,7 +185,7 @@ public:
     // dot product of strides and indices
     return sum<IdxLin>(
       (RangeInts==stride_one_dim ?   // Is this dimension stride-one?
-         indices :  // it's stride one, so dont bother with multiple
+         indices :  // it's stride one, so dont bother with multiply
          strides[RangeInts]*indices // it's not stride one
 			)...
     );
