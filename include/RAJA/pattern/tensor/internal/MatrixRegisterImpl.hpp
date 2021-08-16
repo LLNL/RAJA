@@ -1194,7 +1194,7 @@ namespace RAJA
               auto value = result.get(row) + rowsum.sum();
               result.set(value, row);
 
-            } // col
+            } // row
           }
 
         }
@@ -1259,7 +1259,7 @@ namespace RAJA
       row_vector_type left_multiply_vector_accumulate(column_vector_type const &v, row_vector_type result) const {
 
         if(layout_type::is_row_major()){
-
+//          printf("Aleft\n");
 
           // 1 register is split over multiple columns
           if(s_minor_dim_registers == 0){
@@ -1280,28 +1280,25 @@ namespace RAJA
             vm = vm.segmented_sum_outer(s_segbits, 0);
 
           }
-          // one or more registers per column
+          // one or more registers per row
           else{
-
-            // Loop over rows (which is also registers)
+//            printf("Bleft\n");
+            // Loop over rows
             camp::idx_t reg = 0;
             RAJA_UNROLL
             for(camp::idx_t row = 0;row < s_num_rows;++ row){
-
-              // extract row value from v
-              auto v_row = register_type(v.get(row));
-
-              // apply v_row to entire column (1 or more registers)
+              auto lhs_bcat = register_type(v.get(row));
               RAJA_UNROLL
               for(camp::idx_t colreg = 0;colreg < s_minor_dim_registers;++ colreg){
 
-                auto &mv = result.get_register(colreg);
-                mv = m_registers[reg].multiply_add(v_row, mv);
-
+                result.get_register(colreg) =
+                    m_registers[reg].multiply_add(lhs_bcat, result.get_register(colreg));
                 reg ++;
 
               } // rowreg
-            } // col
+
+            }
+
           }
 
 
@@ -1309,9 +1306,9 @@ namespace RAJA
 
         // Column-major:
         else{
-
           // 1 register is split over multiple rows
           if(s_minor_dim_registers == 0){
+//            printf("Cleft\n");
 
             // start by broadcasting the first segment in v across all of v
             // we will use this term for all registers in the matrix
@@ -1336,25 +1333,25 @@ namespace RAJA
             }
 
           }
-          // one or more registers per row
+          // one or more registers per column
           else{
+//            printf("Dleft\n");
             // Loop over rows
             camp::idx_t reg = 0;
             RAJA_UNROLL
             for(camp::idx_t col = 0;col < s_num_columns;++ col){
 
               // compute partial dot products for all registers in this row
-              auto rowsum = register_type(0);
+              auto colsum = register_type(0);
               RAJA_UNROLL
               for(camp::idx_t rowreg = 0;rowreg < s_minor_dim_registers;++ rowreg){
-
-                rowsum = m_registers[reg].multiply_add(v.get_register(rowreg), rowsum);
+                colsum = m_registers[reg].multiply_add(v.get_register(rowreg), colsum);
                 reg ++;
 
               } // rowreg
 
               // finish dot product by taking sum of rowsum
-              auto value = result.get(col) + rowsum.sum();
+              auto value = result.get(col) + colsum.sum();
               result.set(value, col);
 
             } // col

@@ -266,7 +266,7 @@ namespace RAJA
 
       using left_type = LEFT_OPERAND_TYPE;
       using right_type = RIGHT_OPERAND_TYPE;
-      using result_type = typename RIGHT_OPERAND_TYPE::result_type;
+      using result_type = typename LEFT_OPERAND_TYPE::result_type::column_vector_type;
       static constexpr camp::idx_t s_num_dims = 1;
 
       RAJA_INLINE
@@ -353,7 +353,7 @@ namespace RAJA
           auto right = et_right.eval(right_tile);
 
           // accumulate product
-          left.right_multiply_vector_accumulate(result, right);
+          result = left.right_multiply_vector_accumulate(right, result);
         }
         // remainder tile in k
         if(k < k_size){
@@ -368,7 +368,7 @@ namespace RAJA
           auto right = et_right.eval(right_part_tile);
 
           // accumulate product of partial tile
-          left.right_multiply_vector_accumulate(result, right);
+          result = left.right_multiply_vector_accumulate(right, result);
         }
 
       }
@@ -399,7 +399,7 @@ namespace RAJA
 
       using left_type = LEFT_OPERAND_TYPE;
       using right_type = RIGHT_OPERAND_TYPE;
-      using result_type = typename LEFT_OPERAND_TYPE::result_type;
+      using result_type = typename RIGHT_OPERAND_TYPE::result_type::row_vector_type;
       static constexpr camp::idx_t s_num_dims = 1;
 
       RAJA_INLINE
@@ -454,11 +454,10 @@ namespace RAJA
       static
       void multiply_into_result(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &et_left, RIGHT_OPERAND_TYPE const &et_right)
       {
-        //using RHS_STORAGE = typename RIGHT_OPERAND_TYPE::result_type;
-
         // get tile size from matrix type
-        auto tile_size = right_type::result_type::s_dim_elem(1);
-        auto k_size = et_right.getDimSize(1);
+        auto tile_size = right_type::result_type::s_dim_elem(0);
+        auto k_size = et_right.getDimSize(0);
+
         // TODO: check that left and right are compatible
         // m_left.getDimSize(1) == m_right.getDimSize(0)
         // how do we provide checking for this kind of error?
@@ -472,9 +471,14 @@ namespace RAJA
         TILE_TYPE left_tile = tile;
         left_tile.m_size[0] = tile_size;
 
+//        printf("multiply_into_result: tile_size=%d, k_size=%d\n",
+//            (int)tile_size, (int)k_size);
+//        tile.print();
+
         // Do full tiles in k
         decltype(k_size) k = 0;
         for(;k+tile_size <= k_size; k+= tile_size){
+//            printf("\nk=%d\n", (int)k);
 
           // evaluate both sides of operator
           right_tile.m_begin[0] = k;
@@ -484,7 +488,12 @@ namespace RAJA
           auto left = et_left.eval(left_tile);
 
           // accumulate product
-          right.left_multiply_vector_accumulate(result, left);
+//          printf("left mult vector full, k=%d, k_size=%d, tile_size=%d\n",
+//              (int)k, (int)k_size, (int)tile_size);
+//          printf("-- left_tile:\n"); left_tile.print();
+//          printf("-- right_tile:\n"); right_tile.print();
+
+          result = right.left_multiply_vector_accumulate(left, result);
 
         }
         // remainder tile in k
@@ -499,8 +508,14 @@ namespace RAJA
           left_part_tile.m_size[0] = k_size-k;
           auto left = et_left.eval(left_part_tile);
 
+//          printf("left mult vector remainder, k=%d, k_size=%d, part_size=%d\n",
+//                        (int)k, (int)k_size, (int)(k_size-k));
+
+//          printf("-- left_tile:\n"); left_tile.print();
+//          printf("-- right_tile:\n"); right_tile.print();
+
           // compute product into x of partial tile
-          right.left_multiply_vector_accumulate(result, left);
+          result = right.left_multiply_vector_accumulate(left, result);
         }
 
       }
