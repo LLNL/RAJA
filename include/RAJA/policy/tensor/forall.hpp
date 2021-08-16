@@ -48,11 +48,16 @@ namespace tensor
 
 
 template <typename TENSOR_TYPE, camp::idx_t DIM, camp::idx_t TILE_SIZE, typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
+RAJA_INLINE
+resources::EventProxy<typename resources::get_resource<seq_exec>::type>
+forall_impl(resources::Host &host_res,
 const tensor_exec<seq_exec, TENSOR_TYPE, DIM, TILE_SIZE>&,
                              Iterable &&iter,
                              Func &&loop_body)
 {
+
+ using Res = typename resources::get_resource<seq_exec>::type;
+
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
@@ -84,8 +89,7 @@ const tensor_exec<seq_exec, TENSOR_TYPE, DIM, TILE_SIZE>&,
 
   }
 
-
-  return resources::EventProxy<resources::Host>(&host_res);
+  return RAJA::resources::EventProxy<Res>(host_res);
 }
 
 
