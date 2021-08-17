@@ -39,7 +39,7 @@ using hip_dim_member_t = camp::decay<decltype(std::declval<hip_dim_t>().x)>;
   std::enable_if_t< std::is_same< EXEC_POL, RAJA::hip_exec<256>>::value >
   forall_param(EXEC_POL&&, int N, B const &body, Params... params)
   {
-    FORALL_PARAMS_T<Params...> f_params(params...);
+    ForallParamPack<Params...> f_params(params...);
 
     auto func = forallp_hip_kernel<
       256 /*BlockSize*/,

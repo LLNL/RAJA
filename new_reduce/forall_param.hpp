@@ -44,7 +44,7 @@ namespace detail
   //
   //
   template<typename... Params>
-  struct FORALL_PARAMS_T {
+  struct ForallParamPack {
     using Base = camp::tuple<Params...>;
     using params_seq = camp::make_idx_seq_t< camp::tuple_size<Base>::value >;
     Base param_tup;
@@ -77,26 +77,26 @@ namespace detail
 
     // Init
     template<typename EXEC_POL, camp::idx_t... Seq, typename ...Args>
-    static void constexpr detail_init(EXEC_POL, camp::idx_seq<Seq...>, FORALL_PARAMS_T& f_params, Args&& ...args) {
+    static void constexpr detail_init(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& f_params, Args&& ...args) {
       CAMP_EXPAND(init<EXEC_POL>( camp::get<Seq>(f_params.param_tup), std::forward<Args>(args)... ));
     }
 
     // Combine
     template<typename EXEC_POL, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
-    static void constexpr detail_combine(EXEC_POL, camp::idx_seq<Seq...>, FORALL_PARAMS_T& out, const FORALL_PARAMS_T& in ) {
+    static void constexpr detail_combine(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& out, const ForallParamPack& in ) {
       CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(out.param_tup), camp::get<Seq>(in.param_tup)));
     }
 
     template<typename EXEC_POL, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
-    static void constexpr detail_combine(EXEC_POL, camp::idx_seq<Seq...>, FORALL_PARAMS_T& f_params ) {
+    static void constexpr detail_combine(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& f_params ) {
       CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
     
     // Resolve
     template<typename EXEC_POL, camp::idx_t... Seq>
-    static void constexpr detail_resolve(EXEC_POL, camp::idx_seq<Seq...>, FORALL_PARAMS_T& f_params ) {
+    static void constexpr detail_resolve(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& f_params ) {
       CAMP_EXPAND(resolve<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
 
@@ -106,8 +106,8 @@ namespace detail
     static size_t constexpr count_lambda_args() { return First::num_lambda_args + count_lambda_args<Second, Rest...>(); }
 
   public:
-    FORALL_PARAMS_T (){}
-    FORALL_PARAMS_T(Params... params) {
+    ForallParamPack (){}
+    ForallParamPack(Params... params) {
       param_tup = camp::make_tuple(params...);
     };
 
@@ -121,20 +121,20 @@ namespace detail
 
     // Init
     template<typename EXEC_POL, typename ...Args>
-    friend void constexpr init( FORALL_PARAMS_T& f_params, Args&& ...args) {
+    friend void constexpr init( ForallParamPack& f_params, Args&& ...args) {
       detail_init(EXEC_POL(), params_seq{}, f_params, std::forward<Args>(args)... );
     }
 
     // Combine
     template<typename EXEC_POL, typename ...Args>
     RAJA_HOST_DEVICE
-    friend void constexpr combine(FORALL_PARAMS_T& f_params, Args&& ...args) {
+    friend void constexpr combine(ForallParamPack& f_params, Args&& ...args) {
       detail_combine(EXEC_POL(), params_seq{}, f_params, std::forward<Args>(args)... );
     }
 
     // Resolve
     template<typename EXEC_POL, typename ...Args>
-    friend void constexpr resolve( FORALL_PARAMS_T& f_params, Args&& ...args) {
+    friend void constexpr resolve( ForallParamPack& f_params, Args&& ...args) {
       detail_resolve(EXEC_POL(), params_seq{}, f_params , std::forward<Args>(args)... );
     }
   };

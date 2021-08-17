@@ -8,7 +8,7 @@ namespace detail {
   std::enable_if_t< std::is_same< EXEC_POL, RAJA::omp_target_parallel_for_exec_nt>::value >
   forall_param(EXEC_POL&&, int N, B const &body, Params... params)
   {
-    FORALL_PARAMS_T<Params...> f_params(params...);
+    ForallParamPack<Params...> f_params(params...);
 
     //init<EXEC_POL>(f_params);
 
