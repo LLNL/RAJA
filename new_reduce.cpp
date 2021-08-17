@@ -5,6 +5,7 @@
 #include <numeric>
 
 #include "new_reduce/reduce_basic.hpp"
+#include "new_reduce/kernel_name.hpp"
 #include "new_reduce/forall_param.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -138,6 +139,7 @@ int main(int argc, char *argv[])
                  },
                  Reduce<RAJA::operators::plus>(&r),
                  Reduce<RAJA::operators::minimum>(&m),
+                 KernelName("Test"),
                  Reduce<RAJA::operators::maximum>(&ma)
                  );
     t.stop();
@@ -188,7 +190,8 @@ int main(int argc, char *argv[])
                  },
                  Reduce<RAJA::operators::plus>(&r),
                  Reduce<RAJA::operators::minimum>(&m),
-                 Reduce<RAJA::operators::maximum>(&ma));
+                 Reduce<RAJA::operators::maximum>(&ma)
+                 );
     t.stop();
     
     std::cout << "t : " << t.elapsed() << "\n";

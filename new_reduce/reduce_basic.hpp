@@ -32,6 +32,9 @@ namespace detail
     RAJA::detail::SoAPtr<T, RAJA::DEVICE::device_mempool_type> device_mem;
     unsigned int * device_count = nullptr;
 #endif
+
+    static constexpr size_t num_lambda_args = 1;
+    auto get_lambda_arg_tup() { return camp::make_tuple(&val); }
   };
 
 } // namespace detail

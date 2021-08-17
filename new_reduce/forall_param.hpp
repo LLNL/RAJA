@@ -22,7 +22,7 @@ namespace detail
                                                     camp::idx_seq<Sequence...>,
                                                     Ts&&... extra)
   {
-    return f(extra..., ( params.template get_param_ref<Sequence>() )...);
+    return f(extra..., ( params.template get_lambda_args<Sequence>() )...);
   }
 
   CAMP_SUPPRESS_HD_WARN
@@ -32,13 +32,15 @@ namespace detail
     return invoke_with_order(
         camp::forward<Params>(params),
         camp::forward<Fn>(f),
-        typename camp::decay<Params>::params_seq(),
+        typename camp::decay<Params>::lambda_params_seq(),
         camp::forward<Ts>(extra)...);
   }
 
+
+
   //
   //
-  // Forall param type thing..
+  // Forall Parameter Packing type
   //
   //
   template<typename... Params>
@@ -49,9 +51,28 @@ namespace detail
 
   private:
 
-    template<camp::idx_t... Seq>
-    constexpr auto m_param_refs( camp::idx_seq<Seq...>) -> decltype( camp::make_tuple( (&camp::get<Seq>(param_tup).val)...) ) {
-      return camp::make_tuple( (&camp::get<Seq>(param_tup).val)...) ;
+    template<camp::idx_t Seq>
+    constexpr auto lambda_args( camp::idx_seq<Seq> )
+        -> decltype(
+             camp::get<Seq>(param_tup).get_lambda_arg_tup()
+           )
+    {
+      return camp::get<Seq>(param_tup).get_lambda_arg_tup();
+    }
+
+    template<camp::idx_t First, camp::idx_t... Seq>
+    constexpr auto lambda_args( camp::idx_seq<First, Seq...> )
+        -> decltype(
+             camp::tuple_cat_pair(
+               camp::get<First>(param_tup).get_lambda_arg_tup(),
+               lambda_args(camp::idx_seq<Seq...>())
+             )
+           )
+    {
+      return camp::tuple_cat_pair(
+               camp::get<First>(param_tup).get_lambda_arg_tup(),
+               lambda_args(camp::idx_seq<Seq...>())
+             );
     }
 
     // Init
@@ -79,15 +100,23 @@ namespace detail
       CAMP_EXPAND(resolve<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
 
+    template<typename Last>
+    static size_t constexpr count_lambda_args() { return Last::num_lambda_args; }
+    template<typename First, typename Second, typename... Rest>
+    static size_t constexpr count_lambda_args() { return First::num_lambda_args + count_lambda_args<Second, Rest...>(); }
+
   public:
     FORALL_PARAMS_T (){}
     FORALL_PARAMS_T(Params... params) {
       param_tup = camp::make_tuple(params...);
     };
 
+    using lambda_params_seq = camp::make_idx_seq_t<count_lambda_args<Params...>()>;
+
     template<camp::idx_t Idx>
-    constexpr auto get_param_ref() -> decltype(*camp::get<Idx>( m_param_refs(params_seq{}) )) {
-      return (*camp::get<Idx>( m_param_refs(params_seq{}) ));
+    constexpr auto get_lambda_args()
+        -> decltype(*camp::get<Idx>( lambda_args(params_seq{}) )) {
+      return (*camp::get<Idx>( lambda_args(params_seq{}) ));
     }
 
     // Init
@@ -109,6 +138,7 @@ namespace detail
       detail_resolve(EXEC_POL(), params_seq{}, f_params , std::forward<Args>(args)... );
     }
   };
+
 
 } //  namespace detail
 
