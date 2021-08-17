@@ -12,7 +12,11 @@ namespace detail
 
   template<typename EXEC_POL>
   camp::concepts::enable_if< is_cuda_policy< EXEC_POL > >
-  init(KernelName kn, const RAJA::cuda::detail::cudaInfo &) {}
+  init(KernelName kn, const RAJA::cuda::detail::cudaInfo &) {
+#if defined(RAJA_ENABLE_NV_TOOLS_EXT)
+    nvtxRangePushA(kn.name);
+#endif
+  }
 
   template<typename EXEC_POL>
   RAJA_HOST_DEVICE camp::concepts::enable_if< is_cuda_policy< EXEC_POL > >
@@ -20,7 +24,11 @@ namespace detail
 
   template<typename EXEC_POL>
   camp::concepts::enable_if< is_cuda_policy< EXEC_POL > >
-  resolve(KernelName kn) {}
+  resolve(KernelName kn) {
+#if defined(RAJA_ENABLE_NV_TOOLS_EXT)
+    nvtxRangePop();
+#endif
+  }
 } // namespace detail
 
 #endif
