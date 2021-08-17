@@ -53,7 +53,7 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
     RAJA::cuda::detail::cudaInfo launch_info;
     launch_info.gridDim = RAJA::policy::cuda::impl::getGridDim(static_cast<cuda_dim_member_t>(N), BlockSize);
     launch_info.blockDim = cuda_dim_t{BlockSize, 1, 1};
-    launch_info.stream = 0;
+    launch_info.res = RAJA::resources::Cuda::get_default();
     init<EXEC_POL>(f_params, launch_info);
 
     size_t shmem = 1000;
@@ -68,7 +68,7 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
         launch_info.blockDim, //blockSize,
         args,
         shmem,
-        launch_info.stream   //stream
+        launch_info.res
     );
 
     resolve<EXEC_POL>(f_params);
