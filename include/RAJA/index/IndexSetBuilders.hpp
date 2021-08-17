@@ -55,7 +55,7 @@ namespace RAJA
  */
 void RAJASHAREDDLL_API buildIndexSetAligned(
     RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& iset,
-    camp::resources::Resource& work_res,
+    camp::resources::Resource work_res,
     const RAJA::Index_type* const indices_in,
     RAJA::Index_type length,
     RAJA::Index_type range_min_length,
@@ -118,7 +118,7 @@ void buildLockFreeBlockIndexset(
  */
 void buildLockFreeColorIndexset(
     RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& iset,
-    camp::resources::Resource& work_res,
+    camp::resources::Resource work_res,
     RAJA::Index_type const* domainToRange,
     int numEntity,
     int numRangePerDomain,

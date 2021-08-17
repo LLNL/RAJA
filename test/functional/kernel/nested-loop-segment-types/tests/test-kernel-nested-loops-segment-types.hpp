@@ -25,7 +25,7 @@ void KernelNestedLoopsSegmentTypesTestImpl(
   const std::vector<IDX_TYPE>& s2_idx,
   const RAJA::TypedListSegment<IDX_TYPE>& s3,
   const std::vector<IDX_TYPE>& s3_idx,
-  camp::resources::Resource& working_res,
+  camp::resources::Resource working_res,
   int perm)
 {
   IDX_TYPE dim1 = s1_idx[s1_idx.size() - 1] + 1;

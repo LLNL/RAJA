@@ -36,10 +36,10 @@ using host_loop = RAJA::loop_exec;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using device_launch = RAJA::expt::cuda_launch_t<true>;
+using device_launch = RAJA::expt::cuda_launch_t<false>;
 using device_loop = RAJA::expt::cuda_global_thread_x;
 #elif defined(RAJA_ENABLE_HIP)
-using device_launch = RAJA::expt::hip_launch_t<true>;
+using device_launch = RAJA::expt::hip_launch_t<false>;
 using device_loop = RAJA::expt::hip_global_thread_x;
 #endif
 
@@ -152,7 +152,8 @@ int main(int argc, char *argv[])
   RAJA::expt::launch<launch_policy>
     (select_cpu_or_gpu,
      RAJA::expt::Resources(RAJA::expt::Teams(GRID_SZ),
-                           RAJA::expt::Threads(TEAM_SZ)),
+                           RAJA::expt::Threads(TEAM_SZ),
+                           "Reduction Kernel"),
      [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) 
      {
 

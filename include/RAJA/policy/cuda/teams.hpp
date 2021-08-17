@@ -54,8 +54,6 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
     auto func = launch_global_fcn<BODY>;
 
     resources::Cuda cuda_res = resources::Cuda::get_default();
-    /* Use the zero stream until resource is better supported */
-    cudaStream_t stream = cuda_res.get_stream();
 
     //
     // Compute the number of blocks and threads
@@ -86,21 +84,21 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
         BODY body = RAJA::cuda::make_launch_body(
-            gridSize, blockSize, shmem, stream, std::forward<BODY_IN>(body_in));
+            gridSize, blockSize, shmem, cuda_res, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+        {
+          RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, cuda_res, async, ctx.kernel_name);
+        }
       }
-
-      if (!async) { RAJA::cuda::synchronize(stream); }
 
       RAJA_FT_END;
     }
 
-    // return resources::EventProxy<resources::Cuda>(&cuda_res);
+    // return resources::EventProxy<resources::Cuda>(cuda_res);
   }
 };
 
@@ -125,7 +123,6 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, nthreads>> {
     auto func = launch_global_fcn_fixed<BODY, nthreads>;
 
     resources::Cuda cuda_res = resources::Cuda::get_default();
-    cudaStream_t stream = cuda_res.get_stream();
 
     //
     // Compute the number of blocks and threads
@@ -156,21 +153,19 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, nthreads>> {
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
         BODY body = RAJA::cuda::make_launch_body(
-            gridSize, blockSize, shmem, stream, std::forward<BODY_IN>(body_in));
+            gridSize, blockSize, shmem, cuda_res, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, cuda_res, async);
       }
-
-      if (!async) { RAJA::cuda::synchronize(stream); }
 
       RAJA_FT_END;
     }
 
-    // return resources::EventProxy<resources::Cuda>(&cuda_res);
+    // return resources::EventProxy<resources::Cuda>(cuda_res);
   }
 };
 

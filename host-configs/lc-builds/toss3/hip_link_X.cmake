@@ -11,11 +11,13 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g" CACHE STRING "")
 
-set(HIP_COMMON_OPT_FLAGS )
-set(HIP_COMMON_DEBUG_FLAGS)
-set(HOST_OPT_FLAGS)
+set(HIP_COMMON_OPT_FLAGS "-std=c++17" CACHE STRING "")
+set(HIP_COMMON_DEBUG_FLAGS "-std=c++17" CACHE STRING "")
+set(HOST_OPT_FLAGS "-std=c++17" CACHE STRING "")
 
-set(CMAKE_EXE_LINKER_FLAGS "-Wl,--disable-new-dtags -L/opt/rocm-4.0.0/hip/lib -L/opt/rocm-4.0.0/lib -L/opt/rocm-4.0.0/lib64 -Wl,-rpath,/opt/rocm-4.0.0/hip/lib:/opt/rocm-4.0.0/lib:/opt/rocm-4.0.0/lib64 -lamdhip64 -lhsakmt -lhsa-runtime64" CACHE PATH "")
+if(DEFINED ROCM_ROOT_DIR)
+  set(CMAKE_EXE_LINKER_FLAGS "-Wl,--disable-new-dtags -L${ROCM_ROOT_DIR}/hip/lib -L${ROCM_ROOT_DIR}/lib -L${ROCM_ROOT_DIR}/lib64 -Wl,-rpath,${ROCM_ROOT_DIR}/hip/lib:${ROCM_ROOT_DIR}/lib:${ROCM_ROOT_DIR}/lib64 -lamdhip64 -lhsakmt -lhsa-runtime64" CACHE PATH "")
+endif()
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
   set(RAJA_HIPCC_FLAGS "-fPIC -O2 ${HIP_COMMON_OPT_FLAGS} ${HOST_OPT_FLAGS}" CACHE STRING "")
