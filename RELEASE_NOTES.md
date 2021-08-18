@@ -9,7 +9,7 @@
 Version vxx.yy.zz -- Release date 20yy-mm-dd
 ============================================
 
-Version v0.14.0 -- Release date 2021-07-dd
+Version v0.14.0 -- Release date 2021-08-20
 ============================================
 
 This release contains new features, bug fixes, and build improvements. Please
@@ -18,8 +18,14 @@ see the RAJA user guide for more information about items in this release.
 Notable changes include:
 
   * New features / API changes:
+      * Initial release of some SYCL execution back-end features for supporting
+        Intel GPUs. Users should be able to exercise RAJA::forall, basic
+        RAJA::kernel, and reductions. Furture releases will contain additional
+        RAJA feature support for SYCL. 
       * Various enhancements to the experimental RAJA "teams" capability,
         including documentation and complete code examples illustrating usage.
+      * The RAJA "teams" interface was expanded to initial support for RAJA 
+        resources.
       * The RAJA "teams" interface was expanded to allow users to label
         kernels with name strings to easily attribute execution timings and 
         other details to specific kernels with NVIDIA profiling tools, 
@@ -67,6 +73,10 @@ Notable changes include:
         which was marked deprecated in v0.12.0 release has been removed. Now,
         TypedListSegment constructor requires a camp resource object to be 
         passed which indicates the memory space where the indices will live.
+        Specifically, the array of indices passed to the constructor by a user
+        (assumed to live in host memory for the "owned" case) will be copied
+        to an internally owned allocation in the memory space defined by the
+        resource object. 
       * The ListSegment constructor takes a resource by value now, previously
         taken by reference, which allows more resource argument types to be 
         passed more seamlessly to the List Segment constructor.
@@ -78,7 +88,7 @@ Notable changes include:
 
   * Build changes/improvements:
       * Update BLT submodule to latest release, v0.4.1.
-      * Update camp submodule to latest tagged release, vX.Y.Z
+      * Update camp submodule to latest tagged release, v0.2.2
       * The RAJA_CXX_STANDARD_FLAG CMake variable was removed. The BLT_CXX_STD
         variable is now used instead. 
       * Support for building RAJA as a shared library on Windows has been added.
@@ -103,12 +113,17 @@ Notable changes include:
       * Improvements to build system to address Hip linking issues.
 
   * Bug fixes/improvements:
+      * Hip and CUDA block reductions were tweaked to fix the number of steps
+        in the final wavefront/warp reduction. This saves a couple rounds of
+        warp shfls.
       * A runtime bug resulting from defaulted View constructors not being 
         implemented correctly in CUDA 10.1 is fixed. This fixes an issue
         with CHAI managed arrays not having their copy constructor being 
         triggered properly.
       * Fix bug that caused a CUDA or Hip synchronization error when a zero
         length loop was enqueued in a workgroup.
+      * Added missing Hip workgroup unordered execution policy, so Hip 
+        version is consistent with CUDA version.
       * Fixed issue where the RAJA non-resource API returns an EventProxy object
         with a dangling resource pointer, by getting a reference to the 
         default resource for the execution context.
