@@ -14,32 +14,29 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Reduction Example using RAJA Teams
+ *  Teams run-time resource execution
  *
- *  This example illustrates use of the RAJA reduction types: min, max,
- *  sum, min-loc, and max-loc.
+ *  This example revisits the reductions example
+ *  and illustrates how to incorporate RAJA
+ *  resource constructs and maintain runtime
+ *  execution policy selection
  *
  *  RAJA features shown:
  *    - `launch' loop iteration template method
- *    -  Index range segment
  *    -  Execution policies
  *    -  Reduction types
+ *    -  Resource constructs
  *
  */
 
-#if defined(RAJA_ENABLE_OPENMP)
-using host_launch = RAJA::expt::omp_launch_t;
-using host_loop = RAJA::omp_for_exec;
-#else
 using host_launch = RAJA::expt::seq_launch_t;
 using host_loop = RAJA::loop_exec;
-#endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using device_launch = RAJA::expt::cuda_launch_t<false>;
+using device_launch = RAJA::expt::cuda_launch_t<true>;
 using device_loop = RAJA::expt::cuda_global_thread_x;
 #elif defined(RAJA_ENABLE_HIP)
-using device_launch = RAJA::expt::hip_launch_t<false>;
+using device_launch = RAJA::expt::hip_launch_t<true>;
 using device_loop = RAJA::expt::hip_global_thread_x;
 #endif
 
@@ -59,12 +56,9 @@ using loop_pol = RAJA::expt::LoopPolicy<host_loop
 using reduce_policy = RAJA::cuda_reduce;
 #elif defined(RAJA_ENABLE_HIP)
 using reduce_policy = RAJA::hip_reduce;
-#elif defined(RAJA_ENABLE_OPENMP)
-using reduce_policy = RAJA::omp_reduce;
 #else
 using reduce_policy = RAJA::seq_reduce;
 #endif
-
 
 int main(int argc, char *argv[])
 {
@@ -149,26 +143,40 @@ int main(int argc, char *argv[])
   const int TEAM_SZ = 256;
   const int GRID_SZ = RAJA_DIVIDE_CEILING_INT(N,TEAM_SZ);
 
+
+  RAJA::resources::Host host_res;
+#if defined(RAJA_ENABLE_CUDA)
+  RAJA::resources::Cuda device_res;
+#endif
+#if defined(RAJA_ENABLE_HIP)
+  RAJA::resources::Hip device_res;
+#endif
+
+  //Get typed erased resource - it will internally store if we are running on the host or device
+#if defined(RAJA_DEVICE_ACTIVE)
+  RAJA::resources::Resource res = RAJA::expt::Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
+#else
+  RAJA::resources::Resource res = RAJA::expt::Get_Host_Resource(host_res, select_cpu_or_gpu);
+#endif
+
+  //How the kernel executes now depends on how the resource is constructed (host or device)
   RAJA::expt::launch<launch_policy>
-    (select_cpu_or_gpu,
-     RAJA::expt::Grid(RAJA::expt::Teams(GRID_SZ),
+    (res, RAJA::expt::Grid(RAJA::expt::Teams(GRID_SZ),
                            RAJA::expt::Threads(TEAM_SZ),
                            "Reduction Kernel"),
-     [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) 
-     {
-
+     [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx)  {
        RAJA::expt::loop<loop_pol>(ctx, arange, [&] (int i) {
-           
+
            kernel_sum += a[i];
-           
+
            kernel_min.min(a[i]);
            kernel_max.max(a[i]);
-           
+
            kernel_minloc.minloc(a[i], i);
            kernel_maxloc.maxloc(a[i], i);
          });
-       
     });
+
 
   std::cout << "\tsum = " << kernel_sum.get() << std::endl;
   std::cout << "\tmin = " << kernel_min.get() << std::endl;

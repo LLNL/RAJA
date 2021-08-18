@@ -321,7 +321,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // _matmult_basickernel_start
   RAJA::expt::launch<launch_policy>(RAJA::expt::HOST,
-   RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
+   RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
                          RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
@@ -378,7 +378,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >;
 
   RAJA::expt::launch<omp_launch_policy>(RAJA::expt::HOST,
-   RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
+   RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
                          RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
@@ -417,7 +417,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                                   >;
 
    RAJA::expt::launch<omp_launch_policy>(RAJA::expt::HOST,
-    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
+    RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
                           RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
    [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
@@ -456,7 +456,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   //
    RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
-    RAJA::expt::Resources(RAJA::expt::Teams(N),
+    RAJA::expt::Grid(RAJA::expt::Teams(N),
                           RAJA::expt::Threads(N)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
@@ -492,7 +492,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // The tiling capabilities in RAJA will also mask out of bounds iterations.
   //
   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
-    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
+    RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
                           RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
@@ -552,7 +552,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   //
    RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
-    RAJA::expt::Resources(RAJA::expt::Teams(N),
+    RAJA::expt::Grid(RAJA::expt::Teams(N),
                           RAJA::expt::Threads(N)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
@@ -592,7 +592,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // The tiling capabilities in RAJA will also mask out of bounds iterations.
   //
   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
-    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
+    RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
                           RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
@@ -641,7 +641,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // to add a barrier ensuring all threads have loaded/read from shared memory
   //
   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
-    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
+    RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
                           RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
      [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
    //
