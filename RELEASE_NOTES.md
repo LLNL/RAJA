@@ -20,7 +20,7 @@ Notable changes include:
   * New features / API changes:
       * Initial release of some SYCL execution back-end features for supporting
         Intel GPUs. Users should be able to exercise RAJA::forall, basic
-        RAJA::kernel, and reductions. Furture releases will contain additional
+        RAJA::kernel, and reductions. Future releases will contain additional
         RAJA feature support for SYCL. 
       * Various enhancements to the experimental RAJA "teams" capability,
         including documentation and complete code examples illustrating usage.
@@ -57,8 +57,8 @@ Notable changes include:
         the User Guide for policy descriptions. 
       * Host implementation of Hip atomics added.
       * Add ability to specify atomic to use on the host in CUDA and Hip
-        atomic policies (i.e., added host atomic templlate parameter), This
-        is useful for host-device deorated lambda expressions that may be
+        atomic policies (i.e., added host atomic template parameter), This
+        is useful for host-device decorated lambda expressions that may be
         used for either host or device execution. It also fixes compilation 
         issues with Hip atomic compilation in host-device contexts.
       * The RAJA Registry API has been changed to return raw pointers to
@@ -92,11 +92,11 @@ Notable changes include:
       * The RAJA_CXX_STANDARD_FLAG CMake variable was removed. The BLT_CXX_STD
         variable is now used instead. 
       * Support for building RAJA as a shared library on Windows has been added.
-      * A build sysstem adjustment was made to address an issue when RAJA is 
+      * A build system adjustment was made to address an issue when RAJA is 
         built with an external version of camp (e.g., through Spack).
       * The build default has been changed to use the version of CUB that
         is installed in the specified version of the CUDA toolkit, if available,
-        when CUDA is enabled. Similary, for the analogous functionality in
+        when CUDA is enabled. Similarly, for the analogous functionality in
         Hip. Specific versions of these libraries can still be specified for
         a RAJA build. Please see the RAJA User Guide for details. 
       * The build system now uses the BLT cmake_dependent_options support for
