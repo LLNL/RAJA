@@ -28,11 +28,10 @@ namespace RAJA
 namespace expt
 {
 
-struct omp_launch_t {
-};
-
 template <>
 struct LaunchExecute<RAJA::expt::omp_launch_t> {
+
+
   template <typename BODY>
   static void exec(LaunchContext const &ctx, BODY const &body)
   {
@@ -42,6 +41,20 @@ struct LaunchExecute<RAJA::expt::omp_launch_t> {
       loop_body.get_priv()(ctx);
     });
   }
+
+  template <typename BODY>
+  static resources::EventProxy<resources::Resource>
+  exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY const &body)
+  {
+    RAJA::region<RAJA::omp_parallel_region>([&]() {
+      using RAJA::internal::thread_privatize;
+      auto loop_body = thread_privatize(body);
+      loop_body.get_priv()(ctx);
+    });
+
+    return resources::EventProxy<resources::Resource>(res);
+  }
+
 };
 
 

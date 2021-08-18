@@ -25,6 +25,7 @@
 #include "RAJA/policy/cuda/policy.hpp"
 #endif
 #include "RAJA/policy/hip/policy.hpp"
+#include "RAJA/policy/sycl/policy.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/policy/openmp_target/policy.hpp"
 #include "RAJA/internal/get_platform.hpp"
@@ -88,6 +89,23 @@ namespace RAJA
   };
 #endif
 
+#if defined(RAJA_ENABLE_SYCL)
+  template<size_t BlockSize, bool Async>
+  struct get_resource<sycl_exec<BlockSize, Async>>{
+    using type = camp::resources::Sycl;
+  };
+
+  template<size_t BlockSize, bool Async>
+  struct get_resource<sycl_exec_nontrivial<BlockSize, Async>>{
+    using type = camp::resources::Sycl;
+  };
+
+  template<typename ISetIter, size_t BlockSize, bool Async>
+  struct get_resource<ExecPolicy<ISetIter, sycl_exec<BlockSize, Async>>>{
+    using type = camp::resources::Sycl;
+  };
+#endif
+
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
   template<>
   struct get_resource_from_platform<Platform::omp_target>{
@@ -126,6 +144,9 @@ namespace RAJA
 #endif
 #if defined(RAJA_ENABLE_HIP)
     template <> struct is_resource<resources::Hip> : std::true_type {};
+#endif
+#if defined(RAJA_ENABLE_SYCL)
+    template <> struct is_resource<resources::Sycl> : std::true_type {};
 #endif
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
     template <> struct is_resource<resources::Omp> : std::true_type {};
