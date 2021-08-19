@@ -1148,6 +1148,8 @@ namespace RAJA
 
           // 1 register is split over multiple rows
           if(s_minor_dim_registers == 0){
+            printf("A\n");
+
 
             // start by broadcasting the first segment in v across all of v
             // we will use this term for all registers in the matrix
@@ -1174,6 +1176,7 @@ namespace RAJA
           }
           // one or more registers per row
           else{
+            printf("B\n");
 
             // Loop over rows
             camp::idx_t reg = 0;
@@ -1203,6 +1206,7 @@ namespace RAJA
 
           // 1 register is split over multiple columns
           if(s_minor_dim_registers == 0){
+            printf("C\n");
             auto &mv = result.get_register(0);
 
             // Loop over registers, which are also the segments in v
@@ -1222,6 +1226,7 @@ namespace RAJA
           }
           // one or more registers per column
           else{
+            printf("D\n");
 
             // Loop over columns (which is also registers)
             camp::idx_t reg = 0;

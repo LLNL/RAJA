@@ -1112,23 +1112,23 @@ namespace internal {
        *
        *      input segments allowed are from 0 to 3, inclusive
        *
-       *      output_segment=0:
+       *      input_segment=0:
        *      Result= x0, x1, x0, x1, x0, x1, x0, x1
        *
-       *      output_segment=1:
+       *      input_segment=1:
        *      Result= x2, x3, x2, x3, x2, x3, x2, x3
        *
-       *      output_segment=3:
+       *      input_segment=3:
        *      Result= x6, x7, x6, x7, x6, x7, x6, x7
        *
        *  and so on up to segbits=2, the input segments are 4 wide:
        *
        *      input segments allowed are from 0 or 1
        *
-       *      output_segment=0:
+       *      input_segment=0:
        *      Result= x0, x1, x2, x3, x0, x1, x2, x3
        *
-       *      output_segment=1:
+       *      input_segment=1:
        *      Result= x4, x5, x6, x7, x4, x5, x6, x7
        *
        */

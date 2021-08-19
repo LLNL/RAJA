@@ -12,8 +12,12 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
 
-using RegisterTestTypes = ::testing::Types<
+#include "./tensor-helper.hpp"
 
+using RegisterTestTypes = ::testing::Types<
+#ifdef RAJA_ENABLE_CUDA
+    RAJA::Register<double, RAJA::cuda_warp_register>,
+#endif
 //    RAJA::VectorRegister<double, RAJA::avx2_register, 8>,
 //    RAJA::VectorRegister<double, RAJA::avx_register, 5>,
 //    RAJA::VectorRegister<double, RAJA::avx_register, 6>,
@@ -24,27 +28,27 @@ using RegisterTestTypes = ::testing::Types<
 //    RAJA::VectorRegister<int>,
 //    RAJA::VectorRegister<long>,
 
-//#ifdef __AVX__
+#ifdef __AVX__
 //    RAJA::Register<double, RAJA::avx_register>,
 //    RAJA::Register<float, RAJA::avx_register>,
 //    RAJA::Register<int, RAJA::avx_register>,
 //    RAJA::Register<long, RAJA::avx_register>,
-//#endif
-//
-//#ifdef __AVX2__
+#endif
+
+#ifdef __AVX2__
     RAJA::Register<double, RAJA::avx2_register>,
 //    RAJA::Register<float, RAJA::avx2_register>,
 //    RAJA::Register<int, RAJA::avx2_register>,
 //    RAJA::Register<long, RAJA::avx2_register>,
-//#endif
-//
-//#ifdef __AVX512__
+#endif
+
+#ifdef __AVX512__
 //    RAJA::Register<double, RAJA::avx512_register>,
 //    RAJA::Register<float, RAJA::avx512_register>,
 //    RAJA::Register<int, RAJA::avx512_register>,
 //    RAJA::Register<long, RAJA::avx512_register>,
-//#endif
-//
+#endif
+
 //    // scalar_register is supported on all platforms
 //    RAJA::Register<double, RAJA::scalar_register>,
 //    RAJA::Register<float, RAJA::scalar_register>,
@@ -53,31 +57,33 @@ using RegisterTestTypes = ::testing::Types<
   >;
 
 
-template <typename NestedPolicy>
+template <typename RegisterType>
 class RegisterTest : public ::testing::Test
 {
-protected:
+public:
 
   RegisterTest() = default;
   virtual ~RegisterTest() = default;
 
   virtual void SetUp()
   {
+
   }
 
   virtual void TearDown()
   {
+
   }
 };
 TYPED_TEST_SUITE_P(RegisterTest);
 
-#if 1
+#if 0
 /*
  * We are using NO_OPT_RAND for input values so the compiler cannot do fancy
  * things, like constexpr out all of the intrinsics.
  */
 
-TYPED_TEST_P(RegisterTest, GetSet)
+GPU_TYPED_TEST_P(RegisterTest, GetSet)
 {
 
   using register_t = TypeParam;
@@ -794,23 +800,235 @@ TYPED_TEST_P(RegisterTest, SegmentedDotProduct)
   } // segbits
 
 }
+#endif
 
-TYPED_TEST_P(RegisterTest, SegmentedBroadcast)
+
+GPU_TYPED_TEST_P(RegisterTest, SegmentedSumInner)
 {
-  using register_t = TypeParam;
+  using register_type = TypeParam;
+  using element_type = typename register_type::element_type;
+  using policy_type = typename register_type::register_policy;
 
-  using element_t = typename register_t::element_type;
-  static constexpr camp::idx_t num_elem = register_t::s_num_elem;
+  static constexpr camp::idx_t num_elem = register_type::s_num_elem;
 
-  element_t A[num_elem], R[num_elem];
-  register_t x;
+  // Allocate
 
+  std::vector<element_type> input0_vec(num_elem);
+  element_type *input0_hptr = input0_vec.data();
+  element_type *input0_dptr = tensor_malloc<policy_type, element_type>(num_elem);
+
+  std::vector<element_type> output0_vec(num_elem);
+  element_type *output0_hptr = output0_vec.data();
+  element_type *output0_dptr = tensor_malloc<policy_type, element_type>(num_elem);
+
+
+  // Initialize input data
+//  printf("input: ");
   for(camp::idx_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(NO_OPT_RAND*1000.0);
-    x.set(A[i], i);
+    input0_hptr[i] = (element_type)(i+1); //+NO_OPT_RAND);
+//    printf("%lf ", (double)input0_hptr[i]);
   }
+//  printf("\n");
+  tensor_copy_to_device<policy_type>(input0_dptr, input0_vec);
 
-  printf("x: %s", x.to_string().c_str());
+
+
+  // run segmented dot products for all segments allowed by the vector
+  for(int segbits = 0;(1<<segbits) <= num_elem;++ segbits){
+
+    int num_segments = 1<<segbits;
+
+    for(int output_segment = 0;output_segment < num_segments;++ output_segment){
+//      printf("segbits=%d, output_segment=%d\n", (int)segbits, (int)output_segment);
+
+      // Execute segmented broadcast
+      tensor_do<policy_type>([=] RAJA_HOST_DEVICE (){
+
+        register_type x;
+        x.load_packed(input0_dptr);
+
+        register_type y = x.segmented_sum_inner(segbits, output_segment);
+
+        y.store_packed(output0_dptr);
+
+      });
+
+      // Move result to host
+      tensor_copy_to_host<policy_type>(output0_vec, output0_dptr);
+
+
+      // Check result
+
+      // Compute expected values
+      element_type expected[num_elem];
+      for(camp::idx_t i = 0;i < num_elem; ++ i){
+        expected[i] = 0;
+      }
+
+      int output_offset = output_segment * num_elem>>segbits;
+
+      // sum each value into appropriate segment lane
+      for(camp::idx_t i = 0;i < num_elem; ++ i){
+
+        auto off = (i >> segbits)+output_offset;
+
+        expected[off] += input0_hptr[i];
+      }
+
+
+      printf("Expected: ");
+      for(camp::idx_t i = 0;i < num_elem; ++ i){
+        printf("%lf ", (double)expected[i]);
+      }
+      printf("\nResult:   ");
+      for(camp::idx_t i = 0;i < num_elem; ++ i){
+        printf("%lf ", (double)output0_hptr[i]);
+      }
+      printf("\n");
+
+      for(camp::idx_t i = 0;i < num_elem; ++ i){
+
+        ASSERT_SCALAR_EQ(expected[i], output0_hptr[i]);
+      }
+
+    } // segment
+
+  } // segbits
+
+
+  // Cleanup
+  tensor_free<policy_type>(input0_dptr);
+  tensor_free<policy_type>(output0_dptr);
+}
+
+
+GPU_TYPED_TEST_P(RegisterTest, SegmentedBroadcastInner)
+{
+  using register_type = TypeParam;
+  using element_type = typename register_type::element_type;
+  using policy_type = typename register_type::register_policy;
+
+  static constexpr camp::idx_t num_elem = register_type::s_num_elem;
+
+  // Allocate
+
+  std::vector<element_type> input0_vec(num_elem);
+  element_type *input0_hptr = input0_vec.data();
+  element_type *input0_dptr = tensor_malloc<policy_type, element_type>(num_elem);
+
+  std::vector<element_type> output0_vec(num_elem);
+  element_type *output0_hptr = output0_vec.data();
+  element_type *output0_dptr = tensor_malloc<policy_type, element_type>(num_elem);
+
+
+  // Initialize input data
+//  printf("input: ");
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
+    input0_hptr[i] = (element_type)(i+1); //+NO_OPT_RAND);
+//    printf("%lf ", (double)input0_hptr[i]);
+  }
+//  printf("\n");
+  tensor_copy_to_device<policy_type>(input0_dptr, input0_vec);
+
+
+
+  // run segmented dot products for all segments allowed by the vector
+  for(int segbits = 0;(1<<segbits) <= num_elem;++ segbits){
+
+    int num_segments = num_elem>>segbits;
+
+    for(int input_segment = 0;input_segment < num_segments;++ input_segment){
+//      printf("segbits=%d, input_segment=%d\n", (int)segbits, (int)input_segment);
+
+      // Execute segmented broadcast
+      tensor_do<policy_type>([=] RAJA_HOST_DEVICE (){
+
+        register_type x;
+        x.load_packed(input0_dptr);
+
+        register_type y = x.segmented_broadcast_inner(segbits, input_segment);
+
+        y.store_packed(output0_dptr);
+
+      });
+
+      // Move result to host
+      tensor_copy_to_host<policy_type>(output0_vec, output0_dptr);
+
+
+      // Check result
+
+      // Compute expected values
+      element_type expected[num_elem];
+
+      camp::idx_t mask = (1<<segbits)-1;
+      camp::idx_t offset = input_segment << segbits;
+
+      // default implementation is dumb, just sum each value into
+      // appropriate segment lane
+//      printf("Expected: ");
+      for(camp::idx_t i = 0;i < num_elem; ++ i){
+
+        auto off = (i&mask) + offset;
+
+        expected[i] = input0_hptr[off];
+
+//        printf("%d ", (int)off);
+        //printf("%lf ", (double)expected[i]);
+      }
+//      printf("\n");
+
+
+//      printf("Result:   ");
+//      for(camp::idx_t i = 0;i < num_elem; ++ i){
+//        printf("%lf ", (double)output0_hptr[i]);
+//      }
+//      printf("\n");
+
+      for(camp::idx_t i = 0;i < num_elem; ++ i){
+
+        ASSERT_SCALAR_EQ(expected[i], output0_hptr[i]);
+      }
+
+    } // segment
+
+  } // segbits
+
+
+  // Cleanup
+  tensor_free<policy_type>(input0_dptr);
+  tensor_free<policy_type>(output0_dptr);
+}
+
+GPU_TYPED_TEST_P(RegisterTest, SegmentedBroadcastOuter)
+{
+  using register_type = TypeParam;
+  using element_type = typename register_type::element_type;
+  using policy_type = typename register_type::register_policy;
+
+  static constexpr camp::idx_t num_elem = register_type::s_num_elem;
+
+  // Allocate
+
+  std::vector<element_type> input0_vec(num_elem);
+  element_type *input0_hptr = input0_vec.data();
+  element_type *input0_dptr = tensor_malloc<policy_type, element_type>(num_elem);
+
+  std::vector<element_type> output0_vec(num_elem);
+  element_type *output0_hptr = output0_vec.data();
+  element_type *output0_dptr = tensor_malloc<policy_type, element_type>(num_elem);
+
+
+  // Initialize input data
+//  printf("input: ");
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
+    input0_hptr[i] = (element_type)(i+1+NO_OPT_RAND);
+//    printf("%lf ", (double)input0_hptr[i]);
+  }
+//  printf("\n");
+  tensor_copy_to_device<policy_type>(input0_dptr, input0_vec);
+
+
 
   // run segmented dot products for all segments allowed by the vector
   for(int segbits = 0;(1<<segbits) <= num_elem;++ segbits){
@@ -819,140 +1037,82 @@ TYPED_TEST_P(RegisterTest, SegmentedBroadcast)
 
     for(int input_segment = 0;input_segment < num_segments;++ input_segment){
 
-      register_t ex = x.segmented_broadcast(segbits, input_segment);
+      // Execute segmented broadcast
+      tensor_do<policy_type>([=] RAJA_HOST_DEVICE (){
+
+        register_type x;
+        x.load_packed(input0_dptr);
+
+        register_type y = x.segmented_broadcast_outer(segbits, input_segment);
+
+        y.store_packed(output0_dptr);
+
+      });
+
+      // Move result to host
+      tensor_copy_to_host<policy_type>(output0_vec, output0_dptr);
+
+
+      // Check result
 
       // Compute expected values
-      printf("explode: segbits=%d, input_segment=%d\n", segbits, input_segment);
-      printf("  R:  ");
+//      printf("explode: segbits=%d, input_segment=%d\n", segbits, input_segment);
+//      printf("  expected:  ");
+
+      element_type expected[num_elem];
       for(camp::idx_t i = 0;i < num_elem; ++ i){
         int seg = i>>segbits;
 
-        int off = (num_elem>>segbits)*segment + seg;
+        int off = (num_elem>>segbits)*input_segment + seg;
 
-        R[i] = A[off];
-        printf("%lf ", (double)R[i]);
+        expected[i] = input0_hptr[off];
+//        printf("%lf ", (double)expected[i]);
       }
-      printf("\n");
+//      printf("\n");
 
-      printf("  EX: %s", ex.to_string().c_str());
 
-      for(size_t i = 0;i < num_elem; ++ i){
-        ASSERT_SCALAR_EQ(R[i], ex.get(i));
+      for(camp::idx_t i = 0;i < num_elem; ++ i){
+        ASSERT_SCALAR_EQ(expected[i], output0_hptr[i]);
       }
 
     } // segment
 
   } // segbits
 
+
+  // Cleanup
+  tensor_free<policy_type>(input0_dptr);
+  tensor_free<policy_type>(output0_dptr);
 }
 
-#endif
 
 
 
 
-REGISTER_TYPED_TEST_SUITE_P( RegisterTest,
-                             GetSet,
-                             Load,
-                             Gather,
-                             Scatter,
-                             Add,
-                             Subtract,
-                             Multiply,
-                             Divide,
-                             DotProduct,
-                             FMA,
-                             FMS,
-                             Max,
-                             Min,
-                             SegmentedSum,
-                             SegmentedDotProduct,
-                             SegmentedBroadcast);
+
+REGISTER_TYPED_TEST_SUITE_P(RegisterTest,
+//                             GetSet,
+//                             Load,
+//                             Gather,
+//                             Scatter,
+//                             Add,
+//                             Subtract,
+//                             Multiply,
+//                             Divide,
+//                             DotProduct,
+//                             FMA,
+//                             FMS,
+//                             Max,
+//                             Min,
+
+    SegmentedSumInner,
+//    SegmentedSumOuter,
+//                             SegmentedDotProduct,
+    SegmentedBroadcastInner,
+    SegmentedBroadcastOuter);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SIMD, RegisterTest, RegisterTestTypes);
 
 
-#if defined(RAJA_ENABLE_CUDA)
 
-
-GPU_TEST(RegisterTestCuda, CudaWarpRegister)
-{
-  using namespace RAJA::statement;
-
-  using element_t = double;
-  size_t N = 20;
-
-  element_t *data = nullptr;
-
-  cudaErrchk(cudaMallocManaged(&data,
-                    sizeof(element_t) * N*32,
-                    cudaMemAttachGlobal));
-
-  element_t *result = nullptr;
-
-  cudaErrchk(cudaMallocManaged(&result,
-                    sizeof(element_t) * N,
-                    cudaMemAttachGlobal));
-
-  cudaErrchk(cudaDeviceSynchronize());
-
-  for(int i = 0;i < N*32;++ i){
-    data[i] = i; //1000*NO_OPT_RAND;
-  }
-
-  for(int i = 0;i < N;++ i){
-    result[i] = 0.0;
-  }
-
-  cudaErrchk(cudaDeviceSynchronize());
-
-
-  using vector_t = RAJA::Register<double, RAJA::cuda_warp_register>;
-
-  using Pol = RAJA::KernelPolicy<
-      RAJA::statement::CudaKernel<
-      RAJA::statement::Tile<0, RAJA::tile_fixed<32>, RAJA::cuda_block_x_loop,
-      RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
-          RAJA::statement::Lambda<0>
-            >
-          >
-        >
-       >;
-
-
-  RAJA::kernel<Pol>(
-
-      RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N*32)),
-
-      [=] __device__(int i){
-        // limit i to increments of 32
-        i -= i & 0x1F;
-
-        // load vector
-        vector_t v;
-        v.load_packed(data+i);
-
-        // scale by 2
-        v = v.scale(2.0);
-
-        // store in result
-        v.store_packed(result+i);
-
-      });
-
-
-  cudaErrchk(cudaDeviceSynchronize());
-
-
-  for(int i = 0;i < N;++ i){
-    ASSERT_SCALAR_EQ(data[i]*2.0, result[i]);
-  }
-
-
-
-}
-
-
-
-#endif // RAJA_ENABLE_CUDA
 

@@ -752,15 +752,27 @@ namespace RAJA {
       {
 
         // First: tree reduce values within each segment
+        if(get_lane()==0){
+          printf("segment_sum_inner: segbits=%d\n", (int)segbits);
+          printf("  initial values:\n");
+        }
+        printf("  lane=%d: m_value=%lf\n", (int)get_lane(), (double)m_value);
         element_type x = m_value;
         RAJA_UNROLL
-        for(int delta = (1<<segbits);delta < s_num_elem;delta = delta<<1){
+        for(int delta = 1;delta < 1<<segbits;delta = delta<<1){
+
+          if(get_lane()==0){
+            printf("  iteration: delta=%d\n", (int)delta);
+          }
 
           // note: using shfl, not shfl_up  because we want things to wrap
           // around
 
           // tree shuffle
-          element_type y = __shfl_sync(0xffffffff, m_value, get_lane()+delta);
+          element_type y = __shfl_sync(0xffffffff, x, get_lane()+delta);
+
+          printf("    lane=%d: recv_from=%d, x=%lf, y=%lf, new=%lf\n",
+              (int)get_lane(), (int)(get_lane()+delta), x, y, x+y);
 
           // reduce
           x += y;
@@ -768,12 +780,30 @@ namespace RAJA {
 
         // Second: send result to output segment lanes
         self_type result;
-        result.get_raw_value() = __shfl_sync(0xffffffff, x, get_lane()&( (1<<segbits)-1));
+        int our_segment_lane = get_lane() >> segbits;
+        //int result_lane = our_segment_lane * (1<<segbits);
+        int result_lane = get_lane()<<segbits;
+
+        int output_segment_size = s_num_elem>>segbits;
+        int our_output_segment = get_lane()/output_segment_size;
+        bool in_output_segment = our_output_segment == output_segment;
+        result.get_raw_value() = __shfl_sync(0xffffffff, x, result_lane);
+        if(get_lane()==0){
+          printf("  send result:\n");
+        }
+        printf("  lane=%d: recv_from=%d, mask=%d, result=%lf\n", (int)get_lane(), (int)result_lane, (int)in_output_segment, (double)result.get_raw_value() );
+
 
         // Third: mask off everything but output_segment
-        if((get_lane()>>segbits) != output_segment){
+        if(!in_output_segment){
           result.get_raw_value() = 0;
         }
+
+        if(get_lane()==0){
+          printf("  final values:\n");
+        }
+        printf("  lane=%d: result=%lf\n", (int)get_lane(), (double)result.get_raw_value() );
+
 
         return result;
       }

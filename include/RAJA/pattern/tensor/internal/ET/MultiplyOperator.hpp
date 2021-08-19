@@ -458,6 +458,7 @@ namespace RAJA
         auto tile_size = right_type::result_type::s_dim_elem(0);
         auto k_size = et_right.getDimSize(0);
 
+
         // TODO: check that left and right are compatible
         // m_left.getDimSize(1) == m_right.getDimSize(0)
         // how do we provide checking for this kind of error?
