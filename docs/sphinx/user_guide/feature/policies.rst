@@ -398,7 +398,7 @@ Finally
           as the block-direct policies may yield better performance.
 
 
- GPU Policies for SYCL
+GPU Policies for SYCL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
  ======================================== ============= ========================
