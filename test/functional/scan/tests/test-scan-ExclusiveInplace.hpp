@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -35,28 +35,44 @@ void ScanExclusiveInplaceTestImpl(int N,
 {
   using T = typename OP_TYPE::result_type;
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  WORKING_RES res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res{res};
 
   T* work_in;
   T* work_out;
   T* host_in;
   T* host_out;
 
-  allocScanTestData(N,             
+  allocScanTestData(N,
                     working_res,
-                    &work_in, &work_out,             
+                    &work_in, &work_out,
                     &host_in, &host_out);
 
   std::iota(host_in, host_in + N, 1);
 
-  working_res.memcpy(work_in, host_in, sizeof(T) * N);
+  // test interface without resource
+  res.memcpy(work_in, host_in, sizeof(T) * N);
+  res.wait();
 
-  RAJA::exclusive_scan_inplace<EXEC_POLICY>(work_in,
-                                            work_in + N,
+  RAJA::exclusive_scan_inplace<EXEC_POLICY>(RAJA::make_span(work_in, N),
                                             OP_TYPE{},
                                             offset);
 
-  working_res.memcpy(host_out, work_in, sizeof(T) * N);
+  res.memcpy(host_out, work_in, sizeof(T) * N);
+  res.wait();
+
+  ASSERT_TRUE(check_exclusive<OP_TYPE>(host_out, host_in, N, offset));
+
+  // test interface with resource
+  res.memcpy(work_in, host_in, sizeof(T) * N);
+
+  RAJA::exclusive_scan_inplace<EXEC_POLICY>(res,
+                                            RAJA::make_span(work_in, N),
+                                            OP_TYPE{},
+                                            offset);
+
+  res.memcpy(host_out, work_in, sizeof(T) * N);
+  res.wait();
 
   ASSERT_TRUE(check_exclusive<OP_TYPE>(host_out, host_in, N, offset));
 
@@ -78,10 +94,10 @@ TYPED_TEST_P(ScanExclusiveInplaceTest, ScanExclusiveInplace)
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
   using OP_TYPE          = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  ScanExclusiveInplaceTestImpl<EXEC_POLICY, 
+  ScanExclusiveInplaceTestImpl<EXEC_POLICY,
                                WORKING_RESOURCE,
                                OP_TYPE>(0);
-  ScanExclusiveInplaceTestImpl<EXEC_POLICY, 
+  ScanExclusiveInplaceTestImpl<EXEC_POLICY,
                                WORKING_RESOURCE,
                                OP_TYPE>(357);
   ScanExclusiveInplaceTestImpl<EXEC_POLICY,
@@ -104,7 +120,7 @@ TYPED_TEST_P(ScanExclusiveInplaceTest, ScanExclusiveInplace)
                                OP_TYPE>(32000, T(2));
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ScanExclusiveInplaceTest, 
+REGISTER_TYPED_TEST_SUITE_P(ScanExclusiveInplaceTest,
                             ScanExclusiveInplace);
 
 #endif // __TEST_SCAN_EXCLUSIVE_INPLACE_HPP__

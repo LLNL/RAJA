@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
 .. ## for details.
 .. ##
@@ -132,11 +132,13 @@ build using N cores.
 
 .. _build-external-tpl-label:
 
-.. note:: You may use externally-supplied versions of the camp and cub 
-          libraries with RAJA if you wish. To do so, pass the following 
+.. note:: You may use externally-supplied versions of the camp, CUB, and rocPRIM
+          libraries with RAJA if you wish. To do so, pass the following
           options to CMake:
             * External camp: -DEXTERNAL_CAMP_SOURCE_DIR=<camp dir name>
-            * External cub: -DENABLE_EXTERNAL_CUB=On -DCUB_DIR=<cub dir name> 
+            * External CUB: -DENABLE_EXTERNAL_CUB=On -DCUB_DIR=<CUB dir name>
+            * External rocPRIM: -DENABLE_EXTERNAL_ROCPRIM=On
+                                -DROCPRIM_DIR=<rocPRIM dir name>
 
 -----------------
 GPU Builds, etc.
@@ -190,13 +192,20 @@ appropriate nvcc options in the ``CMAKE_CUDA_FLAGS_*`` variables.
             CMake will report this and stop processing.
 
 Also, RAJA relies on the CUB CUDA utilities library for some CUDA functionality.
-CUB is included with RAJA as a Git submodule and this version will be used if
-you do not specify an alternative. To use an externally-supplied CUB library,
-provide the following options to CMake: 
+The CUB included in the CUDA toolkit is used by default if available. RAJA
+includes a CUB submodule that is used if it is not available. To use
+an external CUB install provide the following option to CMake:
 ``-DENABLE_EXTERNAL_CUB=On -DCUB_DIR=<pat/to/cub>``.
 
-.. note:: It is important to note that the version of Googletest that
-          is used in RAJA version v0.11.0 or newer requires CUDA version 
+.. note:: **It is important to note that the CUDA toolkit version of cub is
+          required for compatibility with the CUDA toolkit version of thrust
+          starting with CUDA toolkit version v11.0.0. So, if you build
+          RAJA with CUDA version 11 or higher you must use the CUDA
+          toolkit version of CUB to use Thrust and be compatible with libraries
+          that use Thrust.
+
+          *It is important to note that the version of Googletest that
+          is used in RAJA version v0.11.0 or newer requires CUDA version
           9.2.x or newer when compiling with nvcc. Thus, if you build
           RAJA with CUDA enabled and want to also enable RAJA tests, you
           must use CUDA version 9.2.x or newer.
@@ -209,6 +218,16 @@ chain (which can also be used to compile code for NVIDIA GPUs).
 
 .. note:: RAJA requires version 3.5 or newer of the rocm software stack to 
           use the RAJA HIP back-end.
+
+Also, RAJA relies on the rocPRIM HIP utilities library for some HIP
+functionality. The rocPRIM included in the ROCM install is used by default if
+available. RAJA includes a rocPRIM submodule that is used if it is not
+available. To use an external rocPRIM install provide the following option to CMake:
+``-DENABLE_EXTERNAL_ROCPRIM=On -DROCPRIM_DIR=<pat/to/rocPRIM>``.
+
+.. note:: When using HIP and targeting NVIDIA GPUs RAJA uses CUB instead of
+          rocPRIM. In this case you must use an external CUB install using the
+          CMake variables described in the CUDA section.
 
 OpenMP
 ^^^^^^^

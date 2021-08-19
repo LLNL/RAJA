@@ -10,7 +10,7 @@
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -330,21 +330,20 @@ template <typename Data,
           typename ParamId,
           camp::idx_t chunk_size,
           int ThreadDim,
-          int MinThreads,
           typename ... EnclosedStmts,
           typename Types>
 struct CudaStatementExecutor<
   Data,
   statement::TileTCount<ArgumentId, ParamId,
                         RAJA::tile_fixed<chunk_size>,
-                        cuda_thread_xyz_loop<ThreadDim, MinThreads>,
+                        cuda_thread_xyz_loop<ThreadDim>,
                         EnclosedStmts ...>,
                         Types>
   : public CudaStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
                     RAJA::tile_fixed<chunk_size>,
-                    cuda_thread_xyz_loop<ThreadDim, MinThreads>,
+                    cuda_thread_xyz_loop<ThreadDim>,
                     EnclosedStmts ...>,
                     Types> {
 
@@ -352,7 +351,7 @@ struct CudaStatementExecutor<
           Data,
           statement::Tile<ArgumentId,
                           RAJA::tile_fixed<chunk_size>,
-                          cuda_thread_xyz_loop<ThreadDim, MinThreads>,
+                          cuda_thread_xyz_loop<ThreadDim>,
                           EnclosedStmts ...>,
                           Types>;
 

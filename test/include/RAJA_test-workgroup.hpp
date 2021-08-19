@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -48,7 +48,7 @@ struct ResourceAllocator
         throw std::bad_alloc();
       }
 
-      value_type* ptr = m_res.template allocate<value_type>(num);
+      value_type* ptr = m_res.template allocate<value_type>(num, camp::resources::MemoryAccess::Pinned);
 
       if (!ptr) {
         throw std::bad_alloc();
@@ -59,7 +59,7 @@ struct ResourceAllocator
 
     void deallocate(value_type* ptr, size_t) noexcept
     {
-      m_res.deallocate(ptr);
+      m_res.deallocate(ptr, camp::resources::MemoryAccess::Pinned);
     }
 
     Resource const& get_resource() const

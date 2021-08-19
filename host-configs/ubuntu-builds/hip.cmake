@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -11,7 +11,9 @@ set(ENABLE_HIP ON CACHE BOOL "")
 set(ENABLE_OPENMP OFF CACHE BOOL "")
 set(ENABLE_CUDA Off CACHE BOOL "")
 
-set(HIP_ROOT_DIR "${ROCM_DIR}/hip" CACHE PATH "HIP ROOT directory path")
+if(DEFINED ROCM_DIR)
+  set(HIP_ROOT_DIR "${ROCM_DIR}/hip" CACHE PATH "HIP ROOT directory path")
+endif()
 
 set(CMAKE_CXX_COMPILER "/usr/bin/g++" CACHE PATH "")
 set(CMAKE_C_COMPILER "/usr/bin/gcc" CACHE PATH "")

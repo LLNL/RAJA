@@ -39,7 +39,7 @@ matrix:
     env:
     - COMPILER=/opt/intel/bin/icpc
     - IMG=icc18
-    - CMAKE_EXTRA_FLAGS="-DENABLE_FORCEINLINE_RECURSIVE=Off -DENABLE_TBB=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_FORCEINLINE_RECURSIVE=Off -DENABLE_TBB=On -DBLT_CXX_STD=c++14"
   - compiler: nvcc10.2
     env:
     - COMPILER=g++
@@ -64,12 +64,13 @@ matrix:
     - IMG=nvcc10.2
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On -DENABLE_WARNINGS=On -DENABLE_WARNINGS_AS_ERRORS=On -DENABLE_TBB=On"
     - DO_TEST=no
-  - compiler: clang9-cuda9.1
-    env:
-    - COMPILER=clang++-9
-    - IMG=clang9
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=Off -DENABLE_CLANG_CUDA=On -DBLT_CLANG_CUDA_ARCH=sm_60 -DENABLE_CUDA=On -DCUDA_ARCH=sm_60 -DCUDA_TOOLKIT_ROOT_DIR:PATH='/usr/lib/cuda'"
-    - DO_TEST=no
+# Disable Clang Cuda until we update some things
+#  - compiler: clang9-cuda9.1
+#    env:
+#    - COMPILER=clang++-9
+#    - IMG=clang9
+#    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=Off -DENABLE_CLANG_CUDA=On -DBLT_CLANG_CUDA_ARCH=sm_60 -DENABLE_CUDA=On -DCUDA_ARCH=sm_60 -DCUDA_TOOLKIT_ROOT_DIR:PATH='/usr/lib/cuda' "
+#    - DO_TEST=no
   - compiler: hip
     env:
       - COMPILER=g++
@@ -79,7 +80,7 @@ matrix:
       - DO_TEST=no
 
 
-before_install: # don't try to build and run intel when it's impossible
+before_install: # don't try to build and run intel when it's not possible
 - |
   if [[ "x$encrypted_cd1f6303bca7_key" != "x" ]] ; then
     openssl aes-256-cbc -K $encrypted_cd1f6303bca7_key -iv $encrypted_cd1f6303bca7_iv -in ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic.enc -out ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic -d
@@ -92,6 +93,14 @@ before_install: # don't try to build and run intel when it's impossible
 - export ASAN_OPTIONS
 
 script:
+- |
+  if [[ "x$DOCKER_PASSWORD" != "x" ]] ; then
+    echo "Attempting docker login"
+    echo "$DOCKER_PASSWORD" | docker login -u rajaci --password-stdin
+  else
+    echo "Docker password unavailable, fail immediately"
+    travis_terminate 1
+  fi
 - docker run --rm --user='root' -v ${TRAVIS_BUILD_DIR}:/home/raja rajaorg/compiler:$IMG chown -R raja /home/raja
 - docker run --rm -v ${TRAVIS_BUILD_DIR}/travis-data:/opt/intel/licenses -v ${TRAVIS_BUILD_DIR}:/home/raja -e ASAN_OPTIONS -e LSAN_OPTIONS -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS -e HCC_AMDGPU_TARGET rajaorg/compiler:$IMG ./scripts/travis_build_and_test.sh
 

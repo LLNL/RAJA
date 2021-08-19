@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -135,14 +135,82 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Sizes)
   NegativeRangeStrideTestSizes<TypeParam>();
 }
 
+template <typename IDX_TYPE,
+  typename std::enable_if<std::is_unsigned<RAJA::strip_index_type_t<IDX_TYPE>>::value>::type* = nullptr>
+void runNegativeIndexStrideSliceTests()
+{
+}
+
+template <typename IDX_TYPE, 
+  typename std::enable_if<std::is_signed<RAJA::strip_index_type_t<IDX_TYPE>>::value>::type* = nullptr>
+void runNegativeIndexStrideSliceTests()
+{
+  auto r1 = RAJA::TypedRangeStrideSegment<IDX_TYPE>(10, -1, -1);
+  auto s1 = r1.slice(2, 6);
+
+  ASSERT_EQ(IDX_TYPE(8), *s1.begin());
+  ASSERT_EQ(IDX_TYPE(2), *s1.end());
+  ASSERT_EQ(size_t(6), size_t(s1.size()));
+
+
+  auto r2 = RAJA::TypedRangeStrideSegment<IDX_TYPE>(10, -1, -1);
+  auto s2 = r2.slice(6, 6);
+
+  ASSERT_EQ(IDX_TYPE(4), *s2.begin());
+  ASSERT_EQ(IDX_TYPE(-1), *s2.end());
+  ASSERT_EQ(size_t(5), size_t(s2.size()));
+
+
+  auto r3 = RAJA::TypedRangeStrideSegment<IDX_TYPE>(-4, 4, 2);
+  auto s3 = r3.slice(1, 2);
+
+  ASSERT_EQ(IDX_TYPE(-2), *s3.begin());
+  ASSERT_EQ(IDX_TYPE(2), *s3.end());
+  ASSERT_EQ(size_t(2), size_t(s3.size()));
+ 
+  
+  auto r4 = RAJA::TypedRangeStrideSegment<IDX_TYPE>(-9, -1, 1);
+  auto s4 = r4.slice(3, 6);
+
+  ASSERT_EQ(IDX_TYPE(-6), *s4.begin());
+  ASSERT_EQ(IDX_TYPE(-1), *s4.end());
+  ASSERT_EQ(size_t(5), size_t(s4.size())); 
+}
+
 TYPED_TEST(RangeStrideSegmentUnitTest, Slices)
 {
-  auto r = RAJA::TypedRangeStrideSegment<TypeParam>(0, 20, 2);
-  auto s = r.slice(0, 5);
+  auto r1 = RAJA::TypedRangeStrideSegment<TypeParam>(0, 20, 2);
+  auto s1 = r1.slice(0, 5);
 
-  ASSERT_EQ(size_t(5), size_t(s.size()));
-  ASSERT_EQ(TypeParam(0), *s.begin());
-  ASSERT_EQ(TypeParam(10), *s.end());
+  ASSERT_EQ(TypeParam(0), *s1.begin());
+  ASSERT_EQ(TypeParam(10), *s1.end());
+  ASSERT_EQ(size_t(5), size_t(s1.size()));
+
+
+  auto r2 = RAJA::TypedRangeStrideSegment<TypeParam>(0, 20, 2);
+  auto s2 = r2.slice(3, 5);
+
+  ASSERT_EQ(TypeParam(6), *s2.begin());
+  ASSERT_EQ(TypeParam(16), *s2.end());
+  ASSERT_EQ(size_t(5), size_t(s2.size()));
+
+
+  auto r3 = RAJA::TypedRangeStrideSegment<TypeParam>(1, 19, 2);
+  auto s3 = r3.slice(3, 4);
+
+  ASSERT_EQ(TypeParam(7), *s3.begin());
+  ASSERT_EQ(TypeParam(15), *s3.end());
+  ASSERT_EQ(size_t(4), size_t(s3.size()));
+
+
+  auto r4 = RAJA::TypedRangeStrideSegment<TypeParam>(1, 19, 2);
+  auto s4 = r4.slice(5, 6);
+
+  ASSERT_EQ(TypeParam(11), *s4.begin());
+  ASSERT_EQ(TypeParam(19), *s4.end());
+  ASSERT_EQ(size_t(4), size_t(s4.size()));
+
+  runNegativeIndexStrideSliceTests<TypeParam>();
 }
 
 TYPED_TEST(RangeStrideSegmentUnitTest, Equality)

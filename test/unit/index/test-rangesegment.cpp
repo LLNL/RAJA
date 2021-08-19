@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -99,14 +99,58 @@ TYPED_TEST(RangeSegmentUnitTest, Iterators)
   NegativeRangeSegIteratorsTest<TypeParam>();
 }
 
+template <typename IDX_TYPE,
+  typename std::enable_if<std::is_unsigned<RAJA::strip_index_type_t<IDX_TYPE>>::value>::type* = nullptr>
+void runNegativeIndexSliceTests()
+{
+}
+
+template <typename IDX_TYPE,
+  typename std::enable_if<std::is_signed<RAJA::strip_index_type_t<IDX_TYPE>>::value>::type* = nullptr>
+void runNegativeIndexSliceTests()
+{
+  auto r1 = RAJA::TypedRangeSegment<IDX_TYPE>(-4, 4);
+  auto s1 = r1.slice(0, 5);
+
+  ASSERT_EQ(IDX_TYPE(-4), *s1.begin());
+  ASSERT_EQ(IDX_TYPE(1), *(s1.end()));
+  ASSERT_EQ(IDX_TYPE(5), s1.size());
+
+
+  auto r2 = RAJA::TypedRangeSegment<IDX_TYPE>(-8, -2);
+  auto s2 = r2.slice(1, 7);
+
+  ASSERT_EQ(IDX_TYPE(-7), *s2.begin());
+  ASSERT_EQ(IDX_TYPE(-2), *(s2.end()));
+  ASSERT_EQ(IDX_TYPE(5), s2.size());
+}
+
 TYPED_TEST(RangeSegmentUnitTest, Slices)
 {
-  auto r = RAJA::TypedRangeSegment<TypeParam>(0, 125);
-  
-  auto s = r.slice(10,100);
+  auto r1 = RAJA::TypedRangeSegment<TypeParam>(0, 125);
+  auto s1 = r1.slice(10,100);
 
-  ASSERT_EQ(TypeParam(10), *s.begin());
-  ASSERT_EQ(TypeParam(110), *(s.end()));
+  ASSERT_EQ(TypeParam(10), *s1.begin());
+  ASSERT_EQ(TypeParam(110), *(s1.end()));
+  ASSERT_EQ(TypeParam(100), s1.size());
+
+ 
+  auto r2 = RAJA::TypedRangeSegment<TypeParam>(0, 12);
+  auto s2 = r2.slice(1,13);
+
+  ASSERT_EQ(TypeParam(1), *s2.begin());
+  ASSERT_EQ(TypeParam(12), *(s2.end()));
+  ASSERT_EQ(TypeParam(11), s2.size());
+
+
+  auto r3 = RAJA::TypedRangeSegment<TypeParam>(1, 125);
+  auto s3 = r3.slice(10,100);
+
+  ASSERT_EQ(TypeParam(11), *s3.begin());
+  ASSERT_EQ(TypeParam(111), *(s3.end()));
+  ASSERT_EQ(TypeParam(100), s3.size());
+
+  runNegativeIndexSliceTests<TypeParam>();
 }
 
 TYPED_TEST(RangeSegmentUnitTest, Equality)

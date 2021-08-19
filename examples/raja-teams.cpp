@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -113,8 +113,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     RAJA::expt::ExecPlace select_cpu_or_gpu = (RAJA::expt::ExecPlace)exec_place;
 
-    // auto select_cpu_or_gpu = RAJA::HOST;
-    // auto select_cpu_or_gpu = RAJA::DEVICE;
+    // auto select_cpu_or_gpu = RAJA::expt::HOST;
+    // auto select_cpu_or_gpu = RAJA::expt::DEVICE;
 
     // Allocate memory for either host or device
     int N_tri = 5;
@@ -154,7 +154,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::View<int, RAJA::Layout<2>> D(Ddat, N_tri, N_tri);
 
     RAJA::expt::launch<launch_policy>(select_cpu_or_gpu,
-       RAJA::expt::Resources(RAJA::expt::Teams(N_tri), RAJA::expt::Threads(N_tri)),
+       RAJA::expt::Grid(RAJA::expt::Teams(N_tri), RAJA::expt::Threads(N_tri)),
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
          RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {

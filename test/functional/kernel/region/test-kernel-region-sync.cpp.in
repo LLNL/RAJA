@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -29,28 +29,9 @@
 using OpenMPKernelRegionSyncExecPols =
   camp::list<
 
-    RAJA::KernelPolicy<
-      RAJA::statement::Region<RAJA::omp_parallel_region,
-
-        RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
-          RAJA::statement::Lambda<0, RAJA::Segs<0>>
-        >,
-
-        RAJA::statement::OmpSyncThreads,
-
-        RAJA::statement::For<1, RAJA::omp_for_nowait_exec,
-          RAJA::statement::Lambda<1, RAJA::Segs<1>>
-        >,
-
-        RAJA::statement::OmpSyncThreads,
-
-        RAJA::statement::For<0, RAJA::omp_for_nowait_exec,
-          RAJA::statement::Lambda<2, RAJA::Segs<0>>
-        >
-
-      >
-    >,
-
+    // Basic check to make sure insertion of thread sync operations
+    // where they are not really needed don't mess anything up
+    // RAJA::omp_for_exec actually has a barrier at the end of it.
     RAJA::KernelPolicy<
       RAJA::statement::Region<RAJA::omp_parallel_region,
 
@@ -67,6 +48,31 @@ using OpenMPKernelRegionSyncExecPols =
         RAJA::statement::OmpSyncThreads,
 
         RAJA::statement::For<0, RAJA::omp_for_exec,
+          RAJA::statement::Lambda<2, RAJA::Segs<0>>
+        >
+
+      >
+
+    >,
+
+    // Check thread sync operations inserted where they are 
+    // needed do the right thing.
+    RAJA::KernelPolicy<
+      RAJA::statement::Region<RAJA::omp_parallel_region,
+
+        RAJA::statement::For<0, RAJA::omp_for_nowait_static_exec< >,
+          RAJA::statement::Lambda<0, RAJA::Segs<0>>
+        >,
+
+        RAJA::statement::OmpSyncThreads,
+
+        RAJA::statement::For<1, RAJA::omp_for_nowait_static_exec< >,
+          RAJA::statement::Lambda<1, RAJA::Segs<1>>
+        >,
+
+        RAJA::statement::OmpSyncThreads,
+
+        RAJA::statement::For<0, RAJA::omp_for_nowait_static_exec< >,
           RAJA::statement::Lambda<2, RAJA::Segs<0>>
         >
 

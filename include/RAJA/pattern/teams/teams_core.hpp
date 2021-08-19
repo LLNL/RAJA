@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -127,17 +127,18 @@ struct Lanes {
   constexpr Lanes(int i) : value(i) {}
 };
 
-struct Resources {
+struct Grid {
 public:
   Teams teams;
   Threads threads;
   Lanes lanes;
+  const char *kernel_name{nullptr};
 
   RAJA_INLINE
-  Resources() = default;
+  Grid() = default;
 
-  Resources(Teams in_teams, Threads in_threads)
-      : teams(in_teams), threads(in_threads){};
+  Grid(Teams in_teams, Threads in_threads, const char *in_kernel_name = nullptr)
+    : teams(in_teams), threads(in_threads), kernel_name(in_kernel_name){};
 
 private:
   RAJA_HOST_DEVICE
@@ -154,13 +155,13 @@ private:
 };
 
 
-class LaunchContext : public Resources
+class LaunchContext : public Grid
 {
 public:
   ExecPlace exec_place;
 
-  LaunchContext(Resources const &base, ExecPlace place)
-      : Resources(base), exec_place(place)
+  LaunchContext(Grid const &base, ExecPlace place)
+      : Grid(base), exec_place(place)
   {
   }
 
@@ -174,34 +175,91 @@ public:
   }
 };
 
-
 template <typename LAUNCH_POLICY>
 struct LaunchExecute;
 
 template <typename POLICY_LIST, typename BODY>
-void launch(ExecPlace place, Resources const &team_resources, BODY const &body)
+void launch(ExecPlace place, Grid const &grid, BODY const &body)
 {
   switch (place) {
     case HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      launch_t::exec(LaunchContext(team_resources, HOST), body);
+      launch_t::exec(LaunchContext(grid, HOST), body);
       break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
     case DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      launch_t::exec(LaunchContext(team_resources, DEVICE), body);
+      launch_t::exec(LaunchContext(grid, DEVICE), body);
       break;
     }
 #endif
     default:
-      RAJA_ABORT_OR_THROW("Unknown launch place or Device is not enabled");
+      RAJA_ABORT_OR_THROW("Unknown launch place or device is not enabled");
   }
 }
+
+// Helper function to retrieve a resource based on the run-time policy - if a device is active
+#if defined(RAJA_DEVICE_ACTIVE)
+template<typename T, typename U>
+RAJA::resources::Resource Get_Runtime_Resource(T host_res, U device_res, RAJA::expt::ExecPlace device){
+  if(device == RAJA::expt::DEVICE) {return RAJA::resources::Resource(device_res);}
+  else { return RAJA::resources::Resource(host_res); }
+}
+#else
+template<typename T>
+RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::expt::ExecPlace device){
+  if(device == RAJA::expt::DEVICE) {RAJA_ABORT_OR_THROW("Device is not enabled");}
+
+  return RAJA::resources::Resource(host_res);
+}
+#endif
+
+
+//Launch API which takes team resource struct
+template <typename POLICY_LIST, typename BODY>
+resources::EventProxy<resources::Resource>
+launch(RAJA::resources::Resource res, Grid const &grid, BODY const &body)
+{
+
+  ExecPlace place;
+  if(res.get_platform() == camp::resources::v1::Platform::host) {
+    place = RAJA::expt::HOST;
+  }else{
+    place = RAJA::expt::DEVICE;
+  }
+
+  switch (place) {
+    case HOST: {
+      using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
+      return launch_t::exec(res, LaunchContext(grid, HOST), body); break;
+    }
+#ifdef RAJA_DEVICE_ACTIVE
+    case DEVICE: {
+      using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
+      return launch_t::exec(res, LaunchContext(grid, DEVICE), body); break;
+    }
+#endif
+    default: {
+      RAJA_ABORT_OR_THROW("Unknown launch place or device is not enabled");
+    }
+  }
+  //Should not get here;
+  return resources::EventProxy<resources::Resource>(res);
+}
+
+template<typename POLICY_LIST>
+#if defined(RAJA_DEVICE_CODE)
+using loop_policy = typename POLICY_LIST::device_policy_t;
+#else
+using loop_policy = typename POLICY_LIST::host_policy_t;
+#endif
 
 template <typename POLICY, typename SEGMENT>
 struct LoopExecute;
 
+template <typename POLICY, typename SEGMENT>
+struct LoopICountExecute;
 
 template <typename POLICY_LIST,
           typename CONTEXT,
@@ -211,15 +269,24 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
                                        SEGMENT const &segment,
                                        BODY const &body)
 {
-#if defined(RAJA_DEVICE_CODE)
-  LoopExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(ctx,
-                                                                    segment,
-                                                                    body);
-#else
-  LoopExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(ctx,
-                                                                  segment,
-                                                                  body);
-#endif
+
+  LoopExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+                                                       segment,
+                                                       body);
+}
+
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename SEGMENT,
+          typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const &ctx,
+                                          SEGMENT const &segment,
+                                          BODY const &body)
+{
+
+  LoopICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+                                                          segment,
+                                                          body);
 }
 
 template <typename POLICY_LIST,
@@ -231,37 +298,110 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
                                        SEGMENT const &segment1,
                                        BODY const &body)
 {
-#if defined(RAJA_DEVICE_CODE)
-  LoopExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(ctx,
-                                                                    segment0,
-                                                                    segment1,
-                                                                    body);
-#else
-  LoopExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(ctx,
-                                                                  segment0,
-                                                                  segment1,
-                                                                  body);
-#endif
+
+  LoopExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+                                                       segment0,
+                                                       segment1,
+                                                       body);
 }
 
 template <typename POLICY_LIST,
           typename CONTEXT,
           typename SEGMENT,
           typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
+RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const &ctx,
                                        SEGMENT const &segment0,
                                        SEGMENT const &segment1,
                                        SEGMENT const &segment2,
                                        BODY const &body)
 {
 
-#if defined(RAJA_DEVICE_CODE)
-  LoopExecute<typename POLICY_LIST::device_policy_t, SEGMENT>::exec(
-      ctx, segment0, segment1, segment2, body);
-#else
-  LoopExecute<typename POLICY_LIST::host_policy_t, SEGMENT>::exec(
-      ctx, segment0, segment1, segment2, body);
-#endif
+  LoopICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+                           segment0, segment1, segment2, body);
+}
+
+
+
+
+template <typename POLICY, typename SEGMENT>
+struct TileExecute;
+
+template <typename POLICY, typename SEGMENT>
+struct TileICountExecute;
+
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename TILE_T,
+          typename SEGMENT,
+          typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const &ctx,
+                                       TILE_T tile_size,
+                                       SEGMENT const &segment,
+                                       BODY const &body)
+{
+
+  TileExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+                                                       tile_size,
+                                                       segment,
+                                                       body);
+}
+
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename TILE_T,
+          typename SEGMENT,
+          typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void tile_icount(CONTEXT const &ctx,
+                                       TILE_T tile_size,
+                                       SEGMENT const &segment,
+                                       BODY const &body)
+{
+  TileICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+                                                          tile_size,
+                                                          segment,
+                                                          body);
+}
+
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename TILE_T,
+          typename SEGMENT,
+          typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const &ctx,
+                                       TILE_T tile_size0,
+                                       TILE_T tile_size1,
+                                       SEGMENT const &segment0,
+                                       SEGMENT const &segment1,
+                                       BODY const &body)
+{
+
+  TileExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+                                                       tile_size0,
+                                                       tile_size1,
+                                                       segment0,
+                                                       segment1,
+                                                       body);
+}
+
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename TILE_T,
+          typename SEGMENT,
+          typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void tile_icount(CONTEXT const &ctx,
+                                       TILE_T tile_size0,
+                                       TILE_T tile_size1,
+                                       SEGMENT const &segment0,
+                                       SEGMENT const &segment1,
+                                       BODY const &body)
+{
+
+  TileICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+                                                          tile_size0,
+                                                          tile_size1,
+                                                          segment0,
+                                                          segment1,
+                                                          body);
 }
 
 }  // namespace expt

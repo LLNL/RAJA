@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -25,6 +25,7 @@
 #include <type_traits>
 
 #include "RAJA/util/StaticLayout.hpp"
+#include "RAJA/util/TypedViewBase.hpp"
 
 namespace RAJA
 {
@@ -48,25 +49,38 @@ using ParamList = camp::idx_seq<Sizes...>;
  * Two versions are created below, a strongly typed version and
  * a non-strongly typed version.
  */
-template<typename DataType, typename Perm, typename Sizes, typename... IndexTypes>
-struct TypedLocalArray
-{
-};
 
-template<typename DataType, camp::idx_t ... Perm, camp::idx_t ...Sizes, typename... IndexTypes>
-struct TypedLocalArray<DataType, camp::idx_seq<Perm...>, RAJA::SizeList<Sizes...>, IndexTypes...>
-{
-  DataType *m_arrayPtr = nullptr;
-  using element_t = DataType;
-  using layout_t = StaticLayout<camp::idx_seq<Perm...>, Sizes...>;
-  static const camp::idx_t NumElem = layout_t::size();
 
-  RAJA_HOST_DEVICE
-  element_t &operator()(IndexTypes ...indices) const
-  {
-    return  m_arrayPtr[layout_t::s_oper(stripIndexType(indices)...)];
-  }
-};
+namespace internal {
+
+
+
+  template<typename Perm, typename Sizes>
+  struct StaticLayoutHelper;
+
+  template<camp::idx_t ... Perm, Index_type ...Sizes>
+  struct StaticLayoutHelper<camp::idx_seq<Perm...>, SizeList<Sizes...>>{
+      using type =  StaticLayout<camp::idx_seq<Perm...>, Sizes...>;
+  };
+
+  template<typename Perm, typename Sizes>
+  using getStaticLayoutType = typename StaticLayoutHelper<Perm, Sizes>::type;
+
+
+
+}
+
+
+template<typename ValueType, typename Perm, typename Sizes, typename... IndexTypes>
+using TypedLocalArray =
+    internal::TypedViewBase<ValueType, ValueType *, internal::getStaticLayoutType<Perm, Sizes>, camp::list<IndexTypes...> >;
+
+
+template<typename ValueType, typename Perm, typename Sizes>
+using LocalArray =
+    internal::TypedViewBase<ValueType, ValueType *, internal::getStaticLayoutType<Perm, Sizes>, internal::getDefaultIndexTypes<Perm> >;
+
+
 
 
 
@@ -76,46 +90,38 @@ struct AtomicTypedLocalArray {
 };
 
 template<typename AtomicPolicy, typename DataType, camp::idx_t ... Perm,
-         camp::idx_t ... Sizes, typename ... IndexTypes>
+          Index_type ... Sizes, typename ... IndexTypes>
 struct AtomicTypedLocalArray<AtomicPolicy, DataType, camp::idx_seq<Perm ...>,
                              RAJA::SizeList<Sizes ...>, IndexTypes ...>{
   DataType *m_arrayPtr = nullptr;
-  using element_t = DataType;
-  using atomic_ref_t = RAJA::AtomicRef<element_t, AtomicPolicy>;
-  using layout_t = RAJA::StaticLayout<camp::idx_seq<Perm ...>, Sizes ...>;
-  static const camp::idx_t NumElem = layout_t::size();
+  using value_type = DataType;
+  using atomic_ref_t = RAJA::AtomicRef<value_type, AtomicPolicy>;
+  using layout_type = RAJA::StaticLayout<camp::idx_seq<Perm ...>, Sizes ...>;
+  static const camp::idx_t NumElem = layout_type::s_size;
 
   RAJA_HOST_DEVICE
   atomic_ref_t operator()(IndexTypes ... indices) const
   {
-    return(atomic_ref_t(&m_arrayPtr[layout_t::s_oper(stripIndexType(indices)
+    return(atomic_ref_t(&m_arrayPtr[layout_type::s_oper(stripIndexType(indices)
                                                      ...)]));
   }
-};
 
-
-
-template<typename DataType, typename Perm, typename Sizes>
-struct LocalArray
-{
-};
-
-template<typename DataType, camp::idx_t ... Perm, camp::idx_t ...Sizes>
-struct LocalArray<DataType, camp::idx_seq<Perm...>, RAJA::SizeList<Sizes...> >
-{
-  DataType *m_arrayPtr = nullptr;
-  using element_t = DataType;
-  using layout_t = StaticLayout<camp::idx_seq<Perm...>, Sizes...>;
-  static const camp::idx_t NumElem = layout_t::size();
-
-  template<typename ...Indices>
   RAJA_HOST_DEVICE
-  element_t &operator()(Indices ...indices) const
+  RAJA_INLINE
+  constexpr
+  camp::idx_t size() const
   {
-    return m_arrayPtr[layout_t::s_oper(indices...)];
+    return layout_type::s_size;
   }
 
+  RAJA_HOST_DEVICE
+  RAJA_INLINE void set_data(DataType * data_ptr){
+    m_arrayPtr = data_ptr;
+  }
 };
+
+
+
 
 
 }  // end namespace RAJA

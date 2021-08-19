@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -25,7 +25,7 @@ camp::resources::Resource* plugin_test_resource = nullptr;
 
 struct SetupPluginVars
 {
-  SetupPluginVars(camp::resources::Resource const& test_resource)
+  SetupPluginVars(camp::resources::Resource const test_resource)
     : m_test_resource(test_resource)
   {
     // ASSERT_EQ(plugin_test_data, nullptr);

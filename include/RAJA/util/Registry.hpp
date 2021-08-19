@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -25,7 +25,7 @@ namespace util {
 
     const std::string& getName() const { return Name; }
     const std::string& getDesc() const { return Desc; }
-    std::shared_ptr<T> get() const { return object; }
+    T* get() const { return object.get(); }
   };
 
   /// A global registry used in conjunction with static constructors to make
@@ -67,7 +67,7 @@ namespace util {
     /// add a node to the executable's registry. Therefore it's not defined here
     /// to avoid it being instantiated in the plugin and is instead defined in
     /// the executable (see RAJA_INSTANTIATE_REGISTRY below).
-    static void add_node(node *N);
+    static RAJASHAREDDLL_API void add_node(node *N);
 
     /// Iterators for registry entries.
     ///
@@ -86,7 +86,7 @@ namespace util {
 
     // begin is not defined here in order to avoid usage of an undefined static
     // data member, instead it's instantiated by RAJA_INSTANTIATE_REGISTRY.
-    static iterator begin();
+    static RAJASHAREDDLL_API iterator begin();
     static iterator end()   { return iterator(nullptr); }
 
     /// A static registration template.

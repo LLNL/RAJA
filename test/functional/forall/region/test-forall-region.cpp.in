@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -36,7 +36,7 @@ using SequentialForallRegionExecPols = SequentialForallExecPols;
 using OpenMPRegionPols = camp::list< RAJA::omp_parallel_region >;
 
 using OpenMPForallRegionExecPols =
-  camp::list< RAJA::omp_for_nowait_exec,
+  camp::list< RAJA::omp_for_nowait_static_exec< >,
               RAJA::omp_for_exec >;
 
 #endif

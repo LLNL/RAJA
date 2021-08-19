@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -336,18 +336,14 @@ constexpr RAJA_HOST_DEVICE RAJA_INLINE
 
 namespace internal{
 template<typename FROM, typename Enable = void>
-struct StripIndexTypeT {};
+struct StripIndexTypeT {
+    using type = FROM;
+};
 
 template<typename FROM>
 struct StripIndexTypeT<FROM, typename std::enable_if<std::is_base_of<IndexValueBase, FROM>::value>::type>
 {
     using type = typename FROM::value_type;
-};
-
-template<typename FROM>
-struct StripIndexTypeT<FROM, typename std::enable_if<!std::is_base_of<IndexValueBase, FROM>::value>::type>
-{
-    using type = FROM;
 };
 } // namespace internal
 

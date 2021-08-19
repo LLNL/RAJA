@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -613,6 +613,7 @@ namespace type_traits
 DefineTypeTraitFromConcept(is_binary_function, RAJA::concepts::BinaryFunction);
 DefineTypeTraitFromConcept(is_unary_function, RAJA::concepts::UnaryFunction);
 }  // namespace type_traits
+
 
 }  // namespace RAJA
 

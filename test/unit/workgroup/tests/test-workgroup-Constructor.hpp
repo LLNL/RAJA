@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -56,6 +56,15 @@ void testWorkGroupConstructorSingle(RAJA::xargs<Xargs...>)
                     Allocator
                   >
         site = group.run(Xargs{}...);
+
+    using resource_type = typename RAJA::WorkPool<
+                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                    IndexType,
+                    RAJA::xargs<Xargs...>,
+                    Allocator
+                  >::resource_type;
+    auto e = resource_type::get_default().get_event();
+    e.wait();
 
     pool.clear();
     group.clear();
