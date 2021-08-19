@@ -48,6 +48,7 @@ cmake \
   -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-${COMP_NVCC_VER}/bin/nvcc \
   -DCUDA_ARCH=${COMP_ARCH} \
   -DCMAKE_CUDA_STANDARD=17 \
+  -DCMAKE_CUDA_ARCHITECTURES=70 \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

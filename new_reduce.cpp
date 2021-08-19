@@ -5,6 +5,7 @@
 #include <numeric>
 
 #include "new_reduce/reduce_basic.hpp"
+#include "new_reduce/reduce_array.hpp"
 #include "new_reduce/kernel_name.hpp"
 #include "new_reduce/forall_param.hpp"
 
@@ -83,19 +84,59 @@ int main(int argc, char *argv[])
 
     forall_param<RAJA::omp_parallel_for_exec>(N,
                  [=](int i, double &r_, double &m_, double &ma_) {
+                 //[=](int i, double &ma_) {
                    r_ += a[i] * b[i];
                    m_ = a[i] < m_ ? a[i] : m_;
-                   ma_ = a[i] > m_ ? a[i] : m_;
+                   ma_ = a[i] > ma_ ? a[i] : ma_;
                  },
                  Reduce<RAJA::operators::plus>(&r),
                  Reduce<RAJA::operators::minimum>(&m),
-                 Reduce<RAJA::operators::maximum>(&ma));
+                 Reduce<RAJA::operators::maximum>(&ma)
+                 );
     t.stop();
     
     std::cout << "t : " << t.elapsed() << "\n";
     std::cout << "r : " << r << "\n";
     std::cout << "m : "  << m  <<"\n";
     std::cout << "ma : " << ma <<"\n";
+  }
+#endif
+#endif
+
+#if 1
+#if defined(RAJA_ENABLE_OPENMP)
+  {
+    std::cout << "OMP ARRAY Reduction NEW\n";
+
+    RAJA::Timer t;
+    t.reset();
+    t.start();
+
+    const size_t arr_sz = 5;
+    double m_array[arr_sz];
+
+    forall_param<RAJA::omp_parallel_for_exec>(N,
+                 [=](int i, double &r_, double &m_, double &ma_, double *l_array) {
+                   r_ += a[i] * b[i];
+                   m_ = a[i] < m_ ? a[i] : m_;
+                   ma_ = a[i] > m_ ? a[i] : m_;
+                   l_array[1] += 2; 
+                   l_array[3] += 2; 
+                 },
+                 Reduce<RAJA::operators::plus>(&r),
+                 Reduce<RAJA::operators::minimum>(&m),
+                 Reduce<RAJA::operators::maximum>(&ma),
+                 ReduceArray<RAJA::operators::plus>(m_array, arr_sz)
+                 );
+    t.stop();
+    
+    std::cout << "t : " << t.elapsed() << "\n";
+    std::cout << "r : " << r << "\n";
+    std::cout << "m : "  << m  <<"\n";
+    std::cout << "ma : " << ma <<"\n";
+    for (size_t i = 0; i < arr_sz; i++) {
+      std::cout << "m_array[" << i << "] : " << m_array[i] << "\n";
+    }
   }
 #endif
 #endif

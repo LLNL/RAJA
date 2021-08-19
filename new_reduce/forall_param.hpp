@@ -115,8 +115,8 @@ namespace detail
 
     template<camp::idx_t Idx>
     constexpr auto get_lambda_args()
-        -> decltype(*camp::get<Idx>( lambda_args(params_seq{}) )) {
-      return (*camp::get<Idx>( lambda_args(params_seq{}) ));
+        -> decltype(  *camp::get<Idx>( lambda_args(params_seq{}) )  ) {
+      return (  *camp::get<Idx>( lambda_args(params_seq{}) )  );
     }
 
     // Init

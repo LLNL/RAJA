@@ -10,19 +10,18 @@ namespace detail {
   {
     ForallParamPack<Params...> f_params(params...);
 
-    //init<EXEC_POL>(f_params);
+    init<EXEC_POL>(f_params);
 
     #pragma omp declare reduction(          \
       combine                               \
       : decltype(f_params)                  \
       : combine<EXEC_POL>(omp_out, omp_in) )\
-      initializer(init<EXEC_POL>(omp_priv))
+      initializer(omp_priv = omp_orig)
 
     #pragma omp parallel for reduction(combine : f_params)
     for (int i = 0; i < N; ++i) {
       invoke(f_params, body, i);
     }
-
     resolve<EXEC_POL>(f_params);
   }
 
