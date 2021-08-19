@@ -64,8 +64,8 @@ commands in the top-level RAJA directory (in-source builds are not allowed!):
     cmake ../
     make
 
-More details about RAJA configuration options are located in the 
-[User Documentation](http://raja.readthedocs.io/en/main/).
+More details about RAJA configuration options are located in the RAJA User Guide
+(linked below). 
 
 We also maintain a [**RAJA Template Project**](https://github.com/LLNL/RAJA-project-template) that shows how to use RAJA in a CMake project, either as a Git
 submodule or as an installed library.
@@ -73,8 +73,12 @@ submodule or as an installed library.
 User Documentation
 -------------------
 
-The [**RAJA User Guide and Tutorial**](http://raja.readthedocs.io/en/main/) 
-is the best place to start learning about RAJA and how to use it.
+The RAJA User Guide is the best place to start learning about RAJA and how to
+use it.
+
+The most recent version of the User Guide (RAJA develop branch): https://raja.readthedocs.io
+
+To access docs for other RAJA released versions: https://readthedocs.org/projects/raja/
 
 To cite RAJA, please use the following references:
 
