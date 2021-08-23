@@ -51,7 +51,7 @@ def get_spec_path(spec, package_name, path_replacements = {}, use_bin = False) :
     return path
 
 
-class Raja(CMakePackage, CudaPackage):
+class Raja(CMakePackage, CudaPackage, ROCmPackage):
     """RAJA Parallel Framework."""
 
     homepage = "http://software.llnl.gov/RAJA/"
@@ -84,9 +84,22 @@ class Raja(CMakePackage, CudaPackage):
 
     depends_on('cmake@3.8:', type='build')
     depends_on('cmake@3.9:', when='+cuda', type='build')
-    depends_on('hip', when='+hip')
 
-    conflicts('+openmp', when='+hip')
+    depends_on('blt@0.4.1', type='build', when='@main')
+    depends_on('blt@0.4.1:', type='build')
+
+    depends_on('camp')
+    depends_on('camp@master')
+    depends_on('camp+rocm', when='+rocm')
+    for val in ROCmPackage.amdgpu_targets:
+        depends_on('camp amdgpu_target=%s' % val, when='amdgpu_target=%s' % val)
+
+    depends_on('camp+cuda', when='+cuda')
+    for sm_ in CudaPackage.cuda_arch_values:
+        depends_on('camp cuda_arch={0}'.format(sm_),
+                   when='cuda_arch={0}'.format(sm_))
+
+    conflicts('+openmp', when='+rocm')
 
     phases = ['hostconfig', 'cmake', 'build', 'install']
 
@@ -274,7 +287,7 @@ class Raja(CMakePackage, CudaPackage):
         else:
             cfg.write(cmake_cache_option("ENABLE_CUDA", False))
 
-        if "+hip" in spec:
+        if "+rocm" in spec:
             cfg.write("#------------------{0}\n".format("-" * 60))
             cfg.write("# HIP\n")
             cfg.write("#------------------{0}\n\n".format("-" * 60))
@@ -334,6 +347,9 @@ class Raja(CMakePackage, CudaPackage):
         else:
             cfg.write(cmake_cache_option("ENABLE_BENCHMARKS", 'tests=benchmarks' in spec))
             cfg.write(cmake_cache_option("ENABLE_TESTS", not 'tests=none' in spec or self.run_tests))
+
+        cfg.write(cmake_cache_path("BLT_SOURCE_DIR", spec['blt'].prefix))
+        cfg.write(cmake_cache_path("camp_DIR", spec['camp'].prefix))
 
         #######################
         # Close and save
