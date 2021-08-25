@@ -45,6 +45,12 @@ struct seq_region : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                           Platform::host> {
 };
 
+struct seq_launch_t : make_policy_pattern_launch_platform_t<Policy::sequential,
+                                                            Pattern::region,
+                                                            Launch::sync,
+                                                            Platform::host> {
+};
+
 struct seq_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                         Pattern::forall,
                                                         Launch::undefined,
@@ -98,6 +104,10 @@ using policy::sequential::seq_region;
 using policy::sequential::seq_segit;
 using policy::sequential::seq_work;
 
+namespace expt
+{
+  using policy::sequential::seq_launch_t;
+}
 
 
 }  // namespace RAJA
