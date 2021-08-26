@@ -329,7 +329,7 @@ class Raja(CMakePackage, CudaPackage):
         cfg.write(cmake_cache_option("RAJA_ENABLE_DESUL_ATOMICS","+desul" in spec))
 
         if "+desul" in spec:
-            cfg.write(cmake_cache_string("BLT_CXX_STD","14"))
+            cfg.write(cmake_cache_string("BLT_CXX_STD","c++14"))
             if "+cuda" in spec:
                 cfg.write(cmake_cache_string("CMAKE_CUDA_STANDARD", "14"))
 
