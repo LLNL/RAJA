@@ -49,5 +49,5 @@ gcc_4_9_3:
 
 clang_10_desul_atomics:
   variables:
-    SPEC: "+openmp +desul %clang@10.0.1"
+    SPEC: "+openmp +desul %clang@10.0.1 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
   extends: .build_and_test_on_ruby
