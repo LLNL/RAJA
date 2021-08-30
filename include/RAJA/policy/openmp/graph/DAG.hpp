@@ -182,8 +182,10 @@ struct DAGExec<omp_task_depend_graph, GraphResource>
           detail::NodeExec* node_exec = &connections;
           detail::NodeData* node_data = node_exec->m_nodeData;
 
-          size_t num_children = connections->m_children.size();
-          detail::NodeData** child_data = connections->m_children.data();
+          size_t num_children = connections.m_children.size();
+          detail::NodeData** child_data = connections.m_children.data();
+
+          RAJA_UNUSED_VAR(node_data, child_data);
 
 #pragma omp task default(none) firstprivate(node_exec) /*shared(gr)*/ \
                  depend(in:node_data[0:1]) \
@@ -207,7 +209,7 @@ private:
   friend DAG;
 
   using node_data_container = typename DAG::node_data_container;
-  using node_data_container_values = typename node_data_container::value_type;
+  // using node_data_container_values = typename node_data_container::value_type;
 
   struct NodeExecConnections : detail::NodeExec
   {
@@ -242,7 +244,7 @@ private:
             // do nothing
           },
           [&](detail::NodeConnections& node_connections) {
-            m_node_execs.emplace_back(node_connections, m_node_data);
+            m_node_execs.emplace_back(node_connections, *m_node_data);
           },
           [](detail::NodeConnections&) {
             // do nothing
