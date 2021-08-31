@@ -1148,7 +1148,7 @@ namespace RAJA
 
           // 1 register is split over multiple rows
           if(s_minor_dim_registers == 0){
-            printf("A\n");
+//            printf("A\n");
 
 
             // start by broadcasting the first segment in v across all of v
@@ -1176,7 +1176,7 @@ namespace RAJA
           }
           // one or more registers per row
           else{
-            printf("B\n");
+//            printf("B\n");
 
             // Loop over rows
             camp::idx_t reg = 0;
@@ -1206,7 +1206,7 @@ namespace RAJA
 
           // 1 register is split over multiple columns
           if(s_minor_dim_registers == 0){
-            printf("C\n");
+//            printf("C\n");
             auto &mv = result.get_register(0);
 
             // Loop over registers, which are also the segments in v
@@ -1226,7 +1226,7 @@ namespace RAJA
           }
           // one or more registers per column
           else{
-            printf("D\n");
+//            printf("D\n");
 
             // Loop over columns (which is also registers)
             camp::idx_t reg = 0;
@@ -1379,6 +1379,11 @@ namespace RAJA
       RAJA_INLINE
       typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type
       matrix_multiply(RMAT const &mat) const {
+#ifdef __CUDA_ARCH__
+        if(threadIdx.x==0){
+        printf("matrix_multiply\n");
+        }
+#endif
         typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type res(0);
         internal::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply(*this, mat, res);
         return res;
@@ -1392,6 +1397,11 @@ namespace RAJA
       RAJA_INLINE
       typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type
       matrix_multiply_add(RMAT const &B, typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type const &C) const {
+#ifdef __CUDA_ARCH__
+        if(threadIdx.x==0){
+        printf("matrix_multiply_add\n");
+        }
+#endif
         typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type res(C);
         internal::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply_accumulate(*this, B, res);
         return res;
@@ -1405,6 +1415,11 @@ namespace RAJA
       RAJA_INLINE
       void
       matrix_multiply_accumulate(ACCMAT &acc, RMAT const &B) const {
+#ifdef __CUDA_ARCH__
+        if(threadIdx.x==0){
+        printf("matrix_multiply_accumulate\n");
+        }
+#endif
         internal::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply_accumulate(*this, B, acc);
       }
 

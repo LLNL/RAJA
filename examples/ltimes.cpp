@@ -21,7 +21,7 @@
 #define VARIANT_RAJA_SEQ_ARGS        0
 #define VARIANT_RAJA_TEAMS_SEQ       0
 #define VARIANT_RAJA_VECTOR          0
-#define VARIANT_RAJA_MATRIX          0
+#define VARIANT_RAJA_MATRIX          1
 #define VARIANT_RAJA_SEQ_SHMEM       0
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -135,16 +135,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //  const int num_g = 48 + (rand()/RAND_MAX);
 //  const int num_d = 80 + (rand()/RAND_MAX);
 
-  const int num_m = 32 + (rand()/RAND_MAX);
+  const int num_m = 8 + (rand()/RAND_MAX);
   const int num_g = 1 + (rand()/RAND_MAX);
-  const int num_d = 32 + (rand()/RAND_MAX);
+  const int num_d = 8 + (rand()/RAND_MAX);
 
 
 #ifdef DEBUG_LTIMES
-  const int num_iter = 1 + (rand()/RAND_MAX);;
+  const int num_iter = 1 ; //+ (rand()/RAND_MAX);;
   // use a decreased number of zones since this will take a lot longer
   // and we're not really measuring performance here
-  const long num_z = 32 + (rand()/RAND_MAX);
+  const long num_z = 8 + (rand()/RAND_MAX);
 #else
   const int num_iter = 10 + (rand()/RAND_MAX);
   const int num_z = 32*1024 + (rand()/RAND_MAX);
@@ -631,7 +631,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  using matrix_t = RAJA::SquareMatrixRegister<double, ColMajorLayout>;
+  //using matrix_t = RAJA::SquareMatrixRegister<double, ColMajorLayout>;
+  //using matrix_t = RAJA::SquareMatrixRegister<double, RowMajorLayout>;
+  using matrix_t = RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,8>;
 
 
 
