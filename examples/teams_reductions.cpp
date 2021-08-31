@@ -14,7 +14,7 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Reduction Example
+ *  Reduction Example using RAJA Teams
  *
  *  This example illustrates use of the RAJA reduction types: min, max,
  *  sum, min-loc, and max-loc.
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 
   RAJA::expt::launch<launch_policy>
     (select_cpu_or_gpu,
-     RAJA::expt::Resources(RAJA::expt::Teams(GRID_SZ),
+     RAJA::expt::Grid(RAJA::expt::Teams(GRID_SZ),
                            RAJA::expt::Threads(TEAM_SZ),
                            "Reduction Kernel"),
      [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) 

@@ -15,7 +15,7 @@ include(CMakeDependentOption)
 
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 13)
+set(RAJA_VERSION_MINOR 14)
 set(RAJA_VERSION_PATCHLEVEL 0)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
@@ -58,6 +58,7 @@ option(ENABLE_NV_TOOLS_EXT "Build with NV_TOOLS_EXT support" Off)
 option(ENABLE_TBB "Build TBB support" Off)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
+option(ENABLE_SYCL "Build SYCL support" Off)
 option(ENABLE_EXTERNAL_CUB "Use an external cub" Off)
 option(ENABLE_EXTERNAL_ROCPRIM "Use an external rocPRIM" Off)
 
@@ -181,6 +182,7 @@ set (raja_sources
   src/LockFreeIndexSetBuilders.cpp
   src/MemUtils_CUDA.cpp
   src/MemUtils_HIP.cpp
+  src/MemUtils_SYCL.cpp
   src/PluginStrategy.cpp)
 
 if (RAJA_ENABLE_RUNTIME_PLUGINS)
@@ -240,6 +242,12 @@ if (ENABLE_EXTERNAL_ROCPRIM)
   set(raja_depends
     ${raja_depends}
     rocPRIM)
+endif ()
+
+if (ENABLE_SYCL)
+  set (raja_depends
+    ${raja_depends}
+    sycl)
 endif ()
 
 if (ENABLE_TBB)

@@ -42,12 +42,12 @@ xl_16_1_1_7_gcc_8_3_1:
 
 ibm_clang_9_cuda:
   variables:
-    SPEC: "+cuda+allow-untested-versions cuda_arch=70 %clang@9.0.0ibm ^cuda@10.1.168"
+    SPEC: "+cuda cuda_arch=70 %clang@9.0.0ibm ^cuda@10.1.168"
   extends: .build_and_test_on_lassen
 
 ibm_clang_9_gcc_8_cuda:
   variables:
-    SPEC: "+cuda %clang@9.0.0ibm cuda_arch=70 +allow-untested-versions cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 ^cuda@10.1.168"
+    SPEC: "+cuda %clang@9.0.0ibm cuda_arch=70 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 ^cuda@10.1.168"
   extends: .build_and_test_on_lassen
 
 gcc_8_3_1_cuda:
