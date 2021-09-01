@@ -10,7 +10,7 @@ namespace detail
     const char* name;
     
     static constexpr size_t num_lambda_args = 0;
-    auto get_lambda_arg_tup() { return camp::make_tuple(); }
+    RAJA_HOST_DEVICE auto get_lambda_arg_tup() { return camp::make_tuple(); }
 
   };
 

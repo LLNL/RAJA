@@ -832,7 +832,7 @@ public:
     if (parent) {
       if (val.setupForDevice()) {
         tally_or_val_ptr.val_ptr =
-            tally_or_val_ptr.list->new_value(*currentResource());
+            tally_or_val_ptr.list->new_value(currentResource());
         val.init_grid_val(tally_or_val_ptr.val_ptr);
         parent = nullptr;
       }

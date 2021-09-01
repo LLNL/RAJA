@@ -17,7 +17,7 @@ namespace detail
             camp::idx_t... Sequence,
             typename Params,
             typename... Ts>
-  CAMP_HOST_DEVICE constexpr auto invoke_with_order(Params&& params,
+  RAJA_HOST_DEVICE constexpr auto invoke_with_order(Params&& params,
                                                     Fn&& f,
                                                     camp::idx_seq<Sequence...>,
                                                     Ts&&... extra)
@@ -27,7 +27,7 @@ namespace detail
 
   CAMP_SUPPRESS_HD_WARN
   template <typename Params, typename Fn, typename... Ts>
-  CAMP_HOST_DEVICE constexpr auto invoke(Params&& params, Fn&& f, Ts&&... extra)
+  RAJA_HOST_DEVICE constexpr auto invoke(Params&& params, Fn&& f, Ts&&... extra)
   {
     return invoke_with_order(
         camp::forward<Params>(params),
@@ -35,7 +35,6 @@ namespace detail
         typename camp::decay<Params>::lambda_params_seq(),
         camp::forward<Ts>(extra)...);
   }
-
 
 
   //
@@ -52,26 +51,19 @@ namespace detail
   private:
 
     template<camp::idx_t Seq>
-    constexpr auto lambda_args( camp::idx_seq<Seq> )
-        -> decltype(
-             camp::get<Seq>(param_tup).get_lambda_arg_tup()
-           )
+    RAJA_HOST_DEVICE
+    constexpr auto lambda_args(camp::idx_seq<Seq> )
     {
       return camp::get<Seq>(param_tup).get_lambda_arg_tup();
     }
 
-    template<camp::idx_t First, camp::idx_t... Seq>
-    constexpr auto lambda_args( camp::idx_seq<First, Seq...> )
-        -> decltype(
-             camp::tuple_cat_pair(
-               camp::get<First>(param_tup).get_lambda_arg_tup(),
-               lambda_args(camp::idx_seq<Seq...>())
-             )
-           )
+    template<camp::idx_t First, camp::idx_t Second, camp::idx_t... Seq>
+    RAJA_HOST_DEVICE
+    constexpr auto lambda_args(camp::idx_seq<First, Second, Seq...> )
     {
       return camp::tuple_cat_pair(
                camp::get<First>(param_tup).get_lambda_arg_tup(),
-               lambda_args(camp::idx_seq<Seq...>())
+               lambda_args(camp::idx_seq<Second, Seq...>())
              );
     }
 
@@ -114,6 +106,7 @@ namespace detail
     using lambda_params_seq = camp::make_idx_seq_t<count_lambda_args<Params...>()>;
 
     template<camp::idx_t Idx>
+    RAJA_HOST_DEVICE
     constexpr auto get_lambda_args()
         -> decltype(  *camp::get<Idx>( lambda_args(params_seq{}) )  ) {
       return (  *camp::get<Idx>( lambda_args(params_seq{}) )  );

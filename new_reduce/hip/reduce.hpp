@@ -6,6 +6,7 @@
 
 //#include <hip.h>
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
+#include "../util/policy.hpp"
 
 namespace detail {
 using hip_dim_t = dim3;
@@ -54,7 +55,7 @@ using hip_dim_t = dim3;
     // reduce per warp values
     if (numThreads > RAJA::policy::hip::WARP_SIZE) {
 
-      // Need to separate declaration and initialization for clang-cuda
+      // Need to separate declaration and initialization for clang-hip
       __shared__ unsigned char tmpsd[sizeof(RAJA::detail::SoAArray<T, RAJA::policy::hip::MAX_WARPS>)];
 
       // Partial placement new: Should call new(tmpsd) here but recasting memory
@@ -105,7 +106,7 @@ using hip_dim_t = dim3;
     int threadId = threadIdx.x + blockDim.x * threadIdx.y +
                    (blockDim.x * blockDim.y) * threadIdx.z;
 
-    T temp = block_reduce<Combiner>(*(red.hipval), Combiner::identity());
+    T temp = block_reduce<OP>(red.val, OP::identity());
 
     // one thread per block writes to device_mem
     bool lastBlock = false;
@@ -133,7 +134,7 @@ using hip_dim_t = dim3;
 
       // one thread returns value
       if (threadId == 0) {
-        *(red.hiptarget) = temp;
+        *(red.devicetarget) = temp;
       }
     }
 
@@ -146,11 +147,10 @@ using hip_dim_t = dim3;
   template<typename EXEC_POL,
            typename OP,
            typename T>
-  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::hip_exec<256> > >
-  init(Reducer<OP, T>& red, const RAJA::hip::detail::hipInfo & cs) {
-    hipMallocManaged( (void**)(&(red.hiptarget)), sizeof(T));//, hipHostAllocPortable );
-    int numThreads = cs.blockDim.x * cs.blockDim.y * cs.blockDim.z;
-
+  camp::concepts::enable_if< is_hip_policy< EXEC_POL > >
+  init(Reducer<OP, T>& red, const RAJA::hip::detail::hipInfo & cs)
+  {
+    hipMallocManaged( (void**)(&(red.devicetarget)), sizeof(T));//, hipHostAllocPortable );
     red.device_mem.allocate(cs.gridDim.x * cs.gridDim.y * cs.gridDim.z);
     red.device_count = RAJA::hip::device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
   }
@@ -160,9 +160,9 @@ using hip_dim_t = dim3;
 // ----------------------------------------------------------------------------
   template<typename EXEC_POL, typename OP, typename T>
   RAJA_HOST_DEVICE
-  camp::concepts::enable_if<std::is_same< EXEC_POL, RAJA::hip_exec<256>> >
-  combine(Reducer<OP, T>& red) {
-
+  camp::concepts::enable_if< is_hip_policy< EXEC_POL > >
+  combine(Reducer<OP, T>& red)
+  {
     bool blah = grid_reduce(red);
   }
   
@@ -170,11 +170,11 @@ using hip_dim_t = dim3;
 //                                   RESOLVE
 // ----------------------------------------------------------------------------
   template<typename EXEC_POL, typename OP, typename T>
-  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::hip_exec<256>> >
-  resolve(Reducer<OP, T>& red) {
+  camp::concepts::enable_if< is_hip_policy< EXEC_POL > >
+  resolve(Reducer<OP, T>& red)
+  {
     hipDeviceSynchronize();
-    hipMemcpy(&red.val, red.hiptarget, sizeof(T), hipMemcpyDeviceToHost);
-    *red.target = red.val; 
+    hipMemcpy(red.target, red.devicetarget, sizeof(T), hipMemcpyDeviceToHost);
   }
 
 } //  namespace detail

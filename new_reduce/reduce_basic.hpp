@@ -34,7 +34,7 @@ namespace detail
 #endif
 
     static constexpr size_t num_lambda_args = 1;
-    auto get_lambda_arg_tup() { return camp::make_tuple(&val); }
+    RAJA_HOST_DEVICE auto get_lambda_arg_tup() { return camp::make_tuple(&val); }
   };
 
 } // namespace detail
