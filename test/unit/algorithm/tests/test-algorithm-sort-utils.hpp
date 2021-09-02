@@ -103,8 +103,8 @@ struct SortData<Res, sort_interface_tag, K, V>
     : m_res(res)
   {
     if (N > 0) {
-      orig_keys = m_res.template allocate<K>(N);
-      sorted_keys = m_res.template allocate<K>(N);
+      orig_keys = m_res.template allocate<K>(N, camp::resources::MemoryAccess::Managed);
+      sorted_keys = m_res.template allocate<K>(N, camp::resources::MemoryAccess::Managed);
     }
 
     for (size_t i = 0; i < N; i++) {
@@ -129,8 +129,8 @@ struct SortData<Res, sort_interface_tag, K, V>
   ~SortData()
   {
     if (orig_keys != nullptr) {
-      m_res.deallocate(orig_keys);
-      m_res.deallocate(sorted_keys);
+      m_res.deallocate(orig_keys, camp::resources::MemoryAccess::Managed);
+      m_res.deallocate(sorted_keys, camp::resources::MemoryAccess::Managed);
     }
   }
 };
@@ -149,8 +149,8 @@ struct SortData<Res, sort_pairs_interface_tag, K, V> : SortData<Res, sort_interf
     : base(N, res, gen_random)
   {
     if (N > 0) {
-      orig_vals = this->m_res.template allocate<V>(N);
-      sorted_vals = this->m_res.template allocate<V>(N);
+      orig_vals = this->m_res.template allocate<V>(N, camp::resources::MemoryAccess::Managed);
+      sorted_vals = this->m_res.template allocate<V>(N, camp::resources::MemoryAccess::Managed);
     }
 
     for (size_t i = 0; i < N; i++) {
@@ -171,8 +171,8 @@ struct SortData<Res, sort_pairs_interface_tag, K, V> : SortData<Res, sort_interf
   ~SortData()
   {
     if (orig_vals != nullptr) {
-      this->m_res.deallocate(orig_vals);
-      this->m_res.deallocate(sorted_vals);
+      this->m_res.deallocate(orig_vals, camp::resources::MemoryAccess::Managed);
+      this->m_res.deallocate(sorted_vals, camp::resources::MemoryAccess::Managed);
     }
   }
 };

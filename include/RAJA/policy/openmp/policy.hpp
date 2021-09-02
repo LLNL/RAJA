@@ -10,7 +10,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -102,6 +102,16 @@ struct Runtime : private internal::Schedule<static_cast<omp_sched_t>(-1), defaul
 ///  Struct supporting OpenMP parallel region.
 ///
 struct omp_parallel_region
+    : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                            Pattern::region,
+                                            Launch::undefined,
+                                            Platform::host> {
+};
+
+///
+///  Struct supporting OpenMP parallel region for Teams
+///
+struct omp_launch_t
     : make_policy_pattern_launch_platform_t<Policy::openmp,
                                             Pattern::region,
                                             Launch::undefined,
@@ -375,6 +385,11 @@ using policy::omp::omp_for_runtime_exec;
 /// Type aliases for omp parallel region
 ///
 using policy::omp::omp_parallel_region;
+
+namespace expt
+{
+  using policy::omp::omp_launch_t;
+}
 
 ///
 /// Type aliases for omp reductions

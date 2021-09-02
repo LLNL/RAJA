@@ -10,7 +10,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -35,6 +35,7 @@ enum class Policy {
   target_openmp,
   cuda,
   hip,
+  sycl,
   tbb
 };
 
@@ -195,6 +196,9 @@ struct is_cuda_policy : RAJA::policy_is<Pol, RAJA::Policy::cuda> {
 };
 template <typename Pol>
 struct is_hip_policy : RAJA::policy_is<Pol, RAJA::Policy::hip> {
+};
+template <typename Pol>
+struct is_sycl_policy : RAJA::policy_is<Pol, RAJA::Policy::sycl> {
 };
 
 template <typename Pol>

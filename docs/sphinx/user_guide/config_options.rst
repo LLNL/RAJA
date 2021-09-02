@@ -1,6 +1,6 @@
 .. ##
 .. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -130,6 +130,7 @@ and their default settings:
       ENABLE_TBB                Off
       ENABLE_CUDA               Off
       ENABLE_HIP                Off
+      ENABLE_SYCL               Off
       =======================   ============================================
 
      Other compilation options are available via the following:

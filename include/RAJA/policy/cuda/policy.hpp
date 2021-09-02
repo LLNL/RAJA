@@ -10,7 +10,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -80,6 +80,16 @@ struct cuda_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        detail::get_launch<Async>::value,
                        RAJA::Platform::cuda> {
 };
+
+template <bool Async, int num_threads = 0>
+struct cuda_launch_t : public RAJA::make_policy_pattern_launch_platform_t<
+                       RAJA::Policy::cuda,
+                       RAJA::Pattern::region,
+                       detail::get_launch<Async>::value,
+                       RAJA::Platform::cuda> {
+};
+
+
 
 
 
@@ -226,7 +236,10 @@ using policy::cuda::cuda_thread_masked_loop;
 
 using policy::cuda::cuda_synchronize;
 
-
+namespace expt
+{
+  using policy::cuda::cuda_launch_t;
+}
 
 
 /*!
