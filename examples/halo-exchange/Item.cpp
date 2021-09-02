@@ -10,6 +10,7 @@
 #include "loop.hpp"
 #include "Item.hpp"
 #include "CopyTransaction.hpp"
+#include "SumTransaction.hpp"
 
 
 Item::Item(double* var,
@@ -18,7 +19,8 @@ Item::Item(double* var,
            std::vector<int >& pack_index_list_lengths,
            Order unpack_transaction_order,
            std::vector<int*>& unpack_index_lists,
-           std::vector<int >& unpack_index_list_lengths)
+           std::vector<int >& unpack_index_list_lengths,
+           TransactionType transaction_type)
   : m_var(var)
   , m_pack_transaction_order(pack_transaction_order)
   , m_pack_index_lists(pack_index_lists)
@@ -26,6 +28,7 @@ Item::Item(double* var,
   , m_unpack_transaction_order(unpack_transaction_order)
   , m_unpack_index_lists(unpack_index_lists)
   , m_unpack_index_list_lengths(unpack_index_list_lengths)
+  , m_transaction_type(transaction_type)
 {
 
 }
@@ -37,6 +40,8 @@ void Item::populate(Schedule& schedule)
   assert(num_neighbors == m_pack_index_list_lengths.size());
   assert(num_neighbors == m_unpack_index_lists.size());
   assert(num_neighbors == m_unpack_index_list_lengths.size());
+  assert(m_transaction_type == TransactionType::copy ||
+         m_transaction_type == TransactionType::sum);
 
   for (int l = 0; l < num_neighbors; ++l) {
 
@@ -45,11 +50,25 @@ void Item::populate(Schedule& schedule)
     int* pack_list = m_pack_index_lists[l];
     int  pack_len  = m_pack_index_list_lengths[l];
 
-    CopyTransaction* pack =
-        new CopyTransaction(schedule.get_my_rank(),
-                            neighbor_rank,
-                            m_var,
-                            pack_list, pack_len);
+    FusibleTransaction* pack = nullptr;
+    if (m_transaction_type == TransactionType::copy)
+    {
+      pack = new CopyTransaction(schedule.get_my_rank(),
+                                 neighbor_rank,
+                                 m_var,
+                                 pack_list, pack_len);
+    }
+    else if (m_transaction_type == TransactionType::sum)
+    {
+      pack = new SumTransaction(schedule.get_my_rank(),
+                                neighbor_rank,
+                                m_var,
+                                pack_list, pack_len);
+    }
+    else
+    {
+      //error
+    }
 
     if (m_pack_transaction_order == Order::unordered && get_loop_pattern_fusible()) {
       schedule.appendTransaction(std::unique_ptr<FusibleTransaction>(pack));
@@ -61,11 +80,25 @@ void Item::populate(Schedule& schedule)
     int* recv_list = m_unpack_index_lists[l];
     int  recv_len  = m_unpack_index_list_lengths[l];
 
-    CopyTransaction* recv =
-        new CopyTransaction(neighbor_rank,
-                            schedule.get_my_rank(),
-                            m_var,
-                            recv_list, recv_len);
+    FusibleTransaction* recv = nullptr;
+    if (m_transaction_type == TransactionType::copy)
+    {
+     recv = new CopyTransaction(neighbor_rank,
+                                schedule.get_my_rank(),
+                                m_var,
+                                recv_list, recv_len);
+    }
+    else if (m_transaction_type == TransactionType::sum)
+    {
+      recv = new SumTransaction(neighbor_rank,
+                                schedule.get_my_rank(),
+                                m_var,
+                                recv_list, recv_len);
+    }
+    else  
+    {
+      //error  
+    }
 
     if (m_unpack_transaction_order == Order::unordered && get_loop_pattern_fusible()) {
       schedule.appendTransaction(std::unique_ptr<FusibleTransaction>(recv));
@@ -83,6 +116,8 @@ void Item::populate(GraphSchedule& graphSchedule)
   assert(num_neighbors == m_pack_index_list_lengths.size());
   assert(num_neighbors == m_unpack_index_lists.size());
   assert(num_neighbors == m_unpack_index_list_lengths.size());
+  assert(m_transaction_type == TransactionType::copy ||
+         m_transaction_type == TransactionType::sum);
 
   for (int l = 0; l < num_neighbors; ++l) {
 
@@ -91,11 +126,25 @@ void Item::populate(GraphSchedule& graphSchedule)
     int* pack_list = m_pack_index_lists[l];
     int  pack_len  = m_pack_index_list_lengths[l];
 
-    CopyTransaction* pack =
-        new CopyTransaction(graphSchedule.get_my_rank(),
-                            neighbor_rank,
-                            m_var,
-                            pack_list, pack_len);
+    FusibleTransaction* pack = nullptr;
+    if (m_transaction_type == TransactionType::copy)
+    {
+      pack = new CopyTransaction(graphSchedule.get_my_rank(),
+                                 neighbor_rank,
+                                 m_var,
+                                 pack_list, pack_len);
+    }
+    else if (m_transaction_type == TransactionType::sum)
+    {
+      pack = new SumTransaction(graphSchedule.get_my_rank(),
+                                neighbor_rank,
+                                m_var,
+                                pack_list, pack_len);
+    }
+    else
+    {
+      //error
+    }
 
     if (m_pack_transaction_order == Order::unordered && get_loop_pattern_fusible()) {
       graphSchedule.appendTransaction(std::unique_ptr<FusibleTransaction>(pack));
@@ -107,11 +156,25 @@ void Item::populate(GraphSchedule& graphSchedule)
     int* recv_list = m_unpack_index_lists[l];
     int  recv_len  = m_unpack_index_list_lengths[l];
 
-    CopyTransaction* recv =
-        new CopyTransaction(neighbor_rank,
-                            graphSchedule.get_my_rank(),
-                            m_var,
-                            recv_list, recv_len);
+    FusibleTransaction* recv = nullptr;
+    if (m_transaction_type == TransactionType::copy)
+    {
+      recv = new CopyTransaction(neighbor_rank,
+                                 graphSchedule.get_my_rank(),
+                                 m_var,
+                                 recv_list, recv_len);
+    }
+    else if (m_transaction_type == TransactionType::sum)
+    {
+      recv = new SumTransaction(neighbor_rank,
+                                graphSchedule.get_my_rank(),
+                                m_var,
+                                recv_list, recv_len);
+    }
+    else
+    {
+      //error  
+    }
 
     if (m_unpack_transaction_order == Order::unordered && get_loop_pattern_fusible()) {
       graphSchedule.appendTransaction(std::unique_ptr<FusibleTransaction>(recv));
