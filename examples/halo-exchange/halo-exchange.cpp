@@ -40,11 +40,11 @@ void printResult(std::vector<double*> const& vars, int var_size, int num_vars);
 int main(int argc, char **argv)
 {
 
-  std::cout << "\n\nRAJA halo exchange example...\n";
+  std::cout << "RAJA halo exchange example..." << std::endl;
 
   if (argc != 1 && argc != 7) {
     std::cerr << "Usage: tut_halo-exchange "
-              << "[grid_x grid_y grid_z halo_width num_vars num_cycles]\n";
+              << "[grid_x grid_y grid_z halo_width num_vars num_cycles]" << std::endl;
     std::exit(1);
   }
 
@@ -62,8 +62,8 @@ int main(int argc, char **argv)
   const int num_cycles =     (argc != 7) ? 128 : std::atoi(argv[6]);
 
   std::cout << "grid dimensions "     << grid_dims[0]
-            << " x "                  << grid_dims[1]
-            << " x "                  << grid_dims[2] << "\n"
+                             << " x " << grid_dims[1]
+                             << " x " << grid_dims[2] << "\n"
             << "halo width "          << halo_width   << "\n"
             << "number of variables " << num_vars     << "\n"
             << "number of cycles "    << num_cycles   << "\n";
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
        grid_dims[1] < halo_width ||
        grid_dims[2] < halo_width ) {
     std::cerr << "Error: "
-              << "grid dimensions must not be smaller than the halo width\n";
+              << "grid dimensions must not be smaller than the halo width" << std::endl;
     std::exit(1);
   }
 
@@ -108,15 +108,17 @@ int main(int argc, char **argv)
   std::vector<int > unpack_index_list_lengths(num_neighbors, 0);
   create_unpack_lists(unpack_index_lists, unpack_index_list_lengths, halo_width, grid_dims);
 
+  std::cout << std::endl;
+
 
   TimerStats timer;
 
 
 //----------------------------------------------------------------------------//
   {
-    std::cout << "\n Running Simple C-style halo exchange...\n"
-                << "   ordering: pack:   items " << get_order_name(Order::ordered) << ", transactions " << get_order_name(Order::ordered) << "\n"
-                << "             unpack: items " << get_order_name(Order::ordered) << ", transactions " << get_order_name(Order::ordered) << "\n";
+    std::cout << "Running Simple C-style halo exchange...\n"
+              << "  ordering: pack:   items " << get_order_name(Order::ordered) << ", transactions " << get_order_name(Order::ordered) << "\n"
+              << "            unpack: items " << get_order_name(Order::ordered) << ", transactions " << get_order_name(Order::ordered) << std::endl;
 
 
     std::vector<double*> buffers(num_neighbors, nullptr);
@@ -194,10 +196,10 @@ int main(int argc, char **argv)
 
     }
 
-    std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
-    std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
-    std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
-    std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+    std::cout << "    " << timer.get_num() << " cycles\n";
+    std::cout << "    avg cycle run time " << timer.get_avg() << " seconds\n";
+    std::cout << "    min cycle run time " << timer.get_min() << " seconds\n";
+    std::cout << "    max cycle run time " << timer.get_max() << " seconds\n";
     timer.reset();
 
     // copy result of exchange for reference later
@@ -210,6 +212,7 @@ int main(int argc, char **argv)
         var_ref[i] = var[i];
       }
     }
+    std::cout << std::endl;
   }
 
 
@@ -229,9 +232,9 @@ int main(int argc, char **argv)
       const Order order_unpack_items        = ordering == 0 ? Order::ordered     : Order::unordered;
 
 
-      std::cout << "\n Running Schedule " << get_loop_pattern_name() << " halo exchange...\n"
-                << "   ordering: pack:   items " << get_order_name(order_pack_items) << ", transactions " << get_order_name(order_pack_transactions) << "\n"
-                << "             unpack: items " << get_order_name(order_unpack_items) << ", transactions " << get_order_name(order_unpack_transactions) << "\n";
+      std::cout << "Running Schedule " << get_loop_pattern_name() << " halo exchange...\n"
+                << "  ordering: pack:   items " << get_order_name(order_pack_items) << ", transactions " << get_order_name(order_pack_transactions) << "\n"
+                << "            unpack: items " << get_order_name(order_unpack_items) << ", transactions " << get_order_name(order_unpack_transactions) << std::endl;
 
 
       // allocate per pattern memory
@@ -318,15 +321,16 @@ int main(int argc, char **argv)
       }
 
 
-      std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
-      std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
-      std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
-      std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+      std::cout << "    " << timer.get_num() << " cycles\n";
+      std::cout << "    avg cycle run time " << timer.get_avg() << " seconds\n";
+      std::cout << "    min cycle run time " << timer.get_min() << " seconds\n";
+      std::cout << "    max cycle run time " << timer.get_max() << " seconds\n";
       timer.reset();
 
       // check results against reference copy
       checkResult(vars, vars_ref, var_size, num_vars);
       //printResult(vars, var_size, num_vars);
+      std::cout << std::endl;
     }
   }
 
@@ -347,9 +351,9 @@ int main(int argc, char **argv)
       const Order order_unpack_items        = ordering == 0 ? Order::ordered     : Order::unordered;
 
 
-      std::cout << "\n Running GraphSchedule " << get_loop_pattern_name() << " halo exchange...\n"
-                << "   ordering: pack:   items " << get_order_name(order_pack_items) << ", transactions " << get_order_name(order_pack_transactions) << "\n"
-                << "             unpack: items " << get_order_name(order_unpack_items) << ", transactions " << get_order_name(order_unpack_transactions) << "\n";
+      std::cout << "Running GraphSchedule " << get_loop_pattern_name() << " halo exchange...\n"
+                << "  ordering: pack:   items " << get_order_name(order_pack_items) << ", transactions " << get_order_name(order_pack_transactions) << "\n"
+                << "            unpack: items " << get_order_name(order_unpack_items) << ", transactions " << get_order_name(order_unpack_transactions) << std::endl;
 
 
       // allocate per pattern memory
@@ -436,15 +440,16 @@ int main(int argc, char **argv)
       }
 
 
-      std::cout<< "\t" << timer.get_num() << " cycles" << std::endl;
-      std::cout<< "\tavg cycle run time " << timer.get_avg() << " seconds" << std::endl;
-      std::cout<< "\tmin cycle run time " << timer.get_min() << " seconds" << std::endl;
-      std::cout<< "\tmax cycle run time " << timer.get_max() << " seconds" << std::endl;
+      std::cout << "    " << timer.get_num() << " cycles\n";
+      std::cout << "    avg cycle run time " << timer.get_avg() << " seconds\n";
+      std::cout << "    min cycle run time " << timer.get_min() << " seconds\n";
+      std::cout << "    max cycle run time " << timer.get_max() << " seconds\n";
       timer.reset();
 
       // check results against reference copy
       checkResult(vars, vars_ref, var_size, num_vars);
       //printResult(vars, var_size, num_vars);
+      std::cout << std::endl;
     }
   }
 
@@ -461,7 +466,7 @@ int main(int argc, char **argv)
   destroy_unpack_lists(unpack_index_lists);
 
 
-  std::cout << "\n DONE!...\n";
+  std::cout << "DONE!..." << std::endl;
 
   return 0;
 }
@@ -482,9 +487,9 @@ void checkResult(std::vector<double*> const& vars, std::vector<double*> const& v
     }
   }
   if ( correct ) {
-    std::cout << "\n\t result -- PASS\n";
+    std::cout << "  result -- PASS" << std::endl;
   } else {
-    std::cout << "\n\t result -- FAIL\n";
+    std::cout << "  result -- FAIL" << std::endl;
   }
 }
 
