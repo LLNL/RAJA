@@ -37,7 +37,7 @@
 #define cudaErrchk(...)
 #endif
 
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_HIP_ACTIVE)
 #include "RAJA/policy/hip/raja_hiperrchk.hpp"
 #else
 #define hipErrchk(...)
@@ -126,7 +126,7 @@ class TypedListSegment
         m_data, &(*src.begin()), m_size * sizeof(T), cudaMemcpyDefault));
   }
 
-#elif defined(RAJA_ENABLE_HIP)
+#elif defined(RAJA_HIP_ACTIVE)
   //! copy data from container using BlockCopy
   template <typename Container>
   void copy(Container&& src, BlockCopy)

@@ -222,7 +222,7 @@ if (ENABLE_HIP)
           ${raja_depends}
           rocPRIM)
     else()
-      message(WARNING "External rocPRIM not found.")
+      message(FATAL_ERROR "External rocPRIM not found.")
       set(ENABLE_EXTERNAL_ROCPRIM Off)
      endif()
   endif ()

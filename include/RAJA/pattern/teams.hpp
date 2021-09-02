@@ -29,7 +29,7 @@
 #include "RAJA/pattern/teams/teams_cuda.hpp"
 #endif
 
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_HIP_ACTIVE)
 #include "RAJA/pattern/teams/teams_hip.hpp"
 #endif
 
