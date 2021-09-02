@@ -150,7 +150,7 @@ using cuda_dim_t = dim3;
   camp::concepts::enable_if< is_cuda_policy< EXEC_POL > >
   init(Reducer<OP, T>& red, const RAJA::cuda::detail::cudaInfo & cs)
   {
-    cudaMallocManaged( (void**)(&(red.devicetarget)), sizeof(T));//, cudaHostAllocPortable );
+    cudaMalloc( (void**)(&(red.devicetarget)), sizeof(T));
     red.device_mem.allocate(cs.gridDim.x * cs.gridDim.y * cs.gridDim.z);
     red.device_count = RAJA::cuda::device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
   }
