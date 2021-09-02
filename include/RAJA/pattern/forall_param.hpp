@@ -1,12 +1,12 @@
-#ifndef PROTO_FORALL_PARAM_HPP
-#define PROTO_FORALL_PARAM_HPP
+#ifndef FORALL_PARAM_HPP
+#define FORALL_PARAM_HPP
 
-// Used in omp reduction
-int use_dev = 1;
+#include "RAJA/policy/sequential/new_reduce.hpp"
 
-namespace detail
+namespace RAJA
 {
-
+namespace expt
+{
   //
   //
   // Invoke Forall with Params.
@@ -25,11 +25,11 @@ namespace detail
     return f(extra..., ( params.template get_lambda_args<Sequence>() )...);
   }
 
-  CAMP_SUPPRESS_HD_WARN
+  //CAMP_SUPPRESS_HD_WARN
   template <typename Params, typename Fn, typename... Ts>
-  RAJA_HOST_DEVICE constexpr auto invoke(Params&& params, Fn&& f, Ts&&... extra)
+  RAJA_HOST_DEVICE constexpr auto invoke_body(Params&& params, Fn&& f, Ts&&... extra)
   {
-    return invoke_with_order(
+    return expt::invoke_with_order(
         camp::forward<Params>(params),
         camp::forward<Fn>(f),
         typename camp::decay<Params>::lambda_params_seq(),
@@ -42,8 +42,13 @@ namespace detail
   // Forall Parameter Packing type
   //
   //
+  struct ParamMultiplexer;
+
   template<typename... Params>
   struct ForallParamPack {
+
+    friend struct ParamMultiplexer;
+
     using Base = camp::tuple<Params...>;
     using params_seq = camp::make_idx_seq_t< camp::tuple_size<Base>::value >;
     Base param_tup;
@@ -70,26 +75,26 @@ namespace detail
     // Init
     template<typename EXEC_POL, camp::idx_t... Seq, typename ...Args>
     static void constexpr detail_init(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& f_params, Args&& ...args) {
-      CAMP_EXPAND(init<EXEC_POL>( camp::get<Seq>(f_params.param_tup), std::forward<Args>(args)... ));
+      CAMP_EXPAND(expt::detail::init<EXEC_POL>( camp::get<Seq>(f_params.param_tup), std::forward<Args>(args)... ));
     }
 
     // Combine
     template<typename EXEC_POL, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
     static void constexpr detail_combine(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& out, const ForallParamPack& in ) {
-      CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(out.param_tup), camp::get<Seq>(in.param_tup)));
+      CAMP_EXPAND(detail::combine<EXEC_POL>( camp::get<Seq>(out.param_tup), camp::get<Seq>(in.param_tup)));
     }
 
     template<typename EXEC_POL, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
     static void constexpr detail_combine(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& f_params ) {
-      CAMP_EXPAND(combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
+      CAMP_EXPAND(detail::combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
     
     // Resolve
     template<typename EXEC_POL, camp::idx_t... Seq>
     static void constexpr detail_resolve(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& f_params ) {
-      CAMP_EXPAND(resolve<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
+      CAMP_EXPAND(detail::resolve<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
 
     template<typename Last>
@@ -111,39 +116,25 @@ namespace detail
         -> decltype(  *camp::get<Idx>( lambda_args(params_seq{}) )  ) {
       return (  *camp::get<Idx>( lambda_args(params_seq{}) )  );
     }
+  };
 
-    // Init
-    template<typename EXEC_POL, typename ...Args>
-    friend void constexpr init( ForallParamPack& f_params, Args&& ...args) {
-      detail_init(EXEC_POL(), params_seq{}, f_params, std::forward<Args>(args)... );
+  
+  struct ParamMultiplexer {
+    template<typename EXEC_POL, typename... Params, typename ...Args, typename FP = ForallParamPack<Params...>>
+    static void constexpr init( ForallParamPack<Params...>& f_params, Args&& ...args) {
+      FP::detail_init(EXEC_POL(),typename FP::params_seq(), f_params, std::forward<Args>(args)... );
     }
-
-    // Combine
-    template<typename EXEC_POL, typename ...Args>
-    RAJA_HOST_DEVICE
-    friend void constexpr combine(ForallParamPack& f_params, Args&& ...args) {
-      detail_combine(EXEC_POL(), params_seq{}, f_params, std::forward<Args>(args)... );
+    template<typename EXEC_POL, typename... Params, typename ...Args, typename FP = ForallParamPack<Params...>>
+    static void constexpr combine(ForallParamPack<Params...>& f_params, Args&& ...args){
+      FP::detail_combine(EXEC_POL(), f_params.params_seq(), f_params, std::forward<Args>(args)... );
     }
-
-    // Resolve
-    template<typename EXEC_POL, typename ...Args>
-    friend void constexpr resolve( ForallParamPack& f_params, Args&& ...args) {
-      detail_resolve(EXEC_POL(), params_seq{}, f_params , std::forward<Args>(args)... );
+    template<typename EXEC_POL, typename... Params, typename ...Args, typename FP = ForallParamPack<Params...>>
+    static void constexpr resolve( ForallParamPack<Params...>& f_params, Args&& ...args){
+      FP::detail_resolve(EXEC_POL(), typename FP::params_seq(), f_params, std::forward<Args>(args)... );
     }
   };
 
+} //  namespace expt
+} //  namespace RAJA
 
-} //  namespace detail
-
-#include "sequential/forall.hpp"
-#include "openmp/forall.hpp"
-#include "omp-target/forall.hpp"
-#include "cuda/forall.hpp"
-#include "hip/forall.hpp"
-
-template<typename ExecPol, typename B, typename... Params>
-void forall_param(int N, const B& body, Params... params) {
-  detail::forall_param(ExecPol(), N, body, params...);
-}
-
-#endif //  PROTO_FORALL_PARAM_HPP
+#endif //  FORALL_PARAM_HPP

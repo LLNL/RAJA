@@ -1,7 +1,5 @@
-#ifndef PROTO_NEW_REDUCE_HPP
-#define PROTO_NEW_REDUCE_HPP
-
-#include "util/valloc.hpp"
+#ifndef NEW_REDUCE_HPP
+#define NEW_REDUCE_HPP
 
 #if defined(RAJA_ENABLE_CUDA)
 #define DEVICE cuda
@@ -9,6 +7,10 @@
 #define DEVICE hip
 #endif
 
+namespace RAJA
+{
+namespace expt
+{
 namespace detail
 {
 
@@ -39,29 +41,14 @@ namespace detail
 
 } // namespace detail
 
-#include "sequential/reduce.hpp"
-#include "openmp/reduce.hpp"
-#include "omp-target/reduce.hpp"
-#include "cuda/reduce.hpp"
-#include "hip/reduce.hpp"
-
 template <template <typename, typename, typename> class Op, typename T>
 auto constexpr Reduce(T *target)
 {
   return detail::Reducer<Op<T, T, T>, T>(target);
 }
+} // namespace expt
 
-template <typename T>
-auto constexpr ReduceLoc(ValLocMin<T> *target) 
-{
-  using R = ValLocMin<T>;
-  return detail::Reducer<RAJA::operators::minimum<R,R,R>, R>(target);
-}
-template <typename T>
-auto constexpr ReduceLoc(ValLocMax<T> *target)
-{
-  using R = ValLocMax<T>;
-  return detail::Reducer<RAJA::operators::maximum<R,R,R>, R>(target);
-}
 
-#endif //  PROTO_NEW_REDUCE_HPP
+} //  namespace RAJA
+
+#endif //  NEW_REDUCE_HPP

@@ -83,6 +83,8 @@
 
 #include "RAJA/util/resource.hpp"
 
+//#include "RAJA/pattern/forall_param.hpp"
+
 namespace RAJA
 {
 
@@ -152,6 +154,21 @@ namespace wrap
  *
  ******************************************************************************
  */
+template <typename Res, typename ExecutionPolicy, typename Container, typename LoopBody, typename ForallParams>
+RAJA_INLINE concepts::enable_if_t<
+    RAJA::resources::EventProxy<Res>,
+    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+    type_traits::is_range<Container>>
+forall(Res r, ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body, ForallParams f_params)
+{
+  RAJA_FORCEINLINE_RECURSIVE
+  return forall_impl(r,
+                     std::forward<ExecutionPolicy>(p),
+                     std::forward<Container>(c),
+                     std::forward<LoopBody>(loop_body),
+                     f_params);
+}
+
 template <typename Res, typename ExecutionPolicy, typename Container, typename LoopBody>
 RAJA_INLINE concepts::enable_if_t<
     RAJA::resources::EventProxy<Res>,
@@ -493,6 +510,39 @@ forall(ExecutionPolicy&& p, Res r, Container&& c, LoopBody&& loop_body)
       std::forward<ExecutionPolicy>(p),
       std::forward<Container>(c),
       std::move(body));
+
+  util::callPostLaunchPlugins(context);
+  return e;
+}
+template <typename ExecutionPolicy, typename Res, typename Container, typename LoopBody, typename... Params>
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<Res>,
+    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+    concepts::negate<type_traits::is_multi_policy<ExecutionPolicy>>,
+    type_traits::is_range<Container>>
+forall(ExecutionPolicy&& p, Res r, Container&& c, LoopBody&& loop_body, Params... params)
+{
+  static_assert(type_traits::is_random_access_range<Container>::value,
+                "Container does not model RandomAccessIterator");
+
+  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
+  util::callPreCapturePlugins(context);
+
+  using RAJA::util::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
+
+  util::callPostCapturePlugins(context);
+
+  util::callPreLaunchPlugins(context);
+
+  expt::ForallParamPack<Params...> f_params(params...);
+
+  resources::EventProxy<Res> e =  wrap::forall(
+      r,
+      std::forward<ExecutionPolicy>(p),
+      std::forward<Container>(c),
+      std::move(body),
+      f_params);
 
   util::callPostLaunchPlugins(context);
   return e;

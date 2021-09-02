@@ -46,7 +46,7 @@ namespace detail
       //if(val_array) std::copy(rhs.val_array, rhs.val_array+size, val_array);
       if (rhs.val_array){
         val_array = new T[size];
-        for (int i = 0; i < size; i++) {
+        for (size_t i = 0; i < size; i++) {
           val_array[i] = rhs.val_array[i];
         }
       }

@@ -1,8 +1,10 @@
-#ifndef PROTO_NEW_REDUCE_SEQ_REDUCE_HPP
-#define PROTO_NEW_REDUCE_SEQ_REDUCE_HPP
+#ifndef NEW_REDUCE_SEQ_REDUCE_HPP
+#define NEW_REDUCE_SEQ_REDUCE_HPP
 
+#include "RAJA/pattern/new_reduce_basic.hpp"
 
-
+namespace RAJA {
+namespace expt {
 namespace detail {
 
   // Init
@@ -25,5 +27,7 @@ namespace detail {
   }
 
 } //  namespace detail
+} //  namespace expt
+} //  namespace RAJA
 
-#endif //  PROTO_NEW_REDUCE_SEQ_REDUCE_HPP
+#endif //  NEW_REDUCE_SEQ_REDUCE_HPP

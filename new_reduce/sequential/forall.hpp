@@ -1,5 +1,5 @@
-#ifndef NEW_REDUCE_FORALL_SEQ_HPP
-#define NEW_REDUCE_FORALL_SEQ_HPP
+#ifndef PROTO_NEW_REDUCE_FORALL_SEQ_HPP
+#define PROTO_NEW_REDUCE_FORALL_SEQ_HPP
 
 namespace detail {
 
@@ -20,4 +20,4 @@ namespace detail {
 
 } //  namespace detail
 
-#endif //  NEW_REDUCE_SEQ_HPP
+#endif //  PROTO_NEW_REDUCE_SEQ_HPP

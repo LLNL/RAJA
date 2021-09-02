@@ -10,7 +10,7 @@ namespace detail {
   // Init
   template<typename EXEC_POL, typename OP, typename T>
   camp::concepts::enable_if< is_openmp_policy<EXEC_POL> >
-  init(ReducerArray<OP, T>& red) {
+  init(ReducerArray<OP, T>& /*red*/) {
     //printf("init ReducerArray %p\n", &red);
     //red.val_array = new T[red.size];
     //for (size_t i = 0; i < red.size; i++){

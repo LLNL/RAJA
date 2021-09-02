@@ -249,18 +249,43 @@ int main(int argc, char *argv[])
 
     RAJA::Timer t;
     t.start();
-    RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(0, N),
-                                                        [=](int i) {
-                                                          rr += a[i] * b[i];
-                                                          rm.min(a[i]);
-                                                          rma.max(a[i]);
-                                                        });
+    RAJA::forall<RAJA::seq_exec>(
+                   RAJA::RangeSegment(0, N),
+                     [=](int i) {
+                       rr += a[i] * b[i];
+                       rm.min(a[i]);
+                       rma.max(a[i]);
+                     }
+                 );
     t.stop();
 
     std::cout << "t : " << t.elapsed() << "\n";
     std::cout << "r : " << rr.get() << "\n";
     std::cout << "m : "  << rm.get()  <<"\n";
     std::cout << "ma : " << rma.get() <<"\n";
+  }
+  {
+    std::cout << "Basic Reduction RAJA w/ NEW REDUCE\n";
+
+    RAJA::Timer t;
+    t.start();
+    RAJA::forall<RAJA::seq_exec>(
+                   RAJA::RangeSegment(0, N),
+                     [=](int i, double &r_, double &m_, double &ma_) {
+                       r_ += a[i] * b[i];
+                       m_ = a[i] < m_ ? a[i] : m_;
+                       ma_ = a[i] > m_ ? a[i] : m_;
+                     },
+                     RAJA::expt::Reduce<RAJA::operators::plus>(&r),
+                     RAJA::expt::Reduce<RAJA::operators::minimum>(&m),
+                     RAJA::expt::Reduce<RAJA::operators::maximum>(&ma)
+                 );
+    t.stop();
+
+    std::cout << "t : " << t.elapsed() << "\n";
+    std::cout << "r : " << r << "\n";
+    std::cout << "m : "  << m  <<"\n";
+    std::cout << "ma : " << ma <<"\n";
   }
 
   return 0;
