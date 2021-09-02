@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -66,7 +66,7 @@ struct grid_s {
 double solution(double x, double y);
 void computeErr(double *I, grid_s grid);
 RAJA::TypedIndexSet<RAJA::ListSegment> 
-  gsColorPolicy(int N, camp::resources::Resource& res);
+  gsColorPolicy(int N, camp::resources::Resource res);
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -175,12 +175,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //  Set.
 
 RAJA::TypedIndexSet<RAJA::ListSegment> 
-  gsColorPolicy(int N, camp::resources::Resource& res)
+  gsColorPolicy(int N, camp::resources::Resource res)
 {
   RAJA::TypedIndexSet<RAJA::ListSegment> colorSet;
 
-  int redN = ceil(N * N / 2);
-  int blkN = floor(N * N / 2);
+  int redN = static_cast<int>( std::ceil( static_cast<double>(N * N / 2) ) );
+  int blkN = static_cast<int>( std::floor( static_cast<double>(N * N / 2) ) );
   RAJA::Index_type *Red = new RAJA::Index_type[redN];
   RAJA::Index_type *Blk = new RAJA::Index_type[blkN];
 

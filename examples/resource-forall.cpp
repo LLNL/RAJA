@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -125,33 +125,33 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // RAJA::omp_for_parallel_exec policy execution.... 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running RAJA omp_parallel<seq_exec> vector addition...\n";
+  std::cout << "\n Running RAJA omp_parallel_for_exec vector addition...\n";
 
-  RAJA::forall<RAJA::omp_parallel_exec<RAJA::seq_exec>>(host, RAJA::RangeSegment(0, N), [=] RAJA_DEVICE (int i) { 
+  RAJA::forall<RAJA::omp_parallel_for_exec>(host, RAJA::RangeSegment(0, N), [=] RAJA_DEVICE (int i) { 
     c[i] = a[i] + b[i]; 
   });
 
   checkResult(c, N);
 
 //----------------------------------------------------------------------------//
-// RAJA::omp_for_nowait_exec policy execution.... 
+// RAJA::omp_parallel_for_static_exec policy execution.... 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running RAJA omp_for_nowait vector addition...\n";
+  std::cout << "\n Running RAJA omp_parallel_for_static_exec (default chunksize) vector addition...\n";
 
-  RAJA::forall<RAJA::omp_for_nowait_exec>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
+  RAJA::forall<RAJA::omp_parallel_for_static_exec< >>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
   });
 
   checkResult(c, N);
 
 //----------------------------------------------------------------------------//
-// RAJA::omp_for_exec policy execution.... 
+// RAJA::omp_parallel_for_dynamic_exec policy execution.... 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running RAJA omp_for_exec vector addition...\n";
+  std::cout << "\n Running RAJA omp_for_dynamic_exec (chunksize = 16) vector addition...\n";
 
-  RAJA::forall<RAJA::omp_for_exec>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
+  RAJA::forall<RAJA::omp_parallel_for_dynamic_exec<16>>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
   });
 
@@ -186,7 +186,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)
 
 /*
   GPU_BLOCK_SIZE - specifies the number of threads in a CUDA/HIP thread block
@@ -206,6 +206,10 @@ const int GPU_BLOCK_SIZE = 256;
   RAJA::resources::Hip res_gpu1;
   RAJA::resources::Hip res_gpu2;
   using EXEC_POLICY = RAJA::hip_exec_async<GPU_BLOCK_SIZE>;
+#elif defined(RAJA_ENABLE_SYCL)
+RAJA::resources::Sycl res_gpu1;
+RAJA::resources::Sycl res_gpu2;
+using EXEC_POLICY = RAJA::sycl_exec<GPU_BLOCK_SIZE>;
 #endif
 
   int* d_a1 = res_gpu1.allocate<int>(N);
@@ -269,6 +273,12 @@ const int GPU_BLOCK_SIZE = 256;
   RAJA::resources::Host res_host;
 
   using EXEC_POLICY = RAJA::hip_exec_async<GPU_BLOCK_SIZE>;
+#elif defined(RAJA_ENABLE_SYCL)
+  RAJA::resources::Sycl res_gpu1;
+  RAJA::resources::Sycl res_gpu2;
+  RAJA::resources::Host res_host;
+
+  using EXEC_POLICY = RAJA::sycl_exec<GPU_BLOCK_SIZE>;
 #endif
 
   // _raja_res_alloc_start

@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -14,7 +14,7 @@
 
 #include <numeric>
 
-// range segment multiplexer
+// segment multiplexer
 template< typename IdxType, typename SegType >
 struct RSMultiplexer {};
 
@@ -49,7 +49,7 @@ struct RSMultiplexer < IdxType, RAJA::TypedListSegment<IdxType> >
     return RAJA::TypedListSegment<IdxType>( &temp[0], static_cast<size_t>(temp.size()), work_res );
   }
 };
-// end range segment multiplexer
+// end segment multiplexer
 
 
 template <typename ExecPolicy,

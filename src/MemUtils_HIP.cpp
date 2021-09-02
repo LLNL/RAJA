@@ -10,8 +10,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -51,8 +51,7 @@ hipInfo tl_status;
 #endif
 
 //! State of raja hip stream synchronization for hip reducer objects
-std::unordered_map<hipStream_t, bool> g_stream_info_map{
-    {hipStream_t(0), true}};
+std::unordered_map<hipStream_t, bool> g_stream_info_map;
 
 
 }  // namespace detail

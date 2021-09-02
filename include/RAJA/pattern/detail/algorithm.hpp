@@ -11,8 +11,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -42,8 +42,19 @@ template <typename Iter>
 using IterDiff = typename ::std::iterator_traits<Iter>::difference_type;
 
 template <typename Container>
+using ContainerIter = camp::iterator_from<Container>;
+
+template <typename Container>
 using ContainerVal =
     camp::decay<decltype(*camp::val<camp::iterator_from<Container>>())>;
+
+template <typename Container>
+using ContainerRef =
+    decltype(*camp::val<camp::iterator_from<Container>>());
+
+template <typename Container>
+using ContainerDiff =
+    camp::decay<decltype(camp::val<camp::iterator_from<Container>>()-camp::val<camp::iterator_from<Container>>())>;
 
 template <typename DiffType, typename CountType>
 RAJA_INLINE

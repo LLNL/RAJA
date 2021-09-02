@@ -9,8 +9,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -97,13 +97,13 @@ template <typename Res,
           typename Body,
           typename Selector,
           typename... Policies>
-RAJA_INLINE resources::EventProxy<Res> forall_impl(Res &r,
+RAJA_INLINE resources::EventProxy<Res> forall_impl(Res r,
                                   MultiPolicy<Selector, Policies...> p,
                                   Iterable &&iter,
                                   Body &&body)
 {
   p.invoke(iter, body);
-  return resources::EventProxy<Res>(&r);
+  return resources::EventProxy<Res>(r);
 }
 
 }  // end namespace multi

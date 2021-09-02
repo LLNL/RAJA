@@ -9,8 +9,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -70,17 +70,17 @@ struct WorkRunner<
   /// run all loops asynchronously and synchronize after is necessary
   ///
   template < typename WorkContainer >
-  per_run_storage run(WorkContainer const& storage, Args... args) const
+  per_run_storage run(WorkContainer const& storage,
+                      typename base::resource_type r, Args... args) const
   {
     per_run_storage run_storage =
-        base::run(storage, std::forward<Args>(args)...);
+        base::run(storage, r, std::forward<Args>(args)...);
 
     IndexType num_loops = std::distance(std::begin(storage), std::end(storage));
 
     // Only synchronize if we had something to iterate over
     if (num_loops > 0 && BLOCK_SIZE > 0) {
-      hipStream_t stream = 0; // TODO: coordinate with base to use same stream
-      if (!Async) { RAJA::hip::synchronize(stream); }
+      if (!Async) { RAJA::hip::synchronize(r); }
     }
 
     return run_storage;
@@ -125,17 +125,17 @@ struct WorkRunner<
   /// run all loops asynchronously and synchronize after is necessary
   ///
   template < typename WorkContainer >
-  per_run_storage run(WorkContainer const& storage, Args... args) const
+  per_run_storage run(WorkContainer const& storage,
+                      typename base::resource_type r, Args... args) const
   {
     per_run_storage run_storage =
-        base::run(storage, std::forward<Args>(args)...);
+        base::run(storage, r, std::forward<Args>(args)...);
 
     IndexType num_loops = std::distance(std::begin(storage), std::end(storage));
 
     // Only synchronize if we had something to iterate over
     if (num_loops > 0 && BLOCK_SIZE > 0) {
-      hipStream_t stream = 0; // TODO: coordinate with base to use same stream
-      if (!Async) { RAJA::hip::synchronize(stream); }
+      if (!Async) { RAJA::hip::synchronize(r); }
     }
 
     return run_storage;
@@ -214,8 +214,9 @@ struct WorkRunner<
   using order_policy = RAJA::policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average;
   using Allocator = ALLOCATOR_T;
   using index_type = INDEX_T;
+  using resource_type = resources::Hip;
 
-  using vtable_type = Vtable<Args...>;
+  using vtable_type = Vtable<RAJA::hip_work<BLOCK_SIZE, true>, Args...>;
 
   WorkRunner() = default;
 
@@ -283,7 +284,7 @@ struct WorkRunner<
   using per_run_storage = int;
 
   template < typename WorkContainer >
-  per_run_storage run(WorkContainer const& storage, Args... args) const
+  per_run_storage run(WorkContainer const& storage, resource_type r, Args... args) const
   {
     using Iterator  = camp::decay<decltype(std::begin(storage))>;
     using IndexType = camp::decay<decltype(std::distance(std::begin(storage), std::end(storage)))>;
@@ -320,20 +321,14 @@ struct WorkRunner<
       // Setup shared memory buffers
       //
       size_t shmem = 0;
-      hipStream_t stream = 0;
 
       {
         //
         // Launch the kernel
         //
-        hipLaunchKernelGGL(func,
-                           dim3(gridSize), dim3(blockSize), shmem, stream,
-                           std::move(begin),
-                           std::forward<Args>(args)...);
-        RAJA::hip::launch(stream);
+        void* func_args[] = { (void*)&begin, (void*)&args... };
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, func_args, shmem, r, Async);
       }
-
-      if (!Async) { RAJA::hip::synchronize(stream); }
 
       RAJA_FT_END;
     }

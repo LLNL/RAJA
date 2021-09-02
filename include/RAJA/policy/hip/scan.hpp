@@ -9,8 +9,8 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -48,12 +48,16 @@ namespace scan
    initial value
 */
 template <size_t BLOCK_SIZE, bool Async, typename InputIter, typename Function>
-void inclusive_inplace(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
-                       InputIter begin,
-                       InputIter end,
-                       Function binary_op)
+RAJA_INLINE
+resources::EventProxy<resources::Hip>
+inclusive_inplace(
+    resources::Hip hip_res,
+    hip_exec<BLOCK_SIZE, Async>,
+    InputIter begin,
+    InputIter end,
+    Function binary_op)
 {
-  hipStream_t stream = 0;
+  hipStream_t stream = hip_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
@@ -102,8 +106,9 @@ void inclusive_inplace(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
 
-  hip::launch(stream);
-  if (!Async) hip::synchronize(stream);
+  hip::launch(hip_res, Async);
+
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -115,13 +120,17 @@ template <size_t BLOCK_SIZE,
           typename InputIter,
           typename Function,
           typename T>
-void exclusive_inplace(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
-                       InputIter begin,
-                       InputIter end,
-                       Function binary_op,
-                       T init)
+RAJA_INLINE
+resources::EventProxy<resources::Hip>
+exclusive_inplace(
+    resources::Hip hip_res,
+    hip_exec<BLOCK_SIZE, Async>,
+    InputIter begin,
+    InputIter end,
+    Function binary_op,
+    T init)
 {
-  hipStream_t stream = 0;
+  hipStream_t stream = hip_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
@@ -173,8 +182,9 @@ void exclusive_inplace(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
 
-  hip::launch(stream);
-  if (!Async) hip::synchronize(stream);
+  hip::launch(hip_res, Async);
+
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -186,24 +196,38 @@ template <size_t BLOCK_SIZE,
           typename InputIter,
           typename OutputIter,
           typename Function>
-void inclusive(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
-               InputIter begin,
-               InputIter end,
-               OutputIter out,
-               Function binary_op)
+RAJA_INLINE
+resources::EventProxy<resources::Hip>
+inclusive(
+    resources::Hip hip_res,
+    hip_exec<BLOCK_SIZE, Async>,
+    InputIter begin,
+    InputIter end,
+    OutputIter out,
+    Function binary_op)
 {
-  hipStream_t stream = 0;
+  hipStream_t stream = hip_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::inclusive_scan(
-      d_temp_storage, temp_storage_bytes, begin, out, len, binary_op, stream));
+  hipErrchk(::rocprim::inclusive_scan(d_temp_storage,
+                                      temp_storage_bytes,
+                                      begin,
+                                      out,
+                                      len,
+                                      binary_op,
+                                      stream));
 #elif defined(__CUDACC__)
-  hipErrchk(::cub::DeviceScan::InclusiveScan(
-      d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
+  hipErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
+                                             temp_storage_bytes,
+                                             begin,
+                                             out,
+                                             binary_op,
+                                             len,
+                                             stream));
 #endif
   // Allocate temporary storage
   d_temp_storage =
@@ -211,17 +235,28 @@ void inclusive(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::inclusive_scan(
-      d_temp_storage, temp_storage_bytes, begin, out, len, binary_op, stream));
+  hipErrchk(::rocprim::inclusive_scan(d_temp_storage,
+                                      temp_storage_bytes,
+                                      begin,
+                                      out,
+                                      len,
+                                      binary_op,
+                                      stream));
 #elif defined(__CUDACC__)
-  hipErrchk(::cub::DeviceScan::InclusiveScan(
-      d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
+  hipErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
+                                             temp_storage_bytes,
+                                             begin,
+                                             out,
+                                             binary_op,
+                                             len,
+                                             stream));
 #endif
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
 
-  hip::launch(stream);
-  if (!Async) hip::synchronize(stream);
+  hip::launch(hip_res, Async);
+
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -234,14 +269,18 @@ template <size_t BLOCK_SIZE,
           typename OutputIter,
           typename Function,
           typename T>
-void exclusive(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
-               InputIter begin,
-               InputIter end,
-               OutputIter out,
-               Function binary_op,
-               T init)
+RAJA_INLINE
+resources::EventProxy<resources::Hip>
+exclusive(
+    resources::Hip hip_res,
+    hip_exec<BLOCK_SIZE, Async>,
+    InputIter begin,
+    InputIter end,
+    OutputIter out,
+    Function binary_op,
+    T init)
 {
-  hipStream_t stream = 0;
+  hipStream_t stream = hip_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
@@ -293,8 +332,9 @@ void exclusive(const ::RAJA::hip_exec<BLOCK_SIZE, Async>&,
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
 
-  hip::launch(stream);
-  if (!Async) hip::synchronize(stream);
+  hip::launch(hip_res, Async);
+
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 }  // namespace scan

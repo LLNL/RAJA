@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -34,8 +34,10 @@ using IdxTypeList = camp::list<RAJA::Index_type,
                                int,
 #if defined(RAJA_TEST_EXHAUSTIVE)
                                unsigned int,
-                               short,
-                               unsigned short,
+// short int types will break a bunch of tests due to assumpitons made in 
+// the test implementations.
+//                             short,
+//                             unsigned short,
                                long int,
                                unsigned long,
                                long long,
@@ -50,8 +52,10 @@ using StrongIdxTypeList = camp::list<RAJA::Index_type,
 #if defined(RAJA_TEST_EXHAUSTIVE)
                                      StrongInt,
                                      unsigned int,
-                                     short,
-                                     unsigned short,
+// short int types will break a bunch of tests due to assumpitons made in 
+// the test implementations.
+//                                   short,
+//                                   unsigned short,
                                      long int,
                                      unsigned long,
                                      long long,

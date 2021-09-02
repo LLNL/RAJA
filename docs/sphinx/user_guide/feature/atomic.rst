@@ -1,6 +1,6 @@
 .. ##
-.. ## Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
-.. ## and other RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## and other RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -93,7 +93,7 @@ an integral sum on a CUDA GPU device::
   cudaDeviceSynchronize();
   *sum = 0;
 
-  RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment(0, N), 
+  RAJA::forall< RAJA::cuda_exec<BLOCK_SIZE> >(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (RAJA::Index_type i) {
 
     RAJA::atomicAdd< RAJA::cuda_atomic >(sum, 1);
