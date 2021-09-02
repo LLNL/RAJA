@@ -24,6 +24,7 @@ enum struct Order
 
 enum struct TransactionType
 {
+  invalid,
   copy,
   sum,
 };
@@ -34,7 +35,17 @@ inline const char* get_order_name(Order o)
     case Order::ordered:     return "ordered";
     case Order::reorderable: return "reorderable";
     case Order::unordered:   return "unordered";
-    default:          return "invalid";
+    default:                 return "invalid";
+  }
+}
+
+inline const char* get_transaction_type_name(TransactionType t)
+{
+  switch (t) {
+    case TransactionType::invalid:     return "invalid";
+    case TransactionType::copy:        return "copy";
+    case TransactionType::sum:         return "sum";
+    default:                           return "invalid";
   }
 }
 
