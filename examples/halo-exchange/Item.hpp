@@ -22,6 +22,12 @@ enum struct Order
   unordered
 };
 
+enum struct TransactionType
+{
+  copy,
+  sum,
+};
+
 inline const char* get_order_name(Order o)
 {
   switch (o) {
@@ -41,7 +47,8 @@ struct Item
        std::vector<int >& pack_index_list_lengths,
        Order unpack_transaction_order,
        std::vector<int*>& unpack_index_lists,
-       std::vector<int >& unpack_index_list_lengths);
+       std::vector<int >& unpack_index_list_lengths,
+       TransactionType transaction_type);
 
   Item(Item const&) = delete;
   Item& operator=(Item const&) = delete;
@@ -80,6 +87,7 @@ private:
   Order m_unpack_transaction_order;
   std::vector<int*> m_unpack_index_lists;
   std::vector<int > m_unpack_index_list_lengths;
+  TransactionType m_transaction_type;
 };
 
 
