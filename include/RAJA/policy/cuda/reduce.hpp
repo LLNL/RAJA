@@ -13,7 +13,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -782,6 +782,8 @@ struct Reduce_Data {
   {
   }
 
+  Reduce_Data& operator=(const Reduce_Data&) = default;
+
   //! initialize output to identity to ensure never read
   //  uninitialized memory
   void init_grid_val(T* output) { *output = identity; }
@@ -868,6 +870,8 @@ struct ReduceAtomic_Data {
         own_device_ptr{false}
   {
   }
+
+  ReduceAtomic_Data& operator=(const ReduceAtomic_Data&) = default;
 
   //! initialize output to identity to ensure never read
   //  uninitialized memory
