@@ -788,6 +788,8 @@ struct Reduce_Data {
   {
   }
 
+  Reduce_Data& operator=(const Reduce_Data&) = default;
+
   //! initialize output to identity to ensure never read
   //  uninitialized memory
   void init_grid_val(T* output) { *output = identity; }
@@ -874,6 +876,8 @@ struct ReduceAtomic_Data {
         own_device_ptr{false}
   {
   }
+
+  ReduceAtomic_Data& operator=(const ReduceAtomic_Data&) = default;
 
   //! initialize output to identity to ensure never read
   //  uninitialized memory
