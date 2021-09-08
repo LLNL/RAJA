@@ -22,7 +22,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_HIP_ACTIVE)
 
 #include <hip/hip_runtime.h>
 
@@ -38,6 +38,6 @@
 #include "RAJA/policy/hip/WorkGroup.hpp"
 
 
-#endif  // closing endif for if defined(RAJA_ENABLE_HIP)
+#endif  // closing endif for if defined(RAJA_HIP_ACTIVE)
 
 #endif  // closing endif for header file include guard
