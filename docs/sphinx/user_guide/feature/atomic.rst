@@ -21,6 +21,8 @@ A complete working example code that shows RAJA atomic usage can be found in
 
 .. note:: * All RAJA atomic operations are in the namespace ``RAJA``.
 
+.. _atomic-ops:
+
 -----------------
 Atomic Operations
 -----------------
@@ -153,3 +155,28 @@ CUDA architecture level is chosen:
 
     * CUDA native 64-bit double `atomicAdd` is used.
 
+---------------------
+DESUL Atomics Support
+---------------------
+
+RAJA supports the use of `DESUL Atomics <https://github.com/desul/desul>`_ as
+an alternative backend to the default implementation of RAJA atomics. Enabling
+this feature may impact the performance of some atomic functions. While switching
+to DESUL typically yields positive or neutral performance results, some atomic
+operations may perform worse when using DESUL.
+
+To enable DESUL Atomics:
+
+#. Ensure that RAJA and its dependencies are configured to use C++14.
+#. Set ``RAJA_ENABLE_DESUL_ATOMICS=On``.
+
+Enabling DESUL Atomics alters RAJA atomic functions to be wrapper-functions for their
+DESUL counterparts. This removes any code changes necessary for switching between
+DESUL and RAJA implementations, except for cases where RAJA atomic helper functions
+are used instead of the backwards-compatible API functions specified by :ref:`atomic-ops`.
+
+DESUL compiles atomic functions in accordance to the scope in which they are
+called, this removes the requirement of using atomic policies to specify
+target backends. As a result, atomic policies such as ``cuda_atomic`` or ``omp_atomic``
+will be ignored when DESUL is enabled, but are still necessary to pass in as parameters
+to the RAJA API.
