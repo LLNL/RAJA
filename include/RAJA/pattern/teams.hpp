@@ -31,7 +31,7 @@
 #include "RAJA/policy/cuda/teams.hpp"
 #endif
 
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_HIP_ACTIVE)
 #include "RAJA/policy/hip/teams.hpp"
 #endif
 
