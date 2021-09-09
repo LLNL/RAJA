@@ -422,9 +422,9 @@ struct LoopExecute<flatten_block_threads_direct<DIM0, DIM1>, SEGMENT>
   {
     const int len = segment.end() - segment.begin();
     {
-      const int tx = internal::get_cuda_dim<DIM0>(threadIdx);
-      const int ty = internal::get_cuda_dim<DIM1>(threadIdx);
-      const int bx = internal::get_cuda_dim<DIM0>(blockIdx);
+      const int tx = internal::get_hip_dim<DIM0>(threadIdx);
+      const int ty = internal::get_hip_dim<DIM1>(threadIdx);
+      const int bx = internal::get_hip_dim<DIM0>(blockIdx);
       const int tid = tx + bx*ty;
 
       if (tid < len) body(*(segment.begin() + tid));
@@ -443,10 +443,10 @@ struct LoopExecute<flatten_block_threads_loop<DIM0, DIM1>, SEGMENT>
   {
     const int len = segment.end() - segment.begin();
 
-    const int tx = internal::get_cuda_dim<DIM0>(threadIdx);
-    const int ty = internal::get_cuda_dim<DIM1>(threadIdx);
-    const int bx = internal::get_cuda_dim<DIM0>(blockIdx);
-    const int by = internal::get_cuda_dim<DIM1>(blockIdx);
+    const int tx = internal::get_hip_dim<DIM0>(threadIdx);
+    const int ty = internal::get_hip_dim<DIM1>(threadIdx);
+    const int bx = internal::get_hip_dim<DIM0>(blockIdx);
+    const int by = internal::get_hip_dim<DIM1>(blockIdx);
     const int tid = tx + bx*ty;
 
     for(int tid = tx + bx*ty; tid < len; tid += bx*by) {
@@ -467,11 +467,11 @@ struct LoopExecute<flatten_block_threads_direct<DIM0, DIM1, DIM2>, SEGMENT>
   {
     const int len = segment.end() - segment.begin();
     {
-      const int tx = internal::get_cuda_dim<DIM0>(threadIdx);
-      const int ty = internal::get_cuda_dim<DIM1>(threadIdx);
-      const int tz = internal::get_cuda_dim<DIM2>(threadIdx);
-      const int bx = internal::get_cuda_dim<DIM0>(blockIdx);
-      const int by = internal::get_cuda_dim<DIM1>(blockIdx);
+      const int tx = internal::get_hip_dim<DIM0>(threadIdx);
+      const int ty = internal::get_hip_dim<DIM1>(threadIdx);
+      const int tz = internal::get_hip_dim<DIM2>(threadIdx);
+      const int bx = internal::get_hip_dim<DIM0>(blockIdx);
+      const int by = internal::get_hip_dim<DIM1>(blockIdx);
       const int tid = tx + bx*(ty + by*tz);
 
       if (tid < len) body(*(segment.begin() + tid));
@@ -490,12 +490,12 @@ struct LoopExecute<flatten_block_threads_loop<DIM0, DIM1, DIM2>, SEGMENT>
   {
     const int len = segment.end() - segment.begin();
 
-    const int tx = internal::get_cuda_dim<DIM0>(threadIdx);
-    const int ty = internal::get_cuda_dim<DIM1>(threadIdx);
-    const int tz = internal::get_cuda_dim<DIM2>(threadIdx);
-    const int bx = internal::get_cuda_dim<DIM0>(blockIdx);
-    const int by = internal::get_cuda_dim<DIM1>(blockIdx);
-    const int bz = internal::get_cuda_dim<DIM2>(blockIdx);
+    const int tx = internal::get_hip_dim<DIM0>(threadIdx);
+    const int ty = internal::get_hip_dim<DIM1>(threadIdx);
+    const int tz = internal::get_hip_dim<DIM2>(threadIdx);
+    const int bx = internal::get_hip_dim<DIM0>(blockIdx);
+    const int by = internal::get_hip_dim<DIM1>(blockIdx);
+    const int bz = internal::get_hip_dim<DIM2>(blockIdx);
 
     for(int tid = tx + bx*(ty + by*tz); tid < len; tid += bx*by*bz) {
       body(*(segment.begin() + tid));
