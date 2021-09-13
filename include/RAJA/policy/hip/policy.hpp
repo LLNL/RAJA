@@ -10,7 +10,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -20,7 +20,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_HIP_ACTIVE)
 
 #include <utility>
 #include "hip/hip_runtime.h"
@@ -77,6 +77,13 @@ struct hip_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::hip> {
 };
 
+template <bool Async, int num_threads = 0>
+struct hip_launch_t : public RAJA::make_policy_pattern_launch_platform_t<
+                       RAJA::Policy::hip,
+                       RAJA::Pattern::region,
+                       detail::get_launch<Async>::value,
+                       RAJA::Platform::hip> {
+};
 
 
 //
@@ -93,6 +100,15 @@ struct hip_work : public RAJA::make_policy_pattern_launch_platform_t<
                        detail::get_launch<Async>::value,
                        RAJA::Platform::hip> {
 };
+
+#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+struct unordered_hip_loop_y_block_iter_x_threadblock_average
+    : public RAJA::make_policy_pattern_platform_t<
+                       RAJA::Policy::hip,
+                       RAJA::Pattern::workgroup_order,
+                       RAJA::Platform::hip> {
+};
+#endif
 
 
 ///
@@ -202,6 +218,10 @@ using policy::hip::hip_work;
 template <size_t BLOCK_SIZE>
 using hip_work_async = policy::hip::hip_work<BLOCK_SIZE, true>;
 
+#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+using policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average;
+#endif
+
 using policy::hip::hip_reduce_base;
 using policy::hip::hip_reduce;
 using policy::hip::hip_reduce_atomic;
@@ -220,8 +240,10 @@ using policy::hip::hip_thread_masked_loop;
 
 using policy::hip::hip_synchronize;
 
-
-
+namespace expt
+{
+  using policy::hip::hip_launch_t;
+}
 
 /*!
  * Maps segment indices to HIP threads.
@@ -251,7 +273,7 @@ using hip_thread_z_loop = hip_thread_xyz_loop<2>;
 
 
 /*!
- * Maps segment indices to CUDA blocks.
+ * Maps segment indices to HIP blocks.
  * This is the lowest overhead mapping, but requires that there are enough
  * physical blocks to fit all of the direct map requests.
  */

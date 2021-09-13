@@ -13,7 +13,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -408,6 +408,9 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   // reduce per warp values
   if (numThreads > policy::cuda::WARP_SIZE) {
 
+    static_assert(policy::cuda::MAX_WARPS <= policy::cuda::WARP_SIZE,
+        "Max Warps must be less than or equal to Warp Size for this algorithm to work");
+
     // Need to separate declaration and initialization for clang-cuda
     __shared__ unsigned char tmpsd[sizeof(RAJA::detail::SoAArray<T, policy::cuda::MAX_WARPS>)];
 
@@ -431,7 +434,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
         temp = identity;
       }
 
-      for (int i = 1; i < policy::cuda::WARP_SIZE; i *= 2) {
+      for (int i = 1; i < policy::cuda::MAX_WARPS; i *= 2) {
         T rhs = shfl_xor_sync(temp, i);
         Combiner{}(temp, rhs);
       }
@@ -779,6 +782,8 @@ struct Reduce_Data {
   {
   }
 
+  Reduce_Data& operator=(const Reduce_Data&) = default;
+
   //! initialize output to identity to ensure never read
   //  uninitialized memory
   void init_grid_val(T* output) { *output = identity; }
@@ -865,6 +870,8 @@ struct ReduceAtomic_Data {
         own_device_ptr{false}
   {
   }
+
+  ReduceAtomic_Data& operator=(const ReduceAtomic_Data&) = default;
 
   //! initialize output to identity to ensure never read
   //  uninitialized memory

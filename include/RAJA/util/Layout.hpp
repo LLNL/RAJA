@@ -10,7 +10,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -185,7 +185,7 @@ public:
     // dot product of strides and indices
     return sum<IdxLin>(
       (RangeInts==stride_one_dim ?   // Is this dimension stride-one?
-         indices :  // it's stride one, so dont bother with multiple
+         indices :  // it's stride one, so dont bother with multiply
          strides[RangeInts]*indices // it's not stride one
 			)...
     );

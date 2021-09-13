@@ -13,7 +13,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -289,6 +289,9 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   // reduce per warp values
   if (numThreads > policy::hip::WARP_SIZE) {
 
+    static_assert(policy::hip::MAX_WARPS <= policy::hip::WARP_SIZE,
+        "Max Warps must be less than or equal to Warp Size for this algorithm to work");
+
     __shared__ unsigned char tmpsd[sizeof(RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS>)];
     RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS>* sd =
       reinterpret_cast<RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS> *>(tmpsd);
@@ -309,7 +312,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
         temp = identity;
       }
 
-      for (int i = 1; i < policy::hip::WARP_SIZE; i *= 2) {
+      for (int i = 1; i < policy::hip::MAX_WARPS; i *= 2) {
         T rhs = shfl_xor_sync(temp, i);
         Combiner{}(temp, rhs);
       }

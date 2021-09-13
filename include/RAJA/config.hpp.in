@@ -23,7 +23,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -99,6 +99,7 @@
 #cmakedefine RAJA_ENABLE_CUDA
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
 #cmakedefine RAJA_ENABLE_HIP
+#cmakedefine RAJA_ENABLE_SYCL
 
 #cmakedefine RAJA_ENABLE_NV_TOOLS_EXT
 
@@ -170,8 +171,12 @@ namespace RAJA {
 #define RAJA_CUDA_ACTIVE
 #endif // RAJA_ENABLE_CUDA && __CUDACC__
 
+#if defined(RAJA_ENABLE_HIP) && defined(__HIPCC__)
+#define RAJA_HIP_ACTIVE
+#endif // RAJA_ENABLE_HIP && __HIPCC__
+
 #if defined(RAJA_CUDA_ACTIVE) || \
-  defined(RAJA_ENABLE_HIP)
+  defined(RAJA_HIP_ACTIVE)
 #define RAJA_DEVICE_ACTIVE
 #endif
 
