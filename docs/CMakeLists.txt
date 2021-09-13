@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-if (ENABLE_DOCUMENTATION)
+if (RAJA_ENABLE_DOCUMENTATION)
   if (SPHINX_FOUND)
     blt_add_sphinx_target( raja_docs )
   endif()
@@ -15,7 +15,7 @@ if (ENABLE_DOCUMENTATION)
   endif()
 
   if ( NOT SPHINX_FOUND AND NOT DOXGEN_FOUND)
-    message(WARNING "ENABLE_DOCUMENTATION=On, but Sphinx or Doxygen not found. \
+    message(WARNING "RAJA_ENABLE_DOCUMENTATION=On, but Sphinx or Doxygen not found. \
       Documentation won't be built.")
   endif ()
 endif()

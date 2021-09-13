@@ -19,6 +19,6 @@ raja_add_test(
 
 add_subdirectory(cpu)
 
-if(ENABLE_CUDA)
+if(RAJA_ENABLE_CUDA)
   add_subdirectory(cuda)
-endif(ENABLE_CUDA)
+endif(RAJA_ENABLE_CUDA)

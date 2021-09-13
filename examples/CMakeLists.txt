@@ -117,7 +117,7 @@ raja_add_executable(
   NAME multiview
   SOURCES multiview.cpp)
 
-if(ENABLE_TARGET_OPENMP)
+if(RAJA_ENABLE_TARGET_OPENMP)
   #  raja_add_executable(
   #    NAME target-kernel
   #    SOURCES omp-target-kernel.cpp)

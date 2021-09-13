@@ -101,7 +101,7 @@ and their default settings:
       =========================   ======================
       Variable                    Default
       =========================   ======================
-      ENABLE_WARNINGS_AS_ERRORS   Off
+      RAJA_ENABLE_WARNINGS_AS_ERRORS   Off
       =========================   ======================
 
      RAJA Views/Layouts may be configured to check for out of bounds 
@@ -125,12 +125,12 @@ and their default settings:
       =======================   ============================================
       Variable                  Default
       =======================   ============================================
-      ENABLE_OPENMP             On
-      ENABLE_TARGET_OPENMP      Off (when on, ENABLE_OPENMP must also be on)
-      ENABLE_TBB                Off
-      ENABLE_CUDA               Off
+      RAJA_ENABLE_OPENMP             On
+      RAJA_ENABLE_TARGET_OPENMP      Off (when on, RAJA_ENABLE_OPENMP must also be on)
+      RAJA_ENABLE_TBB                Off
+      RAJA_ENABLE_CUDA               Off
       ENABLE_HIP                Off
-      ENABLE_SYCL               Off
+      RAJA_ENABLE_SYCL               Off
       =======================   ============================================
 
      Other compilation options are available via the following:
@@ -138,16 +138,16 @@ and their default settings:
       =======================   ==========================================
       Variable                  Default
       =======================   ==========================================
-      ENABLE_CLANG_CUDA         Off (when on, ENABLE_CUDA must also be on)
-      ENABLE_EXTERNAL_CUB       Off (when CUDA enabled)
+      RAJA_ENABLE_CLANG_CUDA         Off (when on, RAJA_ENABLE_CUDA must also be on)
+      RAJA_ENABLE_EXTERNAL_CUB       Off (when CUDA enabled)
       CUDA_ARCH                 sm_35 (set based on hardware support)
-      ENABLE_EXTERNAL_ROCPRIM   Off (when HIP enabled)
+      RAJA_ENABLE_EXTERNAL_ROCPRIM   Off (when HIP enabled)
       =======================   ==========================================
 
-      Turning the 'ENABLE_CLANG_CUDA' variable on will build CUDA code with
+      Turning the 'RAJA_ENABLE_CLANG_CUDA' variable on will build CUDA code with
       the native support in the Clang compiler.
 
-      The 'ENABLE_EXTERNAL_CUB' variable is used to require the use of an
+      The 'RAJA_ENABLE_EXTERNAL_CUB' variable is used to require the use of an
       external install of the NVIDIA CUB support library. Even when Off the CUB
       library included in the CUDA toolkit will still be used if available.
       Starting with CUDA 11, CUB is installed as part of the CUDA toolkit and
@@ -157,7 +157,7 @@ and their default settings:
       install used by RAJA to ensure they use the same include directories when
       configuring their application.
 
-      The 'ENABLE_EXTERNAL_ROCPRIM' variable is used to require an external
+      The 'RAJA_ENABLE_EXTERNAL_ROCPRIM' variable is used to require an external
       install of the AMD rocPRIM support library. Even when Off the rocPRIM
       library included in the ROCM install will be used when available. We
       recommend projects use the rocPRIM included with the ROCM install when

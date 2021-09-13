@@ -66,7 +66,7 @@
  *
  ******************************************************************************
  */
-#cmakedefine ENABLE_FORCEINLINE_RECURSIVE
+#cmakedefine RAJA_ENABLE_FORCEINLINE_RECURSIVE
 
 /*!
  ******************************************************************************
@@ -163,7 +163,7 @@ namespace RAJA {
 #define RAJA_ENABLE_OPENMP_TASK
 #endif
 #else
-#error RAJA configured with ENABLE_OPENMP, but OpenMP not supported by current compiler
+#error RAJA configured with RAJA_ENABLE_OPENMP, but OpenMP not supported by current compiler
 #endif // _OPENMP
 #endif // RAJA_ENABLE_OPENMP
 
@@ -265,7 +265,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 // Configuration options for Intel compilers
 //
 
-#if defined (ENABLE_FORCEINLINE_RECURSIVE)
+#if defined (RAJA_ENABLE_FORCEINLINE_RECURSIVE)
 #define RAJA_FORCEINLINE_RECURSIVE  RAJA_PRAGMA(forceinline recursive)
 #else
 #define RAJA_FORCEINLINE_RECURSIVE
