@@ -2,6 +2,7 @@
 #define FORALL_PARAM_HPP
 
 #include "RAJA/policy/sequential/new_reduce.hpp"
+#include "RAJA/policy/openmp/new_reduce.hpp"
 
 namespace RAJA
 {
@@ -126,7 +127,7 @@ namespace expt
     }
     template<typename EXEC_POL, typename... Params, typename ...Args, typename FP = ForallParamPack<Params...>>
     static void constexpr combine(ForallParamPack<Params...>& f_params, Args&& ...args){
-      FP::detail_combine(EXEC_POL(), f_params.params_seq(), f_params, std::forward<Args>(args)... );
+      FP::detail_combine(EXEC_POL(), typename FP::params_seq(), f_params, std::forward<Args>(args)... );
     }
     template<typename EXEC_POL, typename... Params, typename ...Args, typename FP = ForallParamPack<Params...>>
     static void constexpr resolve( ForallParamPack<Params...>& f_params, Args&& ...args){

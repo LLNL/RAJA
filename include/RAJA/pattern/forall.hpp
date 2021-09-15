@@ -525,6 +525,7 @@ forall(ExecutionPolicy&& p, Res r, Container&& c, LoopBody&& loop_body, Params..
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
 
+  //std::cout << "check\n";
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
   util::callPreCapturePlugins(context);
 

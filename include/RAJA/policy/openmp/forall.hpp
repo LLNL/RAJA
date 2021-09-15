@@ -43,6 +43,7 @@
 #include "RAJA/pattern/forall.hpp"
 #include "RAJA/pattern/region.hpp"
 
+#include "RAJA/pattern/forall_param.hpp"
 
 namespace RAJA
 {
@@ -51,15 +52,125 @@ namespace policy
 {
 namespace omp
 {
+
+namespace expt
+{
+  namespace internal
+  {
+//#define EXPT_USE_RAJA_REGION  
+#if defined(EXPT_USE_RAJA_REGION)
+    //
+    // omp for (Auto)
+    //
+    template <typename Iterable, typename Func, typename ForallParam>
+    RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Auto&,
+                                 Iterable&& iter,
+                                 Func&& loop_body,
+                                 ForallParam&& f_params)
+    {
+      //std::cout << "check params\n";
+      ::RAJA::expt::ParamMultiplexer::init<::RAJA::policy::omp::Auto>(f_params);
+
+      #pragma omp declare reduction(          \
+        combine                               \
+        : typename std::remove_reference<decltype(f_params)>::type                  \
+        : ::RAJA::expt::ParamMultiplexer::combine<::RAJA::policy::omp::Auto>(omp_out, omp_in) )\
+        initializer(omp_priv = omp_orig)
+
+      RAJA_EXTRACT_BED_IT(iter);
+      #pragma omp for reduction(combine : f_params)
+      for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+        ::RAJA::expt::invoke_body(f_params, loop_body, i);
+        //loop_body(begin_it[i]);
+      }
+
+      ::RAJA::expt::ParamMultiplexer::resolve<::RAJA::policy::omp::Auto>(f_params);
+    }
+#else  
+    //
+    // omp for (Auto)
+    //
+    template <typename Iterable, typename Func, typename ForallParam>
+    RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Auto&,
+                                 Iterable&& iter,
+                                 Func&& loop_body,
+                                 ForallParam f_params)
+    {
+      ::RAJA::expt::ParamMultiplexer::init<::RAJA::policy::omp::Auto>(f_params);
+
+      #pragma omp declare reduction(          \
+        combine                               \
+        : decltype(f_params)                  \
+        : ::RAJA::expt::ParamMultiplexer::combine<::RAJA::policy::omp::Auto>(omp_out, omp_in) )\
+        initializer(omp_priv = omp_orig)
+
+      RAJA_EXTRACT_BED_IT(iter);
+      #pragma omp parallel for reduction(combine : f_params)
+      for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+        ::RAJA::expt::invoke_body(f_params, loop_body, i);
+        //loop_body(begin_it[i]);
+      }
+
+      ::RAJA::expt::ParamMultiplexer::resolve<::RAJA::policy::omp::Auto>(f_params);
+    }
+#endif 
+
+  } //  namespace internal
+
+  template <typename Schedule, typename Iterable, typename Func, typename ForallParam>
+  RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
+                                                                 const omp_for_schedule_exec<Schedule>&,
+                                                                 Iterable&& iter,
+                                                                 Func&& loop_body,
+                                                                 ForallParam f_params)
+  {
+    expt::internal::forall_impl(Schedule{}, std::forward<Iterable>(iter), std::forward<Func>(loop_body), std::forward<ForallParam>(f_params));
+    return resources::EventProxy<resources::Host>(host_res);
+}
+
+} //  namespace expt
 ///
 /// OpenMP parallel policy implementation
 ///
+#if defined(EXPT_USE_RAJA_REGION)
+template <typename Iterable, typename Func, typename InnerPolicy, typename ForallParam>
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
+                                                    const omp_parallel_exec<InnerPolicy>&,
+                                                    Iterable&& iter,
+                                                    Func&& loop_body,
+                                                    ForallParam f_params)
+{
+  //std::cout << "check params\n";
+
+  RAJA::region<RAJA::omp_parallel_region>([&]() {
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
+    auto fp  = thread_privatize(f_params);
+    expt::forall_impl(host_res, InnerPolicy{}, iter, body.get_priv(), fp.get_priv());
+  });
+  return resources::EventProxy<resources::Host>(host_res);
+}
+#else
+template <typename Iterable, typename Func, typename InnerPolicy, typename ForallParam>
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
+                                                    const omp_parallel_exec<InnerPolicy>&,
+                                                    Iterable&& iter,
+                                                    Func&& loop_body,
+                                                    ForallParam f_params)
+{
+  //std::cout << "check params\n";
+  expt::forall_impl(host_res, InnerPolicy{}, iter, loop_body, f_params);
+  return resources::EventProxy<resources::Host>(host_res);
+}
+#endif
+
 template <typename Iterable, typename Func, typename InnerPolicy>
 RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
                                                     const omp_parallel_exec<InnerPolicy>&,
                                                     Iterable&& iter,
                                                     Func&& loop_body)
 {
+  //std::cout << "check\n";
   RAJA::region<RAJA::omp_parallel_region>([&]() {
     using RAJA::internal::thread_privatize;
     auto body = thread_privatize(loop_body);
@@ -86,6 +197,7 @@ namespace internal
                                Iterable&& iter,
                                Func&& loop_body)
   {
+    //std::cout << "check\n";
     RAJA_EXTRACT_BED_IT(iter);
     #pragma omp for
     for (decltype(distance_it) i = 0; i < distance_it; ++i) {
@@ -307,6 +419,7 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host h
   internal::forall_impl_nowait(Schedule{}, std::forward<Iterable>(iter), std::forward<Func>(loop_body));
   return resources::EventProxy<resources::Host>(host_res);
 }
+
 
 //
 //////////////////////////////////////////////////////////////////////

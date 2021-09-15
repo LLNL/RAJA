@@ -31,7 +31,7 @@ namespace detail
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
     // Device related attributes.
     T * devicetarget = nullptr;
-    RAJA::detail::SoAPtr<T, RAJA::DEVICE::device_mempool_type> device_mem;
+    //RAJA::detail::SoAPtr<T, RAJA::DEVICE::device_mempool_type> device_mem;
     unsigned int * device_count = nullptr;
 #endif
 
