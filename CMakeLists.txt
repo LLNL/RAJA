@@ -44,32 +44,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PA
 
 include(cmake/SetupRajaOptions.cmake)
 
-
-
 cmake_minimum_required(VERSION 3.9)
-
-if (RAJA_ENABLE_CUDA)
-  if (DEFINED CUDA_ARCH)
-    if (CUDA_ARCH MATCHES "^sm_*")
-      if ("${CUDA_ARCH}" STRLESS "sm_35")
-        message( FATAL_ERROR "RAJA requires minimum CUDA compute architecture of sm_35")
-      endif()
-    endif()
-    if (CUDA_ARCH MATCHES "^compute_*")
-      if ("${CUDA_ARCH}" STRLESS "compute_35")
-        message( FATAL_ERROR "RAJA requires minimum CUDA compute architecture of compute_35")
-      endif()
-    endif()
-  else()
-    message(STATUS "CUDA compute architecture set to RAJA default sm_35 since it was not specified")
-    set(CUDA_ARCH "sm_35" CACHE STRING "Set CUDA_ARCH to RAJA minimum supported" FORCE)
-  endif()
-  if ( (CMAKE_CXX_COMPILER_ID MATCHES GNU) AND (CMAKE_SYSTEM_PROCESSOR MATCHES ppc64le) )
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
-      set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -mno-float128")
-    endif ()
-  endif ()
-endif()
 
 # Detect C++ standard and add appropriate flag _before_ loading BLT
 set(COMPILERS_KNOWN_TO_CMAKE33 AppleClang Clang GNU MSVC)
@@ -131,6 +106,29 @@ include(cmake/SetupBasics.cmake)
 include(cmake/SetupPackages.cmake)
 # Setup vendor-specific compiler flags
 include(cmake/SetupCompilers.cmake)
+
+if (RAJA_ENABLE_CUDA)
+  if (DEFINED CUDA_ARCH)
+    if (CUDA_ARCH MATCHES "^sm_*")
+      if ("${CUDA_ARCH}" STRLESS "sm_35")
+        message( FATAL_ERROR "RAJA requires minimum CUDA compute architecture of sm_35")
+      endif()
+    endif()
+    if (CUDA_ARCH MATCHES "^compute_*")
+      if ("${CUDA_ARCH}" STRLESS "compute_35")
+        message( FATAL_ERROR "RAJA requires minimum CUDA compute architecture of compute_35")
+      endif()
+    endif()
+  else()
+    message(STATUS "CUDA compute architecture set to RAJA default sm_35 since it was not specified")
+    set(CUDA_ARCH "sm_35" CACHE STRING "Set CUDA_ARCH to RAJA minimum supported" FORCE)
+  endif()
+  if ( (CMAKE_CXX_COMPILER_ID MATCHES GNU) AND (CMAKE_SYSTEM_PROCESSOR MATCHES ppc64le) )
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
+      set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -mno-float128")
+    endif ()
+  endif ()
+endif()
 
 # Macros for building executables and libraries
 include (cmake/RAJAMacros.cmake)
