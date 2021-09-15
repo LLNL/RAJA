@@ -514,18 +514,21 @@ forall(ExecutionPolicy&& p, Res r, Container&& c, LoopBody&& loop_body)
   util::callPostLaunchPlugins(context);
   return e;
 }
-template <typename ExecutionPolicy, typename Res, typename Container, typename LoopBody, typename... Params>
+
+template <typename ExecutionPolicy, typename Res, typename Container, typename... Params>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<Res>,
     concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
     concepts::negate<type_traits::is_multi_policy<ExecutionPolicy>>,
     type_traits::is_range<Container>>
-forall(ExecutionPolicy&& p, Res r, Container&& c, LoopBody&& loop_body, Params... params)
+forall(ExecutionPolicy&& p, Res r, Container&& c, Params... params)
 {
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
 
-  //std::cout << "check\n";
+  auto f_params = expt::make_forall_param_pack(params...);
+  auto loop_body = expt::get_lambda(params...);
+
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
   util::callPreCapturePlugins(context);
 
@@ -535,8 +538,6 @@ forall(ExecutionPolicy&& p, Res r, Container&& c, LoopBody&& loop_body, Params..
   util::callPostCapturePlugins(context);
 
   util::callPreLaunchPlugins(context);
-
-  expt::ForallParamPack<Params...> f_params(params...);
 
   resources::EventProxy<Res> e =  wrap::forall(
       r,
@@ -548,6 +549,7 @@ forall(ExecutionPolicy&& p, Res r, Container&& c, LoopBody&& loop_body, Params..
   util::callPostLaunchPlugins(context);
   return e;
 }
+
 template <typename ExecutionPolicy, typename Container, typename LoopBody,
           typename Res = typename resources::get_resource<ExecutionPolicy>::type >
 RAJA_INLINE concepts::enable_if_t<

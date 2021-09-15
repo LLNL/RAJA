@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
   }
 #endif
 
-#if 1
+#if 0
 #if defined(RAJA_ENABLE_OPENMP)
   {
     std::cout << "OMP Reduction NEW\n";
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
-#if 1
+#if 0
 #if defined(RAJA_ENABLE_OPENMP)
   {
     std::cout << "OMP ARRAY Reduction NEW\n";
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
-#if 1
+#if 0
 #if defined(RAJA_ENABLE_CUDA)
   {
     std::cout << "CUDA Reduction NEW Single\n";
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
-#if 1
+#if 0
 #if defined(RAJA_ENABLE_CUDA)
   {
     std::cout << "CUDA Reduction NEW Multi\n";
@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
-#if 1
+#if 0
   {
     std::cout << "Sequential Reduction NEW\n";
 
@@ -271,14 +271,14 @@ int main(int argc, char *argv[])
     t.start();
     RAJA::forall<RAJA::seq_exec>(
                    RAJA::RangeSegment(0, N),
+                     RAJA::expt::Reduce<RAJA::operators::plus>(&r),
+                     RAJA::expt::Reduce<RAJA::operators::minimum>(&m),
+                     RAJA::expt::Reduce<RAJA::operators::maximum>(&ma),
                      [=](int i, double &r_, double &m_, double &ma_) {
                        r_ += a[i] * b[i];
                        m_ = a[i] < m_ ? a[i] : m_;
                        ma_ = a[i] > m_ ? a[i] : m_;
-                     },
-                     RAJA::expt::Reduce<RAJA::operators::plus>(&r),
-                     RAJA::expt::Reduce<RAJA::operators::minimum>(&m),
-                     RAJA::expt::Reduce<RAJA::operators::maximum>(&ma)
+                     }
                  );
     t.stop();
 
@@ -331,18 +331,14 @@ for (int sample = 0; sample < sample_sz; sample++){
     t.start();
     RAJA::forall<RAJA::omp_parallel_for_exec>(
                    RAJA::RangeSegment(0, N),
-                     //RAJA::expt::Reduce<RAJA::operators::plus>(&r),
-                     //RAJA::expt::Reduce<RAJA::operators::minimum>(&m),
-                     //RAJA::expt::Reduce<RAJA::operators::maximum>(&ma),
+                     RAJA::expt::Reduce<RAJA::operators::plus>(&r),
+                     RAJA::expt::Reduce<RAJA::operators::minimum>(&m),
+                     RAJA::expt::Reduce<RAJA::operators::maximum>(&ma),
                      [=](int i, double &r_, double &m_, double &ma_) {
                        r_ += a[i] * b[i];
                        m_ = a[i] < m_ ? a[i] : m_;
                        ma_ = a[i] > m_ ? a[i] : m_;
                      }
-                     ,
-                     RAJA::expt::Reduce<RAJA::operators::plus>(&r),
-                     RAJA::expt::Reduce<RAJA::operators::minimum>(&m),
-                     RAJA::expt::Reduce<RAJA::operators::maximum>(&ma)
                  );
     t.stop();
 

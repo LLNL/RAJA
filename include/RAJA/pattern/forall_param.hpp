@@ -108,6 +108,7 @@ namespace expt
     ForallParamPack(Params... params) {
       param_tup = camp::make_tuple(params...);
     };
+    ForallParamPack(camp::tuple<Params...> t) : param_tup(t) {};
 
     using lambda_params_seq = camp::make_idx_seq_t<count_lambda_args<Params...>()>;
 
@@ -134,6 +135,44 @@ namespace expt
       FP::detail_resolve(EXEC_POL(), typename FP::params_seq(), f_params, std::forward<Args>(args)... );
     }
   };
+
+  //TODO :: Figure out where this tuple malarky should go ...
+  //===========================================================================
+  // Should this go in camp?
+  template<camp::idx_t... Seq, typename... Ts>
+  constexpr auto tuple_from_seq (const camp::idx_seq<Seq...>&, const camp::tuple<Ts...>& tuple){
+    return camp::make_tuple( camp::get< Seq >(tuple)... );
+  };
+
+  // Should this go in camp?
+  template<typename... Ts>
+  constexpr auto strip_last_elem(const camp::tuple<Ts...>& tuple){
+    return tuple_from_seq(camp::make_idx_seq_t<sizeof...(Ts)-1>{},tuple);
+  };
+
+    template<typename... Args>
+    constexpr auto get_param_tuple(Args&&... args){
+      return strip_last_elem(camp::make_tuple(args...));
+    }
+
+    template<typename... Ts>
+    constexpr auto make_forall_param_pack_from_tuple(const camp::tuple<Ts...>& tuple) {
+      return ForallParamPack<Ts...>(tuple);
+    }
+
+  //===========================================================================
+
+  // Make a tuple of the param pack except the final element...
+  template<typename... Args>
+  constexpr auto make_forall_param_pack(Args&&... args){
+    return make_forall_param_pack_from_tuple( get_param_tuple(args...) );
+  }
+
+  // Lambda should be the last argument in the param pack, just extract it...
+  template<typename... Args>
+  constexpr auto get_lambda(Args&&... args){
+    return camp::get<sizeof...(Args)-1>( camp::make_tuple(args...) ); 
+  } 
 
 } //  namespace expt
 } //  namespace RAJA
