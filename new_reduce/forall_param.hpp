@@ -102,6 +102,7 @@ namespace detail
     ForallParamPack(Params... params) {
       param_tup = camp::make_tuple(params...);
     };
+    ForallParamPack(camp::tuple<Params...> tuple) : param_tup(tuple) {};
 
     using lambda_params_seq = camp::make_idx_seq_t<count_lambda_args<Params...>()>;
 
@@ -133,6 +134,45 @@ namespace detail
   };
 
 
+  //TODO :: Figure out where this tuple malarky should go ...
+  //===========================================================================
+  // Should this go in camp?
+  template<camp::idx_t... Seq, typename... Ts>
+  constexpr auto tuple_from_seq (const camp::idx_seq<Seq...>&, const camp::tuple<Ts...>& tuple){
+    return camp::make_tuple( camp::get< Seq >(tuple)... );
+  };
+
+  // Should this go in camp?
+  template<typename... Ts>
+  constexpr auto strip_last_elem(const camp::tuple<Ts...>& tuple){
+    return tuple_from_seq(camp::make_idx_seq_t<sizeof...(Ts)-1>{},tuple);
+  };
+
+    template<typename... Args>
+    constexpr auto get_param_tuple(Args&&... args){
+      return strip_last_elem(camp::make_tuple(args...));
+    }
+
+    template<typename... Ts>
+    constexpr auto make_forall_param_pack_from_tuple(const camp::tuple<Ts...>& tuple) {
+      return ForallParamPack<Ts...>(tuple);
+    }
+
+  //===========================================================================
+
+  // Make a tuple of the param pack except the final element...
+  template<typename... Args>
+  constexpr auto make_forall_param_pack(Args&&... args){
+    return make_forall_param_pack_from_tuple( get_param_tuple(args...) );
+  }
+
+  // Lambda should be the last argument in the param pack, just extract it...
+  template<typename... Args>
+  constexpr auto get_lambda(Args&&... args){
+    return camp::get<sizeof...(Args)-1>( camp::make_tuple(args...) ); 
+  } 
+
+
 } //  namespace detail
 
 #include "sequential/forall.hpp"
@@ -141,9 +181,12 @@ namespace detail
 #include "cuda/forall.hpp"
 #include "hip/forall.hpp"
 
-template<typename ExecPol, typename B, typename... Params>
-void forall_param(int N, const B& body, Params... params) {
-  detail::forall_param(ExecPol(), N, body, params...);
+template<typename ExecPol, typename... Params>
+void forall_param(int N, Params... params) {
+  auto f_params = detail::make_forall_param_pack(params...);
+  auto body = detail::get_lambda(params...);
+
+  detail::forall_param(ExecPol(), N, body, f_params);
 }
 
 #endif //  PROTO_FORALL_PARAM_HPP

@@ -1,15 +1,19 @@
 #ifndef NEW_REDUCE_FORALL_OMP_HPP
 #define NEW_REDUCE_FORALL_OMP_HPP
 
+#include<typeinfo>
+#include<cxxabi.h>
+#include<type_traits>
+
 #if defined(RAJA_ENABLE_OPENMP)
 namespace detail {
+  
 
-  template <typename EXEC_POL, typename B, typename... Params>
+
+  template <typename EXEC_POL, typename B, typename ParamPack>
   std::enable_if_t< std::is_same< EXEC_POL, RAJA::omp_parallel_for_exec>::value >
-  forall_param(EXEC_POL&&, int N, B const &body, Params... params)
+  forall_param(EXEC_POL&&, int N, B const &body, ParamPack f_params)
   {
-    ForallParamPack<Params...> f_params(params...);
-
     init<EXEC_POL>(f_params);
 
     #pragma omp declare reduction(          \

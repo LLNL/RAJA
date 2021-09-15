@@ -83,16 +83,14 @@ int main(int argc, char *argv[])
     t.start();
 
     forall_param<RAJA::omp_parallel_for_exec>(N,
+                 Reduce<RAJA::operators::plus>(&r),
+                 Reduce<RAJA::operators::minimum>(&m),
+                 Reduce<RAJA::operators::maximum>(&ma),
                  [=](int i, double &r_, double &m_, double &ma_) {
-                 //[=](int i, double &ma_) {
                    r_ += a[i] * b[i];
                    m_ = a[i] < m_ ? a[i] : m_;
                    ma_ = a[i] > ma_ ? a[i] : ma_;
-                 },
-                 Reduce<RAJA::operators::plus>(&r),
-                 Reduce<RAJA::operators::minimum>(&m),
-                 Reduce<RAJA::operators::maximum>(&ma)
-                 );
+                 });
     t.stop();
     
     std::cout << "t : " << t.elapsed() << "\n";
@@ -116,18 +114,17 @@ int main(int argc, char *argv[])
     double m_array[arr_sz];
 
     forall_param<RAJA::omp_parallel_for_exec>(N,
+                 Reduce<RAJA::operators::plus>(&r),
+                 Reduce<RAJA::operators::minimum>(&m),
+                 Reduce<RAJA::operators::maximum>(&ma),
+                 ReduceArray<RAJA::operators::plus>(m_array, arr_sz),
                  [=](int i, double &r_, double &m_, double &ma_, double *l_array) {
                    r_ += a[i] * b[i];
                    m_ = a[i] < m_ ? a[i] : m_;
                    ma_ = a[i] > m_ ? a[i] : m_;
                    l_array[1] += 2; 
                    l_array[3] += 2; 
-                 },
-                 Reduce<RAJA::operators::plus>(&r),
-                 Reduce<RAJA::operators::minimum>(&m),
-                 Reduce<RAJA::operators::maximum>(&ma),
-                 ReduceArray<RAJA::operators::plus>(m_array, arr_sz)
-                 );
+                 });
     t.stop();
     
     std::cout << "t : " << t.elapsed() << "\n";
@@ -151,10 +148,10 @@ int main(int argc, char *argv[])
     t.start();
 
     forall_param<RAJA::cuda_exec<256>>(N,
+                 Reduce<RAJA::operators::plus>(&r),
                  [=] RAJA_HOST_DEVICE (int i, double &r_) {
                    r_ += a[i] * b[i];
-                 },
-                 Reduce<RAJA::operators::plus>(&r));
+                 });
     t.stop();
     
     std::cout << "t : " << t.elapsed() << "\n";
@@ -173,15 +170,15 @@ int main(int argc, char *argv[])
     t.start();
 
     forall_param<RAJA::cuda_exec<256>>(N,
+                 Reduce<RAJA::operators::plus>(&r),
+                 Reduce<RAJA::operators::minimum>(&m),
+                 KernelName("Test"),
+                 Reduce<RAJA::operators::maximum>(&ma),
                  [=] RAJA_HOST_DEVICE (int i, double &r_, double &m_, double &ma_) {
                    r_ += a[i] * b[i];
                    m_ = a[i] < m_ ? a[i] : m_;
                    ma_ = a[i] > m_ ? a[i] : m_;
-                 },
-                 Reduce<RAJA::operators::plus>(&r),
-                 Reduce<RAJA::operators::minimum>(&m),
-                 KernelName("Test"),
-                 Reduce<RAJA::operators::maximum>(&ma)
+                 }
                  );
     t.stop();
     
@@ -193,7 +190,7 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
-#if 1
+#if 0
 #if defined(RAJA_ENABLE_HIP)
   {
     std::cout << "HIP Reduction NEW Single\n";
@@ -224,14 +221,14 @@ int main(int argc, char *argv[])
     t.start();
 
     forall_param<RAJA::seq_exec>(N,
+                 Reduce<RAJA::operators::plus>(&r),
+                 Reduce<RAJA::operators::minimum>(&m),
+                 Reduce<RAJA::operators::maximum>(&ma),
                  [=](int i, double &r_, double &m_, double &ma_) {
                    r_ += a[i] * b[i];
                    m_ = a[i] < m_ ? a[i] : m_;
                    ma_ = a[i] > m_ ? a[i] : m_;
-                 },
-                 Reduce<RAJA::operators::plus>(&r),
-                 Reduce<RAJA::operators::minimum>(&m),
-                 Reduce<RAJA::operators::maximum>(&ma)
+                 }
                  );
     t.stop();
     
@@ -241,6 +238,7 @@ int main(int argc, char *argv[])
     std::cout << "ma : " << ma <<"\n";
   }
 #endif
+#if 0
   {
     std::cout << "Basic Reduction RAJA\n";
     RAJA::ReduceSum<RAJA::seq_reduce, double> rr(0);
@@ -264,6 +262,8 @@ int main(int argc, char *argv[])
     std::cout << "m : "  << rm.get()  <<"\n";
     std::cout << "ma : " << rma.get() <<"\n";
   }
+#endif
+#if 1
   {
     std::cout << "Basic Reduction RAJA w/ NEW REDUCE\n";
 
@@ -287,6 +287,77 @@ int main(int argc, char *argv[])
     std::cout << "m : "  << m  <<"\n";
     std::cout << "ma : " << ma <<"\n";
   }
+#endif
+
+int sample_sz = 100;
+RAJA::Timer::ElapsedType old_t_sum = 0;
+RAJA::Timer::ElapsedType new_t_sum = 0;
+for (int sample = 0; sample < sample_sz; sample++){
+#if 1
+  {
+    //std::cout << "Basic OMP Reduction RAJA\n";
+    RAJA::ReduceSum<RAJA::omp_reduce, double> rr(0);
+    RAJA::ReduceMin<RAJA::omp_reduce, double> rm(5000);
+    RAJA::ReduceMax<RAJA::omp_reduce, double> rma(0);
+
+    RAJA::Timer t;
+    t.start();
+    RAJA::forall<RAJA::omp_parallel_for_exec>(
+                   RAJA::RangeSegment(0, N),
+                     [=](int i) {
+                       rr += a[i] * b[i];
+                       rm.min(a[i]);
+                       rma.max(a[i]);
+                     }
+                 );
+    t.stop();
+
+    //std::cout << N << " " << t.elapsed() << "\n";
+    old_t_sum += t.elapsed();
+    //std::cout << "t : " << t.elapsed() << "\n";
+    //std::cout << "r : " << rr.get() << "\n";
+    //std::cout << "m : "  << rm.get()  <<"\n";
+    //std::cout << "ma : " << rma.get() <<"\n";
+  }
+#endif
+#if 1
+  {
+    r = 0;
+    m = 5000;
+    ma = 0;
+    //std::cout << "Basic OMP Reduction RAJA w/ NEW REDUCE\n";
+
+    RAJA::Timer t;
+    t.start();
+    RAJA::forall<RAJA::omp_parallel_for_exec>(
+                   RAJA::RangeSegment(0, N),
+                     //RAJA::expt::Reduce<RAJA::operators::plus>(&r),
+                     //RAJA::expt::Reduce<RAJA::operators::minimum>(&m),
+                     //RAJA::expt::Reduce<RAJA::operators::maximum>(&ma),
+                     [=](int i, double &r_, double &m_, double &ma_) {
+                       r_ += a[i] * b[i];
+                       m_ = a[i] < m_ ? a[i] : m_;
+                       ma_ = a[i] > m_ ? a[i] : m_;
+                     }
+                     ,
+                     RAJA::expt::Reduce<RAJA::operators::plus>(&r),
+                     RAJA::expt::Reduce<RAJA::operators::minimum>(&m),
+                     RAJA::expt::Reduce<RAJA::operators::maximum>(&ma)
+                 );
+    t.stop();
+
+    //std::cout << N << " " << t.elapsed() << "\n";
+    new_t_sum += t.elapsed();
+    //std::cout << "t : " << t.elapsed() << "\n";
+    //std::cout << "r : " << r << "\n";
+    //std::cout << "m : "  << m  <<"\n";
+    //std::cout << "ma : " << ma <<"\n";
+  }
+#endif
+} //  sample loop
+std::cout << "AVERAGES:\n";
+std::cout << old_t_sum / sample_sz << "\n";
+std::cout << new_t_sum / sample_sz << "\n";
 
   return 0;
 }

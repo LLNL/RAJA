@@ -36,11 +36,10 @@ using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
     combine<EXEC_POL>(f_params);
   }
 
-  template <size_t BlockSize, bool Async, typename B, typename... Params>
-  void forall_param(RAJA::cuda_exec<BlockSize, Async>&&, int N, B const &body, Params... params)
+  template <size_t BlockSize, bool Async, typename B, typename ParamPack>
+  void forall_param(RAJA::cuda_exec<BlockSize, Async>&&, int N, B const &body, ParamPack f_params)
   {
     using EXEC_POL = RAJA::cuda_exec<BlockSize, Async>;
-    ForallParamPack<Params...> f_params(params...);
 
     auto func = forallp_cuda_kernel<
       EXEC_POL,

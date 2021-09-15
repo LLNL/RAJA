@@ -1,7 +1,7 @@
-#ifndef NEW_REDUCE_OMP_REDUCE_HPP
-#define NEW_REDUCE_OMP_REDUCE_HPP
+#ifndef PROTO_NEW_REDUCE_OMP_REDUCE_HPP
+#define PROTO_NEW_REDUCE_OMP_REDUCE_HPP
 
-#include "../util/policy.hpp"
+//#include "../util/policy.hpp"
 
 namespace detail {
 
@@ -9,21 +9,21 @@ namespace detail {
 
   // Init
   template<typename EXEC_POL, typename OP, typename T>
-  camp::concepts::enable_if< is_openmp_policy<EXEC_POL> >
+  camp::concepts::enable_if< RAJA::type_traits::is_openmp_policy<EXEC_POL> >
   init(Reducer<OP, T>& red) {
     red.val = Reducer<OP,T>::op::identity();
   }
 
   // Combine
   template<typename EXEC_POL, typename OP, typename T>
-  camp::concepts::enable_if< is_openmp_policy<EXEC_POL> >
+  camp::concepts::enable_if< RAJA::type_traits::is_openmp_policy<EXEC_POL> >
   combine(Reducer<OP, T>& out, const Reducer<OP, T>& in) {
     out.val = typename Reducer<OP,T>::op{}(out.val, in.val);
   }
 
   // Resolve
   template<typename EXEC_POL, typename OP, typename T>
-  camp::concepts::enable_if< is_openmp_policy<EXEC_POL> >
+  camp::concepts::enable_if< RAJA::type_traits::is_openmp_policy<EXEC_POL> >
   resolve(Reducer<OP, T>& red) {
     *red.target = red.val;
   }
@@ -32,4 +32,4 @@ namespace detail {
 
 } //  namespace detail
 
-#endif //  NEW_REDUCE_OMP_REDUCE_HPP
+#endif //  PROTO_NEW_REDUCE_OMP_REDUCE_HPP

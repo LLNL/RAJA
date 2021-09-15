@@ -1,5 +1,5 @@
-#ifndef NEW_REDUCE_ARRAY_OMP_REDUCE_HPP
-#define NEW_REDUCE_ARRAY_OMP_REDUCE_HPP
+#ifndef PROTO_NEW_REDUCE_ARRAY_OMP_REDUCE_HPP
+#define PROTO_NEW_REDUCE_ARRAY_OMP_REDUCE_HPP
 
 #include "../util/policy.hpp"
 
@@ -43,4 +43,4 @@ namespace detail {
 
 } //  namespace detail
 
-#endif //  NEW_REDUCE_ARRAY_OMP_REDUCE_HPP
+#endif //  PROTO_NEW_REDUCE_ARRAY_OMP_REDUCE_HPP
