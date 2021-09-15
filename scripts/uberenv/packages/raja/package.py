@@ -289,10 +289,11 @@ class Raja(CMakePackage, CudaPackage):
             cfg.write(cmake_cache_entry("HIP_CLANG_PATH",
                                         rocm_root + '/llvm/bin'))
 
-            hipcc_flags = '--amdgpu-target=gfx906'
+            hipcc_flags = ['--amdgpu-target=gfx906']
             if "+desul" in spec:
-                hipcc_flags += ';-std=c++14'
-            cfg.write(cmake_cache_entry("HIP_HIPCC_FLAGS", hipcc_flags))
+                hipcc_flags.append('-std=c++14')
+            
+            cfg.write(cmake_cache_entry("HIP_HIPCC_FLAGS", ';'.join(hipcc_flags)))
 
             cfg.write(cmake_cache_entry("HIP_RUNTIME_INCLUDE_DIRS",
                                         "{0}/include;{0}/../hsa/include".format(hip_root)))
