@@ -38,6 +38,8 @@ namespace RAJA
 {
 namespace policy
 {
+#include "RAJA/pattern/forall_param.hpp"
+
 namespace loop
 {
 
@@ -51,6 +53,23 @@ namespace loop
 //////////////////////////////////////////////////////////////////////
 //
 
+
+template <typename Iterable, typename Func, typename Resource, typename ForallParam>
+RAJA_INLINE resources::EventProxy<Resource> forall_impl(Resource res,
+                                                    const loop_exec &,
+                                                    Iterable &&iter,
+                                                    Func &&body,
+                                                    ForallParam f_params)
+{
+  expt::ParamMultiplexer::init<seq_exec>(f_params);
+  RAJA_EXTRACT_BED_IT(iter);
+
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    expt::invoke_body(f_params, body, *(begin_it + i));
+  }
+  expt::ParamMultiplexer::resolve<seq_exec>(f_params);
+  return RAJA::resources::EventProxy<Resource>(res);
+}
 
 template <typename Iterable, typename Func, typename Resource>
 RAJA_INLINE resources::EventProxy<Resource> forall_impl(Resource res,
