@@ -484,36 +484,36 @@ forall_Icount(ExecutionPolicy&& p,
  *
  ******************************************************************************
  */
-template <typename ExecutionPolicy, typename Res, typename Container, typename LoopBody>
-RAJA_INLINE concepts::enable_if_t<
-    resources::EventProxy<Res>,
-    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
-    concepts::negate<type_traits::is_multi_policy<ExecutionPolicy>>,
-    type_traits::is_range<Container>>
-forall(ExecutionPolicy&& p, Res r, Container&& c, LoopBody&& loop_body)
-{
-  static_assert(type_traits::is_random_access_range<Container>::value,
-                "Container does not model RandomAccessIterator");
-
-  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
-  util::callPreCapturePlugins(context);
-
-  using RAJA::util::trigger_updates_before;
-  auto body = trigger_updates_before(loop_body);
-
-  util::callPostCapturePlugins(context);
-
-  util::callPreLaunchPlugins(context);
-
-  resources::EventProxy<Res> e =  wrap::forall(
-      r,
-      std::forward<ExecutionPolicy>(p),
-      std::forward<Container>(c),
-      std::move(body));
-
-  util::callPostLaunchPlugins(context);
-  return e;
-}
+//template <typename ExecutionPolicy, typename Res, typename Container, typename LoopBody>
+//RAJA_INLINE concepts::enable_if_t<
+//    resources::EventProxy<Res>,
+//    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+//    concepts::negate<type_traits::is_multi_policy<ExecutionPolicy>>,
+//    type_traits::is_range<Container>>
+//forall(ExecutionPolicy&& p, Res r, Container&& c, LoopBody&& loop_body)
+//{
+//  static_assert(type_traits::is_random_access_range<Container>::value,
+//                "Container does not model RandomAccessIterator");
+//
+//  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
+//  util::callPreCapturePlugins(context);
+//
+//  using RAJA::util::trigger_updates_before;
+//  auto body = trigger_updates_before(loop_body);
+//
+//  util::callPostCapturePlugins(context);
+//
+//  util::callPreLaunchPlugins(context);
+//
+//  resources::EventProxy<Res> e =  wrap::forall(
+//      r,
+//      std::forward<ExecutionPolicy>(p),
+//      std::forward<Container>(c),
+//      std::move(body));
+//
+//  util::callPostLaunchPlugins(context);
+//  return e;
+//}
 
 template <typename ExecutionPolicy, typename Res, typename Container, typename... Params>
 RAJA_INLINE concepts::enable_if_t<
