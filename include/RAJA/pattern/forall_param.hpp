@@ -23,7 +23,7 @@ namespace expt
                                                     camp::idx_seq<Sequence...>,
                                                     Ts&&... extra)
   {
-    return f(extra..., ( params.template get_lambda_args<Sequence>() )...);
+    return f(std::forward<Ts...>(extra...), ( params.template get_lambda_args<Sequence>() )...);
   }
 
   //CAMP_SUPPRESS_HD_WARN
@@ -34,7 +34,7 @@ namespace expt
         camp::forward<Params>(params),
         camp::forward<Fn>(f),
         typename camp::decay<Params>::lambda_params_seq(),
-        camp::forward<Ts>(extra)...);
+        camp::forward<Ts...>(extra)...);
   }
 
 
@@ -55,6 +55,12 @@ namespace expt
     Base param_tup;
 
   private:
+
+    RAJA_HOST_DEVICE
+    constexpr auto lambda_args(camp::idx_seq<> )
+    {
+      return camp::make_tuple();
+    }
 
     template<camp::idx_t Seq>
     RAJA_HOST_DEVICE
@@ -98,19 +104,20 @@ namespace expt
       CAMP_EXPAND(detail::resolve<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
 
-    template<typename Last>
+    template<typename null_t = camp::nil>
+    static size_t constexpr count_lambda_args() { return 0; }
+    template<typename null_t = camp::nil, typename Last>
     static size_t constexpr count_lambda_args() { return Last::num_lambda_args; }
-    template<typename First, typename Second, typename... Rest>
-    static size_t constexpr count_lambda_args() { return First::num_lambda_args + count_lambda_args<Second, Rest...>(); }
+    template<typename null_t = camp::nil, typename First, typename Second, typename... Rest>
+    static size_t constexpr count_lambda_args() { return First::num_lambda_args + count_lambda_args<camp::nil, Second, Rest...>(); }
 
   public:
-    ForallParamPack (){}
     ForallParamPack(Params... params) {
       param_tup = camp::make_tuple(params...);
     };
     ForallParamPack(camp::tuple<Params...> t) : param_tup(t) {};
 
-    using lambda_params_seq = camp::make_idx_seq_t<count_lambda_args<Params...>()>;
+    using lambda_params_seq = camp::make_idx_seq_t<count_lambda_args<camp::nil, Params...>()>;
 
     template<camp::idx_t Idx>
     RAJA_HOST_DEVICE
@@ -119,7 +126,6 @@ namespace expt
       return (  *camp::get<Idx>( lambda_args(params_seq{}) )  );
     }
   };
-
   
   struct ParamMultiplexer {
     template<typename EXEC_POL, typename... Params, typename ...Args, typename FP = ForallParamPack<Params...>>
@@ -162,12 +168,14 @@ namespace expt
 
   //===========================================================================
 
+  //TODO :: static asserts here?
   // Make a tuple of the param pack except the final element...
   template<typename... Args>
   constexpr auto make_forall_param_pack(Args&&... args){
     return make_forall_param_pack_from_tuple( get_param_tuple(args...) );
   }
 
+  //TODO :: static asserts here?
   // Lambda should be the last argument in the param pack, just extract it...
   template<typename... Args>
   constexpr auto get_lambda(Args&&... args){

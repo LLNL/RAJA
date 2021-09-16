@@ -289,7 +289,7 @@ int main(int argc, char *argv[])
   }
 #endif
 
-int sample_sz = 100;
+int sample_sz = 1;
 RAJA::Timer::ElapsedType old_t_sum = 0;
 RAJA::Timer::ElapsedType new_t_sum = 0;
 for (int sample = 0; sample < sample_sz; sample++){
@@ -314,10 +314,10 @@ for (int sample = 0; sample < sample_sz; sample++){
 
     //std::cout << N << " " << t.elapsed() << "\n";
     old_t_sum += t.elapsed();
-    //std::cout << "t : " << t.elapsed() << "\n";
-    //std::cout << "r : " << rr.get() << "\n";
-    //std::cout << "m : "  << rm.get()  <<"\n";
-    //std::cout << "ma : " << rma.get() <<"\n";
+    std::cout << "t : " << t.elapsed() << "\n";
+    std::cout << "r : " << rr.get() << "\n";
+    std::cout << "m : "  << rm.get()  <<"\n";
+    std::cout << "ma : " << rma.get() <<"\n";
   }
 #endif
 #if 1
@@ -344,10 +344,10 @@ for (int sample = 0; sample < sample_sz; sample++){
 
     //std::cout << N << " " << t.elapsed() << "\n";
     new_t_sum += t.elapsed();
-    //std::cout << "t : " << t.elapsed() << "\n";
-    //std::cout << "r : " << r << "\n";
-    //std::cout << "m : "  << m  <<"\n";
-    //std::cout << "ma : " << ma <<"\n";
+    std::cout << "t : " << t.elapsed() << "\n";
+    std::cout << "r : " << r << "\n";
+    std::cout << "m : "  << m  <<"\n";
+    std::cout << "ma : " << ma <<"\n";
   }
 #endif
 } //  sample loop
