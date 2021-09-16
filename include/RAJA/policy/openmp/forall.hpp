@@ -45,6 +45,14 @@
 
 #include "RAJA/pattern/forall_param.hpp"
 
+#define RAJA_OMP_DECLARE_REDUCTION_COMBINE \
+      _Pragma(" omp declare reduction( combine \
+        : typename std::remove_reference<decltype(f_params)>::type \
+        : RAJA::expt::ParamMultiplexer::combine< \
+            std::decay<decltype(p)>::type \
+          >(omp_out, omp_in) ) \
+        initializer(omp_priv = omp_orig) ")
+
 namespace RAJA
 {
 
@@ -57,64 +65,253 @@ namespace expt
 {
   namespace internal
   {
-//#define EXPT_USE_RAJA_REGION  
-#if defined(EXPT_USE_RAJA_REGION)
     //
     // omp for (Auto)
     //
     template <typename Iterable, typename Func, typename ForallParam>
-    RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Auto&,
+    RAJA_INLINE void forall_impl(const RAJA::policy::omp::Auto& p,
                                  Iterable&& iter,
                                  Func&& loop_body,
                                  ForallParam&& f_params)
     {
-      //std::cout << "check params\n";
-      ::RAJA::expt::ParamMultiplexer::init<::RAJA::policy::omp::Auto>(f_params);
-
-      #pragma omp declare reduction(          \
-        combine                               \
-        : typename std::remove_reference<decltype(f_params)>::type                  \
-        : ::RAJA::expt::ParamMultiplexer::combine<::RAJA::policy::omp::Auto>(omp_out, omp_in) )\
-        initializer(omp_priv = omp_orig)
+      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
       RAJA_EXTRACT_BED_IT(iter);
       #pragma omp for reduction(combine : f_params)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
-        ::RAJA::expt::invoke_body(f_params, loop_body, i);
-        //loop_body(begin_it[i]);
+        RAJA::expt::invoke_body(f_params, loop_body, i);
       }
 
-      ::RAJA::expt::ParamMultiplexer::resolve<::RAJA::policy::omp::Auto>(f_params);
+      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
     }
-#else  
+
     //
-    // omp for (Auto)
+    // omp for schedule(static)
     //
-    template <typename Iterable, typename Func, typename ForallParam>
-    RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Auto&,
+    template <typename Iterable, typename Func, int ChunkSize, typename ForallParam,
+      typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
+    RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Static<ChunkSize>& p,
                                  Iterable&& iter,
                                  Func&& loop_body,
-                                 ForallParam f_params)
+                                 ForallParam&& f_params)
     {
-      ::RAJA::expt::ParamMultiplexer::init<::RAJA::policy::omp::Auto>(f_params);
-
-      #pragma omp declare reduction(          \
-        combine                               \
-        : decltype(f_params)                  \
-        : ::RAJA::expt::ParamMultiplexer::combine<::RAJA::policy::omp::Auto>(omp_out, omp_in) )\
-        initializer(omp_priv = omp_orig)
+      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
       RAJA_EXTRACT_BED_IT(iter);
-      #pragma omp parallel for reduction(combine : f_params)
+      #pragma omp parallel for schedule(static)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
-        ::RAJA::expt::invoke_body(f_params, loop_body, i);
-        //loop_body(begin_it[i]);
+        loop_body(begin_it[i]);
       }
 
-      ::RAJA::expt::ParamMultiplexer::resolve<::RAJA::policy::omp::Auto>(f_params);
+      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
     }
-#endif 
 
+    //
+    // omp for schedule(static, ChunkSize)
+    //
+    template <typename Iterable, typename Func, int ChunkSize, typename ForallParam,
+      typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
+    RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Static<ChunkSize>& p,
+                                 Iterable&& iter,
+                                 Func&& loop_body,
+                                 ForallParam&& f_params)
+    {
+      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      RAJA_OMP_DECLARE_REDUCTION_COMBINE;
+
+      RAJA_EXTRACT_BED_IT(iter);
+      #pragma omp parallel for schedule(static, ChunkSize)
+      for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+        loop_body(begin_it[i]);
+      }
+
+      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+    }
+
+    //
+    // omp for schedule(dynamic)
+    //
+    template <typename Iterable, typename Func, int ChunkSize, typename ForallParam,
+      typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
+    RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
+                                 Iterable&& iter,
+                                 Func&& loop_body,
+                                 ForallParam&& f_params)
+    {
+      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      RAJA_OMP_DECLARE_REDUCTION_COMBINE;
+
+      RAJA_EXTRACT_BED_IT(iter);
+      #pragma omp parallel for schedule(dynamic)
+      for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+        loop_body(begin_it[i]);
+      }
+
+      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+    }
+
+    //
+    // omp for schedule(dynamic, ChunkSize)
+    //
+    template <typename Iterable, typename Func, int ChunkSize, typename ForallParam,
+      typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
+    RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
+                                 Iterable&& iter,
+                                 Func&& loop_body,
+                                 ForallParam&& f_params)
+    {
+      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      RAJA_OMP_DECLARE_REDUCTION_COMBINE;
+
+      RAJA_EXTRACT_BED_IT(iter);
+      #pragma omp parallel for schedule(dynamic, ChunkSize)
+      for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+        loop_body(begin_it[i]);
+      }
+
+      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+    }
+
+    //
+    // omp for schedule(guided)
+    //
+    template <typename Iterable, typename Func, int ChunkSize, typename ForallParam,
+      typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
+    RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>& p,
+                                 Iterable&& iter,
+                                 Func&& loop_body,
+                                 ForallParam&& f_params)
+    {
+      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      RAJA_OMP_DECLARE_REDUCTION_COMBINE;
+
+      RAJA_EXTRACT_BED_IT(iter);
+      #pragma omp parallel for schedule(guided)
+      for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+        loop_body(begin_it[i]);
+      }
+
+      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+    }
+
+    //
+    // omp for schedule(guided, ChunkSize)
+    //
+    template <typename Iterable, typename Func, int ChunkSize, typename ForallParam,
+      typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
+    RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>& p,
+                                 Iterable&& iter,
+                                 Func&& loop_body,
+                                 ForallParam&& f_params)
+    {
+      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      RAJA_OMP_DECLARE_REDUCTION_COMBINE;
+
+      RAJA_EXTRACT_BED_IT(iter);
+      #pragma omp parallel for schedule(guided, ChunkSize)
+      for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+        loop_body(begin_it[i]);
+      }
+
+      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+    }
+
+    //
+    // omp for schedule(runtime)
+    //
+    template <typename Iterable, typename Func, typename ForallParam>
+    RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Runtime& p,
+                                 Iterable&& iter,
+                                 Func&& loop_body,
+                                 ForallParam&& f_params)
+    {
+      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      RAJA_OMP_DECLARE_REDUCTION_COMBINE;
+
+      RAJA_EXTRACT_BED_IT(iter);
+      #pragma omp parallel for schedule(runtime)
+      for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+        loop_body(begin_it[i]);
+      }
+
+      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+    }
+
+    //
+    // omp for nowait (Auto)
+    //
+    template <typename Iterable, typename Func, typename ForallParam>
+    RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Auto& p,
+                                 Iterable&& iter,
+                                 Func&& loop_body,
+                                 ForallParam&& f_params)
+    {
+      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      RAJA_OMP_DECLARE_REDUCTION_COMBINE;
+
+      RAJA_EXTRACT_BED_IT(iter);
+      #pragma omp parallel
+      {
+      #pragma omp for nowait
+      for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+        loop_body(begin_it[i]);
+      }
+      }
+
+      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+    }
+
+    //
+    // omp for schedule(static) nowait
+    //
+    template <typename Iterable, typename Func, int ChunkSize, typename ForallParam,
+      typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
+    RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Static<ChunkSize>& p,
+                                 Iterable&& iter,
+                                 Func&& loop_body,
+                                 ForallParam&& f_params)
+    {
+      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      RAJA_OMP_DECLARE_REDUCTION_COMBINE;
+
+      RAJA_EXTRACT_BED_IT(iter);
+      #pragma omp parallel
+      {
+      #pragma omp for schedule(static) nowait
+      for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+        loop_body(begin_it[i]);
+      }
+      }
+
+      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+    }
+
+    //
+    // omp for schedule(static, ChunkSize) nowait
+    //
+    template <typename Iterable, typename Func, int ChunkSize, typename ForallParam,
+      typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
+    RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Static<ChunkSize>& p,
+                                 Iterable&& iter,
+                                 Func&& loop_body,
+                                 ForallParam&& f_params)
+    {
+      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      RAJA_OMP_DECLARE_REDUCTION_COMBINE;
+
+      RAJA_EXTRACT_BED_IT(iter);
+      #pragma omp parallel
+      {
+      #pragma omp for schedule(static, ChunkSize) nowait
+      for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+        loop_body(begin_it[i]);
+      }
+      }
+
+      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+    }
   } //  namespace internal
 
   template <typename Schedule, typename Iterable, typename Func, typename ForallParam>
@@ -132,7 +329,6 @@ namespace expt
 ///
 /// OpenMP parallel policy implementation
 ///
-#if defined(EXPT_USE_RAJA_REGION)
 template <typename Iterable, typename Func, typename InnerPolicy, typename ForallParam>
 RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
                                                     const omp_parallel_exec<InnerPolicy>&,
@@ -140,29 +336,10 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host h
                                                     Func&& loop_body,
                                                     ForallParam f_params)
 {
-  //std::cout << "check params\n";
-
-  RAJA::region<RAJA::omp_parallel_region>([&]() {
-    using RAJA::internal::thread_privatize;
-    auto body = thread_privatize(loop_body);
-    auto fp  = thread_privatize(f_params);
-    expt::forall_impl(host_res, InnerPolicy{}, iter, body.get_priv(), fp.get_priv());
-  });
-  return resources::EventProxy<resources::Host>(host_res);
-}
-#else
-template <typename Iterable, typename Func, typename InnerPolicy, typename ForallParam>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
-                                                    const omp_parallel_exec<InnerPolicy>&,
-                                                    Iterable&& iter,
-                                                    Func&& loop_body,
-                                                    ForallParam f_params)
-{
-  //std::cout << "check params\n";
+  std::cout << "param call\n";
   expt::forall_impl(host_res, InnerPolicy{}, iter, loop_body, f_params);
   return resources::EventProxy<resources::Host>(host_res);
 }
-#endif
 
 template <typename Iterable, typename Func, typename InnerPolicy>
 RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
@@ -170,7 +347,7 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host h
                                                     Iterable&& iter,
                                                     Func&& loop_body)
 {
-  //std::cout << "check\n";
+  std::cout << "current call\n";
   RAJA::region<RAJA::omp_parallel_region>([&]() {
     using RAJA::internal::thread_privatize;
     auto body = thread_privatize(loop_body);
@@ -316,6 +493,7 @@ namespace internal
     }
   }
 
+  // TODO :: not implemented in forall param interface ...
   #if !defined(RAJA_COMPILER_MSVC)
   // dynamic & guided
   template <typename Policy, typename Iterable, typename Func>
@@ -382,6 +560,7 @@ namespace internal
     }
   }
 
+  //TODO :: not implemented in param interface...
   #if !defined(RAJA_COMPILER_MSVC)
   // dynamic & guided
   template <typename Policy, typename Iterable, typename Func>
