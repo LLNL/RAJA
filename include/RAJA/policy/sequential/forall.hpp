@@ -68,7 +68,7 @@ RAJA_INLINE resources::EventProxy<Resource> forall_impl(Resource res,
 
   RAJA_NO_SIMD
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
-    expt::invoke_body(f_params, body, i);
+    expt::invoke_body(f_params, body, *(begin_it + i));
   }
 
   expt::ParamMultiplexer::resolve<seq_exec>(f_params);
