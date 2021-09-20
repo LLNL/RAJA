@@ -236,6 +236,7 @@ if (ENABLE_HIP)
   set(raja_depends
     ${raja_depends}
     hip)
+  include(FindRoctracer)
 endif ()
 
 if (ENABLE_EXTERNAL_ROCPRIM)
