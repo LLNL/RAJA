@@ -385,41 +385,41 @@ struct LoopExecute<cuda_global_thread<DIM0, DIM1, DIM2>, SEGMENT> {
 Reshape threads in a block into a 1D iteration space
 */
 template<int ... dim>
-struct flatten_block_threads_direct{};
+struct cuda_flatten_block_threads_direct{};
 
-using flatten_block_threads_xy_direct = flatten_block_threads_direct<0,1>;
-using flatten_block_threads_xz_direct = flatten_block_threads_direct<0,2>;
-using flatten_block_threads_yx_direct = flatten_block_threads_direct<1,0>;
-using flatten_block_threads_yz_direct = flatten_block_threads_direct<1,2>;
-using flatten_block_threads_zx_direct = flatten_block_threads_direct<2,0>;
-using flatten_block_threads_zy_direct = flatten_block_threads_direct<2,1>;
+using cuda_flatten_block_threads_xy_direct = cuda_flatten_block_threads_direct<0,1>;
+using cuda_flatten_block_threads_xz_direct = cuda_flatten_block_threads_direct<0,2>;
+using cuda_flatten_block_threads_yx_direct = cuda_flatten_block_threads_direct<1,0>;
+using cuda_flatten_block_threads_yz_direct = cuda_flatten_block_threads_direct<1,2>;
+using cuda_flatten_block_threads_zx_direct = cuda_flatten_block_threads_direct<2,0>;
+using cuda_flatten_block_threads_zy_direct = cuda_flatten_block_threads_direct<2,1>;
 
-using flatten_block_threads_xyz_direct = flatten_block_threads_direct<0,1,2>;
-using flatten_block_threads_xzy_direct = flatten_block_threads_direct<0,2,1>;
-using flatten_block_threads_yxz_direct = flatten_block_threads_direct<1,0,2>;
-using flatten_block_threads_yzx_direct = flatten_block_threads_direct<1,2,0>;
-using flatten_block_threads_zxy_direct = flatten_block_threads_direct<2,0,1>;
-using flatten_block_threads_zyx_direct = flatten_block_threads_direct<2,1,1>;
+using cuda_flatten_block_threads_xyz_direct = cuda_flatten_block_threads_direct<0,1,2>;
+using cuda_flatten_block_threads_xzy_direct = cuda_flatten_block_threads_direct<0,2,1>;
+using cuda_flatten_block_threads_yxz_direct = cuda_flatten_block_threads_direct<1,0,2>;
+using cuda_flatten_block_threads_yzx_direct = cuda_flatten_block_threads_direct<1,2,0>;
+using cuda_flatten_block_threads_zxy_direct = cuda_flatten_block_threads_direct<2,0,1>;
+using cuda_flatten_block_threads_zyx_direct = cuda_flatten_block_threads_direct<2,1,1>;
 
 template<int ... dim>
-struct flatten_block_threads_loop{};
+struct cuda_flatten_block_threads_loop{};
 
-using flatten_block_threads_xy_loop = flatten_block_threads_loop<0,1>;
-using flatten_block_threads_xz_loop = flatten_block_threads_loop<0,2>;
-using flatten_block_threads_yx_loop = flatten_block_threads_loop<1,0>;
-using flatten_block_threads_yz_loop = flatten_block_threads_loop<1,2>;
-using flatten_block_threads_zx_loop = flatten_block_threads_loop<2,0>;
-using flatten_block_threads_zy_loop = flatten_block_threads_loop<2,1>;
+using cuda_flatten_block_threads_xy_loop = cuda_flatten_block_threads_loop<0,1>;
+using cuda_flatten_block_threads_xz_loop = cuda_flatten_block_threads_loop<0,2>;
+using cuda_flatten_block_threads_yx_loop = cuda_flatten_block_threads_loop<1,0>;
+using cuda_flatten_block_threads_yz_loop = cuda_flatten_block_threads_loop<1,2>;
+using cuda_flatten_block_threads_zx_loop = cuda_flatten_block_threads_loop<2,0>;
+using cuda_flatten_block_threads_zy_loop = cuda_flatten_block_threads_loop<2,1>;
 
-using flatten_block_threads_xyz_loop = flatten_block_threads_loop<0,1,2>;
-using flatten_block_threads_xzy_loop = flatten_block_threads_loop<0,2,1>;
-using flatten_block_threads_yxz_loop = flatten_block_threads_loop<1,0,2>;
-using flatten_block_threads_yzx_loop = flatten_block_threads_loop<1,2,0>;
-using flatten_block_threads_zxy_loop = flatten_block_threads_loop<2,0,1>;
-using flatten_block_threads_zyx_loop = flatten_block_threads_loop<2,1,1>;
+using cuda_flatten_block_threads_xyz_loop = cuda_flatten_block_threads_loop<0,1,2>;
+using cuda_flatten_block_threads_xzy_loop = cuda_flatten_block_threads_loop<0,2,1>;
+using cuda_flatten_block_threads_yxz_loop = cuda_flatten_block_threads_loop<1,0,2>;
+using cuda_flatten_block_threads_yzx_loop = cuda_flatten_block_threads_loop<1,2,0>;
+using cuda_flatten_block_threads_zxy_loop = cuda_flatten_block_threads_loop<2,0,1>;
+using cuda_flatten_block_threads_zyx_loop = cuda_flatten_block_threads_loop<2,1,1>;
 
 template<typename SEGMENT, int DIM0, int DIM1>
-struct LoopExecute<flatten_block_threads_direct<DIM0, DIM1>, SEGMENT>
+struct LoopExecute<cuda_flatten_block_threads_direct<DIM0, DIM1>, SEGMENT>
 {
   template<typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -440,7 +440,7 @@ struct LoopExecute<flatten_block_threads_direct<DIM0, DIM1>, SEGMENT>
 };
 
 template<typename SEGMENT, int DIM0, int DIM1>
-struct LoopExecute<flatten_block_threads_loop<DIM0, DIM1>, SEGMENT>
+struct LoopExecute<cuda_flatten_block_threads_loop<DIM0, DIM1>, SEGMENT>
 {
   template<typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -464,7 +464,7 @@ struct LoopExecute<flatten_block_threads_loop<DIM0, DIM1>, SEGMENT>
 };
 
 template<typename SEGMENT, int DIM0, int DIM1, int DIM2>
-struct LoopExecute<flatten_block_threads_direct<DIM0, DIM1, DIM2>, SEGMENT>
+struct LoopExecute<cuda_flatten_block_threads_direct<DIM0, DIM1, DIM2>, SEGMENT>
 {
   template<typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -487,7 +487,7 @@ struct LoopExecute<flatten_block_threads_direct<DIM0, DIM1, DIM2>, SEGMENT>
 };
 
 template<typename SEGMENT, int DIM0, int DIM1, int DIM2>
-struct LoopExecute<flatten_block_threads_loop<DIM0, DIM1, DIM2>, SEGMENT>
+struct LoopExecute<cuda_flatten_block_threads_loop<DIM0, DIM1, DIM2>, SEGMENT>
 {
   template<typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
