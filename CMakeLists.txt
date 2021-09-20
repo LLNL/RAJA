@@ -233,10 +233,13 @@ if (ENABLE_EXTERNAL_CUB)
 endif ()
 
 if (ENABLE_HIP)
+  include(FindRoctracer)
   set(raja_depends
     ${raja_depends}
     hip)
-  include(FindRoctracer)
+    set(raja_depends
+    ${raja_depends}
+    roctx)
 endif ()
 
 if (ENABLE_EXTERNAL_ROCPRIM)

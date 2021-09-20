@@ -61,6 +61,9 @@ endif ()
 
 if (ENABLE_HIP OR ENABLE_EXTERNAL_ROCPRIM)
   find_package(RocPRIM)
+  blt_import_library(NAME roctx
+                   INCLUDES ${ROCM_INCLUDE_DIRS}
+                   LIBRARIES ${ROCM_LIBRARIES})
   if (ROCPRIM_FOUND)
     set(ENABLE_EXTERNAL_ROCPRIM On)
     blt_import_library(

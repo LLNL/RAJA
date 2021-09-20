@@ -229,7 +229,7 @@ void launch(const void* func, hip_dim_t gridDim, hip_dim_t blockDim, void** args
   //#endif
   hipErrchk(hipLaunchKernel(func, dim3(gridDim), dim3(blockDim), args, shmem, res.get_stream()));
   //#if defined(RAJA_ENABLE_NV_TOOLS_EXT)
-  if(name) rocktxRangePop();
+  if(name) roctxRangePop();
   //#endif
   launch(res, async);
 }
