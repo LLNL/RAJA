@@ -238,7 +238,6 @@ if (ENABLE_HIP)
     ${raja_depends}
     hip)
   if(ENABLE_ROCTX)
-    include(FindRoctracer)  
       set(raja_depends
       ${raja_depends}
       roctx)
