@@ -38,8 +38,10 @@
 #include "RAJA/policy/hip/policy.hpp"
 #include "RAJA/policy/hip/raja_hiperrchk.hpp"
 
+#if defined(RAJA_ENABLE_ROCTX)
 #include "hip/hip_runtime_api.h"
 #include "roctx.h"
+#endif
 
 namespace RAJA
 {
@@ -222,15 +224,15 @@ RAJA_INLINE
 void launch(const void* func, hip_dim_t gridDim, hip_dim_t blockDim, void** args, size_t shmem,
             ::RAJA::resources::Hip res, bool async = true, const char *name = nullptr)
 {
-  //#if defined(RAJA_ENABLE_NV_TOOLS_EXT) //REPLACE with ROCTX version
+  #if defined(RAJA_ENABLE_ROCTX)
   if(name) roctxRangePush(name);
-  //#else
-  //  RAJA_UNUSED_VAR(name);
-  //#endif
+  #else
+    RAJA_UNUSED_VAR(name);
+  #endif
   hipErrchk(hipLaunchKernel(func, dim3(gridDim), dim3(blockDim), args, shmem, res.get_stream()));
-  //#if defined(RAJA_ENABLE_NV_TOOLS_EXT)
+  #if defined(RAJA_ENABLE_ROCTX)
   if(name) roctxRangePop();
-  //#endif
+  #endif
   launch(res, async);
 }
 

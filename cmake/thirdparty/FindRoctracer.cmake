@@ -9,29 +9,29 @@
 
 # Find ROCTracer libraries/headers
 
-find_path(ROCM_PREFIX
+find_path(ROCTX_PREFIX
   NAMES include/roctracer/roctx.h
 )
 
-find_library(ROCM_LIBRARIES
+find_library(ROCTX_LIBRARIES
   NAMES roctx64
-  HINTS ${ROCM_PREFIX}/lib
+  HINTS ${ROCTX_PREFIX}/lib
 )
 
-find_path(ROCM_INCLUDE_DIRS
+find_path(ROCTX_INCLUDE_DIRS
   NAMES roctx.h
-  HINTS ${ROCM_PREFIX}/include/roctracer
+  HINTS ${ROCTX_PREFIX}/include/roctracer
 )
 
 include(FindPackageHandleStandardArgs)
 
-find_package_handle_standard_args(ROCM
+find_package_handle_standard_args(ROCTX
   DEFAULT_MSG
-  ROCM_LIBRARIES
-  ROCM_INCLUDE_DIRS
+  ROCTX_LIBRARIES
+  ROCTX_INCLUDE_DIRS
 )
 
 mark_as_advanced(
-  ROCM_INCLUDE_DIRS
-  ROCM_LIBRARIES
+  ROCTX_INCLUDE_DIRS
+  ROCTX_LIBRARIES
 )
