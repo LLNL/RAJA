@@ -87,7 +87,7 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, hip_res, async);
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, hip_res, async, ctx.kernel_name);
       }
 
       RAJA_FT_END;
@@ -140,7 +140,7 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, hip_res, async);
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, hip_res, async, ctx.kernel_name);
       }
 
       RAJA_FT_END;
@@ -209,7 +209,7 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, hip_res, async);
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, hip_res, async, ctx.kernel_name);
       }
 
       RAJA_FT_END;
@@ -262,7 +262,7 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, hip_res, async);
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, hip_res, async, ctx.kernel_name);
       }
 
       RAJA_FT_END;

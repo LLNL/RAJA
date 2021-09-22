@@ -54,6 +54,7 @@ set(ENABLE_GTEST_DEATH_TESTS On CACHE BOOL "Enable tests asserting failure.")
 ##       the same names with 'RAJA_' prepended to them.
 
 option(ENABLE_NV_TOOLS_EXT "Build with NV_TOOLS_EXT support" Off)
+option(ENABLE_ROCTX "Build with ENABLE_ROCTX support" Off)
 
 option(ENABLE_TBB "Build TBB support" Off)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
@@ -244,6 +245,11 @@ if (ENABLE_HIP)
   set(raja_depends
     ${raja_depends}
     hip)
+  if(ENABLE_ROCTX)
+      set(raja_depends
+      ${raja_depends}
+      roctx)
+  endif()
 endif ()
 
 if (ENABLE_EXTERNAL_ROCPRIM)
