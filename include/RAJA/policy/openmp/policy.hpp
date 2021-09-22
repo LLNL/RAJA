@@ -22,6 +22,9 @@
 
 #include "RAJA/policy/PolicyBase.hpp"
 
+// Rely on builtin_atomic when OpenMP can't do the job
+#include "RAJA/policy/atomic_builtin.hpp"
+
 #if defined(RAJA_COMPILER_MSVC)
 typedef enum omp_sched_t { 
     // schedule kinds 
@@ -149,7 +152,6 @@ struct omp_for_schedule_exec : make_policy_pattern_launch_platform_t<Policy::ope
         "Schedule type must be one of: Auto|Runtime|Static|Dynamic|Guided");
 };
 
- 
 ///
 ///  Internal type aliases supporting 'omp for schedule( )' for specific
 ///  schedule types.
@@ -286,6 +288,17 @@ struct omp_synchronize : make_policy_pattern_launch_t<Policy::openmp,
                                                       Launch::sync> {
 };
 
+#if defined(RAJA_COMPILER_MSVC)
+
+// For MS Visual C, just default to builtin_atomic for everything
+using omp_atomic = builtin_atomic;
+
+#else  // RAJA_COMPILER_MSVC not defined
+
+struct omp_atomic {};
+
+#endif
+
 }  // namespace omp
 }  // namespace policy
 
@@ -297,6 +310,11 @@ struct omp_synchronize : make_policy_pattern_launch_t<Policy::openmp,
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
+
+///
+/// Type alias for atomics
+///
+using policy::omp::omp_atomic;
 
 ///
 /// Type aliases to simplify common omp parallel for loop execution

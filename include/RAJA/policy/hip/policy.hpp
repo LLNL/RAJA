@@ -28,6 +28,7 @@
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
+#include "RAJA/policy/loop/policy.hpp"
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/types.hpp"
@@ -205,6 +206,19 @@ struct hip_synchronize : make_policy_pattern_launch_t<Policy::hip,
                                                        Launch::sync> {
 };
 
+/*!
+ * Hip atomic policy for using hip atomics on the device and
+ * the provided host_policy on the host
+ */
+template<typename host_policy>
+struct hip_atomic_explicit{};
+
+/*!
+ * Default hip atomic policy uses hip atomics on the device and non-atomics
+ * on the host
+ */
+using hip_atomic = hip_atomic_explicit<loop_atomic>;
+
 }  // end namespace hip
 }  // end namespace policy
 
@@ -217,6 +231,9 @@ using policy::hip::hip_work;
 
 template <size_t BLOCK_SIZE>
 using hip_work_async = policy::hip::hip_work<BLOCK_SIZE, true>;
+
+using policy::hip::hip_atomic;
+using policy::hip::hip_atomic_explicit;
 
 #if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
 using policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average;

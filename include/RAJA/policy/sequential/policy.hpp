@@ -83,9 +83,21 @@ struct seq_reduce : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                           Launch::undefined,
                                                           Platform::host> {
 };
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Atomic execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+struct seq_atomic {
+};
+
 }  // namespace sequential
 }  // namespace policy
 
+using policy::sequential::seq_atomic;
 using policy::sequential::seq_exec;
 using policy::sequential::seq_reduce;
 using policy::sequential::seq_region;
