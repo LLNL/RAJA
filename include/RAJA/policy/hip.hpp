@@ -26,7 +26,9 @@
 
 #include <hip/hip_runtime.h>
 
-#include "RAJA/policy/hip/atomic.hpp"
+#if !defined(RAJA_ENABLE_DESUL_ATOMICS)
+    #include "RAJA/policy/hip/atomic.hpp"
+#endif
 #include "RAJA/policy/hip/forall.hpp"
 #include "RAJA/policy/hip/policy.hpp"
 #include "RAJA/policy/hip/reduce.hpp"
