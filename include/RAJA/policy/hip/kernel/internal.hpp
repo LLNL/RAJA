@@ -425,6 +425,7 @@ static hipFuncAttributes get_hip_func_attributes(void const *kernel_func) {
     static hipFuncAttributes attr = [=]() {
       hipFuncAttributes attr;
       hipFuncGetAttributes(&attr, kernel_func);
+      hipErrchk(hipFuncGetAttributes(&attr, kernel_func));
       return attr;
     }();
     return attr;
