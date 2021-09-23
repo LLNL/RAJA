@@ -38,6 +38,7 @@ variables:
   ALLOC_NAME: ${CI_PROJECT_NAME}_ci_${CI_PIPELINE_ID}
   BUILD_ROOT: ${CI_PROJECT_DIR}
   DEFAULT_TIME: 30
+  MY_BRANCH: "task/kab163/setup-multiproject-ci"
 
 # Normally, stages are blocking in Gitlab. However, using the keyword "needs" we
 # can express dependencies between job that break the ordering of stages, in
@@ -95,12 +96,12 @@ stages:
 trigger-rajaperf:
   stage: multi_project
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"' || '$MULTI_PROJECT == "ON"' #run only if ...
+    - if: '$CI_COMMIT_BRANCH == ${MY_BRANCH}' || '$MULTI_PROJECT == "ON"' #run only if ...
   variables:
-    UPDATE_RAJA: task/kab163/setup-multiproject-ci
+    UPDATE_RAJA: ${MY_BRANCH}
   trigger:
     project: radiuss/rajaperf
-    branch: task/kab163/setup-multiproject-ci
+    branch: ${MY_BRANCH}
     strategy: depend
 
 # This is where jobs are included.
