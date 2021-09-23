@@ -410,6 +410,21 @@ using hip_statement_list_executor_t = HipStatementListExecutor<
     StmtList,
     Types>;
 
+struct HIPKernelLaunchFuncData {
+  static unsigned int getKernelScratchBytes(
+      hipFuncAttributes const &hip_func_attributes) {
+    return hip_func_attributes.localSizeBytes;
+  }
+
+static hipFuncAttributes get_hip_func_attributes(void const *kernel_func) {
+    static hipFuncAttributes attr = [=]() {
+      hipFuncAttributes attr;
+      hipFuncGetAttributes(&attr, kernel_func);
+      return attr;
+    }();
+    return attr;
+  }
+};
 
 
 }  // namespace internal
