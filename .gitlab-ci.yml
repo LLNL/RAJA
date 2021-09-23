@@ -96,7 +96,7 @@ stages:
 trigger-rajaperf:
   stage: multi_project
   rules:
-    - if: '$CI_COMMIT_BRANCH == ${MY_BRANCH}' || '$MULTI_PROJECT == "ON"' #run only if ...
+    - if: '$CI_COMMIT_BRANCH == ${MY_BRANCH} || $MULTI_PROJECT == "ON"' #run only if ...
   variables:
     UPDATE_RAJA: ${MY_BRANCH}
   trigger:
