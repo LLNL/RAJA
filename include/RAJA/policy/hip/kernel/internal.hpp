@@ -415,6 +415,11 @@ struct HIPKernelLaunchFuncData {
       hipFuncAttributes const &hip_func_attributes) {
     return hip_func_attributes.localSizeBytes;
   }
+  static unsigned int getKernelRegisters(
+  	hipFuncAttributes const &hip_func_attributes) {
+	 return hip_func_attributes.numRegs;
+   }
+
 
 static hipFuncAttributes get_hip_func_attributes(void const *kernel_func) {
     static hipFuncAttributes attr = [=]() {
