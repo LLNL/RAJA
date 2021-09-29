@@ -295,7 +295,7 @@ RAJA::Timer::ElapsedType new_t_sum = 0;
 for (int sample = 0; sample < sample_sz; sample++){
 #if 1
   {
-    //std::cout << "Basic OMP Reduction RAJA\n";
+    std::cout << "Basic OMP Reduction RAJA\n";
     RAJA::ReduceSum<RAJA::omp_reduce, double> rr(0);
     RAJA::ReduceMin<RAJA::omp_reduce, double> rm(5000);
     RAJA::ReduceMax<RAJA::omp_reduce, double> rma(0);
@@ -325,7 +325,7 @@ for (int sample = 0; sample < sample_sz; sample++){
     r = 0;
     m = 5000;
     ma = 0;
-    //std::cout << "Basic OMP Reduction RAJA w/ NEW REDUCE\n";
+    std::cout << "Basic OMP Reduction RAJA w/ NEW REDUCE\n";
 
     RAJA::Timer t;
     t.start();
