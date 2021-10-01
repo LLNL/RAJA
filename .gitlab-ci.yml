@@ -38,7 +38,7 @@ variables:
   ALLOC_NAME: ${CI_PROJECT_NAME}_ci_${CI_PIPELINE_ID}
   BUILD_ROOT: ${CI_PROJECT_DIR}
   DEFAULT_TIME: 30
-  MY_BRANCH: "task/kab163/setup-multiproject-ci"
+  MP_BRANCH: "develop"
 
 # Normally, stages are blocking in Gitlab. However, using the keyword "needs" we
 # can express dependencies between job that break the ordering of stages, in
@@ -92,16 +92,16 @@ stages:
 # If testing develop branch, trigger CHAI pipeline with this version of RAJA.
 # TODO: Once spack allows to clone a specific commit on demand, then point to the exact commit.
 #       This will prevent from sticking to a branch (here develop).
-#       To turn back on chai trigger, add '$CI_COMMIT_BRANCH == "develop" to rule.
+#       MP_BRANCH is short for "Multi-Project Branch" and will usually be develop.
 trigger-rajaperf:
   stage: multi_project
   rules:
-    - if: '$CI_COMMIT_BRANCH == "${MY_BRANCH}" || $MULTI_PROJECT == "ON"' #run only if ...
+    - if: '$CI_COMMIT_BRANCH == "${MP_BRANCH}" || $MULTI_PROJECT == "ON"' #run only if ...
   variables:
-    UPDATE_RAJA: ${MY_BRANCH}
+    UPDATE_RAJA: ${MP_BRANCH}
   trigger:
     project: radiuss/rajaperf
-    branch: ${MY_BRANCH}
+    branch: ${MP_BRANCH}
     strategy: depend
 
 # This is where jobs are included.
