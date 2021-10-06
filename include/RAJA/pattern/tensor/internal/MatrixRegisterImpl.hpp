@@ -50,6 +50,9 @@ namespace RAJA
 
       using transpose_tensor_type = TensorRegister<REGISTER_POLICY, T, TensorLayout<!ROW_ORD, !COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>>;
 
+      using transpose_type = TensorRegister<REGISTER_POLICY, T, layout_type, camp::idx_seq<COL_SIZE, ROW_SIZE>>;
+      using product_type = TensorRegister<REGISTER_POLICY, T, layout_type, camp::idx_seq<ROW_SIZE, ROW_SIZE>>;
+
       static constexpr camp::idx_t s_num_rows = ROW_SIZE;
       static constexpr camp::idx_t s_num_columns = COL_SIZE;
 
@@ -1109,7 +1112,7 @@ namespace RAJA
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      transpose_tensor_type const &transpose_type() const {
+      transpose_tensor_type const &transpose_by_type() const {
         return reinterpret_cast<transpose_tensor_type const &>(*this);
       }
 
@@ -1397,11 +1400,11 @@ namespace RAJA
       RAJA_INLINE
       typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type
       matrix_multiply_add(RMAT const &B, typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type const &C) const {
-#ifdef __CUDA_ARCH__
-        if(threadIdx.x==0){
-        printf("matrix_multiply_add\n");
-        }
-#endif
+//#ifdef __CUDA_ARCH__
+//        if(threadIdx.x==0){
+//        printf("matrix_multiply_add\n");
+//        }
+//#endif
         typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type res(C);
         internal::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply_accumulate(*this, B, res);
         return res;
@@ -1415,11 +1418,11 @@ namespace RAJA
       RAJA_INLINE
       void
       matrix_multiply_accumulate(ACCMAT &acc, RMAT const &B) const {
-#ifdef __CUDA_ARCH__
-        if(threadIdx.x==0){
-        printf("matrix_multiply_accumulate\n");
-        }
-#endif
+//#ifdef __CUDA_ARCH__
+//        if(threadIdx.x==0){
+//        printf("matrix_multiply_accumulate\n");
+//        }
+//#endif
         internal::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply_accumulate(*this, B, acc);
       }
 

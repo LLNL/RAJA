@@ -91,7 +91,7 @@ namespace internal {
       typename std::enable_if<(s_C_minor_dim_registers != 0), dummy>::type
       multiply_accumulate(left_type const &A, right_type const &B, result_type &C)
       {
-
+//        printf("ROW A\n");
 #if defined(RAJA_ENABLE_VECTOR_STATS) && !defined(__CUDA_ARCH__)
         RAJA::tensor_stats::num_matrix_mm_multacc_row_row ++;
 #endif
@@ -128,29 +128,39 @@ namespace internal {
       multiply_accumulate(left_type const &A, right_type const &B, result_type &C)
       {
 
+//        printf("ROW B\n");
 
         constexpr camp::idx_t bc_segbits = result_type::s_segbits;
         constexpr camp::idx_t a_segments_per_register = 1<<bc_segbits;
 
-        C.get_register(0) = A.get_register(0).multiply(B.get_register(0));
-//        RAJA_UNROLL
-        for(camp::idx_t ac_row = 0;ac_row < N_SIZE;++ ac_row){
+//          printf("bc_segbits=%d\n", (int)bc_segbits);
+//          printf("a_segments_per_register=%d\n", (int)a_segments_per_register);
+//
+//          printf("A=%s\n", A.to_string().c_str());
+//          printf("B=%s\n", B.to_string().c_str());
+//          printf("C=%s\n", C.to_string().c_str());
 
+        RAJA_UNROLL
+        for(camp::idx_t ac_row = 0;ac_row < N_SIZE;++ ac_row){
+//          printf("\nac_row=%d\n", (int)ac_row);
           camp::idx_t c_reg     = ac_row / result_type::s_major_dim_per_register;
           camp::idx_t c_segment = ac_row % result_type::s_major_dim_per_register;
           register_type c_tmp;
 
-//          RAJA_UNROLL
+//          printf("c_reg=%d, c_segment=%d\n", (int)c_reg, (int)c_segment);
+
+          RAJA_UNROLL
           for(camp::idx_t b_reg = 0;b_reg < right_type::s_num_registers;++ b_reg){
 
-
+//            printf("  b_reg=%d\n", (int)b_reg);
 
             camp::idx_t a_segment = ac_row*right_type::s_num_registers + b_reg;
             camp::idx_t a_reg = a_segment / a_segments_per_register;
             camp::idx_t a_reg_segment = a_segment % a_segments_per_register;
 
             auto a_tmp = A.get_register(a_reg).segmented_broadcast_outer(bc_segbits, a_reg_segment);
-
+//            printf("    a_tmp=%s", a_tmp.to_string().c_str());
+//            printf("    b=    %s", B.get_register(b_reg).to_string().c_str());
 
             if(b_reg == 0){
 
@@ -159,10 +169,13 @@ namespace internal {
             else{
               c_tmp = a_tmp.multiply_add(B.get_register(b_reg), c_tmp);
             }
+//            printf("c_tmp=    %s", c_tmp.to_string().c_str());
 
           }
 
           C.get_register(c_reg) += c_tmp.segmented_sum_outer(bc_segbits, c_segment);
+
+//          printf("result=    %s", C.get_register(c_reg).to_string().c_str());
 
         }
 
@@ -242,6 +255,7 @@ namespace internal {
         typename std::enable_if<(s_C_minor_dim_registers != 0), dummy>::type
         multiply_accumulate(left_type const &A, right_type const &B, result_type &C)
         {
+//            printf("COL A\n");
 
   #if defined(RAJA_ENABLE_VECTOR_STATS) && !defined(__CUDA_ARCH__)
           RAJA::tensor_stats::num_matrix_mm_multacc_row_row ++;
@@ -281,37 +295,63 @@ namespace internal {
         multiply_accumulate(left_type const &A, right_type const &B, result_type &C)
         {
 
+//          printf("COL B\n");
           constexpr camp::idx_t ac_segbits = result_type::s_segbits;
           constexpr camp::idx_t b_segments_per_register = 1<<ac_segbits;
+//          printf("ac_segbits=%d\n", (int)ac_segbits);
+//          printf("b_segments_per_register=%d\n", (int)b_segments_per_register);
+//
+//          printf("A=%s\n", A.to_string().c_str());
+//          printf("B=%s\n", B.to_string().c_str());
+//          printf("C=%s\n", C.to_string().c_str());
 
+
+//          for(camp::idx_t bc_col = 0;bc_col < N_SIZE;++ bc_col){
+          camp::idx_t bc_col = 0;
           RAJA_UNROLL
-          for(camp::idx_t bc_col = 0;bc_col < N_SIZE;++ bc_col){
-            camp::idx_t c_reg     = bc_col / result_type::s_major_dim_per_register;
-            camp::idx_t c_segment = bc_col % result_type::s_major_dim_per_register;
-            register_type c_tmp;
-
+          for(camp::idx_t c_reg = 0;c_reg < N_SIZE/result_type::s_major_dim_per_register;++ c_reg){
             RAJA_UNROLL
-            for(camp::idx_t a_reg = 0;a_reg < right_type::s_num_registers;++ a_reg){
+            for(camp::idx_t c_segment = 0;c_segment < result_type::s_major_dim_per_register;++ c_segment){
+//              camp::idx_t c_reg     = bc_col / result_type::s_major_dim_per_register;
+//              camp::idx_t c_segment = bc_col % result_type::s_major_dim_per_register;
+              register_type c_tmp;
+
+  //            printf("bc_col=%d, c_reg=%d, c_segment=%d\n", (int)bc_col, (int)c_reg, (int)c_segment);
+
+              RAJA_UNROLL
+              for(camp::idx_t a_reg = 0;a_reg < right_type::s_num_registers;++ a_reg){
 
 
-              camp::idx_t b_segment = bc_col*right_type::s_num_registers + a_reg;
-              camp::idx_t b_reg = b_segment / b_segments_per_register;
-              camp::idx_t b_reg_segment = b_segment % b_segments_per_register;
+                camp::idx_t b_segment = bc_col*right_type::s_num_registers + a_reg;
+                camp::idx_t b_reg = b_segment / b_segments_per_register;
+                camp::idx_t b_reg_segment = b_segment % b_segments_per_register;
 
-              register_type b_tmp = B.get_register(b_reg).segmented_broadcast_outer(ac_segbits, b_reg_segment);
+  //              printf("  a_reg=%d, b_segment=%d, b_reg=%d, b_reg_segment=%d\n",
+  //                  (int)a_reg, (int)b_segment, (int)b_reg, (int)b_reg_segment);
 
-              if(a_reg == 0){
-                c_tmp = b_tmp.multiply(A.get_register(a_reg));
+                register_type b_tmp = B.get_register(b_reg).segmented_broadcast_outer(ac_segbits, b_reg_segment);
+
+
+  //              printf("  a_tmp=%s", A.get_register(a_reg).to_string().c_str());
+  //              printf("  b_tmp=%s", b_tmp.to_string().c_str());
+
+                if(a_reg == 0){
+                  c_tmp = b_tmp.multiply(A.get_register(a_reg));
+                }
+                else{
+                  c_tmp = b_tmp.multiply_add(A.get_register(a_reg), c_tmp);
+                }
+
+  //              printf("  c_tmp=%s", c_tmp.to_string().c_str());
+
               }
-              else{
-                c_tmp = b_tmp.multiply_add(A.get_register(a_reg), c_tmp);
-              }
 
-            }
+              C.get_register(c_reg) += c_tmp.segmented_sum_outer(ac_segbits, c_segment);
+  //            printf("  C(c_reg)=%s", C.get_register(c_reg).to_string().c_str());
 
-            C.get_register(c_reg) += c_tmp.segmented_sum_outer(ac_segbits, c_segment);
-
-          }
+              ++ bc_col;
+            } // c_segment
+          } // c_reg
 
 
         }

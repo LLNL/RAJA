@@ -10,7 +10,7 @@
 //#define RAJA_ENABLE_VECTOR_STATS
 
 // Un-comment the following line to run correctness checks on each variant
-#define DEBUG_LTIMES
+//#define DEBUG_LTIMES
 //#define DEBUG_MATRIX_LOAD_STORE
 
 #include "RAJA/config.hpp"
@@ -21,7 +21,7 @@
 #define VARIANT_RAJA_SEQ_ARGS        0
 #define VARIANT_RAJA_TEAMS_SEQ       0
 #define VARIANT_RAJA_VECTOR          0
-#define VARIANT_RAJA_MATRIX          1
+#define VARIANT_RAJA_MATRIX          0
 #define VARIANT_RAJA_SEQ_SHMEM       0
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -131,20 +131,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Define array dimensions, allocate arrays, define Layouts and Views, etc.
   // Note: rand()/RAND_MAX is always zero, but forces the compiler to not
   // optimize out these values as compile time constants
-//  const int num_m = 25 + (rand()/RAND_MAX);
-//  const int num_g = 48 + (rand()/RAND_MAX);
-//  const int num_d = 80 + (rand()/RAND_MAX);
-
-  const int num_m = 8 + (rand()/RAND_MAX);
-  const int num_g = 1 + (rand()/RAND_MAX);
-  const int num_d = 8 + (rand()/RAND_MAX);
+  const int num_m = 32 + (rand()/RAND_MAX);
+  const int num_g = 160 + (rand()/RAND_MAX);
+  const int num_d = 64 + (rand()/RAND_MAX);
+//
+//  const int num_m = 8 + (rand()/RAND_MAX);
+//  const int num_g = 1 + (rand()/RAND_MAX);
+//  const int num_d = 8 + (rand()/RAND_MAX);
 
 
 #ifdef DEBUG_LTIMES
   const int num_iter = 1 ; //+ (rand()/RAND_MAX);;
   // use a decreased number of zones since this will take a lot longer
   // and we're not really measuring performance here
-  const long num_z = 8 + (rand()/RAND_MAX);
+  const long num_z = 128 + (rand()/RAND_MAX);
 #else
   const int num_iter = 10 + (rand()/RAND_MAX);
   const int num_z = 32*1024 + (rand()/RAND_MAX);
@@ -633,7 +633,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //using matrix_t = RAJA::SquareMatrixRegister<double, ColMajorLayout>;
   //using matrix_t = RAJA::SquareMatrixRegister<double, RowMajorLayout>;
-  using matrix_t = RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,8>;
+  using matrix_t = RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,8>;
 
 
 
@@ -1327,20 +1327,23 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                           cudaMemcpyHostToDevice ) );
 
 
-  using matrix_host_t = RAJA::SquareMatrixRegister<double, RowMajorLayout>;
-  using matrix_device_t = RAJA::RectMatrixRegister<double, RowMajorLayout, 8, 8, RAJA::cuda_warp_register>;
 
-  using matrix_hd_t = RAJA::expt::LaunchPolicy<matrix_host_t, matrix_device_t>;
+  using L_matrix_host_t = RAJA::SquareMatrixRegister<double, ColMajorLayout>;
+  using L_matrix_device_t = RAJA::RectMatrixRegister<double, ColMajorLayout, 8, 4, RAJA::cuda_warp_register>;
+  using L_matrix_hd_t = RAJA::expt::LaunchPolicy<L_matrix_host_t, L_matrix_device_t>;
+
+  using phi_matrix_host_t = RAJA::SquareMatrixRegister<double, ColMajorLayout>;
+  using phi_matrix_device_t = RAJA::RectMatrixRegister<double, ColMajorLayout, 8, 8, RAJA::cuda_warp_register>;
+  using phi_matrix_hd_t = RAJA::expt::LaunchPolicy<L_matrix_host_t, phi_matrix_device_t>;
+
+  using psi_matrix_host_t = RAJA::SquareMatrixRegister<double, ColMajorLayout>;
+  using psi_matrix_device_t = RAJA::RectMatrixRegister<double, ColMajorLayout, 4, 8, RAJA::cuda_warp_register>;
+  using psi_matrix_hd_t = RAJA::expt::LaunchPolicy<L_matrix_host_t, psi_matrix_device_t>;
 
 
   using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t, RAJA::expt::cuda_launch_t<true , 1024> >;
   using pol_g = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_block_x_direct>;
-//  using pol_z = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_thread_y_direct>;
-
-  //using pol_z = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>, cuda_thread_y_matrix_col_loop<matrix_t> >;
-  //using pol_z = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>, cuda_thread_y_matrix_col_loop<matrix_t> >;
-//  using pol_m = RAJA::expt::LoopPolicy<matrix_row_exec<matrix_t>, cuda_warp_matrix_row_loop<matrix_t> >;
-//  using pol_d = RAJA::expt::LoopPolicy<matrix_col_exec<matrix_t>, matrix_col_exec<matrix_t>>;
+  using pol_z = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_thread_y_loop>;
 
 
   //
@@ -1377,35 +1380,41 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   auto seg_m = RAJA::TypedRangeSegment<IM>(0, num_m);
   auto seg_d = RAJA::TypedRangeSegment<ID>(0, num_d);
 
+  printf("num_iter=%d\n", (int)num_iter);
   for (int iter = 0;iter < num_iter;++ iter){
     RAJA::expt::launch<pol_launch>(
         RAJA::expt::DEVICE,
         RAJA::expt::Resources(RAJA::expt::Teams(num_g, 1, 1),
-                              RAJA::expt::Threads(32, 1, 1)),
+                              RAJA::expt::Threads(32, 32, 1)),
         [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
     {
 
 
-      using matrix_t = RAJA_GET_POLICY(matrix_hd_t);
+      using L_matrix_t = RAJA_GET_POLICY(L_matrix_hd_t);
+      using L_RowM = RAJA::RowIndex<IM, L_matrix_t>;
+      using L_ColD = RAJA::ColIndex<ID, L_matrix_t>;
 
-      using RowM = RAJA::RowIndex<IM, matrix_t>;
-      using ColD = RAJA::ColIndex<ID, matrix_t>;
-      using ColZ = RAJA::ColIndex<IZ, matrix_t>;
+      using psi_matrix_t = RAJA_GET_POLICY(psi_matrix_hd_t);
+      using psi_RowD = RAJA::RowIndex<ID, psi_matrix_t>;
+      using psi_ColZ = RAJA::ColIndex<IZ, psi_matrix_t>;
 
-      //RAJA::expt::loop<pol_g>(ctx, seg_g, [&](IG g){
+      using phi_matrix_t = RAJA_GET_POLICY(phi_matrix_hd_t);
+      using phi_RowM = RAJA::RowIndex<IM, phi_matrix_t>;
+      using phi_ColZ = RAJA::ColIndex<IZ, phi_matrix_t>;
+
+
       RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
 
-//        RAJA::expt::tile<pol_z>(ctx, 32, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](RAJA::TypedRangeSegment<IZ> tz){
+        //RAJA::expt::tile<pol_z>(ctx, 32, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](RAJA::TypedRangeSegment<IZ> tz){
+        RAJA::expt::tile<pol_z>(ctx, 32, RAJA::TypedRangeSegment<int>(0, num_z), [&](RAJA::TypedRangeSegment<int> tzi){
+
+          RAJA::TypedRangeSegment<IZ> tz(*tzi.begin(), *tzi.end());
 
 
-        //phi(RowM::all(),g, ColZ::all()) = psi(toRowIndex(ColD::all()), g, ColZ::all());
-//        phi(RowM::range(IM(0),IM(32)),g, ColZ::range(IZ(0),IZ(32))) = psi(toRowIndex(ColD::range(ID(0),ID(32))), g, ColZ::range(IZ(0),IZ(32)));
+          phi(phi_RowM::all(), g, phi_ColZ(tz)) +=
+              L(L_RowM::all(), L_ColD::all()) * psi(psi_RowD::all(), g, psi_ColZ(tz));
 
-
-          phi(RowM::all(), g, ColZ::all()) +=
-              L(RowM::all(), ColD::all()) * psi(toRowIndex(ColD::all()), g, ColZ::all());
-
-//        });
+        });
       });
 
     });

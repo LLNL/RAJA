@@ -540,7 +540,7 @@ namespace RAJA
 
       using left_type = LEFT_OPERAND_TYPE;
       using right_type = RIGHT_OPERAND_TYPE;
-      using result_type = typename RIGHT_OPERAND_TYPE::result_type;
+      using result_type = typename LEFT_OPERAND_TYPE::result_type::product_type;
       static constexpr camp::idx_t s_num_dims = 2;
 
       RAJA_INLINE
@@ -621,7 +621,8 @@ namespace RAJA
       void multiply_into_result(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &et_left, RIGHT_OPERAND_TYPE const &et_right)
       {
         // get tile size from matrix type
-        auto tile_size = result_type::s_dim_elem(1);
+        using right_tensor_type = typename right_type::result_type;
+        auto tile_size = right_tensor_type::s_dim_elem(0);
         auto k_size = et_left.getDimSize(1);
 
         // TODO: check that left and right are compatible
@@ -652,8 +653,9 @@ namespace RAJA
           right_tile.m_begin[0] = k + right_begin;
           auto right = et_right.eval(right_tile);
 
-//          printf("        left: "); left_tile.print();
-//          printf("        right:"); right_tile.print();
+//          printf("result tile: "); tile.print();
+//          printf("left tile: "); left_tile.print();
+//          printf("right tile:"); right_tile.print();
 
           // accumulate product
 
@@ -772,7 +774,7 @@ namespace RAJA
     {
         using left_type = LEFT_OPERAND_TYPE;
         using right_type = RIGHT_OPERAND_TYPE;
-        using result_type = typename RIGHT_OPERAND_TYPE::result_type;
+        using result_type = typename LEFT_OPERAND_TYPE::result_type::product_type;
         static constexpr camp::idx_t s_num_dims = 2;
 
   //      static_assert(LEFT_OPERAND_TYPE::s_num_dims == 1, "WHAOO");

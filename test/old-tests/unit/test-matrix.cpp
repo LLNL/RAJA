@@ -18,9 +18,9 @@ using MatrixTestTypes = ::testing::Types<
 
 #ifdef RAJA_ENABLE_CUDA
 //    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,4, RAJA::cuda_warp_register>,
-    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,8, RAJA::cuda_warp_register>,
-//    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,4, RAJA::cuda_warp_register>,
-//    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4,8, RAJA::cuda_warp_register>
+//    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,8, RAJA::cuda_warp_register>,
+    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,4, RAJA::cuda_warp_register>
+//    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,8, RAJA::cuda_warp_register>,
 #endif
 
 //    // These tests use the platform default SIMD architecture
@@ -31,12 +31,12 @@ using MatrixTestTypes = ::testing::Types<
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,2>,
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4,4>,
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 4,8>,
-//    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 2,4>,
+//    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2,4>,
 //    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,4>,
 //    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,2>,
 //    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,4>,
-//    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,8>,
-//    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2,2>,
+    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 4,8>,
+    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 2,2>,
     RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,4>
 //
 //    RAJA::RectMatrixRegister<float, RAJA::ColMajorLayout, 16,4>,
@@ -1603,381 +1603,425 @@ GPU_TYPED_TEST_P(MatrixTest, ET_MatrixVector)
 }
 
 
-//GPU_TYPED_TEST_P(MatrixTest, ET_MatrixMatrixMultiply)
-//{
-//
-//  using matrix_t = TypeParam;
-//  using policy_t = typename matrix_t::register_policy;
-//  using element_t = typename matrix_t::element_type;
-//
-//  using cvector_t = typename matrix_t::column_vector_type;
-//  using rvector_t = typename matrix_t::row_vector_type;
-//
-//  static constexpr camp::idx_t N = 8; //matrix_t::s_num_rows*matrix_t::s_num_columns*2;
-////static constexpr camp::idx_t N = RAJA::max<camp::idx_t>(matrix_t::s_num_rows, matrix_t::s_num_columns)*2;
-//  //
-//  // Allocate Row-Major Data
-//  //
-//
-//  // alloc data1 - The left matrix
-//
-//  std::vector<element_t> data1_vec(N*N);
-//  RAJA::View<element_t, RAJA::Layout<2>> data1_h(data1_vec.data(), N, N);
-//
-//  element_t *data1_ptr = tensor_malloc<policy_t>(data1_vec);
-//  RAJA::View<element_t, RAJA::Layout<2>> data1_d(data1_ptr,  N, N);
-//
-//
-//  // alloc data2 - The right matrix
-//
-//  std::vector<element_t> data2_vec(N*N);
-//  RAJA::View<element_t, RAJA::Layout<2>> data2_h(data2_vec.data(),  N, N);
-//
-//  element_t *data2_ptr = tensor_malloc<policy_t>(data2_vec);
-//  RAJA::View<element_t, RAJA::Layout<2>> data2_d(data2_ptr,  N, N);
-//
-//
-//  // alloc data3 - The result matrix
-//
-//  std::vector<element_t> data3_vec(N*N);
-//  RAJA::View<element_t, RAJA::Layout<2>> data3_h(data3_vec.data(),  N, N);
-//
-//  element_t *data3_ptr = tensor_malloc<policy_t>(data3_vec);
-//  RAJA::View<element_t, RAJA::Layout<2>> data3_d(data3_ptr,  N, N);
-//
-//
-//
-//  // Fill data1 and data2
-//  for(camp::idx_t i = 0;i < N; ++ i){
-//    for(camp::idx_t j = 0;j < N; ++ j){
-//      data1_h(i,j) = 3+i*N+j;
-//    }
-//    data2_h(i) = i+1;
-//  }
-//
-////  printf("data1:\n");
-////  for(camp::idx_t i = 0;i < N; ++ i){
-////    printf("  ");
-////    for(camp::idx_t j = 0;j < N; ++ j){
-////      printf("%lf  ", (double)data1_h(i,j));
-////    }
-////    printf("\n");
-////  }
-//
-//
-////  for(camp::idx_t i = 0;i < N; ++ i){
-////    printf("data2[%d]=%lf\n", (int)i, (double)data2_h(i));
-////  }
-//
-//  tensor_copy_to_device<policy_t>(data1_ptr, data1_vec);
-//  tensor_copy_to_device<policy_t>(data2_ptr, data2_vec);
-//
-//
-//  //
-//  // Do Operation: A*x
-//  //
-//  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
-//
-//    auto rows = RAJA::RowIndex<int, matrix_t>::all();
-//    auto cols = RAJA::ColIndex<int, matrix_t>::all();
-//
-//    auto vrow = RAJA::VectorIndex<int, rvector_t>::all();
-//    auto vcol = RAJA::VectorIndex<int, cvector_t>::all();
-//
-//    data3_d(vcol) = data1_d(rows, cols) * data2_d(vrow);
-//
-//  });
-//
-//  tensor_copy_to_host<policy_t>(data3_vec, data3_ptr);
-//
-//
-//  //
-//  // Check results
-//  //
-//  for(camp::idx_t i = 0;i < N; ++ i){
-//
-//    element_t expected(0);
-//    for(camp::idx_t j = 0;j < N; ++ j){
-//      expected += data1_h(i,j)*data2_h(j);
-//    }
-////    printf("i=%d, expected=%e, data3=%e\n", (int)i, (double)expected, (double)data3_h(i));
-//
-//    ASSERT_SCALAR_EQ(expected, data3_h(i));
-//  }
-//
-////return;
-//
-//
-//  //
-//  // Loop over all possible sub-matrix sizes for A*x
-//  //
-//  for(camp::idx_t n_size = 0;n_size <= N; ++ n_size){
-//    for(camp::idx_t m_size = 0;m_size <= N; ++ m_size){
-////      printf("Running %d x %d\n", (int)n_size, (int)m_size);
-//      //
-//      // Clear data3
-//      //
-//      for(camp::idx_t i = 0;i < N; ++ i){
-//        data3_h(i) = 0;
-//      }
-//
-//      tensor_copy_to_device<policy_t>(data3_ptr, data3_vec);
-//
-//
-//      //
-//      // Do Operation (x')*A
-//      //
-//      tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
-//        // Load data using a View
-//        auto rows = RAJA::RowIndex<int, matrix_t>::range(0, n_size);
-//        auto cols = RAJA::ColIndex<int, matrix_t>::range(0, m_size);
-//
-//        auto vrow = RAJA::VectorIndex<int, rvector_t>::range(0, m_size);
-//        auto vcol = RAJA::VectorIndex<int, cvector_t>::range(0, n_size);
-//
-//        data3_d(vcol) = data1_d(rows, cols) * data2_d(vrow);
-//      });
-//
-//      tensor_copy_to_host<policy_t>(data3_vec, data3_ptr);
-//
-//
-//      //
-//      // Check results
-//      //
-//      for(camp::idx_t i = 0;i < n_size; ++ i){
-//
-//
-//        element_t expected(0);
-//        for(camp::idx_t j = 0;j < m_size; ++ j){
-//          expected += data1_h(i,j) * data2_h(j);
-//        }
-//
-//        if(i >= n_size || m_size == 0){
-//          expected = 0;
-//        }
-//
-////        printf("i=%d, expected=%e, data3=%e\n", (int)i, (double)expected, (double)data3_h(i));
-//        ASSERT_SCALAR_EQ(expected, data3_h(i));
-//
-//      }
-//
-//
-//    }
-//  }
-//
-//
-//
-//  //
-//  // Do Operation: (x')*A
-//  //
-//  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
-//
-//    auto rows = RAJA::RowIndex<int, matrix_t>::all();
-//    auto cols = RAJA::ColIndex<int, matrix_t>::all();
-//
-//    auto vrow = RAJA::VectorIndex<int, rvector_t>::all();
-//    auto vcol = RAJA::VectorIndex<int, cvector_t>::all();
-//
-//    data3_d(vrow) =  data2_d(vcol) * data1_d(rows, cols);
-//
-//  });
-//
-//  tensor_copy_to_host<policy_t>(data3_vec, data3_ptr);
-//
-//
-//  //
-//  // Check results
-//  //
-//  for(camp::idx_t j = 0;j < N; ++ j){
-//
-//
-//    element_t expected(0);
-//    for(camp::idx_t i = 0;i < N; ++ i){
-//      expected += data2_h(i)*data1_h(i,j);
-//    }
-//
-//    ASSERT_SCALAR_EQ(expected, data3_h(j));
-////    printf("i=%d, data3=%lf, expected=%lf\n", (int)j, (double)data3_h(j), (double)expected);
-//  }
-//
-//
-//
-//
-//  //
-//  // Loop over all possible sub-matrix sizes for (x')*A
-//  //
-//  for(camp::idx_t n_size = 0;n_size <= N; ++ n_size){
-//    for(camp::idx_t m_size = 0;m_size <= N; ++ m_size){
-////      printf("Running %d x %d\n", (int)n_size, (int)m_size);
-//      //
-//      // Clear data3
-//      //
-//      for(camp::idx_t j = 0;j < N; ++ j){
-//        data3_h(j) = 0;
-//      }
-//
-//      tensor_copy_to_device<policy_t>(data3_ptr, data3_vec);
-//
-//
-//      //
-//      // Do Operation (x')*A
-//      //
-//      tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
-//        // Load data using a View
-//        auto rows = RAJA::RowIndex<int, matrix_t>::range(0, n_size);
-//        auto cols = RAJA::ColIndex<int, matrix_t>::range(0, m_size);
-//
-//        auto vrow = RAJA::VectorIndex<int, rvector_t>::range(0, m_size);
-//        auto vcol = RAJA::VectorIndex<int, cvector_t>::range(0, n_size);
-//
-//        data3_d(vrow) =  data2_d(vcol) * data1_d(rows, cols);
-//      });
-//
-//      tensor_copy_to_host<policy_t>(data3_vec, data3_ptr);
-//
-//
-//      //
-//      // Check results
-//      //
-//      for(camp::idx_t j = 0;j < N; ++ j){
-//
-//        element_t expected(0);
-//
-//        for(camp::idx_t i = 0;i < n_size; ++ i){
-//          expected += data2_h(i) * data1_h(i,j);
-//        }
-//
-//        if(j >= m_size || n_size == 0){
-//          expected = 0;
-//        }
-//
-////        printf("j=%d, expected=%e, data3=%e\n", (int)j, (double)expected, (double)data3_h(j));
-//        ASSERT_SCALAR_EQ(expected, data3_h(j));
-//
-//      }
-//
-//
-//    }
-//  }
-//
-//
-//  //
-//  // Free data
-//  //
-//  tensor_free<policy_t>(data1_ptr);
-//  tensor_free<policy_t>(data2_ptr);
-//  tensor_free<policy_t>(data3_ptr);
-//
-//}
+GPU_TYPED_TEST_P(MatrixTest, ET_MatrixMatrixMultiply)
+{
 
+  using matrix_t = TypeParam;
+  using policy_t = typename matrix_t::register_policy;
+  using element_t = typename matrix_t::element_type;
+
+  using A_matrix_t = matrix_t;
+  using B_matrix_t = typename matrix_t::transpose_type;
+  using C_matrix_t = typename matrix_t::product_type;
+
+//  static constexpr camp::idx_t N = 8; //matrix_t::s_num_rows*matrix_t::s_num_columns*2;
+  static constexpr camp::idx_t N = RAJA::max<camp::idx_t>(matrix_t::s_num_rows, matrix_t::s_num_columns);
+  //
+  // Allocate Row-Major Data
+  //
+
+  // alloc data1 - The left matrix
+
+  std::vector<element_t> data1_vec(N*N);
+  RAJA::View<element_t, RAJA::Layout<2>> data1_h(data1_vec.data(), N, N);
+
+  element_t *data1_ptr = tensor_malloc<policy_t>(data1_vec);
+  RAJA::View<element_t, RAJA::Layout<2>> data1_d(data1_ptr,  N, N);
+
+
+  // alloc data2 - The right matrix
+
+  std::vector<element_t> data2_vec(N*N);
+  RAJA::View<element_t, RAJA::Layout<2>> data2_h(data2_vec.data(),  N, N);
+
+  element_t *data2_ptr = tensor_malloc<policy_t>(data2_vec);
+  RAJA::View<element_t, RAJA::Layout<2>> data2_d(data2_ptr,  N, N);
+
+
+  // alloc data3 - The result matrix
+
+  std::vector<element_t> data3_vec(N*N);
+  RAJA::View<element_t, RAJA::Layout<2>> data3_h(data3_vec.data(),  N, N);
+
+  element_t *data3_ptr = tensor_malloc<policy_t>(data3_vec);
+  RAJA::View<element_t, RAJA::Layout<2>> data3_d(data3_ptr,  N, N);
+
+
+
+  // Fill data1 and data2
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      data1_h(i,j) = 1+i*N+j;
+      data2_h(i,j) = 3+i*N+j;
+    }
+
+  }
+
+//  printf("data1:\n");
+//  for(camp::idx_t i = 0;i < N; ++ i){
+//    printf("  ");
+//    for(camp::idx_t j = 0;j < N; ++ j){
+//      printf("%lf  ", (double)data1_h(i,j));
+//    }
+//    printf("\n");
+//  }
+
+
+//  printf("data2:\n");
+//  for(camp::idx_t i = 0;i < N; ++ i){
+//    printf("  ");
+//    for(camp::idx_t j = 0;j < N; ++ j){
+//      printf("%lf  ", (double)data2_h(i,j));
+//    }
+//    printf("\n");
+//  }
+
+  tensor_copy_to_device<policy_t>(data1_ptr, data1_vec);
+  tensor_copy_to_device<policy_t>(data2_ptr, data2_vec);
+
+
+  //
+  // Do Operation: A*B
+  //
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    auto A_rows = RAJA::RowIndex<int, A_matrix_t>::all();
+    auto A_cols = RAJA::ColIndex<int, A_matrix_t>::all();
+
+    auto B_rows = RAJA::RowIndex<int, B_matrix_t>::all();
+    auto B_cols = RAJA::ColIndex<int, B_matrix_t>::all();
+
+    auto C_rows = RAJA::RowIndex<int, C_matrix_t>::all();
+    auto C_cols = RAJA::ColIndex<int, C_matrix_t>::all();
+
+    data3_d(C_rows, C_cols) = data1_d(A_rows, A_cols) * data2_d(B_rows, B_cols);
+
+  });
+
+  tensor_copy_to_host<policy_t>(data3_vec, data3_ptr);
+
+//  printf("data3:\n");
+//  for(camp::idx_t i = 0;i < N; ++ i){
+//    printf("  ");
+//    for(camp::idx_t j = 0;j < N; ++ j){
+//      printf("%lf  ", (double)data3_h(i,j));
+//    }
+//    printf("\n");
+//  }
+
+  //
+  // Check results
+  //
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      element_t expected(0);
+      for(camp::idx_t k = 0;k < N; ++ k){
+        expected += data1_h(i,k)*data2_h(k,j);
+      }
+//    printf("i=%d, j=%d, expected=%e, data3=%e\n", (int)i, (int)j, (double)expected, (double)data3_h(i,j));
+
+      ASSERT_SCALAR_EQ(expected, data3_h(i,j));
+//      data3_h(i,j) = expected;
+
+    }
+  }
+
+//  printf("expected:\n");
+//  for(camp::idx_t i = 0;i < N; ++ i){
+//    printf("  ");
+//    for(camp::idx_t j = 0;j < N; ++ j){
+//      printf("%lf  ", (double)data3_h(i,j));
+//    }
+//    printf("\n");
+//  }
+
+
+  //
+  // Loop over all possible sub-matrix sizes for A*x
+  //
+  for(camp::idx_t n_size = 0;n_size <= N; ++ n_size){
+    for(camp::idx_t m_size = 0;m_size <= N; ++ m_size){
+//      printf("Running %d x %d\n", (int)n_size, (int)m_size);
+      //
+      // Clear data3
+      //
+      for(camp::idx_t i = 0;i < N; ++ i){
+        for(camp::idx_t j = 0;j < N; ++ j){
+          data3_h(i, j) = 0;
+        }
+      }
+
+      tensor_copy_to_device<policy_t>(data3_ptr, data3_vec);
+
+
+      //
+      // Do Operation A*B
+      //
+      tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+        auto A_rows = RAJA::RowIndex<int, A_matrix_t>::range(0, n_size);
+        auto A_cols = RAJA::ColIndex<int, A_matrix_t>::range(0, m_size);
+
+        auto B_rows = RAJA::RowIndex<int, B_matrix_t>::range(0, m_size);
+        auto B_cols = RAJA::ColIndex<int, B_matrix_t>::range(0, n_size);
+
+        auto C_rows = RAJA::RowIndex<int, C_matrix_t>::range(0, n_size);
+        auto C_cols = RAJA::ColIndex<int, C_matrix_t>::range(0, n_size);
+
+        data3_d(C_rows, C_cols) = data1_d(A_rows, A_cols) * data2_d(B_rows, B_cols);
+      });
+
+      tensor_copy_to_host<policy_t>(data3_vec, data3_ptr);
+
+
+      //
+      // Check results
+      //
+      //
+      // Check results
+      //
+      for(camp::idx_t i = 0;i < n_size; ++ i){
+        for(camp::idx_t j = 0;j < n_size; ++ j){
+          element_t expected(0);
+          for(camp::idx_t k = 0;k < m_size; ++ k){
+            expected += data1_h(i,k)*data2_h(k,j);
+          }
+    //    printf("i=%d, j=%d, expected=%e, data3=%e\n", (int)i, (int)j, (double)expected, (double)data3_h(i,j));
+
+          ASSERT_SCALAR_EQ(expected, data3_h(i,j));
+    //      data3_h(i,j) = expected;
+
+        }
+      }
+
+
+    }
+  }
+
+
+
+  //
+  // Free data
+  //
+  tensor_free<policy_t>(data1_ptr);
+  tensor_free<policy_t>(data2_ptr);
+  tensor_free<policy_t>(data3_ptr);
+
+}
+
+
+
+
+GPU_TYPED_TEST_P(MatrixTest, ET_MatrixMatrixMultiplyAdd)
+{
+
+  using matrix_t = TypeParam;
+  using policy_t = typename matrix_t::register_policy;
+  using element_t = typename matrix_t::element_type;
+
+  using A_matrix_t = matrix_t;
+  using B_matrix_t = typename matrix_t::transpose_type;
+  using C_matrix_t = typename matrix_t::product_type;
+
+//  static constexpr camp::idx_t N = 8; //matrix_t::s_num_rows*matrix_t::s_num_columns*2;
+  static constexpr camp::idx_t N = RAJA::max<camp::idx_t>(matrix_t::s_num_rows, matrix_t::s_num_columns);
+  //
+  // Allocate Row-Major Data
+  //
+
+  // alloc data1 - The left matrix
+
+  std::vector<element_t> data1_vec(N*N);
+  RAJA::View<element_t, RAJA::Layout<2>> data1_h(data1_vec.data(), N, N);
+
+  element_t *data1_ptr = tensor_malloc<policy_t>(data1_vec);
+  RAJA::View<element_t, RAJA::Layout<2>> data1_d(data1_ptr,  N, N);
+
+
+  // alloc data2 - The right matrix
+
+  std::vector<element_t> data2_vec(N*N);
+  RAJA::View<element_t, RAJA::Layout<2>> data2_h(data2_vec.data(),  N, N);
+
+  element_t *data2_ptr = tensor_malloc<policy_t>(data2_vec);
+  RAJA::View<element_t, RAJA::Layout<2>> data2_d(data2_ptr,  N, N);
+
+
+  // alloc data3 - The result matrix
+
+  std::vector<element_t> data3_vec(N*N);
+  RAJA::View<element_t, RAJA::Layout<2>> data3_h(data3_vec.data(),  N, N);
+
+  element_t *data3_ptr = tensor_malloc<policy_t>(data3_vec);
+  RAJA::View<element_t, RAJA::Layout<2>> data3_d(data3_ptr,  N, N);
+
+
+
+  // Fill data1 and data2
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      data1_h(i,j) = 1+i*N+j;
+      data2_h(i,j) = 3+i*N+j;
+      data3_h(i,j) = 5*i+13*j;
+    }
+
+  }
+
+//  printf("data1:\n");
+//  for(camp::idx_t i = 0;i < N; ++ i){
+//    printf("  ");
+//    for(camp::idx_t j = 0;j < N; ++ j){
+//      printf("%lf  ", (double)data1_h(i,j));
+//    }
+//    printf("\n");
+//  }
+
+
+//  printf("data2:\n");
+//  for(camp::idx_t i = 0;i < N; ++ i){
+//    printf("  ");
+//    for(camp::idx_t j = 0;j < N; ++ j){
+//      printf("%lf  ", (double)data2_h(i,j));
+//    }
+//    printf("\n");
+//  }
+
+  tensor_copy_to_device<policy_t>(data1_ptr, data1_vec);
+  tensor_copy_to_device<policy_t>(data2_ptr, data2_vec);
+  tensor_copy_to_device<policy_t>(data3_ptr, data3_vec);
+
+
+  //
+  // Do Operation: A*B
+  //
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    auto A_rows = RAJA::RowIndex<int, A_matrix_t>::all();
+    auto A_cols = RAJA::ColIndex<int, A_matrix_t>::all();
+
+    auto B_rows = RAJA::RowIndex<int, B_matrix_t>::all();
+    auto B_cols = RAJA::ColIndex<int, B_matrix_t>::all();
+
+    auto C_rows = RAJA::RowIndex<int, C_matrix_t>::all();
+    auto C_cols = RAJA::ColIndex<int, C_matrix_t>::all();
+
+    data3_d(C_rows, C_cols) += data1_d(A_rows, A_cols) * data2_d(B_rows, B_cols);
+
+  });
+
+  tensor_copy_to_host<policy_t>(data3_vec, data3_ptr);
+
+//  printf("data3:\n");
+//  for(camp::idx_t i = 0;i < N; ++ i){
+//    printf("  ");
+//    for(camp::idx_t j = 0;j < N; ++ j){
+//      printf("%lf  ", (double)data3_h(i,j));
+//    }
+//    printf("\n");
+//  }
+
+  //
+  // Check results
+  //
+  for(camp::idx_t i = 0;i < N; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      element_t expected(5*i+13*j);
+      for(camp::idx_t k = 0;k < N; ++ k){
+        expected += data1_h(i,k)*data2_h(k,j);
+      }
+//    printf("i=%d, j=%d, expected=%e, data3=%e\n", (int)i, (int)j, (double)expected, (double)data3_h(i,j));
+
+      ASSERT_SCALAR_EQ(expected, data3_h(i,j));
+//      data3_h(i,j) = expected;
+
+    }
+  }
+
+//  printf("expected:\n");
+//  for(camp::idx_t i = 0;i < N; ++ i){
+//    printf("  ");
+//    for(camp::idx_t j = 0;j < N; ++ j){
+//      printf("%lf  ", (double)data3_h(i,j));
+//    }
+//    printf("\n");
+//  }
+
+
+  //
+  // Loop over all possible sub-matrix sizes for A*x
+  //
+  for(camp::idx_t n_size = 0;n_size <= N; ++ n_size){
+    for(camp::idx_t m_size = 0;m_size <= N; ++ m_size){
+//      printf("Running %d x %d\n", (int)n_size, (int)m_size);
+      //
+      // Clear data3
+      //
+      for(camp::idx_t i = 0;i < N; ++ i){
+        for(camp::idx_t j = 0;j < N; ++ j){
+          data3_h(i,j) = 5*i+13*j;
+        }
+      }
+
+      tensor_copy_to_device<policy_t>(data3_ptr, data3_vec);
+
+
+      //
+      // Do Operation A*B
+      //
+      tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+        auto A_rows = RAJA::RowIndex<int, A_matrix_t>::range(0, n_size);
+        auto A_cols = RAJA::ColIndex<int, A_matrix_t>::range(0, m_size);
+
+        auto B_rows = RAJA::RowIndex<int, B_matrix_t>::range(0, m_size);
+        auto B_cols = RAJA::ColIndex<int, B_matrix_t>::range(0, n_size);
+
+        auto C_rows = RAJA::RowIndex<int, C_matrix_t>::range(0, n_size);
+        auto C_cols = RAJA::ColIndex<int, C_matrix_t>::range(0, n_size);
+
+        data3_d(C_rows, C_cols) += data1_d(A_rows, A_cols) * data2_d(B_rows, B_cols);
+      });
+
+      tensor_copy_to_host<policy_t>(data3_vec, data3_ptr);
+
+
+      //
+      // Check results
+      //
+      //
+      // Check results
+      //
+      for(camp::idx_t i = 0;i < n_size; ++ i){
+        for(camp::idx_t j = 0;j < n_size; ++ j){
+          element_t expected(5*i+13*j);
+          for(camp::idx_t k = 0;k < m_size; ++ k){
+            expected += data1_h(i,k)*data2_h(k,j);
+          }
+    //    printf("i=%d, j=%d, expected=%e, data3=%e\n", (int)i, (int)j, (double)expected, (double)data3_h(i,j));
+
+          ASSERT_SCALAR_EQ(expected, data3_h(i,j));
+    //      data3_h(i,j) = expected;
+
+        }
+      }
+
+
+    }
+  }
+
+
+
+  //
+  // Free data
+  //
+  tensor_free<policy_t>(data1_ptr);
+  tensor_free<policy_t>(data2_ptr);
+  tensor_free<policy_t>(data3_ptr);
+
+}
 
 #if 0
 
-
-
-TYPED_TEST_P(MatrixTest, ET_MatrixMatrixMultiplyAdd)
-{
-  using matrix_t = TypeParam;
-  using element_t = typename matrix_t::element_type;
-
-  static const int Nmax = matrix_t::register_type::s_num_elem * 2;
-
-  static const int N = Nmax;
-
-  // Create a row-major data buffer
-  element_t data1[Nmax][Nmax], data2[Nmax][Nmax];
-
-  // Create an empty result bufffer
-  element_t data3[Nmax][Nmax];
-
-
-
-  for(camp::idx_t i = 0;i < N; ++ i){
-    for(camp::idx_t j = 0;j < N; ++ j){
-      data1[i][j] = i*j*j;
-      data2[i][j] = i+2*j;
-    }
-  }
-
-
-
-  //  Create views
-  RAJA::View<element_t, RAJA::Layout<2, int>> view1(
-      &data1[0][0], RAJA::make_permuted_layout<2, int>({{Nmax, Nmax}}, {{0,1}}));
-
-
-  RAJA::View<element_t, RAJA::Layout<2, int>> view2(
-      &data2[0][0], RAJA::make_permuted_layout<2, int>({{Nmax, Nmax}}, {{0,1}}));
-
-  RAJA::View<element_t, RAJA::Layout<2, int>> view3(
-      &data3[0][0], RAJA::make_permuted_layout<2, int>({{Nmax, Nmax}}, {{0,1}}));
-
-
-  using Row = RAJA::RowIndex<int, matrix_t>;
-  using Col = RAJA::ColIndex<int, matrix_t>;
-
-
-  // Perform view3 = 2.0 * view1 * view2 + view1;
-  auto rows = Row::range(0,N);
-  auto cols = Col::range(0,N);
-  view3(rows, cols) = view1(rows, cols) * view2(rows, cols) + view1(rows, cols);
-
-
-  // Check that data1==data2
-  for(camp::idx_t i = 0;i < N; ++ i){
-    for(camp::idx_t j = 0;j < N; ++ j){
-      element_t result = data1[i][j];
-
-      for(camp::idx_t k = 0;k < N; ++ k){
-        result += data1[i][k] * data2[k][j];
-      }
-      ASSERT_SCALAR_EQ(data3[i][j], result);
-      //printf("(%d,%d): val=%e, exp=%e\n",(int)i, (int)j, (double)data3[i][j], (double)result);
-    }
-  }
-
-  // Perform view3 = view1 + view2 * view1 * 2.0;
-  view3(Row::all(), Col::all()) = view1(Row::all(), Col::all()) +
-                                  view2(Row::all(), Col::all()) *
-                                  view1(Row::all(), Col::all()) * 2.0;
-
-
-
-  // Check that data1==data2
-  for(camp::idx_t i = 0;i < N; ++ i){
-    for(camp::idx_t j = 0;j < N; ++ j){
-      element_t result = data1[i][j];
-
-      for(camp::idx_t k = 0;k < N; ++ k){
-        result += data2[i][k] * data1[k][j] * 2.0;
-      }
-      ASSERT_SCALAR_EQ(data3[i][j], result);
-      //printf("(%d,%d): val=%e, exp=%e\n",(int)i, (int)j, (double)data3[i][j], (double)result);
-    }
-  }
-
-  // Perform view3 = view1,
-  //  and    view1 += view2 * view1;
-  view3(Row::all(), Col::all()) = view1(Row::all(), Col::all());
-  view3(Row::all(), Col::all()) += view2(Row::all(), Col::all()) *
-                                   view1(Row::all(), Col::all());
-
-
-
-  // Check that data1==data2
-  for(camp::idx_t i = 0;i < N; ++ i){
-    for(camp::idx_t j = 0;j < N; ++ j){
-      element_t result = data1[i][j];
-
-      for(camp::idx_t k = 0;k < N; ++ k){
-        result += data2[i][k] * data1[k][j];
-      }
-      ASSERT_SCALAR_EQ(data3[i][j], result);
-      //printf("(%d,%d): val=%e, exp=%e\n",(int)i, (int)j, (double)data3[i][j], (double)result);
-    }
-  }
-
-}
 
 
 
@@ -2038,9 +2082,9 @@ REGISTER_TYPED_TEST_SUITE_P(MatrixTest,
                                         ET_Add,
                                         ET_Subtract,
                                         ET_Divide,
-                                        ET_MatrixVector
-//                                        ET_MatrixMatrixMultiply,
-//                                        ET_MatrixMatrixMultiplyAdd,
+                                        ET_MatrixVector,
+                                        ET_MatrixMatrixMultiply,
+                                        ET_MatrixMatrixMultiplyAdd
 //                                        ET_TransposeNegate
                                         );
 
