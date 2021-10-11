@@ -306,14 +306,19 @@ namespace expt
 ///
 /// OpenMP parallel policy implementation
 ///
-template <typename Iterable, typename Func, typename InnerPolicy, typename FirstP, typename... RestP>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
-                                                    const omp_parallel_exec<InnerPolicy>&,
-                                                    Iterable&& iter,
-                                                    Func&& loop_body,
-                                                    RAJA::expt::ForallParamPack<FirstP, RestP...> f_params)
+template <typename Iterable, typename Func, typename InnerPolicy, typename ForallParam>
+RAJA_EXPT_FORALL_WARN("Using EXPERIMENTAL forall_impl for omp exec policy.")
+RAJA_INLINE
+concepts::enable_if_t<
+  resources::EventProxy<resources::Host>,
+  RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
+  concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
+forall_impl(resources::Host host_res,
+            const omp_parallel_exec<InnerPolicy>&,
+            Iterable&& iter,
+            Func&& loop_body,
+            ForallParam f_params)
 {
-  std::cout << "param call\n";
   expt::forall_impl(host_res, InnerPolicy{}, iter, loop_body, f_params);
   return resources::EventProxy<resources::Host>(host_res);
 }
