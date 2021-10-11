@@ -48,7 +48,14 @@ namespace simd
 
 
 template <typename Iterable, typename Func, typename ForallParam>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(RAJA::resources::Host host_res,
+RAJA_EXPT_FORALL_WARN("Using EXPERIMENTAL forall_impl for simd_exec.")
+RAJA_INLINE
+concepts::enable_if_t<
+  resources::EventProxy<resources::Host>,
+  expt::type_traits::is_ForallParamPack<ForallParam>,
+  concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>
+  >
+forall_impl(RAJA::resources::Host host_res,
                                                                const simd_exec &,
                                                                Iterable &&iter,
                                                                Func &&loop_body,
@@ -68,11 +75,18 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(RAJA::resources::
   return RAJA::resources::EventProxy<resources::Host>(host_res);
 }
 
-template <typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(RAJA::resources::Host host_res,
-                                                               const simd_exec &,
-                                                               Iterable &&iter,
-                                                               Func &&loop_body)
+template <typename Iterable, typename Func, typename ForallParam>
+RAJA_INLINE
+concepts::enable_if_t<
+  resources::EventProxy<resources::Host>,
+  expt::type_traits::is_ForallParamPack<ForallParam>,
+  expt::type_traits::is_ForallParamPack_empty<ForallParam>
+  >
+forall_impl(RAJA::resources::Host host_res,
+            const simd_exec &,
+            Iterable &&iter,
+            Func &&loop_body,
+            ForallParam)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);

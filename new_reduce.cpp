@@ -1,3 +1,5 @@
+#define RAJA_EXPT_FORALL
+
 #include <iostream>
 #include <RAJA/RAJA.hpp>
 #include <RAJA/util/Timer.hpp>
@@ -238,7 +240,7 @@ int main(int argc, char *argv[])
     std::cout << "ma : " << ma <<"\n";
   }
 #endif
-#if 0
+#if 1
   {
     std::cout << "Basic Reduction RAJA\n";
     RAJA::ReduceSum<RAJA::seq_reduce, double> rr(0);
@@ -293,7 +295,7 @@ int sample_sz = 1;
 RAJA::Timer::ElapsedType old_t_sum = 0;
 RAJA::Timer::ElapsedType new_t_sum = 0;
 for (int sample = 0; sample < sample_sz; sample++){
-#if 1
+#if 0
   {
     std::cout << "Basic OMP Reduction RAJA\n";
     RAJA::ReduceSum<RAJA::omp_reduce, double> rr(0);
@@ -320,7 +322,7 @@ for (int sample = 0; sample < sample_sz; sample++){
     std::cout << "ma : " << rma.get() <<"\n";
   }
 #endif
-#if 1
+#if 0
   {
     r = 0;
     m = 5000;
