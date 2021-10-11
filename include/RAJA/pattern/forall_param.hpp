@@ -4,6 +4,12 @@
 #include "RAJA/policy/sequential/new_reduce.hpp"
 #include "RAJA/policy/openmp/new_reduce.hpp"
 
+#if defined(RAJA_EXPT_FORALL)
+#define RAJA_EXPT_FORALL_WARN(Msg)
+#else
+#define RAJA_EXPT_FORALL_WARN(Msg) RAJA_DEPRECATE(Msg)
+#endif
+
 namespace RAJA
 {
 namespace expt
@@ -181,6 +187,21 @@ namespace expt
   constexpr auto get_lambda(Args&&... args){
     return camp::get<sizeof...(Args)-1>( camp::make_tuple(args...) ); 
   } 
+
+  RAJA_INLINE static auto get_empty_forall_param_pack(){
+    static ForallParamPack<> p;
+    return p;
+  }
+
+  namespace type_traits
+  {
+    template <typename T> struct is_ForallParamPack : std::false_type {};
+    template <typename... Args> struct is_ForallParamPack<ForallParamPack<Args...>> : std::true_type {};
+
+    template <typename T> struct is_ForallParamPack_empty : std::true_type {};
+    template <typename First, typename... Rest> struct is_ForallParamPack_empty<ForallParamPack<First, Rest...>> : std::false_type {};
+    template <> struct is_ForallParamPack_empty<ForallParamPack<>> : std::true_type {};
+  }
 
 } //  namespace expt
 } //  namespace RAJA
