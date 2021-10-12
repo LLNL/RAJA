@@ -399,7 +399,7 @@ using cuda_flatten_block_threads_xzy_direct = cuda_flatten_block_threads_direct<
 using cuda_flatten_block_threads_yxz_direct = cuda_flatten_block_threads_direct<1,0,2>;
 using cuda_flatten_block_threads_yzx_direct = cuda_flatten_block_threads_direct<1,2,0>;
 using cuda_flatten_block_threads_zxy_direct = cuda_flatten_block_threads_direct<2,0,1>;
-using cuda_flatten_block_threads_zyx_direct = cuda_flatten_block_threads_direct<2,1,1>;
+using cuda_flatten_block_threads_zyx_direct = cuda_flatten_block_threads_direct<2,1,0>;
 
 template<int ... dim>
 struct cuda_flatten_block_threads_loop{};
@@ -416,7 +416,7 @@ using cuda_flatten_block_threads_xzy_loop = cuda_flatten_block_threads_loop<0,2,
 using cuda_flatten_block_threads_yxz_loop = cuda_flatten_block_threads_loop<1,0,2>;
 using cuda_flatten_block_threads_yzx_loop = cuda_flatten_block_threads_loop<1,2,0>;
 using cuda_flatten_block_threads_zxy_loop = cuda_flatten_block_threads_loop<2,0,1>;
-using cuda_flatten_block_threads_zyx_loop = cuda_flatten_block_threads_loop<2,1,1>;
+using cuda_flatten_block_threads_zyx_loop = cuda_flatten_block_threads_loop<2,1,0>;
 
 template<typename SEGMENT, int DIM0, int DIM1>
 struct LoopExecute<cuda_flatten_block_threads_direct<DIM0, DIM1>, SEGMENT>

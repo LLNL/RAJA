@@ -392,7 +392,7 @@ using hip_flatten_block_threads_xzy_direct = hip_flatten_block_threads_direct<0,
 using hip_flatten_block_threads_yxz_direct = hip_flatten_block_threads_direct<1,0,2>;
 using hip_flatten_block_threads_yzx_direct = hip_flatten_block_threads_direct<1,2,0>;
 using hip_flatten_block_threads_zxy_direct = hip_flatten_block_threads_direct<2,0,1>;
-using hip_flatten_block_threads_zyx_direct = hip_flatten_block_threads_direct<2,1,1>;
+using hip_flatten_block_threads_zyx_direct = hip_flatten_block_threads_direct<2,1,0>;
 
 template<int ... dim>
 struct hip_flatten_block_threads_loop{};
@@ -409,7 +409,7 @@ using hip_flatten_block_threads_xzy_loop = hip_flatten_block_threads_loop<0,2,1>
 using hip_flatten_block_threads_yxz_loop = hip_flatten_block_threads_loop<1,0,2>;
 using hip_flatten_block_threads_yzx_loop = hip_flatten_block_threads_loop<1,2,0>;
 using hip_flatten_block_threads_zxy_loop = hip_flatten_block_threads_loop<2,0,1>;
-using hip_flatten_block_threads_zyx_loop = hip_flatten_block_threads_loop<2,1,1>;
+using hip_flatten_block_threads_zyx_loop = hip_flatten_block_threads_loop<2,1,0>;
 
 template<typename SEGMENT, int DIM0, int DIM1>
 struct LoopExecute<hip_flatten_block_threads_direct<DIM0, DIM1>, SEGMENT>
