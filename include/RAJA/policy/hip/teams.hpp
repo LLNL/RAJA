@@ -375,6 +375,137 @@ struct LoopExecute<hip_global_thread<DIM0, DIM1, DIM2>, SEGMENT> {
 };
 
 /*
+Reshape threads in a block into a 1D iteration space
+*/
+template<int ... dim>
+struct hip_flatten_block_threads_direct{};
+
+using hip_flatten_block_threads_xy_direct = hip_flatten_block_threads_direct<0,1>;
+using hip_flatten_block_threads_xz_direct = hip_flatten_block_threads_direct<0,2>;
+using hip_flatten_block_threads_yx_direct = hip_flatten_block_threads_direct<1,0>;
+using hip_flatten_block_threads_yz_direct = hip_flatten_block_threads_direct<1,2>;
+using hip_flatten_block_threads_zx_direct = hip_flatten_block_threads_direct<2,0>;
+using hip_flatten_block_threads_zy_direct = hip_flatten_block_threads_direct<2,1>;
+
+using hip_flatten_block_threads_xyz_direct = hip_flatten_block_threads_direct<0,1,2>;
+using hip_flatten_block_threads_xzy_direct = hip_flatten_block_threads_direct<0,2,1>;
+using hip_flatten_block_threads_yxz_direct = hip_flatten_block_threads_direct<1,0,2>;
+using hip_flatten_block_threads_yzx_direct = hip_flatten_block_threads_direct<1,2,0>;
+using hip_flatten_block_threads_zxy_direct = hip_flatten_block_threads_direct<2,0,1>;
+using hip_flatten_block_threads_zyx_direct = hip_flatten_block_threads_direct<2,1,0>;
+
+template<int ... dim>
+struct hip_flatten_block_threads_loop{};
+
+using hip_flatten_block_threads_xy_loop = hip_flatten_block_threads_loop<0,1>;
+using hip_flatten_block_threads_xz_loop = hip_flatten_block_threads_loop<0,2>;
+using hip_flatten_block_threads_yx_loop = hip_flatten_block_threads_loop<1,0>;
+using hip_flatten_block_threads_yz_loop = hip_flatten_block_threads_loop<1,2>;
+using hip_flatten_block_threads_zx_loop = hip_flatten_block_threads_loop<2,0>;
+using hip_flatten_block_threads_zy_loop = hip_flatten_block_threads_loop<2,1>;
+
+using hip_flatten_block_threads_xyz_loop = hip_flatten_block_threads_loop<0,1,2>;
+using hip_flatten_block_threads_xzy_loop = hip_flatten_block_threads_loop<0,2,1>;
+using hip_flatten_block_threads_yxz_loop = hip_flatten_block_threads_loop<1,0,2>;
+using hip_flatten_block_threads_yzx_loop = hip_flatten_block_threads_loop<1,2,0>;
+using hip_flatten_block_threads_zxy_loop = hip_flatten_block_threads_loop<2,0,1>;
+using hip_flatten_block_threads_zyx_loop = hip_flatten_block_threads_loop<2,1,0>;
+
+template<typename SEGMENT, int DIM0, int DIM1>
+struct LoopExecute<hip_flatten_block_threads_direct<DIM0, DIM1>, SEGMENT>
+{
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const int len = segment.end() - segment.begin();
+    {
+      const int tx = internal::get_hip_dim<DIM0>(threadIdx);
+      const int ty = internal::get_hip_dim<DIM1>(threadIdx);
+      const int bx = internal::get_hip_dim<DIM0>(blockIdx);
+      const int tid = tx + bx*ty;
+
+      if (tid < len) body(*(segment.begin() + tid));
+    }
+  }
+};
+
+template<typename SEGMENT, int DIM0, int DIM1>
+struct LoopExecute<hip_flatten_block_threads_loop<DIM0, DIM1>, SEGMENT>
+{
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const int len = segment.end() - segment.begin();
+
+    const int tx = internal::get_hip_dim<DIM0>(threadIdx);
+    const int ty = internal::get_hip_dim<DIM1>(threadIdx);
+    const int bx = internal::get_hip_dim<DIM0>(blockIdx);
+    const int by = internal::get_hip_dim<DIM1>(blockIdx);
+    const int tid = tx + bx*ty;
+
+    for(int tid = tx + bx*ty; tid < len; tid += bx*by) {
+      body(*(segment.begin() + tid));
+    }
+
+  }
+};
+
+template<typename SEGMENT, int DIM0, int DIM1, int DIM2>
+struct LoopExecute<hip_flatten_block_threads_direct<DIM0, DIM1, DIM2>, SEGMENT>
+{
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const int len = segment.end() - segment.begin();
+    {
+      const int tx = internal::get_hip_dim<DIM0>(threadIdx);
+      const int ty = internal::get_hip_dim<DIM1>(threadIdx);
+      const int tz = internal::get_hip_dim<DIM2>(threadIdx);
+      const int bx = internal::get_hip_dim<DIM0>(blockIdx);
+      const int by = internal::get_hip_dim<DIM1>(blockIdx);
+      const int tid = tx + bx*(ty + by*tz);
+
+      if (tid < len) body(*(segment.begin() + tid));
+    }
+  }
+};
+
+template<typename SEGMENT, int DIM0, int DIM1, int DIM2>
+struct LoopExecute<hip_flatten_block_threads_loop<DIM0, DIM1, DIM2>, SEGMENT>
+{
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const int len = segment.end() - segment.begin();
+
+    const int tx = internal::get_hip_dim<DIM0>(threadIdx);
+    const int ty = internal::get_hip_dim<DIM1>(threadIdx);
+    const int tz = internal::get_hip_dim<DIM2>(threadIdx);
+    const int bx = internal::get_hip_dim<DIM0>(blockIdx);
+    const int by = internal::get_hip_dim<DIM1>(blockIdx);
+    const int bz = internal::get_hip_dim<DIM2>(blockIdx);
+
+    for(int tid = tx + bx*(ty + by*tz); tid < len; tid += bx*by*bz) {
+      body(*(segment.begin() + tid));
+    }
+
+  }
+};
+
+
+/*
   HIP thread loops with block strides
 */
 template <typename SEGMENT, int DIM>
