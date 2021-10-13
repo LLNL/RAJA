@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <numeric>
 #include <random>
+#include <list>
 #include <map>
 #include <unordered_map>
 #include <set>
