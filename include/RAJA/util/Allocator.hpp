@@ -27,6 +27,15 @@
 namespace RAJA
 {
 
+struct Allocator;
+
+namespace detail
+{
+
+inline std::vector<Allocator*>& get_allocators();
+
+} /* end namespace detail */
+
 /*! \class Allocator
  ******************************************************************************
  *
@@ -38,7 +47,10 @@ namespace RAJA
  */
 struct Allocator
 {
-  Allocator() = default;
+  Allocator()
+  {
+    detail::get_allocators().emplace_back(this);
+  }
 
   // not copyable or movable
   Allocator(Allocator const&) = delete;
@@ -46,7 +58,18 @@ struct Allocator
   Allocator& operator=(Allocator const&) = delete;
   Allocator& operator=(Allocator &&) = delete;
 
-  virtual ~Allocator() = default;
+  virtual ~Allocator()
+  {
+    auto& allocators = detail::get_allocators();
+    for (auto iter = allocators.cbegin();
+         iter != allocators.cend();
+         ++iter) {
+      if (this == *iter) {
+        allocators.erase(iter);
+        break;
+      }
+    }
+  }
 
   virtual void* allocate(size_t nbytes,
                          size_t alignment = alignof(std::max_align_t)) = 0;
