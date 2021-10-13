@@ -28,10 +28,12 @@
 #include <cstdio>
 #include <type_traits>
 #include <unordered_map>
+#include <memory>
 
 #include "nvToolsExt.h"
 
-#include "RAJA/util/basic_mempool.hpp"
+#include "RAJA/util/Allocator.hpp"
+#include "RAJA/util/AllocatorPool.hpp"
 #include "RAJA/util/mutex.hpp"
 #include "RAJA/util/types.hpp"
 #include "RAJA/util/macros.hpp"
@@ -46,51 +48,30 @@ namespace RAJA
 namespace cuda
 {
 
+namespace detail
+{
 
-//! Allocator for pinned memory for use in basic_mempool
-struct PinnedAllocator {
+//! Allocator for device memory for use in AllocatorPool
+struct DeviceBaseAllocator {
 
-  // returns a valid pointer on success, nullptr on failure
-  void* malloc(size_t nbytes)
-  {
-    void* ptr;
-    cudaErrchk(cudaHostAlloc(&ptr, nbytes, cudaHostAllocMapped));
-    return ptr;
-  }
-
-  // returns true on success, false on failure
-  bool free(void* ptr)
-  {
-    cudaErrchk(cudaFreeHost(ptr));
-    return true;
-  }
-};
-
-//! Allocator for device memory for use in basic_mempool
-struct DeviceAllocator {
-
-  // returns a valid pointer on success, nullptr on failure
-  void* malloc(size_t nbytes)
+  void* allocate(size_t nbytes)
   {
     void* ptr;
     cudaErrchk(cudaMalloc(&ptr, nbytes));
     return ptr;
   }
 
-  // returns true on success, false on failure
-  bool free(void* ptr)
+  void deallocate(void* ptr)
   {
     cudaErrchk(cudaFree(ptr));
-    return true;
   }
 };
 
-//! Allocator for pre-zeroed device memory for use in basic_mempool
+//! Allocator for pre-zeroed device memory for use in AllocatorPool
 //  Note: Memory must be zero when returned to mempool
-struct DeviceZeroedAllocator {
+struct DeviceZeroedBaseAllocator {
 
-  // returns a valid pointer on success, nullptr on failure
-  void* malloc(size_t nbytes)
+  void* allocate(size_t nbytes)
   {
     void* ptr;
     cudaErrchk(cudaMalloc(&ptr, nbytes));
@@ -98,18 +79,144 @@ struct DeviceZeroedAllocator {
     return ptr;
   }
 
-  // returns true on success, false on failure
-  bool free(void* ptr)
+  void deallocate(void* ptr)
   {
     cudaErrchk(cudaFree(ptr));
-    return true;
   }
 };
 
-using device_mempool_type = basic_mempool::MemPool<DeviceAllocator>;
-using device_zeroed_mempool_type =
-    basic_mempool::MemPool<DeviceZeroedAllocator>;
-using pinned_mempool_type = basic_mempool::MemPool<PinnedAllocator>;
+//! Allocator for pinned memory for use in AllocatorPool
+struct PinnedBaseAllocator {
+
+  void* allocate(size_t nbytes)
+  {
+    void* ptr;
+    cudaErrchk(cudaHostAlloc(&ptr, nbytes, cudaHostAllocMapped));
+    return ptr;
+  }
+
+  void deallocate(void* ptr)
+  {
+    cudaErrchk(cudaFreeHost(ptr));
+  }
+};
+
+//! Make default allocators used by RAJA internally
+inline std::unique_ptr<RAJA::Allocator> make_default_device_allocator()
+{
+  return std::unique_ptr<RAJA::Allocator>(
+      new AllocatorPool<DeviceBaseAllocator>(
+        std::string("RAJA::cuda::default_device_allocator"),
+        DeviceBaseAllocator()));
+}
+///
+inline std::unique_ptr<RAJA::Allocator> make_default_device_zeroed_allocator()
+{
+  return std::unique_ptr<RAJA::Allocator>(
+      new AllocatorPool<DeviceZeroedBaseAllocator>(
+        std::string("RAJA::cuda::default_device_zeroed_allocator"),
+        DeviceZeroedBaseAllocator()));
+}
+///
+inline std::unique_ptr<RAJA::Allocator> make_default_pinned_allocator()
+{
+  return std::unique_ptr<RAJA::Allocator>(
+      new AllocatorPool<PinnedBaseAllocator>(
+        std::string("RAJA::cuda::default_pinned_allocator"),
+        PinnedBaseAllocator()));
+}
+
+//! Storage for allocators used by RAJA internally
+inline std::unique_ptr<RAJA::Allocator>& get_device_allocator()
+{
+  static std::unique_ptr<RAJA::Allocator> allocator(
+      make_default_device_allocator());
+  return allocator;
+}
+///
+inline std::unique_ptr<RAJA::Allocator>& get_device_zeroed_allocator()
+{
+  static std::unique_ptr<RAJA::Allocator> allocator(
+      make_default_device_zeroed_allocator());
+  return allocator;
+}
+///
+inline std::unique_ptr<RAJA::Allocator>& get_pinned_allocator()
+{
+  static std::unique_ptr<RAJA::Allocator> allocator(
+      make_default_pinned_allocator());
+  return allocator;
+}
+
+} // namespace detail
+
+//! Sets the allocator used by RAJA internally by making an allocator of
+//  allocator_type with the given arguments. It is an error to change the
+//  allocator when any memory is allocated. This routine is not thread safe.
+template < typename allocator_type, typename ... Args >
+inline void set_device_allocator(Args&&... args)
+{
+  detail::get_device_allocator().release();
+  detail::get_device_allocator().reset(
+      new allocator_type(std::forward<Args>(args)...));
+}
+///
+template < typename allocator_type, typename ... Args >
+inline void set_device_zeroed_allocator(Args&&... args)
+{
+  detail::get_device_zeroed_allocator().release();
+  detail::get_device_zeroed_allocator().reset(
+      new allocator_type(std::forward<Args>(args)...));
+}
+///
+template < typename allocator_type, typename ... Args >
+inline void set_pinned_allocator(Args&&... args)
+{
+  detail::get_pinned_allocator().release();
+  detail::get_pinned_allocator().reset(
+      new allocator_type(std::forward<Args>(args)...));
+}
+
+//! Reset the allocator used by RAJA internally. This will destroy any existing
+//  allocator and replace it with the kind of allocator used by default. It is
+//  an error to change the allocator when any memory is allocated. This routine
+//  is not thread safe.
+inline void reset_device_allocator()
+{
+  detail::get_device_allocator().release();
+  detail::get_device_allocator() =
+      detail::make_default_device_allocator();
+}
+inline void reset_device_zeroed_allocator()
+{
+  detail::get_device_zeroed_allocator().release();
+  detail::get_device_zeroed_allocator() =
+      detail::make_default_device_zeroed_allocator();
+}
+inline void reset_pinned_allocator()
+{
+  detail::get_pinned_allocator().release();
+  detail::get_pinned_allocator() =
+      detail::make_default_pinned_allocator();
+}
+
+//! Gets the allocator used by RAJA internally. This allows the user to query
+//  the memory stats of the allocator.
+inline RAJA::Allocator& get_device_allocator()
+{
+  return *detail::get_device_allocator();
+}
+///
+inline RAJA::Allocator& get_device_zeroed_allocator()
+{
+  return *detail::get_device_zeroed_allocator();
+}
+///
+inline RAJA::Allocator& get_pinned_allocator()
+{
+  return *detail::get_pinned_allocator();
+}
+
 
 namespace detail
 {

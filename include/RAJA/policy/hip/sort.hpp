@@ -122,7 +122,7 @@ stable(
   int end_bit=sizeof(R)*CHAR_BIT;
 
   // Allocate temporary storage for the output array
-  R* d_out = hip::device_mempool_type::getInstance().malloc<R>(len);
+  R* d_out = hip::get_device_allocator().template allocate<R>(len);
 
   // use cub double buffer to reduce temporary memory requirements
   // by allowing cub to write to the begin buffer
@@ -150,7 +150,7 @@ stable(
 #endif
   // Allocate temporary storage
   d_temp_storage =
-      hip::device_mempool_type::getInstance().malloc<unsigned char>(
+      hip::get_device_allocator().template allocate<unsigned char>(
           temp_storage_bytes);
 
   // Run
@@ -172,7 +172,7 @@ stable(
                                               stream));
 #endif
   // Free temporary storage
-  hip::device_mempool_type::getInstance().free(d_temp_storage);
+  hip::get_device_allocator().deallocate(d_temp_storage);
 
   if (detail::get_current(d_keys) == d_out) {
 
@@ -180,7 +180,7 @@ stable(
     hipErrchk(hipMemcpyAsync(begin, d_out, len*sizeof(R), hipMemcpyDefault, stream));
   }
 
-  hip::device_mempool_type::getInstance().free(d_out);
+  hip::get_device_allocator().deallocate(d_out);
 
   hip::launch(hip_res, Async);
 
@@ -210,7 +210,7 @@ stable(
   int end_bit=sizeof(R)*CHAR_BIT;
 
   // Allocate temporary storage for the output array
-  R* d_out = hip::device_mempool_type::getInstance().malloc<R>(len);
+  R* d_out = hip::get_device_allocator().template allocate<R>(len);
 
   // use cub double buffer to reduce temporary memory requirements
   // by allowing cub to write to the begin buffer
@@ -238,7 +238,7 @@ stable(
 #endif
   // Allocate temporary storage
   d_temp_storage =
-      hip::device_mempool_type::getInstance().malloc<unsigned char>(
+      hip::get_device_allocator().template allocate<unsigned char>(
           temp_storage_bytes);
 
   // Run
@@ -260,7 +260,7 @@ stable(
                                                         stream));
 #endif
   // Free temporary storage
-  hip::device_mempool_type::getInstance().free(d_temp_storage);
+  hip::get_device_allocator().deallocate(d_temp_storage);
 
   if (detail::get_current(d_keys) == d_out) {
 
@@ -268,7 +268,7 @@ stable(
     hipErrchk(hipMemcpyAsync(begin, d_out, len*sizeof(R), hipMemcpyDefault, stream));
   }
 
-  hip::device_mempool_type::getInstance().free(d_out);
+  hip::get_device_allocator().deallocate(d_out);
 
   hip::launch(hip_res, Async);
 
@@ -403,8 +403,8 @@ stable_pairs(
   int end_bit=sizeof(K)*CHAR_BIT;
 
   // Allocate temporary storage for the output arrays
-  K* d_keys_out = hip::device_mempool_type::getInstance().malloc<K>(len);
-  V* d_vals_out = hip::device_mempool_type::getInstance().malloc<V>(len);
+  K* d_keys_out = hip::get_device_allocator().template allocate<K>(len);
+  V* d_vals_out = hip::get_device_allocator().template allocate<V>(len);
 
   // use cub double buffer to reduce temporary memory requirements
   // by allowing cub to write to the keys_begin and vals_begin buffers
@@ -435,7 +435,7 @@ stable_pairs(
 #endif
   // Allocate temporary storage
   d_temp_storage =
-      hip::device_mempool_type::getInstance().malloc<unsigned char>(
+      hip::get_device_allocator().template allocate<unsigned char>(
           temp_storage_bytes);
 
   // Run
@@ -459,7 +459,7 @@ stable_pairs(
                                                stream));
 #endif
   // Free temporary storage
-  hip::device_mempool_type::getInstance().free(d_temp_storage);
+  hip::get_device_allocator().deallocate(d_temp_storage);
 
   if (detail::get_current(d_keys) == d_keys_out) {
 
@@ -472,8 +472,8 @@ stable_pairs(
     hipErrchk(hipMemcpyAsync(vals_begin, d_vals_out, len*sizeof(V), hipMemcpyDefault, stream));
   }
 
-  hip::device_mempool_type::getInstance().free(d_keys_out);
-  hip::device_mempool_type::getInstance().free(d_vals_out);
+  hip::get_device_allocator().deallocate(d_keys_out);
+  hip::get_device_allocator().deallocate(d_vals_out);
 
   hip::launch(hip_res, Async);
 
@@ -507,8 +507,8 @@ stable_pairs(
   int end_bit=sizeof(K)*CHAR_BIT;
 
   // Allocate temporary storage for the output arrays
-  K* d_keys_out = hip::device_mempool_type::getInstance().malloc<K>(len);
-  V* d_vals_out = hip::device_mempool_type::getInstance().malloc<V>(len);
+  K* d_keys_out = hip::get_device_allocator().template allocate<K>(len);
+  V* d_vals_out = hip::get_device_allocator().template allocate<V>(len);
 
   // use cub double buffer to reduce temporary memory requirements
   // by allowing cub to write to the keys_begin and vals_begin buffers
@@ -539,7 +539,7 @@ stable_pairs(
 #endif
   // Allocate temporary storage
   d_temp_storage =
-      hip::device_mempool_type::getInstance().malloc<unsigned char>(
+      hip::get_device_allocator().template allocate<unsigned char>(
           temp_storage_bytes);
 
   // Run
@@ -563,7 +563,7 @@ stable_pairs(
                                                          stream));
 #endif
   // Free temporary storage
-  hip::device_mempool_type::getInstance().free(d_temp_storage);
+  hip::get_device_allocator().deallocate(d_temp_storage);
 
   if (detail::get_current(d_keys) == d_keys_out) {
 
@@ -576,8 +576,8 @@ stable_pairs(
     hipErrchk(hipMemcpyAsync(vals_begin, d_vals_out, len*sizeof(V), hipMemcpyDefault, stream));
   }
 
-  hip::device_mempool_type::getInstance().free(d_keys_out);
-  hip::device_mempool_type::getInstance().free(d_vals_out);
+  hip::get_device_allocator().deallocate(d_keys_out);
+  hip::get_device_allocator().deallocate(d_vals_out);
 
   hip::launch(hip_res, Async);
 

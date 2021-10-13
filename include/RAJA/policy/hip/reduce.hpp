@@ -32,7 +32,7 @@
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/SoAArray.hpp"
 #include "RAJA/util/SoAPtr.hpp"
-#include "RAJA/util/basic_mempool.hpp"
+#include "RAJA/util/Allocator.hpp"
 #include "RAJA/util/mutex.hpp"
 #include "RAJA/util/types.hpp"
 
@@ -567,7 +567,7 @@ public:
       rn->node_list = nullptr;
       resource_list = rn;
     }
-    Node* n = hip::pinned_mempool_type::getInstance().template malloc<Node>(1);
+    Node* n = hip::get_pinned_allocator().template allocate<Node>(1);
     n->next = rn->node_list;
     rn->node_list = n;
     return &n->value;
@@ -590,7 +590,7 @@ public:
       while (rn->node_list) {
         Node* n = rn->node_list;
         rn->node_list = n->next;
-        hip::pinned_mempool_type::getInstance().free(n);
+        hip::get_pinned_allocator().deallocate(n);
       }
       resource_list = rn->next;
       free(rn);
@@ -623,7 +623,7 @@ struct Reduce_Data {
   mutable T value;
   T identity;
   unsigned int* device_count;
-  RAJA::detail::SoAPtr<T, device_mempool_type> device;
+  RAJA::detail::SoAPtr<T> device;
   bool own_device_ptr;
 
   Reduce_Data() : Reduce_Data(T(), T()){};
@@ -683,9 +683,9 @@ struct Reduce_Data {
     if (act) {
       hip_dim_t gridDim = currentGridDim();
       size_t numBlocks = gridDim.x * gridDim.y * gridDim.z;
-      device.allocate(numBlocks);
-      device_count = device_zeroed_mempool_type::getInstance()
-                         .template malloc<unsigned int>(1);
+      device.allocate(hip::get_device_allocator(), numBlocks);
+      device_count = hip::get_device_zeroed_allocator()
+                         .template allocate<unsigned int>(1);
       own_device_ptr = true;
     }
     return act;
@@ -697,8 +697,8 @@ struct Reduce_Data {
   {
     bool act = own_device_ptr;
     if (act) {
-      device.deallocate();
-      device_zeroed_mempool_type::getInstance().free(device_count);
+      device.deallocate(hip::get_device_allocator());
+      hip::get_device_zeroed_allocator().deallocate(device_count);
       device_count = nullptr;
       own_device_ptr = false;
     }
@@ -769,9 +769,9 @@ struct ReduceAtomic_Data {
   {
     bool act = !device && setupReducers();
     if (act) {
-      device = device_mempool_type::getInstance().template malloc<T>(1);
-      device_count = device_zeroed_mempool_type::getInstance()
-                         .template malloc<unsigned int>(1);
+      device = hip::get_device_allocator().template allocate<T>(1);
+      device_count = hip::get_device_zeroed_allocator()
+                         .template allocate<unsigned int>(1);
       own_device_ptr = true;
     }
     return act;
@@ -783,9 +783,9 @@ struct ReduceAtomic_Data {
   {
     bool act = own_device_ptr;
     if (act) {
-      device_mempool_type::getInstance().free(device);
+      hip::get_device_allocator().deallocate(device);
       device = nullptr;
-      device_zeroed_mempool_type::getInstance().free(device_count);
+      hip::get_device_zeroed_allocator().deallocate(device_count);
       device_count = nullptr;
       own_device_ptr = false;
     }
