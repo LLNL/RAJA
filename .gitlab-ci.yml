@@ -101,7 +101,7 @@ trigger-rajaperf:
     UPDATE_RAJA: ${MP_BRANCH}
   trigger:
     project: radiuss/rajaperf
-    branch: ${MP_BRANCH}
+    branch: develop
     strategy: depend
 
 # This is where jobs are included.
