@@ -585,20 +585,6 @@ RAJA_INLINE __device__ unsigned long long cuda_atomicCAS<unsigned long long>(
 
 
 /*!
- * Cuda atomic policy for using cuda atomics on the device and
- * the provided host_policy on the host
- */
-template<typename host_policy>
-struct cuda_atomic_explicit{};
-
-/*!
- * Default cuda atomic policy uses cuda atomics on the device and non-atomics
- * on the host
- */
-using cuda_atomic = cuda_atomic_explicit<loop_atomic>;
-
-
-/*!
  * Catch-all policy passes off to CUDA's builtin atomics.
  *
  * This catch-all will only work for types supported by the compiler.

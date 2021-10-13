@@ -85,6 +85,10 @@
 #endif
 #endif
 
+#if defined(RAJA_ENABLE_DESUL_ATOMICS)
+    #include "RAJA/policy/desul.hpp"
+#endif
+
 #include "RAJA/index/IndexSet.hpp"
 
 //
