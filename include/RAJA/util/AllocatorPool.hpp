@@ -444,7 +444,7 @@ struct AllocatorPool : Allocator
     }
   }
 
-  size_t get_arena_size() const
+  size_t get_arena_size()
   {
 #if defined(RAJA_ENABLE_OPENMP)
     lock_guard<omp::mutex> lock(m_mutex);
