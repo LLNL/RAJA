@@ -112,7 +112,7 @@ inline std::vector<Allocator*>& get_allocators()
 /*!
  * \brief Get the set of allocators used by RAJA internally
  */
-inline std::vector<Allocator*> get_allocators()
+inline std::vector<Allocator*> const& get_allocators()
 {
   return detail::get_allocators();
 }
