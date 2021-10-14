@@ -64,7 +64,7 @@ struct LoopPolicy {
 template <typename HOST_POLICY
 #if defined(RAJA_DEVICE_ACTIVE)
           ,
-          typename DEVICE_POLICY=HOST_POLICY
+          typename DEVICE_POLICY = HOST_POLICY
 #endif
           >
 struct LaunchPolicy {
