@@ -353,7 +353,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //RAJA Team loops support a pair of policies at a time.
   //Switching between a sequential and OpenMP launch space requires
   //recompiling execution policies. When running exclusively on the host
-  //the compute grid may be set to zero as the loop methods get expanded to
+  //the compute grid may be left uninitialized as loop methods get expanded to
   //standard C style loops.
   using omp_launch_policy = RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t>;
 
