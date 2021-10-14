@@ -183,8 +183,9 @@ struct LaunchExecute;
 template <typename LAUNCH_POLICY, typename BODY>
 void launch(Grid const &grid, BODY const &body)
 {
-  //used when host == device policy
-  using launch_t = LaunchExecute<typename LAUNCH_POLICY::device_policy_t>;
+  //Take the first policy as we assume the second policy is not user defined.
+  //We rely on the user to pair launch and loop policies correctly.
+  using launch_t = LaunchExecute<typename LAUNCH_POLICY::host_policy_t>;
   launch_t::exec(LaunchContext(grid, HOST), body);
 }
 
