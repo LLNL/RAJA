@@ -50,9 +50,10 @@ struct null_launch_t {
 template <typename HOST_POLICY
 #if defined(RAJA_DEVICE_ACTIVE)
           ,
-          typename DEVICE_POLICY
+          typename DEVICE_POLICY = HOST_POLICY
 #endif
           >
+
 struct LoopPolicy {
   using host_policy_t = HOST_POLICY;
 #if defined(RAJA_DEVICE_ACTIVE)
@@ -63,7 +64,7 @@ struct LoopPolicy {
 template <typename HOST_POLICY
 #if defined(RAJA_DEVICE_ACTIVE)
           ,
-          typename DEVICE_POLICY
+          typename DEVICE_POLICY=HOST_POLICY
 #endif
           >
 struct LaunchPolicy {
@@ -178,6 +179,17 @@ public:
 template <typename LAUNCH_POLICY>
 struct LaunchExecute;
 
+//Policy based launch
+template <typename LAUNCH_POLICY, typename BODY>
+void launch(Grid const &grid, BODY const &body)
+{
+  //used when host == device policy
+  using launch_t = LaunchExecute<typename LAUNCH_POLICY::device_policy_t>;
+  launch_t::exec(LaunchContext(grid, HOST), body);
+}
+
+
+//Run time based policy launch
 template <typename POLICY_LIST, typename BODY>
 void launch(ExecPlace place, Grid const &grid, BODY const &body)
 {
