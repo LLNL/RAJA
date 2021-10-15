@@ -50,7 +50,7 @@ template <typename ValueType,
           typename LayoutType,
           typename PointerType = ValueType *>
 using View =
-    internal::ViewBase<ValueType, ValueType *, LayoutType>;
+    internal::ViewBase<ValueType, PointerType, LayoutType>;
 
 
 
