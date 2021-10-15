@@ -350,7 +350,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
-  //RAJA Team loops support a pair of policies at a time.
+  //RAJA Team loops currently only support a pair of policies at a time.
   //Switching between a sequential and OpenMP launch space requires
   //recompiling execution policies. When running exclusively on the host
   //the compute grid may be left uninitialized as loop methods get expanded to
