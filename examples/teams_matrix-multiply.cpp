@@ -287,7 +287,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 //
-// RAJA Team loops uses a RAJA::launch method to execute the kernel.
+// RAJA Team loops uses a RAJA::launch method to launch a kernel.
 // These examples, illustrate the basic interface and mechanics.
 //
 // This is different than RAJA::forall and so a few points of exmplanation
