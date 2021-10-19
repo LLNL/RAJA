@@ -27,7 +27,10 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include "RAJA/policy/cuda/atomic.hpp"
+#if !defined(RAJA_ENABLE_DESUL_ATOMICS)
+    #include "RAJA/policy/cuda/atomic.hpp"
+#endif
+
 #include "RAJA/policy/cuda/forall.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/reduce.hpp"
