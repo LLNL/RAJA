@@ -40,7 +40,13 @@
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
-#include "RAJA/policy/cuda/atomic.hpp"
+
+#if defined(RAJA_ENABLE_DESUL_ATOMICS)
+  #include "RAJA/policy/desul/atomic.hpp"
+#else
+  #include "RAJA/policy/cuda/atomic.hpp"
+#endif
+
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 

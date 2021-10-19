@@ -13,3 +13,6 @@
 [submodule "scripts/radiuss-spack-configs"]
 	path = scripts/radiuss-spack-configs
 	url = https://github.com/LLNL/radiuss-spack-configs
+[submodule "tpl/desul"]
+	path = tpl/desul
+	url = https://github.com/desul/desul.git
