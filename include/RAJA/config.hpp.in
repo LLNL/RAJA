@@ -102,6 +102,7 @@
 #cmakedefine RAJA_ENABLE_SYCL
 
 #cmakedefine RAJA_ENABLE_NV_TOOLS_EXT
+#cmakedefine RAJA_ENABLE_ROCTX
 
 #cmakedefine RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL
 
@@ -125,6 +126,15 @@
  ******************************************************************************
  */
 #cmakedefine RAJA_ENABLE_RUNTIME_PLUGINS
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Desul atomics.
+ *
+ ******************************************************************************
+ */
+#cmakedefine RAJA_ENABLE_DESUL_ATOMICS
 
 /*!
  ******************************************************************************

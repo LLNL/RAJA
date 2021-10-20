@@ -75,6 +75,11 @@ else() #check BLT_CXX_STD is high enough by disallowing the only invalid option
     message(FATAL_ERROR "RAJA requires minimum C++ standard of c++11")
   endif()
 endif(NOT DEFINED BLT_CXX_STD)
+if (RAJA_ENABLE_DESUL_ATOMICS)
+  if("${BLT_CXX_STD}" STREQUAL "c++11")
+    message(FATAL_ERROR "RAJA_ENABLE_DESUL_ATOMICS requires minimum C++ standard of c++14")
+  endif()
+endif()
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -193,6 +198,11 @@ if (RAJA_ENABLE_HIP)
   set(raja_depends
     ${raja_depends}
     hip)
+  if(ENABLE_ROCTX)
+      set(raja_depends
+      ${raja_depends}
+      roctx)
+  endif()
 endif ()
 
 if (RAJA_ENABLE_EXTERNAL_ROCPRIM)
@@ -211,6 +221,14 @@ if (RAJA_ENABLE_TBB)
   set(raja_depends
     ${raja_depends}
     tbb)
+endif ()
+
+message(STATUS "Desul Atomics support is ${RAJA_ENABLE_DESUL_ATOMICS}")
+if (RAJA_ENABLE_DESUL_ATOMICS)
+  add_subdirectory(tpl/desul)
+  set(raja_depends
+    ${raja_depends}
+    desul_atomics)
 endif ()
 
 if (NOT TARGET camp)
