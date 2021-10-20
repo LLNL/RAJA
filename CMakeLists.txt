@@ -176,7 +176,7 @@ if (RAJA_ENABLE_CUDA)
   set(raja_depends
     ${raja_depends}
     cuda)
-  if(ENABLE_NV_TOOLS_EXT)
+  if(RAJA_ENABLE_NV_TOOLS_EXT)
     set(raja_depends
       ${raja_depends}
       nvtoolsext)

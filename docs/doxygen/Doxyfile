@@ -1948,18 +1948,18 @@ PERLMOD_MAKEVAR_PREFIX =
 # Configuration options related to the preprocessor
 #---------------------------------------------------------------------------
 
-# If the ENABLE_PREPROCESSING tag is set to YES, doxygen will evaluate all
+# If the RAJA_ENABLE_PREPROCESSING tag is set to YES, doxygen will evaluate all
 # C-preprocessor directives found in the sources and include files.
 # The default value is: YES.
 
-ENABLE_PREPROCESSING   = YES
+RAJA_ENABLE_PREPROCESSING   = YES
 
 # If the MACRO_EXPANSION tag is set to YES, doxygen will expand all macro names
 # in the source code. If set to NO, only conditional compilation will be
 # performed. Macro expansion can be done in a controlled way by setting
 # EXPAND_ONLY_PREDEF to YES.
 # The default value is: NO.
-# This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
+# This tag requires that the tag RAJA_ENABLE_PREPROCESSING is set to YES.
 
 MACRO_EXPANSION        = NO
 
@@ -1967,14 +1967,14 @@ MACRO_EXPANSION        = NO
 # the macro expansion is limited to the macros specified with the PREDEFINED and
 # EXPAND_AS_DEFINED tags.
 # The default value is: NO.
-# This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
+# This tag requires that the tag RAJA_ENABLE_PREPROCESSING is set to YES.
 
 EXPAND_ONLY_PREDEF     = NO
 
 # If the SEARCH_INCLUDES tag is set to YES, the include files in the
 # INCLUDE_PATH will be searched if a #include is found.
 # The default value is: YES.
-# This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
+# This tag requires that the tag RAJA_ENABLE_PREPROCESSING is set to YES.
 
 SEARCH_INCLUDES        = YES
 
@@ -1989,7 +1989,7 @@ INCLUDE_PATH           =
 # patterns (like *.h and *.hpp) to filter out the header-files in the
 # directories. If left blank, the patterns specified with FILE_PATTERNS will be
 # used.
-# This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
+# This tag requires that the tag RAJA_ENABLE_PREPROCESSING is set to YES.
 
 INCLUDE_FILE_PATTERNS  =
 
@@ -1999,7 +1999,7 @@ INCLUDE_FILE_PATTERNS  =
 # name=definition (no spaces). If the definition and the "=" are omitted, "=1"
 # is assumed. To prevent a macro definition from being undefined via #undef or
 # recursively expanded use the := operator instead of the = operator.
-# This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
+# This tag requires that the tag RAJA_ENABLE_PREPROCESSING is set to YES.
 
 PREDEFINED             =
 
@@ -2008,7 +2008,7 @@ PREDEFINED             =
 # macro definition that is found in the sources will be used. Use the PREDEFINED
 # tag if you want to use a different macro definition that overrules the
 # definition found in the source code.
-# This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
+# This tag requires that the tag RAJA_ENABLE_PREPROCESSING is set to YES.
 
 EXPAND_AS_DEFINED      =
 
@@ -2018,7 +2018,7 @@ EXPAND_AS_DEFINED      =
 # are typically used for boiler-plate code, and will confuse the parser if not
 # removed.
 # The default value is: YES.
-# This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
+# This tag requires that the tag RAJA_ENABLE_PREPROCESSING is set to YES.
 
 SKIP_FUNCTION_MACROS   = YES
 
@@ -2205,7 +2205,7 @@ UML_LIMIT_NUM_FIELDS   = 10
 
 TEMPLATE_RELATIONS     = NO
 
-# If the INCLUDE_GRAPH, ENABLE_PREPROCESSING and SEARCH_INCLUDES tags are set to
+# If the INCLUDE_GRAPH, RAJA_ENABLE_PREPROCESSING and SEARCH_INCLUDES tags are set to
 # YES then doxygen will generate a graph for each documented file showing the
 # direct and indirect include dependencies of the file with other documented
 # files.
@@ -2214,7 +2214,7 @@ TEMPLATE_RELATIONS     = NO
 
 INCLUDE_GRAPH          = YES
 
-# If the INCLUDED_BY_GRAPH, ENABLE_PREPROCESSING and SEARCH_INCLUDES tags are
+# If the INCLUDED_BY_GRAPH, RAJA_ENABLE_PREPROCESSING and SEARCH_INCLUDES tags are
 # set to YES then doxygen will generate a graph for each documented file showing
 # the direct and indirect include dependencies of the file with other documented
 # files.

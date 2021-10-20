@@ -81,7 +81,7 @@ TYPED_TEST(StridedNumericIteratorUnitTest, simple)
   ASSERT_EQ(five - 1, three);
 }
 
-#if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+#if defined(RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG)
 TYPED_TEST(NumericIteratorUnitTest, overflow)
 {
   if (std::is_unsigned<TypeParam>::value) {

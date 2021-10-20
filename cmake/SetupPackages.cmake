@@ -45,7 +45,7 @@ if (RAJA_ENABLE_CUDA OR RAJA_ENABLE_EXTERNAL_CUB)
   endif()
 endif ()
 
-if (RAJA_ENABLE_CUDA AND ENABLE_NV_TOOLS_EXT)
+if (RAJA_ENABLE_CUDA AND RAJA_ENABLE_NV_TOOLS_EXT)
   find_package(NvToolsExt)
   if (NVTOOLSEXT_FOUND)
     blt_import_library( NAME       nvtoolsext
@@ -59,7 +59,7 @@ if (RAJA_ENABLE_CUDA AND ENABLE_NV_TOOLS_EXT)
   endif()
 endif ()
 
-if (ENABLE_HIP OR RAJA_ENABLE_EXTERNAL_ROCPRIM)
+if (RAJA_ENABLE_HIP OR RAJA_ENABLE_EXTERNAL_ROCPRIM)
   find_package(RocPRIM)
   if (ROCPRIM_FOUND)
     set(RAJA_ENABLE_EXTERNAL_ROCPRIM On)
@@ -77,12 +77,12 @@ endif ()
 
 set(TPL_DEPS)
 blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF RAJA_ENABLE_CUDA)
-blt_list_append(TO TPL_DEPS ELEMENTS nvtoolsext IF ENABLE_NV_TOOLS_EXT)
+blt_list_append(TO TPL_DEPS ELEMENTS nvtoolsext IF RAJA_ENABLE_NV_TOOLS_EXT)
 blt_list_append(TO TPL_DEPS ELEMENTS cub IF RAJA_ENABLE_EXTERNAL_CUB)
-blt_list_append(TO TPL_DEPS ELEMENTS hip hip_runtime IF ENABLE_HIP)
+blt_list_append(TO TPL_DEPS ELEMENTS hip hip_runtime IF RAJA_ENABLE_HIP)
 blt_list_append(TO TPL_DEPS ELEMENTS rocPRIM IF RAJA_ENABLE_EXTERNAL_ROCPRIM)
 blt_list_append(TO TPL_DEPS ELEMENTS openmp IF RAJA_ENABLE_OPENMP)
-blt_list_append(TO TPL_DEPS ELEMENTS mpi IF ENABLE_MPI)
+blt_list_append(TO TPL_DEPS ELEMENTS mpi IF RAJA_ENABLE_MPI)
 
 foreach(dep ${TPL_DEPS})
     # If the target is EXPORTABLE, add it to the export set

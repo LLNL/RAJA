@@ -38,8 +38,8 @@
  *
  ******************************************************************************
  */
-#cmakedefine ENABLE_FT
-#cmakedefine ENABLE_ITERATOR_OVERFLOW_DEBUG
+#cmakedefine RAJA_ENABLE_FT
+#cmakedefine RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG
 /*!
  ******************************************************************************
  *

@@ -129,7 +129,7 @@ and their default settings:
       RAJA_ENABLE_TARGET_OPENMP      Off (when on, RAJA_ENABLE_OPENMP must also be on)
       RAJA_ENABLE_TBB                Off
       RAJA_ENABLE_CUDA               Off
-      ENABLE_HIP                Off
+      RAJA_ENABLE_HIP                Off
       RAJA_ENABLE_SYCL               Off
       =======================   ============================================
 
@@ -299,7 +299,7 @@ and their default settings:
       =============================   ========================================
       Variable                        Meaning
       =============================   ========================================
-      ENABLE_FT                       Enable/disable RAJA experimental
+      RAJA_ENABLE_FT                       Enable/disable RAJA experimental
                                       loop-level fault-tolerance mechanism
       RAJA_REPORT_FT                  Enable/disable a report of fault-
                                       tolerance enabled run (e.g., number of 

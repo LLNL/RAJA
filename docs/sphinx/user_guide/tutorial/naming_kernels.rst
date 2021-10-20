@@ -48,6 +48,6 @@ user specified name::
 
 As future work we plan to add support to other profiling tools; API changes may occur 
 based on user feedback and integration with other tools. Enabling NVTX profiling
-with RAJA Teams requires RAJA to be configured with ENABLE_NV_TOOLS_EXT=ON.
+with RAJA Teams requires RAJA to be configured with RAJA_ENABLE_NV_TOOLS_EXT=ON.
 
 The file RAJA/examples/teams_reductions.cpp contains a complete working example code.

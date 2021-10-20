@@ -23,7 +23,7 @@ macro(raja_add_executable)
     list (APPEND arg_DEPENDS_ON cuda)
   endif ()
 
-  if (ENABLE_HIP)
+  if (RAJA_ENABLE_HIP)
     list (APPEND arg_DEPENDS_ON hip)
   endif ()
 
@@ -71,7 +71,7 @@ macro(raja_add_plugin_library)
     list (APPEND arg_DEPENDS_ON cuda)
   endif ()
 
-  if (ENABLE_HIP)
+  if (RAJA_ENABLE_HIP)
     list (APPEND arg_DEPENDS_ON hip)
   endif ()
 

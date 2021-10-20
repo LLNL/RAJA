@@ -17,7 +17,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
   if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
     message(FATAL_ERROR "RAJA requires GCC 4.9 or greater!")
   endif ()
-  if (ENABLE_COVERAGE)
+  if (RAJA_ENABLE_COVERAGE)
     if(NOT RAJA_ENABLE_CUDA)
       message(INFO "Coverage analysis enabled")
       set(CMAKE_CXX_FLAGS "-coverage ${CMAKE_CXX_FLAGS}")
@@ -63,7 +63,7 @@ if (RAJA_ENABLE_CUDA)
 endif()
 # end RAJA_ENABLE_CUDA section
 
-if (ENABLE_HIP)
+if (RAJA_ENABLE_HIP)
   if (NOT RAJA_HOST_CONFIG_LOADED)
     #list(APPEND RAJA_EXTRA_HIPCC_FLAGS)
 
