@@ -42,10 +42,10 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
 
     resources::Sycl sycl_res = resources::Sycl::get_default();
-    
+
     // Global resource was not set, use the resource that was passed to forall
     // Determine if the default SYCL res is being used
-    if (!q) { 
+    if (!q) {
       q = sycl_res.get_queue();
     }
 
@@ -67,145 +67,83 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
 	 ctx.setup_loc_id(itm.get_local_id(0),
 		    itm.get_local_id(1),
 		    itm.get_local_id(2));
-	 
+
 	 ctx.setup_group_id(itm.get_group(0),
 			    itm.get_group(1),
 			    itm.get_group(2));
 
 	 body_in(ctx);
-	 
-       });                        
-	 
+
+       });
+
     });
 
     if (!async) { q->wait(); }
-    
+
   }
 
-#if 0  
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
   exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY_IN &&body_in)
   {
-    using BODY = camp::decay<BODY_IN>;
 
-    auto func = launch_global_fcn<BODY>;
+    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
 
     /*Get the concrete resource */
     resources::Sycl sycl_res = res.get<RAJA::resources::Sycl>();
 
-    //
-    // Compute the number of blocks and threads
-    //
-
-    sycl_dim_t gridSize{ static_cast<sycl_dim_member_t>(ctx.teams.value[0]),
-                         static_cast<sycl_dim_member_t>(ctx.teams.value[1]),
-                         static_cast<sycl_dim_member_t>(ctx.teams.value[2]) };
-
-    sycl_dim_t blockSize{ static_cast<sycl_dim_member_t>(ctx.threads.value[0]),
-                          static_cast<sycl_dim_member_t>(ctx.threads.value[1]),
-                          static_cast<sycl_dim_member_t>(ctx.threads.value[2]) };
-
-    // Only launch kernel if we have something to iterate over
-    constexpr sycl_dim_member_t zero = 0;
-    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
-         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
-
-      RAJA_FT_BEGIN;
-
-      //
-      // Setup shared memory buffers
-      //
-      size_t shmem = 0;
-
-      {
-        //
-        // Privatize the loop_body, using make_launch_body to setup reductions
-        //
-        BODY body = RAJA::sycl::make_launch_body(
-            gridSize, blockSize, shmem, sycl_res, std::forward<BODY_IN>(body_in));
-
-        //
-        // Launch the kernel
-        //
-        void *args[] = {(void*)&ctx, (void*)&body};
-        {
-          RAJA::sycl::launch((const void*)func, gridSize, blockSize, args, shmem, sycl_res, async, ctx.kernel_name);
-        }
-      }
-
-      RAJA_FT_END;
+    // Global resource was not set, use the resource that was passed to forall
+    // Determine if the default SYCL res is being used
+    if (!q) {
+      q = sycl_res.get_queue();
     }
+
+    const ::sycl::range<3> gridSize(ctx.teams.value[0],
+			      ctx.teams.value[1],
+			      ctx.teams.value[2]);
+
+    const ::sycl::range<3> blockSize(ctx.threads.value[0],
+			      ctx.threads.value[1],
+			      ctx.threads.value[2]);
+
+
+    q->submit([&](cl::sycl::handler& h) {
+
+    h.parallel_for
+      (cl::sycl::nd_range<3>{gridSize, blockSize},
+       [=] (cl::sycl::nd_item<3> itm) {
+
+	 ctx.setup_loc_id(itm.get_local_id(0),
+		    itm.get_local_id(1),
+		    itm.get_local_id(2));
+
+	 ctx.setup_group_id(itm.get_group(0),
+			    itm.get_group(1),
+			    itm.get_group(2));
+
+	 body_in(ctx);
+
+       });
+
+    });
+
+    if (!async) { q->wait(); }
 
     return resources::EventProxy<resources::Resource>(res);
   }
-#endif
+
 };
 
 #if 0
-template <typename BODY, int num_threads>
-__launch_bounds__(num_threads, 1) __global__
-    void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
-{
-  using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(body_in);
-  auto& body = privatizer.get_priv();
-  body(ctx);
-}
-
-
 template <bool async, int nthreads>
 struct LaunchExecute<RAJA::expt::sycl_launch_t<async, nthreads>> {
 
   template <typename BODY_IN>
   static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
   {
-    using BODY = camp::decay<BODY_IN>;
-
-    auto func = launch_global_fcn_fixed<BODY, nthreads>;
-
     resources::Sycl sycl_res = resources::Sycl::get_default();
 
-    //
-    // Compute the number of blocks and threads
-    //
-
-    sycl_dim_t gridSize{ static_cast<sycl_dim_member_t>(ctx.teams.value[0]),
-                         static_cast<sycl_dim_member_t>(ctx.teams.value[1]),
-                         static_cast<sycl_dim_member_t>(ctx.teams.value[2]) };
-
-    sycl_dim_t blockSize{ static_cast<sycl_dim_member_t>(ctx.threads.value[0]),
-                          static_cast<sycl_dim_member_t>(ctx.threads.value[1]),
-                          static_cast<sycl_dim_member_t>(ctx.threads.value[2]) };
-
-    // Only launch kernel if we have something to iterate over
-    constexpr sycl_dim_member_t zero = 0;
-    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
-         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
-
-      RAJA_FT_BEGIN;
-
-      //
-      // Setup shared memory buffers
-      //
-      size_t shmem = 0;
-
-      {
-        //
-        // Privatize the loop_body, using make_launch_body to setup reductions
-        //
-        BODY body = RAJA::sycl::make_launch_body(
-            gridSize, blockSize, shmem, sycl_res, std::forward<BODY_IN>(body_in));
-
-        //
-        // Launch the kernel
-        //
-        void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::sycl::launch((const void*)func, gridSize, blockSize, args, shmem, sycl_res, async, ctx.kernel_name);
-      }
-
-      RAJA_FT_END;
-    }
+    //Does SYCL support launch bounds?
 
   }
 
@@ -213,55 +151,10 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, nthreads>> {
   static resources::EventProxy<resources::Resource>
   exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY_IN &&body_in)
   {
-    using BODY = camp::decay<BODY_IN>;
-
-    auto func = launch_global_fcn<BODY>;
-
     /*Get the concrete resource */
     resources::Sycl sycl_res = res.get<RAJA::resources::Sycl>();
 
-    //
-    // Compute the number of blocks and threads
-    //
-
-    sycl_dim_t gridSize{ static_cast<sycl_dim_member_t>(ctx.teams.value[0]),
-                         static_cast<sycl_dim_member_t>(ctx.teams.value[1]),
-                         static_cast<sycl_dim_member_t>(ctx.teams.value[2]) };
-
-    sycl_dim_t blockSize{ static_cast<sycl_dim_member_t>(ctx.threads.value[0]),
-                          static_cast<sycl_dim_member_t>(ctx.threads.value[1]),
-                          static_cast<sycl_dim_member_t>(ctx.threads.value[2]) };
-
-    // Only launch kernel if we have something to iterate over
-    constexpr sycl_dim_member_t zero = 0;
-    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
-         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
-
-      RAJA_FT_BEGIN;
-
-      //
-      // Setup shared memory buffers
-      //
-      size_t shmem = 0;
-
-      {
-        //
-        // Privatize the loop_body, using make_launch_body to setup reductions
-        //
-        BODY body = RAJA::sycl::make_launch_body(
-            gridSize, blockSize, shmem, sycl_res, std::forward<BODY_IN>(body_in));
-
-        //
-        // Launch the kernel
-        //
-        void *args[] = {(void*)&ctx, (void*)&body};
-        {
-          RAJA::sycl::launch((const void*)func, gridSize, blockSize, args, shmem, sycl_res, async, ctx.kernel_name);
-        }
-      }
-
-      RAJA_FT_END;
-    }
+    //Does SYCL support launch bounds?
 
     return resources::EventProxy<resources::Resource>(res);
   }
@@ -269,7 +162,7 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, nthreads>> {
 };
 
 #endif
-  
+
 /*
    SYCL global thread mapping
 */
@@ -300,7 +193,7 @@ struct LoopExecute<sycl_global_thread<DIM>, SEGMENT> {
     }
   }
 };
-  
+
 using sycl_global_id_xy = sycl_global_thread<0,1>;
 using sycl_global_id_xz = sycl_global_thread<0,2>;
 using sycl_global_id_yx = sycl_global_thread<1,0>;
@@ -526,8 +419,6 @@ struct LoopExecute<sycl_local_123_loop<DIM>, SEGMENT> {
     }
   }
 };
-
-#if 1
 
 /*
   SYCL thread direct mappings
@@ -1136,7 +1027,6 @@ struct TileICountExecute<sycl_group_123_direct<DIM>, SEGMENT> {
     }
   }
 };
-#endif
 
 }  // namespace expt
 
