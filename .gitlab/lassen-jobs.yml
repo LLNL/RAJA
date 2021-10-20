@@ -55,7 +55,7 @@ gcc_8_3_1_cuda:
     SPEC: "+cuda %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.168"
   extends: .build_and_test_on_lassen
 
-gcc_8_3_1_cuda:
+gcc_8_3_1_cuda_ats_disabled:
   variables:
     SPEC: "+cuda %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.168"
   extends: .build_and_test_on_lassen_ats_disabled
