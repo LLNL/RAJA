@@ -276,9 +276,9 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, nthreads>> {
 template<int ... DIM>
 struct sycl_global_thread;
 
-using sycl_global_local_x = sycl_global_thread<0>;
-using sycl_global_local_y = sycl_global_thread<1>;
-using sycl_global_local_z = sycl_global_thread<2>;
+using sycl_global_id_x = sycl_global_thread<0>;
+using sycl_global_id_y = sycl_global_thread<1>;
+using sycl_global_id_z = sycl_global_thread<2>;
 
 template <typename SEGMENT, int DIM>
 struct LoopExecute<sycl_global_thread<DIM>, SEGMENT> {
@@ -293,7 +293,7 @@ struct LoopExecute<sycl_global_thread<DIM>, SEGMENT> {
     const int len = segment.end() - segment.begin();
     {
       const int tx = internal::get_sycl_dim<DIM>(ctx.loc_id) +
-        internal::get_sycl_dim<DIM>(ctx.threads.value[DIM])*
+        ctx.threads.value[DIM]*
 	internal::get_sycl_dim<DIM>(ctx.group_id);
 
       if (tx < len) body(*(segment.begin() + tx));
@@ -301,12 +301,12 @@ struct LoopExecute<sycl_global_thread<DIM>, SEGMENT> {
   }
 };
   
-using sycl_global_local_xy = sycl_global_thread<0,1>;
-using sycl_global_local_xz = sycl_global_thread<0,2>;
-using sycl_global_local_yx = sycl_global_thread<1,0>;
-using sycl_global_local_yz = sycl_global_thread<1,2>;
-using sycl_global_local_zx = sycl_global_thread<2,0>;
-using sycl_global_local_zy = sycl_global_thread<2,1>;
+using sycl_global_id_xy = sycl_global_thread<0,1>;
+using sycl_global_id_xz = sycl_global_thread<0,2>;
+using sycl_global_id_yx = sycl_global_thread<1,0>;
+using sycl_global_id_yz = sycl_global_thread<1,2>;
+using sycl_global_id_zx = sycl_global_thread<2,0>;
+using sycl_global_id_zy = sycl_global_thread<2,1>;
 
 template <typename SEGMENT, int DIM0, int DIM1>
 struct LoopExecute<sycl_global_thread<DIM0, DIM1>, SEGMENT> {
@@ -322,10 +322,10 @@ struct LoopExecute<sycl_global_thread<DIM0, DIM1>, SEGMENT> {
     const int len0 = segment0.end() - segment0.begin();
     {
       const int tx = internal::get_sycl_dim<DIM0>(ctx.loc_id) +
-        internal::get_sycl_dim<DIM0>(ctx.threads.value[DIM0])*internal::get_sycl_dim<DIM0>(ctx.group_id);
+        ctx.threads.value[DIM0]*internal::get_sycl_dim<DIM0>(ctx.group_id);
 
       const int ty = internal::get_sycl_dim<DIM1>(ctx.loc_id) +
-        internal::get_sycl_dim<DIM1>(ctx.threads.value[DIM1])*internal::get_sycl_dim<DIM1>(ctx.group_id);
+        ctx.threads.value[DIM1]*internal::get_sycl_dim<DIM1>(ctx.group_id);
 
       if (tx < len0 && ty < len1)
         body(*(segment0.begin() + tx), *(segment1.begin() + ty));
@@ -333,12 +333,12 @@ struct LoopExecute<sycl_global_thread<DIM0, DIM1>, SEGMENT> {
   }
 };
 
-using sycl_global_local_xyz = sycl_global_thread<0,1,2>;
-using sycl_global_local_xzy = sycl_global_thread<0,2,1>;
-using sycl_global_local_yxz = sycl_global_thread<1,0,2>;
-using sycl_global_local_yzx = sycl_global_thread<1,2,0>;
-using sycl_global_local_zxy = sycl_global_thread<2,0,1>;
-using sycl_global_local_zyx = sycl_global_thread<2,1,0>;
+using sycl_global_id_xyz = sycl_global_thread<0,1,2>;
+using sycl_global_id_xzy = sycl_global_thread<0,2,1>;
+using sycl_global_id_yxz = sycl_global_thread<1,0,2>;
+using sycl_global_id_yzx = sycl_global_thread<1,2,0>;
+using sycl_global_id_zxy = sycl_global_thread<2,0,1>;
+using sycl_global_id_zyx = sycl_global_thread<2,1,0>;
 
 template <typename SEGMENT, int DIM0, int DIM1, int DIM2>
 struct LoopExecute<sycl_global_thread<DIM0, DIM1, DIM2>, SEGMENT> {
@@ -356,13 +356,13 @@ struct LoopExecute<sycl_global_thread<DIM0, DIM1, DIM2>, SEGMENT> {
     const int len0 = segment0.end() - segment0.begin();
     {
       const int tx = internal::get_sycl_dim<DIM0>(ctx.loc_id) +
-        internal::get_sycl_dim<DIM0>(ctx.threads.value[DIM0])*internal::get_sycl_dim<DIM0>(ctx.group_id);
+        ctx.threads.value[DIM0]*internal::get_sycl_dim<DIM0>(ctx.group_id);
 
       const int ty = internal::get_sycl_dim<DIM1>(ctx.loc_id) +
-        internal::get_sycl_dim<DIM1>(ctx.threads.value[DIM1])*internal::get_sycl_dim<DIM1>(ctx.group_id);
+        ctx.threads.value[DIM1]*internal::get_sycl_dim<DIM1>(ctx.group_id);
 
       const int tz = internal::get_sycl_dim<DIM2>(ctx.loc_id) +
-        internal::get_sycl_dim<DIM2>(ctx.threads.value[DIM2])*internal::get_sycl_dim<DIM2>(ctx.group_id);
+        ctx.threads.value[DIM2]*internal::get_sycl_dim<DIM2>(ctx.group_id);
 
       if (tx < len0 && ty < len1 && tz < len2)
         body(*(segment0.begin() + tx),
@@ -612,7 +612,7 @@ struct LoopICountExecute<sycl_local_123_loop<DIM>, SEGMENT> {
 
     for (int tx = internal::get_sycl_dim<DIM>(ctx.loc_id);
          tx < len;
-         tx += internal::get_sycl_dim<DIM>(ctx.threads.value[DIM]) )
+         tx += ctx.threads.value[DIM] )
     {
       body(*(segment.begin() + tx), tx);
     }
@@ -971,7 +971,7 @@ struct TileExecute<sycl_local_123_loop<DIM>, SEGMENT> {
 
     for (int tx = internal::get_sycl_dim<DIM>(ctx.loc_id) * tile_size;
          tx < len;
-         tx += internal::get_sycl_dim<DIM>(ctx.threads.value[DIM]) * tile_size)
+         tx += ctx.threads.value[DIM] * tile_size)
     {
       body(segment.slice(tx, tile_size));
     }
@@ -1062,7 +1062,7 @@ struct TileICountExecute<sycl_local_123_loop<DIM>, SEGMENT> {
 
     for (int tx = internal::get_sycl_dim<DIM>(ctx.loc_id) * tile_size;
          tx < len;
-         tx += internal::get_sycl_dim<DIM>(ctx.threads.value[DIM]) * tile_size)
+         tx += ctx.threads.value[DIM] * tile_size)
     {
       body(segment.slice(tx, tile_size), tx/tile_size);
     }
