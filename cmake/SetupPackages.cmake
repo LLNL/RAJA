@@ -25,7 +25,7 @@ if (RAJA_ENABLE_TBB)
     message(STATUS "TBB Enabled")
   else()
     message(WARNING "TBB NOT FOUND")
-    set(RAJA_ENABLE_TBB Off)
+    set(RAJA_ENABLE_TBB Off CACHE BOOL "" FORCE)
   endif()
 endif ()
 
