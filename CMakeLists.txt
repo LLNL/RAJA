@@ -109,8 +109,6 @@ include(cmake/SetupDependentOptions.cmake)
 include(cmake/SetupBasics.cmake)
 # Find third-party packages
 include(cmake/SetupPackages.cmake)
-# Setup vendor-specific compiler flags
-include(cmake/SetupCompilers.cmake)
 
 if (RAJA_ENABLE_CUDA)
   if (DEFINED CUDA_ARCH)
@@ -135,6 +133,8 @@ if (RAJA_ENABLE_CUDA)
   endif ()
 endif()
 
+# Setup vendor-specific compiler flags
+include(cmake/SetupCompilers.cmake)
 # Macros for building executables and libraries
 include (cmake/RAJAMacros.cmake)
 
