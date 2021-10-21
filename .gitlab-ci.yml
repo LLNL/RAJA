@@ -86,6 +86,13 @@ stages:
     reports:
       junit: junit.xml
 
+.build_blueos_3_ppc64le_ib_ats_disabled_script:
+  script:
+    - lalloc 1 --atsdisable -W ${DEFAULT_TIME} scripts/gitlab/build_and_test.sh
+  artifacts:
+    reports:
+      junit: junit.xml
+
 .build_blueos_3_ppc64le_ib_p9_script:
   extends: .build_blueos_3_ppc64le_ib_script
 
