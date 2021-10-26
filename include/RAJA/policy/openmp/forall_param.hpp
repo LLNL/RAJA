@@ -25,9 +25,7 @@
 #define RAJA_OMP_DECLARE_REDUCTION_COMBINE \
       _Pragma(" omp declare reduction( combine \
         : typename std::remove_reference<decltype(f_params)>::type \
-        : RAJA::expt::ParamMultiplexer::combine< \
-            typename std::decay<decltype(p)>::type \
-          >(omp_out, omp_in) ) \
+        : RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(omp_out, omp_in) ) \
         initializer(omp_priv = omp_orig) ")
 
 namespace RAJA
@@ -45,13 +43,16 @@ namespace expt
     //
     // omp for (Auto)
     //
-    template <typename Iterable, typename Func, typename ForallParam>
-    RAJA_INLINE void forall_impl(const RAJA::policy::omp::Auto& p,
-                                 Iterable&& iter,
-                                 Func&& loop_body,
-                                 ForallParam&& f_params)
+    template <typename ExecPol, typename Iterable, typename Func, typename ForallParam>
+    RAJA_INLINE 
+    concepts::enable_if< std::is_same<ExecPol, RAJA::policy::omp::Auto> >
+    forall_impl(const ExecPol& p,
+                Iterable&& iter,
+                Func&& loop_body,
+                ForallParam&& f_params)
     {
-      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      using EXEC_POL = typename std::decay<decltype(p)>::type;
+      RAJA::expt::ParamMultiplexer::init<ExecPol>(f_params);
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
       RAJA_EXTRACT_BED_IT(iter);
@@ -60,20 +61,23 @@ namespace expt
         RAJA::expt::invoke_body(f_params, loop_body, *(begin_it + i));
       }
 
-      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+      RAJA::expt::ParamMultiplexer::resolve<ExecPol>(f_params);
     }
 
     //
     // omp for schedule(static)
     //
-    template <typename Iterable, typename Func, int ChunkSize, typename ForallParam,
-      typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
-    RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Static<ChunkSize>& p,
+    template <template<int> class ExecPol, typename Iterable, typename Func, int ChunkSize, typename ForallParam>
+    RAJA_INLINE 
+    concepts::enable_if< std::is_same<ExecPol<ChunkSize>, RAJA::policy::omp::Static<ChunkSize>>,
+                         std::integral_constant<bool,(ChunkSize <= 0)> >
+    forall_impl(const ExecPol<ChunkSize>& p,
                                  Iterable&& iter,
                                  Func&& loop_body,
                                  ForallParam&& f_params)
     {
-      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      using EXEC_POL = typename std::decay<decltype(p)>::type;
+      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
       RAJA_EXTRACT_BED_IT(iter);
@@ -82,20 +86,23 @@ namespace expt
         RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
       }
 
-      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
 
     //
     // omp for schedule(static, ChunkSize)
     //
-    template <typename Iterable, typename Func, int ChunkSize, typename ForallParam,
-      typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
-    RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Static<ChunkSize>& p,
+    template <template<int> class ExecPol, typename Iterable, typename Func, int ChunkSize, typename ForallParam>
+    RAJA_INLINE 
+    concepts::enable_if< std::is_same<ExecPol<ChunkSize>, RAJA::policy::omp::Static<ChunkSize>>,
+                         std::integral_constant<bool,(ChunkSize > 0)> >
+    forall_impl(const ExecPol<ChunkSize>& p,
                                  Iterable&& iter,
                                  Func&& loop_body,
                                  ForallParam&& f_params)
     {
-      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      using EXEC_POL = typename std::decay<decltype(p)>::type;
+      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
       RAJA_EXTRACT_BED_IT(iter);
@@ -104,7 +111,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
       }
 
-      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
 
     //
@@ -117,7 +124,8 @@ namespace expt
                                  Func&& loop_body,
                                  ForallParam&& f_params)
     {
-      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      using EXEC_POL = typename std::decay<decltype(p)>::type;
+      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
       RAJA_EXTRACT_BED_IT(iter);
@@ -126,7 +134,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, loop_body, *(begin_it + i));
       }
 
-      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
 
     //
@@ -139,7 +147,8 @@ namespace expt
                                  Func&& loop_body,
                                  ForallParam&& f_params)
     {
-      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      using EXEC_POL = typename std::decay<decltype(p)>::type;
+      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
       RAJA_EXTRACT_BED_IT(iter);
@@ -148,7 +157,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, loop_body, *(begin_it + i));
       }
 
-      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
 
     //
@@ -161,7 +170,8 @@ namespace expt
                                  Func&& loop_body,
                                  ForallParam&& f_params)
     {
-      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      using EXEC_POL = typename std::decay<decltype(p)>::type;
+      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
       RAJA_EXTRACT_BED_IT(iter);
@@ -170,7 +180,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, loop_body, *(begin_it + i));
       }
 
-      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
 
     //
@@ -183,7 +193,8 @@ namespace expt
                                  Func&& loop_body,
                                  ForallParam&& f_params)
     {
-      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      using EXEC_POL = typename std::decay<decltype(p)>::type;
+      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
       RAJA_EXTRACT_BED_IT(iter);
@@ -192,7 +203,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, loop_body, *(begin_it + i));
       }
 
-      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
 
     //
@@ -204,7 +215,8 @@ namespace expt
                                  Func&& loop_body,
                                  ForallParam&& f_params)
     {
-      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      using EXEC_POL = typename std::decay<decltype(p)>::type;
+      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
       RAJA_EXTRACT_BED_IT(iter);
@@ -213,7 +225,7 @@ namespace expt
         loop_body(begin_it[i]);
       }
 
-      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
 
     //
@@ -225,7 +237,8 @@ namespace expt
                                  Func&& loop_body,
                                  ForallParam&& f_params)
     {
-      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      using EXEC_POL = typename std::decay<decltype(p)>::type;
+      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
       RAJA_EXTRACT_BED_IT(iter);
@@ -237,7 +250,7 @@ namespace expt
       }
       }
 
-      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
 
     //
@@ -250,7 +263,8 @@ namespace expt
                                  Func&& loop_body,
                                  ForallParam&& f_params)
     {
-      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      using EXEC_POL = typename std::decay<decltype(p)>::type;
+      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
       RAJA_EXTRACT_BED_IT(iter);
@@ -262,7 +276,7 @@ namespace expt
       }
       }
 
-      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
 
     //
@@ -275,7 +289,8 @@ namespace expt
                                  Func&& loop_body,
                                  ForallParam&& f_params)
     {
-      RAJA::expt::ParamMultiplexer::init<RAJA::policy::omp::Auto>(f_params);
+      using EXEC_POL = typename std::decay<decltype(p)>::type;
+      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
       RAJA_EXTRACT_BED_IT(iter);
@@ -287,7 +302,7 @@ namespace expt
       }
       }
 
-      RAJA::expt::ParamMultiplexer::resolve<RAJA::policy::omp::Auto>(f_params);
+      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
   } //  namespace internal
 
