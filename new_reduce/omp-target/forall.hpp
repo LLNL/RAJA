@@ -5,7 +5,7 @@
 namespace detail {
 
   template <typename EXEC_POL, typename B, typename... Params>
-  std::enable_if_t< std::is_same< EXEC_POL, RAJA::omp_target_parallel_for_exec_nt>::value >
+  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::omp_target_parallel_for_exec_nt> >
   forall_param(EXEC_POL&&, int N, B const &body, Params... params)
   {
     ForallParamPack<Params...> f_params(params...);

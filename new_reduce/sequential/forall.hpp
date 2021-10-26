@@ -4,7 +4,7 @@
 namespace detail {
 
   template <typename EXEC_POL, typename B, typename ParamPack>
-  std::enable_if_t< std::is_same< EXEC_POL, RAJA::seq_exec>::value >
+  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::seq_exec> >
   forall_param(EXEC_POL&&, int N, B const &body, ParamPack f_params)
   {
     init<EXEC_POL>(f_params);

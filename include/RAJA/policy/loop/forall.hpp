@@ -32,13 +32,14 @@
 
 #include "RAJA/internal/fault_tolerance.hpp"
 
+#include "RAJA/pattern/forall_param.hpp"
+
 using RAJA::concepts::enable_if;
 
 namespace RAJA
 {
 namespace policy
 {
-#include "RAJA/pattern/forall_param.hpp"
 
 namespace loop
 {
