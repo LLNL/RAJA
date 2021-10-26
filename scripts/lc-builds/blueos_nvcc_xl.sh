@@ -58,6 +58,6 @@ echo
 echo "  Please note that you have to disable CUDA GPU hooks when you run"
 echo "  the RAJA tests; for example,"
 echo
-echo "    lrun -1 --smpiargs="-disable_gpu_hooks" ./bin/raja-perf.exe"
+echo "    lrun -1 --smpiargs="-disable_gpu_hooks" make test"
 echo
 echo "***********************************************************************"
