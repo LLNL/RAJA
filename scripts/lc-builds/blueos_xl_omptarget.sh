@@ -16,7 +16,7 @@ fi
 
 COMP_VER=$1
 
-BUILD_SUFFIX=lc_blueos-xl-${COMP_VER}
+BUILD_SUFFIX=lc_blueos-xl_omptarget-${COMP_VER}
 
 echo
 echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
