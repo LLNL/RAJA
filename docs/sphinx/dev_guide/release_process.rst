@@ -76,7 +76,7 @@ Finalizing a release on a release candidate branch involves the following steps:
      established in the file for previous releases. All changes that users 
      should be aware of should be documented in the release notes. Hopefully,
      the release notes file has been updated along with the corresponding
-     changes as they are merged into the develop branch. At any rate, it is
+     changes in PRs that are merged into the develop branch. At any rate, it is
      good practice to look over the commit history since the last release 
      to ensure all important changes are captured in the release notes.
   #. Update the version number entries for the new release in the 

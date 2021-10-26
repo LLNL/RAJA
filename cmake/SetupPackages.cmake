@@ -75,6 +75,13 @@ if (ENABLE_HIP OR ENABLE_EXTERNAL_ROCPRIM)
   endif()
 endif ()
 
+if (ENABLE_HIP AND ENABLE_ROCTX)
+  include(FindRoctracer)
+  blt_import_library(NAME roctx
+                     INCLUDES ${ROCTX_INCLUDE_DIRS}
+                     LIBRARIES ${ROCTX_LIBRARIES})
+endif ()
+
 set(TPL_DEPS)
 blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF ENABLE_CUDA)
 blt_list_append(TO TPL_DEPS ELEMENTS nvtoolsext IF ENABLE_NV_TOOLS_EXT)
