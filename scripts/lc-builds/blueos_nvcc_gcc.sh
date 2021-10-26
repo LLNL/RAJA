@@ -53,7 +53,7 @@ cmake \
 echo
 echo "***********************************************************************"
 echo
-echo "cd into directory build_${BUILD_SUFFIX} and run make to build RAJA Perf Suite"
+echo "cd into directory build_${BUILD_SUFFIX} and run make to build RAJA"
 echo
 echo "  Please note that you have to disable CUDA GPU hooks when you run"
 echo "  the RAJA tests; for example,"
