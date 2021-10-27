@@ -15,7 +15,6 @@ option(RAJA_ENABLE_EXTERNAL_ROCPRIM "Use an external rocPRIM" Off)
 option(RAJA_ENABLE_REPRODUCERS "Build issue reproducers" Off)
 
 option(RAJA_ENABLE_EXERCISES "Build exercises " On)
-option(RAJA_ENABLE_MODULES "Enable modules in supporting compilers (clang)" On)
 option(RAJA_ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
 option(RAJA_ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
 option(RAJA_ENABLE_FORCEINLINE_RECURSIVE "Enable Forceinline recursive (only supported with Intel compilers)" On)
