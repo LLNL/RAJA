@@ -85,6 +85,30 @@ struct Allocator
 
   virtual void release() = 0;
 
+  virtual const std::string& getName() const noexcept = 0;
+};
+
+
+/*! \class AllocatorWithStats
+ ******************************************************************************
+ *
+ * \brief  AllocatorWithStats Provides a generic interface for allocation and
+ *         getting allocation statistics in RAJA
+ *
+ ******************************************************************************
+ */
+struct AllocatorWithStats : Allocator
+{
+  AllocatorWithStats() = default;
+
+  // not copyable or movable
+  AllocatorWithStats(AllocatorWithStats const&) = delete;
+  AllocatorWithStats(AllocatorWithStats &&) = delete;
+  AllocatorWithStats& operator=(AllocatorWithStats const&) = delete;
+  AllocatorWithStats& operator=(AllocatorWithStats &&) = delete;
+
+  virtual ~AllocatorWithStats() = default;
+
   virtual size_t getHighWatermark() const noexcept = 0;
 
   virtual size_t getCurrentSize() const noexcept = 0;
@@ -93,9 +117,7 @@ struct Allocator
 
   virtual size_t getAllocationCount() const noexcept = 0;
 
-  virtual const std::string& getName() const noexcept = 0;
-
-  // virtual Platform getPlatform() const noexcept = 0;
+  virtual Platform getPlatform() const noexcept = 0;
 };
 
 namespace detail

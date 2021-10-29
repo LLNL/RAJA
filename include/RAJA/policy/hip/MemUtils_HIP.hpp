@@ -110,6 +110,7 @@ inline std::unique_ptr<RAJA::Allocator> make_default_device_allocator()
   return std::unique_ptr<RAJA::Allocator>(
       new AllocatorPool<DeviceBaseAllocator>(
         std::string("RAJA::hip::default_device_allocator"),
+        Platform::hip,
         DeviceBaseAllocator()));
 }
 ///
@@ -118,6 +119,7 @@ inline std::unique_ptr<RAJA::Allocator> make_default_device_zeroed_allocator()
   return std::unique_ptr<RAJA::Allocator>(
       new AllocatorPool<DeviceZeroedBaseAllocator>(
         std::string("RAJA::hip::default_device_zeroed_allocator"),
+        Platform::hip,
         DeviceZeroedBaseAllocator()));
 }
 ///
@@ -126,6 +128,7 @@ inline std::unique_ptr<RAJA::Allocator> make_default_pinned_allocator()
   return std::unique_ptr<RAJA::Allocator>(
       new AllocatorPool<PinnedBaseAllocator>(
         std::string("RAJA::hip::default_pinned_allocator"),
+        Platform::hip,
         PinnedBaseAllocator()));
 }
 

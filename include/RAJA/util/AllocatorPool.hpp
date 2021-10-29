@@ -325,18 +325,20 @@ private:
  ******************************************************************************
  */
 template <typename allocator_t>
-struct AllocatorPool : Allocator
+struct AllocatorPool : AllocatorWithStats
 {
   using allocator_type = allocator_t;
 
   static const size_t default_default_arena_size = 32ull * 1024ull * 1024ull;
 
   AllocatorPool(std::string const& name,
+                Platform platform,
                 allocator_type const& aloc = allocator_type{},
                 size_t default_arena_size = default_default_arena_size)
     : m_default_arena_size(default_arena_size)
     , m_alloc(aloc)
     , m_name(name) // std::string("RAJA::AllocatorPool<")+m_alloc.getName()+">")
+    , m_platform(platform)
   {
   }
 
@@ -489,10 +491,10 @@ struct AllocatorPool : Allocator
     return m_name;
   }
 
-  // Platform getPlatform() const noexcept final
-  // {
-  //   return m_alloc.getPlatform();
-  // }
+  Platform getPlatform() const noexcept final
+  {
+    return m_platform;
+  }
 
 private:
   using arena_container_type = std::list<detail::MemoryArena>;
@@ -501,6 +503,7 @@ private:
   size_t m_default_arena_size;
   allocator_t m_alloc;
   std::string m_name;
+  Platform m_platform;
 
   size_t m_highWatermark = 0;
   size_t m_currentSize = 0;
