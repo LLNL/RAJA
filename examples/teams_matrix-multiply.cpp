@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -41,11 +41,11 @@ using launch_policy = RAJA::expt::LaunchPolicy<
     RAJA::expt::seq_launch_t
 #if defined(RAJA_ENABLE_CUDA)
     ,
-    RAJA::expt::cuda_launch_t<true>
+    RAJA::expt::cuda_launch_t<false>
 #endif
 #if defined(RAJA_ENABLE_HIP)
     ,
-    RAJA::expt::hip_launch_t<true>
+    RAJA::expt::hip_launch_t<false>
 #endif
     >;
 
@@ -287,7 +287,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 //
-// RAJA Team loops uses a RAJA::launch method to execute the kernel.
+// RAJA Team loops uses a RAJA::launch method to launch a kernel.
 // These examples, illustrate the basic interface and mechanics.
 //
 // This is different than RAJA::forall and so a few points of exmplanation
@@ -321,7 +321,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // _matmult_basickernel_start
   RAJA::expt::launch<launch_policy>(RAJA::expt::HOST,
-   RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
+   RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
                          RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
@@ -350,36 +350,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
-  //RAJA Team loops only support one host and device policy at a time.
+  //RAJA Team loops currently only support a pair of policies at a time.
   //Switching between a sequential and OpenMP launch space requires
-  //recompiling execution policies
-  using omp_launch_policy = RAJA::expt::LaunchPolicy<
-                              RAJA::expt::omp_launch_t
-#if defined(RAJA_ENABLE_CUDA)
-                              ,
-                              RAJA::expt::cuda_launch_t<true>
-#endif
-#if defined(RAJA_ENABLE_HIP)
-                              ,
-                              RAJA::expt::hip_launch_t<true>
-#endif
-                              >;
+  //recompiling execution policies. When running exclusively on the host
+  //the compute grid may be left uninitialized as loop methods get expanded to
+  //standard C style loops.
+  using omp_launch_policy = RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t>;
 
-  using omp_col_policy0 = RAJA::expt::LoopPolicy<RAJA::omp_parallel_for_exec
-#if defined(RAJA_DEVICE_ACTIVE)
-                                                 ,gpu_global_thread_y_policy
-#endif
-    >;
+  using omp_col_policy0 = RAJA::expt::LoopPolicy<RAJA::omp_for_exec>;
 
-  using omp_row_policy0 = RAJA::expt::LoopPolicy<loop_policy
-#if defined(RAJA_DEVICE_ACTIVE)
-                                                 ,gpu_global_thread_x_policy
-#endif
-    >;
+  using omp_row_policy0 = RAJA::expt::LoopPolicy<loop_policy>;
 
-  RAJA::expt::launch<omp_launch_policy>(RAJA::expt::HOST,
-   RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
-                         RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
+  RAJA::expt::launch<omp_launch_policy>(RAJA::expt::Grid(),
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
    RAJA::expt::loop<omp_col_policy0>(ctx, col_range, [&] (int col) {
@@ -409,16 +391,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This is the same as using an OpenMP 'parallel for' directive on the
   // outer loop with a 'collapse(2) clause.
   //
-  using global_thread_xy = RAJA::expt::LoopPolicy<RAJA::expt::omp_parallel_nested_for_exec
-#if defined(RAJA_DEVICE_ACTIVE)
-                                                  ,
-                                                  gpu_global_thread_xy_policy
-#endif
-                                                  >;
+  using global_thread_xy = RAJA::expt::LoopPolicy<RAJA::omp_for_exec>;
 
    RAJA::expt::launch<omp_launch_policy>(RAJA::expt::HOST,
-    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
-                          RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
+                                         RAJA::expt::Grid(),
    [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
      RAJA::expt::loop<global_thread_xy>(ctx, col_range, row_range, [&] (int col, int row) {
@@ -456,7 +432,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   //
    RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
-    RAJA::expt::Resources(RAJA::expt::Teams(N),
+    RAJA::expt::Grid(RAJA::expt::Teams(N),
                           RAJA::expt::Threads(N)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
@@ -492,7 +468,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // The tiling capabilities in RAJA will also mask out of bounds iterations.
   //
   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
-    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
+    RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
                           RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
@@ -552,7 +528,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   //
    RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
-    RAJA::expt::Resources(RAJA::expt::Teams(N),
+    RAJA::expt::Grid(RAJA::expt::Teams(N),
                           RAJA::expt::Threads(N)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
@@ -592,7 +568,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // The tiling capabilities in RAJA will also mask out of bounds iterations.
   //
   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
-    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
+    RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
                           RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
@@ -641,7 +617,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // to add a barrier ensuring all threads have loaded/read from shared memory
   //
   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
-    RAJA::expt::Resources(RAJA::expt::Teams(NTeams,NTeams),
+    RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
                           RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
      [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
    //

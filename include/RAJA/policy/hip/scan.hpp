@@ -10,7 +10,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -51,7 +51,7 @@ template <size_t BLOCK_SIZE, bool Async, typename InputIter, typename Function>
 RAJA_INLINE
 resources::EventProxy<resources::Hip>
 inclusive_inplace(
-    resources::Hip &hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async>,
     InputIter begin,
     InputIter end,
@@ -106,10 +106,9 @@ inclusive_inplace(
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
 
-  hip::launch(stream);
-  if (!Async) hip::synchronize(stream);
+  hip::launch(hip_res, Async);
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -124,7 +123,7 @@ template <size_t BLOCK_SIZE,
 RAJA_INLINE
 resources::EventProxy<resources::Hip>
 exclusive_inplace(
-    resources::Hip &hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async>,
     InputIter begin,
     InputIter end,
@@ -183,10 +182,9 @@ exclusive_inplace(
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
 
-  hip::launch(stream);
-  if (!Async) hip::synchronize(stream);
+  hip::launch(hip_res, Async);
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -201,7 +199,7 @@ template <size_t BLOCK_SIZE,
 RAJA_INLINE
 resources::EventProxy<resources::Hip>
 inclusive(
-    resources::Hip &hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async>,
     InputIter begin,
     InputIter end,
@@ -256,10 +254,9 @@ inclusive(
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
 
-  hip::launch(stream);
-  if (!Async) hip::synchronize(stream);
+  hip::launch(hip_res, Async);
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 /*!
@@ -275,7 +272,7 @@ template <size_t BLOCK_SIZE,
 RAJA_INLINE
 resources::EventProxy<resources::Hip>
 exclusive(
-    resources::Hip &hip_res,
+    resources::Hip hip_res,
     hip_exec<BLOCK_SIZE, Async>,
     InputIter begin,
     InputIter end,
@@ -335,10 +332,9 @@ exclusive(
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
 
-  hip::launch(stream);
-  if (!Async) hip::synchronize(stream);
+  hip::launch(hip_res, Async);
 
-  return resources::EventProxy<resources::Hip>(&hip_res);
+  return resources::EventProxy<resources::Hip>(hip_res);
 }
 
 }  // namespace scan

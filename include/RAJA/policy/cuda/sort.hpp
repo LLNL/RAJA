@@ -10,7 +10,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -53,7 +53,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
                           camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
                           camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
 stable(
-    resources::Cuda& cuda_res,
+    resources::Cuda cuda_res,
     cuda_exec<BLOCK_SIZE, Async>,
     Iter,
     Iter,
@@ -69,7 +69,7 @@ stable(
       camp::is_same<Compare, operators::greater<iterval>>>::value,
       "stable_sort<cuda_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 /*!
@@ -80,7 +80,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                       std::is_pointer<Iter>>
 stable(
-    resources::Cuda& cuda_res,
+    resources::Cuda cuda_res,
     cuda_exec<BLOCK_SIZE, Async>,
     Iter begin,
     Iter end,
@@ -135,10 +135,9 @@ stable(
 
   cuda::device_mempool_type::getInstance().free(d_out);
 
-  cuda::launch(stream);
-  if (!Async) cuda::synchronize(stream);
+  cuda::launch(cuda_res, Async);
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 /*!
@@ -149,7 +148,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                       std::is_pointer<Iter>>
 stable(
-    resources::Cuda& cuda_res,
+    resources::Cuda cuda_res,
     cuda_exec<BLOCK_SIZE, Async>,
     Iter begin,
     Iter end,
@@ -204,10 +203,9 @@ stable(
 
   cuda::device_mempool_type::getInstance().free(d_out);
 
-  cuda::launch(stream);
-  if (!Async) cuda::synchronize(stream);
+  cuda::launch(cuda_res, Async);
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 
@@ -223,7 +221,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
                           camp::is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
                           camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
 unstable(
-    resources::Cuda& cuda_res,
+    resources::Cuda cuda_res,
     cuda_exec<BLOCK_SIZE, Async>,
     Iter,
     Iter,
@@ -239,7 +237,7 @@ unstable(
       camp::is_same<Compare, operators::greater<iterval>>>::value,
       "sort<cuda_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 /*!
@@ -250,7 +248,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                       std::is_pointer<Iter>>
 unstable(
-    resources::Cuda& cuda_res,
+    resources::Cuda cuda_res,
     cuda_exec<BLOCK_SIZE, Async> p,
     Iter begin,
     Iter end,
@@ -267,7 +265,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                       std::is_pointer<Iter>>
 unstable(
-    resources::Cuda& cuda_res,
+    resources::Cuda cuda_res,
     cuda_exec<BLOCK_SIZE, Async> p,
     Iter begin,
     Iter end,
@@ -291,7 +289,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
                           camp::is_same<Compare, operators::less<RAJA::detail::IterVal<KeyIter>>>,
                           camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<KeyIter>>>>>>>
 stable_pairs(
-    resources::Cuda& cuda_res,
+    resources::Cuda cuda_res,
     cuda_exec<BLOCK_SIZE, Async>,
     KeyIter,
     KeyIter,
@@ -310,7 +308,7 @@ stable_pairs(
       camp::is_same<Compare, operators::greater<K>>>::value,
       "stable_sort_pairs<cuda_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 /*!
@@ -323,7 +321,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
                       std::is_pointer<KeyIter>,
                       std::is_pointer<ValIter>>
 stable_pairs(
-    resources::Cuda& cuda_res,
+    resources::Cuda cuda_res,
     cuda_exec<BLOCK_SIZE, Async>,
     KeyIter keys_begin,
     KeyIter keys_end,
@@ -390,10 +388,9 @@ stable_pairs(
   cuda::device_mempool_type::getInstance().free(d_keys_out);
   cuda::device_mempool_type::getInstance().free(d_vals_out);
 
-  cuda::launch(stream);
-  if (!Async) cuda::synchronize(stream);
+  cuda::launch(cuda_res, Async);
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 /*!
@@ -406,7 +403,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
                       std::is_pointer<KeyIter>,
                       std::is_pointer<ValIter>>
 stable_pairs(
-    resources::Cuda& cuda_res,
+    resources::Cuda cuda_res,
     cuda_exec<BLOCK_SIZE, Async>,
     KeyIter keys_begin,
     KeyIter keys_end,
@@ -473,10 +470,9 @@ stable_pairs(
   cuda::device_mempool_type::getInstance().free(d_keys_out);
   cuda::device_mempool_type::getInstance().free(d_vals_out);
 
-  cuda::launch(stream);
-  if (!Async) cuda::synchronize(stream);
+  cuda::launch(cuda_res, Async);
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 
@@ -494,7 +490,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
                           camp::is_same<Compare, operators::less<RAJA::detail::IterVal<KeyIter>>>,
                           camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<KeyIter>>>>>>>
 unstable_pairs(
-    resources::Cuda& cuda_res,
+    resources::Cuda cuda_res,
     cuda_exec<BLOCK_SIZE, Async>,
     KeyIter,
     KeyIter,
@@ -513,7 +509,7 @@ unstable_pairs(
       camp::is_same<Compare, operators::greater<K>>>::value,
       "sort_pairs<cuda_exec> is only implemented for RAJA::operators::less or RAJA::operators::greater");
 
-  return resources::EventProxy<resources::Cuda>(&cuda_res);
+  return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
 /*!
@@ -526,7 +522,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
                       std::is_pointer<KeyIter>,
                       std::is_pointer<ValIter>>
 unstable_pairs(
-    resources::Cuda& cuda_res,
+    resources::Cuda cuda_res,
     cuda_exec<BLOCK_SIZE, Async> p,
     KeyIter keys_begin,
     KeyIter keys_end,
@@ -546,7 +542,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
                       std::is_pointer<KeyIter>,
                       std::is_pointer<ValIter>>
 unstable_pairs(
-    resources::Cuda& cuda_res,
+    resources::Cuda cuda_res,
     cuda_exec<BLOCK_SIZE, Async> p,
     KeyIter keys_begin,
     KeyIter keys_end,

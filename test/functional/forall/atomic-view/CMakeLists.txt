@@ -1,6 +1,6 @@
 ###############################################################################
 # Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -46,8 +46,30 @@ if(RAJA_ENABLE_TARGET_OPENMP)
   if(RAJA_TEST_OPENMP_TARGET_SUBSET)
 
     set(ATOMIC_BACKEND OpenMPTarget)
-    set(TEST AtomicView)
+    set(TESTTYPES AtomicMultiView)
 
+    foreach( TEST ${TESTTYPES} )
+      configure_file( test-forall-atomic-view.cpp.in
+                      test-forall-${TEST}-${ATOMIC_BACKEND}.cpp )
+      raja_add_test( NAME test-forall-${TEST}-${ATOMIC_BACKEND}
+                     SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-${TEST}-${ATOMIC_BACKEND}.cpp )
+
+      target_include_directories(test-forall-${TEST}-${ATOMIC_BACKEND}.exe
+                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    endforeach()
+
+    unset(TESTTYPES)
+
+  endif()
+endif()
+
+#
+# Testing failure cases with only Sequential. Failures for various backends differ immensely.
+#
+set(FAILTESTS AtomicOutOfBoundsMultiView)
+
+foreach( ATOMIC_BACKEND ${FORALL_FAIL_ATOMIC_BACKENDS} )
+  foreach( TEST ${FAILTESTS} )
     configure_file( test-forall-atomic-view.cpp.in
                     test-forall-${TEST}-${ATOMIC_BACKEND}.cpp )
     raja_add_test( NAME test-forall-${TEST}-${ATOMIC_BACKEND}
@@ -55,7 +77,8 @@ if(RAJA_ENABLE_TARGET_OPENMP)
 
     target_include_directories(test-forall-${TEST}-${ATOMIC_BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  endforeach()
+endforeach()
 
-  endif()
-endif()
+unset(FAILTESTS)
 

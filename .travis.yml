@@ -39,7 +39,7 @@ matrix:
     env:
     - COMPILER=/opt/intel/bin/icpc
     - IMG=icc18
-    - CMAKE_EXTRA_FLAGS="-DENABLE_FORCEINLINE_RECURSIVE=Off -DENABLE_TBB=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_FORCEINLINE_RECURSIVE=Off -DENABLE_TBB=On -DBLT_CXX_STD=c++14"
   - compiler: nvcc10.2
     env:
     - COMPILER=g++
@@ -80,7 +80,7 @@ matrix:
       - DO_TEST=no
 
 
-before_install: # don't try to build and run intel when it's impossible
+before_install: # don't try to build and run intel when it's not possible
 - |
   if [[ "x$encrypted_cd1f6303bca7_key" != "x" ]] ; then
     openssl aes-256-cbc -K $encrypted_cd1f6303bca7_key -iv $encrypted_cd1f6303bca7_iv -in ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic.enc -out ${TRAVIS_BUILD_DIR}/travis-data/intel2016.lic -d

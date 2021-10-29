@@ -1,6 +1,6 @@
 .. ##
 .. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-.. ## and other RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## and other RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -280,7 +280,7 @@ space enabling them to express algorithms in terms of nested
 ``RAJA::expt::loop`` statements::
 
   RAJA::expt::launch<launch_policy>(select_CPU_or_GPU)
-  RAJA::expt::Resources(RAJA::expt::Teams(NE), RAJA::expt::Threads(Q1D)),
+  RAJA::expt::Grid(RAJA::expt::Teams(NE), RAJA::expt::Threads(Q1D)),
   [=] RAJA_HOST_DEVICE (RAJA::expt::Launch ctx) {
 
     RAJA::expt::loop<team_x> (ctx, RAJA::RangeSegment(0, teamRange), [&] (int bx) {

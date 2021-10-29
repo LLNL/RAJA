@@ -1,6 +1,6 @@
 ###############################################################################
 # Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -46,7 +46,7 @@ unset( FORALL_BACKENDS )
 #
 # Note: Forall atomic tests use their own backend list since atomic 
 #       constructs are defined for only some of the RAJA back-ends.
-#
+list(APPEND FORALL_FAIL_ATOMIC_BACKENDS Sequential)
 list(APPEND FORALL_ATOMIC_BACKENDS Sequential)
 
 if(RAJA_ENABLE_OPENMP)
@@ -76,6 +76,7 @@ add_subdirectory(atomic-view)
 add_subdirectory(atomic-ref)
 
 unset( FORALL_ATOMIC_BACKENDS )
+unset( FORALL_FAIL_ATOMIC_BACKENDS )
 
 #
 # Note: Forall region tests define their backend list in the region

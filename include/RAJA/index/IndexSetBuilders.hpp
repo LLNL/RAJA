@@ -10,7 +10,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -53,9 +53,9 @@ namespace RAJA
  *
  ******************************************************************************
  */
-void buildIndexSetAligned(
+void RAJASHAREDDLL_API buildIndexSetAligned(
     RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& iset,
-    camp::resources::Resource& work_res,
+    camp::resources::Resource work_res,
     const RAJA::Index_type* const indices_in,
     RAJA::Index_type length,
     RAJA::Index_type range_min_length,
@@ -118,7 +118,7 @@ void buildLockFreeBlockIndexset(
  */
 void buildLockFreeColorIndexset(
     RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& iset,
-    camp::resources::Resource& work_res,
+    camp::resources::Resource work_res,
     RAJA::Index_type const* domainToRange,
     int numEntity,
     int numRangePerDomain,

@@ -2,7 +2,7 @@
 
 ###############################################################################
 # Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -12,6 +12,7 @@ set -o nounset
 
 option=${1:-""}
 hostname="$(hostname)"
+truehostname=${hostname//[0-9]/}
 project_dir="$(pwd)"
 
 build_root=${BUILD_ROOT:-""}
@@ -111,7 +112,13 @@ then
     echo "~~~~~ Building RAJA"
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
+    # Map CPU core allocations
+    declare -A core_counts=(["lassen"]=40 ["ruby"]=28 ["corona"]=32)
+
     # If building, then delete everything first
+    # NOTE: 'cmake --build . -j core_counts' attempts to reduce individual build resources.
+    #       If core_counts does not contain hostname, then will default to '-j ', which should
+    #       use max cores.
     rm -rf ${build_dir} 2>/dev/null
     mkdir -p ${build_dir} && cd ${build_dir}
 
@@ -119,7 +126,7 @@ then
     cmake \
       -C ${hostconfig_path} \
       ${project_dir}
-    cmake --build . -j 32
+    cmake --build . -j ${core_counts[$truehostname]}
     date
 fi
 

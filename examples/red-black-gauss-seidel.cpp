@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -66,7 +66,7 @@ struct grid_s {
 double solution(double x, double y);
 void computeErr(double *I, grid_s grid);
 RAJA::TypedIndexSet<RAJA::ListSegment> 
-  gsColorPolicy(int N, camp::resources::Resource& res);
+  gsColorPolicy(int N, camp::resources::Resource res);
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -175,7 +175,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //  Set.
 
 RAJA::TypedIndexSet<RAJA::ListSegment> 
-  gsColorPolicy(int N, camp::resources::Resource& res)
+  gsColorPolicy(int N, camp::resources::Resource res)
 {
   RAJA::TypedIndexSet<RAJA::ListSegment> colorSet;
 

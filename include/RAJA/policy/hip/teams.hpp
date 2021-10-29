@@ -10,7 +10,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -31,10 +31,6 @@ namespace RAJA
 namespace expt
 {
 
-template <bool async, int num_threads = 0>
-struct hip_launch_t {
-};
-
 template <typename BODY>
 __global__ void launch_global_fcn(LaunchContext ctx, BODY body_in)
 {
@@ -46,6 +42,7 @@ __global__ void launch_global_fcn(LaunchContext ctx, BODY body_in)
 
 template <bool async>
 struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
+
   template <typename BODY_IN>
   static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
   {
@@ -54,8 +51,6 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
     auto func = launch_global_fcn<BODY>;
 
     resources::Hip hip_res = resources::Hip::get_default();
-    /* Use the zero stream until resource is better supported */
-    hipStream_t stream = 0;//hip_res.get_stream();
 
     //
     // Compute the number of blocks and threads
@@ -86,22 +81,74 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
         BODY body = RAJA::hip::make_launch_body(
-            gridSize, blockSize, shmem, stream, std::forward<BODY_IN>(body_in));
+            gridSize, blockSize, shmem, hip_res, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, hip_res, async, ctx.kernel_name);
       }
-
-      if (!async) { RAJA::hip::synchronize(stream); }
 
       RAJA_FT_END;
     }
 
   }
-    // return resources::EventProxy<resources::Hip>(&hip_res);
+
+  template <typename BODY_IN>
+  static resources::EventProxy<resources::Resource>
+  exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY_IN &&body_in)
+  {
+    using BODY = camp::decay<BODY_IN>;
+
+    auto func = launch_global_fcn<BODY>;
+
+    resources::Hip hip_res = res.get<RAJA::resources::Hip>();
+
+    //
+    // Compute the number of blocks and threads
+    //
+
+    hip_dim_t gridSize{ static_cast<hip_dim_member_t>(ctx.teams.value[0]),
+                        static_cast<hip_dim_member_t>(ctx.teams.value[1]),
+                        static_cast<hip_dim_member_t>(ctx.teams.value[2]) };
+
+    hip_dim_t blockSize{ static_cast<hip_dim_member_t>(ctx.threads.value[0]),
+                         static_cast<hip_dim_member_t>(ctx.threads.value[1]),
+                         static_cast<hip_dim_member_t>(ctx.threads.value[2]) };
+
+    // Only launch kernel if we have something to iterate over
+    constexpr hip_dim_member_t zero = 0;
+    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
+         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
+
+      RAJA_FT_BEGIN;
+
+      //
+      // Setup shared memory buffers
+      //
+      size_t shmem = 0;
+
+      {
+        //
+        // Privatize the loop_body, using make_launch_body to setup reductions
+        //
+        BODY body = RAJA::hip::make_launch_body(
+            gridSize, blockSize, shmem, hip_res, std::forward<BODY_IN>(body_in));
+
+        //
+        // Launch the kernel
+        //
+        void *args[] = {(void*)&ctx, (void*)&body};
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, hip_res, async, ctx.kernel_name);
+      }
+
+      RAJA_FT_END;
+    }
+
+    return resources::EventProxy<resources::Resource>(res);
+  }
+
 };
 
 template <typename BODY, int num_threads>
@@ -117,6 +164,7 @@ static void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
 
 template <bool async, int nthreads>
 struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
+
   template <typename BODY_IN>
   static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
   {
@@ -125,7 +173,6 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
     auto func = launch_global_fcn_fixed<BODY, nthreads>;
 
     resources::Hip hip_res = resources::Hip::get_default();
-    hipStream_t stream = hip_res.get_stream();
 
     //
     // Compute the number of blocks and threads
@@ -156,22 +203,74 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
         BODY body = RAJA::hip::make_launch_body(
-            gridSize, blockSize, shmem, stream, std::forward<BODY_IN>(body_in));
+            gridSize, blockSize, shmem, hip_res, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, stream);
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, hip_res, async, ctx.kernel_name);
       }
-
-      if (!async) { RAJA::hip::synchronize(stream); }
 
       RAJA_FT_END;
     }
 
-    // return resources::EventProxy<resources::Hip>(&hip_res);
   }
+
+  template <typename BODY_IN>
+  static resources::EventProxy<resources::Resource>
+  exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY_IN &&body_in)
+  {
+    using BODY = camp::decay<BODY_IN>;
+
+    auto func = launch_global_fcn<BODY>;
+
+    resources::Hip hip_res = res.get<RAJA::resources::Hip>();
+
+    //
+    // Compute the number of blocks and threads
+    //
+
+    hip_dim_t gridSize{ static_cast<hip_dim_member_t>(ctx.teams.value[0]),
+                        static_cast<hip_dim_member_t>(ctx.teams.value[1]),
+                        static_cast<hip_dim_member_t>(ctx.teams.value[2]) };
+
+    hip_dim_t blockSize{ static_cast<hip_dim_member_t>(ctx.threads.value[0]),
+                         static_cast<hip_dim_member_t>(ctx.threads.value[1]),
+                         static_cast<hip_dim_member_t>(ctx.threads.value[2]) };
+
+    // Only launch kernel if we have something to iterate over
+    constexpr hip_dim_member_t zero = 0;
+    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
+         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
+
+      RAJA_FT_BEGIN;
+
+      //
+      // Setup shared memory buffers
+      //
+      size_t shmem = 0;
+
+      {
+        //
+        // Privatize the loop_body, using make_launch_body to setup reductions
+        //
+        BODY body = RAJA::hip::make_launch_body(
+            gridSize, blockSize, shmem, hip_res, std::forward<BODY_IN>(body_in));
+
+        //
+        // Launch the kernel
+        //
+        void *args[] = {(void*)&ctx, (void*)&body};
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, hip_res, async, ctx.kernel_name);
+      }
+
+      RAJA_FT_END;
+    }
+
+    return resources::EventProxy<resources::Resource>(res);
+  }
+
 };
 
 /*
@@ -274,6 +373,137 @@ struct LoopExecute<hip_global_thread<DIM0, DIM1, DIM2>, SEGMENT> {
     }
   }
 };
+
+/*
+Reshape threads in a block into a 1D iteration space
+*/
+template<int ... dim>
+struct hip_flatten_block_threads_direct{};
+
+using hip_flatten_block_threads_xy_direct = hip_flatten_block_threads_direct<0,1>;
+using hip_flatten_block_threads_xz_direct = hip_flatten_block_threads_direct<0,2>;
+using hip_flatten_block_threads_yx_direct = hip_flatten_block_threads_direct<1,0>;
+using hip_flatten_block_threads_yz_direct = hip_flatten_block_threads_direct<1,2>;
+using hip_flatten_block_threads_zx_direct = hip_flatten_block_threads_direct<2,0>;
+using hip_flatten_block_threads_zy_direct = hip_flatten_block_threads_direct<2,1>;
+
+using hip_flatten_block_threads_xyz_direct = hip_flatten_block_threads_direct<0,1,2>;
+using hip_flatten_block_threads_xzy_direct = hip_flatten_block_threads_direct<0,2,1>;
+using hip_flatten_block_threads_yxz_direct = hip_flatten_block_threads_direct<1,0,2>;
+using hip_flatten_block_threads_yzx_direct = hip_flatten_block_threads_direct<1,2,0>;
+using hip_flatten_block_threads_zxy_direct = hip_flatten_block_threads_direct<2,0,1>;
+using hip_flatten_block_threads_zyx_direct = hip_flatten_block_threads_direct<2,1,0>;
+
+template<int ... dim>
+struct hip_flatten_block_threads_loop{};
+
+using hip_flatten_block_threads_xy_loop = hip_flatten_block_threads_loop<0,1>;
+using hip_flatten_block_threads_xz_loop = hip_flatten_block_threads_loop<0,2>;
+using hip_flatten_block_threads_yx_loop = hip_flatten_block_threads_loop<1,0>;
+using hip_flatten_block_threads_yz_loop = hip_flatten_block_threads_loop<1,2>;
+using hip_flatten_block_threads_zx_loop = hip_flatten_block_threads_loop<2,0>;
+using hip_flatten_block_threads_zy_loop = hip_flatten_block_threads_loop<2,1>;
+
+using hip_flatten_block_threads_xyz_loop = hip_flatten_block_threads_loop<0,1,2>;
+using hip_flatten_block_threads_xzy_loop = hip_flatten_block_threads_loop<0,2,1>;
+using hip_flatten_block_threads_yxz_loop = hip_flatten_block_threads_loop<1,0,2>;
+using hip_flatten_block_threads_yzx_loop = hip_flatten_block_threads_loop<1,2,0>;
+using hip_flatten_block_threads_zxy_loop = hip_flatten_block_threads_loop<2,0,1>;
+using hip_flatten_block_threads_zyx_loop = hip_flatten_block_threads_loop<2,1,0>;
+
+template<typename SEGMENT, int DIM0, int DIM1>
+struct LoopExecute<hip_flatten_block_threads_direct<DIM0, DIM1>, SEGMENT>
+{
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const int len = segment.end() - segment.begin();
+    {
+      const int tx = internal::get_hip_dim<DIM0>(threadIdx);
+      const int ty = internal::get_hip_dim<DIM1>(threadIdx);
+      const int bx = internal::get_hip_dim<DIM0>(blockIdx);
+      const int tid = tx + bx*ty;
+
+      if (tid < len) body(*(segment.begin() + tid));
+    }
+  }
+};
+
+template<typename SEGMENT, int DIM0, int DIM1>
+struct LoopExecute<hip_flatten_block_threads_loop<DIM0, DIM1>, SEGMENT>
+{
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const int len = segment.end() - segment.begin();
+
+    const int tx = internal::get_hip_dim<DIM0>(threadIdx);
+    const int ty = internal::get_hip_dim<DIM1>(threadIdx);
+    const int bx = internal::get_hip_dim<DIM0>(blockIdx);
+    const int by = internal::get_hip_dim<DIM1>(blockIdx);
+    const int tid = tx + bx*ty;
+
+    for(int tid = tx + bx*ty; tid < len; tid += bx*by) {
+      body(*(segment.begin() + tid));
+    }
+
+  }
+};
+
+template<typename SEGMENT, int DIM0, int DIM1, int DIM2>
+struct LoopExecute<hip_flatten_block_threads_direct<DIM0, DIM1, DIM2>, SEGMENT>
+{
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const int len = segment.end() - segment.begin();
+    {
+      const int tx = internal::get_hip_dim<DIM0>(threadIdx);
+      const int ty = internal::get_hip_dim<DIM1>(threadIdx);
+      const int tz = internal::get_hip_dim<DIM2>(threadIdx);
+      const int bx = internal::get_hip_dim<DIM0>(blockIdx);
+      const int by = internal::get_hip_dim<DIM1>(blockIdx);
+      const int tid = tx + bx*(ty + by*tz);
+
+      if (tid < len) body(*(segment.begin() + tid));
+    }
+  }
+};
+
+template<typename SEGMENT, int DIM0, int DIM1, int DIM2>
+struct LoopExecute<hip_flatten_block_threads_loop<DIM0, DIM1, DIM2>, SEGMENT>
+{
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const int len = segment.end() - segment.begin();
+
+    const int tx = internal::get_hip_dim<DIM0>(threadIdx);
+    const int ty = internal::get_hip_dim<DIM1>(threadIdx);
+    const int tz = internal::get_hip_dim<DIM2>(threadIdx);
+    const int bx = internal::get_hip_dim<DIM0>(blockIdx);
+    const int by = internal::get_hip_dim<DIM1>(blockIdx);
+    const int bz = internal::get_hip_dim<DIM2>(blockIdx);
+
+    for(int tid = tx + bx*(ty + by*tz); tid < len; tid += bx*by*bz) {
+      body(*(segment.begin() + tid));
+    }
+
+  }
+};
+
 
 /*
   HIP thread loops with block strides

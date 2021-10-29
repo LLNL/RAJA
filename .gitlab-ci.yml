@@ -18,7 +18,7 @@
 # Tells Gitlab to recursively update the submodules when cloning umpire
 #
 # ALLOC_NAME:
-# On LLNL's quartz, this pipeline creates only one allocation shared among jobs
+# On LLNL's ruby, this pipeline creates only one allocation shared among jobs
 # in order to save time and resources. This allocation has to be uniquely named
 # so that we are sure to retrieve it.
 #
@@ -38,16 +38,17 @@ variables:
   ALLOC_NAME: ${CI_PROJECT_NAME}_ci_${CI_PIPELINE_ID}
   BUILD_ROOT: ${CI_PROJECT_DIR}
   DEFAULT_TIME: 30
+  MP_BRANCH: "develop"
 
 # Normally, stages are blocking in Gitlab. However, using the keyword "needs" we
 # can express dependencies between job that break the ordering of stages, in
 # favor of a DAG.
-# In practice q_*, l_* and b_* stages are independently run and start immediately.
+# In practice r_*, l_* and b_* stages are independently run and start immediately.
 
 stages:
-  - q_allocate_resources
-  - q_build_and_test
-  - q_release_resources
+  - r_allocate_resources
+  - r_build_and_test
+  - r_release_resources
   - l_build_and_test
   - b_build_and_test
   - c_build_and_test
@@ -85,28 +86,35 @@ stages:
     reports:
       junit: junit.xml
 
+.build_blueos_3_ppc64le_ib_ats_disabled_script:
+  script:
+    - lalloc 1 --atsdisable -W ${DEFAULT_TIME} scripts/gitlab/build_and_test.sh
+  artifacts:
+    reports:
+      junit: junit.xml
+
 .build_blueos_3_ppc64le_ib_p9_script:
   extends: .build_blueos_3_ppc64le_ib_script
 
 # If testing develop branch, trigger CHAI pipeline with this version of RAJA.
 # TODO: Once spack allows to clone a specific commit on demand, then point to the exact commit.
 #       This will prevent from sticking to a branch (here develop).
-#       To turn back on chai trigger, add '$CI_COMMIT_BRANCH == "develop" to rule.
-trigger-chai:
+#       MP_BRANCH is short for "Multi-Project Branch" and will usually be develop.
+trigger-rajaperf:
   stage: multi_project
   rules:
-    - if: '$MULTI_PROJECT == "ON"' #run only if ...
+    - if: '$CI_COMMIT_BRANCH == "${MP_BRANCH}" || $MULTI_PROJECT == "ON"' #run only if ...
   variables:
-    UPDATE_RAJA: develop
+    UPDATE_RAJA: ${MP_BRANCH}
   trigger:
-    project: radiuss/chai
+    project: radiuss/rajaperf
     branch: develop
     strategy: depend
 
 # This is where jobs are included.
 include:
-  - local: .gitlab/quartz-templates.yml
-  - local: .gitlab/quartz-jobs.yml
+  - local: .gitlab/ruby-templates.yml
+  - local: .gitlab/ruby-jobs.yml
   - local: .gitlab/lassen-templates.yml
   - local: .gitlab/lassen-jobs.yml
   - local: .gitlab/corona-templates.yml

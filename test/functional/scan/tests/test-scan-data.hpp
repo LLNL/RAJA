@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -14,7 +14,7 @@
 
 template <typename T>
 void allocScanTestData(int N,
-                       camp::resources::Resource& work_res,
+                       camp::resources::Resource work_res,
                        T** work_in, T** work_out,
                        T** host_in, T** host_out)
 {
@@ -28,7 +28,7 @@ void allocScanTestData(int N,
 }
 
 template <typename T>
-void deallocScanTestData(camp::resources::Resource& work_res,
+void deallocScanTestData(camp::resources::Resource work_res,
                          T* work_in, T* work_out,
                          T* host_in, T* host_out)
 {

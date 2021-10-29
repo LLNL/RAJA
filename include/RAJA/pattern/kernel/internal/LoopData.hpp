@@ -11,7 +11,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -123,7 +123,7 @@ struct LoopData {
   offset_tuple_t offset_tuple;
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr
-  LoopData(SegmentTuple const &s, ParamTuple const &p, Resource const &r, Bodies const &... b)
+  LoopData(SegmentTuple const &s, ParamTuple const &p, Resource r, Bodies const &... b)
       : segment_tuple(s), param_tuple(p), res(r), bodies(b...)
   {
     //assign_begin_all();

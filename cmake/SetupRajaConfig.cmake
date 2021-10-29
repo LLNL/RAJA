@@ -1,6 +1,6 @@
 ###############################################################################
 # Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-# and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# and other RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -59,8 +59,11 @@ set(RAJA_ENABLE_OPENMP ${ENABLE_OPENMP})
 set(RAJA_ENABLE_TARGET_OPENMP ${ENABLE_TARGET_OPENMP})
 set(RAJA_ENABLE_TBB ${ENABLE_TBB})
 set(RAJA_ENABLE_CUDA ${ENABLE_CUDA})
+set(RAJA_ENABLE_NV_TOOLS_EXT ${ENABLE_NV_TOOLS_EXT})
+set(RAJA_ENABLE_ROCTX ${ENABLE_ROCTX})
 set(RAJA_ENABLE_CLANG_CUDA ${ENABLE_CLANG_CUDA})
 set(RAJA_ENABLE_HIP ${ENABLE_HIP})
+set(RAJA_ENABLE_SYCL ${ENABLE_SYCL})
 set(RAJA_ENABLE_CUB ${ENABLE_CUB})
 
 option(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL "Enable use of device function pointers in hip backend" OFF)

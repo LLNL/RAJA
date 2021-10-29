@@ -12,7 +12,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -24,9 +24,13 @@
 #if defined(RAJA_CUDA_ACTIVE)
 #include "RAJA/policy/cuda/policy.hpp"
 #endif
+#if defined(RAJA_HIP_ACTIVE)
 #include "RAJA/policy/hip/policy.hpp"
+#endif
+#include "RAJA/policy/sycl/policy.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/policy/openmp_target/policy.hpp"
+#include "RAJA/internal/get_platform.hpp"
 
 namespace RAJA
 {
@@ -49,7 +53,7 @@ namespace RAJA
   using resource_from_pol_t = typename get_resource_from_platform<detail::get_platform<ExecPol>::value>::type;
 
   template<typename ExecPol>
-  constexpr resource_from_pol_t<ExecPol>& get_default_resource() {
+  constexpr resource_from_pol_t<ExecPol> get_default_resource() {
     return resource_from_pol_t<ExecPol>::get_default();
   }
 
@@ -70,7 +74,7 @@ namespace RAJA
   };
 #endif
 
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_HIP_ACTIVE)
   template<>
   struct get_resource_from_platform<Platform::hip>{
     using type = camp::resources::Hip;
@@ -87,7 +91,29 @@ namespace RAJA
   };
 #endif
 
+#if defined(RAJA_ENABLE_SYCL)
+  template<size_t BlockSize, bool Async>
+  struct get_resource<sycl_exec<BlockSize, Async>>{
+    using type = camp::resources::Sycl;
+  };
+
+  template<size_t BlockSize, bool Async>
+  struct get_resource<sycl_exec_nontrivial<BlockSize, Async>>{
+    using type = camp::resources::Sycl;
+  };
+
+  template<typename ISetIter, size_t BlockSize, bool Async>
+  struct get_resource<ExecPolicy<ISetIter, sycl_exec<BlockSize, Async>>>{
+    using type = camp::resources::Sycl;
+  };
+#endif
+
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
+  template<>
+  struct get_resource_from_platform<Platform::omp_target>{
+    using type = camp::resources::Omp;
+  };
+
   template<>
   struct get_resource<omp_target_parallel_for_exec_nt>{
     using type = camp::resources::Omp;
@@ -118,8 +144,11 @@ namespace RAJA
 #if defined(RAJA_CUDA_ACTIVE)
     template <> struct is_resource<resources::Cuda> : std::true_type {};
 #endif
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_HIP_ACTIVE)
     template <> struct is_resource<resources::Hip> : std::true_type {};
+#endif
+#if defined(RAJA_ENABLE_SYCL)
+    template <> struct is_resource<resources::Sycl> : std::true_type {};
 #endif
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
     template <> struct is_resource<resources::Omp> : std::true_type {};

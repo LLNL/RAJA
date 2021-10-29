@@ -10,7 +10,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -27,6 +27,7 @@
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
+#include "RAJA/policy/loop/policy.hpp"
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/types.hpp"
@@ -81,6 +82,16 @@ struct cuda_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::cuda> {
 };
 
+template <bool Async, int num_threads = 0>
+struct cuda_launch_t : public RAJA::make_policy_pattern_launch_platform_t<
+                       RAJA::Policy::cuda,
+                       RAJA::Pattern::region,
+                       detail::get_launch<Async>::value,
+                       RAJA::Platform::cuda> {
+};
+
+
+
 
 
 //
@@ -121,6 +132,19 @@ struct cuda_reduce_base
                                                 detail::get_launch<false>::value,
                                                 RAJA::Platform::cuda> {
 };
+
+//
+// Cuda atomic policy for using cuda atomics on the device and
+// the provided Policy on the host
+//
+template<typename host_policy>
+struct cuda_atomic_explicit{};
+
+//
+// Default cuda atomic policy uses cuda atomics on the device and non-atomics
+// on the host
+//
+using cuda_atomic = cuda_atomic_explicit<loop_atomic>;
 
 using cuda_reduce = cuda_reduce_base<false>;
 
@@ -208,6 +232,9 @@ using cuda_work_async = policy::cuda::cuda_work<BLOCK_SIZE, true>;
 
 using policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average;
 
+using policy::cuda::cuda_atomic;
+using policy::cuda::cuda_atomic_explicit;
+
 using policy::cuda::cuda_reduce_base;
 using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_atomic;
@@ -226,7 +253,10 @@ using policy::cuda::cuda_thread_masked_loop;
 
 using policy::cuda::cuda_synchronize;
 
-
+namespace expt
+{
+  using policy::cuda::cuda_launch_t;
+}
 
 
 /*!

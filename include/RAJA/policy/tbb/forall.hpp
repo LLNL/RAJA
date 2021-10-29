@@ -13,7 +13,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -69,7 +69,7 @@ namespace tbb
  */
 
 template <typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
                                                                const tbb_for_dynamic& p,
                                                                Iterable&& iter,
                                                                Func&& loop_body)
@@ -88,7 +88,7 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &
       body(b[i]);
   });
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 ///
 /// TBB parallel for static policy implementation
@@ -112,7 +112,7 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &
  */
 
 template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &host_res,
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
                                                                const tbb_for_static<ChunkSize>&,
                                                                Iterable&& iter,
                                                                Func&& loop_body)
@@ -134,7 +134,7 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host &
       },
       tbb_static_partitioner{});
 
-  return resources::EventProxy<resources::Host>(&host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 }  // namespace tbb

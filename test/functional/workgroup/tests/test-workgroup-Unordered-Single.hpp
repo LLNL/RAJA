@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -48,11 +48,16 @@ void testWorkGroupUnorderedSingle(IndexType begin, IndexType end)
                   Allocator
                 >;
 
+  using resource_type = typename WorkSite_type::resource_type;
+  static_assert(std::is_same<WORKING_RES, resource_type>::value,
+                "Expected same resource types");
+
   ASSERT_GE(begin, (IndexType)0);
   ASSERT_GE(end, begin);
   IndexType N = end + begin;
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  WORKING_RES res = WORKING_RES::get_default();
+  camp::resources::Resource working_res{res};
 
   IndexType* working_array;
   IndexType* check_array;
@@ -70,7 +75,7 @@ void testWorkGroupUnorderedSingle(IndexType begin, IndexType end)
       test_array[i] = IndexType(0);
     }
 
-    working_res.memcpy(working_array, test_array, sizeof(IndexType) * N);
+    res.memcpy(working_array, test_array, sizeof(IndexType) * N);
 
     for (IndexType i = begin; i < end; ++i) {
       test_array[ i ] = IndexType(i);
@@ -92,10 +97,11 @@ void testWorkGroupUnorderedSingle(IndexType begin, IndexType end)
 
   WorkSite_type site = group.run();
 
-  working_res.memcpy(check_array, working_array, sizeof(IndexType) * N);
+  auto e = site.get_resource().get_event();
+  e.wait();
 
   {
-    working_res.memcpy(check_array, working_array, sizeof(IndexType) * N);
+    res.memcpy(check_array, working_array, sizeof(IndexType) * N);
 
     for (IndexType i = IndexType(0); i < begin; i++) {
       ASSERT_EQ(test_array[i], check_array[i]);

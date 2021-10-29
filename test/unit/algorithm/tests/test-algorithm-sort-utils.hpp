@@ -95,15 +95,15 @@ struct SortData<Res, sort_interface_tag, K, V>
 {
   K* orig_keys = nullptr;
   K* sorted_keys = nullptr;
-  Res* m_res;
+  Res m_res;
 
   template < typename RandomGenerator >
-  SortData(size_t N, Res* res, RandomGenerator gen_random)
+  SortData(size_t N, Res res, RandomGenerator gen_random)
     : m_res(res)
   {
     if (N > 0) {
-      orig_keys = m_res->template allocate<K>(N);
-      sorted_keys = m_res->template allocate<K>(N);
+      orig_keys = m_res.template allocate<K>(N, camp::resources::MemoryAccess::Managed);
+      sorted_keys = m_res.template allocate<K>(N, camp::resources::MemoryAccess::Managed);
     }
 
     for (size_t i = 0; i < N; i++) {
@@ -114,12 +114,12 @@ struct SortData<Res, sort_interface_tag, K, V>
   void copy_data(size_t N)
   {
     if ( N == 0 ) return;
-    m_res->memcpy(sorted_keys, orig_keys, N*sizeof(K));
+    m_res.memcpy(sorted_keys, orig_keys, N*sizeof(K));
   }
 
-  Res& resource()
+  Res resource()
   {
-    return *m_res;
+    return m_res;
   }
 
   SortData(SortData const&) = delete;
@@ -128,8 +128,8 @@ struct SortData<Res, sort_interface_tag, K, V>
   ~SortData()
   {
     if (orig_keys != nullptr) {
-      m_res->deallocate(orig_keys);
-      m_res->deallocate(sorted_keys);
+      m_res.deallocate(orig_keys, camp::resources::MemoryAccess::Managed);
+      m_res.deallocate(sorted_keys, camp::resources::MemoryAccess::Managed);
     }
   }
 };
@@ -144,12 +144,12 @@ struct SortData<Res, sort_pairs_interface_tag, K, V> : SortData<Res, sort_interf
   V* sorted_vals = nullptr;
 
   template < typename RandomGenerator >
-  SortData(size_t N, Res* res, RandomGenerator gen_random)
+  SortData(size_t N, Res res, RandomGenerator gen_random)
     : base(N, res, gen_random)
   {
     if (N > 0) {
-      orig_vals = this->m_res->template allocate<V>(N);
-      sorted_vals = this->m_res->template allocate<V>(N);
+      orig_vals = this->m_res.template allocate<V>(N, camp::resources::MemoryAccess::Managed);
+      sorted_vals = this->m_res.template allocate<V>(N, camp::resources::MemoryAccess::Managed);
     }
 
     for (size_t i = 0; i < N; i++) {
@@ -161,7 +161,7 @@ struct SortData<Res, sort_pairs_interface_tag, K, V> : SortData<Res, sort_interf
   {
     base::copy_data(N);
     if ( N == 0 ) return;
-    this->m_res->memcpy(sorted_vals, orig_vals, N*sizeof(V));
+    this->m_res.memcpy(sorted_vals, orig_vals, N*sizeof(V));
   }
 
   SortData(SortData const&) = delete;
@@ -170,8 +170,8 @@ struct SortData<Res, sort_pairs_interface_tag, K, V> : SortData<Res, sort_interf
   ~SortData()
   {
     if (orig_vals != nullptr) {
-      this->m_res->deallocate(orig_vals);
-      this->m_res->deallocate(sorted_vals);
+      this->m_res.deallocate(orig_vals, camp::resources::MemoryAccess::Managed);
+      this->m_res.deallocate(sorted_vals, camp::resources::MemoryAccess::Managed);
     }
   }
 };
@@ -607,7 +607,7 @@ void testSorterResInterfaces(
 template <typename K,
           typename Sorter,
           typename Res>
-void testSorterInterfaces(unsigned seed, RAJA::Index_type MaxN, Sorter sorter, Res& res)
+void testSorterInterfaces(unsigned seed, RAJA::Index_type MaxN, Sorter sorter, Res res)
 {
   using stability_category = typename Sorter::sort_category ;
   using pairs_category     = typename Sorter::sort_interface ;
@@ -619,7 +619,7 @@ void testSorterInterfaces(unsigned seed, RAJA::Index_type MaxN, Sorter sorter, R
   RAJA::Index_type N = std::uniform_int_distribution<RAJA::Index_type>((MaxN+1)/2, MaxN)(rng);
   std::uniform_int_distribution<RAJA::Index_type> dist(-N, N);
 
-  SortData<Res, pairs_category, K> data(N, &res, [&](){ return dist(rng); });
+  SortData<Res, pairs_category, K> data(N, res, [&](){ return dist(rng); });
 
   ASSERT_TRUE(testSort("default", seed, data, N, RAJA::operators::less<K>{},
       sorter, stability_category{}, pairs_category{}, no_comparator{}));
@@ -634,7 +634,7 @@ void testSorterInterfaces(unsigned seed, RAJA::Index_type MaxN, Sorter sorter, R
 template <typename K,
           typename Sorter,
           typename Res>
-void testSorter(unsigned seed, RAJA::Index_type MaxN, Sorter sorter, Res& res)
+void testSorter(unsigned seed, RAJA::Index_type MaxN, Sorter sorter, Res res)
 {
   testSorterInterfaces<K>(seed, 0, sorter, res);
   for (RAJA::Index_type n = 1; n <= MaxN; n *= 10) {

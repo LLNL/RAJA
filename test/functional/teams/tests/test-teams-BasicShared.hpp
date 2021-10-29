@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -14,7 +14,7 @@ template <typename WORKING_RES, typename LAUNCH_POLICY, typename TEAM_POLICY, ty
 void TeamsBasicSharedTestImpl()
 {
 
-  int N = 100;
+  int N = 1000;
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
   int* working_array;
@@ -39,7 +39,7 @@ void TeamsBasicSharedTestImpl()
 
 
   RAJA::expt::launch<LAUNCH_POLICY>(select_cpu_or_gpu,
-    RAJA::expt::Resources(RAJA::expt::Teams(N), RAJA::expt::Threads(N)),
+    RAJA::expt::Grid(RAJA::expt::Teams(N), RAJA::expt::Threads(N)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
           RAJA::expt::loop<TEAM_POLICY>(ctx, RAJA::RangeSegment(0, N), [&](int r) {

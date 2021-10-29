@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -25,18 +25,29 @@ void KernelNestedLoopsSegmentTypesTestImpl(
   const std::vector<IDX_TYPE>& s2_idx,
   const RAJA::TypedListSegment<IDX_TYPE>& s3,
   const std::vector<IDX_TYPE>& s3_idx,
-  camp::resources::Resource& working_res,
+  camp::resources::Resource working_res,
   int perm)
 {
-  IDX_TYPE dim1 = s1_idx[s1_idx.size() - 1] + 1;
-  IDX_TYPE dim2 = s2_idx[s2_idx.size() - 1] + 1;
-  IDX_TYPE dim3 = s3_idx[s3_idx.size() - 1] + 1;
-
-  IDX_TYPE data_len = dim1 * dim2 * dim3;
-
   IDX_TYPE idx1_len = static_cast<IDX_TYPE>(s1_idx.size());
   IDX_TYPE idx2_len = static_cast<IDX_TYPE>(s2_idx.size());
   IDX_TYPE idx3_len = static_cast<IDX_TYPE>(s3_idx.size());
+
+  bool zero_legth_segment = false;
+  if ( RAJA::stripIndexType(idx1_len * idx2_len * idx3_len) == 0 ) {
+    zero_legth_segment = true;
+  }
+
+  IDX_TYPE dim1 = 1;
+  IDX_TYPE dim2 = 1;
+  IDX_TYPE dim3 = 1;
+
+  if ( !zero_legth_segment ) {
+    dim1 = s1_idx[s1_idx.size() - 1] + 1;
+    dim2 = s2_idx[s2_idx.size() - 1] + 1;
+    dim3 = s3_idx[s3_idx.size() - 1] + 1;
+  }
+
+  IDX_TYPE data_len = dim1 * dim2 * dim3;
 
   DATA_TYPE* work_array;
   DATA_TYPE* check_array;
@@ -53,22 +64,23 @@ void KernelNestedLoopsSegmentTypesTestImpl(
   RAJA::View< DATA_TYPE, RAJA::Layout<3> > test_view(test_array, 
                                                      dim1, dim2, dim3);
 
-  for (IDX_TYPE i = 0; i < data_len; ++i) {
-    test_array[RAJA::stripIndexType(i)] = static_cast<DATA_TYPE>(0);
-  }
- 
+  memset( static_cast<void*>(test_array), 0, 
+          sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len) );
+
   working_res.memcpy(work_array, test_array, 
                      sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
-  for (IDX_TYPE i1 = 0; i1 < idx1_len; ++i1) {
-    for (IDX_TYPE i2 = 0; i2 < idx2_len; ++i2) {
-      for (IDX_TYPE i3 = 0; i3 < idx3_len; ++i3) {
-        auto ii1 = RAJA::stripIndexType(i1);
-        auto ii2 = RAJA::stripIndexType(i2);
-        auto ii3 = RAJA::stripIndexType(i3);
-        test_view( s1_idx[ii1], s2_idx[ii2], s3_idx[ii3] ) = 
-          static_cast<DATA_TYPE>( RAJA::stripIndexType(
+  if ( !zero_legth_segment ) {
+    for (IDX_TYPE i1 = 0; i1 < idx1_len; ++i1) {
+      for (IDX_TYPE i2 = 0; i2 < idx2_len; ++i2) {
+        for (IDX_TYPE i3 = 0; i3 < idx3_len; ++i3) {
+          auto ii1 = RAJA::stripIndexType(i1);
+          auto ii2 = RAJA::stripIndexType(i2);
+          auto ii3 = RAJA::stripIndexType(i3);
+          test_view( s1_idx[ii1], s2_idx[ii2], s3_idx[ii3] ) = 
+            static_cast<DATA_TYPE>( RAJA::stripIndexType(
                                     s1_idx[ii1] + s2_idx[ii2] + s3_idx[ii3]) );
+        }
       }
     }
   }
@@ -133,7 +145,8 @@ TYPED_TEST_P(KernelNestedLoopsSegmentTypesTest, NestedLoopsSegmentTypesKernel)
   std::vector<IDX_TYPE> s2_idx;
   std::vector<IDX_TYPE> s3_idx;
 
-// Create a segment of each basic type RAJA provides
+// Create a segment of each basic type RAJA provides and test
+// permutations of those segments in nested loops 
 
   RAJA::TypedRangeSegment<IDX_TYPE> s1( 0, 69 );
   RAJA::getIndices(s1_idx, s1);
@@ -173,6 +186,95 @@ TYPED_TEST_P(KernelNestedLoopsSegmentTypesTest, NestedLoopsSegmentTypesKernel)
                                         s1, s1_idx,
                                         s2, s2_idx,
                                         s3, s3_idx,
+                                        working_res,
+                                        perm);
+
+// Test some zero-length segment combinations
+
+// Zero-length range segment
+  RAJA::TypedRangeSegment<IDX_TYPE> s4( 4, 4 );
+  std::vector<IDX_TYPE> s4_idx;
+  RAJA::getIndices(s4_idx, s4);
+
+  perm = 1;
+  KernelNestedLoopsSegmentTypesTestImpl<IDX_TYPE, int, EXEC_POLICY>(
+                                        s4, s4_idx,
+                                        s2, s2_idx,
+                                        s3, s3_idx,
+                                        working_res,
+                                        perm);
+
+  perm = 2;
+  KernelNestedLoopsSegmentTypesTestImpl<IDX_TYPE, int, EXEC_POLICY>(
+                                        s4, s4_idx,
+                                        s2, s2_idx,
+                                        s3, s3_idx,
+                                        working_res,
+                                        perm);
+
+  perm = 3;
+  KernelNestedLoopsSegmentTypesTestImpl<IDX_TYPE, int, EXEC_POLICY>(
+                                        s4, s4_idx,
+                                        s2, s2_idx,
+                                        s3, s3_idx,
+                                        working_res,
+                                        perm);
+
+// Zero-length range stride segment
+  RAJA::TypedRangeStrideSegment<IDX_TYPE> s5( 3, 3, 2 );
+  std::vector<IDX_TYPE> s5_idx;
+  RAJA::getIndices(s5_idx, s5);
+
+  perm = 1;
+  KernelNestedLoopsSegmentTypesTestImpl<IDX_TYPE, int, EXEC_POLICY>(
+                                        s1, s1_idx,
+                                        s5, s5_idx,
+                                        s3, s3_idx,
+                                        working_res,
+                                        perm);
+
+  perm = 2;
+  KernelNestedLoopsSegmentTypesTestImpl<IDX_TYPE, int, EXEC_POLICY>(
+                                        s1, s1_idx,
+                                        s5, s5_idx,
+                                        s3, s3_idx,
+                                        working_res,
+                                        perm);
+
+  perm = 3;
+  KernelNestedLoopsSegmentTypesTestImpl<IDX_TYPE, int, EXEC_POLICY>(
+                                        s1, s1_idx,
+                                        s5, s5_idx,
+                                        s3, s3_idx,
+                                        working_res,
+                                        perm);
+
+// Zero-length list segment 
+  std::vector<IDX_TYPE> s6_idx;
+  RAJA::TypedListSegment<IDX_TYPE> s6( nullptr, s6_idx.size(),
+                                       working_res );
+
+  perm = 1;
+  KernelNestedLoopsSegmentTypesTestImpl<IDX_TYPE, int, EXEC_POLICY>(
+                                        s1, s1_idx,
+                                        s2, s2_idx,
+                                        s6, s6_idx,
+                                        working_res,
+                                        perm);
+
+  perm = 2;
+  KernelNestedLoopsSegmentTypesTestImpl<IDX_TYPE, int, EXEC_POLICY>(
+                                        s1, s1_idx,
+                                        s2, s2_idx,
+                                        s6, s6_idx,
+                                        working_res,
+                                        perm);
+
+  perm = 3;
+  KernelNestedLoopsSegmentTypesTestImpl<IDX_TYPE, int, EXEC_POLICY>(
+                                        s1, s1_idx,
+                                        s2, s2_idx,
+                                        s6, s6_idx,
                                         working_res,
                                         perm);
 }
