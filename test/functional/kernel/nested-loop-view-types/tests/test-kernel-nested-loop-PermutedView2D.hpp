@@ -35,7 +35,7 @@ void KernelPermutedView2DTestImpl(std::array<IDX_TYPE, 2> dim,
 
   int mod_val = dim.at( perm.at(1) );
   for (RAJA::idx_t ii = 0; ii < N; ++ii) {
-    test_array[ii] = ii % mod_val;
+    test_array[ii] = static_cast<IDX_TYPE>(ii % mod_val);
   }  
 
   RAJA::Layout<2> layout = RAJA::make_permuted_layout(dim_strip, perm);
@@ -46,7 +46,7 @@ void KernelPermutedView2DTestImpl(std::array<IDX_TYPE, 2> dim,
                       RAJA::TypedRangeSegment<IDX_TYPE>(0, dim_strip.at(1)) ),
     [=] RAJA_HOST_DEVICE(IDX_TYPE i, IDX_TYPE j) {
       int val = RAJA::stripIndexType(layout(i, j)) % mod_val;
-      view(i, j) = val;
+      view(i, j) = static_cast<IDX_TYPE>(val);
     } 
   );
 
