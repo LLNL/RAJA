@@ -16,24 +16,7 @@
 #include <numeric>
 #include <vector>
 
-//template<typename EXEC_POL, bool USE_RESOURCE,
-//         typename SEGMENTS,
-//         typename WORKING_RES,
-//         typename... Args>
-//typename std::enable_if< USE_RESOURCE >::type call_kernel(SEGMENTS&& segs, WORKING_RES work_res, Args&&... args) {
-//  RAJA::kernel_resource<EXEC_POL>( segs, work_res, args...);
-//}
-//
-//template<typename EXEC_POL, bool USE_RESOURCE,
-//         typename SEGMENTS,
-//         typename WORKING_RES,
-//         typename... Args>
-//typename std::enable_if< !USE_RESOURCE >::type call_kernel(SEGMENTS&& segs, WORKING_RES, Args&&... args) {
-//  RAJA::kernel<EXEC_POL>( segs, args...);
-//}
-
-template <typename IDX_TYPE, typename EXEC_POLICY, typename WORKING_RES,
-          typename SEG_TYPE, bool USE_RESOURCE>
+template <typename IDX_TYPE, typename EXEC_POLICY, typename WORKING_RES, typename SEG_TYPE>
 void KernelBasicSingleICountLoopTestImpl(const SEG_TYPE& seg, 
                                    const std::vector<IDX_TYPE>& seg_idx,
                                    WORKING_RES working_res,
@@ -90,8 +73,6 @@ void KernelBasicSingleICountLoopTestImpl(const SEG_TYPE& seg,
       RAJA::make_tuple(seg),
       RAJA::make_tuple(IDX_TYPE(0)),
       
-      //working_res,
-
       [=] RAJA_HOST_DEVICE(IDX_TYPE idx, IDX_TYPE i_idx) {
         working_array[RAJA::stripIndexType(idx)] = IDX_TYPE(idx) ;
         working_array_i[RAJA::stripIndexType(i_idx)] = IDX_TYPE(i_idx) ;
@@ -104,8 +85,6 @@ void KernelBasicSingleICountLoopTestImpl(const SEG_TYPE& seg,
       RAJA::make_tuple(seg),
       RAJA::make_tuple(IDX_TYPE(0)),
       
-      //working_res,
-
       [=] RAJA_HOST_DEVICE(IDX_TYPE idx, IDX_TYPE i_idx) {
         (void) idx; (void) i_idx;
         working_array[0]++;
