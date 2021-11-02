@@ -1,3 +1,4 @@
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
@@ -17,7 +18,7 @@
 #include <vector>
 
 template <typename IDX_TYPE, typename EXEC_POLICY, typename WORKING_RES, typename SEG_TYPE>
-void KernelBasicSingleFisionFussionLoopTestImpl(const SEG_TYPE& seg, 
+void KernelBasicFisionFussionLoopTestImpl(const SEG_TYPE& seg, 
                                          const std::vector<IDX_TYPE>& seg_idx,
                                          WORKING_RES working_res,
                                          camp::resources::Resource erased_working_res)
