@@ -54,9 +54,19 @@ inline void cudaAssert(cudaError_t code,
                        bool abort = true)
 {
   if (code != cudaSuccess) {
-    fprintf(
-        stderr, "CUDAassert: %s %s %d\n", cudaGetErrorString(code), file, line);
-    if (abort) RAJA_ABORT_OR_THROW("CUDAassert");
+    if (abort) {
+      std::string msg;
+      msg += "CUDAassert: ";
+      msg += cudaGetErrorString(code);
+      msg += " ";
+      msg += file;
+      msg += ":";
+      msg += std::to_string(line);
+      throw std::runtime_error(msg);
+    } else {
+      fprintf(stderr, "CUDAassert: %s %s %d\n",
+              cudaGetErrorString(code), file, line);
+    }
   }
 }
 
