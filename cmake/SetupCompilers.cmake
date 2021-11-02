@@ -9,7 +9,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0" CACHE STRING "")
 
-if (RAJA_ENABLE_MODULES OR ENABLE_MODULES)
+if (RAJA_ENABLE_MODULES)
   message(WARNING "In the next RAJA Release, Modules will be deprecated and should not be used. The -fmodules flag can be added manually if desired.")
   set(RAJA_ENABLE_MODULES Off CACHE BOOL "" FORCE)
 endif()
