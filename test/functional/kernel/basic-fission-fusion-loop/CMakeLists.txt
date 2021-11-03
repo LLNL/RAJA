@@ -10,7 +10,7 @@
 #
 # Note: KERNEL_BACKENDS is defined in ../CMakeLists.txt
 #
-foreach( BACKEND Sequential )
+foreach( BACKEND ${KERNEL_BACKENDS} )
       configure_file( test-kernel-basic-fission-fusion-loop.cpp.in
                       test-kernel-basic-fission-fusion-loop-${BACKEND}.cpp )
       raja_add_test( NAME test-kernel-basic-fission-fusion-loop-${BACKEND}
