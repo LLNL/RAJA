@@ -30,20 +30,21 @@ void KernelBasicFisionFussionLoopTestImpl(const SEG_TYPE& seg,
     data_len = seg_idx[seg_idx.size() - 1] + 1;
   }
 
-  IDX_TYPE* working_array_x;
-  IDX_TYPE* working_array_y;
-  IDX_TYPE* check_array_x;
-  IDX_TYPE* check_array_y;
-  IDX_TYPE* test_array_x;
-  IDX_TYPE* test_array_y;
+  using DATA_TYPE = int;
+  DATA_TYPE* working_array_x;
+  DATA_TYPE* working_array_y;
+  DATA_TYPE* check_array_x;
+  DATA_TYPE* check_array_y;
+  DATA_TYPE* test_array_x;
+  DATA_TYPE* test_array_y;
 
-  allocateForallTestData<IDX_TYPE>(data_len,
+  allocateForallTestData<DATA_TYPE>(RAJA::stripIndexType(data_len),
                                    erased_working_res,
                                    &working_array_x,
                                    &check_array_x,
                                    &test_array_x);
 
-  allocateForallTestData<IDX_TYPE>(data_len,
+  allocateForallTestData<DATA_TYPE>(RAJA::stripIndexType(data_len),
                                    erased_working_res,
                                    &working_array_y,
                                    &check_array_y,
@@ -57,11 +58,12 @@ void KernelBasicFisionFussionLoopTestImpl(const SEG_TYPE& seg,
   RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(seg, seg),
                             
                             [=] RAJA_HOST_DEVICE(IDX_TYPE i) { 
-                              working_array_x[RAJA::stripIndexType(i)] += 1;
+                              RAJA::atomicAdd<RAJA::auto_atomic>(&working_array_x[RAJA::stripIndexType(i)], (DATA_TYPE) 1);
                             },
                             
                             [=] RAJA_HOST_DEVICE(IDX_TYPE i) { 
-                              working_array_x[RAJA::stripIndexType(i)] += 2; }                            
+                              RAJA::atomicAdd<RAJA::atomic_atomic>(&working_array_x[RAJA::stripIndexType(i)], (DATA_TYPE) 2)}
+
                             );
 
   working_res.memcpy(check_array_x, working_array_x, 
@@ -81,13 +83,13 @@ void KernelBasicFisionFussionLoopTestImpl(const SEG_TYPE& seg,
                check_array_y[RAJA::stripIndexType(i)] );
   }
 
-  deallocateForallTestData<IDX_TYPE>(erased_working_res,
+  deallocateForallTestData<DATA_TYPE>(erased_working_res,
                                      working_array_x,
                                      check_array_x,
                                      test_array_x);
 
 
-  deallocateForallTestData<IDX_TYPE>(erased_working_res,
+  deallocateForallTestData<DATA_TYPE>(erased_working_res,
                                      working_array_y,
                                      check_array_y,
                                      test_array_y);
