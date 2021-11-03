@@ -29,7 +29,7 @@ endif()
 
 add_subdirectory(basic-single-loop)
 
-add_subdirectory(basic-fision-fussion-loop)
+add_subdirectory(basic-fission-fusion-loop)
 
 add_subdirectory(nested-loop)
 

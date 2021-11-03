@@ -8,7 +8,7 @@
 #ifndef __TEST_KERNEL_BASIC_FISION_FUSSION_LOOP_HPP__
 #define __TEST_KERNEL_BASIC_FISION_FUSSION_LOOP_HPP__
 
-#include "basic-fision-fussion-loop-impl.hpp"
+#include "basic-fission-fusion-loop-impl.hpp"
 
 TYPED_TEST_SUITE_P(KernelBasicFisionFussionLoopTest);
 template <typename T>

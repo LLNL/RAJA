@@ -11,11 +11,11 @@
 # Note: KERNEL_BACKENDS is defined in ../CMakeLists.txt
 #
 foreach( BACKEND Sequential )
-      configure_file( test-kernel-basic-fision-fussion-loop.cpp.in
-                      test-kernel-basic-fision-fussion-loop-${BACKEND}.cpp )
-      raja_add_test( NAME test-kernel-basic-fision-fussion-loop-${BACKEND}
-                     SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-basic-fision-fussion-loop-${BACKEND}.cpp )
-      target_include_directories(test-kernel-basic-fision-fussion-loop-${BACKEND}.exe
+      configure_file( test-kernel-basic-fission-fusion-loop.cpp.in
+                      test-kernel-basic-fission-fusion-loop-${BACKEND}.cpp )
+      raja_add_test( NAME test-kernel-basic-fission-fusion-loop-${BACKEND}
+                     SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-basic-fission-fusion-loop-${BACKEND}.cpp )
+      target_include_directories(test-kernel-basic-fission-fusion-loop-${BACKEND}.exe
                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 endforeach()
 

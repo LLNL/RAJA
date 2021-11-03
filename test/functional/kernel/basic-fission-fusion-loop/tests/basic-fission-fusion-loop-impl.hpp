@@ -62,7 +62,7 @@ void KernelBasicFisionFussionLoopTestImpl(const SEG_TYPE& seg,
                             },
                             
                             [=] RAJA_HOST_DEVICE(IDX_TYPE i) { 
-                              RAJA::atomicAdd<RAJA::atomic_atomic>(&working_array_x[RAJA::stripIndexType(i)], (DATA_TYPE) 2)}
+                              RAJA::atomicAdd<RAJA::auto_atomic>(&working_array_x[RAJA::stripIndexType(i)], (DATA_TYPE) 2);}
 
                             );
 

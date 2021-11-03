@@ -19,7 +19,7 @@
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-kernel-basic-fision-fussion-loop-segments.hpp"
+#include "test-kernel-basic-fission-fusion-loop-segments.hpp"
 
 // Sequential execution policy types
 using SequentialKernelExecPols = camp::list< 
