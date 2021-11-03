@@ -6,11 +6,11 @@
 ###############################################################################
 
 #
-# Generate tests for each enabled RAJA back-end. 
-# 
+# Generate tests for each enabled RAJA back-end.
+#
 # Note: KERNEL_BACKENDS is defined in ../CMakeLists.txt
 #
-foreach( BACKEND ${KERNEL_BACKENDS} )                      
+foreach( BACKEND Sequential )
       configure_file( test-kernel-basic-fision-fussion-loop.cpp.in
                       test-kernel-basic-fision-fussion-loop-${BACKEND}.cpp )
       raja_add_test( NAME test-kernel-basic-fision-fussion-loop-${BACKEND}

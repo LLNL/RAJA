@@ -18,104 +18,79 @@
 #include <vector>
 
 template <typename IDX_TYPE, typename EXEC_POLICY, typename WORKING_RES, typename SEG_TYPE>
-void KernelBasicFisionFussionLoopTestImpl(const SEG_TYPE& seg, 
-                                         const std::vector<IDX_TYPE>& seg_idx,
+void KernelBasicFisionFussionLoopTestImpl(const SEG_TYPE& seg,              
                                          WORKING_RES working_res,
                                          camp::resources::Resource erased_working_res)
 {
-  IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
   IDX_TYPE data_len = IDX_TYPE(0);
+
+  std::vector<IDX_TYPE> seg_idx;
+  RAJA::getIndices(seg_idx, seg);
   if ( seg_idx.size() > 0 ) {
     data_len = seg_idx[seg_idx.size() - 1] + 1;
   }
 
-  IDX_TYPE* working_array;
-  IDX_TYPE* working_array_i;
-  IDX_TYPE* check_array;
-  IDX_TYPE* check_array_i;
-  IDX_TYPE* test_array;
-  IDX_TYPE* test_array_i;
-
-  if ( RAJA::stripIndexType(data_len) == 0 ) {
-    data_len++;
-  }
+  IDX_TYPE* working_array_x;
+  IDX_TYPE* working_array_y;
+  IDX_TYPE* check_array_x;
+  IDX_TYPE* check_array_y;
+  IDX_TYPE* test_array_x;
+  IDX_TYPE* test_array_y;
 
   allocateForallTestData<IDX_TYPE>(data_len,
                                    erased_working_res,
-                                   &working_array,
-                                   &check_array,
-                                   &test_array);
+                                   &working_array_x,
+                                   &check_array_x,
+                                   &test_array_x);
 
   allocateForallTestData<IDX_TYPE>(data_len,
                                    erased_working_res,
-                                   &working_array_i,
-                                   &check_array_i,
-                                   &test_array_i);
+                                   &working_array_y,
+                                   &check_array_y,
+                                   &test_array_y);
+ 
 
-  memset(static_cast<void*>(test_array), 0, 
+  memset(static_cast<void*>(test_array_x), 0, 
          sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
 
-  working_res.memcpy(working_array, test_array, 
+
+  RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(seg, seg),
+                            
+                            [=] RAJA_HOST_DEVICE(IDX_TYPE i) { 
+                              working_array_x[RAJA::stripIndexType(i)] += 1;
+                            },
+                            
+                            [=] RAJA_HOST_DEVICE(IDX_TYPE i) { 
+                              working_array_x[RAJA::stripIndexType(i)] += 2; }                            
+                            );
+
+  working_res.memcpy(check_array_x, working_array_x, 
                      sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
 
-  working_res.memcpy(working_array_i, test_array_i, 
-                     sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
+  memset(static_cast<void*>(check_array_y), 0, 
+         sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
 
-  if ( RAJA::stripIndexType(idx_len) > 0 ) {
+  RAJA::forall<RAJA::loop_exec>(working_res, seg, [=] (IDX_TYPE i) {
+      check_array_y[RAJA::stripIndexType(i)] += 1;
+      check_array_y[RAJA::stripIndexType(i)] += 2;
+  });
 
-    for (IDX_TYPE i = IDX_TYPE(0); i < idx_len; ++i) {
-      test_array  [ RAJA::stripIndexType(seg_idx[RAJA::stripIndexType(i)]) ] = 
-        seg_idx[RAJA::stripIndexType(i)];
-      test_array_i[ RAJA::stripIndexType(RAJA::stripIndexType(i)) ] = 
-        IDX_TYPE(i);
-    }
- 
-    RAJA::kernel_param<EXEC_POLICY>(
-                                    RAJA::make_tuple(seg),
-                                    RAJA::make_tuple(IDX_TYPE(0)),
-      
-                                    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, IDX_TYPE i_idx) {
-                                      working_array[RAJA::stripIndexType(idx)] = IDX_TYPE(idx) ;
-                                      working_array_i[RAJA::stripIndexType(i_idx)] = IDX_TYPE(i_idx) ;
-                                    }
-                                    );
-
-  } else { // zero-length segment
-
-    RAJA::kernel_param<EXEC_POLICY>(
-                                    RAJA::make_tuple(seg),
-                                    RAJA::make_tuple(IDX_TYPE(0)),
-      
-                                    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, IDX_TYPE i_idx) {
-                                      (void) idx; (void) i_idx;
-                                      working_array[0]++;
-                                      working_array_i[0]++;
-                                    }
-                                    );
-
-  }
-
-  working_res.memcpy(check_array, working_array, 
-                     sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
-  working_res.memcpy(check_array_i, working_array_i, 
-                     sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
 
   for (IDX_TYPE i = IDX_TYPE(0); i < data_len; ++i) {
-    ASSERT_EQ( test_array[RAJA::stripIndexType(i)],
-               check_array[RAJA::stripIndexType(i)] );
-    ASSERT_EQ( test_array_i[RAJA::stripIndexType(i)],
-               check_array_i[RAJA::stripIndexType(i)] );
+    ASSERT_EQ( check_array_x[RAJA::stripIndexType(i)],
+               check_array_y[RAJA::stripIndexType(i)] );
   }
 
   deallocateForallTestData<IDX_TYPE>(erased_working_res,
-                                     working_array,
-                                     check_array,
-                                     test_array);
+                                     working_array_x,
+                                     check_array_x,
+                                     test_array_x);
+
 
   deallocateForallTestData<IDX_TYPE>(erased_working_res,
-                                     working_array_i,
-                                     check_array_i,
-                                     test_array_i);
+                                     working_array_y,
+                                     check_array_y,
+                                     test_array_y);
 }
 
 #endif  // __BASIC_FISION_FUSSION_LOOP_SEGMENTS_IMPL_HPP__
