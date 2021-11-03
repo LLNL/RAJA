@@ -8,7 +8,7 @@
 #
 # List of test types for generating test files.
 #
-set(TESTTYPES Depends MultiStream)
+set(TESTTYPES Depends MultiStream Async)
 
 list(APPEND RESOURCE_BACKENDS Sequential)
 
