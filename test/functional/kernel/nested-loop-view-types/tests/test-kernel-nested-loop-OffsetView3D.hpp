@@ -95,9 +95,6 @@ TYPED_TEST_P(KernelNestedLoopOffsetView3DTest, OffsetView3DKernelTest)
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 
-//
-// 3-D View tests
-//
 
   RAJA::idx_t dim0 = 13;
   RAJA::idx_t dim1 = 19;

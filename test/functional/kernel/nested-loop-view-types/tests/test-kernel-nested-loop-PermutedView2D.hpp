@@ -76,9 +76,6 @@ TYPED_TEST_P(KernelNestedLoopPermutedView2DTest, PermutedView2DKernelTest)
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 
-//
-// 2-D View tests
-//
 
   std::array<RAJA::idx_t, 2> perm {{0, 1}};
   //

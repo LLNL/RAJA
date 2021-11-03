@@ -8,7 +8,7 @@
 #
 # List of test types for future expansion, if needed. 
 #
-set(TESTTYPES PermutedView OffsetView)
+set(TESTTYPES PermutedView OffsetView PermutedOffsetView)
 set(DIMTYPES 2D 3D)
 
 #
