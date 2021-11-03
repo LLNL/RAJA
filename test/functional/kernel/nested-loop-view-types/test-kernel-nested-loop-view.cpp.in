@@ -284,7 +284,7 @@ camp::list<
     RAJA::statement::HipKernel<
       RAJA::statement::For<0, RAJA::hip_thread_x_loop,
         RAJA::statement::For<1, RAJA::hip_thread_y_loop,
-          RAJA::statement::For<3, RAJA::hip_thread_z_loop,
+          RAJA::statement::For<2, RAJA::hip_thread_z_loop,
             RAJA::statement::Lambda<0>
           >
         >
