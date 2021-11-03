@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_BASIC_FISION_FUSSION_LOOP_HPP__
-#define __TEST_KERNEL_BASIC_FISION_FUSSION_LOOP_HPP__
+#ifndef __TEST_KERNEL_BASIC_FISSION_FUSION_LOOP_HPP__
+#define __TEST_KERNEL_BASIC_FISSION_FUSION_LOOP_HPP__
 
 #include "basic-fission-fusion-loop-impl.hpp"
 
@@ -120,4 +120,4 @@ TYPED_TEST_P(KernelBasicFisionFussionLoopTest,
 
 REGISTER_TYPED_TEST_SUITE_P(KernelBasicFisionFussionLoopTest,
                             BasicFisionFussionLoopSegmentKernel);
-#endif  // __TEST_KERNEL_BASIC_FISION_FUSSION_LOOP_HPP__
+#endif  // __TEST_KERNEL_BASIC_FISSION_FUSION_LOOP_HPP__

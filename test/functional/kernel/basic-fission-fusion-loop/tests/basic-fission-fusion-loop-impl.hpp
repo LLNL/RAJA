@@ -1,4 +1,3 @@
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
@@ -6,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __BASIC_FISION_FUSSION_LOOP_SEGMENTS_IMPL_HPP__
-#define __BASIC_FISION_FUSSION_LOOP_SEGMENTS_IMPL_HPP__
+#ifndef __BASIC_FISSION_FUSION_LOOP_SEGMENTS_IMPL_HPP__
+#define __BASIC_FISSION_FUSION_LOOP_SEGMENTS_IMPL_HPP__
 
 #include <algorithm>
 #include <cstdio>
@@ -105,4 +104,4 @@ void KernelBasicFisionFussionLoopTestImpl(
                                       test_array_y);
 }
 
-#endif  // __BASIC_FISION_FUSSION_LOOP_SEGMENTS_IMPL_HPP__
+#endif  // __BASIC_FISSION_FUSION_LOOP_SEGMENTS_IMPL_HPP__
