@@ -37,6 +37,8 @@ add_subdirectory(nested-loop)
 
 add_subdirectory(nested-loop-segment-types)
 
+add_subdirectory(nested-loop-view-types)
+
 add_subdirectory(reduce-loc)
 
 add_subdirectory(tile)
