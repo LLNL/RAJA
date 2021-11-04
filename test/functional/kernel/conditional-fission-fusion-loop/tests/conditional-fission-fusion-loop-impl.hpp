@@ -61,21 +61,21 @@ void KernelConditionalFisionFussionLoopTestImpl(
 
     RAJA::kernel_param<EXEC_POLICY>(
 
-      RAJA::make_tuple(seg, seg),
+        RAJA::make_tuple(seg, seg),
 
-      RAJA::make_tuple(param),
+        RAJA::make_tuple(param),
 
-      [=] RAJA_HOST_DEVICE(IDX_TYPE i) {
-        RAJA::atomicAdd<RAJA::auto_atomic>(
-            &working_array_x[RAJA::stripIndexType(i)], (DATA_TYPE)1);
-      },
+        [=] RAJA_HOST_DEVICE(IDX_TYPE i) {
+          RAJA::atomicAdd<RAJA::auto_atomic>(
+              &working_array_x[RAJA::stripIndexType(i)], (DATA_TYPE)1);
+        },
 
-      [=] RAJA_HOST_DEVICE(IDX_TYPE i) {
-        RAJA::atomicAdd<RAJA::auto_atomic>(
-            &working_array_x[RAJA::stripIndexType(i)], (DATA_TYPE)2);
-      }
+        [=] RAJA_HOST_DEVICE(IDX_TYPE i) {
+          RAJA::atomicAdd<RAJA::auto_atomic>(
+              &working_array_x[RAJA::stripIndexType(i)], (DATA_TYPE)2);
+        }
 
-  );
+    );
 
     working_res.memcpy(check_array_x,
                        working_array_x,
@@ -84,17 +84,16 @@ void KernelConditionalFisionFussionLoopTestImpl(
     memset(static_cast<void*>(check_array_y),
            0,
            sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
-    
-    RAJA::forall<RAJA::loop_exec>(working_res, seg_idx, [=](IDX_TYPE i) {
-        check_array_y[RAJA::stripIndexType(i)] = 3 + 3*param;
-      });
 
-    
+    RAJA::forall<RAJA::loop_exec>(working_res, seg_idx, [=](IDX_TYPE i) {
+      check_array_y[RAJA::stripIndexType(i)] = 3 + 3 * param;
+    });
+
+
     for (IDX_TYPE i = IDX_TYPE(0); i < data_len; ++i) {
       ASSERT_EQ(check_array_x[RAJA::stripIndexType(i)],
                 check_array_y[RAJA::stripIndexType(i)]);
     }
-    
   }
 
   deallocateForallTestData<DATA_TYPE>(erased_working_res,

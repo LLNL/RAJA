@@ -138,7 +138,7 @@ using HipKernelExecPols = camp::list<
 
 
     ,
-    RAJA::KernelPolicy<RAJA::HipKernel<
+   RAJA::KernelPolicy<RAJA::statement::HipKernel<
         RAJA::statement::For<0,
                              RAJA::hip_thread_x_loop,
                              RAJA::statement::Lambda<0, RAJA::Segs<0>>>,
