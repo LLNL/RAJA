@@ -24,18 +24,20 @@ import subprocess
 # Call doxygen in ReadtheDocs
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 if read_the_docs_build:
-  # Makes sure directory exists for doxygen output
-  cwd=os.getcwd()
-  buildpath=os.path.join(cwd,"_build")
-  if (os.path.isdir(buildpath) == 0):
-    os.mkdir(buildpath)
-  htmlpath=os.path.join(buildpath,"html")
-  if (os.path.isdir(htmlpath) == 0):
-    os.mkdir(htmlpath)
-
-  # Call doxygen
-    from subprocess import call
-    call(['doxygen', "./doxygen/Doxyfile"])
+    # Generate an RST file for Doxygen index, this is replaced by the real
+    # index.html by hooking into the Sphinx build-finished event at the bottom of
+    # this file
+    cwd=os.getcwd()
+    fpath=os.path.join(cwd,"doxygen/html")
+    if (os.path.isdir(fpath) == 0):
+        os.makedirs(fpath)
+    with open(os.path.join(fpath,"index.rst"), 'w') as f:
+        print("Writing file {}", f)
+        f.write(".. _doxygen:\n")
+        f.write("\n")
+        f.write("*******\n")
+        f.write("Doxygen\n")
+        f.write("*******\n")
 
 # Get current directory
 conf_directory = os.path.dirname(os.path.realpath(__file__))
@@ -327,3 +329,23 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+# Generate Doxygen, and overwrite the index.rst in doxygen/html
+# Only do this on readthedocs
+def gendoxy(app, exception):
+    if read_the_docs_build:
+        buildpath=os.path.join(conf_directory,"_build/html/doxygen/html")
+        if (os.path.isdir(buildpath) == 0):
+            os.makedirs(buildpath)
+
+        if (os.path.exists(os.path.join(buildpath, 'index.html"'))):
+            print("Removing existing index.html")
+            os.remove(os.path.join(buildpath, "index.html"))
+
+        # Call doxygen
+        from subprocess import call
+        call(['doxygen', "./doxygen/Doxyfile"])
+
+
+def setup(app):
+    app.connect('build-finished', gendoxy)

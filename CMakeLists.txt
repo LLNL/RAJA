@@ -54,6 +54,7 @@ set(ENABLE_GTEST_DEATH_TESTS On CACHE BOOL "Enable tests asserting failure.")
 ##       the same names with 'RAJA_' prepended to them.
 
 option(ENABLE_NV_TOOLS_EXT "Build with NV_TOOLS_EXT support" Off)
+option(ENABLE_ROCTX "Build with ENABLE_ROCTX support" Off)
 
 option(ENABLE_TBB "Build TBB support" Off)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
@@ -76,6 +77,9 @@ option(RAJA_ENABLE_BOUNDS_CHECK "Enable bounds checking in RAJA::Views/Layouts" 
 option(RAJA_TEST_EXHAUSTIVE "Build RAJA exhaustive tests" Off)
 option(RAJA_TEST_OPENMP_TARGET_SUBSET "Build subset of RAJA OpenMP target tests when it is enabled" On)
 option(RAJA_ENABLE_RUNTIME_PLUGINS "Enable support for loading plugins at runtime" Off)
+
+option(RAJA_ENABLE_DESUL_ATOMICS "Enable support of desul atomics" Off)
+set(DESUL_ENABLE_TESTS Off CACHE BOOL "")
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
@@ -135,6 +139,11 @@ else() #check BLT_CXX_STD is high enough by disallowing the only invalid option
     message(FATAL_ERROR "RAJA requires minimum C++ standard of c++11")
   endif()
 endif(NOT DEFINED BLT_CXX_STD)
+if (RAJA_ENABLE_DESUL_ATOMICS)
+  if("${BLT_CXX_STD}" STREQUAL "c++11")
+    message(FATAL_ERROR "RAJA_ENABLE_DESUL_ATOMICS requires minimum C++ standard of c++14")
+  endif()
+endif()
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -236,6 +245,11 @@ if (ENABLE_HIP)
   set(raja_depends
     ${raja_depends}
     hip)
+  if(ENABLE_ROCTX)
+      set(raja_depends
+      ${raja_depends}
+      roctx)
+  endif()
 endif ()
 
 if (ENABLE_EXTERNAL_ROCPRIM)
@@ -254,6 +268,14 @@ if (ENABLE_TBB)
   set(raja_depends
     ${raja_depends}
     tbb)
+endif ()
+
+message(STATUS "Desul Atomics support is ${RAJA_ENABLE_DESUL_ATOMICS}")
+if (RAJA_ENABLE_DESUL_ATOMICS)
+  add_subdirectory(tpl/desul)
+  set(raja_depends
+    ${raja_depends}
+    desul_atomics)
 endif ()
 
 if (NOT TARGET camp)

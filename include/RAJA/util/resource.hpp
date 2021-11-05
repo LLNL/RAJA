@@ -24,7 +24,9 @@
 #if defined(RAJA_CUDA_ACTIVE)
 #include "RAJA/policy/cuda/policy.hpp"
 #endif
+#if defined(RAJA_HIP_ACTIVE)
 #include "RAJA/policy/hip/policy.hpp"
+#endif
 #include "RAJA/policy/sycl/policy.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/policy/openmp_target/policy.hpp"
@@ -72,7 +74,7 @@ namespace RAJA
   };
 #endif
 
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_HIP_ACTIVE)
   template<>
   struct get_resource_from_platform<Platform::hip>{
     using type = camp::resources::Hip;
@@ -142,7 +144,7 @@ namespace RAJA
 #if defined(RAJA_CUDA_ACTIVE)
     template <> struct is_resource<resources::Cuda> : std::true_type {};
 #endif
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_HIP_ACTIVE)
     template <> struct is_resource<resources::Hip> : std::true_type {};
 #endif
 #if defined(RAJA_ENABLE_SYCL)

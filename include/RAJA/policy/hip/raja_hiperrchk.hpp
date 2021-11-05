@@ -53,9 +53,19 @@ inline void hipAssert(hipError_t code,
                        bool abort = true)
 {
   if (code != hipSuccess) {
-    fprintf(
-        stderr, "HIPassert: %s %s %d\n", hipGetErrorString(code), file, line);
-    if (abort) RAJA_ABORT_OR_THROW("HIPassert");
+    if (abort) {
+      std::string msg;
+      msg += "HIPassert: ";
+      msg += hipGetErrorString(code);
+      msg += " ";
+      msg += file;
+      msg += ":";
+      msg += std::to_string(line);
+      throw std::runtime_error(msg);
+    } else {
+      fprintf(stderr, "HIPassert: %s %s %d\n",
+              hipGetErrorString(code), file, line);
+    }
   }
 }
 

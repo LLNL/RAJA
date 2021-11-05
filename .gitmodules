@@ -16,3 +16,6 @@
 [submodule "scripts/uberenv"]
 	path = scripts/uberenv
 	url = https://github.com/LLNL/uberenv.git
+[submodule "tpl/desul"]
+	path = tpl/desul
+	url = https://github.com/desul/desul.git
