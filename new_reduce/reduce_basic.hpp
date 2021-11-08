@@ -31,6 +31,8 @@ namespace detail
     T * devicetarget = nullptr;
     RAJA::detail::SoAPtr<T, RAJA::DEVICE::device_mempool_type> device_mem;
     unsigned int * device_count = nullptr;
+#elif defined(RAJA_ENABLE_SYCL)
+    camp::resources::Resource * sycl_res = nullptr;
 #endif
 
     static constexpr size_t num_lambda_args = 1;
@@ -44,6 +46,7 @@ namespace detail
 #include "omp-target/reduce.hpp"
 #include "cuda/reduce.hpp"
 #include "hip/reduce.hpp"
+#include "sycl/reduce.hpp"
 
 template <template <typename, typename, typename> class Op, typename T>
 auto constexpr Reduce(T *target)

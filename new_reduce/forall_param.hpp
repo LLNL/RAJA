@@ -180,6 +180,7 @@ namespace detail
 #include "omp-target/forall.hpp"
 #include "cuda/forall.hpp"
 #include "hip/forall.hpp"
+#include "sycl/forall.hpp"
 
 template<typename ExecPol, typename... Params>
 void forall_param(int N, Params... params) {
