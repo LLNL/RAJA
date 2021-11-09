@@ -98,11 +98,11 @@ and their default settings:
      RAJA can also be configured to build with compiler warnings reported as
      errors, which may be useful to make sure your application builds cleanly:
 
-      =========================   ======================
-      Variable                    Default
-      =========================   ======================
+      ==============================   ======================
+      Variable                         Default
+      ==============================   ======================
       RAJA_ENABLE_WARNINGS_AS_ERRORS   Off
-      =========================   ======================
+      ==============================   ======================
 
      RAJA Views/Layouts may be configured to check for out of bounds 
      indexing at runtime:
@@ -122,27 +122,27 @@ and their default settings:
      Variables that control which RAJA programming model back-ends are enabled
      are (names are descriptive of what they enable):
 
-      =======================   ============================================
-      Variable                  Default
-      =======================   ============================================
-      RAJA_ENABLE_OPENMP             On
-      RAJA_ENABLE_TARGET_OPENMP      Off (when on, RAJA_ENABLE_OPENMP must also be on)
-      RAJA_ENABLE_TBB                Off
-      RAJA_ENABLE_CUDA               Off
-      RAJA_ENABLE_HIP                Off
-      RAJA_ENABLE_SYCL               Off
-      =======================   ============================================
+      ==========================   ============================================
+      Variable                     Default
+      ==========================   ============================================
+      RAJA_ENABLE_OPENMP           On
+      RAJA_ENABLE_TARGET_OPENMP    Off (when on, RAJA_ENABLE_OPENMP must also be on)
+      RAJA_ENABLE_TBB              Off
+      RAJA_ENABLE_CUDA             Off
+      RAJA_ENABLE_HIP              Off
+      RAJA_ENABLE_SYCL             Off
+      ==========================   ============================================
 
      Other compilation options are available via the following:
 
-      =======================   ==========================================
-      Variable                  Default
-      =======================   ==========================================
-      RAJA_ENABLE_CLANG_CUDA         Off (when on, RAJA_ENABLE_CUDA must also be on)
+      ============================   ============================================
+      Variable                       Default
+      ============================   ============================================
+      RAJA_ENABLE_CLANG_CUDA         Off (if on, RAJA_ENABLE_CUDA must be on too)
       RAJA_ENABLE_EXTERNAL_CUB       Off (when CUDA enabled)
-      CUDA_ARCH                 sm_35 (set based on hardware support)
+      CUDA_ARCH                      sm_35 (set based on hardware support)
       RAJA_ENABLE_EXTERNAL_ROCPRIM   Off (when HIP enabled)
-      =======================   ==========================================
+      ============================   ============================================
 
       Turning the 'RAJA_ENABLE_CLANG_CUDA' variable on will build CUDA code with
       the native support in the Clang compiler.
@@ -299,13 +299,13 @@ and their default settings:
       =============================   ========================================
       Variable                        Meaning
       =============================   ========================================
-      RAJA_ENABLE_FT                       Enable/disable RAJA experimental
+      RAJA_ENABLE_FT                  Enable/disable RAJA experimental
                                       loop-level fault-tolerance mechanism
       RAJA_REPORT_FT                  Enable/disable a report of fault-
                                       tolerance enabled run (e.g., number of 
                                       faults detected, recovered from, 
                                       recovery overhead, etc.)
-     RAJA_ENABLE_RUNTIME_PLUGINS           Enable support for dynamically loading
+      RAJA_ENABLE_RUNTIME_PLUGINS     Enable support for dynamically loaded
                                       RAJA plugins.
       =============================   ========================================
 
