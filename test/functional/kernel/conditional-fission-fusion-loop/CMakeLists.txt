@@ -18,5 +18,3 @@ foreach( BACKEND ${KERNEL_BACKENDS} )
       target_include_directories(test-kernel-conditional-fission-fusion-loop-${BACKEND}.exe
                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 endforeach()
-
-unset( TEST_TYPES )
