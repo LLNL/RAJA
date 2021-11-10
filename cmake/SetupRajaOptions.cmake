@@ -1,5 +1,13 @@
+###############################################################################
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+# and other RAJA project contributors. See the RAJA/LICENSE file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+################################################################################
+
 # Enable OpenMP by by default
 set(RAJA_ENABLE_OPENMP On CACHE BOOL "Build OpenMP support")
+
 set(RAJA_ENABLE_WARNINGS_AS_ERRORS Off CACHE BOOL "")
 set(ENABLE_GTEST_DEATH_TESTS On CACHE BOOL "Enable tests asserting failure.")
 
