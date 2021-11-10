@@ -19,7 +19,7 @@ using MatrixTestTypes = ::testing::Types<
 #ifdef RAJA_ENABLE_CUDA
 //    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,4, RAJA::cuda_warp_register>,
 //    RAJA::RectMatrixRegister<double, RAJA::RowMajorLayout, 8,8, RAJA::cuda_warp_register>,
-    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,4, RAJA::cuda_warp_register>
+    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,4, RAJA::cuda_warp_register>,
 //    RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,8, RAJA::cuda_warp_register>,
 #endif
 
@@ -1978,6 +1978,8 @@ GPU_TYPED_TEST_P(MatrixTest, ET_MatrixMatrixMultiplyAdd)
 
         auto C_rows = RAJA::RowIndex<int, C_matrix_t>::range(0, n_size);
         auto C_cols = RAJA::ColIndex<int, C_matrix_t>::range(0, n_size);
+
+        RAJA_ASSERT_EQ(data3_ptr, data2_ptr);
 
         data3_d(C_rows, C_cols) += data1_d(A_rows, A_cols) * data2_d(B_rows, B_cols);
       });

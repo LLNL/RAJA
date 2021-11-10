@@ -107,6 +107,27 @@
 #endif
 
 
+#if defined(__CUDA_ARCH__)
+
+#define RAJA_ASSERT_EQ(X,Y) \
+{\
+  auto x = (X); \
+  auto y = (Y); \
+  if(x != y){ \
+      asm("trap;"); \
+  } \
+}
+      //printf("Assertion failed: " #X " (%ld) != " #Y " (%ld)\n", (long)x, (long)y); \
+
+#define RAJA_ASSERT_FLOAT_EQ(X,Y) {RAJA_ASSERT_EQ(X,Y);}
+#define RAJA_ASSERT_DOUBLE_EQ(X,Y) {RAJA_ASSERT_EQ(X,Y);}
+#else
+
+#define RAJA_ASSERT_EQ(X,Y) {ASSERT_EQ(X,Y);}
+#define RAJA_ASSERT_FLOAT_EQ(X,Y) {ASSERT_FLOAT_EQ(X,Y);}
+#define RAJA_ASSERT_DOUBLE_EQ(X,Y) {ASSERT_DOUBLE_EQ(X,Y);}
+
+#endif
 /*
  * A gtest assertion that automatically selects between 3 gtest macros:
  *   ASSERT_EQ
