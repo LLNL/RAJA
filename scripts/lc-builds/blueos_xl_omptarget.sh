@@ -2,7 +2,7 @@
 
 ###############################################################################
 # Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -17,7 +17,7 @@ fi
 COMP_VER=$1
 shift 1
 
-BUILD_SUFFIX=lc_blueos-xl-${COMP_VER}
+BUILD_SUFFIX=lc_blueos-xl_omptarget-${COMP_VER}
 
 echo
 echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"

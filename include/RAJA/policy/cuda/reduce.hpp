@@ -13,7 +13,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -40,7 +40,13 @@
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
-#include "RAJA/policy/cuda/atomic.hpp"
+
+#if defined(RAJA_ENABLE_DESUL_ATOMICS)
+  #include "RAJA/policy/desul/atomic.hpp"
+#else
+  #include "RAJA/policy/cuda/atomic.hpp"
+#endif
+
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
@@ -813,6 +819,8 @@ struct Reduce_Data {
   {
   }
 
+  Reduce_Data& operator=(const Reduce_Data&) = default;
+
   //! initialize output to identity to ensure never read
   //  uninitialized memory
   void init_grid_val(T* output) { *output = identity; }
@@ -899,6 +907,8 @@ struct ReduceAtomic_Data {
         own_device_ptr{false}
   {
   }
+
+  ReduceAtomic_Data& operator=(const ReduceAtomic_Data&) = default;
 
   //! initialize output to identity to ensure never read
   //  uninitialized memory

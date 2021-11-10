@@ -1,6 +1,6 @@
 .. ##
 .. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,9 +16,9 @@ The RAJA project employs multiple tools to run its tests for each GitHub
 *pull request*, all of which must pass before the pull request can be merged.
 These tools include:
 
-  * **Travis CI.** This runs builds for a Linux environment using multiple 
-    versions of the GNU and clang compilers, and one version each of the Intel, 
-    nvcc (CUDA), and HIP compilers. RAJA tests are run for each non-GPU build.
+  * **Azure.** This runs builds for Linux, Windows, and MacOS  environments 
+    using a variety of compilers. While we do GPU builds for CUDA, Hip, and
+    SYCL on Azure, RAJA tests are run for each non-GPU build.
 
   * **Appveyor.** This runs builds and tests for a Windows environment for two
     versions of the Visual Studio compiler.

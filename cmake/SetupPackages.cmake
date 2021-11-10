@@ -1,6 +1,6 @@
 ###############################################################################
 # Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-# and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# and other RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -73,6 +73,13 @@ if (ENABLE_HIP OR ENABLE_EXTERNAL_ROCPRIM)
   else()
     message(STATUS "Using RAJA rocPRIM submodule.")
   endif()
+endif ()
+
+if (ENABLE_HIP AND ENABLE_ROCTX)
+  include(FindRoctracer)
+  blt_import_library(NAME roctx
+                     INCLUDES ${ROCTX_INCLUDE_DIRS}
+                     LIBRARIES ${ROCTX_LIBRARIES})
 endif ()
 
 set(TPL_DEPS)

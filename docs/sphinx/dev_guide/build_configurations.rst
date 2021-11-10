@@ -1,6 +1,6 @@
 .. ##
 .. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -174,9 +174,8 @@ Reproducing Docker Builds
 ============================
 
 RAJA uses docker container images that it shares with other LLNL GitHub projects
-for CI testing on GitHub. Currently, we use Travis for Linux builds and Appveyor
-for Windows. Soon we will switch over to using Azure Pipelines so we can do CI
-testing for Linux, Windows, and MacOS in a single tool. 
+for CI testing on GitHub. Currently, we use Azure for Linux, Windows, and MacOS 
+builds and also have Appveyor builds for Windows.
 
 You can reproduce these builds locally for testing with the following steps:
 

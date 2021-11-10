@@ -10,7 +10,7 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -53,6 +53,7 @@ template <typename HOST_POLICY
           typename DEVICE_POLICY = HOST_POLICY
 #endif
           >
+
 struct LoopPolicy {
   using host_policy_t = HOST_POLICY;
 #if defined(RAJA_DEVICE_ACTIVE)
@@ -127,7 +128,7 @@ struct Lanes {
   constexpr Lanes(int i) : value(i) {}
 };
 
-struct Resources {
+struct Grid {
 public:
   Teams teams;
   Threads threads;
@@ -135,9 +136,9 @@ public:
   const char *kernel_name{nullptr};
 
   RAJA_INLINE
-  Resources() = default;
+  Grid() = default;
 
-  Resources(Teams in_teams, Threads in_threads, const char *in_kernel_name = nullptr)
+  Grid(Teams in_teams, Threads in_threads, const char *in_kernel_name = nullptr)
     : teams(in_teams), threads(in_threads), kernel_name(in_kernel_name){};
 
 private:
@@ -155,16 +156,14 @@ private:
 };
 
 
-class LaunchContext : public Resources
+class LaunchContext : public Grid
 {
 public:
-  ExecPlace exec_place;
 
-  LaunchContext(Resources const &base, ExecPlace place)
-      : Resources(base), exec_place(place)
+  LaunchContext(Grid const &base)
+      : Grid(base)
   {
   }
-
 
   RAJA_HOST_DEVICE
   void teamSync()
@@ -175,23 +174,34 @@ public:
   }
 };
 
-
 template <typename LAUNCH_POLICY>
 struct LaunchExecute;
 
+//Policy based launch
+template <typename LAUNCH_POLICY, typename BODY>
+void launch(Grid const &grid, BODY const &body)
+{
+  //Take the first policy as we assume the second policy is not user defined.
+  //We rely on the user to pair launch and loop policies correctly.
+  using launch_t = LaunchExecute<typename LAUNCH_POLICY::host_policy_t>;
+  launch_t::exec(LaunchContext(grid), body);
+}
+
+
+//Run time based policy launch
 template <typename POLICY_LIST, typename BODY>
-void launch(ExecPlace place, Resources const &team_resources, BODY const &body)
+void launch(ExecPlace place, Grid const &grid, BODY const &body)
 {
   switch (place) {
     case HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      launch_t::exec(LaunchContext(team_resources, HOST), body);
+      launch_t::exec(LaunchContext(grid), body);
       break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
     case DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      launch_t::exec(LaunchContext(team_resources, DEVICE), body);
+      launch_t::exec(LaunchContext(grid), body);
       break;
     }
 #endif
@@ -200,6 +210,54 @@ void launch(ExecPlace place, Resources const &team_resources, BODY const &body)
   }
 }
 
+// Helper function to retrieve a resource based on the run-time policy - if a device is active
+#if defined(RAJA_DEVICE_ACTIVE)
+template<typename T, typename U>
+RAJA::resources::Resource Get_Runtime_Resource(T host_res, U device_res, RAJA::expt::ExecPlace device){
+  if(device == RAJA::expt::DEVICE) {return RAJA::resources::Resource(device_res);}
+  else { return RAJA::resources::Resource(host_res); }
+}
+#else
+template<typename T>
+RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::expt::ExecPlace device){
+  if(device == RAJA::expt::DEVICE) {RAJA_ABORT_OR_THROW("Device is not enabled");}
+
+  return RAJA::resources::Resource(host_res);
+}
+#endif
+
+
+//Launch API which takes team resource struct
+template <typename POLICY_LIST, typename BODY>
+resources::EventProxy<resources::Resource>
+launch(RAJA::resources::Resource res, Grid const &grid, BODY const &body)
+{
+
+  ExecPlace place;
+  if(res.get_platform() == camp::resources::v1::Platform::host) {
+    place = RAJA::expt::HOST;
+  }else{
+    place = RAJA::expt::DEVICE;
+  }
+
+  switch (place) {
+    case HOST: {
+      using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
+      return launch_t::exec(res, LaunchContext(grid), body); break;
+    }
+#ifdef RAJA_DEVICE_ACTIVE
+    case DEVICE: {
+      using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
+      return launch_t::exec(res, LaunchContext(grid), body); break;
+    }
+#endif
+    default: {
+      RAJA_ABORT_OR_THROW("Unknown launch place or device is not enabled");
+    }
+  }
+  //Should not get here;
+  return resources::EventProxy<resources::Resource>(res);
+}
 
 template<typename POLICY_LIST>
 #if defined(RAJA_DEVICE_CODE)
