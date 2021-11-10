@@ -296,18 +296,18 @@ and their default settings:
      not be of general interest to RAJA users. These are turned off be default.
      They are described here for reference and completeness.
 
-      =============================   ========================================
-      Variable                        Meaning
-      =============================   ========================================
-      RAJA_ENABLE_FT                  Enable/disable RAJA experimental
-                                      loop-level fault-tolerance mechanism
-      RAJA_REPORT_FT                  Enable/disable a report of fault-
-                                      tolerance enabled run (e.g., number of 
-                                      faults detected, recovered from, 
-                                      recovery overhead, etc.)
-      RAJA_ENABLE_RUNTIME_PLUGINS     Enable support for dynamically loaded
-                                      RAJA plugins.
-      =============================   ========================================
+      ===========================   =======================================
+      Variable                      Meaning
+      ===========================   =======================================
+      RAJA_ENABLE_FT                Enable/disable RAJA experimental
+                                    loop-level fault-tolerance mechanism
+      RAJA_REPORT_FT                Enable/disable a report of fault-
+                                    tolerance enabled run (e.g., number of 
+                                    faults detected, recovered from, 
+                                    recovery overhead, etc.)
+      RAJA_ENABLE_RUNTIME_PLUGINS   Enable support for dynamically loaded
+                                    RAJA plugins.
+      ===========================   =======================================
 
 
 .. _configopt-raja-backends-label:
