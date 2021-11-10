@@ -41,7 +41,7 @@ T *allocate(RAJA::Index_type size)
 #elif defined(RAJA_ENABLE_HIP)
       hipErrchk(hipMalloc((void **)&ptr, sizeof(T) * size));
 #elif defined(RAJA_ENABLE_SYCL)
-      ptr = sycl_res->allocate<T>(size);
+      ptr = sycl_res->allocate<T>(size, camp::resources::MemoryAccess::Managed);
 #else
   ptr = new T[size];
 #endif
