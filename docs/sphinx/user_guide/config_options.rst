@@ -19,24 +19,31 @@ configuration options that are most useful for users to know about and
 their defaults.
 
 =============================
-RAJA-Specific Options
+RAJA Option Types
 =============================
 
 All Cmake options used in RAJA contains the prefix ``RAJA_`` to give users 
 the flexibility to enable/disable individual options for RAJA, specifically.
-RAJA contains two types of options, those that are specific to RAJA and those
-that mirror the behavior of standard CMake options or options provided by BLT;
-i.e., *dependent options* in CMake terminology. In the following discussion, 
-we indicate which options are specific to RAJA and which can be 
-enabled/disabled using the CMake or BLT variants. The CMake and BLT option
-names are the same as the RAJA option names, but without the ``RAJA_``
-prefix.
+RAJA contains two types of options, those that only exist in RAJA
+and those that are similar tostandard CMake options or options 
+provided by BLT; i.e., *dependent options* in CMake terminology. RAJA 
+dependent option names are the same as the associated CMake and BLT option 
+names, but with the ``RAJA_`` prefix added.
 
-.. note:: RAJA uses a mix of RAJA-specific options and CMake-dependent
+In the following discussion, we indicate which options only exist in RAJA.
+Every other option can be assumed to be a dependent option that can be 
+enabled/disabled using the CMake or BLT variants. 
+
+.. note:: RAJA uses a mix of RAJA only options and CMake-dependent
           options that can be controlled with CMake or BLT variants. 
-          All Cmake options used in RAJA contains the prefix ``RAJA_``.
-          Options that are also CMake-dependent options, may be controlled
-          with the non-RAJA variable name (without the ``RAJA_`` prefix). 
+
+            * Dependent options are typically used for *disabling* features.
+
+            * To enable features, it is best to use the non ``RAJA_`` prefix
+              version when available. For example, passing the option
+              ``-DRAJA_ENABLE_CUDA=On`` to CMake will not enable CUDA because
+              ``ENABLE_CUDA`` is off by default. So to enable CUDA, you need
+              to pass the ``-DENABLE_CUDA`` option to Cmake.
 
 =======================
 Setting Options
@@ -104,12 +111,16 @@ and their default settings:
 
 * **Examples, tests, warnings, etc.**
 
-     Variables that control whether RAJA tests, examples, tutorial
-     exercises, etc. are built when RAJA is compiled:
+     CMake variables can be used to control whether RAJA tests, examples, 
+     tutorial exercises, etc. are built when RAJA is compiled.
+
+.. note:: In the following tables, an option name followed by an asterisk ('*')
+          only exists in RAJA (i.e., no associated CMake or BLT variant). 
+          For the others (dependent options), it is recommended to use the
+          non-RAJA form (with ``RAJA_`` prefix removed) to enable features.
 
       ========================   =========================================
-      Variable (* indicates      Default
-      RAJA-specific)                  
+      Variable                   Default
       ========================   =========================================
       RAJA_ENABLE_TESTS          On 
       RAJA_ENABLE_EXAMPLES       On 
@@ -131,11 +142,11 @@ and their default settings:
      RAJA Views/Layouts may be configured to check for out of bounds 
      indexing at runtime:
 
-      =========================   ======================
-      Variable (RAJA-specific)    Default
-      =========================   ======================
-      RAJA_ENABLE_BOUNDS_CHECK    Off
-      =========================   ======================
+      ==========================   ======================
+      Variable (RAJA-specific)     Default
+      ==========================   ======================
+      RAJA_ENABLE_BOUNDS_CHECK*    Off
+      ==========================   ======================
 
      Note that RAJA bounds checking is a runtime check and will add 
      execution time overhead. Thus, this feature should only be used
@@ -146,9 +157,13 @@ and their default settings:
      Variables that control which RAJA programming model back-ends are enabled
      are (names are descriptive of what they enable):
 
+.. note:: In the following tables, an option name followed by an asterisk ('*')
+          only exists in RAJA (i.e., no associated CMake or BLT variant). 
+          For the others (dependent options), it is recommended to use the
+          non-RAJA form (with ``RAJA_`` prefix removed) to enable features.
+
       ==========================   ============================================
-      Variable (* indicates        Default
-      RAJA-specific)                   
+      Variable                     Default
       ==========================   ============================================
       RAJA_ENABLE_OPENMP           On
       RAJA_ENABLE_TARGET_OPENMP*   Off (when on, RAJA_ENABLE_OPENMP must 
@@ -205,7 +220,8 @@ and their default settings:
      RAJA provides type aliases that can be used to parameterize floating 
      point types in applications, which makes it easier to switch between types.
 
-.. note:: All options in this section are RAJA-specific.
+.. note:: *All options in this section, only exist in RAJA. They are not 
+          dependendent options.*
 
      The following variables are used to set the data type for the type
      alias ``RAJA::Real_type``:
@@ -301,7 +317,8 @@ and their default settings:
      your preferences, and one should be selected by setting the 'RAJA_TIMER'
      variable. 
 
-.. note:: All options in this section are RAJA-specific.
+.. note:: *All options in this section, only exist in RAJA. They are not 
+          dependendent options.*
 
       ======================   ======================
       Variable                 Values
@@ -329,7 +346,8 @@ and their default settings:
      not be of general interest to RAJA users. These are turned off be default.
      They are described here for reference and completeness.
 
-.. note:: All options in this section are RAJA-specific.
+.. note:: *All options in this section, only exist in RAJA. They are not 
+          dependendent options.*
 
       ===========================   =======================================
       Variable                      Meaning
