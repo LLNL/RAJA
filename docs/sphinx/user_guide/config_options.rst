@@ -121,10 +121,10 @@ tutorial exercises, etc. are built when RAJA is compiled.
       =========================  =========================================
       Variable                   Default
       =========================  =========================================
-      (RAJA)_ENABLE_TESTS        On 
-      (RAJA)_ENABLE_EXAMPLES     On 
-      (RAJA)_ENABLE_BENCHMARKS   Off
-      (RAJA)_ENABLE_COVERAGE     Off (supported for GNU compilers only)
+      (RAJA_)ENABLE_TESTS        On 
+      (RAJA_)ENABLE_EXAMPLES     On 
+      (RAJA_)ENABLE_BENCHMARKS   Off
+      (RAJA_)ENABLE_COVERAGE     Off (supported for GNU compilers only)
       RAJA_ENABLE_EXERCISES      On 
       RAJA_ENABLE_REPRODUCERS    Off 
       =========================  =========================================
@@ -135,7 +135,7 @@ errors, which may be useful to make sure your application builds cleanly:
       ================================   ======================
       Variable                           Default
       ================================   ======================
-      (RAJA)_ENABLE_WARNINGS_AS_ERRORS   Off
+      (RAJA_)ENABLE_WARNINGS_AS_ERRORS   Off
       ================================   ======================
 
 RAJA Views/Layouts may be configured to check for out of bounds 
@@ -159,9 +159,9 @@ are as follows (names are descriptive of what they enable):
       ==========================   ============================================
       Variable                     Default
       ==========================   ============================================
-      (RAJA)_ENABLE_OPENMP         On
-      (RAJA)_ENABLE_CUDA           Off
-      (RAJA)_ENABLE_HIP            Off
+      (RAJA_)ENABLE_OPENMP         On
+      (RAJA_)ENABLE_CUDA           Off
+      (RAJA_)ENABLE_HIP            Off
       RAJA_ENABLE_TARGET_OPENMP    Off (when on, RAJA_ENABLE_OPENMP must 
                                    also be on!)
       RAJA_ENABLE_TBB              Off
@@ -173,7 +173,7 @@ Other programming model specific compilation options are also available:
       ======================================   =================================
       Variable                                 Default
       ======================================   =================================
-      (RAJA)_ENABLE_CLANG_CUDA                 Off (if on, RAJA_ENABLE_CUDA 
+      (RAJA_)ENABLE_CLANG_CUDA                 Off (if on, RAJA_ENABLE_CUDA 
                                                must be on too!)
       RAJA_ENABLE_EXTERNAL_CUB                 Off
       RAJA_ENABLE_NV_TOOLS_EXT                 Off
