@@ -184,7 +184,7 @@ Other programming model specific compilation options are also available:
                                                pointers in Hip back-end)
       ======================================   =================================
 
-Turning the ``(RAJA)_ENABLE_CLANG_CUDA`` variable on will build CUDA 
+Turning the ``(RAJA_)ENABLE_CLANG_CUDA`` variable on will build CUDA 
 code with the native support in the Clang compiler.
 
 The ``RAJA_ENABLE_EXTERNAL_CUB`` variable is used to enable use of an
