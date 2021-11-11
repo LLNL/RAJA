@@ -23,130 +23,139 @@
 // Sequential execution policy types
 using SequentialKernelExecPols = camp::list<
 
-    RAJA::KernelPolicy<
-        RAJA::statement::For<0,
-                             RAJA::seq_exec,
-                             RAJA::statement::Lambda<0, RAJA::Segs<0>>,
-                             RAJA::statement::Lambda<1, RAJA::Segs<0>>>>
+  RAJA::KernelPolicy<
+    RAJA::statement::For<0, RAJA::seq_exec,
+      RAJA::statement::Lambda<0, RAJA::Segs<0>>,
+      RAJA::statement::Lambda<1, RAJA::Segs<0>>
+    >
+  >,
 
+  RAJA::KernelPolicy<
+    RAJA::statement::For<0, RAJA::seq_exec, 
+      RAJA::statement::Lambda<0, RAJA::Segs<0>>
+    >,
+    RAJA::statement::For<0, RAJA::seq_exec, 
+      RAJA::statement::Lambda<1, RAJA::Segs<0>>
+    >
+  >
 
-    ,
-    RAJA::KernelPolicy<
-        RAJA::statement::
-            For<0, RAJA::seq_exec, RAJA::statement::Lambda<0, RAJA::Segs<0>>>,
-        RAJA::statement::
-            For<0, RAJA::seq_exec, RAJA::statement::Lambda<1, RAJA::Segs<0>>>>
-
-    >;
+>;
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPKernelExecPols = camp::list<
 
-    RAJA::KernelPolicy<
-        RAJA::statement::For<0,
-                             RAJA::omp_parallel_for_exec,
-                             RAJA::statement::Lambda<0, RAJA::Segs<0>>,
-                             RAJA::statement::Lambda<1, RAJA::Segs<0>>>>
+  RAJA::KernelPolicy<
+    RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
+      RAJA::statement::Lambda<0, RAJA::Segs<0>>,
+      RAJA::statement::Lambda<1, RAJA::Segs<0>>
+    >
+  >,
 
+  RAJA::KernelPolicy<
+    RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
+      RAJA::statement::Lambda<0, RAJA::Segs<0>>
+    >,
+    RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
+      RAJA::statement::Lambda<1, RAJA::Segs<0>>
+    >
+  >
 
-    ,
-    RAJA::KernelPolicy<
-        RAJA::statement::For<0,
-                             RAJA::omp_parallel_for_exec,
-                             RAJA::statement::Lambda<0, RAJA::Segs<0>>>,
-        RAJA::statement::For<0,
-                             RAJA::omp_parallel_for_exec,
-                             RAJA::statement::Lambda<1, RAJA::Segs<0>>>>
-
-    >;
+>;
 #endif
 
 #if defined(RAJA_ENABLE_TBB)
 using TBBKernelExecPols = camp::list<
 
-    RAJA::KernelPolicy<
-        RAJA::statement::For<0,
-                             RAJA::tbb_for_exec,
-                             RAJA::statement::Lambda<0, RAJA::Segs<0>>,
-                             RAJA::statement::Lambda<1, RAJA::Segs<0>>>>
+  RAJA::KernelPolicy<
+    RAJA::statement::For<0, RAJA::tbb_for_exec,
+      RAJA::statement::Lambda<0, RAJA::Segs<0>>,
+      RAJA::statement::Lambda<1, RAJA::Segs<0>>
+    >
+  >,
 
+  RAJA::KernelPolicy<
+    RAJA::statement::For<0, RAJA::tbb_for_exec,
+      RAJA::statement::Lambda<0, RAJA::Segs<0>>
+    >,
+    RAJA::statement::For<0, RAJA::tbb_for_exec,
+      RAJA::statement::Lambda<1, RAJA::Segs<0>>
+    >
+  >
 
-    ,
-    RAJA::KernelPolicy<
-        RAJA::statement::For<0,
-                             RAJA::tbb_for_exec,
-                             RAJA::statement::Lambda<0, RAJA::Segs<0>>>,
-        RAJA::statement::For<0,
-                             RAJA::tbb_for_exec,
-                             RAJA::statement::Lambda<1, RAJA::Segs<0>>>>
-
-    >;
+>;
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OpenMPTargetKernelExecPols = camp::list<
 
-    RAJA::KernelPolicy<
-        RAJA::statement::For<0,
-                             RAJA::omp_target_parallel_for_exec<4>,
-                             RAJA::statement::Lambda<0, RAJA::Segs<0>>,
-                             RAJA::statement::Lambda<1, RAJA::Segs<0>>>>
+  RAJA::KernelPolicy<
+    RAJA::statement::For<0, RAJA::omp_target_parallel_for_exec<4>,
+      RAJA::statement::Lambda<0, RAJA::Segs<0>>,
+      RAJA::statement::Lambda<1, RAJA::Segs<0>>
+    >
+  >,
 
+  RAJA::KernelPolicy<
+    RAJA::statement::For<0, RAJA::omp_target_parallel_for_exec<4>,
+      RAJA::statement::Lambda<0, RAJA::Segs<0>>>,
+    RAJA::statement::For<0, RAJA::omp_target_parallel_for_exec<4>,
+      RAJA::statement::Lambda<1, RAJA::Segs<0>>
+    >
+  >
 
-    ,
-    RAJA::KernelPolicy<
-        RAJA::statement::For<0,
-                             RAJA::omp_target_parallel_for_exec<4>,
-                             RAJA::statement::Lambda<0, RAJA::Segs<0>>>,
-        RAJA::statement::For<0,
-                             RAJA::omp_target_parallel_for_exec<4>,
-                             RAJA::statement::Lambda<1, RAJA::Segs<0>>>>
-
-    >;
+>;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
 using CudaKernelExecPols = camp::list<
 
-    RAJA::KernelPolicy<RAJA::statement::CudaKernel<
-        RAJA::statement::For<0,
-                             RAJA::cuda_thread_x_loop,
-                             RAJA::statement::Lambda<0, RAJA::Segs<0>>,
-                             RAJA::statement::Lambda<1, RAJA::Segs<0>>>>>
+  RAJA::KernelPolicy<
+    RAJA::statement::CudaKernel<
+      RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>,
+        RAJA::statement::Lambda<1, RAJA::Segs<0>>
+      >
+    >
+  >,
 
+  RAJA::KernelPolicy<
+    RAJA::statement::CudaKernel<
+      RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>
+      >,
+      RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+        RAJA::statement::Lambda<1, RAJA::Segs<0>>
+      >
+    >
+  >
 
-    ,
-    RAJA::KernelPolicy<RAJA::statement::CudaKernel<
-        RAJA::statement::For<0,
-                             RAJA::cuda_thread_x_loop,
-                             RAJA::statement::Lambda<0, RAJA::Segs<0>>>,
-        RAJA::statement::For<0,
-                             RAJA::cuda_thread_x_loop,
-                             RAJA::statement::Lambda<1, RAJA::Segs<0>>>>>
-
-    >;
+>;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
 using HipKernelExecPols = camp::list<
 
-    RAJA::KernelPolicy<RAJA::statement::HipKernel<
-        RAJA::statement::For<0,
-                             RAJA::hip_thread_x_loop,
-                             RAJA::statement::Lambda<0, RAJA::Segs<0>>,
-                             RAJA::statement::Lambda<1, RAJA::Segs<0>>>>>
+  RAJA::KernelPolicy<
+    RAJA::statement::HipKernel<
+      RAJA::statement::For<0, RAJA::hip_thread_x_loop,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>,
+        RAJA::statement::Lambda<1, RAJA::Segs<0>>
+      >
+    >
+  >,
 
+  RAJA::KernelPolicy<
+    RAJA::statement::HipKernel<
+      RAJA::statement::For<0, RAJA::hip_thread_x_loop,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>
+      >,
+      RAJA::statement::For<0, RAJA::hip_thread_x_loop,
+        RAJA::statement::Lambda<1, RAJA::Segs<0>>
+      >
+    >
+  >
 
-    ,
-   RAJA::KernelPolicy<RAJA::statement::HipKernel<
-        RAJA::statement::For<0,
-                             RAJA::hip_thread_x_loop,
-                             RAJA::statement::Lambda<0, RAJA::Segs<0>>>,
-        RAJA::statement::For<0,
-                             RAJA::hip_thread_x_loop,
-                             RAJA::statement::Lambda<1, RAJA::Segs<0>>>>>
-
-    >;
+>;
 #endif
 
 
