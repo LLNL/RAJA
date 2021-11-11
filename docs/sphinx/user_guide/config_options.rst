@@ -106,7 +106,7 @@ build process for all of the code.
 
 .. note:: The following discussion indicates which options exist in RAJA 
           only and those which are dependent options. **Dependent options 
-          appear in the discussion with parentheses around the ``RAJA_`` 
+          appear in the discussion with parentheses around the 'RAJA_'
           prefix to indicate that the option name without the prefix can be 
           used and is often preferred.**
 
