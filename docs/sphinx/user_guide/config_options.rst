@@ -210,8 +210,8 @@ applications.
 
 * **Data types, sizes, alignment, etc.**
 
-AJA provides type aliases that can be used to parameterize floating 
-oint types in applications, which makes it easier to switch between types.
+RAJA provides type aliases that can be used to parameterize floating 
+point types in applications, which makes it easier to switch between types.
 
 .. note:: RAJA data types in this section are provided as a convenience to 
           users if they wish to use them. They are not used within RAJA 
