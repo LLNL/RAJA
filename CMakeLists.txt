@@ -192,13 +192,17 @@ set (raja_sources
   src/MemUtils_CUDA.cpp
   src/MemUtils_HIP.cpp
   src/MemUtils_SYCL.cpp
-  src/PluginStrategy.cpp)
+  src/PluginStrategy.cpp
+)
 
 if (RAJA_ENABLE_RUNTIME_PLUGINS)
   set (raja_sources
     ${raja_sources}
     src/RuntimePluginLoader.cpp
-    src/KokkosPluginLoader.cpp)
+    src/KokkosPluginLoader.cpp
+    src/Kokkos_Command_Line_Parsing.cpp
+    src/Kokkos_Profiling.cpp
+)
 endif ()
 
 set (raja_depends)
@@ -312,7 +316,7 @@ blt_add_library(
   DEPENDS_ON ${raja_depends} camp ${CMAKE_DL_LIBS}
   DEFINES ${raja_defines})
 
-
+target_compile_definitions(RAJA PUBLIC KOKKOS_TOOLS_INDEPENDENT_BUILD)
 install(TARGETS RAJA
   EXPORT RAJA
   ARCHIVE DESTINATION lib
@@ -322,11 +326,20 @@ install(TARGETS RAJA
 
 install(EXPORT RAJA DESTINATION share/raja/cmake/)
 
+#target_include_directories(RAJA
+#  PUBLIC
+#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/RAJA/tools/>
+#  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+#  $<INSTALL_INTERFACE:include>
+#  $<INSTALL_INTERFACE:${PROJECT_BINARY_DIR}/include/RAJA/tools/>
+#)
 target_include_directories(RAJA
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
+  $<INSTALL_INTERFACE:include>
+)
 if (ENABLE_CUDA AND NOT ENABLE_EXTERNAL_CUB)
   target_include_directories(RAJA SYSTEM
     PUBLIC
