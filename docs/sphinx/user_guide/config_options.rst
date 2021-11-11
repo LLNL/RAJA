@@ -25,7 +25,7 @@ RAJA Option Types
 All Cmake options used in RAJA contains the prefix ``RAJA_`` to give users 
 the flexibility to enable/disable individual options for RAJA, specifically.
 RAJA contains two types of options, those that only exist in RAJA
-and those that are similar tostandard CMake options or options 
+and those that are similar to standard CMake options or options 
 provided by BLT; i.e., *dependent options* in CMake terminology. RAJA 
 dependent option names are the same as the associated CMake and BLT option 
 names, but with the ``RAJA_`` prefix added.
