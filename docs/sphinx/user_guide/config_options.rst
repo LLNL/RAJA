@@ -22,25 +22,30 @@ their defaults.
 RAJA Option Types
 =============================
 
-All Cmake options used in RAJA contains the prefix ``RAJA_`` to give users 
-the flexibility to enable/disable individual options for RAJA, specifically.
-RAJA contains two types of options, those that only exist in RAJA
-and those that are similar to standard CMake options or options 
+Nearly all Cmake options used in RAJA contain the prefix ``RAJA_`` to give 
+users flexibility to enable/disable individual compilation features for RAJA, 
+specifically. RAJA contains two types of options, those that exist in 
+RAJA only and those that are similar to standard CMake options or options 
 provided by BLT; i.e., *dependent options* in CMake terminology. RAJA 
 dependent option names are the same as the associated CMake and BLT option 
 names, but with the ``RAJA_`` prefix added.
 
-In the following discussion, we indicate which options only exist in RAJA.
-Every other option can be assumed to be a dependent option that can be 
-enabled/disabled using the CMake or BLT variants. 
+The following discussion indicates which options exist in RAJA only and
+those which are dependent options. **Dependent options appear in the 
+discussion with parentheses around the ``RAJA_`` prefix to indicate that
+the option name without the prefix can be used.**
 
-.. note:: RAJA uses a mix of RAJA only options and CMake-dependent
+.. note:: RAJA uses a mix of RAJA-only options and CMake-dependent
           options that can be controlled with CMake or BLT variants. 
 
             * Dependent options are typically used for *disabling* features.
+              For example, providing the option ``-DRAJA_ENABLE_TESTS=Off``
+              to CMake will disable compilation of RAJA tests, even if the 
+              option ``-DENABLE_TESTS=On`` is also provided.
 
-            * To enable features, it is best to use the non ``RAJA_`` prefix
-              version when available. For example, passing the option
+            * We recommend using the option names without the ``RAJA_`` prefix,
+              when available, to enable features at compile time to avoid 
+              potential undesired behavior. For example, passing the option
               ``-DRAJA_ENABLE_CUDA=On`` to CMake will not enable CUDA because
               ``ENABLE_CUDA`` is off by default. So to enable CUDA, you need
               to pass the ``-DENABLE_CUDA`` option to Cmake.
@@ -101,7 +106,7 @@ not need to be set by users. Others can be used to enable or disable certain
 RAJA features. Most variables get translated to 
 compiler directives and definitions in the RAJA ``config.hpp`` file that is 
 generated when CMake runs. The ``config.hpp`` header file is included in other 
-RAJA headers as needed so all options propagate consistently through the 
+RAJA headers so all options propagate consistently through the 
 build process for all of the code. Each RAJA variable has a special prefix 
 to distinguish it as being specific to RAJA; i.e., it is not a BLT variable
 or a standard CMake variable.
@@ -114,103 +119,92 @@ and their default settings:
      CMake variables can be used to control whether RAJA tests, examples, 
      tutorial exercises, etc. are built when RAJA is compiled.
 
-.. note:: In the following tables, an option name followed by an asterisk ('*')
-          only exists in RAJA (i.e., no associated CMake or BLT variant). 
-          For the others (dependent options), it is recommended to use the
-          non-RAJA form (with ``RAJA_`` prefix removed) to enable features.
-
-      ========================   =========================================
+      =========================  =========================================
       Variable                   Default
-      ========================   =========================================
-      RAJA_ENABLE_TESTS          On 
-      RAJA_ENABLE_EXAMPLES       On 
-      RAJA_ENABLE_BENCHMARKS     Off
-      RAJA_ENABLE_COVERAGE       Off (only supported with GNU compilers)
-      RAJA_ENABLE_EXERCISES*     On 
-      RAJA_ENABLE_REPRODUCERS*   Off 
-      ========================   =========================================
+      =========================  =========================================
+      (RAJA)_ENABLE_TESTS        On 
+      (RAJA)_ENABLE_EXAMPLES     On 
+      (RAJA)_ENABLE_BENCHMARKS   Off
+      (RAJA)_ENABLE_COVERAGE     Off (supported for GNU compilers only)
+      RAJA_ENABLE_EXERCISES      On 
+      RAJA_ENABLE_REPRODUCERS    Off 
+      =========================  =========================================
 
      RAJA can also be configured to build with compiler warnings reported as
      errors, which may be useful to make sure your application builds cleanly:
 
-      ==============================   ======================
-      Variable                         Default
-      ==============================   ======================
-      RAJA_ENABLE_WARNINGS_AS_ERRORS   Off
-      ==============================   ======================
+      ================================   ======================
+      Variable                           Default
+      ================================   ======================
+      (RAJA)_ENABLE_WARNINGS_AS_ERRORS   Off
+      ================================   ======================
 
      RAJA Views/Layouts may be configured to check for out of bounds 
      indexing at runtime:
 
-      ==========================   ======================
-      Variable (RAJA-specific)     Default
-      ==========================   ======================
-      RAJA_ENABLE_BOUNDS_CHECK*    Off
-      ==========================   ======================
+      =========================   ======================
+      Variable                    Default
+      =========================   ======================
+      RAJA_ENABLE_BOUNDS_CHECK    Off
+      =========================   ======================
 
      Note that RAJA bounds checking is a runtime check and will add 
-     execution time overhead. Thus, this feature should only be used
-     for correctness checking and should not be enabled for release builds.
+     considerable execution time overhead. Thus, this feature should only be 
+     used for correctness checking and should be disabled for production builds.
      
 * **Programming model back-end support**
 
      Variables that control which RAJA programming model back-ends are enabled
-     are (names are descriptive of what they enable):
-
-.. note:: In the following tables, an option name followed by an asterisk ('*')
-          only exists in RAJA (i.e., no associated CMake or BLT variant). 
-          For the others (dependent options), it is recommended to use the
-          non-RAJA form (with ``RAJA_`` prefix removed) to enable features.
+     are as follows (names are descriptive of what they enable):
 
       ==========================   ============================================
       Variable                     Default
       ==========================   ============================================
-      RAJA_ENABLE_OPENMP           On
-      RAJA_ENABLE_TARGET_OPENMP*   Off (when on, RAJA_ENABLE_OPENMP must 
-                                   also be on)
-      RAJA_ENABLE_TBB*             Off
-      RAJA_ENABLE_CUDA             Off
-      RAJA_ENABLE_HIP              Off
-      RAJA_ENABLE_SYCL*            Off
+      (RAJA)_ENABLE_OPENMP         On
+      (RAJA)_ENABLE_CUDA           Off
+      (RAJA)_ENABLE_HIP            Off
+      RAJA_ENABLE_TARGET_OPENMP    Off (when on, RAJA_ENABLE_OPENMP must 
+                                   also be on!)
+      RAJA_ENABLE_TBB              Off
+      RAJA_ENABLE_SYCL             Off
       ==========================   ============================================
 
      Other programming model specific compilation options are also available:
 
-      =======================================   =====================================
-      Variable (* indicates                     Default
-      RAJA-specific)                       
-      =======================================   =====================================
-      RAJA_ENABLE_CLANG_CUDA                    Off (if on, RAJA_ENABLE_CUDA must be
-                                                on too)
-      RAJA_ENABLE_EXTERNAL_CUB*                 Off (when CUDA enabled)
-      RAJA_ENABLE_NV_TOOLS_EXT*                 Off (when CUDA enabled)
-      CUDA_ARCH                                 sm_35 (set based on hardware support)
-      RAJA_ENABLE_EXTERNAL_ROCPRIM*             Off (when HIP enabled)
-      RAJA_ENABLE_ROCTX*                        Off (when HIP enabled)
-      RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL*   Off enables device function pointers
-                                                in Hip back-end
-      =======================================   =====================================
+      ======================================   =================================
+      Variable                                 Default
+      ======================================   =================================
+      (RAJA)_ENABLE_CLANG_CUDA                 Off (if on, RAJA_ENABLE_CUDA 
+                                               must be on too!)
+      RAJA_ENABLE_EXTERNAL_CUB                 Off
+      RAJA_ENABLE_NV_TOOLS_EXT                 Off
+      CUDA_ARCH                                sm_35 (based on hardware support)
+      RAJA_ENABLE_EXTERNAL_ROCPRIM             Off
+      RAJA_ENABLE_ROCTX                        Off
+      RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL   Off (enables device function 
+                                               pointers in Hip back-end)
+      ======================================   =================================
 
-      Turning the 'RAJA_ENABLE_CLANG_CUDA' variable on will build CUDA code with
-      the native support in the Clang compiler.
+      Turning the ``(RAJA)_ENABLE_CLANG_CUDA`` variable on will build CUDA 
+      code with the native support in the Clang compiler.
 
-      The 'RAJA_ENABLE_EXTERNAL_CUB' variable is used to require the use of an
-      external install of the NVIDIA CUB support library. Even when Off the CUB
-      library included in the CUDA toolkit will still be used if available.
+      The ``RAJA_ENABLE_EXTERNAL_CUB`` variable is used to enable use of an
+      external install of the NVIDIA CUB support library. When Off, the CUB
+      library included in the CUDA toolkit will still be used, if available.
       Starting with CUDA 11, CUB is installed as part of the CUDA toolkit and
-      the NVIDIA THRUST library requires that install of CUB. We recommended
+      the NVIDIA Thrust library requires that install of CUB. We recommended
       projects use the CUB included with the CUDA toolkit for compatibility with
-      THRUST and applications using THRUST. Users should take note of the CUB
+      Thrust and applications using Thrust. Users should take note of the CUB
       install used by RAJA to ensure they use the same include directories when
-      configuring their application.
+      configuring their applications.
 
-      The 'RAJA_ENABLE_EXTERNAL_ROCPRIM' variable is used to require an external
-      install of the AMD rocPRIM support library. Even when Off the rocPRIM
-      library included in the ROCM install will be used when available. We
-      recommend projects use the rocPRIM included with the ROCM install when
+      The ``RAJA_ENABLE_EXTERNAL_ROCPRIM`` variable is used to enable use of an 
+      external install of the AMD rocPRIM support library. When Off, the 
+      rocPRIM library included in the ROCM install will be used, when available.
+      We recommend projects use the rocPRIM included with the ROCM install when
       available. Users should take note of the rocPRIM install used by RAJA to
       ensure they use the same include directories when configuring their
-      application.
+      applications.
 
 .. note:: See :ref:`getting-started-label` for more information about
           setting other options for RAJA back-ends.
@@ -219,9 +213,6 @@ and their default settings:
 
      RAJA provides type aliases that can be used to parameterize floating 
      point types in applications, which makes it easier to switch between types.
-
-.. note:: *All options in this section, only exist in RAJA. They are not 
-          dependendent options.*
 
      The following variables are used to set the data type for the type
      alias ``RAJA::Real_type``:
@@ -317,9 +308,6 @@ and their default settings:
      your preferences, and one should be selected by setting the 'RAJA_TIMER'
      variable. 
 
-.. note:: *All options in this section, only exist in RAJA. They are not 
-          dependendent options.*
-
       ======================   ======================
       Variable                 Values
       ======================   ======================
@@ -345,9 +333,6 @@ and their default settings:
      RAJA contains some features that are used mainly for development or may
      not be of general interest to RAJA users. These are turned off be default.
      They are described here for reference and completeness.
-
-.. note:: *All options in this section, only exist in RAJA. They are not 
-          dependendent options.*
 
       ===========================   =======================================
       Variable                      Meaning
