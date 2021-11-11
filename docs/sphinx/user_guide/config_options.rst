@@ -30,11 +30,6 @@ provided by BLT; i.e., *dependent options* in CMake terminology. RAJA
 dependent option names are the same as the associated CMake and BLT option 
 names, but with the ``RAJA_`` prefix added.
 
-The following discussion indicates which options exist in RAJA only and
-those which are dependent options. **Dependent options appear in the 
-discussion with parentheses around the ``RAJA_`` prefix to indicate that
-the option name without the prefix can be used.**
-
 .. note:: RAJA uses a mix of RAJA-only options and CMake-dependent
           options that can be controlled with CMake or BLT variants. 
 
@@ -107,9 +102,13 @@ RAJA features. Most variables get translated to
 compiler directives and definitions in the RAJA ``config.hpp`` file that is 
 generated when CMake runs. The ``config.hpp`` header file is included in other 
 RAJA headers so all options propagate consistently through the 
-build process for all of the code. Each RAJA variable has a special prefix 
-to distinguish it as being specific to RAJA; i.e., it is not a BLT variable
-or a standard CMake variable.
+build process for all of the code. 
+
+.. note:: The following discussion indicates which options exist in RAJA 
+          only and those which are dependent options. **Dependent options 
+          appear in the discussion with parentheses around the ``RAJA_`` 
+          prefix to indicate that the option name without the prefix can be 
+          used and is often preferred.**
 
 The following tables describe which variables set RAJA options and 
 and their default settings:
