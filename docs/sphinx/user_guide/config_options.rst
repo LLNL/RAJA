@@ -214,17 +214,21 @@ and their default settings:
      RAJA provides type aliases that can be used to parameterize floating 
      point types in applications, which makes it easier to switch between types.
 
+.. note:: RAJA data types in this section are provided as a convenience to 
+          users if they wish to use them. They are not used within RAJA 
+          implementation code directly.
+
      The following variables are used to set the data type for the type
      alias ``RAJA::Real_type``:
 
       ======================   ======================
       Variable                 Default
       ======================   ======================
-      RAJA_USE_DOUBLE          On 
+      RAJA_USE_DOUBLE          On (type is double)
       RAJA_USE_FLOAT           Off 
       ======================   ======================
 
-     Similarly, the 'RAJA::Complex_type' can be enabled to support complex 
+     Similarly, the ``RAJA::Complex_type`` can be enabled to support complex 
      numbers if needed:
 
       ======================   ======================
@@ -233,7 +237,8 @@ and their default settings:
       RAJA_USE_COMPLEX         Off 
       ======================   ======================
 
-     When turned on, the RAJA Complex_type is 'std::complex<Real_type>'.
+     When turned on, the ``RAJA::Complex_type`` is an alias to 
+     ``std::complex<Real_type>``.
 
      There are several variables to control the definition of the RAJA 
      floating-point data pointer type ``RAJA::Real_ptr``. The base data type
