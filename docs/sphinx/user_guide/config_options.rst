@@ -205,7 +205,7 @@ and their default settings:
       ensure they use the same include directories when configuring their
       applications.
 
-.. note:: See :ref:`getting-started-label` for more information about
+.. note:: See :ref:`getting_started-label` for more information about
           setting other options for RAJA back-ends.
 
 * **Data types, sizes, alignment, etc.**
