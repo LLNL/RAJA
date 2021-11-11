@@ -43,7 +43,7 @@ names, but with the ``RAJA_`` prefix added.
               potential undesired behavior. For example, passing the option
               ``-DRAJA_ENABLE_CUDA=On`` to CMake will not enable CUDA because
               ``ENABLE_CUDA`` is off by default. So to enable CUDA, you need
-              to pass the ``-DENABLE_CUDA`` option to Cmake.
+              to pass the ``-DENABLE_CUDA=On`` option to Cmake.
 
 =======================
 Setting Options
@@ -162,7 +162,7 @@ are as follows (names are descriptive of what they enable):
       (RAJA_)ENABLE_OPENMP         On
       (RAJA_)ENABLE_CUDA           Off
       (RAJA_)ENABLE_HIP            Off
-      RAJA_ENABLE_TARGET_OPENMP    Off (when on, RAJA_ENABLE_OPENMP must 
+      RAJA_ENABLE_TARGET_OPENMP    Off (when on, (RAJA_)ENABLE_OPENMP must 
                                    also be on!)
       RAJA_ENABLE_TBB              Off
       RAJA_ENABLE_SYCL             Off
@@ -173,7 +173,7 @@ Other programming model specific compilation options are also available:
       ======================================   =================================
       Variable                                 Default
       ======================================   =================================
-      (RAJA_)ENABLE_CLANG_CUDA                 Off (if on, RAJA_ENABLE_CUDA 
+      (RAJA_)ENABLE_CLANG_CUDA                 Off (if on, (RAJA_)ENABLE_CUDA 
                                                must be on too!)
       RAJA_ENABLE_EXTERNAL_CUB                 Off
       RAJA_ENABLE_NV_TOOLS_EXT                 Off
