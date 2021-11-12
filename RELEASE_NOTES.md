@@ -85,6 +85,9 @@ Notable changes include:
         launch per SM. This resulted in a performance improvement for an
         application use case. Future work will expand this concept to other GPU
         kernel execution methods in RAJA.
+      * RAJA Modules is deprecated and no longer uses the "-fmodules" flag
+        since it can cause issues. The RAJA_ENABLE_MODULES option
+        will be removed in the next release.
 
   * Build changes/improvements:
       * Update BLT submodule to latest release, v0.4.1.

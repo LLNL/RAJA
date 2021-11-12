@@ -5,8 +5,8 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ################################################################################
 
-if(ENABLE_CLANG_CUDA)
+if(RAJA_ENABLE_CLANG_CUDA)
   add_subdirectory(clangcuda)
-endif(ENABLE_CLANG_CUDA)
+endif(RAJA_ENABLE_CLANG_CUDA)
 
 add_subdirectory(openmp-target)
