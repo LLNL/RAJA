@@ -102,23 +102,3 @@ foreach(dep ${TPL_DEPS})
         set_target_properties(${dep} PROPERTIES EXPORT_NAME RAJA::${dep})
     endif()
 endforeach()
-
-
-if (ENABLE_BLAS)
-	#find_package(cblas)
-	find_package(BLAS)
-  if(BLAS_FOUND)
-    blt_register_library(
-      NAME BLAS
-      INCLUDES ${BLAS_INCLUDE_DIRS}
-      LIBRARIES ${BLAS_LIBRARIES})
-    message(STATUS "BLAS Enabled")
-    message(STATUS "BLAS Include:      ${BLAS_INCLUDE_DIRS}")
-    message(STATUS "BLAS Libraries:    ${BLAS_LIBRARIES}")
-    message(STATUS "BLAS Library Dirs: ${BLAS_LIBRARY_DIRS}")
-    message(STATUS "BLAS Root Dir:     ${BLAS_ROOT_DIR}")
-  else()
-    message(WARNING "BLAS NOT FOUND")
-    set(ENABLE_BLAS Off)
-  endif()
-endif ()
