@@ -258,6 +258,7 @@ namespace expt
   using policy::cuda::cuda_launch_t;
 }
 
+
 /*!
  * Maps segment indices to CUDA threads.
  * This is the lowest overhead mapping, but requires that there are enough

@@ -263,8 +263,6 @@ forall_impl(resources::Cuda r,
 
 }  // namespace policy
 
-
-
 }  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_CUDA guard
