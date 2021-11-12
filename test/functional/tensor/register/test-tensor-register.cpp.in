@@ -62,7 +62,7 @@ TYPED_TEST_SUITE_P(TestTensorRegister);
 // Instantiate parameterized test
 //
 
-REGISTER_TYPED_TEST_SUITE_P(TestTensorRegister, @TENSOR_REGISTER_TEST@)
+REGISTER_TYPED_TEST_SUITE_P(TestTensorRegister, @TENSOR_REGISTER_TEST@);
 
                                
 INSTANTIATE_TYPED_TEST_SUITE_P(RAJA, TestTensorRegister, TensorRegisterTypes);

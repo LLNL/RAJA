@@ -8,8 +8,10 @@
 #ifndef __TEST_TESNOR_REGISTER_SegmentedSumInner_HPP__
 #define __TEST_TESNOR_REGISTER_SegmentedSumInner_HPP__
 
-#include <numeric>
+
 #if 0
+#include <numeric>
+
 
 template <typename EXEC_POLICY, typename WORKING_RES, typename OP_TYPE>
 void ScanExclusiveTestImpl(int N,
@@ -69,7 +71,7 @@ void ScanExclusiveTestImpl(int N,
 
 #endif
 
-TYPED_TEST_P(TestTensorRegister, SesgmentedSumInnerTest)
+TYPED_TEST_P(TestTensorRegister, SegmentedSumInner)
 {
   printf("hello!\n");
 #if 0

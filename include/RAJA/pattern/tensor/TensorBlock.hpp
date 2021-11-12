@@ -15,6 +15,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#if 0
 #ifndef RAJA_pattern_tensor_TensorBlock_HPP
 #define RAJA_pattern_tensor_TensorBlock_HPP
 
@@ -358,5 +359,7 @@ namespace ET{
 }  // namespace RAJA
 
 
+
+#endif
 
 #endif

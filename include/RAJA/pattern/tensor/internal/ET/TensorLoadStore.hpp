@@ -24,7 +24,6 @@
 
 #include "RAJA/pattern/tensor/internal/ET/ExpressionTemplateBase.hpp"
 #include "RAJA/pattern/tensor/internal/TensorTileExec.hpp"
-#include "RAJA/util/TypedViewBase.hpp"
 
 
 namespace RAJA
