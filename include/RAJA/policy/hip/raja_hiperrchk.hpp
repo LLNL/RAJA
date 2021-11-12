@@ -17,8 +17,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_raja_hiperrchk_HPP
-#define RAJA_raja_hiperrchk_HPP
+#ifndef RAJA_hiperrchk_HPP
+#define RAJA_hiperrchk_HPP
 
 #include "RAJA/config.hpp"
 
