@@ -35,7 +35,7 @@ cmake \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/xl/xl-${COMP_VER}/bin/xlc++_r \
   -C ../host-configs/lc-builds/blueos/xl_X.cmake \
   -DENABLE_OPENMP=On \
-  -DENABLE_TARGET_OPENMP=On \
+  -DRAJA_ENABLE_TARGET_OPENMP=On \
   -DOpenMP_CXX_FLAGS="-qoffload;-qsmp=omp;-qalias=noansi" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
