@@ -126,7 +126,7 @@ GPU_TYPED_TEST_P(Kernel, Basic)
       total += i * 1.1 + j;
     }
   }
-  ASSERT_SCALAR_EQ((double)total, (double)tsum.get());
+  ASSERT_FLOAT_EQ((double)total, (double)tsum.get());
 
   camp::resources::Resource work_res{Res()};
 
@@ -177,9 +177,9 @@ GPU_TYPED_TEST_P(Kernel, Basic)
     tMax.max(arr[id]);
   });
 
-  ASSERT_SCALAR_EQ((double)total, (double)tsum.get());
-  ASSERT_SCALAR_EQ((double)-1, (double)tMin.get());
-  ASSERT_SCALAR_EQ((double)50, (double)tMax.get());
+  ASSERT_FLOAT_EQ((double)total, (double)tsum.get());
+  ASSERT_FLOAT_EQ((double)-1, (double)tMin.get());
+  ASSERT_FLOAT_EQ((double)50, (double)tMax.get());
 
   std::vector<Idx0> idx_x;
   std::vector<Idx1> idx_y;
@@ -208,7 +208,7 @@ GPU_TYPED_TEST_P(Kernel, Basic)
       total += i * 1.1 + j;
     }
   }
-  ASSERT_SCALAR_EQ((double)total, (double)tsum.get());
+  ASSERT_FLOAT_EQ((double)total, (double)tsum.get());
 
   total = 0.0;
   tsum.reset(0.0);
@@ -236,7 +236,7 @@ GPU_TYPED_TEST_P(Kernel, Basic)
       total += i * 1.1 + j;
     }
   }
-  ASSERT_SCALAR_EQ((double)total, (double)tsum.get());
+  ASSERT_FLOAT_EQ((double)total, (double)tsum.get());
 
 
 
@@ -283,7 +283,7 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
       total += i * 1.1 + j;
     }
   }
-  ASSERT_SCALAR_EQ(total, tsum.get());
+  ASSERT_FLOAT_EQ(total, tsum.get());
 
   camp::resources::Resource work_res{Res()};
 
@@ -332,9 +332,9 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
       tMax.max(d_arr[id]);
   });
 
-  ASSERT_SCALAR_EQ(total, tsum.get());
-  ASSERT_SCALAR_EQ(-1,  tMin.get());
-  ASSERT_SCALAR_EQ(50, tMax.get());
+  ASSERT_FLOAT_EQ(total, tsum.get());
+  ASSERT_FLOAT_EQ(-1,  tMin.get());
+  ASSERT_FLOAT_EQ(50, tMax.get());
 
   std::vector<Idx0> idx_x;
   std::vector<Idx1> idx_y;
@@ -362,7 +362,7 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
       total += i * 1.1 + j;
     }
   }
-  ASSERT_SCALAR_EQ(total, tsum.get());
+  ASSERT_FLOAT_EQ(total, tsum.get());
 
   total=0.0;
   tsum.reset(0.0);
@@ -384,7 +384,7 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
       total += i * 1.1 + j;
     }
   }
-  ASSERT_SCALAR_EQ(total, tsum.get());
+  ASSERT_FLOAT_EQ(total, tsum.get());
 
 
   total=0.0;
@@ -404,7 +404,7 @@ GPU_TYPED_TEST_P(Kernel_gpu, Basic)
     }
   }
 
-  ASSERT_SCALAR_EQ(total, tsum.get());
+  ASSERT_FLOAT_EQ(total, tsum.get());
 
   hipErrchk(hipFree(d_arr));
   hipErrchk(hipFree(d_idx_test));

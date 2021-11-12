@@ -28,7 +28,7 @@
 #include <complex>
 #endif
 
-#include "camp/camp.hpp"
+#include "camp/helpers.hpp"
 
 namespace RAJA
 {
@@ -54,9 +54,9 @@ const int UndefinedValue = -9999999;
 ///
 /// Template list of sizes
 ///
-template <camp::idx_t... Sizes>
-using SizeList = camp::idx_seq<Sizes...>;
-
+template <Index_type... Sizes>
+struct SizeList {
+};
 
 
 /*!
