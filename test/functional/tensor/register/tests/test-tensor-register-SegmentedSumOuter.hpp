@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_TESNOR_REGISTER_SegmentedSumInner_HPP__
-#define __TEST_TESNOR_REGISTER_SegmentedSumInner_HPP__
+#ifndef __TEST_TESNOR_REGISTER_SegmentedSumOuter_HPP__
+#define __TEST_TESNOR_REGISTER_SegmentedSumOuter_HPP__
 
 #include<RAJA/RAJA.hpp>
 
 template <typename REGISTER_TYPE>
-void SegmentedSumInnerImpl()
+void SegmentedSumOuterImpl()
 {
   using register_type = REGISTER_TYPE;
   using element_type = typename register_type::element_type;
@@ -32,9 +32,8 @@ void SegmentedSumInnerImpl()
 
   // Initialize input data
   for(camp::idx_t i = 0;i < num_elem; ++ i){
-    input0_hptr[i] = (element_type)(i+1+NO_OPT_RAND);
+    input0_hptr[i] = (element_type)(i+1); //+NO_OPT_RAND);
   }
-
   tensor_copy_to_device<policy_type>(input0_dptr, input0_vec);
 
 
@@ -42,7 +41,7 @@ void SegmentedSumInnerImpl()
   // run segmented dot products for all segments allowed by the vector
   for(int segbits = 0;(1<<segbits) <= num_elem;++ segbits){
 
-    int num_segments = 1<<segbits;
+    int num_segments = num_elem>>segbits;
 
     for(int output_segment = 0;output_segment < num_segments;++ output_segment){
 
@@ -52,7 +51,7 @@ void SegmentedSumInnerImpl()
         register_type x;
         x.load_packed(input0_dptr);
 
-        register_type y = x.segmented_sum_inner(segbits, output_segment);
+        register_type y = x.segmented_sum_outer(segbits, output_segment);
 
         y.store_packed(output0_dptr);
 
@@ -70,16 +69,12 @@ void SegmentedSumInnerImpl()
         expected[i] = 0;
       }
 
-      int output_offset = output_segment * num_elem>>segbits;
+      int output_offset = output_segment * (1<<segbits);
 
-      // sum each value into appropriate segment lane
       for(camp::idx_t i = 0;i < num_elem; ++ i){
-
-        auto off = (i >> segbits)+output_offset;
-
-        expected[off] += input0_hptr[i];
+        camp::idx_t output_i = output_offset + i%(1<<segbits);
+        expected[output_i] += input0_hptr[i];
       }
-
 
 
       for(camp::idx_t i = 0;i < num_elem; ++ i){
@@ -99,9 +94,9 @@ void SegmentedSumInnerImpl()
 
 
 
-TYPED_TEST_P(TestTensorRegister, SegmentedSumInner)
+TYPED_TEST_P(TestTensorRegister, SegmentedSumOuter)
 {
-  SegmentedSumInnerImpl<TypeParam>();
+  SegmentedSumOuterImpl<TypeParam>();
 }
 
 

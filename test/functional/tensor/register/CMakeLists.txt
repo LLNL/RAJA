@@ -7,7 +7,8 @@
 
 
 set(TENSOR_REGISTER_TESTS
-				SegmentedSumInner)
+				SegmentedSumInner,
+				SegmentedSumOuter)
 
 #
 # Generate tensor register tests for each element type, and each register policy
