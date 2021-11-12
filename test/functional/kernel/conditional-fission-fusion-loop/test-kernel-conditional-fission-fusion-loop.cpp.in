@@ -177,7 +177,7 @@ using HipKernelExecPols = camp::list<
 //
 // Cartesian product of types used in parameterized tests
 //
-using @BACKEND@KernelConditionalFisionFussionLoopTypes =
+using @BACKEND@KernelConditionalFissionFusionLoopTypes =
     Test<camp::cartesian_product<StrongIdxTypeList,
                                  @BACKEND@ResourceList,
                                  @BACKEND@KernelExecPols>>::Types;
@@ -186,6 +186,6 @@ using @BACKEND@KernelConditionalFisionFussionLoopTypes =
 // Instantiate parameterized tests
 //
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               KernelConditionalFisionFussionLoopTest,
-                               @BACKEND@KernelConditionalFisionFussionLoopTypes);
+                               KernelConditionalFissionFusionLoopTest,
+                               @BACKEND@KernelConditionalFissionFusionLoopTypes);
                                

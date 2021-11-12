@@ -10,14 +10,14 @@
 
 #include "conditional-fission-fusion-loop-impl.hpp"
 
-TYPED_TEST_SUITE_P(KernelConditionalFisionFussionLoopTest);
+TYPED_TEST_SUITE_P(KernelConditionalFissionFusionLoopTest);
 template <typename T>
-class KernelConditionalFisionFussionLoopTest : public ::testing::Test
+class KernelConditionalFissionFusionLoopTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(KernelConditionalFisionFussionLoopTest,
-             ConditionalFisionFussionLoopSegmentKernel)
+TYPED_TEST_P(KernelConditionalFissionFusionLoopTest,
+             ConditionalFissionFusionLoopSegmentKernel)
 {
   using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -32,7 +32,7 @@ TYPED_TEST_P(KernelConditionalFisionFussionLoopTest,
   RAJA::TypedRangeSegment<IDX_TYPE> r1(0, 37);
   RAJA::getIndices(seg_idx, r1);
 
-  KernelConditionalFisionFussionLoopTestImpl<IDX_TYPE,
+  KernelConditionalFissionFusionLoopTestImpl<IDX_TYPE,
                                              EXEC_POLICY,
                                              WORKING_RES,
                                              RAJA::TypedRangeSegment<IDX_TYPE>>(
@@ -41,7 +41,7 @@ TYPED_TEST_P(KernelConditionalFisionFussionLoopTest,
   seg_idx.clear();
   RAJA::TypedRangeSegment<IDX_TYPE> r2(3, 2057);
   RAJA::getIndices(seg_idx, r2);
-  KernelConditionalFisionFussionLoopTestImpl<IDX_TYPE,
+  KernelConditionalFissionFusionLoopTestImpl<IDX_TYPE,
                                              EXEC_POLICY,
                                              WORKING_RES,
                                              RAJA::TypedRangeSegment<IDX_TYPE>>(
@@ -52,7 +52,7 @@ TYPED_TEST_P(KernelConditionalFisionFussionLoopTest,
   RAJA::TypedRangeSegment<IDX_TYPE> r3(5, 5);
   RAJA::getIndices(seg_idx, r3);
 
-  KernelConditionalFisionFussionLoopTestImpl<IDX_TYPE,
+  KernelConditionalFissionFusionLoopTestImpl<IDX_TYPE,
                                              EXEC_POLICY,
                                              WORKING_RES,
                                              RAJA::TypedRangeSegment<IDX_TYPE>>(
@@ -62,7 +62,7 @@ TYPED_TEST_P(KernelConditionalFisionFussionLoopTest,
   seg_idx.clear();
   RAJA::TypedRangeStrideSegment<IDX_TYPE> rs1(0, 188, 2);
   RAJA::getIndices(seg_idx, rs1);
-  KernelConditionalFisionFussionLoopTestImpl<
+  KernelConditionalFissionFusionLoopTestImpl<
       IDX_TYPE,
       EXEC_POLICY,
       WORKING_RES,
@@ -74,7 +74,7 @@ TYPED_TEST_P(KernelConditionalFisionFussionLoopTest,
   seg_idx.clear();
   RAJA::TypedRangeStrideSegment<IDX_TYPE> rs2(2, 1029, 3);
   RAJA::getIndices(seg_idx, rs2);
-  KernelConditionalFisionFussionLoopTestImpl<
+  KernelConditionalFissionFusionLoopTestImpl<
       IDX_TYPE,
       EXEC_POLICY,
       WORKING_RES,
@@ -87,7 +87,7 @@ TYPED_TEST_P(KernelConditionalFisionFussionLoopTest,
   seg_idx.clear();
   RAJA::TypedRangeStrideSegment<IDX_TYPE> rs3(2, 2, 3);
   RAJA::getIndices(seg_idx, rs3);
-  KernelConditionalFisionFussionLoopTestImpl<
+  KernelConditionalFissionFusionLoopTestImpl<
       IDX_TYPE,
       EXEC_POLICY,
       WORKING_RES,
@@ -109,7 +109,7 @@ TYPED_TEST_P(KernelConditionalFisionFussionLoopTest,
   RAJA::TypedListSegment<IDX_TYPE> l1(&seg_idx[0],
                                       seg_idx.size(),
                                       erased_working_res);
-  KernelConditionalFisionFussionLoopTestImpl<IDX_TYPE,
+  KernelConditionalFissionFusionLoopTestImpl<IDX_TYPE,
                                              EXEC_POLICY,
                                              WORKING_RES,
                                              RAJA::TypedListSegment<IDX_TYPE>>(
@@ -120,13 +120,13 @@ TYPED_TEST_P(KernelConditionalFisionFussionLoopTest,
   RAJA::TypedListSegment<IDX_TYPE> l2(nullptr,
                                       seg_idx.size(),
                                       erased_working_res);
-  KernelConditionalFisionFussionLoopTestImpl<IDX_TYPE,
+  KernelConditionalFissionFusionLoopTestImpl<IDX_TYPE,
                                              EXEC_POLICY,
                                              WORKING_RES,
                                              RAJA::TypedListSegment<IDX_TYPE>>(
       l2, seg_idx, working_res, erased_working_res);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelConditionalFisionFussionLoopTest,
-                            ConditionalFisionFussionLoopSegmentKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelConditionalFissionFusionLoopTest,
+                            ConditionalFissionFusionLoopSegmentKernel);
 #endif  // __TEST_KERNEL_CONDITIONAL_FISSION_FUSION_LOOP_HPP__

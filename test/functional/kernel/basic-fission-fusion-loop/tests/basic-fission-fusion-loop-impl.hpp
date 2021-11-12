@@ -20,7 +20,7 @@ template <typename IDX_TYPE,
           typename EXEC_POLICY,
           typename WORKING_RES,
           typename SEG_TYPE>
-void KernelBasicFisionFussionLoopTestImpl(
+void KernelBasicFissionFusionLoopTestImpl(
     const SEG_TYPE& seg,
     const std::vector<IDX_TYPE>& seg_idx,
     WORKING_RES working_res,
