@@ -38,8 +38,8 @@
  *
  ******************************************************************************
  */
-#cmakedefine ENABLE_FT
-#cmakedefine ENABLE_ITERATOR_OVERFLOW_DEBUG
+#cmakedefine RAJA_ENABLE_FT
+#cmakedefine RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG
 /*!
  ******************************************************************************
  *
@@ -66,7 +66,7 @@
  *
  ******************************************************************************
  */
-#cmakedefine ENABLE_FORCEINLINE_RECURSIVE
+#cmakedefine RAJA_ENABLE_FORCEINLINE_RECURSIVE
 
 /*!
  ******************************************************************************
@@ -103,8 +103,6 @@
 
 #cmakedefine RAJA_ENABLE_NV_TOOLS_EXT
 #cmakedefine RAJA_ENABLE_ROCTX
-
-#cmakedefine RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL
 
 /*!
  ******************************************************************************
@@ -173,7 +171,7 @@ namespace RAJA {
 #define RAJA_ENABLE_OPENMP_TASK
 #endif
 #else
-#error RAJA configured with ENABLE_OPENMP, but OpenMP not supported by current compiler
+#error RAJA configured with RAJA_ENABLE_OPENMP, but OpenMP not supported by current compiler
 #endif // _OPENMP
 #endif // RAJA_ENABLE_OPENMP
 
@@ -183,6 +181,13 @@ namespace RAJA {
 
 #if defined(RAJA_ENABLE_HIP) && defined(__HIPCC__)
 #define RAJA_HIP_ACTIVE
+
+// enable device function pointers with rocm version >= 4.3
+#include <hip/hip_version.h>
+#if (HIP_VERSION_MAJOR > 4) || \
+    (HIP_VERSION_MAJOR == 4 && HIP_VERSION_MINOR >= 3)
+#define RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL
+#endif
 #endif // RAJA_ENABLE_HIP && __HIPCC__
 
 #if defined(RAJA_CUDA_ACTIVE) || \
@@ -279,7 +284,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 // Configuration options for Intel compilers
 //
 
-#if defined (ENABLE_FORCEINLINE_RECURSIVE)
+#if defined (RAJA_ENABLE_FORCEINLINE_RECURSIVE)
 #define RAJA_FORCEINLINE_RECURSIVE  RAJA_PRAGMA(forceinline recursive)
 #else
 #define RAJA_FORCEINLINE_RECURSIVE
