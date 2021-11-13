@@ -7,7 +7,7 @@
 
 
 set(TENSOR_REGISTER_TESTS
-				SegmentedSumInner,
+				SegmentedSumInner
 				SegmentedSumOuter)
 
 #

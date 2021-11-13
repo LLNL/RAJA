@@ -9,7 +9,7 @@ set( TENSOR_ELEMENT_TYPES  int long float double )
 
 add_subdirectory(register)
 #add_subdirectory(vector)
-#add_subdirectory(matrix)
+add_subdirectory(matrix)
 
 
 unset( TENSOR_ELEMENT_TYPES )

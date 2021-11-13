@@ -105,4 +105,4 @@ TYPED_TEST_P(TestTensorRegister, SegmentedSumInner)
 }
 
 
-#endif // __TEST_SCAN_EXCLUSIVE_HPP__
+#endif
