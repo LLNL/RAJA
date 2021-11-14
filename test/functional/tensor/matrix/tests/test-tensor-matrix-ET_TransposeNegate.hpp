@@ -15,7 +15,7 @@ void ET_TransposeNegateImpl()
 {
 
   using matrix_t = MATRIX_TYPE;
-  using policy_t = typename matrix_t::register_policy;
+  //using policy_t = typename matrix_t::register_policy;
   using element_t = typename matrix_t::element_type;
   static const int N = matrix_t::register_type::s_num_elem * 4;
 

@@ -22,9 +22,6 @@ raja_add_test(
   NAME test-register
   SOURCES test-register.cpp)
   
-raja_add_test(
-  NAME test-vector
-  SOURCES test-vector.cpp)
 
 add_subdirectory(cpu)
 

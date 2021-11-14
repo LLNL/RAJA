@@ -23,13 +23,13 @@ using TensorMatrixTypes = ::testing::Types<
     RAJA::SquareMatrixRegister<MatrixElementType, TensorMatrixLayoutType>,
 
     // Try different rectangular matrices
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 2,16>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 4,16>,
+//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 2,16>,
+//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 4,16>,
     RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,16>,
     RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 16,16>,
     RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 16,8>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 16,4>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 16,2>,
+//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 16,4>,
+//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 16,2>,
 
     RAJA::SquareMatrixRegister<MatrixElementType, TensorMatrixLayoutType, RAJA::scalar_register>
 
