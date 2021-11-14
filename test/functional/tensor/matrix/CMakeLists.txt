@@ -18,7 +18,8 @@ set(TENSOR_MATRIX_TESTS
                 ET_Divide
                 ET_MatrixVector
                 ET_MatrixMatrixMultiply
-                ET_MatrixMatrixMultiplyAdd)
+                ET_MatrixMatrixMultiplyAdd
+                ET_TransposeNegate)
 				
 set(TENSOR_MATRIX_LAYOUTS
                 RowMajor

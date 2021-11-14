@@ -25,10 +25,6 @@ raja_add_test(
 raja_add_test(
   NAME test-vector
   SOURCES test-vector.cpp)
-  
-raja_add_test(
-  NAME test-matrix
-  SOURCES test-matrix.cpp)
 
 add_subdirectory(cpu)
 
