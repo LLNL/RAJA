@@ -26,21 +26,21 @@ namespace RAJA
 
 
   template<>
-  struct RegisterTraits<scalar_register, int>{
-      using element_type = int;
+  struct RegisterTraits<scalar_register, int32_t>{
+      using element_type = int32_t;
       using register_policy = scalar_register;
       static constexpr camp::idx_t s_num_bits = sizeof(element_type)*8;
       static constexpr camp::idx_t s_num_elem = 1;
-      using int_element_type = int;
+      using int_element_type = int32_t;
   };
 
   template<>
-  struct RegisterTraits<scalar_register, long>{
-      using element_type = long;
+  struct RegisterTraits<scalar_register, int64_t>{
+      using element_type = int64_t;
       using register_policy = scalar_register;
       static constexpr camp::idx_t s_num_bits = sizeof(element_type)*8;
       static constexpr camp::idx_t s_num_elem = 1;
-      using int_element_type = long;
+      using int_element_type = int64_t;
   };
 
   template<>
@@ -49,7 +49,7 @@ namespace RAJA
       using register_policy = scalar_register;
       static constexpr camp::idx_t s_num_bits = sizeof(element_type)*8;
       static constexpr camp::idx_t s_num_elem = 1;
-      using int_element_type = int;
+      using int_element_type = int32_t;
   };
 
   template<>
@@ -58,7 +58,7 @@ namespace RAJA
       using register_policy = scalar_register;
       static constexpr camp::idx_t s_num_bits = sizeof(element_type)*8;
       static constexpr camp::idx_t s_num_elem = 1;
-      using int_element_type = long;
+      using int_element_type = int64_t;
   };
 
 

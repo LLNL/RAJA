@@ -20,7 +20,9 @@
 
 #include "camp/camp.hpp"
 #include "RAJA/config.hpp"
+#include "RAJA/policy/tensor/arch.hpp"
 #include "RAJA/pattern/tensor/TensorRegister.hpp"
+
 
 namespace RAJA
 {

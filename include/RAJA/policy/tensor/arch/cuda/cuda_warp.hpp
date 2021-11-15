@@ -54,7 +54,7 @@ namespace RAJA {
       using element_type = ELEMENT_TYPE;
       using register_type = ELEMENT_TYPE;
 
-      using int_vector_type = Register<long, cuda_warp_register>;
+      using int_vector_type = Register<int64_t, cuda_warp_register>;
 
 
 		private:

@@ -49,22 +49,22 @@ namespace RAJA
 
   template<typename REGISTER_POLICY>
   struct RegisterTraits<int, REGISTER_POLICY>{
-      using int_vector_type = Register<int, REGISTER_POLICY>;
+      using int_vector_type = Register<int32_t, REGISTER_POLICY>;
   };
 
   template<typename REGISTER_POLICY>
   struct RegisterTraits<long, REGISTER_POLICY>{
-      using int_vector_type = Register<long, REGISTER_POLICY>;
+      using int_vector_type = Register<int64_t, REGISTER_POLICY>;
   };
 
   template<typename REGISTER_POLICY>
   struct RegisterTraits<float, REGISTER_POLICY>{
-      using int_vector_type = Register<int, REGISTER_POLICY>;
+      using int_vector_type = Register<int32_t, REGISTER_POLICY>;
   };
 
   template<typename REGISTER_POLICY>
   struct RegisterTraits<double, REGISTER_POLICY>{
-      using int_vector_type = Register<long, REGISTER_POLICY>;
+      using int_vector_type = Register<int64_t, REGISTER_POLICY>;
   };
 
 

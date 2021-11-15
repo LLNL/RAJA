@@ -51,7 +51,6 @@ using TensorMatrixTypes = ::testing::Types<
     RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 16,8, RAJA::avx512_register>,
     RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 16,4, RAJA::avx512_register>,
     RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,4, RAJA::avx512_register>,
-
 #endif
 
 

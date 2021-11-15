@@ -44,7 +44,7 @@ namespace RAJA
       using element_type = double;
       using register_type = __m256d;
 
-      using int_vector_type = Register<long, avx_register>;
+      using int_vector_type = Register<int64_t, avx_register>;
 
 
     private:

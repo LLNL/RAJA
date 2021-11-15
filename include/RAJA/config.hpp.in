@@ -374,6 +374,8 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
+#define RAJA_UNROLL RAJA_PRAGMA(clang loop unroll(enable))
+
 
 // note that neither nvcc nor Apple Clang compiler currently doesn't support
 // the __builtin_assume_aligned attribute
@@ -413,6 +415,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_ALIGN_DATA(d) d
 #define RAJA_SIMD
 #define RAJA_NO_SIMD
+#define RAJA_UNROLL
 
 #else
 
