@@ -34,18 +34,18 @@ namespace RAJA
 
 
   template<>
-  class Register<int, avx2_register> :
-    public internal::RegisterBase<Register<int, avx2_register>>
+  class Register<int32_t, avx2_register> :
+    public internal::RegisterBase<Register<int32_t, avx2_register>>
   {
     public:
-      using base_type = internal::RegisterBase<Register<int, avx2_register>>;
+      using base_type = internal::RegisterBase<Register<int32_t, avx2_register>>;
 
       using register_policy = avx2_register;
-      using self_type = Register<int, avx2_register>;
-      using element_type = int;
+      using self_type = Register<int32_t, avx2_register>;
+      using element_type = int32_t;
       using register_type = __m256i;
 
-      using int_vector_type = Register<int, avx2_register>;
+      using int_vector_type = Register<int32_t, avx2_register>;
 
 
     private:
@@ -445,7 +445,7 @@ namespace RAJA
       {
         // Some simple cases
         if(N <= 0 || N > 8){
-          return RAJA::operators::limits<int>::min();
+          return RAJA::operators::limits<int32_t>::min();
         }
         if(N == 1){
           return get(0);
@@ -492,7 +492,7 @@ namespace RAJA
       {
         // Some simple cases
         if(N <= 0 || N > 8){
-          return RAJA::operators::limits<int>::max();
+          return RAJA::operators::limits<int32_t>::max();
         }
         if(N == 1){
           return get(0);

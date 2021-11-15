@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-set( TENSOR_ELEMENT_TYPES  int long float double )
+set( TENSOR_ELEMENT_TYPES  int32_t int64_t float double )
 
 add_subdirectory(register)
 add_subdirectory(vector)

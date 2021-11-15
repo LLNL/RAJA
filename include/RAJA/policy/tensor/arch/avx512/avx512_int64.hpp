@@ -33,18 +33,18 @@ namespace RAJA
 {
 
   template<>
-  class Register<long, avx512_register> :
-    public internal::RegisterBase<Register<long, avx512_register>>
+  class Register<int64_t, avx512_register> :
+    public internal::RegisterBase<Register<int64_t, avx512_register>>
   {
     public:
-      using base_type = internal::RegisterBase<Register<long, avx512_register>>;
+      using base_type = internal::RegisterBase<Register<int64_t, avx512_register>>;
 
       using register_policy = avx512_register;
-      using self_type = Register<long, avx512_register>;
-      using element_type = long;
+      using self_type = Register<int64_t, avx512_register>;
+      using element_type = int64_t;
       using register_type = __m512i;
 
-      using int_vector_type = Register<long, avx512_register>;
+      using int_vector_type = Register<int64_t, avx512_register>;
 
 
     private:

@@ -33,18 +33,18 @@ namespace RAJA
 {
 
   template<>
-  class Register<int, avx_register> :
-    public internal::RegisterBase<Register<int, avx_register>>
+  class Register<int32_t, avx_register> :
+    public internal::RegisterBase<Register<int32_t, avx_register>>
   {
     public:
-      using base_type = internal::RegisterBase<Register<int, avx_register>>;
+      using base_type = internal::RegisterBase<Register<int32_t, avx_register>>;
 
       using register_policy = avx_register;
-      using self_type = Register<int, avx_register>;
-      using element_type = int;
+      using self_type = Register<int32_t, avx_register>;
+      using element_type = int32_t;
       using register_type = __m256i;
 
-      using int_vector_type = Register<int, avx_register>;
+      using int_vector_type = Register<int32_t, avx_register>;
 
 
     private:
@@ -490,7 +490,7 @@ namespace RAJA
       {
         // Some simple cases
         if(N <= 0 || N > 8){
-          return RAJA::operators::limits<int>::min();
+          return RAJA::operators::limits<int32_t>::min();
         }
 
         // this is just painful, since we don't have a proper masked permute
@@ -590,7 +590,7 @@ namespace RAJA
       {
         // Some simple cases
         if(N <= 0 || N > 8){
-          return RAJA::operators::limits<int>::max();
+          return RAJA::operators::limits<int32_t>::max();
         }
         // this is just painful, since we don't have a proper masked permute
         // in AVX.  Lots of special cases to make sure we compare just the

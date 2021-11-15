@@ -33,18 +33,18 @@ namespace RAJA
 {
 
   template<>
-  class Register<long, avx2_register> :
-    public internal::RegisterBase<Register<long, avx2_register>>
+  class Register<int64_t, avx2_register> :
+    public internal::RegisterBase<Register<int64_t, avx2_register>>
   {
     public:
-      using base_type = internal::RegisterBase<Register<long, avx2_register>>;
+      using base_type = internal::RegisterBase<Register<int64_t, avx2_register>>;
 
       using register_policy = avx2_register;
-      using self_type = Register<long, avx2_register>;
-      using element_type = long;
+      using self_type = Register<int64_t, avx2_register>;
+      using element_type = int64_t;
       using register_type = __m256i;
 
-      using int_vector_type = Register<long, avx2_register>;
+      using int_vector_type = Register<int64_t, avx2_register>;
 
     private:
       register_type m_value;
@@ -170,7 +170,7 @@ namespace RAJA
        *
        */
       RAJA_INLINE
-      self_type &load_strided(long const *ptr, camp::idx_t stride){
+      self_type &load_strided(int64_t const *ptr, camp::idx_t stride){
         m_value = _mm256_i64gather_epi64(reinterpret_cast<long long const *>(ptr),
                                       createStridedOffsets(stride),
                                       sizeof(element_type));
@@ -352,7 +352,7 @@ namespace RAJA
       RAJA_HOST_DEVICE
       RAJA_INLINE
       self_type multiply(self_type const &b) const {
-        // AVX2 does not supply an long multiply, so do it manually
+        // AVX2 does not supply an int64_t multiply, so do it manually
         return self_type(_mm256_set_epi64x(
             get(3)*b.get(3),
             get(2)*b.get(2),
@@ -414,7 +414,7 @@ namespace RAJA
       element_type max(camp::idx_t N = 4) const
       {
         if(N <= 0 || N > 4){
-          return RAJA::operators::limits<long>::min();
+          return RAJA::operators::limits<int64_t>::min();
         }
 
         // AVX2 does not supply an 64bit integer max?!?
@@ -459,7 +459,7 @@ namespace RAJA
       element_type min(camp::idx_t N = 4) const
       {
         if(N <= 0 || N > 4){
-          return RAJA::operators::limits<long>::max();
+          return RAJA::operators::limits<int64_t>::max();
         }
 
         // AVX2 does not supply an 64bit integer max?!?
