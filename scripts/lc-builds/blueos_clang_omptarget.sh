@@ -2,7 +2,7 @@
 
 ###############################################################################
 # Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -38,7 +38,7 @@ cmake \
   -C ../host-configs/lc-builds/blueos/clang_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=Off \
-  -DENABLE_TARGET_OPENMP=On \
+  -DRAJA_ENABLE_TARGET_OPENMP=On \
   -DOpenMP_CXX_FLAGS="-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \

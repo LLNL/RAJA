@@ -1,6 +1,6 @@
 .. ##
 .. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-.. ## and other RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## and other RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -398,7 +398,7 @@ Finally
           as the block-direct policies may yield better performance.
 
 
- GPU Policies for SYCL
+GPU Policies for SYCL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
  ======================================== ============= ========================

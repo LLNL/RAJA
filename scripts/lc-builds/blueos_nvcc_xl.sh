@@ -2,7 +2,7 @@
 
 ###############################################################################
 # Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -49,3 +49,15 @@ cmake \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
+
+echo
+echo "***********************************************************************"
+echo
+echo "cd into directory build_${BUILD_SUFFIX} and run make to build RAJA"
+echo
+echo "  Please note that you have to disable CUDA GPU hooks when you run"
+echo "  the RAJA tests; for example,"
+echo
+echo "    lrun -1 --smpiargs="-disable_gpu_hooks" make test"
+echo
+echo "***********************************************************************"

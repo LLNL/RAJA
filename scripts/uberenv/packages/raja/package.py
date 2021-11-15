@@ -81,6 +81,7 @@ class Raja(CMakePackage, CudaPackage):
     variant('hip', default=False, description='Build with HIP support')
     variant('tests', default='basic', values=('none', 'basic', 'benchmarks'),
             multi=False, description='Tests to run')
+    variant('desul', default=False, description='Build Desul Atomics backend')
 
     depends_on('cmake@3.8:', type='build')
     depends_on('cmake@3.9:', when='+cuda', type='build')
@@ -287,8 +288,13 @@ class Raja(CMakePackage, CudaPackage):
                                         hip_root))
             cfg.write(cmake_cache_entry("HIP_CLANG_PATH",
                                         rocm_root + '/llvm/bin'))
-            cfg.write(cmake_cache_entry("HIP_HIPCC_FLAGS",
-                                        '--amdgpu-target=gfx906'))
+
+            hipcc_flags = ['--amdgpu-target=gfx906']
+            if "+desul" in spec:
+                hipcc_flags.append('-std=c++14')
+            
+            cfg.write(cmake_cache_entry("HIP_HIPCC_FLAGS", ';'.join(hipcc_flags)))
+
             cfg.write(cmake_cache_entry("HIP_RUNTIME_INCLUDE_DIRS",
                                         "{0}/include;{0}/../hsa/include".format(hip_root)))
             hip_link_flags = "-Wl,--disable-new-dtags -L{0}/lib -L{0}/../lib64 -L{0}/../lib -Wl,-rpath,{0}/lib:{0}/../lib:{0}/../lib64 -lamdhip64 -lhsakmt -lhsa-runtime64".format(hip_root)
@@ -320,7 +326,13 @@ class Raja(CMakePackage, CudaPackage):
 
         # shared vs static libs
         cfg.write(cmake_cache_option("BUILD_SHARED_LIBS","+shared" in spec))
-        cfg.write(cmake_cache_option("ENABLE_OPENMP","+openmp" in spec))
+        cfg.write(cmake_cache_option("RAJA_ENABLE_OPENMP","+openmp" in spec))
+        cfg.write(cmake_cache_option("RAJA_ENABLE_DESUL_ATOMICS","+desul" in spec))
+
+        if "+desul" in spec:
+            cfg.write(cmake_cache_string("BLT_CXX_STD","c++14"))
+            if "+cuda" in spec:
+                cfg.write(cmake_cache_string("CMAKE_CUDA_STANDARD", "14"))
 
         # Note 1: Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS
         # which is used by the spack compiler wrapper.  This can go away when

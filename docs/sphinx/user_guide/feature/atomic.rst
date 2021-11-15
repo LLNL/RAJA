@@ -1,6 +1,6 @@
 .. ##
 .. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-.. ## and other RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## and other RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,6 +20,8 @@ A complete working example code that shows RAJA atomic usage can be found in
 :ref:`atomichist-label`.
 
 .. note:: * All RAJA atomic operations are in the namespace ``RAJA``.
+
+.. _atomic-ops:
 
 -----------------
 Atomic Operations
@@ -100,7 +102,7 @@ an integral sum on a CUDA GPU device::
 
   });
 
-After this kernel executes, '*sum' will be equal to 'N'.
+After this kernel executes, the value reference by 'sum' will be 'N'.
 
 ^^^^^^^^^^^^^^^^^^^^
 AtomicRef
@@ -153,3 +155,28 @@ CUDA architecture level is chosen:
 
     * CUDA native 64-bit double `atomicAdd` is used.
 
+---------------------
+DESUL Atomics Support
+---------------------
+
+RAJA provides support for the use of `DESUL Atomics <https://github.com/desul/desul>`_ as
+an alternative backend to the default implementation of RAJA atomics. DESUL atomics are considered an **experimental** feature in RAJA at this point. DESUL atomics
+may impact the performance of some atomic functions. While switching
+to DESUL atomics typically yields positive or neutral performance results, some atomic
+operations may perform worse when using DESUL.
+
+To enable DESUL Atomics:
+
+#. Ensure that RAJA and its dependencies are configured to use C++14.
+#. Set ``RAJA_ENABLE_DESUL_ATOMICS=On``.
+
+Enabling DESUL Atomics alters RAJA atomic functions to be wrapper-functions for their
+DESUL counterparts. This removes the need for user code changes to switch between
+DESUL and RAJA implementations. The exception to this is when RAJA atomic helper functions
+are used instead of the backwards-compatible API functions specified by :ref:`atomic-ops`. By *helper functions*, we mean the RAJA atomic methods which take a reduction policy object as the first argument, instead of specifying the reduction policy type as a template parameter. 
+
+DESUL atomic functions are compiled with the proper back-end implementation based on the scope in which they are
+called, which removes the need to specify atomic policies for
+target back-ends. As a result, atomic policies such as ``cuda_atomic`` or ``omp_atomic``
+are ignored when DESUL is enabled, but are still necessary to pass in as parameters
+to the RAJA API. This will likely change in the future and RAJA atomic policies will be removed.

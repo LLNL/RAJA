@@ -2,7 +2,7 @@
 
 ###############################################################################
 # Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -17,7 +17,7 @@ fi
 COMP_VER=$1
 shift 1
 
-BUILD_SUFFIX=lc_blueos-xl-${COMP_VER}
+BUILD_SUFFIX=lc_blueos-xl_omptarget-${COMP_VER}
 
 echo
 echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
@@ -35,7 +35,7 @@ cmake \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/xl/xl-${COMP_VER}/bin/xlc++_r \
   -C ../host-configs/lc-builds/blueos/xl_X.cmake \
   -DENABLE_OPENMP=On \
-  -DENABLE_TARGET_OPENMP=On \
+  -DRAJA_ENABLE_TARGET_OPENMP=On \
   -DOpenMP_CXX_FLAGS="-qoffload;-qsmp=omp;-qalias=noansi" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \

@@ -200,7 +200,7 @@ class Chai(CMakePackage, CudaPackage):
             cfg.write("# Cuda\n")
             cfg.write("#------------------{0}\n\n".format("-" * 60))
 
-            cfg.write(cmake_cache_option("ENABLE_CUDA", True))
+            cfg.write(cmake_cache_option("RAJA_ENABLE_CUDA", True))
 
             cudatoolkitdir = spec['cuda'].prefix
             cfg.write(cmake_cache_entry("CUDA_TOOLKIT_ROOT_DIR",
@@ -217,7 +217,7 @@ class Chai(CMakePackage, CudaPackage):
                 cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS", flag))
 
         else:
-            cfg.write(cmake_cache_option("ENABLE_CUDA", False))
+            cfg.write(cmake_cache_option("RAJA_ENABLE_CUDA", False))
 
         # shared vs static libs
         cfg.write(cmake_cache_option("BUILD_SHARED_LIBS","+shared" in spec))
