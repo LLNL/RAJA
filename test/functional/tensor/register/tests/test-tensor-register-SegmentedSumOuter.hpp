@@ -13,28 +13,28 @@
 template <typename REGISTER_TYPE>
 void SegmentedSumOuterImpl()
 {
-  using register_type = REGISTER_TYPE;
-  using element_type = typename register_type::element_type;
-  using policy_type = typename register_type::register_policy;
+  using register_t = REGISTER_TYPE;
+  using element_t = typename register_t::element_type;
+  using policy_t = typename register_t::register_policy;
 
-  static constexpr camp::idx_t num_elem = register_type::s_num_elem;
+  static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
   // Allocate
 
-  std::vector<element_type> input0_vec(num_elem);
-  element_type *input0_hptr = input0_vec.data();
-  element_type *input0_dptr = tensor_malloc<policy_type, element_type>(num_elem);
+  std::vector<element_t> input0_vec(num_elem);
+  element_t *input0_hptr = input0_vec.data();
+  element_t *input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
-  std::vector<element_type> output0_vec(num_elem);
-  element_type *output0_hptr = output0_vec.data();
-  element_type *output0_dptr = tensor_malloc<policy_type, element_type>(num_elem);
+  std::vector<element_t> output0_vec(num_elem);
+  element_t *output0_hptr = output0_vec.data();
+  element_t *output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
 
   // Initialize input data
   for(camp::idx_t i = 0;i < num_elem; ++ i){
-    input0_hptr[i] = (element_type)(i+1); //+NO_OPT_RAND);
+    input0_hptr[i] = (element_t)(i+1); //+NO_OPT_RAND);
   }
-  tensor_copy_to_device<policy_type>(input0_dptr, input0_vec);
+  tensor_copy_to_device<policy_t>(input0_dptr, input0_vec);
 
 
 
@@ -46,25 +46,25 @@ void SegmentedSumOuterImpl()
     for(int output_segment = 0;output_segment < num_segments;++ output_segment){
 
       // Execute segmented broadcast
-      tensor_do<policy_type>([=] RAJA_HOST_DEVICE (){
+      tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
-        register_type x;
+        register_t x;
         x.load_packed(input0_dptr);
 
-        register_type y = x.segmented_sum_outer(segbits, output_segment);
+        register_t y = x.segmented_sum_outer(segbits, output_segment);
 
         y.store_packed(output0_dptr);
 
       });
 
       // Move result to host
-      tensor_copy_to_host<policy_type>(output0_vec, output0_dptr);
+      tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
 
       // Check result
 
       // Compute expected values
-      element_type expected[num_elem];
+      element_t expected[num_elem];
       for(camp::idx_t i = 0;i < num_elem; ++ i){
         expected[i] = 0;
       }
@@ -88,8 +88,8 @@ void SegmentedSumOuterImpl()
 
 
   // Cleanup
-  tensor_free<policy_type>(input0_dptr);
-  tensor_free<policy_type>(output0_dptr);
+  tensor_free<policy_t>(input0_dptr);
+  tensor_free<policy_t>(output0_dptr);
 }
 
 

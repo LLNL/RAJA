@@ -18,10 +18,6 @@ raja_add_test(
   SOURCES test-simd.cpp)
 
 
-raja_add_test(
-  NAME test-register
-  SOURCES test-register.cpp)
-  
 
 add_subdirectory(cpu)
 

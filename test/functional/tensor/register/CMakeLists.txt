@@ -7,6 +7,22 @@
 
 
 set(TENSOR_REGISTER_TESTS
+				Load
+				Store
+				Gather
+				Scatter
+				Add
+				Subtract
+				Multiply
+				Divide
+				DotProduct
+				FMA
+				FMS
+				Max
+				Min
+				SegmentedDotProduct
+			    SegmentedBroadcastInner
+			    SegmentedBroadcastOuter
 				SegmentedSumInner
 				SegmentedSumOuter)
 

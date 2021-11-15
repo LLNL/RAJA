@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_TESNOR_REGISTER_SegmentedSumInner_HPP__
-#define __TEST_TESNOR_REGISTER_SegmentedSumInner_HPP__
+#ifndef __TEST_TESNOR_REGISTER_SegmentedBroadcastOuter_HPP__
+#define __TEST_TESNOR_REGISTER_SegmentedBroadcastOuter_HPP__
 
 #include<RAJA/RAJA.hpp>
 
 template <typename REGISTER_TYPE>
-void SegmentedSumInnerImpl()
+void SegmentedBroadcastOuterImpl()
 {
   using register_t = REGISTER_TYPE;
   using element_t = typename register_t::element_type;
@@ -31,10 +31,12 @@ void SegmentedSumInnerImpl()
 
 
   // Initialize input data
+//  printf("input: ");
   for(camp::idx_t i = 0;i < num_elem; ++ i){
     input0_hptr[i] = (element_t)(i+1+NO_OPT_RAND);
+//    printf("%lf ", (double)input0_hptr[i]);
   }
-
+//  printf("\n");
   tensor_copy_to_device<policy_t>(input0_dptr, input0_vec);
 
 
@@ -42,9 +44,9 @@ void SegmentedSumInnerImpl()
   // run segmented dot products for all segments allowed by the vector
   for(int segbits = 0;(1<<segbits) <= num_elem;++ segbits){
 
-    int num_segments = 1<<segbits;
+    int num_segments = (1<<segbits);
 
-    for(int output_segment = 0;output_segment < num_segments;++ output_segment){
+    for(int input_segment = 0;input_segment < num_segments;++ input_segment){
 
       // Execute segmented broadcast
       tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
@@ -52,7 +54,7 @@ void SegmentedSumInnerImpl()
         register_t x;
         x.load_packed(input0_dptr);
 
-        register_t y = x.segmented_sum_inner(segbits, output_segment);
+        register_t y = x.segmented_broadcast_outer(segbits, input_segment);
 
         y.store_packed(output0_dptr);
 
@@ -65,25 +67,22 @@ void SegmentedSumInnerImpl()
       // Check result
 
       // Compute expected values
+//      printf("explode: segbits=%d, input_segment=%d\n", segbits, input_segment);
+//      printf("  expected:  ");
+
       element_t expected[num_elem];
       for(camp::idx_t i = 0;i < num_elem; ++ i){
-        expected[i] = 0;
+        int seg = i>>segbits;
+
+        int off = (num_elem>>segbits)*input_segment + seg;
+
+        expected[i] = input0_hptr[off];
+//        printf("%lf ", (double)expected[i]);
       }
-
-      int output_offset = output_segment * num_elem>>segbits;
-
-      // sum each value into appropriate segment lane
-      for(camp::idx_t i = 0;i < num_elem; ++ i){
-
-        auto off = (i >> segbits)+output_offset;
-
-        expected[off] += input0_hptr[i];
-      }
-
+//      printf("\n");
 
 
       for(camp::idx_t i = 0;i < num_elem; ++ i){
-
         ASSERT_SCALAR_EQ(expected[i], output0_hptr[i]);
       }
 
@@ -99,9 +98,9 @@ void SegmentedSumInnerImpl()
 
 
 
-TYPED_TEST_P(TestTensorRegister, SegmentedSumInner)
+TYPED_TEST_P(TestTensorRegister, SegmentedBroadcastOuter)
 {
-  SegmentedSumInnerImpl<TypeParam>();
+  SegmentedBroadcastOuterImpl<TypeParam>();
 }
 
 
