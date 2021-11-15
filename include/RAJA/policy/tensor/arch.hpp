@@ -23,6 +23,14 @@
 namespace RAJA
 {
 
+namespace expt
+{
+
+namespace internal {
+
+  /*!
+   * Provides architectural details for a given architecture and data type.
+   */
   template<typename REGISTER_POLICY, typename T>
   struct RegisterTraits;
   /*
@@ -32,7 +40,7 @@ namespace RAJA
    * static constexpr camp::idx s_num_elem = Y;
    *
    */
-
+} //namespace internal
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -44,24 +52,27 @@ namespace RAJA
 
 #ifdef __AVX512F__
 struct avx512_register {};
+
 #ifndef RAJA_TENSOR_REGISTER_TYPE
-#define RAJA_TENSOR_REGISTER_TYPE RAJA::avx512_register
+#define RAJA_TENSOR_REGISTER_TYPE RAJA::expt::avx512_register
 #endif
 #endif
 
 
 #ifdef __AVX2__
 struct avx2_register {};
+
 #ifndef RAJA_TENSOR_REGISTER_TYPE
-#define RAJA_TENSOR_REGISTER_TYPE RAJA::avx2_register
+#define RAJA_TENSOR_REGISTER_TYPE RAJA::expt::avx2_register
 #endif
 #endif
 
 
 #ifdef __AVX__
 struct avx_register {};
+
 #ifndef RAJA_TENSOR_REGISTER_TYPE
-#define RAJA_TENSOR_REGISTER_TYPE RAJA::avx_register
+#define RAJA_TENSOR_REGISTER_TYPE RAJA::expt::avx_register
 #endif
 #endif
 
@@ -78,15 +89,45 @@ struct cuda_warp_register {};
 
 // The scalar register is always supported (doesn't require any SIMD/SIMT)
 struct scalar_register {};
+
 #ifndef RAJA_TENSOR_REGISTER_TYPE
-#define RAJA_TENSOR_REGISTER_TYPE RAJA::scalar_register
+#define RAJA_TENSOR_REGISTER_TYPE RAJA::expt::scalar_register
+
 #endif
 
 
   // This sets the default SIMD register that will be used
   using default_register = RAJA_TENSOR_REGISTER_TYPE;
 
+
+} // namespace expt
 } // namespace RAJA
+
+
+
+//
+// Now include all of the traits files
+//
+
+#ifdef __AVX512F__
+#include "RAJA/policy/tensor/arch/avx512/traits.hpp"
+#endif
+
+
+#ifdef __AVX2__
+#include "RAJA/policy/tensor/arch/avx2/traits.hpp"
+#endif
+
+#ifdef __AVX__
+#include "RAJA/policy/tensor/arch/avx/traits.hpp"
+#endif
+
+
+#if defined(RAJA_CUDA_ACTIVE)
+#include "RAJA/policy/tensor/arch/cuda/traits.hpp"
+#endif
+
+#include "RAJA/policy/tensor/arch/scalar/traits.hpp"
 
 
 #endif

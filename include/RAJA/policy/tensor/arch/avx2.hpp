@@ -17,25 +17,7 @@
 
 #ifdef __AVX2__
 
-#ifndef RAJA_policy_vector_register_avx2_HPP
-#define RAJA_policy_vector_register_avx2_HPP
-
-#include<RAJA/policy/tensor/arch.hpp>
-
-
-namespace RAJA {
-
-  template<typename T>
-  struct RegisterTraits<avx2_register, T>{
-      using element_type = T;
-      using register_policy = avx2_register;
-      static constexpr camp::idx_t s_num_bits = 256;
-      static constexpr camp::idx_t s_num_elem = s_num_bits / 8 / sizeof(T);
-  };
-}
-
-#endif // guard
-
+#include<RAJA/policy/tensor/arch/avx2/traits.hpp>
 #include<RAJA/policy/tensor/arch/avx2/avx2_int32.hpp>
 #include<RAJA/policy/tensor/arch/avx2/avx2_int64.hpp>
 #include<RAJA/policy/tensor/arch/avx2/avx2_float.hpp>

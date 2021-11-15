@@ -31,7 +31,8 @@
 
 namespace RAJA
 {
-
+namespace expt
+{
   template<>
   class Register<int64_t, avx_register> :
     public internal::RegisterBase<Register<int64_t, avx_register>>
@@ -485,6 +486,7 @@ namespace RAJA
   };
 
 
+}   // namespace expt
 
 }  // namespace RAJA
 

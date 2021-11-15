@@ -30,7 +30,8 @@
 
 namespace RAJA
 {
-
+namespace expt
+{
 
   /*!
    * This provides a Tensor specialization for vectors
@@ -123,7 +124,7 @@ namespace RAJA
        * Overload for:    assignment of ET to a TensorRegister
        */
       template<typename RHS,
-        typename std::enable_if<std::is_base_of<RAJA::internal::ET::TensorExpressionConcreteBase, RHS>::value, bool>::type = true>
+        typename std::enable_if<std::is_base_of<internal::ET::TensorExpressionConcreteBase, RHS>::value, bool>::type = true>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       TensorRegister(RHS const &rhs)
@@ -833,6 +834,7 @@ namespace RAJA
   };
 
 
+} // namespace expt
 
 }  // namespace RAJA
 

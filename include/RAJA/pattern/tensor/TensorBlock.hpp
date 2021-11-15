@@ -29,7 +29,8 @@
 
 namespace RAJA
 {
-
+namespace expt
+{
   template<camp::idx_t ... IDX>
   struct GetSeqValue;
 
@@ -355,7 +356,7 @@ namespace ET{
 
 } // namespace ET
 } // namespace internal
-
+} // namespace expt
 }  // namespace RAJA
 
 

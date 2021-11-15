@@ -86,7 +86,7 @@ namespace internal
 
         static constexpr camp::idx_t value =
             RAJA::max<camp::idx_t>(
-                (isTensorIndex<ARGS>()&&getTensorDim<ARGS>()==DIM ? IDX : -1) ...);
+                (expt::internal::isTensorIndex<ARGS>()&&expt::internal::getTensorDim<ARGS>()==DIM ? IDX : -1) ...);
     };
 
 
@@ -102,7 +102,7 @@ namespace internal
   struct count_num_tensor_args{
     static constexpr camp::idx_t value =
         RAJA::sum<camp::idx_t>(
-            (isTensorIndex<ARGS>() ? 1 : 0) ...);
+            (expt::internal::isTensorIndex<ARGS>() ? 1 : 0) ...);
   };
 
   /*
@@ -123,8 +123,8 @@ namespace internal
   RAJA_HOST_DEVICE
   static constexpr camp::idx_t get_tensor_args_begin(LAYOUT const &layout, ARGS ... args){
     return RAJA::max<camp::idx_t>(
-        getTensorDim<ARGS>()==DIM
-        ? getTensorBegin<ARGS>(args, layout.template get_dim_begin<GetTesorArgIdx<DIM, ARGS...>::value>())
+        expt::internal::getTensorDim<ARGS>()==DIM
+        ? expt::internal::getTensorBegin<ARGS>(args, layout.template get_dim_begin<GetTesorArgIdx<DIM, ARGS...>::value>())
         : 0 ...);
   }
 
@@ -136,8 +136,8 @@ namespace internal
   RAJA_HOST_DEVICE
   static constexpr camp::idx_t get_tensor_args_size(LAYOUT const &layout, ARGS ... args){
     return RAJA::max<camp::idx_t>(
-        getTensorDim<ARGS>()==DIM
-        ? getTensorSize<ARGS>(args, layout.template get_dim_size<GetTesorArgIdx<DIM, ARGS...>::value>())
+        expt::internal::getTensorDim<ARGS>()==DIM
+        ? expt::internal::getTensorSize<ARGS>(args, layout.template get_dim_size<GetTesorArgIdx<DIM, ARGS...>::value>())
         : 0 ...);
   }
 
@@ -196,8 +196,8 @@ namespace internal
 
 
       using tensor_reg_type = typename camp::at_v<camp::list<Args...>, GetTesorArgIdx<0, Args...>::value>::tensor_type;
-      using ref_type = internal::TensorRef<ElementType*, LinIdx, internal::TENSOR_MULTIPLE, s_num_dims, s_stride_one_dim>;
-      using return_type = internal::ET::TensorLoadStore<tensor_reg_type, ref_type>;
+      using ref_type = expt::internal::TensorRef<ElementType*, LinIdx, expt::internal::TENSOR_MULTIPLE, s_num_dims, s_stride_one_dim>;
+      using return_type = expt::internal::ET::TensorLoadStore<tensor_reg_type, ref_type>;
 
       template<typename LayoutType>
       RAJA_INLINE
@@ -215,7 +215,7 @@ namespace internal
 
         return return_type(ref_type{
           // data pointer
-          &data[0] + layout(isTensorIndex<Args>() ? LinIdx{0} : (LinIdx)stripIndexType(stripTensorIndex(args))...),
+          &data[0] + layout(expt::internal::isTensorIndex<Args>() ? LinIdx{0} : (LinIdx)stripIndexType(expt::internal::stripTensorIndex(args))...),
           // strides
           {(LinIdx)layout.template get_dim_stride<GetTesorArgIdx<VecSeq, Args...>::value>()...},
           // tile
@@ -312,17 +312,17 @@ namespace internal
    * typed indices.
    */
   template<typename Expected, typename Arg, typename VectorType, camp::idx_t DIM>
-  struct MatchTypedViewArgHelper<Expected, RAJA::TensorIndex<Arg, VectorType, DIM> >{
+  struct MatchTypedViewArgHelper<Expected, RAJA::expt::TensorIndex<Arg, VectorType, DIM> >{
 
     static_assert(std::is_convertible<Arg, Expected>::value,
         "Argument isn't compatible");
 
     using arg_type = strip_index_type_t<Arg>;
 
-    using type = RAJA::TensorIndex<arg_type, VectorType, DIM>;
+    using type = RAJA::expt::TensorIndex<arg_type, VectorType, DIM>;
 
     static constexpr RAJA_HOST_DEVICE RAJA_INLINE
-    type extract(RAJA::TensorIndex<Arg, VectorType, DIM> vec_arg){
+    type extract(RAJA::expt::TensorIndex<Arg, VectorType, DIM> vec_arg){
       return type(stripIndexType(*vec_arg), vec_arg.size());
     }
   };

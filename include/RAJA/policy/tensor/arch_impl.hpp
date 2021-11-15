@@ -51,7 +51,7 @@
 
 
 // The scalar register is always supported (doesn't require any SIMD/SIMT)
-#include<RAJA/policy/tensor/arch/scalar/scalar.hpp>
+#include<RAJA/policy/tensor/arch/scalar.hpp>
 
 
 

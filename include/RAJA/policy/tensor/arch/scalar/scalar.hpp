@@ -22,45 +22,7 @@
 
 namespace RAJA
 {
-
-
-
-  template<>
-  struct RegisterTraits<scalar_register, int32_t>{
-      using element_type = int32_t;
-      using register_policy = scalar_register;
-      static constexpr camp::idx_t s_num_bits = sizeof(element_type)*8;
-      static constexpr camp::idx_t s_num_elem = 1;
-      using int_element_type = int32_t;
-  };
-
-  template<>
-  struct RegisterTraits<scalar_register, int64_t>{
-      using element_type = int64_t;
-      using register_policy = scalar_register;
-      static constexpr camp::idx_t s_num_bits = sizeof(element_type)*8;
-      static constexpr camp::idx_t s_num_elem = 1;
-      using int_element_type = int64_t;
-  };
-
-  template<>
-  struct RegisterTraits<scalar_register, float>{
-      using element_type = float;
-      using register_policy = scalar_register;
-      static constexpr camp::idx_t s_num_bits = sizeof(element_type)*8;
-      static constexpr camp::idx_t s_num_elem = 1;
-      using int_element_type = int32_t;
-  };
-
-  template<>
-  struct RegisterTraits<scalar_register, double>{
-      using element_type = double;
-      using register_policy = scalar_register;
-      static constexpr camp::idx_t s_num_bits = sizeof(element_type)*8;
-      static constexpr camp::idx_t s_num_elem = 1;
-      using int_element_type = int64_t;
-  };
-
+namespace expt {
 
   /**
    * A specialization for a single element register.
@@ -79,7 +41,7 @@ namespace RAJA
       using element_type = T;
       using register_type = T;
 
-      using int_vector_type = Register<typename RegisterTraits<scalar_register, T>::int_element_type, scalar_register>;
+      using int_vector_type = Register<typename internal::RegisterTraits<scalar_register, T>::int_element_type, scalar_register>;
 
 
     private:
@@ -480,7 +442,7 @@ namespace RAJA
 
 
   };
-
+} // namespace expt
 }  // namespace RAJA
 
 

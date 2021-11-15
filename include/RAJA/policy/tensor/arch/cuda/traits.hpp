@@ -22,10 +22,23 @@
 #define RAJA_policy_tensor_arch_cuda_HPP
 
 
+namespace RAJA {
+namespace expt {
+namespace internal {
 
-#include<RAJA/pattern/tensor.hpp>
-#include<RAJA/policy/tensor/arch/cuda/traits.hpp>
-#include<RAJA/policy/tensor/arch/cuda/cuda_warp.hpp>
+  template<typename T>
+  struct RegisterTraits<cuda_warp_register, T>{
+      using element_type = T;
+      using register_policy = cuda_warp_register;
+      static constexpr camp::idx_t s_num_elem = 32;
+      static constexpr camp::idx_t s_num_bits = sizeof(T) * s_num_elem;
+      using int_element_type = int32_t;
+  };
+
+} // namespace internal
+} // namespace expt
+} // namespace RAJA
+
 
 
 #endif

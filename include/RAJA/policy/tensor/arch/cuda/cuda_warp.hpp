@@ -31,16 +31,10 @@
 
 
 
-namespace RAJA {
-
-  /*
-   *   class Register<float, avx2_register> :
-    public internal::RegisterBase<Register<float, avx2_register>>
-  {
-    public:
-      using base_type = internal::RegisterBase<Register<float, avx2_register>>;
-   */
-
+namespace RAJA
+{
+namespace expt
+{
 
   template<typename ELEMENT_TYPE>
   class Register<ELEMENT_TYPE, cuda_warp_register> :
@@ -991,6 +985,7 @@ namespace RAJA {
 
 
 
+}   // namespace expt
 
 } // namespace RAJA
 

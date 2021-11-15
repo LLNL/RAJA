@@ -24,7 +24,8 @@
 
 namespace RAJA
 {
-
+namespace expt
+{
 
 
   template<camp::idx_t ... DIM_SEQ>
@@ -87,7 +88,7 @@ namespace RAJA
   using ColMajorLayout = TensorLayout<1, 0>;
 
 
-
+} // namespace expt
 }  // namespace RAJA
 
 

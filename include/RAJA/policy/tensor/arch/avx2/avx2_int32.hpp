@@ -31,7 +31,8 @@
 
 namespace RAJA
 {
-
+namespace expt
+{
 
   template<>
   class Register<int32_t, avx2_register> :
@@ -532,6 +533,7 @@ namespace RAJA
   };
 
 
+}   // namespace expt
 
 }  // namespace RAJA
 

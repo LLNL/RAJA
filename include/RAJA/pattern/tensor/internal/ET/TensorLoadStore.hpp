@@ -28,7 +28,8 @@
 
 namespace RAJA
 {
-
+namespace expt
+{
 
 
 
@@ -267,6 +268,7 @@ namespace RAJA
   } // namespace ET
 
   } // namespace internal
+} // namespace expt
 
 }  // namespace RAJA
 

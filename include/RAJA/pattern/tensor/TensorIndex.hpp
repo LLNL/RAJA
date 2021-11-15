@@ -25,7 +25,8 @@
 
 namespace RAJA
 {
-
+namespace expt
+{
   template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM>
   class TensorIndex {
     public:
@@ -152,7 +153,7 @@ namespace RAJA
     return RowIndex<IDX, MATRIX_TYPE>(*c, c.size());
   }
 
-
+} // namespace expt
 }  // namespace RAJA
 
 #include "RAJA/pattern/tensor/internal/TensorIndexTraits.hpp"

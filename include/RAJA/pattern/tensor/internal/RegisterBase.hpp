@@ -27,10 +27,12 @@
 #include "RAJA/pattern/tensor/internal/TensorRef.hpp"
 #include "RAJA/util/BitMask.hpp"
 
+#include "RAJA/policy/tensor/arch.hpp"
 
 namespace RAJA
 {
-
+namespace expt
+{
 
 
   struct scalar_register;
@@ -42,30 +44,6 @@ namespace RAJA
   namespace internal {
     class RegisterConcreteBase {};
   }
-
-
-  template<typename T, typename REGISTER_POLICY>
-  struct RegisterTraits;
-
-  template<typename REGISTER_POLICY>
-  struct RegisterTraits<int, REGISTER_POLICY>{
-      using int_vector_type = Register<int32_t, REGISTER_POLICY>;
-  };
-
-  template<typename REGISTER_POLICY>
-  struct RegisterTraits<long, REGISTER_POLICY>{
-      using int_vector_type = Register<int64_t, REGISTER_POLICY>;
-  };
-
-  template<typename REGISTER_POLICY>
-  struct RegisterTraits<float, REGISTER_POLICY>{
-      using int_vector_type = Register<int32_t, REGISTER_POLICY>;
-  };
-
-  template<typename REGISTER_POLICY>
-  struct RegisterTraits<double, REGISTER_POLICY>{
-      using int_vector_type = Register<int64_t, REGISTER_POLICY>;
-  };
 
 
 
@@ -149,7 +127,8 @@ namespace internal {
 
       using index_type = camp::idx_t;
 
-      using int_vector_type = typename RegisterTraits<T, REGISTER_POLICY>::int_vector_type;
+      using int_element_type = typename RegisterTraits<REGISTER_POLICY, T>::int_element_type;
+      using int_vector_type = Register<int_element_type, REGISTER_POLICY>;
 
     private:
 
@@ -1240,6 +1219,7 @@ namespace internal {
 
 } //namespace internal
 
+} // namespace expt
 
 }  // namespace RAJA
 

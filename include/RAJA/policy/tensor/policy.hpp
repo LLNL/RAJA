@@ -55,6 +55,9 @@ struct tensor_exec : public EXEC_POLICY {
 
 }  // end of namespace policy
 
+namespace expt {
+
+
 template<typename TENSOR_TYPE, camp::idx_t TILE_SIZE = -1>
 using vector_exec = policy::tensor::tensor_exec<RAJA::seq_exec, TENSOR_TYPE, 0, TILE_SIZE>;
 
@@ -64,6 +67,8 @@ using matrix_row_exec = policy::tensor::tensor_exec<seq_exec, TENSOR_TYPE, 0, TI
 template<typename TENSOR_TYPE, camp::idx_t TILE_SIZE = -1>
 using matrix_col_exec = policy::tensor::tensor_exec<seq_exec, TENSOR_TYPE, 1, TILE_SIZE>;
 
+
+} //  namespace expt
 
 
 

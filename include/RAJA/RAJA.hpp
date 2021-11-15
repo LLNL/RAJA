@@ -26,6 +26,8 @@
 #ifndef RAJA_HPP
 #define RAJA_HPP
 
+
+
 #include "RAJA/config.hpp"
 
 #include "RAJA/util/Operators.hpp"
@@ -192,5 +194,12 @@
 #endif
 
 #include "RAJA/pattern/sort.hpp"
+
+namespace RAJA {
+namespace expt{}
+  // provide a RAJA::expt namespace for experimental work, but bring alias
+  // it into RAJA so it doesn't affect user code
+  using namespace expt;
+}
 
 #endif  // closing endif for header file include guard

@@ -29,7 +29,8 @@
 
 namespace RAJA
 {
-
+namespace expt
+{
 
   /*
    * 2D (Matrix) specialization of TensorRegister
@@ -60,7 +61,7 @@ namespace RAJA
 
 
       static constexpr camp::idx_t s_elements_per_register =
-          RegisterTraits<REGISTER_POLICY,T>::s_num_elem;
+          internal::RegisterTraits<REGISTER_POLICY,T>::s_num_elem;
 
       // number of registers to hold entire matrix
       static constexpr camp::idx_t s_num_registers =
@@ -1514,7 +1515,7 @@ namespace RAJA
 
 
 
-
+} // namespace expt
 }  // namespace RAJA
 
 

@@ -64,7 +64,7 @@ const tensor_exec<seq_exec, TENSOR_TYPE, DIM, TILE_SIZE>&,
   using diff_t = decltype(distance);
   using value_type = typename Iterable::value_type;
   using tensor_type = TENSOR_TYPE;
-  using tensor_index_type = RAJA::TensorIndex<value_type, tensor_type, DIM>;
+  using tensor_index_type = RAJA::expt::TensorIndex<value_type, tensor_type, DIM>;
 
   // negative TILE_SIZE value uses entire loop range in one tile
   // this lets the expression templates do all of the looping
@@ -117,7 +117,7 @@ namespace expt {
 
       using value_type = typename Iterable::value_type;
       using tensor_type = TENSOR_TYPE;
-      using tensor_index_type = TensorIndex<value_type, tensor_type, TENSOR_DIM>;
+      using tensor_index_type = expt::TensorIndex<value_type, tensor_type, TENSOR_DIM>;
 
 
       static_assert(TILE_SIZE != 0, "TILE_SIZE cannot be zero");

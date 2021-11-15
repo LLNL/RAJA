@@ -30,6 +30,8 @@
 
 namespace RAJA
 {
+namespace expt
+{
 struct tensor_stats
 {
     static int indent;
@@ -79,7 +81,7 @@ struct tensor_stats
 
 };
 
-
+} // namespace expt
 } // namespace RAJA
 
 #endif

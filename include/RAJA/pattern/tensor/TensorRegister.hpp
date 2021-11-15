@@ -28,6 +28,8 @@
 
 namespace RAJA
 {
+namespace expt
+{
   namespace internal {
     class TensorRegisterConcreteBase;
   }
@@ -95,7 +97,7 @@ namespace RAJA
     return RIGHT(lhs).divide(rhs);
   }
 
-
+} // namespace expt
 }  // namespace RAJA
 
 

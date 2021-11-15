@@ -28,7 +28,8 @@
 
 namespace RAJA
 {
-
+namespace expt
+{
   struct scalar_register;
 
 
@@ -174,7 +175,7 @@ namespace internal {
        * Overload for:    assignment of ET to a TensorRegister
        */
       template<typename RHS,
-        typename std::enable_if<std::is_base_of<RAJA::internal::ET::TensorExpressionConcreteBase, RHS>::value, bool>::type = true>
+        typename std::enable_if<std::is_base_of<ET::TensorExpressionConcreteBase, RHS>::value, bool>::type = true>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       TensorRegisterBase(RHS const &rhs)
@@ -838,6 +839,7 @@ namespace internal {
 
 } //namespace internal
 
+} // namespace expt
 
 }  // namespace RAJA
 
