@@ -87,6 +87,12 @@ namespace internal {
       }
   };
 
+  template<camp::idx_t N, camp::idx_t D>
+  struct DivideRoundUp {
+      static constexpr camp::idx_t value =
+          (N % D) > 0 ? (1 + N/D) : (N/D);
+  };
+
 
   class TensorRegisterConcreteBase {};
 
@@ -109,7 +115,7 @@ namespace internal {
 
       static constexpr camp::idx_t s_num_dims = sizeof...(SIZES);
 
-      static constexpr camp::idx_t s_num_registers = RAJA::product<camp::idx_t>(SIZES...);
+      static constexpr camp::idx_t s_num_registers = DivideRoundUp<RAJA::product<camp::idx_t>(SIZES...), RegisterTraits<REGISTER_POLICY,T>::s_num_elem>::value;
 
       using index_type = camp::idx_t;
 

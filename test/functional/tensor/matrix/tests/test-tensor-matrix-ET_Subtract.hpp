@@ -99,14 +99,14 @@ void ET_SubtractImpl()
     for(camp::idx_t m_size = 0;m_size <= N; ++ m_size){
 //      printf("Running %d x %d\n", (int)n_size, (int)m_size);
       //
-      // Clear data2
+      // Clear data3
       //
       for(camp::idx_t i = 0;i < N; ++ i){
         for(camp::idx_t j = 0;j < N; ++ j){
-          data2_h(j,i) = -1;
+          data3_h(j,i) = -1;
         }
       }
-      tensor_copy_to_device<policy_t>(data2_ptr, data2_vec);
+      tensor_copy_to_device<policy_t>(data3_ptr, data3_vec);
 
 
       //
@@ -133,7 +133,7 @@ void ET_SubtractImpl()
             ASSERT_SCALAR_EQ(data3_h(j,i), data1_h(i,j)-data2_h(j,i));
           }
           else{
-            ASSERT_SCALAR_EQ(element_t(-1), data2_h(j,i));
+            ASSERT_SCALAR_EQ(element_t(-1), data3_h(j,i));
           }
         }
       }

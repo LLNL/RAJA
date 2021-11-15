@@ -179,7 +179,6 @@ void ET_MatrixMatrixMultiplyAddImpl()
         auto C_rows = RAJA::RowIndex<int, C_matrix_t>::range(0, n_size);
         auto C_cols = RAJA::ColIndex<int, C_matrix_t>::range(0, n_size);
 
-        RAJA_ASSERT_EQ(data3_ptr, data2_ptr);
 
         data3_d(C_rows, C_cols) += data1_d(A_rows, A_cols) * data2_d(B_rows, B_cols);
       });
@@ -202,8 +201,6 @@ void ET_MatrixMatrixMultiplyAddImpl()
     //    printf("i=%d, j=%d, expected=%e, data3=%e\n", (int)i, (int)j, (double)expected, (double)data3_h(i,j));
 
           ASSERT_SCALAR_EQ(expected, data3_h(i,j));
-    //      data3_h(i,j) = expected;
-
         }
       }
 

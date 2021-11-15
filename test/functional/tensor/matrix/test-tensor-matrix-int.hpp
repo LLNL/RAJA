@@ -19,19 +19,32 @@ using TensorMatrixTypes = ::testing::Types<
     RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,8, RAJA::cuda_warp_register>,
 #endif
 
+
+#ifdef __AVX__
+    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 4,8, RAJA::avx_register>,
+    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,8, RAJA::avx_register>,
+    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,4, RAJA::avx_register>,
+#endif
+
+
+#ifdef __AVX2__
+    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 4,8, RAJA::avx2_register>,
+    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,8, RAJA::avx2_register>,
+    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,4, RAJA::avx2_register>,
+#endif
+
+
+#ifdef __AVX512__
+    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,16, RAJA::avx512_register>,
+    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 16,16, RAJA::avx512_register>,
+    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 16,8, RAJA::avx512_register>,
+#endif
+
+
     // These tests use the platform default SIMD architecture
     RAJA::SquareMatrixRegister<MatrixElementType, TensorMatrixLayoutType>,
 
-    // Try different rectangular matrices
-//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 2,16>,
-//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 4,16>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,16>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 16,16>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 16,8>,
-//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 16,4>,
-//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 16,2>,
-
+    // Always test the non-vectorized scalar type
     RAJA::SquareMatrixRegister<MatrixElementType, TensorMatrixLayoutType, RAJA::scalar_register>
 
   >;
-

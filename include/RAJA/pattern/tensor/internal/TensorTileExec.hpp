@@ -57,6 +57,9 @@ namespace RAJA
         auto const orig_size =  otile.m_size[DIM0];
 
 
+//        printf("DIM%d orig_begin=%d, orig_size=%d\n", (int)DIM0, (int)orig_begin, (int)orig_size);
+
+
 //        printf("%*sDIM%d orig_begin=%d, orig_size=%d\n", (int)RAJA::tensor_stats::indent*2, "", (int)DIM0, (int)orig_begin, (int)orig_size);
 
 //        RAJA::tensor_stats::indent ++;
@@ -97,7 +100,7 @@ namespace RAJA
 //                (int)DIM0, (int)part_tile.m_begin[DIM0],
 //                (int)(part_tile.m_size[DIM0] + part_tile.m_size[DIM0]));
 
-//          printf("DIM%d tile:begin=%d, size=%d\n", (int)DIM0, (int)part_tile.m_begin[DIM0], (int)part_tile.m_size[DIM0]);
+//          printf("DIM%d tile:begin=%d, size=%d (partial)\n", (int)DIM0, (int)part_tile.m_begin[DIM0], (int)part_tile.m_size[DIM0]);
 
           // Do the next inner tiling loop
           inner_t::exec(otile, part_tile, body);
