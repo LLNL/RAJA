@@ -31,6 +31,10 @@ add_subdirectory(basic-single-loop)
 
 add_subdirectory(basic-single-icount-loop)
 
+add_subdirectory(basic-fission-fusion-loop)
+
+add_subdirectory(conditional-fission-fusion-loop)
+
 add_subdirectory(nested-loop)
 
 add_subdirectory(nested-loop-segment-types)
