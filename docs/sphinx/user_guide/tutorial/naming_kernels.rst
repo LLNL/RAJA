@@ -53,7 +53,7 @@ the resulting json file can be viewed using tools such as `perfetto
 
 As future work we plan to add support to other profiling tools; API changes may occur
 based on user feedback and integration with other tools. Enabling NVTX profiling
-with RAJA Teams requires RAJA to be configured with ENABLE_NV_TOOLS_EXT=ON
-or ENABLE_ROCTX=ON for ROCTX profiling on AMD platforms platforms.
+with RAJA Teams requires RAJA to be configured with RAJA_ENABLE_NV_TOOLS_EXT=ON.
+or RAJA_ENABLE_ROCTX=ON for ROCTX profiling on AMD platforms platforms.
 
 The file RAJA/examples/teams_reductions.cpp contains a complete working example code.
