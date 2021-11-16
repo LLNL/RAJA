@@ -66,7 +66,7 @@ struct StatementExecutor<
 
     // compute the vector index type and new LoopTypes
     using value_type = camp::at_v<typename DataT::index_types_t, ArgumentId>;
-    using tensor_index_type = expt::TensorIndex<value_type, TENSOR_TYPE, DIM>;
+    using tensor_index_type = RAJA::expt::TensorIndex<value_type, TENSOR_TYPE, DIM>;
     using NewTypes = setSegmentType<Types, ArgumentId, tensor_index_type>;
 
 

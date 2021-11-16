@@ -31,17 +31,17 @@ namespace expt {
    */
   template<typename T>
   class Register<T, scalar_register> :
-      public internal::RegisterBase<Register<T, scalar_register>>
+      public internal::expt::RegisterBase<Register<T, scalar_register>>
   {
     public:
-      using base_type = internal::RegisterBase<Register<T, scalar_register>>;
+      using base_type = internal::expt::RegisterBase<Register<T, scalar_register>>;
 
       using register_policy = scalar_register;
       using self_type = Register<T, scalar_register>;
       using element_type = T;
       using register_type = T;
 
-      using int_vector_type = Register<typename internal::RegisterTraits<scalar_register, T>::int_element_type, scalar_register>;
+      using int_vector_type = Register<typename internal::expt::RegisterTraits<scalar_register, T>::int_element_type, scalar_register>;
 
 
     private:

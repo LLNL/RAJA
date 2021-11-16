@@ -27,10 +27,11 @@
 
 namespace RAJA
 {
+namespace internal
+{
 namespace expt
 {
-  namespace internal
-  {
+
 
   namespace ET
   {
@@ -40,7 +41,7 @@ namespace expt
     class TensorScalarLiteral :  public TensorExpressionBase<TensorScalarLiteral<T>> {
       public:
         using self_type = TensorScalarLiteral<T>;
-        using tensor_type = ScalarRegister<T>;
+        using tensor_type = RAJA::expt::ScalarRegister<T>;
         using element_type = T;
         using result_type = T;
         using index_type = RAJA::Index_type;

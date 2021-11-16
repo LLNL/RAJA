@@ -27,10 +27,11 @@
 
 namespace RAJA
 {
+namespace internal
+{
 namespace expt
 {
-  namespace internal
-  {
+
 
   namespace ET
   {
@@ -85,7 +86,7 @@ namespace expt
      */
     template<typename RHS>
     struct NormalizeOperandHelper<RHS,
-    typename std::enable_if<std::is_base_of<internal::TensorRegisterConcreteBase, RHS>::value>::type>
+    typename std::enable_if<std::is_base_of<TensorRegisterConcreteBase, RHS>::value>::type>
     {
         using return_type = TensorLiteral<RHS>;
 

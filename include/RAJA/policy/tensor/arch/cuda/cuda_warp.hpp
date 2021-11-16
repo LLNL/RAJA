@@ -38,10 +38,10 @@ namespace expt
 
   template<typename ELEMENT_TYPE>
   class Register<ELEMENT_TYPE, cuda_warp_register> :
-    public internal::RegisterBase<Register<ELEMENT_TYPE, cuda_warp_register>>
+    public internal::expt::RegisterBase<Register<ELEMENT_TYPE, cuda_warp_register>>
   {
     public:
-      using base_type = internal::RegisterBase<Register<ELEMENT_TYPE, cuda_warp_register>>;
+      using base_type = internal::expt::RegisterBase<Register<ELEMENT_TYPE, cuda_warp_register>>;
 
       using register_policy = cuda_warp_register;
       using self_type = Register<ELEMENT_TYPE, cuda_warp_register>;

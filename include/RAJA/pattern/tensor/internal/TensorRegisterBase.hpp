@@ -28,13 +28,14 @@
 
 namespace RAJA
 {
+namespace internal
+{
 namespace expt
 {
-  struct scalar_register;
 
 
 
-namespace internal {
+
 
   namespace ET
   {
@@ -107,11 +108,11 @@ namespace internal {
   class TensorRegisterBase;
 
   template<typename REGISTER_POLICY, typename T, typename LAYOUT, typename camp::idx_t ... SIZES>
-  class TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, LAYOUT, camp::idx_seq<SIZES...>>> :
+  class TensorRegisterBase<RAJA::expt::TensorRegister<REGISTER_POLICY, T, LAYOUT, camp::idx_seq<SIZES...>>> :
     public TensorRegisterConcreteBase
   {
     public:
-      using self_type = TensorRegister<REGISTER_POLICY, T, LAYOUT, camp::idx_seq<SIZES...>>;
+      using self_type = RAJA::expt::TensorRegister<REGISTER_POLICY, T, LAYOUT, camp::idx_seq<SIZES...>>;
       using element_type = camp::decay<T>;
 
       static constexpr camp::idx_t s_num_dims = sizeof...(SIZES);
@@ -120,7 +121,7 @@ namespace internal {
 
       using index_type = camp::idx_t;
 
-      using register_type = Register<T, REGISTER_POLICY>;
+      using register_type = RAJA::expt::Register<T, REGISTER_POLICY>;
 
       using register_policy = REGISTER_POLICY;
 
@@ -441,7 +442,7 @@ namespace internal {
       template<typename T2>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &operator=(TensorRegister<scalar_register, T2, ScalarLayout, camp::idx_seq<>> const &value)
+      self_type const &operator=(RAJA::expt::TensorRegister<RAJA::expt::scalar_register, T2, RAJA::expt::ScalarLayout, camp::idx_seq<>> const &value)
       {
         getThis()->broadcast(value.get(0));
         return *getThis();

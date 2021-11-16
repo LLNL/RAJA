@@ -35,10 +35,10 @@ namespace expt
 {
   template<>
   class Register<float, avx2_register> :
-    public internal::RegisterBase<Register<float, avx2_register>>
+    public internal::expt::RegisterBase<Register<float, avx2_register>>
   {
     public:
-      using base_type = internal::RegisterBase<Register<float, avx2_register>>;
+      using base_type = internal::expt::RegisterBase<Register<float, avx2_register>>;
 
       using register_policy = avx2_register;
       using self_type = Register<float, avx2_register>;

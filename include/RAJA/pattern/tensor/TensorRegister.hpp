@@ -28,11 +28,15 @@
 
 namespace RAJA
 {
+namespace internal {
+namespace expt {
+    class TensorRegisterConcreteBase;
+}
+}
+
 namespace expt
 {
-  namespace internal {
-    class TensorRegisterConcreteBase;
-  }
+
 
   template<typename REGISTER_POLICY,
            typename T,
@@ -47,7 +51,7 @@ namespace expt
    */
   template<typename LEFT, typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
-    typename std::enable_if<std::is_base_of<internal::TensorRegisterConcreteBase, RIGHT>::value, bool>::type = true>
+    typename std::enable_if<std::is_base_of<RAJA::internal::expt::TensorRegisterConcreteBase, RIGHT>::value, bool>::type = true>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   RIGHT operator+(LEFT const &lhs, RIGHT const &rhs)
@@ -61,7 +65,7 @@ namespace expt
    */
   template<typename LEFT, typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
-    typename std::enable_if<std::is_base_of<internal::TensorRegisterConcreteBase, RIGHT>::value, bool>::type = true>
+    typename std::enable_if<std::is_base_of<RAJA::internal::expt::TensorRegisterConcreteBase, RIGHT>::value, bool>::type = true>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   RIGHT operator-(LEFT const &lhs, RIGHT const &rhs)
@@ -75,7 +79,7 @@ namespace expt
    */
   template<typename LEFT, typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
-    typename std::enable_if<std::is_base_of<internal::TensorRegisterConcreteBase, RIGHT>::value, bool>::type = true>
+    typename std::enable_if<std::is_base_of<RAJA::internal::expt::TensorRegisterConcreteBase, RIGHT>::value, bool>::type = true>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   RIGHT operator*(LEFT const &lhs, RIGHT const &rhs)
@@ -89,7 +93,7 @@ namespace expt
    */
   template<typename LEFT, typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
-    typename std::enable_if<std::is_base_of<internal::TensorRegisterConcreteBase, RIGHT>::value, bool>::type = true>
+    typename std::enable_if<std::is_base_of<RAJA::internal::expt::TensorRegisterConcreteBase, RIGHT>::value, bool>::type = true>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   RIGHT operator/(LEFT const &lhs, RIGHT const &rhs)

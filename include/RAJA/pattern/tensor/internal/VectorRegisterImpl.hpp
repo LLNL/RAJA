@@ -30,6 +30,7 @@
 
 namespace RAJA
 {
+
 namespace expt
 {
 
@@ -37,12 +38,12 @@ namespace expt
    * This provides a Tensor specialization for vectors
    */
   template<typename REGISTER_POLICY, typename T, camp::idx_t SIZE>
-  class TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>> :
-    public internal::TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>>>
+  class RAJA::expt::TensorRegister<REGISTER_POLICY, T, RAJA::expt::VectorLayout, camp::idx_seq<SIZE>> :
+    public internal::expt::TensorRegisterBase<RAJA::expt::TensorRegister<REGISTER_POLICY, T, RAJA::expt::VectorLayout, camp::idx_seq<SIZE>>>
   {
     public:
-      using self_type = TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>>;
-      using base_type = internal::TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<SIZE>>>;
+      using self_type = RAJA::expt::TensorRegister<REGISTER_POLICY, T, RAJA::expt::VectorLayout, camp::idx_seq<SIZE>>;
+      using base_type = internal::expt::TensorRegisterBase<RAJA::expt::TensorRegister<REGISTER_POLICY, T, RAJA::expt::VectorLayout, camp::idx_seq<SIZE>>>;
       using element_type = camp::decay<T>;
       using layout_type = TensorLayout<0>;
       using register_type = Register<T, REGISTER_POLICY>;
@@ -50,7 +51,7 @@ namespace expt
       static constexpr camp::idx_t s_num_elem = SIZE;
 
       using int_element_type = typename register_type::int_vector_type::element_type;
-      using int_vector_type = TensorRegister<REGISTER_POLICY, int_element_type, VectorLayout, camp::idx_seq<SIZE>>;
+      using int_vector_type = RAJA::expt::TensorRegister<REGISTER_POLICY, int_element_type, RAJA::expt::VectorLayout, camp::idx_seq<SIZE>>;
 
     private:
 
@@ -121,15 +122,15 @@ namespace expt
       }
 
       /*
-       * Overload for:    assignment of ET to a TensorRegister
+       * Overload for:    assignment of ET to a RAJA::expt::TensorRegister
        */
       template<typename RHS,
-        typename std::enable_if<std::is_base_of<internal::ET::TensorExpressionConcreteBase, RHS>::value, bool>::type = true>
+        typename std::enable_if<std::is_base_of<RAJA::internal::expt::ET::TensorExpressionConcreteBase, RHS>::value, bool>::type = true>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       TensorRegister(RHS const &rhs)
       {
-        // evaluate a single tile of the ET, storing in this TensorRegister
+        // evaluate a single tile of the ET, storing in this RAJA::expt::TensorRegister
         *this = rhs.eval(base_type::s_get_default_tile());
       }
 
@@ -213,17 +214,17 @@ namespace expt
       /*!
        * @brief Performs load specified by TensorRef object.
        */
-      template<typename POINTER_TYPE, typename INDEX_TYPE, internal::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
+      template<typename POINTER_TYPE, typename INDEX_TYPE, RAJA::internal::expt::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &load_ref(internal::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM> const &ref){
+      self_type &load_ref(RAJA::internal::expt::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM> const &ref){
 
         auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0];
 
         // check for packed data
         if(STRIDE_ONE_DIM == 0){
           // full vector?
-          if(TENSOR_SIZE == internal::TENSOR_FULL){
+          if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::tensor_stats::num_vector_load_packed ++;
 #endif
@@ -242,7 +243,7 @@ namespace expt
         else
         {
           // full vector?
-          if(TENSOR_SIZE == internal::TENSOR_FULL){
+          if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::tensor_stats::num_vector_load_strided ++;
 #endif
@@ -263,17 +264,17 @@ namespace expt
       /*!
        * @brief Performs load specified by TensorRef object.
        */
-      template<typename POINTER_TYPE, typename INDEX_TYPE, internal::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
+      template<typename POINTER_TYPE, typename INDEX_TYPE, RAJA::internal::expt::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &store_ref(internal::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM> const &ref) const {
+      self_type const &store_ref(RAJA::internal::expt::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM> const &ref) const {
 
         auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0];
 
         // check for packed data
         if(STRIDE_ONE_DIM == 0){
           // full vector?
-          if(TENSOR_SIZE == internal::TENSOR_FULL){
+          if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::tensor_stats::num_vector_store_packed ++;
 #endif
@@ -292,7 +293,7 @@ namespace expt
         else
         {
           // full vector?
-          if(TENSOR_SIZE == internal::TENSOR_FULL){
+          if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::tensor_stats::num_vector_store_strided ++;
 #endif
@@ -835,7 +836,6 @@ namespace expt
 
 
 } // namespace expt
-
 }  // namespace RAJA
 
 

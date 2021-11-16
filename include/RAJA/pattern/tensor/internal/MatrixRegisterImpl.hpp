@@ -37,11 +37,11 @@ namespace expt
    */
   template<typename REGISTER_POLICY, typename T, camp::idx_t ROW_ORD, camp::idx_t COL_ORD, camp::idx_t ROW_SIZE, camp::idx_t COL_SIZE>
   class TensorRegister<REGISTER_POLICY, T, TensorLayout<ROW_ORD, COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>> :
-    public internal::TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, TensorLayout<ROW_ORD, COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>>>
+    public RAJA::internal::expt::TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, TensorLayout<ROW_ORD, COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>>>
   {
     public:
       using self_type = TensorRegister<REGISTER_POLICY, T, TensorLayout<ROW_ORD, COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>>;
-      using base_type = internal::TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, TensorLayout<ROW_ORD, COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>>>;
+      using base_type = RAJA::internal::expt::TensorRegisterBase<TensorRegister<REGISTER_POLICY, T, TensorLayout<ROW_ORD, COL_ORD>, camp::idx_seq<ROW_SIZE, COL_SIZE>>>;
       using register_type = Register<T, REGISTER_POLICY>;
       using row_vector_type = VectorRegister<T, REGISTER_POLICY, COL_SIZE>;
       using column_vector_type = VectorRegister<T, REGISTER_POLICY, ROW_SIZE>;
@@ -61,7 +61,7 @@ namespace expt
 
 
       static constexpr camp::idx_t s_elements_per_register =
-          internal::RegisterTraits<REGISTER_POLICY,T>::s_num_elem;
+          RAJA::internal::expt::RegisterTraits<REGISTER_POLICY,T>::s_num_elem;
 
       // number of registers to hold entire matrix
       static constexpr camp::idx_t s_num_registers =
@@ -234,10 +234,10 @@ namespace expt
       /*!
        * @brief Performs load specified by TensorRef object.
        */
-      template<typename POINTER_TYPE, typename INDEX_TYPE, internal::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
+      template<typename POINTER_TYPE, typename INDEX_TYPE, RAJA::internal::expt::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type &load_ref(internal::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 2, STRIDE_ONE_DIM> const &ref){
+      self_type &load_ref(RAJA::internal::expt::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 2, STRIDE_ONE_DIM> const &ref){
 
         auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0] +
                                    ref.m_tile.m_begin[1]*ref.m_stride[1];
@@ -245,7 +245,7 @@ namespace expt
         // check for packed data
         if(is_ref_packed<STRIDE_ONE_DIM>()){
           // full vector?
-          if(TENSOR_SIZE == internal::TENSOR_FULL){
+          if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
             load_packed(ptr, ref.m_stride[0], ref.m_stride[1]);
           }
           // partial
@@ -259,7 +259,7 @@ namespace expt
         else
         {
           // full vector?
-          if(TENSOR_SIZE == internal::TENSOR_FULL){
+          if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
             load_strided(ptr, ref.m_stride[0], ref.m_stride[1]);
           }
           // partial
@@ -275,10 +275,10 @@ namespace expt
       /*!
        * @brief Performs load specified by TensorRef object.
        */
-      template<typename POINTER_TYPE, typename INDEX_TYPE, internal::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
+      template<typename POINTER_TYPE, typename INDEX_TYPE, RAJA::internal::expt::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
       RAJA_INLINE
       RAJA_HOST_DEVICE
-      self_type const &store_ref(internal::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE,2, STRIDE_ONE_DIM> const &ref) const {
+      self_type const &store_ref(RAJA::internal::expt::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE,2, STRIDE_ONE_DIM> const &ref) const {
 
         auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0] +
                                    ref.m_tile.m_begin[1]*ref.m_stride[1];
@@ -287,7 +287,7 @@ namespace expt
         if(is_ref_packed<STRIDE_ONE_DIM>())
         {
           // full vector?
-          if(TENSOR_SIZE == internal::TENSOR_FULL){
+          if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
             store_packed(ptr, ref.m_stride[0], ref.m_stride[1]);
           }
           // partial
@@ -301,7 +301,7 @@ namespace expt
         else
         {
           // full vector?
-          if(TENSOR_SIZE == internal::TENSOR_FULL){
+          if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
             store_strided(ptr, ref.m_stride[0], ref.m_stride[1]);
           }
           // partial
@@ -1381,15 +1381,15 @@ namespace expt
       template<typename RMAT>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type
+      typename RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type
       matrix_multiply(RMAT const &mat) const {
 #ifdef __CUDA_ARCH__
         if(threadIdx.x==0){
         printf("matrix_multiply\n");
         }
 #endif
-        typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type res(0);
-        internal::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply(*this, mat, res);
+        typename RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type res(0);
+        RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply(*this, mat, res);
         return res;
       }
 
@@ -1399,15 +1399,15 @@ namespace expt
       template<typename RMAT>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type
-      matrix_multiply_add(RMAT const &B, typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type const &C) const {
+      typename RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type
+      matrix_multiply_add(RMAT const &B, typename RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type const &C) const {
 //#ifdef __CUDA_ARCH__
 //        if(threadIdx.x==0){
 //        printf("matrix_multiply_add\n");
 //        }
 //#endif
-        typename internal::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type res(C);
-        internal::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply_accumulate(*this, B, res);
+        typename RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type res(C);
+        RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply_accumulate(*this, B, res);
         return res;
       }
 
@@ -1424,7 +1424,7 @@ namespace expt
 //        printf("matrix_multiply_accumulate\n");
 //        }
 //#endif
-        internal::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply_accumulate(*this, B, acc);
+        RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply_accumulate(*this, B, acc);
       }
 
 

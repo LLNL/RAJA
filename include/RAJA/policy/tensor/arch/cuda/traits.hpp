@@ -23,13 +23,13 @@
 
 
 namespace RAJA {
-namespace expt {
 namespace internal {
+namespace expt {
 
   template<typename T>
-  struct RegisterTraits<cuda_warp_register, T>{
+  struct RegisterTraits<RAJA::expt::cuda_warp_register, T>{
       using element_type = T;
-      using register_policy = cuda_warp_register;
+      using register_policy = RAJA::expt::cuda_warp_register;
       static constexpr camp::idx_t s_num_elem = 32;
       static constexpr camp::idx_t s_num_bits = sizeof(T) * s_num_elem;
       using int_element_type = int32_t;

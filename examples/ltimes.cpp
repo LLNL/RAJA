@@ -21,7 +21,7 @@
 #define VARIANT_RAJA_SEQ_ARGS        0
 #define VARIANT_RAJA_TEAMS_SEQ       0
 #define VARIANT_RAJA_VECTOR          0
-#define VARIANT_RAJA_MATRIX          0
+#define VARIANT_RAJA_MATRIX          1
 #define VARIANT_RAJA_SEQ_SHMEM       0
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -146,7 +146,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // and we're not really measuring performance here
   const long num_z = 128 + (rand()/RAND_MAX);
 #else
-  const int num_iter = 10 + (rand()/RAND_MAX);
+  const int num_iter = 1 + (rand()/RAND_MAX);
   const int num_z = 32*1024 + (rand()/RAND_MAX);
 
 //  const int num_z = 32 + (rand()/RAND_MAX);
@@ -631,14 +631,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  //using matrix_t = RAJA::SquareMatrixRegister<double, ColMajorLayout>;
+  using matrix_t = RAJA::SquareMatrixRegister<double, ColMajorLayout>;
   //using matrix_t = RAJA::SquareMatrixRegister<double, RowMajorLayout>;
-  using matrix_t = RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,8>;
+//  using matrix_t = RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,8>;
 
 
 
 	std::cout << "matrix size: " << matrix_t::s_dim_elem(0) <<
 	    "x" << matrix_t::s_dim_elem(1) << std::endl;
+
+	printf("Num registers/matrix = %d\n", (int)matrix_t::s_num_registers);
 
   using RowM = RAJA::RowIndex<IM, matrix_t>;
   using ColD = RAJA::ColIndex<ID, matrix_t>;
@@ -663,8 +665,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       auto cols_d = ColD::all();
       auto rows_d = toRowIndex(cols_d);
 
-        phi(rows_m, g, cols_z) +=
-            L(rows_m, cols_d) * psi(rows_d, g, cols_z);
+//        phi(rows_m, g, cols_z) +=
+//            L(rows_m, cols_d) * psi(rows_d, g, cols_z);
+
+      phi(rows_m, g, cols_z) = (L(rows_m, cols_d) * psi(rows_d, g, cols_z)) * (L(rows_m, cols_d) * psi(rows_d, g, cols_z));
 
     });
 
@@ -692,7 +696,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-#if VARIANT_RAJA_MATRIX
+#if VARIANT_RAJA_MATRIX0
 {
   std::cout << "\n Running RAJA row-major matrix version of LTimes...\n";
 

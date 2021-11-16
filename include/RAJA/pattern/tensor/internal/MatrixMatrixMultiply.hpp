@@ -25,11 +25,12 @@
 
 namespace RAJA
 {
+namespace internal
+{
 namespace expt
 {
 
 
-namespace internal {
 
 
 
@@ -47,31 +48,31 @@ namespace internal {
    */
   template<typename T, typename REGISTER_POLICY, camp::idx_t N_SIZE, camp::idx_t M_SIZE, camp::idx_t M2_SIZE, camp::idx_t O_SIZE>
   struct MatrixMatrixMultiplyHelper<
-    TensorRegister<REGISTER_POLICY,
+  RAJA::expt::TensorRegister<REGISTER_POLICY,
                    T,
-                   RowMajorLayout,
+                   RAJA::expt::RowMajorLayout,
                    camp::idx_seq<N_SIZE, M_SIZE>>,
-     TensorRegister<REGISTER_POLICY,
+                   RAJA::expt::TensorRegister<REGISTER_POLICY,
                     T,
-                    RowMajorLayout,
+                    RAJA::expt::RowMajorLayout,
                     camp::idx_seq<M2_SIZE, O_SIZE>> >
     {
 
       static_assert(M_SIZE == M2_SIZE, "Matrices are not compatible for multiplication");
 
-      using left_type = TensorRegister<REGISTER_POLICY,
+      using left_type = RAJA::expt::TensorRegister<REGISTER_POLICY,
                                        T,
-                                       RowMajorLayout,
+                                       RAJA::expt::RowMajorLayout,
                                        camp::idx_seq<N_SIZE, M_SIZE>>;
 
-      using right_type = TensorRegister<REGISTER_POLICY,
+      using right_type = RAJA::expt::TensorRegister<REGISTER_POLICY,
                                         T,
-                                        RowMajorLayout,
+                                        RAJA::expt::RowMajorLayout,
                                         camp::idx_seq<M_SIZE, O_SIZE>> ;
 
-      using result_type = TensorRegister<REGISTER_POLICY,
+      using result_type = RAJA::expt::TensorRegister<REGISTER_POLICY,
                                          T,
-                                         RowMajorLayout,
+                                         RAJA::expt::RowMajorLayout,
                                          camp::idx_seq<N_SIZE, O_SIZE>> ;
 
       using register_type = typename result_type::register_type;
@@ -199,41 +200,41 @@ namespace internal {
    */
   template<typename T, typename REGISTER_POLICY, camp::idx_t N_SIZE, camp::idx_t M_SIZE, camp::idx_t M2_SIZE, camp::idx_t O_SIZE>
     struct MatrixMatrixMultiplyHelper<
-      TensorRegister<REGISTER_POLICY,
+    RAJA::expt::TensorRegister<REGISTER_POLICY,
                      T,
-                     ColMajorLayout,
+                     RAJA::expt::ColMajorLayout,
                      camp::idx_seq<N_SIZE, M_SIZE>>,
-       TensorRegister<REGISTER_POLICY,
+                     RAJA::expt::TensorRegister<REGISTER_POLICY,
                       T,
-                      ColMajorLayout,
+                      RAJA::expt::ColMajorLayout,
                       camp::idx_seq<M2_SIZE, O_SIZE>> >
       {
 
       using self_type = MatrixMatrixMultiplyHelper<
-          TensorRegister<REGISTER_POLICY,
+          RAJA::expt::TensorRegister<REGISTER_POLICY,
                          T,
-                         ColMajorLayout,
+                         RAJA::expt::ColMajorLayout,
                          camp::idx_seq<N_SIZE, M_SIZE>>,
-           TensorRegister<REGISTER_POLICY,
+                         RAJA::expt::TensorRegister<REGISTER_POLICY,
                           T,
-                          ColMajorLayout,
+                          RAJA::expt::ColMajorLayout,
                           camp::idx_seq<M2_SIZE, O_SIZE>> >;
 
         static_assert(M_SIZE == M2_SIZE, "Matrices are not compatible for multiplication");
 
-        using left_type = TensorRegister<REGISTER_POLICY,
+        using left_type = RAJA::expt::TensorRegister<REGISTER_POLICY,
                                          T,
-                                         ColMajorLayout,
+                                         RAJA::expt::ColMajorLayout,
                                          camp::idx_seq<N_SIZE, M_SIZE>>;
 
-        using right_type = TensorRegister<REGISTER_POLICY,
+        using right_type = RAJA::expt::TensorRegister<REGISTER_POLICY,
                                           T,
-                                          ColMajorLayout,
+                                          RAJA::expt::ColMajorLayout,
                                           camp::idx_seq<M_SIZE, O_SIZE>> ;
 
-        using result_type = TensorRegister<REGISTER_POLICY,
+        using result_type = RAJA::expt::TensorRegister<REGISTER_POLICY,
                                            T,
-                                           ColMajorLayout,
+                                           RAJA::expt::ColMajorLayout,
                                            camp::idx_seq<N_SIZE, O_SIZE>> ;
 
         using register_type = typename result_type::register_type;
@@ -370,9 +371,8 @@ namespace internal {
 
 
 
-
-} // namespace internal
 } // namespace expt
+} // namespace internal
 } // namespace RAJA
 
 

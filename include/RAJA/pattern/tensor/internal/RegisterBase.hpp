@@ -33,18 +33,15 @@ namespace RAJA
 {
 namespace expt
 {
-
-
-  struct scalar_register;
-
-
   template<typename T, typename REGISTER_POLICY>
   class Register;
+}
 
-  namespace internal {
-    class RegisterConcreteBase {};
-  }
-
+namespace internal
+{
+namespace expt
+{
+  class RegisterConcreteBase {};
 
 
   /*
@@ -53,7 +50,7 @@ namespace expt
    */
   template<typename LEFT, typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
-    typename std::enable_if<std::is_base_of<internal::RegisterConcreteBase, RIGHT>::value, bool>::type = true>
+    typename std::enable_if<std::is_base_of<RegisterConcreteBase, RIGHT>::value, bool>::type = true>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   RIGHT operator+(LEFT const &lhs, RIGHT const &rhs)
@@ -67,7 +64,7 @@ namespace expt
    */
   template<typename LEFT, typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
-    typename std::enable_if<std::is_base_of<internal::RegisterConcreteBase, RIGHT>::value, bool>::type = true>
+    typename std::enable_if<std::is_base_of<RegisterConcreteBase, RIGHT>::value, bool>::type = true>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   RIGHT operator-(LEFT const &lhs, RIGHT const &rhs)
@@ -81,7 +78,7 @@ namespace expt
    */
   template<typename LEFT, typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
-    typename std::enable_if<std::is_base_of<internal::RegisterConcreteBase, RIGHT>::value, bool>::type = true>
+    typename std::enable_if<std::is_base_of<RegisterConcreteBase, RIGHT>::value, bool>::type = true>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   RIGHT operator*(LEFT const &lhs, RIGHT const &rhs)
@@ -95,7 +92,7 @@ namespace expt
    */
   template<typename LEFT, typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
-    typename std::enable_if<std::is_base_of<internal::RegisterConcreteBase, RIGHT>::value, bool>::type = true>
+    typename std::enable_if<std::is_base_of<RegisterConcreteBase, RIGHT>::value, bool>::type = true>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   RIGHT operator/(LEFT const &lhs, RIGHT const &rhs)
@@ -105,7 +102,6 @@ namespace expt
 
 
 
-namespace internal {
 
 
   /*!
@@ -118,17 +114,17 @@ namespace internal {
   class RegisterBase;
 
   template<typename T, typename REGISTER_POLICY>
-  class RegisterBase<Register<T, REGISTER_POLICY>> :
+  class RegisterBase<RAJA::expt::Register<T, REGISTER_POLICY>> :
     public RegisterConcreteBase
   {
     public:
-      using self_type = Register<T, REGISTER_POLICY>;
+      using self_type = RAJA::expt::Register<T, REGISTER_POLICY>;
       using element_type = camp::decay<T>;
 
       using index_type = camp::idx_t;
 
       using int_element_type = typename RegisterTraits<REGISTER_POLICY, T>::int_element_type;
-      using int_vector_type = Register<int_element_type, REGISTER_POLICY>;
+      using int_vector_type = RAJA::expt::Register<int_element_type, REGISTER_POLICY>;
 
     private:
 
@@ -220,7 +216,7 @@ namespace internal {
       template<typename T2>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &gather(element_type const *ptr, Register<T2, REGISTER_POLICY> offsets){
+      self_type &gather(element_type const *ptr, RAJA::expt::Register<T2, REGISTER_POLICY> offsets){
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::tensor_stats::num_vector_load_strided_n ++;
 #endif
@@ -243,7 +239,7 @@ namespace internal {
       template<typename T2>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &gather_n(element_type const *ptr, Register<T2, REGISTER_POLICY> const &offsets, camp::idx_t N){
+      self_type &gather_n(element_type const *ptr, RAJA::expt::Register<T2, REGISTER_POLICY> const &offsets, camp::idx_t N){
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::tensor_stats::num_vector_load_strided_n ++;
 #endif
@@ -336,7 +332,7 @@ namespace internal {
       template<typename T2>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &scatter(element_type *ptr, Register<T2, REGISTER_POLICY> const &offsets) const {
+      self_type const &scatter(element_type *ptr, RAJA::expt::Register<T2, REGISTER_POLICY> const &offsets) const {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::tensor_stats::num_vector_load_strided_n ++;
 #endif
@@ -358,7 +354,7 @@ namespace internal {
       template<typename T2>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type const &scatter_n(element_type *ptr, Register<T2, REGISTER_POLICY> const &offsets, camp::idx_t N) const {
+      self_type const &scatter_n(element_type *ptr, RAJA::expt::Register<T2, REGISTER_POLICY> const &offsets, camp::idx_t N) const {
 #ifdef RAJA_ENABLE_VECTOR_STATS
           RAJA::tensor_stats::num_vector_load_strided_n ++;
 #endif
@@ -443,7 +439,7 @@ namespace internal {
       template<typename T2>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &operator=(Register<T2, scalar_register> const &value)
+      self_type &operator=(RAJA::expt::Register<T2, RAJA::expt::scalar_register> const &value)
       {
         getThis()->broadcast(value.get(0));
         return *getThis();
@@ -1217,11 +1213,10 @@ namespace internal {
 
   };
 
-} //namespace internal
 
 } // namespace expt
-
-}  // namespace RAJA
+} // namespace internal
+} // namespace RAJA
 
 
 

@@ -25,10 +25,11 @@
 
 namespace RAJA
 {
+namespace internal
+{
 namespace expt
 {
-  namespace internal
-  {
+
 
     enum TensorTileSize
     {

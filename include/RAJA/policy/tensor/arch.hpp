@@ -23,10 +23,11 @@
 namespace RAJA
 {
 
+namespace internal {
+
 namespace expt
 {
 
-namespace internal {
 
   /*!
    * Provides architectural details for a given architecture and data type.
@@ -40,6 +41,7 @@ namespace internal {
    * static constexpr camp::idx s_num_elem = Y;
    *
    */
+} //namespace expt
 } //namespace internal
 //
 //////////////////////////////////////////////////////////////////////
@@ -48,7 +50,8 @@ namespace internal {
 //
 //////////////////////////////////////////////////////////////////////
 //
-
+namespace expt
+{
 
 #ifdef __AVX512F__
 struct avx512_register {};

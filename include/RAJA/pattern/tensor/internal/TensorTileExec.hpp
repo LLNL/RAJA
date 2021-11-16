@@ -27,11 +27,12 @@
 
 namespace RAJA
 {
+namespace internal
+{
 namespace expt
 {
 
-  namespace internal
-  {
+
 
 
     template<typename STORAGE, typename DIM_SEQ>

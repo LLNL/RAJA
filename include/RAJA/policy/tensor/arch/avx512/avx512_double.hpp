@@ -36,9 +36,12 @@ namespace expt
 
   template<>
   class Register<double, avx512_register> :
-    public internal::RegisterBase<Register<double, avx512_register>>
+    public internal::expt::RegisterBase<Register<double, avx512_register>>
   {
     public:
+      using base_type = internal::expt::RegisterBase<Register<double, avx512_register>>;
+
+
       using register_policy = avx512_register;
       using self_type = Register<double, avx512_register>;
       using element_type = double;

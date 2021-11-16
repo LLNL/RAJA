@@ -21,41 +21,41 @@
 #define RAJA_policy_tensor_arch_cuda_HPP
 
 namespace RAJA {
-namespace expt {
 namespace internal {
+namespace expt {
 
 
   template<>
-  struct RegisterTraits<scalar_register, int32_t>{
+  struct RegisterTraits<RAJA::expt::scalar_register, int32_t>{
       using element_type = int32_t;
-      using register_policy = scalar_register;
+      using register_policy = RAJA::expt::scalar_register;
       static constexpr camp::idx_t s_num_bits = sizeof(element_type)*8;
       static constexpr camp::idx_t s_num_elem = 1;
       using int_element_type = int32_t;
   };
 
   template<>
-  struct RegisterTraits<scalar_register, int64_t>{
+  struct RegisterTraits<RAJA::expt::scalar_register, int64_t>{
       using element_type = int64_t;
-      using register_policy = scalar_register;
+      using register_policy = RAJA::expt::scalar_register;
       static constexpr camp::idx_t s_num_bits = sizeof(element_type)*8;
       static constexpr camp::idx_t s_num_elem = 1;
       using int_element_type = int64_t;
   };
 
   template<>
-  struct RegisterTraits<scalar_register, float>{
+  struct RegisterTraits<RAJA::expt::scalar_register, float>{
       using element_type = float;
-      using register_policy = scalar_register;
+      using register_policy = RAJA::expt::scalar_register;
       static constexpr camp::idx_t s_num_bits = sizeof(element_type)*8;
       static constexpr camp::idx_t s_num_elem = 1;
       using int_element_type = int32_t;
   };
 
   template<>
-  struct RegisterTraits<scalar_register, double>{
+  struct RegisterTraits<RAJA::expt::scalar_register, double>{
       using element_type = double;
-      using register_policy = scalar_register;
+      using register_policy = RAJA::expt::scalar_register;
       static constexpr camp::idx_t s_num_bits = sizeof(element_type)*8;
       static constexpr camp::idx_t s_num_elem = 1;
       using int_element_type = int64_t;

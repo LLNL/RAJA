@@ -23,13 +23,14 @@
 
 namespace RAJA
 {
+namespace internal
+{
 namespace expt
 {
   //forward
   class TensorBlockConcreteBase;
 
-  namespace internal
-  {
+
 
 
   namespace ET

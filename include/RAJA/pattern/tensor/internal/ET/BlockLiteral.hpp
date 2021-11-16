@@ -29,10 +29,11 @@
 
 namespace RAJA
 {
+namespace internal
+{
 namespace expt
 {
-  namespace internal
-  {
+
 
   namespace ET
   {
@@ -87,7 +88,7 @@ namespace expt
           result_type result;
 
           // load result from storage
-          result.load_ref(internal::merge_ref_tile(m_storage.get_ref(), tile - m_tile_origin));
+          result.load_ref(merge_ref_tile(m_storage.get_ref(), tile - m_tile_origin));
 
           return result;
         }
