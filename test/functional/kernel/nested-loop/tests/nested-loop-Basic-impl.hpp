@@ -94,6 +94,7 @@ template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE, typenam
 void KernelNestedLoopTest(const DEPTH_2_COLLAPSE&, Args... args){
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RESOURCE>(DEPTH_2(), args...);
 }
+
 template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE, typename... Args>
 void KernelNestedLoopTest(const DEVICE_DEPTH_2&, Args... args){
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RESOURCE>(DEPTH_2(), args...);
@@ -149,19 +150,22 @@ void KernelNestedLoopTest(const DEPTH_3&,
                                        test_array);
 }
 
-// DEPTH_3_COLLAPSE and DEVICE_DEPTH_3 execution policies use the above DEPTH_3 test.
+// DEPTH_3_COLLAPSE execution policies use the above DEPTH_3 test.
 template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE, typename... Args>
 void KernelNestedLoopTest(const DEPTH_3_COLLAPSE&, Args... args){
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RESOURCE>(DEPTH_3(), args...);
 }
+
 template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE, typename... Args>
 void KernelNestedLoopTest(const DEPTH_3_COLLAPSE_SEQ_OUTER&, Args... args){
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RESOURCE>(DEPTH_3(), args...);
 }
+
 template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE, typename... Args>
 void KernelNestedLoopTest(const DEPTH_3_COLLAPSE_SEQ_INNER&, Args... args){
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RESOURCE>(DEPTH_3(), args...);
 }
+
 //
 //
 // Defining the Kernel Loop structure for Basic Nested Loop Tests.
