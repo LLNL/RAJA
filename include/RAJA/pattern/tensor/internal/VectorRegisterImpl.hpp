@@ -38,11 +38,11 @@ namespace expt
    * This provides a Tensor specialization for vectors
    */
   template<typename REGISTER_POLICY, typename T, camp::idx_t SIZE>
-  class RAJA::expt::TensorRegister<REGISTER_POLICY, T, RAJA::expt::VectorLayout, camp::idx_seq<SIZE>> :
+  class TensorRegister<REGISTER_POLICY, T, RAJA::expt::VectorLayout, camp::idx_seq<SIZE>> :
     public internal::expt::TensorRegisterBase<RAJA::expt::TensorRegister<REGISTER_POLICY, T, RAJA::expt::VectorLayout, camp::idx_seq<SIZE>>>
   {
     public:
-      using self_type = RAJA::expt::TensorRegister<REGISTER_POLICY, T, RAJA::expt::VectorLayout, camp::idx_seq<SIZE>>;
+      using self_type = TensorRegister<REGISTER_POLICY, T, RAJA::expt::VectorLayout, camp::idx_seq<SIZE>>;
       using base_type = internal::expt::TensorRegisterBase<RAJA::expt::TensorRegister<REGISTER_POLICY, T, RAJA::expt::VectorLayout, camp::idx_seq<SIZE>>>;
       using element_type = camp::decay<T>;
       using layout_type = TensorLayout<0>;
@@ -51,7 +51,7 @@ namespace expt
       static constexpr camp::idx_t s_num_elem = SIZE;
 
       using int_element_type = typename register_type::int_vector_type::element_type;
-      using int_vector_type = RAJA::expt::TensorRegister<REGISTER_POLICY, int_element_type, RAJA::expt::VectorLayout, camp::idx_seq<SIZE>>;
+      using int_vector_type = TensorRegister<REGISTER_POLICY, int_element_type, RAJA::expt::VectorLayout, camp::idx_seq<SIZE>>;
 
     private:
 
