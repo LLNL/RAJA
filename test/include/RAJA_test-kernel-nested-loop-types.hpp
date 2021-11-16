@@ -17,6 +17,9 @@
 struct DEPTH_2 {};
 struct DEPTH_2_COLLAPSE {};
 struct DEPTH_3 {};
+struct DEPTH_3_COLLAPSE {};
+struct DEPTH_3_COLLAPSE_SEQ_INNER {};
+struct DEPTH_3_COLLAPSE_SEQ_OUTER {};
 struct DEVICE_DEPTH_2 {};
 struct DEVICE_DEPTH_3 {};
 
