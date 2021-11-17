@@ -83,14 +83,13 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
             multi=False, description='Tests to run')
     variant('desul', default=False, description='Build Desul Atomics backend')
 
-    depends_on('cmake@3.8:', type='build')
-    depends_on('cmake@3.9:', when='+cuda', type='build')
+    depends_on('cmake@3.9:', type='build')
 
     depends_on('blt@0.4.1', type='build', when='@main')
     depends_on('blt@0.4.1:', type='build')
 
     depends_on('camp')
-    depends_on('camp@master')
+    depends_on('camp@main')
     depends_on('camp+rocm', when='+rocm')
     for val in ROCmPackage.amdgpu_targets:
         depends_on('camp amdgpu_target=%s' % val, when='amdgpu_target=%s' % val)
