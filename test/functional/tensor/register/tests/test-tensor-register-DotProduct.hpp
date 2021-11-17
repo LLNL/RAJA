@@ -17,22 +17,63 @@ void DotProductImpl()
   using element_t = typename register_t::element_type;
   using policy_t = typename register_t::register_policy;
 
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
-  element_t A[num_elem], B[num_elem];
-  register_t x, y;
+  // Allocate
 
-  element_t expected = 0.0;
-  for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(NO_OPT_RAND*1000.0);
-    B[i] = (element_t)(NO_OPT_RAND*1000.0);
-    x.set(A[i], i);
-    y.set(B[i], i);
-    expected += A[i]*B[i];
+  std::vector<element_t> input0_vec(num_elem);
+  element_t *input0_hptr = input0_vec.data();
+  element_t *input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+
+  std::vector<element_t> input1_vec(num_elem);
+  element_t *input1_hptr = input1_vec.data();
+  element_t *input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+
+  std::vector<element_t> output0_vec(1);
+  element_t *output0_hptr = output0_vec.data();
+  element_t *output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+
+
+  // Initialize input data
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
+   input0_hptr[i] = (element_t)(i+1+NO_OPT_RAND);
+   input1_hptr[i] = (element_t)(i*i+1+NO_OPT_RAND);
   }
 
-  ASSERT_SCALAR_EQ(x.dot(y), expected);
+  tensor_copy_to_device<policy_t>(input0_dptr, input0_vec);
+  tensor_copy_to_device<policy_t>(input1_dptr, input1_vec);
 
+
+  //
+  //  Check full-length operations
+  //
+
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    register_t x;
+    x.load_packed(input0_dptr);
+
+    register_t y;
+    y.load_packed(input1_dptr);
+
+
+    output0_dptr[0] = x.dot(y);
+  });
+
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  element_t expected = 0;
+  for(int lane = 0;lane < num_elem;++ lane){
+    expected += input0_vec[lane] * input1_vec[lane];
+  }
+  ASSERT_SCALAR_EQ(expected, output0_vec[0]);
+
+
+
+  // Cleanup
+  tensor_free<policy_t>(input0_dptr);
+  tensor_free<policy_t>(input1_dptr);
+  tensor_free<policy_t>(output0_dptr);
 }
 
 

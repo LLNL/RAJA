@@ -21,7 +21,7 @@
 #define VARIANT_RAJA_SEQ_ARGS        0
 #define VARIANT_RAJA_TEAMS_SEQ       0
 #define VARIANT_RAJA_VECTOR          0
-#define VARIANT_RAJA_MATRIX          1
+#define VARIANT_RAJA_MATRIX          0
 #define VARIANT_RAJA_SEQ_SHMEM       0
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -36,8 +36,8 @@
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-#define RAJA_HIP_KERNEL              1
-#define RAJA_HIP_KERNEL_SHMEM        1
+#define RAJA_HIP_KERNEL              0
+#define RAJA_HIP_KERNEL_SHMEM        0
 #endif
 
 
@@ -133,7 +133,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // optimize out these values as compile time constants
   const int num_m = 32 + (rand()/RAND_MAX);
   const int num_g = 160 + (rand()/RAND_MAX);
-  const int num_d = 64 + (rand()/RAND_MAX);
+  const int num_d = 32 + (rand()/RAND_MAX);
 //
 //  const int num_m = 8 + (rand()/RAND_MAX);
 //  const int num_g = 1 + (rand()/RAND_MAX);
@@ -146,8 +146,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // and we're not really measuring performance here
   const long num_z = 128 + (rand()/RAND_MAX);
 #else
-  const int num_iter = 1 + (rand()/RAND_MAX);
-  const int num_z = 32*1024 + (rand()/RAND_MAX);
+  const int num_iter = 20 + (rand()/RAND_MAX);
+  const int num_z = 32*32 + (rand()/RAND_MAX);
 
 //  const int num_z = 32 + (rand()/RAND_MAX);
 
@@ -157,7 +157,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 
-  double total_flops = 2.0*num_g*num_z*num_d*num_m*num_iter;
+  double total_flops = 2.0*num_g*num_z*num_d*num_m*num_iter*1000.0;
 
   std::cout << "num_m = " << num_m << ", num_g = " << num_g <<
                ", num_d = " << num_d << ", num_z = " << num_z << "\n\n";
@@ -631,7 +631,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  using matrix_t = RAJA::SquareMatrixRegister<double, ColMajorLayout>;
+  using matrix_t = RAJA::SquareMatrixRegister<double, ColMajorLayout, RAJA::scalar_register>;
   //using matrix_t = RAJA::SquareMatrixRegister<double, RowMajorLayout>;
 //  using matrix_t = RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,8>;
 
@@ -654,21 +654,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::Timer timer;
   timer.start();
 
+
   for (int iter = 0;iter < num_iter;++ iter){
 
   RAJA::forall<loop_exec>(RAJA::TypedRangeSegment<IG>(0, num_g),
     [=](IG g)
     {
 
-      auto rows_m = RowM::all();
-      auto cols_z = ColZ::all();
-      auto cols_d = ColD::all();
-      auto rows_d = toRowIndex(cols_d);
+        auto rows_m = RowM::all();
+        auto cols_z = ColZ::all();
+        auto cols_d = ColD::all();
+        auto rows_d = toRowIndex(cols_d);
 
-//        phi(rows_m, g, cols_z) +=
-//            L(rows_m, cols_d) * psi(rows_d, g, cols_z);
+        phi(rows_m, g, cols_z) +=
+            L(rows_m, cols_d) * psi(rows_d, g, cols_z);
 
-      phi(rows_m, g, cols_z) = (L(rows_m, cols_d) * psi(rows_d, g, cols_z)) * (L(rows_m, cols_d) * psi(rows_d, g, cols_z));
+//      phi(rows_m, g, cols_z) = (L(rows_m, cols_d) * psi(rows_d, g, cols_z)) * (L(rows_m, cols_d) * psi(rows_d, g, cols_z));
 
     });
 
@@ -696,7 +697,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-#if VARIANT_RAJA_MATRIX0
+#if VARIANT_RAJA_MATRIX
 {
   std::cout << "\n Running RAJA row-major matrix version of LTimes...\n";
 
@@ -1331,17 +1332,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                           cudaMemcpyHostToDevice ) );
 
 
+  using matrix_layout = RowMajorLayout;
 
-  using L_matrix_host_t = RAJA::SquareMatrixRegister<double, ColMajorLayout>;
-  using L_matrix_device_t = RAJA::RectMatrixRegister<double, ColMajorLayout, 8, 4, RAJA::cuda_warp_register>;
+  using L_matrix_host_t = RAJA::SquareMatrixRegister<double, matrix_layout>;
+  using L_matrix_device_t = RAJA::RectMatrixRegister<double, matrix_layout, 8, 4, RAJA::cuda_warp_register>;
   using L_matrix_hd_t = RAJA::expt::LaunchPolicy<L_matrix_host_t, L_matrix_device_t>;
 
-  using phi_matrix_host_t = RAJA::SquareMatrixRegister<double, ColMajorLayout>;
-  using phi_matrix_device_t = RAJA::RectMatrixRegister<double, ColMajorLayout, 8, 8, RAJA::cuda_warp_register>;
+  using phi_matrix_host_t = RAJA::SquareMatrixRegister<double, matrix_layout>;
+  using phi_matrix_device_t = RAJA::RectMatrixRegister<double, matrix_layout, 8, 8, RAJA::cuda_warp_register>;
   using phi_matrix_hd_t = RAJA::expt::LaunchPolicy<L_matrix_host_t, phi_matrix_device_t>;
 
-  using psi_matrix_host_t = RAJA::SquareMatrixRegister<double, ColMajorLayout>;
-  using psi_matrix_device_t = RAJA::RectMatrixRegister<double, ColMajorLayout, 4, 8, RAJA::cuda_warp_register>;
+  using psi_matrix_host_t = RAJA::SquareMatrixRegister<double, matrix_layout>;
+  using psi_matrix_device_t = RAJA::RectMatrixRegister<double, matrix_layout, 4, 8, RAJA::cuda_warp_register>;
   using psi_matrix_hd_t = RAJA::expt::LaunchPolicy<L_matrix_host_t, psi_matrix_device_t>;
 
 
@@ -1388,7 +1390,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int iter = 0;iter < num_iter;++ iter){
     RAJA::expt::launch<pol_launch>(
         RAJA::expt::DEVICE,
-        RAJA::expt::Resources(RAJA::expt::Teams(num_g, 1, 1),
+        RAJA::expt::Grid(RAJA::expt::Teams(num_g, 1, 1),
                               RAJA::expt::Threads(32, 32, 1)),
         [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
     {
@@ -1414,7 +1416,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           RAJA::TypedRangeSegment<IZ> tz(*tzi.begin(), *tzi.end());
 
-
+for(int i = 0;i < 1000;++ i)
           phi(phi_RowM::all(), g, phi_ColZ(tz)) +=
               L(L_RowM::all(), L_ColD::all()) * psi(psi_RowD::all(), g, psi_ColZ(tz));
 

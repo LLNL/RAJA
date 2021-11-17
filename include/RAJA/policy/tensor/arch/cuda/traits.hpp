@@ -18,9 +18,8 @@
 #ifdef RAJA_ENABLE_CUDA
 
 
-#ifndef RAJA_policy_tensor_arch_cuda_HPP
-#define RAJA_policy_tensor_arch_cuda_HPP
-
+#ifndef RAJA_policy_tensor_arch_cuda_traits_HPP
+#define RAJA_policy_tensor_arch_cuda_traits_HPP
 
 namespace RAJA {
 namespace internal {

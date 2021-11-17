@@ -17,52 +17,161 @@ void DivideImpl()
   using element_t = typename register_t::element_type;
   using policy_t = typename register_t::register_policy;
 
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
-  element_t A[num_elem], B[num_elem];
-  register_t x, y;
+  // Allocate
 
-  for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(NO_OPT_RAND*1000.0)+1.0;
-    B[i] = (element_t)(NO_OPT_RAND*1000.0)+1.0;
-    x.set(A[i], i);
-    y.set(B[i], i);
+  std::vector<element_t> input0_vec(num_elem);
+  element_t *input0_hptr = input0_vec.data();
+  element_t *input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+
+  std::vector<element_t> input1_vec(num_elem);
+  element_t *input1_hptr = input1_vec.data();
+  element_t *input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+
+  std::vector<element_t> output0_vec(num_elem);
+  element_t *output0_hptr = output0_vec.data();
+  element_t *output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+
+
+  // Initialize input data
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
+   input0_hptr[i] = (element_t)(i+1+NO_OPT_RAND);
+   input1_hptr[i] = (element_t)(i*i+1+NO_OPT_RAND);
   }
+
+  tensor_copy_to_device<policy_t>(input0_dptr, input0_vec);
+  tensor_copy_to_device<policy_t>(input1_dptr, input1_vec);
+
+
+  //
+  //  Check full-length operations
+  //
 
   // operator /
-  register_t op_div = x/y;
-  for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_div.get(i), A[i] / B[i]);
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    register_t x;
+    x.load_packed(input0_dptr);
+
+    register_t y;
+    y.load_packed(input1_dptr);
+
+    register_t z = x / y;
+
+    z.store_packed(output0_dptr);
+  });
+
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  for(int lane = 0;lane < num_elem;++ lane){
+    ASSERT_SCALAR_EQ(input0_vec[lane] / input1_vec[lane], output0_vec[lane]);
   }
+
+
 
   // operator /=
-  register_t op_diveq = x;
-  op_diveq /= y;
-  for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_diveq.get(i), A[i] / B[i]);
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    register_t x;
+    x.load_packed(input0_dptr);
+
+    register_t y;
+    y.load_packed(input1_dptr);
+
+    register_t z = x;
+
+    z /= y;
+
+    z.store_packed(output0_dptr);
+  });
+
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  for(int lane = 0;lane < num_elem;++ lane){
+    ASSERT_SCALAR_EQ(input0_vec[lane] / input1_vec[lane], output0_vec[lane]);
   }
 
-  // function divide
-  register_t func_div = x.divide(y);
-  for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(func_div.get(i), A[i] / B[i]);
-  }
+
 
 
   // operator / scalar
-  register_t op_div_s1 = x / element_t(2);
-  register_t op_div_s2 = element_t(2) / x;
-  for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_div_s1.get(i), A[i] / element_t(2));
-    ASSERT_SCALAR_EQ(op_div_s2.get(i), element_t(2) / A[i]);
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    register_t x;
+    x.load_packed(input0_dptr);
+
+    register_t z = x / 7;
+
+    z.store_packed(output0_dptr);
+  });
+
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  for(int lane = 0;lane < num_elem;++ lane){
+    ASSERT_SCALAR_EQ(input0_vec[lane] / 7, output0_vec[lane]);
   }
 
-  // operator /= scalar
-  register_t op_diveq_s = x;
-  op_diveq_s /= element_t(2);
-  for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(op_diveq_s.get(i), A[i] / element_t(2));
+
+
+
+  // operator += scalar
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    register_t x;
+    x.load_packed(input0_dptr);
+
+    register_t z = x;
+
+    z /= 3;
+
+    z.store_packed(output0_dptr);
+  });
+
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  for(int lane = 0;lane < num_elem;++ lane){
+    ASSERT_SCALAR_EQ(input0_vec[lane] / 3, output0_vec[lane]);
   }
+
+
+  //
+  // Test variable length operations for all valid lengths
+  //
+  for(int N = 0;N < num_elem; ++N){
+
+    tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+      register_t x;
+      x.load_packed_n(input0_dptr, N);
+
+      register_t y;
+      y.load_packed_n(input1_dptr, N);
+
+      register_t z = x.divide_n(y,N);
+
+      z.store_packed(output0_dptr);
+    });
+
+    tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+    for(int lane = 0;lane < num_elem;++ lane){
+      if(lane < N){
+        ASSERT_SCALAR_EQ(input0_vec[lane] / input1_vec[lane], output0_vec[lane]);
+      }
+      else{
+        ASSERT_SCALAR_EQ(0, output0_vec[lane]);
+      }
+    }
+
+
+  }
+
+
+  // Cleanup
+  tensor_free<policy_t>(input0_dptr);
+  tensor_free<policy_t>(input1_dptr);
+  tensor_free<policy_t>(output0_dptr);
 }
 
 

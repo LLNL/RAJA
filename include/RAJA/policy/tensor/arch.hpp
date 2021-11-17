@@ -80,7 +80,7 @@ struct avx_register {};
 #endif
 
 
-#if defined(RAJA_CUDA_ACTIVE)
+#ifdef RAJA_ENABLE_CUDA
 
 /*!
  * A CUDA warp distributed vector register
@@ -126,7 +126,7 @@ struct scalar_register {};
 #endif
 
 
-#if defined(RAJA_CUDA_ACTIVE)
+#ifdef RAJA_ENABLE_CUDA
 #include "RAJA/policy/tensor/arch/cuda/traits.hpp"
 #endif
 

@@ -75,7 +75,7 @@ namespace expt
       RAJA_INLINE
       RAJA_DEVICE
       constexpr
-      explicit Register(element_type c) : base_type(), m_value(c) {}
+      Register(element_type c) : base_type(), m_value(c) {}
 
 
       /*!
@@ -545,11 +545,6 @@ namespace expt
         return self_type(m_value + b.m_value);
       }
 
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type add(element_type b) const {
-        return self_type(m_value + b);
-      }
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -568,6 +563,7 @@ namespace expt
       self_type divide(self_type const &b) const {
         return self_type(m_value / b.m_value);
       }
+
 
       RAJA_HOST_DEVICE
       RAJA_INLINE

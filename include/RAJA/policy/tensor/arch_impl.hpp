@@ -45,7 +45,7 @@
 #include<RAJA/policy/tensor/arch/avx.hpp>
 #endif
 
-#if defined(RAJA_CUDA_ACTIVE)
+#ifdef RAJA_ENABLE_CUDA
 #include<RAJA/policy/tensor/arch/cuda.hpp>
 #endif
 

@@ -17,8 +17,8 @@
 
 
 
-#ifndef RAJA_policy_tensor_arch_cuda_HPP
-#define RAJA_policy_tensor_arch_cuda_HPP
+#ifndef RAJA_policy_tensor_arch_scalar_traits_HPP
+#define RAJA_policy_tensor_arch_scalar_traits_HPP
 
 namespace RAJA {
 namespace internal {
