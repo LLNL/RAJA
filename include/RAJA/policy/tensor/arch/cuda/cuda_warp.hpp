@@ -571,18 +571,56 @@ namespace expt
         return get_lane() < N ? self_type(m_value / b.m_value) : self_type(element_type(0));
       }
 
+      /**
+       * floats and doubles use the CUDA instrinsic FMA
+       */
+      template<typename RETURN_TYPE = self_type>
       RAJA_DEVICE
       RAJA_INLINE
-      self_type multiply_add(self_type const &b, self_type const &c) const
+      typename std::enable_if<!std::numeric_limits<element_type>::is_integer,
+      RETURN_TYPE>::type
+      multiply_add(self_type const &b, self_type const &c) const
       {
         return self_type(fma(m_value, b.m_value, c.m_value));
       }
 
+      /**
+       * int32 and int64 don't have a CUDA intrinsic FMA, do unfused ops
+       */
+      template<typename RETURN_TYPE = self_type>
       RAJA_DEVICE
       RAJA_INLINE
-      self_type multiply_subtract(self_type const &b, self_type const &c) const
+      typename std::enable_if<std::numeric_limits<element_type>::is_integer,
+      RETURN_TYPE>::type
+      multiply_add(self_type const &b, self_type const &c) const
+      {
+        return self_type(m_value * b.m_value + c.m_value);
+      }
+
+      /**
+       * floats and doubles use the CUDA instrinsic FMS
+       */
+      template<typename RETURN_TYPE = self_type>
+      RAJA_DEVICE
+      RAJA_INLINE
+      typename std::enable_if<!std::numeric_limits<element_type>::is_integer,
+      RETURN_TYPE>::type
+      multiply_subtract(self_type const &b, self_type const &c) const
       {
         return self_type(fma(m_value, b.m_value, -c.m_value));
+      }
+
+      /**
+       * int32 and int64 don't have a CUDA intrinsic FMS, do unfused ops
+       */
+      template<typename RETURN_TYPE = self_type>
+      RAJA_DEVICE
+      RAJA_INLINE
+      typename std::enable_if<std::numeric_limits<element_type>::is_integer,
+      RETURN_TYPE>::type
+      multiply_subtract(self_type const &b, self_type const &c) const
+      {
+        return self_type(m_value * b.m_value - c.m_value);
       }
 
 

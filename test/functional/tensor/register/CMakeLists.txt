@@ -7,6 +7,7 @@
 
 
 set(TENSOR_REGISTER_TESTS
+                GetSet
 				Load
 				Store
 				Gather

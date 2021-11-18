@@ -143,9 +143,9 @@
 #define ASSERT_SCALAR_EQ(X,Y) { \
   int value_type = RAJA::gtest::getScalarType(X); \
   switch(value_type){ \
-    case 1: {ASSERT_FLOAT_EQ(X,Y);} break; \
-    case 2: {ASSERT_DOUBLE_EQ(X,Y);} break; \
-    default: {ASSERT_EQ(X,Y);} \
+    case 1: {RAJA_ASSERT_FLOAT_EQ(X,Y);} break; \
+    case 2: {RAJA_ASSERT_DOUBLE_EQ(X,Y);} break; \
+    default: {RAJA_ASSERT_EQ(X,Y);} \
   }; }
 
 // Traits use by the above maco

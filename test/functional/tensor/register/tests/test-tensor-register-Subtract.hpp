@@ -65,7 +65,7 @@ void SubtractImpl()
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   for(int lane = 0;lane < num_elem;++ lane){
-    ASSERT_SCALAR_EQ(input0_vec[lane] * input1_vec[lane], output0_vec[lane]);
+    ASSERT_SCALAR_EQ(input0_vec[lane] - input1_vec[lane], output0_vec[lane]);
   }
 
 

@@ -19,57 +19,156 @@ void StoreImpl()
 
   static constexpr size_t num_elem = register_t::s_num_elem;
 
-  element_t A[num_elem];
-  register_t x;
-  for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(NO_OPT_RAND*1000.0);
-    x.set(A[i], i);
+  // Allocate
+  std::vector<element_t> input0_vec(num_elem);
+  element_t *input0_hptr = input0_vec.data();
+  element_t *input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+
+  std::vector<element_t> output0_vec(10*num_elem);
+  element_t *output0_hptr = output0_vec.data();
+  element_t *output0_dptr = tensor_malloc<policy_t, element_t>(10*num_elem);
+
+  // Initialize input data
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
+   input0_hptr[i] = (element_t)(i+1+NO_OPT_RAND);
   }
 
+  tensor_copy_to_device<policy_t>(input0_dptr, input0_vec);
+
+
+  // Initialize output
+  for(camp::idx_t i = 0;i < 10*num_elem; ++ i){
+   output0_hptr[i] = (element_t)0;
+  }
+  tensor_copy_to_device<policy_t>(output0_dptr, output0_vec);
+
+
+  // store stride-1 to pointer
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    // fill x
+    register_t x;
+    for(size_t i = 0;i < num_elem; ++ i){
+      x.set(input0_dptr[i], i);
+    }
+
+    x.store_packed(output0_dptr);
+
+  });
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  // check that we were able to copy
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(x.get(i), A[i]);
-    ASSERT_SCALAR_EQ(x.get(i), A[i]);
+    ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i]);
   }
 
-  // test copy construction
-  register_t cc(x);
-  for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(cc.get(i), A[i]);
+
+
+  for(int N = 0;N < num_elem; ++ N){
+
+    // Initialize output
+    for(camp::idx_t i = 0;i < 10*num_elem; ++ i){
+     output0_hptr[i] = (element_t)0;
+    }
+    tensor_copy_to_device<policy_t>(output0_dptr, output0_vec);
+
+
+    // load stride-1 from pointer
+    tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+      // fill x
+      register_t x;
+      for(size_t i = 0;i < num_elem; ++ i){
+        x.set(input0_dptr[i], i);
+      }
+
+      x.store_packed_n(output0_dptr, N);
+
+    });
+    tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+    // check that we were able to copy using set/get
+    for(size_t i = 0;i < num_elem; ++ i){
+      if(i < N){
+        ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i]);
+      }
+      else{
+        ASSERT_SCALAR_EQ(output0_vec[i], (element_t)0);
+      }
+    }
   }
 
-  // test explicit copy
-  register_t ce(0);
-  ce.copy(x);
+
+
+  // Initialize output
+  for(camp::idx_t i = 0;i < 10*num_elem; ++ i){
+   output0_hptr[i] = (element_t)0;
+  }
+  tensor_copy_to_device<policy_t>(output0_dptr, output0_vec);
+
+
+  // load stride-2 from pointer
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    // fill x
+    register_t x;
+    for(size_t i = 0;i < num_elem; ++ i){
+      x.set(input0_dptr[i], i);
+    }
+
+    x.store_strided(output0_dptr, 2);
+
+  });
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  // check that we were able to copy using set/get
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(ce.get(i), A[i]);
+    ASSERT_SCALAR_EQ(output0_vec[2*i], input0_vec[i]);
   }
 
-  // test assignment
-  register_t ca(0);
-  ca = cc;
-  for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(ca.get(i), A[i]);
+
+
+  for(int N = 0;N < num_elem; ++ N){
+
+    // Initialize output
+    for(camp::idx_t i = 0;i < 10*num_elem; ++ i){
+     output0_hptr[i] = (element_t)0;
+    }
+    tensor_copy_to_device<policy_t>(output0_dptr, output0_vec);
+
+
+
+    // load stride-2 from pointer
+    tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+      // fill x
+      register_t x;
+      for(size_t i = 0;i < num_elem; ++ i){
+        x.set(input0_dptr[i], i);
+      }
+
+      x.store_strided_n(output0_dptr, 2, N);
+
+    });
+    tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+    // check that we were able to copy using set/get
+    for(size_t i = 0;i < num_elem; ++ i){
+      if(i < N){
+        ASSERT_SCALAR_EQ(output0_vec[2*i], input0_vec[i]);
+      }
+      else{
+        ASSERT_SCALAR_EQ(output0_vec[2*i], (element_t)0);
+      }
+    }
   }
 
-  // test scalar construction (broadcast)
-  register_t bc((element_t)5);
-  for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(bc.get(i), 5.0);
-  }
 
-  // test scalar assignment (broadcast)
-  register_t ba((element_t)0);
-  ba = (element_t)13.0;
-  for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(ba.get(i), 13.0);
-  }
-
-  // test explicit broadcast
-  register_t be((element_t)0);
-  be.broadcast((element_t)13.0);
-  for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(be.get(i), 13.0);
-  }
+  //
+  // Cleanup
+  //
+  tensor_free<policy_t>(input0_dptr);
+  tensor_free<policy_t>(output0_dptr);
 }
 
 

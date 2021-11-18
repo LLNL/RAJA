@@ -19,57 +19,209 @@ void GetSetImpl()
 
   static constexpr size_t num_elem = register_t::s_num_elem;
 
-  element_t A[num_elem];
-  register_t x;
-  for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(NO_OPT_RAND*1000.0);
-    x.set(A[i], i);
+  // Allocate
+  std::vector<element_t> input0_vec(num_elem);
+  element_t *input0_hptr = input0_vec.data();
+  element_t *input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+
+  std::vector<element_t> output0_vec(num_elem);
+  element_t *output0_hptr = output0_vec.data();
+  element_t *output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+
+  // Initialize input data
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
+   input0_hptr[i] = (element_t)(i+1+NO_OPT_RAND);
   }
 
+  tensor_copy_to_device<policy_t>(input0_dptr, input0_vec);
+
+  // Test set and get operations
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    // fill x using set
+    register_t x;
+    for(size_t i = 0;i < num_elem; ++ i){
+      x.set(input0_dptr[i], i);
+    }
+
+    // extract from x using get
+    for(size_t i = 0;i < num_elem; ++ i){
+      output0_dptr[i] = x.get(i);
+    }
+
+  });
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  // check that we were able to copy using set/get
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(x.get(i), A[i]);
-    ASSERT_SCALAR_EQ(x.get(i), A[i]);
+    ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i]);
   }
 
+
+  //
   // test copy construction
-  register_t cc(x);
+  //
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    // fill x using set
+    register_t x;
+    for(size_t i = 0;i < num_elem; ++ i){
+      x.set(input0_dptr[i], i);
+    }
+
+    register_t cc(x);
+
+    // extract from x using get
+    for(size_t i = 0;i < num_elem; ++ i){
+      output0_dptr[i] = cc.get(i);
+    }
+
+  });
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  // check that we were able to copy using set/get
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(cc.get(i), A[i]);
+    ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i]);
   }
 
+
+
+
+  //
   // test explicit copy
-  register_t ce(0);
-  ce.copy(x);
+  //
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    // fill x using set
+    register_t x;
+    for(size_t i = 0;i < num_elem; ++ i){
+      x.set(input0_dptr[i], i);
+    }
+
+    register_t cc;
+    cc.copy(x);
+
+    // extract from x using get
+    for(size_t i = 0;i < num_elem; ++ i){
+      output0_dptr[i] = cc.get(i);
+    }
+
+  });
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  // check that we were able to copy using set/get
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(ce.get(i), A[i]);
+    ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i]);
   }
 
+
+
+
+  //
   // test assignment
-  register_t ca(0);
-  ca = cc;
+  //
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    // fill x using set
+    register_t x;
+    for(size_t i = 0;i < num_elem; ++ i){
+      x.set(input0_dptr[i], i);
+    }
+
+    register_t cc = x;
+
+    // extract from x using get
+    for(size_t i = 0;i < num_elem; ++ i){
+      output0_dptr[i] = cc.get(i);
+    }
+
+  });
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  // check that we were able to copy using set/get
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(ca.get(i), A[i]);
+    ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i]);
   }
 
+
+
+
+  //
   // test scalar construction (broadcast)
-  register_t bc((element_t)5);
+  //
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+
+    register_t cc = (element_t) 5;
+
+    // extract from x using get
+    for(size_t i = 0;i < num_elem; ++ i){
+      output0_dptr[i] = cc.get(i);
+    }
+
+  });
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  // check that we were able to copy using set/get
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(bc.get(i), 5.0);
+    ASSERT_SCALAR_EQ(output0_vec[i], (element_t)5);
   }
 
-  // test scalar assignment (broadcast)
-  register_t ba((element_t)0);
-  ba = (element_t)13.0;
+
+
+
+
+  //
+  // test scalar broadcast by assignment
+  //
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+
+    register_t cc = (element_t) 0;
+    cc = (element_t) 11.0;
+
+    // extract from x using get
+    for(size_t i = 0;i < num_elem; ++ i){
+      output0_dptr[i] = cc.get(i);
+    }
+
+  });
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  // check that we were able to copy using set/get
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(ba.get(i), 13.0);
+    ASSERT_SCALAR_EQ(output0_vec[i], (element_t)11);
   }
 
-  // test explicit broadcast
-  register_t be((element_t)0);
-  be.broadcast((element_t)13.0);
+
+
+  //
+  // test scalar explicit broadcast
+  //
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    register_t cc = (element_t) 0;
+    cc.broadcast(13.0);
+
+    // extract from x using get
+    for(size_t i = 0;i < num_elem; ++ i){
+      output0_dptr[i] = cc.get(i);
+    }
+
+  });
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  // check that we were able to copy using set/get
   for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(be.get(i), 13.0);
+    ASSERT_SCALAR_EQ(output0_vec[i], (element_t)13);
   }
+
+
+  //
+  // Cleanup
+  //
+  tensor_free<policy_t>(input0_dptr);
+  tensor_free<policy_t>(output0_dptr);
 }
 
 

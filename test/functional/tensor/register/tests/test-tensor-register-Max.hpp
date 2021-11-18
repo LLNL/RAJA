@@ -30,11 +30,9 @@ void MaxImpl()
   element_t *input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(1);
-  element_t *output0_hptr = output0_vec.data();
   element_t *output0_dptr = tensor_malloc<policy_t, element_t>(1);
 
   std::vector<element_t> output1_vec(num_elem);
-  element_t *output1_hptr = output1_vec.data();
   element_t *output1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
 

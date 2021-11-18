@@ -19,54 +19,132 @@ void LoadImpl()
 
   static constexpr size_t num_elem = register_t::s_num_elem;
 
-  element_t A[num_elem*2];
-  for(size_t i = 0;i < num_elem*2; ++ i){
-    A[i] = (element_t)(NO_OPT_RAND*1000.0);
+  // Allocate
+  std::vector<element_t> input0_vec(10*num_elem);
+  element_t *input0_hptr = input0_vec.data();
+  element_t *input0_dptr = tensor_malloc<policy_t, element_t>(10*num_elem);
+
+  std::vector<element_t> output0_vec(num_elem);
+  element_t *output0_hptr = output0_vec.data();
+  element_t *output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+
+  // Initialize input data
+  for(camp::idx_t i = 0;i < 10*num_elem; ++ i){
+   input0_hptr[i] = (element_t)(i+1+NO_OPT_RAND);
   }
+
+  tensor_copy_to_device<policy_t>(input0_dptr, input0_vec);
+
+
 
 
   // load stride-1 from pointer
-  register_t x;
-  x.load_packed(A);
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
-  for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(x.get(i), A[i]);
-  }
+    // fill x using set
+    register_t x;
+    x.load_packed(input0_dptr);
 
-
-  // load n stride-1 from pointer
-  if(num_elem > 1){
-    x.load_packed_n(A, num_elem-1);
-
-    // check first n-1 values
-    for(size_t i = 0;i+1 < num_elem; ++ i){
-      ASSERT_SCALAR_EQ(x.get(i), A[i]);
+    // extract from x using get
+    for(size_t i = 0;i < num_elem; ++ i){
+      output0_dptr[i] = x.get(i);
     }
 
-    // last value should be cleared to zero
-    ASSERT_SCALAR_EQ(x.get(num_elem-1), 0);
+  });
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  // check that we were able to copy using set/get
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i]);
   }
+
+
+
+  for(int N = 0;N < num_elem; ++ N){
+    // load stride-1 from pointer
+    tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+      // fill x using set
+      register_t x;
+      x.load_packed_n(input0_dptr, N);
+
+      // extract from x using get
+      for(size_t i = 0;i < num_elem; ++ i){
+        output0_dptr[i] = x.get(i);
+      }
+
+    });
+    tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+    // check that we were able to copy using set/get
+    for(size_t i = 0;i < num_elem; ++ i){
+      if(i < N){
+        ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i]);
+      }
+      else{
+        ASSERT_SCALAR_EQ(output0_vec[i], (element_t)0);
+      }
+    }
+  }
+
+
+
 
   // load stride-2 from pointer
-  register_t y;
-  y.load_strided(A, 2);
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
-  for(size_t i = 0;i < num_elem; ++ i){
-    ASSERT_SCALAR_EQ(y.get(i), A[i*2]);
-  }
+    // fill x using set
+    register_t x;
+    x.load_strided(input0_dptr, 2);
 
-  // load n stride-2 from pointer
-  if(num_elem > 1){
-    y.load_strided_n(A, 2, num_elem-1);
-
-    // check first n-1 values
-    for(size_t i = 0;i+1 < num_elem; ++ i){
-      ASSERT_SCALAR_EQ(y.get(i), A[i*2]);
+    // extract from x using get
+    for(size_t i = 0;i < num_elem; ++ i){
+      output0_dptr[i] = x.get(i);
     }
 
-    // last value should be cleared to zero
-    ASSERT_SCALAR_EQ(y.get(num_elem-1), 0);
+  });
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  // check that we were able to copy using set/get
+  for(size_t i = 0;i < num_elem; ++ i){
+    ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i*2]);
   }
+
+
+
+  for(int N = 0;N < num_elem; ++ N){
+    // load stride-2 from pointer
+    tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+      // fill x using set
+      register_t x;
+      x.load_strided_n(input0_dptr, 2, N);
+
+      // extract from x using get
+      for(size_t i = 0;i < num_elem; ++ i){
+        output0_dptr[i] = x.get(i);
+      }
+
+    });
+    tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+    // check that we were able to copy using set/get
+    for(size_t i = 0;i < num_elem; ++ i){
+      if(i < N){
+        ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i*2]);
+      }
+      else{
+        ASSERT_SCALAR_EQ(output0_vec[i], (element_t)0);
+      }
+    }
+  }
+
+
+  //
+  // Cleanup
+  //
+  tensor_free<policy_t>(input0_dptr);
+  tensor_free<policy_t>(output0_dptr);
 }
 
 

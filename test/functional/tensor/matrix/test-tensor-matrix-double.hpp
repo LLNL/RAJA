@@ -15,7 +15,6 @@ using TensorMatrixTypes = ::testing::Types<
 
 #ifdef RAJA_ENABLE_CUDA
     RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,4, RAJA::cuda_warp_register>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 4,8, RAJA::cuda_warp_register>,
     RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,8, RAJA::cuda_warp_register>,
 #endif
 
