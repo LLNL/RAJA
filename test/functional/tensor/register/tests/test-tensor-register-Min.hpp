@@ -38,8 +38,8 @@ void MinImpl()
 
   // Initialize input data
   for(camp::idx_t i = 0;i < num_elem; ++ i){
-   input0_hptr[i] = (element_t)(drand48()*100);
-   input1_hptr[i] = (element_t)(drand48()*100);
+   input0_hptr[i] = (element_t)(rand()*1000/RAND_MAX);
+   input0_hptr[i] = (element_t)(rand()*1000/RAND_MAX);
   }
 
   tensor_copy_to_device<policy_t>(input0_dptr, input0_vec);

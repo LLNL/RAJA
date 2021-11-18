@@ -17,20 +17,32 @@ void SegmentedDotProductImpl()
   using element_t = typename register_t::element_type;
   using policy_t = typename register_t::register_policy;
 
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
-  element_t A[num_elem], B[num_elem], R[num_elem];
-  register_t x, y;
+  // Allocate
 
-  for(size_t i = 0;i < num_elem; ++ i){
-    A[i] = (element_t)(NO_OPT_RAND*1000.0);
-    B[i] = (element_t)(NO_OPT_RAND*1000.0);
-    x.set(A[i], i);
-    y.set(B[i], i);
+  std::vector<element_t> input0_vec(num_elem);
+  element_t *input0_hptr = input0_vec.data();
+  element_t *input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+
+  std::vector<element_t> input1_vec(num_elem);
+  element_t *input1_hptr = input1_vec.data();
+  element_t *input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+
+  std::vector<element_t> output0_vec(num_elem);
+  element_t *output0_hptr = output0_vec.data();
+  element_t *output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+
+
+  // Initialize input data
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
+   input0_hptr[i] = (element_t)(i+1+NO_OPT_RAND);
+   input1_hptr[i] = (element_t)(i*i+1+NO_OPT_RAND);
   }
 
-//  printf("x: %s", x.to_string().c_str());
-//  printf("y: %s", y.to_string().c_str());
+  tensor_copy_to_device<policy_t>(input0_dptr, input0_vec);
+  tensor_copy_to_device<policy_t>(input1_dptr, input1_vec);
+
 
 
   // run segmented dot products for all segments allowed by the vector
@@ -40,30 +52,50 @@ void SegmentedDotProductImpl()
 
     for(int output_segment = 0;output_segment < num_output_segments;++output_segment){
 
-      int offset = output_segment * num_elem/(1<<segbits);
 
-      register_t dp = x.segmented_dot(segbits, output_segment, y);
+      tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
+        register_t x;
+        x.load_packed(input0_dptr);
+
+        register_t y;
+        y.load_packed(input1_dptr);
+
+        register_t dp = x.segmented_dot(segbits, output_segment, y);
+        dp.store_packed(output0_dptr);
+
+      });
+
+
+      // Move result to host
+      tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
       // Compute expected values
-      for(size_t i = 0;i < num_elem; ++ i){
-        R[i] = 0;
-      }
-      for(size_t i = 0;i < num_elem; ++ i){
-        R[(i>>segbits) + offset] += A[i]*B[i];
-      }
+      std::vector<element_t> expected(num_elem);
 
-      //printf("xdoty: segbits=%d, oseg=%d, %s", segbits, output_segment, dp.to_string().c_str());
+      int offset = output_segment * num_elem/(1<<segbits);
 
       for(size_t i = 0;i < num_elem; ++ i){
-        //printf("i=%d, R=%lf, dp=%lf\n", (int)i, (double)R[i], (double)dp.get(i));
-        ASSERT_SCALAR_EQ(R[i], dp.get(i));
+        expected[i] = 0;
+      }
+      for(size_t i = 0;i < num_elem; ++ i){
+        expected[(i>>segbits) + offset] += input0_vec[i]*input1_vec[i];
+      }
+
+      for(size_t i = 0;i < num_elem; ++ i){
+        ASSERT_SCALAR_EQ(expected[i], output0_vec[i]);
       }
 
     } // output_segment
 
   } // segbits
 
+
+
+  // Cleanup
+  tensor_free<policy_t>(input0_dptr);
+  tensor_free<policy_t>(input1_dptr);
+  tensor_free<policy_t>(output0_dptr);
 }
 
 
