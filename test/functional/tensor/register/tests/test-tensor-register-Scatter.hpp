@@ -17,69 +17,130 @@ void ScatterImpl()
   using element_t = typename register_t::element_type;
   using policy_t = typename register_t::register_policy;
 
-  using int_register_t = typename register_t::int_vector_type;
-
-
   static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
-  element_t A[num_elem*num_elem];
-  for(camp::idx_t i = 0;i < num_elem*num_elem;++ i){
-    A[i] = 0;
+  // get the integer indexing types
+  using int_register_t = typename register_t::int_vector_type;
+  using index_t = typename int_register_t::element_type;
+
+  // Allocate
+
+  // Data to be read
+  std::vector<element_t> input0_vec(num_elem);
+  element_t *input0_hptr = input0_vec.data();
+  element_t *input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+
+  // Indexing into output0
+  std::vector<index_t> input1_vec(num_elem);
+  index_t *input1_hptr = input1_vec.data();
+  index_t *input1_dptr = tensor_malloc<policy_t, index_t>(num_elem);
+
+  // Scattered output (10x larger than output)
+  std::vector<element_t> output0_vec(10*num_elem);
+  element_t *output0_hptr = output0_vec.data();
+  element_t *output0_dptr = tensor_malloc<policy_t, element_t>(10*num_elem);
+
+  // precomputed expected output
+  std::vector<element_t> expected(10*num_elem);
+
+  // Initialize input data
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
+   input0_hptr[i] = (element_t)(i+1+NO_OPT_RAND);
+   input1_hptr[i] = (index_t)(3*i+1+NO_OPT_RAND);
   }
 
-  // create an index vector to point at sub elements of A
-  int_register_t idx;
-  for(camp::idx_t i = 0;i < num_elem;++ i){
-    int j = num_elem-1-i;
-    idx.set(j*j, i);
+  tensor_copy_to_device<policy_t>(input0_dptr, input0_vec);
+  tensor_copy_to_device<policy_t>(input1_dptr, input1_vec);
+
+
+  // Initialize output
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
+   output0_hptr[i] = (element_t)0;
+  }
+  tensor_copy_to_device<policy_t>(output0_dptr, output0_vec);
+
+
+  //
+  //  Check full-length operations
+  //
+
+  // operator z[b[i]] = a[i]
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    int_register_t idx;
+    idx.load_packed(input1_dptr);
+
+    register_t a;
+    a.load_packed(input0_dptr);
+
+    a.scatter(output0_dptr, idx);
+  });
+
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  // compute expected value
+  for(int lane = 0;lane < 10*num_elem;++ lane){
+    expected[lane] = 0;
+  }
+  for(int lane = 0;lane < num_elem;++ lane){
+    expected[input1_vec[lane]] = input0_vec[lane];
   }
 
-  // Create a vector of values
-  register_t x;
-  for(camp::idx_t i = 0;i < num_elem;++ i){
-    x.set(i+1, i);
+  // check result
+  for(int lane = 0;lane < num_elem;++ lane){
+    ASSERT_SCALAR_EQ(expected[lane], output0_vec[lane]);
   }
 
-  // Scatter the values of x into A[] using idx as the offsets
-  x.scatter(&A[0], idx);
 
-  // check
-  for(camp::idx_t i = 0;i < num_elem*num_elem;++ i){
-//    printf("A[%d]=%d\n", (int)i, (int)A[i]);
-    // if the index i is in idx, check that A contains the right value
-    for(camp::idx_t j = 0;j < num_elem;++ j){
-      if(idx.get(j) == i){
-        // check
-        ASSERT_SCALAR_EQ(A[i], element_t(j+1));
-        // and set to zero (for the next assert, and to clear for next test)
-        A[i] = 0;
-      }
+  //
+  // Check partial length operations
+  //
+
+  for(int N = 0;N <= num_elem;++ N){
+
+    // Initialize output
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
+     output0_hptr[i] = (element_t)0;
     }
-    // otherwise A should contain zero
-    ASSERT_SCALAR_EQ(A[i], element_t(0));
-  }
+    tensor_copy_to_device<policy_t>(output0_dptr, output0_vec);
 
 
-  // Scatter all but one of the values of x into A[] using idx as the offsets
-  x.scatter_n(&A[0], idx, num_elem-1);
 
-  // check
-  for(camp::idx_t i = 0;i < num_elem*num_elem;++ i){
-//    printf("A[%d]=%d\n", (int)i, (int)A[i]);
-    // if the index i is in idx, check that A contains the right value
-    for(camp::idx_t j = 0;j < num_elem-1;++ j){
-      if(idx.get(j) == i){
-        // check
-        ASSERT_SCALAR_EQ(A[i], element_t(j+1));
-        // and set to zero (for the next assert, and to clear for next test)
-        A[i] = 0;
-      }
+    // operator z[i] = a[b[i]]
+    tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+      int_register_t idx;
+      idx.load_packed(input1_dptr);
+
+      register_t a;
+      a.load_packed(input0_dptr);
+
+      a.scatter_n(output0_dptr, idx, N);
+    });
+
+    tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+
+    // compute expected value
+    for(int lane = 0;lane < 10*num_elem;++ lane){
+      expected[lane] = 0;
     }
-    // otherwise A should contain zero
-    ASSERT_SCALAR_EQ(A[i], element_t(0));
+    for(int lane = 0;lane < N;++ lane){
+      expected[input1_vec[lane]] = input0_vec[lane];
+    }
+
+    // check result
+    for(int lane = 0;lane < num_elem;++ lane){
+      ASSERT_SCALAR_EQ(expected[lane], output0_vec[lane]);
+    }
+
   }
 
 
+  // Cleanup
+  tensor_free<policy_t>(input0_dptr);
+  tensor_free<policy_t>(input1_dptr);
+  tensor_free<policy_t>(output0_dptr);
 }
 
 

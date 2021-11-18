@@ -451,11 +451,8 @@ namespace expt
        * @return Sum of the values of the vectors scalar elements
        */
       RAJA_INLINE
-      element_type sum(camp::idx_t N = 8) const
+      element_type sum() const
       {
-        if(N <= 0){
-          return element_type(0);
-        }
         // Low 128-bits
         auto low = _mm256_castsi256_si128(m_value);
 
@@ -487,7 +484,48 @@ namespace expt
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type max(camp::idx_t N = 8) const
+      element_type max() const
+      {
+        // this is just painful, since we don't have a proper masked permute
+        // in AVX.  Lots of special cases to make sure we compare just the
+        // right lanes
+
+
+        // Low 128-bits
+        auto low = _mm256_castsi256_si128(m_value);
+
+        auto low_sh1 = _mm_shuffle_epi32(low, 0xB1);
+        auto low_red1 = _mm_max_epi32(low, low_sh1);
+
+        auto low_sh2 = _mm_shuffle_epi32(low_red1, 0x1B);
+
+        // lane 0 of low_red2 now has reduction of 0,1,2,3
+        auto low_red2 = _mm_max_epi32(low_red1, low_sh2);
+
+
+
+        // High 128-bits
+        auto hi = _mm256_extractf128_si256(m_value, 1);
+
+
+        auto hi_sh1 = _mm_shuffle_epi32(hi, 0xB1);
+        auto hi_red1 = _mm_max_epi32(hi, hi_sh1);
+
+        auto hi_sh2 = _mm_shuffle_epi32(hi_red1, 0x1B);
+        auto hi_red2 = _mm_max_epi32(hi_red1, hi_sh2);
+
+
+        // Sum halves, extract final reduction
+        auto hi_low = _mm_max_epi32(hi_red2, low_red2);
+        return _mm_extract_epi32(hi_low, 0);
+      }
+
+      /*!
+       * @brief Returns the largest element
+       * @return The largest scalar element in the register
+       */
+      RAJA_INLINE
+      element_type max_n(camp::idx_t N) const
       {
         // Some simple cases
         if(N <= 0 || N > 8){
@@ -587,7 +625,46 @@ namespace expt
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type min(camp::idx_t N = 8) const
+      element_type min() const
+      {
+        // this is just painful, since we don't have a proper masked permute
+        // in AVX.  Lots of special cases to make sure we compare just the
+        // right lanes
+
+        // Low 128-bits
+        auto low = _mm256_castsi256_si128(m_value);
+
+        auto low_sh1 = _mm_shuffle_epi32(low, 0xB1);
+        auto low_red1 = _mm_min_epi32(low, low_sh1);
+
+        auto low_sh2 = _mm_shuffle_epi32(low_red1, 0x1B);
+
+        // lane 0 of low_red2 now has reduction of 0,1,2,3
+        auto low_red2 = _mm_min_epi32(low_red1, low_sh2);
+
+
+        // High 128-bits
+        auto hi = _mm256_extractf128_si256(m_value, 1);
+
+        auto hi_sh1 = _mm_shuffle_epi32(hi, 0xB1);
+        auto hi_red1 = _mm_min_epi32(hi, hi_sh1);
+
+
+        auto hi_sh2 = _mm_shuffle_epi32(hi_red1, 0x1B);
+        auto hi_red2 = _mm_min_epi32(hi_red1, hi_sh2);
+
+
+        // Sum halves, extract total sum
+        auto hi_low = _mm_min_epi32(hi_red2, low_red2);
+        return _mm_extract_epi32(hi_low, 0);
+      }
+
+      /*!
+       * @brief Returns the largest element
+       * @return The largest scalar element in the register
+       */
+      RAJA_INLINE
+      element_type min_n(camp::idx_t N) const
       {
         // Some simple cases
         if(N <= 0 || N > 8){

@@ -31,7 +31,7 @@ void DotProductImpl()
 
   std::vector<element_t> output0_vec(1);
   element_t *output0_hptr = output0_vec.data();
-  element_t *output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+  element_t *output0_dptr = tensor_malloc<policy_t, element_t>(1);
 
 
   // Initialize input data

@@ -368,11 +368,8 @@ namespace expt
        * @return Sum of the values of the vectors scalar elements
        */
       RAJA_INLINE
-      element_type sum(camp::idx_t N = 4) const
+      element_type sum() const
       {
-        if(N <= 0){
-          return element_type(0);
-        }
         // swap pairs and add
         auto sh1 = permute<0x5>(m_value);
 
@@ -399,7 +396,29 @@ namespace expt
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type max(camp::idx_t N = 4) const
+      element_type max() const
+      {
+        // AVX2 does not supply an 64bit integer max!
+        auto red = get(0);
+
+        auto v1 = get(1);
+        red = red < v1 ? v1 : red;
+
+        auto v2 = get(2);
+        red = red < v2 ? v2 : red;
+
+        auto v3 = get(3);
+        red = red < v3 ? v3 : red;
+
+        return red;
+      }
+
+      /*!
+       * @brief Returns the largest element
+       * @return The largest scalar element in the register
+       */
+      RAJA_INLINE
+      element_type max_n(camp::idx_t N) const
       {
         if(N <= 0 || N > 4){
           return RAJA::operators::limits<int64_t>::min();
@@ -444,7 +463,30 @@ namespace expt
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type min(camp::idx_t N = 4) const
+      element_type min() const
+      {
+
+        // AVX2 does not supply an 64bit integer max?!?
+        auto red = get(0);
+
+        auto v1 = get(1);
+        red = red > v1 ? v1 : red;
+
+        auto v2 = get(2);
+        red = red > v2 ? v2 : red;
+
+        auto v3 = get(3);
+        red = red > v3 ? v3 : red;
+
+        return red;
+      }
+
+      /*!
+       * @brief Returns the largest element
+       * @return The largest scalar element in the register
+       */
+      RAJA_INLINE
+      element_type min_n(camp::idx_t N) const
       {
         if(N <= 0 || N > 4){
           return RAJA::operators::limits<int64_t>::max();

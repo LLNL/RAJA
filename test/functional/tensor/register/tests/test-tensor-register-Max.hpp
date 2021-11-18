@@ -17,38 +17,117 @@ void MaxImpl()
   using element_t = typename register_t::element_type;
   using policy_t = typename register_t::register_policy;
 
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
-  for(int iter = 0;iter < 100;++ iter){
-    element_t A[num_elem], B[num_elem];
-    register_t x, y;
+  // Allocate
 
-    for(size_t i = 0;i < num_elem; ++ i){
-      A[i] = -(element_t)(NO_OPT_RAND*1000.0);
-      B[i] = -(element_t)(NO_OPT_RAND*1000.0);
-      x.set(A[i], i);
-      y.set(B[i], i);
-    }
+  std::vector<element_t> input0_vec(num_elem);
+  element_t *input0_hptr = input0_vec.data();
+  element_t *input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
-    // Check vector reduction
-    element_t expected = A[0];
-    for(size_t i = 1;i < num_elem;++ i){
-      expected = expected > A[i] ? expected : A[i];
-    }
+  std::vector<element_t> input1_vec(num_elem);
+  element_t *input1_hptr = input1_vec.data();
+  element_t *input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
-//    printf("X=%s", x.to_string().c_str());
+  std::vector<element_t> output0_vec(1);
+  element_t *output0_hptr = output0_vec.data();
+  element_t *output0_dptr = tensor_malloc<policy_t, element_t>(1);
 
-    ASSERT_SCALAR_EQ(x.max(), expected);
+  std::vector<element_t> output1_vec(num_elem);
+  element_t *output1_hptr = output1_vec.data();
+  element_t *output1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
 
-    // Check element-wise
+  // Initialize input data
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
+   input0_hptr[i] = (element_t)(drand48()*100);
+   input1_hptr[i] = (element_t)(drand48()*100);
+  }
+
+  tensor_copy_to_device<policy_t>(input0_dptr, input0_vec);
+  tensor_copy_to_device<policy_t>(input1_dptr, input1_vec);
+
+
+  //
+  //  Check full-length operations
+  //
+
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    // load input vectors
+    register_t x;
+    x.load_packed(input0_dptr);
+
+    register_t y;
+    y.load_packed(input1_dptr);
+
+
+    // compute reduction
+    output0_dptr[0] = x.max();
+
+
+    // compute element-wise
     register_t z = x.vmax(y);
-    for(size_t i = 1;i < num_elem;++ i){
-      ASSERT_SCALAR_EQ(z.get(i), std::max<element_t>(A[i], B[i]));
+    z.store_packed(output1_dptr);
+  });
+
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+  tensor_copy_to_host<policy_t>(output1_vec, output1_dptr);
+
+
+
+  // compute expected value for reduction
+  element_t expected = input0_vec[0];
+  for(int i = 1;i < num_elem;++i){
+    expected = expected < input0_vec[i] ? input0_vec[i] : expected;
+  }
+
+  // check reduction
+  ASSERT_SCALAR_EQ(expected, output0_vec[0]);
+
+
+  // check element-wise operation
+  for(int i = 0;i < num_elem;++i){
+    ASSERT_SCALAR_EQ(std::max<element_t>(input0_vec[i], input1_vec[i]), output1_vec[i]);
+  }
+
+
+  //
+  // check variable length operator
+  //
+  for(int N = 0;N <= num_elem;++ N){
+    //
+    //  Check full-length operations
+    //
+
+    tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+      register_t x;
+      x.load_packed(input0_dptr);
+
+      output0_dptr[0] = x.max_n(N);
+
+    });
+
+    tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+
+    // compute expected value for reduction
+    element_t expected = RAJA::operators::limits<element_t>::min();
+    for(int i = 0;i < N;++i){
+      expected = expected < input0_vec[i] ? input0_vec[i] : expected;
     }
 
+    // check reduction
+    ASSERT_SCALAR_EQ(expected, output0_vec[0]);
 
   }
+
+  // Cleanup
+  tensor_free<policy_t>(input0_dptr);
+  tensor_free<policy_t>(input1_dptr);
+  tensor_free<policy_t>(output0_dptr);
+  tensor_free<policy_t>(output1_dptr);
 }
 
 

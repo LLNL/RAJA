@@ -375,7 +375,7 @@ namespace expt {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
-      element_type sum(camp::idx_t = 1) const
+      element_type sum() const
       {
         return m_value;
       }
@@ -401,9 +401,20 @@ namespace expt {
       RAJA_HOST_DEVICE
       RAJA_INLINE
       constexpr
-      element_type max(camp::idx_t = 1) const
+      element_type max() const
       {
         return m_value;
+      }
+
+      /*!
+       * @brief Returns the largest element from first N lanes
+       * @return The largest scalar element in the register
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      element_type max_n(camp::idx_t N) const
+      {
+        return N ? m_value : RAJA::operators::limits<element_type>::min();;
       }
 
       /*!
@@ -418,14 +429,25 @@ namespace expt {
       }
 
       /*!
-       * @brief Returns the largest element
-       * @return The largest scalar element in the register
+       * @brief Returns the smallest element
+       * @return The smallest scalar element in the register
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      element_type min(camp::idx_t = 1) const
+      element_type min() const
       {
         return m_value;
+      }
+
+      /*!
+       * @brief Returns the smallest element from first N lanes
+       * @return The smallest scalar element in the register
+       */
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      element_type min_n(camp::idx_t N) const
+      {
+        return N ? m_value : RAJA::operators::limits<element_type>::max();;
       }
 
       /*!

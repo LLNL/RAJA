@@ -297,20 +297,41 @@ namespace expt
        * @return Sum of the values of the vectors scalar elements
        */
       RAJA_INLINE
-      element_type sum(camp::idx_t = 4) const
+      element_type sum() const
       {
         auto sh1 = _mm256_permute_pd(m_value, 0x5);
         auto red1 = _mm256_add_pd(m_value, sh1);
         return red1[0]+red1[2];
       }
 
+      /*!
+       * @brief Returns the largest element
+       * @return The largest scalar element in the register
+       */
+      RAJA_INLINE
+      element_type max() const
+      {
+        // permute the first two and last two lanes of the register
+        // A = { v[1], v[0], v[3], v[2] }
+        register_type a = _mm256_shuffle_pd(m_value, m_value, 0x5);
+
+        // take the maximum value of each lane
+        // B = { max{v[0], v[1]},
+        //       max{v[0], v[1]},
+        //       max{v[2], v[3]},
+        //       max{v[2], v[3]} }
+        register_type b = _mm256_max_pd(m_value, a);
+
+        // now take the maximum of a lower and upper halves
+        return RAJA::max<element_type>(b[0], b[2]);
+      }
 
       /*!
        * @brief Returns the largest element
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type max(camp::idx_t N = 4) const
+      element_type max_n(camp::idx_t N) const
       {
         if(N == 4){
           // permute the first two and last two lanes of the register
@@ -363,12 +384,36 @@ namespace expt
         return self_type(_mm256_max_pd(m_value, a.m_value));
       }
 
+
       /*!
        * @brief Returns the largest element
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type min(camp::idx_t N = 4) const
+      element_type min() const
+      {
+        // permute the first two and last two lanes of the register
+        // A = { v[1], v[0], v[3], v[2] }
+        register_type a = _mm256_shuffle_pd(m_value, m_value, 0x5);
+
+        // take the minimum value of each lane
+        // B = { min{v[0], v[1]},
+        //       min{v[0], v[1]},
+        //       min{v[2], v[3]},
+        //       min{v[2], v[3]} }
+        register_type b = _mm256_min_pd(m_value, a);
+
+        // now take the minimum of a lower and upper halves
+        return RAJA::min<element_type>(b[0], b[2]);
+      }
+
+
+      /*!
+       * @brief Returns the largest element
+       * @return The largest scalar element in the register
+       */
+      RAJA_INLINE
+      element_type min_n(camp::idx_t N) const
       {
         if(N == 4){
           // permute the first two and last two lanes of the register

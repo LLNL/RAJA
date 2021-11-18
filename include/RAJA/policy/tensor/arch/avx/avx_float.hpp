@@ -302,23 +302,11 @@ namespace expt
        * @return Sum of the values of the vectors scalar elements
        */
       RAJA_INLINE
-      element_type sum(camp::idx_t N = 8) const
+      element_type sum() const
       {
-        // Some simple cases
-        if(N == 1){
-          return m_value[0];
-        }
-        if(N == 2){
-          return m_value[0]+m_value[1];
-        }
-
         // swap odd-even pairs and add
         auto sh1 = _mm256_permute_ps(m_value, 0xB1);
         auto red1 = _mm256_add_ps(m_value, sh1);
-
-        if(N == 3 || N == 4){
-          return red1[0] + red1[2];
-        }
 
         // swap odd-even quads and add
         auto sh2 = _mm256_permute_ps(red1, 0x4E);
@@ -333,7 +321,26 @@ namespace expt
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type max(camp::idx_t N = 8) const
+      element_type max() const
+      {
+        // swap odd-even pairs and combine
+        auto sh1 = _mm256_permute_ps(m_value, 0xB1);
+        auto red1 = _mm256_max_ps(m_value, sh1);
+
+        // swap odd-even quads and combine
+        auto sh2 = _mm256_permute_ps(red1, 0x4E);
+        auto red2 = _mm256_max_ps(red1, sh2);
+
+        // combine quads
+        return RAJA::max<element_type>(red2[0], red2[4]);
+      }
+
+      /*!
+       * @brief Returns the largest element of first N lanes
+       * @return The largest scalar element in the register
+       */
+      RAJA_INLINE
+      element_type max_n(camp::idx_t N) const
       {
         // Some simple cases
         if(N <= 0 || N >8){
@@ -395,7 +402,26 @@ namespace expt
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type min(camp::idx_t N = 8) const
+      element_type min() const
+      {
+        // swap odd-even pairs and combine
+        auto sh1 = _mm256_permute_ps(m_value, 0xB1);
+        auto red1 = _mm256_min_ps(m_value, sh1);
+
+        // swap odd-even quads and combine
+        auto sh2 = _mm256_permute_ps(red1, 0x4E);
+        auto red2 = _mm256_min_ps(red1, sh2);
+
+        // combine quads
+        return RAJA::min<element_type>(red2[0], red2[4]);
+      }
+
+      /*!
+       * @brief Returns the largest element
+       * @return The largest scalar element in the register
+       */
+      RAJA_INLINE
+      element_type min_n(camp::idx_t N) const
       {
         // Some simple cases
         if(N <= 0 || N >8){

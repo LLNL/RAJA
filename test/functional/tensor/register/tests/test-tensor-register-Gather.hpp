@@ -17,48 +17,108 @@ void GatherImpl()
   using element_t = typename register_t::element_type;
   using policy_t = typename register_t::register_policy;
 
-  using int_register_t = typename register_t::int_vector_type;
-
   static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
-  element_t A[num_elem*num_elem];
-  for(camp::idx_t i = 0;i < num_elem*num_elem;++ i){
-    A[i] = 3*i+13;
-//    printf("A[%d]=%d\n", (int)i, (int)A[i]);
+  // get the integer indexing types
+  using int_register_t = typename register_t::int_vector_type;
+  using index_t = typename int_register_t::element_type;
+
+  // Allocate
+
+  // Data to be read (10x larger than output)
+  std::vector<element_t> input0_vec(10*num_elem);
+  element_t *input0_hptr = input0_vec.data();
+  element_t *input0_dptr = tensor_malloc<policy_t, element_t>(10*num_elem);
+
+  // Indexing into input0
+  std::vector<index_t> input1_vec(num_elem);
+  index_t *input1_hptr = input1_vec.data();
+  index_t *input1_dptr = tensor_malloc<policy_t, index_t>(num_elem);
+
+  std::vector<element_t> output0_vec(num_elem);
+  element_t *output0_hptr = output0_vec.data();
+  element_t *output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+
+
+  // Initialize input data
+  for(camp::idx_t i = 0;i < 10*num_elem; ++ i){
+   input0_hptr[i] = (element_t)(i+1+NO_OPT_RAND);
+  }
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
+   input1_hptr[i] = (index_t)(3*i+1+NO_OPT_RAND);
   }
 
-  // create an index vector to point at sub elements of A
-  int_register_t idx;
-  for(camp::idx_t i = 0;i < num_elem;++ i){
-    int j = num_elem-1-i;
-    idx.set(j*j, i);
-//    printf("idx[%d]=%d\n", (int)i, (int)(j*j));
+  tensor_copy_to_device<policy_t>(input0_dptr, input0_vec);
+  tensor_copy_to_device<policy_t>(input1_dptr, input1_vec);
+
+
+  //
+  //  Check full-length operations
+  //
+
+  // operator z[i] = a[b[i]]
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+    // get offsets
+    int_register_t idx;
+    idx.load_packed(input1_dptr);
+
+    // gather elements from a given offsets in idx
+    register_t a;
+    a.gather(input0_dptr, idx);
+
+    // write out gathered elements in packed order
+    a.store_packed(output0_dptr);
+  });
+
+  tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+  for(int lane = 0;lane < num_elem;++ lane){
+    ASSERT_SCALAR_EQ(input0_vec[input1_vec[lane]], output0_vec[lane]);
   }
 
-  // Gather elements from A into a register using the idx offsets
-  register_t x;
-  x.gather(&A[0], idx);
 
-  // check
-  for(camp::idx_t i = 0;i < num_elem;++ i){
-    int j = num_elem-1-i;
-//    printf("i=%d, j=%d, A[%d]=%d, x.get(i)=%d\n",
-//        (int)i, (int)j, (int)(j*j), (int)A[j*j], (int)x.get(i));
-    ASSERT_SCALAR_EQ(A[j*j], x.get(i));
+  //
+  // Check partial length operations
+  //
+
+  for(int N = 0;N <= num_elem;++ N){
+
+    // operator z[i] = a[b[i]]
+    tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+
+      // get offsets
+      int_register_t idx;
+      idx.load_packed_n(input1_dptr, N);
+
+      // gather elements from a given offsets in idx
+      register_t a;
+      a.gather_n(input0_dptr, idx, N);
+
+      // write out gathered elements in packed order
+      // we're writing out entire length to check the zeroing
+      a.store_packed(output0_dptr);
+    });
+
+    tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
+
+
+    for(int lane = 0;lane < num_elem;++ lane){
+      if(lane < N){
+        ASSERT_SCALAR_EQ(input0_vec[input1_vec[lane]], output0_vec[lane]);
+      }
+      else{
+        ASSERT_SCALAR_EQ((element_t)0, output0_vec[lane]);
+      }
+    }
+
   }
 
 
-  // Gather all but one elements from A into a register using the idx offsets
-  register_t y;
-  y.gather_n(&A[0], idx, num_elem-1);
-
-  // check
-  for(camp::idx_t i = 0;i < num_elem-1;++ i){
-    int j = num_elem-1-i;
-    ASSERT_SCALAR_EQ(A[j*j], y.get(i));
-  }
-  ASSERT_SCALAR_EQ(0, y.get(num_elem-1));
-
+  // Cleanup
+  tensor_free<policy_t>(input0_dptr);
+  tensor_free<policy_t>(input1_dptr);
+  tensor_free<policy_t>(output0_dptr);
 }
 
 

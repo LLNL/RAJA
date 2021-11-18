@@ -406,27 +406,13 @@ namespace expt
        * @return Sum of the values of the vectors scalar elements
        */
       RAJA_INLINE
-      element_type sum(camp::idx_t N = 8) const
+      element_type sum() const
       {
-        if(N <= 0){
-          return element_type(0);
-        }
-        // Some simple cases
-        if(N == 1){
-          return get(0);
-        }
-        if(N == 2){
-          return get(0) + get(1);
-        }
-
         // swap odd-even pairs and add
         auto sh1 = _mm256_castps_si256(
             _mm256_permute_ps(_mm256_castsi256_ps(m_value), 0xB1) );
         auto red1 = _mm256_add_epi32(m_value, sh1);
 
-        if(N == 3 || N == 4){
-          return _mm256_extract_epi32(red1, 0) + _mm256_extract_epi32(red1, 2);
-        }
 
         // swap odd-even quads and add
         auto sh2 = _mm256_castps_si256(
@@ -442,7 +428,26 @@ namespace expt
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type max(camp::idx_t N = 8) const
+      element_type max() const
+      {
+
+        // swap odd-even pairs and add
+        auto sh1 = _mm256_permutevar8x32_epi32(m_value, createPermute1(8));
+        auto red1 = _mm256_max_epi32(m_value, sh1);
+
+        // swap odd-even quads and add
+        auto sh2 = _mm256_permutevar8x32_epi32(red1, createPermute2(8));
+        auto red2 = _mm256_max_epi32(red1, sh2);
+
+        return std::max<element_type>(_mm256_extract_epi32(red2, 0), _mm256_extract_epi32(red2, 4));
+      }
+
+      /*!
+       * @brief Returns the largest element
+       * @return The largest scalar element in the register
+       */
+      RAJA_INLINE
+      element_type max_n(camp::idx_t N) const
       {
         // Some simple cases
         if(N <= 0 || N > 8){
@@ -489,7 +494,27 @@ namespace expt
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type min(camp::idx_t N = 8) const
+      element_type min() const
+      {
+
+        // swap odd-even pairs and add
+        auto sh1 = _mm256_permutevar8x32_epi32(m_value, createPermute1(8));
+        auto red1 = _mm256_min_epi32(m_value, sh1);
+
+
+        // swap odd-even quads and add
+        auto sh2 = _mm256_permutevar8x32_epi32(red1, createPermute2(8));
+        auto red2 = _mm256_min_epi32(red1, sh2);
+
+        return std::min<element_type>(_mm256_extract_epi32(red2, 0), _mm256_extract_epi32(red2, 4));
+      }
+
+      /*!
+       * @brief Returns the largest element
+       * @return The largest scalar element in the register
+       */
+      RAJA_INLINE
+      element_type min_n(camp::idx_t N) const
       {
         // Some simple cases
         if(N <= 0 || N > 8){

@@ -116,20 +116,20 @@ namespace expt
       }
 
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
       constexpr
       element_type const &get_raw_value() const {
         return m_value;
       }
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
       element_type &get_raw_value() {
         return m_value;
       }
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
       static
       constexpr
@@ -510,8 +510,8 @@ namespace expt
 			}
 
 
-      RAJA_HOST_DEVICE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
+      RAJA_INLINE
       self_type &broadcast(element_type const &a){
         m_value = a;
         return *this;
@@ -520,8 +520,8 @@ namespace expt
       /*!
        * @brief Extracts a scalar value and broadcasts to a new register
        */
-      RAJA_HOST_DEVICE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
+      RAJA_INLINE
       self_type get_and_broadcast(int i) const {
 #ifdef __CUDA_ARCH__
         self_type x;
@@ -532,27 +532,27 @@ namespace expt
 #endif
       }
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
       self_type &copy(self_type const &src){
         m_value = src.m_value;
         return *this;
       }
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
       self_type add(self_type const &b) const {
         return self_type(m_value + b.m_value);
       }
 
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
       self_type subtract(self_type const &b) const {
         return self_type(m_value - b.m_value);
       }
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
       self_type multiply(self_type const &b) const {
         return self_type(m_value * b.m_value);
@@ -565,7 +565,7 @@ namespace expt
       }
 
 
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       RAJA_INLINE
       self_type divide_n(self_type const &b, int N) const {
         return get_lane() < N ? self_type(m_value / b.m_value) : self_type(element_type(0));
@@ -591,7 +591,7 @@ namespace expt
        * @return Sum of the values of the vectors scalar elements
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
       element_type sum(int N = s_num_elem) const
       {
 #ifdef __CUDA_ARCH__
@@ -614,31 +614,13 @@ namespace expt
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
-      element_type max(int N = s_num_elem) const
+      RAJA_DEVICE
+      element_type max() const
       {
-#ifdef __CUDA_ARCH__
         // Allreduce maximum
         using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::maximum>;
 
-        auto ident = element_type();
-        auto lane = get_lane();
-        auto value = lane < N ? m_value : ident;
-        return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, 5, element_type>(value);
-#else
-        return N > 0 ? m_value : element_type();
-#endif
-      }
-
-      /*!
-       * @brief Returns element-wise largest values
-       * @return Vector of the element-wise max values
-       */
-      RAJA_INLINE
-      RAJA_HOST_DEVICE
-      self_type vmax(self_type a) const
-      {
-        return self_type{RAJA::max(m_value, a.m_value)};
+        return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, 5, element_type>(m_value);
       }
 
       /*!
@@ -646,21 +628,16 @@ namespace expt
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
-      element_type min(int N = s_num_elem) const
+      RAJA_DEVICE
+      element_type max_n(int N) const
       {
-#ifdef __CUDA_ARCH__
-        // Allreduce minimum
-        using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::minimum>;
+        // Allreduce maximum
+        using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::maximum>;
 
-        auto ident = element_type();
+        auto ident = RAJA::operators::limits<element_type>::min();
         auto lane = get_lane();
         auto value = lane < N ? m_value : ident;
         return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, 5, element_type>(value);
-        return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, 5, element_type>(value);
-#else
-        return N > 0 ? m_value : element_type();
-#endif
       }
 
       /*!
@@ -668,10 +645,53 @@ namespace expt
        * @return Vector of the element-wise max values
        */
       RAJA_INLINE
-      RAJA_HOST_DEVICE
+      RAJA_DEVICE
+      self_type vmax(self_type a) const
+      {
+        return self_type{RAJA::max<element_type>(m_value, a.m_value)};
+      }
+
+      /*!
+       * @brief Returns the largest element
+       * @return The largest scalar element in the register
+       */
+      RAJA_INLINE
+      RAJA_DEVICE
+      element_type min() const
+      {
+        // Allreduce minimum
+        using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::minimum>;
+
+        return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, 5, element_type>(m_value);
+
+      }
+
+      /*!
+       * @brief Returns the largest element from first N lanes
+       * @return The largest scalar element in the register
+       */
+      RAJA_INLINE
+      RAJA_DEVICE
+      element_type min_n(int N) const
+      {
+        // Allreduce minimum
+        using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::minimum>;
+
+        auto ident = RAJA::operators::limits<element_type>::max();
+        auto lane = get_lane();
+        auto value = lane < N ? m_value : ident;
+        return RAJA::cuda::impl::partial_warp_allreduce<combiner_t, 5, element_type>(value);
+      }
+
+      /*!
+       * @brief Returns element-wise largest values
+       * @return Vector of the element-wise max values
+       */
+      RAJA_INLINE
+      RAJA_DEVICE
       self_type vmin(self_type a) const
       {
-        return self_type{RAJA::min(m_value, a.m_value)};
+        return self_type{RAJA::min<element_type>(m_value, a.m_value)};
       }
 
 

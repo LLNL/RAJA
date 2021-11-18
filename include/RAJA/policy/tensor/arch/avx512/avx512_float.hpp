@@ -322,18 +322,27 @@ namespace expt
        * @return Sum of the values of the vectors scalar elements
        */
       RAJA_INLINE
-      element_type sum(camp::idx_t N = 16) const
+      element_type sum() const
       {
-				return _mm512_mask_reduce_add_ps(createMask(N), m_value);
+				return _mm512_reduce_add_ps(m_value);
       }
-
 
       /*!
        * @brief Returns the largest element
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type max(camp::idx_t N = 16) const
+      element_type max() const
+      {
+        return _mm512_reduce_max_ps(m_value);
+      }
+
+      /*!
+       * @brief Returns the largest element
+       * @return The largest scalar element in the register
+       */
+      RAJA_INLINE
+      element_type max_n(camp::idx_t N) const
       {
 				return _mm512_mask_reduce_max_ps(createMask(N), m_value);
       }
@@ -353,7 +362,17 @@ namespace expt
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
-      element_type min(camp::idx_t N = 16) const
+      element_type min() const
+      {
+        return _mm512_reduce_min_ps(m_value);
+      }
+
+      /*!
+       * @brief Returns the largest element
+       * @return The largest scalar element in the register
+       */
+      RAJA_INLINE
+      element_type min_n(camp::idx_t N) const
       {
 				return _mm512_mask_reduce_min_ps(createMask(N), m_value);
       }
