@@ -18,6 +18,12 @@ using TensorMatrixTypes = ::testing::Types<
     RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,8, RAJA::cuda_warp_register>,
 #endif
 
+#ifdef RAJA_ENABLE_HIP
+    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 16,8, RAJA::hip_wave_register>,
+    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,8, RAJA::hip_wave_register>,
+    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,16, RAJA::hip_wave_register>,
+#endif
+
 
 #ifdef __AVX__
     RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 2,4, RAJA::avx_register>,
