@@ -85,8 +85,18 @@ struct avx_register {};
 /*!
  * A CUDA warp distributed vector register
  */
-
 struct cuda_warp_register {};
+
+#endif
+
+
+#ifdef RAJA_ENABLE_HIP
+
+/*!
+ * A HIP wavefront distributed vector register
+ * On AMD GPUs this is rally just a vector register
+ */
+struct hip_wave_register {};
 
 #endif
 
@@ -128,6 +138,10 @@ struct scalar_register {};
 
 #ifdef RAJA_ENABLE_CUDA
 #include "RAJA/policy/tensor/arch/cuda/traits.hpp"
+#endif
+
+#ifdef RAJA_ENABLE_HIP
+#include "RAJA/policy/tensor/arch/hip/traits.hpp"
 #endif
 
 #include "RAJA/policy/tensor/arch/scalar/traits.hpp"

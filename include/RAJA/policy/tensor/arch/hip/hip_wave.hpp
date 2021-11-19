@@ -22,12 +22,12 @@
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/Operators.hpp"
 
-#ifdef RAJA_ENABLE_CUDA
+#ifdef RAJA_ENABLE_HIP
 
-#include "RAJA/policy/cuda/reduce.hpp"
+#include "RAJA/policy/hip/reduce.hpp"
 
-#ifndef RAJA_policy_tensor_arch_cuda_cuda_warp_register_HPP
-#define RAJA_policy_tensor_arch_cuda_cuda_warp_register_HPP
+#ifndef RAJA_policy_tensor_arch_hip_hip_wave_register_HPP
+#define RAJA_policy_tensor_arch_hip_hip_wave_register_HPP
 
 
 
@@ -36,19 +36,20 @@ namespace RAJA
 namespace expt
 {
 
+
   template<typename ELEMENT_TYPE>
-  class Register<ELEMENT_TYPE, cuda_warp_register> :
-    public internal::expt::RegisterBase<Register<ELEMENT_TYPE, cuda_warp_register>>
+  class Register<ELEMENT_TYPE, hip_wave_register> :
+    public internal::expt::RegisterBase<Register<ELEMENT_TYPE, hip_wave_register>>
   {
     public:
-      using base_type = internal::expt::RegisterBase<Register<ELEMENT_TYPE, cuda_warp_register>>;
+      using base_type = internal::expt::RegisterBase<Register<ELEMENT_TYPE, hip_wave_register>>;
 
-      using register_policy = cuda_warp_register;
-      using self_type = Register<ELEMENT_TYPE, cuda_warp_register>;
+      using register_policy = hip_wave_register;
+      using self_type = Register<ELEMENT_TYPE, hip_wave_register>;
       using element_type = ELEMENT_TYPE;
       using register_type = ELEMENT_TYPE;
 
-      using int_vector_type = Register<int64_t, cuda_warp_register>;
+      using int_vector_type = Register<int64_t, hip_wave_register>;
 
 
 		private:
@@ -56,7 +57,7 @@ namespace expt
 
 		public:
 
-      static constexpr int s_num_elem = 32;
+      static constexpr int s_num_elem = 64;
 
       /*!
        * @brief Default constructor, zeros register contents
@@ -490,7 +491,7 @@ namespace expt
       RAJA_DEVICE
       element_type get(int i) const
 			{
-        return  __shfl_sync(0xffffffff, m_value, i, 32);
+        return hip::impl::shfl_sync(m_value, i);
 			}
 
       /*!
@@ -525,7 +526,7 @@ namespace expt
       self_type get_and_broadcast(int i) const {
 #ifdef __CUDA_ARCH__
         self_type x;
-        x.m_value = __shfl_sync(0xffffffff, m_value, i, 32);
+        x.m_value = hip::impl::shfl_sync(m_value, i, 32);
         return x;
 #else
         return self_type(m_value);
@@ -635,7 +636,7 @@ namespace expt
 				// Allreduce sum
 				using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::plus>;
 
-				return RAJA::cuda::impl::warp_allreduce<combiner_t, element_type>(m_value);
+				return RAJA::hip::impl::warp_allreduce<combiner_t, element_type>(m_value);
       }
 
 
@@ -651,7 +652,7 @@ namespace expt
         // Allreduce maximum
         using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::maximum>;
 
-        return RAJA::cuda::impl::warp_allreduce<combiner_t, element_type>(m_value);
+        return RAJA::hip::impl::warp_allreduce<combiner_t, element_type>(m_value);
       }
 
       /*!
@@ -668,7 +669,7 @@ namespace expt
         auto ident = RAJA::operators::limits<element_type>::min();
         auto lane = get_lane();
         auto value = lane < N ? m_value : ident;
-        return RAJA::cuda::impl::warp_allreduce<combiner_t, element_type>(value);
+        return RAJA::hip::impl::warp_allreduce<combiner_t, element_type>(value);
       }
 
       /*!
@@ -693,7 +694,7 @@ namespace expt
         // Allreduce minimum
         using combiner_t = RAJA::reduce::detail::op_adapter<element_type, RAJA::operators::minimum>;
 
-        return RAJA::cuda::impl::warp_allreduce<combiner_t, element_type>(m_value);
+        return RAJA::hip::impl::warp_allreduce<combiner_t, element_type>(m_value);
 
       }
 
@@ -711,7 +712,7 @@ namespace expt
         auto ident = RAJA::operators::limits<element_type>::max();
         auto lane = get_lane();
         auto value = lane < N ? m_value : ident;
-        return RAJA::cuda::impl::warp_allreduce<combiner_t, element_type>(value);
+        return RAJA::hip::impl::warp_allreduce<combiner_t, element_type>(value);
       }
 
       /*!
@@ -798,7 +799,7 @@ namespace expt
         for(int delta = 1;delta < 1<<segbits;delta = delta<<1){
 
           // tree shuffle
-          element_type y = __shfl_sync(0xffffffff, x, get_lane()+delta);
+          element_type y = hip::impl::shfl_sync(x, get_lane()+delta);
 
           // reduce
           x += y;
@@ -806,12 +807,12 @@ namespace expt
 
         // Second: send result to output segment lanes
         self_type result;
-        result.get_raw_value() = __shfl_sync(0xffffffff, x, get_lane()<<segbits);
+        result.get_raw_value() = hip::impl::shfl_sync(x, get_lane()<<segbits);
 
         // Third: mask off everything but output_segment
         //        this is because all output segments are valid at this point
         // (5-segbits), the 5 is since the warp-width is 32 == 1<<5
-        int our_output_segment = get_lane()>>(5-segbits);
+        int our_output_segment = get_lane()>>(6-segbits);
         bool in_output_segment = our_output_segment == output_segment;
         if(!in_output_segment){
           result.get_raw_value() = 0;
@@ -859,11 +860,11 @@ namespace expt
         // First: tree reduce values within each segment
         element_type x = m_value;
         RAJA_UNROLL
-        for(int i = 0;i < 5-segbits; ++ i){
+        for(int i = 0;i < 6-segbits; ++ i){
 
           // tree shuffle
           int delta = s_num_elem >> (i+1);
-          element_type y = __shfl_sync(0xffffffff, x, get_lane()+delta);
+          element_type y = hip::impl::shfl_sync(x, get_lane()+delta);
 
           // reduce
           x += y;
@@ -872,7 +873,7 @@ namespace expt
         // Second: send result to output segment lanes
         self_type result;
         int get_from = get_lane()&( (1<<segbits)-1);
-        result.get_raw_value() = __shfl_sync(0xffffffff, x, get_from);
+        result.get_raw_value() = hip::impl::shfl_sync(x, get_from);
 
         int mask = (get_lane()>>segbits) == output_segment;
 
@@ -967,7 +968,7 @@ namespace expt
 
         camp::idx_t i = (get_lane()&mask) + offset;
 
-        result.get_raw_value() = __shfl_sync(0xffffffff, m_value, i);
+        result.get_raw_value() = hip::impl::shfl_sync(m_value, i);
 
 
         return result;
@@ -1020,7 +1021,7 @@ namespace expt
 
         camp::idx_t i = (get_lane() >> segbits) + offset;
 
-        result.get_raw_value() = __shfl_sync(0xffffffff, m_value, i);
+        result.get_raw_value() = hip::impl::shfl_sync(m_value, i);
 
         return result;
       }
@@ -1039,4 +1040,4 @@ namespace expt
 
 #endif // Guard
 
-#endif // CUDA
+#endif // HIP

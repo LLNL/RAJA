@@ -19,7 +19,8 @@ set(TENSOR_MATRIX_TESTS
                 ET_MatrixVector
                 ET_MatrixMatrixMultiply
                 ET_MatrixMatrixMultiplyAdd
-                ET_TransposeNegate)
+                ET_Negate
+                ET_Transpose)
 				
 set(TENSOR_MATRIX_LAYOUTS
                 RowMajor
@@ -36,7 +37,7 @@ foreach( TENSOR_ELEMENT_TYPE ${TENSOR_ELEMENT_TYPES} )
 		
 			configure_file( test-tensor-matrix.cpp.in  ${TEST_NAME}.cpp )
 			
-			raja_add_test( NAME ${TEST_NAME} SOURCES ${TEST_NAME}.cpp )
+			raja_add_test( NAME ${TEST_NAME} SOURCES ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.cpp )
 	
 	        target_include_directories(${TEST_NAME}.exe PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/)
 			target_include_directories(${TEST_NAME}.exe PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)

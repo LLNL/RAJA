@@ -23,6 +23,10 @@ using TensorRegisterTypes = ::testing::Types<
     RAJA::Register<@TENSOR_ELEMENT_TYPE@, RAJA::cuda_warp_register>,
 #endif
 
+#ifdef RAJA_ENABLE_HIP
+    RAJA::Register<@TENSOR_ELEMENT_TYPE@, RAJA::hip_wave_register>,
+#endif
+
 #ifdef __AVX__
     RAJA::Register<@TENSOR_ELEMENT_TYPE@, RAJA::avx_register>,
 #endif

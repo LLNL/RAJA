@@ -49,6 +49,9 @@
 #include<RAJA/policy/tensor/arch/cuda.hpp>
 #endif
 
+#ifdef RAJA_ENABLE_HIP
+#include<RAJA/policy/tensor/arch/hip.hpp>
+#endif
 
 // The scalar register is always supported (doesn't require any SIMD/SIMT)
 #include<RAJA/policy/tensor/arch/scalar.hpp>
