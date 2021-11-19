@@ -83,7 +83,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                           camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
 stable(
     resources::Hip hip_res,
-    hip_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM Async>,
+    hip_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
     Iter,
     Iter,
     Compare)
