@@ -70,8 +70,8 @@ namespace policy
 namespace hip
 {
 
-template <size_t BLOCK_SIZE, bool Async = false>
-struct hip_exec : public RAJA::make_policy_pattern_launch_platform_t<
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
+struct hip_exec_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Policy::hip,
                        RAJA::Pattern::forall,
                        detail::get_launch<Async>::value,
@@ -222,10 +222,16 @@ using hip_atomic = hip_atomic_explicit<loop_atomic>;
 }  // end namespace hip
 }  // end namespace policy
 
-using policy::hip::hip_exec;
+using policy::hip::hip_exec_explicit;
 
-template <size_t BLOCK_SIZE>
-using hip_exec_async = policy::hip::hip_exec<BLOCK_SIZE, true>;
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
+using hip_exec_explicit_async = policy::hip::hip_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, bool ASYNC = false>
+using hip_exec = policy::hip::hip_exec_explicit<BLOCK_SIZE, 1, ASYNC>;
+
+template <size_t BLOCK_SIZE, bool ASYNC = true>
+using hip_exec_async = policy::hip::hip_exec_explicit<BLOCK_SIZE, 1, true>;
 
 using policy::hip::hip_work;
 

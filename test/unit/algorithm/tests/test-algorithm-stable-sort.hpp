@@ -116,7 +116,8 @@ using TBBStableSortSorters =
 using CudaStableSortSorters =
   camp::list<
               PolicyStableSort<RAJA::cuda_exec<128>>,
-              PolicyStableSortPairs<RAJA::cuda_exec<128>>
+              PolicyStableSortPairs<RAJA::cuda_exec<128>>,
+              PolicyStableSort<RAJA::cuda_exec_explicit<128, 2>>
             >;
 
 #endif
@@ -126,7 +127,8 @@ using CudaStableSortSorters =
 using HipStableSortSorters =
   camp::list<
               PolicyStableSort<RAJA::hip_exec<128>>,
-              PolicyStableSortPairs<RAJA::hip_exec<128>>
+              PolicyStableSortPairs<RAJA::hip_exec<128>>,
+              PolicyStableSort<RAJA::hip_exec_explicit<128, 2>>
             >;
 
 #endif

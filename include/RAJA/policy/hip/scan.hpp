@@ -47,12 +47,12 @@ namespace scan
         \brief explicit inclusive inplace scan given range, function, and
    initial value
 */
-template <size_t BLOCK_SIZE, bool Async, typename InputIter, typename Function>
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async, typename InputIter, typename Function>
 RAJA_INLINE
 resources::EventProxy<resources::Hip>
 inclusive_inplace(
     resources::Hip hip_res,
-    hip_exec<BLOCK_SIZE, Async>,
+    hip_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
     Function binary_op)
@@ -116,6 +116,7 @@ inclusive_inplace(
    initial value
 */
 template <size_t BLOCK_SIZE,
+          size_t BLOCKS_PER_SM,
           bool Async,
           typename InputIter,
           typename Function,
@@ -124,7 +125,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Hip>
 exclusive_inplace(
     resources::Hip hip_res,
-    hip_exec<BLOCK_SIZE, Async>,
+    hip_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
     Function binary_op,
@@ -192,6 +193,7 @@ exclusive_inplace(
    initial value
 */
 template <size_t BLOCK_SIZE,
+          size_t BLOCKS_PER_SM,
           bool Async,
           typename InputIter,
           typename OutputIter,
@@ -200,7 +202,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Hip>
 inclusive(
     resources::Hip hip_res,
-    hip_exec<BLOCK_SIZE, Async>,
+    hip_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
     OutputIter out,
@@ -264,6 +266,7 @@ inclusive(
    initial value
 */
 template <size_t BLOCK_SIZE,
+          size_t BLOCKS_PER_SM,
           bool Async,
           typename InputIter,
           typename OutputIter,
@@ -273,7 +276,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Hip>
 exclusive(
     resources::Hip hip_res,
-    hip_exec<BLOCK_SIZE, Async>,
+    hip_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
     OutputIter out,

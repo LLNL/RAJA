@@ -72,6 +72,16 @@ namespace RAJA
   struct get_resource<ExecPolicy<ISetIter, cuda_exec<BlockSize, Async>>>{
     using type = camp::resources::Cuda;
   };
+
+  template<size_t BlockSize, size_t BlocksPerSM, bool Async>
+  struct get_resource<cuda_exec_explicit<BlockSize, BlocksPerSM, Async>>{
+    using type = camp::resources::Cuda;
+  };
+
+  template<typename ISetIter, size_t BlockSize, size_t BlocksPerSM, bool Async>
+  struct get_resource<ExecPolicy<ISetIter, cuda_exec_explicit<BlockSize, BlocksPerSM, Async>>>{
+    using type = camp::resources::Cuda;
+  };
 #endif
 
 #if defined(RAJA_HIP_ACTIVE)
@@ -87,6 +97,16 @@ namespace RAJA
 
   template<typename ISetIter, size_t BlockSize, bool Async>
   struct get_resource<ExecPolicy<ISetIter, hip_exec<BlockSize, Async>>>{
+    using type = camp::resources::Hip;
+  };
+
+  template<size_t BlockSize, size_t BlocksPerSM, bool Async>
+  struct get_resource<hip_exec_explicit<BlockSize, BlocksPerSM, Async>>{
+    using type = camp::resources::Hip;
+  };
+
+  template<typename ISetIter, size_t BlockSize, size_t BlocksPerSM, bool Async>
+  struct get_resource<ExecPolicy<ISetIter, hip_exec_explicit<BlockSize, BlocksPerSM, Async>>>{
     using type = camp::resources::Hip;
   };
 #endif

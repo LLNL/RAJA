@@ -74,8 +74,8 @@ namespace policy
 namespace cuda
 {
 
-template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_exec : public RAJA::make_policy_pattern_launch_platform_t<
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
+struct cuda_exec_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Policy::cuda,
                        RAJA::Pattern::forall,
                        detail::get_launch<Async>::value,
@@ -220,10 +220,16 @@ struct cuda_synchronize : make_policy_pattern_launch_t<Policy::cuda,
 }  // end namespace cuda
 }  // end namespace policy
 
-using policy::cuda::cuda_exec;
+using policy::cuda::cuda_exec_explicit;
 
-template <size_t BLOCK_SIZE>
-using cuda_exec_async = policy::cuda::cuda_exec<BLOCK_SIZE, true>;
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
+using cuda_exec_explicit_async = policy::cuda::cuda_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, bool ASYNC = false>
+using cuda_exec = policy::cuda::cuda_exec_explicit<BLOCK_SIZE, 1, ASYNC>;
+
+template <size_t BLOCK_SIZE, bool ASYNC = true>
+using cuda_exec_async = policy::cuda::cuda_exec_explicit<BLOCK_SIZE, 1, true>;
 
 using policy::cuda::cuda_work;
 
