@@ -45,9 +45,19 @@ namespace RAJA
 
 /*!
  * HIP kernel launch policy where the user may specify the number of physical
- * thread blocks and threads per block.
+ * thread blocks, threads per block, and blocks per SM.
  * If num_blocks is 0 and num_threads is non-zero then num_blocks is chosen at
  * runtime.
+ * Num_blocks is chosen to maximize the number of blocks running concurrently.
+ * Blocks per SM must be chosen by the user.
+ */
+template <bool async0, int num_blocks, int num_threads, int blocks_per_sm>
+struct hip_explicit_launch {};
+
+/*!
+ * HIP kernel launch policy where the user specifies the number of physical
+ * thread blocks and threads per block.
+ * If num_blocks is 0 then num_blocks is chosen at runtime.
  * Num_blocks is chosen to maximize the number of blocks running concurrently.
  * If num_threads and num_blocks are both 0 then num_threads and num_blocks are
  * chosen at runtime.
@@ -55,18 +65,10 @@ namespace RAJA
  * If num_threads is 0 and num_blocks is non-zero then num_threads is chosen at
  * runtime.
  * Num_threads is 1024, which may not be appropriate for all kernels.
+ * Blocks per SM defaults to 1.
  */
 template <bool async0, int num_blocks, int num_threads>
-struct hip_launch {};
-
-/*!
- * HIP kernel launch policy where the user specifies the number of physical
- * thread blocks and threads per block.
- * If num_blocks is 0 then num_blocks is chosen at runtime.
- * Num_blocks is chosen to maximize the number of blocks running concurrently.
- */
-template <bool async0, int num_blocks, int num_threads>
-using hip_explicit_launch = hip_launch<async0, num_blocks, num_threads>;
+using hip_launch = hip_explicit_launch<async0, num_blocks, num_threads, 1>;
 
 
 /*!
@@ -75,7 +77,7 @@ using hip_explicit_launch = hip_launch<async0, num_blocks, num_threads>;
  * If num_threads is 0 then num_threads is chosen at runtime.
  */
 template <int num_threads0, bool async0>
-using hip_occ_calc_launch = hip_launch<async0, 0, num_threads0>;
+using hip_occ_calc_launch = hip_explicit_launch<async0, 0, num_threads0, 0>;
 
 namespace statement
 {
@@ -87,7 +89,7 @@ namespace statement
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
 struct HipKernelExt
-    : public internal::Statement<hip_exec<0>, EnclosedStmts...> {
+    : public internal::Statement<hip_exec<0, 0>, EnclosedStmts...> {
 };
 
 
@@ -136,7 +138,17 @@ using HipKernelOccAsync =
  */
 template <int num_threads, typename... EnclosedStmts>
 using HipKernelFixed =
-    HipKernelExt<hip_explicit_launch<false, 0, num_threads>,
+    HipKernelExt<hip_launch<false, 0, num_threads>,
+                  EnclosedStmts...>;
+
+/*!
+ * A RAJA::kernel statement that launches a HIP kernel with a fixed
+ * number of threads (specified by num_threads) and min blocks per sm.
+ * The kernel launch is synchronous.
+ */
+template <size_t num_threads, size_t blocks_per_sm, typename... EnclosedStmts>
+using HipKernelFixedSM =
+    HipKernelExt<hip_explicit_launch<false, 0, num_threads, blocks_per_sm>,
                   EnclosedStmts...>;
 
 /*!
@@ -146,7 +158,17 @@ using HipKernelFixed =
  */
 template <int num_threads, typename... EnclosedStmts>
 using HipKernelFixedAsync =
-    HipKernelExt<hip_explicit_launch<true, 0, num_threads>, EnclosedStmts...>;
+    HipKernelExt<hip_launch<true, 0, num_threads>, EnclosedStmts...>;
+
+/*!
+ * A RAJA::kernel statement that launches a HIP kernel with a fixed
+ * number of threads (specified by num_threads) and min blocks per sm.
+ * The kernel launch is asynchronous.
+ */
+template <size_t num_threads, size_t blocks_per_sm, typename... EnclosedStmts>
+using HipKernelFixedSMAsync =
+    HipKernelExt<hip_explicit_launch<true, 0, num_threads, blocks_per_sm>,
+                  EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a HIP kernel with 1024 threads
@@ -189,8 +211,8 @@ __global__ void HipKernelLauncher(Data data)
  *
  * This launcher is used by the HipKerelFixed policies.
  */
-template <size_t BlockSize, typename Data, typename Exec>
-__launch_bounds__(BlockSize, 1) __global__
+template <size_t BlockSize, size_t BlocksPerSM, typename Data, typename Exec>
+__launch_bounds__(BlockSize, BlocksPerSM) __global__
     void HipKernelLauncherFixed(Data data)
 {
 
@@ -210,13 +232,13 @@ __launch_bounds__(BlockSize, 1) __global__
  * The default case handles BlockSize != 0 and gets the fixed max block size
  * version of the kernel.
  */
-template<size_t BlockSize, typename Data, typename executor_t>
+template<size_t BlockSize, size_t BlocksPerSM, typename Data, typename executor_t>
 struct HipKernelLauncherGetter
 {
-  using type = camp::decay<decltype(&internal::HipKernelLauncherFixed<BlockSize, Data, executor_t>)>;
+  using type = camp::decay<decltype(&internal::HipKernelLauncherFixed<BlockSize, BlocksPerSM, Data, executor_t>)>;
   static constexpr type get() noexcept
   {
-    return internal::HipKernelLauncherFixed<BlockSize, Data, executor_t>;
+    return internal::HipKernelLauncherFixed<BlockSize, BlocksPerSM, Data, executor_t>;
   }
 };
 
@@ -225,7 +247,7 @@ struct HipKernelLauncherGetter
  * block size version of the kernel.
  */
 template<typename Data, typename executor_t>
-struct HipKernelLauncherGetter<0, Data, executor_t>
+struct HipKernelLauncherGetter<0, 0, Data, executor_t>
 {
   using type = camp::decay<decltype(&internal::HipKernelLauncher<Data, executor_t>)>;
   static constexpr type get() noexcept
@@ -249,8 +271,8 @@ struct HipLaunchHelper;
  * The user may specify the number of threads and blocks or let one or both be
  * determined at runtime using the HIP occupancy calculator.
  */
-template<bool async0, int num_blocks, int num_threads, typename StmtList, typename Data, typename Types>
-struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data,Types>
+template<bool async0, int num_blocks, int num_threads, int blocks_per_sm, typename StmtList, typename Data, typename Types>
+struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads, blocks_per_sm>,StmtList,Data,Types>
 {
   using Self = HipLaunchHelper;
 
@@ -258,7 +280,7 @@ struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data
 
   using executor_t = internal::hip_statement_list_executor_t<StmtList, Data, Types>;
 
-  using kernelGetter_t = HipKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads, Data, executor_t>;
+  using kernelGetter_t = HipKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads, (blocks_per_sm <= 0) ? 0 : blocks_per_sm, Data, executor_t>;
 
   inline static void recommended_blocks_threads(int shmem_size,
       int &recommended_blocks, int &recommended_threads)

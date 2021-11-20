@@ -158,7 +158,7 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
 
 template <typename Iterable, typename LoopBody, size_t BlockSize, size_t BlocksPerSM, bool Async>
 RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip hip_res,
-                                                    hip_exec_explicit<BlockSize, Async>,
+                                                    hip_exec_explicit<BlockSize, BlocksPerSM, Async>,
                                                     Iterable&& iter,
                                                     LoopBody&& loop_body)
 {
