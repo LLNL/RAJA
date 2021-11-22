@@ -78,6 +78,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
     variant('openmp', default=True, description='Build OpenMP backend')
     variant('shared', default=False, description='Build Shared Libs')
     variant('libcpp', default=False, description='Uses libc++ instead of libstdc++')
+    variant('hip', default=False, description='Build Desul job with HIP support')
     variant('tests', default='basic', values=('none', 'basic', 'benchmarks'),
             multi=False, description='Tests to run')
     variant('desul', default=False, description='Build Desul Atomics backend')
