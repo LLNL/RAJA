@@ -29,4 +29,5 @@ foreach( BACKEND ${KERNEL_BACKENDS} )
   endforeach()
 endforeach()
 
+unset( TILESIZES )
 unset( TESTTYPES )
