@@ -43,6 +43,8 @@ add_subdirectory(nested-loop-view-types)
 
 add_subdirectory(reduce-loc)
 
+add_subdirectory(single-loop-icount-tcount)
+
 add_subdirectory(tile)
 
 unset( KERNEL_BACKENDS )
