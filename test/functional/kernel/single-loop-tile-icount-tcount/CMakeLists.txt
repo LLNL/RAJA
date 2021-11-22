@@ -19,7 +19,7 @@ set(TILESIZES 8 32)
 foreach( BACKEND ${KERNEL_BACKENDS} )
   foreach( TESTTYPE ${TESTTYPES} )
     foreach( TILESIZE ${TILESIZES} )
-      configure_file( test-kernel-single-loop-count.cpp.in
+      configure_file( test-kernel-single-loop-tile-count.cpp.in
                       test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.cpp )
       raja_add_test( NAME test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}
                      SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.cpp )
