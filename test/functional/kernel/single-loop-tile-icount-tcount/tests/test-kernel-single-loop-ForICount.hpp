@@ -21,12 +21,9 @@ template <typename IDX_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY>
 void KernelSingleLoopForICountTestImpl(IDX_TYPE N, IDX_TYPE tsize)
 {
 
-//std::cout << "\n-------------------------- N, tsize = " << N << " , " << tsize << std::endl;
-
   RAJA::ReduceSum<REDUCE_POLICY, IDX_TYPE> trip_count(0);
 
   for (IDX_TYPE t = 0; t < tsize; ++t) {
-//std::cout << "\t tsize : t = " << tsize << " : " << t << std::endl;
 
     RAJA::ReduceSum<REDUCE_POLICY, IDX_TYPE> tile_count(0);
 
@@ -35,27 +32,22 @@ void KernelSingleLoopForICountTestImpl(IDX_TYPE N, IDX_TYPE tsize)
       RAJA::make_tuple( static_cast<IDX_TYPE>(0) ),
 
       [=] RAJA_HOST_DEVICE(IDX_TYPE i, IDX_TYPE ii) {
-//std::cout << "i, ii = " << i << " , " << ii << std::endl;
         trip_count += 1;
         if ( i % tsize == t && ii == t ) { 
-//std::cout << "bump tile_count\n";
           tile_count += 1;
         }
       }
     );
 
     IDX_TYPE trip_result = trip_count.get();
-//std::cout << "trip_result = " << trip_result << std::endl;
     ASSERT_EQ( trip_result, (t+1) * N );
 
     IDX_TYPE tile_result = tile_count.get();
-//std::cout << "tile_result = " << tile_result << std::endl;
 
     IDX_TYPE tile_expect = N / tsize;
     if ( t < N % tsize ) {
       tile_expect += 1;
     }
-//std::cout << "tile_expect = " << tile_expect << std::endl;
     ASSERT_EQ(tile_result, tile_expect);
 
   }
