@@ -78,7 +78,6 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
     variant('openmp', default=True, description='Build OpenMP backend')
     variant('shared', default=False, description='Build Shared Libs')
     variant('libcpp', default=False, description='Uses libc++ instead of libstdc++')
-    variant('hip', default=False, description='Build Desul job with HIP support')
     variant('tests', default='basic', values=('none', 'basic', 'benchmarks'),
             multi=False, description='Tests to run')
     variant('desul', default=False, description='Build Desul Atomics backend')
@@ -91,7 +90,6 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
     depends_on('camp')
     depends_on('camp@main')
     depends_on('camp+rocm', when='+rocm')
-    depends_on('camp+rocm', when='+hip') #required for the desul job
     for val in ROCmPackage.amdgpu_targets:
         depends_on('camp amdgpu_target=%s' % val, when='amdgpu_target=%s' % val)
 
@@ -303,6 +301,8 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
                                         rocm_root + '/llvm/bin'))
 
             hipcc_flags = ['--amdgpu-target=gfx906']
+            if "+desul" in spec:
+                hipcc_flags.append('-std=c++14')
             
             cfg.write(cmake_cache_entry("HIP_HIPCC_FLAGS", ';'.join(hipcc_flags)))
 
