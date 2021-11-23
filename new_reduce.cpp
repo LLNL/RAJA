@@ -290,6 +290,7 @@ int main(int argc, char *argv[])
 #endif
 
 #if 1
+#if defined(RAJA_ENABLE_OPENMP)
   {
     std::cout << "Basic OMP Reduction RAJA w/ NEW REDUCE\n";
 
@@ -315,6 +316,7 @@ int main(int argc, char *argv[])
     //std::cout << "m : "  << m  <<"\n";
     //std::cout << "ma : " << ma <<"\n";
   }
+#endif
 #endif
 
 int sample_sz = 1;
