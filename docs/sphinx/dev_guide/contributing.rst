@@ -151,7 +151,7 @@ consistent.
                pattern for existing tests in the ``RAJA/test`` directory when 
                adding or modifying tests. 
 
-.. _prfromfork-label::
+.. _prfromfork-label:
 
 -----------------------------------------------------------
 Testing Pull Requests from Branches in Forked Repositories
