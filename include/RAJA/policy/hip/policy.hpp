@@ -78,12 +78,12 @@ struct hip_exec_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::hip> {
 };
 
-template <bool Async, int num_threads = 0>
-struct hip_launch_t : public RAJA::make_policy_pattern_launch_platform_t<
-                       RAJA::Policy::hip,
-                       RAJA::Pattern::region,
-                       detail::get_launch<Async>::value,
-                       RAJA::Platform::hip> {
+template <bool Async, int num_threads, int BLOCKS_PER_SM = 0>
+struct hip_launch_explicit_t : public RAJA::make_policy_pattern_launch_platform_t<
+                                      RAJA::Policy::hip,
+                                      RAJA::Pattern::region,
+                                      detail::get_launch<Async>::value,
+                                      RAJA::Platform::hip> {
 };
 
 
@@ -265,7 +265,8 @@ using policy::hip::hip_synchronize;
 
 namespace expt
 {
-  using policy::hip::hip_launch_t;
+  template <bool Async, int num_threads = 0>
+  using hip_launch_t = policy::hip::hip_launch_explicit_t<Async, num_threads, 0>;
 }
 
 /*!

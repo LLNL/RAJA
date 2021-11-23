@@ -82,12 +82,12 @@ struct cuda_exec_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::cuda> {
 };
 
-template <bool Async, int num_threads = 0>
-struct cuda_launch_t : public RAJA::make_policy_pattern_launch_platform_t<
-                       RAJA::Policy::cuda,
-                       RAJA::Pattern::region,
-                       detail::get_launch<Async>::value,
-                       RAJA::Platform::cuda> {
+template <bool Async, int num_threads, size_t BLOCKS_PER_SM = 0>
+struct cuda_launch_explicit_t : public RAJA::make_policy_pattern_launch_platform_t<
+                                RAJA::Policy::cuda,
+                                RAJA::Pattern::region,
+                                detail::get_launch<Async>::value,
+                                RAJA::Platform::cuda> {
 };
 
 
@@ -261,7 +261,8 @@ using policy::cuda::cuda_synchronize;
 
 namespace expt
 {
-  using policy::cuda::cuda_launch_t;
+  template <bool Async, int num_threads = 0>
+  using cuda_launch_t = policy::cuda::cuda_launch_explicit_t<Async, num_threads, 0>;
 }
 
 

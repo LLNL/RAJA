@@ -22,8 +22,14 @@ using seq_cuda_policies = camp::list<
   RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::cuda_block_x_direct>,
   RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::cuda_thread_x_loop>>;
 
+using seq_cuda_explicit_policies = camp::list<
+  RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t,RAJA::policy::cuda::cuda_launch_explicit_t<true, 0, 0>>,
+  RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::cuda_block_x_direct>,
+  RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::cuda_thread_x_loop>>;
+
 using Sequential_launch_policies = camp::list<
-        seq_cuda_policies
+        seq_cuda_policies,
+        seq_cuda_explicit_policies
          >;
 
 #elif defined(RAJA_ENABLE_HIP)
@@ -32,8 +38,14 @@ using seq_hip_policies = camp::list<
   RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::hip_block_x_direct>,
   RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::hip_thread_x_loop>>;
 
+using seq_hip_explicit_policies = camp::list<
+  RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t,RAJA::policy::hip::hip_launch_explicit_t<true, 0, 0>>,
+  RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::hip_block_x_direct>,
+  RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::hip_thread_x_loop>>;
+
 using Sequential_launch_policies = camp::list<
-         seq_hip_policies
+         seq_hip_policies,
+         seq_hip_explicit_policies
          >;
 #else
 using Sequential_launch_policies = camp::list<
@@ -54,8 +66,15 @@ using omp_cuda_policies = camp::list<
          RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::cuda_thread_x_loop>
   >;
 
+using omp_cuda_explicit_policies = camp::list<
+         RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t,RAJA::policy::cuda::cuda_launch_explicit_t<false, 0, 0>>,
+         RAJA::expt::LoopPolicy<RAJA::omp_parallel_for_exec, RAJA::cuda_block_x_direct>,
+         RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::cuda_thread_x_loop>
+  >;
+
 using OpenMP_launch_policies = camp::list<
-         omp_cuda_policies
+         omp_cuda_policies,
+         omp_cuda_explicit_policies
          >;
 
 #elif defined(RAJA_ENABLE_HIP)
@@ -66,8 +85,15 @@ using omp_hip_policies = camp::list<
          RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::hip_thread_x_loop>
   >;
 
+using omp_hip_explicit_policies = camp::list<
+         RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t,RAJA::policy::hip::hip_launch_explicit_t<false, 0, 0>>,
+         RAJA::expt::LoopPolicy<RAJA::omp_parallel_for_exec, RAJA::hip_block_x_direct>,
+         RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::hip_thread_x_loop>
+  >;
+
 using OpenMP_launch_policies = camp::list<
-         omp_hip_policies
+         omp_hip_policies,
+         omp_hip_explicit_policies
          >;
 #else
 using OpenMP_launch_policies = camp::list<
@@ -82,8 +108,10 @@ using OpenMP_launch_policies = camp::list<
 #if defined(RAJA_ENABLE_CUDA)
 using Cuda_launch_policies = camp::list<
          seq_cuda_policies
+         , seq_cuda_explicit_policies
 #if defined(RAJA_ENABLE_OPENMP)
          , omp_cuda_policies
+         , omp_cuda_explicit_policies
 #endif
         >;
 #endif  // RAJA_ENABLE_CUDA
@@ -91,8 +119,10 @@ using Cuda_launch_policies = camp::list<
 #if defined(RAJA_ENABLE_HIP)
 using Hip_launch_policies = camp::list<
          seq_hip_policies
+         , seq_hip_explicit_policies
 #if defined(RAJA_ENABLE_OPENMP)
          , omp_hip_policies
+         , omp_hip_explicit_policies
 #endif
         >;
 #endif // RAJA_ENABLE_HIP
