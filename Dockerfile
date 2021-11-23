@@ -63,7 +63,7 @@ RUN cd build && make -j 16
 RUN cd build && ctest -T test --output-on-failure
 
 #FROM axom/compilers:nvcc-10.2 AS nvcc10
-FROM ghcr.io/rse-ops/ghcr.io/rse-ops/cuda-ubuntu-20.04 AS nvcc10
+FROM ghcr.io/rse-ops/cuda-ubuntu-20.04:cuda-11.1.1 AS nvcc11
 ENV GTEST_COLOR=1
 COPY --chown=axom:axom . /home/axom/workspace
 WORKDIR /home/axom/workspace
