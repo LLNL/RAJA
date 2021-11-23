@@ -25,7 +25,7 @@ namespace detail {
   template<typename EXEC_POL, typename OP, typename T>
   camp::concepts::enable_if< RAJA::type_traits::is_openmp_policy<EXEC_POL> >
   resolve(Reducer<OP, T>& red) {
-    *red.target = red.val;
+    *red.target = OP{}(red.val, *red.target);
   }
 
 #endif

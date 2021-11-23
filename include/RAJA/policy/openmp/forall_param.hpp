@@ -52,6 +52,7 @@ namespace expt
                 ForallParam&& f_params)
     {
       using EXEC_POL = typename std::decay<decltype(p)>::type;
+
       RAJA::expt::ParamMultiplexer::init<ExecPol>(f_params);
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 

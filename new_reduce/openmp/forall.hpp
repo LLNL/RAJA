@@ -1,10 +1,6 @@
 #ifndef NEW_REDUCE_FORALL_OMP_HPP
 #define NEW_REDUCE_FORALL_OMP_HPP
 
-#include<typeinfo>
-#include<cxxabi.h>
-#include<type_traits>
-
 #if defined(RAJA_ENABLE_OPENMP)
 namespace detail {
   

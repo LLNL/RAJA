@@ -1,5 +1,3 @@
-#define RAJA_EXPT_FORALL
-
 #include <iostream>
 #include <RAJA/RAJA.hpp>
 #include <RAJA/util/Timer.hpp>
@@ -288,6 +286,34 @@ int main(int argc, char *argv[])
     std::cout << "r : " << r << "\n";
     std::cout << "m : "  << m  <<"\n";
     std::cout << "ma : " << ma <<"\n";
+  }
+#endif
+
+#if 1
+  {
+    std::cout << "Basic OMP Reduction RAJA w/ NEW REDUCE\n";
+
+    double r = 0;
+    RAJA::Timer t;
+    t.start();
+    RAJA::forall<RAJA::omp_parallel_for_exec>(
+                   RAJA::RangeSegment(0, N),
+                     RAJA::expt::Reduce<RAJA::operators::plus>(&r),
+                     //RAJA::expt::Reduce<RAJA::operators::minimum>(&m),
+                     //RAJA::expt::Reduce<RAJA::operators::maximum>(&ma),
+                     [=](int i, double &r_) {
+                     //[=](int i, double &r_, double &m_, double &ma_) {
+                       r_ += a[i] * b[i];
+                       //m_ = a[i] < m_ ? a[i] : m_;
+                       //ma_ = a[i] > m_ ? a[i] : m_;
+                     }
+                 );
+    t.stop();
+
+    std::cout << "t : " << t.elapsed() << "\n";
+    std::cout << "r : " << r << "\n";
+    //std::cout << "m : "  << m  <<"\n";
+    //std::cout << "ma : " << ma <<"\n";
   }
 #endif
 

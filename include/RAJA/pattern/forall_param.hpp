@@ -118,9 +118,12 @@ namespace expt
     static size_t constexpr count_lambda_args() { return First::num_lambda_args + count_lambda_args<camp::nil, Second, Rest...>(); }
 
   public:
-    ForallParamPack(Params... params) {
-      param_tup = camp::make_tuple(params...);
-    };
+    ForallParamPack(){}
+
+    //ForallParamPack(Params... params) {
+    //  param_tup = camp::make_tuple(params...);
+    //};
+
     ForallParamPack(camp::tuple<Params...> t) : param_tup(t) {};
 
     using lambda_params_seq = camp::make_idx_seq_t<count_lambda_args<camp::nil, Params...>()>;
@@ -131,7 +134,8 @@ namespace expt
         -> decltype(  *camp::get<Idx>( lambda_args(params_seq{}) )  ) {
       return (  *camp::get<Idx>( lambda_args(params_seq{}) )  );
     }
-  };
+  }; // struct ForallParamPack 
+  
   
   struct ParamMultiplexer {
     template<typename EXEC_POL, typename... Params, typename ...Args, typename FP = ForallParamPack<Params...>>
