@@ -53,24 +53,6 @@ struct sycl_launch {};
 namespace statement
 {
 
-/*!
- * A RAJA::kernel statement that launches a SYCL kernel.
- *
- *
- */
-template <typename LaunchConfig, typename... EnclosedStmts>
-struct SyclKernelExtNonTrivial
-    : public internal::Statement<sycl_launch<0>, EnclosedStmts...> {
-};
-
-/*
- * A RAJA::kernel statement that launches a SYCL kernel.
- * The kernel launch is synchronous.
- */
-template <typename... EnclosedStmts>
-using SyclKernelNonTrivial =
-    SyclKernelExtNonTrivial<sycl_launch<false>,
-                  EnclosedStmts...>;
 
 /*! RAJA::kernel statement that launches a SYCL kernel.
  *
@@ -126,15 +108,8 @@ void SyclKernelLauncher(Data data, cl::sycl::nd_item<3> item)
  * Helper class that handles SYCL kernel launching, and computing
  * maximum number of threads/blocks
  */
-template<typename LaunchPolicy, typename StmtList, typename Data, typename Types>
+template<bool, typename LaunchPolicy, typename StmtList, typename Data, typename Types>
 struct SyclLaunchHelper;
-
-/*!
- * Helper class that handles SYCL kernel launching, and computing
- * maximum number of threads/blocks
- */
-template<typename LaunchPolicy, typename StmtList, typename Data, typename Types>
-struct SyclLaunchHelperNonTrivial;
 
 /*!
  * Helper class specialization to determine the number of threads and blocks.
@@ -142,9 +117,9 @@ struct SyclLaunchHelperNonTrivial;
  * determined at runtime using the SYCL occupancy calculator.
  */
 template<bool async0, typename StmtList, typename Data, typename Types>
-struct SyclLaunchHelperNonTrivial<sycl_launch<async0>,StmtList,Data,Types>
+struct SyclLaunchHelper<false,sycl_launch<async0>,StmtList,Data,Types>
 {
-  using Self = SyclLaunchHelperNonTrivial;
+  using Self = SyclLaunchHelper;
 
   static constexpr bool async = async0;
 
@@ -186,7 +161,7 @@ struct SyclLaunchHelperNonTrivial<sycl_launch<async0>,StmtList,Data,Types>
  * determined at runtime using the SYCL occupancy calculator.
  */
 template<bool async0, typename StmtList, typename Data, typename Types>
-struct SyclLaunchHelper<sycl_launch<async0>,StmtList,Data,Types>
+struct SyclLaunchHelper<true,sycl_launch<async0>,StmtList,Data,Types>
 {
   using Self = SyclLaunchHelper;
 
@@ -233,7 +208,8 @@ struct StatementExecutor<
 
     using data_t = camp::decay<Data>;
     using executor_t = sycl_statement_list_executor_t<stmt_list_t, data_t, Types>;
-    using launch_t = SyclLaunchHelper<LaunchConfig, stmt_list_t, data_t, Types>;
+    using launch_t = SyclLaunchHelper<std::is_trivially_copyable<data_t>::value,
+                                      LaunchConfig, stmt_list_t, data_t, Types>;
 
     //
     // Compute the requested kernel dimensions
@@ -252,41 +228,6 @@ struct StatementExecutor<
 
 };
 
-/*!
- * Specialization that launches SYCL kernels for RAJA::kernel from host code
- */
-template <typename LaunchConfig, typename... EnclosedStmts, typename Types>
-struct StatementExecutor<
-    statement::SyclKernelExtNonTrivial<LaunchConfig, EnclosedStmts...>, Types> {
-
-  using stmt_list_t = StatementList<EnclosedStmts...>;
-  using StatementType =
-      statement::SyclKernelNonTrivial<LaunchConfig, EnclosedStmts...>;
-
-  template <typename Data>
-  static inline void exec(Data &&data)
-  {
-
-    using data_t = camp::decay<Data>;
-    using executor_t = sycl_statement_list_executor_t<stmt_list_t, data_t, Types>;
-    using launch_t = SyclLaunchHelperNonTrivial<LaunchConfig, stmt_list_t, data_t, Types>;
-
-    //
-    // Compute the requested kernel dimensions
-    //
-    LaunchDims launch_dims = executor_t::calculateDimensions(data);
-
-    int shmem = 0;
-    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
-
-    //
-    // Launch the kernels
-    //
-    launch_t::launch(std::move(data), launch_dims, shmem, q);
-
-  }
-
-};
 
 }  // namespace internal
 }  // namespace RAJA
