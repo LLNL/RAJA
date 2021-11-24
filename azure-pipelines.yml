@@ -49,8 +49,6 @@ jobs:
         docker_target: gcc9
       gcc11:
         docker_target: gcc11
-      clang9:
-        docker_target: clang9
       clang11:
         docker_target: clang11
       clang11-debug:
