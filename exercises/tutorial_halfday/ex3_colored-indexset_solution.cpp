@@ -271,6 +271,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_CUDA)
 
+#if !defined(RAJA_ENABLE_OPENMP)
+  using SegmentType = RAJA::TypedListSegment<int>;
+#endif
+
 //
 // Resource object used to construct list segment objects with indices
 // living in host (CPU) memory.
