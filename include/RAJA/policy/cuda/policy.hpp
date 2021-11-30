@@ -101,8 +101,8 @@ struct cuda_launch_explicit_t : public RAJA::make_policy_pattern_launch_platform
 ///
 /// WorkGroup execution policies
 ///
-template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_work : public RAJA::make_policy_pattern_launch_platform_t<
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
+struct cuda_work_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Policy::cuda,
                        RAJA::Pattern::workgroup_exec,
                        detail::get_launch<Async>::value,
@@ -231,10 +231,13 @@ using cuda_exec = policy::cuda::cuda_exec_explicit<BLOCK_SIZE, 1, ASYNC>;
 template <size_t BLOCK_SIZE, bool ASYNC = true>
 using cuda_exec_async = policy::cuda::cuda_exec_explicit<BLOCK_SIZE, 1, true>;
 
-using policy::cuda::cuda_work;
+using policy::cuda::cuda_work_explicit;
+
+template <size_t BLOCK_SIZE, bool ASYNC = false>
+using cuda_work = policy::cuda::cuda_work_explicit<BLOCK_SIZE, 1, ASYNC>;
 
 template <size_t BLOCK_SIZE>
-using cuda_work_async = policy::cuda::cuda_work<BLOCK_SIZE, true>;
+using cuda_work_async = policy::cuda::cuda_work_explicit<BLOCK_SIZE, 1, true>;
 
 using policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average;
 

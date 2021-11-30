@@ -94,8 +94,8 @@ struct hip_launch_explicit_t : public RAJA::make_policy_pattern_launch_platform_
 ///
 /// WorkGroup execution policies
 ///
-template <size_t BLOCK_SIZE, bool Async = false>
-struct hip_work : public RAJA::make_policy_pattern_launch_platform_t<
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
+struct hip_work_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Policy::hip,
                        RAJA::Pattern::workgroup_exec,
                        detail::get_launch<Async>::value,
@@ -233,10 +233,13 @@ using hip_exec = policy::hip::hip_exec_explicit<BLOCK_SIZE, 1, ASYNC>;
 template <size_t BLOCK_SIZE, bool ASYNC = true>
 using hip_exec_async = policy::hip::hip_exec_explicit<BLOCK_SIZE, 1, true>;
 
-using policy::hip::hip_work;
+using policy::hip::hip_work_explicit;
+
+template <size_t BLOCK_SIZE, bool ASYNC = false>
+using hip_work = policy::hip::hip_work_explicit<BLOCK_SIZE, 1, ASYNC>;
 
 template <size_t BLOCK_SIZE>
-using hip_work_async = policy::hip::hip_work<BLOCK_SIZE, true>;
+using hip_work_async = policy::hip::hip_work_explicit<BLOCK_SIZE, 1, true>;
 
 using policy::hip::hip_atomic;
 using policy::hip::hip_atomic_explicit;

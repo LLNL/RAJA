@@ -109,6 +109,23 @@ inline const Vtable_T* get_Vtable(hip_work<BLOCK_SIZE, Async> const&)
   return &vtable;
 }
 
+/*!
+* Explicit BLOCKS_PER_SM version.
+* Populate and return a Vtable object where the
+* call operator is a device function
+*/
+template < typename T, typename Vtable_T, size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async >
+inline const Vtable_T* get_Vtable(hip_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async> const&)
+{
+  static Vtable_T vtable{
+        &Vtable_T::template move_construct_destroy<T>,
+        get_cached_Vtable_hip_device_call<T, Vtable_T>(),
+        &Vtable_T::template destroy<T>,
+        sizeof(T)
+      };
+  return &vtable;
+}
+
 #endif
 
 }  // namespace detail

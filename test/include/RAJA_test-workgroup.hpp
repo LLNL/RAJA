@@ -360,8 +360,13 @@ using OpenMPTargetStoragePolicyList = SequentialStoragePolicyList;
 #if defined(RAJA_ENABLE_CUDA)
 using CudaExecPolicyList =
     camp::list<
+                #if defined(RAJA_TEST_EXHAUSTIVE)
+                // avoid compilation error:
+                // tpl/camp/include/camp/camp.hpp(104): error #456: excessive recursion at instantiation of class
                 RAJA::cuda_work<256>,
-                RAJA::cuda_work<1024>
+                #endif
+                RAJA::cuda_work<1024>,
+                RAJA::cuda_work_explicit<256, 2>
               >;
 using CudaOrderedPolicyList = SequentialOrderedPolicyList;
 using CudaOrderPolicyList   =
@@ -376,8 +381,11 @@ using CudaStoragePolicyList = SequentialStoragePolicyList;
 #if defined(RAJA_ENABLE_HIP)
 using HipExecPolicyList =
     camp::list<
+                #if defined(RAJA_TEST_EXHAUSTIVE)
                 RAJA::hip_work<256>,
-                RAJA::hip_work<1024>
+                #endif
+                RAJA::hip_work<1024>,
+                RAJA::hip_work_explicit<256, 2>
               >;
 using HipOrderedPolicyList = SequentialOrderedPolicyList;
 using HipOrderPolicyList   =
