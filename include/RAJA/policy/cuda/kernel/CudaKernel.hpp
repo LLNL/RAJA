@@ -84,8 +84,8 @@ namespace statement
 
 /*!
  * A RAJA::kernel statement that launches a CUDA kernel.
- *
- *
+ * Note - Statement requires a placeholder cuda_exec policy for the sake of 
+ * object oriented inheritance.
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
 struct CudaKernelExt
