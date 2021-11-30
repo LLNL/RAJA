@@ -127,12 +127,13 @@ __device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
  *
  ******************************************************************************
  */
+// HIP BLOCKS_PER_SM calculation is actually MIN_WARPS_PER_EXECUTION_UNIT
 template <size_t BlockSize,
           size_t BlocksPerSM,
           typename Iterator,
           typename LOOP_BODY,
           typename IndexType>
-__launch_bounds__(BlockSize, BlocksPerSM) __global__
+__launch_bounds__(BlockSize, (BlockSize * BlocksPerSM)/32) __global__
     void forall_hip_kernel(LOOP_BODY loop_body,
                             const Iterator idx,
                             IndexType length)

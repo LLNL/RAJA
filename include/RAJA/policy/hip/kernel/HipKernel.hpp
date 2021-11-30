@@ -211,8 +211,9 @@ __global__ void HipKernelLauncher(Data data)
  *
  * This launcher is used by the HipKerelFixed policies.
  */
+// HIP BLOCKS_PER_SM calculation is actually MIN_WARPS_PER_EXECUTION_UNIT
 template <size_t BlockSize, size_t BlocksPerSM, typename Data, typename Exec>
-__launch_bounds__(BlockSize, BlocksPerSM) __global__
+__launch_bounds__(BlockSize, (BlockSize * BlocksPerSM)/32) __global__
     void HipKernelLauncherFixed(Data data)
 {
 

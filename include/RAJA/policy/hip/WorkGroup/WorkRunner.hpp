@@ -178,13 +178,14 @@ private:
   LoopBody m_body;
 };
 
+// HIP BLOCKS_PER_SM calculation is actually MIN_WARPS_PER_EXECUTION_UNIT
 template < size_t BLOCK_SIZE,
            size_t BLOCKS_PER_SM,
            typename StorageIter,
            typename value_type,
            typename index_type,
            typename ... Args >
-__launch_bounds__(BLOCK_SIZE, BLOCKS_PER_SM) __global__
+__launch_bounds__(BLOCK_SIZE, (BLOCK_SIZE * BLOCKS_PER_SM)/32) __global__
     void hip_unordered_y_block_global(StorageIter iter, Args... args)
 {
   const index_type i_loop = blockIdx.y;

@@ -31,8 +31,9 @@ namespace RAJA
 namespace expt
 {
 
+// HIP BLOCKS_PER_SM calculation is actually MIN_WARPS_PER_EXECUTION_UNIT
 template <typename BODY, int num_threads, int BLOCKS_PER_SM>
-__launch_bounds__(num_threads, BLOCKS_PER_SM) __global__
+__launch_bounds__(num_threads, (num_threads * BLOCKS_PER_SM)/32) __global__
 static void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
 {
   using RAJA::internal::thread_privatize;
