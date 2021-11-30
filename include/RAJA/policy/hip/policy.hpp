@@ -272,7 +272,7 @@ using policy::hip::hip_synchronize;
 namespace expt
 {
   template <bool Async, int num_threads = 0>
-  using hip_launch_t = policy::hip::expt::hip_launch_explicit_t<Async, num_threads, 0>;
+  using hip_launch_t = policy::hip::expt::hip_launch_explicit_t<Async, num_threads, 1>;
 }
 
 /*!
