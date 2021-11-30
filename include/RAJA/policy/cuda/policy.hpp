@@ -82,6 +82,8 @@ struct cuda_exec_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::cuda> {
 };
 
+namespace expt
+{
 template <bool Async, int num_threads, size_t BLOCKS_PER_SM = 0>
 struct cuda_launch_explicit_t : public RAJA::make_policy_pattern_launch_platform_t<
                                 RAJA::Policy::cuda,
@@ -89,7 +91,7 @@ struct cuda_launch_explicit_t : public RAJA::make_policy_pattern_launch_platform
                                 detail::get_launch<Async>::value,
                                 RAJA::Platform::cuda> {
 };
-
+}
 
 
 
@@ -228,7 +230,7 @@ using cuda_exec_explicit_async = policy::cuda::cuda_exec_explicit<BLOCK_SIZE, BL
 template <size_t BLOCK_SIZE, bool ASYNC = false>
 using cuda_exec = policy::cuda::cuda_exec_explicit<BLOCK_SIZE, 1, ASYNC>;
 
-template <size_t BLOCK_SIZE, bool ASYNC = true>
+template <size_t BLOCK_SIZE>
 using cuda_exec_async = policy::cuda::cuda_exec_explicit<BLOCK_SIZE, 1, true>;
 
 using policy::cuda::cuda_work_explicit;
@@ -265,7 +267,7 @@ using policy::cuda::cuda_synchronize;
 namespace expt
 {
   template <bool Async, int num_threads = 0>
-  using cuda_launch_t = policy::cuda::cuda_launch_explicit_t<Async, num_threads, 0>;
+  using cuda_launch_t = policy::cuda::expt::cuda_launch_explicit_t<Async, num_threads, 0>;
 }
 
 

@@ -23,7 +23,7 @@ using seq_cuda_policies = camp::list<
   RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::cuda_thread_x_loop>>;
 
 using seq_cuda_explicit_policies = camp::list<
-  RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t,RAJA::policy::cuda::cuda_launch_explicit_t<true, 0, 0>>,
+  RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t,RAJA::policy::cuda::expt::cuda_launch_explicit_t<true, 0, 0>>,
   RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::cuda_block_x_direct>,
   RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::cuda_thread_x_loop>>;
 
@@ -39,7 +39,7 @@ using seq_hip_policies = camp::list<
   RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::hip_thread_x_loop>>;
 
 using seq_hip_explicit_policies = camp::list<
-  RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t,RAJA::policy::hip::hip_launch_explicit_t<true, 0, 0>>,
+  RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t,RAJA::policy::hip::expt::hip_launch_explicit_t<true, 0, 0>>,
   RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::hip_block_x_direct>,
   RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::hip_thread_x_loop>>;
 
@@ -67,7 +67,7 @@ using omp_cuda_policies = camp::list<
   >;
 
 using omp_cuda_explicit_policies = camp::list<
-         RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t,RAJA::policy::cuda::cuda_launch_explicit_t<false, 0, 0>>,
+         RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t,RAJA::policy::cuda::expt::cuda_launch_explicit_t<false, 0, 0>>,
          RAJA::expt::LoopPolicy<RAJA::omp_parallel_for_exec, RAJA::cuda_block_x_direct>,
          RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::cuda_thread_x_loop>
   >;
@@ -86,7 +86,7 @@ using omp_hip_policies = camp::list<
   >;
 
 using omp_hip_explicit_policies = camp::list<
-         RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t,RAJA::policy::hip::hip_launch_explicit_t<false, 0, 0>>,
+         RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t,RAJA::policy::hip::expt::hip_launch_explicit_t<false, 0, 0>>,
          RAJA::expt::LoopPolicy<RAJA::omp_parallel_for_exec, RAJA::hip_block_x_direct>,
          RAJA::expt::LoopPolicy<RAJA::loop_exec,RAJA::hip_thread_x_loop>
   >;
