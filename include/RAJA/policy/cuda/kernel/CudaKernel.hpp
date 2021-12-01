@@ -68,7 +68,7 @@ struct cuda_explicit_launch {};
  * Blocks per SM defaults to 1.
  */
 template <bool async0, size_t num_blocks, size_t num_threads>
-using cuda_launch = cuda_explicit_launch<async0, num_blocks, num_threads, 1>;
+using cuda_launch = cuda_explicit_launch<async0, num_blocks, num_threads, policy::cuda::MIN_BLOCKS_PER_SM>;
 
 
 /*!
@@ -77,7 +77,7 @@ using cuda_launch = cuda_explicit_launch<async0, num_blocks, num_threads, 1>;
  * If num_threads is 0 then num_threads is chosen at runtime.
  */
 template <size_t num_threads0, bool async0>
-using cuda_occ_calc_launch = cuda_explicit_launch<async0, 0, num_threads0, 0>;
+using cuda_occ_calc_launch = cuda_explicit_launch<async0, 0, num_threads0, policy::cuda::MIN_BLOCKS_PER_SM>;
 
 namespace statement
 {
