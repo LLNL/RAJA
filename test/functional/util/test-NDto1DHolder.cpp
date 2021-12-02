@@ -26,7 +26,7 @@ void test_NDto1DHolder_1D(Segment0 const& seg0)
   auto seg0_begin = begin(seg0);
 
   size_t counter0 = 0;
-  auto holder = make_NDto1DHolder([&](IndexType i0) {
+  auto holder = RAJA::make_NDto1DHolder([&](IndexType i0) {
     ASSERT_EQ(seg0_begin[counter0], i0);
     counter0 += 1;
   }, seg0);
@@ -75,7 +75,7 @@ void test_NDto1DHolder_2D(Segment0 const& seg0, Segment1 const& seg1)
 
   size_t counter0 = 0;
   size_t counter1 = 0;
-  auto holder = make_NDto1DHolder([&](IndexType i0, IndexType i1) {
+  auto holder = RAJA::make_NDto1DHolder([&](IndexType i0, IndexType i1) {
     ASSERT_EQ(seg0_begin[counter0], i0);
     ASSERT_EQ(seg1_begin[counter1], i1);
     counter1 += 1;
@@ -140,7 +140,7 @@ void test_NDto1DHolder_3D(Segment0 const& seg0, Segment1 const& seg1, Segment2 c
   size_t counter0 = 0;
   size_t counter1 = 0;
   size_t counter2 = 0;
-  auto holder = make_NDto1DHolder([&](IndexType i0, IndexType i1, IndexType i2) {
+  auto holder = RAJA::make_NDto1DHolder([&](IndexType i0, IndexType i1, IndexType i2) {
     ASSERT_EQ(seg0_begin[counter0], i0);
     ASSERT_EQ(seg1_begin[counter1], i1);
     ASSERT_EQ(seg2_begin[counter2], i2);
