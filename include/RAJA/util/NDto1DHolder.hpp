@@ -93,10 +93,13 @@ struct NDto1DHolder
   static_assert(type_traits::is_integral<IndexType>::value,
                 "IndexType must model Integral");
 
-  template < typename C_LAMBDA, typename ... C_Spans >
-  RAJA_HOST_DEVICE NDto1DHolder(C_LAMBDA&& lambda, C_Spans&&... spans)
+  // constructor from lambda and spans
+  // NOTE this uses C_Span0, C_Spans... to avoid conflicting with the
+  // copy constructor
+  template < typename C_LAMBDA, typename C_Span0, typename ... C_Spans >
+  RAJA_HOST_DEVICE NDto1DHolder(C_LAMBDA&& lambda, C_Span0&& span0, C_Spans&&... spans)
       : m_lambda(std::forward<C_LAMBDA>(lambda))
-      , m_spans(std::forward<C_Spans>(spans)...)
+      , m_spans(std::forward<C_Span0>(span0), std::forward<C_Spans>(spans)...)
   {
   }
 
@@ -213,8 +216,8 @@ auto make_NDto1DHolder(Lambda&& lambda, Segments&&... segs)
   using IndexType = typename std::common_type<
       typename std::iterator_traits<decltype(begin(segs))>::difference_type... >::type;
   return NDto1DHolder<typename std::decay<Lambda>::type,
-                    IndexType,
-                    decltype(RAJA::make_span(begin(segs), distance(begin(segs), end(segs))))...>(
+                      IndexType,
+                      decltype(RAJA::make_span(begin(segs), distance(begin(segs), end(segs))))...>(
       std::forward<Lambda>(lambda),
       RAJA::make_span(begin(segs), distance(begin(segs), end(segs)))...);
 }
