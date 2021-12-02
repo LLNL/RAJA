@@ -269,7 +269,8 @@ using policy::cuda::cuda_synchronize;
 
 namespace expt
 {
-  template <bool Async, int num_threads = 0>
+  // num_threads defaults to 1, but not expected to be used in kernel launch
+  template <bool Async, int num_threads = 1>
   using cuda_launch_t = policy::cuda::expt::cuda_launch_explicit_t<Async, num_threads, policy::cuda::MIN_BLOCKS_PER_SM>;
 }
 

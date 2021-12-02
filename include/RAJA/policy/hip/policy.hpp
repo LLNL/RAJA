@@ -271,6 +271,7 @@ using policy::hip::hip_synchronize;
 
 namespace expt
 {
+  // num_threads defaults to 1, but not expected to be used in kernel launch
   template <bool Async, int num_threads = 1>
   using hip_launch_t = policy::hip::expt::hip_launch_explicit_t<Async, num_threads, 1>;
 }

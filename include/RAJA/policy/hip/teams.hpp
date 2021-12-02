@@ -31,6 +31,127 @@ namespace RAJA
 namespace expt
 {
 
+template <typename BODY>
+__global__ static void launch_global_fcn(LaunchContext ctx, BODY body_in)
+{
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(body_in);
+  auto& body = privatizer.get_priv();
+  body(ctx);
+}
+
+template <bool async>
+struct LaunchExecute<RAJA::expt::hip_launch_t<async, 1>> {
+// hip_launch_t num_threads set to 1, but not used in launch of kernel
+
+  template <typename BODY_IN>
+  static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
+  {
+    using BODY = camp::decay<BODY_IN>;
+
+    auto func = launch_global_fcn<BODY>;
+
+    resources::Hip hip_res = resources::Hip::get_default();
+
+    //
+    // Compute the number of blocks and threads
+    //
+
+    hip_dim_t gridSize{ static_cast<hip_dim_member_t>(ctx.teams.value[0]),
+                        static_cast<hip_dim_member_t>(ctx.teams.value[1]),
+                        static_cast<hip_dim_member_t>(ctx.teams.value[2]) };
+
+    hip_dim_t blockSize{ static_cast<hip_dim_member_t>(ctx.threads.value[0]),
+                         static_cast<hip_dim_member_t>(ctx.threads.value[1]),
+                         static_cast<hip_dim_member_t>(ctx.threads.value[2]) };
+
+    // Only launch kernel if we have something to iterate over
+    constexpr hip_dim_member_t zero = 0;
+    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
+         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
+
+      RAJA_FT_BEGIN;
+
+      //
+      // Setup shared memory buffers
+      //
+      size_t shmem = 0;
+
+      {
+        //
+        // Privatize the loop_body, using make_launch_body to setup reductions
+        //
+        BODY body = RAJA::hip::make_launch_body(
+            gridSize, blockSize, shmem, hip_res, std::forward<BODY_IN>(body_in));
+
+        //
+        // Launch the kernel
+        //
+        void *args[] = {(void*)&ctx, (void*)&body};
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, hip_res, async, ctx.kernel_name);
+      }
+
+      RAJA_FT_END;
+    }
+
+  }
+
+  template <typename BODY_IN>
+  static resources::EventProxy<resources::Resource>
+  exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY_IN &&body_in)
+  {
+    using BODY = camp::decay<BODY_IN>;
+
+    auto func = launch_global_fcn<BODY>;
+
+    resources::Hip hip_res = res.get<RAJA::resources::Hip>();
+
+    //
+    // Compute the number of blocks and threads
+    //
+
+    hip_dim_t gridSize{ static_cast<hip_dim_member_t>(ctx.teams.value[0]),
+                        static_cast<hip_dim_member_t>(ctx.teams.value[1]),
+                        static_cast<hip_dim_member_t>(ctx.teams.value[2]) };
+
+    hip_dim_t blockSize{ static_cast<hip_dim_member_t>(ctx.threads.value[0]),
+                         static_cast<hip_dim_member_t>(ctx.threads.value[1]),
+                         static_cast<hip_dim_member_t>(ctx.threads.value[2]) };
+
+    // Only launch kernel if we have something to iterate over
+    constexpr hip_dim_member_t zero = 0;
+    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
+         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
+
+      RAJA_FT_BEGIN;
+
+      //
+      // Setup shared memory buffers
+      //
+      size_t shmem = 0;
+
+      {
+        //
+        // Privatize the loop_body, using make_launch_body to setup reductions
+        //
+        BODY body = RAJA::hip::make_launch_body(
+            gridSize, blockSize, shmem, hip_res, std::forward<BODY_IN>(body_in));
+
+        //
+        // Launch the kernel
+        //
+        void *args[] = {(void*)&ctx, (void*)&body};
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shmem, hip_res, async, ctx.kernel_name);
+      }
+
+      RAJA_FT_END;
+    }
+
+    return resources::EventProxy<resources::Resource>(res);
+  }
+
+};
+
 // HIP BLOCKS_PER_SM calculation is actually MIN_WARPS_PER_EXECUTION_UNIT
 template <typename BODY, int num_threads, int BLOCKS_PER_SM>
 __launch_bounds__(num_threads, (num_threads * BLOCKS_PER_SM)/32) __global__
