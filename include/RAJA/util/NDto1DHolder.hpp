@@ -96,9 +96,9 @@ struct NDto1DHolder
   // constructor from lambda and spans
   // NOTE this uses C_Span0, C_Spans... to avoid conflicting with the
   // copy constructor
-  template < typename C_LAMBDA, typename C_Span0, typename ... C_Spans >
-  RAJA_HOST_DEVICE NDto1DHolder(C_LAMBDA&& lambda, C_Span0&& span0, C_Spans&&... spans)
-      : m_lambda(std::forward<C_LAMBDA>(lambda))
+  template < typename C_Lambda, typename C_Span0, typename ... C_Spans >
+  RAJA_HOST_DEVICE NDto1DHolder(C_Lambda&& lambda, C_Span0&& span0, C_Spans&&... spans)
+      : m_lambda(std::forward<C_Lambda>(lambda))
       , m_spans(std::forward<C_Span0>(span0), std::forward<C_Spans>(spans)...)
   {
   }
