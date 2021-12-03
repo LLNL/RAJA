@@ -202,3 +202,49 @@ TEST(NDto1DHolder, test3D)
   test_types_NDto1DHolder_3D<long, long, int, int>(4, 13, -2, 7, -3, 0);
   test_types_NDto1DHolder_3D<long, long, long, long>(-8, -2, -5, 3, 1, 4);
 }
+
+
+
+
+
+
+
+
+
+
+template < typename IndexType >
+void test_CombiningAdapter_1D(IndexType N0)
+{
+  using std::begin; using std::end; using std::distance;
+
+  RAJA::Layout<1, IndexType, 0> layout(N0);
+
+  IndexType counter0 = 0;
+
+  auto holder = RAJA::make_CombiningAdapter([&](IndexType i0) {
+    ASSERT_EQ(counter0, i0);
+    counter0++;
+  }, layout);
+
+  ASSERT_EQ(holder.size(), N0);
+  ASSERT_EQ(holder.size(), layout.size());
+
+  auto range = holder.getRange();
+
+  ASSERT_EQ(distance(begin(range), end(range)), N0);
+
+  auto range_end = end(range);
+  for (auto idx = begin(range); idx != range_end; ++idx) {
+    holder(*idx);
+  }
+
+  ASSERT_EQ(counter0, N0);
+}
+
+TEST(CombiningAdapter, test1D)
+{
+  test_CombiningAdapter_1D<int>(0);
+
+  test_CombiningAdapter_1D<int>(15);
+  test_CombiningAdapter_1D<long>(16);
+}

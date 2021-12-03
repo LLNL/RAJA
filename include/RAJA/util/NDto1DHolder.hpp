@@ -222,6 +222,163 @@ auto make_NDto1DHolder(Lambda&& lambda, Segments&&... segs)
       RAJA::make_span(begin(segs), distance(begin(segs), end(segs)))...);
 }
 
+
+
+
+
+
+/*!
+ * @brief A holder for adapting lambdas meant for multidimensional index spaces
+ *        to allow their use in 1-dimensional index spaces.
+ *
+ * Creates callable object that when called with a 1-dimensional index, converts
+ * that index to a multi-dimensional index and calls the given lambda.
+ * This allows lambdas meant for use in multi-dimensional loop abstractions to
+ * be used in 1-dimensional loop abstractions.
+ * The 1-dimensional index is of the type of the IndexType template parameter.
+ *
+ * For example:
+ *
+ *     // lambda for use in 3-d loop
+ *     auto lambda = [=](int i, int j, int k) {...};
+ *
+ *     // example lambda usage
+ *     for (int i = ibegin; i < iend; ++i) {
+ *       for (int j = jbegin; j < jend; ++j) {
+ *         for (int k = kbegin; k < kend; ++k) {
+ *           lambda(i, j, k);
+ *         }
+ *       }
+ *     }
+ *
+ *     // ranges for 3D loop bounds
+ *     RAJA::TypedRangeSegment<int> irange(ibegin, iend);
+ *     RAJA::TypedRangeSegment<int> jrange(jbegin, jend);
+ *     RAJA::TypedRangeSegment<int> krange(kbegin, kend);
+ *
+ *     // Create a CombiningAdapter object for lambda and the ranges
+ *     // NOTE Use make_CombiningAdapter
+ *     RAJA::CombiningAdapter<decltype(lambda), int, RAJA::TypedRangeSegment<int>, RAJA::TypedRangeSegment<int>, RAJA::TypedRangeSegment<int>>
+ *         holder(lambda, irange, jrange, krange);
+ *
+ *     // Use with RAJA forall
+ *     RAJA::forall<policy>(holder.getRange(), holder);
+ *
+ *     // Use with c++-style loop
+ *     auto range = holder.getRange();
+ *     for (auto it = begin(range); it < end(range); ++it) {
+ *       holder(*it)
+ *     }
+ *
+ */
+template <typename Lambda, typename Layout>
+struct CombiningAdapter
+{
+  using IndexLinear = typename Layout::IndexLinear;
+  using IndexRange = typename Layout::IndexRange;
+  using range_type = RAJA::TypedRangeSegment<IndexLinear>;
+
+private:
+  Lambda m_lambda;
+  Layout m_layout;
+
+  template < camp::idx_t ... Is >
+  RAJA_HOST_DEVICE inline auto call_helper(IndexLinear linear_index, camp::idx_seq<Is...>) const
+    -> decltype(m_lambda(IndexLinear(Is)...))
+  {
+    IndexLinear indices[Layout::n_dims];
+    m_layout.toIndices(linear_index, indices[Is]...);
+    return m_lambda(indices[Is]...);
+  }
+
+public:
+
+  // constructor from lambda and layout
+  template < typename C_Lambda, typename C_Layout >
+  RAJA_HOST_DEVICE CombiningAdapter(C_Lambda&& lambda, C_Layout&& layout)
+      : m_lambda(std::forward<C_Lambda>(lambda))
+      , m_layout(std::forward<C_Layout>(layout))
+  {
+  }
+
+  // Call operator taking 1-dimensional index argument
+  // Note: this may not be called with an out of bounds index
+  RAJA_HOST_DEVICE RAJA_INLINE auto operator()(IndexLinear linear_index) const
+    -> decltype(call_helper(linear_index, IndexRange()))
+  {
+    return call_helper(linear_index, IndexRange());
+  }
+
+  /*!
+   * Computes the total size of the layout's space.
+   *
+   * @return Total size of layout
+   */
+  RAJA_HOST_DEVICE RAJA_INLINE IndexLinear size() const
+  {
+    return m_layout.size();
+  }
+
+  /*!
+   * Convenience method to get a 1-dimensional range representing the
+   * total size of the layout.
+   *
+   * @return Range representing the total size of the layout
+   */
+  RAJA_HOST_DEVICE RAJA_INLINE range_type getRange() const
+  {
+    return range_type(static_cast<IndexLinear>(0), size());
+  }
+
+};
+
+/*!
+ * @brief Creates a CombiningAdapter class from a lambda and segments.
+ * @param lambda functional object
+ * @param segs iterable objects defining the multi-dimensional index space
+ * @return Returns a CombiningAdapter for the given lambda and segments
+ *
+ * Creates a CombiningAdapter object given a lambda and iterables.
+ *
+ * NOTE: the stride 1 index is the right-most index
+ *
+ * For example:
+ *
+ *     // lambda to be used in 2D loop
+ *     auto lambda = [](int i, int j) {...};
+ *
+ *     // example lambda usage
+ *     for (int i = ibegin; i < iend; ++i) {
+ *       for (int j = jbegin; j < jend; ++j) {
+ *         lambda(i, j);
+ *       }
+ *     }
+ *
+ *     // ranges for 2D loop bounds
+ *     RAJA::TypedRangeSegment<int> irange(ibegin, iend);
+ *     RAJA::TypedRangeSegment<int> jrange(jbegin, jend);
+ *
+ *     // holder class
+ *     auto holder = RAJA::make_CombiningAdapter(lambda, irange, jrange);
+ *
+ *     // Use with RAJA forall
+ *     RAJA::forall<policy>(holder.getRange(), holder);
+ *
+ *     // Use with c++-style loop
+ *     auto range = holder.getRange();
+ *     for (auto it = begin(range); it < end(range); ++it) {
+ *       holder(*it)
+ *     }
+ *
+ */
+template <typename Lambda, typename Layout>
+RAJA_HOST_DEVICE RAJA_INLINE
+auto make_CombiningAdapter(Lambda&& lambda, Layout&& layout)
+{
+  return CombiningAdapter<camp::decay<Lambda>, camp::decay<Layout>>(
+      std::forward<Lambda>(lambda), std::forward<Layout>(layout));
+}
+
 }  // end namespace RAJA
 
 #endif /* RAJA_NDto1DHolder_HPP */
