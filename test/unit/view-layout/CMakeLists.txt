@@ -6,6 +6,10 @@
 ###############################################################################
 
 raja_add_test(
+  NAME test-noprojection-layout
+  SOURCES test-noprojection-layout.cpp)
+
+raja_add_test(
   NAME test-standard-layout
   SOURCES test-standard-layout.cpp)
 

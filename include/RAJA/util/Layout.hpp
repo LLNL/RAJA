@@ -41,7 +41,8 @@ namespace detail
 
 template <typename Range,
           typename IdxLin = Index_type,
-          ptrdiff_t StrideOneDim = -1>
+          ptrdiff_t StrideOneDim = -1,
+          bool AllowProjection = true>
 struct LayoutBase_impl;
 
 /*!
@@ -68,8 +69,10 @@ struct stride_calculator<n_dims, n_dims, IdxLin> {
   }
 };
 
-template <camp::idx_t... RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
-struct LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim> {
+template <camp::idx_t... RangeInts, typename IdxLin,
+          ptrdiff_t StrideOneDim, bool AllowProjection>
+struct LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
+                       StrideOneDim, AllowProjection> {
 public:
   using IndexLinear = IdxLin;
   using IndexRange = camp::make_idx_seq_t<sizeof...(RangeInts)>;
@@ -77,6 +80,7 @@ public:
   static constexpr size_t n_dims = sizeof...(RangeInts);
   static constexpr IdxLin limit = RAJA::operators::limits<IdxLin>::max();
   static constexpr ptrdiff_t stride_one_dim = StrideOneDim;
+  static constexpr bool allow_projection = AllowProjection;
 
   IdxLin sizes[n_dims] = {0};
   IdxLin strides[n_dims] = {0};
@@ -97,6 +101,7 @@ public:
 
   /*!
    * Construct a layout given the size of each dimension.
+   * Calculates Strides s.t. stride is highest at the left and 1 at the right.
    */
   template <typename... Types>
   RAJA_INLINE RAJA_HOST_DEVICE constexpr LayoutBase_impl(Types... ns)
@@ -112,11 +117,12 @@ public:
   }
 
   /*!
-   *  Templated copy ctor from simillar layout.
+   *  Templated copy ctor from similar layout.
    */
-  template <typename CIdxLin, ptrdiff_t CStrideOneDim>
+  template <typename CIdxLin, ptrdiff_t CStrideOneDim, bool CAllowProjection>
   constexpr RAJA_INLINE RAJA_HOST_DEVICE LayoutBase_impl(
-      const LayoutBase_impl<camp::idx_seq<RangeInts...>, CIdxLin, CStrideOneDim>
+      const LayoutBase_impl<camp::idx_seq<RangeInts...>, CIdxLin,
+                            CStrideOneDim, CAllowProjection>
           &rhs)
       : sizes{static_cast<IdxLin>(rhs.sizes[RangeInts])...},
         strides{static_cast<IdxLin>(rhs.strides[RangeInts])...},
@@ -159,7 +165,8 @@ public:
   template <camp::idx_t N, typename Idx, typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck(Idx idx, Indices... indices) const
   {
-    if(sizes[N] > 0 && !(0<=idx && idx < static_cast<Idx>(sizes[N])))
+    if((sizes[N] > 0 || !allow_projection) &&
+       !(0<=idx && idx < static_cast<Idx>(sizes[N])))
     {
       BoundsCheckError<N>(idx);
     }
@@ -209,15 +216,19 @@ public:
 #if defined(RAJA_BOUNDS_CHECK_INTERNAL)
     IdxLin totSize{1};
     for(size_t i=0; i<n_dims; ++i) {totSize *= sizes[i];};
-    if(totSize > 0 && (linear_index < 0 || linear_index >= totSize)) {
+    if((totSize > 0 || !allow_projection) &&
+       (linear_index < 0 || linear_index >= totSize)) {
       printf("Error! Linear index %ld is not within bounds [0, %ld]. \n",
              static_cast<long int>(linear_index), static_cast<long int>(totSize-1));
       RAJA_ABORT_OR_THROW("Out of bounds error \n");
      }
 #endif
 
-    camp::sink((indices = (camp::decay<Indices>)((linear_index / inv_strides[RangeInts]) %
-                                   inv_mods[RangeInts]))...);
+    camp::sink((indices = (camp::decay<Indices>)(
+      ( RangeInts==stride_one_dim ?   // Is this dimension stride-one?
+          (linear_index % inv_mods[RangeInts]) :  // it's stride one, so don't bother with divide
+          ((linear_index / inv_strides[RangeInts]) % inv_mods[RangeInts]) // it's not stride one
+      ) ))...);
   }
 
   /*!
@@ -231,7 +242,9 @@ public:
     // Multiply together all of the sizes,
     // replacing 1 for any zero-sized dimensions
     return foldl(RAJA::operators::multiplies<IdxLin>(),
-                         (sizes[RangeInts] == IdxLin(0) ? IdxLin(1) : sizes[RangeInts])...);
+        ( (allow_projection && (sizes[RangeInts] == IdxLin(0))) ?
+          IdxLin(1) :
+          sizes[RangeInts] )...);
   }
 
   template<camp::idx_t DIM>
@@ -243,12 +256,26 @@ public:
   }
 };
 
-template <camp::idx_t... RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
+template <camp::idx_t... RangeInts, typename IdxLin,
+          ptrdiff_t StrideOneDim, bool AllowProjection>
 constexpr size_t
-    LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim>::n_dims;
-template <camp::idx_t... RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
+    LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
+                    StrideOneDim, AllowProjection>::n_dims;
+template <camp::idx_t... RangeInts, typename IdxLin,
+          ptrdiff_t StrideOneDim, bool AllowProjection>
 constexpr IdxLin
-    LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim>::limit;
+    LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
+                    StrideOneDim, AllowProjection>::limit;
+template <camp::idx_t... RangeInts, typename IdxLin,
+          ptrdiff_t StrideOneDim, bool AllowProjection>
+constexpr ptrdiff_t
+    LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
+                    StrideOneDim, AllowProjection>::stride_one_dim;
+template <camp::idx_t... RangeInts, typename IdxLin,
+          ptrdiff_t StrideOneDim, bool AllowProjection>
+constexpr bool
+    LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
+                    StrideOneDim, AllowProjection>::allow_projection;
 }  // namespace detail
 
 /*!
@@ -300,9 +327,23 @@ constexpr IdxLin
  *     layout.toIndices(lin2, i, j, k); // i,j,k = {0, 0, 1}
  *
  */
-template <size_t n_dims, typename IdxLin = Index_type, ptrdiff_t StrideOne = -1>
+template <size_t n_dims, typename IdxLin = Index_type,
+          ptrdiff_t StrideOneDim = -1, bool AllowProjection = true>
 using Layout =
-    detail::LayoutBase_impl<camp::make_idx_seq_t<n_dims>, IdxLin, StrideOne>;
+    detail::LayoutBase_impl<camp::make_idx_seq_t<n_dims>, IdxLin,
+                            StrideOneDim, AllowProjection>;
+
+/*!
+ * @brief A mapping of n-dimensional index space to a linear index space.
+ *
+ * This is the same as Layout, but does not allow projections.
+ */
+template <size_t n_dims, typename IdxLin = Index_type,
+          ptrdiff_t StrideOneDim = -1>
+using LayoutNoProj =
+    detail::LayoutBase_impl<camp::make_idx_seq_t<n_dims>, IdxLin,
+                            StrideOneDim, false>;
+
 
 template <typename IdxLin, typename DimTuple, ptrdiff_t StrideOne = -1>
 struct TypedLayout;
@@ -372,17 +413,17 @@ private:
 };
 
 
+
 /*!
  * Convert a non-stride-one Layout to a stride-1 Layout
  *
  */
-template <ptrdiff_t s1_dim, size_t n_dims, typename IdxLin>
-RAJA_INLINE Layout<n_dims, IdxLin, s1_dim> make_stride_one(
-    Layout<n_dims, IdxLin> const &l)
+template <ptrdiff_t s1_dim, size_t n_dims, typename IdxLin, bool AllowProj>
+RAJA_INLINE Layout<n_dims, IdxLin, s1_dim, AllowProj> make_stride_one(
+    Layout<n_dims, IdxLin, -1, AllowProj> const &l)
 {
-  return Layout<n_dims, IdxLin, s1_dim>(l);
+  return Layout<n_dims, IdxLin, s1_dim, AllowProj>(l);
 }
-
 
 /*!
  * Convert a non-stride-one TypedLayout to a stride-1 TypedLayout
