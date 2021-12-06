@@ -345,16 +345,28 @@ using LayoutNoProj =
                             StrideOneDim, false>;
 
 
-template <typename IdxLin, typename DimTuple, ptrdiff_t StrideOne = -1>
+/*!
+ * @brief A mapping of n-dimensional index space to a linear index space.
+ *
+ * This is the same as Layout, but allows the use of different types for each
+ * index. Intended for use with strongly typed indices.
+ */
+template <typename IdxLin, typename DimTuple,
+          ptrdiff_t StrideOneDim = -1, bool AllowProjection = true>
 struct TypedLayout;
 
-template <typename IdxLin, typename... DimTypes, ptrdiff_t StrideOne>
-struct TypedLayout<IdxLin, camp::tuple<DimTypes...>, StrideOne>
-    : public Layout<sizeof...(DimTypes), strip_index_type_t<IdxLin>, StrideOne> {
+template <typename IdxLin, typename... DimTypes,
+          ptrdiff_t StrideOneDim, bool AllowProjection>
+struct TypedLayout<IdxLin, camp::tuple<DimTypes...>,
+                   StrideOneDim, AllowProjection>
+    : public Layout<sizeof...(DimTypes), strip_index_type_t<IdxLin>,
+                    StrideOneDim, AllowProjection> {
 
   using StrippedIdxLin = strip_index_type_t<IdxLin>;
-  using Self = TypedLayout<IdxLin, camp::tuple<DimTypes...>, StrideOne>;
-  using Base = Layout<sizeof...(DimTypes), StrippedIdxLin, StrideOne>;
+  using Self = TypedLayout<IdxLin, camp::tuple<DimTypes...>,
+                           StrideOneDim, AllowProjection>;
+  using Base = Layout<sizeof...(DimTypes), StrippedIdxLin,
+                      StrideOneDim, AllowProjection>;
   using DimArr = std::array<StrippedIdxLin, sizeof...(DimTypes)>;
 
   // Pull in base constructors
@@ -412,6 +424,13 @@ private:
   }
 };
 
+/*!
+ * @brief A mapping of n-dimensional index space to a linear index space.
+ *
+ * This is the same as TypedLayout, but does not allow projections.
+ */
+template <typename IdxLin, typename DimTuple, ptrdiff_t StrideOneDim = -1>
+using TypedLayoutNoProj = TypedLayout<IdxLin, DimTuple, StrideOneDim, false>;
 
 
 /*!
@@ -429,19 +448,17 @@ RAJA_INLINE Layout<n_dims, IdxLin, s1_dim, AllowProj> make_stride_one(
  * Convert a non-stride-one TypedLayout to a stride-1 TypedLayout
  *
  */
-template <ptrdiff_t s1_dim, typename IdxLin, typename IdxTuple>
-RAJA_INLINE TypedLayout<IdxLin, IdxTuple, s1_dim> make_stride_one(
-    TypedLayout<IdxLin, IdxTuple> const &l)
+template <ptrdiff_t s1_dim, typename IdxLin, typename IdxTuple, bool AllowProj>
+RAJA_INLINE TypedLayout<IdxLin, IdxTuple, s1_dim, AllowProj> make_stride_one(
+    TypedLayout<IdxLin, IdxTuple, -1, AllowProj> const &l)
 {
   // strip l to it's base-class type
-  using Base = typename TypedLayout<IdxLin, IdxTuple>::Base;
+  using Base = typename TypedLayout<IdxLin, IdxTuple, -1, AllowProj>::Base;
   Base const &b = (Base const &)l;
 
   // Use non-typed layout to initialize new typed layout
-  return TypedLayout<IdxLin, IdxTuple, s1_dim>(b);
+  return TypedLayout<IdxLin, IdxTuple, s1_dim, AllowProj>(b);
 }
-
-
 
 
 }  // namespace RAJA

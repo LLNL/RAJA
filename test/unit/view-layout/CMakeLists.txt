@@ -14,6 +14,10 @@ raja_add_test(
   SOURCES test-standard-layout.cpp)
 
 raja_add_test(
+  NAME test-noprojection-typedlayout
+  SOURCES test-noprojection-typedlayout.cpp)
+
+raja_add_test(
   NAME test-typedlayout
   SOURCES test-typedlayout.cpp)
 
