@@ -20,7 +20,7 @@ TEST(OffsetLayoutNoProjUnitTest, Constructors)
    *
    * 0, 1, 2, 3, 4
    */
-  const layout l(4);
+  const layout l(5);
 
   /*
    * First element, 0, should have index 0.
