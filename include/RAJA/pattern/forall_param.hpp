@@ -14,35 +14,6 @@ namespace RAJA
 {
 namespace expt
 {
-  //
-  //
-  // Invoke Forall with Params.
-  //
-  //
-  CAMP_SUPPRESS_HD_WARN
-  template <typename Fn,
-            camp::idx_t... Sequence,
-            typename Params,
-            typename... Ts>
-  RAJA_HOST_DEVICE constexpr auto invoke_with_order(Params&& params,
-                                                    Fn&& f,
-                                                    camp::idx_seq<Sequence...>,
-                                                    Ts&&... extra)
-  {
-    return f(std::forward<Ts...>(extra...), ( params.template get_lambda_args<Sequence>() )...);
-  }
-
-  //CAMP_SUPPRESS_HD_WARN
-  template <typename Params, typename Fn, typename... Ts>
-  RAJA_HOST_DEVICE constexpr auto invoke_body(Params&& params, Fn&& f, Ts&&... extra)
-  {
-    return expt::invoke_with_order(
-        camp::forward<Params>(params),
-        camp::forward<Fn>(f),
-        typename camp::decay<Params>::lambda_params_seq(),
-        camp::forward<Ts...>(extra)...);
-  }
-
 
   //
   //
@@ -61,29 +32,6 @@ namespace expt
     Base param_tup;
 
   private:
-
-    RAJA_HOST_DEVICE
-    constexpr auto lambda_args(camp::idx_seq<> )
-    {
-      return camp::make_tuple();
-    }
-
-    template<camp::idx_t Seq>
-    RAJA_HOST_DEVICE
-    constexpr auto lambda_args(camp::idx_seq<Seq> )
-    {
-      return camp::get<Seq>(param_tup).get_lambda_arg_tup();
-    }
-
-    template<camp::idx_t First, camp::idx_t Second, camp::idx_t... Seq>
-    RAJA_HOST_DEVICE
-    constexpr auto lambda_args(camp::idx_seq<First, Second, Seq...> )
-    {
-      return camp::tuple_cat_pair(
-               camp::get<First>(param_tup).get_lambda_arg_tup(),
-               lambda_args(camp::idx_seq<Second, Seq...>())
-             );
-    }
 
     // Init
     template<typename EXEC_POL, camp::idx_t... Seq, typename ...Args>
@@ -124,18 +72,41 @@ namespace expt
     //  param_tup = camp::make_tuple(params...);
     //};
 
+    RAJA_HOST_DEVICE
+    constexpr auto lambda_args(camp::idx_seq<> )
+    {
+      return camp::make_tuple();
+    }
+
+    template<camp::idx_t Seq>
+    RAJA_HOST_DEVICE
+    constexpr auto lambda_args(camp::idx_seq<Seq> )
+    {
+      return camp::get<Seq>(param_tup).get_lambda_arg_tup();
+    }
+
+    template<camp::idx_t First, camp::idx_t Second, camp::idx_t... Seq>
+    RAJA_HOST_DEVICE
+    constexpr auto lambda_args(camp::idx_seq<First, Second, Seq...> )
+    {
+      return camp::tuple_cat_pair(
+               camp::get<First>(param_tup).get_lambda_arg_tup(),
+               lambda_args(camp::idx_seq<Second, Seq...>())
+             );
+    }
+
+
     ForallParamPack(camp::tuple<Params...> t) : param_tup(t) {};
 
     using lambda_params_seq = camp::make_idx_seq_t<count_lambda_args<camp::nil, Params...>()>;
-
-    template<camp::idx_t Idx>
-    RAJA_HOST_DEVICE
-    constexpr auto get_lambda_args()
-        -> decltype(  *camp::get<Idx>( lambda_args(params_seq{}) )  ) {
-      return (  *camp::get<Idx>( lambda_args(params_seq{}) )  );
-    }
   }; // struct ForallParamPack 
   
+  template<camp::idx_t Idx, typename... Params>
+  RAJA_HOST_DEVICE
+  constexpr auto get_lambda_args(ForallParamPack<Params...>& fpp)
+      -> decltype(  *camp::get<Idx>( fpp.lambda_args(typename ForallParamPack<Params...>::params_seq()) )  ) {
+    return (  *camp::get<Idx>( fpp.lambda_args(typename ForallParamPack<Params...>::params_seq()) )  );
+  }
   
   struct ParamMultiplexer {
     template<typename EXEC_POL, typename... Params, typename ...Args, typename FP = ForallParamPack<Params...>>
@@ -205,6 +176,36 @@ namespace expt
     template <typename T> struct is_ForallParamPack_empty : std::true_type {};
     template <typename First, typename... Rest> struct is_ForallParamPack_empty<ForallParamPack<First, Rest...>> : std::false_type {};
     template <> struct is_ForallParamPack_empty<ForallParamPack<>> : std::true_type {};
+  }
+
+  //
+  //
+  // Invoke Forall with Params.
+  //
+  //
+  CAMP_SUPPRESS_HD_WARN
+  template <typename Fn,
+            camp::idx_t... Sequence,
+            typename Params,
+            typename... Ts>
+  RAJA_HOST_DEVICE constexpr auto invoke_with_order(Params&& params,
+                                                    Fn&& f,
+                                                    camp::idx_seq<Sequence...>,
+                                                    Ts&&... extra)
+  {
+    //return f(std::forward<Ts...>(extra...), ( params.template get_lambda_args<Sequence>() )...);
+    return f(std::forward<Ts...>(extra...), ( get_lambda_args<Sequence>(params) )...);
+  }
+
+  //CAMP_SUPPRESS_HD_WARN
+  template <typename Params, typename Fn, typename... Ts>
+  RAJA_HOST_DEVICE constexpr auto invoke_body(Params&& params, Fn&& f, Ts&&... extra)
+  {
+    return expt::invoke_with_order(
+        camp::forward<Params>(params),
+        camp::forward<Fn>(f),
+        typename camp::decay<Params>::lambda_params_seq(),
+        camp::forward<Ts...>(extra)...);
   }
 
 } //  namespace expt
