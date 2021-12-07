@@ -32,7 +32,7 @@
 #
 @PACKAGE_INIT@
 
-find_dependency(camp REQUIRED PATHS "@CMAKE_INSTALL_PREFIX@")
+find_dependency(camp REQUIRED PATHS "@PACKAGE_INSTALL_PREFIX@")
 include("${CMAKE_CURRENT_LIST_DIR}/RAJA.cmake")
 
 # Export version number
