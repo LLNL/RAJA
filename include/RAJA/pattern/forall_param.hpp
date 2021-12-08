@@ -10,6 +10,13 @@
 #define RAJA_EXPT_FORALL_WARN(Msg) RAJA_DEPRECATE(Msg)
 #endif
 
+// TODO : Look into this abomination...
+#if !defined(__GNUC__) || (__GNUC__ > 4)
+#define GCC_GT4_CONSTEXPR constexpr
+#else
+#define GCC_GT4_CONSTEXPR
+#endif
+
 namespace RAJA
 {
 namespace expt
@@ -68,26 +75,25 @@ namespace expt
   public:
     ForallParamPack(){}
 
-    //ForallParamPack(Params... params) {
-    //  param_tup = camp::make_tuple(params...);
-    //};
-
     RAJA_HOST_DEVICE
-    constexpr auto lambda_args(camp::idx_seq<> )
+    GCC_GT4_CONSTEXPR
+    auto lambda_args(camp::idx_seq<> )
     {
       return camp::make_tuple();
     }
 
     template<camp::idx_t Seq>
     RAJA_HOST_DEVICE
-    constexpr auto lambda_args(camp::idx_seq<Seq> )
+    GCC_GT4_CONSTEXPR
+    auto lambda_args(camp::idx_seq<Seq> )
     {
       return camp::get<Seq>(param_tup).get_lambda_arg_tup();
     }
 
     template<camp::idx_t First, camp::idx_t Second, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
-    constexpr auto lambda_args(camp::idx_seq<First, Second, Seq...> )
+    GCC_GT4_CONSTEXPR
+    auto lambda_args(camp::idx_seq<First, Second, Seq...> )
     {
       return camp::tuple_cat_pair(
                camp::get<First>(param_tup).get_lambda_arg_tup(),
@@ -95,17 +101,17 @@ namespace expt
              );
     }
 
-
     ForallParamPack(camp::tuple<Params...> t) : param_tup(t) {};
 
     using lambda_params_seq = camp::make_idx_seq_t<count_lambda_args<camp::nil, Params...>()>;
   }; // struct ForallParamPack 
   
-  template<camp::idx_t Idx, typename... Params>
+  template<camp::idx_t Idx, typename FP>
   RAJA_HOST_DEVICE
-  constexpr auto get_lambda_args(ForallParamPack<Params...>& fpp)
-      -> decltype(  *camp::get<Idx>( fpp.lambda_args(typename ForallParamPack<Params...>::params_seq()) )  ) {
-    return (  *camp::get<Idx>( fpp.lambda_args(typename ForallParamPack<Params...>::params_seq()) )  );
+  GCC_GT4_CONSTEXPR
+  auto get_lambda_args(FP& fpp)
+      -> decltype(  *camp::get<Idx>( fpp.lambda_args(typename FP::params_seq()) )  ) {
+    return (  *camp::get<Idx>( fpp.lambda_args(typename FP::params_seq()) )  );
   }
   
   struct ParamMultiplexer {

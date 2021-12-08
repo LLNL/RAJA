@@ -116,6 +116,56 @@ namespace expt
     }
 
     //
+    // omp for schedule(runtime)
+    //
+    template <typename Iterable, typename Func, typename ForallParam>
+    RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Runtime& p,
+                                 Iterable&& iter,
+                                 Func&& loop_body,
+                                 ForallParam&& f_params)
+    {
+      using EXEC_POL = typename std::decay<decltype(p)>::type;
+      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+      RAJA_OMP_DECLARE_REDUCTION_COMBINE;
+
+      RAJA_EXTRACT_BED_IT(iter);
+      #pragma omp parallel for schedule(runtime) reduction(combine : f_params)
+      for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+        loop_body(begin_it[i]);
+      }
+
+      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+    }
+
+    //
+    // omp for nowait (Auto)
+    //
+    template <typename Iterable, typename Func, typename ForallParam>
+    RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Auto& p,
+                                 Iterable&& iter,
+                                 Func&& loop_body,
+                                 ForallParam&& f_params)
+    {
+      using EXEC_POL = typename std::decay<decltype(p)>::type;
+      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+      RAJA_OMP_DECLARE_REDUCTION_COMBINE;
+
+      RAJA_EXTRACT_BED_IT(iter);
+      #pragma omp parallel
+      {
+      #pragma omp for nowait reduction(combine : f_params)
+      for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+        loop_body(begin_it[i]);
+      }
+      }
+
+      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+    }
+
+// TODO : GCC < 4 does not like how we are defining the types in omp combine
+// when there is a default template argument...
+#if !defined(__GNUC__) || (__GNUC__ > 4)
+    //
     // omp for schedule(dynamic)
     //
     template <typename Iterable, typename Func, int ChunkSize, typename ForallParam,
@@ -208,53 +258,6 @@ namespace expt
     }
 
     //
-    // omp for schedule(runtime)
-    //
-    template <typename Iterable, typename Func, typename ForallParam>
-    RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Runtime& p,
-                                 Iterable&& iter,
-                                 Func&& loop_body,
-                                 ForallParam&& f_params)
-    {
-      using EXEC_POL = typename std::decay<decltype(p)>::type;
-      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
-      RAJA_OMP_DECLARE_REDUCTION_COMBINE;
-
-      RAJA_EXTRACT_BED_IT(iter);
-      #pragma omp parallel for schedule(runtime) reduction(combine : f_params)
-      for (decltype(distance_it) i = 0; i < distance_it; ++i) {
-        loop_body(begin_it[i]);
-      }
-
-      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
-    }
-
-    //
-    // omp for nowait (Auto)
-    //
-    template <typename Iterable, typename Func, typename ForallParam>
-    RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Auto& p,
-                                 Iterable&& iter,
-                                 Func&& loop_body,
-                                 ForallParam&& f_params)
-    {
-      using EXEC_POL = typename std::decay<decltype(p)>::type;
-      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
-      RAJA_OMP_DECLARE_REDUCTION_COMBINE;
-
-      RAJA_EXTRACT_BED_IT(iter);
-      #pragma omp parallel
-      {
-      #pragma omp for nowait reduction(combine : f_params)
-      for (decltype(distance_it) i = 0; i < distance_it; ++i) {
-        loop_body(begin_it[i]);
-      }
-      }
-
-      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
-    }
-
-    //
     // omp for schedule(static) nowait
     //
     template <typename Iterable, typename Func, int ChunkSize, typename ForallParam,
@@ -305,6 +308,8 @@ namespace expt
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
+#endif // !defined(__GNUC__) || (__GNUC__ > 4)
+
   } //  namespace internal
 
   template <typename Schedule, typename Iterable, typename Func, typename ForallParam>
