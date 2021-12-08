@@ -155,11 +155,17 @@ __launch_bounds__(BlockSize, 1) __global__
 ////////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip hip_res,
-                                                    hip_exec<BlockSize, Async>,
-                                                    Iterable&& iter,
-                                                    LoopBody&& loop_body)
+template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async, typename ForallParam>
+RAJA_INLINE 
+concepts::enable_if_t<
+  resources::EventProxy<resources::Hip>,
+  RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
+  RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
+forall_impl(resources::Hip hip_res,
+            hip_exec<BlockSize, Async>,
+            Iterable&& iter,
+            LoopBody&& loop_body,
+            ForallParam)
 {
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;

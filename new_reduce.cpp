@@ -1,4 +1,6 @@
 #include <iostream>
+
+#define RAJA_EXPT_FORALL
 #include <RAJA/RAJA.hpp>
 #include <RAJA/util/Timer.hpp>
 
