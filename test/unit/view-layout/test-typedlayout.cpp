@@ -19,6 +19,8 @@ TYPED_TEST(TypedLayoutUnitTest, TypedLayoutConstructors)
 
   const RAJA::TypedLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam>> l(10,5);
 
+  ASSERT_EQ(TypeParam{50}, l.size());
+
   ASSERT_EQ(TypeParam{0}, l(TypeParam{0}, TypeParam{0}));
 
   ASSERT_EQ(TypeParam{2}, l(TypeParam{0}, TypeParam{2}));
@@ -56,6 +58,7 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_accessor)
   my_layout layout;
   layout = layout_b;
 
+  ASSERT_EQ(TypeParam(15), layout.size());
 
   ASSERT_EQ(TypeParam(0), layout(0, 0));
 
@@ -106,6 +109,8 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_IJ_ProjJ)
   // Construct using variadic "sizes" ctor
   // Zero for J size should correctly produce projective layout
   const my_layout layout(7, 0);
+
+  ASSERT_EQ(TypeParam(7), layout.size());
 
   ASSERT_EQ(TypeParam(0), layout(0, 0));
 

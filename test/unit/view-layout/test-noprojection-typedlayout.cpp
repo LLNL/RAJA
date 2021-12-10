@@ -19,6 +19,8 @@ TYPED_TEST(TypedLayoutNoProjUnitTest, TypedLayoutNoProjConstructors)
 
   const RAJA::TypedLayoutNoProj<TypeParam, RAJA::tuple<TypeParam, TypeParam>> l(10,5);
 
+  ASSERT_EQ(TypeParam{50}, l.size());
+
   ASSERT_EQ(TypeParam{0}, l(TypeParam{0}, TypeParam{0}));
 
   ASSERT_EQ(TypeParam{2}, l(TypeParam{0}, TypeParam{2}));
@@ -56,6 +58,7 @@ TYPED_TEST(TypedLayoutNoProjUnitTest, 2D_accessor)
   my_layout layout;
   layout = layout_b;
 
+  ASSERT_EQ(TypeParam(15), layout.size());
 
   ASSERT_EQ(TypeParam(0), layout(0, 0));
 

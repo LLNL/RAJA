@@ -22,6 +22,8 @@ TEST(OffsetLayoutNoProjUnitTest, Constructors)
    */
   const layout l(5);
 
+  ASSERT_EQ(5, l.size());
+
   /*
    * First element, 0, should have index 0.
    */
@@ -59,6 +61,7 @@ TEST(LayoutNoProjUnitTest, 2D_IJ)
   my_layout layout;
   layout = layout_b;
 
+  ASSERT_EQ(15, layout.size());
 
   ASSERT_EQ(0, layout(0, 0));
 

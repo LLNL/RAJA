@@ -60,6 +60,8 @@ TEST(LayoutUnitTest, 2D_IJ)
   layout = layout_b;
 
 
+  ASSERT_EQ(15, layout.size());
+
   ASSERT_EQ(0, layout(0, 0));
 
   ASSERT_EQ(5, layout(1, 0));
@@ -104,6 +106,8 @@ TEST(LayoutUnitTest, 2D_JI)
       RAJA::make_permuted_layout({{3, 5}},
                                  RAJA::as_array<RAJA::PERM_JI>::get());
 
+  ASSERT_EQ(15, layout.size());
+
   ASSERT_EQ(0, layout(0, 0));
 
   ASSERT_EQ(1, layout(1, 0));
@@ -147,6 +151,8 @@ TEST(LayoutUnitTest, 2D_IJ_ProjJ)
   // Construct using variadic "sizes" ctor
   // Zero for J size should correctly produce projective layout
   const my_layout layout(7, 0);
+
+  ASSERT_EQ(7, layout.size());
 
   ASSERT_EQ(0, layout(0, 0));
 
