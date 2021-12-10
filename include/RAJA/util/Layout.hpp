@@ -538,7 +538,9 @@ struct LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
 #if defined (RAJA_BOUNDS_CHECK_INTERNAL)
     BoundsCheck<0>(indices...);
 #endif
-    return Base::operator()(std::forward<Indices>(indices)...);
+    return sum<IdxLin>(
+      index_calculator<RangeInts, stride_one_dim, IdxLin>{}(
+          indices, strides[RangeInts])... );
   }
 
 
