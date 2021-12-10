@@ -103,7 +103,4 @@ TYPED_TEST(TypedLayoutNoProjUnitTest, 2D_IJ_zero)
   const my_layout layout00(0, 0);
 
   ASSERT_EQ(TypeParam(0), layout00.size());
-
-  // Zero for J size should correctly produce projective layout
-  const my_layout layout(7, 0);
 }
