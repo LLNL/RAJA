@@ -30,4 +30,5 @@ foreach( BACKEND ${KERNEL_BACKENDS} )
   endforeach()
 endforeach()
 
-unset( TEST_TYPES )
+unset( USE_RESOURCE )
+unset( TESTTYPES )
