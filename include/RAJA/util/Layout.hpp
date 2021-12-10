@@ -177,8 +177,12 @@ struct LayoutNoProjBase_impl;
 
 template <camp::idx_t... RangeInts, typename IdxLin,
           ptrdiff_t StrideOneDim, ptrdiff_t StrideMaxDim>
-struct LayoutNoProjBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim, StrideMaxDim>
+struct LayoutNoProjBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
+                             StrideOneDim, StrideMaxDim>
 {
+  using Self = LayoutNoProjBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
+                                     StrideOneDim, StrideMaxDim>;
+
   using IndexLinear = IdxLin;
   using IndexRange = camp::make_idx_seq_t<sizeof...(RangeInts)>;
 
@@ -412,6 +416,8 @@ struct LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
     : LayoutNoProjBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
                             StrideOneDim, StrideMaxDim>
 {
+  using Self = LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
+                               StrideOneDim, StrideMaxDim>;
   using Base = LayoutNoProjBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
                                      StrideOneDim, StrideMaxDim>;
   using Base::n_dims;
