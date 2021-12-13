@@ -10,8 +10,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -91,6 +91,35 @@ inline void free_aligned(void* ptr)
   free(((void**)ptr)[-1]);
 #endif
 }
+
+///
+/// Deleter function object for memory allocated with allocate_aligned
+///
+struct FreeAligned
+{
+  void operator()(void* ptr)
+  {
+    free_aligned(ptr);
+  }
+};
+
+///
+/// Deleter function object for memory allocated with allocate_aligned_type
+/// that calls the destructor for the fist size objects in the storage.
+///
+template < typename T, typename index_type >
+struct FreeAlignedType : FreeAligned
+{
+  index_type size = 0;
+
+  void operator()(T* ptr)
+  {
+    for ( index_type i = size; i > 0; --i ) {
+      ptr[i-1].~T();
+    }
+    FreeAligned::operator()(ptr);
+  }
+};
 
 }  // namespace RAJA
 

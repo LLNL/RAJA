@@ -12,8 +12,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -52,68 +52,260 @@ namespace policy
 namespace omp
 {
 ///
-/// OpenMP parallel for policy implementation
+/// OpenMP parallel policy implementation
 ///
-
 template <typename Iterable, typename Func, typename InnerPolicy>
-RAJA_INLINE void forall_impl(const omp_parallel_exec<InnerPolicy>&,
-                             Iterable&& iter,
-                             Func&& loop_body)
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
+                                                    const omp_parallel_exec<InnerPolicy>&,
+                                                    Iterable&& iter,
+                                                    Func&& loop_body)
 {
-
   RAJA::region<RAJA::omp_parallel_region>([&]() {
     using RAJA::internal::thread_privatize;
     auto body = thread_privatize(loop_body);
-    forall_impl(InnerPolicy{}, iter, body.get_priv());
+    forall_impl(host_res, InnerPolicy{}, iter, body.get_priv());
   });
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
+
 ///
-/// OpenMP for nowait policy implementation
+/// OpenMP parallel for schedule policy implementation
 ///
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const omp_for_nowait_exec&,
-                             Iterable&& iter,
-                             Func&& loop_body)
+namespace internal
 {
-  RAJA_EXTRACT_BED_IT(iter);
-#pragma omp for nowait
-  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
-    loop_body(begin_it[i]);
+
+  /// Tag dispatch for omp forall
+
+  //
+  // omp for (Auto)
+  //
+  template <typename Iterable, typename Func>
+  RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Auto&,
+                               Iterable&& iter,
+                               Func&& loop_body)
+  {
+    RAJA_EXTRACT_BED_IT(iter);
+    #pragma omp for
+    for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+      loop_body(begin_it[i]);
+    }
   }
+
+  //
+  // omp for schedule(static)
+  //
+  template <typename Iterable, typename Func, int ChunkSize,
+    typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
+  RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Static<ChunkSize>&,
+                               Iterable&& iter,
+                               Func&& loop_body)
+  {
+    RAJA_EXTRACT_BED_IT(iter);
+    #pragma omp for schedule(static)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+      loop_body(begin_it[i]);
+    }
+  }
+
+  //
+  // omp for schedule(static, ChunkSize)
+  //
+  template <typename Iterable, typename Func, int ChunkSize,
+    typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
+  RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Static<ChunkSize>&,
+                               Iterable&& iter,
+                               Func&& loop_body)
+  {
+    RAJA_EXTRACT_BED_IT(iter);
+    #pragma omp for schedule(static, ChunkSize)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+      loop_body(begin_it[i]);
+    }
+  }
+
+  //
+  // omp for schedule(dynamic)
+  //
+  template <typename Iterable, typename Func, int ChunkSize,
+    typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
+  RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>&,
+                               Iterable&& iter,
+                               Func&& loop_body)
+  {
+    RAJA_EXTRACT_BED_IT(iter);
+    #pragma omp for schedule(dynamic)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+      loop_body(begin_it[i]);
+    }
+  }
+
+  //
+  // omp for schedule(dynamic, ChunkSize)
+  //
+  template <typename Iterable, typename Func, int ChunkSize,
+    typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
+  RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>&,
+                               Iterable&& iter,
+                               Func&& loop_body)
+  {
+    RAJA_EXTRACT_BED_IT(iter);
+    #pragma omp for schedule(dynamic, ChunkSize)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+      loop_body(begin_it[i]);
+    }
+  }
+
+  //
+  // omp for schedule(guided)
+  //
+  template <typename Iterable, typename Func, int ChunkSize,
+    typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
+  RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>&,
+                               Iterable&& iter,
+                               Func&& loop_body)
+  {
+    RAJA_EXTRACT_BED_IT(iter);
+    #pragma omp for schedule(guided)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+      loop_body(begin_it[i]);
+    }
+  }
+
+  //
+  // omp for schedule(guided, ChunkSize)
+  //
+  template <typename Iterable, typename Func, int ChunkSize,
+    typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
+  RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>&,
+                               Iterable&& iter,
+                               Func&& loop_body)
+  {
+    RAJA_EXTRACT_BED_IT(iter);
+    #pragma omp for schedule(guided, ChunkSize)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+      loop_body(begin_it[i]);
+    }
+  }
+
+  //
+  // omp for schedule(runtime)
+  //
+  template <typename Iterable, typename Func>
+  RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Runtime&,
+                               Iterable&& iter,
+                               Func&& loop_body)
+  {
+    RAJA_EXTRACT_BED_IT(iter);
+    #pragma omp for schedule(runtime)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+      loop_body(begin_it[i]);
+    }
+  }
+
+  #if !defined(RAJA_COMPILER_MSVC)
+  // dynamic & guided
+  template <typename Policy, typename Iterable, typename Func>
+  RAJA_INLINE void forall_impl(const Policy&,
+                               Iterable&& iter,
+                               Func&& loop_body)
+  {
+    omp_sched_t prev_sched;
+    int prev_chunk;
+    omp_get_schedule(&prev_sched, &prev_chunk);
+    omp_set_schedule(Policy::schedule, Policy::chunk_size);
+    forall_impl(::RAJA::policy::omp::Runtime{}, std::forward<Iterable>(iter), std::forward<Func>(loop_body));
+    omp_set_schedule(prev_sched, prev_chunk);
+  }
+  #endif
+
+
+  /// Tag dispatch for omp forall with nowait
+
+  //
+  // omp for nowait (Auto)
+  //
+  template <typename Iterable, typename Func>
+  RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Auto&,
+                               Iterable&& iter,
+                               Func&& loop_body)
+  {
+    RAJA_EXTRACT_BED_IT(iter);
+    #pragma omp for nowait
+    for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+      loop_body(begin_it[i]);
+    }
+  }
+
+  //
+  // omp for schedule(static) nowait
+  //
+  template <typename Iterable, typename Func, int ChunkSize,
+    typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
+  RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Static<ChunkSize>&,
+                               Iterable&& iter,
+                               Func&& loop_body)
+  {
+    RAJA_EXTRACT_BED_IT(iter);
+    #pragma omp for schedule(static) nowait
+    for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+      loop_body(begin_it[i]);
+    }
+  }
+
+  //
+  // omp for schedule(static, ChunkSize) nowait
+  //
+  template <typename Iterable, typename Func, int ChunkSize,
+    typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
+  RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Static<ChunkSize>&,
+                               Iterable&& iter,
+                               Func&& loop_body)
+  {
+    RAJA_EXTRACT_BED_IT(iter);
+    #pragma omp for schedule(static, ChunkSize) nowait
+    for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+      loop_body(begin_it[i]);
+    }
+  }
+
+  #if !defined(RAJA_COMPILER_MSVC)
+  // dynamic & guided
+  template <typename Policy, typename Iterable, typename Func>
+  RAJA_INLINE void forall_impl_nowait(const Policy&,
+                               Iterable&& iter,
+                               Func&& loop_body)
+  {
+    omp_sched_t prev_sched;
+    int prev_chunk;
+    omp_get_schedule(&prev_sched, &prev_chunk);
+    omp_set_schedule(Policy::schedule, Policy::chunk_size);
+    forall_impl_nowait(::RAJA::policy::omp::Runtime{}, std::forward<Iterable>(iter), std::forward<Func>(loop_body));
+    omp_set_schedule(prev_sched, prev_chunk);
+  }
+  #endif
+
+} // end namespace internal
+
+template <typename Schedule, typename Iterable, typename Func>
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
+                                                               const omp_for_schedule_exec<Schedule>&,
+                                                               Iterable&& iter,
+                                                               Func&& loop_body)
+{
+  internal::forall_impl(Schedule{}, std::forward<Iterable>(iter), std::forward<Func>(loop_body));
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
-///
-/// OpenMP parallel for policy implementation
-///
-
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const omp_for_exec&,
-                             Iterable&& iter,
-                             Func&& loop_body)
+template <typename Schedule, typename Iterable, typename Func>
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
+                                                               const omp_for_nowait_schedule_exec<Schedule>&,
+                                                               Iterable&& iter,
+                                                               Func&& loop_body)
 {
-  RAJA_EXTRACT_BED_IT(iter);
-#pragma omp for
-  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
-    loop_body(begin_it[i]);
-  }
-}
-
-///
-/// OpenMP parallel for static policy implementation
-///
-
-template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE void forall_impl(const omp_for_static<ChunkSize>&,
-                             Iterable&& iter,
-                             Func&& loop_body)
-{
-  RAJA_EXTRACT_BED_IT(iter);
-#pragma omp for schedule(static, ChunkSize)
-  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
-    loop_body(begin_it[i]);
-  }
+  internal::forall_impl_nowait(Schedule{}, std::forward<Iterable>(iter), std::forward<Func>(loop_body));
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 //

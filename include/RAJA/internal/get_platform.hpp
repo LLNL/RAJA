@@ -2,7 +2,7 @@
 #define RAJA_get_platform_HPP
 
 #include "RAJA/util/Operators.hpp"
-#include "RAJA/internal/LegacyCompatibility.hpp"
+#include "RAJA/internal/foldl.hpp"
 #include "RAJA/pattern/kernel/internal.hpp"
 
 namespace RAJA
@@ -47,7 +47,7 @@ struct get_platform {
 template <typename... Policies>
 struct get_platform_from_list {
   static constexpr Platform value =
-      VarOps::foldl(max_platform(), get_platform<Policies>::value...);
+      foldl(max_platform(), get_platform<Policies>::value...);
 };
 
 /*!
@@ -104,7 +104,7 @@ struct get_statement_platform {
 template <typename... Stmts>
 struct get_platform<RAJA::internal::StatementList<Stmts...>> {
   static constexpr Platform value =
-      VarOps::foldl(max_platform(), get_statement_platform<Stmts>::value...);
+      foldl(max_platform(), get_statement_platform<Stmts>::value...);
 };
 
 /*!

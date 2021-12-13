@@ -1,6 +1,6 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -70,7 +70,7 @@ object is retrieved after the kernel by calling a 'get()' method on the
 reduction object. The min-loc/max-loc index values are obtained using 
 'getLoc()' methods.
 
-For parallel multi-threading execution via OpenMP, the example can be run 
+For parallel multithreading execution via OpenMP, the example can be run 
 by replacing the execution and reduction policies with:
 
 .. literalinclude:: ../../../../examples/tut_reductions.cpp
@@ -79,11 +79,18 @@ by replacing the execution and reduction policies with:
    :language: C++
 
 Similarly, the kernel containing the reductions can be run in parallel
-on a CUDA GPU using these policies:
+on a GPU using CUDA policies:
 
 .. literalinclude:: ../../../../examples/tut_reductions.cpp
    :start-after: _reductions_raja_cudapolicy_start
    :end-before: _reductions_raja_cudapolicy_end
+   :language: C++
+
+or HIP policies:
+
+.. literalinclude:: ../../../../examples/tut_reductions.cpp
+   :start-after: _reductions_raja_hippolicy_start
+   :end-before: _reductions_raja_hippolicy_end
    :language: C++
 
 .. note:: Each RAJA reduction type requires a reduction policy that must 

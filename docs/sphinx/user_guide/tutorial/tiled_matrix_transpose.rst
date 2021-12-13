@@ -1,6 +1,6 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -60,7 +60,7 @@ RAJA::kernel Variants
 ^^^^^^^^^^^^^^^^^^^^^
 
 For ``RAJA::kernel`` variants, we use ``RAJA::statement::Tile`` types
-for the outer loop tiling and ``RAJA::statement::tile_fixed`` types to 
+for the outer loop tiling and ``RAJA::tile_fixed`` types to 
 indicate the tile dimensions. The complete sequential RAJA variant is:
 
 .. literalinclude:: ../../../../examples/tut_tiled-matrix-transpose.cpp
@@ -77,7 +77,7 @@ to these statement types refer to the entries in the iteration space tuple
 passed to the ``RAJA::kernel`` method.
 
 The file ``RAJA/examples/tut_tiled-matrix-transpose.cpp`` contains the complete working example code for the examples described in this section, including
-OpenMP and CUDA variants.
+OpenMP, CUDA, and HIP variants.
 
 A more advanced version using RAJA local arrays for CPU cache blocking and
 using GPU shared memory is discussed in :ref:`matrixtransposelocalarray-label`.

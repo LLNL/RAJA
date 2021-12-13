@@ -1,6 +1,6 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -116,7 +116,7 @@ kernel is:
 The ``RAJA::statement::Tile`` types in the execution policy define
 tiling of the outer 'row' (iteration space tuple index '1') and 'col' 
 (iteration space tuple index '0') loops, including tile sizes 
-(``RAJA::statement::tile_fixed`` types) and loop execution policies. Next, 
+(``RAJA::tile_fixed`` types) and loop execution policies. Next, 
 the ``RAJA::statement::InitLocalMem`` type initializes the local stack array
 based on the memory policy type (here, we use ``RAJA::cpu_tile_mem`` for
 a CPU stack-allocated array). The ``RAJA::ParamList<2>`` parameter indicates 
@@ -182,7 +182,7 @@ execution policy and kernel:
    :language: C++
 
 Here, the two ``RAJA::statement::Lambda`` types in the execution policy show
-two different ways to specify the segments (``RAJA::statement::Segs``) 
+two different ways to specify the segments (``RAJA::Segs``) 
 associated with the matrix column and row indices. That is, we can use a 
 ``Segs`` statement for each argument, or include multiple segment ids in one
 statement. 
@@ -191,7 +191,7 @@ Note that we are using ``RAJA::statement::For`` types for the inner tile
 loops instead of `RAJA::statement::ForICount`` types used in the first variant.
 As a consequence of specifying lambda arguments, there are two main differences.
 The local tile indices are properly computed and passed to the lambda 
-expressions as a result of the ``RAJA::statement::Offsets`` types that appear
+expressions as a result of the ``RAJA::Offsets`` types that appear
 in the lambda statement types. The ``RAJA::statement::Lambda`` type for each
 lambda shows the two ways to specify the local tile index args; we can use an
 ``Offsets`` statement for each argument, or include multiple segment ids in one
@@ -200,4 +200,4 @@ tuple in this case, the local tile array. The placeholders are not needed.
 
 The file ``RAJA/examples/tut_matrix-transpose-local-array.cpp`` contains the 
 complete working example code for the examples described in this section along 
-with OpenMP and CUDA variants.
+with OpenMP, CUDA, and HIP variants.

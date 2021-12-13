@@ -10,8 +10,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -27,8 +27,6 @@
 #include "camp/camp.hpp"
 
 #include "RAJA/index/IndexValue.hpp"
-
-#include "RAJA/internal/LegacyCompatibility.hpp"
 
 #include "RAJA/util/Permutations.hpp"
 #include "RAJA/util/PermutedLayout.hpp"
@@ -46,8 +44,11 @@ template <camp::idx_t... RangeInts, typename IdxLin>
 struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   using Self = OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>;
   using IndexRange = camp::idx_seq<RangeInts...>;
-  using Base = detail::LayoutBase_impl<IndexRange, IdxLin>;
+  using IndexLinear = IdxLin;
+  using Base = RAJA::detail::LayoutBase_impl<IndexRange, IdxLin>;
   Base base_;
+
+  static constexpr camp::idx_t stride_one_dim = Base::stride_one_dim;
 
   static constexpr size_t n_dims = sizeof...(RangeInts);
   IdxLin offsets[n_dims]={0}; //If not specified set to zero
@@ -76,7 +77,7 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
     printf("Error at index %d, value %ld is not within bounds [%ld, %ld] \n",
            static_cast<int>(N), static_cast<long int>(idx),
            static_cast<long int>(offsets[N]), static_cast<long int>(offsets[N] + base_.sizes[N] - 1));
-    RAJA_ASSERT(offsets[N] < idx && idx < (offsets[N] + base_.sizes[N]) && "Layout index out of bounds \n");
+    RAJA_ABORT_OR_THROW("Out of bounds error \n");
   }
 
   template <camp::idx_t N>
@@ -87,7 +88,10 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   template <camp::idx_t N, typename Idx, typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck(Idx idx, Indices... indices) const
   {
-    if(!(0<idx && idx < base_.sizes[N])) BoundsCheckError<N>(idx);
+    if(!(offsets[N] <=idx && idx < offsets[N] + base_.sizes[N]))
+    {
+      BoundsCheckError<N>(idx);
+    }
     RAJA_UNUSED_VAR(idx);
     BoundsCheck<N+1>(indices...);
   }
@@ -108,7 +112,7 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
       const Layout<sizeof...(RangeInts), IdxLin>& rhs)
   {
     OffsetLayout_impl ret{rhs};
-    VarOps::ignore_args((ret.offsets[RangeInts] = offsets_in[RangeInts])...);
+    camp::sink((ret.offsets[RangeInts] = offsets_in[RangeInts])...);
     return ret;
   }
 
@@ -116,6 +120,14 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   OffsetLayout_impl(const Layout<sizeof...(RangeInts), IdxLin>& rhs)
       : base_{rhs}
   {
+  }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_stride() const {
+    return base_.get_dim_stride();
   }
 };
 
@@ -149,9 +161,15 @@ struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>
    using Self = TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>;
    using Base = OffsetLayout<sizeof...(DimTypes), Index_type>;
    using DimArr = std::array<Index_type, sizeof...(DimTypes)>;
+   using IndexLinear = IdxLin;
 
    // Pull in base coonstructors
-   using Base::Base;
+ #if 0
+   // This breaks with nvcc11
+ using Base::Base;
+ #else
+   using OffsetLayout<sizeof...(DimTypes), Index_type>::OffsetLayout;
+ #endif
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(DimTypes... indices) const
   {

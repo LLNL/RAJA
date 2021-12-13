@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -30,31 +30,47 @@ struct Target {
 struct Distribute {
 };
 
+struct Collapse {
+};
+
 template <size_t ThreadsPerTeam>
 struct omp_target_parallel_for_exec
-    : make_policy_pattern_t<Policy::target_openmp,
+    : make_policy_pattern_platform_t<Policy::target_openmp,
                             Pattern::forall,
+                            Platform::omp_target,
                             omp::Target,
                             omp::Teams<ThreadsPerTeam>,
                             omp::Distribute> {
 };
 
 struct omp_target_parallel_for_exec_nt
-    : make_policy_pattern_t<Policy::target_openmp,
+    : make_policy_pattern_platform_t<Policy::target_openmp,
                             Pattern::forall,
+                            Platform::omp_target,
                             omp::Target,
                             omp::Distribute> {
 };
 
 struct omp_target_parallel_collapse_exec
-    : make_policy_pattern_t<Policy::target_openmp,
+    : make_policy_pattern_platform_t<Policy::target_openmp,
                             Pattern::forall,
+                            Platform::omp_target,
                             omp::Target,
                             omp::Collapse> {
 };
 
 struct omp_target_reduce
-    : make_policy_pattern_t<Policy::target_openmp, Pattern::reduce> {
+    : make_policy_pattern_platform_t<Policy::target_openmp, Pattern::reduce, Platform::omp_target> {
+};
+
+///
+/// WorkGroup execution policies
+///
+struct omp_target_work
+    : make_policy_pattern_launch_platform_t<Policy::target_openmp,
+                                            Pattern::workgroup_exec,
+                                            Launch::sync,
+                                            Platform::omp_target> {
 };
 
 
@@ -66,6 +82,7 @@ using policy::omp::omp_target_parallel_for_exec;
 using policy::omp::omp_target_parallel_for_exec_nt;
 using policy::omp::omp_target_reduce;
 using policy::omp::omp_target_parallel_collapse_exec;
+using policy::omp::omp_target_work;
 #endif
 
 } // closing brace for RAJA namespace

@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -12,6 +12,8 @@
 #include <vector>
 
 #include "RAJA/RAJA.hpp"
+
+#include "camp/resource.hpp"
 
 #include "memoryManager.hpp"
 
@@ -210,30 +212,36 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #endif
 
- 
-// 
-// Create a RAJA TypedIndexSet with four ListSegments, one for the indices of 
-// the elements in each subsut. This will be used in the RAJA OpenMP and CUDA 
-// variants of the vertex sum calculation.
-//
+
 // The TypedIndexSet is a variadic template, where the template arguments
 // are the segment types that the TypedIndexSet can hold. 
 // 
   using SegmentType = RAJA::TypedListSegment<int>;
+ 
+#if defined(RAJA_ENABLE_OPENMP)
+
+//
+// Resource object used to construct list segment objects with indices
+// living in host (CPU) memory.
+//
+  camp::resources::Resource host_res{camp::resources::Host()};
+
+// 
+// Create a RAJA TypedIndexSet with four ListSegments, one for the indices of 
+// the elements in each subsut. This will be used in the RAJA OpenMP and CUDA 
+// variants of the vertex sum calculation.
 
   RAJA::TypedIndexSet<SegmentType> colorset;
 
-  colorset.push_back( SegmentType(&idx[0][0], idx[0].size()) ); 
-  colorset.push_back( SegmentType(&idx[1][0], idx[1].size()) ); 
-  colorset.push_back( SegmentType(&idx[2][0], idx[2].size()) ); 
-  colorset.push_back( SegmentType(&idx[3][0], idx[3].size()) ); 
+  colorset.push_back( SegmentType(&idx[0][0], idx[0].size(), host_res) ); 
+  colorset.push_back( SegmentType(&idx[1][0], idx[1].size(), host_res) ); 
+  colorset.push_back( SegmentType(&idx[2][0], idx[2].size(), host_res) ); 
+  colorset.push_back( SegmentType(&idx[3][0], idx[3].size(), host_res) ); 
 
 //----------------------------------------------------------------------------//
 // RAJA OpenMP vertex sum calculation using TypedIndexSet (sequential iteration 
 // over segments, OpenMP parallel iteration of each segment)
 //----------------------------------------------------------------------------//
-
-#if defined(RAJA_ENABLE_OPENMP)
 
   std::cout << "\n Running RAJA OpenMP index set vertex sum...\n";
 
@@ -264,6 +272,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_CUDA)
 
+//
+// Resource object used to construct list segment objects with indices
+// living in host (CPU) memory.
+//
+  camp::resources::Resource cuda_res{camp::resources::Cuda()};
+
+//
+// Create a RAJA TypedIndexSet with four ListSegments, one for the indices of
+// the elements in each subsut. This will be used in the RAJA OpenMP and CUDA
+// variants of the vertex sum calculation.
+
+  RAJA::TypedIndexSet<SegmentType> cuda_colorset;
+
+  cuda_colorset.push_back( SegmentType(&idx[0][0], idx[0].size(), cuda_res) );
+  cuda_colorset.push_back( SegmentType(&idx[1][0], idx[1].size(), cuda_res) );
+  cuda_colorset.push_back( SegmentType(&idx[2][0], idx[2].size(), cuda_res) );
+  cuda_colorset.push_back( SegmentType(&idx[3][0], idx[3].size(), cuda_res) );
+
   std::cout << "\n Running RAJA CUDA index set vertex sum...\n";
 
   std::memset(areav, 0, Nvert*Nvert * sizeof(double));
@@ -271,7 +297,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL4 = RAJA::ExecPolicy<RAJA::seq_segit, 
                                      RAJA::cuda_exec<CUDA_BLOCK_SIZE>>;
 
-  RAJA::forall<EXEC_POL4>(colorset, [=] RAJA_DEVICE (int ie) {
+  RAJA::forall<EXEC_POL4>(cuda_colorset, [=] RAJA_DEVICE (int ie) {
     int* iv = &(e2v_map[4*ie]);
     areav[ iv[0] ] += areae[ie] / 4.0 ;
     areav[ iv[1] ] += areae[ie] / 4.0 ;

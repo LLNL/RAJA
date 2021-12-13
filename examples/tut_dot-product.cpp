@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -37,6 +37,14 @@
 const int CUDA_BLOCK_SIZE = 256;
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+const int HIP_BLOCK_SIZE = 256;
+#endif
+
+#if defined(RAJA_ENABLE_SYCL)
+const int SYCL_BLOCK_SIZE = 256;
+#endif
+
 //
 //  Function to check dot product result.
 //
@@ -47,6 +55,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n\nRAJA vector dot product example...\n";
 
+#if defined(RAJA_ENABLE_SYCL)
+  memoryManager::sycl_res = new camp::resources::Resource{camp::resources::Sycl()};
+  ::RAJA::sycl::detail::setQueue(memoryManager::sycl_res);
+#endif
+
 //
 // Define vector length
 //
@@ -55,8 +68,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Allocate and initialize vector data
 //
-  int *a = memoryManager::allocate<int>(N);
-  int *b = memoryManager::allocate<int>(N);
+  double *a = memoryManager::allocate<double>(N);
+  double *b = memoryManager::allocate<double>(N);
 
   for (int i = 0; i < N; ++i) {
     a[i] = 1.0;
@@ -144,6 +157,59 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
 //----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+  std::cout << "\n Running RAJA HIP dot product...\n";
+
+  int *d_a = memoryManager::allocate_gpu<int>(N);
+  int *d_b = memoryManager::allocate_gpu<int>(N);
+
+  hipErrchk(hipMemcpy( d_a, a, N * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_b, b, N * sizeof(int), hipMemcpyHostToDevice ));
+
+  // _rajahip_dotprod_start
+  RAJA::ReduceSum<RAJA::hip_reduce, double> hpdot(0.0);
+
+  RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
+    [=] RAJA_DEVICE (int i) {
+    hpdot += d_a[i] * d_b[i];
+  });
+
+  dot = hpdot.get();
+  // _rajahip_dotprod_end
+
+  std::cout << "\t (a, b) = " << dot << std::endl;
+
+  checkResult(dot, dot_ref);
+
+  memoryManager::deallocate_gpu(d_a);
+  memoryManager::deallocate_gpu(d_b);
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_SYCL)
+  std::cout << "\n Running RAJA SYCL dot product...\n";
+
+  // _rajasycl_dotprod_start
+  RAJA::ReduceSum<RAJA::sycl_reduce, double> hpdot(0.0);
+
+  RAJA::forall<RAJA::sycl_exec_nontrivial<SYCL_BLOCK_SIZE, false>>(RAJA::RangeSegment(0, N),
+    [=] RAJA_DEVICE (int i) {
+    hpdot += a[i] * b[i];
+  });
+
+  dot = static_cast<double>(hpdot.get());
+  // _rajasycl_dotprod_end
+
+  std::cout << "\t (a, b) = " << dot << std::endl;
+
+  checkResult(dot, dot_ref);
+
+#endif
+
+//----------------------------------------------------------------------------//
+
 
   memoryManager::deallocate(a);
   memoryManager::deallocate(b);

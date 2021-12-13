@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -68,6 +68,10 @@
 */
 #if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE = 256;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+const int HIP_BLOCK_SIZE = 256;
 #endif
 
 //
@@ -500,6 +504,147 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
   std::cout<< "\trun time : "<< minRun << " seconds" << std::endl;
   checkResult(Cview2, N, N_r, N_c);
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+
+  std::cout << " \n Performing batched matrix multiplication"
+            << " with layout 1 (RAJA - hip) ... " << std::endl;
+
+  double *d_A = memoryManager::allocate_gpu<double>(N_c * N_r * N);
+  double *d_B = memoryManager::allocate_gpu<double>(N_c * N_r * N);
+  double *d_C = memoryManager::allocate_gpu<double>(N_c * N_r * N);
+
+  double *d_A2 = memoryManager::allocate_gpu<double>(N_c * N_r * N);
+  double *d_B2 = memoryManager::allocate_gpu<double>(N_c * N_r * N);
+  double *d_C2 = memoryManager::allocate_gpu<double>(N_c * N_r * N);
+
+  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> d_Aview(d_A, layout1);
+  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> d_Bview(d_B, layout1);
+  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> d_Cview(d_C, layout1);
+
+  RAJA::View<double, RAJA::Layout<3, Index_type, 0>> d_Aview2(d_A2, layout2);
+  RAJA::View<double, RAJA::Layout<3, Index_type, 0>> d_Bview2(d_B2, layout2);
+  RAJA::View<double, RAJA::Layout<3, Index_type, 0>> d_Cview2(d_C2, layout2);
+
+  hipErrchk(hipMemcpy( d_A, A, N_c * N_r * N * sizeof(double), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_B, B, N_c * N_r * N * sizeof(double), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_A2, A2, N_c * N_r * N * sizeof(double), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_B2, B2, N_c * N_r * N * sizeof(double), hipMemcpyHostToDevice ));
+
+  minRun = std::numeric_limits<double>::max();
+  for (int i = 0; i < NITER; ++i) {
+
+    timer.start();
+    RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
+        RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(Index_type e) {
+
+          d_Cview(e, 0, 0) = d_Aview(e, 0, 0) * d_Bview(e, 0, 0)
+                           + d_Aview(e, 0, 1) * d_Bview(e, 1, 0)
+                           + d_Aview(e, 0, 2) * d_Bview(e, 2, 0);
+          d_Cview(e, 0, 1) = d_Aview(e, 0, 0) * d_Bview(e, 0, 1)
+                           + d_Aview(e, 0, 1) * d_Bview(e, 1, 1)
+                           + d_Aview(e, 0, 2) * d_Bview(e, 2, 1);
+          d_Cview(e, 0, 2) = d_Aview(e, 0, 0) * d_Bview(e, 0, 2)
+                           + d_Aview(e, 0, 1) * d_Bview(e, 1, 2)
+                           + d_Aview(e, 0, 2) * d_Bview(e, 2, 2);
+
+          d_Cview(e, 1, 0) = d_Aview(e, 1, 0) * d_Bview(e, 0, 0)
+                           + d_Aview(e, 1, 1) * d_Bview(e, 1, 0)
+                           + d_Aview(e, 1, 2) * d_Bview(e, 2, 0);
+          d_Cview(e, 1, 1) = d_Aview(e, 1, 0) * d_Bview(e, 0, 1)
+                           + d_Aview(e, 1, 1) * d_Bview(e, 1, 1)
+                           + d_Aview(e, 1, 2) * d_Bview(e, 2, 1);
+          d_Cview(e, 1, 2) = d_Aview(e, 1, 0) * d_Bview(e, 0, 2)
+                           + d_Aview(e, 1, 1) * d_Bview(e, 1, 2)
+                           + d_Aview(e, 1, 2) * d_Bview(e, 2, 2);
+
+          d_Cview(e, 2, 0) = d_Aview(e, 2, 0) * d_Bview(e, 0, 0)
+                           + d_Aview(e, 2, 1) * d_Bview(e, 1, 0)
+                           + d_Aview(e, 2, 2) * d_Bview(e, 2, 0);
+          d_Cview(e, 2, 1) = d_Aview(e, 2, 0) * d_Bview(e, 0, 1)
+                           + d_Aview(e, 2, 1) * d_Bview(e, 1, 1)
+                           + d_Aview(e, 2, 2) * d_Bview(e, 2, 1);
+          d_Cview(e, 2, 2) = d_Aview(e, 2, 0) * d_Bview(e, 0, 2)
+                           + d_Aview(e, 2, 1) * d_Bview(e, 1, 2)
+                           + d_Aview(e, 2, 2) * d_Bview(e, 2, 2);
+
+        });
+    timer.stop();
+
+    RAJA::Timer::ElapsedType tMin = timer.elapsed();
+    if (tMin < minRun) minRun = tMin;
+    timer.reset();
+  }
+
+  hipErrchk(hipMemcpy( C, d_C, N_c * N_r * N * sizeof(double), hipMemcpyDeviceToHost ));
+
+  std::cout<< "\trun time: "<< minRun << " seconds" << std::endl;
+  checkResult(Cview, N, N_r, N_c);
+
+//----------------------------------------------------------------------------//
+
+  std::cout << " \n Performing batched matrix multiplication"
+            << " with layout 2 (RAJA - hip) ... " << std::endl;
+
+  minRun = std::numeric_limits<double>::max();
+  for (int i = 0; i < NITER; ++i) {
+
+    timer.start();
+    RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
+        RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(Index_type e) {
+
+          d_Cview2(e, 0, 0) = d_Aview2(e, 0, 0) * d_Bview2(e, 0, 0)
+                            + d_Aview2(e, 0, 1) * d_Bview2(e, 1, 0)
+                            + d_Aview2(e, 0, 2) * d_Bview2(e, 2, 0);
+          d_Cview2(e, 0, 1) = d_Aview2(e, 0, 0) * d_Bview2(e, 0, 1)
+                            + d_Aview2(e, 0, 1) * d_Bview2(e, 1, 1)
+                            + d_Aview2(e, 0, 2) * d_Bview2(e, 2, 1);
+          d_Cview2(e, 0, 2) = d_Aview2(e, 0, 0) * d_Bview2(e, 0, 2)
+                            + d_Aview2(e, 0, 1) * d_Bview2(e, 1, 2)
+                            + d_Aview2(e, 0, 2) * d_Bview2(e, 2, 2);
+
+          d_Cview2(e, 1, 0) = d_Aview2(e, 1, 0) * d_Bview2(e, 0, 0)
+                            + d_Aview2(e, 1, 1) * d_Bview2(e, 1, 0)
+                            + d_Aview2(e, 1, 2) * d_Bview2(e, 2, 0);
+          d_Cview2(e, 1, 1) = d_Aview2(e, 1, 0) * d_Bview2(e, 0, 1)
+                            + d_Aview2(e, 1, 1) * d_Bview2(e, 1, 1)
+                            + d_Aview2(e, 1, 2) * d_Bview2(e, 2, 1);
+          d_Cview2(e, 1, 2) = d_Aview2(e, 1, 0) * d_Bview2(e, 0, 2)
+                            + d_Aview2(e, 1, 1) * d_Bview2(e, 1, 2)
+                            + d_Aview2(e, 1, 2) * d_Bview2(e, 2, 2);
+
+          d_Cview2(e, 2, 0) = d_Aview2(e, 2, 0) * d_Bview2(e, 0, 0)
+                            + d_Aview2(e, 2, 1) * d_Bview2(e, 1, 0)
+                            + d_Aview2(e, 2, 2) * d_Bview2(e, 2, 0);
+          d_Cview2(e, 2, 1) = d_Aview2(e, 2, 0) * d_Bview2(e, 0, 1)
+                            + d_Aview2(e, 2, 1) * d_Bview2(e, 1, 1)
+                            + d_Aview2(e, 2, 2) * d_Bview2(e, 2, 1);
+          d_Cview2(e, 2, 2) = d_Aview2(e, 2, 0) * d_Bview2(e, 0, 2)
+                            + d_Aview2(e, 2, 1) * d_Bview2(e, 1, 2)
+                            + d_Aview2(e, 2, 2) * d_Bview2(e, 2, 2);
+
+        });
+    timer.stop();
+
+    RAJA::Timer::ElapsedType tMin = timer.elapsed();
+    if (tMin < minRun) minRun = tMin;
+    timer.reset();
+  }
+
+  hipErrchk(hipMemcpy( C2, d_C2, N_c * N_r * N * sizeof(double), hipMemcpyDeviceToHost ));
+
+  std::cout<< "\trun time : "<< minRun << " seconds" << std::endl;
+  checkResult(Cview2, N, N_r, N_c);
+
+  memoryManager::deallocate_gpu(d_A);
+  memoryManager::deallocate_gpu(d_B);
+  memoryManager::deallocate_gpu(d_C);
+  memoryManager::deallocate_gpu(d_A2);
+  memoryManager::deallocate_gpu(d_B2);
+  memoryManager::deallocate_gpu(d_C2);
 #endif
 
 //----------------------------------------------------------------------------//

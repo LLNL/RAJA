@@ -9,8 +9,8 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -41,16 +41,26 @@ namespace scan
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename BinFn>
-concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
-inclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f)
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                      type_traits::is_sequential_policy<ExecPolicy>>
+inclusive_inplace(
+    resources::Host host_res,
+    const ExecPolicy &,
+    Iter begin,
+    Iter end,
+    BinFn f)
 {
-  auto agg = *begin;
+  using ValueT = typename std::remove_reference<decltype(*begin)>::type;
+  ValueT agg = *begin;
 
   RAJA_NO_SIMD
   for (Iter i = ++begin; i != end; ++i) {
-    agg = f(*i, agg);
+    agg = f(agg, *i);
     *i = agg;
   }
+
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -58,18 +68,32 @@ inclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f)
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename BinFn, typename T>
-concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
-exclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f, T v)
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                      type_traits::is_sequential_policy<ExecPolicy>>
+exclusive_inplace(
+    resources::Host host_res,
+    const ExecPolicy &,
+    Iter begin,
+    Iter end,
+    BinFn f,
+    T v)
 {
-  const int n = end - begin;
-  decltype(*begin) agg = v;
+  using std::distance;
+  const auto n = distance(begin, end);
+  using DistanceT = typename std::remove_const<decltype(n)>::type;
+
+  using ValueT = typename std::remove_reference<decltype(*begin)>::type;
+  ValueT agg = v;
 
   RAJA_NO_SIMD
-  for (int i = 0; i < n; ++i) {
-    auto t = *(begin + i);
-    *(begin + i) = agg;
+  for (DistanceT i = 0; i < n; ++i) {
+    auto t = begin[i];
+    begin[i] = agg;
     agg = f(agg, t);
   }
+
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -77,14 +101,20 @@ exclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f, T v)
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename OutIter, typename BinFn>
-concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> inclusive(
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                      type_traits::is_sequential_policy<ExecPolicy>>
+inclusive(
+    resources::Host host_res,
     const ExecPolicy &,
     const Iter begin,
     const Iter end,
     OutIter out,
     BinFn f)
 {
-  auto agg = *begin;
+  using ValueT = typename std::remove_reference<decltype(*out)>::type;
+  ValueT agg = *begin;
+
   *out++ = agg;
 
   RAJA_NO_SIMD
@@ -92,6 +122,8 @@ concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> inclusive(
     agg = f(agg, *i);
     *out++ = agg;
   }
+
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -103,7 +135,11 @@ template <typename ExecPolicy,
           typename OutIter,
           typename BinFn,
           typename T>
-concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> exclusive(
+RAJA_INLINE
+concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                      type_traits::is_sequential_policy<ExecPolicy>>
+exclusive(
+    resources::Host host_res,
     const ExecPolicy &,
     const Iter begin,
     const Iter end,
@@ -111,15 +147,18 @@ concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> exclusive(
     BinFn f,
     T v)
 {
-  decltype(*begin) agg = v;
+  using ValueT = typename std::remove_const<decltype(*begin)>::type;
+  ValueT agg = v;
   OutIter o = out;
   *o++ = v;
 
   RAJA_NO_SIMD
   for (Iter i = begin; i != end - 1; ++i, ++o) {
-    agg = f(*i, agg);
+    agg = f(agg, *i);
     *o = agg;
   }
+
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 }  // namespace scan

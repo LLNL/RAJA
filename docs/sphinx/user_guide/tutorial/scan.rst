@@ -1,6 +1,6 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -69,7 +69,7 @@ We can be explicit about the operation used in the scan by passing the
 
 The result in the 'out' array is the same.
 
-An inclusive parallel scan operation using OpenMP multi-threading is
+An inclusive parallel scan operation using OpenMP multithreading is
 accomplished similarly by replacing the execution policy type:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
@@ -166,9 +166,11 @@ and the only difference is the execution policy template parameter.
 Lastly, we show a parallel inclusive in-place prefix-sum operation using CUDA:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
-   :start-after: _scan_exclusive_inplace_omp_plus_start
-   :end-before: _scan_exclusive_inplace_omp_plus_end
+   :start-after: _scan_inclusive_inplace_cuda_plus_start
+   :end-before: _scan_inclusive_inplace_cuda_plus_end
    :language: C++
+
+.. note:: RAJA scans for the HIP back-end are similar to those for CUDA.
 
 The file ``RAJA/examples/tut_scan.cpp`` contains the complete 
 working example code.

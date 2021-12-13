@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -34,6 +34,10 @@
 */
 #if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE = 256;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+const int HIP_BLOCK_SIZE = 256;
 #endif
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
@@ -178,14 +182,54 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::forall<EXEC_POL3>(bins, [=] RAJA_DEVICE (int i) {
       double x = (double(i) + 0.5) * dx;
-      RAJA::atomicAdd<ATOMIC_POL3>(atomic_pi, 
-                                   4.0 * dx / (1.0 + x * x));
+      RAJA::atomicAdd<ATOMIC_POL3>(atomic_pi, dx / (1.0 + x * x));
   });
   *atomic_pi *= 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec)
             << *atomic_pi << std::endl;
 
+#endif
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+
+  std::cout << "\n Running RAJA HIP pi approximation (reduction)...\n";
+
+  using EXEC_POL4   = RAJA::hip_exec<HIP_BLOCK_SIZE>;
+  using REDUCE_POL4 = RAJA::hip_reduce;
+
+  RAJA::ReduceSum<REDUCE_POL4, double> hip_pi(0.0);
+
+  RAJA::forall<EXEC_POL4>(bins, [=] RAJA_DEVICE (int i) {
+      double x = (double(i) + 0.5) * dx;
+      hip_pi += dx / (1.0 + x * x);
+  });
+  double hip_pi_val = hip_pi.get() * 4.0;
+
+  std::cout << "\tpi = " << std::setprecision(prec)
+            << hip_pi_val << std::endl;
+
+  std::cout << "\n Running RAJA HIP pi approximation (atomic)...\n";
+
+  *atomic_pi = 0;
+  double* d_atomic_pi = memoryManager::allocate_gpu<double>(1);
+  hipErrchk(hipMemcpy( d_atomic_pi, atomic_pi, 1 * sizeof(double), hipMemcpyHostToDevice ));
+
+  using ATOMIC_POL4 = RAJA::hip_atomic;
+
+  RAJA::forall<EXEC_POL4>(bins, [=] RAJA_DEVICE (int i) {
+      double x = (double(i) + 0.5) * dx;
+      RAJA::atomicAdd<ATOMIC_POL4>(d_atomic_pi, dx / (1.0 + x * x));
+  });
+
+  hipErrchk(hipMemcpy( atomic_pi, d_atomic_pi, 1 * sizeof(double), hipMemcpyDeviceToHost ));
+  *atomic_pi *= 4.0; 
+  std::cout << "\tpi = " << std::setprecision(prec)
+            << *atomic_pi << std::endl;
+
+  memoryManager::deallocate_gpu(d_atomic_pi);
 #endif
 
 //----------------------------------------------------------------------------//

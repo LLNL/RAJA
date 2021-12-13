@@ -1,23 +1,12 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 #ifndef RAJA_Registry_HPP
 #define RAJA_Registry_HPP
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
-//
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-// 
-// This file is distributed under the University of Illinois Open Source
-// License. See docs/Licenses/llvm-license.txt for details.
-//
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <memory>
 
@@ -36,7 +25,7 @@ namespace util {
 
     const std::string& getName() const { return Name; }
     const std::string& getDesc() const { return Desc; }
-    std::shared_ptr<T> get() const { return object; }
+    T* get() const { return object.get(); }
   };
 
   /// A global registry used in conjunction with static constructors to make
@@ -78,7 +67,7 @@ namespace util {
     /// add a node to the executable's registry. Therefore it's not defined here
     /// to avoid it being instantiated in the plugin and is instead defined in
     /// the executable (see RAJA_INSTANTIATE_REGISTRY below).
-    static void add_node(node *N);
+    static RAJASHAREDDLL_API void add_node(node *N);
 
     /// Iterators for registry entries.
     ///
@@ -97,26 +86,26 @@ namespace util {
 
     // begin is not defined here in order to avoid usage of an undefined static
     // data member, instead it's instantiated by RAJA_INSTANTIATE_REGISTRY.
-    static iterator begin();
+    static RAJASHAREDDLL_API iterator begin();
     static iterator end()   { return iterator(nullptr); }
 
     /// A static registration template.
     template <typename V>
-    class Add {
+    class add {
       entry Entry;
       node Node;
 
       static std::shared_ptr<T> CtorFn() { return std::make_shared<V>(); }
 
     public:
-      Add(const std::string& Name, const std::string& Desc)
+      add(const std::string& Name, const std::string& Desc)
           : Entry(Name, Desc, CtorFn), Node(Entry) {
         add_node(&Node);
       }
     };
   };
 
-} // closing brace for util namespace 
+} // closing brace for util namespace
 } // closing brace for RAJA namespace
 
 #define RAJA_INSTANTIATE_REGISTRY(REGISTRY_CLASS) \
@@ -143,4 +132,4 @@ namespace util {
   } \
   }
 
-#endif 
+#endif

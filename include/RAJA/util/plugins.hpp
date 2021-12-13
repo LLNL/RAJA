@@ -1,48 +1,116 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 #ifndef RAJA_plugins_HPP
 #define RAJA_plugins_HPP
 
+#include "RAJA/config.hpp"
+
 #include "RAJA/util/PluginContext.hpp"
+#include "RAJA/util/PluginOptions.hpp"
 #include "RAJA/util/PluginStrategy.hpp"
+#if defined(RAJA_ENABLE_RUNTIME_PLUGINS)
+#include "RAJA/util/RuntimePluginLoader.hpp"
+#include "RAJA/util/KokkosPluginLoader.hpp"
+#endif
 
 namespace RAJA {
 namespace util {
 
-inline
-void
-callPreLaunchPlugins(PluginContext p)
+template <typename T>
+RAJA_INLINE auto trigger_updates_before(T&& item)
+  -> typename std::remove_reference<T>::type
 {
-  for (auto plugin = PluginRegistry::begin(); 
+  return item;
+}
+
+RAJA_INLINE
+void
+callPreCapturePlugins(const PluginContext& p)
+{
+  for (auto plugin = PluginRegistry::begin();
+      plugin != PluginRegistry::end();
+      ++plugin)
+  {
+    (*plugin).get()->preCapture(p);
+  }
+}
+
+RAJA_INLINE
+void
+callPostCapturePlugins(const PluginContext& p)
+{
+  for (auto plugin = PluginRegistry::begin();
+      plugin != PluginRegistry::end();
+      ++plugin)
+  {
+    (*plugin).get()->postCapture(p);
+  }
+}
+
+RAJA_INLINE
+void
+callPreLaunchPlugins(const PluginContext& p)
+{
+  for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();
       ++plugin)
   {
     (*plugin).get()->preLaunch(p);
   }
-
 }
 
-inline
+RAJA_INLINE
 void
-callPostLaunchPlugins(PluginContext p)
+callPostLaunchPlugins(const PluginContext& p)
+{
+  for (auto plugin = PluginRegistry::begin();
+      plugin != PluginRegistry::end();
+      ++plugin)
+  {
+    (*plugin).get()->postLaunch(p);
+  }
+}
+
+RAJA_INLINE
+void
+callInitPlugins(const PluginOptions p)
 {
   for (auto plugin = PluginRegistry::begin(); 
       plugin != PluginRegistry::end();
       ++plugin)
   {
-    (*plugin).get()->postLaunch(p);
+    (*plugin).get()->init(p);
+  }
+}
+
+RAJA_INLINE
+void
+init_plugins(const std::string& path)
+{   
+  callInitPlugins(make_options(path));
+}
+
+RAJA_INLINE
+void
+init_plugins()
+{   
+  callInitPlugins(make_options(""));
+}
+
+RAJA_INLINE
+void
+finalize_plugins()
+{   
+  for (auto plugin = PluginRegistry::begin(); 
+    plugin != PluginRegistry::end();
+    ++plugin)
+  {
+    (*plugin).get()->finalize();
   }
 }
 

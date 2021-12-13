@@ -1,9 +1,17 @@
 ###############################################################################
-# Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
+
+raja_add_executable(
+  NAME tut_teams_basic
+  SOURCES tut_teams_basic.cpp)
+
+raja_add_executable(
+  NAME resource-forall
+  SOURCES resource-forall.cpp)
 
 raja_add_executable(
   NAME tut_daxpy
@@ -36,10 +44,22 @@ raja_add_executable(
 raja_add_executable(
   NAME tut_reductions
   SOURCES tut_reductions.cpp)
-  
+
+raja_add_executable(
+  NAME teams_reductions
+  SOURCES teams_reductions.cpp)
+
+raja_add_executable(
+  NAME resource-runtime-teams
+  SOURCES resource-runtime-teams.cpp)
+
 raja_add_executable(
   NAME tut_scan
   SOURCES tut_scan.cpp)
+
+raja_add_executable(
+  NAME tut_sort
+  SOURCES tut_sort.cpp)
 
 raja_add_executable(
   NAME tut_atomic-histogram
@@ -62,8 +82,20 @@ raja_add_executable(
   SOURCES tut_tiled-matrix-transpose.cpp)
 
 raja_add_executable(
+  NAME tut_halo-exchange
+  SOURCES tut_halo-exchange.cpp)
+
+raja_add_executable(
   NAME pi-reduce_vs_atomic
   SOURCES pi-reduce_vs_atomic.cpp)
+
+raja_add_executable(
+  NAME raja-teams
+  SOURCES raja-teams.cpp)
+
+raja_add_executable(
+  NAME teams_matrix-multiply
+  SOURCES teams_matrix-multiply.cpp)
 
 raja_add_executable(
   NAME jacobi
@@ -76,19 +108,35 @@ raja_add_executable(
 raja_add_executable(
   NAME wave-eqn
   SOURCES wave-eqn.cpp)
-  
+
 raja_add_executable(
   NAME ltimes
   SOURCES ltimes.cpp)
 
-if(ENABLE_TARGET_OPENMP)
-  raja_add_executable(
-    NAME target-kernel
-    SOURCES omp-target-kernel.cpp)
+raja_add_executable(
+  NAME multiview
+  SOURCES multiview.cpp)
 
-  raja_add_executable(
-    NAME omp-target-ltimes
-    SOURCES omp-target-ltimes.cpp)
+if(RAJA_ENABLE_TARGET_OPENMP)
+  #  raja_add_executable(
+  #    NAME target-kernel
+  #    SOURCES omp-target-kernel.cpp)
+  #
+  #  raja_add_executable(
+  #    NAME omp-target-ltimes
+  #    SOURCES omp-target-ltimes.cpp)
 endif()
+
+raja_add_executable(
+  NAME kernel-dynamic-tile
+  SOURCES kernel-dynamic-tile.cpp)
+
+raja_add_executable(
+  NAME resource-kernel
+  SOURCES resource-kernel.cpp)
+
+raja_add_executable(
+  NAME resource-teams
+  SOURCES resource-teams.cpp)
 
 add_subdirectory(plugin)

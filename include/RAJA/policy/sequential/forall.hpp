@@ -14,8 +14,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -32,6 +32,8 @@
 #include "RAJA/internal/fault_tolerance.hpp"
 
 #include "RAJA/pattern/detail/forall.hpp"
+
+#include "RAJA/util/resource.hpp"
 
 namespace RAJA
 {
@@ -51,8 +53,11 @@ namespace sequential
 //////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall_impl(const seq_exec &, Iterable &&iter, Func &&body)
+template <typename Iterable, typename Func, typename Resource>
+RAJA_INLINE resources::EventProxy<Resource> forall_impl(Resource res,
+                                                               const seq_exec &,
+                                                               Iterable &&iter,
+                                                               Func &&body)
 {
   RAJA_EXTRACT_BED_IT(iter);
 
@@ -60,6 +65,7 @@ RAJA_INLINE void forall_impl(const seq_exec &, Iterable &&iter, Func &&body)
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     body(*(begin_it + i));
   }
+  return resources::EventProxy<Resource>(res);
 }
 
 }  // namespace sequential

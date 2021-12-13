@@ -9,8 +9,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -18,6 +18,7 @@
 #ifndef RAJA_POLICYBASE_HPP
 #define RAJA_POLICYBASE_HPP
 
+#include "RAJA/util/camp_aliases.hpp"
 #include "RAJA/util/concepts.hpp"
 
 #include <cstddef>
@@ -33,6 +34,8 @@ enum class Policy {
   openmp,
   target_openmp,
   cuda,
+  hip,
+  sycl,
   tbb
 };
 
@@ -42,12 +45,14 @@ enum class Pattern {
   region,
   reduce,
   taskgraph,
-  synchronize
+  synchronize,
+  workgroup,
+  workgroup_exec,
+  workgroup_order,
+  workgroup_storage
 };
 
 enum class Launch { undefined, sync, async };
-
-enum class Platform { undefined = 0, host = 1, cuda = 2, omp_target = 4 };
 
 struct PolicyBase {
 };
@@ -86,6 +91,10 @@ struct platform_of {
 
 template <typename PolicyType, RAJA::Policy P_>
 struct policy_is : camp::num<policy_of<camp::decay<PolicyType>>::value == P_> {
+};
+
+template <typename PolicyType, RAJA::Policy ... Ps_>
+struct policy_any_of : camp::num<camp::concepts::any_of<policy_is<PolicyType, Ps_>...>::value> {
 };
 
 template <typename PolicyType, RAJA::Pattern P_>
@@ -128,9 +137,19 @@ template <Policy Policy_,
 using make_policy_pattern_launch_platform_t =
     PolicyBaseT<Policy_, Pattern_, Launch_, Platform_, Args...>;
 
-template <Policy Policy_, Pattern Pattern_, Launch Launch_, typename... Args>
+template <Policy Policy_,
+          Pattern Pattern_,
+          Launch Launch_,
+          typename... Args>
 using make_policy_pattern_launch_t =
     PolicyBaseT<Policy_, Pattern_, Launch_, Platform::undefined, Args...>;
+
+template <Policy Policy_,
+          Pattern Pattern_,
+          Platform Platform_,
+          typename... Args>
+using make_policy_pattern_platform_t =
+    PolicyBaseT<Policy_, Pattern_, Launch::undefined, Platform_, Args...>;
 
 namespace concepts
 {
@@ -173,6 +192,17 @@ struct is_target_openmp_policy
 };
 template <typename Pol>
 struct is_cuda_policy : RAJA::policy_is<Pol, RAJA::Policy::cuda> {
+};
+template <typename Pol>
+struct is_hip_policy : RAJA::policy_is<Pol, RAJA::Policy::hip> {
+};
+template <typename Pol>
+struct is_sycl_policy : RAJA::policy_is<Pol, RAJA::Policy::sycl> {
+};
+
+template <typename Pol>
+struct is_device_exec_policy
+    : RAJA::policy_any_of<Pol, RAJA::Policy::cuda, RAJA::Policy::hip> {
 };
 
 DefineTypeTraitFromConcept(is_execution_policy,

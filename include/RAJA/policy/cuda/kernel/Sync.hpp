@@ -10,8 +10,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -57,8 +57,8 @@ struct CudaSyncWarp : public internal::Statement<camp::nil> {
 namespace internal
 {
 
-template <typename Data>
-struct CudaStatementExecutor<Data, statement::CudaSyncThreads> {
+template <typename Data, typename Types>
+struct CudaStatementExecutor<Data, statement::CudaSyncThreads, Types> {
 
   static
   inline
@@ -74,8 +74,8 @@ struct CudaStatementExecutor<Data, statement::CudaSyncThreads> {
   }
 };
 
-template <typename Data>
-struct CudaStatementExecutor<Data, statement::CudaSyncWarp> {
+template <typename Data, typename Types>
+struct CudaStatementExecutor<Data, statement::CudaSyncWarp, Types> {
 
   static
   inline

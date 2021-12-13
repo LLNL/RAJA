@@ -9,8 +9,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -20,13 +20,14 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_CUDA_ACTIVE)
 
 #include <utility>
 
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
+#include "RAJA/policy/loop/policy.hpp"
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/types.hpp"
@@ -81,11 +82,39 @@ struct cuda_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::cuda> {
 };
 
+template <bool Async, int num_threads = 0>
+struct cuda_launch_t : public RAJA::make_policy_pattern_launch_platform_t<
+                       RAJA::Policy::cuda,
+                       RAJA::Pattern::region,
+                       detail::get_launch<Async>::value,
+                       RAJA::Platform::cuda> {
+};
+
+
+
 
 
 //
 // NOTE: There is no Index set segment iteration policy for CUDA
 //
+
+///
+/// WorkGroup execution policies
+///
+template <size_t BLOCK_SIZE, bool Async = false>
+struct cuda_work : public RAJA::make_policy_pattern_launch_platform_t<
+                       RAJA::Policy::cuda,
+                       RAJA::Pattern::workgroup_exec,
+                       detail::get_launch<Async>::value,
+                       RAJA::Platform::cuda> {
+};
+
+struct unordered_cuda_loop_y_block_iter_x_threadblock_average
+    : public RAJA::make_policy_pattern_platform_t<
+                       RAJA::Policy::cuda,
+                       RAJA::Pattern::workgroup_order,
+                       RAJA::Platform::cuda> {
+};
 
 ///
 ///////////////////////////////////////////////////////////////////////
@@ -103,6 +132,19 @@ struct cuda_reduce_base
                                                 detail::get_launch<false>::value,
                                                 RAJA::Platform::cuda> {
 };
+
+//
+// Cuda atomic policy for using cuda atomics on the device and
+// the provided Policy on the host
+//
+template<typename host_policy>
+struct cuda_atomic_explicit{};
+
+//
+// Default cuda atomic policy uses cuda atomics on the device and non-atomics
+// on the host
+//
+using cuda_atomic = cuda_atomic_explicit<loop_atomic>;
 
 using cuda_reduce = cuda_reduce_base<false>;
 
@@ -183,6 +225,16 @@ using policy::cuda::cuda_exec;
 template <size_t BLOCK_SIZE>
 using cuda_exec_async = policy::cuda::cuda_exec<BLOCK_SIZE, true>;
 
+using policy::cuda::cuda_work;
+
+template <size_t BLOCK_SIZE>
+using cuda_work_async = policy::cuda::cuda_work<BLOCK_SIZE, true>;
+
+using policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average;
+
+using policy::cuda::cuda_atomic;
+using policy::cuda::cuda_atomic_explicit;
+
 using policy::cuda::cuda_reduce_base;
 using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_atomic;
@@ -201,7 +253,10 @@ using policy::cuda::cuda_thread_masked_loop;
 
 using policy::cuda::cuda_synchronize;
 
-
+namespace expt
+{
+  using policy::cuda::cuda_launch_t;
+}
 
 
 /*!
@@ -211,7 +266,7 @@ using policy::cuda::cuda_synchronize;
  * For example, a segment of size 2000 will not fit, and trigger a runtime
  * error.
  */
-template<int dim>
+template<int ... dim>
 struct cuda_thread_xyz_direct{};
 
 using cuda_thread_x_direct = cuda_thread_xyz_direct<0>;
@@ -223,19 +278,19 @@ using cuda_thread_z_direct = cuda_thread_xyz_direct<2>;
  * Maps segment indices to CUDA threads.
  * Uses block-stride looping to exceed the maximum number of physical threads
  */
-template<int dim, int min_threads>
+template<int ... dim>
 struct cuda_thread_xyz_loop{};
 
-using cuda_thread_x_loop = cuda_thread_xyz_loop<0, 1>;
-using cuda_thread_y_loop = cuda_thread_xyz_loop<1, 1>;
-using cuda_thread_z_loop = cuda_thread_xyz_loop<2, 1>;
+using cuda_thread_x_loop = cuda_thread_xyz_loop<0>;
+using cuda_thread_y_loop = cuda_thread_xyz_loop<1>;
+using cuda_thread_z_loop = cuda_thread_xyz_loop<2>;
 
 /*!
  * Maps segment indices to CUDA blocks.
  * This is the lowest overhead mapping, but requires that there are enough
  * physical blocks to fit all of the direct map requests.
  */
-template<int dim>
+template<int ... dim>
 struct cuda_block_xyz_direct{};
 
 using cuda_block_x_direct = cuda_block_xyz_direct<0>;
@@ -247,7 +302,7 @@ using cuda_block_z_direct = cuda_block_xyz_direct<2>;
  * Maps segment indices to CUDA blocks.
  * Uses grid-stride looping to exceed the maximum number of blocks
  */
-template<int dim>
+template<int ... dim>
 struct cuda_block_xyz_loop{};
 
 using cuda_block_x_loop = cuda_block_xyz_loop<0>;

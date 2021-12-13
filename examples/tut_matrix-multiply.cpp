@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -37,6 +37,9 @@
 #define CUDA_BLOCK_SIZE 16
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+#define HIP_BLOCK_SIZE 16
+#endif
 
 //
 // Define dimensionality of matrices.
@@ -55,7 +58,7 @@ const int DIM = 2;
 /*
   Define CUDA matrix multiplication kernel for comparison to RAJA version
 */
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 __global__ void matMultKernel(int N, double* C, double* A, double* B)
 {
   int row = blockIdx.y * blockDim.y + threadIdx.y;
@@ -469,8 +472,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL5 =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
             RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
               RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
                 RAJA::statement::Lambda<0>
@@ -495,6 +498,112 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printResult<double>(Cview, N);
 
 #endif // if RAJA_ENABLE_CUDA
+
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+
+  double *d_A = memoryManager::allocate_gpu<double>(N * N);
+  double *d_B = memoryManager::allocate_gpu<double>(N * N);
+  double *d_C = memoryManager::allocate_gpu<double>(N * N);
+
+  std::cout << "\n Running HIP mat-mult (RAJA-nested - POL4)...\n";
+
+  std::memset(C, 0, N*N * sizeof(double));
+
+  hipErrchk(hipMemcpy( d_A, A, N * N * sizeof(double), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_B, B, N * N * sizeof(double), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
+
+  RAJA::View<double, RAJA::Layout<DIM>> d_Aview(d_A, N, N);
+  RAJA::View<double, RAJA::Layout<DIM>> d_Bview(d_B, N, N);
+  RAJA::View<double, RAJA::Layout<DIM>> d_Cview(d_C, N, N);
+
+  //
+  // This policy replaces the loop nest with a single HIP kernel launch
+  // (kernel body is the lambda loop body) where the row indices are
+  // assigned to thread blocks and the col indices are assigned to
+  // threads within each block.
+  //
+  // This is equivalent to launching a HIP kernel with grid dimension N
+  // and blocksize N; i.e., kernel<<<N, N>>> and defining row = blockIdx.x
+  // and col = threadIdx.x in the kernel.
+  //
+  using EXEC_POL4 =
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+        RAJA::statement::For<1, RAJA::hip_block_x_loop,
+          RAJA::statement::For<0, RAJA::hip_thread_x_loop,
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >
+    >;
+
+  RAJA::kernel<EXEC_POL4>(RAJA::make_tuple(col_range, row_range),
+    [=] RAJA_DEVICE (int col, int row) {
+
+    double dot = 0.0;
+    for (int k = 0; k < N; ++k) {
+      dot += d_Aview(row, k) * d_Bview(k, col);
+    }
+
+    d_Cview(row, col) = dot;
+
+  });
+  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
+  checkResult<double>(Cview, N);
+//printResult<double>(Cview, N);
+
+
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running HIP tiled mat-mult (RAJA-POL5)...\n";
+
+  std::memset(C, 0, N*N * sizeof(double));
+  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
+
+  //
+  // This policy collapses the col and row loops into a single HIP kernel
+  // using two-dimensional HIP thread blocks with x and y dimensions defined
+  // by HIP_BLOCK_SIZE arguments.
+  //
+  // When the matrix dimension N is an integer multiple of HIP_BLOCK_SIZE,
+  // the HIP grid and thread dimension kernel launch parameters will be the
+  // same as in this kernel and the one above.
+  //
+  using EXEC_POL5 =
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+        RAJA::statement::Tile<1, RAJA::tile_fixed<HIP_BLOCK_SIZE>,
+                                 RAJA::hip_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<HIP_BLOCK_SIZE>,
+                                   RAJA::hip_block_x_loop,
+            RAJA::statement::For<1, RAJA::hip_thread_y_loop,
+              RAJA::statement::For<0, RAJA::hip_thread_x_loop,
+                RAJA::statement::Lambda<0>
+              >
+            >
+          >
+        >
+      >
+    >;
+
+  RAJA::kernel<EXEC_POL5>(RAJA::make_tuple(col_range, row_range),
+    [=] RAJA_DEVICE (int col, int row) {
+
+    double dot = 0.0;
+    for (int k = 0; k < N; ++k) {
+      dot += d_Aview(row, k) * d_Bview(k, col);
+    }
+
+    d_Cview(row, col) = dot;
+
+  });
+  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
+  checkResult<double>(Cview, N);
+//printResult<double>(Cview, N);
+#endif // if RAJA_ENABLE_HIP
 
 //----------------------------------------------------------------------------//
 
@@ -527,11 +636,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::loop_exec,
         RAJA::statement::For<0, RAJA::loop_exec,
-          RAJA::statement::Lambda<0>,  // dot = 0.0
+          RAJA::statement::Lambda<0, RAJA::Params<0>>,  // dot = 0.0
           RAJA::statement::For<2, RAJA::loop_exec,
             RAJA::statement::Lambda<1> // inner loop: dot += ...
           >,
-          RAJA::statement::Lambda<2>   // set C(row, col) = dot
+          RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C(row, col) = dot
         >
       >
     >;
@@ -542,7 +651,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
 
     // lambda 0
-    [=] (int /* col */, int /* row */, int /* k */, double& dot) {
+    [=] (double& dot) {
        dot = 0.0;
     },
 
@@ -552,7 +661,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // lambda 2
-    [=] (int col, int row, int /* k */, double& dot) {
+    [=] (int col, int row, double& dot) {
        Cview(row, col) = dot;
     }
 
@@ -576,8 +685,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // _matmult_3lambdakernel_args_seq_start
   // Alias for convenience
-  using RAJA::statement::Segs;
-  using RAJA::statement::Params;
+  using RAJA::Segs;
+  using RAJA::Params;
 
   using EXEC_POL6b =
     RAJA::KernelPolicy<
@@ -631,11 +740,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::KernelPolicy<
       RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                 RAJA::ArgList<1, 0>,   // row, col
-        RAJA::statement::Lambda<0>,  // dot = 0.0
+        RAJA::statement::Lambda<0, RAJA::Params<0>>,  // dot = 0.0
         RAJA::statement::For<2, RAJA::loop_exec,
           RAJA::statement::Lambda<1> // inner loop: dot += ...
         >,
-        RAJA::statement::Lambda<2>   // set C(row, col) = dot
+        RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C(row, col) = dot
       >
     >;
   // _matmult_3lambdakernel_ompcollapse_end
@@ -646,7 +755,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
 
     // lambda 0
-    [=] (int /* col */, int /* row */, int /* k */, double& dot) {
+    [=] (double& dot) {
        dot = 0.0;
     },
 
@@ -656,7 +765,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // lambda 2
-    [=] (int col, int row, int /* k */, double& dot) {
+    [=] (int col, int row, double& dot) {
        Cview(row, col) = dot;
     }
 
@@ -680,11 +789,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::statement::CudaKernel<
         RAJA::statement::For<1, RAJA::cuda_block_x_loop,    // row
           RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
-            RAJA::statement::Lambda<0>,   // dot = 0.0
+            RAJA::statement::Lambda<0, RAJA::Params<0>>,    // dot = 0.0
             RAJA::statement::For<2, RAJA::seq_exec,
-                RAJA::statement::Lambda<1> // dot += ...
+                RAJA::statement::Lambda<1>                  // dot += ...
             >,
-            RAJA::statement::Lambda<2>   // set C = ...
+            RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C = ...
           >
         >
       >
@@ -697,7 +806,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
 
     // lambda 0
-    [=] RAJA_DEVICE (int /* col */, int /* row */, int /* k */, double& dot) {
+    [=] RAJA_DEVICE (double& dot) {
        dot = 0.0;
     },
 
@@ -707,7 +816,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // lambda 2
-    [=] RAJA_DEVICE (int col, int row, int /* k */, double& dot) {
+    [=] RAJA_DEVICE (int col, int row, double& dot) {
        Cview(row, col) = dot;
     }
 
@@ -726,15 +835,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL9a =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
-            RAJA::statement::For<1, RAJA::cuda_thread_y_loop, // row
+        RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>,
+                                 RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>,
+                                   RAJA::cuda_block_x_loop,
+            RAJA::statement::For<1, RAJA::cuda_thread_y_loop,   // row
               RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
-                RAJA::statement::Lambda<0>,   // dot = 0.0
+                RAJA::statement::Lambda<0, RAJA::Params<0>>,    // dot = 0.0
                 RAJA::statement::For<2, RAJA::seq_exec,
-                    RAJA::statement::Lambda<1> // dot += ...
+                    RAJA::statement::Lambda<1>                 // dot += ...
                 >,
-                RAJA::statement::Lambda<2>   // set C = ...
+                RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C = ...
               >
             >
           >
@@ -749,7 +860,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
 
     // lambda 0
-    [=] RAJA_DEVICE (int /* col */, int /* row */, int /* k */, double& dot) {
+    [=] RAJA_DEVICE (double& dot) {
        dot = 0.0;
     },
 
@@ -759,7 +870,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // lambda 2
-    [=] RAJA_DEVICE (int col, int row, int /* k */, double& dot) {
+    [=] RAJA_DEVICE (int col, int row,  double& dot) {
        Cview(row, col) = dot;
     }
 
@@ -777,8 +888,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL9b =
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>,
+                                 RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>,
+                                   RAJA::cuda_block_x_loop,
             RAJA::statement::For<1, RAJA::cuda_thread_y_loop, // row
               RAJA::statement::For<0, RAJA::cuda_thread_x_loop, // col
                 RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
@@ -817,6 +930,130 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
+
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running  mat-mult with tiling + shared memory...\n";
+
+  std::memset(C, 0, N*N * sizeof(double));
+
+  // This example builds on the RAJA tiling capabilities presented earlier
+  // and uses RAJA LocalArray's to load tiles of the global matrix
+  // and perform matrix-matrix multiplication within the tiles.
+
+  // This example illustrates using CUDA shared memory, and thread
+  // synchronization. We recommend viewing tut_matrix-transpose-local-array.cpp
+  // for an introduction to RAJA LocalArray types and thread synchronization.
+
+  using Shmem      = RAJA::LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE>>;
+
+  using shmem_Lambda0 = RAJA::statement::Lambda<0, RAJA::Offsets<0, 2>, RAJA::Params<2>>;
+  using shmem_Lambda1 = RAJA::statement::Lambda<1, RAJA::Segs<0, 1>, RAJA::Offsets<0, 1>, RAJA::Params<0>>;
+  using shmem_Lambda2 = RAJA::statement::Lambda<2, RAJA::Segs<1, 2>, RAJA::Offsets<1, 2>, RAJA::Params<1>>;
+  using shmem_Lambda3 = RAJA::statement::Lambda<3, RAJA::Offsets<0, 1, 2>, RAJA::Params<0, 1, 2>>;
+  using shmem_Lambda4 = RAJA::statement::Lambda<4, RAJA::Segs<0, 2>, RAJA::Offsets<0, 2>, RAJA::Params<2>>;
+
+  using EXEC_POL10 =
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernelFixed<CUDA_BLOCK_SIZE*CUDA_BLOCK_SIZE,
+        //Initalize thread private value
+        RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2,1,0>,
+
+          // Tile rows and cols of C (the result matrix C)
+          RAJA::statement::Tile<0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
+            RAJA::statement::Tile<2, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_direct,
+
+            // zero out shmem tile of C
+            RAJA::statement::For<2, RAJA::cuda_thread_y_loop,
+              RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                shmem_Lambda0 > >,
+
+                // Slide window across matrix: Load tiles of global matrices A, B and compute
+                // local dot products
+                RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::loop_exec,
+
+                  // Load tile of A into shmem
+                  RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
+                    RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                      shmem_Lambda1
+                    >
+                   >,
+
+                  // Load tile of B into shmem
+                  RAJA::statement::For<2, RAJA::cuda_thread_y_loop,
+                    RAJA::statement::For<1, RAJA::cuda_thread_x_loop,
+                      shmem_Lambda2
+                    >
+                  >,
+
+                  RAJA::statement::CudaSyncThreads,
+
+                  //Partial multiplication
+                  RAJA::statement::For<2, RAJA::cuda_thread_y_loop,
+                    RAJA::statement::For<1, RAJA::loop_exec,
+                      RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                        shmem_Lambda3
+                      >
+                    >
+                  >,
+
+                  RAJA::statement::CudaSyncThreads
+                >, //sliding window
+
+               //Write memory out to global matrix
+               RAJA::statement::For<2, RAJA::cuda_thread_y_loop,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                shmem_Lambda4 > >
+             >
+            >
+           > //Create shared memory
+         >//Cuda kernel
+        >;
+
+    Shmem aShared, bShared, cShared;
+
+    RAJA::kernel_param<EXEC_POL10>(RAJA::make_tuple(RAJA::RangeSegment(0, N),
+                                                    RAJA::RangeSegment(0, N),
+                                                    RAJA::RangeSegment(0, N)),
+                                   RAJA::make_tuple(aShared, bShared, cShared),
+
+    // Zero out thread local memory for storing dot products
+    [=] RAJA_HOST_DEVICE (int tn, int tp, Shmem &cShared) {
+
+      cShared(tn,tp) = 0.0;
+
+    },
+
+    // Load tile of A
+    [=] RAJA_HOST_DEVICE (int n, int m, int tn, int tm, Shmem &aShared) {
+
+      aShared(tn, tm) = Aview(n, m);
+
+    },
+
+    // Load tile of B
+    [=] RAJA_HOST_DEVICE (int m, int p, int tm, int tp, Shmem &bShared) {
+
+      bShared(tm, tp) = Bview(m, p);
+
+    },
+
+    // Do partial update in shmem
+    [=] RAJA_HOST_DEVICE (int tn, int tm, int tp, Shmem &aShared,  Shmem &bShared, Shmem & cShared) {
+
+      cShared(tn,tp) += aShared(tn,tm) * bShared(tm, tp);
+
+    },
+
+    // Write out complete result
+    [=] RAJA_HOST_DEVICE (int n, int p, int tn, int tp,  Shmem &cShared) {
+
+      Cview(n,p) = cShared(tn,tp);
+
+    });
+
+  checkResult<double>(Cview, N);
+//printResult<double>(Cview, N);
 #endif // if RAJA_ENABLE_CUDA
 
 //----------------------------------------------------------------------------//
@@ -846,6 +1083,144 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #endif // if RAJA_ENABLE_CUDA
 
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+
+  std::cout << "\n Running HIP mat-mult with multiple lambdas (RAJA-POL8)...\n";
+
+  std::memset(C, 0, N*N * sizeof(double));
+  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
+
+  // _matmult_3lambdakernel_hip_start
+  using EXEC_POL8 =
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+        RAJA::statement::For<1, RAJA::hip_block_x_loop,    // row
+          RAJA::statement::For<0, RAJA::hip_thread_x_loop, // col
+            RAJA::statement::Lambda<0, RAJA::Params<0>>,   // dot = 0.0
+            RAJA::statement::For<2, RAJA::seq_exec,
+                RAJA::statement::Lambda<1>                 // dot += ...
+            >,
+            RAJA::statement::Lambda<2,
+              RAJA::Segs<0,1>, RAJA::Params<0>>            // set C = ...
+          >
+        >
+      >
+    >;
+  // _matmult_3lambdakernel_hip_end
+
+  RAJA::kernel_param<EXEC_POL8>(
+    RAJA::make_tuple(col_range, row_range, dot_range),
+
+    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
+
+    // lambda 0
+    [=] RAJA_DEVICE (double& dot) {
+       dot = 0.0;
+    },
+
+    // lambda 1
+    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
+       dot += d_Aview(row, k) * d_Bview(k, col);
+    },
+
+    // lambda 2
+    [=] RAJA_DEVICE (int col, int row, double& dot) {
+       d_Cview(row, col) = dot;
+    }
+
+  );
+
+  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
+  checkResult<double>(Cview, N);
+//printResult<double>(Cview, N);
+
+
+  //----------------------------------------------------------------------------//
+
+  std::cout << "\n Running HIP mat-mult with multiple lambdas - lambda args in statements (RAJA-POL9)...\n";
+
+  std::memset(C, 0, N*N * sizeof(double));
+  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
+
+  // _matmult_3lambdakernel_hiptiled_start
+  using EXEC_POL9b =
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+        RAJA::statement::Tile<1, RAJA::tile_fixed<HIP_BLOCK_SIZE>,
+                                 RAJA::hip_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<HIP_BLOCK_SIZE>,
+                                   RAJA::hip_block_x_loop,
+            RAJA::statement::For<1, RAJA::hip_thread_y_loop,    // row
+              RAJA::statement::For<0, RAJA::hip_thread_x_loop,  // col
+                RAJA::statement::Lambda<0, Params<0>>,          // dot = 0.0
+                RAJA::statement::For<2, RAJA::seq_exec,
+                  RAJA::statement::Lambda<1, Segs<0,1,2>, Params<0>> // dot += ...
+                >,
+                  RAJA::statement::Lambda<2, Segs<0,1>, Params<0>>   // set C = ...
+              >
+            >
+          >
+        >
+      >
+    >;
+ // _matmult_3lambdakernel_hiptiled_end
+
+  RAJA::kernel_param<EXEC_POL9b>(
+    RAJA::make_tuple(col_range, row_range, dot_range),
+
+    RAJA::tuple<double>{0.0},    // thread local variable for 'dot'
+
+    // lambda 0
+    [=] RAJA_DEVICE (double& dot) {
+       dot = 0.0;
+    },
+
+    // lambda 1
+    [=] RAJA_DEVICE (int col, int row, int k, double& dot) {
+       dot += d_Aview(row, k) * d_Bview(k, col);
+    },
+
+    // lambda 2
+    [=] RAJA_DEVICE (int col, int row, double& dot) {
+       d_Cview(row, col) = dot;
+    }
+
+  );
+
+  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
+  checkResult<double>(Cview, N);
+//printResult<double>(Cview, N);
+
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running HIP tiled mat-mult (no RAJA)...\n";
+
+  std::memset(C, 0, N*N * sizeof(double));
+  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
+
+  // Define thread block dimensions
+  dim3 blockdim(HIP_BLOCK_SIZE, HIP_BLOCK_SIZE);
+  // Define grid dimensions to match the RAJA version above
+  dim3 griddim(RAJA_DIVIDE_CEILING_INT(N,blockdim.x),
+               RAJA_DIVIDE_CEILING_INT(N,blockdim.y));
+
+//printf("griddim = (%d,%d), blockdim = (%d,%d)\n", (int)griddim.x, (int)griddim.y, (int)blockdim.x, (int)blockdim.y);
+
+  // Launch HIP kernel defined near the top of this file.
+  hipLaunchKernelGGL((matMultKernel), dim3(griddim), dim3(blockdim), 0, 0, N, d_C, d_A, d_B);
+
+  hipDeviceSynchronize();
+
+  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
+  checkResult<double>(Cview, N);
+//printResult<double>(Cview, N);
+
+  memoryManager::deallocate_gpu(d_A);
+  memoryManager::deallocate_gpu(d_B);
+  memoryManager::deallocate_gpu(d_C);
+#endif // if RAJA_ENABLE_HIP
 
 //----------------------------------------------------------------------------//
 

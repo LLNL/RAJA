@@ -1,6 +1,6 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -168,7 +168,7 @@ policy as before.
 Before we end the discussion of these examples, we demonstrate a few more 
 index set execution policy variations. To run the previous three segment 
 code by iterating over the segments sequentially and executing each 
-segment in parallel using OpenMP multi-threading, we would use this policy 
+segment in parallel using OpenMP multithreading, we would use this policy 
 definition:
 
 .. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
@@ -186,13 +186,20 @@ following policy:
    :language: C++ 
 
 Finally, to iterate over the segments sequentially and execute each segment in
-parallel on a GPU by launching a CUDA kernel, we would define this policy:
+parallel on a GPU using either CUDA or HIP kernel, we would use a policy,
+such as:
  
 .. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
    :start-after: _raja_indexset_cudapolicy_daxpy_start
    :end-before: _raja_indexset_cudapolicy_daxpy_end
    :language: C++
-                    :lines: 312-313
+
+or:
+
+.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
+   :start-after: _raja_indexset_hippolicy_daxpy_start
+   :end-before: _raja_indexset_hippolicy_daxpy_end
+   :language: C++
 
 The file ``RAJA/examples/tut_indexset-segments.cpp`` contains working code
 for these examples.

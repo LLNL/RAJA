@@ -17,8 +17,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -43,6 +43,7 @@
 //
 #include "RAJA/pattern/forall.hpp"
 #include "RAJA/pattern/kernel.hpp"
+#include "RAJA/pattern/teams.hpp"
 
 
 //
@@ -68,12 +69,24 @@
 #include "RAJA/policy/cuda.hpp"
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+#include "RAJA/policy/hip.hpp"
+#endif
+
+#if defined(RAJA_ENABLE_SYCL)
+#include "RAJA/policy/sycl.hpp"
+#endif
+
 #if defined(RAJA_ENABLE_OPENMP)
 #include "RAJA/policy/openmp.hpp"
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 #include "RAJA/policy/openmp_target.hpp"
 #endif
+#endif
+
+#if defined(RAJA_ENABLE_DESUL_ATOMICS)
+    #include "RAJA/policy/desul.hpp"
 #endif
 
 #include "RAJA/index/IndexSet.hpp"
@@ -105,6 +118,16 @@
 
 
 //
+// View for sequences of objects
+//
+#include "RAJA/util/Span.hpp"
+
+//
+// zip iterator to iterator over sequences simultaneously
+//
+#include "RAJA/util/zip.hpp"
+
+//
 // Atomic operations support
 //
 #include "RAJA/pattern/atomic.hpp"
@@ -118,6 +141,17 @@
 // Bit masking operators
 //
 #include "RAJA/util/BitMask.hpp"
+
+//
+// sort algorithms
+//
+#include "RAJA/util/sort.hpp"
+
+//
+// WorkPool, WorkGroup, WorkSite objects
+//
+#include "RAJA/policy/WorkGroup.hpp"
+#include "RAJA/pattern/WorkGroup.hpp"
 
 //
 // Reduction objects
@@ -144,7 +178,14 @@
 //
 
 #include "RAJA/index/IndexSetUtils.hpp"
+#include "RAJA/index/IndexSetBuilders.hpp"
 
 #include "RAJA/pattern/scan.hpp"
+
+#if defined(RAJA_ENABLE_RUNTIME_PLUGINS)
+#include "RAJA/util/PluginLinker.hpp"
+#endif
+
+#include "RAJA/pattern/sort.hpp"
 
 #endif  // closing endif for header file include guard

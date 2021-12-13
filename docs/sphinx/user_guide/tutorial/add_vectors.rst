@@ -1,6 +1,6 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -73,7 +73,7 @@ This policy allows the compiler to generate optimizations, such as SIMD if
 compiler heuristics suggest that it is safe to do so and potentially 
 beneficial for performance, but the optimizations are not forced.
 
-To run the kernel with OpenMP multi-threaded parallelism on a CPU, we use the
+To run the kernel with OpenMP multithreaded parallelism on a CPU, we use the
 ``RAJA::omp_parallel_for_exec`` execution policy:
 
 .. literalinclude:: ../../../../examples/tut_add-vectors.cpp
@@ -84,7 +84,7 @@ To run the kernel with OpenMP multi-threaded parallelism on a CPU, we use the
 This will distribute the loop iterations across CPU threads and run the 
 loop over threads in parallel.
 
-Finally, to run the kernel on a CUDA GPU device, we use the ``RAJA::cuda_exec``
+To run the kernel on a CUDA GPU device, we use the ``RAJA::cuda_exec``
 policy:
 
 .. literalinclude:: ../../../../examples/tut_add-vectors.cpp
@@ -95,12 +95,18 @@ policy:
 Note that the CUDA execution policy type accepts a template argument 
 ``CUDA_BLOCK_SIZE``, which specifies that each CUDA thread block launched 
 to execute the kernel will have the given number threads in the block.
-The thread block size parameter is optional; if not provided, the RAJA policy 
-provides a default of 256, which is a reasonable choice for most cases. 
 
 Since the lambda defining the loop body will be passed to a device kernel, 
 it must be decorated with the ``__device__`` attribute when it is defined. 
 This can be done directly or by using the ``RAJA_DEVICE`` macro.
+
+Similarly, to run the kernel on a GPU using the RAJA HIP back-end, 
+we use the ``RAJA::hip_exec`` policy:
+
+.. literalinclude:: ../../../../examples/tut_add-vectors.cpp
+   :start-after: _rajahip_vector_add_start
+   :end-before: _rajahip_vector_add_end
+   :language: C++
 
 The file ``RAJA/examples/tut_add-vectors.cpp`` contains the complete 
 working example code.

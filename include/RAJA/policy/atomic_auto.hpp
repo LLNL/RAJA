@@ -9,8 +9,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -22,7 +22,9 @@
 
 #include "RAJA/util/macros.hpp"
 
-#include "RAJA/policy/sequential/atomic.hpp"
+#if !defined(RAJA_ENABLE_DESUL_ATOMICS)
+    #include "RAJA/policy/sequential/atomic.hpp"
+#endif
 
 /*!
  * Provides priority between atomic policies that should do the "right thing"
@@ -39,6 +41,9 @@
 #if defined(__CUDA_ARCH__)
 #define RAJA_AUTO_ATOMIC \
   RAJA::cuda_atomic {}
+#elif defined(__HIP_DEVICE_COMPILE__)
+#define RAJA_AUTO_ATOMIC \
+  RAJA::hip_atomic {}
 #elif defined(RAJA_ENABLE_OPENMP)
 #define RAJA_AUTO_ATOMIC \
   RAJA::omp_atomic {}

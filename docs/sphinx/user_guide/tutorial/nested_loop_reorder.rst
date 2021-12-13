@@ -1,6 +1,6 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -103,7 +103,7 @@ for-loops, the loop would appear as::
 
   for (int k = 2; k< 4; ++k) {
     for (int j = 1; j < 3; ++j) { 
-      for (int i = 0; j < 2; ++i) { 
+      for (int i = 0; i < 2; ++i) { 
         // print loop index triple...
       }
     }

@@ -1,16 +1,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/util/PluginStrategy.hpp"
@@ -21,6 +13,18 @@ namespace RAJA {
 namespace util {
 
 PluginStrategy::PluginStrategy() = default;
+
+void PluginStrategy::init(const PluginOptions&) { }
+
+void PluginStrategy::preCapture(const PluginContext&) { }
+
+void PluginStrategy::postCapture(const PluginContext&) { }
+
+void PluginStrategy::preLaunch(const PluginContext&) { }
+
+void PluginStrategy::postLaunch(const PluginContext&) { }
+
+void PluginStrategy::finalize() { }
 
 }
 }

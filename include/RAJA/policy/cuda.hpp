@@ -11,8 +11,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -22,18 +22,24 @@
 
 #include "RAJA/config.hpp"
 
-#if (defined(__NVCC__) || (defined(__clang__) && defined(__CUDA__))) && defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_CUDA_ACTIVE)
 
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include "RAJA/policy/cuda/atomic.hpp"
+#if !defined(RAJA_ENABLE_DESUL_ATOMICS)
+    #include "RAJA/policy/cuda/atomic.hpp"
+#endif
+
 #include "RAJA/policy/cuda/forall.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/reduce.hpp"
 #include "RAJA/policy/cuda/scan.hpp"
+#include "RAJA/policy/cuda/sort.hpp"
 #include "RAJA/policy/cuda/kernel.hpp"
 #include "RAJA/policy/cuda/synchronize.hpp"
+#include "RAJA/policy/cuda/teams.hpp"
+#include "RAJA/policy/cuda/WorkGroup.hpp"
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
 

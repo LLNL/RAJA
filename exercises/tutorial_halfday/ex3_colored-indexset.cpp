@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -12,6 +12,8 @@
 #include <vector>
 
 #include "RAJA/RAJA.hpp"
+
+#include "camp/resource.hpp"
 
 #include "memoryManager.hpp"
 
@@ -213,23 +215,33 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #endif
 
- 
-// 
-// Create a RAJA TypedIndexSet with four ListSegments, one for the indices of 
-// the elements in each subset. This will be used in the RAJA OpenMP and CUDA 
-// variants of the vertex sum calculation.
-//
-// The TypedIndexSet is a variadic template, where the template arguments
-// are the segment types that the TypedIndexSet can hold. 
-// 
 
+// The TypedIndexSet is a variadic template, where the template arguments
+// are the segment types that the TypedIndexSet can hold.
+//
+  using SegmentType = RAJA::TypedListSegment<int>;
+
+#if defined(RAJA_ENABLE_OPENMP)
+
+//
+// Resource object used to construct list segment objects with indices
+// living in host (CPU) memory.
+//
+  camp::resources::Resource host_res{camp::resources::Host()};
+
+//
+// Create a RAJA TypedIndexSet with four ListSegments, one for the indices of
+// the elements in each subsut. This will be used in the RAJA OpenMP and CUDA
+// variants of the vertex sum calculation.
+
+  RAJA::TypedIndexSet<SegmentType> colorset;
 
   ///
   /// TODO...
   ///
-  /// EXERCISE: Create a RAJA::TypedIndexSet object that holds four
-  ///           RAJA::TypedListSegment objects, one for each of the 
-  ///           'idx' arrays above.
+  /// EXERCISE: Add four SegmentType objects to the coloret, one for each of 
+  ///           the 'idx' arrays above. Remember to pass the 'host_res'
+  ///           object to the SegmentType constructor. 
   ///
 
 
@@ -237,8 +249,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // RAJA OpenMP vertex sum calculation using TypedIndexSet (sequential iteration 
 // over segments, OpenMP parallel iteration of each segment)
 //----------------------------------------------------------------------------//
-
-#if defined(RAJA_ENABLE_OPENMP)
 
   std::cout << "\n Running RAJA OpenMP index set vertex sum...\n";
 
@@ -271,6 +281,36 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
+
+//
+// Resource object used to construct list segment objects with indices
+// living in host (CPU) memory.
+//
+  camp::resources::Resource cuda_res{camp::resources::Cuda()};
+
+  RAJA::TypedIndexSet<SegmentType> cuda_colorset;
+
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Add four SegmentType objects to the cuda_coloret, one for 
+  ///           each of the 'idx' arrays above. Remember to pass the 'cuda_res'
+  ///           object to the SegmentType constructor.
+  ///
+
+
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the vertex sum kernel a RAJA::forall
+  ///           method with execution policy type
+  ///
+  ///            RAJA::ExecPolicy<RAJA::seq_segit,
+  ///                             RAJA::cuda_exec<CUDA_BLOCK_SIZE>>
+  ///
+  ///            so that the kernel iterates over the segments sequentially
+  ///            and executes each segment in parallel as a CUDA kernel.
+
 
   std::cout << "\n Running RAJA CUDA index set vertex sum...\n";
 

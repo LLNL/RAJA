@@ -1,37 +1,38 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-18, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
-// Produced at the Lawrence Livermore National Laboratory
-//
-// LLNL-CODE-689114
-//
-// All rights reserved.
-//
-// This file is part of RAJA.
-//
-// For details about use and distribution, please read RAJA/LICENSE.
-//
+// SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 #ifndef RAJA_PluginStrategy_HPP
 #define RAJA_PluginStrategy_HPP
 
 #include "RAJA/util/PluginContext.hpp"
+#include "RAJA/util/PluginOptions.hpp"
 #include "RAJA/util/Registry.hpp"
 
 namespace RAJA {
 namespace util {
 
-
-class PluginStrategy 
+class PluginStrategy
 {
   public:
-    PluginStrategy();
+    RAJASHAREDDLL_API PluginStrategy();
 
     virtual ~PluginStrategy() = default;
 
-    virtual void preLaunch(PluginContext p) = 0;
+    virtual RAJASHAREDDLL_API void init(const PluginOptions& p);
 
-    virtual void postLaunch(PluginContext p) = 0;
+    virtual RAJASHAREDDLL_API void preCapture(const PluginContext& p);
+
+    virtual RAJASHAREDDLL_API void postCapture(const PluginContext& p);
+
+    virtual RAJASHAREDDLL_API void preLaunch(const PluginContext& p);
+
+    virtual RAJASHAREDDLL_API void postLaunch(const PluginContext& p);
+
+    virtual RAJASHAREDDLL_API void finalize();
 };
 
 using PluginRegistry = Registry<PluginStrategy>;

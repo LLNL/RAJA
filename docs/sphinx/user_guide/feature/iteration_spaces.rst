@@ -1,6 +1,6 @@
 .. ##
-.. ## Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-.. ## and other RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## and other RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -36,17 +36,14 @@ Just like traditional C and C++ for-loops, RAJA uses index variables to
 identify loop iterates. Any lambda expression that represents all or part of
 a loop body passed to a ``RAJA::forall`` or ``RAJA::kernel`` method will 
 take at least one loop index variable argument. RAJA iteration space types 
-and methods are templates that allow users to use any integral type for an
+are templates that allow users to use any integral type for an
 index variable. The index variable type may be explicitly specified by a user.
-RAJA also provides a ``RAJA::Index_type`` type, which is used as a default 
+RAJA also provides the ``RAJA::Index_type`` type, which is used as a default 
 in some circumstances for convenience by allowing use of a common type 
 alias to typed constructs without explicitly specifying the type. 
-The ``RAJA::Index_type`` type is an alias to the C++ type 'std::ptrdiff_t', 
+The ``RAJA::Index_type`` type is an alias to the C++ type ``std::ptrdiff_t``, 
 which is appropriate for most compilers to generate useful loop-level 
 optimizations.
-
-.. note:: Users can change the type of ``RAJA::Index_type`` by editing the RAJA
-          ``RAJA/include/RAJA/util/types.hpp`` header file.
 
 .. _segments-label:
 
@@ -78,7 +75,7 @@ One can create an explicitly-typed range segment or one with the default
    RAJA::RangeSegment default_range(beg, end);
 
 .. note:: When using a RAJA range segment, no loop iterations will be run when
-          begin is greater-than-or-equal-to end.  
+          begin is greater-than-or-equal-to end similar to a C-style for-loop.
 
 Strided Segments
 ^^^^^^^^^^^^^^^^^^^
@@ -136,13 +133,49 @@ segment constructor. For example::
    // Create a vector holding some integer index values
    std::vector<int> idx = {0, 2, 3, 4, 7, 8, 9, 53};
 
-   // Create list segment with these loop indices
-   RAJA::TypedListSegment<int> idx_list( &idx[0], static_cast<int>(idx.size()) );
+   // Create list segment with these loop indices where the indices are 
+   // stored in the host memory space
+   camp::resources::Resource host_res{camp::resources::Host()};
+   RAJA::TypedListSegment<int> idx_list( &idx[0], idx.size(),
+                                         host_res );
+
+Using a list segment in a RAJA loop traversal template will run the loop 
+indices specified in the array passed to the list segment constructor. That 
+is, using 'idx_list' from above::
+
+   RAJA::forall< RAJA::seq_exec >( idx_list, [=] (RAJA::Index_type i) {
+     printf("%ld ", i);
+   } );
+
+will print the values::
+
+   0 2 3 4 7 8 9 53
+
+Note that a ``RAJA::TypedListSegment`` constructor can take a pointer to
+an array of indices and an array length, as shown above. If the indices are
+in a container, such as ``std::vector`` that provides ``begin()``, ``end()``,
+and ``size()`` methods, the length argument is not required. For example::
+
+   std::vector<int> idx = {0, 2, 3, 4, 7, 8, 9, 53};
+
+   camp::resources::Resource host_res{camp::resources::Host()};
+   RAJA::TypedListSegment<int> idx_list( idx, host_res );
 
 Similar to range segment types, RAJA provides ``RAJA::ListSegment``, which is
 a type alias to ``RAJA::TypedListSegment`` using ``RAJA::Index_type`` as the
 template type parameter.
    
+By default, the list segment constructor copies the indices in the array
+passed to it to the memory space specified by the resource argument.
+The resource argument is required so that the segment index values are in the
+proper memory space for the kernel to run. Since the kernel is run on 
+the CPU host in this example (indicated by the ``RAJA::seq_exec`` execution 
+policy), we pass a host resource object to the list segment constructor. 
+If, for example, the kernel was to run on a GPU using a CUDA or HIP 
+execution policy, then the resource type passed to the camp resource 
+constructor would be ``camp::resources::Cuda()`` or 
+``camp::resources::Hip()``, respectively.
+
 Segment Types and  Iteration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -197,15 +230,16 @@ loop execution template to execute the indices defined by its segments::
    // Run a kernel with iterates defined by the index set
    RAJA::forall<ISET_EXECPOL>(iset, [=] (int i) { ... });
 
-.. note:: Iterating over the indices of all segments in a RAJA index set 
-          requires a two-level execution policy. The outer level specifies
-          how to iterate over the seqments. The inner level specifies how
-          each segment will execute. See :ref:`indexsetpolicy-label` for
-          more information about IndexSet execution policies.
-
 In this example, the loop iterations will execute in three chunks defined by 
 the two range segments and one list segment. The segments will be iterated 
 over in parallel using OpenMP, and each segment will execute sequentially.
+
+.. note:: Iterating over the indices of all segments in a RAJA index set 
+          requires a two-level execution policy, with two template parameters,
+          as shown above. The first parameter specifies how to iterate over 
+          the seqments. The second parameter specifies how each segment will 
+          execute. See :ref:`indexsetpolicy-label` for more information about 
+          RAJA index set execution policies.
 
 .. note:: It is the responsibility of the user to ensure that segments are
           defined properly when using RAJA index sets. For example, if the
