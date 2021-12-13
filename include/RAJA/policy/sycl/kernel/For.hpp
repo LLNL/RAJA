@@ -45,7 +45,7 @@ template <typename Data,
           typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::sycl_global_123<Dim, Local_Size>, EnclosedStmts...>,
+    statement::For<ArgumentId, RAJA::sycl_global_012<Dim, Local_Size>, EnclosedStmts...>,
     Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -109,7 +109,7 @@ template <typename Data,
           typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::sycl_group_123_direct<Dim>, EnclosedStmts...>,
+    statement::For<ArgumentId, RAJA::sycl_group_012_direct<Dim>, EnclosedStmts...>,
     Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -171,7 +171,7 @@ template <typename Data,
           typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::sycl_group_123_loop<Dim>, EnclosedStmts...>,
+    statement::For<ArgumentId, RAJA::sycl_group_012_loop<Dim>, EnclosedStmts...>,
     Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -236,7 +236,7 @@ template <typename Data,
           typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::sycl_local_123_direct<Dim>, EnclosedStmts...>,
+    statement::For<ArgumentId, RAJA::sycl_local_012_direct<Dim>, EnclosedStmts...>,
     Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -299,7 +299,7 @@ template <typename Data,
           typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::sycl_local_123_loop<Dim>, EnclosedStmts...>,
+    statement::For<ArgumentId, RAJA::sycl_local_012_loop<Dim>, EnclosedStmts...>,
     Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
