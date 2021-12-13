@@ -7,6 +7,8 @@
 
 #include "RAJA_test-base.hpp"
 
+#include "test-layout.hpp"
+
 /*
  * Basic layout test
  */
@@ -22,6 +24,8 @@ TEST(OffsetLayoutUnitTest, Constructors)
    */
   const layout l({{10}}, {{14}});
 
+  // ASSERT_EQ(5, l.size());
+
   /*
    * First element, 10, should have index 0.
    */
@@ -33,6 +37,22 @@ TEST(OffsetLayoutUnitTest, Constructors)
    * Last element, 14, should have index 5.
    */
   ASSERT_EQ(4, l(14));
+}
+
+TEST(LayoutUnitTest, 2D)
+{
+  test_layout_2d(RAJA::Layout<2>{3, 5}, 15, 0, 3, false, 0, 5, false);
+  test_layout_2d(RAJA::Layout<2, RAJA::Index_type,  1>{3, 5}, 15, 0, 3, false, 0, 5, false);
+  test_layout_2d(RAJA::Layout<2, RAJA::Index_type, -1, 0>{3, 5}, 15, 0, 3, false, 0, 5, false);
+  test_layout_2d(RAJA::Layout<2, RAJA::Index_type,  1, 0>{3, 5}, 15, 0, 3, false, 0, 5, false);
+}
+
+TEST(LayoutUnitTest, 3D)
+{
+  test_layout_3d(RAJA::Layout<3>{3, 4, 2}, 24, 0, 3, false, 0, 4, false, 0, 2, false);
+  test_layout_3d(RAJA::Layout<3, RAJA::Index_type,  2>{3, 4, 2}, 24, 0, 3, false, 0, 4, false, 0, 2, false);
+  test_layout_3d(RAJA::Layout<3, RAJA::Index_type, -1, 0>{3, 4, 2}, 24, 0, 3, false, 0, 4, false, 0, 2, false);
+  test_layout_3d(RAJA::Layout<3, RAJA::Index_type,  2, 0>{3, 4, 2}, 24, 0, 3, false, 0, 4, false, 0, 2, false);
 }
 
 TEST(LayoutUnitTest, 2D_IJ)
