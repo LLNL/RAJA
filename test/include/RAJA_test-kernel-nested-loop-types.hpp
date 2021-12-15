@@ -14,14 +14,26 @@
 #define DEVICE_KERNEL CudaKernel
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+#define DEVICE_REDUCE_POL hip_reduce
+#else
+#define DEVICE_REDUCE_POL cuda_reduce
+#endif
+
 struct DEPTH_2 {};
 struct DEPTH_2_COLLAPSE {};
 struct DEPTH_3 {};
 struct DEPTH_3_COLLAPSE {};
 struct DEPTH_3_COLLAPSE_SEQ_INNER {};
 struct DEPTH_3_COLLAPSE_SEQ_OUTER {};
+struct DEPTH_3_REDUCESUM {};
+struct DEPTH_3_REDUCESUM_SEQ_INNER {};
+struct DEPTH_3_REDUCESUM_SEQ_OUTER {};
 struct DEVICE_DEPTH_2 {};
 struct DEVICE_DEPTH_3 {};
+struct DEVICE_DEPTH_3_REDUCESUM {};
+struct DEVICE_DEPTH_3_REDUCESUM_SEQ_INNER {};
+struct DEVICE_DEPTH_3_REDUCESUM_SEQ_OUTER {};
 
 
 //

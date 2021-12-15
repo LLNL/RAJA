@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-set(NESTED_LOOPTYPES Basic MultiLambda MultiLambdaParam)
+set(NESTED_LOOPTYPES Basic MultiLambda MultiLambdaParam ReduceSum)
 
 set( USE_RESOURCE "-resource-" "-" )
 
