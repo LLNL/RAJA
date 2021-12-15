@@ -728,8 +728,8 @@ private:
  */
 template <size_t n_dims,
           typename IdxLin = Index_type,
-          ptrdiff_t StrideOneDim = (n_dims == 1) ? 0 : -1,
-          ptrdiff_t StrideMaxDim = (n_dims == 1) ? 0 : -1>
+          ptrdiff_t StrideOneDim = -1,
+          ptrdiff_t StrideMaxDim = -1>
 using Layout =
     detail::LayoutBase_impl<camp::make_idx_seq_t<n_dims>, IdxLin,
                             StrideOneDim, StrideMaxDim>;
@@ -741,8 +741,8 @@ using Layout =
  */
 template <size_t n_dims,
           typename IdxLin = Index_type,
-          ptrdiff_t StrideOneDim = (n_dims == 1) ? 0 : -1,
-          ptrdiff_t StrideMaxDim = (n_dims == 1) ? 0 : -1>
+          ptrdiff_t StrideOneDim = -1,
+          ptrdiff_t StrideMaxDim = -1>
 using LayoutNoProj =
     detail::LayoutNoProjBase_impl<camp::make_idx_seq_t<n_dims>, IdxLin,
                                   StrideOneDim, StrideMaxDim>;
@@ -754,8 +754,8 @@ using LayoutNoProj =
  * index. Intended for use with strongly typed indices.
  */
 template <typename IdxLin, typename DimTuple,
-          ptrdiff_t StrideOneDim = (camp::tuple_size<DimTuple>::value == 1) ? 0 : -1,
-          ptrdiff_t StrideMaxDim = (camp::tuple_size<DimTuple>::value == 1) ? 0 : -1>
+          ptrdiff_t StrideOneDim = -1,
+          ptrdiff_t StrideMaxDim = -1>
 using TypedLayout = detail::TypedLayoutBase_impl<IdxLin, DimTuple,
                         Layout<camp::tuple_size<DimTuple>::value, strip_index_type_t<IdxLin>,
                                StrideOneDim, StrideMaxDim>>;
@@ -766,8 +766,8 @@ using TypedLayout = detail::TypedLayoutBase_impl<IdxLin, DimTuple,
  * This is the same as TypedLayout, but does not allow projections.
  */
 template <typename IdxLin, typename DimTuple,
-          ptrdiff_t StrideOneDim = (camp::tuple_size<DimTuple>::value == 1) ? 0 : -1,
-          ptrdiff_t StrideMaxDim = (camp::tuple_size<DimTuple>::value == 1) ? 0 : -1>
+          ptrdiff_t StrideOneDim = -1,
+          ptrdiff_t StrideMaxDim = -1>
 using TypedLayoutNoProj = detail::TypedLayoutBase_impl<IdxLin, DimTuple,
                         LayoutNoProj<camp::tuple_size<DimTuple>::value, strip_index_type_t<IdxLin>,
                                StrideOneDim, StrideMaxDim>>;
