@@ -47,9 +47,9 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin,
                          StrideOneDim, StrideMaxDim>
     : ::RAJA::detail::LayoutBaseMarker
 {
-  using Self = OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin,
-                                 StrideOneDim, StrideMaxDim>;
   using IndexRange = camp::idx_seq<RangeInts...>;
+  using Self = OffsetLayout_impl<IndexRange, IdxLin,
+                                 StrideOneDim, StrideMaxDim>;
   using IndexLinear = IdxLin;
   using Base = RAJA::detail::LayoutBase_impl<IndexRange, IdxLin,
                                              StrideOneDim, StrideMaxDim>;
@@ -61,8 +61,8 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin,
   IdxLin offsets[n_dims]={0}; //If not specified set to zero
 
   constexpr RAJA_INLINE OffsetLayout_impl(
-      std::array<IdxLin, sizeof...(RangeInts)> lower,
-      std::array<IdxLin, sizeof...(RangeInts)> upper)
+      std::array<IdxLin, n_dims> lower,
+      std::array<IdxLin, n_dims> upper)
       : base_{(upper[RangeInts] - lower[RangeInts] + 1)...},
         offsets{lower[RangeInts]...}
   {
@@ -73,7 +73,7 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin,
   {
   }
 
-  void shift(std::array<IdxLin, sizeof...(RangeInts)> shift)
+  void shift(std::array<IdxLin, n_dims> shift)
   {
     for(size_t i=0; i<n_dims; ++i) offsets[i] += shift[i];
   }
@@ -113,20 +113,18 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin,
     return base_((indices - offsets[RangeInts])...);
   }
 
-  static RAJA_INLINE OffsetLayout_impl<IndexRange, IdxLin,
-                                       StrideOneDim, StrideMaxDim>
+  static RAJA_INLINE Self
   from_layout_and_offsets(
-      const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
-      const Layout<sizeof...(RangeInts), IdxLin, StrideOneDim, StrideMaxDim>& rhs)
+      const std::array<IdxLin, n_dims>& offsets_in,
+      const Layout<n_dims, IdxLin, StrideOneDim, StrideMaxDim>& rhs)
   {
-    OffsetLayout_impl ret{rhs};
+    Self ret{rhs};
     camp::sink((ret.offsets[RangeInts] = offsets_in[RangeInts])...);
     return ret;
   }
 
   constexpr RAJA_INLINE RAJA_HOST_DEVICE
-  OffsetLayout_impl(const Layout<sizeof...(RangeInts), IdxLin,
-                                 StrideOneDim, StrideMaxDim>& rhs)
+  OffsetLayout_impl(const Base& rhs)
       : base_{rhs}
   {
   }
@@ -183,7 +181,7 @@ struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>,
    using DimArr = std::array<Index_type, sizeof...(DimTypes)>;
    using IndexLinear = IdxLin;
 
-   // Pull in base coonstructors
+   // Pull in base constructors
  #if 0
    // This breaks with nvcc11
  using Base::Base;
