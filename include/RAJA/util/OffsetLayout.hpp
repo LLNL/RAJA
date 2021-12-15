@@ -45,6 +45,7 @@ template <camp::idx_t... RangeInts, typename IdxLin,
           ptrdiff_t StrideOneDim, ptrdiff_t StrideMaxDim>
 struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin,
                          StrideOneDim, StrideMaxDim>
+    : ::RAJA::detail::LayoutBaseMarker
 {
   using Self = OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin,
                                  StrideOneDim, StrideMaxDim>;

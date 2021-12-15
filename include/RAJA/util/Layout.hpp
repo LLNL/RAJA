@@ -28,6 +28,7 @@
 
 #include "RAJA/internal/foldl.hpp"
 
+#include "RAJA/util/concepts.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/Permutations.hpp"
 
@@ -168,6 +169,7 @@ struct to_index_calculator<i_dim, i_dim, i_dim, IdxLin> {
   }
 };
 
+struct LayoutBaseMarker {};
 
 template <typename Range,
           typename IdxLin = Index_type,
@@ -179,6 +181,7 @@ template <camp::idx_t... RangeInts, typename IdxLin,
           ptrdiff_t StrideOneDim, ptrdiff_t StrideMaxDim>
 struct LayoutNoProjBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
                              StrideOneDim, StrideMaxDim>
+    : LayoutBaseMarker
 {
   using Self = LayoutNoProjBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
                                      StrideOneDim, StrideMaxDim>;
@@ -215,7 +218,9 @@ struct LayoutNoProjBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
    * Therefore if you use this constructor it is valid to set
    * StrideOneDim = n_dims-1 and StrideMaxDim = 0.
    */
-  template <typename... Types>
+  template <typename... Types,
+            typename = concepts::enable_if<
+                concepts::negate<std::is_base_of<LayoutBaseMarker, Types>>...>>
   RAJA_INLINE RAJA_HOST_DEVICE constexpr LayoutNoProjBase_impl(Types... ns)
       : sizes{static_cast<IdxLin>(stripIndexType(ns))...},
         strides{(detail::stride_calculator<RangeInts + 1, n_dims, IdxLin>{}(
@@ -448,7 +453,9 @@ struct LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
    * Therefore if you use this constructor it is valid to set
    * StrideOneDim = n_dims-1 and StrideMaxDim = 0.
    */
-  template <typename... Types>
+  template <typename... Types,
+            typename = concepts::enable_if<
+                concepts::negate<std::is_base_of<LayoutBaseMarker, Types>>...>>
   RAJA_INLINE RAJA_HOST_DEVICE constexpr LayoutBase_impl(Types... ns)
       : Base(camp::make_tuple(static_cast<IdxLin>(stripIndexType(ns))...),
              camp::make_tuple((detail::projection_stride_calculator<
