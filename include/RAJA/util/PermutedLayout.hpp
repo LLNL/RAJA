@@ -79,16 +79,7 @@ auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
     strides[permutation[i]] = folded_strides[i];
   }
 
-
-  // return Layout<Rank, IdxLin>(sizes, strides);
-  auto ret  = Layout<Rank, IdxLin>();
-  for (size_t i = 0; i < Rank; ++i) {
-    ret.sizes[i] = sizes[i];
-    ret.strides[i] = strides[i];
-    ret.inv_strides[i] = strides[i] ? strides[i] : 1;
-    ret.inv_mods[i] = sizes[i] ? sizes[i] : 1;
-  }
-  return ret;
+  return Layout<Rank, IdxLin>(sizes, strides);
 }
 
 
