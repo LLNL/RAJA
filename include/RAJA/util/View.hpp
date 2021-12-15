@@ -35,15 +35,49 @@ namespace RAJA
 //layouts -> OffsetLayouts
 //Typedlayouts -> TypedOffsetLayouts
 template<typename layout>
-struct add_offset
+struct add_offset;
+
+
+
+template <camp::idx_t... RangeInts, typename IdxLin,
+          ptrdiff_t StrideOneDim, ptrdiff_t StrideMaxDim>
+struct add_offset<RAJA::detail::LayoutNoProjBase_impl<
+                      camp::idx_seq<RangeInts...>, IdxLin,
+                      StrideOneDim, StrideMaxDim>>
 {
-  using type = RAJA::OffsetLayout<layout::n_dims>;
+  using type = RAJA::OffsetLayout<sizeof...(RangeInts),IdxLin,StrideOneDim,StrideMaxDim>;
 };
 
-template<typename IdxLin, typename...DimTypes>
-struct add_offset<RAJA::TypedLayout<IdxLin,camp::tuple<DimTypes...>>>
+template <camp::idx_t... RangeInts, typename IdxLin,
+          ptrdiff_t StrideOneDim, ptrdiff_t StrideMaxDim>
+struct add_offset<RAJA::detail::LayoutBase_impl<
+                      camp::idx_seq<RangeInts...>, IdxLin,
+                      StrideOneDim, StrideMaxDim>>
 {
-  using type = RAJA::TypedOffsetLayout<IdxLin,camp::tuple<DimTypes...>>;
+  using type = RAJA::OffsetLayout<sizeof...(RangeInts),IdxLin,StrideOneDim,StrideMaxDim>;
+};
+
+template<typename IdxLin, typename...DimTypes,
+         ptrdiff_t StrideOneDim, ptrdiff_t StrideMaxDim>
+struct add_offset<RAJA::TypedLayout<
+                      IdxLin,camp::tuple<DimTypes...>,StrideOneDim,StrideMaxDim>>
+{
+  using type = RAJA::TypedOffsetLayout<
+                  IdxLin,camp::tuple<DimTypes...>,StrideOneDim,StrideMaxDim>;
+};
+
+template <size_t n_dims, typename IdxLin,
+          ptrdiff_t StrideOneDim, ptrdiff_t StrideMaxDim>
+struct add_offset<RAJA::OffsetLayout<n_dims, IdxLin, StrideOneDim, StrideMaxDim>>
+{
+  using type = RAJA::OffsetLayout<n_dims, IdxLin, StrideOneDim, StrideMaxDim>;
+};
+
+template <typename IdxLin, typename DimTuple,
+          ptrdiff_t StrideOneDim, ptrdiff_t StrideMaxDim>
+struct add_offset<RAJA::TypedOffsetLayout<IdxLin, DimTuple, StrideOneDim, StrideMaxDim>>
+{
+  using type = RAJA::TypedOffsetLayout<IdxLin, DimTuple, StrideOneDim, StrideMaxDim>;
 };
 
 template <typename ValueType,
