@@ -758,7 +758,7 @@ template <typename IdxLin, typename DimTuple,
           ptrdiff_t StrideMaxDim = (camp::tuple_size<DimTuple>::value == 1) ? 0 : -1>
 using TypedLayout = detail::TypedLayoutBase_impl<IdxLin, DimTuple,
                         Layout<camp::tuple_size<DimTuple>::value, strip_index_type_t<IdxLin>,
-                               StrideOneDim, StrideOneDim>>;
+                               StrideOneDim, StrideMaxDim>>;
 
 /*!
  * @brief A mapping of n-dimensional index space to a linear index space.
@@ -770,7 +770,7 @@ template <typename IdxLin, typename DimTuple,
           ptrdiff_t StrideMaxDim = (camp::tuple_size<DimTuple>::value == 1) ? 0 : -1>
 using TypedLayoutNoProj = detail::TypedLayoutBase_impl<IdxLin, DimTuple,
                         LayoutNoProj<camp::tuple_size<DimTuple>::value, strip_index_type_t<IdxLin>,
-                               StrideOneDim, StrideOneDim>>;
+                               StrideOneDim, StrideMaxDim>>;
 
 
 /*!
