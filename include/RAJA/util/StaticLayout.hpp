@@ -130,7 +130,6 @@ struct StaticLayoutBase_impl<IdxLin,
     return camp::seq_at<DIM, strides>::value;
   }
 
-
 };
 
 template <typename IdxLin, IdxLin N, IdxLin Idx, IdxLin... Sizes>
@@ -171,6 +170,7 @@ struct StrideCalculator<IdxLin,
   using range = camp::int_seq<IdxLin, Range...>;
   using perm = camp::idx_seq<Perm...>;
   using inv_perm = invert_permutation<perm>;
+
   using strides_unperm =
       camp::int_seq<IdxLin, StrideCalculatorIdx<IdxLin, N, Range, camp::seq_at<Perm, sizes>::value...>::stride...>;
   
@@ -242,11 +242,8 @@ using StaticLayoutT = typename detail::StaticLayoutMaker<
     camp::make_int_seq_t<IdxLin, sizeof...(Sizes)>
     >::type;
 
-
 template <typename Perm, camp::idx_t... Sizes>
 using StaticLayout = StaticLayoutT<Perm, camp::idx_t, Sizes...>;
-
-
 
 template <typename Perm, typename IdxLin, typename TypeList, camp::idx_t... Sizes>
 using TypedStaticLayout =
