@@ -44,7 +44,7 @@ using ReduceSumSupportedLoopTypeList = camp::list<
 // ReduceSum 3D Matrix index calculation per element.
 //
 //
-template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE>
+template <typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POL, bool USE_RESOURCE>
 void KernelNestedLoopTest(const DEPTH_3_REDUCESUM&,
                           const RAJA::Index_type dim0,
                           const RAJA::Index_type dim1,
@@ -76,7 +76,7 @@ void KernelNestedLoopTest(const DEPTH_3_REDUCESUM&,
   RAJA::View< RAJA::Index_type, RAJA::Layout<Depth> > work_view(work_array, dim0, dim1, dim2);
 
   RAJA::ReduceSum<RAJA::seq_reduce, RAJA::Index_type> hostsum(0);
-  RAJA::ReduceSum<RAJA::DEVICE_REDUCE_POL, RAJA::Index_type> worksum(0);
+  RAJA::ReduceSum<REDUCE_POL, RAJA::Index_type> worksum(0);
 
   call_kernel<EXEC_POLICY, USE_RESOURCE>(RAJA::make_tuple(range0, range1, range2), work_res,
                             [=] RAJA_HOST_DEVICE (RAJA::Index_type i, RAJA::Index_type j, RAJA::Index_type k) {
@@ -96,29 +96,29 @@ void KernelNestedLoopTest(const DEPTH_3_REDUCESUM&,
 }
 
 // DEVICE_ and DEPTH_3_REDUCESUM_SEQ_ execution policies use the above DEPTH_3_REDUCESUM test.
-template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE, typename... Args>
+template <typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POL, bool USE_RESOURCE, typename... Args>
 void KernelNestedLoopTest(const DEPTH_3_REDUCESUM_SEQ_OUTER&, Args... args){
-  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RESOURCE>(DEPTH_3_REDUCESUM(), args...);
+  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, REDUCE_POL, USE_RESOURCE>(DEPTH_3_REDUCESUM(), args...);
 }
 
-template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE, typename... Args>
+template <typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POL, bool USE_RESOURCE, typename... Args>
 void KernelNestedLoopTest(const DEPTH_3_REDUCESUM_SEQ_INNER&, Args... args){
-  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RESOURCE>(DEPTH_3_REDUCESUM(), args...);
+  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, REDUCE_POL, USE_RESOURCE>(DEPTH_3_REDUCESUM(), args...);
 }
 
-template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE, typename... Args>
+template <typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POL, bool USE_RESOURCE, typename... Args>
 void KernelNestedLoopTest(const DEVICE_DEPTH_3_REDUCESUM&, Args... args){
-  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RESOURCE>(DEPTH_3_REDUCESUM(), args...);
+  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, REDUCE_POL, USE_RESOURCE>(DEPTH_3_REDUCESUM(), args...);
 }
 
-template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE, typename... Args>
+template <typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POL, bool USE_RESOURCE, typename... Args>
 void KernelNestedLoopTest(const DEVICE_DEPTH_3_REDUCESUM_SEQ_OUTER&, Args... args){
-  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RESOURCE>(DEPTH_3_REDUCESUM(), args...);
+  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, REDUCE_POL, USE_RESOURCE>(DEPTH_3_REDUCESUM(), args...);
 }
 
-template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE, typename... Args>
+template <typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POL, bool USE_RESOURCE, typename... Args>
 void KernelNestedLoopTest(const DEVICE_DEPTH_3_REDUCESUM_SEQ_INNER&, Args... args){
-  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RESOURCE>(DEPTH_3_REDUCESUM(), args...);
+  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, REDUCE_POL, USE_RESOURCE>(DEPTH_3_REDUCESUM(), args...);
 }
 
 //
@@ -126,11 +126,11 @@ void KernelNestedLoopTest(const DEVICE_DEPTH_3_REDUCESUM_SEQ_INNER&, Args... arg
 // Defining the Kernel Loop structure for ReduceSum Nested Loop Tests.
 //
 //
-template<typename POLICY_TYPE, typename POLICY_DATA>
+template<typename POLICY_TYPE, typename REDUCE_POL, typename POLICY_DATA>
 struct ReduceSumNestedLoopExec;
 
-template<typename POLICY_DATA>
-struct ReduceSumNestedLoopExec<DEPTH_3_REDUCESUM, POLICY_DATA> {
+template<typename REDUCE_POL, typename POLICY_DATA>
+struct ReduceSumNestedLoopExec<DEPTH_3_REDUCESUM, REDUCE_POL, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
       RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<0>>::type,
@@ -143,8 +143,8 @@ struct ReduceSumNestedLoopExec<DEPTH_3_REDUCESUM, POLICY_DATA> {
     >;
 };
 
-template<typename POLICY_DATA>
-struct ReduceSumNestedLoopExec<DEPTH_3_REDUCESUM_SEQ_OUTER, POLICY_DATA> {
+template<typename REDUCE_POL, typename POLICY_DATA>
+struct ReduceSumNestedLoopExec<DEPTH_3_REDUCESUM_SEQ_OUTER, REDUCE_POL, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
       RAJA::statement::For<0, RAJA::seq_exec,
@@ -157,8 +157,8 @@ struct ReduceSumNestedLoopExec<DEPTH_3_REDUCESUM_SEQ_OUTER, POLICY_DATA> {
     >;
 };
 
-template<typename POLICY_DATA>
-struct ReduceSumNestedLoopExec<DEPTH_3_REDUCESUM_SEQ_INNER, POLICY_DATA> {
+template<typename REDUCE_POL, typename POLICY_DATA>
+struct ReduceSumNestedLoopExec<DEPTH_3_REDUCESUM_SEQ_INNER, REDUCE_POL, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
       RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<0>>::type,
@@ -173,8 +173,8 @@ struct ReduceSumNestedLoopExec<DEPTH_3_REDUCESUM_SEQ_INNER, POLICY_DATA> {
 
 #if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP)
 
-template<typename POLICY_DATA>
-struct ReduceSumNestedLoopExec<DEVICE_DEPTH_3_REDUCESUM, POLICY_DATA> {
+template<typename REDUCE_POL, typename POLICY_DATA>
+struct ReduceSumNestedLoopExec<DEVICE_DEPTH_3_REDUCESUM, REDUCE_POL, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
       RAJA::statement::DEVICE_KERNEL<
@@ -189,8 +189,8 @@ struct ReduceSumNestedLoopExec<DEVICE_DEPTH_3_REDUCESUM, POLICY_DATA> {
     >;
 };
 
-template<typename POLICY_DATA>
-struct ReduceSumNestedLoopExec<DEVICE_DEPTH_3_REDUCESUM_SEQ_OUTER, POLICY_DATA> {
+template<typename REDUCE_POL, typename POLICY_DATA>
+struct ReduceSumNestedLoopExec<DEVICE_DEPTH_3_REDUCESUM_SEQ_OUTER, REDUCE_POL, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
       RAJA::statement::DEVICE_KERNEL<
@@ -205,8 +205,8 @@ struct ReduceSumNestedLoopExec<DEVICE_DEPTH_3_REDUCESUM_SEQ_OUTER, POLICY_DATA> 
     >;
 };
 
-template<typename POLICY_DATA>
-struct ReduceSumNestedLoopExec<DEVICE_DEPTH_3_REDUCESUM_SEQ_INNER, POLICY_DATA> {
+template<typename REDUCE_POL, typename POLICY_DATA>
+struct ReduceSumNestedLoopExec<DEVICE_DEPTH_3_REDUCESUM_SEQ_INNER, REDUCE_POL, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
       RAJA::statement::DEVICE_KERNEL<

@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-set(NESTED_LOOPTYPES Basic MultiLambda MultiLambdaParam)
+set(NESTED_LOOPTYPES ReduceSum)
 
 set( USE_RESOURCE "-resource-" "-" )
 
@@ -28,20 +28,11 @@ foreach( NESTED_LOOP_BACKEND ${KERNEL_BACKENDS} )
       configure_file( test-kernel-nested-loop.cpp.in
           test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
 
-      #Some tests are known to fail for Hip, mark those tests (Will not be run in Gitlab CI)
-      if(${NESTED_LOOP_BACKEND} STREQUAL "Hip" AND ${NESTED_LOOP_TYPE} STREQUAL "MultiLambda")
-          raja_add_test( NAME test-kernel${RESOURCE}nested-loop-Known-Hip-Failure-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}
-              SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
-
-          target_include_directories(test-kernel${RESOURCE}nested-loop-Known-Hip-Failure-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.exe
-                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-      else()
           raja_add_test( NAME test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}
               SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
 
           target_include_directories(test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.exe
                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-      endif()
 
     endforeach()
   endforeach()
