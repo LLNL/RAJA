@@ -715,8 +715,8 @@ The following memory policies are available to specify memory allocation
 for ``RAJA::LocalArray`` objects:
 
   *  ``RAJA::cpu_tile_mem`` - Allocate CPU memory on the stack
-  *  ``RAJA::cuda_shared_mem`` - Allocate CUDA shared memory
-  *  ``RAJA::cuda_thread_mem`` - Allocate CUDA thread private memory
+  *  ``RAJA::cuda/hip_shared_mem`` - Allocate CUDA or Hip shared memory
+  *  ``RAJA::cuda/hip_thread_mem`` - Allocate CUDA or Hip thread private memory
 
 
 .. _loop_elements-kernelpol-label:
