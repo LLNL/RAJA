@@ -50,24 +50,18 @@ namespace internal
   using getDefaultIndexTypes = typename SequenceToType<Perm, RAJA::Index_type>::type;
 
 
-
-
-  //Helpers to convert
-  //layouts -> OffsetLayouts
-  //Typedlayouts -> TypedOffsetLayouts
-  template<typename layout>
+  // Helpers to convert layouts to OffsetLayouts of the same type
+  template<typename LayoutType>
   struct add_offset
   {
-    using type = RAJA::OffsetLayout<layout::n_dims>;
+    using type = RAJA::internal::OffsetLayout_impl<LayoutType>;
   };
 
-  template<typename IdxLin, typename...DimTypes>
-  struct add_offset<RAJA::TypedLayout<IdxLin,camp::tuple<DimTypes...>>>
+  template <typename LayoutType>
+  struct add_offset<RAJA::internal::OffsetLayout_impl<LayoutType>>
   {
-    using type = RAJA::TypedOffsetLayout<IdxLin,camp::tuple<DimTypes...>>;
+    using type = RAJA::internal::OffsetLayout_impl<LayoutType>;
   };
-
-
 
 
   /*
@@ -360,15 +354,11 @@ class ViewBase {
     }
 
 
-
-    template <size_t n_dims = layout_type::n_dims, typename IdxLin = linear_index_type>
     RAJA_INLINE
-    ShiftedView shift(const std::array<IdxLin, n_dims>& shift)
+    ShiftedView shift(const typename layout_type::DimArr& offset)
     {
-      static_assert(n_dims==layout_type::n_dims, "Dimension mismatch in view shift");
-
       shifted_layout_type shift_layout(m_layout);
-      shift_layout.shift(shift);
+      shift_layout.shift(offset);
 
       return ShiftedView(m_data, shift_layout);
     }
@@ -439,15 +429,11 @@ class TypedViewBase<ValueType, PointerType, LayoutType, camp::list<IndexTypes...
     }
 
 
-
-    template <size_t n_dims = sizeof...(IndexTypes), typename IdxLin = linear_index_type>
     RAJA_INLINE
-    ShiftedView shift(const std::array<IdxLin, n_dims>& shift)
+    ShiftedView shift(const typename layout_type::DimArr& offset)
     {
-      static_assert(n_dims==layout_type::n_dims, "Dimension mismatch in view shift");
-
       shifted_layout_type shift_layout(Base::get_layout());
-      shift_layout.shift(shift);
+      shift_layout.shift(offset);
 
       return ShiftedView(Base::get_data(), shift_layout);
     }

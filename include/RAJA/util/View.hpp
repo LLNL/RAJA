@@ -31,55 +31,6 @@
 namespace RAJA
 {
 
-//Helpers to convert
-//layouts -> OffsetLayouts
-//Typedlayouts -> TypedOffsetLayouts
-template<typename layout>
-struct add_offset;
-
-
-
-template <camp::idx_t... RangeInts, typename IdxLin,
-          ptrdiff_t StrideOneDim, ptrdiff_t StrideMaxDim>
-struct add_offset<RAJA::detail::LayoutNoProjBase_impl<
-                      camp::idx_seq<RangeInts...>, IdxLin,
-                      StrideOneDim, StrideMaxDim>>
-{
-  using type = RAJA::OffsetLayout<sizeof...(RangeInts),IdxLin,StrideOneDim,StrideMaxDim>;
-};
-
-template <camp::idx_t... RangeInts, typename IdxLin,
-          ptrdiff_t StrideOneDim, ptrdiff_t StrideMaxDim>
-struct add_offset<RAJA::detail::LayoutBase_impl<
-                      camp::idx_seq<RangeInts...>, IdxLin,
-                      StrideOneDim, StrideMaxDim>>
-{
-  using type = RAJA::OffsetLayout<sizeof...(RangeInts),IdxLin,StrideOneDim,StrideMaxDim>;
-};
-
-template<typename IdxLin, typename...DimTypes,
-         ptrdiff_t StrideOneDim, ptrdiff_t StrideMaxDim>
-struct add_offset<RAJA::TypedLayout<
-                      IdxLin,camp::tuple<DimTypes...>,StrideOneDim,StrideMaxDim>>
-{
-  using type = RAJA::TypedOffsetLayout<
-                  IdxLin,camp::tuple<DimTypes...>,StrideOneDim,StrideMaxDim>;
-};
-
-template <size_t n_dims, typename IdxLin,
-          ptrdiff_t StrideOneDim, ptrdiff_t StrideMaxDim>
-struct add_offset<RAJA::OffsetLayout<n_dims, IdxLin, StrideOneDim, StrideMaxDim>>
-{
-  using type = RAJA::OffsetLayout<n_dims, IdxLin, StrideOneDim, StrideMaxDim>;
-};
-
-template <typename IdxLin, typename DimTuple,
-          ptrdiff_t StrideOneDim, ptrdiff_t StrideMaxDim>
-struct add_offset<RAJA::TypedOffsetLayout<IdxLin, DimTuple, StrideOneDim, StrideMaxDim>>
-{
-  using type = RAJA::TypedOffsetLayout<IdxLin, DimTuple, StrideOneDim, StrideMaxDim>;
-};
-
 template <typename ValueType,
           typename LayoutType,
           typename PointerType = ValueType *>
@@ -107,14 +58,14 @@ RAJA_INLINE View<ValueType, Layout<1, IndexType, 0> > make_view(
 // select certain indices from a tuple, given a curated index sequence
 // returns linear index of layout(ar...)
 template <typename Lay, typename Tup, camp::idx_t... Idxs>
-RAJA_HOST_DEVICE RAJA_INLINE 
+RAJA_HOST_DEVICE RAJA_INLINE
 auto selecttuple( Lay lyout, Tup&& tup, camp::idx_seq<Idxs...> ) ->
   decltype(
             lyout(
               camp::get<Idxs>(std::forward<Tup>(tup))...
             )
           )
-{ 
+{
   return lyout(
                 camp::get<Idxs>(std::forward<Tup>(tup))...
               );
@@ -235,16 +186,15 @@ struct MultiView {
 
   RAJA_INLINE void set_data(pointer_type data_ptr) { data = data_ptr; }
 
-  template <size_t n_dims=layout_type::n_dims, typename IdxLin = Index_type>
-  RAJA_INLINE RAJA::MultiView<ValueType, typename add_offset<layout_type>::type, P2Pidx>
-  shift(const std::array<IdxLin, n_dims>& shift)
+  RAJA_INLINE RAJA::MultiView<ValueType, typename internal::add_offset<layout_type>::type, P2Pidx>
+  shift(const typename layout_type::DimArr& offset)
   {
-    static_assert(n_dims==layout_type::n_dims, "Dimension mismatch in view shift");
+    using offset_layout_type = typename internal::add_offset<layout_type>::type;
+    offset_layout_type shift_layout(layout);
+    shift_layout.shift(offset);
 
-    typename add_offset<layout_type>::type shift_layout(layout);
-    shift_layout.shift(shift);
-
-    return RAJA::MultiView<ValueType, typename add_offset<layout_type>::type, P2Pidx>(data, shift_layout);
+    return RAJA::MultiView<ValueType, offset_layout_type, P2Pidx>(
+        data, shift_layout);
   }
 
   // Moving the position of the index into the array-of-pointers
@@ -260,7 +210,7 @@ struct MultiView {
     {
       RAJA_ABORT_OR_THROW( "Negative index while accessing array of pointers.\n" );
     }
-    
+
     auto idx = stripIndexType( removenth<LayoutType, P2Pidx>( layout, camp::forward_as_tuple( ar... ) ) );
     return data[pidx][idx];
   }
