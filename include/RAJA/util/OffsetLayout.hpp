@@ -37,45 +37,60 @@ namespace RAJA
 namespace internal
 {
 
-template <typename Range, typename IdxLin,
-          ptrdiff_t StrideOneDim = -1, ptrdiff_t StrideMaxDim = -1>
-struct OffsetLayout_impl;
-
-template <camp::idx_t... RangeInts, typename IdxLin,
-          ptrdiff_t StrideOneDim, ptrdiff_t StrideMaxDim>
-struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin,
-                         StrideOneDim, StrideMaxDim>
-    : ::RAJA::detail::LayoutBaseMarker
+template <typename LayoutBase>
+struct OffsetLayout_impl
+    : LayoutBase
 {
-  using IndexRange = camp::idx_seq<RangeInts...>;
-  using Self = OffsetLayout_impl<IndexRange, IdxLin,
-                                 StrideOneDim, StrideMaxDim>;
-  using IndexLinear = IdxLin;
-  using Base = RAJA::detail::LayoutBase_impl<IndexRange, IdxLin,
-                                             StrideOneDim, StrideMaxDim>;
-  Base base_;
+  using Base = LayoutBase;
+  using Self = OffsetLayout_impl<LayoutBase>;
 
-  static constexpr camp::idx_t stride_one_dim = Base::stride_one_dim;
+  using typename Base::IndexRange;
+  using typename Base::StrippedIndexLinear;
+  using typename Base::IndexLinear;
+  using typename Base::DimTuple;
+  using typename Base::DimArr;
 
-  static constexpr size_t n_dims = sizeof...(RangeInts);
-  IdxLin offsets[n_dims]={0}; //If not specified set to zero
+  using Base::n_dims;
+  using Base::limit;
+  using Base::stride_one_dim;
+  using Base::stride_max_dim;
+
+  using Base::sizes;
+  using Base::strides;
+
+  StrippedIndexLinear offsets[n_dims]={0}; //If not specified set to zero
+
+  static RAJA_INLINE Self from_layout_and_offsets(
+      const std::array<StrippedIndexLinear, n_dims>& offsets_in,
+      const Base& rhs)
+  {
+    Self ret{rhs};
+    ret.shift(offsets_in);
+    return ret;
+  }
 
   constexpr RAJA_INLINE OffsetLayout_impl(
-      std::array<IdxLin, n_dims> lower,
-      std::array<IdxLin, n_dims> upper)
-      : base_{(upper[RangeInts] - lower[RangeInts] + 1)...},
-        offsets{lower[RangeInts]...}
+      std::array<StrippedIndexLinear, n_dims> lower,
+      std::array<StrippedIndexLinear, n_dims> upper)
+    : Self(IndexRange{}, lower, upper)
+  {
+  }
+
+  constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout_impl(const Base& rhs)
+    : Base{rhs}
   {
   }
 
   constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout_impl(Self const& c)
-      : base_(c.base_), offsets{c.offsets[RangeInts]...}
+    : Self(IndexRange{}, c)
   {
   }
 
-  void shift(std::array<IdxLin, n_dims> shift)
+  void shift(const std::array<StrippedIndexLinear, n_dims>& shift)
   {
-    for(size_t i=0; i<n_dims; ++i) offsets[i] += shift[i];
+    for (size_t i=0; i<n_dims; ++i) {
+      offsets[i] += shift[i];
+    }
   }
 
   template<camp::idx_t N, typename Idx>
@@ -83,7 +98,7 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin,
   {
     printf("Error at index %d, value %ld is not within bounds [%ld, %ld] \n",
            static_cast<int>(N), static_cast<long int>(idx),
-           static_cast<long int>(offsets[N]), static_cast<long int>(offsets[N] + base_.sizes[N] - 1));
+           static_cast<long int>(offsets[N]), static_cast<long int>(offsets[N] + sizes[N] - 1));
     RAJA_ABORT_OR_THROW("Out of bounds error \n");
   }
 
@@ -95,7 +110,7 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin,
   template <camp::idx_t N, typename Idx, typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck(Idx idx, Indices... indices) const
   {
-    if(!(offsets[N] <=idx && idx < offsets[N] + base_.sizes[N]))
+    if(!(offsets[N] <=idx && idx < offsets[N] + sizes[N]))
     {
       BoundsCheckError<N>(idx);
     }
@@ -104,98 +119,115 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin,
   }
 
   template <typename... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE RAJA_BOUNDS_CHECK_constexpr IdxLin operator()(
+  RAJA_INLINE RAJA_HOST_DEVICE RAJA_BOUNDS_CHECK_constexpr IndexLinear operator()(
       Indices... indices) const
   {
+    static_assert(n_dims == sizeof...(Indices),
+        "Error: wrong number of indices");
 #if defined (RAJA_BOUNDS_CHECK_INTERNAL)
     BoundsCheck<0>(indices...);
 #endif
-    return base_((indices - offsets[RangeInts])...);
+    return callHelper(IndexRange{}, indices...);
   }
 
-  static RAJA_INLINE Self
-  from_layout_and_offsets(
-      const std::array<IdxLin, n_dims>& offsets_in,
-      const Layout<n_dims, IdxLin, StrideOneDim, StrideMaxDim>& rhs)
+  /*!
+   * Given a linear-space index, compute the n-dimensional indices defined
+   * by this layout.
+   *
+   * Note that this operation requires 2n integer divide instructions
+   *
+   * @param linear_index  Linear space index to be converted to indices.
+   * @param indices  Variadic list of indices to be assigned, number must match
+   *                 dimensionality of this layout.
+   */
+  template <typename... Indices>
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IndexLinear linear_index,
+                                              Indices&... indices) const
   {
-    Self ret{rhs};
-    camp::sink((ret.offsets[RangeInts] = offsets_in[RangeInts])...);
-    return ret;
+    static_assert(n_dims == sizeof...(Indices),
+        "Error: wrong number of indices");
+    toIndicesHelper(IndexRange{},
+                    std::forward<IndexLinear>(linear_index),
+                    std::forward<Indices &>(indices)...);
   }
 
-  constexpr RAJA_INLINE RAJA_HOST_DEVICE
-  OffsetLayout_impl(const Base& rhs)
-      : base_{rhs}
+private:
+
+  template <camp::idx_t... RangeInts>
+  constexpr RAJA_INLINE OffsetLayout_impl(
+      camp::idx_seq<RangeInts...>,
+      std::array<StrippedIndexLinear, n_dims> lower,
+      std::array<StrippedIndexLinear, n_dims> upper)
+    : Base{(upper[RangeInts] - lower[RangeInts] + 1)...},
+      offsets{lower[RangeInts]...}
   {
   }
 
-  template<camp::idx_t DIM>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr
-  IndexLinear get_dim_stride() const {
-    return base_.get_dim_stride();
+  template <camp::idx_t... RangeInts>
+  constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout_impl(
+      camp::idx_seq<RangeInts...>,
+      Self const& c)
+    : Base(static_cast<Base const&>(c))
+    , offsets{c.offsets[RangeInts]...}
+  {
+  }
+
+  /*!
+   * @internal
+   *
+   * Helper that calls the base operator() method with offset indices
+   *
+   */
+  template <typename... Indices, camp::idx_t... RangeInts>
+  RAJA_INLINE RAJA_HOST_DEVICE IndexLinear callHelper(camp::idx_seq<RangeInts...>,
+                                                      Indices... indices) const
+  {
+    return Base::operator()((indices - offsets[RangeInts])...);
+  }
+
+  /*!
+   * @internal
+   *
+   * Helper that uses the base toIndices() method
+   *
+   */
+  template <typename... Indices, camp::idx_t... RangeInts>
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndicesHelper(camp::idx_seq<RangeInts...>,
+                                                    IndexLinear linear_index,
+                                                    Indices&... indices) const
+  {
+    static_assert(n_dims == sizeof...(Indices),
+        "Error: wrong number of indices");
+    DimTuple locals;
+    Base::toIndices(linear_index, camp::get<RangeInts>(locals)...);
+    camp::sink( (indices = camp::get<RangeInts>(locals) +
+                           static_cast<Indices>(offsets[RangeInts]))... );
   }
 };
 
 }  // namespace internal
 
+
 template <size_t n_dims = 1, typename IdxLin = Index_type,
           ptrdiff_t StrideOneDim = -1, ptrdiff_t StrideMaxDim = -1>
-struct OffsetLayout
-    : public internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin,
-                                         StrideOneDim, StrideMaxDim> {
-  using Base =
-      internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin,
-                                  StrideOneDim, StrideMaxDim>;
+using OffsetLayoutNoProj = internal::OffsetLayout_impl<
+    LayoutNoProj<n_dims, IdxLin, StrideOneDim, StrideMaxDim> >;
 
-  using internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin,
-                                    StrideOneDim, StrideMaxDim
-                                   >::OffsetLayout_impl;
+template <size_t n_dims = 1, typename IdxLin = Index_type,
+          ptrdiff_t StrideOneDim = -1, ptrdiff_t StrideMaxDim = -1>
+using OffsetLayout = internal::OffsetLayout_impl<
+    Layout<n_dims, IdxLin, StrideOneDim, StrideMaxDim> >;
 
-  constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout(
-      const internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin,
-                                        StrideOneDim, StrideMaxDim>&
-          rhs)
-      : Base{rhs}
-  {
-  }
-};
 
-//TypedOffsetLayout
 template <typename IdxLin, typename DimTuple,
           ptrdiff_t StrideOneDim = -1, ptrdiff_t StrideMaxDim = -1>
-struct TypedOffsetLayout;
+using TypedOffsetLayoutNoProj = internal::OffsetLayout_impl<
+    TypedLayoutNoProj<IdxLin, DimTuple, StrideOneDim, StrideMaxDim> >;
 
-template <typename IdxLin, typename... DimTypes,
-          ptrdiff_t StrideOneDim, ptrdiff_t StrideMaxDim>
-struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>,
-                         StrideOneDim, StrideMaxDim>
-: public OffsetLayout<sizeof...(DimTypes), Index_type,
-                      StrideOneDim, StrideMaxDim>
-{
-   using Self = TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>,
-                                  StrideOneDim, StrideMaxDim>;
-   using Base = OffsetLayout<sizeof...(DimTypes), Index_type,
-                             StrideOneDim, StrideMaxDim>;
-   using DimArr = std::array<Index_type, sizeof...(DimTypes)>;
-   using IndexLinear = IdxLin;
-
-   // Pull in base constructors
- #if 0
-   // This breaks with nvcc11
- using Base::Base;
- #else
-   using OffsetLayout<sizeof...(DimTypes), Index_type,
-                      StrideOneDim, StrideMaxDim>::OffsetLayout;
- #endif
-
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(DimTypes... indices) const
-  {
-    return IdxLin(Base::operator()(stripIndexType(indices)...));
-  }
-
-};
+template <typename IdxLin, typename DimTuple,
+          ptrdiff_t StrideOneDim = -1, ptrdiff_t StrideMaxDim = -1>
+using TypedOffsetLayout = internal::OffsetLayout_impl<
+    TypedLayout<IdxLin, DimTuple, StrideOneDim, StrideMaxDim> >;
 
 
 template <size_t n_dims, typename IdxLin = Index_type,
@@ -207,23 +239,21 @@ auto make_offset_layout(const std::array<IdxLin, n_dims>& lower,
   return OffsetLayout<n_dims, IdxLin, StrideOneDim, StrideMaxDim>{lower, upper};
 }
 
-template <size_t Rank, typename IdxLin = Index_type,
+template <size_t n_dims, typename IdxLin = Index_type,
           ptrdiff_t StrideOneDim = -1, ptrdiff_t StrideMaxDim = -1>
-auto make_permuted_offset_layout(const std::array<IdxLin, Rank>& lower,
-                                 const std::array<IdxLin, Rank>& upper,
-                                 const std::array<IdxLin, Rank>& permutation)
-    -> decltype(make_offset_layout<Rank, IdxLin, StrideOneDim, StrideMaxDim
-                                  >(lower, upper))
+auto make_permuted_offset_layout(const std::array<IdxLin, n_dims>& lower,
+                                 const std::array<IdxLin, n_dims>& upper,
+                                 const std::array<IdxLin, n_dims>& permutation)
+    -> OffsetLayout<n_dims, IdxLin, StrideOneDim, StrideMaxDim>
 {
-  std::array<IdxLin, Rank> sizes;
-  for (size_t i = 0; i < Rank; ++i) {
+  std::array<IdxLin, n_dims> sizes;
+  for (size_t i = 0; i < n_dims; ++i) {
     sizes[i] = upper[i] - lower[i] + 1;
   }
-  return internal::OffsetLayout_impl<camp::make_idx_seq_t<Rank>, IdxLin,
-                                     StrideOneDim, StrideMaxDim>::
+  return OffsetLayout<n_dims, IdxLin, StrideOneDim, StrideMaxDim>::
       from_layout_and_offsets(lower,
-          make_permuted_layout<Rank, IdxLin, StrideOneDim, StrideMaxDim
-                              >(sizes, permutation));
+          make_permuted_layout<n_dims, IdxLin, StrideOneDim, StrideMaxDim>(
+              sizes, permutation));
 }
 
 }  // namespace RAJA
