@@ -353,7 +353,10 @@ struct StaticLayoutBase_impl<IdxLin,
   using inv_strides = camp::int_seq<IdxLin, (Strides ? Strides : IdxLin(1))...>;
   using inv_mods = camp::int_seq<IdxLin, (Sizes ? Sizes : IdxLin(1))...>;
 
-  using Base::Base;
+  /*!
+   * Default constructor.
+   */
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr StaticLayoutBase_impl() : Base() {}
 
   // Multiply together all of the sizes,
   // replacing 1 for any zero-sized dimensions
