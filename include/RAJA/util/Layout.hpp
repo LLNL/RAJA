@@ -343,7 +343,8 @@ struct LayoutNoProjBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
       RAJA_ABORT_OR_THROW("Out of bounds error \n");
      }
 #endif
-    toIndicesHelper(linear_index, strides, sizes, std::forward<Indices>(indices)...);
+    toIndicesHelper<stride_one_dim, stride_max_dim>(
+        linear_index, strides, sizes, std::forward<Indices>(indices)...);
   }
 
   /*!
@@ -373,7 +374,7 @@ protected:
    * result to typed indices
    *
    */
-  template <typename... Indices>
+  template <ptrdiff_t stride_one_dim, ptrdiff_t stride_max_dim, typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void toIndicesHelper(IdxLin linear_index,
                                                     IdxLin const (&inv_strides)[n_dims],
                                                     IdxLin const (&inv_mods)[n_dims],
@@ -438,7 +439,8 @@ struct LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
   using Base::n_dims;
   using Base::limit;
   using Base::stride_one_dim;
-  using Base::stride_max_dim;
+  // always do mod with projection on max size dimension
+  static constexpr ptrdiff_t stride_max_dim = -1;
 
   using Base::sizes;
   using Base::strides;
@@ -591,7 +593,8 @@ struct LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin,
       RAJA_ABORT_OR_THROW("Out of bounds error \n");
      }
 #endif
-    return Base::toIndicesHelper(linear_index, inv_strides, inv_mods, std::forward<Indices>(indices)...);
+    return Base::template toIndicesHelper<stride_one_dim, stride_max_dim>(
+        linear_index, inv_strides, inv_mods, std::forward<Indices>(indices)...);
   }
 
   /*!
