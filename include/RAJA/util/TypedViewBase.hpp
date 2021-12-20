@@ -54,13 +54,32 @@ namespace internal
   template<typename LayoutType>
   struct add_offset
   {
-    using type = RAJA::internal::OffsetLayout_impl<LayoutType>;
+    using type = ::RAJA::internal::OffsetLayout_impl<LayoutType>;
   };
 
   template <typename LayoutType>
-  struct add_offset<RAJA::internal::OffsetLayout_impl<LayoutType>>
+  struct add_offset<::RAJA::internal::OffsetLayout_impl<LayoutType>>
   {
-    using type = RAJA::internal::OffsetLayout_impl<LayoutType>;
+    using type = ::RAJA::internal::OffsetLayout_impl<LayoutType>;
+  };
+
+  template <typename IdxLin, typename DimTuple, typename LayoutBase>
+  struct add_offset<::RAJA::internal::TypedOffsetLayout_impl<IdxLin, DimTuple, LayoutBase>>
+  {
+    using type = ::RAJA::internal::TypedOffsetLayout_impl<IdxLin, DimTuple, LayoutBase>;
+  };
+
+  // note that the bases of TypedLayouts are not be typed
+  template <typename IdxLin, typename DimTuple, typename LayoutBase>
+  struct add_offset<::RAJA::detail::TypedLayoutBase_impl<IdxLin, DimTuple, LayoutBase>>
+  {
+    using type = ::RAJA::internal::TypedOffsetLayout_impl<IdxLin, DimTuple, LayoutBase>;
+  };
+
+  template <typename LayoutBase, typename IdxLin, typename... DimTypes>
+  struct add_offset<::RAJA::detail::TypedStaticLayoutImpl<LayoutBase, IdxLin, camp::list<DimTypes...>>>
+  {
+    using type = ::RAJA::internal::TypedOffsetLayout_impl<IdxLin, camp::tuple<DimTypes...>, LayoutBase>;
   };
 
 
