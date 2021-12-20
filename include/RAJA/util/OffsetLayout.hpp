@@ -201,7 +201,7 @@ protected:
     StrippedIndexLinear locals[n_dims];
     Base::toIndices(linear_index, locals[RangeInts]...);
     camp::sink( (indices = (camp::decay<Indices>)(
-        camp::get<RangeInts>(locals) + offsets[RangeInts]))... );
+        locals[RangeInts] + offsets[RangeInts]))... );
   }
 };
 
