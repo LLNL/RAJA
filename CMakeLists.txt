@@ -239,15 +239,18 @@ camp source repository")
     add_subdirectory(${EXTERNAL_CAMP_SOURCE_DIR}
                      ${CMAKE_CURRENT_BINARY_DIR}/tpl/camp)
   else (EXTERNAL_CAMP_SOURCE_DIR)
-    find_package(camp QUIET)
-    if (NOT camp_FOUND)
+    if (DEFINED camp_DIR)
+      find_package(camp REQUIRED
+        NO_DEFAULT_PATH
+        PATHS ${camp_DIR}
+        ${camp_DIR}/lib/cmake/camp
+      )
+      message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
+      set(EXTERNAL_CAMP_INSTALL_DIR ${camp_INSTALL_PREFIX} CACHE PATH "")
+    else ()
       message(STATUS "Using RAJA CAMP submodule.")
       add_subdirectory(tpl/camp)
-    else (NOT camp_FOUND)
-      message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
-      # Save the path so it can be used in raja-config.cmake
-      set(EXTERNAL_CAMP_INSTALL_DIR ${camp_INSTALL_PREFIX} CACHE PATH "")
-    endif(NOT camp_FOUND)
+    endif()
   endif (EXTERNAL_CAMP_SOURCE_DIR)
 endif (NOT TARGET camp)
 
