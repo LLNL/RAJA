@@ -468,20 +468,6 @@ GPU Policies for SYCL
 
  ======================================== ============= ========================
 
-There is a notable constraint to using the sycl policies.
-
-.. note:: SYCL kernels impose the restriction that kernel parameters must
-          be trivially copyable.  The sycl_exec_nontrivial and
-          SyclKernelNonTrivial policies provide a workaround to this
-          constraint given the non trivially copyable data is safe to 
-          memcpy to the device. 
-
-          The non trivial policies incur some additional overhead, but 
-          will function whether data is trivially copyable or not.  
-          Beginning with non trivial polices will help accerate development
-          of a working RAJA SYCL application.
-
-
 OpenMP Target Offload Policies 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -839,8 +825,6 @@ Statement types that lauch SYCL kernels are listed next.
 * ``SyclKernel<EnclosedStatements>`` launches ``EnclosedStatements`` as a SYCL kernel.  This kernel launch is synchronous.
 
 * ``SyclKernelAsync<EnclosedStatements>`` asynchronous version of SyclKernel.
-
-* ``SyclKernelNonTrivial<EnclosedStatements>`` Same as SyclKernel, but allows for non-trivially copyable kernels by preforming an allocation on the device followed by a memcpy.  If the non-trivially data type in the kernel cannot be safely memcpy'd to the device the kernel the execution may be incorrect.
 
 RAJA provides statements to define loop tiling which can improve performance; 
 e.g., by allowing CPU cache blocking or use of GPU shared memory. 
