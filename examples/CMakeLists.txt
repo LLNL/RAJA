@@ -139,4 +139,8 @@ raja_add_executable(
   NAME resource-teams
   SOURCES resource-teams.cpp)
 
+raja_add_executable(
+  NAME tut_allocators
+  SOURCES tut_allocators.cpp)
+
 add_subdirectory(plugin)

@@ -20,6 +20,8 @@
 
 #include "RAJA/config.hpp"
 
+#include "RAJA/util/Allocator.hpp"
+
 // for RAJA::reduce::detail::ValueLoc
 #include "RAJA/pattern/detail/reduce.hpp"
 
@@ -36,29 +38,27 @@ namespace detail
  * This is useful for creating a vectorizable data layout and getting
  * coalesced memory accesses or avoiding shared memory bank conflicts in cuda.
  */
-template <typename T,
-          typename mempool = RAJA::basic_mempool::MemPool<
-              RAJA::basic_mempool::generic_allocator> >
+template <typename T>
 class SoAPtr
 {
   using value_type = T;
 
 public:
   SoAPtr() = default;
-  explicit SoAPtr(size_t size)
-      : mem(mempool::getInstance().template malloc<value_type>(size))
+  SoAPtr(Allocator& allocator, size_t size)
+      : mem(allocator.template allocate<value_type>(size))
   {
   }
 
-  SoAPtr& allocate(size_t size)
+  SoAPtr& allocate(Allocator& allocator, size_t size)
   {
-    mem = mempool::getInstance().template malloc<value_type>(size);
+    mem = allocator.template allocate<value_type>(size);
     return *this;
   }
 
-  SoAPtr& deallocate()
+  SoAPtr& deallocate(Allocator& allocator)
   {
-    mempool::getInstance().free(mem);
+    allocator.deallocate(mem);
     mem = nullptr;
     return *this;
   }
@@ -75,8 +75,8 @@ private:
 /*!
  * @brief Specialization for RAJA::reduce::detail::ValueLoc.
  */
-template <typename T, typename IndexType, bool doing_min, typename mempool>
-class SoAPtr<RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>, mempool>
+template <typename T, typename IndexType, bool doing_min>
+class SoAPtr<RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>>
 {
   using value_type = RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>;
   using first_type = T;
@@ -84,24 +84,24 @@ class SoAPtr<RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>, mempool>
 
 public:
   SoAPtr() = default;
-  explicit SoAPtr(size_t size)
-      : mem(mempool::getInstance().template malloc<first_type>(size)),
-        mem_idx(mempool::getInstance().template malloc<second_type>(size))
+  SoAPtr(Allocator& allocator, size_t size)
+      : mem(allocator.template allocate<first_type>(size)),
+        mem_idx(allocator.template allocate<second_type>(size))
   {
   }
 
-  SoAPtr& allocate(size_t size)
+  SoAPtr& allocate(Allocator& allocator, size_t size)
   {
-    mem = mempool::getInstance().template malloc<first_type>(size);
-    mem_idx = mempool::getInstance().template malloc<second_type>(size);
+    mem = allocator.template allocate<first_type>(size);
+    mem_idx = allocator.template allocate<second_type>(size);
     return *this;
   }
 
-  SoAPtr& deallocate()
+  SoAPtr& deallocate(Allocator& allocator)
   {
-    mempool::getInstance().free(mem);
+    allocator.deallocate(mem);
     mem = nullptr;
-    mempool::getInstance().free(mem_idx);
+    allocator.deallocate(mem_idx);
     mem_idx = nullptr;
     return *this;
   }

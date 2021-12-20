@@ -67,7 +67,7 @@ inclusive_inplace(
                                               stream));
   // Allocate temporary storage
   d_temp_storage =
-      cuda::device_mempool_type::getInstance().malloc<unsigned char>(
+      cuda::get_device_allocator().template allocate<unsigned char>(
           temp_storage_bytes);
   // Run
   cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
@@ -78,7 +78,7 @@ inclusive_inplace(
                                               len,
                                               stream));
   // Free temporary storage
-  cuda::device_mempool_type::getInstance().free(d_temp_storage);
+  cuda::get_device_allocator().deallocate(d_temp_storage);
 
   cuda::launch(cuda_res, Async);
 
@@ -120,7 +120,7 @@ exclusive_inplace(
                                               stream));
   // Allocate temporary storage
   d_temp_storage =
-      cuda::device_mempool_type::getInstance().malloc<unsigned char>(
+      cuda::get_device_allocator().template allocate<unsigned char>(
           temp_storage_bytes);
   // Run
   cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
@@ -132,7 +132,7 @@ exclusive_inplace(
                                               len,
                                               stream));
   // Free temporary storage
-  cuda::device_mempool_type::getInstance().free(d_temp_storage);
+  cuda::get_device_allocator().deallocate(d_temp_storage);
 
   cuda::launch(cuda_res, Async);
 
@@ -173,7 +173,7 @@ inclusive(
                                               stream));
   // Allocate temporary storage
   d_temp_storage =
-      cuda::device_mempool_type::getInstance().malloc<unsigned char>(
+      cuda::get_device_allocator().template allocate<unsigned char>(
           temp_storage_bytes);
   // Run
   cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
@@ -184,7 +184,7 @@ inclusive(
                                               len,
                                               stream));
   // Free temporary storage
-  cuda::device_mempool_type::getInstance().free(d_temp_storage);
+  cuda::get_device_allocator().deallocate(d_temp_storage);
 
   cuda::launch(cuda_res, Async);
 
@@ -228,7 +228,7 @@ exclusive(
                                               stream));
   // Allocate temporary storage
   d_temp_storage =
-      cuda::device_mempool_type::getInstance().malloc<unsigned char>(
+      cuda::get_device_allocator().template allocate<unsigned char>(
           temp_storage_bytes);
   // Run
   cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
@@ -240,7 +240,7 @@ exclusive(
                                               len,
                                               stream));
   // Free temporary storage
-  cuda::device_mempool_type::getInstance().free(d_temp_storage);
+  cuda::get_device_allocator().deallocate(d_temp_storage);
 
   cuda::launch(cuda_res, Async);
 
