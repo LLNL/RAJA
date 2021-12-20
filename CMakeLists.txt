@@ -42,73 +42,9 @@ project(RAJA LANGUAGES CXX C
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PATH})
 
-# Build options
-set(ENABLE_OPENMP On CACHE BOOL "Build OpenMP support")
-set(ENABLE_CUDA Off CACHE BOOL "Build CUDA support")
-set(ENABLE_COPY_HEADERS Off CACHE BOOL "")
-set(ENABLE_WARNINGS_AS_ERRORS Off CACHE BOOL "")
-set(ENABLE_GTEST_DEATH_TESTS On CACHE BOOL "Enable tests asserting failure.")
-
-## NOTE: CMake-dependent options are placed AFTER BLT is loaded so they
-##       work as intended. BLT has variables defined for these and we use
-##       the same names with 'RAJA_' prepended to them.
-
-option(ENABLE_NV_TOOLS_EXT "Build with NV_TOOLS_EXT support" Off)
-option(ENABLE_ROCTX "Build with ENABLE_ROCTX support" Off)
-
-option(ENABLE_TBB "Build TBB support" Off)
-option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
-option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
-option(ENABLE_SYCL "Build SYCL support" Off)
-option(ENABLE_EXTERNAL_CUB "Use an external cub" Off)
-option(ENABLE_EXTERNAL_ROCPRIM "Use an external rocPRIM" Off)
-
-option(ENABLE_REPRODUCERS "Build issue reproducers" Off)
-
-option(RAJA_ENABLE_EXERCISES "Build exercises " On)
-option(ENABLE_MODULES "Enable modules in supporting compilers (clang)" On)
-option(ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
-option(ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
-option(ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
-option(ENABLE_FORCEINLINE_RECURSIVE "Enable Forceinline recursive (only supported with Intel compilers)" On)
-
-option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
-option(RAJA_ENABLE_BOUNDS_CHECK "Enable bounds checking in RAJA::Views/Layouts" Off)
-option(RAJA_TEST_EXHAUSTIVE "Build RAJA exhaustive tests" Off)
-option(RAJA_TEST_OPENMP_TARGET_SUBSET "Build subset of RAJA OpenMP target tests when it is enabled" On)
-option(RAJA_ENABLE_RUNTIME_PLUGINS "Enable support for loading plugins at runtime" Off)
-
-option(RAJA_ENABLE_DESUL_ATOMICS "Enable support of desul atomics" Off)
-set(DESUL_ENABLE_TESTS Off CACHE BOOL "")
-
-set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
-
-set(BLT_EXPORT_THIRDPARTY ON CACHE BOOL "")
+include(cmake/SetupRajaOptions.cmake)
 
 cmake_minimum_required(VERSION 3.9)
-
-if (ENABLE_CUDA)
-  if (DEFINED CUDA_ARCH)
-    if (CUDA_ARCH MATCHES "^sm_*")
-      if ("${CUDA_ARCH}" STRLESS "sm_35")
-        message( FATAL_ERROR "RAJA requires minimum CUDA compute architecture of sm_35")
-      endif()
-    endif()
-    if (CUDA_ARCH MATCHES "^compute_*")
-      if ("${CUDA_ARCH}" STRLESS "compute_35")
-        message( FATAL_ERROR "RAJA requires minimum CUDA compute architecture of compute_35")
-      endif()
-    endif()
-  else()
-    message(STATUS "CUDA compute architecture set to RAJA default sm_35 since it was not specified")
-    set(CUDA_ARCH "sm_35" CACHE STRING "Set CUDA_ARCH to RAJA minimum supported" FORCE)
-  endif()
-  if ( (CMAKE_CXX_COMPILER_ID MATCHES GNU) AND (CMAKE_SYSTEM_PROCESSOR MATCHES ppc64le) )
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
-      set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -mno-float128")
-    endif ()
-  endif ()
-endif()
 
 # Detect C++ standard and add appropriate flag _before_ loading BLT
 set(COMPILERS_KNOWN_TO_CMAKE33 AppleClang Clang GNU MSVC)
@@ -167,21 +103,38 @@ if (NOT BLT_LOADED)
   include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 endif()
 
-##
-## Here are the CMake dependent options...
-##
-cmake_dependent_option(RAJA_ENABLE_TESTS "Build tests" On "ENABLE_TESTS" Off)
-cmake_dependent_option(RAJA_ENABLE_EXAMPLES "Build simple examples" On "ENABLE_EXAMPLES" off)
-cmake_dependent_option(RAJA_ENABLE_BENCHMARKS "Build benchmarks" On "ENABLE_BENCHMARKS" Off)
-
-
+# Setup options that depend on BLT
+include(cmake/SetupDependentOptions.cmake)
 # Setup basic CMake options
 include(cmake/SetupBasics.cmake)
 # Find third-party packages
 include(cmake/SetupPackages.cmake)
+
+if (RAJA_ENABLE_CUDA)
+  if (DEFINED CUDA_ARCH)
+    if (CUDA_ARCH MATCHES "^sm_*")
+      if ("${CUDA_ARCH}" STRLESS "sm_35")
+        message( FATAL_ERROR "RAJA requires minimum CUDA compute architecture of sm_35")
+      endif()
+    endif()
+    if (CUDA_ARCH MATCHES "^compute_*")
+      if ("${CUDA_ARCH}" STRLESS "compute_35")
+        message( FATAL_ERROR "RAJA requires minimum CUDA compute architecture of compute_35")
+      endif()
+    endif()
+  else()
+    message(STATUS "CUDA compute architecture set to RAJA default sm_35 since it was not specified")
+    set(CUDA_ARCH "sm_35" CACHE STRING "Set CUDA_ARCH to RAJA minimum supported" FORCE)
+  endif()
+  if ( (CMAKE_CXX_COMPILER_ID MATCHES GNU) AND (CMAKE_SYSTEM_PROCESSOR MATCHES ppc64le) )
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
+      set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -mno-float128")
+    endif ()
+  endif ()
+endif()
+
 # Setup vendor-specific compiler flags
 include(cmake/SetupCompilers.cmake)
-
 # Macros for building executables and libraries
 include (cmake/RAJAMacros.cmake)
 
@@ -203,7 +156,7 @@ endif ()
 
 set (raja_depends)
 
-if (ENABLE_OPENMP)
+if (RAJA_ENABLE_OPENMP)
   set (raja_depends
     openmp)
 endif()
@@ -212,36 +165,36 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION V
   message(WARNING "RAJA::simd_exec support requires Intel-17 or greater")
 endif()
 
-if(ENABLE_CUDA)
+if(RAJA_ENABLE_CUDA)
   if("${CUDA_VERSION_STRING}" VERSION_LESS "9.2")
     message(FATAL_ERROR "Trying to use CUDA version ${CUDA_VERSION_STRING}. RAJA dependency Googletest requires CUDA version 9.2.x or newer.")
   endif()
 endif()
 
-if(ENABLE_HIP)
+if(RAJA_ENABLE_HIP)
   if("${HIP_VERSION_STRING}" VERSION_LESS "3.5")
     message(FATAL_ERROR "Trying to use HIP/ROCm version ${HIP_VERSION_STRING}. RAJA requires HIP/ROCm version 3.5 or newer. ")
   endif()
 endif()
 
-if (ENABLE_CUDA)
+if (RAJA_ENABLE_CUDA)
   set(raja_depends
     ${raja_depends}
     cuda)
-  if(ENABLE_NV_TOOLS_EXT)
+  if(RAJA_ENABLE_NV_TOOLS_EXT)
     set(raja_depends
       ${raja_depends}
       nvtoolsext)
   endif ()
 endif ()
 
-if (ENABLE_EXTERNAL_CUB)
+if (RAJA_ENABLE_EXTERNAL_CUB)
   set(raja_depends
     ${raja_depends}
     cub)
 endif ()
 
-if (ENABLE_HIP)
+if (RAJA_ENABLE_HIP)
   set(raja_depends
     ${raja_depends}
     hip)
@@ -252,19 +205,19 @@ if (ENABLE_HIP)
   endif()
 endif ()
 
-if (ENABLE_EXTERNAL_ROCPRIM)
+if (RAJA_ENABLE_EXTERNAL_ROCPRIM)
   set(raja_depends
     ${raja_depends}
     rocPRIM)
 endif ()
 
-if (ENABLE_SYCL)
+if (RAJA_ENABLE_SYCL)
   set (raja_depends
     ${raja_depends}
     sycl)
 endif ()
 
-if (ENABLE_TBB)
+if (RAJA_ENABLE_TBB)
   set(raja_depends
     ${raja_depends}
     tbb)
@@ -286,15 +239,18 @@ camp source repository")
     add_subdirectory(${EXTERNAL_CAMP_SOURCE_DIR}
                      ${CMAKE_CURRENT_BINARY_DIR}/tpl/camp)
   else (EXTERNAL_CAMP_SOURCE_DIR)
-    find_package(camp QUIET)
-    if (NOT camp_FOUND)
+    if (DEFINED camp_DIR)
+      find_package(camp REQUIRED
+        NO_DEFAULT_PATH
+        PATHS ${camp_DIR}
+        ${camp_DIR}/lib/cmake/camp
+      )
+      message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
+      set(EXTERNAL_CAMP_INSTALL_DIR ${camp_INSTALL_PREFIX} CACHE PATH "")
+    else ()
       message(STATUS "Using RAJA CAMP submodule.")
       add_subdirectory(tpl/camp)
-    else (NOT camp_FOUND)
-      message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
-      # Save the path so it can be used in raja-config.cmake
-      set(EXTERNAL_CAMP_INSTALL_DIR ${camp_INSTALL_PREFIX} CACHE PATH "")
-    endif(NOT camp_FOUND)
+    endif()
   endif (EXTERNAL_CAMP_SOURCE_DIR)
 endif (NOT TARGET camp)
 
@@ -327,22 +283,22 @@ target_include_directories(RAJA
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-if (ENABLE_CUDA AND NOT ENABLE_EXTERNAL_CUB)
+if (RAJA_ENABLE_CUDA AND NOT RAJA_ENABLE_EXTERNAL_CUB)
   target_include_directories(RAJA SYSTEM
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/cub>)
 endif()
-if (ENABLE_HIP AND NOT ENABLE_EXTERNAL_ROCPRIM)
+if (RAJA_ENABLE_HIP AND NOT RAJA_ENABLE_EXTERNAL_ROCPRIM)
   target_include_directories(RAJA SYSTEM
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tpl/rocPRIM/rocprim/include>)
 endif()
 
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
-if (ENABLE_CUDA AND NOT ENABLE_EXTERNAL_CUB)
+if (RAJA_ENABLE_CUDA AND NOT RAJA_ENABLE_EXTERNAL_CUB)
   install(DIRECTORY tpl/cub/cub/ DESTINATION include/cub FILES_MATCHING PATTERN *.cuh)
 endif()
-if (ENABLE_HIP AND NOT ENABLE_EXTERNAL_ROCPRIM)
+if (RAJA_ENABLE_HIP AND NOT RAJA_ENABLE_EXTERNAL_ROCPRIM)
   install(DIRECTORY tpl/rocPRIM/rocprim/include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
 endif()
 
@@ -360,7 +316,7 @@ if(RAJA_ENABLE_TESTS)
   add_subdirectory(test)
 endif()
 
-if(ENABLE_REPRODUCERS)
+if(RAJA_ENABLE_REPRODUCERS)
   add_subdirectory(reproducers)
 endif()
 
@@ -372,7 +328,7 @@ if(RAJA_ENABLE_EXERCISES)
   add_subdirectory(exercises)
 endif()
 
-if (ENABLE_DOCUMENTATION)
+if (RAJA_ENABLE_DOCUMENTATION)
   add_subdirectory(docs)
 endif ()
 

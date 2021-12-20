@@ -102,7 +102,7 @@ an integral sum on a CUDA GPU device::
 
   });
 
-After this kernel executes, '*sum' will be equal to 'N'.
+After this kernel executes, the value reference by 'sum' will be 'N'.
 
 ^^^^^^^^^^^^^^^^^^^^
 AtomicRef

@@ -15,23 +15,23 @@ macro(raja_add_executable)
 
   list (APPEND arg_DEPENDS_ON RAJA)
 
-  if (ENABLE_OPENMP)
+  if (RAJA_ENABLE_OPENMP)
     list (APPEND arg_DEPENDS_ON openmp)
   endif ()
 
-  if (ENABLE_CUDA)
+  if (RAJA_ENABLE_CUDA)
     list (APPEND arg_DEPENDS_ON cuda)
   endif ()
 
-  if (ENABLE_HIP)
+  if (RAJA_ENABLE_HIP)
     list (APPEND arg_DEPENDS_ON hip)
   endif ()
 
-  if (ENABLE_SYCL)
+  if (RAJA_ENABLE_SYCL)
     list (APPEND arg_DEPENDS_ON sycl)
   endif ()
 
-  if (ENABLE_TBB)
+  if (RAJA_ENABLE_TBB)
     list (APPEND arg_DEPENDS_ON tbb)
   endif ()
 
@@ -63,23 +63,23 @@ macro(raja_add_plugin_library)
 
   list(APPEND arg_DEPENDS_ON RAJA)
 
-  if (ENABLE_OPENMP)
+  if (RAJA_ENABLE_OPENMP)
     list (APPEND arg_DEPENDS_ON openmp)
   endif ()
 
-  if (ENABLE_CUDA)
+  if (RAJA_ENABLE_CUDA)
     list (APPEND arg_DEPENDS_ON cuda)
   endif ()
 
-  if (ENABLE_HIP)
+  if (RAJA_ENABLE_HIP)
     list (APPEND arg_DEPENDS_ON hip)
   endif ()
 
-  if (ENABLE_SYCL)
+  if (RAJA_ENABLE_SYCL)
     list (APPEND arg_DEPENDS_ON sycl)
   endif ()
 
-  if (ENABLE_TBB)
+  if (RAJA_ENABLE_TBB)
     list (APPEND arg_DEPENDS_ON tbb)
   endif ()
 

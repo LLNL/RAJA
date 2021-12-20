@@ -43,6 +43,14 @@ using IdxTypeList = camp::list<RAJA::Index_type,
                                long long,
 #endif
                                unsigned long long>;
+
+//
+// Signed index types list
+//
+using SignedIdxTypeList = camp::list<RAJA::Index_type,
+                                     int,
+                                     long long>;
+
 //
 // Index types w/ Strong types list
 //

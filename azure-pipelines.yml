@@ -15,7 +15,7 @@ jobs:
   pool:
     vmImage: 'windows-2019'
   variables:
-    CMAKE_EXTRA_FLAGS: '-DENABLE_WARNINGS_AS_ERRORS=Off -DBLT_CXX_STD="" -DCMAKE_CXX_STANDARD=17'
+    CMAKE_EXTRA_FLAGS: '-DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off -DBLT_CXX_STD="" -DCMAKE_CXX_STANDARD=17'
   steps:
   - checkout: self
     clean: boolean
@@ -67,7 +67,7 @@ jobs:
     vmImage: 'ubuntu-latest'
   variables:
     DOCKER_BUILDKIT: '1'
-    CMAKE_EXTRA_FLAGS: '-DENABLE_DEVELOPER_BENCHMARKS=On -DENABLE_DEVELOPER_DEFAULTS=On -DCMAKE_CXX_STANDARD=11'
+    CMAKE_EXTRA_FLAGS: '-DENABLE_DEVELOPER_BENCHMARKS=On -DENABLE_DEVELOPER_DEFAULTS=On -DCMAKE_CXX_STANDARD=14'
   steps:
   - checkout: self
     clean: boolean

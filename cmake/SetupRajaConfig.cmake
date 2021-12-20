@@ -13,7 +13,7 @@ option(RAJA_USE_FLOAT Off)
 option(RAJA_USE_COMPLEX Off)
 
 ## Pointer options
-if (ENABLE_CUDA OR ENABLE_HIP)
+if (RAJA_ENABLE_CUDA OR RAJA_ENABLE_HIP)
   set(RAJA_PTR "RAJA_USE_BARE_PTR")
 else ()
   set(RAJA_PTR "RAJA_USE_RESTRICT_PTR")
@@ -24,9 +24,9 @@ endif()
 #set(RAJA_USE_PTR_CLASS OFF)
 
 ## Fault tolerance options
-option(ENABLE_FT "Enable fault-tolerance features" OFF)
+option(RAJA_ENABLE_FT "Enable fault-tolerance features" OFF)
 option(RAJA_REPORT_FT "Report on use of fault-tolerant features" OFF)
-option(ENABLE_ITERATOR_OVERFLOW_DEBUG "Enable Overflow checking during Iterator operations" OFF)
+option(RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG "Enable Overflow checking during Iterator operations" OFF)
 
 ## Timer options
 set(RAJA_TIMER "chrono" CACHE STRING
@@ -66,8 +66,6 @@ set(RAJA_ENABLE_HIP ${ENABLE_HIP})
 set(RAJA_ENABLE_SYCL ${ENABLE_SYCL})
 set(RAJA_ENABLE_CUB ${ENABLE_CUB})
 
-option(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL "Enable use of device function pointers in hip backend" OFF)
-
 # Configure a header file with all the variables we found.
 configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hpp.in
   ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp)
@@ -89,17 +87,17 @@ if(PKG_CONFIG_FOUND)
   foreach(INCDIR ${INCLUDE_DIRECTORIES} ${CUDA_INCLUDE_DIRS})
     set(PC_C_FLAGS "${PC_C_FLAGS} -I${INCDIR}")
   endforeach()
-  if(ENABLE_EXTERNAL_ROCPRIM)
+  if(RAJA_ENABLE_EXTERNAL_ROCPRIM)
     foreach(INCDIR ${ROCPRIM_INCLUDE_DIRS})
       set(PC_C_FLAGS "${PC_C_FLAGS} -I${INCDIR}")
     endforeach()
   endif()
-  if(ENABLE_EXTERNAL_CUB)
+  if(RAJA_ENABLE_EXTERNAL_CUB)
     foreach(INCDIR ${CUB_INCLUDE_DIRS})
       set(PC_C_FLAGS "${PC_C_FLAGS} -I${INCDIR}")
     endforeach()
   endif()
-  if(ENABLE_CUDA)
+  if(RAJA_ENABLE_CUDA)
     foreach(FLAG ${RAJA_NVCC_FLAGS})
       set(PC_C_FLAGS "${PC_C_FLAGS} ${FLAG}")
     endforeach()
