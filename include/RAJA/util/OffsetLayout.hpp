@@ -278,7 +278,7 @@ private:
    */
   template <camp::idx_t... RangeInts>
   RAJA_INLINE RAJA_HOST_DEVICE void toTypedIndicesHelper(camp::idx_seq<RangeInts...>,
-                                                         IndexLinear linear_index,
+                                                         IdxLin linear_index,
                                                          DimTypes&... indices) const
   {
     StrippedIndexLinear locals[n_dims];

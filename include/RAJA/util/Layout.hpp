@@ -624,9 +624,9 @@ struct TypedLayoutBase_impl<IdxLin, camp::tuple<DimTypes...>, LayoutBase>
   using Self = TypedLayoutBase_impl<IdxLin, camp::tuple<DimTypes...>, LayoutBase>;
   using Base = LayoutBase;
 
+  using typename Base::IndexRange;
   using StrippedIndexLinear = strip_index_type_t<IdxLin>;
   using IndexLinear = IdxLin;
-  using typename Base::IndexRange;
   using DimTuple = camp::tuple<DimTypes...>;
   using typename Base::DimArr;
 

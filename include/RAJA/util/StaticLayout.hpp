@@ -399,19 +399,19 @@ struct StaticLayoutBase_impl<IdxLin,
 };
 
 
-template <typename Layout, typename DimTypeList>
+template <typename LayoutBase, typename IdxLin, typename DimTypeList>
 struct TypedStaticLayoutImpl;
 
-template <typename LayoutBase, typename... DimTypes>
-struct TypedStaticLayoutImpl<LayoutBase, camp::list<DimTypes...>>
+template <typename LayoutBase, typename IdxLin, typename... DimTypes>
+struct TypedStaticLayoutImpl<LayoutBase, IdxLin, camp::list<DimTypes...>>
     : LayoutBase
 {
-  using Self = TypedStaticLayoutImpl<LayoutBase, camp::list<DimTypes...>>;
+  using Self = TypedStaticLayoutImpl<LayoutBase, IdxLin, camp::list<DimTypes...>>;
   using Base = LayoutBase;
 
   using typename Base::IndexRange;
-  using typename Base::StrippedIndexLinear;
-  using typename Base::IndexLinear;
+  using StrippedIndexLinear = strip_index_type_t<IdxLin>;
+  using IndexLinear = IdxLin;
   using DimTuple = camp::tuple<DimTypes...>;
   using typename Base::DimArr;
 
@@ -421,6 +421,8 @@ struct TypedStaticLayoutImpl<LayoutBase, camp::list<DimTypes...>>
 
   static_assert(n_dims == sizeof...(DimTypes),
       "Error: number of dimension types does not match base layout");
+  static_assert(std::is_same<StrippedIndexLinear, typename Base::IndexLinear>::value,
+      "Error: linear index types does not match base layout");
 
   using typename Base::sizes;
   using typename Base::strides;
@@ -435,16 +437,16 @@ struct TypedStaticLayoutImpl<LayoutBase, camp::list<DimTypes...>>
    * @param indices  Indices in the n-dimensional space of this layout
    * @return Linear space index.
    */
-  RAJA_INLINE RAJA_HOST_DEVICE static constexpr IndexLinear s_oper(
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr IdxLin s_oper(
       DimTypes... indices)
   {
-    return Base::s_oper(stripIndexType(indices)...);
+    return IdxLin(Base::s_oper(stripIndexType(indices)...));
   }
   ///
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr IndexLinear operator()(
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
       DimTypes... indices) const
   {
-    return Base::s_oper(stripIndexType(indices)...);
+    return IdxLin(Base::s_oper(stripIndexType(indices)...));
   }
 
   using Base::s_size;
@@ -459,11 +461,11 @@ struct TypedStaticLayoutImpl<LayoutBase, camp::list<DimTypes...>>
    * @param indices  Variadic list of indices to be assigned, number must match
    *                 dimensionality of this layout.
    */
-  RAJA_INLINE RAJA_HOST_DEVICE static void toIndices(IndexLinear linear_index,
+  RAJA_INLINE RAJA_HOST_DEVICE static void toIndices(IdxLin linear_index,
                                                      DimTypes&... indices)
   {
     toTypedIndicesHelper(IndexRange{},
-                         std::forward<IndexLinear>(linear_index),
+                         std::forward<IdxLin>(linear_index),
                          std::forward<DimTypes &>(indices)...);
   }
 
@@ -477,7 +479,7 @@ private:
    */
   template <camp::idx_t... RangeInts>
   RAJA_INLINE RAJA_HOST_DEVICE static void toTypedIndicesHelper(camp::idx_seq<RangeInts...>,
-                                                                IndexLinear linear_index,
+                                                                IdxLin linear_index,
                                                                 DimTypes&... indices)
   {
     StrippedIndexLinear locals[n_dims];
@@ -530,11 +532,11 @@ using StaticLayout = StaticLayoutT<Perm, camp::idx_t, Sizes...>;
 
 template <typename Perm, typename IdxLin, typename TypeList, camp::idx_t... Sizes>
 using TypedStaticLayoutNoProj =
-    detail::TypedStaticLayoutImpl<StaticLayoutNoProjT<Perm, IdxLin, Sizes...>, TypeList>;
+    detail::TypedStaticLayoutImpl<StaticLayoutNoProjT<Perm, strip_index_type_t<IdxLin>, Sizes...>, IdxLin, TypeList>;
 
 template <typename Perm, typename IdxLin, typename TypeList, camp::idx_t... Sizes>
 using TypedStaticLayout =
-    detail::TypedStaticLayoutImpl<StaticLayoutT<Perm, IdxLin, Sizes...>, TypeList>;
+    detail::TypedStaticLayoutImpl<StaticLayoutT<Perm, strip_index_type_t<IdxLin>, Sizes...>, IdxLin, TypeList>;
 
 
 }  // namespace RAJA
