@@ -673,7 +673,7 @@ struct TypedLayoutBase_impl<IdxLin, camp::tuple<DimTypes...>, LayoutBase>
   {
     toTypedIndicesHelper(IndexRange{},
                          std::forward<IdxLin>(linear_index),
-                         std::forward<DimTypes &>(indices)...);
+                         std::forward<DimTypes&>(indices)...);
   }
 
 private:
