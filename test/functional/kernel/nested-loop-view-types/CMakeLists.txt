@@ -29,4 +29,5 @@ foreach( BACKEND ${KERNEL_BACKENDS} )
   endforeach()
 endforeach()
 
-unset( TEST_TYPES )
+unset( DIMTYPES )
+unset( TESTTYPES )
