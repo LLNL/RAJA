@@ -60,10 +60,11 @@ namespace RAJA
  *
  *
  */
-template <size_t Rank, typename IdxLin = Index_type>
+template <size_t Rank, typename IdxLin = Index_type,
+          ptrdiff_t StrideOneDim = -1, ptrdiff_t StrideMaxDim = -1>
 auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
                           std::array<camp::idx_t, Rank> permutation)
-    -> Layout<Rank, IdxLin>
+    -> Layout<Rank, IdxLin, StrideOneDim, StrideMaxDim>
 {
   std::array<IdxLin, Rank> strides;
   std::array<IdxLin, Rank> folded_strides;
@@ -79,16 +80,29 @@ auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
     strides[permutation[i]] = folded_strides[i];
   }
 
-
-  // return Layout<Rank, IdxLin>(sizes, strides);
-  auto ret  = Layout<Rank, IdxLin>();
+  return Layout<Rank, IdxLin, StrideOneDim, StrideMaxDim>(sizes, strides);
+}
+///
+template <size_t Rank, typename IdxLin = Index_type,
+          ptrdiff_t StrideOneDim = -1, ptrdiff_t StrideMaxDim = -1>
+auto make_permuted_layout_no_proj(std::array<IdxLin, Rank> sizes,
+                                  std::array<camp::idx_t, Rank> permutation)
+    -> LayoutNoProj<Rank, IdxLin, StrideOneDim, StrideMaxDim>
+{
+  std::array<IdxLin, Rank> strides;
+  std::array<IdxLin, Rank> folded_strides;
   for (size_t i = 0; i < Rank; ++i) {
-    ret.sizes[i] = sizes[i];
-    ret.strides[i] = strides[i];
-    ret.inv_strides[i] = strides[i] ? strides[i] : 1;
-    ret.inv_mods[i] = sizes[i] ? sizes[i] : 1;
+    folded_strides[i] = 1;
+    for (size_t j = i + 1; j < Rank; ++j) {
+      folded_strides[i] *= sizes[permutation[j]];
+    }
   }
-  return ret;
+
+  for (size_t i = 0; i < Rank; ++i) {
+    strides[permutation[i]] = folded_strides[i];
+  }
+
+  return LayoutNoProj<Rank, IdxLin, StrideOneDim, StrideMaxDim>(sizes, strides);
 }
 
 

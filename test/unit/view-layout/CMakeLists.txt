@@ -6,12 +6,28 @@
 ###############################################################################
 
 raja_add_test(
+  NAME test-noprojection-layout
+  SOURCES test-noprojection-layout.cpp)
+target_include_directories(test-noprojection-layout.exe
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+
+raja_add_test(
   NAME test-standard-layout
   SOURCES test-standard-layout.cpp)
+target_include_directories(test-standard-layout.exe
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+
+raja_add_test(
+  NAME test-noprojection-typedlayout
+  SOURCES test-noprojection-typedlayout.cpp)
+target_include_directories(test-noprojection-typedlayout.exe
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 raja_add_test(
   NAME test-typedlayout
   SOURCES test-typedlayout.cpp)
+target_include_directories(test-typedlayout.exe
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 raja_add_test(
   NAME test-typedview

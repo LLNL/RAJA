@@ -146,9 +146,10 @@ RAJA Layouts
 
 ``RAJA::Layout`` objects support other indexing patterns with different
 striding orders, offsets, and permutations. In addition to layouts created
-using the default Layout constructor, as shown above, RAJA provides other 
-methods to generate layouts for different indexing patterns. We describe 
-them here.
+using the default Layout constructor, as shown above, RAJA provides other
+methods to generate layouts for different indexing patterns. We describe
+them here. Note that layouts support *projections* by default but that
+functionality can be disabled, see Projections subsection below.
 
 Permuted Layout
 ^^^^^^^^^^^^^^^^
@@ -343,13 +344,17 @@ three-dimensional index space to a one-dimensional linear space::
    int i, j, k;
    layout.toIndices(lin, i, j, k); // i,j,k = {2, 3, 1}
 
-RAJA layouts also support *projections*, where one or more dimension
-extent is zero. In this case, the linear index space is invariant for 
-those index entries; thus, the 'toIndicies(...)' method will always return 
-zero for each dimension with zero extent. For example::
+Projections
+^^^^^^^^^^^
+
+RAJA layouts also support *projections* by default. If projections are enabled
+a dimension is projected out if the extent is zero. In this case, the linear
+index space is invariant for those index entries; thus, the 'toIndicies(...)'
+method will always return zero for each dimension with zero extent. For example::
 
    // Create a layout with second dimension extent zero
    RAJA::Layout<3> layout(3, 0, 5);
+   int size = layout.size();      // size == 15
 
    // The second (j) index is projected out
    int lin1 = layout(0, 10, 0);   // lin1 = 0
@@ -358,6 +363,22 @@ zero for each dimension with zero extent. For example::
    // The inverse mapping always produces zero for j
    int i,j,k;
    layout.toIndices(lin2, i, j, k); // i,j,k = {0, 0, 1}
+
+If projections are disabled then a dimension with zero extent creates a
+linear index space with zero extent. Thus it is an error to do any index
+calculations as there are no valid indices. For example::
+
+   // Create a non-projecting layout with second dimension extent zero
+   RAJA::LayoutNoProj<3> layout(3, 0, 5);
+   int size = layout.size();      // size == 0
+
+   // All j indices are out of bounds
+   int lin1 = layout(0, 0, 0);    // error j out of bounds, undefined behavior
+   int lin2 = layout(0, 5, 1);    // error j out of bounds, undefined behavior
+
+   // All linear indices are out of bounds
+   int i,j,k;
+   layout.toIndices(lin2, i, j, k); // error lin2 out of bounds, undefined behavior
 
 -------------------
 RAJA Atomic Views
