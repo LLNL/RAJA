@@ -40,7 +40,7 @@ add_subdirectory(reduce-multiple-indexset)
 add_subdirectory(resource-indexset)
 add_subdirectory(resource-segment)
 
-add_subdirectory(NDto1DHolder)
+add_subdirectory(CombiningAdapter)
 
 unset( FORALL_BACKENDS )
 

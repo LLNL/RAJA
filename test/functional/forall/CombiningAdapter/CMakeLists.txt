@@ -17,12 +17,12 @@ set(DIMENSIONS 1D 2D 3D)
 #
 foreach( BACKEND ${FORALL_BACKENDS} )
   foreach( DIMENSION ${DIMENSIONS} )
-    configure_file( test-forall-NDto1DHolder.cpp.in
-                    test-forall-NDto1DHolder-${DIMENSION}-${BACKEND}.cpp )
-    raja_add_test( NAME test-forall-NDto1DHolder-${DIMENSION}-${BACKEND}
-                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-NDto1DHolder-${DIMENSION}-${BACKEND}.cpp )
+    configure_file( test-forall-CombiningAdapter.cpp.in
+                    test-forall-CombiningAdapter-${DIMENSION}-${BACKEND}.cpp )
+    raja_add_test( NAME test-forall-CombiningAdapter-${DIMENSION}-${BACKEND}
+                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-CombiningAdapter-${DIMENSION}-${BACKEND}.cpp )
 
-    target_include_directories(test-forall-NDto1DHolder-${DIMENSION}-${BACKEND}.exe
+    target_include_directories(test-forall-CombiningAdapter-${DIMENSION}-${BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
   endforeach()
 endforeach()

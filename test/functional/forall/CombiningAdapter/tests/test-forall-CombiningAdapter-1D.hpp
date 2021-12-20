@@ -5,19 +5,20 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_NDto1DHolder_1D_HPP__
-#define __TEST_FORALL_NDto1DHolder_1D_HPP__
+#ifndef __TEST_FORALL_CombiningAdapter_1D_HPP__
+#define __TEST_FORALL_CombiningAdapter_1D_HPP__
 
 #include <numeric>
 #include <cstring>
 
-#include "RAJA/util/NDto1DHolder.hpp"
+#include "RAJA/util/CombiningAdapter.hpp"
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallNDto1DHolder1DTestImpl(INDEX_TYPE first, INDEX_TYPE last)
+void ForallCombiningAdapter1DTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 {
   RAJA::TypedRangeSegment<INDEX_TYPE> r0(RAJA::stripIndexType(first), RAJA::stripIndexType(last));
-  INDEX_TYPE N = static_cast<INDEX_TYPE>(r0.end() - r0.begin());
+  INDEX_TYPE N0 = static_cast<INDEX_TYPE>(r0.end() - r0.begin());
+  INDEX_TYPE N = N0;
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
   INDEX_TYPE* working_array;
@@ -42,7 +43,7 @@ void ForallNDto1DHolder1DTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
     working_res.memset(working_array, 0, sizeof(INDEX_TYPE) * data_len);
 
-    auto holder = RAJA::make_NDto1DHolder([=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+    auto adapter = RAJA::make_CombiningAdapter([=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
       if (idx >= first && idx < last) {
         // in bounds
         working_array[RAJA::stripIndexType(idx - first)] += (idx - first);
@@ -52,7 +53,7 @@ void ForallNDto1DHolder1DTestImpl(INDEX_TYPE first, INDEX_TYPE last)
       }
     }, r0);
 
-    RAJA::forall<EXEC_POLICY>(holder.getRange(), holder);
+    RAJA::forall<EXEC_POLICY>(adapter.getRange(), adapter);
 
   }
 
@@ -69,9 +70,9 @@ void ForallNDto1DHolder1DTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 }
 
 
-TYPED_TEST_SUITE_P(ForallNDto1DHolder1DTest);
+TYPED_TEST_SUITE_P(ForallCombiningAdapter1DTest);
 template <typename T>
-class ForallNDto1DHolder1DTest : public ::testing::Test
+class ForallCombiningAdapter1DTest : public ::testing::Test
 {
 };
 
@@ -86,30 +87,30 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY,
 void runNegativeTests()
 {
   // test zero-length range segment
-  ForallNDto1DHolder1DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(-5));
+  ForallCombiningAdapter1DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(-5));
 
-  ForallNDto1DHolder1DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(0));
-  ForallNDto1DHolder1DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(5));
+  ForallCombiningAdapter1DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(0));
+  ForallCombiningAdapter1DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(5));
 }
 
 
-TYPED_TEST_P(ForallNDto1DHolder1DTest, Forall1D)
+TYPED_TEST_P(ForallCombiningAdapter1DTest, Forall1D)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 
   // test zero-length range segment
-  ForallNDto1DHolder1DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(3), INDEX_TYPE(3));
+  ForallCombiningAdapter1DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(3), INDEX_TYPE(3));
 
-  ForallNDto1DHolder1DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(0), INDEX_TYPE(27));
-  ForallNDto1DHolder1DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(1), INDEX_TYPE(2047));
-  ForallNDto1DHolder1DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(1), INDEX_TYPE(32000));
+  ForallCombiningAdapter1DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(0), INDEX_TYPE(27));
+  ForallCombiningAdapter1DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(1), INDEX_TYPE(2047));
+  ForallCombiningAdapter1DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(1), INDEX_TYPE(32000));
 
   runNegativeTests<INDEX_TYPE, WORKING_RES, EXEC_POLICY>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallNDto1DHolder1DTest,
+REGISTER_TYPED_TEST_SUITE_P(ForallCombiningAdapter1DTest,
                             Forall1D);
 
-#endif  // __TEST_FORALL_NDto1DHolder_1D_HPP__
+#endif  // __TEST_FORALL_CombiningAdapter_1D_HPP__

@@ -5,16 +5,16 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_NDto1DHolder_3D_HPP__
-#define __TEST_FORALL_NDto1DHolder_3D_HPP__
+#ifndef __TEST_FORALL_CombiningAdapter_3D_HPP__
+#define __TEST_FORALL_CombiningAdapter_3D_HPP__
 
 #include <numeric>
 #include <cstring>
 
-#include "RAJA/util/NDto1DHolder.hpp"
+#include "RAJA/util/CombiningAdapter.hpp"
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallNDto1DHolder3DTestImpl(INDEX_TYPE first0, INDEX_TYPE last0,
+void ForallCombiningAdapter3DTestImpl(INDEX_TYPE first0, INDEX_TYPE last0,
                                   INDEX_TYPE first1, INDEX_TYPE last1,
                                   INDEX_TYPE first2, INDEX_TYPE last2)
 {
@@ -56,7 +56,7 @@ void ForallNDto1DHolder3DTestImpl(INDEX_TYPE first0, INDEX_TYPE last0,
 
     working_res.memset(working_array, 0, sizeof(INDEX_TYPE) * data_len);
 
-    auto holder = RAJA::make_NDto1DHolder([=] RAJA_HOST_DEVICE(INDEX_TYPE idx0, INDEX_TYPE idx1, INDEX_TYPE idx2) {
+    auto adapter = RAJA::make_CombiningAdapter([=] RAJA_HOST_DEVICE(INDEX_TYPE idx0, INDEX_TYPE idx1, INDEX_TYPE idx2) {
       if (idx0 >= first0 && idx0 < last0 &&
           idx1 >= first1 && idx1 < last1 &&
           idx2 >= first2 && idx2 < last2) {
@@ -72,7 +72,7 @@ void ForallNDto1DHolder3DTestImpl(INDEX_TYPE first0, INDEX_TYPE last0,
       }
     }, r0, r1, r2);
 
-    RAJA::forall<EXEC_POLICY>(holder.getRange(), holder);
+    RAJA::forall<EXEC_POLICY>(adapter.getRange(), adapter);
 
   }
 
@@ -89,9 +89,9 @@ void ForallNDto1DHolder3DTestImpl(INDEX_TYPE first0, INDEX_TYPE last0,
 }
 
 
-TYPED_TEST_SUITE_P(ForallNDto1DHolder3DTest);
+TYPED_TEST_SUITE_P(ForallCombiningAdapter3DTest);
 template <typename T>
-class ForallNDto1DHolder3DTest : public ::testing::Test
+class ForallCombiningAdapter3DTest : public ::testing::Test
 {
 };
 
@@ -106,53 +106,53 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY,
 void runNegativeTests()
 {
   // test zero-length range segment
-  ForallNDto1DHolder3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(-5),
+  ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(-5),
                                                                      INDEX_TYPE(-3), INDEX_TYPE(-3),
                                                                      INDEX_TYPE(-1), INDEX_TYPE(-1));
 
-  ForallNDto1DHolder3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(0),
+  ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(0),
                                                                      INDEX_TYPE(-3), INDEX_TYPE(0),
                                                                      INDEX_TYPE(-4), INDEX_TYPE(0));
-  ForallNDto1DHolder3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(5),
+  ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(5),
                                                                      INDEX_TYPE(-3), INDEX_TYPE(2),
                                                                      INDEX_TYPE(-7), INDEX_TYPE(-2));
 }
 
 
-TYPED_TEST_P(ForallNDto1DHolder3DTest, Forall3D)
+TYPED_TEST_P(ForallCombiningAdapter3DTest, Forall3D)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 
   // test zero-length range segment
-  ForallNDto1DHolder3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(3), INDEX_TYPE(3),
+  ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(3), INDEX_TYPE(3),
                                                                      INDEX_TYPE(5), INDEX_TYPE(5),
                                                                      INDEX_TYPE(7), INDEX_TYPE(7));
-  ForallNDto1DHolder3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(3), INDEX_TYPE(3),
+  ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(3), INDEX_TYPE(3),
                                                                      INDEX_TYPE(5), INDEX_TYPE(6),
                                                                      INDEX_TYPE(7), INDEX_TYPE(8));
-  ForallNDto1DHolder3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(3), INDEX_TYPE(4),
+  ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(3), INDEX_TYPE(4),
                                                                      INDEX_TYPE(5), INDEX_TYPE(5),
                                                                      INDEX_TYPE(7), INDEX_TYPE(8));
-  ForallNDto1DHolder3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(3), INDEX_TYPE(4),
+  ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(3), INDEX_TYPE(4),
                                                                      INDEX_TYPE(5), INDEX_TYPE(6),
                                                                      INDEX_TYPE(7), INDEX_TYPE(7));
 
-  ForallNDto1DHolder3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(0), INDEX_TYPE(7),
+  ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(0), INDEX_TYPE(7),
                                                                      INDEX_TYPE(0), INDEX_TYPE(6),
                                                                      INDEX_TYPE(0), INDEX_TYPE(3));
-  ForallNDto1DHolder3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(1), INDEX_TYPE(13),
+  ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(1), INDEX_TYPE(13),
                                                                      INDEX_TYPE(4), INDEX_TYPE(17),
                                                                      INDEX_TYPE(6), INDEX_TYPE(11));
-  ForallNDto1DHolder3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(13), INDEX_TYPE(46),
+  ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(13), INDEX_TYPE(46),
                                                                      INDEX_TYPE(17), INDEX_TYPE(51),
                                                                      INDEX_TYPE(4), INDEX_TYPE(31));
 
   runNegativeTests<INDEX_TYPE, WORKING_RES, EXEC_POLICY>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallNDto1DHolder3DTest,
+REGISTER_TYPED_TEST_SUITE_P(ForallCombiningAdapter3DTest,
                             Forall3D);
 
-#endif  // __TEST_FORALL_NDto1DHolder_3D_HPP__
+#endif  // __TEST_FORALL_CombiningAdapter_3D_HPP__
