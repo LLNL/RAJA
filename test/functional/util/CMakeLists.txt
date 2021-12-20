@@ -6,6 +6,6 @@
 ###############################################################################
 
 raja_add_test(
-  NAME test-NDto1DHolder
-  SOURCES test-NDto1DHolder.cpp)
+  NAME test-CombiningAdapter
+  SOURCES test-CombiningAdapter.cpp)
 
