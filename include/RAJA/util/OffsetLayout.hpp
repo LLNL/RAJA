@@ -318,11 +318,37 @@ using TypedOffsetLayout = internal::TypedOffsetLayout_impl<
 
 template <size_t n_dims, typename IdxLin = Index_type,
           ptrdiff_t StrideOneDim = -1, ptrdiff_t StrideMaxDim = -1>
+auto make_offset_layout_no_proj(const std::array<IdxLin, n_dims>& lower,
+                                const std::array<IdxLin, n_dims>& upper)
+    -> OffsetLayoutNoProj<n_dims, IdxLin, StrideOneDim, StrideMaxDim>
+{
+  return OffsetLayoutNoProj<n_dims, IdxLin, StrideOneDim, StrideMaxDim>{lower, upper};
+}
+
+template <size_t n_dims, typename IdxLin = Index_type,
+          ptrdiff_t StrideOneDim = -1, ptrdiff_t StrideMaxDim = -1>
 auto make_offset_layout(const std::array<IdxLin, n_dims>& lower,
                         const std::array<IdxLin, n_dims>& upper)
     -> OffsetLayout<n_dims, IdxLin, StrideOneDim, StrideMaxDim>
 {
   return OffsetLayout<n_dims, IdxLin, StrideOneDim, StrideMaxDim>{lower, upper};
+}
+
+template <size_t n_dims, typename IdxLin = Index_type,
+          ptrdiff_t StrideOneDim = -1, ptrdiff_t StrideMaxDim = -1>
+auto make_permuted_offset_layout_no_proj(const std::array<IdxLin, n_dims>& lower,
+                                         const std::array<IdxLin, n_dims>& upper,
+                                         const std::array<IdxLin, n_dims>& permutation)
+    -> OffsetLayoutNoProj<n_dims, IdxLin, StrideOneDim, StrideMaxDim>
+{
+  std::array<IdxLin, n_dims> sizes;
+  for (size_t i = 0; i < n_dims; ++i) {
+    sizes[i] = upper[i] - lower[i] + 1;
+  }
+  return OffsetLayoutNoProj<n_dims, IdxLin, StrideOneDim, StrideMaxDim>::
+      from_layout_and_offsets(lower,
+          make_permuted_layout_no_proj<n_dims, IdxLin, StrideOneDim, StrideMaxDim>(
+              sizes, permutation));
 }
 
 template <size_t n_dims, typename IdxLin = Index_type,
