@@ -257,8 +257,11 @@ auto make_PermutedCombiningAdapter(Lambda&& lambda, ::RAJA::TypedRangeSegment<Id
   return make_CombiningAdapter(std::forward<Lambda>(lambda),
       OffsetLayout::from_layout_and_offsets(
           {{(distance(begin(segs), end(segs)) ? static_cast<IdxLin>(*begin(segs)) : static_cast<IdxLin>(0))...}},
-          make_permuted_layout_no_proj({{static_cast<IdxLin>(distance(begin(segs), end(segs)))...}},
-                                       RAJA::as_array<Perm>::get()) ));
+          make_permuted_layout_no_proj<OffsetLayout::n_dims, IdxLin,
+                                       OffsetLayout::stride_one_dim,
+                                       OffsetLayout::stride_max_dim>(
+              {{static_cast<IdxLin>(distance(begin(segs), end(segs)))...}},
+              RAJA::as_array<Perm>::get()) ));
 }
 
 }  // end namespace RAJA
