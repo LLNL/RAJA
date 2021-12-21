@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-set(NESTED_LOOPTYPES ReduceSum)
+set(NESTED_LOOPTYPES ReduceSum MultiLambdaParamReduceSum)
 
 set( USE_RESOURCE "-resource-" "-" )
 
@@ -25,14 +25,18 @@ endif()
 foreach( NESTED_LOOP_BACKEND ${KERNEL_BACKENDS} )
   foreach( RESOURCE ${USE_RESOURCE} )
     foreach( NESTED_LOOP_TYPE ${NESTED_LOOPTYPES} )
-      configure_file( test-kernel-nested-loop.cpp.in
-          test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
+      if((${NESTED_LOOP_BACKEND} STREQUAL "OpenMP" OR ${NESTED_LOOP_BACKEND} STREQUAL "OpenMPTarget" OR ${NESTED_LOOP_BACKEND} STREQUAL "TBB" ) AND ${NESTED_LOOP_TYPE} STREQUAL "MultiLambdaParamReduceSum")
+        # No tests exist for: OpenMP, OpenMPTarget, and TBB for MultiLambdaParamReduceSum.
+      else()
+          configure_file( test-kernel-nested-loop.cpp.in
+                          test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
 
           raja_add_test( NAME test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}
               SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
 
           target_include_directories(test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.exe
                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+      endif()
 
     endforeach()
   endforeach()
@@ -47,7 +51,7 @@ if(RAJA_ENABLE_TARGET_OPENMP)
   if(RAJA_TEST_OPENMP_TARGET_SUBSET)
 
     set(NESTED_LOOP_BACKEND OpenMPTarget)
-    set(NESTED_LOOPTYPES ReduceSum)
+    set(NESTED_LOOPTYPES ReduceSum MultiLambdaParamReduceSum)
 
     set(RESOURCE "-")
     foreach( NESTED_LOOP_TYPE ${NESTED_LOOPTYPES} )

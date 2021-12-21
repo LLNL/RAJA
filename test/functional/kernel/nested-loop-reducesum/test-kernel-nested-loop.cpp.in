@@ -17,6 +17,9 @@
 
 using SequentialKernelNestedLoopExecPols = camp::list<
 
+    // Depth 2 ReduceSum Exec Pols
+    NestedLoopData<DEPTH_1_REDUCESUM, RAJA::seq_exec, RAJA::seq_reduce >,
+
     // Depth 3 ReduceSum Exec Pols
     NestedLoopData<DEPTH_3_REDUCESUM, RAJA::seq_exec,  RAJA::seq_exec, RAJA::seq_exec >,
     NestedLoopData<DEPTH_3_REDUCESUM_SEQ_OUTER, RAJA::seq_exec,  RAJA::loop_exec, RAJA::loop_exec >,
@@ -60,6 +63,9 @@ using TBBKernelNestedLoopExecPols = camp::list<
 #if defined(RAJA_ENABLE_CUDA)
 using CudaKernelNestedLoopExecPols = camp::list<
 
+    // Device Depth 2 ReduceSum Exec Pols
+    NestedLoopData<DEVICE_DEPTH_1_REDUCESUM, RAJA::cuda_thread_x_loop, RAJA::cuda_block_reduce >,
+
     // Device Depth 3 ReduceSum Exec Pols
     NestedLoopData<DEVICE_DEPTH_3_REDUCESUM, RAJA::cuda_block_x_loop, RAJA::cuda_thread_y_loop, RAJA::cuda_thread_z_loop >,
     NestedLoopData<DEVICE_DEPTH_3_REDUCESUM_SEQ_OUTER, RAJA::seq_exec, RAJA::cuda_block_x_loop, RAJA::cuda_thread_y_loop >,
@@ -71,6 +77,9 @@ using CudaKernelNestedLoopExecPols = camp::list<
 #if defined(RAJA_ENABLE_HIP)
   
 using HipKernelNestedLoopExecPols = camp::list<
+
+    // Device Depth 2 ReduceSum Exec Pols
+    NestedLoopData<DEVICE_DEPTH_1_REDUCESUM, RAJA::hip_thread_x_loop, RAJA::hip_block_reduce >,
 
     // Device Depth 3 ReduceSum Exec Pols
     NestedLoopData<DEVICE_DEPTH_3_REDUCESUM, RAJA::hip_block_x_loop, RAJA::hip_thread_y_loop, RAJA::hip_thread_z_loop >,
