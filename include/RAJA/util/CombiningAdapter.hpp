@@ -235,6 +235,31 @@ auto make_CombiningAdapter(Lambda&& lambda, ::RAJA::TypedRangeSegment<IdxTs> con
           {{(distance(begin(segs), end(segs)) ? static_cast<IdxLin>(*begin(segs)) : static_cast<IdxLin>(0))...}},
           LayoutBase(static_cast<IdxLin>(distance(begin(segs), end(segs)))...)));
 }
+///
+template <typename Perm, typename Lambda, typename... IdxTs>
+RAJA_INLINE
+auto make_PermutedCombiningAdapter(Lambda&& lambda, ::RAJA::TypedRangeSegment<IdxTs> const&... segs)
+  -> decltype(make_CombiningAdapter(std::forward<Lambda>(lambda),
+              camp::val<RAJA::TypedOffsetLayoutNoProj<
+                  typename std::common_type< strip_index_type_t<IdxTs>... >::type,
+                  camp::tuple<IdxTs...>,
+                  camp::seq_at<sizeof...(IdxTs)-1, Perm>::value,
+                  camp::seq_at<0, Perm>::value>>()))
+{
+  using std::begin; using std::end; using std::distance;
+  using IdxLin = typename std::common_type< strip_index_type_t<IdxTs>... >::type;
+  using OffsetLayout = RAJA::TypedOffsetLayoutNoProj<
+      IdxLin,
+      camp::tuple<IdxTs...>,
+      camp::seq_at<sizeof...(IdxTs)-1, Perm>::value,
+      camp::seq_at<0, Perm>::value>;
+
+  return make_CombiningAdapter(std::forward<Lambda>(lambda),
+      OffsetLayout::from_layout_and_offsets(
+          {{(distance(begin(segs), end(segs)) ? static_cast<IdxLin>(*begin(segs)) : static_cast<IdxLin>(0))...}},
+          make_permuted_layout_no_proj({{static_cast<IdxLin>(distance(begin(segs), end(segs)))...}},
+                                       RAJA::as_array<Perm>::get()) ));
+}
 
 }  // end namespace RAJA
 
