@@ -6,6 +6,14 @@
 ###############################################################################
 
 raja_add_test(
-  NAME test-CombiningAdapter
-  SOURCES test-CombiningAdapter.cpp)
+  NAME test-CombiningAdapter-1D
+  SOURCES test-CombiningAdapter-1D.cpp)
+
+raja_add_test(
+  NAME test-CombiningAdapter-2D
+  SOURCES test-CombiningAdapter-2D.cpp)
+
+raja_add_test(
+  NAME test-CombiningAdapter-3D
+  SOURCES test-CombiningAdapter-3D.cpp)
 
