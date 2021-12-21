@@ -17,3 +17,14 @@ raja_add_test(
   NAME test-CombiningAdapter-3D
   SOURCES test-CombiningAdapter-3D.cpp)
 
+raja_add_test(
+  NAME test-PermutedCombiningAdapter-1D
+  SOURCES test-PermutedCombiningAdapter-1D.cpp)
+
+raja_add_test(
+  NAME test-PermutedCombiningAdapter-2D
+  SOURCES test-PermutedCombiningAdapter-2D.cpp)
+
+raja_add_test(
+  NAME test-PermutedCombiningAdapter-3D
+  SOURCES test-PermutedCombiningAdapter-3D.cpp)
