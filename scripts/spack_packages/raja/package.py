@@ -54,7 +54,7 @@ def get_spec_path(spec, package_name, path_replacements = {}, use_bin = False) :
 class Raja(CMakePackage, CudaPackage, ROCmPackage):
     """RAJA Performance Portability Abstractions for C++ HPC Applications."""
 
-    homepage = "https://github.llnl.gov/RAJA/"
+    homepage = "https://github.com/LLNL/RAJA"
     git      = "https://github.com/LLNL/RAJA.git"
 
     version('develop', branch='develop', submodules='True')
