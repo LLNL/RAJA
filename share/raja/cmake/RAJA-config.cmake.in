@@ -32,12 +32,11 @@
 #
 @PACKAGE_INIT@
 
-find_dependency(camp REQUIRED PATHS "@PACKAGE_INSTALL_PREFIX@")
-include("${CMAKE_CURRENT_LIST_DIR}/RAJA.cmake")
+if (NOT TARGET camp)
+  include(CMakeFindDependencyMacro)
+  find_dependency(camp REQUIRED PATHS "@PACKAGE_CMAKE_INSTALL_PREFIX@")
+endif ()
 
-# Export version number
-set(RAJA_VERSION_MAJOR @RAJA_VERSION_MAJOR@)
-set(RAJA_VERSION_MINOR @RAJA_VERSION_MINOR@)
-set(RAJA_VERSION_PATCHLEVEL @RAJA_VERSION_PATCHLEVEL@)
+include("${CMAKE_CURRENT_LIST_DIR}/RAJA.cmake")
 
 check_required_components("@PROJECT_NAME@")

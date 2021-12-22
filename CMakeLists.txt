@@ -272,7 +272,7 @@ install(TARGETS RAJA
   RUNTIME DESTINATION lib
   )
 
-install(EXPORT RAJA DESTINATION share/raja/cmake/)
+install(EXPORT RAJA DESTINATION lib/cmake/raja)
 
 target_include_directories(RAJA
   PUBLIC
