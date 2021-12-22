@@ -30,10 +30,10 @@ typename std::enable_if< !USE_RESOURCE >::type call_kernel(SEGMENTS&& segs, PARA
 
 //
 //
-// Define list of nested loop types the MultiLambdaParam test supports.
+// Define list of nested loop types the Block test supports.
 //
 //
-using MultiLambdaParamReduceSumSupportedLoopTypeList = camp::list<
+using BlockReduceSumSupportedLoopTypeList = camp::list<
   DEPTH_1_REDUCESUM,
   DEVICE_DEPTH_1_REDUCESUM
   >;
@@ -111,14 +111,14 @@ void KernelNestedLoopTest(const DEVICE_DEPTH_1_REDUCESUM&, Args... args){
 
 //
 //
-// Defining the Kernel Loop structure for MultiLambdaParam Nested Loop Tests.
+// Defining the Kernel Loop structure for Block Nested Loop Tests.
 //
 //
 template<typename POLICY_TYPE, typename REDUCE_POL, typename POLICY_DATA>
-struct MultiLambdaParamNestedLoopExec;
+struct BlockNestedLoopExec;
 
 template<typename REDUCE_POL, typename POLICY_DATA>
-struct MultiLambdaParamNestedLoopExec<DEPTH_1_REDUCESUM, REDUCE_POL, POLICY_DATA> {
+struct BlockNestedLoopExec<DEPTH_1_REDUCESUM, REDUCE_POL, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
       RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<0>>::type, RAJA::statement::Lambda<0>,
@@ -132,7 +132,7 @@ struct MultiLambdaParamNestedLoopExec<DEPTH_1_REDUCESUM, REDUCE_POL, POLICY_DATA
 #if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP)
 
 template<typename REDUCE_POL, typename POLICY_DATA>
-struct MultiLambdaParamNestedLoopExec<DEVICE_DEPTH_1_REDUCESUM, REDUCE_POL, POLICY_DATA> {
+struct BlockNestedLoopExec<DEVICE_DEPTH_1_REDUCESUM, REDUCE_POL, POLICY_DATA> {
   using type = 
     RAJA::KernelPolicy<
       RAJA::statement::DEVICE_KERNEL<

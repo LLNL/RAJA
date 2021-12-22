@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-set(NESTED_LOOPTYPES ReduceSum MultiLambdaParamReduceSum)
+set(NESTED_LOOPTYPES ReduceSum BlockReduceSum)
 
 set( USE_RESOURCE "-resource-" "-" )
 
@@ -26,9 +26,9 @@ foreach( NESTED_LOOP_BACKEND ${KERNEL_BACKENDS} )
   foreach( RESOURCE ${USE_RESOURCE} )
     foreach( NESTED_LOOP_TYPE ${NESTED_LOOPTYPES} )
       if( ${NESTED_LOOP_TYPE} STREQUAL "ReduceSum" OR # allow all ReduceSum tests
-          ((${NESTED_LOOP_BACKEND} STREQUAL "Sequential" OR ${NESTED_LOOP_BACKEND} STREQUAL "Cuda" OR ${NESTED_LOOP_BACKEND} STREQUAL "Hip" ) AND ${NESTED_LOOP_TYPE} STREQUAL "MultiLambdaParamReduceSum") # allow only certain MultiLambdaParamReduceSum tests
+          ((${NESTED_LOOP_BACKEND} STREQUAL "Sequential" OR ${NESTED_LOOP_BACKEND} STREQUAL "Cuda" OR ${NESTED_LOOP_BACKEND} STREQUAL "Hip" ) AND ${NESTED_LOOP_TYPE} STREQUAL "BlockReduceSum") # allow only certain BlockReduceSum tests
         )
-        # Note on MultiLambdaParamReduceSum: Inherent kernel reduction functionality does not exist for - OpenMP, OpenMPTarget, and TBB.
+        # Note on BlockReduceSum: Inherent kernel reduction functionality does not exist for - OpenMP, OpenMPTarget, and TBB.
         configure_file( test-kernel-nested-loop.cpp.in
                         test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
 
@@ -52,7 +52,7 @@ if(RAJA_ENABLE_TARGET_OPENMP)
   if(RAJA_TEST_OPENMP_TARGET_SUBSET)
 
     set(NESTED_LOOP_BACKEND OpenMPTarget)
-    set(NESTED_LOOPTYPES ReduceSum MultiLambdaParamReduceSum)
+    set(NESTED_LOOPTYPES ReduceSum BlockReduceSum)
 
     set(RESOURCE "-")
     foreach( NESTED_LOOP_TYPE ${NESTED_LOOPTYPES} )
