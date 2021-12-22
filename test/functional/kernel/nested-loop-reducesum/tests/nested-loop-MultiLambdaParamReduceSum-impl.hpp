@@ -77,17 +77,17 @@ void KernelNestedLoopTest(const DEPTH_1_REDUCESUM&, const int N){
     // Resource
     work_res,
 
-    // lambda 0, for sequential
+    // lambda 0, only runs for sequential
     [=] RAJA_HOST_DEVICE (RAJA::Index_type i, int & value) {
        value = work_array[i];
     },
 
-    // lambda 1, for device
+    // lambda 1, only runs for device
     [=] RAJA_HOST_DEVICE (RAJA::Index_type i, int & value) {
        value += work_array[i];
     },
 
-    // lambda 2, reduction for sequential and device
+    // lambda 2, (reduction) runs for both sequential and device
     // Device: This only gets executed on the "root" thread which received the reduced value.
     [=] RAJA_HOST_DEVICE (int & value) {
        worksum += value;

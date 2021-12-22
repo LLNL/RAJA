@@ -25,16 +25,17 @@ endif()
 foreach( NESTED_LOOP_BACKEND ${KERNEL_BACKENDS} )
   foreach( RESOURCE ${USE_RESOURCE} )
     foreach( NESTED_LOOP_TYPE ${NESTED_LOOPTYPES} )
-      if((${NESTED_LOOP_BACKEND} STREQUAL "OpenMP" OR ${NESTED_LOOP_BACKEND} STREQUAL "OpenMPTarget" OR ${NESTED_LOOP_BACKEND} STREQUAL "TBB" ) AND ${NESTED_LOOP_TYPE} STREQUAL "MultiLambdaParamReduceSum")
-        # No tests exist for: OpenMP, OpenMPTarget, and TBB for MultiLambdaParamReduceSum.
-      else()
-          configure_file( test-kernel-nested-loop.cpp.in
-                          test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
+      if( ${NESTED_LOOP_TYPE} STREQUAL "ReduceSum" OR # allow all ReduceSum tests
+          ((${NESTED_LOOP_BACKEND} STREQUAL "Sequential" OR ${NESTED_LOOP_BACKEND} STREQUAL "Cuda" OR ${NESTED_LOOP_BACKEND} STREQUAL "Hip" ) AND ${NESTED_LOOP_TYPE} STREQUAL "MultiLambdaParamReduceSum") # allow only certain MultiLambdaParamReduceSum tests
+        )
+        # Note on MultiLambdaParamReduceSum: Inherent kernel reduction functionality does not exist for - OpenMP, OpenMPTarget, and TBB.
+        configure_file( test-kernel-nested-loop.cpp.in
+                        test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
 
-          raja_add_test( NAME test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}
-              SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
+        raja_add_test( NAME test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}
+            SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
 
-          target_include_directories(test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.exe
+        target_include_directories(test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.exe
                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
       endif()
 
