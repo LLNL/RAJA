@@ -47,7 +47,7 @@ ibm_clang_9_cuda:
 
 ibm_clang_10_cuda:
   variables:
-    SPEC: "+cuda cuda_arch=70 %clang@10.0.1ibm ^cuda@10.1.168"
+    SPEC: "+cuda cuda_arch=70 %clang@10.0.1-ibm ^cuda@10.1.168"
   extends: .build_and_test_on_lassen
 
 gcc_8_3_1_cuda:
