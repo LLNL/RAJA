@@ -94,11 +94,11 @@ ENV HCC_AMDGPU_TARGET=gfx900
 RUN mkdir build && cd build && cmake -DBLT_CXX_STD=c++14 -DROCM_ROOT_DIR=/opt/rocm/include -DHIP_RUNTIME_INCLUDE_DIRS="/opt/rocm/include;/opt/rocm/hip/include" -DENABLE_HIP=On -DENABLE_OPENMP=Off -DENABLE_CUDA=Off -DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off -DHIP_HIPCC_FLAGS=-fPIC ..
 RUN cd build && make -j 6
 
-FROM axom/compilers:oneapi-2021.2.0 AS sycl
+FROM ghcr.io/rse-ops/intel-ubuntu-20.04:intel-2021.2.0 AS sycl
 ENV GTEST_COLOR=1
-COPY --chown=axom:axom . /home/axom/workspace
-WORKDIR /home/axom/workspace
-RUN /bin/bash -c 'source /opt/intel/oneapi/setvars.sh && mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=dpcpp -DRAJA_ENABLE_SYCL=On -DENABLE_OPENMP=OFF -DENABLE_ALL_WARNINGS=Off -DBLT_CXX_STD=c++17 ..'
-RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh && cd build && make -j 16"
-RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh && cd build && ctest -T test --output-on-failure"
-
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN /bin/bash -c "source /opt/view/setvars.sh && \
+    cmake -DCMAKE_CXX_COMPILER=dpcpp -DENABLE_SYCL=On -DENABLE_OPENMP=Off .. && \
+    make -j 6 &&\
+    ctest -T test --output-on-failure"
