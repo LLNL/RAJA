@@ -51,14 +51,17 @@ def get_spec_path(spec, package_name, path_replacements = {}, use_bin = False) :
     return path
 
 
-class Raja(CMakePackage, CudaPackage):
-    """RAJA Parallel Framework."""
+class Raja(CMakePackage, CudaPackage, ROCmPackage):
+    """RAJA Performance Portability Abstractions for C++ HPC Applications."""
 
-    homepage = "http://software.llnl.gov/RAJA/"
+    homepage = "https://github.com/LLNL/RAJA"
     git      = "https://github.com/LLNL/RAJA.git"
 
     version('develop', branch='develop', submodules='True')
     version('main',  branch='main',  submodules='True')
+    version('0.14.1', tag='v0.14.1', submodules="True")
+    version('0.14.0', tag='v0.14.0', submodules="True")
+    version('0.13.0', tag='v0.13.0', submodules="True")
     version('0.12.1', tag='v0.12.1', submodules="True")
     version('0.12.0', tag='v0.12.0', submodules="True")
     version('0.11.0', tag='v0.11.0', submodules="True")
@@ -78,16 +81,27 @@ class Raja(CMakePackage, CudaPackage):
     variant('openmp', default=True, description='Build OpenMP backend')
     variant('shared', default=False, description='Build Shared Libs')
     variant('libcpp', default=False, description='Uses libc++ instead of libstdc++')
-    variant('hip', default=False, description='Build with HIP support')
     variant('tests', default='basic', values=('none', 'basic', 'benchmarks'),
             multi=False, description='Tests to run')
     variant('desul', default=False, description='Build Desul Atomics backend')
 
-    depends_on('cmake@3.8:', type='build')
-    depends_on('cmake@3.9:', when='+cuda', type='build')
-    depends_on('hip', when='+hip')
+    depends_on('cmake@3.9:', type='build')
 
-    conflicts('+openmp', when='+hip')
+    depends_on('blt@0.4.1', type='build', when='@main')
+    depends_on('blt@0.4.1:', type='build')
+
+    depends_on('camp')
+    depends_on('camp@0.2.2')
+    depends_on('camp+rocm', when='+rocm')
+    for val in ROCmPackage.amdgpu_targets:
+        depends_on('camp amdgpu_target=%s' % val, when='amdgpu_target=%s' % val)
+
+    depends_on('camp+cuda', when='+cuda')
+    for sm_ in CudaPackage.cuda_arch_values:
+        depends_on('camp cuda_arch={0}'.format(sm_),
+                   when='cuda_arch={0}'.format(sm_))
+
+    conflicts('+openmp', when='+rocm')
 
     phases = ['hostconfig', 'cmake', 'build', 'install']
 
@@ -275,7 +289,7 @@ class Raja(CMakePackage, CudaPackage):
         else:
             cfg.write(cmake_cache_option("ENABLE_CUDA", False))
 
-        if "+hip" in spec:
+        if "+rocm" in spec:
             cfg.write("#------------------{0}\n".format("-" * 60))
             cfg.write("# HIP\n")
             cfg.write("#------------------{0}\n\n".format("-" * 60))
@@ -334,18 +348,11 @@ class Raja(CMakePackage, CudaPackage):
             if "+cuda" in spec:
                 cfg.write(cmake_cache_string("CMAKE_CUDA_STANDARD", "14"))
 
-        # Note 1: Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS
-        # which is used by the spack compiler wrapper.  This can go away when
-        # BLT removes -Werror from GTest flags
-        # Note 2: Tests are either built if variant is set, or if run-tests
-        # option is passed.
-        if self.spec.satisfies('%clang target=ppc64le:'):
-            cfg.write(cmake_cache_option("ENABLE_TESTS",False))
-            if 'tests=benchmarks' in spec or not 'tests=none' in spec:
-                print("MSG: no testing supported on %clang target=ppc64le:")
-        else:
-            cfg.write(cmake_cache_option("ENABLE_BENCHMARKS", 'tests=benchmarks' in spec))
-            cfg.write(cmake_cache_option("ENABLE_TESTS", not 'tests=none' in spec or self.run_tests))
+        cfg.write(cmake_cache_option("ENABLE_BENCHMARKS", 'tests=benchmarks' in spec))
+        cfg.write(cmake_cache_option("ENABLE_TESTS", not 'tests=none' in spec or self.run_tests))
+
+        cfg.write(cmake_cache_path("BLT_SOURCE_DIR", spec['blt'].prefix))
+        cfg.write(cmake_cache_path("camp_DIR", spec['camp'].prefix))
 
         #######################
         # Close and save
