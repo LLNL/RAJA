@@ -14,6 +14,7 @@
 #define DEVICE_KERNEL CudaKernel
 #endif
 
+struct DEPTH_1_REDUCESUM {};
 struct DEPTH_2 {};
 struct DEPTH_2_COLLAPSE {};
 struct DEPTH_3 {};
@@ -23,6 +24,7 @@ struct DEPTH_3_COLLAPSE_SEQ_OUTER {};
 struct DEPTH_3_REDUCESUM {};
 struct DEPTH_3_REDUCESUM_SEQ_INNER {};
 struct DEPTH_3_REDUCESUM_SEQ_OUTER {};
+struct DEVICE_DEPTH_1_REDUCESUM {};
 struct DEVICE_DEPTH_2 {};
 struct DEVICE_DEPTH_3 {};
 struct DEVICE_DEPTH_3_REDUCESUM {};
