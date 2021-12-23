@@ -53,6 +53,8 @@ jobs:
         docker_target: clang11
       clang11-debug:
         docker_target: clang11-debug
+      clang13:
+        docker_target: clang13
       #nvcc10:
       #  docker_target: nvcc10
       nvcc11:
