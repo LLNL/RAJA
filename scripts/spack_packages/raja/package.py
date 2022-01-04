@@ -52,13 +52,16 @@ def get_spec_path(spec, package_name, path_replacements = {}, use_bin = False) :
 
 
 class Raja(CMakePackage, CudaPackage, ROCmPackage):
-    """RAJA Parallel Framework."""
+    """RAJA Performance Portability Abstractions for C++ HPC Applications."""
 
-    homepage = "http://software.llnl.gov/RAJA/"
+    homepage = "https://github.com/LLNL/RAJA"
     git      = "https://github.com/LLNL/RAJA.git"
 
     version('develop', branch='develop', submodules='True')
     version('main',  branch='main',  submodules='True')
+    version('0.14.1', tag='v0.14.1', submodules="True")
+    version('0.14.0', tag='v0.14.0', submodules="True")
+    version('0.13.0', tag='v0.13.0', submodules="True")
     version('0.12.1', tag='v0.12.1', submodules="True")
     version('0.12.0', tag='v0.12.0', submodules="True")
     version('0.11.0', tag='v0.11.0', submodules="True")
@@ -270,10 +273,14 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
                 cuda_debug_flags = "-O0 -g"
 
                 cfg.write(cmake_cache_string("BLT_CXX_STD", "c++14"))
-            else:
+            elif ("gcc" in cpp_compiler):
                 cuda_release_flags = "-O3 -Xcompiler -Ofast -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
                 cuda_reldebinf_flags = "-O3 -g -Xcompiler -Ofast -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
                 cuda_debug_flags = "-O0 -g -Xcompiler -O0 -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
+            else:
+                cuda_release_flags = "-O3 -Xcompiler -Ofast -Xcompiler -finline-functions"
+                cuda_reldebinf_flags = "-O3 -g -Xcompiler -Ofast -Xcompiler -finline-functions"
+                cuda_debug_flags = "-O0 -g -Xcompiler -O0 -Xcompiler -finline-functions"
    
             cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_RELEASE", cuda_release_flags))
             cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_RELWITHDEBINFO", cuda_reldebinf_flags))
@@ -345,18 +352,8 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
             if "+cuda" in spec:
                 cfg.write(cmake_cache_string("CMAKE_CUDA_STANDARD", "14"))
 
-        # Note 1: Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS
-        # which is used by the spack compiler wrapper.  This can go away when
-        # BLT removes -Werror from GTest flags
-        # Note 2: Tests are either built if variant is set, or if run-tests
-        # option is passed.
-        if self.spec.satisfies('%clang target=ppc64le:'):
-            cfg.write(cmake_cache_option("ENABLE_TESTS",False))
-            if 'tests=benchmarks' in spec or not 'tests=none' in spec:
-                print("MSG: no testing supported on %clang target=ppc64le:")
-        else:
-            cfg.write(cmake_cache_option("ENABLE_BENCHMARKS", 'tests=benchmarks' in spec))
-            cfg.write(cmake_cache_option("ENABLE_TESTS", not 'tests=none' in spec or self.run_tests))
+        cfg.write(cmake_cache_option("ENABLE_BENCHMARKS", 'tests=benchmarks' in spec))
+        cfg.write(cmake_cache_option("ENABLE_TESTS", not 'tests=none' in spec or self.run_tests))
 
         cfg.write(cmake_cache_path("BLT_SOURCE_DIR", spec['blt'].prefix))
         cfg.write(cmake_cache_path("camp_DIR", spec['camp'].prefix))
