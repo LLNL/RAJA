@@ -71,6 +71,7 @@ configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hpp.in
   ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp)
 
 # Configure CMake config
+include(CMakePackageConfigHelpers)
 configure_package_config_file(
   ${PROJECT_SOURCE_DIR}/share/raja/cmake/RAJA-config.cmake.in
   ${PROJECT_BINARY_DIR}/raja-config.cmake
