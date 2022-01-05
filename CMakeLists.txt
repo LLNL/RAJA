@@ -249,6 +249,8 @@ camp source repository")
       set(EXTERNAL_CAMP_INSTALL_DIR ${camp_INSTALL_PREFIX} CACHE PATH "")
     else ()
       message(STATUS "Using RAJA CAMP submodule.")
+      # propagate setting for sycl since there's no common enable to use
+      set (CAMP_ENABLE_SYCL ${RAJA_ENABLE_SYCL})
       add_subdirectory(tpl/camp)
     endif()
   endif (EXTERNAL_CAMP_SOURCE_DIR)
