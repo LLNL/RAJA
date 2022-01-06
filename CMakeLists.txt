@@ -246,7 +246,6 @@ camp source repository")
         ${camp_DIR}/lib/cmake/camp
       )
       message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
-      set(EXTERNAL_CAMP_INSTALL_DIR ${camp_INSTALL_PREFIX} CACHE PATH "")
     else ()
       message(STATUS "Using RAJA CAMP submodule.")
       # propagate setting for sycl since there's no common enable to use
@@ -278,7 +277,7 @@ install(TARGETS RAJA
   RUNTIME DESTINATION lib
   )
 
-install(EXPORT RAJA DESTINATION share/raja/cmake/)
+install(EXPORT RAJA DESTINATION lib/cmake/raja)
 
 target_include_directories(RAJA
   PUBLIC
