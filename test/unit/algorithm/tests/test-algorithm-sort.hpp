@@ -127,8 +127,7 @@ using CudaSortSorters =
 using HipSortSorters =
   camp::list<
               PolicySort<RAJA::hip_exec<128>>,
-              PolicySortPairs<RAJA::hip_exec<128>>,
-              PolicySort<RAJA::hip_exec_explicit<128, 2>>
+              PolicySortPairs<RAJA::hip_exec<128>>
             >;
 
 #endif

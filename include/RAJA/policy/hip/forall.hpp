@@ -127,13 +127,11 @@ __device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
  *
  ******************************************************************************
  */
-// HIP BLOCKS_PER_SM calculation is actually MIN_WARPS_PER_EXECUTION_UNIT
 template <size_t BlockSize,
-          size_t BlocksPerSM,
           typename Iterator,
           typename LOOP_BODY,
           typename IndexType>
-__launch_bounds__(BlockSize, (BlockSize * BlocksPerSM)/32) __global__
+__launch_bounds__(BlockSize, 1) __global__
     void forall_hip_kernel(LOOP_BODY loop_body,
                             const Iterator idx,
                             IndexType length)
@@ -157,9 +155,9 @@ __launch_bounds__(BlockSize, (BlockSize * BlocksPerSM)/32) __global__
 ////////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, size_t BlocksPerSM, bool Async>
+template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
 RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip hip_res,
-                                                    hip_exec_explicit<BlockSize, BlocksPerSM, Async>,
+                                                    hip_exec<BlockSize, Async>,
                                                     Iterable&& iter,
                                                     LoopBody&& loop_body)
 {
@@ -167,7 +165,7 @@ RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip hip
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
-  auto func = impl::forall_hip_kernel<BlockSize, BlocksPerSM, Iterator, LOOP_BODY, IndexType>;
+  auto func = impl::forall_hip_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
 
   //
   // Compute the requested iteration space size
@@ -237,12 +235,11 @@ RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(resources::Hip hip
  */
 template <typename LoopBody,
           size_t BlockSize,
-          size_t BlocksPerSM,
           bool Async,
           typename... SegmentTypes>
 RAJA_INLINE resources::EventProxy<resources::Hip>
 forall_impl(resources::Hip r,
-            ExecPolicy<seq_segit, hip_exec_explicit<BlockSize, BlocksPerSM, Async>>,
+            ExecPolicy<seq_segit, hip_exec<BlockSize, Async>>,
             const TypedIndexSet<SegmentTypes...>& iset,
             LoopBody&& loop_body)
 {
@@ -251,7 +248,7 @@ forall_impl(resources::Hip r,
     iset.segmentCall(r,
                      isi,
                      detail::CallForall(),
-                     hip_exec_explicit<BlockSize, BlocksPerSM, true>(),
+                     hip_exec<BlockSize, true>(),
                      loop_body);
   }  // iterate over segments of index set
 

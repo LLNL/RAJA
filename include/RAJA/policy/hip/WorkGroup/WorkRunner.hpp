@@ -36,27 +36,27 @@ namespace detail
  * Runs work in a storage container in order
  * and returns any per run resources
  */
-template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async,
+template <size_t BLOCK_SIZE, bool Async,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
-        RAJA::hip_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
+        RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::ordered,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
     : WorkRunnerForallOrdered<
-        RAJA::hip_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>,
-        RAJA::hip_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
+        RAJA::hip_exec_async<BLOCK_SIZE>,
+        RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::ordered,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
 {
   using base = WorkRunnerForallOrdered<
-        RAJA::hip_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>,
-        RAJA::hip_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
+        RAJA::hip_exec_async<BLOCK_SIZE>,
+        RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::ordered,
         ALLOCATOR_T,
         INDEX_T,
@@ -91,27 +91,27 @@ struct WorkRunner<
  * Runs work in a storage container in reverse order
  * and returns any per run resources
  */
-template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async,
+template <size_t BLOCK_SIZE, bool Async,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
-        RAJA::hip_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
+        RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::reverse_ordered,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
     : WorkRunnerForallReverse<
-        RAJA::hip_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>,
-        RAJA::hip_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
+        RAJA::hip_exec_async<BLOCK_SIZE>,
+        RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::reverse_ordered,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
 {
   using base = WorkRunnerForallReverse<
-        RAJA::hip_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>,
-        RAJA::hip_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
+        RAJA::hip_exec_async<BLOCK_SIZE>,
+        RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::reverse_ordered,
         ALLOCATOR_T,
         INDEX_T,
@@ -178,14 +178,12 @@ private:
   LoopBody m_body;
 };
 
-// HIP BLOCKS_PER_SM calculation is actually MIN_WARPS_PER_EXECUTION_UNIT
 template < size_t BLOCK_SIZE,
-           size_t BLOCKS_PER_SM,
            typename StorageIter,
            typename value_type,
            typename index_type,
            typename ... Args >
-__launch_bounds__(BLOCK_SIZE, (BLOCK_SIZE * BLOCKS_PER_SM)/32) __global__
+__launch_bounds__(BLOCK_SIZE, 1) __global__
     void hip_unordered_y_block_global(StorageIter iter, Args... args)
 {
   const index_type i_loop = blockIdx.y;
@@ -201,24 +199,24 @@ __launch_bounds__(BLOCK_SIZE, (BLOCK_SIZE * BLOCKS_PER_SM)/32) __global__
  * the x direction, with the number of threads in the x dimension determined
  * by the average number of iterates per loop
  */
-template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async,
+template <size_t BLOCK_SIZE, bool Async,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
-        RAJA::hip_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
+        RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
 {
-  using exec_policy = RAJA::hip_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>;
+  using exec_policy = RAJA::hip_work<BLOCK_SIZE, Async>;
   using order_policy = RAJA::policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average;
   using Allocator = ALLOCATOR_T;
   using index_type = INDEX_T;
   using resource_type = resources::Hip;
 
-  using vtable_type = Vtable<RAJA::hip_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, true>, Args...>;
+  using vtable_type = Vtable<RAJA::hip_work<BLOCK_SIZE, true>, Args...>;
 
   WorkRunner() = default;
 
@@ -294,7 +292,7 @@ struct WorkRunner<
 
     per_run_storage run_storage{};
 
-    auto func = hip_unordered_y_block_global<BLOCK_SIZE, BLOCKS_PER_SM, Iterator, value_type, index_type, Args...>;
+    auto func = hip_unordered_y_block_global<BLOCK_SIZE, Iterator, value_type, index_type, Args...>;
 
     //
     // Compute the requested iteration space size

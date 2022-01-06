@@ -32,7 +32,7 @@ namespace expt
 {
 
 template <typename BODY>
-__global__ static void launch_global_fcn(LaunchContext ctx, BODY body_in)
+__global__ void launch_global_fcn(LaunchContext ctx, BODY body_in)
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(body_in);
@@ -41,8 +41,7 @@ __global__ static void launch_global_fcn(LaunchContext ctx, BODY body_in)
 }
 
 template <bool async>
-struct LaunchExecute<RAJA::expt::hip_launch_t<async, 1>> {
-// hip_launch_t num_threads set to 1, but not used in launch of kernel
+struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
 
   template <typename BODY_IN>
   static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
@@ -152,9 +151,8 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 1>> {
 
 };
 
-// HIP BLOCKS_PER_SM calculation is actually MIN_WARPS_PER_EXECUTION_UNIT
-template <typename BODY, int num_threads, int BLOCKS_PER_SM>
-__launch_bounds__(num_threads, (num_threads * BLOCKS_PER_SM)/32) __global__
+template <typename BODY, int num_threads>
+__launch_bounds__(num_threads, 1) __global__
 static void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
 {
   using RAJA::internal::thread_privatize;
@@ -163,15 +161,15 @@ static void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
   body(ctx);
 }
 
-template <bool async, int nthreads, int BLOCKS_PER_SM>
-struct LaunchExecute<RAJA::policy::hip::expt::hip_launch_explicit_t<async, nthreads, BLOCKS_PER_SM>> {
+template <bool async, int nthreads>
+struct LaunchExecute<RAJA::policy::hip::expt::hip_launch_t<async, nthreads>> {
 
   template <typename BODY_IN>
   static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
-    auto func = launch_global_fcn_fixed<BODY, nthreads, BLOCKS_PER_SM>;
+    auto func = launch_global_fcn_fixed<BODY, nthreads>;
 
     resources::Hip hip_res = resources::Hip::get_default();
 
@@ -224,7 +222,7 @@ struct LaunchExecute<RAJA::policy::hip::expt::hip_launch_explicit_t<async, nthre
   {
     using BODY = camp::decay<BODY_IN>;
 
-    auto func = launch_global_fcn_fixed<BODY, nthreads, BLOCKS_PER_SM>;
+    auto func = launch_global_fcn<BODY, nthreads>;
 
     resources::Hip hip_res = res.get<RAJA::resources::Hip>();
 

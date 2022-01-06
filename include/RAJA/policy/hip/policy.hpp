@@ -70,24 +70,21 @@ namespace policy
 namespace hip
 {
 
-template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
-struct hip_exec_explicit : public RAJA::make_policy_pattern_launch_platform_t<
+template <size_t BLOCK_SIZE, bool Async = false>
+struct hip_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Policy::hip,
                        RAJA::Pattern::forall,
                        detail::get_launch<Async>::value,
                        RAJA::Platform::hip> {
 };
 
-namespace expt
-{
-template <bool Async, int num_threads, int BLOCKS_PER_SM = 0>
-struct hip_launch_explicit_t : public RAJA::make_policy_pattern_launch_platform_t<
+template <bool Async, int num_threads = 0>
+struct hip_launch_t : public RAJA::make_policy_pattern_launch_platform_t<
                                       RAJA::Policy::hip,
                                       RAJA::Pattern::region,
                                       detail::get_launch<Async>::value,
                                       RAJA::Platform::hip> {
 };
-}
 
 
 //
@@ -97,8 +94,8 @@ struct hip_launch_explicit_t : public RAJA::make_policy_pattern_launch_platform_
 ///
 /// WorkGroup execution policies
 ///
-template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
-struct hip_work_explicit : public RAJA::make_policy_pattern_launch_platform_t<
+template <size_t BLOCK_SIZE, bool Async = false>
+struct hip_work : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Policy::hip,
                        RAJA::Pattern::workgroup_exec,
                        detail::get_launch<Async>::value,
@@ -225,24 +222,15 @@ using hip_atomic = hip_atomic_explicit<loop_atomic>;
 }  // end namespace hip
 }  // end namespace policy
 
-using policy::hip::hip_exec_explicit;
-
-template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
-using hip_exec_explicit_async = policy::hip::hip_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, true>;
-
-template <size_t BLOCK_SIZE, bool ASYNC = false>
-using hip_exec = policy::hip::hip_exec_explicit<BLOCK_SIZE, 1, ASYNC>;
+using policy::hip::hip_exec;
 
 template <size_t BLOCK_SIZE>
-using hip_exec_async = policy::hip::hip_exec_explicit<BLOCK_SIZE, 1, true>;
+using hip_exec_async = policy::hip::hip_exec<BLOCK_SIZE, true>;
 
-using policy::hip::hip_work_explicit;
-
-template <size_t BLOCK_SIZE, bool ASYNC = false>
-using hip_work = policy::hip::hip_work_explicit<BLOCK_SIZE, 1, ASYNC>;
+using policy::hip::hip_work;
 
 template <size_t BLOCK_SIZE>
-using hip_work_async = policy::hip::hip_work_explicit<BLOCK_SIZE, 1, true>;
+using hip_work_async = policy::hip::hip_work<BLOCK_SIZE, true>;
 
 using policy::hip::hip_atomic;
 using policy::hip::hip_atomic_explicit;
@@ -271,9 +259,7 @@ using policy::hip::hip_synchronize;
 
 namespace expt
 {
-  // num_threads defaults to 1, but not expected to be used in kernel launch
-  template <bool Async, int num_threads = 1>
-  using hip_launch_t = policy::hip::expt::hip_launch_explicit_t<Async, num_threads, 1>;
+  using policy::hip::hip_launch_t;
 }
 
 /*!

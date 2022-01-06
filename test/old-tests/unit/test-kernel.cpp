@@ -3181,7 +3181,7 @@ GPU_TEST(Kernel_gpu, HipExec1c)
 
   // Loop Fusion
   using Pol = KernelPolicy<
-      HipKernelExt<hip_explicit_launch<false, 5, 3, 1>,
+      HipKernelExt<hip_explicit_launch<false, 5, 3>,
            statement::Tile<2, tile_fixed<2>, hip_block_z_loop,
                     For<0, hip_block_x_loop,
                         For<1, hip_block_y_loop,

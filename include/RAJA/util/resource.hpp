@@ -99,16 +99,6 @@ namespace RAJA
   struct get_resource<ExecPolicy<ISetIter, hip_exec<BlockSize, Async>>>{
     using type = camp::resources::Hip;
   };
-
-  template<size_t BlockSize, size_t BlocksPerSM, bool Async>
-  struct get_resource<hip_exec_explicit<BlockSize, BlocksPerSM, Async>>{
-    using type = camp::resources::Hip;
-  };
-
-  template<typename ISetIter, size_t BlockSize, size_t BlocksPerSM, bool Async>
-  struct get_resource<ExecPolicy<ISetIter, hip_exec_explicit<BlockSize, BlocksPerSM, Async>>>{
-    using type = camp::resources::Hip;
-  };
 #endif
 
 #if defined(RAJA_ENABLE_SYCL)

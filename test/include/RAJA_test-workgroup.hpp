@@ -384,8 +384,7 @@ using HipExecPolicyList =
                 #if defined(RAJA_TEST_EXHAUSTIVE)
                 RAJA::hip_work<256>,
                 #endif
-                RAJA::hip_work<1024>,
-                RAJA::hip_work_explicit<256, 2>
+                RAJA::hip_work<1024>
               >;
 using HipOrderedPolicyList = SequentialOrderedPolicyList;
 using HipOrderPolicyList   =
