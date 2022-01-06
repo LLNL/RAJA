@@ -9,6 +9,79 @@
 Version vxx.yy.zz -- Release date 20yy-mm-dd
 ============================================
 
+This release contains ...
+
+Notable changes include:
+
+  * New features / API changes:
+
+  * Build changes/improvements:
+
+  * Bug fixes/improvements:
+
+
+Version vxx.yy.zz -- Release date 20yy-mm-dd
+============================================
+
+This release contains new features, bug fixes, and build improvements. Please
+see the RAJA user guide for more information about items in this release.
+
+Notable changes include:
+
+  * New features / API changes:
+      * "Flatten" policies were added for RAJA Teams. This reshaping 
+        multi-dimensional GPU thread blocks to 1D.
+      * RAJA Teams now allows a single execution policy to be provided. 
+        Previously, it required two; e.g., a CPU policy and a GPU policy.
+      * ROCTX suport has been added to enable kernel naming with RAJA Teams.
+      * Details of CUDA and Hip errors are now added to the reported exception
+        string. Previously, this information was going to stderr.
+      * Additional feature support and improvements have been made to the 
+        RAJA SYCL back-end (please see the RAJA User Guide for more 
+        information):
+         * "nontrivially copyable" SYCL interface has been removed 
+           (i.e., 'RAJA::sycl_exec_nontrivial<...>' and 
+           'RAJA::SyclKernelNonTrivial<...>') as these constructs are no longer            needed when using recent updates to the Intel OneAPI compiler.
+           Execution is now dispatched based on the C++ 'is_trivially_copyable'
+           type trait.
+         * Support for RAJA::kernel loop tiling policies is now available for
+           SYCL execution.
+         * The naming scheme for SYCL 'group' and 'local' policies has been
+           changed from 1-based to 0-based for block dimensions.
+         * The use of the SYCL atomic OneAPI extension namespace has been 
+           cleaned up.
+
+  * Build changes/improvements:
+      * AS OF THIS RELEASE, RAJA REQUIRES A C++14-COMPLIANT COMPILER TO BUILD!! 
+      * The camp submodule is updated to v0.4.0. If you do not use the submodule
+        and build RAJA with an external version of camp, we recommend that
+        you use camp v0.4.0 or later.
+      * the "RAJA_" prefix has been added to all CMake options. Options that 
+        shadow a CMake or BLT option are turned into cmake_dependent_option 
+        calls, ensuring that they can be controlled independently and have the 
+        correct dependence on the underlying CMake or BLT support;
+        e.g., RAJA_ENABLE_CUDA requires ENABLE_CUDA.
+      * The camp_DIR export has been removed. Camp paths will be searched 
+        using the default logic which consistent with camp.
+      * The raja-config.cmake package file is now "relocatable", meaning it
+        can be moved to another directory location after an install and still
+        work. This should make it easier to use for applications that use 
+        RAJA and CMake, but do not use BLT.
+      * The RAJA Spack package was updated to include the version of this 
+        release and address some issues.
+      * Added a concept of RAJA_HIP_ACTIVE that mirrors RAJA_CUDA_ACTIVE.
+      * The CMake option RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL has been 
+        removed.  Now the choice is made based on the rocm compiler version.
+
+  * Bug fixes/improvements:
+      * RAJA View pointer type is fixed to properly allow CHAI ManagedArray 
+        type to be passed through to View instead of the raw pointer type. This
+        fixes an issue where some required CHAI memory transfers were not 
+        occurring.
+      * Various improvements, updates, and fixes (formatting, typos, etc.) 
+        in RAJA User Guide.
+
+
 Version v0.14.1 -- Release date 2021-11-15
 ============================================
 
