@@ -134,7 +134,7 @@ using CudaForallAtomicExecPols = CudaForallExecPols;
 
 #if defined(RAJA_ENABLE_HIP)
 using HipForallExecPols = camp::list< RAJA::hip_exec<128>,
-                                      RAJA::hip_exec<256>   >;
+                                      RAJA::hip_exec<256>  >;
 
 using HipForallReduceExecPols = HipForallExecPols;
 

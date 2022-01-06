@@ -75,7 +75,7 @@ using hip_explicit_launch = hip_launch<async0, num_blocks, num_threads>;
  * If num_threads is 0 then num_threads is chosen at runtime.
  */
 template <int num_threads0, bool async0>
-using hip_occ_calc_launch = hip_launch<async0, 0, num_threads0, 0>;
+using hip_occ_calc_launch = hip_launch<async0, 0, num_threads0>;
 
 namespace statement
 {
@@ -137,16 +137,6 @@ using HipKernelOccAsync =
 template <int num_threads, typename... EnclosedStmts>
 using HipKernelFixed =
     HipKernelExt<hip_explicit_launch<false, 0, num_threads>,
-                  EnclosedStmts...>;
-
-/*!
- * A RAJA::kernel statement that launches a HIP kernel with a fixed
- * number of threads (specified by num_threads) and min blocks per sm.
- * The kernel launch is synchronous.
- */
-template <size_t num_threads, size_t blocks_per_sm, typename... EnclosedStmts>
-using HipKernelFixedSM =
-    HipKernelExt<hip_explicit_launch<false, 0, num_threads, blocks_per_sm>,
                   EnclosedStmts...>;
 
 /*!

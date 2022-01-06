@@ -162,7 +162,7 @@ static void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
 }
 
 template <bool async, int nthreads>
-struct LaunchExecute<RAJA::policy::hip::expt::hip_launch_t<async, nthreads>> {
+struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
 
   template <typename BODY_IN>
   static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
@@ -222,7 +222,7 @@ struct LaunchExecute<RAJA::policy::hip::expt::hip_launch_t<async, nthreads>> {
   {
     using BODY = camp::decay<BODY_IN>;
 
-    auto func = launch_global_fcn<BODY, nthreads>;
+    auto func = launch_global_fcn<BODY>;
 
     resources::Hip hip_res = res.get<RAJA::resources::Hip>();
 
