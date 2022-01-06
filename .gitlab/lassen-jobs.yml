@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -11,12 +11,12 @@
 
 ibm_clang_9:
   variables:
-    SPEC: "%clang@9.0.0ibm"
+    SPEC: "%clang@ibm.9.0.0"
   extends: .build_and_test_on_lassen
 
 ibm_clang_9_gcc_8:
   variables:
-    SPEC: "%clang@9.0.0ibm cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
+    SPEC: "%clang@ibm.9.0.0 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
   extends: .build_and_test_on_lassen
 
 gcc_8_3_1:
@@ -42,12 +42,12 @@ xl_16_1_1_7_gcc_8_3_1:
 
 ibm_clang_9_cuda:
   variables:
-    SPEC: "+cuda cuda_arch=70 %clang@9.0.0ibm ^cuda@10.1.168"
+    SPEC: "+cuda cuda_arch=70 %clang@ibm.9.0.0 ^cuda@10.1.168"
   extends: .build_and_test_on_lassen
 
 ibm_clang_10_cuda:
   variables:
-    SPEC: "+cuda cuda_arch=70 %clang@10.0.1ibm ^cuda@10.1.168"
+    SPEC: "+cuda cuda_arch=70 %clang@ibm.10.0.1 ^cuda@10.1.168"
   extends: .build_and_test_on_lassen
 
 gcc_8_3_1_cuda:
