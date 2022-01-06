@@ -248,6 +248,8 @@ camp source repository")
       message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
     else ()
       message(STATUS "Using RAJA CAMP submodule.")
+      # propagate setting for sycl since there's no common enable to use
+      set (CAMP_ENABLE_SYCL ${RAJA_ENABLE_SYCL})
       add_subdirectory(tpl/camp)
     endif()
   endif (EXTERNAL_CAMP_SOURCE_DIR)
