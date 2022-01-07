@@ -74,22 +74,27 @@ namespace policy
 namespace cuda
 {
 
-template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_exec : public RAJA::make_policy_pattern_launch_platform_t<
+constexpr const size_t MIN_BLOCKS_PER_SM = 1;
+constexpr const size_t MAX_BLOCKS_PER_SM = 32;
+
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
+struct cuda_exec_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Policy::cuda,
                        RAJA::Pattern::forall,
                        detail::get_launch<Async>::value,
                        RAJA::Platform::cuda> {
 };
 
-template <bool Async, int num_threads = 0>
-struct cuda_launch_t : public RAJA::make_policy_pattern_launch_platform_t<
-                       RAJA::Policy::cuda,
-                       RAJA::Pattern::region,
-                       detail::get_launch<Async>::value,
-                       RAJA::Platform::cuda> {
+namespace expt
+{
+template <bool Async, int num_threads, size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM>
+struct cuda_launch_explicit_t : public RAJA::make_policy_pattern_launch_platform_t<
+                                RAJA::Policy::cuda,
+                                RAJA::Pattern::region,
+                                detail::get_launch<Async>::value,
+                                RAJA::Platform::cuda> {
 };
-
+}
 
 
 
@@ -101,8 +106,8 @@ struct cuda_launch_t : public RAJA::make_policy_pattern_launch_platform_t<
 ///
 /// WorkGroup execution policies
 ///
-template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_work : public RAJA::make_policy_pattern_launch_platform_t<
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
+struct cuda_work_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Policy::cuda,
                        RAJA::Pattern::workgroup_exec,
                        detail::get_launch<Async>::value,
@@ -220,15 +225,24 @@ struct cuda_synchronize : make_policy_pattern_launch_t<Policy::cuda,
 }  // end namespace cuda
 }  // end namespace policy
 
-using policy::cuda::cuda_exec;
+using policy::cuda::cuda_exec_explicit;
+
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
+using cuda_exec_explicit_async = policy::cuda::cuda_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, bool ASYNC = false>
+using cuda_exec = policy::cuda::cuda_exec_explicit<BLOCK_SIZE, policy::cuda::MIN_BLOCKS_PER_SM, ASYNC>;
 
 template <size_t BLOCK_SIZE>
-using cuda_exec_async = policy::cuda::cuda_exec<BLOCK_SIZE, true>;
+using cuda_exec_async = policy::cuda::cuda_exec_explicit<BLOCK_SIZE, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
-using policy::cuda::cuda_work;
+using policy::cuda::cuda_work_explicit;
+
+template <size_t BLOCK_SIZE, bool ASYNC = false>
+using cuda_work = policy::cuda::cuda_work_explicit<BLOCK_SIZE, policy::cuda::MIN_BLOCKS_PER_SM, ASYNC>;
 
 template <size_t BLOCK_SIZE>
-using cuda_work_async = policy::cuda::cuda_work<BLOCK_SIZE, true>;
+using cuda_work_async = policy::cuda::cuda_work_explicit<BLOCK_SIZE, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
 using policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average;
 
@@ -255,7 +269,9 @@ using policy::cuda::cuda_synchronize;
 
 namespace expt
 {
-  using policy::cuda::cuda_launch_t;
+  // num_threads defaults to 1, but not expected to be used in kernel launch
+  template <bool Async, int num_threads = 1>
+  using cuda_launch_t = policy::cuda::expt::cuda_launch_explicit_t<Async, num_threads, policy::cuda::MIN_BLOCKS_PER_SM>;
 }
 
 
