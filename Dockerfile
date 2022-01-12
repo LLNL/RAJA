@@ -86,7 +86,7 @@ ENV HCC_AMDGPU_TARGET=gfx900
 RUN mkdir build && cd build && cmake -DROCM_ROOT_DIR=/opt/rocm/include -DHIP_RUNTIME_INCLUDE_DIRS="/opt/rocm/include;/opt/rocm/hip/include" -DENABLE_HIP=On -DENABLE_OPENMP=Off -DENABLE_CUDA=Off -DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off -DHIP_HIPCC_FLAGS=-fPIC ..
 RUN cd build && make -j 4
 
-FROM axom/compilers:oneapi-2021.2.0 AS sycl
+FROM axom/compilers:oneapi-2022.0.1 AS sycl
 ENV GTEST_COLOR=1
 COPY --chown=axom:axom . /home/axom/workspace
 WORKDIR /home/axom/workspace
