@@ -161,7 +161,6 @@ static void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
   body(ctx);
 }
 
-
 template <bool async, int nthreads>
 struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
 
