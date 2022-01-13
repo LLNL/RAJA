@@ -346,6 +346,7 @@ private:
   index_type m_total_iterations = 0;
 };
 
+
 #endif
 
 }  // namespace detail

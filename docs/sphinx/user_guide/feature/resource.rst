@@ -130,6 +130,7 @@ execution policy suport.
  ======== ==============================
  Cuda     | cuda_exec
           | cuda_exec_async
+          | cuda_exec_explicit
  Hip      | hip_exec
           | hip_exec_async
  Omp*     | omp_target_parallel_for_exec
