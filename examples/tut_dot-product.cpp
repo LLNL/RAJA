@@ -194,7 +194,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _rajasycl_dotprod_start
   RAJA::ReduceSum<RAJA::sycl_reduce, double> hpdot(0.0);
 
-  RAJA::forall<RAJA::sycl_exec_nontrivial<SYCL_BLOCK_SIZE, false>>(RAJA::RangeSegment(0, N),
+  RAJA::forall<RAJA::sycl_exec<SYCL_BLOCK_SIZE, false>>(RAJA::RangeSegment(0, N),
     [=] RAJA_DEVICE (int i) {
     hpdot += a[i] * b[i];
   });

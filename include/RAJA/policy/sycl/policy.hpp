@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -72,15 +72,6 @@ struct sycl_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::sycl> {
 };
 
-template <size_t BLOCK_SIZE, bool Async = false>
-struct sycl_exec_nontrivial : public RAJA::make_policy_pattern_launch_platform_t<
-                       RAJA::Policy::sycl,
-                       RAJA::Pattern::forall,
-                       detail::get_launch<Async>::value,
-                       RAJA::Platform::sycl> {
-};
-
-
 struct sycl_reduce
     : make_policy_pattern_t<RAJA::Policy::sycl, RAJA::Pattern::reduce> {
 };
@@ -89,7 +80,6 @@ struct sycl_reduce
 }  // namespace policy
 
 using policy::sycl::sycl_exec;
-using policy::sycl::sycl_exec_nontrivial;
 using policy::sycl::sycl_reduce;
 
 /*!
