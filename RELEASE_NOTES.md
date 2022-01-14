@@ -36,6 +36,9 @@ Notable changes include:
       * ROCTX suport has been added to enable kernel naming with RAJA Teams.
       * Details of CUDA and Hip errors are now added to the reported exception
         string. Previously, this information was going to stderr.
+      * All CUDA execution policies have been expanded to allow users to specify
+        a minimum number of blocks per SM, if they wish to do that. An analogous
+        capability for Hip execution policies is being hashed out. 
       * Additional feature support and improvements have been made to the 
         RAJA SYCL back-end (please see the RAJA User Guide for more 
         information):
@@ -54,8 +57,8 @@ Notable changes include:
   * Build changes/improvements:
       * AS OF THIS RELEASE, RAJA REQUIRES A C++14-COMPLIANT COMPILER TO BUILD!! 
       * The camp submodule is updated to v0.4.0. If you do not use the submodule
-        and build RAJA with an external version of camp, we recommend that
-        you use camp v0.4.0 or later.
+        and build RAJA with an external version of camp, you will need to
+        use camp v0.4.0 or newer.
       * the "RAJA_" prefix has been added to all CMake options. Options that 
         shadow a CMake or BLT option are turned into cmake_dependent_option 
         calls, ensuring that they can be controlled independently and have the 
@@ -78,6 +81,8 @@ Notable changes include:
         type to be passed through to View instead of the raw pointer type. This
         fixes an issue where some required CHAI memory transfers were not 
         occurring.
+      * RAJA StaticLayout was fixed to avoid compiler warnings due to
+        converting -1 to an unsigned integral type.
       * Various improvements, updates, and fixes (formatting, typos, etc.) 
         in RAJA User Guide.
 
