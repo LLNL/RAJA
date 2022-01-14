@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-set(NESTED_LOOPTYPES ReduceWarp )
+set(NESTED_LOOPTYPES ReduceWarp ReduceMask )
 
 set( USE_RESOURCE "-resource-" "-" )
 
@@ -25,10 +25,8 @@ endif()
 foreach( NESTED_LOOP_BACKEND ${KERNEL_BACKENDS} )
   foreach( RESOURCE ${USE_RESOURCE} )
     foreach( NESTED_LOOP_TYPE ${NESTED_LOOPTYPES} )
-      if( ${NESTED_LOOP_TYPE} STREQUAL "ReduceWarp" AND # allow all ReduceWarp tests
-          (${NESTED_LOOP_BACKEND} STREQUAL "Cuda" OR ${NESTED_LOOP_BACKEND} STREQUAL "Hip" ) # allow only device tests
+      if( (${NESTED_LOOP_BACKEND} STREQUAL "Cuda" OR ${NESTED_LOOP_BACKEND} STREQUAL "Hip" ) # allow only device tests
         )
-        # Note on BlockReduceWarp: Inherent kernel reduction functionality does not exist for - OpenMP, OpenMPTarget, and TBB.
         configure_file( test-kernel-warp-thread.cpp.in
                         test-kernel${RESOURCE}warp-thread-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
 
@@ -52,7 +50,7 @@ if(RAJA_ENABLE_TARGET_OPENMP)
   if(RAJA_TEST_OPENMP_TARGET_SUBSET)
 
     set(NESTED_LOOP_BACKEND OpenMPTarget)
-    set(NESTED_LOOPTYPES ReduceWarp)
+    set(NESTED_LOOPTYPES ReduceWarp ReduceMask)
 
     set(RESOURCE "-")
     foreach( NESTED_LOOP_TYPE ${NESTED_LOOPTYPES} )

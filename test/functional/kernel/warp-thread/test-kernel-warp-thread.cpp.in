@@ -21,7 +21,11 @@ using CudaKernelWarpThreadExecPols = camp::list<
     // Device Depth 1 ReduceWarp Exec Pols
     NestedLoopData<DEVICE_DEPTH_1_REDUCESUM_WARP, RAJA::cuda_warp_loop >,
     NestedLoopData<DEVICE_DEPTH_1_REDUCESUM_WARPDIRECT_TILE, RAJA::cuda_warp_direct >,
-    NestedLoopData<DEVICE_DEPTH_2_REDUCESUM_WARP, RAJA::cuda_warp_direct >
+    NestedLoopData<DEVICE_DEPTH_2_REDUCESUM_WARP, RAJA::cuda_warp_direct >,
+
+    // Device Depth 2 ReduceMask Exec Pols
+    NestedLoopData<DEVICE_DEPTH_2_REDUCESUM_WARPMASK, RAJA::cuda_thread_masked_direct<RAJA::BitMask<6,0>>, RAJA::cuda_thread_masked_loop<RAJA::BitMask<2,6>> >,
+    NestedLoopData<DEVICE_DEPTH_2_REDUCESUM_WARPMASK_FORI, RAJA::cuda_thread_masked_direct<RAJA::BitMask<6,0>>, RAJA::cuda_thread_masked_loop<RAJA::BitMask<2,6>> >
 
   >;
 
