@@ -83,7 +83,7 @@ cl::sycl::range<1> getGridDim(size_t len, size_t block_size)
 //
 
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async,
-          typename std::enable_if<std::is_trivially_copyable_v<LoopBody>,bool>::type = true>
+          typename std::enable_if<std::is_trivially_copyable<LoopBody>{},bool>::type = true>
 RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl &sycl_res,
                                                                 sycl_exec<BlockSize, Async>,
                                                                 Iterable&& iter,
@@ -139,7 +139,7 @@ RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl 
 }
 
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async,
-          typename std::enable_if<!std::is_trivially_copyable_v<LoopBody>,bool>::type = true>
+          typename std::enable_if<!std::is_trivially_copyable<LoopBody>{},bool>::type = true>
 RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &sycl_res,
                                                     sycl_exec<BlockSize, Async>,
                                                     Iterable&& iter,
