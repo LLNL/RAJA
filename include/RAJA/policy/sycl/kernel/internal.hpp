@@ -47,12 +47,16 @@ struct LaunchDims {
   sycl_dim_3_t group;
   sycl_dim_3_t local;
   sycl_dim_3_t global;
+  sycl_dim_3_t min_groups;
+  sycl_dim_3_t min_locals;
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   LaunchDims() : group{0,0,0},
                  local{1,1,1},
-                 global{1,1,1} {}
+                 global{1,1,1},
+                 min_groups{0,0,0},
+                 min_locals{0,0,0} {}
 
   RAJA_INLINE
   RAJA_HOST_DEVICE

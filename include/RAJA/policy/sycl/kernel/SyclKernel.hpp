@@ -108,7 +108,7 @@ void SyclKernelLauncher(Data data, cl::sycl::nd_item<3> item)
  * Helper class that handles SYCL kernel launching, and computing
  * maximum number of threads/blocks
  */
-template<bool, typename LaunchPolicy, typename StmtList, typename Data, typename Types>
+template<bool IsTriviallyCopyable, typename LaunchPolicy, typename StmtList, typename Data, typename Types>
 struct SyclLaunchHelper;
 
 /*!
