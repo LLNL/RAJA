@@ -5,21 +5,21 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_WARP_THREAD_REDUCESUM_HPP__
-#define __TEST_WARP_THREAD_REDUCESUM_HPP__
+#ifndef __TEST_WARP_THREAD_REDUCEWARP_HPP__
+#define __TEST_WARP_THREAD_REDUCEWARP_HPP__
 
-#include "warp-thread-ReduceSum-impl.hpp"
+#include "warp-thread-ReduceWarp-impl.hpp"
 
 //
 //
-// Setup the Warp Reduction ReduceSum g-tests.
+// Setup the Warp Reduction ReduceWarp g-tests.
 //
 //
-TYPED_TEST_SUITE_P(KernelWarpThreadReduceSumTest);
+TYPED_TEST_SUITE_P(KernelWarpThreadReduceWarpTest);
 template <typename T>
-class KernelWarpThreadReduceSumTest : public ::testing::Test {};
+class KernelWarpThreadReduceWarpTest : public ::testing::Test {};
 
-TYPED_TEST_P(KernelWarpThreadReduceSumTest, WarpThreadReduceSumKernel) {
+TYPED_TEST_P(KernelWarpThreadReduceWarpTest, WarpThreadReduceWarpKernel) {
   using WORKING_RES = typename camp::at<TypeParam, camp::num<0>>::type;
   using REDUCE_POL = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POL_DATA = typename camp::at<TypeParam, camp::num<2>>::type;
@@ -39,7 +39,7 @@ TYPED_TEST_P(KernelWarpThreadReduceSumTest, WarpThreadReduceSumKernel) {
   KernelWarpThreadTest<WORKING_RES, EXEC_POLICY, REDUCE_POL, USE_RES>( LOOP_TYPE(), 2345);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelWarpThreadReduceSumTest,
-                            WarpThreadReduceSumKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelWarpThreadReduceWarpTest,
+                            WarpThreadReduceWarpKernel);
 
-#endif  // __TEST_WARP_THREAD_REDUCESUM_HPP__
+#endif  // __TEST_WARP_THREAD_REDUCEWARP_HPP__

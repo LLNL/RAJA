@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __WARP_THREAD_REDUCESUM_IMPL_HPP__
-#define __WARP_THREAD_REDUCESUM_IMPL_HPP__
+#ifndef __WARP_THREAD_REDUCEWARP_IMPL_HPP__
+#define __WARP_THREAD_REDUCEWARP_IMPL_HPP__
 
 #include <numeric>
 
@@ -46,10 +46,10 @@ typename std::enable_if< !USE_RESOURCE >::type call_kernel_param(SEGMENTS&& segs
 
 //
 //
-// Define list of nested loop types the ReduceSum test supports.
+// Define list of nested loop types the ReduceWarp test supports.
 //
 //
-using ReduceSumSupportedLoopTypeList = camp::list<
+using ReduceWarpSupportedLoopTypeList = camp::list<
   DEVICE_DEPTH_1_REDUCESUM_WARP,
   DEVICE_DEPTH_1_REDUCESUM_WARPDIRECT_TILE,
   DEVICE_DEPTH_2_REDUCESUM_WARP
@@ -145,7 +145,7 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_1_REDUCESUM_WARPDIRECT_TILE&, Args.
 
 //
 //
-// Defining the Kernel Loop structure for ReduceSum Nested Loop Tests.
+// Defining the Kernel Loop structure for ReduceWarp Nested Loop Tests.
 //
 //
 template<typename POLICY_TYPE, typename REDUCE_POL, typename POLICY_DATA>
@@ -195,4 +195,4 @@ struct WarpThreadExec<DEVICE_DEPTH_2_REDUCESUM_WARP, REDUCE_POL, POLICY_DATA> {
 
 #endif  // RAJA_ENABLE_CUDA or RAJA_ENABLE_HIP
 
-#endif  // __WARP_THREAD_REDUCESUM_IMPL_HPP__
+#endif  // __WARP_THREAD_REDUCEWARP_IMPL_HPP__

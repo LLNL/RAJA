@@ -18,7 +18,7 @@
 #if defined(RAJA_ENABLE_CUDA)
 using CudaKernelWarpThreadExecPols = camp::list<
 
-    // Device Depth 1 ReduceSum Exec Pols
+    // Device Depth 1 ReduceWarp Exec Pols
     NestedLoopData<DEVICE_DEPTH_1_REDUCESUM_WARP, RAJA::cuda_warp_loop >,
     NestedLoopData<DEVICE_DEPTH_1_REDUCESUM_WARPDIRECT_TILE, RAJA::cuda_warp_direct >,
     NestedLoopData<DEVICE_DEPTH_2_REDUCESUM_WARP, RAJA::cuda_warp_direct >
@@ -31,10 +31,10 @@ using CudaKernelWarpThreadExecPols = camp::list<
   
 //using HipKernelNestedLoopExecPols = camp::list<
 //
-//    // Device Depth 1 ReduceSum Exec Pols
+//    // Device Depth 1 ReduceWarp Exec Pols
 //    NestedLoopData<DEVICE_DEPTH_1_REDUCESUM, RAJA::hip_thread_x_loop, RAJA::hip_block_reduce >,
 //
-//    // Device Depth 3 ReduceSum Exec Pols
+//    // Device Depth 3 ReduceWarp Exec Pols
 //    NestedLoopData<DEVICE_DEPTH_3_REDUCESUM, RAJA::hip_block_x_loop, RAJA::hip_thread_y_loop, RAJA::hip_thread_z_loop >,
 //    NestedLoopData<DEVICE_DEPTH_3_REDUCESUM_SEQ_OUTER, RAJA::seq_exec, RAJA::hip_block_x_loop, RAJA::hip_thread_y_loop >,
 //    NestedLoopData<DEVICE_DEPTH_3_REDUCESUM_SEQ_INNER, RAJA::hip_block_x_loop, RAJA::hip_thread_x_loop, RAJA::seq_exec >
