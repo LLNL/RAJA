@@ -1,5 +1,5 @@
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2016-21, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2016-22, Lawrence Livermore National Security, LLC)
 [comment]: # (and RAJA project contributors. See the RAJA/LICENSE file)
 [comment]: # (for details.)
 [comment]: # 
@@ -8,6 +8,13 @@
 
 Version vxx.yy.zz -- Release date 20yy-mm-dd
 ============================================
+
+Version v0.14.1 -- Release date 2021-11-15
+============================================
+
+This is a patch release for v0.14.0. It updates the camp submodule to v0.2.3 and 
+fixes a couple of broken macro include guards in RAJA.
+
 
 Version v0.14.0 -- Release date 2021-08-20
 ============================================

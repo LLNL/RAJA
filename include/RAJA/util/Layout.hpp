@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,9 +20,9 @@
 
 #include "RAJA/config.hpp"
 
+#include <cassert>
 #include <iostream>
 #include <limits>
-#include <cassert>
 
 #include "RAJA/index/IndexValue.hpp"
 
@@ -157,14 +157,15 @@ public:
   }
 
   template <camp::idx_t N, typename Idx, typename... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck(Idx idx, Indices... indices) const
+  RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck(Idx idx,
+                                                Indices... indices) const
   {
     if(sizes[N] > 0 && !(0<=idx && idx < static_cast<Idx>(sizes[N])))
     {
       BoundsCheckError<N>(idx);
     }
     RAJA_UNUSED_VAR(idx);
-    BoundsCheck<N+1>(indices...);
+    BoundsCheck<N + 1>(indices...);
   }
 
   /*!
@@ -176,8 +177,8 @@ public:
    */
 
   template <typename... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE RAJA_BOUNDS_CHECK_constexpr IdxLin operator()(
-      Indices... indices) const
+  RAJA_INLINE RAJA_HOST_DEVICE RAJA_BOUNDS_CHECK_constexpr IdxLin
+  operator()(Indices... indices) const
   {
 #if defined (RAJA_BOUNDS_CHECK_INTERNAL)
     BoundsCheck<0>(indices...);
@@ -216,8 +217,9 @@ public:
      }
 #endif
 
-    camp::sink((indices = (camp::decay<Indices>)((linear_index / inv_strides[RangeInts]) %
-                                   inv_mods[RangeInts]))...);
+    camp::sink((indices = 
+      (camp::decay<Indices>)((linear_index / inv_strides[RangeInts]) %
+                             inv_mods[RangeInts]))...);
   }
 
   /*!

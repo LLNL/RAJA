@@ -13,7 +13,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -130,10 +130,11 @@ __device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
  ******************************************************************************
  */
 template <size_t BlockSize,
+          size_t BlocksPerSM,
           typename Iterator,
           typename LOOP_BODY,
           typename IndexType>
-__launch_bounds__(BlockSize, 1) __global__
+__launch_bounds__(BlockSize, BlocksPerSM) __global__
     void forall_cuda_kernel(LOOP_BODY loop_body,
                             const Iterator idx,
                             IndexType length)
@@ -157,9 +158,9 @@ __launch_bounds__(BlockSize, 1) __global__
 ////////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
+template <typename Iterable, typename LoopBody, size_t BlockSize, size_t BlocksPerSM, bool Async>
 RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda cuda_res,
-                                                    cuda_exec<BlockSize, Async>,
+                                                    cuda_exec_explicit<BlockSize, BlocksPerSM, Async>,
                                                     Iterable&& iter,
                                                     LoopBody&& loop_body)
 {
@@ -167,7 +168,7 @@ RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda c
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
-  auto func = impl::forall_cuda_kernel<BlockSize, Iterator, LOOP_BODY, IndexType>;
+  auto func = impl::forall_cuda_kernel<BlockSize, BlocksPerSM, Iterator, LOOP_BODY, IndexType>;
 
   //
   // Compute the requested iteration space size
@@ -238,11 +239,12 @@ RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(resources::Cuda c
  */
 template <typename LoopBody,
           size_t BlockSize,
+          size_t BlocksPerSM,
           bool Async,
           typename... SegmentTypes>
 RAJA_INLINE resources::EventProxy<resources::Cuda>
 forall_impl(resources::Cuda r,
-            ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
+            ExecPolicy<seq_segit, cuda_exec_explicit<BlockSize, BlocksPerSM, Async>>,
             const TypedIndexSet<SegmentTypes...>& iset,
             LoopBody&& loop_body)
 {
@@ -251,7 +253,7 @@ forall_impl(resources::Cuda r,
     iset.segmentCall(r,
                      isi,
                      detail::CallForall(),
-                     cuda_exec<BlockSize, true>(),
+                     cuda_exec_explicit<BlockSize, BlocksPerSM, true>(),
                      loop_body);
   }  // iterate over segments of index set
 

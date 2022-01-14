@@ -27,7 +27,7 @@ jobs:
   - task: CMake@1
     inputs:
       workingDir: 'build'
-      cmakeArgs: '--build . --config Release --verbose'
+      cmakeArgs: '--build . --config Release --verbose -j 4'
 #   - task: CmdLine@2
 #     inputs:
 #       script: 'ctest.exe -T test -C Release'
@@ -67,7 +67,7 @@ jobs:
     vmImage: 'ubuntu-latest'
   variables:
     DOCKER_BUILDKIT: '1'
-    CMAKE_EXTRA_FLAGS: '-DENABLE_DEVELOPER_BENCHMARKS=On -DENABLE_DEVELOPER_DEFAULTS=On -DCMAKE_CXX_STANDARD=11'
+    CMAKE_EXTRA_FLAGS: '-DENABLE_DEVELOPER_BENCHMARKS=On -DENABLE_DEVELOPER_DEFAULTS=On -DCMAKE_CXX_STANDARD=14'
   steps:
   - checkout: self
     clean: boolean
@@ -107,7 +107,7 @@ jobs:
       cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../'
   - script: |
       cd build
-      make
+      make -j 4
     displayName: 'OSX Build'
     condition: eq( variables['Agent.OS'], 'Darwin')
 #  - script: |

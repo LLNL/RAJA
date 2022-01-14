@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -239,15 +239,19 @@ camp source repository")
     add_subdirectory(${EXTERNAL_CAMP_SOURCE_DIR}
                      ${CMAKE_CURRENT_BINARY_DIR}/tpl/camp)
   else (EXTERNAL_CAMP_SOURCE_DIR)
-    find_package(camp QUIET)
-    if (NOT camp_FOUND)
-      message(STATUS "Using RAJA CAMP submodule.")
-      add_subdirectory(tpl/camp)
-    else (NOT camp_FOUND)
+    if (DEFINED camp_DIR)
+      find_package(camp REQUIRED
+        NO_DEFAULT_PATH
+        PATHS ${camp_DIR}
+        ${camp_DIR}/lib/cmake/camp
+      )
       message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
-      # Save the path so it can be used in raja-config.cmake
-      set(EXTERNAL_CAMP_INSTALL_DIR ${camp_INSTALL_PREFIX} CACHE PATH "")
-    endif(NOT camp_FOUND)
+    else ()
+      message(STATUS "Using RAJA CAMP submodule.")
+      # propagate setting for sycl since there's no common enable to use
+      set (CAMP_ENABLE_SYCL ${RAJA_ENABLE_SYCL})
+      add_subdirectory(tpl/camp)
+    endif()
   endif (EXTERNAL_CAMP_SOURCE_DIR)
 endif (NOT TARGET camp)
 
@@ -273,7 +277,7 @@ install(TARGETS RAJA
   RUNTIME DESTINATION lib
   )
 
-install(EXPORT RAJA DESTINATION share/raja/cmake/)
+install(EXPORT RAJA DESTINATION lib/cmake/raja)
 
 target_include_directories(RAJA
   PUBLIC
