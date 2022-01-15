@@ -38,7 +38,7 @@ using CudaKernelWarpThreadExecPols = camp::list<
 
 #if defined(RAJA_ENABLE_HIP)
   
-using HipKernelNestedLoopExecPols = camp::list<
+using HipKernelWarpThreadExecPols = camp::list<
 
     // Device Depth 1 WarpLoop Exec Pols
     NestedLoopData<DEVICE_DEPTH_1_REDUCESUM_WARP, RAJA::hip_warp_loop >,
