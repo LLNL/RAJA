@@ -5,19 +5,9 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-set(NESTED_LOOPTYPES ReduceWarp ReduceMask )
+set(NESTED_LOOPTYPES WarpLoop ReduceMask ReduceWarp)
 
 set( USE_RESOURCE "-resource-" "-" )
-
-#
-# If building a subset of openmp target tests, remove the back-end from
-# from the list of tests to generate here.
-#
-if(RAJA_ENABLE_TARGET_OPENMP)
-  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
-    list(REMOVE_ITEM KERNEL_BACKENDS OpenMPTarget)
-  endif()
-endif()
 
 #
 # Generate kernel region basic tests for each enabled RAJA back-end.
@@ -40,30 +30,5 @@ foreach( NESTED_LOOP_BACKEND ${KERNEL_BACKENDS} )
     endforeach()
   endforeach()
 endforeach()
-
-unset( NESTED_LOOPTYPES )
-
-#
-# If building a subset of openmp target tests, add tests to build here.
-#
-if(RAJA_ENABLE_TARGET_OPENMP)
-  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
-
-    set(NESTED_LOOP_BACKEND OpenMPTarget)
-    set(NESTED_LOOPTYPES ReduceWarp ReduceMask)
-
-    set(RESOURCE "-")
-    foreach( NESTED_LOOP_TYPE ${NESTED_LOOPTYPES} )
-      configure_file( test-kernel-warp-thread.cpp.in
-                      test-kernel-warp-thread-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
-      raja_add_test( NAME test-kernel-warp-thread-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}
-                     SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-warp-thread-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
-
-      target_include_directories(test-kernel-warp-thread-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.exe
-                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-  endforeach()
-
-  endif()
-endif()
 
 unset( NESTED_LOOPTYPES )

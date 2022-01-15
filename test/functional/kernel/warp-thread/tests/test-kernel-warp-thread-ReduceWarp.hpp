@@ -36,7 +36,8 @@ TYPED_TEST_P(KernelWarpThreadReduceWarpTest, WarpThreadReduceWarpKernel) {
   constexpr bool USE_RES = false;
 
   // For double nested loop tests the third arg is ignored.
-  KernelWarpThreadTest<WORKING_RES, EXEC_POLICY, REDUCE_POL, USE_RES>( LOOP_TYPE(), 2345);
+  // Integer argument needs to be divisible by 10, and 16.
+  KernelWarpThreadTest<WORKING_RES, EXEC_POLICY, REDUCE_POL, USE_RES>( LOOP_TYPE(), 4000 );
 }
 
 REGISTER_TYPED_TEST_SUITE_P(KernelWarpThreadReduceWarpTest,
