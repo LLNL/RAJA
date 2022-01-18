@@ -61,8 +61,7 @@ RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release .. && \
     make -j 6 &&\
     ctest -T test --output-on-failure
 
-# Broken container is built w/ gcc9, which is incompatible with nvcc10 
-FROM ghcr.io/rse-ops/cuda-ubuntu-20.04:cuda-10.1.243 AS nvcc10
+FROM ghcr.io/rse-ops/cuda:cuda-10.1.243-ubuntu-18.04 AS nvcc10
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
