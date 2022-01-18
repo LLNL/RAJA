@@ -198,7 +198,7 @@ if (RAJA_ENABLE_HIP)
   set(raja_depends
     ${raja_depends}
     hip)
-  if(ENABLE_ROCTX)
+  if(RAJA_ENABLE_ROCTX)
       set(raja_depends
       ${raja_depends}
       roctx)
