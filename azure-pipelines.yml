@@ -27,7 +27,7 @@ jobs:
   - task: CMake@1
     inputs:
       workingDir: 'build'
-      cmakeArgs: '--build . --config Release --verbose'
+      cmakeArgs: '--build . --config Release --verbose -j 4'
 #   - task: CmdLine@2
 #     inputs:
 #       script: 'ctest.exe -T test -C Release'
@@ -109,7 +109,7 @@ jobs:
       cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../'
   - script: |
       cd build
-      make
+      make -j 4
     displayName: 'OSX Build'
     condition: eq( variables['Agent.OS'], 'Darwin')
 #  - script: |

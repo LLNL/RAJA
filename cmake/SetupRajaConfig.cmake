@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -71,11 +71,24 @@ configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hpp.in
   ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp)
 
 # Configure CMake config
-configure_file(${PROJECT_SOURCE_DIR}/share/raja/cmake/RAJA-config.cmake.in
-  ${PROJECT_BINARY_DIR}/share/raja/cmake/raja-config.cmake @ONLY)
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  ${PROJECT_SOURCE_DIR}/share/raja/cmake/RAJA-config.cmake.in
+  ${PROJECT_BINARY_DIR}/raja-config.cmake
+  PATH_VARS CMAKE_INSTALL_PREFIX
+  INSTALL_DESTINATION lib/cmake/raja)
 
-install(FILES ${PROJECT_BINARY_DIR}/share/raja/cmake/raja-config.cmake
-  DESTINATION share/raja/cmake/)
+install(FILES
+  ${PROJECT_BINARY_DIR}/raja-config.cmake
+  DESTINATION lib/cmake/raja)
+
+write_basic_package_version_file(
+  ${PROJECT_BINARY_DIR}/raja-config-version.cmake
+  COMPATIBILITY SameMajorVersion)
+
+install(FILES
+  "${PROJECT_BINARY_DIR}/raja-config-version.cmake"
+  DESTINATION lib/cmake/raja)
 
 # Setup pkg-config
 find_package(PkgConfig QUIET)

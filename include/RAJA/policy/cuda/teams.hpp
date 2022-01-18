@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -41,7 +41,8 @@ __global__ void launch_global_fcn(LaunchContext ctx, BODY body_in)
 }
 
 template <bool async>
-struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
+struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 1>> {
+// cuda_launch_t num_threads set to 1, but not used in launch of kernel
 
   template <typename BODY_IN>
   static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
@@ -87,9 +88,7 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        {
-          RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, cuda_res, async, ctx.kernel_name);
-        }
+        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, cuda_res, async, ctx.kernel_name);
       }
 
       RAJA_FT_END;
@@ -153,10 +152,11 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
 
     return resources::EventProxy<resources::Resource>(res);
   }
+
 };
 
-template <typename BODY, int num_threads>
-__launch_bounds__(num_threads, 1) __global__
+template <typename BODY, int num_threads, size_t BLOCKS_PER_SM>
+__launch_bounds__(num_threads, BLOCKS_PER_SM) __global__
     void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
 {
   using RAJA::internal::thread_privatize;
@@ -165,16 +165,15 @@ __launch_bounds__(num_threads, 1) __global__
   body(ctx);
 }
 
-
-template <bool async, int nthreads>
-struct LaunchExecute<RAJA::expt::cuda_launch_t<async, nthreads>> {
+template <bool async, int nthreads, size_t BLOCKS_PER_SM>
+struct LaunchExecute<RAJA::policy::cuda::expt::cuda_launch_explicit_t<async, nthreads, BLOCKS_PER_SM>> {
 
   template <typename BODY_IN>
   static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
-    auto func = launch_global_fcn_fixed<BODY, nthreads>;
+    auto func = launch_global_fcn_fixed<BODY, nthreads, BLOCKS_PER_SM>;
 
     resources::Cuda cuda_res = resources::Cuda::get_default();
 
@@ -227,7 +226,7 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, nthreads>> {
   {
     using BODY = camp::decay<BODY_IN>;
 
-    auto func = launch_global_fcn<BODY>;
+    auto func = launch_global_fcn_fixed<BODY, nthreads, BLOCKS_PER_SM>;
 
     /*Get the concrete resource */
     resources::Cuda cuda_res = res.get<RAJA::resources::Cuda>();

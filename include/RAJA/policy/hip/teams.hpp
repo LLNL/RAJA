@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -160,7 +160,6 @@ static void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
   auto& body = privatizer.get_priv();
   body(ctx);
 }
-
 
 template <bool async, int nthreads>
 struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
