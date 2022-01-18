@@ -20,7 +20,7 @@ FROM axom/compilers:gcc-5 AS gcc5-debug
 ENV GTEST_COLOR=1
 COPY --chown=axom:axom . /home/axom/workspace
 WORKDIR /home/axom/workspace
-RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Debug -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_COVERAGE=On -DRAJA_ENABLE_TBB=On ..
+RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Debug -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DRAJA_ENABLE_COVERAGE=On -DRAJA_ENABLE_TBB=On ..
 RUN cd build && make -j 4
 RUN cd build && ctest -T test --output-on-failure
 
