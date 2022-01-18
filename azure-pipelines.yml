@@ -87,7 +87,7 @@ jobs:
   - script: |
       bash <(curl -s https://raw.githubusercontent.com/codecov/codecov-bash/0b376529f626b50b7d4a9fb734e0e50d28b9b91e/codecov) >& /dev/null
     displayName: 'Upload code coverage'
-    condition: eq( variables['docker_target'], 'gcc')
+    condition: eq( variables['docker_target'], 'gcc5-debug')
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'cTest'
