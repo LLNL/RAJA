@@ -13,7 +13,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -82,7 +82,8 @@ cl::sycl::range<1> getGridDim(size_t len, size_t block_size)
 ////////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
+template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async,
+          typename std::enable_if<std::is_trivially_copyable<LoopBody>{},bool>::type = true>
 RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl &sycl_res,
                                                                 sycl_exec<BlockSize, Async>,
                                                                 Iterable&& iter,
@@ -137,9 +138,10 @@ RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl 
   return resources::EventProxy<resources::Sycl>(sycl_res);
 }
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
+template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async,
+          typename std::enable_if<!std::is_trivially_copyable<LoopBody>{},bool>::type = true>
 RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &sycl_res,
-                                                    sycl_exec_nontrivial<BlockSize, Async>,
+                                                    sycl_exec<BlockSize, Async>,
                                                     Iterable&& iter,
                                                     LoopBody&& loop_body)
 {

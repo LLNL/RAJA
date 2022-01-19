@@ -1,17 +1,17 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_TILE_LOCALARRAY2D_HPP__
-#define __TEST_KERNEL_TILE_LOCALARRAY2D_HPP__
+#ifndef __TEST_KERNEL_TILE_DYNAMIC2D_HPP__
+#define __TEST_KERNEL_TILE_DYNAMIC2D_HPP__
 
 #include <numeric>
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void KernelTileLocalArray2DTestImpl(const int rows, const int cols)
+void KernelTileDynamic2DTestImpl(const int rows, const int cols)
 {
   // This test emulates matrix transposition with tiling.
 
@@ -48,10 +48,6 @@ void KernelTileLocalArray2DTestImpl(const int rows, const int cols)
   RAJA::View<DATA_TYPE, RAJA::Layout<2>> WorkTView( work_array_t, cols, rows );
   RAJA::View<DATA_TYPE, RAJA::Layout<2>> CheckTView( check_array_t, cols, rows );
 
-  // initialize local array (shared mem)
-  using TILE_MEM = RAJA::LocalArray<DATA_TYPE, RAJA::Perm<0,1>, RAJA::SizeList<tile_dim_x, tile_dim_y>>;
-  TILE_MEM Tile_Array;
-
   // initialize arrays
   std::iota( test_array, test_array + array_length, 1 );
   std::iota( test_array_t, test_array_t + array_length, 1 );
@@ -72,15 +68,34 @@ void KernelTileLocalArray2DTestImpl(const int rows, const int cols)
   RAJA::TypedRangeSegment<INDEX_TYPE> rowrange( 0, rows );
   RAJA::TypedRangeSegment<INDEX_TYPE> colrange( 0, cols );
 
-  RAJA::kernel_param<EXEC_POLICY> ( RAJA::make_tuple( colrange, rowrange ), RAJA::make_tuple( (INDEX_TYPE)0, (INDEX_TYPE)0, Tile_Array ),
-    [=] RAJA_HOST_DEVICE ( INDEX_TYPE cc, INDEX_TYPE rr, INDEX_TYPE tx, INDEX_TYPE ty, TILE_MEM &Tile_Array ) {
-      Tile_Array( ty, tx ) = WorkView( rr, cc );
-    },
+  RAJA::kernel_param<EXEC_POLICY> (
+    RAJA::make_tuple( colrange, rowrange ),
+    RAJA::make_tuple( RAJA::TileSize{tile_dim_x}, RAJA::TileSize{tile_dim_y} ),
+    [=] RAJA_HOST_DEVICE ( INDEX_TYPE cc, INDEX_TYPE rr ) {
+      WorkTView( cc, rr ) = WorkView( rr, cc );
+  });
 
-    [=] RAJA_HOST_DEVICE ( INDEX_TYPE cc, INDEX_TYPE rr, INDEX_TYPE tx, INDEX_TYPE ty, TILE_MEM &Tile_Array ) {
-      WorkTView( cc, rr ) = Tile_Array( ty, tx );
+  work_res.memcpy( check_array_t, work_array_t, sizeof(DATA_TYPE) * array_length );
+
+  for ( int rr = 0; rr < rows; ++rr )
+  {
+    for ( int cc = 0; cc < cols; ++cc )
+    {
+      ASSERT_EQ(CheckTView(cc, rr), HostTView(cc, rr));
     }
-  );
+  }
+
+  // reset check and work transpose arrays
+  work_res.memcpy( check_array_t, test_array, sizeof(DATA_TYPE) * array_length );
+  work_res.memcpy( work_array_t, test_array, sizeof(DATA_TYPE) * array_length );
+
+  // transpose work_array again with different tile sizes
+  RAJA::kernel_param<EXEC_POLICY> (
+    RAJA::make_tuple( colrange, rowrange ),
+    RAJA::make_tuple( RAJA::TileSize{tile_dim_x}, RAJA::TileSize{tile_dim_y/2} ),
+    [=] RAJA_HOST_DEVICE ( INDEX_TYPE cc, INDEX_TYPE rr ) {
+      WorkTView( cc, rr ) = WorkView( rr, cc );
+  });
 
   work_res.memcpy( check_array_t, work_array_t, sizeof(DATA_TYPE) * array_length );
 
@@ -106,25 +121,25 @@ void KernelTileLocalArray2DTestImpl(const int rows, const int cols)
 }
 
 
-TYPED_TEST_SUITE_P(KernelTileLocalArray2DTest);
+TYPED_TEST_SUITE_P(KernelTileDynamic2DTest);
 template <typename T>
-class KernelTileLocalArray2DTest : public ::testing::Test
+class KernelTileDynamic2DTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(KernelTileLocalArray2DTest, TileLocalArray2DKernel)
+TYPED_TEST_P(KernelTileDynamic2DTest, TileDynamic2DKernel)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using DATA_TYPE  = typename camp::at<TypeParam, camp::num<1>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  KernelTileLocalArray2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY>(10, 10);
-  KernelTileLocalArray2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY>(151, 111);
-  KernelTileLocalArray2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY>(362, 362);
+  KernelTileDynamic2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY>(10, 10);
+  KernelTileDynamic2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY>(151, 111);
+  KernelTileDynamic2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY>(362, 362);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelTileLocalArray2DTest,
-                            TileLocalArray2DKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelTileDynamic2DTest,
+                            TileDynamic2DKernel);
 
-#endif  // __TEST_KERNEL_TILE_LOCALARRAY2D_HPP__
+#endif  // __TEST_KERNEL_TILE_DYNAMIC2D_HPP__

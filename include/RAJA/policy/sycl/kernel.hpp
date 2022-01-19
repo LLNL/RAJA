@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-20, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -28,7 +28,7 @@
 #include "RAJA/policy/sycl/kernel/Lambda.hpp"
 //#include "RAJA/policy/sycl/kernel/Reduce.hpp"
 //#include "RAJA/policy/sycl/kernel/Sync.hpp"
-//#include "RAJA/policy/sycl/kernel/Tile.hpp"
+#include "RAJA/policy/sycl/kernel/Tile.hpp"
 //#include "RAJA/policy/sycl/kernel/TileTCount.hpp"
 #include "RAJA/policy/sycl/kernel/internal.hpp"
 

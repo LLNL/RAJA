@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -59,7 +59,7 @@ struct StaticLayoutBase_impl<IdxLin,
 
   static constexpr camp::idx_t stride_one_dim =
       RAJA::max<camp::idx_t>(
-          (camp::seq_at<RangeInts, strides>::value == 1 ? RangeInts : -1)...);
+          (camp::seq_at<RangeInts, strides>::value == 1 ? camp::idx_t(RangeInts) : -1)...);
 
   static constexpr size_t n_dims = sizeof...(Sizes);
 
@@ -178,6 +178,7 @@ struct StrideCalculator<IdxLin,
   using range = camp::int_seq<IdxLin, Range...>;
   using perm = camp::idx_seq<Perm...>;
   using inv_perm = invert_permutation<perm>;
+
   using strides_unperm =
       camp::int_seq<IdxLin, StrideCalculatorIdx<IdxLin, N, Range, camp::seq_at<Perm, sizes>::value...>::stride...>;
   
@@ -249,11 +250,8 @@ using StaticLayoutT = typename detail::StaticLayoutMaker<
     camp::make_int_seq_t<IdxLin, sizeof...(Sizes)>
     >::type;
 
-
 template <typename Perm, camp::idx_t... Sizes>
 using StaticLayout = StaticLayoutT<Perm, camp::idx_t, Sizes...>;
-
-
 
 template <typename Perm, typename IdxLin, typename TypeList, camp::idx_t... Sizes>
 using TypedStaticLayout =
