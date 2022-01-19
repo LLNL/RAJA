@@ -45,4 +45,8 @@ using CudaReducePols = camp::list< RAJA::cuda_reduce >;
 using HipReducePols = camp::list< RAJA::hip_reduce >;
 #endif
 
+#if defined(RAJA_ENABLE_SYCL)
+using SyclReducePols = camp::list< RAJA::sycl_reduce >;
+#endif
+
 #endif  // __RAJA_test_reducepol_HPP__
