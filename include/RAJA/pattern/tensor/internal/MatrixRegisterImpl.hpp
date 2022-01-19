@@ -83,6 +83,9 @@ namespace expt
       static constexpr camp::idx_t s_minor_dim_elements =
           layout_type::is_row_major() ? s_num_columns : s_num_rows;
 
+      static constexpr camp::idx_t s_major_dim_elements =
+          layout_type::is_row_major() ? s_num_rows : s_num_columns;
+
       // number of (full) registers that span the minor dim
       // if a single register is split across multiple rows or columns, then
       // this is 0
@@ -329,10 +332,6 @@ namespace expt
       self_type &load_packed(element_type const *ptr,
           int row_stride, int col_stride)
       {
-#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: load_packed, stride=%d,%d\n",
-            threadIdx.x, threadIdx.y, row_stride, col_stride);
-#endif
         // if it's dense in columns and rows, just do a dense load
         if((layout_type::is_row_major()&&(row_stride==COL_SIZE)) ||
            (layout_type::is_column_major()&&(col_stride==ROW_SIZE))){
@@ -402,10 +401,6 @@ namespace expt
       self_type &load_strided(element_type const *ptr,
           int row_stride, int col_stride)
       {
-#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: load_strided, stride=%d,%d\n",
-            threadIdx.x, threadIdx.y, row_stride, col_stride);
-#endif
 
         if(layout_type::is_row_major()){
           // one or more registers per row
@@ -460,10 +455,6 @@ namespace expt
           int row_stride, int col_stride,
           int num_rows, int num_cols)
       {
-#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: load_packed_nm, stride=%d,%d, nm=%d,%d\n",
-            threadIdx.x, threadIdx.y, row_stride, 1, num_rows, num_cols);
-#endif
 
         if(layout_type::is_row_major()){
 
@@ -578,10 +569,6 @@ namespace expt
           int row_stride, int col_stride,
           int num_rows, int num_cols)
       {
-#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: load_strided_nm, stride=%d,%d, nm=%d,%d\n",
-            threadIdx.x, threadIdx.y, row_stride, col_stride, num_rows, num_cols);
-#endif
 
         if(layout_type::is_row_major()){
           // one or more registers per row
@@ -678,10 +665,6 @@ namespace expt
       self_type const &store_packed(element_type *ptr,
           int row_stride, int col_stride) const
       {
-#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: store_packed, stride=%d,%d\n",
-            threadIdx.x, threadIdx.y, row_stride, 1);
-#endif
 
         // if it's dense in columns and rows, just do a dense load
         if((layout_type::is_row_major()&&(row_stride==COL_SIZE)) ||
@@ -737,10 +720,6 @@ namespace expt
       self_type const &store_strided(element_type *ptr,
           int row_stride, int col_stride) const
       {
-#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: store_strided, stride=%d,%d\n",
-            threadIdx.x, threadIdx.y, row_stride, col_stride);
-#endif
 
 
         if(layout_type::is_row_major()){
@@ -794,10 +773,6 @@ namespace expt
           int row_stride, int col_stride,
           int num_rows, int num_cols) const
       {
-#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: RM store_packed_nm, stride=%d,%d, nm=%d,%d\n",
-            threadIdx.x, threadIdx.y, row_stride, 1, num_rows, num_cols);
-#endif
 
 
         if(layout_type::is_row_major()){
@@ -883,10 +858,6 @@ namespace expt
           int row_stride, int col_stride,
           int num_rows, int num_cols) const
       {
-#if defined(__CUDA_ARCH__) && defined(DEBUG_MATRIX_LOAD_STORE)
-        printf("th%d,%d: RM store_strided_nm, stride=%d,%d, nm=%d,%d\n",
-            threadIdx.x, threadIdx.y, row_stride, col_stride, num_rows, num_cols);
-#endif
 
 
         if(layout_type::is_row_major()){
@@ -971,9 +942,7 @@ namespace expt
       RAJA_INLINE
       self_type divide_nm(self_type const &mat, int num_rows, int num_cols) const {
         self_type result;
-//        for(camp::idx_t reg = 0;reg < s_num_registers;++ reg){
-//          result.vec(reg) = m_registers[reg].divide(mat.vec(reg));
-//        }
+
 
         if(layout_type::is_row_major()){
           // one or more registers per row
@@ -1057,9 +1026,17 @@ namespace expt
        */
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type transpose() const {
+      transpose_type transpose() const {
 
         static constexpr camp::idx_t num_elem = register_type::s_num_elem;
+
+        printf("input to transpose():\n");
+        for(camp::idx_t i = 0;i < s_major_dim_elements; ++ i){
+          for(camp::idx_t j = 0;j < s_minor_dim_elements; ++ j){
+            printf("%3d ", (int)get(i,j));
+          }
+          printf("\n");
+        }
 
         /*
          * We use Eklundh's Algorithm: Recursive block transpose because
@@ -1067,28 +1044,123 @@ namespace expt
          *
          * Executes in n*log(n) row operations
          *
+         * Also, the algorithm is the same for row and column major.
          */
         self_type result = *this;
-        for(camp::idx_t lvl = 0; (1<<lvl) < num_elem;++ lvl){
-          // At this level, we do block transposes of NxN sub-matrices, where
-          // N = 1<<lvl
+        // 1 register is split over multiple rows
+        if(s_minor_dim_registers == 0){
+//          for(camp::idx_t lvl = 0; (1<<lvl) < num_elem;++ lvl){
+//            // At this level, we do block transposes of NxN sub-matrices, where
+//            // N = 1<<lvl
+//
+//            auto const &vals = result.m_registers;
+//
+//            self_type tmp;
+//            for(camp::idx_t i = 0;i < s_num_registers;++ i){
+//              if(((i>>lvl)&0x1) == 0){
+//                tmp.m_registers[i] = vals[i - (i&(1<<lvl))].transpose_shuffle_left(lvl, vals[i - (i&(1<<lvl)) + (1<<lvl)]);
+//              }
+//              else{
+//                tmp.m_registers[i] = vals[i - (i&(1<<lvl))].transpose_shuffle_right(lvl, vals[i - (i&(1<<lvl)) + (1<<lvl)]);
+//              }
+//            }
+//            result = tmp;
+//          }
+        }
+        // one or more registers per row/column
+        else{
 
-          auto const &vals = result.m_registers;
 
-          self_type tmp;
-          for(camp::idx_t i = 0;i < s_num_registers;++ i){
-            if(((i>>lvl)&0x1) == 0){
-              tmp.m_registers[i] = vals[i - (i&(1<<lvl))].transpose_shuffle_left(lvl, vals[i - (i&(1<<lvl)) + (1<<lvl)]);
+          // This only works with square matrices.... need to generalize
+          for(camp::idx_t lvl = 0; (1<<lvl) < num_elem;++ lvl){
+            // At this level, we do block transposes of NxN sub-matrices, where
+            // N = 1<<lvl
+
+
+            printf("lvl=%d\n", (int)lvl);
+
+            camp::idx_t skip_bits = 0;
+            if(transpose_type::s_major_dim_per_register <= 1){
+              skip_bits = lvl;
             }
-            else{
-              tmp.m_registers[i] = vals[i - (i&(1<<lvl))].transpose_shuffle_right(lvl, vals[i - (i&(1<<lvl)) + (1<<lvl)]);
+            camp::idx_t skip_reg = (1<<skip_bits)*s_minor_dim_registers;
+            printf("  skip_reg=%d transpose_type::s_major_dim_per_register=%d\n", (int)skip_reg, (int)transpose_type::s_major_dim_per_register);
+
+            auto const &vals = result.m_registers;
+
+            self_type tmp;
+            for(camp::idx_t major = 0;major < s_major_dim_elements;++ major){
+              if(((major>>skip_bits)&0x1) == 0){
+                printf("  major=%d, left\n", (int)major);
+                for(camp::idx_t i = major*s_minor_dim_registers;i < (major+1)*s_minor_dim_registers;++ i){
+                  printf("    i=%d, i+skip_reg=%d\n", (int)i, (int)(i+skip_reg));
+                  tmp.m_registers[i] = vals[i].transpose_shuffle_left(lvl, vals[i+skip_reg]);
+                }
+
+              }
+              else{
+                printf("  major=%d, right\n", (int)major);
+                for(camp::idx_t i = major*s_minor_dim_registers;i < (major+1)*s_minor_dim_registers;++ i){
+                  printf("    i=%d, i-skip_reg=%d\n", (int)i, (int)(i-skip_reg));
+
+                  tmp.m_registers[i] = vals[i-skip_reg].transpose_shuffle_right(lvl, vals[i]);
+                }
+              }
             }
+            result = tmp;
+
+            printf("%s\n", result.to_string().c_str());
           }
-          result = tmp;
+
+
+          // Now do the same Eklhund algorithm on registers, which is needed
+          // if we have more than one register per input minor dim
+          for(camp::idx_t lvl = 0; (1<<lvl) < s_minor_dim_registers;++ lvl){
+
+            printf("reglvl=%d\n", (int)lvl);
+
+            camp::idx_t skip_reg = 1<<lvl;
+            printf("  skip_reg=%d\n", (int)skip_reg);
+
+            auto const &vals = result.m_registers;
+
+            self_type tmp;
+            for(camp::idx_t major = 0;major < s_major_dim_elements;++ major){
+              if(((major>>skip_bits)&0x1) == 0){
+                for(camp::idx_t minor = 0;minor < self_type::s_minor_dim_registers;++ minor){
+
+                  // extract value x or y
+                  camp::idx_t xy_select = (minor >> lvl) & 0x1;
+
+                  camp::idx_t reg = major*s_minor_dim_registers + minor;
+                  camp::idx_t reg_x = major*s_minor_dim_registers + minor;
+                  camp::idx_t reg_y = (major+skip_reg)*s_minor_dim_registers + minor;
+
+
+                  tmp.m_registers[reg] =
+                      xy_select == 0 ? result.m_registers[reg_x] : result.m_registers[reg_y];
+
+                }
+              }
+              else{
+
+              }
+            }
+            result = tmp;
+
+            printf("%s\n", result.to_string().c_str());
+          }
+
         }
 
-        return result;
+        transpose_type *tptr = reinterpret_cast<transpose_type*>(&result);
 
+
+        printf("output:\n");
+        printf("%s\n", tptr->to_string().c_str());
+
+
+        return *tptr;
       }
 
 
@@ -1152,8 +1224,6 @@ namespace expt
 
           // 1 register is split over multiple rows
           if(s_minor_dim_registers == 0){
-//            printf("A\n");
-
 
             // start by broadcasting the first segment in v across all of v
             // we will use this term for all registers in the matrix
@@ -1180,7 +1250,6 @@ namespace expt
           }
           // one or more registers per row
           else{
-//            printf("B\n");
 
             // Loop over rows
             camp::idx_t reg = 0;
@@ -1210,7 +1279,7 @@ namespace expt
 
           // 1 register is split over multiple columns
           if(s_minor_dim_registers == 0){
-//            printf("C\n");
+
             auto &mv = result.get_register(0);
 
             // Loop over registers, which are also the segments in v
@@ -1230,7 +1299,6 @@ namespace expt
           }
           // one or more registers per column
           else{
-//            printf("D\n");
 
             // Loop over columns (which is also registers)
             camp::idx_t reg = 0;
@@ -1268,7 +1336,6 @@ namespace expt
       row_vector_type left_multiply_vector_accumulate(column_vector_type const &v, row_vector_type result) const {
 
         if(layout_type::is_row_major()){
-//          printf("Aleft\n");
 
           // 1 register is split over multiple columns
           if(s_minor_dim_registers == 0){
@@ -1291,7 +1358,7 @@ namespace expt
           }
           // one or more registers per row
           else{
-//            printf("Bleft\n");
+
             // Loop over rows
             camp::idx_t reg = 0;
             RAJA_UNROLL
@@ -1317,7 +1384,6 @@ namespace expt
         else{
           // 1 register is split over multiple rows
           if(s_minor_dim_registers == 0){
-//            printf("Cleft\n");
 
             // start by broadcasting the first segment in v across all of v
             // we will use this term for all registers in the matrix
@@ -1344,7 +1410,6 @@ namespace expt
           }
           // one or more registers per column
           else{
-//            printf("Dleft\n");
             // Loop over rows
             camp::idx_t reg = 0;
             RAJA_UNROLL
@@ -1383,11 +1448,6 @@ namespace expt
       RAJA_INLINE
       typename RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type
       matrix_multiply(RMAT const &mat) const {
-#ifdef __CUDA_ARCH__
-        if(threadIdx.x==0){
-        printf("matrix_multiply\n");
-        }
-#endif
         typename RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type res(0);
         RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply(*this, mat, res);
         return res;
@@ -1401,11 +1461,6 @@ namespace expt
       RAJA_INLINE
       typename RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type
       matrix_multiply_add(RMAT const &B, typename RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type const &C) const {
-//#ifdef __CUDA_ARCH__
-//        if(threadIdx.x==0){
-//        printf("matrix_multiply_add\n");
-//        }
-//#endif
         typename RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type res(C);
         RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply_accumulate(*this, B, res);
         return res;
@@ -1419,11 +1474,6 @@ namespace expt
       RAJA_INLINE
       void
       matrix_multiply_accumulate(ACCMAT &acc, RMAT const &B) const {
-//#ifdef __CUDA_ARCH__
-//        if(threadIdx.x==0){
-//        printf("matrix_multiply_accumulate\n");
-//        }
-//#endif
         RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type,RMAT>::multiply_accumulate(*this, B, acc);
       }
 

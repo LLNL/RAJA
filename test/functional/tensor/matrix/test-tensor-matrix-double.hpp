@@ -25,26 +25,28 @@ using TensorMatrixTypes = ::testing::Types<
 #endif
 
 
-#ifdef __AVX__
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 2,4, RAJA::avx_register>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 2,8, RAJA::avx_register>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 4,8, RAJA::avx_register>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,8, RAJA::avx_register>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,4, RAJA::avx_register>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 4,2, RAJA::avx_register>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,2, RAJA::avx_register>,
-
-#endif
+//#ifdef __AVX__
+//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 2,4, RAJA::avx_register>,
+//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 2,8, RAJA::avx_register>,
+//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 4,8, RAJA::avx_register>,
+//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,8, RAJA::avx_register>,
+//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,4, RAJA::avx_register>,
+//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 4,2, RAJA::avx_register>,
+//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,2, RAJA::avx_register>,
+//
+//#endif
 
 
 #ifdef __AVX2__
     RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 2,4, RAJA::avx2_register>,
     RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 2,8, RAJA::avx2_register>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 4,8, RAJA::avx2_register>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,8, RAJA::avx2_register>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,4, RAJA::avx2_register>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 4,2, RAJA::avx2_register>,
-    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,2, RAJA::avx2_register>,
+    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 2,12, RAJA::avx2_register>,
+
+//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 4,8, RAJA::avx2_register>,
+//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,8, RAJA::avx2_register>,
+//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,4, RAJA::avx2_register>,
+//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 4,2, RAJA::avx2_register>,
+//    RAJA::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType, 8,2, RAJA::avx2_register>,
 #endif
 
 

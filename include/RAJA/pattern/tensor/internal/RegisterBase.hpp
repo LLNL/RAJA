@@ -861,6 +861,7 @@ namespace expt
 
 
 
+
       /*!
        * Provides gather/scatter indices for segmented loads and stores
        *

@@ -11,6 +11,7 @@ set(TENSOR_MATRIX_TESTS
 				Load_RowMajor
 				Load_ColMajor
 				Store_RowMajor
+				Transpose
                 Store_ColMajor
                 ET_LoadStore
                 ET_Add

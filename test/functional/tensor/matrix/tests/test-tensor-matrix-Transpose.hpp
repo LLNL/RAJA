@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_TESNOR_MATRIX_ET_Transpose_HPP__
-#define __TEST_TESNOR_MATRIX_ET_Transpose_HPP__
+#ifndef __TEST_TESNOR_MATRIX_Transpose_HPP__
+#define __TEST_TESNOR_MATRIX_Transpose_HPP__
 
 #include<RAJA/RAJA.hpp>
 
 template <typename MATRIX_TYPE>
-void ET_TransposeImpl()
+void TransposeImpl()
 {
 
   using matrix_t = MATRIX_TYPE;
@@ -20,11 +20,11 @@ void ET_TransposeImpl()
 
   using transpose_t = typename matrix_t::transpose_type;
 
-//  static constexpr camp::idx_t N = RAJA::max<camp::idx_t>(matrix_t::s_num_rows, matrix_t::s_num_columns)*2;
-//  static constexpr camp::idx_t M = RAJA::max<camp::idx_t>(matrix_t::s_num_rows, matrix_t::s_num_columns)*2;
 
   static constexpr camp::idx_t N = matrix_t::s_num_rows;
   static constexpr camp::idx_t M = matrix_t::s_num_columns;
+
+//  bool is_row_major = matrix_t::layout_type::is_row_major();
 
   //
   // Allocate Row-Major Data
@@ -60,31 +60,35 @@ void ET_TransposeImpl()
   tensor_copy_to_device<policy_t>(input0_ptr, input0_vec);
 
 
+
+
   //
   // Do Operation: transpose
   //
   tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
-    auto rows = RAJA::RowIndex<int, matrix_t>::all();
-    auto cols = RAJA::ColIndex<int, matrix_t>::all();
+    // load original matrix
+    matrix_t A;
+    A.load_strided(input0_ptr, M, 1);
 
-    auto rows_tr = RAJA::RowIndex<int, transpose_t>::all();
-    auto cols_tr = RAJA::ColIndex<int, transpose_t>::all();
+    // transpose matrix
+    transpose_t B = A.transpose();
 
-    output0_d(rows_tr, cols_tr) = input0_d(rows, cols).transpose();
+    // store transposed matrix
+    B.store_strided(output0_ptr, N, 1);
 
   });
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_ptr);
 
 
-
-//  for(camp::idx_t i = 0;i < M; ++ i){
-//    for(camp::idx_t j = 0;j < N; ++ j){
-//      printf("%3d ", (int)output0_h(i,j));
-//    }
-//    printf("\n");
-//  }
+  printf("gtest result:\n");
+  for(camp::idx_t i = 0;i < M; ++ i){
+    for(camp::idx_t j = 0;j < N; ++ j){
+      printf("%3d ", (int)output0_h(i,j));
+    }
+    printf("\n");
+  }
 
 
 
@@ -109,9 +113,9 @@ void ET_TransposeImpl()
 
 
 
-TYPED_TEST_P(TestTensorMatrix, ET_Transpose)
+TYPED_TEST_P(TestTensorMatrix, Transpose)
 {
-  ET_TransposeImpl<TypeParam>();
+  TransposeImpl<TypeParam>();
 }
 
 
