@@ -67,17 +67,18 @@ if (RAJA_ENABLE_CUDA AND RAJA_ENABLE_NV_TOOLS_EXT)
   endif()
 endif ()
 
-if (RAJA_ENABLE_HIP OR RAJA_ENABLE_EXTERNAL_ROCPRIM)
-  find_package(RocPRIM)
-  if (ROCPRIM_FOUND)
-    set(RAJA_ENABLE_EXTERNAL_ROCPRIM On)
-    blt_import_library(
-      NAME rocPRIM
-      INCLUDES ${ROCPRIM_INCLUDE_DIRS}
-      TREAT_INCLUDES_AS_SYSTEM ON
-      EXPORTABLE ON)
-  elseif (RAJA_ENABLE_EXTERNAL_ROCPRIM)
+if (RAJA_ENABLE_HIP)
+  if (RAJA_ENABLE_EXTERNAL_ROCPRIM)
+    find_package(RocPRIM)
+    if (ROCPRIM_FOUND)
+      blt_import_library(
+        NAME rocPRIM
+        INCLUDES ${ROCPRIM_INCLUDE_DIRS}
+        TREAT_INCLUDES_AS_SYSTEM ON
+        EXPORTABLE ON)
+    else()
       message(FATAL_ERROR "External rocPRIM not found, ROCPRIM_DIR=${ROCPRIM_DIR}.")
+    endif()
   else()
     message(STATUS "Using RAJA rocPRIM submodule.")
   endif()
