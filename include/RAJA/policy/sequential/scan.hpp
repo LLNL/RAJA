@@ -114,7 +114,6 @@ inclusive(
 {
   using ValueT = typename std::remove_reference<decltype(*out)>::type;
   ValueT agg = *begin;
-
   *out++ = agg;
 
   RAJA_NO_SIMD
@@ -147,7 +146,7 @@ exclusive(
     BinFn f,
     T v)
 {
-  using ValueT = typename std::remove_const<decltype(*begin)>::type;
+  using ValueT = typename std::remove_reference<decltype(*out)>::type;
   ValueT agg = v;
   OutIter o = out;
   *o++ = v;
