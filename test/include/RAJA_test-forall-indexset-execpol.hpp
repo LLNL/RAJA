@@ -94,4 +94,12 @@ using HipForallIndexSetExecPols =
 using HipForallIndexSetReduceExecPols = HipForallIndexSetExecPols;
 #endif
 
+#if defined(RAJA_ENABLE_SYCL)
+using SyclForallIndexSetExecPols =
+  camp::list< RAJA::ExecPolicy<RAJA::seq_segit, RAJA::sycl_exec<128>>,
+              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::sycl_exec<256>> >;
+
+using SyclForallIndexSetReduceExecPols = SyclForallIndexSetExecPols;
+#endif
+
 #endif  // __RAJA_test_forall_indexset_execpol_HPP__
