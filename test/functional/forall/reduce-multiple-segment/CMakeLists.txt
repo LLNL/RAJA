@@ -21,9 +21,9 @@ endif()
 #
 # Eventually, remove this and enable in the top-level CMakeLists.txt file.
 #
-if(RAJA_ENABLE_SYCL)
-  list(APPEND FORALL_BACKENDS Sycl)
-endif()
+#if(RAJA_ENABLE_SYCL)
+#  list(APPEND FORALL_BACKENDS Sycl)
+#endif()
 
 #
 # Generate tests for each enabled RAJA back-end
