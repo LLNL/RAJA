@@ -59,6 +59,15 @@ set(REDUCETYPES ReduceBitAnd ReduceBitOr)
 set(DATATYPES BitwiseReductionDataTypeList)
 
 #
+# Remove Sycl back-end from bitwise reduction tests, since those reduction
+# types are not yet(?) supported for Sycl.  
+#
+
+if(RAJA_ENABLE_SYCL)
+  list(REMOVE_ITEM FORALL_BACKENDS Sycl)
+endif()
+
+#
 # Generate bitwise reduction tests for each enabled RAJA back-end
 #
 # Note: FORALL_BACKENDS is defined in ../CMakeLists.txt
