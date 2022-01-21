@@ -148,12 +148,7 @@ namespace expt
       RAJA_DEVICE
       self_type &load_packed(element_type const *ptr){
 
-
-
         auto lane = get_lane();
-
-
-//        printf("load_packed(lane=%d, %p)\n", (int)lane, ptr); return *this;
 
         m_value = ptr[lane];
 
@@ -169,7 +164,6 @@ namespace expt
       RAJA_DEVICE
       self_type &load_packed_n(element_type const *ptr, int N){
         auto lane = get_lane();
-//        printf("load_packed_n(lane=%d, %p, n=%d)\n", (int)lane, ptr, N);return *this;
         if(lane < N){
           m_value = ptr[lane];
         }
@@ -189,8 +183,6 @@ namespace expt
 
         auto lane = get_lane();
 
-//        printf("load_strided(lane=%d, stride=%d, %p)\n", (int)lane, (int)stride, ptr);return *this;
-
         m_value = ptr[stride*lane];
 
         return *this;
@@ -206,8 +198,6 @@ namespace expt
       RAJA_DEVICE
       self_type &load_strided_n(element_type const *ptr, int stride, int N){
         auto lane = get_lane();
-
-//        printf("load_strided_n(lane=%d, stride=%d, n=%d, %p)\n", (int)lane, (int)stride, N, ptr);return *this;
 
         if(lane < N){
           m_value = ptr[stride*lane];
@@ -320,11 +310,8 @@ namespace expt
       RAJA_INLINE
       RAJA_DEVICE
       self_type const &store_packed(element_type *ptr) const{
-//        printf("store_packed");
 
         auto lane = get_lane();
-
-//        printf("store_packed(lane=%d, %p)\n", (int)lane, ptr);return *this;
 
         ptr[lane] = m_value;
 
@@ -338,11 +325,8 @@ namespace expt
       RAJA_INLINE
       RAJA_DEVICE
       self_type const &store_packed_n(element_type *ptr, int N) const{
-//        printf("store_packed_n");
 
         auto lane = get_lane();
-
-//        printf("store_packed_n(lane=%d, %p, n=%d)\n", (int)lane, ptr, N);return *this;
 
         if(lane < N){
           ptr[lane] = m_value;
@@ -357,11 +341,8 @@ namespace expt
       RAJA_INLINE
       RAJA_DEVICE
       self_type const &store_strided(element_type *ptr, int stride) const{
-//        printf("store_strided");
 
         auto lane = get_lane();
-
-//        printf("store_strided(lane=%d, stride=%d, %p)\n", (int)lane, (int)stride, ptr);return *this;
 
         ptr[lane*stride] = m_value;
 
@@ -377,12 +358,7 @@ namespace expt
       RAJA_DEVICE
       self_type const &store_strided_n(element_type *ptr, int stride, int N) const{
 
-//        printf("store_strided_n");
-
         auto lane = get_lane();
-
-//        printf("store_strided_n(lane=%d, stride=%d, n=%d, %p)\n", (int)lane, (int)stride, N, ptr);return *this;
-
 
         if(lane < N){
           ptr[lane*stride] = m_value;
@@ -404,7 +380,6 @@ namespace expt
       RAJA_DEVICE
       RAJA_INLINE
       self_type const &scatter(element_type *ptr, T2 const &offsets) const {
-//        printf("scatter");
 
         ptr[offsets.get_raw_value()] = m_value;
 
@@ -425,7 +400,6 @@ namespace expt
       RAJA_DEVICE
       RAJA_INLINE
       self_type const &scatter_n(element_type *ptr, T2 const &offsets, camp::idx_t N) const {
-//        printf("scatter_n");
         if(get_lane() < N){
           ptr[offsets.get_raw_value()] = m_value;
         }
@@ -463,7 +437,6 @@ namespace expt
           camp::idx_t stride_inner, camp::idx_t stride_outer,
           camp::idx_t num_inner, camp::idx_t num_outer) const
       {
-//        printf("segmented_store_nm");
         auto lane = get_lane();
 
         // compute segment and segment_size

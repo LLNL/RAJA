@@ -56,33 +56,12 @@ namespace expt
 
           /*
            *
-           * view(bah) -> ET
-           *
-           * ETLoadStore(A) = ET
-           *
-           *    tileloop(Atile in A){
-           *
-           *      ETLoadStore(A).eval_lhs(Atile) = ET.eval(Atile)
-           *
-           *    }
-           *
-           *
            * For recursive ET types, eval() produces a new ET, and
            * eval_lhs() produces a new TensorLoadStore.
            *
            */
-//#ifdef __CUDA_ARCH__
-//          if(threadIdx.x==1){
-//            printf("Starting tile:"); tile.print();
-//          }
-//#endif
-//          m_lhs.eval_lhs(tile);
-//          m_rhs.eval(tile);
+
           m_lhs.eval_lhs(tile) = m_rhs.eval(tile);
-
-
-//          printf("Ending tile:"); tile.print();
-//          printf("\n");
 
         }
     };
@@ -166,7 +145,6 @@ namespace expt
         RAJA_INLINE
         self_type &operator+=(RHS const &rhs)
         {
-          //store(TensorAdd<self_type, RHS>(*this, normalizeOperand(rhs)) );
           store( normalizeOperand(rhs) + (*this) );
           return *this;
         }

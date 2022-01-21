@@ -287,14 +287,6 @@ namespace expt
         camp::idx_t lane = 0;
         for(camp::idx_t seg = 0;seg < num_segments; ++ seg){
           for(camp::idx_t i = 0;i < seg_size; ++ i){
-//            printf("segmented_load_nm: seg=%d of %d, i=%d of %d, lane=%d, ninner=%d, nouter=%d\n",
-//                (int)seg,
-//                (int)num_segments,
-//                (int)i,
-//                (int)seg_size,
-//                (int)lane,
-//                (int)num_inner,
-//                (int)num_outer);
 
             if(seg >= num_outer || i >= num_inner){
               getThis()->set(element_type(0), lane);

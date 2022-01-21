@@ -51,20 +51,9 @@ namespace expt
       RAJA_INLINE
       static
       void exec(OTILE const &otile, TTYPE &tile, BODY && body){
-//                  printf("store_tile_loop<DIM%d> %d to %d\n",
-//                      (int)DIM0, (int)tile.m_begin[DIM0],
-//                      (int)(tile.m_begin[DIM0] + tile.m_size[DIM0]));
-//        printf("  DIM %d\n", (int)DIM0);
+
         auto const orig_begin = otile.m_begin[DIM0];
         auto const orig_size =  otile.m_size[DIM0];
-
-
-//        printf("DIM%d orig_begin=%d, orig_size=%d\n", (int)DIM0, (int)orig_begin, (int)orig_size);
-
-
-//        printf("%*sDIM%d orig_begin=%d, orig_size=%d\n", (int)RAJA::tensor_stats::indent*2, "", (int)DIM0, (int)orig_begin, (int)orig_size);
-
-//        RAJA::tensor_stats::indent ++;
 
         // Do the full tile sizes
         for(tile.m_begin[DIM0] = orig_begin;
@@ -73,8 +62,6 @@ namespace expt
                 orig_begin+orig_size;
 
             tile.m_begin[DIM0] += STORAGE::s_dim_elem(DIM0)){
-
-//          printf("DIM%d tile:begin=%d, size=%d\n", (int)DIM0, (int)tile.m_begin[DIM0], (int)tile.m_size[DIM0]);
 
           // Do the next inner tiling loop
           inner_t::exec(otile, tile, body);
@@ -98,12 +85,6 @@ namespace expt
               orig_size -
               tile.m_begin[DIM0];
 
-//            printf("store_tile_loop<DIM%d>  postamble %d to %d\n",
-//                (int)DIM0, (int)part_tile.m_begin[DIM0],
-//                (int)(part_tile.m_size[DIM0] + part_tile.m_size[DIM0]));
-
-//          printf("DIM%d tile:begin=%d, size=%d (partial)\n", (int)DIM0, (int)part_tile.m_begin[DIM0], (int)part_tile.m_size[DIM0]);
-
           // Do the next inner tiling loop
           inner_t::exec(otile, part_tile, body);
 
@@ -114,9 +95,6 @@ namespace expt
         // reset tile dimension
         tile.m_begin[DIM0] = orig_begin;
 
-//        printf("  DONE %d\n", (int)DIM0);
-
-//        RAJA::tensor_stats::indent --;
       }
 
 
@@ -134,9 +112,6 @@ namespace expt
       RAJA_INLINE
       static
       void exec(OTILE &, TTYPE const &tile, BODY && body){
-
-//        printf("%*sexec: ", (int)RAJA::tensor_stats::indent*2, "");
-//        tile.print();
 
         // execute body, passing in the current tile
         body(tile);

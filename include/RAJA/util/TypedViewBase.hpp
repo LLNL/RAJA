@@ -205,13 +205,6 @@ namespace internal
       static
       constexpr
       return_type make_return(LayoutType const &layout, PointerType const &data, Args const &... args){
-//        printf("TypedViewBase:  view_s1=%d, tensor_s1=%d\n",
-//            (int)StrideOneDim, (int)s_stride_one_dim);
-//        camp::sink(
-//            printf("DIM%d, arg=%d, size=%d\n", (int)VecSeq, (int)GetTesorArgIdx<VecSeq, Args...>::value,
-//                (int)get_tensor_args_size<VecSeq>(layout, args...))...
-//            );
-//        printf("\n");
 
         return return_type(ref_type{
           // data pointer

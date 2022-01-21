@@ -83,7 +83,6 @@ namespace expt
       RAJA_INLINE
       self_type operator=(RHS const &rhs)
       {
-//        printf("Storing TensorRegister: "); m_ref.m_tile.print();
         rhs.store_ref(m_ref);
         return *this;
       }

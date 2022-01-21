@@ -1030,14 +1030,6 @@ namespace expt
 
         static constexpr camp::idx_t num_elem = register_type::s_num_elem;
 
-        printf("input to transpose():\n");
-        for(camp::idx_t i = 0;i < s_major_dim_elements; ++ i){
-          for(camp::idx_t j = 0;j < s_minor_dim_elements; ++ j){
-            printf("%3d ", (int)get(i,j));
-          }
-          printf("\n");
-        }
-
         /*
          * We use Eklundh's Algorithm: Recursive block transpose because
          * it's easy to implement using SIMD register permutation primitives
@@ -1076,32 +1068,24 @@ namespace expt
             // At this level, we do block transposes of NxN sub-matrices, where
             // N = 1<<lvl
 
-
-            printf("lvl=%d\n", (int)lvl);
-
             camp::idx_t skip_bits = 0;
             if(transpose_type::s_major_dim_per_register <= 1){
               skip_bits = lvl;
             }
             camp::idx_t skip_reg = (1<<skip_bits)*s_minor_dim_registers;
-            printf("  skip_reg=%d transpose_type::s_major_dim_per_register=%d\n", (int)skip_reg, (int)transpose_type::s_major_dim_per_register);
 
             auto const &vals = result.m_registers;
 
             self_type tmp;
             for(camp::idx_t major = 0;major < s_major_dim_elements;++ major){
               if(((major>>skip_bits)&0x1) == 0){
-                printf("  major=%d, left\n", (int)major);
                 for(camp::idx_t i = major*s_minor_dim_registers;i < (major+1)*s_minor_dim_registers;++ i){
-                  printf("    i=%d, i+skip_reg=%d\n", (int)i, (int)(i+skip_reg));
                   tmp.m_registers[i] = vals[i].transpose_shuffle_left(lvl, vals[i+skip_reg]);
                 }
 
               }
               else{
-                printf("  major=%d, right\n", (int)major);
                 for(camp::idx_t i = major*s_minor_dim_registers;i < (major+1)*s_minor_dim_registers;++ i){
-                  printf("    i=%d, i-skip_reg=%d\n", (int)i, (int)(i-skip_reg));
 
                   tmp.m_registers[i] = vals[i-skip_reg].transpose_shuffle_right(lvl, vals[i]);
                 }
@@ -1109,7 +1093,6 @@ namespace expt
             }
             result = tmp;
 
-            printf("%s\n", result.to_string().c_str());
           }
 
 
@@ -1117,10 +1100,8 @@ namespace expt
           // if we have more than one register per input minor dim
           for(camp::idx_t lvl = 0; (1<<lvl) < s_minor_dim_registers;++ lvl){
 
-            printf("reglvl=%d\n", (int)lvl);
 
             camp::idx_t skip_reg = 1<<lvl;
-            printf("  skip_reg=%d\n", (int)skip_reg);
 
             auto const &vals = result.m_registers;
 
@@ -1148,7 +1129,6 @@ namespace expt
             }
             result = tmp;
 
-            printf("%s\n", result.to_string().c_str());
           }
 
         }
@@ -1156,8 +1136,6 @@ namespace expt
         transpose_type *tptr = reinterpret_cast<transpose_type*>(&result);
 
 
-        printf("output:\n");
-        printf("%s\n", tptr->to_string().c_str());
 
 
         return *tptr;

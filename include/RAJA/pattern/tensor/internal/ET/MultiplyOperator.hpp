@@ -474,14 +474,10 @@ namespace expt
         TILE_TYPE left_tile = tile;
         left_tile.m_size[0] = tile_size;
 
-//        printf("multiply_into_result: tile_size=%d, k_size=%d\n",
-//            (int)tile_size, (int)k_size);
-//        tile.print();
 
         // Do full tiles in k
         decltype(k_size) k = 0;
         for(;k+tile_size <= k_size; k+= tile_size){
-//            printf("\nk=%d\n", (int)k);
 
           // evaluate both sides of operator
           right_tile.m_begin[0] = k;
@@ -491,11 +487,6 @@ namespace expt
           auto left = et_left.eval(left_tile);
 
           // accumulate product
-//          printf("left mult vector full, k=%d, k_size=%d, tile_size=%d\n",
-//              (int)k, (int)k_size, (int)tile_size);
-//          printf("-- left_tile:\n"); left_tile.print();
-//          printf("-- right_tile:\n"); right_tile.print();
-
           result = right.left_multiply_vector_accumulate(left, result);
 
         }
@@ -510,12 +501,6 @@ namespace expt
           left_part_tile.m_begin[0] = k;
           left_part_tile.m_size[0] = k_size-k;
           auto left = et_left.eval(left_part_tile);
-
-//          printf("left mult vector remainder, k=%d, k_size=%d, part_size=%d\n",
-//                        (int)k, (int)k_size, (int)(k_size-k));
-
-//          printf("-- left_tile:\n"); left_tile.print();
-//          printf("-- right_tile:\n"); right_tile.print();
 
           // compute product into x of partial tile
           result = right.left_multiply_vector_accumulate(left, result);
@@ -588,9 +573,6 @@ namespace expt
         result_type result;
         result.broadcast(0);
 
-//        printf("      MM Multiply Register:"); tile.print();
-
-
         // multiply left and right operands into temporary
         multiply_into_result(result, tile, left,right);
 
@@ -603,8 +585,6 @@ namespace expt
       static
       result_type multiply_add(TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &left, RIGHT_OPERAND_TYPE const &right, ADD_TYPE const &add)
       {
-
-//        printf("      MM Multiply-Add Register:"); tile.print();
 
         // start accumulator with addition term
         result_type result = add.eval(tile);
@@ -645,9 +625,6 @@ namespace expt
         decltype(k_size) k = 0;
         for(;k+tile_size <= k_size; k+= tile_size){
 
-//          printf("       - k-tile %d\n", (int)k);
-
-
           // evaluate both sides of operator
           left_tile.m_begin[1] = k + left_begin;
           auto left = et_left.eval(left_tile);
@@ -655,18 +632,11 @@ namespace expt
           right_tile.m_begin[0] = k + right_begin;
           auto right = et_right.eval(right_tile);
 
-//          printf("result tile: "); tile.print();
-//          printf("left tile: "); left_tile.print();
-//          printf("right tile:"); right_tile.print();
-
           // accumulate product
-
           left.matrix_multiply_accumulate(result, right);
         }
         // remainder tile in k
         if(k < k_size){
-
-//          printf("       - k-tile %d (partial)\n", (int)k);
 
           auto &left_part_tile = make_tensor_tile_partial(left_tile);
           left_part_tile.m_begin[1] = k + left_begin;
@@ -677,9 +647,6 @@ namespace expt
           right_part_tile.m_begin[0] = k + right_begin;
           right_part_tile.m_size[0] = k_size-k;
           auto right = et_right.eval(right_part_tile);
-
-//          printf("        left: "); left_part_tile.print();
-//          printf("        right:"); right_part_tile.print();
 
           // accumulate product
           left.matrix_multiply_accumulate(result, right);
@@ -832,7 +799,6 @@ namespace expt
            * of the operands
            *
            */
-//          printf("MM Multiply Block:"); tile.print();
           // create a BlockLiteral
           block_literal result(tile);
 
@@ -878,8 +844,6 @@ namespace expt
 
           //return TensorMultiplyAdd<decltype(left.eval(tile)), decltype(right.eval(tile)), decltype(add.eval(tile))>(left.eval(tile), right.eval(tile), add.eval(tile));
 
-//          printf("MM Multiply-Add Block:"); tile.print();
-
 //          multiply_into_result(result_et, tile, restrictExtents(left, tile), restrictExtents(right, tile));
           multiply_into_result(result_et, tile, left, right);
 
@@ -919,8 +883,6 @@ namespace expt
           decltype(k_size) k = 0;
           for(;k+tile_size <= k_size; k+= tile_size){
 
-//            printf("   - k-tile %d\n", (int)k);
-
 
             // evaluate both sides of operator
             left_tile.m_begin[1] = k + left_begin;
@@ -929,17 +891,12 @@ namespace expt
             right_tile.m_begin[0] = k + right_begin;
             auto right = et_right.eval(right_tile);
 
-//            printf("      left: "); left_tile.print();
-//            printf("      right:"); right_tile.print();
-
             // accumulate product
             //left.matrix_multiply_accumulate(result, right);
             result += restrictExtents(left, left_tile) * restrictExtents(right, right_tile);
           }
           // remainder tile in k
           if(k < k_size){
-
-//            printf("   - k-tile %d (partial)\n", (int)k);
 
             auto &left_part_tile = make_tensor_tile_partial(left_tile);
             left_part_tile.m_begin[1] = k + left_begin;
@@ -950,9 +907,6 @@ namespace expt
             right_part_tile.m_begin[0] = k + right_begin;
             right_part_tile.m_size[0] = k_size-k;
             auto right = et_right.eval(right_part_tile);
-
-//            printf("      left: "); left_part_tile.print();
-//            printf("      right:"); right_part_tile.print();
 
             // accumulate product
             //left.matrix_multiply_accumulate(result, right);
