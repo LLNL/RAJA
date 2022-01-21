@@ -15,29 +15,29 @@
 
 #include "RAJA/config.hpp"
 
-#define VARIANT_C                    0
-#define VARIANT_C_VIEWS              0
-#define VARIANT_RAJA_SEQ             0
-#define VARIANT_RAJA_SEQ_ARGS        0
-#define VARIANT_RAJA_TEAMS_SEQ       0
-#define VARIANT_RAJA_VECTOR          0
-#define VARIANT_RAJA_MATRIX          0
-#define VARIANT_RAJA_SEQ_SHMEM       0
+#define VARIANT_C                    1
+#define VARIANT_C_VIEWS              1
+#define VARIANT_RAJA_SEQ             1
+#define VARIANT_RAJA_SEQ_ARGS        1
+#define VARIANT_RAJA_TEAMS_SEQ       1
+#define VARIANT_RAJA_VECTOR          1
+#define VARIANT_RAJA_MATRIX          1
+#define VARIANT_RAJA_SEQ_SHMEM       1
 
 #if defined(RAJA_ENABLE_OPENMP)
-#define VARIANT_RAJA_OPENMP          0
+#define VARIANT_RAJA_OPENMP          1
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-#define VARIANT_CUDA_KERNEL          0
-#define VARIANT_CUDA_TEAMS           0
+#define VARIANT_CUDA_KERNEL          1
+#define VARIANT_CUDA_TEAMS           1
 #define VARIANT_CUDA_TEAMS_MATRIX    1
-#define VARIANT_CUDA_KERNEL_SHMEM    0
+#define VARIANT_CUDA_KERNEL_SHMEM    1
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-#define RAJA_HIP_KERNEL              0
-#define RAJA_HIP_KERNEL_SHMEM        0
+#define RAJA_HIP_KERNEL              1
+#define RAJA_HIP_KERNEL_SHMEM        1
 #endif
 
 
@@ -131,28 +131,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Define array dimensions, allocate arrays, define Layouts and Views, etc.
   // Note: rand()/RAND_MAX is always zero, but forces the compiler to not
   // optimize out these values as compile time constants
-  const int num_m = 32 + (rand()/RAND_MAX);
+  const int num_m = 25 + (rand()/RAND_MAX);
   const int num_g = 160 + (rand()/RAND_MAX);
-  const int num_d = 32 + (rand()/RAND_MAX);
-//
-//  const int num_m = 8 + (rand()/RAND_MAX);
-//  const int num_g = 1 + (rand()/RAND_MAX);
-//  const int num_d = 8 + (rand()/RAND_MAX);
-
+  const int num_d = 80 + (rand()/RAND_MAX);
 
 #ifdef DEBUG_LTIMES
   const int num_iter = 1 ; //+ (rand()/RAND_MAX);;
   // use a decreased number of zones since this will take a lot longer
   // and we're not really measuring performance here
-  const long num_z = 128 + (rand()/RAND_MAX);
+  const long num_z = 32 + (rand()/RAND_MAX);
 #else
-  const int num_iter = 20 + (rand()/RAND_MAX);
-  const int num_z = 32*32 + (rand()/RAND_MAX);
+  const int num_iter = 10 + (rand()/RAND_MAX);
+  const int num_z = 32*65536 + (rand()/RAND_MAX);
 
-//  const int num_z = 32 + (rand()/RAND_MAX);
-
-//  const int num_iter = 1 + (rand()/RAND_MAX);
-//  const int num_z = 32 + (rand()/RAND_MAX);
 #endif
 
 
@@ -1411,12 +1402,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
       RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
 
-        //RAJA::expt::tile<pol_z>(ctx, 32, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](RAJA::TypedRangeSegment<IZ> tz){
         RAJA::expt::tile<pol_z>(ctx, 32, RAJA::TypedRangeSegment<int>(0, num_z), [&](RAJA::TypedRangeSegment<int> tzi){
 
           RAJA::TypedRangeSegment<IZ> tz(*tzi.begin(), *tzi.end());
 
-for(int i = 0;i < 1000;++ i)
           phi(phi_RowM::all(), g, phi_ColZ(tz)) +=
               L(L_RowM::all(), L_ColD::all()) * psi(psi_RowD::all(), g, psi_ColZ(tz));
 
