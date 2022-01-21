@@ -17,7 +17,7 @@ void StoreImpl()
   using element_t = typename register_t::element_type;
   using policy_t = typename register_t::register_policy;
 
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
   // Allocate
   std::vector<element_t> input0_vec(num_elem);
@@ -25,7 +25,6 @@ void StoreImpl()
   element_t *input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(10*num_elem);
-  element_t *output0_hptr = output0_vec.data();
   element_t *output0_dptr = tensor_malloc<policy_t, element_t>(10*num_elem);
 
   // Initialize input data
@@ -38,7 +37,7 @@ void StoreImpl()
 
   // Initialize output
   for(camp::idx_t i = 0;i < 10*num_elem; ++ i){
-   output0_hptr[i] = (element_t)0;
+    output0_vec[i] = (element_t)0;
   }
   tensor_copy_to_device<policy_t>(output0_dptr, output0_vec);
 
@@ -48,7 +47,7 @@ void StoreImpl()
 
     // fill x
     register_t x;
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       x.set(input0_dptr[i], i);
     }
 
@@ -58,17 +57,17 @@ void StoreImpl()
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy
-  for(size_t i = 0;i < num_elem; ++ i){
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
     ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i]);
   }
 
 
 
-  for(int N = 0;N < num_elem; ++ N){
+  for(camp::idx_t N = 0;N < num_elem; ++ N){
 
     // Initialize output
     for(camp::idx_t i = 0;i < 10*num_elem; ++ i){
-     output0_hptr[i] = (element_t)0;
+      output0_vec[i] = (element_t)0;
     }
     tensor_copy_to_device<policy_t>(output0_dptr, output0_vec);
 
@@ -78,7 +77,7 @@ void StoreImpl()
 
       // fill x
       register_t x;
-      for(size_t i = 0;i < num_elem; ++ i){
+      for(camp::idx_t i = 0;i < num_elem; ++ i){
         x.set(input0_dptr[i], i);
       }
 
@@ -88,7 +87,7 @@ void StoreImpl()
     tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
     // check that we were able to copy using set/get
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       if(i < N){
         ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i]);
       }
@@ -102,7 +101,7 @@ void StoreImpl()
 
   // Initialize output
   for(camp::idx_t i = 0;i < 10*num_elem; ++ i){
-   output0_hptr[i] = (element_t)0;
+    output0_vec[i] = (element_t)0;
   }
   tensor_copy_to_device<policy_t>(output0_dptr, output0_vec);
 
@@ -112,7 +111,7 @@ void StoreImpl()
 
     // fill x
     register_t x;
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       x.set(input0_dptr[i], i);
     }
 
@@ -122,17 +121,17 @@ void StoreImpl()
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
-  for(size_t i = 0;i < num_elem; ++ i){
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
     ASSERT_SCALAR_EQ(output0_vec[2*i], input0_vec[i]);
   }
 
 
 
-  for(int N = 0;N < num_elem; ++ N){
+  for(camp::idx_t N = 0;N < num_elem; ++ N){
 
     // Initialize output
     for(camp::idx_t i = 0;i < 10*num_elem; ++ i){
-     output0_hptr[i] = (element_t)0;
+      output0_vec[i] = (element_t)0;
     }
     tensor_copy_to_device<policy_t>(output0_dptr, output0_vec);
 
@@ -143,7 +142,7 @@ void StoreImpl()
 
       // fill x
       register_t x;
-      for(size_t i = 0;i < num_elem; ++ i){
+      for(camp::idx_t i = 0;i < num_elem; ++ i){
         x.set(input0_dptr[i], i);
       }
 
@@ -153,7 +152,7 @@ void StoreImpl()
     tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
     // check that we were able to copy using set/get
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       if(i < N){
         ASSERT_SCALAR_EQ(output0_vec[2*i], input0_vec[i]);
       }

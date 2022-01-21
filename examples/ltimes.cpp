@@ -461,11 +461,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
 
-  using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
-  using pol_g = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
-  using pol_z = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
-  using pol_m = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
-  using pol_d = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
+  using pol_launch = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
+  using pol_g = RAJA::LoopPolicy<RAJA::loop_exec>;
+  using pol_z = RAJA::LoopPolicy<RAJA::loop_exec>;
+  using pol_m = RAJA::LoopPolicy<RAJA::loop_exec>;
+  using pol_d = RAJA::LoopPolicy<RAJA::loop_exec>;
 
 
 
@@ -473,12 +473,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   timer.start();
 
   for (int iter = 0;iter < num_iter;++ iter){
-    RAJA::expt::launch<pol_launch>(RAJA::expt::HOST, RAJA::expt::Resources(), [=](RAJA::expt::LaunchContext ctx){
+    RAJA::launch<pol_launch>(RAJA::HOST, RAJA::Grid(), [=](RAJA::LaunchContext ctx){
 
-      RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
-        RAJA::expt::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](IZ z){
-          RAJA::expt::loop<pol_m>(ctx, RAJA::TypedRangeSegment<IM>(0, num_m), [&](IM m){
-            RAJA::expt::loop<pol_d>(ctx, RAJA::TypedRangeSegment<ID>(0, num_d), [&](ID d){
+      RAJA::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
+        RAJA::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](IZ z){
+          RAJA::loop<pol_m>(ctx, RAJA::TypedRangeSegment<IM>(0, num_m), [&](IM m){
+            RAJA::loop<pol_d>(ctx, RAJA::TypedRangeSegment<ID>(0, num_d), [&](ID d){
               phi(m, g, z) += L(m, d) * psi(d, g, z);
             });
           });
@@ -1200,11 +1200,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                           cudaMemcpyHostToDevice ) );
 
 
-  using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t, RAJA::expt::cuda_launch_t<true, 512> >;
-  using pol_g = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_block_x_loop>;
-  using pol_z = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_thread_y_loop>;
-  using pol_m = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_thread_x_loop>;
-  using pol_d = RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
+  using pol_launch = RAJA::LaunchPolicy<RAJA::seq_launch_t, RAJA::cuda_launch_t<true, 512> >;
+  using pol_g = RAJA::LoopPolicy<RAJA::loop_exec, cuda_block_x_loop>;
+  using pol_z = RAJA::LoopPolicy<RAJA::loop_exec, cuda_thread_y_loop>;
+  using pol_m = RAJA::LoopPolicy<RAJA::loop_exec, cuda_thread_x_loop>;
+  using pol_d = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
 
 
   //
@@ -1238,19 +1238,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   for (int iter = 0;iter < num_iter;++ iter){
-    RAJA::expt::launch<pol_launch>(
-        RAJA::expt::DEVICE,
-        RAJA::expt::Resources(RAJA::expt::Teams(160, 1, 1),
-                              RAJA::expt::Threads(8, 64, 1)),
-        [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
+    RAJA::launch<pol_launch>(
+        RAJA::DEVICE,
+        RAJA::Grid(RAJA::Teams(160, 1, 1),
+                              RAJA::Threads(8, 64, 1)),
+        [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
     {
-      RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
-        RAJA::expt::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](IZ z){
-          RAJA::expt::loop<pol_m>(ctx, RAJA::TypedRangeSegment<IM>(0, num_m), [&](IM m){
+      RAJA::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
+        RAJA::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](IZ z){
+          RAJA::loop<pol_m>(ctx, RAJA::TypedRangeSegment<IM>(0, num_m), [&](IM m){
 
             double acc = phi(m, g, z);
 
-            RAJA::expt::loop<pol_d>(ctx, RAJA::TypedRangeSegment<ID>(0, num_d), [&](ID d){
+            RAJA::loop<pol_d>(ctx, RAJA::TypedRangeSegment<ID>(0, num_d), [&](ID d){
 
               acc += L(m, d) * psi(d, g, z);
 
@@ -1327,20 +1327,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using L_matrix_host_t = RAJA::SquareMatrixRegister<double, matrix_layout>;
   using L_matrix_device_t = RAJA::RectMatrixRegister<double, matrix_layout, 8, 4, RAJA::cuda_warp_register>;
-  using L_matrix_hd_t = RAJA::expt::LaunchPolicy<L_matrix_host_t, L_matrix_device_t>;
+  using L_matrix_hd_t = RAJA::LaunchPolicy<L_matrix_host_t, L_matrix_device_t>;
 
   using phi_matrix_host_t = RAJA::SquareMatrixRegister<double, matrix_layout>;
   using phi_matrix_device_t = RAJA::RectMatrixRegister<double, matrix_layout, 8, 8, RAJA::cuda_warp_register>;
-  using phi_matrix_hd_t = RAJA::expt::LaunchPolicy<L_matrix_host_t, phi_matrix_device_t>;
+  using phi_matrix_hd_t = RAJA::LaunchPolicy<L_matrix_host_t, phi_matrix_device_t>;
 
   using psi_matrix_host_t = RAJA::SquareMatrixRegister<double, matrix_layout>;
   using psi_matrix_device_t = RAJA::RectMatrixRegister<double, matrix_layout, 4, 8, RAJA::cuda_warp_register>;
-  using psi_matrix_hd_t = RAJA::expt::LaunchPolicy<L_matrix_host_t, psi_matrix_device_t>;
+  using psi_matrix_hd_t = RAJA::LaunchPolicy<L_matrix_host_t, psi_matrix_device_t>;
 
 
-  using pol_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t, RAJA::expt::cuda_launch_t<true , 1024> >;
-  using pol_g = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_block_x_direct>;
-  using pol_z = RAJA::expt::LoopPolicy<RAJA::loop_exec, cuda_thread_y_loop>;
+  using pol_launch = RAJA::LaunchPolicy<RAJA::seq_launch_t, RAJA::cuda_launch_t<true , 1024> >;
+  using pol_g = RAJA::LoopPolicy<RAJA::loop_exec, cuda_block_x_direct>;
+  using pol_z = RAJA::LoopPolicy<RAJA::loop_exec, cuda_thread_y_loop>;
 
 
   //
@@ -1379,11 +1379,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   printf("num_iter=%d\n", (int)num_iter);
   for (int iter = 0;iter < num_iter;++ iter){
-    RAJA::expt::launch<pol_launch>(
-        RAJA::expt::DEVICE,
-        RAJA::expt::Grid(RAJA::expt::Teams(num_g, 1, 1),
-                              RAJA::expt::Threads(32, 32, 1)),
-        [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
+    RAJA::launch<pol_launch>(
+        RAJA::DEVICE,
+        RAJA::Grid(RAJA::Teams(num_g, 1, 1),
+                              RAJA::Threads(32, 32, 1)),
+        [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
     {
 
 
@@ -1400,9 +1400,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       using phi_ColZ = RAJA::ColIndex<IZ, phi_matrix_t>;
 
 
-      RAJA::expt::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
+      RAJA::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
 
-        RAJA::expt::tile<pol_z>(ctx, 32, RAJA::TypedRangeSegment<int>(0, num_z), [&](RAJA::TypedRangeSegment<int> tzi){
+        RAJA::tile<pol_z>(ctx, 32, RAJA::TypedRangeSegment<int>(0, num_z), [&](RAJA::TypedRangeSegment<int> tzi){
 
           RAJA::TypedRangeSegment<IZ> tz(*tzi.begin(), *tzi.end());
 

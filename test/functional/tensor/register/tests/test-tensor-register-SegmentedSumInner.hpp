@@ -26,7 +26,6 @@ void SegmentedSumInnerImpl()
   element_t *input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(num_elem);
-  element_t *output0_hptr = output0_vec.data();
   element_t *output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
 
@@ -40,11 +39,11 @@ void SegmentedSumInnerImpl()
 
 
   // run segmented dot products for all segments allowed by the vector
-  for(int segbits = 0;(1<<segbits) <= num_elem;++ segbits){
+  for(camp::idx_t segbits = 0;(1<<segbits) <= num_elem;++ segbits){
 
-    int num_segments = 1<<segbits;
+    camp::idx_t num_segments = 1<<segbits;
 
-    for(int output_segment = 0;output_segment < num_segments;++ output_segment){
+    for(camp::idx_t output_segment = 0;output_segment < num_segments;++ output_segment){
 
       // Execute segmented broadcast
       tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
@@ -70,7 +69,7 @@ void SegmentedSumInnerImpl()
         expected[i] = 0;
       }
 
-      int output_offset = output_segment * num_elem>>segbits;
+      camp::idx_t output_offset = output_segment * num_elem>>segbits;
 
       // sum each value into appropriate segment lane
       for(camp::idx_t i = 0;i < num_elem; ++ i){
@@ -84,7 +83,7 @@ void SegmentedSumInnerImpl()
 
       for(camp::idx_t i = 0;i < num_elem; ++ i){
 
-        ASSERT_SCALAR_EQ(expected[i], output0_hptr[i]);
+        ASSERT_SCALAR_EQ(expected[i], output0_vec[i]);
       }
 
     } // segment

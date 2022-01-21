@@ -30,7 +30,6 @@ void DotProductImpl()
   element_t *input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(1);
-  element_t *output0_hptr = output0_vec.data();
   element_t *output0_dptr = tensor_malloc<policy_t, element_t>(1);
 
 
@@ -63,7 +62,7 @@ void DotProductImpl()
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   element_t expected = 0;
-  for(int lane = 0;lane < num_elem;++ lane){
+  for(camp::idx_t lane = 0;lane < num_elem;++ lane){
     expected += input0_vec[lane] * input1_vec[lane];
   }
   ASSERT_SCALAR_EQ(expected, output0_vec[0]);

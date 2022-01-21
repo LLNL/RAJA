@@ -17,7 +17,7 @@ void LoadImpl()
   using element_t = typename register_t::element_type;
   using policy_t = typename register_t::register_policy;
 
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
   // Allocate
   std::vector<element_t> input0_vec(10*num_elem);
@@ -25,7 +25,6 @@ void LoadImpl()
   element_t *input0_dptr = tensor_malloc<policy_t, element_t>(10*num_elem);
 
   std::vector<element_t> output0_vec(num_elem);
-  element_t *output0_hptr = output0_vec.data();
   element_t *output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   // Initialize input data
@@ -46,7 +45,7 @@ void LoadImpl()
     x.load_packed(input0_dptr);
 
     // extract from x using get
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       output0_dptr[i] = x.get(i);
     }
 
@@ -54,13 +53,13 @@ void LoadImpl()
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
-  for(size_t i = 0;i < num_elem; ++ i){
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
     ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i]);
   }
 
 
 
-  for(int N = 0;N < num_elem; ++ N){
+  for(camp::idx_t N = 0;N < num_elem; ++ N){
     // load stride-1 from pointer
     tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
@@ -69,7 +68,7 @@ void LoadImpl()
       x.load_packed_n(input0_dptr, N);
 
       // extract from x using get
-      for(size_t i = 0;i < num_elem; ++ i){
+      for(camp::idx_t i = 0;i < num_elem; ++ i){
         output0_dptr[i] = x.get(i);
       }
 
@@ -77,7 +76,7 @@ void LoadImpl()
     tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
     // check that we were able to copy using set/get
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       if(i < N){
         ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i]);
       }
@@ -98,7 +97,7 @@ void LoadImpl()
     x.load_strided(input0_dptr, 2);
 
     // extract from x using get
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       output0_dptr[i] = x.get(i);
     }
 
@@ -106,13 +105,13 @@ void LoadImpl()
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
-  for(size_t i = 0;i < num_elem; ++ i){
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
     ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i*2]);
   }
 
 
 
-  for(int N = 0;N < num_elem; ++ N){
+  for(camp::idx_t N = 0;N < num_elem; ++ N){
     // load stride-2 from pointer
     tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
@@ -121,7 +120,7 @@ void LoadImpl()
       x.load_strided_n(input0_dptr, 2, N);
 
       // extract from x using get
-      for(size_t i = 0;i < num_elem; ++ i){
+      for(camp::idx_t i = 0;i < num_elem; ++ i){
         output0_dptr[i] = x.get(i);
       }
 
@@ -129,7 +128,7 @@ void LoadImpl()
     tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
     // check that we were able to copy using set/get
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       if(i < N){
         ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i*2]);
       }

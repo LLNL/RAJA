@@ -26,7 +26,6 @@ void SegmentedBroadcastInnerImpl()
   element_t *input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(num_elem);
-  element_t *output0_hptr = output0_vec.data();
   element_t *output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
 
@@ -42,12 +41,12 @@ void SegmentedBroadcastInnerImpl()
 
 
   // run segmented dot products for all segments allowed by the vector
-  for(int segbits = 0;(1<<segbits) <= num_elem;++ segbits){
+  for(camp::idx_t segbits = 0;(1<<segbits) <= num_elem;++ segbits){
 
-    int num_segments = num_elem>>segbits;
+    camp::idx_t num_segments = num_elem>>segbits;
 
-    for(int input_segment = 0;input_segment < num_segments;++ input_segment){
-//      printf("segbits=%d, input_segment=%d\n", (int)segbits, (int)input_segment);
+    for(camp::idx_t input_segment = 0;input_segment < num_segments;++ input_segment){
+//      printf("segbits=%d, input_segment=%d\n", (camp::idx_t)segbits, (camp::idx_t)input_segment);
 
       // Execute segmented broadcast
       tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
@@ -82,7 +81,7 @@ void SegmentedBroadcastInnerImpl()
 
         expected[i] = input0_hptr[off];
 
-//        printf("%d ", (int)off);
+//        printf("%d ", (camp::idx_t)off);
         //printf("%lf ", (double)expected[i]);
       }
 //      printf("\n");
@@ -90,13 +89,13 @@ void SegmentedBroadcastInnerImpl()
 
 //      printf("Result:   ");
 //      for(camp::idx_t i = 0;i < num_elem; ++ i){
-//        printf("%lf ", (double)output0_hptr[i]);
+//        printf("%lf ", (double)output0_vec[i]);
 //      }
 //      printf("\n");
 
       for(camp::idx_t i = 0;i < num_elem; ++ i){
 
-        ASSERT_SCALAR_EQ(expected[i], output0_hptr[i]);
+        ASSERT_SCALAR_EQ(expected[i], output0_vec[i]);
       }
 
     } // segment

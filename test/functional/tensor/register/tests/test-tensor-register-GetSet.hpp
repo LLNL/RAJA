@@ -17,7 +17,7 @@ void GetSetImpl()
   using element_t = typename register_t::element_type;
   using policy_t = typename register_t::register_policy;
 
-  static constexpr size_t num_elem = register_t::s_num_elem;
+  static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
   // Allocate
   std::vector<element_t> input0_vec(num_elem);
@@ -25,7 +25,6 @@ void GetSetImpl()
   element_t *input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(num_elem);
-  element_t *output0_hptr = output0_vec.data();
   element_t *output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   // Initialize input data
@@ -40,12 +39,12 @@ void GetSetImpl()
 
     // fill x using set
     register_t x;
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       x.set(input0_dptr[i], i);
     }
 
     // extract from x using get
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       output0_dptr[i] = x.get(i);
     }
 
@@ -53,7 +52,7 @@ void GetSetImpl()
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
-  for(size_t i = 0;i < num_elem; ++ i){
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
     ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i]);
   }
 
@@ -65,14 +64,14 @@ void GetSetImpl()
 
     // fill x using set
     register_t x;
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       x.set(input0_dptr[i], i);
     }
 
     register_t cc(x);
 
     // extract from x using get
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       output0_dptr[i] = cc.get(i);
     }
 
@@ -80,7 +79,7 @@ void GetSetImpl()
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
-  for(size_t i = 0;i < num_elem; ++ i){
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
     ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i]);
   }
 
@@ -94,7 +93,7 @@ void GetSetImpl()
 
     // fill x using set
     register_t x;
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       x.set(input0_dptr[i], i);
     }
 
@@ -102,7 +101,7 @@ void GetSetImpl()
     cc.copy(x);
 
     // extract from x using get
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       output0_dptr[i] = cc.get(i);
     }
 
@@ -110,7 +109,7 @@ void GetSetImpl()
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
-  for(size_t i = 0;i < num_elem; ++ i){
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
     ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i]);
   }
 
@@ -124,14 +123,14 @@ void GetSetImpl()
 
     // fill x using set
     register_t x;
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       x.set(input0_dptr[i], i);
     }
 
     register_t cc = x;
 
     // extract from x using get
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       output0_dptr[i] = cc.get(i);
     }
 
@@ -139,7 +138,7 @@ void GetSetImpl()
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
-  for(size_t i = 0;i < num_elem; ++ i){
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
     ASSERT_SCALAR_EQ(output0_vec[i], input0_vec[i]);
   }
 
@@ -155,7 +154,7 @@ void GetSetImpl()
     register_t cc = (element_t) 5;
 
     // extract from x using get
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       output0_dptr[i] = cc.get(i);
     }
 
@@ -163,7 +162,7 @@ void GetSetImpl()
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
-  for(size_t i = 0;i < num_elem; ++ i){
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
     ASSERT_SCALAR_EQ(output0_vec[i], (element_t)5);
   }
 
@@ -181,7 +180,7 @@ void GetSetImpl()
     cc = (element_t) 11.0;
 
     // extract from x using get
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       output0_dptr[i] = cc.get(i);
     }
 
@@ -189,7 +188,7 @@ void GetSetImpl()
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
-  for(size_t i = 0;i < num_elem; ++ i){
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
     ASSERT_SCALAR_EQ(output0_vec[i], (element_t)11);
   }
 
@@ -204,7 +203,7 @@ void GetSetImpl()
     cc.broadcast(13.0);
 
     // extract from x using get
-    for(size_t i = 0;i < num_elem; ++ i){
+    for(camp::idx_t i = 0;i < num_elem; ++ i){
       output0_dptr[i] = cc.get(i);
     }
 
@@ -212,7 +211,7 @@ void GetSetImpl()
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
-  for(size_t i = 0;i < num_elem; ++ i){
+  for(camp::idx_t i = 0;i < num_elem; ++ i){
     ASSERT_SCALAR_EQ(output0_vec[i], (element_t)13);
   }
 

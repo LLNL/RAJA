@@ -11,7 +11,7 @@ set(TENSOR_MATRIX_TESTS
 				Load_RowMajor
 				Load_ColMajor
 				Store_RowMajor
-				Transpose
+				#Transpose     # AJK:  Disabled, feature not complete yet
                 Store_ColMajor
                 ET_LoadStore
                 ET_Add
@@ -21,7 +21,8 @@ set(TENSOR_MATRIX_TESTS
                 ET_MatrixMatrixMultiply
                 ET_MatrixMatrixMultiplyAdd
                 ET_Negate
-                ET_Transpose)
+                #ET_Transpose    # AJK:  Disabled, feature not complete yet
+                )
 				
 set(TENSOR_MATRIX_LAYOUTS
                 RowMajor

@@ -30,7 +30,6 @@ void SegmentedDotProductImpl()
   element_t *input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(num_elem);
-  element_t *output0_hptr = output0_vec.data();
   element_t *output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
 
@@ -46,11 +45,11 @@ void SegmentedDotProductImpl()
 
 
   // run segmented dot products for all segments allowed by the vector
-  for(int segbits = 0;(1<<segbits) <= num_elem;++ segbits){
+  for(camp::idx_t segbits = 0;(1<<segbits) <= num_elem;++ segbits){
 
-    int num_output_segments = 1<<segbits;
+    camp::idx_t num_output_segments = 1<<segbits;
 
-    for(int output_segment = 0;output_segment < num_output_segments;++output_segment){
+    for(camp::idx_t output_segment = 0;output_segment < num_output_segments;++output_segment){
 
 
       tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
@@ -73,16 +72,16 @@ void SegmentedDotProductImpl()
       // Compute expected values
       std::vector<element_t> expected(num_elem);
 
-      int offset = output_segment * num_elem/(1<<segbits);
+      camp::idx_t offset = output_segment * num_elem/(1<<segbits);
 
-      for(size_t i = 0;i < num_elem; ++ i){
+      for(camp::idx_t i = 0;i < num_elem; ++ i){
         expected[i] = 0;
       }
-      for(size_t i = 0;i < num_elem; ++ i){
+      for(camp::idx_t i = 0;i < num_elem; ++ i){
         expected[(i>>segbits) + offset] += input0_vec[i]*input1_vec[i];
       }
 
-      for(size_t i = 0;i < num_elem; ++ i){
+      for(camp::idx_t i = 0;i < num_elem; ++ i){
         ASSERT_SCALAR_EQ(expected[i], output0_vec[i]);
       }
 

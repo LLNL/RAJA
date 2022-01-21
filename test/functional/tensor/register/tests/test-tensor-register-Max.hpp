@@ -76,7 +76,7 @@ void MaxImpl()
 
   // compute expected value for reduction
   element_t expected = input0_vec[0];
-  for(int i = 1;i < num_elem;++i){
+  for(camp::idx_t i = 1;i < num_elem;++i){
     expected = expected < input0_vec[i] ? input0_vec[i] : expected;
   }
 
@@ -85,7 +85,7 @@ void MaxImpl()
 
 
   // check element-wise operation
-  for(int i = 0;i < num_elem;++i){
+  for(camp::idx_t i = 0;i < num_elem;++i){
     ASSERT_SCALAR_EQ(std::max<element_t>(input0_vec[i], input1_vec[i]), output1_vec[i]);
   }
 
@@ -93,7 +93,7 @@ void MaxImpl()
   //
   // check variable length operator
   //
-  for(int N = 0;N <= num_elem;++ N){
+  for(camp::idx_t N = 0;N <= num_elem;++ N){
     //
     //  Check full-length operations
     //
@@ -112,7 +112,7 @@ void MaxImpl()
 
     // compute expected value for reduction
     element_t expected = RAJA::operators::limits<element_t>::min();
-    for(int i = 0;i < N;++i){
+    for(camp::idx_t i = 0;i < N;++i){
       expected = expected < input0_vec[i] ? input0_vec[i] : expected;
     }
 

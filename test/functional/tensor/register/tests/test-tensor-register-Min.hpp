@@ -26,7 +26,6 @@ void MinImpl()
   element_t *input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> input1_vec(num_elem);
-  element_t *input1_hptr = input1_vec.data();
   element_t *input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(1);
@@ -76,7 +75,7 @@ void MinImpl()
 
   // compute expected value for reduction
   element_t expected = input0_vec[0];
-  for(int i = 1;i < num_elem;++i){
+  for(camp::idx_t i = 1;i < num_elem;++i){
     expected = expected > input0_vec[i] ? input0_vec[i] : expected;
   }
 
@@ -85,7 +84,7 @@ void MinImpl()
 
 
   // check element-wise operation
-  for(int i = 0;i < num_elem;++i){
+  for(camp::idx_t i = 0;i < num_elem;++i){
     ASSERT_SCALAR_EQ(std::min<element_t>(input0_vec[i], input1_vec[i]), output1_vec[i]);
   }
 
@@ -93,7 +92,7 @@ void MinImpl()
   //
   // check variable length operator
   //
-  for(int N = 0;N <= num_elem;++ N){
+  for(camp::idx_t N = 0;N <= num_elem;++ N){
     //
     //  Check full-length operations
     //
@@ -112,7 +111,7 @@ void MinImpl()
 
     // compute expected value for reduction
     element_t expected = RAJA::operators::limits<element_t>::max();
-    for(int i = 0;i < N;++i){
+    for(camp::idx_t i = 0;i < N;++i){
       expected = expected > input0_vec[i] ? input0_vec[i] : expected;
     }
 

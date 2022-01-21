@@ -30,7 +30,6 @@ void DivideImpl()
   element_t *input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(num_elem);
-  element_t *output0_hptr = output0_vec.data();
   element_t *output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
 
@@ -64,7 +63,7 @@ void DivideImpl()
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
-  for(int lane = 0;lane < num_elem;++ lane){
+  for(camp::idx_t  lane = 0;lane < num_elem;++ lane){
     ASSERT_SCALAR_EQ(input0_vec[lane] / input1_vec[lane], output0_vec[lane]);
   }
 
@@ -88,7 +87,7 @@ void DivideImpl()
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
-  for(int lane = 0;lane < num_elem;++ lane){
+  for(camp::idx_t  lane = 0;lane < num_elem;++ lane){
     ASSERT_SCALAR_EQ(input0_vec[lane] / input1_vec[lane], output0_vec[lane]);
   }
 
@@ -108,7 +107,7 @@ void DivideImpl()
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
-  for(int lane = 0;lane < num_elem;++ lane){
+  for(camp::idx_t  lane = 0;lane < num_elem;++ lane){
     ASSERT_SCALAR_EQ(input0_vec[lane] / 7, output0_vec[lane]);
   }
 
@@ -130,7 +129,7 @@ void DivideImpl()
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
-  for(int lane = 0;lane < num_elem;++ lane){
+  for(camp::idx_t  lane = 0;lane < num_elem;++ lane){
     ASSERT_SCALAR_EQ(input0_vec[lane] / 3, output0_vec[lane]);
   }
 
@@ -138,7 +137,7 @@ void DivideImpl()
   //
   // Test variable length operations for all valid lengths
   //
-  for(int N = 0;N < num_elem; ++N){
+  for(camp::idx_t  N = 0;N < num_elem; ++N){
 
     tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
@@ -155,7 +154,7 @@ void DivideImpl()
 
     tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
-    for(int lane = 0;lane < num_elem;++ lane){
+    for(camp::idx_t  lane = 0;lane < num_elem;++ lane){
       if(lane < N){
         ASSERT_SCALAR_EQ(input0_vec[lane] / input1_vec[lane], output0_vec[lane]);
       }

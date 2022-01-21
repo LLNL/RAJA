@@ -1023,7 +1023,10 @@ namespace expt
 
       /*!
        * Matrix transpose, keeping layout
+       *
+       * Transpose is not completely implemented
        */
+#if 0
       RAJA_HOST_DEVICE
       RAJA_INLINE
       transpose_type transpose() const {
@@ -1166,7 +1169,7 @@ namespace expt
       transpose_tensor_type const &transpose_by_type() const {
         return reinterpret_cast<transpose_tensor_type const &>(*this);
       }
-
+#endif
       /*!
        * Matrix vector product
        */

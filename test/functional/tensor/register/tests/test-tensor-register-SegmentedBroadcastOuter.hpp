@@ -26,7 +26,6 @@ void SegmentedBroadcastOuterImpl()
   element_t *input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(num_elem);
-  element_t *output0_hptr = output0_vec.data();
   element_t *output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
 
@@ -42,11 +41,11 @@ void SegmentedBroadcastOuterImpl()
 
 
   // run segmented dot products for all segments allowed by the vector
-  for(int segbits = 0;(1<<segbits) <= num_elem;++ segbits){
+  for(camp::idx_t segbits = 0;(1<<segbits) <= num_elem;++ segbits){
 
-    int num_segments = (1<<segbits);
+    camp::idx_t num_segments = (1<<segbits);
 
-    for(int input_segment = 0;input_segment < num_segments;++ input_segment){
+    for(camp::idx_t input_segment = 0;input_segment < num_segments;++ input_segment){
 
       // Execute segmented broadcast
       tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
@@ -72,9 +71,9 @@ void SegmentedBroadcastOuterImpl()
 
       element_t expected[num_elem];
       for(camp::idx_t i = 0;i < num_elem; ++ i){
-        int seg = i>>segbits;
+        camp::idx_t seg = i>>segbits;
 
-        int off = (num_elem>>segbits)*input_segment + seg;
+        camp::idx_t off = (num_elem>>segbits)*input_segment + seg;
 
         expected[i] = input0_hptr[off];
 //        printf("%lf ", (double)expected[i]);
@@ -83,7 +82,7 @@ void SegmentedBroadcastOuterImpl()
 
 
       for(camp::idx_t i = 0;i < num_elem; ++ i){
-        ASSERT_SCALAR_EQ(expected[i], output0_hptr[i]);
+        ASSERT_SCALAR_EQ(expected[i], output0_vec[i]);
       }
 
     } // segment
