@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -14,10 +14,13 @@
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct AndEqOtherOp : int_op {
-  AndEqOtherOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
-    : other(count), min(T(0)), max((T)seg.size()),
+  AndEqOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
+    : other(dcount), min(T(0)), max((T)seg.size()),
     final_min(min), final_max(min)
-  { count[0] = np2m1((T)seg.size()); }
+  {
+    hcount[0] = np2m1((T)seg.size());
+    work_res.memcpy(dcount, hcount, sizeof(T));
+  }
   RAJA_HOST_DEVICE
     T operator()(IdxType i) const
     { return other &= (T)i; }
@@ -27,10 +30,13 @@ struct AndEqOtherOp : int_op {
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct FetchAndOtherOp : int_op {
-  FetchAndOtherOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
-    : other(count), min(T(0)), max(np2m1((T)seg.size())),
+  FetchAndOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
+    : other(dcount), min(T(0)), max(np2m1((T)seg.size())),
     final_min(min), final_max(min)
-  { count[0] = max; }
+  {
+    hcount[0] = max;
+    work_res.memcpy(dcount, hcount, sizeof(T));
+  }
   RAJA_HOST_DEVICE
     T operator()(IdxType i) const
     { return other.fetch_and((T)i); }
@@ -40,10 +46,13 @@ struct FetchAndOtherOp : int_op {
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct OrEqOtherOp : int_op {
-  OrEqOtherOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
-    : other(count), min(T(0)), max(np2m1((T)seg.size())),
+  OrEqOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
+    : other(dcount), min(T(0)), max(np2m1((T)seg.size())),
     final_min(max), final_max(max)
-  { count[0] = T(0); }
+  {
+    hcount[0] = T(0);
+    work_res.memcpy(dcount, hcount, sizeof(T));
+  }
   RAJA_HOST_DEVICE
     T operator()(IdxType i) const
     { return other |= (T)i; }
@@ -53,10 +62,13 @@ struct OrEqOtherOp : int_op {
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct FetchOrOtherOp : int_op {
-  FetchOrOtherOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
-    : other(count), min(T(0)), max(np2m1((T)seg.size())),
+  FetchOrOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
+    : other(dcount), min(T(0)), max(np2m1((T)seg.size())),
     final_min(max), final_max(max)
-  { count[0] = T(0); }
+  {
+    hcount[0] = T(0);
+    work_res.memcpy(dcount, hcount, sizeof(T));
+  }
   RAJA_HOST_DEVICE
     T operator()(IdxType i) const
     { return other.fetch_or((T)i); }
@@ -66,13 +78,16 @@ struct FetchOrOtherOp : int_op {
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct XorEqOtherOp : int_op {
-  XorEqOtherOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
-    : other(count), min(T(0)), max(np2m1((T)seg.size())),
+  XorEqOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
+    : other(dcount), min(T(0)), max(np2m1((T)seg.size())),
     final_min(min), final_max(min)
-  { count[0] = T(0);
+  {
+    hcount[0] = T(0);
+    work_res.memcpy(dcount, hcount, sizeof(T));
     for (IdxType i = 0; i < seg.size(); ++i) {
       final_min ^= (T)i; final_max ^= (T)i;
-    } }
+    }
+  }
   RAJA_HOST_DEVICE
     T operator()(IdxType i) const
     { return other ^= (T)i; }
@@ -82,13 +97,16 @@ struct XorEqOtherOp : int_op {
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct FetchXorOtherOp : int_op {
-  FetchXorOtherOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
-    : other(count), min(T(0)), max(np2m1((T)seg.size())),
+  FetchXorOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
+    : other(dcount), min(T(0)), max(np2m1((T)seg.size())),
     final_min(min), final_max(min)
-  { count[0] = T(0);
+  {
+    hcount[0] = T(0);
+    work_res.memcpy(dcount, hcount, sizeof(T));
     for (IdxType i = 0; i < seg.size(); ++i) {
       final_min ^= (T)i; final_max ^= (T)i;
-    } }
+    }
+  }
   RAJA_HOST_DEVICE
     T operator()(IdxType i) const
     { return other.fetch_xor((T)i); }
@@ -107,7 +125,9 @@ typename std::enable_if<
             std::is_base_of<int_op, OtherOp<T,AtomicPolicy, IdxType>>::value)
          >::type
 testAtomicRefLogicalOp(RAJA::TypedRangeSegment<IdxType> RAJA_UNUSED_ARG(seg), 
-                     T* RAJA_UNUSED_ARG(count), T* RAJA_UNUSED_ARG(list))
+                     T* RAJA_UNUSED_ARG(count), T* RAJA_UNUSED_ARG(list),
+                     T* RAJA_UNUSED_ARG(hcount), T* RAJA_UNUSED_ARG(hlist),
+                     camp::resources::Resource RAJA_UNUSED_ARG(work_res), IdxType RAJA_UNUSED_ARG(N))
 {
 }
 
@@ -122,9 +142,11 @@ typename std::enable_if<
             std::is_base_of<int_op, OtherOp<T,AtomicPolicy, IdxType>>::value) || 
             (std::is_base_of<all_op, OtherOp<T,AtomicPolicy, IdxType>>::value)
          >::type
-testAtomicRefLogicalOp(RAJA::TypedRangeSegment<IdxType> seg, T* count, T* list)
+testAtomicRefLogicalOp(RAJA::TypedRangeSegment<IdxType> seg, T* count, T* list,
+    T* hcount, T* hlist,
+    camp::resources::Resource work_res, IdxType N)
 {
-  OtherOp<T, AtomicPolicy, IdxType> otherop(count, seg);
+  OtherOp<T, AtomicPolicy, IdxType> otherop(count, hcount, work_res, seg);
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
       list[i] = otherop.max + (T)1;
   });
@@ -138,11 +160,15 @@ testAtomicRefLogicalOp(RAJA::TypedRangeSegment<IdxType> seg, T* count, T* list)
 #if defined(RAJA_ENABLE_HIP)
   hipErrchk(hipDeviceSynchronize());
 #endif
-  EXPECT_LE(otherop.final_min, count[0]);
-  EXPECT_GE(otherop.final_max, count[0]);
+
+  work_res.memcpy( hcount, count, sizeof(T) );
+  work_res.memcpy( hlist, list, sizeof(T) * N );
+
+  EXPECT_LE(otherop.final_min, hcount[0]);
+  EXPECT_GE(otherop.final_max, hcount[0]);
   for (IdxType i = 0; i < seg.size(); i++) {
-    EXPECT_LE(otherop.min, list[i]);
-    EXPECT_GE(otherop.max, list[i]);
+    EXPECT_LE(otherop.min, hlist[i]);
+    EXPECT_GE(otherop.max, hlist[i]);
   }
 }
 
@@ -156,11 +182,15 @@ void ForallAtomicRefLogicalTestImpl( IdxType N )
 {
   RAJA::TypedRangeSegment<IdxType> seg(0, N);
 
-  camp::resources::Resource count_res{WORKINGRES()};
-  camp::resources::Resource list_res{WORKINGRES()};
+  camp::resources::Resource work_res{WORKINGRES()};
 
-  T * count   = count_res.allocate<T>(1);
-  T * list    = list_res.allocate<T>(N);
+  camp::resources::Resource host_res{camp::resources::Host()};
+
+  T * count   = work_res.allocate<T>(1);
+  T * list    = work_res.allocate<T>(N);
+
+  T * hcount   = host_res.allocate<T>(1);
+  T * hlist    = host_res.allocate<T>(N);
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
@@ -173,20 +203,22 @@ void ForallAtomicRefLogicalTestImpl( IdxType N )
   // Note: These integral tests require return type conditional overloading 
   //       of testAtomicRefLogicalOp
   testAtomicRefLogicalOp<ExecPolicy, AtomicPolicy, IdxType, T, 
-                       AndEqOtherOp   >(seg, count, list);
+                       AndEqOtherOp   >(seg, count, list, hcount, hlist, work_res, N);
   testAtomicRefLogicalOp<ExecPolicy, AtomicPolicy, IdxType, T, 
-                       FetchAndOtherOp>(seg, count, list);
+                       FetchAndOtherOp>(seg, count, list, hcount, hlist, work_res, N);
   testAtomicRefLogicalOp<ExecPolicy, AtomicPolicy, IdxType, T, 
-                       OrEqOtherOp    >(seg, count, list);
+                       OrEqOtherOp    >(seg, count, list, hcount, hlist, work_res, N);
   testAtomicRefLogicalOp<ExecPolicy, AtomicPolicy, IdxType, T, 
-                       FetchOrOtherOp >(seg, count, list);
+                       FetchOrOtherOp >(seg, count, list, hcount, hlist, work_res, N);
   testAtomicRefLogicalOp<ExecPolicy, AtomicPolicy, IdxType, T, 
-                       XorEqOtherOp   >(seg, count, list);
+                       XorEqOtherOp   >(seg, count, list, hcount, hlist, work_res, N);
   testAtomicRefLogicalOp<ExecPolicy, AtomicPolicy, IdxType, T, 
-                       FetchXorOtherOp>(seg, count, list);
+                       FetchXorOtherOp>(seg, count, list, hcount, hlist, work_res, N);
 
-  count_res.deallocate( count );
-  list_res.deallocate( list );
+  work_res.deallocate( count );
+  work_res.deallocate( list );
+  host_res.deallocate( hcount );
+  host_res.deallocate( hlist );
 }
 
 

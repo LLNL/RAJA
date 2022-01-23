@@ -9,8 +9,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -37,7 +37,7 @@ namespace Iterators
 
 // Containers
 
-#if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+#if defined(RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG)
 template <typename LType, typename RType>
 std::string overflow_msg(LType lhs, RType rhs)
 {
@@ -177,7 +177,7 @@ public:
   RAJA_HOST_DEVICE inline numeric_iterator& operator+=(
       const difference_type& rhs)
   {
-#if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+#if defined(RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG)
     check_is_addition_overflow(val, rhs);
 #endif
     val += rhs;
@@ -186,7 +186,7 @@ public:
   RAJA_HOST_DEVICE inline numeric_iterator& operator-=(
       const difference_type& rhs)
   {
-#if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+#if defined(RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG)
     check_is_subtraction_overflow(val, rhs);
 #endif
     val -= rhs;
@@ -218,7 +218,7 @@ public:
   RAJA_HOST_DEVICE inline numeric_iterator operator+(
       const difference_type& rhs) const
   {
-#if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+#if defined(RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG)
     check_is_addition_overflow(val, rhs);
 #endif
     return numeric_iterator(val + rhs);
@@ -226,7 +226,7 @@ public:
   RAJA_HOST_DEVICE inline numeric_iterator operator-(
       const difference_type& rhs) const
   {
-#if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+#if defined(RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG)
     check_is_subtraction_overflow(val, rhs);
 #endif
     return numeric_iterator(val - rhs);
@@ -235,7 +235,7 @@ public:
       difference_type lhs,
       const numeric_iterator& rhs)
   {
-#if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+#if defined(RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG)
     return is_addition_overflow(rhs.val, lhs)
                ? throw std::runtime_error(overflow_msg(lhs, rhs.val))
                : numeric_iterator(lhs + rhs.val);
@@ -247,7 +247,7 @@ public:
       difference_type lhs,
       const numeric_iterator& rhs)
   {
-#if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+#if defined(RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG)
     return is_subtraction_overflow(rhs.val, lhs, false)
                ? throw std::runtime_error(overflow_msg(lhs, rhs.val))
                : numeric_iterator(lhs - rhs.val);
@@ -315,7 +315,7 @@ public:
   RAJA_HOST_DEVICE inline strided_numeric_iterator& operator+=(
       const difference_type& rhs)
   {
-#if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+#if defined(RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG)
     check_is_addition_overflow(val, rhs * stride);
 #endif
     val += rhs * stride;
@@ -324,7 +324,7 @@ public:
   RAJA_HOST_DEVICE inline strided_numeric_iterator& operator-=(
       const difference_type& rhs)
   {
-#if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+#if defined(RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG)
     check_is_subtraction_overflow(val, rhs * stride);
 #endif
     val -= rhs * stride;
@@ -351,7 +351,7 @@ public:
   RAJA_HOST_DEVICE inline strided_numeric_iterator operator+(
       const difference_type& rhs) const
   {
-#if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+#if defined(RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG)
     check_is_addition_overflow(val, rhs * stride);
 #endif
     return strided_numeric_iterator(val + rhs * stride, stride);
@@ -359,7 +359,7 @@ public:
   RAJA_HOST_DEVICE inline strided_numeric_iterator operator-(
       const difference_type& rhs) const
   {
-#if defined(ENABLE_ITERATOR_OVERFLOW_DEBUG)
+#if defined(RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG)
     check_is_subtraction_overflow(val, rhs * stride);
 #endif
     return strided_numeric_iterator(val - rhs * stride, stride);

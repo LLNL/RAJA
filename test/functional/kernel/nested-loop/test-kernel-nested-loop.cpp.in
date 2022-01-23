@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -13,9 +13,6 @@
 
 #include "test-kernel@RESOURCE@nested-loop-@NESTED_LOOP_TYPE@.hpp"
 
-// ----------------------------------------------------------------------------
-// Sequential
-// ----------------------------------------------------------------------------
 using SequentialKernelNestedLoopExecPols = camp::list<
 
     // Depth 2 Exec Pols
@@ -24,13 +21,13 @@ using SequentialKernelNestedLoopExecPols = camp::list<
     NestedLoopData<DEPTH_2, RAJA::loop_exec, RAJA::seq_exec  >,
     NestedLoopData<DEPTH_2, RAJA::loop_exec, RAJA::loop_exec >,
 
+    // Collapse Exec Pols
+    NestedLoopData<DEPTH_2_COLLAPSE, RAJA::seq_exec >,
+
     // Depth 3 Exec Pols
     NestedLoopData<DEPTH_3, RAJA::seq_exec,  RAJA::seq_exec, RAJA::seq_exec >
   >;
 
-// ----------------------------------------------------------------------------
-// OpenMP
-// ----------------------------------------------------------------------------
 #if defined(RAJA_ENABLE_OPENMP)
 
 using OpenMPKernelNestedLoopExecPols = camp::list<
@@ -44,6 +41,9 @@ using OpenMPKernelNestedLoopExecPols = camp::list<
 
     // Collapse Exec Pols
     NestedLoopData<DEPTH_2_COLLAPSE, RAJA::omp_parallel_collapse_exec >,
+    NestedLoopData<DEPTH_3_COLLAPSE, RAJA::omp_parallel_collapse_exec >,
+    NestedLoopData<DEPTH_3_COLLAPSE_SEQ_INNER, RAJA::omp_parallel_collapse_exec >,
+    NestedLoopData<DEPTH_3_COLLAPSE_SEQ_OUTER, RAJA::omp_parallel_collapse_exec >,
 
     // Depth 3 Exec Pols
     NestedLoopData<DEPTH_3, RAJA::omp_parallel_for_exec, RAJA::loop_exec, RAJA::loop_exec >,
@@ -53,9 +53,6 @@ using OpenMPKernelNestedLoopExecPols = camp::list<
 #endif  // RAJA_ENABLE_OPENMP
 
 
-// ----------------------------------------------------------------------------
-// OpenMP Target
-// ----------------------------------------------------------------------------
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 
 using OpenMPTargetKernelNestedLoopExecPols = camp::list<
@@ -74,9 +71,6 @@ using OpenMPTargetKernelNestedLoopExecPols = camp::list<
 #endif  // RAJA_ENABLE_TARGET_OPENMP
 
 
-// ----------------------------------------------------------------------------
-// TBB
-// ----------------------------------------------------------------------------
 #if defined(RAJA_ENABLE_TBB)
 
 using TBBKernelNestedLoopExecPols = camp::list<
@@ -91,11 +85,8 @@ using TBBKernelNestedLoopExecPols = camp::list<
     NestedLoopData<DEPTH_3, RAJA::tbb_for_exec, RAJA::tbb_for_exec, RAJA::tbb_for_exec >
   >;
 
-#endif  // RAJA_ENABLE_TARGET_OPENMP
+#endif  // RAJA_ENABLE_TBB
 
-// ----------------------------------------------------------------------------
-// CUDA
-// ----------------------------------------------------------------------------
 #if defined(RAJA_ENABLE_CUDA)
 using CudaKernelNestedLoopExecPols = camp::list<
 
@@ -111,9 +102,6 @@ using CudaKernelNestedLoopExecPols = camp::list<
 
 #endif  // RAJA_ENABLE_CUDA
 
-// ----------------------------------------------------------------------------
-// HIP
-// ----------------------------------------------------------------------------
 #if defined(RAJA_ENABLE_HIP)
   
 using HipKernelNestedLoopExecPols = camp::list<

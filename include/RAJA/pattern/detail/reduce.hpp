@@ -9,8 +9,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -105,7 +105,6 @@ template <typename T>
 struct xor_bit : detail::op_adapter<T, RAJA::operators::bit_xor> {
 };
 
-
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 #pragma omp end declare target
 #endif
@@ -133,8 +132,7 @@ public:
 #if __NVCC__ && defined(CUDART_VERSION) && CUDART_VERSION < 9020 || defined(__HIPCC__)
   RAJA_HOST_DEVICE constexpr ValueLoc() {}
   RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const &other) : val{other.val}, loc{other.loc} {}
-  RAJA_HOST_DEVICE
-  ValueLoc &operator=(ValueLoc const &other) { val = other.val; loc = other.loc; return *this;}
+  RAJA_HOST_DEVICE ValueLoc &operator=(ValueLoc const &other) { val = other.val; loc = other.loc; return *this;}
 #else
   constexpr ValueLoc() = default;
   constexpr ValueLoc(ValueLoc const &) = default;
@@ -142,21 +140,12 @@ public:
 #endif
 
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val_) : val{val_}, loc{DefaultLoc<IndexType>().value()} {}
-  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val_, IndexType const &loc_)
-      : val{val_}, loc{loc_}
-  {
-  }
+  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val_, IndexType const &loc_) : val{val_}, loc{loc_} {}
 
   RAJA_HOST_DEVICE operator T() const { return val; }
   RAJA_HOST_DEVICE IndexType getLoc() { return loc; }
-  RAJA_HOST_DEVICE bool operator<(ValueLoc const &rhs) const
-  {
-    return val < rhs.val;
-  }
-  RAJA_HOST_DEVICE bool operator>(ValueLoc const &rhs) const
-  {
-    return val > rhs.val;
-  }
+  RAJA_HOST_DEVICE bool operator<(ValueLoc const &rhs) const { return val < rhs.val; }
+  RAJA_HOST_DEVICE bool operator>(ValueLoc const &rhs) const { return val > rhs.val; }
 };
 
 }  // namespace detail

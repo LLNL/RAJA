@@ -1,6 +1,6 @@
 .. ##
-.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -49,7 +49,7 @@ A Little C++ Background
 
 RAJA makes heavy use of C++ templates and using RAJA most easily and 
 effectively is done by representing the bodies of loop kernels as C++ lambda 
-expressions. Alternatively, C++ factors can be used, but they make 
+expressions. Alternatively, C++ functors can be used, but they make 
 application source code more complex, potentially placing a significant 
 negative burden on source code readability and maintainability.
 

@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -44,6 +44,15 @@ TYPED_TEST_P(KernelBasicSingleLoopTest, BasicSingleLoopSegmentKernel)
                                 RAJA::TypedRangeSegment<IDX_TYPE>, USE_RES>(
                                   r2, seg_idx, working_res, erased_working_res);
 
+  // test zero-length range segment
+  seg_idx.clear();
+  RAJA::TypedRangeSegment<IDX_TYPE> r3( 5, 5 );
+  RAJA::getIndices(seg_idx, r3);
+
+  KernelBasicSingleLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
+                                RAJA::TypedRangeSegment<IDX_TYPE>, USE_RES>(
+                                  r3, seg_idx, working_res, erased_working_res);
+
 // Range-stride segment tests
   seg_idx.clear();
   RAJA::TypedRangeStrideSegment<IDX_TYPE> rs1( 0, 188, 2 );
@@ -59,6 +68,14 @@ TYPED_TEST_P(KernelBasicSingleLoopTest, BasicSingleLoopSegmentKernel)
                                 RAJA::TypedRangeStrideSegment<IDX_TYPE>, USE_RES>(
                                   rs2, seg_idx, working_res, erased_working_res);
 
+  // test zero-length range-stride segment
+  seg_idx.clear();
+  RAJA::TypedRangeStrideSegment<IDX_TYPE> rs3( 2, 2, 3 );
+  RAJA::getIndices(seg_idx, rs3);
+  KernelBasicSingleLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
+                                RAJA::TypedRangeStrideSegment<IDX_TYPE>, USE_RES>(
+                                  rs3, seg_idx, working_res, erased_working_res);
+
 // List segment tests
   seg_idx.clear();
   IDX_TYPE last = IDX_TYPE(10567);
@@ -73,6 +90,13 @@ TYPED_TEST_P(KernelBasicSingleLoopTest, BasicSingleLoopSegmentKernel)
   KernelBasicSingleLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
                                 RAJA::TypedListSegment<IDX_TYPE>, USE_RES>(
                                   l1, seg_idx, working_res, erased_working_res);
+
+  // test zero-length list segment
+  seg_idx.clear();
+  RAJA::TypedListSegment<IDX_TYPE> l2( nullptr, seg_idx.size(), erased_working_res);
+  KernelBasicSingleLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
+                                RAJA::TypedListSegment<IDX_TYPE>, USE_RES>(
+                                  l2, seg_idx, working_res, erased_working_res);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(KernelBasicSingleLoopTest,

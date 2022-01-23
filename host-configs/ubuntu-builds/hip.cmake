@@ -1,6 +1,6 @@
 ###############################################################################
-# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -8,8 +8,8 @@
 set(CMAKE_BUILD_TYPE Release CACHE BOOL "")
 
 set(ENABLE_HIP ON CACHE BOOL "")
-set(ENABLE_OPENMP OFF CACHE BOOL "")
-set(ENABLE_CUDA Off CACHE BOOL "")
+set(RAJA_ENABLE_OPENMP OFF CACHE BOOL "")
+set(RAJA_ENABLE_CUDA Off CACHE BOOL "")
 
 if(DEFINED ROCM_DIR)
   set(HIP_ROOT_DIR "${ROCM_DIR}/hip" CACHE PATH "HIP ROOT directory path")
@@ -27,7 +27,7 @@ set(HIP_COMMON_OPT_FLAGS )
 set(HIP_COMMON_DEBUG_FLAGS)
 set(HOST_OPT_FLAGS)
 
-if (ENABLE_OPENMP)
+if (RAJA_ENABLE_OPENMP)
 	set(HIP_COMMON_OPT_FLAGS "-fopenmp ${HIP_COMMON_OPT_FLAGS}")
 endif()
 

@@ -9,8 +9,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -98,8 +98,8 @@ inline typename Vtable_T::call_sig get_cached_Vtable_cuda_device_call()
 * Populate and return a Vtable object where the
 * call operator is a device function
 */
-template < typename T, typename Vtable_T, size_t BLOCK_SIZE, bool Async >
-inline const Vtable_T* get_Vtable(cuda_work<BLOCK_SIZE, Async> const&)
+template < typename T, typename Vtable_T, size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async >
+inline const Vtable_T* get_Vtable(cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async> const&)
 {
   static Vtable_T vtable{
         &Vtable_T::template move_construct_destroy<T>,

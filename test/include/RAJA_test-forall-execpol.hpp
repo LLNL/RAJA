@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -123,7 +123,8 @@ using OpenMPTargetForallAtomicExecPols = OpenMPTargetForallExecPols;
 
 #if defined(RAJA_ENABLE_CUDA)
 using CudaForallExecPols = camp::list< RAJA::cuda_exec<128>,
-                                       RAJA::cuda_exec<256> >;
+                                       RAJA::cuda_exec<256>,
+                                       RAJA::cuda_exec_explicit<256,2> >;
 
 using CudaForallReduceExecPols = CudaForallExecPols;
 

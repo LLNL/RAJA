@@ -1,6 +1,6 @@
 .. ##
-.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-.. ## and other RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+.. ## and other RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -28,22 +28,27 @@ the ``RAJA::expt::loop`` method.
           * A ``RAJA::forall`` loop execution method is a template on an
             *execution policy* type. A ``RAJA::forall`` method takes two 
             arguments:
+
               * an iteration space object, such as a contiguous range of loop
                 indices, and
               * a single lambda expression representing the loop body.
+
           * Each ``RAJA::kernel`` method is a template on a policy that
             contains statements with *execution policy* types appropriate for
             the kernel structure; e.g., an execution policy for each level in a
             loop nest. A ``RAJA::kernel`` method takes multiple arguments:
+
               * a *tuple* of iteration space objects, and
               * one or more lambda expressions representing portions of
                 the loop kernel body.
+
           * The ``RAJA::expt::launch`` method is a template on both host and
             device policies to create an execution space for kernels.
             Since both host and device poilices are specified, the launch 
             method can be used to select at run-time whether to run a kernel
             on the host or device.  Algorithms are expressed inside the 
             execution space as nested loops using ``RAJA::loop`` methods.
+
               * Hierarchical parallelism can be expressed using the thread and
                 thread-team model with ``RAJA::expt::loop`` methods as found in
                 programming models such as CUDA/HIP.
@@ -280,7 +285,7 @@ space enabling them to express algorithms in terms of nested
 ``RAJA::expt::loop`` statements::
 
   RAJA::expt::launch<launch_policy>(select_CPU_or_GPU)
-  RAJA::expt::Resources(RAJA::expt::Teams(NE), RAJA::expt::Threads(Q1D)),
+  RAJA::expt::Grid(RAJA::expt::Teams(NE), RAJA::expt::Threads(Q1D)),
   [=] RAJA_HOST_DEVICE (RAJA::expt::Launch ctx) {
 
     RAJA::expt::loop<team_x> (ctx, RAJA::RangeSegment(0, teamRange), [&] (int bx) {

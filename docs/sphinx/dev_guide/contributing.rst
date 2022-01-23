@@ -1,6 +1,6 @@
 .. ##
-.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -151,7 +151,7 @@ consistent.
                pattern for existing tests in the ``RAJA/test`` directory when 
                adding or modifying tests. 
 
-.. _prfromfork-label::
+.. _prfromfork-label:
 
 -----------------------------------------------------------
 Testing Pull Requests from Branches in Forked Repositories
@@ -160,9 +160,10 @@ Testing Pull Requests from Branches in Forked Repositories
 Due to LLNL security policies and RAJA project policies, only a PR created
 by someone on the RAJA core development team will be run automatically
 through all RAJA CI tools. In particular, a PR made from branch on a forked 
-repository will not trigger Gitlab and Travis CI checks. Gitlab CI on internal 
-LLNL platforms and Travis CI will only be run on PRs that are made from 
-branches in the GitHub RAJA repository.
+repository will not trigger Gitlab CI checks. Gitlab CI on internal LLNL 
+platforms will only be run on PRs that are made from branches in the GitHub 
+RAJA repository. This may change in the future to make it easier to work with 
+PRs from contributors that are not members of the LLNL organization on GitHub.
 
 .. note:: **RAJA core team members:**
 

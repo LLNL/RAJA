@@ -15,7 +15,7 @@ jobs:
   pool:
     vmImage: 'windows-2019'
   variables:
-    CMAKE_EXTRA_FLAGS: '-DENABLE_WARNINGS_AS_ERRORS=Off -DBLT_CXX_STD="" -DCMAKE_CXX_STANDARD=17'
+    CMAKE_EXTRA_FLAGS: '-DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off -DBLT_CXX_STD="" -DCMAKE_CXX_STANDARD=17'
   steps:
   - checkout: self
     clean: boolean
@@ -27,7 +27,7 @@ jobs:
   - task: CMake@1
     inputs:
       workingDir: 'build'
-      cmakeArgs: '--build . --config Release --verbose'
+      cmakeArgs: '--build . --config Release --verbose -j 4'
 #   - task: CmdLine@2
 #     inputs:
 #       script: 'ctest.exe -T test -C Release'
@@ -61,13 +61,13 @@ jobs:
         docker_target: nvcc10-debug
       hip:
         docker_target: hip
-#      sycl:
-#        docker_target: sycl
+      sycl:
+        docker_target: sycl
   pool:
     vmImage: 'ubuntu-latest'
   variables:
     DOCKER_BUILDKIT: '1'
-    CMAKE_EXTRA_FLAGS: '-DENABLE_DEVELOPER_BENCHMARKS=On -DENABLE_DEVELOPER_DEFAULTS=On -DCMAKE_CXX_STANDARD=11'
+    CMAKE_EXTRA_FLAGS: '-DENABLE_DEVELOPER_BENCHMARKS=On -DENABLE_DEVELOPER_DEFAULTS=On -DCMAKE_CXX_STANDARD=14'
   steps:
   - checkout: self
     clean: boolean
@@ -107,7 +107,7 @@ jobs:
       cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../'
   - script: |
       cd build
-      make
+      make -j 4
     displayName: 'OSX Build'
     condition: eq( variables['Agent.OS'], 'Darwin')
 #  - script: |

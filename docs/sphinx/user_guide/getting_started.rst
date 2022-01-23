@@ -1,6 +1,6 @@
 .. ##
-.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -136,8 +136,8 @@ build using N cores.
           libraries with RAJA if you wish. To do so, pass the following
           options to CMake:
             * External camp: -DEXTERNAL_CAMP_SOURCE_DIR=<camp dir name>
-            * External CUB: -DENABLE_EXTERNAL_CUB=On -DCUB_DIR=<CUB dir name>
-            * External rocPRIM: -DENABLE_EXTERNAL_ROCPRIM=On
+            * External CUB: -DRAJA_ENABLE_EXTERNAL_CUB=On -DCUB_DIR=<CUB dir name>
+            * External rocPRIM: -DRAJA_ENABLE_EXTERNAL_ROCPRIM=On
                                 -DROCPRIM_DIR=<rocPRIM dir name>
 
 -----------------
@@ -195,7 +195,7 @@ Also, RAJA relies on the CUB CUDA utilities library for some CUDA functionality.
 The CUB included in the CUDA toolkit is used by default if available. RAJA
 includes a CUB submodule that is used if it is not available. To use
 an external CUB install provide the following option to CMake:
-``-DENABLE_EXTERNAL_CUB=On -DCUB_DIR=<pat/to/cub>``.
+``-DRAJA_ENABLE_EXTERNAL_CUB=On -DCUB_DIR=<pat/to/cub>``.
 
 .. note:: **It is important to note that the CUDA toolkit version of cub is
           required for compatibility with the CUDA toolkit version of thrust
@@ -223,7 +223,7 @@ Also, RAJA relies on the rocPRIM HIP utilities library for some HIP
 functionality. The rocPRIM included in the ROCM install is used by default if
 available. RAJA includes a rocPRIM submodule that is used if it is not
 available. To use an external rocPRIM install provide the following option to CMake:
-``-DENABLE_EXTERNAL_ROCPRIM=On -DROCPRIM_DIR=<pat/to/rocPRIM>``.
+``-DRAJA_ENABLE_EXTERNAL_ROCPRIM=On -DROCPRIM_DIR=<pat/to/rocPRIM>``.
 
 .. note:: When using HIP and targeting NVIDIA GPUs RAJA uses CUB instead of
           rocPRIM. In this case you must use an external CUB install using the

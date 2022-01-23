@@ -11,14 +11,14 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_raja_hiperrchk_HPP
-#define RAJA_raja_hiperrchk_HPP
+#ifndef RAJA_hiperrchk_HPP
+#define RAJA_hiperrchk_HPP
 
 #include "RAJA/config.hpp"
 
@@ -53,9 +53,19 @@ inline void hipAssert(hipError_t code,
                        bool abort = true)
 {
   if (code != hipSuccess) {
-    fprintf(
-        stderr, "HIPassert: %s %s %d\n", hipGetErrorString(code), file, line);
-    if (abort) RAJA_ABORT_OR_THROW("HIPassert");
+    if (abort) {
+      std::string msg;
+      msg += "HIPassert: ";
+      msg += hipGetErrorString(code);
+      msg += " ";
+      msg += file;
+      msg += ":";
+      msg += std::to_string(line);
+      throw std::runtime_error(msg);
+    } else {
+      fprintf(stderr, "HIPassert: %s %s %d\n",
+              hipGetErrorString(code), file, line);
+    }
   }
 }
 

@@ -11,8 +11,8 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -20,7 +20,10 @@
 #ifndef RAJA_loop_HPP
 #define RAJA_loop_HPP
 
-#include "RAJA/policy/loop/atomic.hpp"
+#if !defined(RAJA_ENABLE_DESUL_ATOMICS)
+    #include "RAJA/policy/loop/atomic.hpp"
+#endif
+
 #include "RAJA/policy/loop/forall.hpp"
 #include "RAJA/policy/loop/kernel.hpp"
 #include "RAJA/policy/loop/policy.hpp"

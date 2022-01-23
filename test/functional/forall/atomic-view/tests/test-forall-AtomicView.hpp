@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -25,6 +25,7 @@ void ForallAtomicViewTestImpl( IdxType N )
   camp::resources::Resource work_res{WORKINGRES()};
   camp::resources::Resource host_res{camp::resources::Host()};
 
+  T * hsource = host_res.allocate<T>(N);
   T * source = work_res.allocate<T>(N);
   T * dest = work_res.allocate<T>(N/2);
   T * check_array = host_res.allocate<T>(N/2);
@@ -38,7 +39,9 @@ void ForallAtomicViewTestImpl( IdxType N )
 #endif
 
   RAJA::forall<RAJA::seq_exec>(seg,
-                               [=](IdxType i) { source[i] = (T)1; });
+                               [=](IdxType i) { hsource[i] = (T)1; });
+
+  work_res.memcpy( source, hsource, sizeof(T) * N );
 
   // use atomic add to reduce the array
   RAJA::View<T, RAJA::Layout<1>> vec_view(source, N);
@@ -71,6 +74,7 @@ void ForallAtomicViewTestImpl( IdxType N )
     EXPECT_EQ((T)2, check_array[i]);
   }
 
+  host_res.deallocate( hsource );
   work_res.deallocate( source );
   work_res.deallocate( dest );
   host_res.deallocate( check_array );

@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -39,6 +39,10 @@ const int CUDA_BLOCK_SIZE = 256;
 const int HIP_BLOCK_SIZE = 256;
 #endif
 
+#if defined(RAJA_ENABLE_SYCL)
+const int SYCL_BLOCK_SIZE = 256;
+#endif
+
 //
 // Functions for checking and printing results
 //
@@ -50,6 +54,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
   std::cout << "\n\nRAJA vector addition example...\n";
+
+#if defined(RAJA_ENABLE_SYCL)
+  memoryManager::sycl_res = new camp::resources::Resource{camp::resources::Sycl()};
+  ::RAJA::sycl::detail::setQueue(memoryManager::sycl_res);
+#endif
 
 //
 // Define vector length
@@ -159,6 +168,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   checkResult(c, N);
 //printResult(c, N);
+
+  const bool Asynchronous = false;
+  std::cout << "\n Running RAJA CUDA explicit (2 blocks per SM) vector addition...\n";
+
+  // _rajacuda_explicit_vector_add_start
+  RAJA::forall<RAJA::cuda_exec_explicit<CUDA_BLOCK_SIZE, 2, Asynchronous>>(RAJA::RangeSegment(0, N), 
+    [=] RAJA_DEVICE (int i) { 
+    c[i] = a[i] + b[i]; 
+  });    
+  // _rajacuda_explicit_vector_add_end
+
+  checkResult(c, N);
+//printResult(c, N);
 #endif
 
 //----------------------------------------------------------------------------//
@@ -192,6 +214,34 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
+#if defined(RAJA_ENABLE_SYCL)
+  std::cout << "\n Running RAJA SYCL vector addition...\n";
+
+  int *d_a = memoryManager::allocate_gpu<int>(N);
+  int *d_b = memoryManager::allocate_gpu<int>(N);
+  int *d_c = memoryManager::allocate_gpu<int>(N);
+
+  memoryManager::sycl_res->memcpy(d_a, a, N * sizeof(int));
+  memoryManager::sycl_res->memcpy(d_b, b, N * sizeof(int));
+
+  // _rajasycl_vector_add_start
+  RAJA::forall<RAJA::sycl_exec<SYCL_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
+    [=] RAJA_DEVICE (int i) {
+    d_c[i] = d_a[i] + d_b[i];
+  });
+  // _rajasycl_vector_add_end
+
+  memoryManager::sycl_res->memcpy(c, d_c, N * sizeof(int));
+
+  checkResult(c, N);
+//printResult(c, N);
+
+  memoryManager::deallocate_gpu(d_a);
+  memoryManager::deallocate_gpu(d_b);
+  memoryManager::deallocate_gpu(d_c);
+#endif
+
+//----------------------------------------------------------------------------//
 //
 // Clean up.
 //

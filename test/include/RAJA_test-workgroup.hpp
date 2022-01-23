@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -48,7 +48,7 @@ struct ResourceAllocator
         throw std::bad_alloc();
       }
 
-      value_type* ptr = m_res.template allocate<value_type>(num);
+      value_type* ptr = m_res.template allocate<value_type>(num, camp::resources::MemoryAccess::Pinned);
 
       if (!ptr) {
         throw std::bad_alloc();
@@ -59,7 +59,7 @@ struct ResourceAllocator
 
     void deallocate(value_type* ptr, size_t) noexcept
     {
-      m_res.deallocate(ptr);
+      m_res.deallocate(ptr, camp::resources::MemoryAccess::Pinned);
     }
 
     Resource const& get_resource() const
@@ -360,8 +360,13 @@ using OpenMPTargetStoragePolicyList = SequentialStoragePolicyList;
 #if defined(RAJA_ENABLE_CUDA)
 using CudaExecPolicyList =
     camp::list<
+                #if defined(RAJA_TEST_EXHAUSTIVE)
+                // avoid compilation error:
+                // tpl/camp/include/camp/camp.hpp(104): error #456: excessive recursion at instantiation of class
                 RAJA::cuda_work<256>,
-                RAJA::cuda_work<1024>
+                #endif
+                RAJA::cuda_work<1024>,
+                RAJA::cuda_work_explicit<256, 2>
               >;
 using CudaOrderedPolicyList = SequentialOrderedPolicyList;
 using CudaOrderPolicyList   =
@@ -376,7 +381,9 @@ using CudaStoragePolicyList = SequentialStoragePolicyList;
 #if defined(RAJA_ENABLE_HIP)
 using HipExecPolicyList =
     camp::list<
+                #if defined(RAJA_TEST_EXHAUSTIVE)
                 RAJA::hip_work<256>,
+                #endif
                 RAJA::hip_work<1024>
               >;
 using HipOrderedPolicyList = SequentialOrderedPolicyList;

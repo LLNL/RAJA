@@ -1,6 +1,6 @@
 .. ##
-.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-.. ## and other RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+.. ## and other RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -17,13 +17,13 @@ RAJA supports user-made plugins that may be loaded either at compilation time
 mutually exclusive, as plugins loaded statically can be run alongside plugins that 
 are loaded dynamically.
 
-------------
+-------------------
 Using RAJA Plugins
-------------
+-------------------
 
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Static vs Dynamic Loading
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Static loading** is done at compile time and requires recompilation in order to add, remove, or change a plugin. This is arguably the easier method to implement, requiring only simple file linking to make work. However, recompilation may get tedious and resource-heavy when working with many plugins or on large projects. In these cases, it may be better to load plugins dynamically, requiring no recompilation of the project most of the time.
 
@@ -35,9 +35,9 @@ plugin directory, and automatically loads them at runtime. This means that a plu
 can be added to a project as easily as making a shared object file and setting 
 ``RAJA_PLUGINS`` to the appropriate path.
 
-^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
 Quick Start Guide
-^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
 
 **Static Plugins**
 
@@ -61,9 +61,9 @@ directory.
 
 4. When you run your project, your plugins should work.
 
-^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Interfacing with Plugins
-^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The RAJA plugin API allows for limited interfacing between a project and a 
 plugin. There are a couple of functions that allow for this to take place, 
@@ -83,9 +83,9 @@ function by default.
   every currently loaded plugin. 
 
 
-------------
+--------------------------
 Creating Plugins For RAJA
-------------
+--------------------------
 
 Plugins are classes derived from the ``RAJA::util::PluginStrategy`` base class
 and implement the required functions for the API. An example implementation 
@@ -177,9 +177,9 @@ about the plugin, not necessarily of the project using it.
    that by calling the ``init_plugins()`` method.
 
 
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Example Plugin Implementation
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following is an example plugin that simply will print out the number of 
 times a kernel has been launched and has the ability to be loaded either 

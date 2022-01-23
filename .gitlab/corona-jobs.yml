@@ -1,21 +1,26 @@
 #############################################################################
-# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #############################################################################
 
-hip_4_0_gcc_8_1_0 (build and test on corona):
-  variables:
-    SPEC: "+hip~openmp %gcc@8.1.0 cxxflags='-finline-functions -finline-limit=20000' cflags='-finline-functions -finline-limit=20000' ^hip@4.0.0"
-  extends: .build_and_test_on_corona
-
 hip_4_1_gcc_8_1_0 (build and test on corona):
   variables:
-    SPEC: "+hip~openmp %gcc@8.1.0 cxxflags='-finline-functions -finline-limit=20000' cflags='-finline-functions -finline-limit=20000' ^hip@4.1.0"
+    SPEC: "+rocm~openmp amdgpu_target=gfx906 %gcc@8.1.0 cxxflags='-finline-functions -finline-limit=20000' cflags='-finline-functions -finline-limit=20000' ^hip@4.1.0"
+  extends: .build_and_test_on_corona
+
+hip_4_2_gcc_8_1_0 (build and test on corona):
+  variables:
+    SPEC: "+rocm~openmp amdgpu_target=gfx906 %gcc@8.1.0 cxxflags='-finline-functions -finline-limit=20000' cflags='-finline-functions -finline-limit=20000' ^hip@4.2.0"
   extends: .build_and_test_on_corona
 
 hip_4_1_clang_9_0_0 (build and test on corona):
   variables:
-    SPEC: "+hip~openmp %clang@9.0.0 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.1.0 ^hip@4.1.0"
+    SPEC: "+rocm~openmp amdgpu_target=gfx906 %clang@9.0.0 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.1.0 ^hip@4.1.0"
+  extends: .build_and_test_on_corona
+
+hip_4_1_gcc_8_1_0_desul_atomics (build and test on corona):
+  variables:
+    SPEC: "+rocm~openmp +desul amdgpu_target=gfx906 %gcc@8.1.0 cxxflags='-finline-functions -finline-limit=20000' cflags='-finline-functions -finline-limit=20000' ^hip@4.1.0"
   extends: .build_and_test_on_corona

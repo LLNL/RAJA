@@ -1,7 +1,7 @@
 
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2016-21, Lawrence Livermore National Security, LLC)
-[comment]: # (and RAJA project contributors. See the RAJA/COPYRIGHT file)
+[comment]: # (Copyright 2016-22, Lawrence Livermore National Security, LLC)
+[comment]: # (and RAJA project contributors. See the RAJA/LICENSE file)
 [comment]: # (for details.)
 [comment]: # 
 [comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
@@ -9,9 +9,10 @@
 
 # <img src="/share/raja/logo/RAJA_LOGO_Color.png?raw=true" width="128" valign="middle" alt="RAJA"/>
 
-[![Build Status](https://travis-ci.org/LLNL/RAJA.svg?branch=develop)](https://travis-ci.org/LLNL/RAJA)
-[![Join the chat at https://gitter.im/llnl/raja](https://badges.gitter.im/llnl/raja.svg)](https://gitter.im/llnl/raja?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Azure Piepline Build Status](https://dev.azure.com/LLNL-RAJA/RAJA/_apis/build/status/LLNL.RAJA?branchName=develop)](https://dev.azure.com/LLNL-RAJA/RAJA/_build/latest?definitionId=1&branchName=develop)
+[![Documentation Status](https://readthedocs.org/projects/raja/badge/?version=develop)](https://raja.readthedocs.io/en/develop/?badge=develop)
 [![Coverage](https://img.shields.io/codecov/c/github/LLNL/RAJA/develop.svg)](https://codecov.io/gh/LLNL/RAJA)
+[![Join the chat at https://gitter.im/llnl/raja](https://badges.gitter.im/llnl/raja.svg)](https://gitter.im/llnl/raja?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 RAJA is a library of C++ software abstractions, primarily developed at
 Lawrence Livermore National Laboratory (LLNL), that enables architecture
@@ -64,8 +65,8 @@ commands in the top-level RAJA directory (in-source builds are not allowed!):
     cmake ../
     make
 
-More details about RAJA configuration options are located in the 
-[User Documentation](http://raja.readthedocs.io/en/main/).
+More details about RAJA configuration options are located in the RAJA User Guide
+(linked below). 
 
 We also maintain a [**RAJA Template Project**](https://github.com/LLNL/RAJA-project-template) that shows how to use RAJA in a CMake project, either as a Git
 submodule or as an installed library.
@@ -73,8 +74,12 @@ submodule or as an installed library.
 User Documentation
 -------------------
 
-The [**RAJA User Guide and Tutorial**](http://raja.readthedocs.io/en/main/) 
-is the best place to start learning about RAJA and how to use it.
+The RAJA User Guide is the best place to start learning about RAJA and how to
+use it.
+
+The most recent version of the User Guide (RAJA develop branch): https://raja.readthedocs.io
+
+To access docs for other RAJA released versions: https://readthedocs.org/projects/raja/
 
 To cite RAJA, please use the following references:
 

@@ -9,8 +9,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -564,20 +564,6 @@ RAJA_INLINE __device__ unsigned long long hip_atomicCAS<unsigned long long>(
 }
 
 }  // namespace detail
-
-
-/*!
- * Hip atomic policy for using hip atomics on the device and
- * the provided host_policy on the host
- */
-template<typename host_policy>
-struct hip_atomic_explicit{};
-
-/*!
- * Default hip atomic policy uses hip atomics on the device and non-atomics
- * on the host
- */
-using hip_atomic = hip_atomic_explicit<loop_atomic>;
 
 
 /*!

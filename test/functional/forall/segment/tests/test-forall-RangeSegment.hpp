@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -9,33 +9,54 @@
 #define __TEST_FORALL_RANGESEGMENT_HPP__
 
 #include <numeric>
+#include <cstring>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 {
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(RAJA::stripIndexType(first), RAJA::stripIndexType(last));
-  INDEX_TYPE N = INDEX_TYPE(r1.end() - r1.begin());
+  INDEX_TYPE N = static_cast<INDEX_TYPE>(r1.end() - r1.begin());
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
   INDEX_TYPE* working_array;
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
 
-  allocateForallTestData<INDEX_TYPE>(N,
+  size_t data_len = RAJA::stripIndexType(N);
+  if ( data_len == 0 ) {
+    data_len = 1;
+  }
+
+  allocateForallTestData<INDEX_TYPE>(data_len,
                                      working_res,
                                      &working_array,
                                      &check_array,
                                      &test_array);
 
-  const INDEX_TYPE rbegin = *r1.begin();
+  if ( RAJA::stripIndexType(N) > 0 ) {
 
-  std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
+    const INDEX_TYPE rbegin = *r1.begin();
 
-  RAJA::forall(EXEC_POLICY(), r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-    working_array[RAJA::stripIndexType(idx - rbegin)] = idx;
-  });
+    std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
 
-  working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
+    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+      working_array[RAJA::stripIndexType(idx - rbegin)] = idx;
+    });
+
+  } else { // zero-length segment 
+
+    memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
+
+    working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
+
+    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+      (void) idx;
+      working_array[0]++;
+    });
+
+  }
+
+  working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
 
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
     ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
@@ -64,6 +85,9 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY,
   typename std::enable_if<std::is_signed<RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
 void runNegativeTests()
 {
+  // test zero-length range segment
+  ForallRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(-5));
+
   ForallRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(0));
   ForallRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(5));
 }
@@ -74,6 +98,9 @@ TYPED_TEST_P(ForallRangeSegmentTest, RangeSegmentForall)
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
+
+  // test zero-length range segment
+  ForallRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(3), INDEX_TYPE(3));
 
   ForallRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(0), INDEX_TYPE(27));
   ForallRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(INDEX_TYPE(1), INDEX_TYPE(2047));

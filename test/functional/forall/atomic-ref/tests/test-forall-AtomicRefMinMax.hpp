@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -14,10 +14,13 @@
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct MaxEqOtherOp : all_op {
-  MaxEqOtherOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
-    : other(count), min(T(0)), max((T)seg.size() - (T)1),
+  MaxEqOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
+    : other(dcount), min(T(0)), max((T)seg.size() - (T)1),
     final_min(max), final_max(max)
-  { count[0] = (T)0; }
+  {
+    hcount[0] = (T)0;
+    work_res.memcpy(dcount, hcount, sizeof(T));
+  }
   RAJA_HOST_DEVICE
     T operator()(IdxType i) const
     { return other.max((T)i); }
@@ -27,10 +30,13 @@ struct MaxEqOtherOp : all_op {
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct FetchMaxOtherOp : all_op {
-  FetchMaxOtherOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
-    : other(count), min(T(0)), max((T)seg.size() - (T)1),
+  FetchMaxOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
+    : other(dcount), min(T(0)), max((T)seg.size() - (T)1),
     final_min(max), final_max(max)
-  { count[0] = (T)0; }
+  {
+    hcount[0] = (T)0;
+    work_res.memcpy(dcount, hcount, sizeof(T));
+  }
   RAJA_HOST_DEVICE
     T operator()(IdxType i) const
     { return other.fetch_max((T)i); }
@@ -40,10 +46,13 @@ struct FetchMaxOtherOp : all_op {
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct MinEqOtherOp : all_op {
-  MinEqOtherOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
-    : other(count), min(T(0)), max((T)seg.size() - (T)1),
+  MinEqOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
+    : other(dcount), min(T(0)), max((T)seg.size() - (T)1),
     final_min(min), final_max(min)
-  { count[0] = (T)seg.size(); }
+  {
+    hcount[0] = (T)seg.size();
+    work_res.memcpy(dcount, hcount, sizeof(T));
+  }
   RAJA_HOST_DEVICE
     T operator()(IdxType i) const
     { return other.min((T)i); }
@@ -53,10 +62,13 @@ struct MinEqOtherOp : all_op {
 
 template < typename T, typename AtomicPolicy, typename IdxType >
 struct FetchMinOtherOp : all_op {
-  FetchMinOtherOp(T* count, RAJA::TypedRangeSegment<IdxType> seg)
-    : other(count), min(T(0)), max((T)seg.size()),
+  FetchMinOtherOp(T* dcount, T* hcount, camp::resources::Resource work_res, RAJA::TypedRangeSegment<IdxType> seg)
+    : other(dcount), min(T(0)), max((T)seg.size()),
     final_min(min), final_max(min)
-  { count[0] = (T)seg.size(); }
+  {
+    hcount[0] = (T)seg.size();
+    work_res.memcpy(dcount, hcount, sizeof(T));
+  }
   RAJA_HOST_DEVICE
     T operator()(IdxType i) const
     { return other.fetch_min((T)i); }
@@ -70,9 +82,11 @@ template  < typename ExecPolicy,
             typename T,
             template <typename, typename, typename> class OtherOp>
 void
-testAtomicRefMinMaxOp(RAJA::TypedRangeSegment<IdxType> seg, T* count, T* list)
+testAtomicRefMinMaxOp(RAJA::TypedRangeSegment<IdxType> seg, T* count, T* list,
+    T* hcount, T* hlist,
+    camp::resources::Resource work_res, IdxType N)
 {
-  OtherOp<T, AtomicPolicy, IdxType> otherop(count, seg);
+  OtherOp<T, AtomicPolicy, IdxType> otherop(count, hcount, work_res, seg);
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
       list[i] = otherop.max + (T)1;
   });
@@ -86,11 +100,15 @@ testAtomicRefMinMaxOp(RAJA::TypedRangeSegment<IdxType> seg, T* count, T* list)
 #if defined(RAJA_ENABLE_HIP)
   hipErrchk(hipDeviceSynchronize());
 #endif
-  EXPECT_LE(otherop.final_min, count[0]);
-  EXPECT_GE(otherop.final_max, count[0]);
+
+  work_res.memcpy( hcount, count, sizeof(T) );
+  work_res.memcpy( hlist, list, sizeof(T) * N );
+
+  EXPECT_LE(otherop.final_min, hcount[0]);
+  EXPECT_GE(otherop.final_max, hcount[0]);
   for (IdxType i = 0; i < seg.size(); i++) {
-    EXPECT_LE(otherop.min, list[i]);
-    EXPECT_GE(otherop.max, list[i]);
+    EXPECT_LE(otherop.min, hlist[i]);
+    EXPECT_GE(otherop.max, hlist[i]);
   }
 }
 
@@ -104,11 +122,15 @@ void ForallAtomicRefMinMaxTestImpl( IdxType N )
 {
   RAJA::TypedRangeSegment<IdxType> seg(0, N);
 
-  camp::resources::Resource count_res{WORKINGRES()};
-  camp::resources::Resource list_res{WORKINGRES()};
+  camp::resources::Resource work_res{WORKINGRES()};
 
-  T * count   = count_res.allocate<T>(1);
-  T * list    = list_res.allocate<T>(N);
+  camp::resources::Resource host_res{camp::resources::Host()};
+
+  T * count   = work_res.allocate<T>(1);
+  T * list    = work_res.allocate<T>(N);
+
+  T * hcount   = host_res.allocate<T>(1);
+  T * hlist    = host_res.allocate<T>(N);
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
@@ -119,16 +141,18 @@ void ForallAtomicRefMinMaxTestImpl( IdxType N )
 #endif
 
   testAtomicRefMinMaxOp<ExecPolicy, AtomicPolicy, IdxType, T, 
-                       MaxEqOtherOp   >(seg, count, list);
+                       MaxEqOtherOp   >(seg, count, list, hcount, hlist, work_res, N);
   testAtomicRefMinMaxOp<ExecPolicy, AtomicPolicy, IdxType, T, 
-                       FetchMaxOtherOp>(seg, count, list);
+                       FetchMaxOtherOp>(seg, count, list, hcount, hlist, work_res, N);
   testAtomicRefMinMaxOp<ExecPolicy, AtomicPolicy, IdxType, T, 
-                       MinEqOtherOp   >(seg, count, list);
+                       MinEqOtherOp   >(seg, count, list, hcount, hlist, work_res, N);
   testAtomicRefMinMaxOp<ExecPolicy, AtomicPolicy, IdxType, T, 
-                       FetchMinOtherOp>(seg, count, list);
+                       FetchMinOtherOp>(seg, count, list, hcount, hlist, work_res, N);
 
-  count_res.deallocate( count );
-  list_res.deallocate( list );
+  work_res.deallocate( count );
+  work_res.deallocate( list );
+  host_res.deallocate( hcount );
+  host_res.deallocate( hlist );
 }
 
 

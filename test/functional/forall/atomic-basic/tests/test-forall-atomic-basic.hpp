@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -61,7 +61,7 @@ template <typename ExecPolicy,
 void ForallAtomicBasicTestImpl( IdxType seglimit )
 {
   // initialize an array
-  const int len = 10;
+  const int len = 8;
 
   camp::resources::Resource work_res{WORKINGRES()};
 
@@ -94,11 +94,9 @@ void ForallAtomicBasicTestImpl( IdxType seglimit )
   test_array[2] = (T)seglimit;
   test_array[3] = (T)0;
   test_array[4] = (T)0;
-  test_array[5] = (T)0;
-  test_array[6] = (T)seglimit + 1;
+  test_array[5] = (T)seglimit + 1;
+  test_array[6] = (T)seglimit;
   test_array[7] = (T)0;
-  test_array[8] = (T)seglimit;
-  test_array[9] = (T)0;
 
   work_res.memcpy( work_array, test_array, sizeof(T) * len );
 
@@ -108,11 +106,9 @@ void ForallAtomicBasicTestImpl( IdxType seglimit )
     RAJA::atomicMin<AtomicPolicy>(work_array + 2, (T)i);
     RAJA::atomicMax<AtomicPolicy>(work_array + 3, (T)i);
     RAJA::atomicInc<AtomicPolicy>(work_array + 4);
-    RAJA::atomicInc<AtomicPolicy>(work_array + 5, (T)16);
-    RAJA::atomicDec<AtomicPolicy>(work_array + 6);
-    RAJA::atomicDec<AtomicPolicy>(work_array + 7, (T)16);
-    RAJA::atomicExchange<AtomicPolicy>(work_array + 8, (T)i);
-    RAJA::atomicCAS<AtomicPolicy>(work_array + 9, (T)i, (T)(i+1));
+    RAJA::atomicDec<AtomicPolicy>(work_array + 5);
+    RAJA::atomicExchange<AtomicPolicy>(work_array + 6, (T)i);
+    RAJA::atomicCAS<AtomicPolicy>(work_array + 7, (T)i, (T)(i+1));
   });
 
   work_res.memcpy( check_array, work_array, sizeof(T) * len );
@@ -130,13 +126,11 @@ void ForallAtomicBasicTestImpl( IdxType seglimit )
   EXPECT_EQ((T)0, check_array[2]);
   EXPECT_EQ((T)seglimit - 1, check_array[3]);
   EXPECT_EQ((T)seglimit, check_array[4]);
-  EXPECT_EQ((T)4, check_array[5]);
-  EXPECT_EQ((T)1, check_array[6]);
-  EXPECT_EQ((T)13, check_array[7]);
-  EXPECT_LE((T)0, check_array[8]);
-  EXPECT_GT((T)seglimit, check_array[8]);
-  EXPECT_LT((T)0, check_array[9]);
-  EXPECT_GE((T)seglimit, check_array[9]);
+  EXPECT_EQ((T)1, check_array[5]);
+  EXPECT_LE((T)0, check_array[6]);
+  EXPECT_GT((T)seglimit, check_array[6]);
+  EXPECT_LT((T)0, check_array[7]);
+  EXPECT_GE((T)seglimit, check_array[7]);
 
   deallocateForallTestData<T>(  work_res,
                                 work_array,

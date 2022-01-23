@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -186,7 +186,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)
 
 /*
   GPU_BLOCK_SIZE - specifies the number of threads in a CUDA/HIP thread block
@@ -206,6 +206,10 @@ const int GPU_BLOCK_SIZE = 256;
   RAJA::resources::Hip res_gpu1;
   RAJA::resources::Hip res_gpu2;
   using EXEC_POLICY = RAJA::hip_exec_async<GPU_BLOCK_SIZE>;
+#elif defined(RAJA_ENABLE_SYCL)
+RAJA::resources::Sycl res_gpu1;
+RAJA::resources::Sycl res_gpu2;
+using EXEC_POLICY = RAJA::sycl_exec<GPU_BLOCK_SIZE>;
 #endif
 
   int* d_a1 = res_gpu1.allocate<int>(N);
@@ -269,6 +273,12 @@ const int GPU_BLOCK_SIZE = 256;
   RAJA::resources::Host res_host;
 
   using EXEC_POLICY = RAJA::hip_exec_async<GPU_BLOCK_SIZE>;
+#elif defined(RAJA_ENABLE_SYCL)
+  RAJA::resources::Sycl res_gpu1;
+  RAJA::resources::Sycl res_gpu2;
+  RAJA::resources::Host res_host;
+
+  using EXEC_POLICY = RAJA::sycl_exec<GPU_BLOCK_SIZE>;
 #endif
 
   // _raja_res_alloc_start

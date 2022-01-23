@@ -1,4 +1,3 @@
-
 /*!
  ******************************************************************************
  *
@@ -10,8 +9,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -20,6 +19,7 @@
 #define RAJA_pattern_teams_loop_HPP
 
 #include "RAJA/pattern/teams/teams_core.hpp"
+#include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/policy/loop/policy.hpp"
 
 
@@ -28,9 +28,6 @@ namespace RAJA
 
 namespace expt
 {
-
-struct seq_launch_t {
-};
 
 template <>
 struct LaunchExecute<RAJA::expt::null_launch_t> {
@@ -45,15 +42,39 @@ struct LaunchExecute<RAJA::expt::null_launch_t> {
 
 template <>
 struct LaunchExecute<RAJA::expt::seq_launch_t> {
+
   template <typename BODY>
   static void exec(LaunchContext const &ctx, BODY const &body)
   {
     body(ctx);
   }
+
+  template <typename BODY>
+  static resources::EventProxy<resources::Resource>
+  exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY const &body)
+  {
+    body(ctx);
+
+    return resources::EventProxy<resources::Resource>(res);
+  }
+
 };
 
 template <typename SEGMENT>
 struct LoopExecute<loop_exec, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+    for (int i = 0; i < len; i++) {
+
+      body(*(segment.begin() + i));
+    }
+  }
 
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(

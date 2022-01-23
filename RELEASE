@@ -1,8 +1,8 @@
 *******************************************************************************
 
-RAJA: ................................, version 0.10.0
+RAJA: ................................, version 0.14.0
 
-Copyright (c) 2016-21, Lawrence Livermore National Security, LLC. 
+Copyright (c) 2016-22, Lawrence Livermore National Security, LLC. 
 Produced at the Lawrence Livermore National Laboratory.
 All rights reserved. See details in the RAJA/LICENSE file.
 
@@ -10,20 +10,3 @@ Unlimited Open Source - BSD Distribution
 LLNL-CODE-689114
 OCEC-16-063
 
-The RAJA development team and contributors are:
-
-Rich Hornung (hornung1@llnl.gov)
-David Beckingsale (beckingsale1@llnl.gov)
-Jason Burmark (burmark1@llnl.gov)
-Robert Chen (chen59@llnl.gov)
-Matt Cordery (mcorder@us.ibm.com)
-Mike Davis (davis291@llnl.gov)
-Jeff Hammond (jeff.science@gmail.com)
-Holger Jones (jones19@llnl.gov)
-Jeff Keasler (keasler1@llnl.gov)
-Will Killian (killian4@llnl.gov)
-Adam Kunen (kunen1@llnl.gov)
-Olga Pearce (pearce8@llnl.gov)
-David Poliakoff (poliakoff1@llnl.gov)
-Tom Scogland (scogland1@llnl.gov)
-Arturo Vargas (vargas45@llnl.gov)

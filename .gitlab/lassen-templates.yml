@@ -1,6 +1,6 @@
 ##############################################################################
-# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ##############################################################################
@@ -20,6 +20,11 @@
 .build_and_test_on_lassen:
   stage: l_build_and_test
   extends: [.build_blueos_3_ppc64le_ib_p9_script, .on_lassen]
+  needs: []
+
+.build_and_test_on_lassen_ats_disabled:
+  stage: l_build_and_test
+  extends: [.build_blueos_3_ppc64le_ib_ats_disabled_script, .on_lassen]
   needs: []
 
 # Note: .build_and_test_on_lassen_advanced inherits from

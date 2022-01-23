@@ -1,7 +1,6 @@
-
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2016-21, Lawrence Livermore National Security, LLC)
-[comment]: # (and RAJA project contributors. See the RAJA/COPYRIGHT file)
+[comment]: # (Copyright 2016-22, Lawrence Livermore National Security, LLC)
+[comment]: # (and RAJA project contributors. See the RAJA/LICENSE file)
 [comment]: # (for details.)
 [comment]: # 
 [comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
@@ -9,6 +8,143 @@
 
 Version vxx.yy.zz -- Release date 20yy-mm-dd
 ============================================
+
+Version v0.14.1 -- Release date 2021-11-15
+============================================
+
+This is a patch release for v0.14.0. It updates the camp submodule to v0.2.3 and 
+fixes a couple of broken macro include guards in RAJA.
+
+
+Version v0.14.0 -- Release date 2021-08-20
+============================================
+
+This release contains new features, bug fixes, and build improvements. Please
+see the RAJA user guide for more information about items in this release.
+
+Notable changes include:
+
+  * New features / API changes:
+      * Initial release of some SYCL execution back-end features for supporting
+        Intel GPUs. Users should be able to exercise RAJA::forall, basic
+        RAJA::kernel, and reductions. Future releases will contain additional
+        RAJA feature support for SYCL. 
+      * Various enhancements to the experimental RAJA "teams" capability,
+        including documentation and complete code examples illustrating usage.
+      * The RAJA "teams" interface was expanded to initial support for RAJA 
+        resources.
+      * The RAJA "teams" interface was expanded to allow users to label
+        kernels with name strings to easily attribute execution timings and 
+        other details to specific kernels with NVIDIA profiling tools, 
+        for example. Usage information is available in the RAJA User Guide.
+        Kernel naming will be available for all other RAJA kernel execution
+        methods in a future release.
+      * Deprecated sort and scan methods taking iterators have been removed,
+        Now, these methods take RAJA span arguments. For example,
+        (begin, end) args are replaced with RAJA::make_span(begin, N), where
+        N = end - begin.  Please see the RAJA User Guide documentation for
+        scan and sort operations for details and usage examples.
+      * Sort and scan methods now accept an optional resource argument.
+      * Methods were added to the RAJA::kernel API to accept a resource 
+        argument; specifically 'kernel_resource' and 'kernel_param_resource'.
+        These kernel methods return an Event object similar to the RAJA::forall
+        interface.
+      * Kernel launch methods for the RAJA "teams" interface now use the 
+        CAMP default resource based on the specified execution back-end.
+        Future work will expand the interface to allow users to pass a
+        resource object.
+      * RAJA resource support added to RAJA workgroup and worksite constructs.
+      * OpenMP CPU multithreading policies have been reworked so that usage
+        involving OpenMP scheduling are consistent. Specification of a chunk
+        size for scheduling policies is optional, which is consistent with
+        native OpenMP usage. In addition, no-wait policies are more constrained
+        to prevent potentially non-conforming (to the OpenMP spec) usage. 
+        Finally, additional policy type aliases have been added to make common 
+        use cases less verbose. Please see the RAJA policy documentation in 
+        the User Guide for policy descriptions. 
+      * Host implementation of Hip atomics added.
+      * Add ability to specify atomic to use on the host in CUDA and Hip
+        atomic policies (i.e., added host atomic template parameter), This
+        is useful for host-device decorated lambda expressions that may be
+        used for either host or device execution. It also fixes compilation 
+        issues with Hip atomic compilation in host-device contexts.
+      * The RAJA Registry API has been changed to return raw pointers to
+        registry objects rather than shared_ptr type. This is better for
+        performance.
+      * New content has been added to the RAJA Developer Guide available in the
+        Read The Docs Sphinx documentation. This should help folks align their
+        work with RAJA processes when making contributions to RAJA.
+      * Basic doxygen source code documentation is now available via a link
+        in our Read The Docs Sphinx documentation.
+      * Unified memory implementation for storing indices in TypedListSegment, 
+        which was marked deprecated in v0.12.0 release has been removed. Now,
+        TypedListSegment constructor requires a camp resource object to be 
+        passed which indicates the memory space where the indices will live.
+        Specifically, the array of indices passed to the constructor by a user
+        (assumed to live in host memory for the "owned" case) will be copied
+        to an internally owned allocation in the memory space defined by the
+        resource object. 
+      * The ListSegment constructor takes a resource by value now, previously
+        taken by reference, which allows more resource argument types to be 
+        passed more seamlessly to the List Segment constructor.
+      * 'CudaKernelFixedSM' and 'CudaKernelFixedSMAsync' methods were added
+        which allow users to specify the minimum number of thread blocks to 
+        launch per SM. This resulted in a performance improvement for an
+        application use case. Future work will expand this concept to other GPU
+        kernel execution methods in RAJA.
+      * RAJA Modules is deprecated and no longer uses the "-fmodules" flag
+        since it can cause issues. The RAJA_ENABLE_MODULES option
+        will be removed in the next release.
+
+  * Build changes/improvements:
+      * Update BLT submodule to latest release, v0.4.1.
+      * Update camp submodule to latest tagged release, v0.2.2
+      * The RAJA_CXX_STANDARD_FLAG CMake variable was removed. The BLT_CXX_STD
+        variable is now used instead. 
+      * Support for building RAJA as a shared library on Windows has been added.
+      * A build system adjustment was made to address an issue when RAJA is 
+        built with an external version of camp (e.g., through Spack).
+      * The build default has been changed to use the version of CUB that
+        is installed in the specified version of the CUDA toolkit, if available,
+        when CUDA is enabled. Similarly, for the analogous functionality in
+        Hip. Specific versions of these libraries can still be specified for
+        a RAJA build. Please see the RAJA User Guide for details. 
+      * The build system now uses the BLT cmake_dependent_options support for
+        options defined by BLT. This avoids shadowing of BLT options by options
+        defined in RAJA and in the cases where RAJA is used as a sub-module in
+        another BLT project. For example, it provides the ability to disable 
+        RAJA tests and examples at a more fine granularity.
+      * Checks were added to the RAJA CMake build system to check for minimum
+        required versions of CUDA (9.2) and Hip (3.5).
+      * A build system bug was fixed so that targets for third-party 
+        dependencies provided by BLT (e.g., CUDA and Hip) are exported properly.
+        This allows non-BLT projects to use the imported RAJA target.
+      * An issue was fixed to appease the MSVC 2019 compiler.
+      * Improvements to build system to address Hip linking issues.
+
+  * Bug fixes/improvements:
+      * Hip and CUDA block reductions were tweaked to fix the number of steps
+        in the final wavefront/warp reduction. This saves a couple rounds of
+        warp shfls.
+      * A runtime bug resulting from defaulted View constructors not being 
+        implemented correctly in CUDA 10.1 is fixed. This fixes an issue
+        with CHAI managed arrays not having their copy constructor being 
+        triggered properly.
+      * Fix bug that caused a CUDA or Hip synchronization error when a zero
+        length loop was enqueued in a workgroup.
+      * Added missing Hip workgroup unordered execution policy, so Hip 
+        version is consistent with CUDA version.
+      * Fixed issue where the RAJA non-resource API returns an EventProxy object
+        with a dangling resource pointer, by getting a reference to the 
+        default resource for the execution context.
+      * IndexSet utility methods for collecting indices into a separate 
+        container now work with any index type. 
+      * The volatile qualifier was removed from a type conversion function used
+        in RAJA atomics. This fixes a performance issue with Hip where the 
+        value was written to stack memory during type conversion.
+      * Numerous improvements, updates, and fixes (formatting, typos, etc.) 
+        in RAJA User Guide.
+
 
 Version v0.13.0 -- Release date 2020-10-30
 ============================================
@@ -19,7 +155,7 @@ see the RAJA user guide for more information about items in this release.
 Notable changes include:
 
   * New features:
-      * Execution policies for the RAJA HIP back-end and examples have been
+      * Execution policies for the RAJA Hip back-end and examples have been
         added to the RAJA User Guide and Tutorial.
       * Strongly-typed indices now work with Multiview.
 
@@ -65,7 +201,7 @@ Notable changes include:
         things like Kokkos Performance Profiline Tools to be used with RAJA
         (https://github.com/kokkos/kokkos-tools)
       * Added ability to pass a resource object to RAJA::forall methods to
-        enable asynchronous execution for CUDA and HIP back-ends.
+        enable asynchronous execution for CUDA and Hip back-ends.
       * Added "Multi-view" that works like a regular view, except that it
         can wrap multiple arrays so their accesses can share index arithmetic.
       * Multiple sort algorithms added. This provides portable parallel sort 
@@ -102,7 +238,7 @@ Notable changes include:
         Resource object. This enables run time specification of the memory
         space where the data for list segment indices will live. In earlier
         RAJA versions, the space in which list segment index data lived was a 
-        compile-time choice based on whether CUDA or HIP was enabled and the 
+        compile-time choice based on whether CUDA or Hip was enabled and the 
         data resided in unified memory for either case. This is still supported
         in this release, but is marked as a DEPRECATED FEATURE. In the next RAJA
         release, ListSegment construction will require a camp Resource object.
@@ -115,7 +251,7 @@ Notable changes include:
   * Build changes/improvements:
       * The BLT, camp, CUB, and rocPRIM submodules have all been updated to 
         more recent versions. Please note that RAJA now requires rocm version 
-        3.5 or newer to use the HIP back-end.
+        3.5 or newer to use the Hip back-end.
       * Build for clang9 on macosx has been fixed.
       * Build for Intel19 on Windows has been fixed.
       * Host/device annotations have been added to reduction operations to
@@ -136,7 +272,7 @@ Notable changes include:
   * Bug fixes:
       * An issue with SIMD privatization with the Intel compiler, required
         to generate correct code, has been fixed.
-      * An issue with the atomicExchange() operation for the RAJA HIP back-end
+      * An issue with the atomicExchange() operation for the RAJA Hip back-end
         has been fixed.
       * A type issue in the RAJA::kernel implementation involving RAJA span
         usage has been fixed.
@@ -158,7 +294,7 @@ This release contains new features, several notable changes, and some bug fixes.
 Notable changes include:
 
   * New features:
-      * HIP compiler back-end added to support AMD GPUs. Usage is essentially
+      * Hip compiler back-end added to support AMD GPUs. Usage is essentially
         the same as for CUDA. Note that this feature is considered a
         work-in-progress and not yet production ready. It is undocumented,
         but noted here, for friendly users who would like to try it out. 
