@@ -52,7 +52,7 @@ stages:
   - l_build_and_test
   - b_build_and_test
 # - c_build_and_test
-# - multi_project
+  - multi_project
 
 # This is the rules that drives the activation of "advanced" jobs. All advanced
 # jobs will share this through a template mechanism.
