@@ -116,7 +116,8 @@ using TBBSortSorters =
 using CudaSortSorters =
   camp::list<
               PolicySort<RAJA::cuda_exec<128>>,
-              PolicySortPairs<RAJA::cuda_exec<128>>
+              PolicySortPairs<RAJA::cuda_exec<128>>,
+              PolicySort<RAJA::cuda_exec_explicit<128, 2>>
             >;
 
 #endif

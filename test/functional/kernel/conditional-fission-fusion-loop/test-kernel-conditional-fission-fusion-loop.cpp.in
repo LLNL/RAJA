@@ -1,0 +1,191 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-forall-data.hpp"
+#include "RAJA_test-index-types.hpp"
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-kernel-conditional-fission-fusion-loop-segments.hpp"
+
+// Sequential execution policy types
+using SequentialKernelExecPols = camp::list<
+
+  RAJA::KernelPolicy<
+    RAJA::statement::If< RAJA::statement::Equals<RAJA::statement::Param<0>,
+                                                 RAJA::statement::Value<0>>,
+      RAJA::statement::For<0, RAJA::seq_exec,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>,
+        RAJA::statement::Lambda<1, RAJA::Segs<0>>
+      >
+    >,
+    RAJA::statement::If< RAJA::statement::Equals<RAJA::statement::Param<0>,
+                                                 RAJA::statement::Value<1>>,
+      RAJA::statement::For<0, RAJA::seq_exec,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>
+      >,
+      RAJA::statement::For<0, RAJA::seq_exec,
+        RAJA::statement::Lambda<1, RAJA::Segs<0>>
+      >
+    >
+  >
+
+>;
+
+#if defined(RAJA_ENABLE_OPENMP)
+using OpenMPKernelExecPols = camp::list<
+
+  RAJA::KernelPolicy<
+    RAJA::statement::If< RAJA::statement::Equals<RAJA::statement::Param<0>,
+                                                 RAJA::statement::Value<0>>,
+      RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>,
+        RAJA::statement::Lambda<1, RAJA::Segs<0>>
+      >
+    >,
+    RAJA::statement::If< RAJA::statement::Equals<RAJA::statement::Param<0>,
+                                                 RAJA::statement::Value<1>>,
+      RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>
+      >,
+      RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
+        RAJA::statement::Lambda<1, RAJA::Segs<0>>
+      >
+    >
+  >
+
+>;
+#endif
+
+#if defined(RAJA_ENABLE_TBB)
+using TBBKernelExecPols = camp::list<
+
+  RAJA::KernelPolicy<
+    RAJA::statement::If< RAJA::statement::Equals<RAJA::statement::Param<0>,
+                                                 RAJA::statement::Value<0>>,
+      RAJA::statement::For<0, RAJA::tbb_for_exec,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>,
+        RAJA::statement::Lambda<1, RAJA::Segs<0>>
+      >
+    >,
+    RAJA::statement::If< RAJA::statement::Equals<RAJA::statement::Param<0>,
+                                                 RAJA::statement::Value<1>>,
+      RAJA::statement::For<0, RAJA::tbb_for_exec,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>
+      >,
+      RAJA::statement::For<0, RAJA::tbb_for_exec,
+        RAJA::statement::Lambda<1, RAJA::Segs<0>>
+      >
+    >
+  >
+
+>;
+#endif
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+using OpenMPTargetKernelExecPols = camp::list<
+
+  RAJA::KernelPolicy<
+    RAJA::statement::If<RAJA::statement::Equals<RAJA::statement::Param<0>,
+                                                RAJA::statement::Value<0>>,
+      RAJA::statement::For<0, RAJA::omp_target_parallel_for_exec<4>,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>,
+        RAJA::statement::Lambda<1, RAJA::Segs<0>>
+      >
+    >,
+    RAJA::statement::If<RAJA::statement::Equals<RAJA::statement::Param<0>,
+                                                RAJA::statement::Value<1>>,
+      RAJA::statement::For<0, RAJA::omp_target_parallel_for_exec<4>,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>
+      >,
+      RAJA::statement::For<0, RAJA::omp_target_parallel_for_exec<4>,
+        RAJA::statement::Lambda<1, RAJA::Segs<0>>
+      >
+    >
+  >
+
+>;
+#endif
+
+#if defined(RAJA_ENABLE_CUDA)
+using CudaKernelExecPols = camp::list<
+
+  RAJA::KernelPolicy<
+    RAJA::statement::CudaKernel<
+      RAJA::statement::If<RAJA::statement::Equals<RAJA::statement::Param<0>,
+                                                  RAJA::statement::Value<0>>,
+        RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+          RAJA::statement::Lambda<0, RAJA::Segs<0>>,
+          RAJA::statement::Lambda<1, RAJA::Segs<0>>
+        >
+      >,
+      RAJA::statement::If<RAJA::statement::Equals<RAJA::statement::Param<0>,
+                                                  RAJA::statement::Value<1>>,
+        RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+          RAJA::statement::Lambda<0, RAJA::Segs<0>>
+        >,
+        RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+          RAJA::statement::Lambda<1, RAJA::Segs<0>>
+        >
+      >
+    >
+  >
+
+>;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+using HipKernelExecPols = camp::list<
+
+  RAJA::KernelPolicy<
+    RAJA::statement::HipKernel<
+      RAJA::statement::If<RAJA::statement::Equals<RAJA::statement::Param<0>,
+                                                  RAJA::statement::Value<0>>,
+        RAJA::statement::For<0, RAJA::hip_thread_x_loop,
+          RAJA::statement::Lambda<0, RAJA::Segs<0>>,
+          RAJA::statement::Lambda<1, RAJA::Segs<0>>
+        >
+      >,
+      RAJA::statement::If<RAJA::statement::Equals<RAJA::statement::Param<0>,
+                                                  RAJA::statement::Value<1>>,
+        RAJA::statement::For<0, RAJA::hip_thread_x_loop,
+          RAJA::statement::Lambda<0, RAJA::Segs<0>>
+        >,
+        RAJA::statement::For<0, RAJA::hip_thread_x_loop,
+          RAJA::statement::Lambda<1, RAJA::Segs<0>>
+        >
+      >
+    >
+  >
+
+>;
+#endif
+
+
+//
+// Cartesian product of types used in parameterized tests
+//
+using @BACKEND@KernelConditionalFissionFusionLoopTypes =
+    Test<camp::cartesian_product<StrongIdxTypeList,
+                                 @BACKEND@ResourceList,
+                                 @BACKEND@KernelExecPols>>::Types;
+
+//
+// Instantiate parameterized tests
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
+                               KernelConditionalFissionFusionLoopTest,
+                               @BACKEND@KernelConditionalFissionFusionLoopTypes);
+                               

@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 .. ## and other RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -102,7 +102,7 @@ an integral sum on a CUDA GPU device::
 
   });
 
-After this kernel executes, '*sum' will be equal to 'N'.
+After this kernel executes, the value reference by 'sum' will be 'N'.
 
 ^^^^^^^^^^^^^^^^^^^^
 AtomicRef

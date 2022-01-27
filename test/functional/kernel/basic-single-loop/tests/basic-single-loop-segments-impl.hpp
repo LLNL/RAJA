@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -39,12 +39,19 @@ void KernelBasicSingleLoopTestImpl(const SEG_TYPE& seg,
                                    WORKING_RES working_res,
                                    camp::resources::Resource erased_working_res)
 {
-  IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
   IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
+  IDX_TYPE data_len = IDX_TYPE(0);
+  if ( seg_idx.size() > 0 ) {
+    data_len = seg_idx[seg_idx.size() - 1] + 1;
+  }
 
   IDX_TYPE* working_array;
   IDX_TYPE* check_array;
   IDX_TYPE* test_array;
+
+  if ( RAJA::stripIndexType(data_len) == 0 ) {
+    data_len++;
+  }
 
   allocateForallTestData<IDX_TYPE>(data_len,
                                    erased_working_res,
@@ -52,23 +59,35 @@ void KernelBasicSingleLoopTestImpl(const SEG_TYPE& seg,
                                    &check_array,
                                    &test_array);
 
-  for (IDX_TYPE i = IDX_TYPE(0); i < data_len; ++i) {
-    test_array[RAJA::stripIndexType(i)] = static_cast<IDX_TYPE>(0);
-  }
- 
+  memset(static_cast<void*>(test_array), 0, 
+         sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
+
   working_res.memcpy(working_array, test_array, 
                      sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
 
-  for (IDX_TYPE i = IDX_TYPE(0); i < idx_len; ++i) {
-    test_array[ RAJA::stripIndexType(seg_idx[RAJA::stripIndexType(i)]) ] = 
-       seg_idx[RAJA::stripIndexType(i)];
-  }
- 
-  call_kernel<EXEC_POLICY, USE_RESOURCE>( RAJA::make_tuple( seg ), working_res,
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
-      working_array[RAJA::stripIndexType(idx)] = idx;
+  if ( RAJA::stripIndexType(idx_len) > 0 ) {
+
+    for (IDX_TYPE i = IDX_TYPE(0); i < idx_len; ++i) {
+      test_array[ RAJA::stripIndexType(seg_idx[RAJA::stripIndexType(i)]) ] = 
+         seg_idx[RAJA::stripIndexType(i)];
     }
-  );
+ 
+    call_kernel<EXEC_POLICY, USE_RESOURCE>( RAJA::make_tuple(seg), working_res,
+      [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
+        working_array[RAJA::stripIndexType(idx)] = idx;
+      }
+    );
+
+  } else { // zero-length segment
+
+    call_kernel<EXEC_POLICY, USE_RESOURCE>( RAJA::make_tuple(seg), working_res,
+      [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
+        (void) idx;
+        working_array[0]++;
+      }
+    );
+
+  }
 
   working_res.memcpy(check_array, working_array, 
                      sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));

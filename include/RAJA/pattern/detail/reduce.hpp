@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -56,7 +56,7 @@ namespace RAJA
 namespace reduce
 {
 
-#if defined(RAJA_RAJA_ENABLE_TARGET_OPENMP)
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
 #pragma omp declare target
 #endif
 
@@ -99,7 +99,7 @@ struct and_bit : detail::op_adapter<T, RAJA::operators::bit_and> {
 };
 
 
-#if defined(RAJA_RAJA_ENABLE_TARGET_OPENMP)
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
 #pragma omp end declare target
 #endif
 

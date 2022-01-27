@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -37,6 +37,11 @@
 
 #include "RAJA/policy/hip/policy.hpp"
 #include "RAJA/policy/hip/raja_hiperrchk.hpp"
+
+#if defined(RAJA_ENABLE_ROCTX)
+#include "hip/hip_runtime_api.h"
+#include "roctx.h"
+#endif
 
 namespace RAJA
 {
@@ -219,7 +224,15 @@ RAJA_INLINE
 void launch(const void* func, hip_dim_t gridDim, hip_dim_t blockDim, void** args, size_t shmem,
             ::RAJA::resources::Hip res, bool async = true, const char *name = nullptr)
 {
+  #if defined(RAJA_ENABLE_ROCTX)
+  if(name) roctxRangePush(name);
+  #else
+    RAJA_UNUSED_VAR(name);
+  #endif
   hipErrchk(hipLaunchKernel(func, dim3(gridDim), dim3(blockDim), args, shmem, res.get_stream()));
+  #if defined(RAJA_ENABLE_ROCTX)
+  if(name) roctxRangePop();
+  #endif
   launch(res, async);
 }
 

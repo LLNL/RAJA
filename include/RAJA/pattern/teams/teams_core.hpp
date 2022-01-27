@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -50,9 +50,10 @@ struct null_launch_t {
 template <typename HOST_POLICY
 #if defined(RAJA_DEVICE_ACTIVE)
           ,
-          typename DEVICE_POLICY
+          typename DEVICE_POLICY = HOST_POLICY
 #endif
           >
+
 struct LoopPolicy {
   using host_policy_t = HOST_POLICY;
 #if defined(RAJA_DEVICE_ACTIVE)
@@ -63,7 +64,7 @@ struct LoopPolicy {
 template <typename HOST_POLICY
 #if defined(RAJA_DEVICE_ACTIVE)
           ,
-          typename DEVICE_POLICY
+          typename DEVICE_POLICY = HOST_POLICY
 #endif
           >
 struct LaunchPolicy {
@@ -158,13 +159,11 @@ private:
 class LaunchContext : public Grid
 {
 public:
-  ExecPlace exec_place;
 
-  LaunchContext(Grid const &base, ExecPlace place)
-      : Grid(base), exec_place(place)
+  LaunchContext(Grid const &base)
+      : Grid(base)
   {
   }
-
 
   RAJA_HOST_DEVICE
   void teamSync()
@@ -178,19 +177,31 @@ public:
 template <typename LAUNCH_POLICY>
 struct LaunchExecute;
 
+//Policy based launch
+template <typename LAUNCH_POLICY, typename BODY>
+void launch(Grid const &grid, BODY const &body)
+{
+  //Take the first policy as we assume the second policy is not user defined.
+  //We rely on the user to pair launch and loop policies correctly.
+  using launch_t = LaunchExecute<typename LAUNCH_POLICY::host_policy_t>;
+  launch_t::exec(LaunchContext(grid), body);
+}
+
+
+//Run time based policy launch
 template <typename POLICY_LIST, typename BODY>
 void launch(ExecPlace place, Grid const &grid, BODY const &body)
 {
   switch (place) {
     case HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      launch_t::exec(LaunchContext(grid, HOST), body);
+      launch_t::exec(LaunchContext(grid), body);
       break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
     case DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      launch_t::exec(LaunchContext(grid, DEVICE), body);
+      launch_t::exec(LaunchContext(grid), body);
       break;
     }
 #endif
@@ -232,12 +243,12 @@ launch(RAJA::resources::Resource res, Grid const &grid, BODY const &body)
   switch (place) {
     case HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      return launch_t::exec(res, LaunchContext(grid, HOST), body); break;
+      return launch_t::exec(res, LaunchContext(grid), body); break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
     case DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      return launch_t::exec(res, LaunchContext(grid, DEVICE), body); break;
+      return launch_t::exec(res, LaunchContext(grid), body); break;
     }
 #endif
     default: {

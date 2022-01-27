@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -50,7 +50,7 @@ template <typename ValueType,
           typename LayoutType,
           typename PointerType = ValueType *>
 using View =
-    internal::ViewBase<ValueType, ValueType *, LayoutType>;
+    internal::ViewBase<ValueType, PointerType, LayoutType>;
 
 
 

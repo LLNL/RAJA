@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -151,7 +151,7 @@ consistent.
                pattern for existing tests in the ``RAJA/test`` directory when 
                adding or modifying tests. 
 
-.. _prfromfork-label::
+.. _prfromfork-label:
 
 -----------------------------------------------------------
 Testing Pull Requests from Branches in Forked Repositories

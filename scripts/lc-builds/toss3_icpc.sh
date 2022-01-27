@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -45,7 +45,7 @@ mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 module load cmake/3.14.5
 
 ##
-# CMake option -DENABLE_FORCEINLINE_RECURSIVE=Off used to speed up compile
+# CMake option -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off used to speed up compile
 # times at a potential cost of slower 'forall' execution.
 ##
 
@@ -54,9 +54,9 @@ cmake \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/intel/intel-${COMP_VER}/bin/icpc \
   -DCMAKE_C_COMPILER=/usr/tce/packages/intel/intel-${COMP_VER}/bin/icc \
   -C ../host-configs/lc-builds/toss3/icpc_X_gcc${GCC_HEADER_VER}headers.cmake \
-  -DENABLE_FORCEINLINE_RECURSIVE=Off \
+  -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off \
   -DENABLE_OPENMP=On \
-  -DENABLE_TBB=${USE_TBB} \
+  -DRAJA_ENABLE_TBB=${USE_TBB} \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
