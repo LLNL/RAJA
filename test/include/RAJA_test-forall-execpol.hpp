@@ -81,8 +81,6 @@ using OpenMPForallAtomicExecPols =
 #if defined(RAJA_TEST_EXHAUSTIVE)
               , RAJA::omp_parallel_for_static_exec< >
               , RAJA::omp_parallel_for_static_exec<4>
-              , RAJA::omp_parallel_for_nowait_static_exec< >
-              , RAJA::omp_parallel_for_nowait_static_exec<4>
 
               , RAJA::omp_parallel_for_dynamic_exec< >
               , RAJA::omp_parallel_for_dynamic_exec<2>
