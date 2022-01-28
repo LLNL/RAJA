@@ -24,11 +24,9 @@ endif()
 #
 # Eventually, remove this and enable in the top-level CMakeLists.txt file.
 #
-if(RAJA_ENABLE_SYCL)
-  list(APPEND KERNEL_BACKENDS Sycl)
-  list(REMOVE_ITEM NESTED_LOOPTYPES MultiLambda)
-  list(REMOVE_ITEM NESTED_LOOPTYPES MultiLambdaParam)
-endif()
+#if(RAJA_ENABLE_SYCL)
+#  list(APPEND KERNEL_BACKENDS Sycl)
+#endif()
 
 #
 # Generate kernel region basic tests for each enabled RAJA back-end.
