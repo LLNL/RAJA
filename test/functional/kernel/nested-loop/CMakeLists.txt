@@ -26,6 +26,8 @@ endif()
 #
 if(RAJA_ENABLE_SYCL)
   list(APPEND KERNEL_BACKENDS Sycl)
+  list(REMOVE_ITEM NESTED_LOOPTYPES MultiLambda)
+  list(REMOVE_ITEM NESTED_LOOPTYPES MultiLambdaParam)
 endif()
 
 #
