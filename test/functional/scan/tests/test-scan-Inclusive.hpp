@@ -53,7 +53,7 @@ void ScanInclusiveTestImpl(int N)
   res.memcpy(work_in, host_in, sizeof(T) * N);
   res.wait();
 
-  RAJA::inclusive_scan<EXEC_POLICY>(RAJA::make_span(work_in, N),
+  RAJA::inclusive_scan<EXEC_POLICY>(RAJA::make_span(static_cast<const T*>(work_in), N),
                                     RAJA::make_span(work_out, N),
                                     OP_TYPE{});
 
@@ -66,7 +66,7 @@ void ScanInclusiveTestImpl(int N)
   res.memcpy(work_in, host_in, sizeof(T) * N);
 
   RAJA::inclusive_scan<EXEC_POLICY>(res,
-                                    RAJA::make_span(work_in, N),
+                                    RAJA::make_span(static_cast<const T*>(work_in), N),
                                     RAJA::make_span(work_out, N),
                                     OP_TYPE{});
 
