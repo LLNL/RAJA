@@ -29,17 +29,25 @@ if (RAJA_ENABLE_TBB)
   endif()
 endif ()
 
-if (RAJA_ENABLE_CUDA OR RAJA_ENABLE_EXTERNAL_CUB)
-  find_package(CUB)
-  if (CUB_FOUND)
-    set(RAJA_ENABLE_EXTERNAL_CUB On)
-    blt_import_library(
-      NAME cub
-      INCLUDES ${CUB_INCLUDE_DIRS}
-      TREAT_INCLUDES_AS_SYSTEM ON
-      EXPORTABLE ON)
-  elseif(RAJA_ENABLE_EXTERNAL_CUB)
-    message(FATAL_ERROR "External CUB not found, CUB_DIR=${CUB_DIR}.")
+if (RAJA_ENABLE_CUDA)
+  if ("${CUDA_VERSION_STRING}" VERSION_GREATER_EQUAL "11.0")
+    if (NOT RAJA_ENABLE_EXTERNAL_CUB)
+      set(RAJA_ENABLE_EXTERNAL_CUB On)
+      message(STATUS "Forcing RAJA_ENABLE_EXTERNAL_CUB On with CUDA_VERSION ${CUDA_VERSION_STRING} >= 11.")
+    endif()
+  endif()
+
+  if (RAJA_ENABLE_EXTERNAL_CUB)
+    find_package(CUB)
+    if (CUB_FOUND)
+      blt_import_library(
+        NAME cub
+        INCLUDES ${CUB_INCLUDE_DIRS}
+        TREAT_INCLUDES_AS_SYSTEM ON
+        EXPORTABLE ON)
+    else()
+      message(FATAL_ERROR "External CUB not found, CUB_DIR=${CUB_DIR}.")
+    endif()
   else()
     message(STATUS "Using RAJA CUB submodule.")
   endif()
@@ -59,17 +67,25 @@ if (RAJA_ENABLE_CUDA AND RAJA_ENABLE_NV_TOOLS_EXT)
   endif()
 endif ()
 
-if (RAJA_ENABLE_HIP OR RAJA_ENABLE_EXTERNAL_ROCPRIM)
-  find_package(RocPRIM)
-  if (ROCPRIM_FOUND)
-    set(RAJA_ENABLE_EXTERNAL_ROCPRIM On)
-    blt_import_library(
-      NAME rocPRIM
-      INCLUDES ${ROCPRIM_INCLUDE_DIRS}
-      TREAT_INCLUDES_AS_SYSTEM ON
-      EXPORTABLE ON)
-  elseif (RAJA_ENABLE_EXTERNAL_ROCPRIM)
+if (RAJA_ENABLE_HIP)
+  if ("${HIP_VERSION_STRING}" VERSION_GREATER_EQUAL "4.0")
+    if (NOT RAJA_ENABLE_EXTERNAL_ROCPRIM)
+      set(RAJA_ENABLE_EXTERNAL_ROCPRIM On)
+      message(STATUS "Forcing RAJA_ENABLE_EXTERNAL_ROCPRIM On with HIP_VERSION ${HIP_VERSION_STRING} >= 4.")
+    endif()
+  endif()
+
+  if (RAJA_ENABLE_EXTERNAL_ROCPRIM)
+    find_package(RocPRIM)
+    if (ROCPRIM_FOUND)
+      blt_import_library(
+        NAME rocPRIM
+        INCLUDES ${ROCPRIM_INCLUDE_DIRS}
+        TREAT_INCLUDES_AS_SYSTEM ON
+        EXPORTABLE ON)
+    else()
       message(FATAL_ERROR "External rocPRIM not found, ROCPRIM_DIR=${ROCPRIM_DIR}.")
+    endif()
   else()
     message(STATUS "Using RAJA rocPRIM submodule.")
   endif()
