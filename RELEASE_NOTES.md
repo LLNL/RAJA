@@ -70,6 +70,13 @@ Notable changes include:
         can be moved to another directory location after an install and still
         work. This should make it easier to use for applications that use 
         RAJA and CMake, but do not use BLT.
+      * The use of an external CUB library is only enforced when CUDA version
+        11 or greater is used. An external CUB library is no loger searched for
+        before using the RAJA CUB submodule for CUDA versions less than 11. 
+      * Similar to above, the use of an external rocPRIM library is only 
+        enforced when Hip version 4 or greater is used. An external rocPRIM 
+        library is no loger searched for before using the RAJA rocPRIM 
+        submodule for Hip versions less than 4. 
       * The RAJA Spack package was updated to include the version of this 
         release and address some issues.
       * Added a concept of RAJA_HIP_ACTIVE that mirrors RAJA_CUDA_ACTIVE.
@@ -77,12 +84,15 @@ Notable changes include:
         removed.  Now the choice is made based on the rocm compiler version.
 
   * Bug fixes/improvements:
+      * Changes were made to RAJA scans to address some consistency issues and
+        allow an array corresponding to an input span to be referenced with 
+        a const pointer.
       * RAJA View pointer type is fixed to properly allow CHAI ManagedArray 
         type to be passed through to View instead of the raw pointer type. This
         fixes an issue where some required CHAI memory transfers were not 
         occurring.
       * RAJA StaticLayout was fixed to avoid compiler warnings due to
-        converting -1 to an unsigned integral type.
+        converting a negative integer value to an unsigned integral type.
       * Various improvements, updates, and fixes (formatting, typos, etc.) 
         in RAJA User Guide.
 

@@ -56,6 +56,9 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
 
     homepage = "https://github.com/LLNL/RAJA"
     git      = "https://github.com/LLNL/RAJA.git"
+    tags     = ['radiuss', 'e4s']
+
+    maintainers = ['davidbeckingsale']
 
     version('develop', branch='develop', submodules='True')
     version('main',  branch='main',  submodules='True')

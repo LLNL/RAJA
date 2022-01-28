@@ -634,11 +634,12 @@ omp_atomic                any OpenMP    Atomic operation performed in an OpenMP.
                           policy        multithreading or target kernel; i.e.,
                                         apply ``omp atomic`` pragma.
 cuda/hip_atomic           any CUDA/HIP  Atomic operation performed in a CUDA/HIP
-                                        kernel.
+                          policy        kernel.
 cuda/hip_atomic_explicit  any CUDA/HIP  Atomic operation performed in a CUDA/HIP
-< host_atomic_policy >    any policy    kernel when compiling for the device.
-                          matching the  See description of host_atomic_policy
-                          host atomic   when compiling for the host.
+< host_atomic_policy >    policy and    kernel that may also be used in a host
+                          any policy    execution context. See example below.
+                          matching the
+                          host atomic    
                           policy
 builtin_atomic            seq_exec,     Compiler *builtin* atomic operation.
                           loop_exec,
@@ -651,6 +652,11 @@ auto_atomic               seq_exec,     Atomic operation *compatible* with loop
                           any CUDA/HIP
                           policy
 ========================= ============= ========================================
+
+.. note:: The ``cuda_atomic_explicit`` and ``hip_atomic_explicit`` policies
+          take a host atomic policy template parameter. They are intended to
+          be used with kernels that are host-device decorated to be used in
+          either a host or device execution context.
 
 Here is an example illustrating use of the ``cuda_atomic_explicit`` policy::
 
