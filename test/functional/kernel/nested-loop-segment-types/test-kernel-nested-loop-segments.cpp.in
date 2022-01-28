@@ -153,7 +153,7 @@ using HipKernelExecPols = camp::list<
 >;
 #endif  // if defined(RAJA_ENABLE_SYCL)
 
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_SYCL)
 using SyclKernelExecPols = camp::list<
 
   RAJA::KernelPolicy<
