@@ -17,6 +17,15 @@ if(RAJA_ENABLE_TARGET_OPENMP)
   endif()
 endif()
 
+#
+# While we're adding SYCL tests, enable it for each test set like this.
+#
+# Eventually, remove this and enable in the top-level CMakeLists.txt file.
+#
+if(RAJA_ENABLE_SYCL)
+  list(APPEND KERNEL_BACKENDS Sycl)
+endif()
+
 foreach( BACKEND ${KERNEL_BACKENDS} )
   configure_file( test-kernel-nested-loop-segments.cpp.in
                   test-kernel-nested-loop-segments-${BACKEND}.cpp )
