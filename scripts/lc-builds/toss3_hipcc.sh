@@ -38,6 +38,10 @@ mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 module load cmake/3.14.5
 
+# unload rocm to avoid configuration problems where the loaded rocm and COMP_VER
+# are inconsistent causing the rocprim from the module to be used unexpectedly
+module unload rocm
+
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
