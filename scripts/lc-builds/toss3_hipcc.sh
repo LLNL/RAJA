@@ -25,7 +25,7 @@ COMP_ARCH=$2
 shift 2
 
 HIP_CLANG_FLAGS="--offload-arch=${COMP_ARCH}"
-HOSTCONFIG="hip_X"
+HOSTCONFIG="hip_3_X"
 
 if [[ ${COMP_VER} == 4.5.* ]]
 then
@@ -34,6 +34,11 @@ then
 elif [[ ${COMP_VER} == 4.* ]]
 then
   HOSTCONFIG="hip_4_link_X"
+elif [[ ${COMP_VER} == 3.* ]]
+then
+  HOSTCONFIG="hip_3_X"
+else
+  echo "Unknown hip version, using ${HOSTCONFIG} host-config"
 fi
 
 BUILD_SUFFIX=lc_toss3-hipcc-${COMP_VER}-${COMP_ARCH}
