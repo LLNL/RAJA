@@ -174,7 +174,7 @@ using HipKernelExecPols = camp::list<
 #endif
 
 #if defined(RAJA_ENABLE_SYCL)
-using HipKernelExecPols = camp::list<
+using SyclKernelExecPols = camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::SyclKernel<
