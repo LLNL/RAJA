@@ -51,10 +51,11 @@ inclusive_inplace(
     Iter end,
     BinFn f)
 {
-  auto agg = *begin;
+  using ValueT = typename std::remove_reference<decltype(*begin)>::type;
+  ValueT agg = *begin;
 
   for (Iter i = ++begin; i != end; ++i) {
-    agg = f(*i, agg);
+    agg = f(agg, *i);
     *i = agg;
   }
 
@@ -79,10 +80,9 @@ exclusive_inplace(
 {
   using std::distance;
   const auto n = distance(begin, end);
-
   using DistanceT = typename std::remove_const<decltype(n)>::type;
-  using ValueT = decltype(*begin);
 
+  using ValueT = typename std::remove_reference<decltype(*begin)>::type;
   ValueT agg = v;
 
   for (DistanceT i = 0; i < n; ++i) {
@@ -110,7 +110,8 @@ inclusive(
     OutIter out,
     BinFn f)
 {
-  auto agg = *begin;
+  using ValueT = typename std::remove_reference<decltype(*out)>::type;
+  ValueT agg = *begin;
   *out++ = agg;
 
   for (Iter i = begin + 1; i != end; ++i) {
@@ -142,12 +143,13 @@ exclusive(
     BinFn f,
     T v)
 {
-  typename std::remove_const< decltype(*begin) >::type agg = v;
+  using ValueT = typename std::remove_reference<decltype(*out)>::type;
+  ValueT agg = v;
   OutIter o = out;
   *o++ = v;
 
   for (Iter i = begin; i != end - 1; ++i, ++o) {
-    agg = f(*i, agg);
+    agg = f(agg, *i);
     *o = agg;
   }
 
