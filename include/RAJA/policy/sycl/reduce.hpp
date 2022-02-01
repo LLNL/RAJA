@@ -71,7 +71,7 @@ struct maxloc
 
 // Alias for clarity. Reduction size operates on number of  teams.
 // Ideally, MaxNumTeams = ThreadsPerTeam in omp_target_parallel_for_exec.
-static int MaxNumTeams = 256;
+static int MaxNumTeams = 1;
 
 //! Information necessary for OpenMP offload to be considered
 struct Offload_Info 
@@ -104,12 +104,19 @@ struct Reduce_Data
    *
    *  allocates data on the host and device and initializes values to default
    */
-  Reduce_Data(T /*defaultValue*/, T identityValue, Offload_Info &info)
-      : value(identityValue),
-        device{reinterpret_cast<T *>(
-            cl::sycl::malloc_device(sycl::MaxNumTeams * sizeof(T),*(::RAJA::sycl::detail::getQueue())))},
-        host{new T[sycl::MaxNumTeams]}
+  Reduce_Data(T initValue, T identityValue, Offload_Info &info)
+      : value(initValue)
   {
+    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+
+    if(!q) {
+      camp::resources::Resource res = camp::resources::Sycl();
+      q = res.get<camp::resources::Sycl>().get_queue();
+    } 
+
+    device = reinterpret_cast<T *>(cl::sycl::malloc_device(sycl::MaxNumTeams * sizeof(T), *(q)));
+    host = reinterpret_cast<T *>(cl::sycl::malloc_host(sycl::MaxNumTeams * sizeof(T), *(q)));
+
     if (!host) {
       printf("Unable to allocate space on host\n");
       exit(1);
@@ -122,6 +129,11 @@ struct Reduce_Data
     hostToDevice(info);
   }
 
+  void reset(T initValue)
+  {
+    value = initValue;
+  }
+
   //! default copy constructor for POD
   Reduce_Data(const Reduce_Data &) = default;
 
@@ -129,6 +141,11 @@ struct Reduce_Data
   RAJA_INLINE void hostToDevice(Offload_Info &info)
   {
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+
+    if(!q) {
+      camp::resources::Resource res = camp::resources::Sycl();
+      q = res.get<camp::resources::Sycl>().get_queue();
+    }
 
     // precondition: host and device are valid pointers
     auto e = q->memcpy(reinterpret_cast<void *>(device),
@@ -143,6 +160,11 @@ struct Reduce_Data
   {
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
 
+    if(!q) {
+      camp::resources::Resource res = camp::resources::Sycl();
+      q = res.get<camp::resources::Sycl>().get_queue();
+    } 
+
     // precondition: host and device are valid pointers
     auto e = q->memcpy(reinterpret_cast<void *>(host),
                        reinterpret_cast<void *>(device),
@@ -154,13 +176,18 @@ struct Reduce_Data
   //! frees all data from the offload information passed
   RAJA_INLINE void cleanup(Offload_Info &info)
   {
+    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+    if(!q) {
+      camp::resources::Resource res = camp::resources::Sycl();
+      q = res.get<camp::resources::Sycl>().get_queue();
+    }
     if (device) {
-      cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
       cl::sycl::free(reinterpret_cast<void *>(device), *q);
       device = nullptr;
     }
     if (host) {
-      delete[] host;
+      cl::sycl::free(reinterpret_cast<void *>(host), *q);
+      //delete[] host;
       host = nullptr;
     }
   }
@@ -184,6 +211,15 @@ struct TargetReduce
   {
   }
 
+  void reset(T init_val_, T identity_ = Reducer::identity())
+  {
+    val.cleanup(info);
+    val = sycl::Reduce_Data<T>(identity_, identity_, info);
+    info.isMapped = false;
+    initVal = init_val_;
+    finalVal = identity_;
+  }
+
   //! apply reduction on device upon destruction
   ~TargetReduce()
   {
@@ -194,17 +230,18 @@ struct TargetReduce
   {
     if (!info.isMapped) {
       val.deviceToHost(info);
-
-      for (int i = 0; i < sycl::MaxNumTeams; ++i) {
+      for (int i =0; i < sycl::MaxNumTeams; ++i) {
         Reducer{}(val.value, val.host[i]);
       }
-      val.cleanup(info);
+//      val.cleanup(info);
       info.isMapped = true;
     }
     finalVal = Reducer::identity();
     Reducer{}(finalVal, initVal);
     Reducer{}(finalVal, val.value);
-    return finalVal;
+    T returnVal = finalVal;
+    reset(finalVal);
+    return returnVal;
   }
   //! alias for operator T()
   T get() { return operator T(); }
@@ -214,12 +251,11 @@ struct TargetReduce
   {
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0; //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = cl::sycl::ext::oneapi::atomic_ref<T, cl::sycl::ext::oneapi::memory_order::relaxed, cl::sycl::ext::oneapi::memory_scope::device, cl::sycl::access::address_space::global_space>(val.device[i]);
+    auto atm = cl::sycl::ext::oneapi::atomic_ref<T, cl::sycl::ext::oneapi::memory_order_acq_rel, cl::sycl::ext::oneapi::memory_scope::device, cl::sycl::access::address_space::global_space>(val.device[i]);
     Reducer{}(atm, rhsVal);
     return *this;
 #else
-    auto i = 0;
-    Reducer{}(val.device[i], rhsVal);
+    Reducer{}(val.value, rhsVal);
     return *this;
 #endif
   }
@@ -229,12 +265,11 @@ struct TargetReduce
   {
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0; //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = cl::sycl::ext::oneapi::atomic_ref<T, cl::sycl::ext::oneapi::memory_order::relaxed, cl::sycl::ext::oneapi::memory_scope::device, cl::sycl::access::address_space::global_space>(val.device[i]);
-    atm.fetch_add(rhsVal);  
+    auto atm = cl::sycl::ext::oneapi::atomic_ref<T, cl::sycl::ext::oneapi::memory_order_acq_rel, cl::sycl::ext::oneapi::memory_scope::device, cl::sycl::access::address_space::global_space>(val.device[i]);
+    Reducer{}(atm, rhsVal);  
     return *this;
 #else
-    auto i = 0;
-    Reducer{}(val.device[i], rhsVal);
+    Reducer{}(val.value, rhsVal);
     return *this;
 #endif
   }
@@ -271,14 +306,7 @@ struct TargetReduceLoc
   //! apply reduction on device upon destruction
   ~TargetReduceLoc()
   {
-    //assert ( omp_get_num_teams() <= omp::MaxNumTeams );  // Leaving out until XL is fixed 2/25/2019.
-//    if (!omp_is_initial_device()) {
-//#pragma omp critical
-//      {
-//        int tid = omp_get_team_num();
-//        Reducer{}(val.device[tid], loc.device[tid], val.value, loc.value);
-  //    }
-    //}
+
   }
 
   //! map result value back to host if not done already; return aggregate value
@@ -287,21 +315,42 @@ struct TargetReduceLoc
     if (!info.isMapped) {
       val.deviceToHost(info);
       loc.deviceToHost(info);
+      
+      std::cout << "BRIAN: val.value before reduce with device mem = " << val.value << '\n';
       for (int i = 0; i < sycl::MaxNumTeams; ++i) {
+	      std::cout << "BRIAN Operator (), val.host[i] = " << val.host[i] << '\n';
         Reducer{}(val.value, loc.value, val.host[i], loc.host[i]);
       }
-      val.cleanup(info);
-      loc.cleanup(info);
       info.isMapped = true;
     }
     finalVal = Reducer::identity;
     finalLoc = IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value());
     Reducer{}(finalVal, finalLoc, initVal, initLoc);
     Reducer{}(finalVal, finalLoc, val.value, loc.value);
-    return finalVal;
+    returnVal = finalVal;
+    returnLoc = finalLoc;
+    reset(finalVal, finalLoc);
+    return returnVal;
   }
   //! alias for operator T()
   T get() { return operator T(); }
+
+  void reset(T init_val_,
+             IndexType init_local_ =
+             IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()),
+             T identity_ = Reducer::identity)
+  {
+    val.cleanup(info);
+    val = sycl::Reduce_Data<T>(identity_, identity_, info);
+    loc.cleanup(info);
+    loc = sycl::Reduce_Data<IndexType>(reduce::detail::DefaultLoc<IndexType>().value(), reduce::detail::DefaultLoc<IndexType>().value(), info);
+    info.isMapped = false;
+    initVal = init_val_;
+    finalVal = identity_;
+    initLoc = init_local_;//IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value());
+    finalLoc = IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value());
+  }
+
 
   //! map result value back to host if not done already; return aggregate
   //! location
@@ -309,14 +358,22 @@ struct TargetReduceLoc
   {
     if (!info.isMapped) get();
     // return loc.value;
-    return (finalLoc);
+    return (returnLoc);
   }
 
   //! apply reduction
   TargetReduceLoc &reduce(T rhsVal, IndexType rhsLoc)
   {
+#ifdef __SYCL_DEVICE_ONLY__
+    auto i = 0; //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    cl::sycl::atomic_fence(cl::sycl::memory_order_acquire, cl::sycl::memory_scope::device);
+    Reducer{}(val.device[i], loc.device[i], rhsVal, rhsLoc);
+    cl::sycl::atomic_fence(cl::sycl::memory_order_release, cl::sycl::memory_scope::device);
+    return *this;
+#else
     Reducer{}(val.value, loc.value, rhsVal, rhsLoc);
     return *this;
+#endif
   }
 
   //! apply reduction (const version) -- still reduces internal values
@@ -328,6 +385,7 @@ struct TargetReduceLoc
 
   //! storage for reduction data for value
   sycl::Reduce_Data<T> val;
+  sycl::Reduce_Data<IndexType> loc;
 
 private:
   //! storage for offload information
@@ -335,11 +393,12 @@ private:
   //! storage for reduction data for value
 //  sycl::Reduce_Data<T> val;
   //! storage for redcution data for location
-  sycl::Reduce_Data<IndexType> loc;
   T initVal;
   T finalVal;
+  T returnVal;
   IndexType initLoc;
   IndexType finalLoc;
+  IndexType returnLoc;
 };
 
 
@@ -365,8 +424,8 @@ public:
   const self &operator+=(T rhsVal) const
   {
 #ifdef __SYCL_DEVICE_ONLY__
-    auto i = __spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = cl::sycl::ext::oneapi::atomic_ref<T, cl::sycl::ext::oneapi::memory_order::relaxed, cl::sycl::ext::oneapi::memory_scope::device, cl::sycl::access::address_space::global_space>(parent::val.device[i]);
+    auto i = 0;//__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    auto atm = cl::sycl::ext::oneapi::atomic_ref<T, cl::sycl::ext::oneapi::memory_order_acq_rel, cl::sycl::ext::oneapi::memory_scope::device, cl::sycl::access::address_space::global_space>(parent::val.device[i]);
     atm.fetch_add(rhsVal);
     return *this;
 #else
@@ -392,11 +451,12 @@ public:
   self &min(T rhsVal)
   {
 #ifdef __SYCL_DEVICE_ONLY__
-    auto i = __spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = cl::sycl::ext::oneapi::atomic_ref<T, cl::sycl::ext::oneapi::memory_order::relaxed, cl::sycl::ext::oneapi::memory_scope::device, cl::sycl::access::address_space::global_space>(parent::val.device[i]);
+    auto i = 0;//__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    auto atm = cl::sycl::ext::oneapi::atomic_ref<T, cl::sycl::ext::oneapi::memory_order_acq_rel, cl::sycl::ext::oneapi::memory_scope::device, cl::sycl::access::address_space::global_space>(parent::val.device[i]);
     atm.fetch_min(rhsVal);
     return *this;
 #else
+    std::cout << "BRIAN: min called on host\n";
     parent::reduce(rhsVal);
     return *this;
 #endif
@@ -406,8 +466,8 @@ public:
   const self &min(T rhsVal) const
   {
 #ifdef __SYCL_DEVICE_ONLY__
-    auto i = __spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = cl::sycl::ext::oneapi::atomic_ref<T, cl::sycl::ext::oneapi::memory_order::relaxed, cl::sycl::ext::oneapi::memory_scope::device, cl::sycl::access::address_space::global_space>(parent::val.device[i]);
+    auto i = 0;//__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    auto atm = cl::sycl::ext::oneapi::atomic_ref<T, cl::sycl::ext::oneapi::memory_order_acq_rel, cl::sycl::ext::oneapi::memory_scope::device, cl::sycl::access::address_space::global_space>(parent::val.device[i]);
     atm.fetch_min(rhsVal);
     return *this;
 #else
@@ -434,7 +494,7 @@ public:
   {
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0;//__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = cl::sycl::ext::oneapi::atomic_ref<T, cl::sycl::ext::oneapi::memory_order::relaxed, cl::sycl::ext::oneapi::memory_scope::device, cl::sycl::access::address_space::global_space>(parent::val.device[i]);
+    auto atm = cl::sycl::ext::oneapi::atomic_ref<T, cl::sycl::ext::oneapi::memory_order_acq_rel, cl::sycl::ext::oneapi::memory_scope::device, cl::sycl::access::address_space::global_space>(parent::val.device[i]);
     atm.fetch_max(rhsVal);
     return *this;
 #else
@@ -448,7 +508,7 @@ public:
   {
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0;//__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = cl::sycl::ext::oneapi::atomic_ref<T, cl::sycl::ext::oneapi::memory_order::relaxed, cl::sycl::ext::oneapi::memory_scope::device, cl::sycl::access::address_space::global_space>(parent::val.device[i]);
+    auto atm = cl::sycl::ext::oneapi::atomic_ref<T, cl::sycl::ext::oneapi::memory_order_acq_rel, cl::sycl::ext::oneapi::memory_scope::device, cl::sycl::access::address_space::global_space>(parent::val.device[i]);
     atm.fetch_max(rhsVal);
     return *this;
 #else
@@ -473,6 +533,19 @@ public:
   //! enable minloc() for ReduceMinLoc -- alias for reduce()
   self &minloc(T rhsVal, IndexType rhsLoc)
   {
+#ifdef __SYCL_DEVICE_ONLY__
+    cl::sycl::atomic_fence(cl::sycl::memory_order_acquire, cl::sycl::memory_scope::device);
+    auto i = 0;//__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    if (rhsVal < parent::val.device[i]) {
+      parent::val.device[i] = rhsVal;
+      parent::loc.device[i] = rhsLoc;
+    }
+    cl::sycl::atomic_fence(cl::sycl::memory_order_release, cl::sycl::memory_scope::device);
+    return *this;
+#else
+    parent::reduce(rhsVal, rhsLoc);
+    return *this;
+#endif
     parent::reduce(rhsVal, rhsLoc);
     return *this;
   }
@@ -480,6 +553,19 @@ public:
   //! enable minloc() for ReduceMinLoc -- alias for reduce()
   const self &minloc(T rhsVal, IndexType rhsLoc) const
   {
+#ifdef __SYCL_DEVICE_ONLY__
+    cl::sycl::atomic_fence(cl::sycl::memory_order_acquire, cl::sycl::memory_scope::device);
+    auto i = 0;//__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    if (rhsVal < parent::val.device[i]) {
+      parent::val.device[i] = rhsVal;
+      parent::loc.device[i] = rhsLoc;
+    }
+    cl::sycl::atomic_fence(cl::sycl::memory_order_release, cl::sycl::memory_scope::device);
+    return *this;
+#else
+    parent::reduce(rhsVal, rhsLoc);
+    return *this;
+#endif
     parent::reduce(rhsVal, rhsLoc);
     return *this;
   }
@@ -501,15 +587,37 @@ public:
   //! enable maxloc() for ReduceMaxLoc -- alias for reduce()
   self &maxloc(T rhsVal, IndexType rhsLoc)
   {
+#ifdef __SYCL_DEVICE_ONLY__
+    cl::sycl::atomic_fence(cl::sycl::memory_order_acquire, cl::sycl::memory_scope::device);
+    auto i = 0;//__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    if (rhsVal > parent::val.device[i]) {
+      parent::val.device[i] = rhsVal;
+      parent::loc.device[i] = rhsLoc;
+    }
+    cl::sycl::atomic_fence(cl::sycl::memory_order_release, cl::sycl::memory_scope::device);
+    return *this;
+#else
     parent::reduce(rhsVal, rhsLoc);
     return *this;
+#endif
   }
 
   //! enable maxloc() for ReduceMaxLoc -- alias for reduce()
   const self &maxloc(T rhsVal, IndexType rhsLoc) const
   {
+#ifdef __SYCL_DEVICE_ONLY__
+    cl::sycl::atomic_fence(cl::sycl::memory_order_acquire, cl::sycl::memory_scope::device);
+    auto i = 0;//__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    if (rhsVal > parent::val.device[i]) {
+      parent::val.device[i] = rhsVal;
+      parent::loc.device[i] = rhsLoc;
+    }
+    cl::sycl::atomic_fence(cl::sycl::memory_order_release, cl::sycl::memory_scope::device);
+    return *this;
+#else
     parent::reduce(rhsVal, rhsLoc);
     return *this;
+#endif
   }
 };
 
