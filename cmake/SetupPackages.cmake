@@ -97,7 +97,7 @@ if (RAJA_ENABLE_HIP)
   endif()
 endif ()
 
-if (ENABLE_HIP AND ENABLE_ROCTX)
+if (RAJA_ENABLE_HIP AND RAJA_ENABLE_ROCTX)
   include(FindRoctracer)
   blt_import_library(NAME roctx
                      INCLUDES ${ROCTX_INCLUDE_DIRS}
