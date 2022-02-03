@@ -172,8 +172,9 @@ if(RAJA_ENABLE_CUDA)
 endif()
 
 if(RAJA_ENABLE_HIP)
-  if("${HIP_VERSION_STRING}" VERSION_LESS "3.5")
-    message(FATAL_ERROR "Trying to use HIP/ROCm version ${HIP_VERSION_STRING}. RAJA requires HIP/ROCm version 3.5 or newer. ")
+  message(STATUS "HIP version: ${hip_VERSION}")
+  if("${hip_VERSION}" VERSION_LESS "3.5")
+    message(FATAL_ERROR "Trying to use HIP/ROCm version ${hip_VERSION}. RAJA requires HIP/ROCm version 3.5 or newer. ")
   endif()
 endif()
 
@@ -197,10 +198,10 @@ endif ()
 if (RAJA_ENABLE_HIP)
   set(raja_depends
     ${raja_depends}
-    blt_hip)
+    blt::hip)
   set(raja_depends
     ${raja_depends}
-    blt_hip_runtime)
+    blt::hip_runtime)
   if(RAJA_ENABLE_ROCTX)
       set(raja_depends
       ${raja_depends}
