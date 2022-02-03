@@ -197,7 +197,10 @@ endif ()
 if (RAJA_ENABLE_HIP)
   set(raja_depends
     ${raja_depends}
-    hip)
+    blt_hip)
+  set(raja_depends
+    ${raja_depends}
+    blt_hip_runtime)
   if(RAJA_ENABLE_ROCTX)
       set(raja_depends
       ${raja_depends}
