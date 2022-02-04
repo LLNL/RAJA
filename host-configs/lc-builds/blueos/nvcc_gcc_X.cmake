@@ -7,11 +7,11 @@
 
 set(RAJA_COMPILER "RAJA_COMPILER_GNU" CACHE STRING "")
 
-set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -finline-functions -finline-limit=20000" CACHE STRING "")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Ofast -g -finline-functions -finline-limit=20000" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -finline-functions" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Ofast -g -finline-functions" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g" CACHE STRING "")
 
-set(HOST_OPT_FLAGS "-Xcompiler -O3 -Xcompiler -finline-functions -Xcompiler -fopenmp -Xcompiler -finline-limit=20000")
+set(HOST_OPT_FLAGS "-Xcompiler -O3 -Xcompiler -finline-functions -Xcompiler -fopenmp")
 
 set(CMAKE_CUDA_FLAGS_RELEASE "-O3 ${HOST_OPT_FLAGS}" CACHE STRING "")
 set(CMAKE_CUDA_FLAGS_DEBUG "-g -G -O0" CACHE STRING "")
