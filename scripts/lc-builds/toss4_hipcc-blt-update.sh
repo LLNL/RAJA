@@ -65,9 +65,9 @@ cmake \
   -DROCM_ROOT_DIR="/opt/rocm-${COMP_VER}" \
   -DHIP_ROOT_DIR="/opt/rocm-${COMP_VER}/hip" \
   -DHIP_PATH=/opt/rocm-${COMP_VER}/llvm/bin \
-  -DCMAKE_C_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/clang \
-  -DCMAKE_CXX_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/clang++ \
-  -DHIP_FLAGS="${HIP_CLANG_FLAGS}" \
+  -DCMAKE_C_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/amdclang \
+  -DCMAKE_CXX_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/amdclang++ \
+  -DHIP_CLANG_FLAGS="${HIP_CLANG_FLAGS}" \
   -C "../host-configs/lc-builds/toss4/${HOSTCONFIG}.cmake" \
   -DENABLE_HIP=ON \
   -DENABLE_OPENMP=OFF \
