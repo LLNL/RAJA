@@ -217,7 +217,7 @@ struct HipOccMaxBlocksThreadsData
 
 template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
 RAJA_INLINE
-void hip_occupancy_max_blocks_threads(Func&& func, int shmem_size,
+void hip_occupancy_max_blocks_threads(Func&& RAJA_UNUSED_ARG(func), int shmem_size,
                                        int &max_blocks, int &max_threads)
 {
   static HipOccMaxBlocksThreadsData data = {-1, -1, -1};
@@ -248,7 +248,7 @@ struct HipOccMaxBlocksFixedThreadsData
 
 template < typename RAJA_UNUSED_ARG(UniqueMarker), int num_threads, typename Func >
 RAJA_INLINE
-void hip_occupancy_max_blocks(Func&& func, int shmem_size,
+void hip_occupancy_max_blocks(Func&& RAJA_UNUSED_ARG(func), int shmem_size,
                                int &max_blocks)
 {
   static HipOccMaxBlocksFixedThreadsData data = {-1, -1, -1};
@@ -285,7 +285,7 @@ struct HipOccMaxBlocksVariableThreadsData
 
 template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
 RAJA_INLINE
-void hip_occupancy_max_blocks(Func&& func, int shmem_size,
+void hip_occupancy_max_blocks(Func&& RAJA_UNUSED_ARG(func), int shmem_size,
                                int &max_blocks, int num_threads)
 {
   static HipOccMaxBlocksVariableThreadsData data = {-1, -1, -1, -1};
