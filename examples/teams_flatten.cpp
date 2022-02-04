@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
   constexpr int NN = N*N;
 
   //
-  // Compute grid size
+  // Configure grid size
   //
   RAJA::expt::Grid grid(RAJA::expt::Teams(1),
                         RAJA::expt::Threads(N, N),
@@ -110,8 +110,8 @@ int main(int argc, char *argv[])
 
        ctx.teamSync();
 
-       // RAJA flatten policy will reshape a 2-3D thread team to 1D simplifying
-       // accumulating for a sum
+       // RAJA flatten policy will reshape a 2/3D thread team to 1D simplifying
+       // accumulating memory contents
        RAJA::expt::loop<device_flatten_loop>(ctx, RAJA::RangeSegment(0, NN), [&] (int i) {
            device_kernel_sum += d_A_1DView(i);
        });
