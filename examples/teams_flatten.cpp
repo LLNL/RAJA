@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
   //
   // Compute grid size
   //
-  RAJA::expt::Grid grid(RAJA::expt::Teams(1), 
+  RAJA::expt::Grid grid(RAJA::expt::Teams(1),
                         RAJA::expt::Threads(N, N),
                         "Teams Flatten Kernel");
 
@@ -98,8 +98,8 @@ int main(int argc, char *argv[])
   RAJA::View<int, RAJA::Layout<1>> d_A_1DView(d_A_ptr, NN);
 
 
-  RAJA::expt::launch<device_launch> 
-    (grid, [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)     
+  RAJA::expt::launch<device_launch>
+    (grid, [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
      {
 
        RAJA::expt::loop<device_inner_loop1>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
@@ -126,13 +126,13 @@ int main(int argc, char *argv[])
   RAJA::View<int, RAJA::Layout<2>> h_A_2DView(h_A_ptr, N, N);
   RAJA::View<int, RAJA::Layout<1>> h_A_1DView(h_A_ptr, NN);
 
-  RAJA::expt::launch<host_launch> 
-    (grid, [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)     
+  RAJA::expt::launch<host_launch>
+    (grid, [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
     {
 
        RAJA::expt::loop<host_loop>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
          RAJA::expt::loop<host_loop>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
-             h_A_2DView(j, i) = i + j;             
+             h_A_2DView(j, i) = i + j;
            });
          });
 
