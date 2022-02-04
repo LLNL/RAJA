@@ -35,15 +35,15 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 using device_launch = RAJA::expt::LaunchPolicy<RAJA::expt::cuda_launch_t<false>>;
-using device_inner_loop0 =  RAJA::expt::LoopPolicy<RAJA::cuda_thread_x_direct>;
-using device_inner_loop1 =  RAJA::expt::LoopPolicy<RAJA::cuda_thread_y_direct>;
-using device_flatten_loop =  RAJA::expt::LoopPolicy<RAJA::expt::cuda_flatten_block_threads_xy_direct>;
+using device_inner_pol0 =  RAJA::expt::LoopPolicy<RAJA::cuda_thread_x_direct>;
+using device_inner_pol1 =  RAJA::expt::LoopPolicy<RAJA::cuda_thread_y_direct>;
+using device_flatten_pol =  RAJA::expt::LoopPolicy<RAJA::expt::cuda_flatten_block_threads_xy_direct>;
 using reduce_policy = RAJA::cuda_reduce;
 #elif defined(RAJA_ENABLE_HIP)
 using device_launch = RAJA::expt::LaunchPolicy<RAJA::expt::hip_launch_t<false>>;
-using device_inner_loop0 =  RAJA::expt::LoopPolicy<RAJA::hip_thread_x_direct>;
-using device_inner_loop1 =  RAJA::expt::LoopPolicy<RAJA::hip_thread_y_direct>;
-using device_flatten_loop =  RAJA::expt::LoopPolicy<RAJA::expt::hip_flatten_block_threads_xy_direct>;
+using device_inner_pol0 =  RAJA::expt::LoopPolicy<RAJA::hip_thread_x_direct>;
+using device_inner_pol1 =  RAJA::expt::LoopPolicy<RAJA::hip_thread_y_direct>;
+using device_flatten_pol =  RAJA::expt::LoopPolicy<RAJA::expt::hip_flatten_block_threads_xy_direct>;
 using reduce_policy = RAJA::hip_reduce;
 #endif
 
@@ -102,8 +102,8 @@ int main(int argc, char *argv[])
     (grid, [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
      {
 
-       RAJA::expt::loop<device_inner_loop1>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
-         RAJA::expt::loop<device_inner_loop0>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
+       RAJA::expt::loop<device_inner_pol1>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
+         RAJA::expt::loop<device_inner_pol0>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
              d_A_2DView(j, i) = i + j;
            });
          });
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
 
        // RAJA flatten policy will reshape a 2/3D thread team to 1D simplifying
        // accumulating memory contents
-       RAJA::expt::loop<device_flatten_loop>(ctx, RAJA::RangeSegment(0, NN), [&] (int i) {
+       RAJA::expt::loop<device_flatten_pol>(ctx, RAJA::RangeSegment(0, NN), [&] (int i) {
            device_kernel_sum += d_A_1DView(i);
        });
 
