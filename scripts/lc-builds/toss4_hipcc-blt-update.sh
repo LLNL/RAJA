@@ -24,12 +24,12 @@ COMP_VER=$1
 COMP_ARCH=$2
 shift 2
 
-HIP_CLANG_FLAGS="--offload-arch=${COMP_ARCH}"
+MY_HIP_ARCH_FLAGS="--offload-arch=${COMP_ARCH}"
 HOSTCONFIG="hip_3_X"
 
 if [[ ${COMP_VER} == 4.5.* ]]
 then
-  HIP_CLANG_FLAGS="${HIP_CLANG_FLAGS} -mllvm -amdgpu-fixed-function-abi=1"
+  HIP_CLANG_FLAGS="${MY_HIP_ARCH_FLAGS} -mllvm -amdgpu-fixed-function-abi=1"
   HOSTCONFIG="hip_4_5_link_X"
 elif [[ ${COMP_VER} == 4.* ]]
 then
