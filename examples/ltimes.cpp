@@ -1261,7 +1261,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // Lambda<3> Compute thread-local phi value
-    [=] RAJA_DEVICE (IM m, ID d, IG g, IZ z,
+    [=] RAJA_DEVICE (IM RAJA_UNUSED_ARG(m), ID RAJA_UNUSED_ARG(d), 
+                     IG RAJA_UNUSED_ARG(g), IZ RAJA_UNUSED_ARG(z),
                      shmem_L_t& sh_L, shmem_psi_t& sh_psi, double& phi_local,
                      IM tm, ID td, IG tg, IZ tz) {
 
