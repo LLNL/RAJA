@@ -707,8 +707,8 @@ The following memory policies are available to specify memory allocation
 for ``RAJA::LocalArray`` objects:
 
   *  ``RAJA::cpu_tile_mem`` - Allocate CPU memory on the stack
-  *  ``RAJA::cuda/hip_shared_mem`` - Allocate CUDA or Hip shared memory
-  *  ``RAJA::cuda/hip_thread_mem`` - Allocate CUDA or Hip thread private memory
+  *  ``RAJA::cuda/hip_shared_mem`` - Allocate CUDA or HIP shared memory
+  *  ``RAJA::cuda/hip_thread_mem`` - Allocate CUDA or HIP thread private memory
 
 
 .. _loop_elements-kernelpol-label:
@@ -798,7 +798,7 @@ There is one statement specific to OpenMP kernels.
 
 * ``OmpSyncThreads`` applies the OpenMP ``#pragma omp barrier`` directive.
 
-Statement types that lauch CUDA or Hip GPU kernels are listed next. They work 
+Statement types that lauch CUDA or HIP GPU kernels are listed next. They work 
 similarly for each back-end and their names are distinguished by the prefix 
 ``Cuda`` or ``Hip``. For example, ``CudaKernel`` or ``HipKernel``.
 
@@ -810,9 +810,9 @@ similarly for each back-end and their names are distinguished by the prefix
 
 * ``Cuda/HipKernelFixedAsync<num_threads, EnclosedStatements>`` asynchronous version of Cuda/HipKernelFixed.
 
-* ``CudaKernelFixedSM<num_threads, min_blocks_per_sm, EnclosedStatements>`` similar to CudaKernelFixed but enables a minimum number of blocks per sm (specified by min_blocks_per_sm), this can help increase occupancy. This kernel launch is synchronous.  **Note: there is no Hip variant of this statement.**
+* ``CudaKernelFixedSM<num_threads, min_blocks_per_sm, EnclosedStatements>`` similar to CudaKernelFixed but enables a minimum number of blocks per sm (specified by min_blocks_per_sm), this can help increase occupancy. This kernel launch is synchronous.  **Note: there is no HIP variant of this statement.**
 
-* ``CudaKernelFixedSMAsync<num_threads, min_blocks_per_sm, EnclosedStatements>`` asynchronous version of CudaKernelFixedSM. **Note: there is no Hip variant of this statement.**
+* ``CudaKernelFixedSMAsync<num_threads, min_blocks_per_sm, EnclosedStatements>`` asynchronous version of CudaKernelFixedSM. **Note: there is no HIP variant of this statement.**
 
 * ``Cuda/HipKernelOcc<EnclosedStatements>`` similar to CudaKernel but uses the CUDA occupancy calculator to determine the optimal number of threads/blocks. Statement is intended for use with RAJA::cuda/hip_block_{xyz}_loop policies. This kernel launch is synchronous.
 
@@ -822,9 +822,9 @@ similarly for each back-end and their names are distinguished by the prefix
 
 * ``Cuda/HipKernelExpAsync<num_blocks, num_threads, EnclosedStatements>`` asynchronous version of Cuda/HipKernelExp.
 
-* ``Cuda/HipSyncThreads`` invokes CUDA or Hip '__syncthreads()' barrier.
+* ``Cuda/HipSyncThreads`` invokes CUDA or HIP '__syncthreads()' barrier.
 
-* ``Cuda/HipSyncWarp`` invokes CUDA '__syncwarp()' barrier. **Note: warp sync is not supported, so the Hip variant is a no-op.
+* ``Cuda/HipSyncWarp`` invokes CUDA '__syncwarp()' barrier. **Note: warp sync is not supported, so the HIP variant is a no-op.
 
 Statement types that lauch SYCL kernels are listed next. 
 

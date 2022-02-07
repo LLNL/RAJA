@@ -216,11 +216,11 @@ HIP
 To run RAJA code on AMD GPUs, one typically uses the HIP compiler and tool 
 chain (which can also be used to compile code for NVIDIA GPUs).
 
-.. note:: RAJA requires version 3.5 or newer of the rocm software stack to 
+.. note:: RAJA requires version 3.5 or newer of the ROCm software stack to 
           use the RAJA HIP back-end.
 
 Also, RAJA relies on the rocPRIM HIP utilities library for some HIP
-functionality. The rocPRIM included in the ROCM install is used by default if
+functionality. The rocPRIM included in the ROCm install is used by default if
 available. RAJA includes a rocPRIM submodule that is used if it is not
 available. To use an external rocPRIM install provide the following option to CMake:
 ``-DRAJA_ENABLE_EXTERNAL_ROCPRIM=On -DROCPRIM_DIR=<pat/to/rocPRIM>``.
