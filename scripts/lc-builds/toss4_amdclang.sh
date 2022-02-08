@@ -15,8 +15,7 @@ if [[ $# -lt 2 ]]; then
   echo "   3...) optional arguments to cmake"
   echo
   echo "For example: "
-  echo "    toss4_hipcc.sh 4.1.0 gfx906"
-  echo "    toss4_hipcc.sh 4.1.0 gfx906 -DBLT_CXX_STD=c++11"
+  echo "    toss4_amdclang.sh 4.1.0 gfx906"
   exit
 fi
 
@@ -27,12 +26,10 @@ shift 2
 MY_HIP_ARCH_FLAGS="--offload-arch=${COMP_ARCH}"
 HOSTCONFIG="hip_3_X"
 
-if [[ ${COMP_VER} == 4.5.* ]]
+if [[ ${COMP_VER} == 4.* ]]
 then
-  HIP_CLANG_FLAGS="${MY_HIP_ARCH_FLAGS} -mllvm -amdgpu-fixed-function-abi=1"
-  HOSTCONFIG="hip_4_5_link_X"
-elif [[ ${COMP_VER} == 4.* ]]
-then
+##HIP_CLANG_FLAGS="${MY_HIP_ARCH_FLAGS} -mllvm -amdgpu-fixed-function-abi=1"
+  HIP_CLANG_FLAGS="${MY_HIP_ARCH_FLAGS}"
   HOSTCONFIG="hip_4_link_X"
 elif [[ ${COMP_VER} == 3.* ]]
 then
@@ -41,7 +38,7 @@ else
   echo "Unknown hip version, using ${HOSTCONFIG} host-config"
 fi
 
-BUILD_SUFFIX=lc_toss4-hipcc-${COMP_VER}-${COMP_ARCH}
+BUILD_SUFFIX=lc_toss4-amdclang-${COMP_VER}-${COMP_ARCH}
 
 echo
 echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
@@ -67,7 +64,7 @@ cmake \
   -DHIP_PATH=/opt/rocm-${COMP_VER}/llvm/bin \
   -DCMAKE_C_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/amdclang \
   -DCMAKE_CXX_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/amdclang++ \
-  -DHIP_CLANG_FLAGS="${HIP_CLANG_FLAGS}" \
+  -DCMAKE_CXX_FLAGS="${HIP_CLANG_FLAGS}" \
   -C "../host-configs/lc-builds/toss4/${HOSTCONFIG}.cmake" \
   -DENABLE_HIP=ON \
   -DENABLE_OPENMP=OFF \
