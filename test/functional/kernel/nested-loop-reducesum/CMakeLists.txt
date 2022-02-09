@@ -52,7 +52,7 @@ if(RAJA_ENABLE_TARGET_OPENMP)
   if(RAJA_TEST_OPENMP_TARGET_SUBSET)
 
     set(NESTED_LOOP_BACKEND OpenMPTarget)
-    set(NESTED_LOOPTYPES ReduceSum BlockReduceSum)
+    set(NESTED_LOOPTYPES ReduceSum)
 
     set(RESOURCE "-")
     foreach( NESTED_LOOP_TYPE ${NESTED_LOOPTYPES} )
