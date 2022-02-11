@@ -15,9 +15,9 @@ hip_4_5_2_gcc_10_3_1 (build and test on corona):
     SPEC: "+rocm~openmp amdgpu_target=gfx906 %gcc@10.3.1 cxxflags='-finline-functions -finline-limit=20000' cflags='-finline-functions -finline-limit=20000' ^hip@4.5.2"
   extends: .build_and_test_on_corona
 
-hip_4_3_1_clang_12_0_1 (build and test on corona):
+hip_4_3_1_clang_13_0_0 (build and test on corona):
   variables:
-    SPEC: "+rocm~openmp amdgpu_target=gfx906 %clang@12.0.1 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc-tce/gcc-10.2.1 ^hip@4.3.1"
+    SPEC: "+rocm~openmp amdgpu_target=gfx906 %clang@13.0.0 cxxflags=--offload-arch=gfx906 ^blt@develop ^hip@4.3.1"
   extends: .build_and_test_on_corona
 
 hip_4_3_1_gcc_10_3_1_desul_atomics (build and test on corona):
