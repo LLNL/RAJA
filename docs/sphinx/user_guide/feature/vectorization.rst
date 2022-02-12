@@ -205,7 +205,7 @@ class.  ``RAJA::expt::TensorRegister< >`` wraps one or more
 **To make code cleaner and more readable, the specific types are intended to
 be used with ``RAJA::View`` and ``RAJA::expt::TensorIndex`` objects.
 
-``RAJA::expt::VectorRegister``
+Vector Register
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``RAJA::expt::VectorRegister<T, REGISTER_POLICY, NUM_ELEM>`` provides an 
@@ -306,7 +306,7 @@ the register when ``vec_t`` is defined. ``RAJA::expt::VectorRegister<double>``
 uses defaults for the register policy, based on the system hardware, and 
 number of data elements of type double that will fit in a register.
 
-Matrices
+Matrix Registers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 RAJA provides ``RAJA::expt::TensorRegister`` type aliases to support
