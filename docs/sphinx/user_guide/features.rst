@@ -30,5 +30,3 @@ The following sections describe key aspects of the main RAJA features.
    feature/tiling
    feature/plugins
    feature/workgroup
-   feature/vectorization
-
