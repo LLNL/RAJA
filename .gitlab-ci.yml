@@ -63,7 +63,7 @@ stages:
 # These are also templates (.name) that define project specific build commands.
 # If an allocation exist with the name defined in this pipeline, the job will
 # use it (slurm specific).
-.build_toss_4_x86_64_ib_script:
+.build_toss_3_x86_64_ib_script:
   script:
     - echo ${ALLOC_NAME}
     - export JOBID=$(squeue -h --name=${ALLOC_NAME} --format=%A)
