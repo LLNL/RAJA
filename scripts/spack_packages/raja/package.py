@@ -327,7 +327,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
                 cfg.write(cmake_cache_entry("HIP_CLANG_FLAGS",
                 "--gcc-toolchain={0}".format(gcc_prefix))) 
                 cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS",
-                hip_link_flags + " -Wl,-rpath {}/lib64".format(gcc_prefix)))
+                " -Wl,-rpath {}/lib64".format(gcc_prefix)))
             #else:
             #    cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
 
