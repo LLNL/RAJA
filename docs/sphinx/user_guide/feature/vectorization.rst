@@ -13,7 +13,7 @@ Vectorization (SIMD/SIMT)
 ==========================
 
 .. warning:: **This section describes an initial draft of an incomplete,
-              experimental RAJA capability. It is not considered ready
+             experimental RAJA capability. It is not considered ready
              for production. A basic description is provided here so
              that (potentially) interested users can take a look, try it 
              out, and provide input if they wish to do so.** 
@@ -131,7 +131,7 @@ Register DAXPY Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following is a code example that shows using the ``RAJA::expt::Register`` 
-class to perform a *DAXPY* kernel with AVX2 CPU SIMD instructions::
+class to perform a DAXPY kernel with AVX2 CPU SIMD instructions::
 
   // define array length
   int len = ...;
@@ -234,7 +234,7 @@ clear from the code example below.
 Vector Register DAXPY Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following code example shows the *DAXPY* computation shown above written 
+The following code example shows the DAXPY computation shown above written 
 using ``RAJA::expt::VectorRegister``, ``RAJA::expt::VectorIndex``, and 
 ``RAJA::View`` classes, which obviate the need for the extra lines of code 
 discussed earlier::
