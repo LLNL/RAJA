@@ -123,6 +123,12 @@ then
     mkdir -p ${build_dir} && cd ${build_dir}
 
     date
+
+    if [[ "${truehostname}" == "corona" ]]
+    then
+        module unload rocm
+    fi
+
     cmake \
       -C ${hostconfig_path} \
       ${project_dir}
