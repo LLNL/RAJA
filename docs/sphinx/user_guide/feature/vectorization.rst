@@ -271,6 +271,37 @@ operations as in the earlier example. It may be considered by some to be
 inconvenient to have to use the ``RAJA::View`` class, but it is easy to wrap 
 bare pointers as can is shown in the example.
 
+Expression Templates
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The figure below shows the sequence of SIMD operations, in the form of an
+*abstract syntax tree (AST)*, applied in the DAXPY code by the RAJA constructs 
+used in the code example. During compilation, a tree of *expression template*
+objects is constructed based on the order of operations that appear in the 
+kernel. Specifically, the operation sequence is the following:
+
+  #. Load a chunk of values in 'vX' into a register.
+  #. Broadcast the scalar value 'a' to each slot in a vector register.
+  #. Load a chunk of values in 'vY' into a register.
+  #. Multiply values in the 'a' register and 'vX' register and multiply
+     by the values in the 'vY' register in a single vector FMA
+     (Fused Multiply-Add) operation, storing the result in a register.
+  #. Write the result in the register to the 'vZ' array.
+
+``RAJA::View`` objects indexed by ``RAJA::TensorIndex`` objects 
+(``RAJA::VectorIndex`` in this case) return *LoadStore* expression
+template objects. Each expression template object is evaluated on assignment 
+and a register chunk size of values is loaded into another register object.
+Finally, the left-hand side of the expression is evaluated by storing the
+chunk of values in the right-hand side result register into the array on the
+left-hand side of the equal sign.
+
+.. figure:: ../figures/vectorET.png
+
+   An AST illustration of the SIMD operations in the DAXPY code.
+
+
+
 CPU/GPU Portability
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -384,9 +415,3 @@ handled by RAJA (register width sized chunk, plus postamble scalar operations).
 Again, the ``RAJA::View`` arithmetic operation overloads insert the 
 appropriate vector instructions in the code.
 
-
-------------------------------------
-RAJA Views and Expression Templates
-------------------------------------
-
-Include discussion and figure from Adam's presentation...
