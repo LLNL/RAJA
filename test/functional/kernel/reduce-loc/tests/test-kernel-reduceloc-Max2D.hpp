@@ -56,7 +56,7 @@ void KernelLocMax2DTestImpl(const int xdim, const int ydim)
     {
       checkarr2D[zz][xx] = zz*xdim + xx;
     }
-    checkarr2D[ydim-1][xdim-1] = -1;
+    checkarr2D[ydim-1][xdim-1] = 0;
   });
 
   work_res.memcpy(work_array, check_array, sizeof(DATA_TYPE) * array_length);
