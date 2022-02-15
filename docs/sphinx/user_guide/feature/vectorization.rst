@@ -46,12 +46,6 @@ vectors, and matrices and have the appropriate SIMD/SIMT instructions
 performed during expression evaluation.
 
 
----------------------
-A Motivating Example
-----------------------
-
-Fill this in if we want to start with something...
-
 ------------------------
 Why Are We Doing This?
 ------------------------
