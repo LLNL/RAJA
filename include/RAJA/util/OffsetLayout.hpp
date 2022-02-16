@@ -54,10 +54,10 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   IdxLin offsets[n_dims]={0}; //If not specified set to zero
 
   constexpr RAJA_INLINE OffsetLayout_impl(
-      std::array<IdxLin, sizeof...(RangeInts)> lower,
-      std::array<IdxLin, sizeof...(RangeInts)> upper)
-      : base_{(upper[RangeInts] - lower[RangeInts] + 1)...},
-        offsets{lower[RangeInts]...}
+      std::array<IdxLin, sizeof...(RangeInts)> begin,
+      std::array<IdxLin, sizeof...(RangeInts)> end)
+      : base_{(end[RangeInts] - begin[RangeInts])...},
+        offsets{begin[RangeInts]...}
   {
   }
 
@@ -180,25 +180,25 @@ struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>
 
 
 template <size_t n_dims, typename IdxLin = Index_type>
-auto make_offset_layout(const std::array<IdxLin, n_dims>& lower,
-                        const std::array<IdxLin, n_dims>& upper)
+auto make_offset_layout(const std::array<IdxLin, n_dims>& begin,
+                        const std::array<IdxLin, n_dims>& end)
     -> OffsetLayout<n_dims, IdxLin>
 {
-  return OffsetLayout<n_dims, IdxLin>{lower, upper};
+  return OffsetLayout<n_dims, IdxLin>{begin, end};
 }
 
 template <size_t Rank, typename IdxLin = Index_type>
-auto make_permuted_offset_layout(const std::array<IdxLin, Rank>& lower,
-                                 const std::array<IdxLin, Rank>& upper,
+auto make_permuted_offset_layout(const std::array<IdxLin, Rank>& begin,
+                                 const std::array<IdxLin, Rank>& end,
                                  const std::array<IdxLin, Rank>& permutation)
-    -> decltype(make_offset_layout<Rank, IdxLin>(lower, upper))
+    -> decltype(make_offset_layout<Rank, IdxLin>(begin, end))
 {
   std::array<IdxLin, Rank> sizes;
   for (size_t i = 0; i < Rank; ++i) {
-    sizes[i] = upper[i] - lower[i] + 1;
+    sizes[i] = end[i] - begin[i];
   }
   return internal::OffsetLayout_impl<camp::make_idx_seq_t<Rank>, IdxLin>::
-      from_layout_and_offsets(lower, make_permuted_layout(sizes, permutation));
+      from_layout_and_offsets(begin, make_permuted_layout(sizes, permutation));
 }
 
 }  // namespace RAJA
