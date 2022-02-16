@@ -26,8 +26,6 @@
 #ifndef RAJA_HPP
 #define RAJA_HPP
 
-
-
 #include "RAJA/config.hpp"
 
 #include "RAJA/util/Operators.hpp"

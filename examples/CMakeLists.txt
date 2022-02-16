@@ -110,10 +110,6 @@ raja_add_executable(
   SOURCES wave-eqn.cpp)
 
 raja_add_executable(
-  NAME ltimes
-  SOURCES ltimes.cpp)
-
-raja_add_executable(
   NAME multiview
   SOURCES multiview.cpp)
 

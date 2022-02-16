@@ -276,9 +276,6 @@ struct LambdaArgSwitchboard<Types, LambdaArg<lambda_arg_value_t<T>, value>>
 
 
 
-
-
-
 RAJA_SUPPRESS_HD_WARN
 template<camp::idx_t LoopIndex, typename Types, typename Data, typename... targLists>
 RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda_with_args(Data &&data,
@@ -308,9 +305,6 @@ struct StatementExecutor<statement::Lambda<LambdaIndex, Args...>, Types> {
     invoke_lambda_with_args<LambdaIndex, Types>(std::forward<Data>(data), targList{});
   }
 };
-
-
-
 
 
 
