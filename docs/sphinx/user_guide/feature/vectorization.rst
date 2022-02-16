@@ -125,7 +125,11 @@ Register DAXPY Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following is a code example that shows using the ``RAJA::expt::Register`` 
-class to perform a DAXPY kernel with AVX2 CPU SIMD instructions::
+class to perform a DAXPY kernel with AVX2 CPU SIMD instructions.
+Again, we do not recommend that you write code directly using the Register
+class, but use the higher level VectorRegister abstraction.  
+However, this example demonstrates how the higher level abstractions are
+using the Register class::
 
   // define array length
   int len = ...;
@@ -249,10 +253,12 @@ discussed earlier::
   auto vY = RAJA::make_view( Y, len );
   auto vZ = RAJA::make_view( Z, len );
 
-  //  'all' knows the SIMD chunk size based on the register type
+  // 'all' knows the length of vX, vY, and vZ from the View objects
+  // and it encodes the vector type
   auto all = idx_t::all();
 
   // compute the complete array daxpy in one line of code
+  // this produces a vectorized loop, and the loop postamble
   vZ( all ) = a * vX( all ) + vY( all );
 
 This code has several advantages over the previous example. It is guaranteed 
