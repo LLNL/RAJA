@@ -18,24 +18,11 @@ macro( buildunitworkgrouptest TESTNAME SUBTESTNAMES BACKENDS )
     foreach( SUBTESTNAME ${SUBTESTNAMES} )
       configure_file( test-workgroup-${TESTNAME}.cpp.in
                       test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
-
-      #Some tests are known to fail for Hip, mark those tests (Will not be run in Gitlab CI)
-      if(${BACKEND} STREQUAL "Hip" AND ${TESTNAME} STREQUAL "Unordered")
-	if(${SUBTESTNAME} STREQUAL "Single" OR ${SUBTESTNAME} STREQUAL "MultipleReuse")
-          raja_add_test( NAME test-workgroup-Known-Hip-Failure-${TESTNAME}-${SUBTESTNAME}-${BACKEND}
+      raja_add_test( NAME test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}
                      SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
 
-	  target_include_directories(test-workgroup-Known-Hip-Failure-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.exe
-                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-        else()
-          raja_add_test( NAME test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}
-                     SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
-
-          target_include_directories(test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.exe
-                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-	endif()
-      endif() 
-
+      target_include_directories(test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.exe
+                     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     endforeach()
   endforeach()
 endmacro()
