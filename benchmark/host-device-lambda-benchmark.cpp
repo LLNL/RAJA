@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-#include "benchmark/benchmark_api.h"
+#include "benchmark/benchmark.h"
 
 #include "RAJA/RAJA.hpp"
 
