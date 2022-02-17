@@ -64,27 +64,29 @@ RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_
 RUN cd build && make -j 4
 RUN cd build && ctest -T test --output-on-failure
 
-FROM axom/compilers:nvcc-10.2 AS nvcc10
+FROM ghcr.io/rse-ops/cuda:cuda-10.1.243-ubuntu-18.04 AS nvcc10
 ENV GTEST_COLOR=1
-COPY --chown=axom:axom . /home/axom/workspace
-WORKDIR /home/axom/workspace
-RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 ..
-RUN cd build && make -j 4
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN . /opt/spack/share/spack/setup-env.sh && spack load cuda && \
+    cmake -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 -DCMAKE_CUDA_ARCHITECTURES=70 .. && \
+    make -j 6
 
-FROM axom/compilers:nvcc-10.2 AS nvcc10-debug
+FROM ghcr.io/rse-ops/cuda:cuda-10.1.243-ubuntu-18.04 AS nvcc10-debug
 ENV GTEST_COLOR=1
-COPY --chown=axom:axom . /home/axom/workspace
-WORKDIR /home/axom/workspace
-RUN mkdir build && cd build && cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 ..
-RUN cd build && make -j 4
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN . /opt/spack/share/spack/setup-env.sh && spack load cuda && \
+    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 -DCMAKE_CUDA_ARCHITECTURES=70 .. && \
+    make -j 6
 
-FROM axom/compilers:rocm AS hip
+FROM axom/compilers:rocm-4.3.1 AS hip
 ENV GTEST_COLOR=1
-COPY --chown=axom:axom . /home/axom/workspace
-WORKDIR /home/axom/workspace
 ENV HCC_AMDGPU_TARGET=gfx900
-RUN mkdir build && cd build && cmake -DROCM_ROOT_DIR=/opt/rocm/include -DHIP_RUNTIME_INCLUDE_DIRS="/opt/rocm/include;/opt/rocm/hip/include" -DENABLE_HIP=On -DENABLE_OPENMP=Off -DENABLE_CUDA=Off -DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off -DHIP_HIPCC_FLAGS=-fPIC ..
-RUN cd build && make -j 4
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN cmake -DCMAKE_CXX_COMPILER=/opt/rocm-4.3.1/llvm/bin/amdclang++ -DHIP_PATH=/opt/rocm-4.3.1/hip -DROCM_PATH=/opt/rocm-4.3.1 -DENABLE_HIP=On -DENABLE_CUDA=Off -DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off .. && \
+    make -j 6 VERBOSE=1
 
 FROM axom/compilers:oneapi-2022.0.1 AS sycl
 ENV GTEST_COLOR=1
