@@ -54,9 +54,9 @@ void KernelLocMin2DViewTestImpl(const int xdim, const int ydim)
   {
     for ( int xx = 0; xx < xdim; ++xx )
     {
-      checkarr2D[zz][xx] = zz*xdim + xx;
+      checkarr2D[zz][xx] = zz*xdim + xx + 1;
     }
-    checkarr2D[ydim-1][xdim-1] = -1;
+    checkarr2D[ydim-1][xdim-1] = 0;
   });
 
   work_res.memcpy(work_array, check_array, sizeof(DATA_TYPE) * array_length);
@@ -74,7 +74,7 @@ void KernelLocMin2DViewTestImpl(const int xdim, const int ydim)
                            });
 
   // CPU answer
-  RAJA::ReduceMinLoc<RAJA::seq_reduce, DATA_TYPE, Index2D> checkminloc_reducer((DATA_TYPE)0, Index2D(0, 0));
+  RAJA::ReduceMinLoc<RAJA::seq_reduce, DATA_TYPE, Index2D> checkminloc_reducer((DATA_TYPE)1024, Index2D(0, 0));
 
   RAJA::forall<RAJA::seq_exec>(colrange, [=] (INDEX_TYPE c) {
     for( int r = 0; r < ydim; ++r)

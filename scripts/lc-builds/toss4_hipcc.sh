@@ -15,8 +15,8 @@ if [[ $# -lt 2 ]]; then
   echo "   3...) optional arguments to cmake"
   echo
   echo "For example: "
-  echo "    toss3_hipcc.sh 4.1.0 gfx906"
-  echo "    toss3_hipcc.sh 4.1.0 gfx906 -DBLT_CXX_STD=c++11"
+  echo "    toss4_hipcc.sh 4.1.0 gfx906"
+  echo "    toss4_hipcc.sh 4.1.0 gfx906 -DBLT_CXX_STD=c++11"
   exit
 fi
 
@@ -41,7 +41,7 @@ else
   echo "Unknown hip version, using ${HOSTCONFIG} host-config"
 fi
 
-BUILD_SUFFIX=lc_toss3-hipcc-${COMP_VER}-${COMP_ARCH}
+BUILD_SUFFIX=lc_toss4-hipcc-${COMP_VER}-${COMP_ARCH}
 
 echo
 echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
@@ -68,7 +68,7 @@ cmake \
   -DCMAKE_C_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/clang \
   -DCMAKE_CXX_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/clang++ \
   -DHIP_CLANG_FLAGS="${HIP_CLANG_FLAGS}" \
-  -C "../host-configs/lc-builds/toss3/${HOSTCONFIG}.cmake" \
+  -C "../host-configs/lc-builds/toss4/${HOSTCONFIG}.cmake" \
   -DENABLE_HIP=ON \
   -DENABLE_OPENMP=OFF \
   -DENABLE_CUDA=OFF \
