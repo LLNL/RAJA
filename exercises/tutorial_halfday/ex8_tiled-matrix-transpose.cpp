@@ -151,7 +151,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // tile_fixed statements. Iterations inside a RAJA loop is given by their
   // global iteration number.
   //
-#if 0  // needed for exercises, but if-def'd out to quiet compiler warnings.
+
+// Note: this needs to be turned on for other back-ends when working the 
+//       exercises (sequential, CUDA, etc.)
+#if defined(RAJA_ENABLE_OPENMP)
   RAJA::RangeSegment row_Range(0, N_r);
   RAJA::RangeSegment col_Range(0, N_c);
 #endif
