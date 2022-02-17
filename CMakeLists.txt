@@ -257,6 +257,14 @@ camp source repository")
       add_subdirectory(tpl/camp)
     endif()
   endif (EXTERNAL_CAMP_SOURCE_DIR)
+
+  if (RAJA_ENABLE_TARGET_OPENMP)
+    message(STATUS "Setting CAMP_ENABLE_TARGET_OPENMP to ${RAJA_ENABLE_TARGET_OPENMP}")
+    blt_add_target_definitions(
+      TO camp
+      SCOPE INTERFACE
+      TARGET_DEFINITIONS CAMP_ENABLE_TARGET_OPENMP)
+  endif()
 endif (NOT TARGET camp)
 
 set (raja_defines)
