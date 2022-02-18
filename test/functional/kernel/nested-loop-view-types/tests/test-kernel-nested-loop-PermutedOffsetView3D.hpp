@@ -104,9 +104,9 @@ void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
 
   RAJA::OffsetLayout<3> B_layout =
     RAJA::make_permuted_offset_layout<3>( {{-1, -1, -1}},
-                                          {{Ntot_len.at(0)-2, 
-                                            Ntot_len.at(1)-2,
-                                            Ntot_len.at(2)-2}},
+                                          {{Ntot_len.at(0)-1,
+                                            Ntot_len.at(1)-1,
+                                            Ntot_len.at(2)-1}},
                                           perm );
   RAJA::Layout<3> A_layout =
     RAJA::make_permuted_layout( {{Nint_len.at(0), 
