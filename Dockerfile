@@ -67,7 +67,7 @@ COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN . /opt/spack/share/spack/setup-env.sh && spack load cuda && \
     cmake -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 -DCMAKE_CUDA_ARCHITECTURES=70 .. && \
-    make -j 6
+    make -j 4
 
 FROM ghcr.io/rse-ops/cuda-ubuntu-20.04:cuda-11.1.1 AS nvcc11
 ENV GTEST_COLOR=1
@@ -75,7 +75,7 @@ COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN . /opt/spack/share/spack/setup-env.sh && spack load cuda && \
     cmake -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 -DCMAKE_CUDA_ARCHITECTURES=70 .. && \
-    make -j 6
+    make -j 4
 
 FROM ghcr.io/rse-ops/cuda-ubuntu-20.04:cuda-11.1.1 AS nvcc11-debug
 ENV GTEST_COLOR=1
@@ -83,7 +83,7 @@ COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN . /opt/spack/share/spack/setup-env.sh && spack load cuda && \
     cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 -DCMAKE_CUDA_ARCHITECTURES=70 .. && \
-    make -j 6
+    make -j 4
 
 FROM ghcr.io/rse-ops/hip-ubuntu-20.04:hip-4.3.1 AS hip
 ENV GTEST_COLOR=1
