@@ -30,7 +30,7 @@ void KernelPermutedOffsetView2DTestImpl(std::array<RAJA::idx_t, 2> dim,
 
   //
   // These are used in data initialization and setting reference solution.
-  // We set loop bounds baed on permutation, so inner loop is always stride-1, 
+  // We set loop bounds based on permutation, so inner loop is always stride-1,
   // etc.
   // 
   // Also, we assume a finite difference stencil width of one.
@@ -91,7 +91,7 @@ void KernelPermutedOffsetView2DTestImpl(std::array<RAJA::idx_t, 2> dim,
 
   RAJA::OffsetLayout<2> B_layout =
     RAJA::make_permuted_offset_layout<2>( {{-1, -1}},
-                                          {{Ntot_len.at(0)-2, Ntot_len.at(1)-2}},
+                                          {{Ntot_len.at(0)-1, Ntot_len.at(1)-1}},
                                           perm );
   RAJA::Layout<2> A_layout =
     RAJA::make_permuted_layout( {{Nint_len.at(0), Nint_len.at(1)}}, perm );
