@@ -21,8 +21,8 @@ void KernelOffsetView2DTestImpl(std::array<RAJA::idx_t, 2> dim,
 
   RAJA::idx_t N = dim.at(0) * dim.at(1);
 
-  RAJA::idx_t off_dim0 = offset_hi.at(0) + 1 - offset_lo.at(0);
-  RAJA::idx_t off_dim1 = offset_hi.at(1) + 1 - offset_lo.at(1); 
+  RAJA::idx_t off_dim0 = offset_hi.at(0) - offset_lo.at(0);
+  RAJA::idx_t off_dim1 = offset_hi.at(1) - offset_lo.at(1);
   EXPECT_LT( off_dim0, dim.at(0) );
   EXPECT_LT( off_dim1, dim.at(1) );
 
@@ -43,14 +43,14 @@ void KernelOffsetView2DTestImpl(std::array<RAJA::idx_t, 2> dim,
   }
 
 
-  RAJA::OffsetLayout<2> layout = 
-    RAJA::make_offset_layout<2>( {{offset_lo.at(0), offset_lo.at(1)}}, 
-                                 {{offset_lo.at(0) + dim.at(0) - 1, 
-                                   offset_lo.at(1) + dim.at(1) - 1}} );
+  RAJA::OffsetLayout<2> layout =
+    RAJA::make_offset_layout<2>( {{offset_lo.at(0), offset_lo.at(1)}},
+                                 {{offset_lo.at(0) + dim.at(0),
+                                   offset_lo.at(1) + dim.at(1)}} );
   RAJA::View< IDX_TYPE, RAJA::OffsetLayout<2> > view(working_array, layout);
 
-  RAJA::TypedRangeSegment<IDX_TYPE> iseg( offset_lo.at(0), offset_hi.at(0) + 1);
-  RAJA::TypedRangeSegment<IDX_TYPE> jseg( offset_lo.at(1), offset_hi.at(1) + 1);
+  RAJA::TypedRangeSegment<IDX_TYPE> iseg( offset_lo.at(0), offset_hi.at(0));
+  RAJA::TypedRangeSegment<IDX_TYPE> jseg( offset_lo.at(1), offset_hi.at(1));
 
   RAJA::kernel<EXEC_POLICY>( 
     RAJA::make_tuple( iseg, jseg ),
