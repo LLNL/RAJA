@@ -45,6 +45,10 @@
 #include "RAJA/pattern/kernel.hpp"
 #include "RAJA/pattern/teams.hpp"
 
+//
+// Generic templates to describe SIMD/SIMT registers and vectors
+//
+#include "RAJA/pattern/tensor.hpp"
 
 //
 // All platforms must support sequential execution.
@@ -57,9 +61,10 @@
 #include "RAJA/policy/loop.hpp"
 
 //
-// All platforms should support simd execution.
+// All platforms should support simd and vector execution.
 //
 #include "RAJA/policy/simd.hpp"
+#include "RAJA/policy/tensor.hpp"
 
 #if defined(RAJA_ENABLE_TBB)
 #include "RAJA/policy/tbb.hpp"
@@ -187,5 +192,12 @@
 #endif
 
 #include "RAJA/pattern/sort.hpp"
+
+namespace RAJA {
+namespace expt{}
+  // provide a RAJA::expt namespace for experimental work, but bring alias
+  // it into RAJA so it doesn't affect user code
+  using namespace expt;
+}
 
 #endif  // closing endif for header file include guard

@@ -243,6 +243,22 @@ public:
   IndexLinear get_dim_stride() const {
     return strides[DIM];
   }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_size() const {
+    return sizes[DIM];
+  }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_begin() const {
+    return 0;
+  }
 };
 
 template <camp::idx_t... RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
@@ -401,8 +417,6 @@ RAJA_INLINE TypedLayout<IdxLin, IdxTuple, s1_dim> make_stride_one(
   // Use non-typed layout to initialize new typed layout
   return TypedLayout<IdxLin, IdxTuple, s1_dim>(b);
 }
-
-
 
 
 }  // namespace RAJA

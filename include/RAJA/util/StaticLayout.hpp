@@ -130,6 +130,14 @@ struct StaticLayoutBase_impl<IdxLin,
     return camp::seq_at<DIM, strides>::value;
   }
 
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_size() const {
+    return camp::seq_at<DIM, sizes>::value;
+  }
+
 };
 
 template <typename IdxLin, IdxLin N, IdxLin Idx, IdxLin... Sizes>

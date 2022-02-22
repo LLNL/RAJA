@@ -24,6 +24,19 @@
 namespace RAJA
 {
 
+  template<camp::idx_t N>
+  struct LogBase2
+  {
+      static constexpr camp::idx_t value = LogBase2<(N>>1)>::value + 1;
+      static constexpr bool is_exact = ((1<<value) == N);
+  };
+
+  template<>
+  struct LogBase2<0>
+  {
+      static constexpr camp::idx_t value = -1;
+      static constexpr bool is_exact = true;
+  };
 
   /*!
    * A bit-masking operator
@@ -37,19 +50,33 @@ namespace RAJA
    *
    *
    */
-  template<size_t Width, size_t Shift>
+  template<int Width, int Shift>
   struct BitMask {
-    static constexpr size_t shift = Shift;
-    static constexpr size_t width = Width;
-    static constexpr size_t max_input_size = 1<<(Shift+Width);
-    static constexpr size_t max_masked_size = 1<<Width;
-    static constexpr size_t max_shifted_size = 1<<Shift;
+    static constexpr int shift = Shift;
+    static constexpr int width = Width;
+    static constexpr int max_input_size = 1<<(Shift+Width);
+    static constexpr int max_masked_size = 1<<Width;
+    static constexpr int max_shifted_size = 1<<Shift;
 
     template<typename T>
     RAJA_HOST_DEVICE
     static constexpr T maskValue(T input) {
-      return( (input>>((T) Shift)) & (T) ((1<<(Width))-1));
+      return( (input>>( static_cast<T>(Shift) )) & static_cast<T>((1<<(Width))-1) );
     }
+
+
+    template<typename T>
+    RAJA_HOST_DEVICE
+    static constexpr T getOuter(T input) {
+      return(  (input>>(static_cast<T>(Shift))) >> Width );
+    }
+
+    template<typename T>
+    RAJA_HOST_DEVICE
+    static constexpr T maskOuter(T input) {
+      return( input & (static_cast<T>(-1) << (Width+Shift) )  );
+    }
+
   };
 
 }  // namespace RAJA
