@@ -29,7 +29,6 @@ HOSTCONFIG="hip_3_X"
 if [[ ${COMP_VER} == 4.* ]]
 then
 ##HIP_CLANG_FLAGS="${MY_HIP_ARCH_FLAGS} -mllvm -amdgpu-fixed-function-abi=1"
-  HIP_CLANG_FLAGS="${MY_HIP_ARCH_FLAGS}"
   HOSTCONFIG="hip_4_link_X"
 elif [[ ${COMP_VER} == 3.* ]]
 then
@@ -64,7 +63,7 @@ cmake \
   -DHIP_PATH=/opt/rocm-${COMP_VER}/llvm/bin \
   -DCMAKE_C_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/amdclang \
   -DCMAKE_CXX_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/amdclang++ \
-  -DCMAKE_CXX_FLAGS="${HIP_CLANG_FLAGS}" \
+  -DCMAKE_HIP_ARCHITECTURES="${MY_HIP_ARCH_FLAGS}" \
   -C "../host-configs/lc-builds/toss4/${HOSTCONFIG}.cmake" \
   -DENABLE_HIP=ON \
   -DENABLE_OPENMP=OFF \
