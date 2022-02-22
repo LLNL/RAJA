@@ -23,6 +23,7 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/pattern/atomic.hpp"
+#include "RAJA/pattern/tensor.hpp"
 
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
@@ -70,16 +71,75 @@ namespace internal
 
 
 
+  namespace detail
+  {
+    /*
+     * Returns the argument number which contains a VectorIndex
+     *
+     * returns -1 if none of the arguments are VectorIndexs
+     */
+    template<camp::idx_t DIM, typename ARGS, typename IDX_SEQ>
+    struct GetTensorArgIdxExpanded;
+
+    template<camp::idx_t DIM, typename ... ARGS, camp::idx_t ... IDX>
+    struct GetTensorArgIdxExpanded<DIM, camp::list<ARGS...>, camp::idx_seq<IDX...>> {
+
+        static constexpr camp::idx_t value =
+            RAJA::max<camp::idx_t>(
+                (internal::expt::isTensorIndex<ARGS>()&&internal::expt::getTensorDim<ARGS>()==DIM ? IDX : -1) ...);
+    };
+
+
+
+  } // namespace detail
+
+
+
   /*
    * Returns the number of arguments which are VectorIndexs
    */
   template<typename ... ARGS>
+  struct count_num_tensor_args{
+    static constexpr camp::idx_t value =
+        RAJA::sum<camp::idx_t>(
+            (internal::expt::isTensorIndex<ARGS>() ? 1 : 0) ...);
+  };
+
+  /*
+   * Returns which argument has a vector index
+   */
+  template<camp::idx_t DIM, typename ... ARGS>
+  struct GetTesorArgIdx{
+      static constexpr camp::idx_t value =
+          detail::GetTensorArgIdxExpanded<DIM, camp::list<ARGS...>, camp::make_idx_seq_t<sizeof...(ARGS)> >:: value;
+  };
+
+
+  /*
+   * Returns the beginning index in a vector argument
+   */
+  template<camp::idx_t DIM, typename LAYOUT, typename ... ARGS>
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  static constexpr camp::idx_t count_num_tensor_args(){
-		return 0;
+  static constexpr camp::idx_t get_tensor_args_begin(LAYOUT const &layout, ARGS ... args){
+    return RAJA::max<camp::idx_t>(
+        internal::expt::getTensorDim<ARGS>()==DIM
+        ? internal::expt::getTensorBegin<ARGS>(args, layout.template get_dim_begin<GetTesorArgIdx<DIM, ARGS...>::value>())
+        : 0 ...);
   }
 
+  /*
+   * Returns the number of elements in the vector argument
+   */
+  template<camp::idx_t DIM, typename LAYOUT, typename ... ARGS>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  static constexpr camp::idx_t get_tensor_args_size(LAYOUT const &layout, ARGS ... args){
+    return RAJA::max<camp::idx_t>(
+        internal::expt::getTensorDim<ARGS>()==DIM
+        ? internal::expt::getTensorSize<ARGS>(args, layout.template get_dim_size<GetTesorArgIdx<DIM, ARGS...>::value>())
+        : 0 ...);
+  }
 
 
   namespace detail {
@@ -92,18 +152,15 @@ namespace internal
    * In the future development, this may return SIMD vectors or matrices using
    * class specializations.
    */
-  template<camp::idx_t NumVectors, typename Args, typename ElementType, typename PointerType, typename LinIdx, camp::idx_t StrideOneDim>
-  struct ViewReturnHelper
-  {
-      static_assert(NumVectors == 0, "Vectors and Matrices not supported yet");
-  };
+  template<typename VecSeq, typename Args, typename ElementType, typename PointerType, typename LinIdx, camp::idx_t StrideOneDim>
+  struct ViewReturnHelper;
 
 
   /*
    * Specialization for Scalar return types
    */
   template<typename ... Args, typename ElementType, typename PointerType, typename LinIdx, camp::idx_t StrideOneDim>
-  struct ViewReturnHelper<0, camp::list<Args...>, ElementType, PointerType, LinIdx, StrideOneDim>
+  struct ViewReturnHelper<camp::idx_seq<>, camp::list<Args...>, ElementType, PointerType, LinIdx, StrideOneDim>
   {
       using return_type = ElementType &;
 
@@ -117,6 +174,54 @@ namespace internal
       }
   };
 
+
+  /*
+   * Specialization for Tensor return types
+   */
+  template<camp::idx_t ... VecSeq, typename ... Args, typename ElementType, typename PointerType, typename LinIdx, camp::idx_t StrideOneDim>
+  struct ViewReturnHelper<camp::idx_seq<VecSeq...>, camp::list<Args...>, ElementType, PointerType, LinIdx, StrideOneDim>
+  {
+      static constexpr camp::idx_t s_num_dims = sizeof...(VecSeq);
+
+      // This is the stride-one dimensions w.r.t. the tensor not the View
+      // For example:
+      //  For a vector, s_stride_one_dim is either 0 (packed) or -1 (strided)
+      //  For a matrix, s_stride_one_dim is either:
+      //                 -1 neither row nor column are packed
+      //                 0 rows are stride-one
+      //                 1 columns are stride-one
+      static constexpr camp::idx_t s_stride_one_dim =
+          RAJA::max<camp::idx_t>((GetTesorArgIdx<VecSeq, Args...>::value == StrideOneDim ?
+                    VecSeq : -1)...);
+
+
+      using tensor_reg_type = typename camp::at_v<camp::list<Args...>, GetTesorArgIdx<0, Args...>::value>::tensor_type;
+      using ref_type = internal::expt::TensorRef<ElementType*, LinIdx, internal::expt::TENSOR_MULTIPLE, s_num_dims, s_stride_one_dim>;
+      using return_type = internal::expt::ET::TensorLoadStore<tensor_reg_type, ref_type>;
+
+      template<typename LayoutType>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      constexpr
+      return_type make_return(LayoutType const &layout, PointerType const &data, Args const &... args){
+
+        return return_type(ref_type{
+          // data pointer
+          &data[0] + layout(internal::expt::isTensorIndex<Args>() ? LinIdx{0} : (LinIdx)stripIndexType(internal::expt::stripTensorIndex(args))...),
+          // strides
+          {(LinIdx)layout.template get_dim_stride<GetTesorArgIdx<VecSeq, Args...>::value>()...},
+          // tile
+          {
+              // begin
+              {(LinIdx)(get_tensor_args_begin<VecSeq>(layout, args...))...},
+
+              // size
+              {(LinIdx)get_tensor_args_size<VecSeq>(layout, args...)...}
+          }
+        });
+      }
+  };
 
 
   } // namespace detail
@@ -133,7 +238,7 @@ namespace internal
   template<typename ElementType, typename PointerType, typename LinIdx, typename LayoutType, typename ... Args>
   using view_return_type_t =
       typename detail::ViewReturnHelper<
-        count_num_tensor_args<Args...>(),
+        camp::make_idx_seq_t<count_num_tensor_args<Args...>::value>,
         camp::list<Args...>,
         ElementType,
         PointerType,
@@ -155,7 +260,7 @@ namespace internal
   view_return_type_t<ElementType, PointerType, LinIdx, LayoutType, Args...>
   view_make_return_value(LayoutType const &layout, PointerType const &data, Args const &... args){
     return detail::ViewReturnHelper<
-        count_num_tensor_args<Args...>(),
+        camp::make_idx_seq_t<count_num_tensor_args<Args...>::value>,
         camp::list<Args...>,
         ElementType,
         PointerType,
@@ -192,6 +297,28 @@ namespace internal
     }
   };
 
+
+  /**
+   * Specialization where expected type is wrapped in a VectorIndex type
+   *
+   * In this case, there is no VectorIndex to unpack, just strip any strongly
+   * typed indices.
+   */
+  template<typename Expected, typename Arg, typename VectorType, camp::idx_t DIM>
+  struct MatchTypedViewArgHelper<Expected, RAJA::expt::TensorIndex<Arg, VectorType, DIM> >{
+
+    static_assert(std::is_convertible<Arg, Expected>::value,
+        "Argument isn't compatible");
+
+    using arg_type = strip_index_type_t<Arg>;
+
+    using type = RAJA::expt::TensorIndex<arg_type, VectorType, DIM>;
+
+    static constexpr RAJA_HOST_DEVICE RAJA_INLINE
+    type extract(RAJA::expt::TensorIndex<Arg, VectorType, DIM> vec_arg){
+      return type(stripIndexType(*vec_arg), vec_arg.size());
+    }
+  };
 
   } //namespace detail
 
@@ -325,9 +452,19 @@ class ViewBase {
     RAJA_HOST_DEVICE
     RAJA_INLINE
     constexpr
-    camp::idx_t size() const
+    linear_index_type size() const
     {
       return m_layout.size();
+    }
+
+
+    template<camp::idx_t DIM>
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    constexpr
+    linear_index_type get_dim_size() const
+    {
+      return m_layout.template get_dim_size<DIM>();
     }
 
 
