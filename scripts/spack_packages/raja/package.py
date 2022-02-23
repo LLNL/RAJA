@@ -308,6 +308,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
                                         rocm_root))
             cfg.write(cmake_cache_entry("HIP_PATH",
                                         rocm_root + '/llvm/bin'))
+            cfg.write(cmake_cache_entry("CMAKE_HIP_ARCHITECTURES", 'fx906'))
 
             hipcc_flags = ['--amdgpu-target=gfx906']
             if "+desul" in spec:
