@@ -20,7 +20,7 @@ TEST(OffsetLayoutUnitTest, Constructors)
    *
    * 10, 11, 12, 13, 14
    */
-  const layout l({{10}}, {{14}});
+  const layout l({{10}}, {{15}});
 
   /*
    * First element, 10, should have index 0.
