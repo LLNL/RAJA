@@ -29,6 +29,15 @@ see the RAJA user guide for more information about items in this release.
 Notable changes include:
 
   * New features / API changes:
+      * Breaking change: RAJA OffsetLayout constructor was changed to take
+        begin, end args (where end is one past the last index) instead of
+        first, last args (where last was included). This is consistent with
+        expected behavior and other RAJA Layout/View concepts.
+      * New experimental features that support SIMD/SIMT programming by 
+        guaranteeing vectorization without the need to rely on compiler
+        auto-vectorization. Basic documentation for this is included in the
+        RAJA User Guide and should provide enough description for interested
+        users to try it out. 
       * "Flatten" policies were added for RAJA Teams. This reshaping 
         multi-dimensional GPU thread blocks to 1D.
       * RAJA Teams now allows a single execution policy to be provided. 
@@ -44,7 +53,8 @@ Notable changes include:
         information):
          * "nontrivially copyable" SYCL interface has been removed 
            (i.e., 'RAJA::sycl_exec_nontrivial<...>' and 
-           'RAJA::SyclKernelNonTrivial<...>') as these constructs are no longer            needed when using recent updates to the Intel OneAPI compiler.
+           'RAJA::SyclKernelNonTrivial<...>') as these constructs are no longer
+           needed when using recent updates to the Intel OneAPI compiler.
            Execution is now dispatched based on the C++ 'is_trivially_copyable'
            type trait.
          * Support for RAJA::kernel loop tiling policies is now available for
@@ -56,7 +66,11 @@ Notable changes include:
 
   * Build changes/improvements:
       * AS OF THIS RELEASE, RAJA REQUIRES A C++14-COMPLIANT COMPILER TO BUILD!! 
+      * AS OF THIS RELEASE, RAJA REQUIRES CMAKE version 3.14.5 or newer.
       * BLT update....
+        Although the option CMAKE_HIP_ARCHITECTURES to specify the HIP target 
+        architecture is not available until CMake version 3.21, the option is 
+        supported in the new BLT version and works with all versions of CMake.
       * The camp submodule is updated to v0.4.0. If you do not use the submodule
         and build RAJA with an external version of camp, you will need to
         use camp v0.4.0 or newer.
