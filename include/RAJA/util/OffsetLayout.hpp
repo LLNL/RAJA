@@ -122,12 +122,38 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   {
   }
 
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin size() const
+  {
+    return base_.size();
+  }
+
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin size_noproj() const
+  {
+    return base_.size_noproj();
+  }
+
   template<camp::idx_t DIM>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr
   IndexLinear get_dim_stride() const {
     return base_.get_dim_stride();
+  }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_size() const {
+    return base_.get_dim_size();
+  }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_begin() const {
+    return offsets[DIM];
   }
 };
 
