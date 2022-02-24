@@ -371,6 +371,8 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #endif
 
+#define RAJA_UNROLL RAJA_PRAGMA(unroll)
+
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 #define RAJA_ALIGN_DATA(d) d
 #else
@@ -535,6 +537,10 @@ T * align_hint(T * x)
 
 }  // closing brace for RAJA namespace
 
+
+#ifndef RAJA_UNROLL
+#define RAJA_UNROLL
+#endif
 
 // If we're in CUDA device code, we can use the nvcc unroll pragma
 #if defined(__CUDA_ARCH__) && defined(RAJA_CUDA_ACTIVE)
