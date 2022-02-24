@@ -106,6 +106,14 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
     return base_((indices - offsets[RangeInts])...);
   }
 
+  template <typename... Indices>
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
+                                              Indices &&... indices) const
+  {
+    base_.toIndices(linear_index, std::forward<Indices>(indices)...);
+    camp::sink((indices = (offsets[RangeInts] + indices))...);
+  }
+
   static RAJA_INLINE OffsetLayout_impl<IndexRange, IdxLin>
   from_layout_and_offsets(
       const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
@@ -204,6 +212,24 @@ struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>
     return IdxLin(Base::operator()(stripIndexType(indices)...));
   }
 
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
+                                              DimTypes &... indices) const
+  {
+    toIndicesHelper(camp::make_idx_seq_t<sizeof...(DimTypes)>{},
+                    std::forward<IdxLin>(linear_index),
+                    std::forward<DimTypes &>(indices)...);
+  }
+
+private:
+  template <typename... Indices, camp::idx_t... RangeInts>
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndicesHelper(camp::idx_seq<RangeInts...>,
+                                                    IdxLin linear_index,
+                                                    Indices &... indices) const
+  {
+    StrippedIdxLin locals[sizeof...(DimTypes)];
+    Base::toIndices(stripIndexType(linear_index), locals[RangeInts]...);
+    camp::sink((indices = Indices{static_cast<Indices>(locals[RangeInts])})...);
+  }
 };
 
 
