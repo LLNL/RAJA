@@ -395,7 +395,6 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
-//#define RAJA_UNROLL __attribute__((optimize("unroll-loops")))
 #define RAJA_UNROLL RAJA_PRAGMA(GCC unroll 10000)
 
 
