@@ -182,11 +182,13 @@ struct TypedOffsetLayout;
 
 template <typename IdxLin, typename... DimTypes>
 struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>
-: public OffsetLayout<sizeof...(DimTypes), Index_type>
+: public OffsetLayout<sizeof...(DimTypes), strip_index_type_t<IdxLin>>
 {
+   using StrippedIdxLin = strip_index_type_t<IdxLin>;
    using Self = TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>;
-   using Base = OffsetLayout<sizeof...(DimTypes), Index_type>;
-   using DimArr = std::array<Index_type, sizeof...(DimTypes)>;
+   using Base = OffsetLayout<sizeof...(DimTypes), StrippedIdxLin>;
+   using DimArr = std::array<StrippedIdxLin, sizeof...(DimTypes)>;
+   using DimTuple = camp::tuple<DimTypes...>;
    using IndexLinear = IdxLin;
 
    // Pull in base coonstructors
@@ -194,7 +196,7 @@ struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>
    // This breaks with nvcc11
  using Base::Base;
  #else
-   using OffsetLayout<sizeof...(DimTypes), Index_type>::OffsetLayout;
+   using OffsetLayout<sizeof...(DimTypes), StrippedIdxLin>::OffsetLayout;
  #endif
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(DimTypes... indices) const

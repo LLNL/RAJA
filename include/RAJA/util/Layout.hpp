@@ -394,7 +394,7 @@ private:
                                                     IdxLin linear_index,
                                                     Indices &... indices) const
   {
-    Index_type locals[sizeof...(DimTypes)];
+    StrippedIdxLin locals[sizeof...(DimTypes)];
     Base::toIndices(stripIndexType(linear_index), locals[RangeInts]...);
 		camp::sink((indices = Indices{static_cast<Indices>(locals[RangeInts])})...);
   }
