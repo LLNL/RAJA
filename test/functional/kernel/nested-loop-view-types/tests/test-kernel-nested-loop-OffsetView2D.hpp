@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -52,18 +52,18 @@ void KernelOffsetView2DTestImpl(std::array<RAJA::idx_t, 2> dim,
   RAJA::TypedRangeSegment<IDX_TYPE> iseg( offset_lo.at(0), offset_hi.at(0));
   RAJA::TypedRangeSegment<IDX_TYPE> jseg( offset_lo.at(1), offset_hi.at(1));
 
-  RAJA::kernel<EXEC_POLICY>( 
+  RAJA::kernel<EXEC_POLICY>(
     RAJA::make_tuple( iseg, jseg ),
     [=] RAJA_HOST_DEVICE(IDX_TYPE i, IDX_TYPE j) {
       view(i, j) = static_cast<IDX_TYPE>(1);
-    } 
+    }
   );
 
   working_res.memcpy(check_array, working_array, sizeof(IDX_TYPE) * N);
 
   for (RAJA::idx_t ii = 0; ii < N; ++ii) {
     ASSERT_EQ(test_array[ii], check_array[ii]);
-  } 
+  }
 
   deallocateForallTestData<IDX_TYPE>(working_res,
                                      working_array,
@@ -95,7 +95,7 @@ TYPED_TEST_P(KernelNestedLoopOffsetView2DTest, OffsetView2DKernelTest)
   //
   std::array<RAJA::idx_t, 2> offset_lo {{0, 2}};
   std::array<RAJA::idx_t, 2> offset_hi {{dim0-3, dim1-4}};
-  KernelOffsetView2DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim, 
+  KernelOffsetView2DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim,
                                                                  offset_lo,
                                                                  offset_hi);
 
