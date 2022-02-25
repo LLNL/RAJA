@@ -335,7 +335,7 @@ MultiDimensional loops using Simple loop APIs (RAJA::CombiningAdapter)
 --------------------------------
 
 A ``RAJA::CombiningAdapter`` object provides ways to run perfectly nested loops
-with simple loop APIs like ``RAJA::forall`` and ``RAJA::WorkGroup`` :ref:`_workgroup-label`.
+with simple loop APIs like ``RAJA::forall`` and ``RAJA::WorkGroup`` :ref:`workgroup-label`.
 To introduce the RAJA *CombiningAdapter* interface, consider a (N+1)-level
 C-style loop nest::
 
