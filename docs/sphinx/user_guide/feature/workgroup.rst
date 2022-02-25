@@ -37,7 +37,7 @@ releases.
               * an iteration space object, and
               * a lambda expression representing the loop body.
           * Multi-dimensional loops can be used with ``RAJA::CombiningAdapter``
-            see, :ref:`_loop_elements-CombiningAdapter-label`.
+            see, :ref:`loop_elements-CombiningAdapter-label`.
 
 Examples showing how to use RAJA workgroup methods may be found in
 the :ref:`tutorial-label`.
