@@ -74,6 +74,10 @@ namespace expt
       static constexpr camp::idx_t s_mask_per_register =
           (1<<log_base2_t::value)-1;
 
+      // Offset of last regiser in m_registers
+      static constexpr camp::idx_t s_final_register =
+          s_num_partial_lanes == 0 ?
+              s_num_full_registers-1 : s_num_full_registers;
 
       template<typename IDX>
       RAJA_INLINE
@@ -322,7 +326,7 @@ namespace expt
           m_registers[reg].load_packed(ptr+reg*s_register_num_elem);
         }
         if(s_num_partial_lanes){
-          m_registers[s_num_full_registers].load_packed_n(ptr+s_num_full_registers*s_register_num_elem, s_num_partial_lanes);
+          m_registers[s_final_register].load_packed_n(ptr+s_final_register*s_register_num_elem, s_num_partial_lanes);
         }
         return *this;
       }
@@ -338,7 +342,7 @@ namespace expt
           m_registers[reg].load_strided(ptr+reg*s_register_num_elem*stride, stride);
         }
         if(s_num_partial_lanes){
-          m_registers[s_num_full_registers].load_strided_n(ptr+s_num_full_registers*s_register_num_elem*stride, stride, s_num_partial_lanes);
+          m_registers[s_final_register].load_strided_n(ptr+s_final_register*s_register_num_elem*stride, stride, s_num_partial_lanes);
         }
         return *this;
       }
@@ -366,9 +370,9 @@ namespace expt
 
         }
         if(s_num_partial_lanes){
-          m_registers[s_num_full_registers].load_packed_n(
-              ptr+s_num_full_registers*s_register_num_elem,
-              N-s_num_full_registers*s_register_num_elem);
+          m_registers[s_final_register].load_packed_n(
+              ptr+s_final_register*s_register_num_elem,
+              N-s_final_register*s_register_num_elem);
         }
         return *this;
       }
@@ -397,10 +401,10 @@ namespace expt
 
         }
         if(s_num_partial_lanes){
-          m_registers[s_num_full_registers].load_strided_n(
-              ptr+s_num_full_registers*s_register_num_elem*stride,
+          m_registers[s_final_register].load_strided_n(
+              ptr+s_final_register*s_register_num_elem*stride,
               stride,
-              N-s_num_full_registers*s_register_num_elem);
+              N-s_final_register*s_register_num_elem);
         }
         return *this;
       }
@@ -421,7 +425,7 @@ namespace expt
           m_registers[reg].gather(ptr, offsets.vec(reg));
         }
         if(s_num_partial_lanes){
-          m_registers[s_num_full_registers].gather_n(ptr, offsets.vec(s_num_full_registers), s_num_partial_lanes);
+          m_registers[s_final_register].gather_n(ptr, offsets.vec(s_final_register), s_num_partial_lanes);
         }
         return *this;
       }
@@ -451,10 +455,10 @@ namespace expt
 
         }
         if(s_num_partial_lanes){
-          m_registers[s_num_full_registers].gather_n(
+          m_registers[s_final_register].gather_n(
               ptr,
-              offsets.vec(s_num_full_registers),
-              N-s_num_full_registers*s_register_num_elem);
+              offsets.vec(s_final_register),
+              N-s_final_register*s_register_num_elem);
         }
         return *this;
       }
@@ -471,7 +475,7 @@ namespace expt
           m_registers[reg].store_packed(ptr+reg*s_register_num_elem);
         }
         if(s_num_partial_lanes){
-          m_registers[s_num_full_registers].store_packed_n(ptr+s_num_full_registers*s_register_num_elem, s_num_partial_lanes);
+          m_registers[s_final_register].store_packed_n(ptr+s_final_register*s_register_num_elem, s_num_partial_lanes);
         }
         return *this;
       }
@@ -487,7 +491,7 @@ namespace expt
           m_registers[reg].store_strided(ptr+reg*s_register_num_elem*stride, stride);
         }
         if(s_num_partial_lanes){
-          m_registers[s_num_full_registers].store_strided_n(ptr+s_num_full_registers*s_register_num_elem*stride, stride, s_num_partial_lanes);
+          m_registers[s_final_register].store_strided_n(ptr+s_final_register*s_register_num_elem*stride, stride, s_num_partial_lanes);
         }
         return *this;
       }
@@ -511,9 +515,9 @@ namespace expt
 
         }
         if(s_num_partial_lanes){
-          m_registers[s_num_full_registers].store_packed_n(
-              ptr+s_num_full_registers*s_register_num_elem,
-              N-s_num_full_registers*s_register_num_elem);
+          m_registers[s_final_register].store_packed_n(
+              ptr+s_final_register*s_register_num_elem,
+              N-s_final_register*s_register_num_elem);
         }
         return *this;
       }
@@ -539,10 +543,10 @@ namespace expt
 
         }
         if(s_num_partial_lanes){
-          m_registers[s_num_full_registers].store_strided_n(
-              ptr+s_num_full_registers*s_register_num_elem*stride,
+          m_registers[s_final_register].store_strided_n(
+              ptr+s_final_register*s_register_num_elem*stride,
               stride,
-              N-s_num_full_registers*s_register_num_elem);
+              N-s_final_register*s_register_num_elem);
         }
         return *this;
       }
@@ -565,7 +569,7 @@ namespace expt
           m_registers[reg].scatter(ptr, offsets.vec(reg));
         }
         if(s_num_partial_lanes){
-          m_registers[s_num_full_registers].scatter_n(ptr, offsets.vec(s_num_full_registers), s_num_partial_lanes);
+          m_registers[s_final_register].scatter_n(ptr, offsets.vec(s_final_register), s_num_partial_lanes);
         }
         return *this;
       }
@@ -594,9 +598,9 @@ namespace expt
 
         }
         if(s_num_partial_lanes){
-          m_registers[s_num_full_registers].scatter_n(
+          m_registers[s_final_register].scatter_n(
               ptr,
-              offsets.vec(s_num_full_registers),
+              offsets.vec(s_final_register),
               N-s_num_full_registers*s_register_num_elem);
         }
         return *this;
@@ -611,7 +615,7 @@ namespace expt
           result.vec(reg) = m_registers[reg].divide(den.vec(reg));
         }
         if(s_num_partial_lanes){
-          result.vec(s_num_full_registers) = m_registers[s_num_full_registers].divide_n(den.vec(s_num_full_registers), s_num_partial_lanes);
+          result.vec(s_final_register) = m_registers[s_final_register].divide_n(den.vec(s_final_register), s_num_partial_lanes);
         }
         return result;
       }
@@ -668,7 +672,7 @@ namespace expt
           result = RAJA::min<element_type>(result, m_registers[i].min());
         }
         if(s_num_partial_lanes){
-          result = RAJA::min<element_type>(result, m_registers[s_num_full_registers].min_n(s_num_partial_lanes));
+          result = RAJA::min<element_type>(result, m_registers[s_final_register].min_n(s_num_partial_lanes));
         }
         return result;
       }
@@ -694,7 +698,7 @@ namespace expt
           }
         }
         if(N-s_num_full_registers*s_register_num_elem > 0){
-          result = RAJA::min<element_type>(result, m_registers[s_num_full_registers].min_n(N-s_num_full_registers*s_register_num_elem));
+          result = RAJA::min<element_type>(result, m_registers[s_final_register].min_n(N-s_final_register*s_register_num_elem));
         }
         return result;
       }
@@ -716,7 +720,7 @@ namespace expt
           result = RAJA::max<element_type>(result, m_registers[i].max());
         }
         if(s_num_partial_lanes){
-          result = RAJA::max<element_type>(result, m_registers[s_num_full_registers].max_n(s_num_partial_lanes));
+          result = RAJA::max<element_type>(result, m_registers[s_final_register].max_n(s_num_partial_lanes));
         }
         return result;
       }
@@ -742,7 +746,7 @@ namespace expt
           }
         }
         if(N-s_num_full_registers*s_register_num_elem > 0){
-          result = RAJA::max<element_type>(result, m_registers[s_num_full_registers].max_n(N-s_num_full_registers*s_register_num_elem));
+          result = RAJA::max<element_type>(result, m_registers[s_final_register].max_n(N-s_final_register*s_register_num_elem));
         }
         return result;
       }

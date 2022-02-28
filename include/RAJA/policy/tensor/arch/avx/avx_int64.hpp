@@ -203,7 +203,7 @@ namespace expt
        */
       RAJA_INLINE
       self_type const &store_packed_n(element_type *ptr, camp::idx_t N) const{
-        _mm256_maskstore_pd(reinterpret_cast<double*>(ptr), createMask(N), m_value);
+        _mm256_maskstore_pd(reinterpret_cast<double*>(ptr), createMask(N), reinterpret_cast<__m256d>(m_value));
         return *this;
       }
 
