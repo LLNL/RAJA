@@ -495,13 +495,9 @@ namespace expt
       RAJA_DEVICE
       RAJA_INLINE
       self_type get_and_broadcast(int i) const {
-#ifdef __CUDA_ARCH__
         self_type x;
         x.m_value = __shfl_sync(0xffffffff, m_value, i, 32);
         return x;
-#else
-        return self_type(m_value);
-#endif
       }
 
       RAJA_DEVICE
