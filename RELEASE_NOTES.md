@@ -29,10 +29,10 @@ see the RAJA user guide for more information about items in this release.
 Notable changes include:
 
   * New features / API changes:
-      * Breaking change: RAJA OffsetLayout constructor was changed to take
-        begin, end args (where end is one past the last index) instead of
-        first, last args (where last was included). This is consistent with
-        expected behavior and other RAJA Layout/View concepts.
+      * BREAKING CHANGE: RAJA OffsetLayout constructor was changed to take
+        (begin, end) args (where end is one past the last index) instead of
+        (first, last) args (where last index was included). This is consistent 
+        with expected behavior and other RAJA Layout/View concepts.
       * New experimental features that support SIMD/SIMT programming by 
         guaranteeing vectorization without the need to rely on compiler
         auto-vectorization. Basic documentation for this is included in the
@@ -48,6 +48,16 @@ Notable changes include:
       * All CUDA execution policies have been expanded to allow users to specify
         a minimum number of blocks per SM, if they wish to do that. An analogous
         capability for HIP execution policies is being hashed out. 
+      * Changes were made to RAJA scans to address a consistency issue and
+        allow an array corresponding to an input span to passed as
+        a const pointer.
+      * RAJA View pointer type is fixed to properly allow CHAI ManagedArray 
+        type to be passed through to View instead of the raw pointer type. This
+        fixes an issue where some required CHAI memory transfers were not 
+        occurring.
+      * A "combining adapter" concept has been added that allows 
+        multi-dimensional loops to be run using one-dimensional interfaces.
+        Please see the RAJA User Guide for more description.
       * Additional feature support and improvements have been made to the 
         RAJA SYCL back-end (please see the RAJA User Guide for more 
         information):
@@ -67,13 +77,13 @@ Notable changes include:
   * Build changes/improvements:
       * AS OF THIS RELEASE, RAJA REQUIRES A C++14-COMPLIANT COMPILER TO BUILD!! 
       * AS OF THIS RELEASE, RAJA REQUIRES CMAKE version 3.14.5 or newer.
-      * BLT update....
+      * The BLT submodule is updated to... 
         Although the option CMAKE_HIP_ARCHITECTURES to specify the HIP target 
         architecture is not available until CMake version 3.21, the option is 
         supported in the new BLT version and works with all versions of CMake.
-      * The camp submodule is updated to v0.4.0. If you do not use the submodule
+      * The camp submodule is updated to v0.5.3. If you do not use the submodule
         and build RAJA with an external version of camp, you will need to
-        use camp v0.4.0 or newer.
+        use camp v0.5.3 or newer.
       * the "RAJA_" prefix has been added to all CMake options. Options that 
         shadow a CMake or BLT option are turned into cmake_dependent_option 
         calls, ensuring that they can be controlled independently and have the 
@@ -104,13 +114,7 @@ Notable changes include:
         removed. Now the choice is made based on the rocm compiler version.
 
   * Bug fixes/improvements:
-      * Changes were made to RAJA scans to address some consistency issues and
-        allow an array corresponding to an input span to be referenced with 
-        a const pointer.
-      * RAJA View pointer type is fixed to properly allow CHAI ManagedArray 
-        type to be passed through to View instead of the raw pointer type. This
-        fixes an issue where some required CHAI memory transfers were not 
-        occurring.
+      * A bug in TBB non-inplace scan implementation was fixed.
       * RAJA StaticLayout was fixed to avoid compiler warnings due to
         converting a negative integer value to an unsigned integral type.
       * Various improvements, updates, and fixes (formatting, typos, etc.) 
