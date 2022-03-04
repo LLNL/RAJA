@@ -282,10 +282,6 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
                 cuda_reldebinf_flags = "-O3 -g -Xcompiler -Ofast -Xcompiler -finline-functions"
                 cuda_debug_flags = "-O0 -g -Xcompiler -O0 -Xcompiler -finline-functions"
    
-            if ("clang" in cpp_compiler):
-                cfg.write(cmake_cache_option("ENABLE_GBENCHMARKS", True))
-                cfg.write(cmake_cache_option("ENABLE_BENCHMARKS", True))
-                
             cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_RELEASE", cuda_release_flags))
             cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_RELWITHDEBINFO", cuda_reldebinf_flags))
             cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_DEBUG", cuda_debug_flags))
@@ -357,6 +353,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
                 cfg.write(cmake_cache_string("CMAKE_CUDA_STANDARD", "14"))
 
         cfg.write(cmake_cache_option("ENABLE_BENCHMARKS", 'tests=benchmarks' in spec))
+        cfg.write(cmake_cache_option("ENABLE_GBENCHMARKS", 'tests=benchmarks' in spec))
         cfg.write(cmake_cache_option("ENABLE_TESTS", not 'tests=none' in spec or self.run_tests))
 
         cfg.write(cmake_cache_path("BLT_SOURCE_DIR", spec['blt'].prefix))
