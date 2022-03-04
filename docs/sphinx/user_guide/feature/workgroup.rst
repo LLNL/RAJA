@@ -36,6 +36,8 @@ releases.
           * The ``RAJA::WorkPool::enqueue`` method takes two arguments:
               * an iteration space object, and
               * a lambda expression representing the loop body.
+          * Multi-dimensional loops can be used with ``RAJA::CombiningAdapter``
+            see, :ref:`loop_elements-CombiningAdapter-label`.
 
 Examples showing how to use RAJA workgroup methods may be found in
 the :ref:`tutorial-label`.
@@ -204,8 +206,10 @@ WorkPool
 --------
 
 The ``RAJA::WorkPool`` class template holds a set of simple (e.g., non-nested)
-loops that are enqueued one at a time. For example, to enqueue a C-style loop
-that adds two vectors, like::
+loops that are enqueued one at a time. Note that simple multi-dimensional loops
+can be adapted into simple loops via ``RAJA::CombiningAdapter``, see
+:ref:`loop_elements-CombiningAdapter-label`.
+For example, to enqueue a C-style loop that adds two vectors, like::
 
   for (int i = 0; i < N; ++i) {
     c[i] = a[i] + b[i];

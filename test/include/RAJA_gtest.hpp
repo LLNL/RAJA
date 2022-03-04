@@ -117,7 +117,6 @@
       asm("trap;"); \
   } \
 }
-      //printf("Assertion failed: " #X " (%ld) != " #Y " (%ld)\n", (long)x, (long)y); \
 
 #define RAJA_ASSERT_FLOAT_EQ(X,Y) {RAJA_ASSERT_EQ(X,Y);}
 #define RAJA_ASSERT_DOUBLE_EQ(X,Y) {RAJA_ASSERT_EQ(X,Y);}

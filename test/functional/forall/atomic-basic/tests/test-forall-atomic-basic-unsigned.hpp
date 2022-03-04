@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -64,7 +64,7 @@ void ForallAtomicBasicUnsignedTestImpl( IdxType seglimit )
 
   camp::resources::Resource work_res{WORKINGRES()};
 
-  SegmentType seg = 
+  SegmentType seg =
     RSMultiplexer<IdxType, SegmentType>().makeseg(seglimit, work_res);
 
   T * work_array;
@@ -130,14 +130,14 @@ TYPED_TEST_P(ForallAtomicBasicUnsignedTest, AtomicBasicUnsignedForall)
   using IdxType = typename camp::at<TypeParam, camp::num<3>>::type;
   using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallAtomicBasicUnsignedTestImpl<AExec, APol, ResType, 
-                                    IdxType, RAJA::TypedRangeSegment<IdxType>, 
+  ForallAtomicBasicUnsignedTestImpl<AExec, APol, ResType,
+                                    IdxType, RAJA::TypedRangeSegment<IdxType>,
                                     DType>( 10000 );
-  ForallAtomicBasicUnsignedTestImpl<AExec, APol, ResType, 
-                                    IdxType, RAJA::TypedRangeStrideSegment<IdxType>, 
+  ForallAtomicBasicUnsignedTestImpl<AExec, APol, ResType,
+                                    IdxType, RAJA::TypedRangeStrideSegment<IdxType>,
                                     DType>( 10000 );
-  ForallAtomicBasicUnsignedTestImpl<AExec, APol, ResType, 
-                                    IdxType, RAJA::TypedListSegment<IdxType>, 
+  ForallAtomicBasicUnsignedTestImpl<AExec, APol, ResType,
+                                    IdxType, RAJA::TypedListSegment<IdxType>,
                                     DType>( 10000 );
 }
 
