@@ -44,7 +44,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PA
 
 include(cmake/SetupRajaOptions.cmake)
 
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.14.5)
 
 # Detect C++ standard and add appropriate flag _before_ loading BLT
 set(COMPILERS_KNOWN_TO_CMAKE33 AppleClang Clang GNU MSVC)
