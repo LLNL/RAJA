@@ -164,12 +164,12 @@ __global__ void sharedMatMultKernel(int N, double* C, double* A, double* B)
 
   for (int k = 0; k < (THREAD_SZ + N - 1)/THREAD_SZ; k++) {
 
-    if (k*THREAD_SZ + threadIdx.x < N && Row < N)
+    if ( static_cast<int>(k*THREAD_SZ + threadIdx.x) < N && Row < N )
       As[threadIdx.y][threadIdx.x] = A[Row*N + k*THREAD_SZ + threadIdx.x];
     else
       As[threadIdx.y][threadIdx.x] = 0.0;
 
-    if (k*THREAD_SZ + threadIdx.y < N && Col < N)
+    if ( static_cast<int>(k*THREAD_SZ + threadIdx.y) < N && Col < N)
       Bs[threadIdx.y][threadIdx.x] = B[(k*THREAD_SZ + threadIdx.y)*N + Col];
     else
       Bs[threadIdx.y][threadIdx.x] = 0.0;

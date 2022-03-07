@@ -18,7 +18,7 @@
 using SequentialKernelNestedLoopExecPols = camp::list<
 
     // Depth 1 ReduceSum Exec Pols
-    NestedLoopData<DEPTH_1_REDUCESUM, RAJA::seq_exec, RAJA::seq_reduce >,
+    NestedLoopData<DEPTH_1_REDUCESUM, RAJA::seq_exec, RAJA::seq_reduce, RAJA::seq_exec >,
 
     // Depth 3 ReduceSum Exec Pols
     NestedLoopData<DEPTH_3_REDUCESUM, RAJA::seq_exec,  RAJA::seq_exec, RAJA::seq_exec >,

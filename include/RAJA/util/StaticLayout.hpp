@@ -106,19 +106,33 @@ struct StaticLayoutBase_impl<IdxLin,
   static constexpr IdxLin s_size =
       RAJA::product<IdxLin>((Sizes == IdxLin(0) ? IdxLin(1) : Sizes)...);
 
+  // Multiply together all of the sizes
+  static constexpr IdxLin s_size_noproj =
+      RAJA::product<IdxLin>(Sizes...);
+
+  /*!
+   * Computes a size of the layout's space with projections as size 1.
+   * This is the produce of each dimensions size or 1 if projected.
+   *
+   * @return Total size spanned by indices
+   */
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr IdxLin size()
+  {
+    // Multiply together all of the sizes,
+    // replacing 1 for any zero-sized dimensions
+    return s_size;
+  }
+
   /*!
    * Computes a total size of the layout's space.
    * This is the produce of each dimensions size.
    *
    * @return Total size spanned by indices
    */
-
-
-  RAJA_INLINE RAJA_HOST_DEVICE static constexpr IdxLin size()
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr IdxLin size_noproj()
   {
-    // Multiply together all of the sizes,
-    // replacing 1 for any zero-sized dimensions
-    return s_size;
+    // Multiply together all of the sizes
+    return s_size_noproj;
   }
 
 
@@ -128,6 +142,14 @@ struct StaticLayoutBase_impl<IdxLin,
   constexpr
   IndexLinear get_dim_stride() const {
     return camp::seq_at<DIM, strides>::value;
+  }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_size() const {
+    return camp::seq_at<DIM, sizes>::value;
   }
 
 };
@@ -173,7 +195,7 @@ struct StrideCalculator<IdxLin,
 
   using strides_unperm =
       camp::int_seq<IdxLin, StrideCalculatorIdx<IdxLin, N, Range, camp::seq_at<Perm, sizes>::value...>::stride...>;
-  
+
   using strides = camp::int_seq<IdxLin, camp::seq_at<camp::seq_at<Range, inv_perm>::value, strides_unperm>::value...>;
 };
 
@@ -206,10 +228,16 @@ struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
 
 
   static constexpr IndexLinear s_size = Layout::s_size;
+  static constexpr IndexLinear s_size_noproj = Layout::s_size_noproj;
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr static IndexLinear size()
   {
     return s_size;
+  }
+
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr static IndexLinear size_noproj()
+  {
+    return s_size_noproj;
   }
 
   template<camp::idx_t DIM>

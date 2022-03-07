@@ -1,7 +1,6 @@
 version: 1.0.{build}
 skip_branch_with_pr: true
 image:
-  - Visual Studio 2017
   - Visual Studio 2019
 build_script:
 - cmd: >-

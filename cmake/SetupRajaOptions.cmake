@@ -17,8 +17,6 @@ option(RAJA_ENABLE_ROCTX "Build with ENABLE_ROCTX support" Off)
 option(RAJA_ENABLE_TBB "Build TBB support" Off)
 option(RAJA_ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(RAJA_ENABLE_SYCL "Build SYCL support" Off)
-option(RAJA_ENABLE_EXTERNAL_CUB "Use an external cub" Off)
-option(RAJA_ENABLE_EXTERNAL_ROCPRIM "Use an external rocPRIM" Off)
 
 option(RAJA_ENABLE_REPRODUCERS "Build issue reproducers" Off)
 

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,7 +22,7 @@ void KernelPermutedOffsetView2DTestImpl(std::array<RAJA::idx_t, 2> dim,
 
   //
   // These are used for RAJA Layout, Segment definitions in the test.
-  // 
+  //
   // Note that we assume a finite difference stencil width of one.
   //
   std::array<RAJA::idx_t, 2> Nint_len {{dim.at(0), dim.at(1)}};
@@ -30,9 +30,9 @@ void KernelPermutedOffsetView2DTestImpl(std::array<RAJA::idx_t, 2> dim,
 
   //
   // These are used in data initialization and setting reference solution.
-  // We set loop bounds baed on permutation, so inner loop is always stride-1, 
+  // We set loop bounds based on permutation, so inner loop is always stride-1,
   // etc.
-  // 
+  //
   // Also, we assume a finite difference stencil width of one.
   //
   RAJA::idx_t Nint_outer = dim.at( perm.at(0) );
@@ -41,8 +41,8 @@ void KernelPermutedOffsetView2DTestImpl(std::array<RAJA::idx_t, 2> dim,
   RAJA::idx_t Ntot_outer = Nint_outer + 2 * 1;
   RAJA::idx_t Ntot_inner = Nint_inner + 2 * 1;
 
-  RAJA::idx_t Nint = Nint_outer * Nint_inner; 
-  RAJA::idx_t Ntot = Ntot_outer * Ntot_inner; 
+  RAJA::idx_t Nint = Nint_outer * Nint_inner;
+  RAJA::idx_t Ntot = Ntot_outer * Ntot_inner;
 
 
   allocateForallTestData<IDX_TYPE>(Ntot,
@@ -91,7 +91,7 @@ void KernelPermutedOffsetView2DTestImpl(std::array<RAJA::idx_t, 2> dim,
 
   RAJA::OffsetLayout<2> B_layout =
     RAJA::make_permuted_offset_layout<2>( {{-1, -1}},
-                                          {{Ntot_len.at(0)-2, Ntot_len.at(1)-2}},
+                                          {{Ntot_len.at(0)-1, Ntot_len.at(1)-1}},
                                           perm );
   RAJA::Layout<2> A_layout =
     RAJA::make_permuted_layout( {{Nint_len.at(0), Nint_len.at(1)}}, perm );
@@ -102,7 +102,7 @@ void KernelPermutedOffsetView2DTestImpl(std::array<RAJA::idx_t, 2> dim,
   RAJA::TypedRangeSegment<IDX_TYPE> iseg( 0, Nint_len.at(0) );
   RAJA::TypedRangeSegment<IDX_TYPE> jseg( 0, Nint_len.at(1) );
 
-  RAJA::kernel<EXEC_POLICY>( 
+  RAJA::kernel<EXEC_POLICY>(
     RAJA::make_tuple( iseg, jseg ),
     [=] RAJA_HOST_DEVICE(IDX_TYPE i, IDX_TYPE j) {
 
@@ -110,14 +110,14 @@ void KernelPermutedOffsetView2DTestImpl(std::array<RAJA::idx_t, 2> dim,
                      B_view(i - 1, j) + B_view(i + 1, j) +
                      B_view(i, j - 1) + B_view(i, j + 1);
 
-    } 
+    }
   );
 
   working_res.memcpy(A_check_array, A_work_array, sizeof(IDX_TYPE) * Nint);
 
   for (RAJA::idx_t ii = 0; ii < Nint; ++ii) {
     ASSERT_EQ(A_test_array[ii], A_check_array[ii]);
-  } 
+  }
 
   deallocateForallTestData<IDX_TYPE>(working_res,
                                      A_work_array,

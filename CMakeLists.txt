@@ -172,8 +172,9 @@ if(RAJA_ENABLE_CUDA)
 endif()
 
 if(RAJA_ENABLE_HIP)
-  if("${HIP_VERSION_STRING}" VERSION_LESS "3.5")
-    message(FATAL_ERROR "Trying to use HIP/ROCm version ${HIP_VERSION_STRING}. RAJA requires HIP/ROCm version 3.5 or newer. ")
+  message(STATUS "HIP version: ${hip_VERSION}")
+  if("${hip_VERSION}" VERSION_LESS "3.5")
+    message(FATAL_ERROR "Trying to use HIP/ROCm version ${hip_VERSION}. RAJA requires HIP/ROCm version 3.5 or newer. ")
   endif()
 endif()
 
@@ -197,8 +198,11 @@ endif ()
 if (RAJA_ENABLE_HIP)
   set(raja_depends
     ${raja_depends}
-    hip)
-  if(ENABLE_ROCTX)
+    blt::hip)
+  set(raja_depends
+    ${raja_depends}
+    blt::hip_runtime)
+  if(RAJA_ENABLE_ROCTX)
       set(raja_depends
       ${raja_depends}
       roctx)
@@ -253,6 +257,14 @@ camp source repository")
       add_subdirectory(tpl/camp)
     endif()
   endif (EXTERNAL_CAMP_SOURCE_DIR)
+
+  if (RAJA_ENABLE_TARGET_OPENMP)
+    message(STATUS "Setting CAMP_ENABLE_TARGET_OPENMP to ${RAJA_ENABLE_TARGET_OPENMP}")
+    blt_add_target_definitions(
+      TO camp
+      SCOPE INTERFACE
+      TARGET_DEFINITIONS CAMP_ENABLE_TARGET_OPENMP)
+  endif()
 endif (NOT TARGET camp)
 
 set (raja_defines)

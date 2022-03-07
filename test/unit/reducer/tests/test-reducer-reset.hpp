@@ -141,8 +141,8 @@ void testReducerReset()
   reduce_max.reset(resetVal[0]);
   reduce_minloc.reset(resetVal[0]);
   reduce_maxloc.reset(resetVal[0]);
-  reduce_minloctup.reset(resetVal[0]);
   reduce_maxloctup.reset(resetVal[0]);
+  reduce_minloctup.reset(resetVal[0]);
 
   ASSERT_EQ((NumericType)reduce_sum.get(), (NumericType)(resetVal[0]));
   ASSERT_EQ((NumericType)reduce_min.get(), (NumericType)(resetVal[0]));
