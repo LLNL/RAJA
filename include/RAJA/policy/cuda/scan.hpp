@@ -9,7 +9,7 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -42,12 +42,12 @@ namespace scan
         \brief explicit inclusive inplace scan given range, function, and
    initial value
 */
-template <size_t BLOCK_SIZE, bool Async, typename InputIter, typename Function>
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async, typename InputIter, typename Function>
 RAJA_INLINE
 resources::EventProxy<resources::Cuda>
 inclusive_inplace(
     resources::Cuda cuda_res,
-    cuda_exec<BLOCK_SIZE, Async>,
+    cuda_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
     Function binary_op)
@@ -90,6 +90,7 @@ inclusive_inplace(
    initial value
 */
 template <size_t BLOCK_SIZE,
+          size_t BLOCKS_PER_SM,
           bool Async,
           typename InputIter,
           typename Function,
@@ -98,7 +99,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Cuda>
 exclusive_inplace(
     resources::Cuda cuda_res,
-    cuda_exec<BLOCK_SIZE, Async>,
+    cuda_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
     Function binary_op,
@@ -144,6 +145,7 @@ exclusive_inplace(
    initial value
 */
 template <size_t BLOCK_SIZE,
+          size_t BLOCKS_PER_SM,
           bool Async,
           typename InputIter,
           typename OutputIter,
@@ -152,7 +154,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Cuda>
 inclusive(
     resources::Cuda cuda_res,
-    cuda_exec<BLOCK_SIZE, Async>,
+    cuda_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
     OutputIter out,
@@ -196,6 +198,7 @@ inclusive(
    initial value
 */
 template <size_t BLOCK_SIZE,
+          size_t BLOCKS_PER_SM,
           bool Async,
           typename InputIter,
           typename OutputIter,
@@ -205,7 +208,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Cuda>
 exclusive(
     resources::Cuda cuda_res,
-    cuda_exec<BLOCK_SIZE, Async>,
+    cuda_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
     OutputIter out,

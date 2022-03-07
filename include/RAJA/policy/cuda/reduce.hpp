@@ -12,7 +12,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -375,6 +375,27 @@ RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T RAJA_UNUSED_ARG(identity))
 
   return temp;
 }
+
+/*!
+ * Allreduce values in a warp.
+ *
+ *
+ * This does a butterfly pattern leaving each lane with the full reduction
+ *
+ */
+template <typename Combiner, typename T>
+RAJA_DEVICE RAJA_INLINE T warp_allreduce(T val)
+{
+  T temp = val;
+
+  for (int i = 1; i < policy::cuda::WARP_SIZE; i *= 2) {
+    T rhs = __shfl_xor_sync(0xffffffff, temp, i);
+    Combiner{}(temp, rhs);
+  }
+
+  return temp;
+}
+
 
 //! reduce values in block into thread 0
 template <typename Combiner, typename T>

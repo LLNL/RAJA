@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -95,6 +95,17 @@ policy:
 Note that the CUDA execution policy type accepts a template argument 
 ``CUDA_BLOCK_SIZE``, which specifies that each CUDA thread block launched 
 to execute the kernel will have the given number threads in the block.
+
+For performance tuning, the ``RAJA::cuda_exec_explicit`` policy is also
+provided. This allows the user to specify the number of blocks allocated
+per streaming multiprocessor (SM) to allow additional block level
+parallelism. Note that the third boolean argument representing asynchronous
+execution can be omitted, and is ``false`` by default:
+
+.. literalinclude:: ../../../../examples/tut_add-vectors.cpp
+   :start-after: _rajacuda_explicit_vector_add_start
+   :end-before: _rajacuda_explicit_vector_add_end
+   :language: C++ 
 
 Since the lambda defining the loop body will be passed to a device kernel, 
 it must be decorated with the ``__device__`` attribute when it is defined. 

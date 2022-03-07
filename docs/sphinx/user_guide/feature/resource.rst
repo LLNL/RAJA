@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 .. ## and other RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -130,6 +130,7 @@ execution policy suport.
  ======== ==============================
  Cuda     | cuda_exec
           | cuda_exec_async
+          | cuda_exec_explicit
  Hip      | hip_exec
           | hip_exec_async
  Omp*     | omp_target_parallel_for_exec

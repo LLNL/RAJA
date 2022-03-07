@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -165,6 +165,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     c[i] = a[i] + b[i]; 
   });    
   // _rajacuda_vector_add_end
+
+  checkResult(c, N);
+//printResult(c, N);
+
+  const bool Asynchronous = false;
+  std::cout << "\n Running RAJA CUDA explicit (2 blocks per SM) vector addition...\n";
+
+  // _rajacuda_explicit_vector_add_start
+  RAJA::forall<RAJA::cuda_exec_explicit<CUDA_BLOCK_SIZE, 2, Asynchronous>>(RAJA::RangeSegment(0, N), 
+    [=] RAJA_DEVICE (int i) { 
+    c[i] = a[i] + b[i]; 
+  });    
+  // _rajacuda_explicit_vector_add_end
 
   checkResult(c, N);
 //printResult(c, N);

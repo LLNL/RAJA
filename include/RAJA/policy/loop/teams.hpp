@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -63,6 +63,7 @@ struct LaunchExecute<RAJA::expt::seq_launch_t> {
 template <typename SEGMENT>
 struct LoopExecute<loop_exec, SEGMENT> {
 
+  RAJA_SUPPRESS_HD_WARN
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(
       SEGMENT const &segment,

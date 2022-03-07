@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,7 +26,7 @@ void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
   // Note that we assume a finite difference stencil width of one.
   //
   std::array<RAJA::idx_t, 3> Nint_len {{dim.at(0), dim.at(1), dim.at(2)}};
-  std::array<RAJA::idx_t, 3> Ntot_len {{dim.at(0) + 2 * 1, 
+  std::array<RAJA::idx_t, 3> Ntot_len {{dim.at(0) + 2 * 1,
                                         dim.at(1) + 2 * 1,
                                         dim.at(2) + 2 * 1}};
 
@@ -45,8 +45,8 @@ void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
   RAJA::idx_t Ntot_middle = Nint_middle + 2 * 1;
   RAJA::idx_t Ntot_inner  = Nint_inner + 2 * 1;
 
-  RAJA::idx_t Nint = Nint_outer * Nint_middle * Nint_inner; 
-  RAJA::idx_t Ntot = Ntot_outer * Ntot_middle * Ntot_inner; 
+  RAJA::idx_t Nint = Nint_outer * Nint_middle * Nint_inner;
+  RAJA::idx_t Ntot = Ntot_outer * Ntot_middle * Ntot_inner;
 
 
   allocateForallTestData<IDX_TYPE>(Ntot,
@@ -60,7 +60,7 @@ void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
   for (RAJA::idx_t i = 1; i <= Nint_outer; ++i) {
     for (RAJA::idx_t j = 1; j <= Nint_middle; ++j) {
       for (RAJA::idx_t k = 1; k <= Nint_inner; ++k) {
-        B_test_array[k + j * Ntot_inner + i * Ntot_inner * Ntot_middle] = 
+        B_test_array[k + j * Ntot_inner + i * Ntot_inner * Ntot_middle] =
           static_cast<IDX_TYPE>(1);
       }
     }
@@ -85,16 +85,16 @@ void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
       for (RAJA::idx_t k = 0; k < Nint_inner; ++k) {
 
         int A_idx = k + j * Nint_inner + i * Nint_inner * Nint_middle;
-        int B_idx = 
+        int B_idx =
           (k + 1) + (j + 1) * Ntot_inner + (i + 1) * Ntot_inner * Ntot_middle;
 
-        A_test_array[A_idx] = 
+        A_test_array[A_idx] =
           B_test_array[B_idx] +                              // C
-          B_test_array[B_idx - 1] +                          // W 
-          B_test_array[B_idx + 1] +                          // E 
+          B_test_array[B_idx - 1] +                          // W
+          B_test_array[B_idx + 1] +                          // E
           B_test_array[B_idx - Ntot_inner] +                 // S
           B_test_array[B_idx + Ntot_inner] +                 // N
-          B_test_array[B_idx - (Ntot_inner*Ntot_middle)] +   // B 
+          B_test_array[B_idx - (Ntot_inner*Ntot_middle)] +   // B
           B_test_array[B_idx + (Ntot_inner*Ntot_middle)];    // T
 
       }
@@ -104,13 +104,13 @@ void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
 
   RAJA::OffsetLayout<3> B_layout =
     RAJA::make_permuted_offset_layout<3>( {{-1, -1, -1}},
-                                          {{Ntot_len.at(0)-2, 
-                                            Ntot_len.at(1)-2,
-                                            Ntot_len.at(2)-2}},
+                                          {{Ntot_len.at(0)-1,
+                                            Ntot_len.at(1)-1,
+                                            Ntot_len.at(2)-1}},
                                           perm );
   RAJA::Layout<3> A_layout =
-    RAJA::make_permuted_layout( {{Nint_len.at(0), 
-                                  Nint_len.at(1), 
+    RAJA::make_permuted_layout( {{Nint_len.at(0),
+                                  Nint_len.at(1),
                                   Nint_len.at(2)}}, perm );
 
   RAJA::View< IDX_TYPE, RAJA::OffsetLayout<3> > B_view(B_work_array, B_layout);
@@ -120,21 +120,21 @@ void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
   RAJA::TypedRangeSegment<IDX_TYPE> jseg( 0, Nint_len.at(1) );
   RAJA::TypedRangeSegment<IDX_TYPE> kseg( 0, Nint_len.at(2) );
 
-  RAJA::kernel<EXEC_POLICY>( 
+  RAJA::kernel<EXEC_POLICY>(
     RAJA::make_tuple( iseg, jseg, kseg ),
     [=] RAJA_HOST_DEVICE(IDX_TYPE i, IDX_TYPE j, IDX_TYPE k) {
       A_view(i, j, k) = B_view(i, j, k) +
                         B_view(i - 1, j, k) + B_view(i + 1, j, k) +
                         B_view(i, j - 1, k) + B_view(i, j + 1, k) +
                         B_view(i, j, k - 1) + B_view(i, j, k + 1);
-    } 
+    }
   );
 
   working_res.memcpy(A_check_array, A_work_array, sizeof(IDX_TYPE) * Nint);
 
   for (RAJA::idx_t ii = 0; ii < Nint; ++ii) {
     ASSERT_EQ(A_test_array[ii], A_check_array[ii]);
-  } 
+  }
 
   deallocateForallTestData<IDX_TYPE>(working_res,
                                      A_work_array,

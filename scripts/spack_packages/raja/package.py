@@ -273,10 +273,14 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
                 cuda_debug_flags = "-O0 -g"
 
                 cfg.write(cmake_cache_string("BLT_CXX_STD", "c++14"))
-            else:
+            elif ("gcc" in cpp_compiler):
                 cuda_release_flags = "-O3 -Xcompiler -Ofast -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
                 cuda_reldebinf_flags = "-O3 -g -Xcompiler -Ofast -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
                 cuda_debug_flags = "-O0 -g -Xcompiler -O0 -Xcompiler -finline-functions -Xcompiler -finline-limit=20000"
+            else:
+                cuda_release_flags = "-O3 -Xcompiler -Ofast -Xcompiler -finline-functions"
+                cuda_reldebinf_flags = "-O3 -g -Xcompiler -Ofast -Xcompiler -finline-functions"
+                cuda_debug_flags = "-O0 -g -Xcompiler -O0 -Xcompiler -finline-functions"
    
             cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_RELEASE", cuda_release_flags))
             cfg.write(cmake_cache_string("CMAKE_CUDA_FLAGS_RELWITHDEBINFO", cuda_reldebinf_flags))
@@ -300,8 +304,11 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
             rocm_root = hip_root + "/.."
             cfg.write(cmake_cache_entry("HIP_ROOT_DIR",
                                         hip_root))
-            cfg.write(cmake_cache_entry("HIP_CLANG_PATH",
+            cfg.write(cmake_cache_entry("ROCM_ROOT_DIR",
+                                        rocm_root))
+            cfg.write(cmake_cache_entry("HIP_PATH",
                                         rocm_root + '/llvm/bin'))
+            cfg.write(cmake_cache_entry("CMAKE_HIP_ARCHITECTURES", 'fx906'))
 
             hipcc_flags = ['--amdgpu-target=gfx906']
             if "+desul" in spec:
@@ -309,9 +316,9 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
             
             cfg.write(cmake_cache_entry("HIP_HIPCC_FLAGS", ';'.join(hipcc_flags)))
 
-            cfg.write(cmake_cache_entry("HIP_RUNTIME_INCLUDE_DIRS",
-                                        "{0}/include;{0}/../hsa/include".format(hip_root)))
-            hip_link_flags = "-Wl,--disable-new-dtags -L{0}/lib -L{0}/../lib64 -L{0}/../lib -Wl,-rpath,{0}/lib:{0}/../lib:{0}/../lib64 -lamdhip64 -lhsakmt -lhsa-runtime64".format(hip_root)
+            #cfg.write(cmake_cache_entry("HIP_RUNTIME_INCLUDE_DIRS",
+            #                            "{0}/include;{0}/../hsa/include".format(hip_root)))
+            #hip_link_flags = "-Wl,--disable-new-dtags -L{0}/lib -L{0}/../lib64 -L{0}/../lib -Wl,-rpath,{0}/lib:{0}/../lib:{0}/../lib64 -lamdhip64 -lhsakmt -lhsa-runtime64".format(hip_root)
             if ('%gcc' in spec) or (using_toolchain):
                 if ('%gcc' in spec):
                     gcc_bin = os.path.dirname(self.compiler.cxx)
@@ -321,9 +328,9 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
                 cfg.write(cmake_cache_entry("HIP_CLANG_FLAGS",
                 "--gcc-toolchain={0}".format(gcc_prefix))) 
                 cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS",
-                hip_link_flags + " -Wl,-rpath {}/lib64".format(gcc_prefix)))
-            else:
-                cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
+                " -Wl,-rpath {}/lib64".format(gcc_prefix)))
+            #else:
+            #    cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
 
         else:
             cfg.write(cmake_cache_option("ENABLE_HIP", False))
@@ -350,9 +357,6 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
 
         cfg.write(cmake_cache_option("ENABLE_BENCHMARKS", 'tests=benchmarks' in spec))
         cfg.write(cmake_cache_option("ENABLE_TESTS", not 'tests=none' in spec or self.run_tests))
-
-        cfg.write(cmake_cache_path("BLT_SOURCE_DIR", spec['blt'].prefix))
-        cfg.write(cmake_cache_path("camp_DIR", spec['camp'].prefix))
 
         #######################
         # Close and save

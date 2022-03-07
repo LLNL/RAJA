@@ -1,0 +1,50 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+
+#include "RAJA_test-tensor.hpp"
+
+
+// set the layout alias here, then include the matrix header for the
+// given element type
+using TensorMatrixLayoutType = RAJA::@TENSOR_MATRIX_LAYOUT@Layout;
+
+#include "test-tensor-matrix-@TENSOR_ELEMENT_TYPE@.hpp"
+
+
+
+
+template <typename T>
+class TestTensorMatrix : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(TestTensorMatrix);
+
+
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-tensor-matrix-@TENSOR_MATRIX_TEST@.hpp"
+
+
+//
+// Instantiate parameterized test
+//
+
+REGISTER_TYPED_TEST_SUITE_P(TestTensorMatrix, @TENSOR_MATRIX_TEST@);
+
+                               
+INSTANTIATE_TYPED_TEST_SUITE_P(RAJA, TestTensorMatrix, TensorMatrixTypes);

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -24,7 +24,8 @@ macro(raja_add_executable)
   endif ()
 
   if (RAJA_ENABLE_HIP)
-    list (APPEND arg_DEPENDS_ON hip)
+    list (APPEND arg_DEPENDS_ON blt::hip)
+    list (APPEND arg_DEPENDS_ON blt::hip_runtime)
   endif ()
 
   if (RAJA_ENABLE_SYCL)
@@ -72,7 +73,8 @@ macro(raja_add_plugin_library)
   endif ()
 
   if (RAJA_ENABLE_HIP)
-    list (APPEND arg_DEPENDS_ON hip)
+    list (APPEND arg_DEPENDS_ON blt::hip)
+    list (APPEND arg_DEPENDS_ON blt::hip_runtime)
   endif ()
 
   if (RAJA_ENABLE_SYCL)
