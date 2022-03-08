@@ -56,12 +56,12 @@ using CudaAsyncForallAtomicExecPols = CudaForallExecPols;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipForallExecPols = camp::list< RAJA::hip_exec<128, true>,
+using HipAsyncForallExecPols = camp::list< RAJA::hip_exec<128, true>,
                                       RAJA::hip_exec<256, true>  >;
 
-using HipForallReduceExecPols = HipForallExecPols;
+using HipAsyncForallReduceExecPols = HipForallExecPols;
 
-using HipForallAtomicExecPols = HipForallExecPols;
+using HipAsyncForallAtomicExecPols = HipForallExecPols;
 
 #endif
 
