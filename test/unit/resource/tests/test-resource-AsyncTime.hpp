@@ -50,10 +50,10 @@ int get_clockrate()
 }
 
 template <typename WORKING_RES, typename EXEC_POL>
-void ResourceAsyncTestImpl(EXEC_POL&&) {}
+void ResourceAsyncTimeTestImpl(EXEC_POL&&) {}
 
 template <typename WORKING_RES, size_t BLOCK_SIZE, bool Async>
-void ResourceAsyncTestImpl(RAJA::cuda_exec<BLOCK_SIZE, Async>&&)
+void ResourceAsyncTimeTestImpl(RAJA::cuda_exec<BLOCK_SIZE, Async>&&)
 {
   constexpr std::size_t ARRAY_SIZE{10000};
   using namespace RAJA;
@@ -98,33 +98,33 @@ void ResourceAsyncTestImpl(RAJA::cuda_exec<BLOCK_SIZE, Async>&&)
 }
 
 template <typename WORKING_RES, typename EXEC_POLICY>
-void ResourceAsyncTestCall()
+void ResourceAsyncTimeTestCall()
 {
-  ResourceAsyncTestImpl<WORKING_RES>(EXEC_POLICY());
+  ResourceAsyncTimeTestImpl<WORKING_RES>(EXEC_POLICY());
 }
 
 #else
 
 template <typename WORKING_RES, typename EXEC_POLICY>
-void ResourceAsyncTestCall() {}
+void ResourceAsyncTimeTestCall() {}
 
 #endif
 
-TYPED_TEST_SUITE_P(ResourceAsyncTest);
+TYPED_TEST_SUITE_P(ResourceAsyncTimeTest);
 template <typename T>
-class ResourceAsyncTest : public ::testing::Test
+class ResourceAsyncTimeTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(ResourceAsyncTest, ResourceAsync)
+TYPED_TEST_P(ResourceAsyncTimeTest, ResourceAsyncTime)
 {
   using WORKING_RES = typename camp::at<TypeParam, camp::num<0>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<1>>::type;
 
-  ResourceAsyncTestCall<WORKING_RES, EXEC_POLICY>();
+  ResourceAsyncTimeTestCall<WORKING_RES, EXEC_POLICY>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ResourceAsyncTest,
-                            ResourceAsync);
+REGISTER_TYPED_TEST_SUITE_P(ResourceAsyncTimeTest,
+                            ResourceAsyncTime);
 
 #endif  // __TEST_RESOURCE_ASYNC_HPP__
