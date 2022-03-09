@@ -38,6 +38,8 @@ void ResourceBasicAsyncSemanticsTestImpl()
 
   dev.memcpy(h_array, d_array, sizeof(int) * ARRAY_SIZE);
 
+  dev.wait();
+
   forall<policy::sequential::seq_exec>(host, RangeSegment(0,ARRAY_SIZE),
     [=] (int i) {
       ASSERT_EQ(h_array[i], i + 2); 
