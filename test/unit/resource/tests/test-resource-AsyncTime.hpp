@@ -92,9 +92,9 @@ void ResourceAsyncTimeTestImpl(RAJA::cuda_exec<BLOCK_SIZE, Async>&&)
   async_timer.stop();
   RAJA::Timer::ElapsedType t_async = async_timer.elapsed();
 
-  // Ensure that compute time of Async is at least better
-  // than half of combined synchronous time
-  ASSERT_LT(t_async, t_sync / (NUM_STREAMS / 2));
+  // We expect "total async time" to be roughly equal to "total sync time" / NUM_STREAMS.
+  // For comparison tolerance, we multiple the latter by 2 in the check.
+  ASSERT_LT(t_async, 2 * (t_sync / NUM_STREAMS));
 }
 
 template <typename WORKING_RES, typename EXEC_POLICY>
