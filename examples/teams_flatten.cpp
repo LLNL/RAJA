@@ -54,7 +54,7 @@ using reduce_policy = RAJA::hip_reduce;
 using host_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
 using host_loop = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
 
-int main(int argc, char *argv[])
+int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
