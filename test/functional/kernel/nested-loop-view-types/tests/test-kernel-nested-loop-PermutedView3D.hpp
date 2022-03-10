@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -18,7 +18,7 @@ void KernelPermutedView3DTestImpl(std::array<IDX_TYPE, 3> dim,
   IDX_TYPE* check_array;
   IDX_TYPE* test_array;
 
-  std::array<RAJA::idx_t, 3> 
+  std::array<RAJA::idx_t, 3>
     dim_strip {{ static_cast<RAJA::idx_t>( RAJA::stripIndexType(dim.at(0)) ),
                  static_cast<RAJA::idx_t>( RAJA::stripIndexType(dim.at(1)) ),
                  static_cast<RAJA::idx_t>( RAJA::stripIndexType(dim.at(2)) ) }};
@@ -37,26 +37,26 @@ void KernelPermutedView3DTestImpl(std::array<IDX_TYPE, 3> dim,
   int mod_val = dim.at( perm.at(1) ) * dim.at( perm.at(2) );
   for (RAJA::idx_t ii = 0; ii < N; ++ii) {
     test_array[ii] = static_cast<IDX_TYPE>(ii % mod_val);
-  }  
+  }
 
   RAJA::Layout<3> layout = RAJA::make_permuted_layout(dim_strip, perm);
   RAJA::View< IDX_TYPE, RAJA::Layout<3, int> > view(working_array, layout);
 
-  RAJA::kernel<EXEC_POLICY>( 
+  RAJA::kernel<EXEC_POLICY>(
     RAJA::make_tuple( RAJA::TypedRangeSegment<IDX_TYPE>(0, dim_strip.at(0)),
                       RAJA::TypedRangeSegment<IDX_TYPE>(0, dim_strip.at(1)),
                       RAJA::TypedRangeSegment<IDX_TYPE>(0, dim_strip.at(2)) ),
     [=] RAJA_HOST_DEVICE(IDX_TYPE i, IDX_TYPE j, IDX_TYPE k) {
       int val = RAJA::stripIndexType(layout(i, j, k)) % mod_val;
       view(i, j, k) = static_cast<IDX_TYPE>(val);
-    } 
+    }
   );
 
   working_res.memcpy(check_array, working_array, sizeof(IDX_TYPE) * N);
 
   for (RAJA::idx_t ii = 0; ii < N; ++ii) {
     ASSERT_EQ(test_array[ii], check_array[ii]);
-  } 
+  }
 
   deallocateForallTestData<IDX_TYPE>(working_res,
                                      working_array,
@@ -83,7 +83,7 @@ TYPED_TEST_P(KernelNestedLoopPermutedView3DTest, PermutedView3DKernelTest)
   //
   // Square view
   //
-  std::array<IDX_TYPE, 3> dim_s  {{static_cast<IDX_TYPE>(21), 
+  std::array<IDX_TYPE, 3> dim_s  {{static_cast<IDX_TYPE>(21),
                                    static_cast<IDX_TYPE>(21),
                                    static_cast<IDX_TYPE>(21)}};
   KernelPermutedView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim_s, perm);
@@ -98,7 +98,7 @@ TYPED_TEST_P(KernelNestedLoopPermutedView3DTest, PermutedView3DKernelTest)
   //
   // Non-square view
   //
-  std::array<IDX_TYPE, 3> dim_ns  {{static_cast<IDX_TYPE>(15), 
+  std::array<IDX_TYPE, 3> dim_ns  {{static_cast<IDX_TYPE>(15),
                                     static_cast<IDX_TYPE>(24),
                                     static_cast<IDX_TYPE>(17)}};
   KernelPermutedView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim_ns, perm);

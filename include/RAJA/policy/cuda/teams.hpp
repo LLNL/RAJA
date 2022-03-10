@@ -451,9 +451,9 @@ struct LoopExecute<cuda_flatten_block_threads_loop<DIM0, DIM1>, SEGMENT>
 
     const int tx = internal::get_cuda_dim<DIM0>(threadIdx);
     const int ty = internal::get_cuda_dim<DIM1>(threadIdx);
+
     const int bx = internal::get_cuda_dim<DIM0>(blockDim);
     const int by = internal::get_cuda_dim<DIM1>(blockDim);
-    const int tid = tx + bx*ty;
 
     for(int tid = tx + bx*ty; tid < len; tid += bx*by) {
       body(*(segment.begin() + tid));

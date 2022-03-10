@@ -176,7 +176,7 @@ TYPED_TEST(OffsetLayoutViewUnitTest, View)
    * View is constructed by passing in the layout.
    */
   std::array<RAJA::Index_type, 1> lower{{1}};
-  std::array<RAJA::Index_type, 1> upper{{10}};
+  std::array<RAJA::Index_type, 1> upper{{11}};
   RAJA::View<TypeParam, layout> view(data, RAJA::make_offset_layout<1>(lower, upper));
 
   for (int i = 0; i < 10; i++) {
@@ -200,7 +200,7 @@ TYPED_TEST(TypedViewUnitTest, Shift1D)
    * Create a view from a base view
    */
   const int DIM = 1;
-  RAJA::OffsetLayout<DIM> layout = RAJA::make_offset_layout<DIM>({{0}},{{N-1}});
+  RAJA::OffsetLayout<DIM> layout = RAJA::make_offset_layout<DIM>({{0}},{{N}});
   RAJA::View<TypeParam, RAJA::OffsetLayout<DIM>> A(a,layout);
   RAJA::View<TypeParam, RAJA::Layout<DIM>> B(a,N);
   RAJA::TypedView<TypeParam, RAJA::Layout<DIM>,TX> C(a,N);
@@ -258,7 +258,7 @@ TYPED_TEST(TypedViewUnitTest, Shift2D)
   TypeParam *b = new TypeParam[N*N];
 
   const int DIM = 2;
-  RAJA::OffsetLayout<DIM> layout = RAJA::make_offset_layout<DIM>({{0,0}},{{N-1,N-1}});
+  RAJA::OffsetLayout<DIM> layout = RAJA::make_offset_layout<DIM>({{0,0}},{{N,N}});
   RAJA::View<TypeParam, RAJA::OffsetLayout<DIM>> A(a,layout);
   RAJA::View<TypeParam, RAJA::Layout<DIM>> B(a,N,N);
 
@@ -286,7 +286,7 @@ TYPED_TEST(TypedViewUnitTest, Shift2D)
    */
   std::array< RAJA::idx_t, 2> perm {{1, 0}};
   RAJA::OffsetLayout<2> playout =
-    RAJA::make_permuted_offset_layout<2>( {{0, 0}}, {{N-1, N-1}}, perm );
+    RAJA::make_permuted_offset_layout<2>( {{0, 0}}, {{N, N}}, perm );
 
   RAJA::View<TypeParam, RAJA::OffsetLayout<DIM>> C(a, playout);
   RAJA::View<TypeParam, RAJA::OffsetLayout<DIM>> Cshift = C.shift({{N,N}});

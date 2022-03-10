@@ -208,8 +208,7 @@ public:
                                               Indices &&... indices) const
   {
 #if defined(RAJA_BOUNDS_CHECK_INTERNAL)
-    IdxLin totSize{1};
-    for(size_t i=0; i<n_dims; ++i) {totSize *= sizes[i];};
+    IdxLin totSize = size_noproj();
     if(totSize > 0 && (linear_index < 0 || linear_index >= totSize)) {
       printf("Error! Linear index %ld is not within bounds [0, %ld]. \n",
              static_cast<long int>(linear_index), static_cast<long int>(totSize-1));
@@ -217,14 +216,14 @@ public:
      }
 #endif
 
-    camp::sink((indices = 
+    camp::sink((indices =
       (camp::decay<Indices>)((linear_index / inv_strides[RangeInts]) %
                              inv_mods[RangeInts]))...);
   }
 
   /*!
-   * Computes a total size of the layout's space.
-   * This is the produce of each dimensions size.
+   * Computes a size of the layout's space with projections as size 1.
+   * This is the produce of each dimensions size or 1 if projected.
    *
    * @return Total size spanned by indices
    */
@@ -236,12 +235,40 @@ public:
                          (sizes[RangeInts] == IdxLin(0) ? IdxLin(1) : sizes[RangeInts])...);
   }
 
+  /*!
+   * Computes a total size of the layout's space.
+   * This is the produce of each dimensions size.
+   *
+   * @return Total size spanned by indices
+   */
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin size_noproj() const
+  {
+    // Multiply together all of the sizes
+    return foldl(RAJA::operators::multiplies<IdxLin>(), sizes[RangeInts]...);
+  }
+
   template<camp::idx_t DIM>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr
   IndexLinear get_dim_stride() const {
     return strides[DIM];
+  }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_size() const {
+    return sizes[DIM];
+  }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_begin() const {
+    return 0;
   }
 };
 
@@ -367,7 +394,7 @@ private:
                                                     IdxLin linear_index,
                                                     Indices &... indices) const
   {
-    Index_type locals[sizeof...(DimTypes)];
+    StrippedIdxLin locals[sizeof...(DimTypes)];
     Base::toIndices(stripIndexType(linear_index), locals[RangeInts]...);
 		camp::sink((indices = Indices{static_cast<Indices>(locals[RangeInts])})...);
   }
@@ -401,8 +428,6 @@ RAJA_INLINE TypedLayout<IdxLin, IdxTuple, s1_dim> make_stride_one(
   // Use non-typed layout to initialize new typed layout
   return TypedLayout<IdxLin, IdxTuple, s1_dim>(b);
 }
-
-
 
 
 }  // namespace RAJA
