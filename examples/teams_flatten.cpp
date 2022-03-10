@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
   //
 #if defined(RAJA_ENABLE_CUDA)
   camp::resources::Cuda device_res;
-#elif defined(RAJA_ENABLE_CUDA)
+#elif defined(RAJA_ENABLE_HIP)
   camp::resources::Hip device_res;
 #endif
 
