@@ -11,71 +11,61 @@
 #include "RAJA_test-base.hpp"
 
 template <typename WORKING_RES, typename EXEC_POLICY>
-void ResourceDependsTestImpl()
+void ResourceBasicAsyncSemanticsTestImpl()
 {
-  constexpr std::size_t ARRAY_SIZE{10000};
+  constexpr std::size_t ARRAY_SIZE{10000000};
   using namespace RAJA;
 
-  WORKING_RES dev1;
-  WORKING_RES dev2;
+  WORKING_RES dev;
   resources::Host host;
 
-  int* d_array1 = resources::Resource{dev1}.allocate<int>(ARRAY_SIZE);
-  int* d_array2 = resources::Resource{dev2}.allocate<int>(ARRAY_SIZE);
+  int* d_array = resources::Resource{dev}.allocate<int>(ARRAY_SIZE);
   int* h_array  = host.allocate<int>(ARRAY_SIZE);
 
-
-  forall<EXEC_POLICY>(dev1, RangeSegment(0,ARRAY_SIZE),
+  forall<policy::sequential::seq_exec>(host, RangeSegment(0,ARRAY_SIZE),
     [=] RAJA_HOST_DEVICE (int i) {
-      d_array1[i] = i;
+      h_array[i] = i;
     }
   );
 
-  resources::Event e = forall<EXEC_POLICY>(dev2, RangeSegment(0,ARRAY_SIZE),
+  dev.memcpy(d_array, h_array, sizeof(int) * ARRAY_SIZE);
+
+  forall<EXEC_POLICY>(dev, RangeSegment(0,ARRAY_SIZE),
     [=] RAJA_HOST_DEVICE (int i) {
-      d_array2[i] = -1;
+      d_array[i] = i + 2;
     }
   );
 
-  dev1.wait_for(&e);
+  dev.memcpy(h_array, d_array, sizeof(int) * ARRAY_SIZE);
 
-  forall<EXEC_POLICY>(dev1, RangeSegment(0,ARRAY_SIZE),
-    [=] RAJA_HOST_DEVICE (int i) {
-      d_array1[i] *= d_array2[i];
-    }
-  );
-
-  dev1.memcpy(h_array, d_array1, sizeof(int) * ARRAY_SIZE);
-
-  dev1.wait();
+  dev.wait();
 
   forall<policy::sequential::seq_exec>(host, RangeSegment(0,ARRAY_SIZE),
     [=] (int i) {
-      ASSERT_EQ(h_array[i], -i); 
+      ASSERT_EQ(h_array[i], i + 2); 
     }
   );
 
-  dev1.deallocate(d_array1);
-  dev2.deallocate(d_array2);
+  dev.deallocate(d_array);
   host.deallocate(h_array);
   
 }
 
-TYPED_TEST_SUITE_P(ResourceDependsTest);
+TYPED_TEST_SUITE_P(ResourceBasicAsyncSemanticsTest);
 template <typename T>
-class ResourceDependsTest : public ::testing::Test
+class ResourceBasicAsyncSemanticsTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(ResourceDependsTest, ResourceDepends)
+TYPED_TEST_P(ResourceBasicAsyncSemanticsTest, ResourceBasicAsyncSemantics)
 {
   using WORKING_RES = typename camp::at<TypeParam, camp::num<0>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<1>>::type;
 
-  ResourceDependsTestImpl<WORKING_RES, EXEC_POLICY>();
+  ResourceBasicAsyncSemanticsTestImpl<WORKING_RES, EXEC_POLICY>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ResourceDependsTest,
-                            ResourceDepends);
+REGISTER_TYPED_TEST_SUITE_P(ResourceBasicAsyncSemanticsTest,
+                            ResourceBasicAsyncSemantics);
 
 #endif  // __TEST_RESOURCE_DEPENDS_HPP__
