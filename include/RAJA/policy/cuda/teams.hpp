@@ -426,13 +426,14 @@ struct LoopExecute<cuda_flatten_block_threads_direct<DIM0, DIM1>, SEGMENT>
       SEGMENT const &segment,
       BODY const &body)
   {
+
     const int len = segment.end() - segment.begin();
     {
       const int tx = internal::get_cuda_dim<DIM0>(threadIdx);
       const int ty = internal::get_cuda_dim<DIM1>(threadIdx);
-      const int bx = internal::get_cuda_dim<DIM0>(blockIdx);
+      const int bx = internal::get_cuda_dim<DIM0>(blockDim);
       const int tid = tx + bx*ty;
-
+      
       if (tid < len) body(*(segment.begin() + tid));
     }
   }
@@ -451,8 +452,9 @@ struct LoopExecute<cuda_flatten_block_threads_loop<DIM0, DIM1>, SEGMENT>
 
     const int tx = internal::get_cuda_dim<DIM0>(threadIdx);
     const int ty = internal::get_cuda_dim<DIM1>(threadIdx);
-    const int bx = internal::get_cuda_dim<DIM0>(blockIdx);
-    const int by = internal::get_cuda_dim<DIM1>(blockIdx);
+
+    const int bx = internal::get_cuda_dim<DIM0>(blockDim);
+    const int by = internal::get_cuda_dim<DIM1>(blockDim);
 
     for(int tid = tx + bx*ty; tid < len; tid += bx*by) {
       body(*(segment.begin() + tid));
@@ -475,8 +477,8 @@ struct LoopExecute<cuda_flatten_block_threads_direct<DIM0, DIM1, DIM2>, SEGMENT>
       const int tx = internal::get_cuda_dim<DIM0>(threadIdx);
       const int ty = internal::get_cuda_dim<DIM1>(threadIdx);
       const int tz = internal::get_cuda_dim<DIM2>(threadIdx);
-      const int bx = internal::get_cuda_dim<DIM0>(blockIdx);
-      const int by = internal::get_cuda_dim<DIM1>(blockIdx);
+      const int bx = internal::get_cuda_dim<DIM0>(blockDim);
+      const int by = internal::get_cuda_dim<DIM1>(blockDim);
       const int tid = tx + bx*(ty + by*tz);
 
       if (tid < len) body(*(segment.begin() + tid));
@@ -498,9 +500,9 @@ struct LoopExecute<cuda_flatten_block_threads_loop<DIM0, DIM1, DIM2>, SEGMENT>
     const int tx = internal::get_cuda_dim<DIM0>(threadIdx);
     const int ty = internal::get_cuda_dim<DIM1>(threadIdx);
     const int tz = internal::get_cuda_dim<DIM2>(threadIdx);
-    const int bx = internal::get_cuda_dim<DIM0>(blockIdx);
-    const int by = internal::get_cuda_dim<DIM1>(blockIdx);
-    const int bz = internal::get_cuda_dim<DIM2>(blockIdx);
+    const int bx = internal::get_cuda_dim<DIM0>(blockDim);
+    const int by = internal::get_cuda_dim<DIM1>(blockDim);
+    const int bz = internal::get_cuda_dim<DIM2>(blockDim);
 
     for(int tid = tx + bx*(ty + by*tz); tid < len; tid += bx*by*bz) {
       body(*(segment.begin() + tid));
