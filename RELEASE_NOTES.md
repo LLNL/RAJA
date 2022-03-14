@@ -28,6 +28,18 @@ see the RAJA user guide for more information about items in this release.
 
 Notable changes include:
 
+  * Important note: As of this release, the coordinated release of RAJA 
+                    Portability Suite components (RAJA, Umpire, CHAI) will be 
+                    tagged as YYYY.MM.pp for year, month, and patch number. For
+                    example, This release is tagged as 2022.03.0 meaning March 
+                    2022 release. The intent is to indicate that all components 
+                    with a common year-month release tag are compatible and to
+                    make the association amongst them clear for users. If an 
+                    individual component requires a patch release independent 
+                    of the others, the release for that component will be 
+                    labeled 2022.03.1, for example, to indicate that it is one 
+                    patch release beyond the original combined Suite release.
+
   * New features / API changes:
       * BREAKING CHANGE: RAJA OffsetLayout constructor was changed to take
         (begin, end) args (where end is one past the last index) instead of
@@ -77,10 +89,11 @@ Notable changes include:
   * Build changes/improvements:
       * AS OF THIS RELEASE, RAJA REQUIRES A C++14-COMPLIANT COMPILER TO BUILD!! 
       * AS OF THIS RELEASE, RAJA REQUIRES CMAKE version 3.14.5 or newer.
-      * The BLT submodule is updated to... 
-        Although the option CMAKE_HIP_ARCHITECTURES to specify the HIP target 
-        architecture is not available until CMake version 3.21, the option is 
-        supported in the new BLT version and works with all versions of CMake.
+      * The BLT submodule is updated to v0.5.0, which includes improved
+        support for ROCm/HIP builds.Although the option CMAKE_HIP_ARCHITECTURES
+        to specify the HIP target architecture is not available until CMake 
+        version 3.21, the option is supported in the new BLT version and works 
+        with all versions of CMake.
       * The camp submodule is updated to v0.5.3. If you do not use the submodule
         and build RAJA with an external version of camp, you will need to
         use camp v0.5.3 or newer.
