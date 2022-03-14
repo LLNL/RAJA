@@ -26,7 +26,7 @@ them are described in :ref:`configopt-label`. To build RAJA in its most basic
 form and use its simplest features:
 
 - C++ compiler with C++14 support
-- `CMake <https://cmake.org/>`_ version 3.9 or greater.
+- `CMake <https://cmake.org/>`_ version 3.14.5 or greater.
 
 
 ==================
@@ -83,7 +83,7 @@ RAJA uses CMake to configure a build. A "bare bones" configuration looks like::
   $ mkdir build-dir && cd build-dir
   $ cmake -DCMAKE_INSTALL_PREFIX=/path/to/install ../
 
-.. note:: * RAJA requires a minimum CMake version of 3.9.
+.. note:: * RAJA requires a minimum CMake version of 3.14.5.
           * Builds must be *out-of-source*.  RAJA does not allow building in
             the source directory, so you must create a build directory and
             run CMake in it.
