@@ -97,7 +97,7 @@ Notable changes include:
       * The camp submodule is updated to v0.5.3. If you do not use the submodule
         and build RAJA with an external version of camp, you will need to
         use camp v0.5.3 or newer.
-      * the "RAJA_" prefix has been added to all CMake options. Options that 
+      * The "RAJA_" prefix has been added to all CMake options. Options that 
         shadow a CMake or BLT option are turned into cmake_dependent_option 
         calls, ensuring that they can be controlled independently and have the 
         correct dependence on the underlying CMake or BLT support;
@@ -117,8 +117,8 @@ Notable changes include:
       * CMake logic for using rocPRIM in RAJA for a HIP build is similar.
         The default behavior is now that when the HIP version is < 4, the
         RAJA rocPRIM submodule will be used. When the HIP version is >= 4, the
-        rocPRIM version that is included in the associated rocM toolkit will be 
-        used. Users have the ability to override these defaults and select
+        rocPRIM version that is included in the associated ROCmM toolkit will 
+        be used. Users have the ability to override these defaults and select
         a specific version of rocPRIM if they wish.
       * The RAJA Spack package was updated to include the version of this 
         release and address some issues.
