@@ -20,7 +20,7 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
-Version vxx.yy.zz -- Release date 2022-mm-dd
+Version 2022.03.0 -- Release date 2022-03-15
 ============================================
 
 This release contains new features, bug fixes, and build improvements. Please
