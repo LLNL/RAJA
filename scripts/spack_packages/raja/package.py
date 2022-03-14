@@ -185,7 +185,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
         cfg.write("###################\n".format("#" * 60))
         cfg.write("# Generated host-config - Edit at own risk!\n")
         cfg.write("###################\n".format("#" * 60))
-        cfg.write("# Copyright 2016-21, Lawrence Livermore National Security, LLC\n")
+        cfg.write("# Copyright 2016-22, Lawrence Livermore National Security, LLC\n")
         cfg.write("# and RAJA project contributors. See the RAJA/LICENSE file\n")
         cfg.write("# for details.\n")
         cfg.write("#\n")
