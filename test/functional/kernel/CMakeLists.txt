@@ -1,6 +1,6 @@
 ###############################################################################
-# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -29,13 +29,25 @@ endif()
 
 add_subdirectory(basic-single-loop)
 
+add_subdirectory(basic-single-icount-loop)
+
+add_subdirectory(basic-fission-fusion-loop)
+
+add_subdirectory(conditional-fission-fusion-loop)
+
 add_subdirectory(nested-loop)
+
+add_subdirectory(nested-loop-reducesum)
 
 add_subdirectory(nested-loop-segment-types)
 
+add_subdirectory(nested-loop-view-types)
+
 add_subdirectory(reduce-loc)
 
-add_subdirectory(tile)
+add_subdirectory(single-loop-tile-icount-tcount)
+
+add_subdirectory(tile-variants)
 
 unset( KERNEL_BACKENDS )
 

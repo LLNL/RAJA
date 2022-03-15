@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -56,7 +56,7 @@ void KernelLocMax2DViewTestImpl(const int xdim, const int ydim)
     {
       checkarr2D[zz][xx] = zz*xdim + xx;
     }
-    checkarr2D[ydim-1][xdim-1] = -1;
+    checkarr2D[ydim-1][xdim-1] = 0;
   });
 
   work_res.memcpy(work_array, check_array, sizeof(DATA_TYPE) * array_length);

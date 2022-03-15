@@ -9,8 +9,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -22,8 +22,7 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-// rely on builtin_atomic when OpenMP can't do the job
-#include "RAJA/policy/atomic_builtin.hpp"
+#include "RAJA/policy/openmp/policy.hpp"
 
 #include "RAJA/util/macros.hpp"
 
@@ -31,19 +30,8 @@
 namespace RAJA
 {
 
-#if defined(RAJA_COMPILER_MSVC)
-
-
-// For MS Visual C, just default to builtin_atomic for everything
-using omp_atomic = builtin_atomic;
-
-
-#else  // not defined RAJA_COMPILER_MSVC
-
-
-struct omp_atomic {
-};
-
+// Relies on builtin_atomic when OpenMP can't do the job
+#if !defined(RAJA_COMPILER_MSVC)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
@@ -208,7 +196,7 @@ RAJA_INLINE T atomicCAS(omp_atomic, T volatile *acc, T compare, T value)
   return RAJA::atomicCAS(builtin_atomic{}, acc, compare, value);
 }
 
-#endif  // not defined RAJA_COMPILER_MSVC
+#endif // not defined RAJA_COMPILER_MSVC
 
 
 }  // namespace RAJA

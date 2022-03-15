@@ -9,8 +9,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-19, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -72,15 +72,6 @@ struct sycl_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::sycl> {
 };
 
-template <size_t BLOCK_SIZE, bool Async = false>
-struct sycl_exec_nontrivial : public RAJA::make_policy_pattern_launch_platform_t<
-                       RAJA::Policy::sycl,
-                       RAJA::Pattern::forall,
-                       detail::get_launch<Async>::value,
-                       RAJA::Platform::sycl> {
-};
-
-
 struct sycl_reduce
     : make_policy_pattern_t<RAJA::Policy::sycl, RAJA::Pattern::reduce> {
 };
@@ -89,7 +80,6 @@ struct sycl_reduce
 }  // namespace policy
 
 using policy::sycl::sycl_exec;
-using policy::sycl::sycl_exec_nontrivial;
 using policy::sycl::sycl_reduce;
 
 /*!
@@ -97,56 +87,56 @@ using policy::sycl::sycl_reduce;
  * Optional WORK_GROUP_SIZE to 
  */ 
 template<int dim, int WORK_GROUP_SIZE = 1>
-struct sycl_global_123{};
+struct sycl_global_012{};
 
 template<int WORK_GROUP_SIZE>
-using sycl_global_0 = sycl_global_123<0, WORK_GROUP_SIZE>;
+using sycl_global_0 = sycl_global_012<0, WORK_GROUP_SIZE>;
 template<int WORK_GROUP_SIZE>
-using sycl_global_1 = sycl_global_123<1, WORK_GROUP_SIZE>;
+using sycl_global_1 = sycl_global_012<1, WORK_GROUP_SIZE>;
 template<int WORK_GROUP_SIZE>
-using sycl_global_2 = sycl_global_123<2, WORK_GROUP_SIZE>;
+using sycl_global_2 = sycl_global_012<2, WORK_GROUP_SIZE>;
 
 /*!
  * Maps segment indices to SYCL group ids.
  * Loops to allow for any value
  */
 template<int dim>
-struct sycl_group_123_loop{};
+struct sycl_group_012_loop{};
 
-using sycl_group_0_loop = sycl_group_123_loop<0>;
-using sycl_group_1_loop = sycl_group_123_loop<1>;
-using sycl_group_2_loop = sycl_group_123_loop<2>;
+using sycl_group_0_loop = sycl_group_012_loop<0>;
+using sycl_group_1_loop = sycl_group_012_loop<1>;
+using sycl_group_2_loop = sycl_group_012_loop<2>;
 
 /*!
  * Maps segment indices to SYCL local ids.
  * Loops to allow for any value
  */
 template<int dim>
-struct sycl_local_123_loop{};
+struct sycl_local_012_loop{};
 
-using sycl_local_0_loop = sycl_local_123_loop<0>;
-using sycl_local_1_loop = sycl_local_123_loop<1>;
-using sycl_local_2_loop = sycl_local_123_loop<2>;
+using sycl_local_0_loop = sycl_local_012_loop<0>;
+using sycl_local_1_loop = sycl_local_012_loop<1>;
+using sycl_local_2_loop = sycl_local_012_loop<2>;
 
 /*!
  * Maps segment indices to SYCL group ids.
  */
 template<int dim>
-struct sycl_group_123_direct{};
+struct sycl_group_012_direct{};
 
-using sycl_group_0_direct = sycl_group_123_direct<0>;
-using sycl_group_1_direct = sycl_group_123_direct<1>;
-using sycl_group_2_direct = sycl_group_123_direct<2>;
+using sycl_group_0_direct = sycl_group_012_direct<0>;
+using sycl_group_1_direct = sycl_group_012_direct<1>;
+using sycl_group_2_direct = sycl_group_012_direct<2>;
 
 /*!
  * Maps segment indices to SYCL local ids.
  */
 template<int dim>
-struct sycl_local_123_direct{};
+struct sycl_local_012_direct{};
 
-using sycl_local_0_direct = sycl_local_123_direct<0>;
-using sycl_local_1_direct = sycl_local_123_direct<1>;
-using sycl_local_2_direct = sycl_local_123_direct<2>;
+using sycl_local_0_direct = sycl_local_012_direct<0>;
+using sycl_local_1_direct = sycl_local_012_direct<1>;
+using sycl_local_2_direct = sycl_local_012_direct<2>;
 
 
 namespace internal{

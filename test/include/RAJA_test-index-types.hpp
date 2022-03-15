@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -43,6 +43,14 @@ using IdxTypeList = camp::list<RAJA::Index_type,
                                long long,
 #endif
                                unsigned long long>;
+
+//
+// Signed index types list
+//
+using SignedIdxTypeList = camp::list<RAJA::Index_type,
+                                     int,
+                                     long long>;
+
 //
 // Index types w/ Strong types list
 //

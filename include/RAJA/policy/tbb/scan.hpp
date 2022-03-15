@@ -9,8 +9,8 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -172,7 +172,7 @@ inclusive(
     BinFn f)
 {
   auto adapter = detail::scan_adapter_inclusive<
-      typename std::remove_reference<decltype(*begin)>::type,
+      typename std::remove_reference<decltype(*out)>::type,
       Iter,
       OutIter,
       BinFn>{begin, out, f, BinFn::identity()};
@@ -205,7 +205,7 @@ exclusive(
     T v)
 {
   auto adapter = detail::scan_adapter_exclusive<
-      typename std::remove_reference<decltype(*begin)>::type,
+      typename std::remove_reference<decltype(*out)>::type,
       Iter,
       OutIter,
       BinFn>{begin, out, f, v};

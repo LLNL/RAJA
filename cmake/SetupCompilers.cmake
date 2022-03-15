@@ -1,6 +1,6 @@
 ###############################################################################
-# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-# and other RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# and other RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -9,16 +9,17 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0" CACHE STRING "")
 
-if (RAJA_ENABLE_MODULES AND CMAKE_CXX_COMPILER_ID MATCHES Clang)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmodules")
+if (RAJA_ENABLE_MODULES)
+  message(WARNING "RAJA_ENABLE_MODULES is deprecated, please add the -fmodules flag manually if desired.")
+  set(RAJA_ENABLE_MODULES Off CACHE BOOL "" FORCE)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
   if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
     message(FATAL_ERROR "RAJA requires GCC 4.9 or greater!")
   endif ()
-  if (ENABLE_COVERAGE)
-    if(NOT ENABLE_CUDA)
+  if (RAJA_ENABLE_COVERAGE)
+    if(NOT RAJA_ENABLE_CUDA)
       message(INFO "Coverage analysis enabled")
       set(CMAKE_CXX_FLAGS "-coverage ${CMAKE_CXX_FLAGS}")
       set(CMAKE_EXE_LINKER_FLAGS "-coverage ${CMAKE_EXE_LINKER_FLAGS}")
@@ -40,8 +41,8 @@ if ( MSVC )
   endif()
 endif()
 
-if (ENABLE_CUDA)
-  set(CMAKE_CUDA_STANDARD "11" CACHE STRING "Version of C++ standard for CUDA Builds")
+if (RAJA_ENABLE_CUDA)
+  set(CMAKE_CUDA_STANDARD 14)
   set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -restrict -arch ${CUDA_ARCH} --expt-extended-lambda --expt-relaxed-constexpr -Xcudafe \"--display_error_number\"")
 
   if (NOT RAJA_HOST_CONFIG_LOADED)
@@ -63,7 +64,8 @@ if (ENABLE_CUDA)
 endif()
 # end RAJA_ENABLE_CUDA section
 
-if (ENABLE_HIP)
+if (RAJA_ENABLE_HIP)
+  set(RAJA_HIPCC_STD_FLAG -std=c++14)
   if (NOT RAJA_HOST_CONFIG_LOADED)
     #list(APPEND RAJA_EXTRA_HIPCC_FLAGS)
 
@@ -78,11 +80,11 @@ if (ENABLE_HIP)
     endif()
   endif()
   set(RAJA_HIPCC_FLAGS ${RAJA_EXTRA_HIPCC_FLAGS} CACHE STRING "")
-  set(HIP_HIPCC_FLAGS ${RAJA_HIPCC_FLAGS})
-  set(HIP_HIPCC_FLAGS_RELEASE ${RAJA_HIPCC_FLAGS_RELEASE})
-  set(HIP_HIPCC_FLAGS_DEBUG ${RAJA_HIPCC_FLAGS_DEBUG})
-  set(HIP_HIPCC_FLAGS_MINSIZEREL ${RAJA_HIPCC_FLAGS_MINSIZEREL})
-  set(HIP_HIPCC_FLAGS_RELWITHDEBINFO ${RAJA_HIPCC_FLAGS_RELWITHDEBINFO})
+  set(HIP_HIPCC_FLAGS ${RAJA_HIPCC_STD_FLAG} ${RAJA_HIPCC_FLAGS})
+  set(HIP_HIPCC_FLAGS_RELEASE ${RAJA_HIPCC_STD_FLAG} ${RAJA_HIPCC_FLAGS_RELEASE})
+  set(HIP_HIPCC_FLAGS_DEBUG ${RAJA_HIPCC_STD_FLAG} ${RAJA_HIPCC_FLAGS_DEBUG})
+  set(HIP_HIPCC_FLAGS_MINSIZEREL ${RAJA_HIPCC_STD_FLAG} ${RAJA_HIPCC_FLAGS_MINSIZEREL})
+  set(HIP_HIPCC_FLAGS_RELWITHDEBINFO ${RAJA_HIPCC_STD_FLAG} ${RAJA_HIPCC_FLAGS_RELWITHDEBINFO})
 endif()
 # end RAJA_ENABLE_HIP section
 

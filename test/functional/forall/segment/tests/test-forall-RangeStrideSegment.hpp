@@ -1,12 +1,14 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef __TEST_FORALL_RANGESTRIDESEGMENT_HPP__
 #define __TEST_FORALL_RANGESTRIDESEGMENT_HPP__
+
+#include <cstring>
 
 template <typename INDEX_TYPE, typename DIFF_TYPE, 
           typename WORKING_RES, typename EXEC_POLICY>
@@ -22,29 +24,43 @@ void ForallRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
 
-  allocateForallTestData<INDEX_TYPE>(N,
+  size_t data_len = RAJA::stripIndexType(N);
+  if ( data_len == 0 ) {
+    data_len = 1;
+  }
+
+  allocateForallTestData<INDEX_TYPE>(data_len,
                                      working_res,
                                      &working_array,
                                      &check_array,
                                      &test_array);
 
-  for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
-    test_array[RAJA::stripIndexType(i)] = INDEX_TYPE(0);
+  memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
+
+  working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len); 
+
+  if ( RAJA::stripIndexType(N) > 0 ) {
+
+    INDEX_TYPE idx = first;
+    for (INDEX_TYPE i = INDEX_TYPE(0); i < N; ++i) {
+      test_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
+      idx += stride; 
+    }
+
+    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+      working_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
+    });
+
+  } else { // zero-length segment
+
+    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+      (void) idx;
+      working_array[0]++;
+    });
+
   }
 
-  working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N)); 
-
-  INDEX_TYPE idx = first;
-  for (INDEX_TYPE i = INDEX_TYPE(0); i < N; ++i) {
-    test_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
-    idx += stride; 
-  }
-
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-    working_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
-  });
-
-  working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
+  working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
 
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
     ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);

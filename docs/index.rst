@@ -1,6 +1,6 @@
 .. ##
-.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-.. ## and RAJA project contributors. See the RAJA/COPYRIGHT file
+.. ## Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+.. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -128,7 +128,7 @@ Please see :ref:`raja-copyright`.
    :caption: User Documentation
 
    sphinx/user_guide/index
-   Source Documentation <doxygen/html/index.html#http://>
+   doxygen/html/index
 
 .. toctree::
    :hidden: 

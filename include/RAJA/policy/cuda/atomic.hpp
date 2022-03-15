@@ -9,8 +9,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -582,20 +582,6 @@ RAJA_INLINE __device__ unsigned long long cuda_atomicCAS<unsigned long long>(
 #endif
 
 }  // namespace detail
-
-
-/*!
- * Cuda atomic policy for using cuda atomics on the device and
- * the provided host_policy on the host
- */
-template<typename host_policy>
-struct cuda_atomic_explicit{};
-
-/*!
- * Default cuda atomic policy uses cuda atomics on the device and non-atomics
- * on the host
- */
-using cuda_atomic = cuda_atomic_explicit<loop_atomic>;
 
 
 /*!

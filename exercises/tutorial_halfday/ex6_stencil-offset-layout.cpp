@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -22,8 +22,8 @@
  *  The exercise demonstrates the relative ease with which array data access
  *  can be done using multi-dimensional RAJA Views as compared to C-style
  *  pointer offset arithmetic.
- * 
- *  The five-cell stencil accumulates values in a cell from itself and and 
+ *
+ *  The five-cell stencil accumulates values in a cell from itself and
  *  its four neighbors. Assuming the cells are indexed using (i,j) pairs on
  *  the two dimensional mesh, the stencil computation looks like:
  * 

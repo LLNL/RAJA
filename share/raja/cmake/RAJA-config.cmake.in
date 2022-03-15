@@ -1,6 +1,6 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -30,21 +30,13 @@
 #
 # That's all!
 #
-if (NOT RAJA_CONFIG_LOADED)
-  set(RAJA_CONFIG_LOADED TRUE)
+@PACKAGE_INIT@
 
-  if (NOT DEFINED camp_DIR)
-    if (EXISTS @EXTERNAL_CAMP_INSTALL_DIR@)
-      set(camp_DIR @EXTERNAL_CAMP_INSTALL_DIR@)
-    else ()
-      set(camp_DIR @CMAKE_INSTALL_PREFIX@/lib/cmake/camp)
-    endif ()
-  endif ()
-  find_package(camp REQUIRED PATHS ${camp_DIR} NO_DEFAULT_PATH)
-  include(@CMAKE_INSTALL_PREFIX@/share/raja/cmake/RAJA.cmake)
-endif()
+if (NOT TARGET camp)
+  include(CMakeFindDependencyMacro)
+  find_dependency(camp REQUIRED PATHS "@PACKAGE_CMAKE_INSTALL_PREFIX@")
+endif ()
 
-# Export version number
-set(RAJA_VERSION_MAJOR @RAJA_VERSION_MAJOR@)
-set(RAJA_VERSION_MINOR @RAJA_VERSION_MINOR@)
-set(RAJA_VERSION_PATCHLEVEL @RAJA_VERSION_PATCHLEVEL@)
+include("${CMAKE_CURRENT_LIST_DIR}/RAJA.cmake")
+
+check_required_components("@PROJECT_NAME@")

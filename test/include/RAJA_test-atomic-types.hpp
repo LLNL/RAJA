@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -31,5 +31,12 @@ using AtomicDataTypeList =
               float,
 #endif
               double >;
+
+using AtomicDataUnsignedTypeList =
+  camp::list< unsigned,
+#if defined(RAJA_TEST_EXHAUSTIVE)
+              unsigned long,
+#endif
+              unsigned long long>;
 
 #endif // __RAJA_test_atomic_types_HPP__

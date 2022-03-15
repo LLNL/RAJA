@@ -9,8 +9,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -41,7 +41,8 @@ __global__ void launch_global_fcn(LaunchContext ctx, BODY body_in)
 }
 
 template <bool async>
-struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
+struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 1>> {
+// cuda_launch_t num_threads set to 1, but not used in launch of kernel
 
   template <typename BODY_IN>
   static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
@@ -87,9 +88,7 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        {
-          RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, cuda_res, async, ctx.kernel_name);
-        }
+        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, cuda_res, async, ctx.kernel_name);
       }
 
       RAJA_FT_END;
@@ -153,10 +152,11 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 0>> {
 
     return resources::EventProxy<resources::Resource>(res);
   }
+
 };
 
-template <typename BODY, int num_threads>
-__launch_bounds__(num_threads, 1) __global__
+template <typename BODY, int num_threads, size_t BLOCKS_PER_SM>
+__launch_bounds__(num_threads, BLOCKS_PER_SM) __global__
     void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
 {
   using RAJA::internal::thread_privatize;
@@ -165,16 +165,15 @@ __launch_bounds__(num_threads, 1) __global__
   body(ctx);
 }
 
-
-template <bool async, int nthreads>
-struct LaunchExecute<RAJA::expt::cuda_launch_t<async, nthreads>> {
+template <bool async, int nthreads, size_t BLOCKS_PER_SM>
+struct LaunchExecute<RAJA::policy::cuda::expt::cuda_launch_explicit_t<async, nthreads, BLOCKS_PER_SM>> {
 
   template <typename BODY_IN>
   static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
-    auto func = launch_global_fcn_fixed<BODY, nthreads>;
+    auto func = launch_global_fcn_fixed<BODY, nthreads, BLOCKS_PER_SM>;
 
     resources::Cuda cuda_res = resources::Cuda::get_default();
 
@@ -227,7 +226,7 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, nthreads>> {
   {
     using BODY = camp::decay<BODY_IN>;
 
-    auto func = launch_global_fcn<BODY>;
+    auto func = launch_global_fcn_fixed<BODY, nthreads, BLOCKS_PER_SM>;
 
     /*Get the concrete resource */
     resources::Cuda cuda_res = res.get<RAJA::resources::Cuda>();
@@ -380,6 +379,138 @@ struct LoopExecute<cuda_global_thread<DIM0, DIM1, DIM2>, SEGMENT> {
     }
   }
 };
+
+/*
+Reshape threads in a block into a 1D iteration space
+*/
+template<int ... dim>
+struct cuda_flatten_block_threads_direct{};
+
+using cuda_flatten_block_threads_xy_direct = cuda_flatten_block_threads_direct<0,1>;
+using cuda_flatten_block_threads_xz_direct = cuda_flatten_block_threads_direct<0,2>;
+using cuda_flatten_block_threads_yx_direct = cuda_flatten_block_threads_direct<1,0>;
+using cuda_flatten_block_threads_yz_direct = cuda_flatten_block_threads_direct<1,2>;
+using cuda_flatten_block_threads_zx_direct = cuda_flatten_block_threads_direct<2,0>;
+using cuda_flatten_block_threads_zy_direct = cuda_flatten_block_threads_direct<2,1>;
+
+using cuda_flatten_block_threads_xyz_direct = cuda_flatten_block_threads_direct<0,1,2>;
+using cuda_flatten_block_threads_xzy_direct = cuda_flatten_block_threads_direct<0,2,1>;
+using cuda_flatten_block_threads_yxz_direct = cuda_flatten_block_threads_direct<1,0,2>;
+using cuda_flatten_block_threads_yzx_direct = cuda_flatten_block_threads_direct<1,2,0>;
+using cuda_flatten_block_threads_zxy_direct = cuda_flatten_block_threads_direct<2,0,1>;
+using cuda_flatten_block_threads_zyx_direct = cuda_flatten_block_threads_direct<2,1,0>;
+
+template<int ... dim>
+struct cuda_flatten_block_threads_loop{};
+
+using cuda_flatten_block_threads_xy_loop = cuda_flatten_block_threads_loop<0,1>;
+using cuda_flatten_block_threads_xz_loop = cuda_flatten_block_threads_loop<0,2>;
+using cuda_flatten_block_threads_yx_loop = cuda_flatten_block_threads_loop<1,0>;
+using cuda_flatten_block_threads_yz_loop = cuda_flatten_block_threads_loop<1,2>;
+using cuda_flatten_block_threads_zx_loop = cuda_flatten_block_threads_loop<2,0>;
+using cuda_flatten_block_threads_zy_loop = cuda_flatten_block_threads_loop<2,1>;
+
+using cuda_flatten_block_threads_xyz_loop = cuda_flatten_block_threads_loop<0,1,2>;
+using cuda_flatten_block_threads_xzy_loop = cuda_flatten_block_threads_loop<0,2,1>;
+using cuda_flatten_block_threads_yxz_loop = cuda_flatten_block_threads_loop<1,0,2>;
+using cuda_flatten_block_threads_yzx_loop = cuda_flatten_block_threads_loop<1,2,0>;
+using cuda_flatten_block_threads_zxy_loop = cuda_flatten_block_threads_loop<2,0,1>;
+using cuda_flatten_block_threads_zyx_loop = cuda_flatten_block_threads_loop<2,1,0>;
+
+template<typename SEGMENT, int DIM0, int DIM1>
+struct LoopExecute<cuda_flatten_block_threads_direct<DIM0, DIM1>, SEGMENT>
+{
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+    {
+      const int tx = internal::get_cuda_dim<DIM0>(threadIdx);
+      const int ty = internal::get_cuda_dim<DIM1>(threadIdx);
+      const int bx = internal::get_cuda_dim<DIM0>(blockDim);
+      const int tid = tx + bx*ty;
+      
+      if (tid < len) body(*(segment.begin() + tid));
+    }
+  }
+};
+
+template<typename SEGMENT, int DIM0, int DIM1>
+struct LoopExecute<cuda_flatten_block_threads_loop<DIM0, DIM1>, SEGMENT>
+{
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const int len = segment.end() - segment.begin();
+
+    const int tx = internal::get_cuda_dim<DIM0>(threadIdx);
+    const int ty = internal::get_cuda_dim<DIM1>(threadIdx);
+
+    const int bx = internal::get_cuda_dim<DIM0>(blockDim);
+    const int by = internal::get_cuda_dim<DIM1>(blockDim);
+
+    for(int tid = tx + bx*ty; tid < len; tid += bx*by) {
+      body(*(segment.begin() + tid));
+    }
+
+  }
+};
+
+template<typename SEGMENT, int DIM0, int DIM1, int DIM2>
+struct LoopExecute<cuda_flatten_block_threads_direct<DIM0, DIM1, DIM2>, SEGMENT>
+{
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const int len = segment.end() - segment.begin();
+    {
+      const int tx = internal::get_cuda_dim<DIM0>(threadIdx);
+      const int ty = internal::get_cuda_dim<DIM1>(threadIdx);
+      const int tz = internal::get_cuda_dim<DIM2>(threadIdx);
+      const int bx = internal::get_cuda_dim<DIM0>(blockDim);
+      const int by = internal::get_cuda_dim<DIM1>(blockDim);
+      const int tid = tx + bx*(ty + by*tz);
+
+      if (tid < len) body(*(segment.begin() + tid));
+    }
+  }
+};
+
+template<typename SEGMENT, int DIM0, int DIM1, int DIM2>
+struct LoopExecute<cuda_flatten_block_threads_loop<DIM0, DIM1, DIM2>, SEGMENT>
+{
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const int len = segment.end() - segment.begin();
+
+    const int tx = internal::get_cuda_dim<DIM0>(threadIdx);
+    const int ty = internal::get_cuda_dim<DIM1>(threadIdx);
+    const int tz = internal::get_cuda_dim<DIM2>(threadIdx);
+    const int bx = internal::get_cuda_dim<DIM0>(blockDim);
+    const int by = internal::get_cuda_dim<DIM1>(blockDim);
+    const int bz = internal::get_cuda_dim<DIM2>(blockDim);
+
+    for(int tid = tx + bx*(ty + by*tz); tid < len; tid += bx*by*bz) {
+      body(*(segment.begin() + tid));
+    }
+
+  }
+};
+
 
 /*
   CUDA thread loops with block strides

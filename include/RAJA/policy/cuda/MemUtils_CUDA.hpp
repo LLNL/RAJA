@@ -10,8 +10,8 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -223,6 +223,8 @@ void launch(const void* func, cuda_dim_t gridDim, cuda_dim_t blockDim, void** ar
 {
 #if defined(RAJA_ENABLE_NV_TOOLS_EXT)
   if(name) nvtxRangePushA(name);
+#else
+  RAJA_UNUSED_VAR(name);
 #endif
   cudaErrchk(cudaLaunchKernel(func, gridDim, blockDim, args, shmem, res.get_stream()));
 #if defined(RAJA_ENABLE_NV_TOOLS_EXT)

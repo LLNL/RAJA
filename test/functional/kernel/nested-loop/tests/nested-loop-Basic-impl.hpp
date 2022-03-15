@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -35,6 +35,9 @@ using BasicSupportedLoopTypeList = camp::list<
   DEPTH_2,
   DEPTH_2_COLLAPSE,
   DEPTH_3,
+  DEPTH_3_COLLAPSE,
+  DEPTH_3_COLLAPSE_SEQ_INNER,
+  DEPTH_3_COLLAPSE_SEQ_OUTER,
   DEVICE_DEPTH_2>;
 
 //
@@ -91,6 +94,7 @@ template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE, typenam
 void KernelNestedLoopTest(const DEPTH_2_COLLAPSE&, Args... args){
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RESOURCE>(DEPTH_2(), args...);
 }
+
 template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE, typename... Args>
 void KernelNestedLoopTest(const DEVICE_DEPTH_2&, Args... args){
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RESOURCE>(DEPTH_2(), args...);
@@ -146,6 +150,22 @@ void KernelNestedLoopTest(const DEPTH_3&,
                                        test_array);
 }
 
+// DEPTH_3_COLLAPSE execution policies use the above DEPTH_3 test.
+template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE, typename... Args>
+void KernelNestedLoopTest(const DEPTH_3_COLLAPSE&, Args... args){
+  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RESOURCE>(DEPTH_3(), args...);
+}
+
+template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE, typename... Args>
+void KernelNestedLoopTest(const DEPTH_3_COLLAPSE_SEQ_OUTER&, Args... args){
+  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RESOURCE>(DEPTH_3(), args...);
+}
+
+template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE, typename... Args>
+void KernelNestedLoopTest(const DEPTH_3_COLLAPSE_SEQ_INNER&, Args... args){
+  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RESOURCE>(DEPTH_3(), args...);
+}
+
 //
 //
 // Defining the Kernel Loop structure for Basic Nested Loop Tests.
@@ -187,6 +207,43 @@ struct BasicNestedLoopExec<DEPTH_2_COLLAPSE, POLICY_DATA> {
       RAJA::statement::Collapse< typename camp::at<POLICY_DATA, camp::num<0>>::type,
         RAJA::ArgList<1,0>,
         RAJA::statement::Lambda<0>
+      >
+    >;
+};
+
+template<typename POLICY_DATA>
+struct BasicNestedLoopExec<DEPTH_3_COLLAPSE, POLICY_DATA> {
+  using type = 
+    RAJA::KernelPolicy<
+      RAJA::statement::Collapse< typename camp::at<POLICY_DATA, camp::num<0>>::type,
+        RAJA::ArgList<0,1,2>,
+        RAJA::statement::Lambda<0>
+      >
+    >;
+};
+
+template<typename POLICY_DATA>
+struct BasicNestedLoopExec<DEPTH_3_COLLAPSE_SEQ_OUTER, POLICY_DATA> {
+  using type = 
+    RAJA::KernelPolicy<
+      RAJA::statement::For<0, RAJA::seq_exec,
+      RAJA::statement::Collapse< typename camp::at<POLICY_DATA, camp::num<0>>::type,
+        RAJA::ArgList<1,2>,
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >;
+};
+
+template<typename POLICY_DATA>
+struct BasicNestedLoopExec<DEPTH_3_COLLAPSE_SEQ_INNER, POLICY_DATA> {
+  using type = 
+    RAJA::KernelPolicy<
+      RAJA::statement::Collapse< typename camp::at<POLICY_DATA, camp::num<0>>::type,
+        RAJA::ArgList<0,1>,
+        RAJA::statement::For<2, RAJA::seq_exec,
+          RAJA::statement::Lambda<0>
+        >
       >
     >;
 };

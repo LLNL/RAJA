@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -36,36 +36,55 @@ void ForallListSegmentTestImpl(INDEX_TYPE N)
   camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   // Create list segment for tests
-  RAJA::TypedListSegment<INDEX_TYPE> lseg(&idx_array[0], idxlen, 
+  INDEX_TYPE* idx_vals = nullptr;
+  if (N > 0) {
+    idx_vals = &idx_array[0];
+  }
+  RAJA::TypedListSegment<INDEX_TYPE> lseg(idx_vals, idxlen, 
                                           working_res);
 
   INDEX_TYPE* working_array;
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
 
-  allocateForallTestData<INDEX_TYPE>(N,
+  size_t data_len = RAJA::stripIndexType(N);
+  if ( data_len == 0 ) {
+    data_len = 1;
+  }
+
+  allocateForallTestData<INDEX_TYPE>(data_len,
                                      working_res,
                                      &working_array,
                                      &check_array,
                                      &test_array);
 
-  for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
-    test_array[RAJA::stripIndexType(i)] = INDEX_TYPE(0);
+  if ( RAJA::stripIndexType(N) > 0 ) {
+
+    for (size_t i = 0; i < idxlen; ++i) {
+      test_array[ RAJA::stripIndexType(idx_vals[i]) ] = idx_vals[i];
+    }
+
+    working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
+
+    RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+      working_array[RAJA::stripIndexType(idx)] = idx;
+    }); 
+
+  } else { // zero-length segment
+
+    memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
+
+    working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
+
+    RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+      (void) idx;
+      working_array[0]++;
+    });
+
   }
 
-  working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
+  working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
 
-  for (size_t i = 0; i < idxlen; ++i) {
-    test_array[ RAJA::stripIndexType(idx_array[i]) ] = idx_array[i];
-  }
-
-  RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-    working_array[RAJA::stripIndexType(idx)] = idx;
-  }); 
-
-  working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
-
-  // 
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
     ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
   }
@@ -88,6 +107,9 @@ TYPED_TEST_P(ForallListSegmentTest, ListSegmentForall)
   using INDEX_TYPE       = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<2>>::type;
+
+  // test zero-length list segment
+  ForallListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(INDEX_TYPE(0));
 
   ForallListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(INDEX_TYPE(13));
 

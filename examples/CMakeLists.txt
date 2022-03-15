@@ -1,6 +1,6 @@
 ###############################################################################
-# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -44,6 +44,10 @@ raja_add_executable(
 raja_add_executable(
   NAME tut_reductions
   SOURCES tut_reductions.cpp)
+
+raja_add_executable(
+  NAME teams_flatten
+  SOURCES teams_flatten.cpp)
 
 raja_add_executable(
   NAME teams_reductions
@@ -110,14 +114,10 @@ raja_add_executable(
   SOURCES wave-eqn.cpp)
 
 raja_add_executable(
-  NAME ltimes
-  SOURCES ltimes.cpp)
-
-raja_add_executable(
   NAME multiview
   SOURCES multiview.cpp)
 
-if(ENABLE_TARGET_OPENMP)
+if(RAJA_ENABLE_TARGET_OPENMP)
   #  raja_add_executable(
   #    NAME target-kernel
   #    SOURCES omp-target-kernel.cpp)

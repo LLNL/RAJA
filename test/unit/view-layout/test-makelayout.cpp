@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -14,7 +14,7 @@ TEST(LayoutUnitTest, OffsetVsRegular)
                                  RAJA::as_array<RAJA::Perm<1, 0>>::get());
   const auto offset =
       RAJA::make_permuted_offset_layout({{0, 0}},
-                                        {{5, 5}},
+                                        {{6, 6}},
                                         RAJA::as_array<RAJA::PERM_JI>::get());
 
   /*
@@ -37,7 +37,7 @@ TEST(OffsetLayoutUnitTest, 2D_IJ)
    * (-1, -1), (0, -1), (1, -1)
    * (-1, -2), (0, -2), (1, -2)
    */
-  const auto layout = RAJA::make_offset_layout<2>({{-1, -2}}, {{1, 0}});
+  const auto layout = RAJA::make_offset_layout<2>({{-1, -2}}, {{2, 1}});
 
   /*
    * First element, (-1, -2), should have index 0.
@@ -69,7 +69,7 @@ TEST(OffsetLayoutUnitTest, 2D_JI)
    */
   const my_layout layout =
       RAJA::make_permuted_offset_layout({{-1, -2}},
-                                        {{1, 0}},
+                                        {{2, 1}},
                                         RAJA::as_array<RAJA::PERM_JI>::get());
 
   /*

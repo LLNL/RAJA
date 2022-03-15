@@ -22,14 +22,83 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_config_HPP
 #define RAJA_config_HPP
+
+#include <utility>
+#include <type_traits>
+
+#if defined(_MSVC_LANG)
+#define RAJA_CXX_VER _MSVC_LANG
+#else
+#define RAJA_CXX_VER __cplusplus
+#endif
+
+#if RAJA_CXX_VER >= 201402L
+#define RAJA_HAS_SOME_CXX14 1
+#elif __cpp_generic_lambdas >= 201304 && \
+      __cpp_constexpr >=  201304 && \
+      __cpp_decltype_auto >= 201304 && \
+      __cpp_return_type_deduction >= 201304 && \
+      __cpp_aggregate_nsdmi >= 201304 && \
+      __cpp_variable_templates >= 201304
+#define RAJA_HAS_SOME_CXX14 1
+#else
+#define RAJA_HAS_SOME_CXX14 0
+
+static_assert(__cpp_generic_lambdas >= 201304,
+              "RAJA requires C++14 __cpp_generic_lambdas to operate.");
+
+static_assert(__cpp_constexpr >=  201304,
+              "RAJA requires C++14 __cpp_constexpr to operate.");
+
+static_assert(__cpp_decltype_auto >= 201304 ,
+              "RAJA requires C++14 __cpp_decltype_auto to operate");
+
+static_assert(__cpp_return_type_deduction >= 201304,
+              "RAJA requires C++14 __cpp_return_type_deduction to operate");
+
+static_assert(__cpp_aggregate_nsdmi >= 201304,
+              "RAJA requires C++14 __cpp_aggregate_nsdmi to operate");
+
+#endif
+/* NOTE: we want this one __cpp_init_captures >= 201304 */
+/* NOTE: we want this too __cpp_lib_transformation_trait_aliases >= 201304 */
+// __has_cpp_attribute(deprecated) >= 201309
+// __cpp_lib_exchange_function >= 201304
+// __cpp_lib_make_unique >= 201304
+// __cpp_lib_integer_sequence >= 201304
+// __cpp_lib_tuples_by_type >= 201304
+// __cpp_lib_tuple_element_t >= 201402
+// __cpp_lib_transparent_operators >= 201210
+// __cpp_lib_integral_constant_callable >= 201304
+// __cpp_lib_result_of_sfinae >= 201210
+// __cpp_binary_literals 201304
+// __cpp_sized_deallocation  201309
+// __cpp_lib_is_final  201402
+// __cpp_lib_is_null_pointer 201309
+// __cpp_lib_chrono_udls 201304
+// __cpp_lib_string_udls 201304
+// __cpp_lib_generic_associative_lookup  201304
+// __cpp_lib_null_iterators  201304
+// __cpp_lib_make_reverse_iterator 201402
+// __cpp_lib_robust_nonmodifying_seq_ops 201304
+// __cpp_lib_complex_udls  201309
+// __cpp_lib_quoted_string_io  201304
+// __has_include(<shared_mutex>) 1
+// __cpp_lib_shared_timed_mutex  201402
+
+
+static_assert(RAJA_HAS_SOME_CXX14,
+              "RAJA requires at least basic C++14 to operate correctly, your "
+              "compiler and/or standard library does not claim support for "
+              "C++14 features we need");
 
 /*!
  ******************************************************************************
@@ -38,8 +107,8 @@
  *
  ******************************************************************************
  */
-#cmakedefine ENABLE_FT
-#cmakedefine ENABLE_ITERATOR_OVERFLOW_DEBUG
+#cmakedefine RAJA_ENABLE_FT
+#cmakedefine RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG
 /*!
  ******************************************************************************
  *
@@ -66,7 +135,7 @@
  *
  ******************************************************************************
  */
-#cmakedefine ENABLE_FORCEINLINE_RECURSIVE
+#cmakedefine RAJA_ENABLE_FORCEINLINE_RECURSIVE
 
 /*!
  ******************************************************************************
@@ -102,8 +171,7 @@
 #cmakedefine RAJA_ENABLE_SYCL
 
 #cmakedefine RAJA_ENABLE_NV_TOOLS_EXT
-
-#cmakedefine RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL
+#cmakedefine RAJA_ENABLE_ROCTX
 
 /*!
  ******************************************************************************
@@ -125,6 +193,15 @@
  ******************************************************************************
  */
 #cmakedefine RAJA_ENABLE_RUNTIME_PLUGINS
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Desul atomics.
+ *
+ ******************************************************************************
+ */
+#cmakedefine RAJA_ENABLE_DESUL_ATOMICS
 
 /*!
  ******************************************************************************
@@ -163,7 +240,7 @@ namespace RAJA {
 #define RAJA_ENABLE_OPENMP_TASK
 #endif
 #else
-#error RAJA configured with ENABLE_OPENMP, but OpenMP not supported by current compiler
+#error RAJA configured with RAJA_ENABLE_OPENMP, but OpenMP not supported by current compiler
 #endif // _OPENMP
 #endif // RAJA_ENABLE_OPENMP
 
@@ -171,8 +248,25 @@ namespace RAJA {
 #define RAJA_CUDA_ACTIVE
 #endif // RAJA_ENABLE_CUDA && __CUDACC__
 
+#if defined(RAJA_ENABLE_HIP) && defined(__HIPCC__)
+#define RAJA_HIP_ACTIVE
+
+#include <hip/hip_version.h>
+#if (HIP_VERSION_MAJOR > 4) || \
+    (HIP_VERSION_MAJOR == 4 && HIP_VERSION_MINOR >= 3)
+// enable device function pointers with rocm version >= 4.3
+#define RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL
+#endif
+#if (HIP_VERSION_MAJOR > 4) || \
+    (HIP_VERSION_MAJOR == 4 && HIP_VERSION_MINOR >= 2)
+// enable occupancy calculator with rocm version >= 4.2
+// can't test older versions thought they may work
+#define RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
+#endif
+#endif // RAJA_ENABLE_HIP && __HIPCC__
+
 #if defined(RAJA_CUDA_ACTIVE) || \
-  defined(RAJA_ENABLE_HIP)
+  defined(RAJA_HIP_ACTIVE)
 #define RAJA_DEVICE_ACTIVE
 #endif
 
@@ -265,7 +359,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 // Configuration options for Intel compilers
 //
 
-#if defined (ENABLE_FORCEINLINE_RECURSIVE)
+#if defined (RAJA_ENABLE_FORCEINLINE_RECURSIVE)
 #define RAJA_FORCEINLINE_RECURSIVE  RAJA_PRAGMA(forceinline recursive)
 #else
 #define RAJA_FORCEINLINE_RECURSIVE
@@ -276,6 +370,8 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #else
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #endif
+
+#define RAJA_UNROLL RAJA_PRAGMA(unroll)
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 #define RAJA_ALIGN_DATA(d) d
@@ -302,6 +398,12 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
+#if !defined(__NVCC__)
+#define RAJA_UNROLL RAJA_PRAGMA(GCC unroll 10000)
+#else
+#define RAJA_UNROLL RAJA_PRAGMA(unroll)
+#endif
+
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 #define RAJA_ALIGN_DATA(d) d
 #else
@@ -327,7 +429,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
-
+#define RAJA_UNROLL 
 // FIXME: alignx is breaking CUDA+xlc
 #if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d) d
@@ -343,6 +445,11 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_NO_SIMD RAJA_PRAGMA(simd_level(0))
 #endif
 
+// Detect altivec, but disable if NVCC is being used due to some bad interactions
+#if defined(__ALTIVEC__) && (__ALTIVEC__ == 1) && !defined(__NVCC__)
+#define RAJA_ALTIVEC
+#endif
+
 
 #elif defined(RAJA_COMPILER_CLANG)
 //
@@ -350,6 +457,8 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
+#define RAJA_UNROLL RAJA_PRAGMA(clang loop unroll(enable))
+
 
 // note that neither nvcc nor Apple Clang compiler currently doesn't support
 // the __builtin_assume_aligned attribute
@@ -375,6 +484,11 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_NO_SIMD  RAJA_PRAGMA(clang loop vectorize(disable))
 #endif
 
+// Detect altivec, but only seems to work since Clang 9
+#if defined(__ALTIVEC__) && (__clang_major__ >= 9 ) && (__ALTIVEC__ == 1)
+#define RAJA_ALTIVEC
+#endif
+
 
 // This is the same as undefined compiler, but squelches the warning message
 #elif defined(RAJA_COMPILER_MSVC)
@@ -384,7 +498,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_ALIGN_DATA(d) d
 #define RAJA_SIMD
 #define RAJA_NO_SIMD
-
+#define RAJA_UNROLL
 
 #else
 
@@ -394,6 +508,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_ALIGN_DATA(d) d
 #define RAJA_SIMD
 #define RAJA_NO_SIMD
+#define RAJA_UNROLL
 
 #endif
 
@@ -423,6 +538,18 @@ T * align_hint(T * x)
 #endif
 }
 
+
 }  // closing brace for RAJA namespace
+
+
+#ifndef RAJA_UNROLL
+#define RAJA_UNROLL
+#endif
+
+// If we're in CUDA device code, we can use the nvcc unroll pragma
+#if defined(__CUDA_ARCH__) && defined(RAJA_CUDA_ACTIVE)
+#undef RAJA_UNROLL
+#define RAJA_UNROLL RAJA_PRAGMA(unroll)
+#endif
 
 #endif // closing endif for header file include guard
