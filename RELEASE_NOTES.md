@@ -50,19 +50,18 @@ Notable changes include:
         auto-vectorization. Basic documentation for this is included in the
         RAJA User Guide and should provide enough description for interested
         users to try it out. 
-      * "Flatten" policies were added for RAJA Teams. This reshaping 
+      * "Flatten" policies were added for RAJA Teams. This reshapes
         multi-dimensional GPU thread blocks to 1D.
       * RAJA Teams now allows a single execution policy to be provided. 
         Previously, it required two; e.g., a CPU policy and a GPU policy.
-      * ROCTX suport has been added to enable kernel naming with RAJA Teams.
+      * ROCTX support has been added to enable kernel naming with RAJA Teams.
       * Details of CUDA and HIP errors are now added to the reported exception
         string. Previously, this information was going to stderr.
       * All CUDA execution policies have been expanded to allow users to specify
         a minimum number of blocks per SM, if they wish to do that. An analogous
         capability for HIP execution policies is being hashed out. 
       * Changes were made to RAJA scans to address a consistency issue and
-        allow an array corresponding to an input span to passed as
-        a const pointer.
+        allow const pointers to be passed as the input span.
       * RAJA View pointer type is fixed to properly allow CHAI ManagedArray 
         type to be passed through to View instead of the raw pointer type. This
         fixes an issue where some required CHAI memory transfers were not 
@@ -90,20 +89,20 @@ Notable changes include:
       * AS OF THIS RELEASE, RAJA REQUIRES A C++14-COMPLIANT COMPILER TO BUILD!! 
       * AS OF THIS RELEASE, RAJA REQUIRES CMAKE version 3.14.5 or newer.
       * The BLT submodule is updated to v0.5.0, which includes improved
-        support for ROCm/HIP builds.Although the option CMAKE_HIP_ARCHITECTURES
+        support for ROCm/HIP builds. Although the option CMAKE_HIP_ARCHITECTURES
         to specify the HIP target architecture is not available until CMake 
         version 3.21, the option is supported in the new BLT version and works 
         with all versions of CMake.
-      * The camp submodule is updated to v0.5.3. If you do not use the submodule
-        and build RAJA with an external version of camp, you will need to
-        use camp v0.5.3 or newer.
+      * The camp submodule is updated to v2022.03.0. If you do not use the 
+        RAJA submodule and build RAJA with an external version of camp, you 
+        will need to use camp v2022.03.0 or newer.
       * The "RAJA_" prefix has been added to all CMake options. Options that 
         shadow a CMake or BLT option are turned into cmake_dependent_option 
         calls, ensuring that they can be controlled independently and have the 
         correct dependence on the underlying CMake or BLT support;
         e.g., RAJA_ENABLE_CUDA requires ENABLE_CUDA.
       * The camp_DIR export has been removed. Camp paths will be searched 
-        using the default logic which consistent with camp.
+        using the default logic which is consistent with camp.
       * The raja-config.cmake package file is now "relocatable", meaning it
         can be moved to another directory location after an install and still
         work. This should make it easier to use for applications that use 
@@ -117,7 +116,7 @@ Notable changes include:
       * CMake logic for using rocPRIM in RAJA for a HIP build is similar.
         The default behavior is now that when the HIP version is < 4, the
         RAJA rocPRIM submodule will be used. When the HIP version is >= 4, the
-        rocPRIM version that is included in the associated ROCmM toolkit will 
+        rocPRIM version that is included in the associated ROCm toolkit will 
         be used. Users have the ability to override these defaults and select
         a specific version of rocPRIM if they wish.
       * The RAJA Spack package was updated to include the version of this 
