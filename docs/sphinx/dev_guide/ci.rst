@@ -17,7 +17,7 @@ The RAJA project employs multiple tools to run its tests for each GitHub
 These tools include:
 
   * **Azure.** This runs builds for Linux, Windows, and MacOS  environments 
-    using a variety of compilers. While we do GPU builds for CUDA, Hip, and
+    using a variety of compilers. While we do GPU builds for CUDA, HIP, and
     SYCL on Azure, RAJA tests are run for each non-GPU build.
 
   * **Appveyor.** This runs builds and tests for a Windows environment for two

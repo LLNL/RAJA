@@ -56,6 +56,9 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
 
     homepage = "https://github.com/LLNL/RAJA"
     git      = "https://github.com/LLNL/RAJA.git"
+    tags     = ['radiuss', 'e4s']
+
+    maintainers = ['davidbeckingsale']
 
     version('develop', branch='develop', submodules='True')
     version('main',  branch='main',  submodules='True')
@@ -182,9 +185,9 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
         cfg.write("###################\n".format("#" * 60))
         cfg.write("# Generated host-config - Edit at own risk!\n")
         cfg.write("###################\n".format("#" * 60))
-        cfg.write("# Copyright (c) 2020, Lawrence Livermore National Security, LLC and\n")
-        cfg.write("# other Umpire Project Developers. See the top-level LICENSE file for\n")
-        cfg.write("# details.\n")
+        cfg.write("# Copyright 2016-22, Lawrence Livermore National Security, LLC\n")
+        cfg.write("# and RAJA project contributors. See the RAJA/LICENSE file\n")
+        cfg.write("# for details.\n")
         cfg.write("#\n")
         cfg.write("# SPDX-License-Identifier: (BSD-3-Clause) \n")
         cfg.write("###################\n\n".format("#" * 60))
