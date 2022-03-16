@@ -181,7 +181,7 @@ Other programming model specific compilation options are also available:
       RAJA_ENABLE_EXTERNAL_ROCPRIM             Off
       RAJA_ENABLE_ROCTX                        Off
       RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL   Off (enables device function 
-                                               pointers in Hip back-end)
+                                               pointers in HIP back-end)
       ======================================   =================================
 
 Turning the ``(RAJA_)ENABLE_CLANG_CUDA`` variable on will build CUDA 
@@ -199,8 +199,8 @@ configuring their applications.
 
 The ``RAJA_ENABLE_EXTERNAL_ROCPRIM`` variable is used to enable use of an 
 external install of the AMD rocPRIM support library. When Off, the 
-rocPRIM library included in the ROCM install will be used, when available.
-We recommend projects use the rocPRIM included with the ROCM install when
+rocPRIM library included in the ROCm install will be used, when available.
+We recommend projects use the rocPRIM included with the ROCm install when
 available. Users should take note of the rocPRIM install used by RAJA to
 ensure they use the same include directories when configuring their
 applications.
