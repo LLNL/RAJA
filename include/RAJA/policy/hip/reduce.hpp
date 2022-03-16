@@ -12,7 +12,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -246,6 +246,26 @@ RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T RAJA_UNUSED_ARG(identity))
         Combiner{}(temp, rhs);
       }
     }
+  }
+
+  return temp;
+}
+
+/*!
+ * Allreduce values in a warp.
+ *
+ *
+ * This does a butterfly pattern leaving each lane with the full reduction
+ *
+ */
+template <typename Combiner, typename T>
+RAJA_DEVICE RAJA_INLINE T warp_allreduce(T val)
+{
+  T temp = val;
+
+  for (int i = 1; i < policy::hip::WARP_SIZE; i *= 2) {
+    T rhs = shfl_xor_sync(temp, i);
+    Combiner{}(temp, rhs);
   }
 
   return temp;
@@ -660,6 +680,8 @@ struct Reduce_Data {
   {
   }
 
+  Reduce_Data& operator=(const Reduce_Data&) = default;
+
   //! initialize output to identity to ensure never read
   //  uninitialized memory
   void init_grid_val(T* output) { *output = identity; }
@@ -746,6 +768,8 @@ struct ReduceAtomic_Data {
         own_device_ptr{false}
   {
   }
+
+  ReduceAtomic_Data& operator=(const ReduceAtomic_Data&) = default;
 
   //! initialize output to identity to ensure never read
   //  uninitialized memory

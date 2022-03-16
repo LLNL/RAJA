@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -219,7 +219,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // The TypedIndexSet is a variadic template, where the template arguments
 // are the segment types that the TypedIndexSet can hold.
 //
+#if defined(RAJA_ENABLE_OPENMP) || defined(RAJA_ENABLE_CUDA)
+#if 0  // needed for exercises, but if-def'd out to quiet compiler warnings.
   using SegmentType = RAJA::TypedListSegment<int>;
+#endif
+#endif
 
 #if defined(RAJA_ENABLE_OPENMP)
 
@@ -233,8 +237,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Create a RAJA TypedIndexSet with four ListSegments, one for the indices of
 // the elements in each subsut. This will be used in the RAJA OpenMP and CUDA
 // variants of the vertex sum calculation.
-
+#if 0  // needed for exercises, but if-def'd out to quiet compiler warnings.
   RAJA::TypedIndexSet<SegmentType> colorset;
+#endif
 
   ///
   /// TODO...
@@ -288,7 +293,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
   camp::resources::Resource cuda_res{camp::resources::Cuda()};
 
+#if 0  // needed for exercises, but if-def'd out to quiet compiler warnings.
   RAJA::TypedIndexSet<SegmentType> cuda_colorset;
+#endif
 
   ///
   /// TODO...

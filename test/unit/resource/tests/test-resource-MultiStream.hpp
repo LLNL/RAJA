@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -49,6 +49,8 @@ void ResourceMultiStreamTestImpl()
   dev1.wait_for(&e3);
 
   dev1.memcpy(h_array, d_array, sizeof(int) * ARRAY_SIZE);
+
+  dev1.wait();
 
   forall<policy::sequential::seq_exec>(host, RangeSegment(0,ARRAY_SIZE),
     [=] (int i) {

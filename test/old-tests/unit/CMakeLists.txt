@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,6 +16,8 @@ raja_add_test(
 raja_add_test(
   NAME test-simd
   SOURCES test-simd.cpp)
+
+
 
 add_subdirectory(cpu)
 

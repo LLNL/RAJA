@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -30,3 +30,5 @@ The following sections describe key aspects of the main RAJA features.
    feature/tiling
    feature/plugins
    feature/workgroup
+   feature/vectorization
+

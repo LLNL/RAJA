@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 .. ## and other RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -301,6 +301,12 @@ policies have the prefix ``hip_``.
                                                         threads in y-dimension
  cuda/hip_thread_z_loop                   kernel (For)  Same as above, but for
                                                         threads in z-dimension
+ cuda/hip_flatten_block_threads_{xyz}     Teams (Loop)  Reshapes threads in a
+                                                        multi-dimensional thread
+                                                        team into one-dimension,
+                                                        accepts any permutation
+                                                        of dimensions
+                                                        (expt namespace)
  cuda/hip_block_x_direct                  kernel (For)  Map loop iterates
                                                         directly to GPU thread
                                                         blocks in x-dimension,
@@ -317,6 +323,16 @@ policies have the prefix ``hip_``.
                                                         blocks in y-dimension
  cuda/hip_block_z_loop                    kernel (For)  Same as above, but use
                                                         blocks in z-dimension
+ cuda/hip_global_thread_x                 Teams (Loop)  Creates a unique thread
+                                                        id for each thread on the
+                                                        x dimension of the grid
+                                                        (expt namespace)
+ cuda/hip_global_thread_y                 Teams (Loop)  Same as above, but uses
+                                                        threads in y-dimension
+                                                        (expt namespace)
+ cuda/hip_global_thread_z                 Teams (Loop)  Same as above, but uses
+                                                        threads in z-dimension
+                                                        (expt namespace)
  cuda/hip_warp_direct                     kernel (For)  Map work to threads
                                                         in a warp directly.
                                                         Cannot be used in
@@ -467,20 +483,6 @@ GPU Policies for SYCL
                                                         dimension
 
  ======================================== ============= ========================
-
-There is a notable constraint to using the sycl policies.
-
-.. note:: SYCL kernels impose the restriction that kernel parameters must
-          be trivially copyable.  The sycl_exec_nontrivial and
-          SyclKernelNonTrivial policies provide a workaround to this
-          constraint given the non trivially copyable data is safe to 
-          memcpy to the device. 
-
-          The non trivial policies incur some additional overhead, but 
-          will function whether data is trivially copyable or not.  
-          Beginning with non trivial polices will help accerate development
-          of a working RAJA SYCL application.
-
 
 OpenMP Target Offload Policies 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -648,12 +650,13 @@ omp_atomic                any OpenMP    Atomic operation performed in an OpenMP.
                           policy        multithreading or target kernel; i.e.,
                                         apply ``omp atomic`` pragma.
 cuda/hip_atomic           any CUDA/HIP  Atomic operation performed in a CUDA/HIP
-                                        kernel.
+                          policy        kernel.
 cuda/hip_atomic_explicit  any CUDA/HIP  Atomic operation performed in a CUDA/HIP
-< host_atomic_policy >    any policy    kernel when compiling for the device.
-                          matching the  See description of host_atomic_policy
-                          host atomic   when compiling for the host.
-                          policy
+                          policy        kernel that may also be used in a host
+                                        execution context. The atomic policy
+                                        takes a host atomic policy template
+                                        argument. See additional explanation 
+                                        and example below.
 builtin_atomic            seq_exec,     Compiler *builtin* atomic operation.
                           loop_exec,
                           any OpenMP
@@ -665,6 +668,11 @@ auto_atomic               seq_exec,     Atomic operation *compatible* with loop
                           any CUDA/HIP
                           policy
 ========================= ============= ========================================
+
+.. note:: The ``cuda_atomic_explicit`` and ``hip_atomic_explicit`` policies
+          take a host atomic policy template parameter. They are intended to
+          be used with kernels that are host-device decorated to be used in
+          either a host or device execution context.
 
 Here is an example illustrating use of the ``cuda_atomic_explicit`` policy::
 
@@ -684,7 +692,7 @@ used and the OpenMP version of the atomic operation is applied.
 
 Here is an example illustrating use of the ``auto_atomic`` policy::
 
-  RAJA::forall< RAJA::cuda_execBLOCK_SIZE> >(RAJA::RangeSegment seg(0, N),
+  RAJA::forall< RAJA::cuda_exec<BLOCK_SIZE> >(RAJA::RangeSegment seg(0, N),
     [=] RAJA_DEVICE (RAJA::Index_type i) {
 
     RAJA::atomicAdd< RAJA::auto_atomic >(&sum, 1);
@@ -715,8 +723,8 @@ The following memory policies are available to specify memory allocation
 for ``RAJA::LocalArray`` objects:
 
   *  ``RAJA::cpu_tile_mem`` - Allocate CPU memory on the stack
-  *  ``RAJA::cuda_shared_mem`` - Allocate CUDA shared memory
-  *  ``RAJA::cuda_thread_mem`` - Allocate CUDA thread private memory
+  *  ``RAJA::cuda/hip_shared_mem`` - Allocate CUDA or HIP shared memory
+  *  ``RAJA::cuda/hip_thread_mem`` - Allocate CUDA or HIP thread private memory
 
 
 .. _loop_elements-kernelpol-label:
@@ -727,7 +735,7 @@ RAJA Kernel Execution Policies
 
 RAJA kernel execution policy constructs form a simple domain specific language
 for composing and transforming complex loops that relies
-**solely on standard C++11 template support**.
+**solely on standard C++14 template support**.
 RAJA kernel policies are constructed using a combination of *Statements* and
 *Statement Lists*. A RAJA Statement is an action, such as execute a loop,
 invoke a lambda, set a thread barrier, etc. A StatementList is an ordered list
@@ -781,71 +789,100 @@ can be used with ``RAJA::kernel`` and ``RAJA::kernel_param``. More detailed
 explanation along with examples of how they are used can be found in
 :ref:`tutorial-label`.
 
-.. note:: * All of these statement types are in the namespace ``RAJA``.
-          * ``RAJA::kernel_param`` functions similar to ``RAJA::kernel`` except             that its second argument is a *tuple of parameters* used in a kernel
-            for local arrays, thread local variables, tiling information, etc.
+.. note::  * ``RAJA::kernel_param`` functions similar to ``RAJA::kernel`` 
+             except that the second argument is a *tuple of parameters* used 
+             in a kernel for local arrays, thread local variables, tiling 
+             information, etc.
 
-  * ``statement::For< ArgId, ExecPolicy, EnclosedStatements >`` abstracts a for-loop associated with kernel iteration space at tuple index 'ArgId', to be run with 'ExecPolicy' execution policy, and containing the 'EnclosedStatements' which are executed for each loop iteration.
+.. note:: * All of the statement types described below are in the namespace 
+            ``RAJA::statement``. For breavity, we omit the namespaces.
 
-  * ``statement::Lambda< LambdaId >`` invokes the lambda expression that appears at position 'LambdaId' in the sequence of lambda arguments.
+Several RAJA statements can be specialized with auxilliary types, which are
+described in :ref:`auxilliarypolicy_label`.
 
-  * ``statement::Lambda< LambdaId, Args...>`` extension of the lambda statement; enabling lambda arguments to be specified at compile time.
+The following list contains the most commonly used statement types.
 
-  * ``statement::Collapse< ExecPolicy, ArgList<...>, EnclosedStatements >`` collapses multiple perfectly nested loops specified by tuple iteration space indices in 'ArgList', using the 'ExecPolicy' execution policy, and places 'EnclosedStatements' inside the collapsed loops which are executed for each iteration. Note that this only works for CPU execution policies (e.g., sequential, OpenMP).It may be available for CUDA in the future if such use cases arise.
+* ``For< ArgId, ExecPolicy, EnclosedStatements >`` abstracts a for-loop associated with kernel iteration space at tuple index ``ArgId``, to be run with ``ExecPolicy`` execution policy, and containing the ``EnclosedStatements`` which are executed for each loop iteration.
 
-  * ``statement::CudaKernel< EnclosedStatements>`` launches 'EnclosedStatements' as a CUDA kernel; e.g., a loop nest where the iteration spaces of each loop level are associated with threads and/or thread blocks as described by the execution policies applied to them. This kernel launch is synchronous.
+* ``Lambda< LambdaId >`` invokes the lambda expression that appears at position 'LambdaId' in the sequence of lambda arguments. With this statement, the lambda expression must accept all arguments associated with the tuple of iteration space segments and tuple of parameters (if kernel_param is used).
 
-  * ``statement::CudaKernelAsync< EnclosedStatements>`` asynchronous version of CudaKernel.
+* ``Lambda< LambdaId, Args...>`` extends the Lambda statement. The second template parameter indicates which arguments (e.g., which segment iteration variables) are passed to the lambda expression.
 
-  * ``statement::CudaKernelFixed<num_threads, EnclosedStatements>`` similar to CudaKernel but enables a fixed number of threads (specified by num_threads). This kernel launch is synchronous.
+* ``Collapse< ExecPolicy, ArgList<...>, EnclosedStatements >`` collapses multiple perfectly nested loops specified by tuple iteration space indices in ``ArgList``, using the ``ExecPolicy`` execution policy, and places ``EnclosedStatements`` inside the collapsed loops which are executed for each iteration. **Note that this only works for CPU execution policies (e.g., sequential, OpenMP).** It may be available for CUDA in the future if such use cases arise.
 
-  * ``statement::CudaKernelFixedAsync<num_threads, EnclosedStatements>`` asynchronous version of CudaKernelFixed.
+There is one statement specific to OpenMP kernels. 
 
-  * ``statement::CudaKernelFixedSM<num_threads, min_blocks_per_sm, EnclosedStatements>`` similar to CudaKernelFixed but enables a minimum number of blocks per sm (specified by min_blocks_per_sm), this can help increase occupancy. This kernel launch is synchronous.
+* ``OmpSyncThreads`` applies the OpenMP ``#pragma omp barrier`` directive.
 
-  * ``statement::CudaKernelFixedSMAsync<num_threads, min_blocks_per_sm, EnclosedStatements>`` asynchronous version of CudaKernelFixedSM.
+Statement types that lauch CUDA or HIP GPU kernels are listed next. They work 
+similarly for each back-end and their names are distinguished by the prefix 
+``Cuda`` or ``Hip``. For example, ``CudaKernel`` or ``HipKernel``.
 
-  * ``statement::CudaKernelOcc<EnclosedStatements>`` similar to CudaKernel but uses the CUDA occupancy calculator to determine the optimal number of threads/blocks. Statement is intended for RAJA::cuda_block_{xyz}_loop policies. This kernel launch is synchronous.
+* ``Cuda/HipKernel< EnclosedStatements>`` launches ``EnclosedStatements' as a GPU kernel; e.g., a loop nest where the iteration spaces of each loop level are associated with threads and/or thread blocks as described by the execution policies applied to them. This kernel launch is synchronous.
 
-  * ``statement::CudaKernelOccAsync<EnclosedStatements>`` asynchronous version of CudaKernelOcc.
+* ``Cuda/HipKernelAsync< EnclosedStatements>`` asynchronous version of Cuda/HipKernel.
 
-  * ``statement::CudaKernelExp<num_blocks, num_threads, EnclosedStatements>`` similar to CudaKernelOcc but with the flexibility to fix the number of threads and/or blocks and let the CUDA occupancy calculator determine the unspecified values. This kernel launch is synchronous.
+* ``Cuda/HipKernelFixed<num_threads, EnclosedStatements>`` similar to Cuda/HipKernel but enables a fixed number of threads (specified by num_threads). This kernel launch is synchronous.
 
-  * ``statement::CudaKernelExpAsync<num_blocks, num_threads, EnclosedStatements>`` asynchronous version of CudaKernelExp.
+* ``Cuda/HipKernelFixedAsync<num_threads, EnclosedStatements>`` asynchronous version of Cuda/HipKernelFixed.
 
-  * ``statement::CudaSyncThreads`` calls CUDA '__syncthreads()' barrier.
+* ``CudaKernelFixedSM<num_threads, min_blocks_per_sm, EnclosedStatements>`` similar to CudaKernelFixed but enables a minimum number of blocks per sm (specified by min_blocks_per_sm), this can help increase occupancy. This kernel launch is synchronous.  **Note: there is no HIP variant of this statement.**
 
-  * ``statement::CudaSyncWarp`` calls CUDA '__syncwarp()' barrier.
+* ``CudaKernelFixedSMAsync<num_threads, min_blocks_per_sm, EnclosedStatements>`` asynchronous version of CudaKernelFixedSM. **Note: there is no HIP variant of this statement.**
 
-  * ``statement::SyclKernel<EnclosedStatements>`` launches 'EnclosedStatements' as a SYCL kernel.  This kernel launch is synchronous.
+* ``Cuda/HipKernelOcc<EnclosedStatements>`` similar to CudaKernel but uses the CUDA occupancy calculator to determine the optimal number of threads/blocks. Statement is intended for use with RAJA::cuda/hip_block_{xyz}_loop policies. This kernel launch is synchronous.
 
-  * ``statement::SyclKernelAsync<EnclosedStatements`` asynchronous version of SyclKernel.
+* ``Cuda/HipKernelOccAsync<EnclosedStatements>`` asynchronous version of Cuda/HipKernelOcc.
 
-  * ``statement::SyclKernelNonTrivial<EnclosedStatements`` Same as SyclKernel, but allows for non-trivially copyable kernels by preforming an allocation on the device followed by a memcpy.  If the non-trivially data type in the kernel cannot be safely memcpy'd to the device the kernel the execution may be incorrect. 
+* ``Cuda/HipKernelExp<num_blocks, num_threads, EnclosedStatements>`` similar to CudaKernelOcc but with the flexibility to fix the number of threads and/or blocks and let the CUDA occupancy calculator determine the unspecified values. This kernel launch is synchronous.
 
-  * ``statement::OmpSyncThreads`` applies the OpenMP '#pragma omp barrier' directive.
+* ``Cuda/HipKernelExpAsync<num_blocks, num_threads, EnclosedStatements>`` asynchronous version of Cuda/HipKernelExp.
 
-  * ``statement::InitLocalMem< MemPolicy, ParamList<...>, EnclosedStatements >`` allocates memory for a ``RAJA::LocalArray`` object used in kernel. The 'ParamList' entries indicate which local array objects in a tuple will be initialized. The 'EnclosedStatements' contain the code in which the local array will be accessed; e.g., initialization operations.
+* ``Cuda/HipSyncThreads`` invokes CUDA or HIP '__syncthreads()' barrier.
 
-  * ``statement::Tile< ArgId, TilePolicy, ExecPolicy, EnclosedStatements >`` abstracts an outer tiling loop containing an inner for-loop over each tile. The 'ArgId' indicates which entry in the iteration space tuple to which the tiling loop applies and the 'TilePolicy' specifies the tiling pattern to use, including its dimension. The 'ExecPolicy' and 'EnclosedStatements' are similar to what they represent in a ``statement::For`` type.
+* ``Cuda/HipSyncWarp`` invokes CUDA '__syncwarp()' barrier. **Note: warp sync is not supported, so the HIP variant is a no-op.
 
-  * ``statement::TileTCount< ArgId, ParamId, TilePolicy, ExecPolicy, EnclosedStatements >`` abstracts an outer tiling loop containing an inner for-loop over each tile, **where it is necessary to obtain the tile number in each tile**. The 'ArgId' indicates which entry in the iteration space tuple to which the loop applies and the 'ParamId' indicates the position of the tile number in the parameter tuple. The 'TilePolicy' specifies the tiling pattern to use, including its dimension. The 'ExecPolicy' and 'EnclosedStatements' are similar to what they represent in a ``statement::For`` type.
+Statement types that lauch SYCL kernels are listed next. 
 
-  * ``statement::ForICount< ArgId, ParamId, ExecPolicy, EnclosedStatements >`` abstracts an inner for-loop within an outer tiling loop **where it is necessary to obtain the local iteration index in each tile**. The 'ArgId' indicates which entry in the iteration space tuple to which the loop applies and the 'ParamId' indicates the position of the tile index parameter in the parameter tuple. The 'ExecPolicy' and 'EnclosedStatements' are similar to what they represent in a ``statement::For`` type.
+* ``SyclKernel<EnclosedStatements>`` launches ``EnclosedStatements`` as a SYCL kernel.  This kernel launch is synchronous.
 
-  * ``statement::Reduce< ReducePolicy, Operator, ParamId, EnclosedStatements >`` reduces a value across threads to a single thread. The 'ReducePolicy' is similar to what it represents for RAJA reduction types. 'ParamId' specifies the position of the reduction value in the parameter tuple passed to the ``RAJA::kernel_param`` method. 'Operator' is the binary operator used in the reduction; typically, this will be one of the operators that can be used with RAJA scans (see :ref:`scanops-label`. After the reduction is complete, the 'EnclosedStatements' execute on the thread that received the final reduced value.
+* ``SyclKernelAsync<EnclosedStatements>`` asynchronous version of SyclKernel.
 
-  * ``statement::If< Conditional >`` chooses which portions of a policy to run based on run-time evaluation of conditional statement; e.g., true or false, equal to some value, etc.
+RAJA provides statements to define loop tiling which can improve performance; 
+e.g., by allowing CPU cache blocking or use of GPU shared memory. 
 
-  * ``statement::Hyperplane< ArgId, HpExecPolicy, ArgList<...>, ExecPolicy, EnclosedStatements >`` provides a hyperplane (or wavefront) iteration pattern over multiple indices. A hyperplane is a set of multi-dimensional index values: i0, i1, ... such that h = i0 + i1 + ... for a given h. Here, 'ArgId' is the position of the loop argument we will iterate on (defines the order of hyperplanes), 'HpExecPolicy' is the execution policy used to iterate over the iteration space specified by ArgId (often sequential), 'ArgList' is a list of other indices that along with ArgId define a hyperplane, and 'ExecPolicy' is the execution policy that applies to the loops in ArgList. Then, for each iteration, everything in the 'EnclosedStatements' is executed.
+* ``Tile< ArgId, TilePolicy, ExecPolicy, EnclosedStatements >`` abstracts an outer tiling loop containing an inner for-loop over each tile. The ``ArgId`` indicates which entry in the iteration space tuple to which the tiling loop applies and the ``TilePolicy`` specifies the tiling pattern to use, including its dimension. The ``ExecPolicy`` and ``EnclosedStatements`` are similar to what they represent in a ``statement::For`` type.
 
+* ``TileTCount< ArgId, ParamId, TilePolicy, ExecPolicy, EnclosedStatements >`` abstracts an outer tiling loop containing an inner for-loop over each tile, **where it is necessary to obtain the tile number in each tile**. The ``ArgId`` indicates which entry in the iteration space tuple to which the loop applies and the ``ParamId`` indicates the position of the tile number in the parameter tuple. The ``TilePolicy`` specifies the tiling pattern to use, including its dimension. The ``ExecPolicy`` and ``EnclosedStatements`` are similar to what they represent in a ``statement::For`` type.
+
+* ``ForICount< ArgId, ParamId, ExecPolicy, EnclosedStatements >`` abstracts an inner for-loop within an outer tiling loop **where it is necessary to obtain the local iteration index in each tile**. The ``ArgId`` indicates which entry in the iteration space tuple to which the loop applies and the ``ParamId`` indicates the position of the tile index parameter in the parameter tuple. The ``ExecPolicy`` and ``EnclosedStatements`` are similar to what they represent in a ``statement::For`` type.
+
+It is often advantageous to use local arrays for data accessed in tiled loops.
+RAJA provides a statement for allocating data in a :ref:`local_array-label`
+object according to a memory policy. See :ref:`localarraypolicy-label` for more information about such policies.
+
+* ``InitLocalMem< MemPolicy, ParamList<...>, EnclosedStatements >`` allocates memory for a ``RAJA::LocalArray`` object used in kernel. The ``ParamList`` entries indicate which local array objects in a tuple will be initialized. The ``EnclosedStatements`` contain the code in which the local array will be accessed; e.g., initialization operations.
+
+RAJA provides some statement types that apply in specific kernel scenarios.
+
+* ``Reduce< ReducePolicy, Operator, ParamId, EnclosedStatements >`` reduces a value across threads in a multi-threaded code region to a single thread. The ``ReducePolicy`` is similar to what it represents for RAJA reduction types. ``ParamId`` specifies the position of the reduction value in the parameter tuple passed to the ``RAJA::kernel_param`` method. ``Operator`` is the binary operator used in the reduction; typically, this will be one of the operators that can be used with RAJA scans (see :ref:`scanops-label`). After the reduction is complete, the ``EnclosedStatements`` execute on the thread that received the final reduced value.
+
+* ``If< Conditional >`` chooses which portions of a policy to run based on run-time evaluation of conditional statement; e.g., true or false, equal to some value, etc.
+
+* ``Hyperplane< ArgId, HpExecPolicy, ArgList<...>, ExecPolicy, EnclosedStatements >`` provides a hyperplane (or wavefront) iteration pattern over multiple indices. A hyperplane is a set of multi-dimensional index values: i0, i1, ... such that h = i0 + i1 + ... for a given h. Here, ``ArgId`` is the position of the loop argument we will iterate on (defines the order of hyperplanes), ``HpExecPolicy`` is the execution policy used to iterate over the iteration space specified by ArgId (often sequential), ``ArgList`` is a list of other indices that along with ArgId define a hyperplane, and ``ExecPolicy`` is the execution policy that applies to the loops in ``ArgList``. Then, for each iteration, everything in the ``EnclosedStatements`` is executed.
+
+
+.. _auxilliarypolicy_label:
+
+Auxilliary Types
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following list summarizes auxillary types used in the above statments. These
 types live in the ``RAJA`` namespace.
 
-  * ``tile_fixed<TileSize>`` tile policy argument to a ``Tile`` or ``TileTCount`` statement; partitions loop iterations into tiles of a fixed size specified by 'TileSize'. This statement type can be used as the 'TilePolicy' template paramter in the ``Tile`` statements above.
+  * ``tile_fixed<TileSize>`` tile policy argument to a ``Tile`` or ``TileTCount`` statement; partitions loop iterations into tiles of a fixed size specified by ``TileSize``. This statement type can be used as the ``TilePolicy`` template paramter in the ``Tile`` statements above.
  
-  * ``tile_dynamic<ParamIdx>`` TilePolicy argument to a Tile or TileTCount statement; partitions loop iterations into tiles of a size specified by a ``TileSize{}`` positional parameter argument. This statement type can be used as the 'TilePolicy' template paramter in the ``Tile`` statements above.
+  * ``tile_dynamic<ParamIdx>`` TilePolicy argument to a Tile or TileTCount statement; partitions loop iterations into tiles of a size specified by a ``TileSize{}`` positional parameter argument. This statement type can be used as the ``TilePolicy`` template paramter in the ``Tile`` statements above.
 
   * ``Segs<...>`` argument to a Lambda statement; used to specify which segments in a tuple will be used as lambda arguments.
 

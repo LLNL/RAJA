@@ -1,6 +1,6 @@
 
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2016-21, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2016-22, Lawrence Livermore National Security, LLC)
 [comment]: # (and RAJA project contributors. See the RAJA/LICENSE file)
 [comment]: # (for details.)
 [comment]: # 
@@ -9,9 +9,10 @@
 
 # <img src="/share/raja/logo/RAJA_LOGO_Color.png?raw=true" width="128" valign="middle" alt="RAJA"/>
 
-[![Build Status](https://travis-ci.org/LLNL/RAJA.svg?branch=develop)](https://travis-ci.org/LLNL/RAJA)
-[![Join the chat at https://gitter.im/llnl/raja](https://badges.gitter.im/llnl/raja.svg)](https://gitter.im/llnl/raja?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Azure Piepline Build Status](https://dev.azure.com/LLNL-RAJA/RAJA/_apis/build/status/LLNL.RAJA?branchName=develop)](https://dev.azure.com/LLNL-RAJA/RAJA/_build/latest?definitionId=1&branchName=develop)
+[![Documentation Status](https://readthedocs.org/projects/raja/badge/?version=develop)](https://raja.readthedocs.io/en/develop/?badge=develop)
 [![Coverage](https://img.shields.io/codecov/c/github/LLNL/RAJA/develop.svg)](https://codecov.io/gh/LLNL/RAJA)
+[![Join the chat at https://gitter.im/llnl/raja](https://badges.gitter.im/llnl/raja.svg)](https://gitter.im/llnl/raja?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 RAJA is a library of C++ software abstractions, primarily developed at
 Lawrence Livermore National Laboratory (LLNL), that enables architecture
@@ -24,7 +25,7 @@ and programming model portability for HPC applications. RAJA has two main goals:
 
 RAJA offers portable, parallel loop execution by providing building blocks 
 that extend the generally-accepted parallel for idiom. RAJA relies on standard 
-C++11 features, such as lambda expressions.
+C++14 features.
 
 RAJA's design is rooted in decades of experience working on 
 production mesh-based multiphysics applications. Based on the diversity of
@@ -55,7 +56,7 @@ To clone the repo, use the command:
     git clone --recursive https://github.com/llnl/raja.git
 
 Then, you can build RAJA like any other CMake project, provided you have a C++
-compiler that supports the C++11 standard. The simplest way to build the code,
+compiler that supports the C++14 standard. The simplest way to build the code,
 using your system default compiler, is to run the following sequence of 
 commands in the top-level RAJA directory (in-source builds are not allowed!):
 
