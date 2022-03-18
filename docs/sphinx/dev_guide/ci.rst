@@ -37,7 +37,7 @@ Gitlab CI
 
 Gitlab CI testing is still being developed to expand compiler and version 
 coverage, as well as cross-project testing, such as building and running the
-`RAJA Performance Suite <https://github.com/LLNL/RAJAPerf>_` when changes 
+`RAJA Performance Suite <https://github.com/LLNL/RAJAPerf>`_ when changes 
 are pushed to the RAJA develop branch. 
 
 Constraints
@@ -67,9 +67,7 @@ repo that support Gitlab CI testing in the LC CZ. The file
 
 The following figure illustrates the Gitlab CI testing workflow.
 
-.. figure ./figures/RAJA-Gitlab-Workflow.png
-
-   This figure
+.. figure:: ./figures/RAJA-Gitlab-Workflow.png
 
 .. _vettedspecs-label:
 
