@@ -12,49 +12,64 @@
 Continuous Integration (CI) Testing
 ************************************
 
-The RAJA project employs multiple tools to run its tests for each GitHub
-*pull request*, all of which must pass before the pull request can be merged.
+The RAJA project employs multiple tools to run tests for each GitHub
+*pull request*, all of which must pass before the pull request will be merged.
 These tools include:
 
   * **Azure.** This runs builds for Linux, Windows, and MacOS  environments 
     using a variety of compilers. While we do GPU builds for CUDA, HIP, and
     SYCL on Azure, RAJA tests are run for each non-GPU build.
 
-  * **Appveyor.** This runs builds and tests for a Windows environment for two
-    versions of the Visual Studio compiler.
-
   * **Gitlab CI.** This runs builds and tests on platforms in the Livermore
-    Computing *Collaboration Zone*. This is a recent addition for RAJA and
-    is a work-in-progress to get full coverage of compilers and tests we
-    need to exercise.
+    Computing *(Collaboration Zone)* (LC CZ).
 
-These tools integrate seamlessly with GitHub. They will automatically
-(re)run RAJA builds and tests as changes are pushed to each PR branch. Gitlab
-CI execution on Livermore Computing resources has some restrictions which are
-described below.
-
-Gitlab CI support is still being developed to make it more easy to use with 
-GitHub projects. The current state is described below.
+These tools integrate seamlessly with GitHub, for the most part. They 
+automatically (re)run RAJA builds and tests as changes are pushed to each 
+PR branch. Gitlab CI execution on Livermore Computing resources has 
+restrictions that are described below.
 
 .. note:: The status of checks (pass/fail, running status) for each of these 
-          tools can be viewed by clicking the appropriate link in the check
+          tools can be viewed by clicking the appropriate link in the **checks**
           section of a pull request.
 
 Gitlab CI
 =========
 
-If all memmbers of a GitHub project are members of the LLNL GitHub organization 
-and have two-factor authentication enabled on their GitHub accounts, 
-auto-mirroring on the Livermore Computing Collaboration Zone Gitlab server is
-enabled. Thus, Gitlab CI will run automatically for those projects on pull 
-requests that are made by project members. Otherwise, due to Livermore 
-Computing security policies, Gitlab CI must be launched manually by a *blessed* 
-GitHub user satisfying the constraints described above. To manually initiate
-Gitlab CI on a pull request, add a comment with 'LGTM' in it.
+Gitlab CI testing is still being developed to expand compiler and version 
+coverage, as well as cross-project testing, such as building and running the
+`RAJA Performance Suite <https://github.com/LLNL/RAJAPerf>_` when changes 
+are pushed to the RAJA develop branch. 
 
-It is important to note that RAJA shares its Gitlab CI workflow with 
-other projects. See `Shared Gitlab CI Workflow <https://radiuss-ci.readthedocs.io/en/latest/uberenv.html#ci>`_ for more information.
+Constraints
+-----------
 
+Running the RAJA Gitlab CI on Livermore Computing (LC) resources is 
+constrained by LC security policies. Auto-mirroring of a GitHub project repo
+on LC Gitlab requires that all memmbers of the GitHub project are members of 
+the LLNL GitHub organization and have two-factor authentication enabled on 
+their GitHub accounts. Gitlab CI will run automatically for such projects on 
+pull requests that are made by project members. Otherwise, Gitlab CI must be 
+run manually by a *blessed* GitHub user satisfying the constraints described 
+above.
+
+The folowing sections describe contents of the RAJA repository that support
+Gitlab CI testing in the LC CZ, how they fit together to define our
+Gitlab testing workflow, and how to perform basic maintenance and development
+tasks.
+
+Gitlab CI (LC CZ) Testing and Workflow
+--------------------------------------
+
+The following figure illustrates the directories and files in the RAJA 
+repo that support Gitlab CI testing in the LC CZ. The file
+
+.. figure:: ./figures/RAJA-Gitlab-Files.png
+
+The following figure illustrates the Gitlab CI testing workflow.
+
+.. figure ./figures/RAJA-Gitlab-Workflow.png
+
+   This figure
 
 .. _vettedspecs-label:
 

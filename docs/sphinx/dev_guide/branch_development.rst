@@ -95,7 +95,7 @@ Gitflow Illustrated
 
 The figure below shows the basics of how branches interact in Gitflow.
 
-.. figure:: git-workflow-gitflow2.png
+.. figure:: ./figures/git-workflow-gitflow2.png
 
    This figure shows typical interactions between key branches in the Gitflow
    workflow. Here, development is shown following the v0.1.0 release. While
