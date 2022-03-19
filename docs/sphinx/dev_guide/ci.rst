@@ -16,17 +16,24 @@ The RAJA project employs multiple tools to run tests for each GitHub
 *pull request*, all of which must pass before the pull request will be merged.
 These tools include:
 
-  * **Azure.** This runs builds for Linux, Windows, and MacOS  environments 
-    using a variety of compilers. While we do GPU builds for CUDA, HIP, and
-    SYCL on Azure, RAJA tests are run for each non-GPU build.
+  * **Azure Pipelines.** This runs builds for Linux, Windows, and MacOS 
+    environments using a variety of compilers. While we do GPU builds for 
+    CUDA, HIP, and SYCL on Azure, RAJA tests are only run each CPU-only 
+    pipeline.
 
-  * **Gitlab CI.** This runs builds and tests on platforms in the Livermore
-    Computing *(Collaboration Zone)* (LC CZ).
+  * **Gitlab.** We use the Livermore Computing (LC) Collaboration Zone (CZ)
+    Gitlab instance to run builds and tests on LC platforms. Execution of
+    RAJA CI pipelines on the LC Gitlab instance has restrictions that are
+    described bwlow.
 
-These tools integrate seamlessly with GitHub, for the most part. They 
+For the most part, these tools integrate seamlessly with GitHub. They 
 automatically (re)run RAJA builds and tests as changes are pushed to each 
-PR branch. Gitlab CI execution on Livermore Computing resources has 
-restrictions that are described below.
+PR branch.
+
+The following figure illustrates the how CI testing fits into the RAJA 
+development workflow.
+
+.. figure:: ./figures/PR-Workflow.png
 
 .. note:: The status of checks (pass/fail, running status) for each of these 
           tools can be viewed by clicking the appropriate link in the **checks**
@@ -48,9 +55,9 @@ constrained by LC security policies. Auto-mirroring of a GitHub project repo
 on LC Gitlab requires that all memmbers of the GitHub project are members of 
 the LLNL GitHub organization and have two-factor authentication enabled on 
 their GitHub accounts. Gitlab CI will run automatically for such projects on 
-pull requests that are made by project members. Otherwise, Gitlab CI must be 
-run manually by a *blessed* GitHub user satisfying the constraints described 
-above.
+pull requests that are made by vetted project members. Otherwise, Gitlab CI 
+must be run manually by a vetted GitHub user satisfying the constraints just
+described.
 
 The folowing sections describe contents of the RAJA repository that support
 Gitlab CI testing in the LC CZ, how they fit together to define our
@@ -67,7 +74,7 @@ repo that support Gitlab CI testing in the LC CZ. The file
 
 The following figure illustrates the Gitlab CI testing workflow.
 
-.. figure:: ./figures/RAJA-Gitlab-Workflow.png
+.. figure:: ./figures/RAJA-Gitlab-Workflow2.png
 
 .. _vettedspecs-label:
 
