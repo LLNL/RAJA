@@ -3,6 +3,8 @@
 
 //#include "../util/policy.hpp"
 
+#if defined(RAJA_ENABLE_CUDA)
+
 #include <cuda.h>
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #include "RAJA/policy/cuda/reduce.hpp"
@@ -11,8 +13,6 @@
 namespace RAJA {
 namespace expt {
 namespace detail {
-
-#if defined(RAJA_ENABLE_CUDA)
 
   // Init
   template<typename EXEC_POL, typename OP, typename T>
@@ -41,10 +41,10 @@ namespace detail {
     *red.target = OP{}(red.val, *red.target);
   }
 
-#endif
-
 } //  namespace detail
 } //  namespace expt
 } //  namespace RAJA
+
+#endif
 
 #endif //  NEW_REDUCE_CUDA_REDUCE_HPP
