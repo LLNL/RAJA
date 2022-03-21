@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
-#if 0
+#if 1
 #if defined(RAJA_ENABLE_OPENMP)
   {
     std::cout << "OMP ARRAY Reduction NEW\n";
