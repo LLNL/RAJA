@@ -123,7 +123,7 @@ steps in the RAJA Gitlab CI testing process described earlier.
 Launching CI pipelines (step 2) 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In step 2 of the diagram above, Gitlab launches RAJA test pipelines.
+In **step 2** of the diagram above, Gitlab launches RAJA test pipelines.
 The file ``RAJA/.gitlab-ci.yml`` defines high-level testing stages
 (resource allocation, build-and-test, and resource deallocation), names of 
 scripts that will run, and locations of files that define which jobs will run
@@ -146,7 +146,7 @@ information in the script appropriately for each system. First, the script
 runs the ``RAJA/scripts/uberenv/uberenv.py`` script (located in the 
 `uberenv <https://github.com/LLNL/uberenv>`_ submodule), which invokes Spack 
 to generate a CMake *host-config* file that contains a RAJA configuration 
-specification (step 3). 
+specification **(step 3)**. 
 
 To generate a *host-config* file, Spack uses information in the RAJA Spack
 package file ``RAJA/scripts/spack_packages/raja/package.py`` and items
@@ -161,9 +161,9 @@ For each supported system/OS type, you will see files labeled as:
 After the host-config file is generated, the 
 ``scripts/gitlab/build_and_test.sh`` script creates a build space directory 
 and runs CMake in it, passing the host-config (cache) file. Next, it builds 
-the RAJA tests (step 4) and runs the tests (step 5). 
+the RAJA tests **(step 4)** and runs the tests **(step 5)**. 
 
-Lastly, the script packages the test results in a JUnit XML file, which Gitlab uses for reporting the results in its GUI.
+Lastly, the script packages the test results in a JUnit XML file, which Gitlab uses for reporting the results in its GUI **(step 6))**.
 
 .. _vettedspecs-label:
 
