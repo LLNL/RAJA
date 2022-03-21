@@ -17,7 +17,7 @@
  *  Vector Addition Example
  *
  *  Computes c = a + b, where a, b, c are vectors of ints.
- *  It illustrates similarities between a  C-style for-loop and a RAJA 
+ *  It illustrates similarities between a  C-style for-loop and a RAJA
  *  forall loop.
  *
  *  RAJA features shown:
@@ -25,7 +25,7 @@
  *    -  Index range segment
  *    -  Execution policies
  *
- * If CUDA is enabled, CUDA unified memory is used. 
+ * If CUDA is enabled, CUDA unified memory is used.
  */
 
 /*
@@ -46,7 +46,7 @@ const int SYCL_BLOCK_SIZE = 256;
 //
 // Functions for checking and printing results
 //
-void checkResult(int* res, int len); 
+void checkResult(int* res, int len);
 void printResult(int* res, int len);
 
 
@@ -93,14 +93,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 //----------------------------------------------------------------------------//
-// RAJA::seq_exec policy enforces strictly sequential execution.... 
+// RAJA::seq_exec policy enforces strictly sequential execution....
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA sequential vector addition...\n";
 
   // _rajaseq_vector_add_start
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
-    c[i] = a[i] + b[i]; 
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
+    c[i] = a[i] + b[i];
   });
   // _rajaseq_vector_add_end
 
@@ -110,21 +110,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 // RAJA::simd_exec policy should force the compiler to generate SIMD
-// vectorization optimizations.... 
+// vectorization optimizations....
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA SIMD vector addition...\n";
 
-  RAJA::forall<RAJA::simd_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
-    c[i] = a[i] + b[i]; 
-  });    
+  RAJA::forall<RAJA::simd_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
+    c[i] = a[i] + b[i];
+  });
 
   checkResult(c, N);
 //printResult(c, N);
 
 
 //----------------------------------------------------------------------------//
-// RAJA::loop_exec policy means that the compiler is allowed to generate 
+// RAJA::loop_exec policy means that the compiler is allowed to generate
 // optimizations (e.g., SIMD) if it thinks it is safe to do so...
 //----------------------------------------------------------------------------//
 
@@ -144,8 +144,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA OpenMP vector addition...\n";
 
   // _rajaomp_vector_add_start
-  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
-    c[i] = a[i] + b[i]; 
+  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
+    c[i] = a[i] + b[i];
   });
   // _rajaomp_vector_add_end
 
@@ -160,10 +160,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA CUDA vector addition...\n";
 
   // _rajacuda_vector_add_start
-  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N), 
-    [=] RAJA_DEVICE (int i) { 
-    c[i] = a[i] + b[i]; 
-  });    
+  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
+    [=] RAJA_DEVICE (int i) {
+    c[i] = a[i] + b[i];
+  });
   // _rajacuda_vector_add_end
 
   checkResult(c, N);
@@ -173,10 +173,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA CUDA explicit (2 blocks per SM) vector addition...\n";
 
   // _rajacuda_explicit_vector_add_start
-  RAJA::forall<RAJA::cuda_exec_explicit<CUDA_BLOCK_SIZE, 2, Asynchronous>>(RAJA::RangeSegment(0, N), 
-    [=] RAJA_DEVICE (int i) { 
-    c[i] = a[i] + b[i]; 
-  });    
+  RAJA::forall<RAJA::cuda_exec_explicit<CUDA_BLOCK_SIZE, 2, Asynchronous>>(RAJA::RangeSegment(0, N),
+    [=] RAJA_DEVICE (int i) {
+    c[i] = a[i] + b[i];
+  });
   // _rajacuda_explicit_vector_add_end
 
   checkResult(c, N);
@@ -225,10 +225,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   memoryManager::sycl_res->memcpy(d_b, b, N * sizeof(int));
 
   // _rajasycl_vector_add_start
-  RAJA::forall<RAJA::sycl_exec<SYCL_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
-    [=] RAJA_DEVICE (int i) {
-    d_c[i] = d_a[i] + d_b[i];
-  });
+  //RAJA::forall<RAJA::sycl_exec<SYCL_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
+  //[=] RAJA_DEVICE (int i) {
+  //d_c[i] = d_a[i] + d_b[i];
+  //});
+
+  using launch_policy =
+    RAJA::expt::LaunchPolicy<RAJA::expt::sycl_launch_t<false>>;
+
+  const int BLKS = RAJA_DIVIDE_CEILING_INT(N,SYCL_BLOCK_SIZE);
+
+  RAJA::expt::launch<launch_policy>
+    (RAJA::expt::Grid(RAJA::expt::Teams(BLKS),
+		      RAJA::expt::Threads(SYCL_BLOCK_SIZE)),
+     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+
+
+    });
+
   // _rajasycl_vector_add_end
 
   memoryManager::sycl_res->memcpy(c, d_c, N * sizeof(int));
@@ -257,7 +271,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Function to check result and report P/F.
 //
-void checkResult(int* res, int len) 
+void checkResult(int* res, int len)
 {
   bool correct = true;
   for (int i = 0; i < len; i++) {
@@ -281,4 +295,3 @@ void printResult(int* res, int len)
   }
   std::cout << std::endl;
 }
-
