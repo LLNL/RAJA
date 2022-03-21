@@ -72,6 +72,14 @@ struct sycl_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::sycl> {
 };
 
+template <bool Async, int num_threads = 0>
+struct sycl_launch_t : public RAJA::make_policy_pattern_launch_platform_t<
+                       RAJA::Policy::sycl,
+                       RAJA::Pattern::region,
+                       detail::get_launch<Async>::value,
+                       RAJA::Platform::sycl> {
+};
+
 struct sycl_reduce
     : make_policy_pattern_t<RAJA::Policy::sycl, RAJA::Pattern::reduce> {
 };
@@ -82,10 +90,15 @@ struct sycl_reduce
 using policy::sycl::sycl_exec;
 using policy::sycl::sycl_reduce;
 
+namespace expt
+{
+  using policy::sycl::sycl_launch_t;
+}
+
 /*!
  * Maps indices to SYCL global id
- * Optional WORK_GROUP_SIZE to 
- */ 
+ * Optional WORK_GROUP_SIZE to
+ */
 template<int dim, int WORK_GROUP_SIZE = 1>
 struct sycl_global_012{};
 
