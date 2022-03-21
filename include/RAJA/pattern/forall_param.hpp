@@ -3,6 +3,7 @@
 
 #include "RAJA/policy/sequential/new_reduce.hpp"
 #include "RAJA/policy/openmp/new_reduce.hpp"
+#include "RAJA/policy/cuda/new_reduce.hpp"
 
 #if defined(RAJA_EXPT_FORALL)
 #define RAJA_EXPT_FORALL_WARN(Msg)
