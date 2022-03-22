@@ -21,9 +21,9 @@ that they are consistently applied.
    :maxdepth: 1
 
    contributing
-   ci
-   build_configurations
    branch_development
+   build_configurations
+   ci
    tests
    release_process 
    semantic_versioning 
