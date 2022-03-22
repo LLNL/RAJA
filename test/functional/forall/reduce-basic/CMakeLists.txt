@@ -22,7 +22,6 @@ if(RAJA_ENABLE_TARGET_OPENMP)
   endif()
 endif()
 
-list(REMOVE_ITEM FORALL_BACKENDS Hip)
 
 #
 # Generate core reduction tests for each enabled RAJA back-end
