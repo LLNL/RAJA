@@ -13,8 +13,15 @@ Continuous Integration (CI) Testing
 ************************************
 
 The RAJA project employs multiple tools to run CI tests for each GitHub
-*Pull Request (PR)*. All test checks must pass before the pull request can 
-be merged. These tools include:
+*Pull Request (PR)*. 
+
+.. important:: * All CI test checks must pass before a pull request can be
+                 merged.
+               * The status (pass/fail and run) for all checks can be viewed by
+                 clicking the appropriate link in the **checks** section of a
+                 GitHub pull request.
+
+The CI tools used by the RAJA project are:
 
   * **Azure Pipelines** is used to run builds and tests for Linux, Windows, 
     and MacOS environments using very recent versions of various compilers. 
@@ -26,56 +33,53 @@ be merged. These tools include:
     most important to many RAJA user applications. Execution of RAJA CI 
     pipelines on the LC Gitlab instance has restrictions described below.
 
-For the most part, these tools integrate seamlessly with GitHub. They 
-automatically (re)run RAJA builds and tests as changes are pushed to each 
-PR branch.
+These tools integrate fairly seamlessly with GitHub. They automatically 
+(re)run RAJA builds and tests as changes are pushed to each PR branch and
+report status to th GitHub PR.
 
-.. important:: * All test checks must pass before the pull request can be 
-                 merged.
-               * The status (pass/fail and run) for all checks can be viewed by 
-                 clicking the appropriate link in the **checks** section of a 
-                 GitHub pull request.
+The following sections describe basic elements of the operation of the CI tools.
 
 Gitlab CI
 =========
 
-Gitlab CI testing is under development to expand compiler and version 
-coverage, as well as cross-project testing, such as building and running the
-`RAJA Performance Suite <https://github.com/LLNL/RAJAPerf>`_ when changes 
-are pushed to the RAJA develop branch. 
+Gitlab CI testing is under continual development to expand compiler and 
+version coverage, as add cross-project testing, such as building and 
+running the `RAJA Performance Suite <https://github.com/LLNL/RAJAPerf>`_ 
+and gathering performance data when changes are pushed to the RAJA develop 
+branch. 
 
 Constraints
 -----------
 
-Running the RAJA Gitlab CI on Livermore Computing (LC) resources is 
-constrained by LC security policies. Auto-mirroring of a GitHub project repo
-on LC Gitlab requires that all members of the GitHub project are members of 
-the LLNL GitHub organization and have two-factor authentication enabled on 
-their GitHub accounts. Gitlab CI will run automatically for such projects on 
-pull requests that are made by vetted project members. Otherwise, Gitlab CI 
-must be run manually by a vetted GitHub user satisfying the constraints just
-described.
+Running RAJA Gitlab CI on Livermore Computing (LC) resources is 
+constrained by LC security policies. The policies require that all members of 
+a GitHub project be members of the LLNL GitHub organization and have 
+two-factor authentication enabled on their GitHub accounts to automatically
+trigger Gitlab CI functionality from GitHub. Thus, auto-mirroring of a GitHub 
+repo on LC Gitlab is only done when changes are pushed to PRs for branches
+in the RAJA repo, not for PRs for a branch on a fork of the repo. Alternatives
+we use to account for this are described in :ref:`contributing-label`.
 
 Gitlab CI (LC CZ) Testing Workflow
 --------------------------------------
 
 The next figure provides a high-level overview of the main steps in the 
-RAJA Gitlab CI testing workflow. We will describe the individual steps in
-more detail later. The main steps are:   
+RAJA Gitlab CI testing workflow. The main steps, which we will discuss in more
+detail later, are:
 
   #. The process starts with the RAJA GitHub repo being *mirrored* to the 
      RAJA project in the LC CZ Gitlab instance. When a PR is made on the RAJA 
      GitHub project or whenever changes are pushed to the source branch of a 
-     PR, the mirroring occurs.
+     PR, the mirroring is triggered.
   #. Gitlab CI test pipelines are launched. Execution and pass/fail status
      may be viewed and monitored in the Gitlab CI GUI.
   #. For each platform and compiler combination, the 
      `Spack <https://github.com/spack/spack>`_ tool generates a build 
      configuration in the form of a CMake cache or *host-config* file.
-  #. Based on the information in each host-config file, the RAJA code and tests
-     are built.
+  #. A host-config file is passes to CMake, which configures the RAJA build.
+     Then, RAJA and its tests are compiled.
   #. Next, the RAJA tests are run.
-  #. When a test pipeline completes, results are reported to Gitlab.
+  #. When a test pipeline completes, final results are reported to Gitlab.
 
 In the next section, we will describe the roles that specific files in the 
 RAJA repo play in defining these steps.
@@ -90,9 +94,9 @@ Gitlab CI (LC CZ) Testing Files
 --------------------------------------
 
 The following figure shows directories and files in the RAJA repo that 
-support LC CZ Gitlab CI testing. File names in blue denote that they are 
-specific to RAJA and owned by the RAJA team. Red directories and files denote 
-that they are part of Git submodules, shared and maintained with other projects.
+support LC CZ Gitlab CI testing. Files with names in blue are specific to RAJA 
+and owned by the RAJA team. Directories and files with names in red are
+in Git submodules, shared and maintained with other projects.
 In the following sections, we discuss how these files are used to define the 
 steps in the RAJA Gitlab CI testing process described earlier.
 
@@ -107,10 +111,33 @@ Launching CI pipelines (step 2)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In **step 2** of the diagram above, Gitlab launches RAJA test pipelines.
-The file ``RAJA/.gitlab-ci.yml`` defines high-level testing stages
-(resource allocation, build-and-test, and resource deallocation), names of 
-scripts that will run, and locations of files that define which jobs will run
-in each allocation.
+The file ``RAJA/.gitlab-ci.yml`` contains high-level testing informations, 
+such as stages (resource allocation, build-and-test, and resource 
+deallocation) and locations of files that define which jobs will run
+in each allocation. For example, these items appear in the file as::
+
+  stages:
+    - r_allocate_resources
+    - r_build_and_test
+    - r_release_resources
+    - l_build_and_test
+    - c_build_and_test
+    - multi_project
+
+and 
+
+  include:
+    - local: .gitlab/ruby-templates.yml
+    - local: .gitlab/ruby-jobs.yml
+    - local: .gitlab/lassen-templates.yml
+    - local: .gitlab/lassen-jobs.yml
+    - local: .gitlab/corona-templates.yml
+    - local: .gitlab/corona-jobs.yml
+
+In the ``stages`` section above, prefixes like 'r_' and 'l_' refer to resource
+names, the machines 'ruby' and 'lassen' in this case. Which jobs will run
+in the pipeline(s) for each resource are defined in the files listed in the
+``include`` section.
 
 Running a CI build/test pipeline  (steps 3, 4, 5, 6)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
