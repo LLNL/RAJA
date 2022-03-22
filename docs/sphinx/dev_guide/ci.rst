@@ -29,13 +29,13 @@ The CI tools used by the RAJA project are:
     only run for CPU-only pipelines.
 
   * **Gitlab** instance in the Livermore Computing (LC) Collaboration Zone (CZ)
-    is used to run builds and tests with LC platform and compiler environments
+    is used to run builds and tests with LC resource and compiler environments
     most important to many RAJA user applications. Execution of RAJA CI 
     pipelines on the LC Gitlab instance has restrictions described below.
 
 These tools integrate fairly seamlessly with GitHub. They automatically 
 (re)run RAJA builds and tests as changes are pushed to each PR branch and
-report status to th GitHub PR.
+report status to the GitHub PR.
 
 The following sections describe basic elements of the operation of the CI tools.
 
@@ -73,7 +73,7 @@ detail later, are:
      PR, the mirroring is triggered.
   #. Gitlab CI test pipelines are launched. Execution and pass/fail status
      may be viewed and monitored in the Gitlab CI GUI.
-  #. For each platform and compiler combination, the 
+  #. For each resource and compiler combination, the 
      `Spack <https://github.com/spack/spack>`_ tool generates a build 
      configuration in the form of a CMake cache or *host-config* file.
   #. A host-config file is passes to CMake, which configures the RAJA build.
@@ -111,7 +111,7 @@ Launching CI pipelines (step 2)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In **step 2** of the diagram above, Gitlab launches RAJA test pipelines.
-The file ``RAJA/.gitlab-ci.yml`` contains high-level testing informations, 
+The file ``RAJA/.gitlab-ci.yml`` contains high-level testing information, 
 such as stages (resource allocation, build-and-test, and resource 
 deallocation) and locations of files that define which jobs will run
 in each allocation. For example, these items appear in the file as::
@@ -139,34 +139,57 @@ names, the machines 'ruby' and 'lassen' in this case. Which jobs will run
 in the pipeline(s) for each resource are defined in the files listed in the
 ``include`` section.
 
+The ``RAJA/.gitlab`` directory contains a *resource* and *jobs* file for each 
+LC resource which test pipelines will be run. The ``<resource>-templates.yml`` 
+file in that directory contains shared configuration information,
+such as script execution for stages on the resource identified in the 
+``RAJA/.gitlab-ci.yml``, for pipelines that will be run on the resource. For
+example, the ``RAJA/.gitlab/ruby-templates.yml`` file contains the section::
+
+  allocate_resources (on ruby):
+    variables:
+      GIT_STRATEGY: none
+    extends: .on_ruby
+    stage: r_allocate_resources
+    script:
+      - salloc -N 1 -p pdebug -t 45 --no-shell --job-name=${ALLOC_NAME}
+
+which defines the resource allocation stage associated with the 
+``r_allocate_resources`` identifier in the ``RAJA/.gitlab-ci.yml`` file. Other
+stages are defined similarly in all ``RAJA/.gitlab/<resource>-templates.yml``
+files.
+
 Running a CI build/test pipeline  (steps 3, 4, 5, 6)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``RAJA/.gitlab`` directory contains a *platform* and *jobs* file for each 
-LC platform where test pipelines will be run. The ``<platform>-templates.yml`` 
-file contains shared configuration information for pipelines that will be run 
-on the platform. The ``<platform>-jobs.yml`` file defines the build 
-specifications that will be use to generate test executables. Specifically, 
-they identify Spack *specs*.
-
-The ``scripts/gitlab/build_and_test.sh`` file defines the steps executed
+The ``RAJA/scripts/gitlab/build_and_test.sh`` file defines the steps executed
 for each build and test run as well as information that will appear in the 
-log output for each. The process of executing a test pipeline extends the
-information in the script appropriately for each system. First, the script 
-runs the ``RAJA/scripts/uberenv/uberenv.py`` script (located in the 
+log output for each step. First, the script runs the 
+``RAJA/scripts/uberenv/uberenv.py`` script (located in the 
 `uberenv <https://github.com/LLNL/uberenv>`_ submodule), which invokes Spack 
 to generate a CMake *host-config* file that contains a RAJA configuration 
-specification **(step 3)**. 
+specification **(step 3)**. To generate a *host-config* file, Spack uses 
+the RAJA Spack package file ``RAJA/scripts/spack_packages/raja/package.py``,
+plus *Spack spec* information described next.
 
-To generate a *host-config* file, Spack uses information in the RAJA Spack
-package file ``RAJA/scripts/spack_packages/raja/package.py`` and items
-defined in a given Spack configuration (i.e., *Spack spec*). Available Spack 
-configurations are defined in *packages* and *compilers* files in the 
-`radiuss-spack-configs <https://github.com/LLNL/radiuss-spack-configs>`_
-submodule; located in ``RAJA/scripts/radiuss-spack-configs`` directory.
-For each supported system/OS type, you will see files labeled as:
-``radiuss-spack-configs/<os-type>/compilers.yaml`` and 
-``radiuss-spack-configs/<os-type>/packages.yaml``
+The ``RAJA/.gitlab/<resource>-jobs.yml`` file defines the build specifications 
+that will be used for the test jobs on the corresponding resource. For example,
+in the ``lassen-jobs.yml`` file, you will see entries such as::
+
+  gcc_8_3_1_cuda:
+    variables:
+      SPEC: "+cuda %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.168"
+    extends: .build_and_test_on_lassen
+
+This defines the *Spack spec* for the test job in which CUDA device code will 
+be built with the nvcc 10.1.168 compiler and non-device code will be compiled 
+with the GNU 8.3.1 compiler. In the Gitlab CI GUI, this pipeline will be 
+labeled ``gcc_8_3_1_cuda``. Details for compilers, such as file system paths,
+target architecture, etc.  are located in the 
+``RAJA/scripts/radiuss-spack-configs/<sys-type>/compilers.yaml`` file for the 
+system type associated with the resource. Analogous information for packages 
+like CUDA and ROCm (HIP) are located in the corresponding 
+``RAJA/scripts/radiuss-spack-configs/<sys-type>/packages.yaml`` file.
 
 After the host-config file is generated, the 
 ``scripts/gitlab/build_and_test.sh`` script creates a build space directory 
