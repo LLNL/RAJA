@@ -25,7 +25,7 @@ The RAJA release process typically involves the following sequence of steps:
      merge the release candidate branch into the RAJA main branch.
   #. On GitHub, make a new release with a tag for the release. Following our
      convention, the tag label should have the format ``vMM.mm.pp``. See 
-     :ref:`semver-label` for a description of the version numbering scheme we 
+     :ref:`version-label` for a description of the version numbering scheme we 
      use.  In the GitHub release description, please note key features, 
      bugfixes, etc. in the release. These should be a high-level summary of the 
      contents of the ``RELEASE_NOTES.md`` file in the RAJA repo, which may 

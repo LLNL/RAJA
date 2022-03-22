@@ -36,7 +36,7 @@ Gitflow.
 
   * The *main* branch records the release history of the project. Each time 
     the main branch is changed, a new tag for a new code version is made. 
-    See :ref:`semver-label` for a description of the version labeling scheme 
+    See :ref:`version-label` for a description of the version labeling scheme 
     we use.
 
   * The *develop* branch is used to integrate and test new features and most

@@ -26,4 +26,4 @@ that they are consistently applied.
    ci
    tests
    release_process 
-   semantic_versioning 
+   versioning 
