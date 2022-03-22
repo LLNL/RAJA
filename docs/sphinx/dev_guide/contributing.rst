@@ -12,27 +12,55 @@
 Contributing to RAJA
 *********************
 
-Since RAJA is a collaborative open source software project, we encourage 
+RAJA is a collaborative open source software project and we encourage 
 contributions from anyone who wants to add features or improve its
-capabilities. This section describes basic processes to follow
-for individuals outside of the core RAJA team to contribute new features or 
-bugfixes to RAJA. It assumes you are familiar with 
+capabilities. This section describes the following:
+
+  * GitHub project access
+  * How to develop a RAJA *pull request* (PR) contribution.
+  * Requirements that must be met for a PR to be merged.
+
+We assume contributors are familiar with 
 `Git <https://git-scm.com/>`_, which we use for source code version control,
 and `GitHub <https://github.com/>`_, which is where our project is hosted. 
 
-This section describes development processes, such as:
+.. important:: * Before a PR can be merged into RAJA, all test checks must pass 
+                 and the PR must be approved by at least one member of the 
+                 core RAJA team.
+               * Each RAJA contribution (feature, bugfix, etc.) must include 
+                 adequate tests, documentation, and code examples. What is
+                 *adequate* is determined via PR reviews using the professional
+                 judgment of RAJA team members and contributors.
 
-  * Making a fork of the RAJA repository 
-  * Creating a branch for development
-  * Creating a pull request (PR)
+=======================
+GitHub Project Access
+=======================
 
-.. important:: Each RAJA contribution (feature, bugfix, etc.) must include 
-                adequate tests, documentation, and code examples. What is
-                *adequate* is determined via PR reviews using the professional
-                judgement of RAJA team members and contributors.
+RAJA maintains three levels of project access on it GitHub project:
+
+  * **Core team member.** Individuals considered to be on the core RAJA team. 
+    They participate in project meetings, discussions, etc. and are members of 
+    the LLNL GitHub organization and the ``RAJA-core`` GitHub team. They
+    have privileges to create branches, push code changes to the RAJA repo,
+    make PRs and merge them when they are approved and all checks have passed. 
+  * **Regular contributors.** Individuals who are members of the LLNL
+    GitHub organization and are considered sufficiently frequent contributors
+    that they have been given permissions to create branches, push code changes
+    to the RAJA repo, and make PRs. However, and this is mainly due to the 
+    way GitHub structures its project access levels, these individuals cannot
+    merge PRs.
+  * **Everyone else.** Anyone with a GitHub account is welcome to contribute
+    to the RAJA project. Individuals outside of the previous two groups can 
+    make PRs in the RAJA project, but must do so from a branch on a *fork* of 
+    the RAJA repo. This is described below.
+
+=======================
+Pull Request Basics
+=======================
 
 The following figure shows the basic elements of the RAJA PR contribution 
-workflow. The process involves four main steps:
+workflow. Some details vary depending on RAJA GitHub project access level 
+of the contributor. The process involves four main steps:
 
   #. A RAJA contributor makes a PR on the RAJA GitHub project to merge a
      branch on which she has developed a contribution into another RAJA branch.
@@ -47,6 +75,20 @@ workflow. The process involves four main steps:
 
    The four main steps in the RAJA pull request (PR) process, which are
    common practices for many software projects.
+
+If you want more information about the pull request (PR) process, GitHub has 
+a good `PR guide <https://help.github.com/articles/about-pull-requests/>`_ on
+PR basics.
+
+When you create a RAJA PR, you must enter a description of the contents of the 
+PR. The project has a GitHub *PR template* for this purpose for you to fill in.
+Be sure to add a descriptive title explaining the bug you fixed or the feature 
+you have added and any other relevant details that will assist others in 
+reviewing your contribution.
+
+When a PR is created in RAJA, it will be run through our automated testing
+processes and be reviewed by RAJA team members. When the PR passes all 
+tests and it is approved, a member of the RAJA core team will merge it.
 
 ============
 Forking RAJA
@@ -140,37 +182,11 @@ and demonstrates that the issue is resolved. To verify that you have done
 this properly, build the code for your branch and then run ``make test`` to 
 ensure that your new test passes.
 
-When you are ready, create a PR in the RAJA project as described above.
-
------------------------
-Creating a Pull Request
------------------------
-
-We assume all RAJA contributors are familiar with the basic elements of the 
-pull request (PR) process. GitHub has a good 
-`PR guide <https://help.github.com/articles/about-pull-requests/>`_ on
-PR basics if you want more information. 
-
-Ensure that the base for your PR is the current ``develop`` branch of RAJA.  
-When you create a RAJA PR, you must enter a description of the contents of the 
-PR. We have a *PR template* for this purpose for you to fill in. Be sure to add
-a descriptive title explaining the bug you fixed or the feature you have added
-and any other relevant details that will assist others in reviewing your
-contribution.
-
-When a PR is created in RAJA, it will be run through our automated testing
-processes and be reviewed by RAJA team members. When the PR passes all 
-tests and it is approved, a member of the RAJA team will merge it.
-
-.. note:: Before a PR can be merged into RAJA, all CI checks must pass and
-          the PR must be approved by at least one member of the core team. 
-
-
 .. _prfromfork-label:
 
------------------------------------------------------------
+===========================================================
 Testing Pull Requests from Branches in Forked Repositories
------------------------------------------------------------
+===========================================================
 
 Due to LLNL security policies, some RAJA pull requests will not be able to
 be run through all RAJA CI tools. The Livermore Computing (LC) 
@@ -179,7 +195,7 @@ automatically run through its CI test pipelines.
 In particular, a PR made from branch on a forked repository will not trigger 
 Gitlab CI checks. Gitlab CI on internal LLNL platforms will only be run on PRs 
 that are made from branches in the GitHub RAJA repository. 
-See :ref:`ci-label` for more information about RAJA PR testsing.
+See :ref:`ci-label` for more information about RAJA PR testing.
 
 .. note:: **RAJA team process for accepting PR contributions from forked repos:**
 
