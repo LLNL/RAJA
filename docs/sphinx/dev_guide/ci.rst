@@ -30,28 +30,11 @@ For the most part, these tools integrate seamlessly with GitHub. They
 automatically (re)run RAJA builds and tests as changes are pushed to each 
 PR branch.
 
-The following figure illustrates the how CI test checks fit into the RAJA 
-development workflow. The process involves four main steps:
-
-  #. A RAJA contributor makes a PR on the RAJA GitHub project to merge a 
-     branch on which she has developed a contribution into another RAJA branch.
-     Most often, this is the develop branch.
-  #. Then, GitHub triggers Azure and Gitlab CI checks. Running and pass/fail
-     status is reported back to GitHub where it can be viewed and monitored.
-  #. Meanwhile RAJA team members review the PR, suggesting changes and/or 
-     approving when they think it is ready to merge. 
-  #. When all checks pass and the PR is approved by the required minimum 
-     number of reviewers, the PR may be merged.
-
-.. figure:: ./figures/PR-Workflow.png
-
-   The four main steps in the RAJA pull request (PR) process, which are
-   common practices for many software projects.
-
-.. note:: * All test checks must pass before the pull request can be merged.
-          * The status (pass/fail and run) for all checks can be viewed by 
-            clicking the appropriate link in the **checks** section of a 
-            GitHub pull request.
+.. important:: * All test checks must pass before the pull request can be 
+                 merged.
+               * The status (pass/fail and run) for all checks can be viewed by 
+                 clicking the appropriate link in the **checks** section of a 
+                 GitHub pull request.
 
 Gitlab CI
 =========

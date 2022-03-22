@@ -24,5 +24,6 @@ project so that they are understood and uniformly applied by contributors.
    ci
    build_configurations
    branch_development
+   tests
    release_process 
    semantic_versioning 
