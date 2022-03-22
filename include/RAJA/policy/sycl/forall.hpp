@@ -82,12 +82,13 @@ cl::sycl::range<1> getGridDim(size_t len, size_t block_size)
 ////////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async,
+template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async, typename ForallParam,
           typename std::enable_if<std::is_trivially_copyable<LoopBody>{},bool>::type = true>
 RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl &sycl_res,
                                                                 sycl_exec<BlockSize, Async>,
                                                                 Iterable&& iter,
-                                                                LoopBody&& loop_body)
+                                                                LoopBody&& loop_body,
+                                                                ForallParam)
 {
 
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
@@ -138,12 +139,13 @@ RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl 
   return resources::EventProxy<resources::Sycl>(sycl_res);
 }
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async,
+template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async, typename ForallParam,
           typename std::enable_if<!std::is_trivially_copyable<LoopBody>{},bool>::type = true>
 RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &sycl_res,
                                                     sycl_exec<BlockSize, Async>,
                                                     Iterable&& iter,
-                                                    LoopBody&& loop_body)
+                                                    LoopBody&& loop_body,
+                                                    ForallParam)
 {
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
