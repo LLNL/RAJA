@@ -12,9 +12,9 @@
 RAJA Build Configurations
 **************************
 
-RAJA must be built and tested with a wide range of compilers and with 
+RAJA must be built and tested with a wide range of compilers for 
 all of its supported back-ends. The project currently maintains two 
-ways to build and test important configurations in a reproducible manner:
+ways to build and test configurations in a reproducible manner:
 
   * **Build scripts.** The RAJA source repository contains a collection of
     simple build scripts that are used to generate build configurations 
@@ -25,7 +25,7 @@ ways to build and test important configurations in a reproducible manner:
     using `Spack <https://github.com/spack/spack>`_.
 
 Each of these specifies compiler versions and options, a build target 
-(Release, Debug, etc.), RAJA features to enable (OpenMP, CUDA, etc.), 
+(Release, Debug, etc.), RAJA features to enable (OpenMP, CUDA, HIP, etc.), 
 and paths to required tool chains, such as CUDA, ROCm, etc.  
 They are described briefly in the following sections.
 
@@ -38,7 +38,7 @@ The build scripts in the RAJA ``scripts`` directory are used mostly by RAJA
 developers to quickly create a build environment to compile and run tests
 during code development. 
 
-Each script is executed from the top-level RAJA directory. THe scripts for
+Each script is executed from the top-level RAJA directory. The scripts for
 CPU-only platforms require an argument that indicate the compiler version.
 For example,
 
@@ -54,10 +54,10 @@ compiler version. For example,
 
   $ ./scripts/lc-builds/blueos_nvcc_gcc.sh 10.2.89 sm_70 8.3.1
 
-When a script is run, it creates a uniquely-named build directory in the 
-top-level RAJA directory and runs CMake with arguments contained in the script 
-to create a build environment in the new directory. One then goes into that 
-directory and runs make to build RAJA, its tests, example codes, etc.  
+When a script is run, it creates a build directory named for the configuration
+in the top-level RAJA directory and runs CMake with arguments contained in the 
+script to create a build environment in the new directory. One then goes into 
+that directory and runs make to build RAJA, its tests, example codes, etc.  
 For example,
 
 .. code-block:: bash
@@ -67,7 +67,7 @@ For example,
   $ make -j
   $ make test
 
-Eventually, these scripts may go away and be superceded by the Spack-based
+Eventually, these scripts may go away and be superseded by the Spack-based
 host-config file generation process when that achieves the level of
 compiler coverage that the scripts have.
 
@@ -174,8 +174,8 @@ Reproducing Docker Builds
 ============================
 
 RAJA uses docker container images that it shares with other LLNL GitHub projects
-for CI testing on GitHub. Currently, we use Azure for Linux, Windows, and MacOS 
-builds and also have Appveyor builds for Windows.
+for CI testing on GitHub. Currently, we use Azure Pipelines for Linux, Windows,
+and MacOS builds.
 
 You can reproduce these builds locally for testing with the following steps:
 
