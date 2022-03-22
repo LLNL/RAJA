@@ -23,15 +23,6 @@ if(RAJA_ENABLE_TARGET_OPENMP)
 endif()
 
 #
-# While we're adding SYCL tests, enable it for each test set like this.
-#
-# Eventually, remove this and enable in the top-level CMakeLists.txt file.
-#
-if(RAJA_ENABLE_SYCL)
-  list(APPEND FORALL_BACKENDS Sycl)
-endif()
-
-#
 # Generate core reduction tests for each enabled RAJA back-end
 #
 # Note: FORALL_BACKENDS is defined in ../CMakeLists.txt
@@ -57,15 +48,6 @@ unset( REDUCETYPES )
 set(REDUCETYPES ReduceBitAnd ReduceBitOr)
 
 set(DATATYPES BitwiseReductionDataTypeList)
-
-#
-# Remove Sycl back-end from bitwise reduction tests, since those reduction
-# types are not yet(?) supported for Sycl.  
-#
-
-if(RAJA_ENABLE_SYCL)
-  list(REMOVE_ITEM FORALL_BACKENDS Sycl)
-endif()
 
 #
 # Generate bitwise reduction tests for each enabled RAJA back-end

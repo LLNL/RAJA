@@ -20,7 +20,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_SYCL)
+#if defined(RAJA_SYCL_ACTIVE)
 
 #include <CL/sycl.hpp>
 

@@ -259,9 +259,15 @@ namespace RAJA {
 #endif
 #endif // RAJA_ENABLE_HIP && __HIPCC__
 
+#if defined(RAJA_ENABLE_SYCL)
+#if defined(SYCL_LANGUAGE_VERSION)
+#define RAJA_SYCL_ACTIVE
+#endif
+
 #if defined(RAJA_CUDA_ACTIVE) || \
-  defined(RAJA_HIP_ACTIVE)
+  defined(RAJA_HIP_ACTIVE) 
 #define RAJA_DEVICE_ACTIVE
+#endif
 #endif
 
 /*!

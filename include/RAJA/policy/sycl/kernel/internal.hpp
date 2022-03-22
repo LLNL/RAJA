@@ -112,10 +112,32 @@ struct LaunchDims {
       launch_global.z = launch_local.z * ((global.z + (launch_local.z - 1)) / launch_local.z);
     }
 
+    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+    // Global resource was not set, use the resource that was passed to forall
+    // Determine if the default SYCL res is being used
+    if (!q) {
+      camp::resources::Resource sycl_res = camp::resources::Sycl();
+      q = sycl_res.get<camp::resources::Sycl>().get_queue();
+    }
 
-    // Note: Work group allowable sizes depend on the device
-    //       Could query the device to set them
-    //       For now, error on bad work group size
+    cl::sycl::device dev = q->get_device();
+    auto max_work_group_size = dev.get_info< ::cl::sycl::info::device::max_work_group_size>();
+
+    if(launch_local.x > max_work_group_size) {
+      launch_local.x = max_work_group_size;
+    }
+
+    if(launch_local.y > max_work_group_size) {
+      launch_local.y = max_work_group_size;
+    }
+
+    if(launch_local.z > max_work_group_size) {
+      launch_local.z = max_work_group_size;
+    }
+
+    launch_global.x = ((launch_global.x / launch_local.x) + 1) * launch_local.x; 
+    launch_global.y = ((launch_global.y / launch_local.y) + 1) * launch_local.y; 
+    launch_global.z = ((launch_global.z / launch_local.z) + 1) * launch_local.z; 
 
     cl::sycl::range<3> ret_th = {launch_local.x, launch_local.y, launch_local.z};
     cl::sycl::range<3> ret_gl = {launch_global.x, launch_global.y, launch_global.z};
