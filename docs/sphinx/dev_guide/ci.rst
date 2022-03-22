@@ -124,7 +124,7 @@ in each allocation. For example, these items appear in the file as::
     - c_build_and_test
     - multi_project
 
-and 
+and:: 
 
   include:
     - local: .gitlab/ruby-templates.yml
