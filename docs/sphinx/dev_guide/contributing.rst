@@ -44,11 +44,11 @@ RAJA maintains three levels of project access on it GitHub project:
     have privileges to create branches, push code changes to the RAJA repo,
     make PRs and merge them when they are approved and all checks have passed. 
   * **Regular contributors.** Individuals who are members of the LLNL
-    GitHub organization and are considered sufficiently frequent contributors
-    that they have been given permissions to create branches, push code changes
-    to the RAJA repo, and make PRs. However, and this is mainly due to the 
-    way GitHub structures its project access levels, these individuals cannot
-    merge PRs.
+    GitHub organization and the ``RAJA-contrib`` GitHub team are considered 
+    sufficiently frequent contributors that they have been given permissions 
+    to create branches, push code changes to the RAJA repo, and make PRs. 
+    However, and this is mainly due to the way GitHub structures its project 
+    access levels, these individuals cannot merge PRs.
   * **Everyone else.** Anyone with a GitHub account is welcome to contribute
     to the RAJA project. Individuals outside of the previous two groups can 
     make PRs in the RAJA project, but must do so from a branch on a *fork* of 
