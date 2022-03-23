@@ -100,6 +100,12 @@ static_assert(RAJA_HAS_SOME_CXX14,
               "compiler and/or standard library does not claim support for "
               "C++14 features we need");
 
+#if defined(__cpp_lib_is_invocable) && (__cpp_lib_is_invocable >= 201703L)
+#define RAJA_HAS_CXX17_IS_INVOCABLE 1
+#else
+#define RAJA_HAS_CXX17_IS_INVOCABLE 0
+#endif
+
 /*!
  ******************************************************************************
  *
