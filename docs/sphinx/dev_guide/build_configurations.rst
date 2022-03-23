@@ -136,8 +136,7 @@ the compiler and version. For example,
   hc-quartz-toss_3_x86_64_ib-gcc@8.1.0-fjcjwd6ec3uen5rh6msdqujydsj74ubf.cmake
 
 Specs that are exercised during the Gitlab CI process are found YAML files in 
-the ``RAJA/.gitlab`` directory. See :ref:`ci-label` for more 
-information.
+the ``RAJA/.gitlab`` directory. See :ref:`ci-label` for more information.
 
 Building RAJA with a generated host-config file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -165,8 +164,10 @@ MacOS
 ^^^^^
 
 In RAJA, the Spack configuration for MacOS contains the default compiler
-corresponding to the OS version (``compilers.yaml``), and a commented section 
-to illustrate how to add `CMake` as an external package. You may install CMake 
+corresponding to the OS version in the ``compilers.yaml`` file in the 
+``RAJA/scripts/radiuss-spack-configs/darwin/`` directory, and a commented 
+section to illustrate how to add `CMake` as an external package in the
+``packages.taml`` in the same directory. You may also install CMake 
 with `Homebrew <https://brew.sh>`_, for example, and follow the process 
 outlined above after it is installed.
 
