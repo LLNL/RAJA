@@ -97,11 +97,12 @@ Generating a RAJA host-config file
 
 This section describes the host-config file generation process for RAJA.
 
-Machine specific configurations
+Platform configurations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Compiler configurations for Livermore computer platforms are contained in 
-in sub-directories in the RAJA ``scripts/uberenv/spack_configs`` directory:
+in sub-directories in the ``RAJA/scripts/uberenv/spack_configs`` directory.
+For example,
 
 .. code-block:: bash
 
@@ -113,12 +114,12 @@ in sub-directories in the RAJA ``scripts/uberenv/spack_configs`` directory:
   config.yaml
 
 To see currently supported configurations, please see the contents of the 
-``compilers.yaml`` file in each of these sub-directories.
+``compilers.yaml`` and ``packages.yaml`` files in each of these sub-directories.
 
 Generating a host-config file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The main uberenv python script can be invoked from the top-level RAJA directory
+The main uberenv python script can be run from the top-level RAJA directory
 to generate a host-config file for a desired configuration. For example,
 
 .. code-block:: bash
@@ -135,7 +136,7 @@ the compiler and version. For example,
   hc-quartz-toss_3_x86_64_ib-gcc@8.1.0-fjcjwd6ec3uen5rh6msdqujydsj74ubf.cmake
 
 Specs that are exercised during the Gitlab CI process are found YAML files in 
-the ``RAJA/.gitlab`` directory. See :ref:`vettedspecs-label` for more 
+the ``RAJA/.gitlab`` directory. See :ref:`ci-label` for more 
 information.
 
 Building RAJA with a generated host-config file
@@ -164,8 +165,8 @@ MacOS
 ^^^^^
 
 In RAJA, the Spack configuration for MacOS contains the default compiler
-corresponding to the OS version (`compilers.yaml`), and a commented section to 
-illustrate how to add `CMake` as an external package. You may install CMake 
+corresponding to the OS version (``compilers.yaml``), and a commented section 
+to illustrate how to add `CMake` as an external package. You may install CMake 
 with `Homebrew <https://brew.sh>`_, for example, and follow the process 
 outlined above after it is installed.
 
@@ -177,7 +178,8 @@ RAJA uses docker container images that it shares with other LLNL GitHub projects
 for CI testing on GitHub. Currently, we use Azure Pipelines for Linux, Windows,
 and MacOS builds.
 
-You can reproduce these builds locally for testing with the following steps:
+You can reproduce these builds locally for testing with the following steps if
+you have Docker installed.
 
   #. Run the command to build a local Docker image:
 
@@ -185,8 +187,8 @@ You can reproduce these builds locally for testing with the following steps:
 
        $ DOCKER_BUILDKIT=1 docker build --target ${TARGET} --no-cache
 
-     Here, ${TARGET} is replaced with one of the names following "AS" in the
-     `RAJA Dockerfile <https://github.com/LLNL/RAJA/blob/develop/Dockerfile>`_ 
+     Here, ``${TARGET}`` is replaced with one of the names following ``AS`` in 
+     the `RAJA Dockerfile <https://github.com/LLNL/RAJA/blob/develop/Dockerfile>`_. 
 
 
   #. To get dropped into a terminal in the Docker image, run the following:
@@ -195,10 +197,10 @@ You can reproduce these builds locally for testing with the following steps:
      
        $ docker run -it axom/compilers:${COMPILER} /bin/bash
 
-     Here, ${COMPILER} is replaced with the compiler you want (see the 
+     Here, ``${COMPILER}`` is replaced with the compiler you want (see the 
      aforementioned Dockerfile).
  
 Then, you can build, run tests, edit files, etc. in the Docker image. Note that
-the docker command has a '-v' argument that you can use to mount your local 
-directory in the image; e.g., -v `pwd`:/opt/RAJA would mount the pwd as 
-/opt/RAJA in the image.
+the docker command has a ``-v`` argument that you can use to mount your local 
+directory in the image; e.g.,``docker -v pwd:/opt/RAJA`` would mount the pwd as 
+``/opt/RAJA`` in the image.
