@@ -123,8 +123,8 @@ to generate a host-config file for a desired configuration. For example,
 
 .. code-block:: bash
 
-  $ python ./scripts/uberenv/uberenv.py --spec="%gcc@8.1.0"
-  $ python ./scripts/uberenv/uberenv.py --spec="%gcc@8.1.0~shared+openmp tests=benchmarks"
+  $ python3 ./scripts/uberenv/uberenv.py --spec="%gcc@8.1.0"
+  $ python3 ./scripts/uberenv/uberenv.py --spec="%gcc@8.1.0~shared+openmp tests=benchmarks"
 
 Each command generates a corresponding host-config file in the top-level RAJA 
 directory. The file name contains the platform and OS to which it applies, and 
