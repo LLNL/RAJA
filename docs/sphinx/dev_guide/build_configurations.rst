@@ -201,6 +201,11 @@ you have Docker installed.
      aforementioned Dockerfile).
  
 Then, you can build, run tests, edit files, etc. in the Docker image. Note that
-the docker command has a ``-v`` argument that you can use to mount your local 
-directory in the image; e.g.,``docker -v pwd:/opt/RAJA`` would mount the pwd as 
-``/opt/RAJA`` in the image.
+the docker command has a ``-v`` argument that you can use to mount a local 
+directory in the image. For example
+
+  .. code-block:: bash 
+
+    & docker -v pwd:/opt/RAJA 
+
+will mount your current local directory as ``/opt/RAJA`` in the image.
