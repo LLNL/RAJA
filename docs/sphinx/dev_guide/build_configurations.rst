@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. host_config:
+.. _build_config-label:
 
 **************************
 RAJA Build Configurations
@@ -29,6 +29,8 @@ Each of these specifies compiler versions and options, a build target
 and paths to required tool chains, such as CUDA, ROCm, etc.  
 They are described briefly in the following sections.
 
+
+.. _build_scripts-label:
 
 ===================
 RAJA Build Scripts
@@ -71,10 +73,11 @@ Eventually, these scripts may go away and be superseded by the Spack-based
 host-config file generation process when that achieves the level of
 compiler coverage that the scripts have.
 
+.. _spack_host_config-label:
 
-============================
-Generated Host-Config Files
-============================
+==================================
+Spack-Generated Host-Config Files
+==================================
 
 The RAJA repository contains two submodules 
 `uberenv <https://github.com/LLNL/uberenv>`_ and
@@ -171,12 +174,14 @@ section to illustrate how to add `CMake` as an external package in the
 with `Homebrew <https://brew.sh>`_, for example, and follow the process 
 outlined above after it is installed.
 
-============================
-Reproducing Docker Builds
-============================
+.. _docker_local-label:
 
-RAJA uses docker container images that it shares with other LLNL GitHub projects
-for CI testing on GitHub. Currently, we use Azure Pipelines for Linux, Windows,
+==================================
+Reproducing Docker Builds Locally
+==================================
+
+RAJA uses Docker container images that it shares with other LLNL GitHub projects
+for Azure CI testing. Currently, we use Azure Pipelines for Linux, Windows,
 and MacOS builds.
 
 You can reproduce these builds locally for testing with the following steps if

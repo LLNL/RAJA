@@ -35,6 +35,8 @@ when changes are pushed to a PR branch.
 
 The following sections describe basic elements of the operation of the CI tools.
 
+.. _gitlab_ci-label:
+
 =========
 Gitlab CI
 =========
@@ -194,6 +196,10 @@ system type associated with the resource. Analogous information for packages
 like CUDA and ROCm (HIP) are located in the corresponding 
 ``RAJA/scripts/radiuss-spack-configs/<sys-type>/packages.yaml`` file.
 
+.. note:: Please see :ref:`spack_host_config-label` for more information about
+          Spack-generated host-config files and how to use them for local
+          debugging.
+
 After the host-config file is generated, the 
 ``scripts/gitlab/build_and_test.sh`` script creates a build space directory 
 and runs CMake in it, passing the host-config (cache) file. Then, it builds
@@ -254,12 +260,81 @@ The commands shown here intermingle with other commands that emit messages,
 timing information for various operations, etc. which appear in a log
 file that can be viewed in the Gitlab GUI.
 
+.. _azure_ci-label:
+
 ==================
 Azure Pipelines CI
 ==================
 
 The Azure Pipelines tool builds and tests for Linux, Windows, and MacOS 
-environments. For these builds, we use Docker container images that are built 
-using recent versions of various compilers. The RAJA project shares these
-container images with other LLNL RADIUSS projects. While we do GPU builds for 
-CUDA, HIP, and SYCL on Azure, RAJA tests are only run for CPU-only pipelines.
+environments.  While we do builds for CUDA, HIP, and SYCL RAJA back-ends 
+in the Azure Linux environment, RAJA tests are only run for CPU-only pipelines.
+
+Azure Pipelines Testing Workflow
+--------------------------------
+
+The Azure Pipelines testing workflow for RAJA is much simpler than the Gitlab
+testing process described above.
+
+The test jobs we run for each OS environment are specified in the 
+``RAJA/azure-pipelines.yml`` file. This file defines the job steps, commands,
+compilers, etc. for each OS environment in the associated ``- job:`` section.
+A summary of the configurations we build are:
+
+  * **Windows.** The ``- job: Windows`` Windows section contains information
+    for the Windows test builds. For example, we build and test RAJA as
+    a static and shared library. This is indicated in the Windows ``strategy``
+    section::
+   
+      strategy:
+        matrix:
+          shared:
+            ...
+          static:
+            ...
+
+    We use the Windows/compiler image provided by the Azure application 
+    indicated the ``pool`` section; for example::
+
+      pool:
+        vmImage: 'windows-2019'
+
+    **MacOS.** The ``- job: Mac`` section contains information for Mac test 
+    builds. For example, we build and test RAJA using the the MacOS/compiler 
+    image provided by the Azure application indicated in the ``pool`` section; 
+    for example::
+
+      pool:
+        vmImage: 'macOS-latest' 
+
+    **Linux.** The ``- job: Docker`` section contains information for Linux
+    test builds. We build and test RAJA using Docker container images generated 
+    with recent versions of various compilers. The RAJA project shares these 
+    container images with other open-source LLNL RADIUSS projects. The builds
+    we do at any point in time are located in the ``strategy`` block::
+
+      strategy:
+        matrix: 
+          gccX:
+            docker_target: ...
+          ...
+          clangY:
+            docker_target: ...
+          ...
+          nvccZ:
+            docker_target: ...
+
+          ...
+
+    The Linux OS image is indicated in the ``pool`` section; 
+    for example::
+
+      pool:
+        vmImage: 'ubuntu-latest'
+
+For each Linux build and test pipeline, the container images, CMake, build, and
+test commands are located in the ``RAJA/Dockerfile`` file.
+
+.. note:: Please see :ref:`docker_local-label` for more information about
+          reproducing Docker builds locally for debugging purposes.
+

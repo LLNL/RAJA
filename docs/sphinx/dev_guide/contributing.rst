@@ -61,7 +61,7 @@ RAJA maintains three levels of project access on it GitHub project:
     the RAJA repo. This is described below.
 
 =======================
-Pull Request Basics
+Pull Request Process
 =======================
 
 The following figure shows the basic elements of the RAJA PR contribution 
@@ -196,7 +196,7 @@ likely the develop branch.
 .. _prfromfork-label:
 
 ===========================================================
-Testing A Pull Request From A Forked Repository
+Accepting A Pull Request From A Forked Repository
 ===========================================================
 
 Due to LLNL security policies, some RAJA pull requests will not be able to

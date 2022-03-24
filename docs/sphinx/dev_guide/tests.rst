@@ -9,14 +9,17 @@
 .. _tests-label:
 
 ***************************
-RAJA Testing Requirements
+RAJA Tests
 ***************************
 
-As noted earlier, all RAJA automated test checks must pass before any PR
+As noted in :ref:`ci-label`, all RAJA test checks must pass before any PR 
 contribution will be merged. Additionally, we recommend that contributors
 also include new tests in their code contributions when adding new features
-or bug fixes. If RAJA team members think adequate testing is included in a 
-PR branch, they will ask for additional testing to be added.
+and bug fixes.
+
+.. note:: If RAJA team members think adequate testing is not included in a 
+          PR branch, they will ask for additional testing to be added during
+          the review process..
 
 
 =========================
