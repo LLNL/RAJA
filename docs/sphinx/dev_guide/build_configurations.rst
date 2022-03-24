@@ -36,9 +36,9 @@ They are described briefly in the following sections.
 RAJA Build Scripts
 ===================
 
-The build scripts in the RAJA ``scripts`` directory are used mostly by RAJA 
-developers to quickly create a build environment to compile and run tests
-during code development. 
+The build scripts in the ``RAJA/scripts/lc-builds`` directory are used mostly 
+by RAJA developers to quickly create a build environment to compile and run 
+tests during code development. 
 
 Each script is executed from the top-level RAJA directory. The scripts for
 CPU-only platforms require an argument that indicate the compiler version.
