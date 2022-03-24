@@ -8,6 +8,7 @@
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #elif defined(RAJA_ENABLE_HIP)
 #define DEVICE hip
+#include "RAJA/policy/hip/MemUtils_HIP.hpp"
 #endif
 
 namespace RAJA
