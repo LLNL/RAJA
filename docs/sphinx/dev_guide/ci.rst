@@ -28,7 +28,9 @@ The CI tools used by the RAJA project, and which integrate with GitHub are:
   * **Gitlab** instance in the Livermore Computing (LC) Collaboration Zone (CZ)
     runs builds and tests in LC resource and compiler environments
     important to many RAJA user applications. Execution of RAJA CI 
-    pipelines on the LC Gitlab instance has restrictions described below.
+    pipelines on the LC Gitlab instance has restrictions described below. If 
+    you have access to LC resources, you can access additional information about
+    `LC GitLab CI <https://lc.llnl.gov/confluence/display/GITLAB/GitLab+CI>`_
 
 The tools automatically run RAJA builds and tests when a PR is created and 
 when changes are pushed to a PR branch.
@@ -52,10 +54,12 @@ Running Gitlab CI on Livermore Computing (LC) resources is constrained by LC
 security policies. The policies require that all members of a GitHub project 
 be members of the LLNL GitHub organization and have two-factor authentication 
 enabled on their GitHub accounts to automatically mirror a GitHub repo and
-trigger Gitlab CI functionality from GitHub. Also, auto-mirroring of a GitHub 
-repo on LC Gitlab is only done when changes are pushed to PRs for branches
-in the RAJA repo, not for PRs for a branch on a fork of the repo. An alternative
-procedure we use to handle this is described in :ref:`contributing-label`.
+trigger Gitlab CI functionality from GitHub. For compliant LLNL GitHub projects,
+auto-mirroring of the GitHub repo on LC Gitlab is done when changes are pushed 
+to PRs for branches in the RAJA repo, but not for PRs for a branch on a fork of
+the repo. An alternative procedure we use to handle this is described in 
+:ref:`contributing-label`. If you have access to LC resources, you can learn
+more about `LC Gitlab mirroring <https://lc.llnl.gov/confluence/pages/viewpage.action?pageId=662832265>`_.
 
 Gitlab CI (LC CZ) Testing Workflow
 --------------------------------------
