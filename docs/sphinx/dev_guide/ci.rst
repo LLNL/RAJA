@@ -23,7 +23,9 @@ The CI tools used by the RAJA project, and which integrate with GitHub are:
   * **Azure Pipelines** runs builds and tests for Linux, Windows, and MacOS 
     environments using recent versions of various compilers. While we do GPU 
     builds for CUDA, HIP, and SYCL on Azure, RAJA tests are only run for 
-    CPU-only pipelines.
+    CPU-only pipelines. See the 
+    `RAJA Azure DevOps <https://dev.azure.com/llnl/RAJA>`_ project to learn 
+    more about our testing there.
 
   * **Gitlab** instance in the Livermore Computing (LC) Collaboration Zone (CZ)
     runs builds and tests in LC resource and compiler environments
