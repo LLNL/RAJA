@@ -72,8 +72,8 @@ process. The main steps, which we will discuss in more detail later, are:
      as when any PR branch in the RAJA GitHub project is changed. 
   #. Gitlab launches CI test pipelines. While running, the Execution and 
      pass/fail status may be viewed and monitored in the Gitlab CI GUI.
-  #. For each resource and compiler combination, the 
-     `Spack <https://github.com/spack/spack>`_ tool is used to generate a build 
+  #. For each resource and compiler combination,
+     `Spack <https://github.com/spack/spack>`_ is used to generate a build 
      configuration in the form of a CMake cache file, or *host-config* file.
   #. A host-config file is passed to CMake, which configures a RAJA build 
      space.  Then, RAJA and its tests are compiled.
@@ -111,7 +111,7 @@ Launching CI pipelines (step 2)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In **step 2** of the diagram above, Gitlab launches RAJA test pipelines.
-The `RAJA/.gitlab-ci.yml file <https://github.com/LLNL/RAJA/blob/develop/.gitlab-ci.yml>`_ contains high-level testing information, 
+The `RAJA/.gitlab-ci.yml <https://github.com/LLNL/RAJA/blob/develop/.gitlab-ci.yml>`_ file contains high-level testing information, 
 such as stages (resource allocation, build-and-test, and resource 
 deallocation) and locations of files that define which jobs will run
 in each pipeline. For example, these items appear in the file as::
@@ -142,8 +142,9 @@ Note that the stage labels above appear on each Gitlab CI run webpage as the
 title of a column containing other information about what is run in that stage,
 such as build and test jobs.
 
-The `RAJA/.gitlab directory <https://github.com/LLNL/RAJA/tree/develop/.gitlab>`_ contains a *templates* and *jobs* file for each LC resource on which test 
-pipelines will be run. The ``<resource>-templates.yml`` files contain 
+The `RAJA/.gitlab <https://github.com/LLNL/RAJA/tree/develop/.gitlab>`_ 
+directory contains a *templates* and *jobs* file for each LC resource on which 
+test pipelines will be run. The ``<resource>-templates.yml`` files contain 
 information that is common across jobs that run on the corresponding resource, 
 such as commands and scripts that are run for stages identified in the 
 ``RAJA/.gitlab-ci.yml`` file. For example, the 
@@ -164,7 +165,7 @@ defined similarly in other ``RAJA/.gitlab/<resource>-templates.yml`` files.
 Running a CI build/test pipeline  (steps 3, 4, 5, 6)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The `RAJA/scripts/gitlab/build_and_test.sh file <https://github.com/LLNL/RAJA/tree/develop/scripts/gitlab/build_and_test.sh>`_ defines the steps executed
+The `RAJA/scripts/gitlab/build_and_test.sh <https://github.com/LLNL/RAJA/tree/develop/scripts/gitlab/build_and_test.sh>`_ file defines the steps executed
 for each build and test run as well as information that will appear in the
 log output for each step. First, the script runs the 
 ``RAJA/scripts/uberenv/uberenv.py`` script located in the 
@@ -178,7 +179,7 @@ log output for each step. First, the script runs the
 
 Project specific settings related to which Spack version to use, where 
 Spack packages live, etc. are located in the 
-`RAJA/.uberenv_config.json file <https://github.com/LLNL/RAJA/blob/develop/.uberenv_config.json>`_.
+`RAJA/.uberenv_config.json <https://github.com/LLNL/RAJA/blob/develop/.uberenv_config.json>`_ file.
 
 The uberenv python script invokes Spack to generate a CMake *host-config* 
 file containing a RAJA build specification **(step 3)**. To generate
@@ -284,7 +285,7 @@ The Azure Pipelines testing workflow for RAJA is much simpler than the Gitlab
 testing process described above.
 
 The test jobs we run for each OS environment are specified in the 
-`RAJA/azure-pipelines.yml file <https://github.com/LLNL/RAJA/blob/develop/azure-pipelines.yml>`_. This file defines the job steps, commands,
+`RAJA/azure-pipelines.yml <https://github.com/LLNL/RAJA/blob/develop/azure-pipelines.yml>`_ file. This file defines the job steps, commands,
 compilers, etc. for each OS environment in the associated ``- job:`` section.
 A summary of the configurations we build are:
 

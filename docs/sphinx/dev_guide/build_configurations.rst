@@ -88,7 +88,7 @@ can then be passed to CMake using the '-C' option to create a build
 configuration. *Spack specs* defining compiler configurations are maintained 
 in files in the radiuss-spack-configs repository.
 
-Additional documentation for this process is available in 
+Additional documentation for this process is available in the
 `RADIUSS Uberenv Guide <https://radiuss-ci.readthedocs.io/en/latest/uberenv.html#uberenv-guide>`_.
 
 
