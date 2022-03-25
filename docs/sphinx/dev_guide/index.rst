@@ -24,6 +24,7 @@ that they are consistently applied.
    branch_development
    build_configurations
    ci
+   ci_tasks 
    tests
    release_process 
    versioning 
