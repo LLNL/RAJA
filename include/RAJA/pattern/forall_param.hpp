@@ -3,7 +3,8 @@
 
 #include "RAJA/policy/sequential/new_reduce.hpp"
 #include "RAJA/policy/openmp/new_reduce.hpp"
-#include "RAJA/policy/cuda/new_reduce.hpp"
+#include "RAJA/policy/cuda/params/new_reduce.hpp"
+#include "RAJA/policy/cuda/params/kernel_name.hpp"
 #include "RAJA/policy/hip/new_reduce.hpp"
 
 #if defined(RAJA_EXPT_FORALL)

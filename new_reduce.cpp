@@ -321,6 +321,38 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
+
+#if 1
+#if defined(RAJA_ENABLE_CUDA)
+  {
+    std::cout << "CUDA Reduction NEW Multi\n";
+
+    RAJA::Timer t;
+    t.reset();
+    t.start();
+
+    RAJA::forall<RAJA::cuda_exec<256>>(
+                 RAJA::RangeSegment(0, N),
+                 RAJA::expt::Reduce<RAJA::operators::plus>(&r),
+                 RAJA::expt::Reduce<RAJA::operators::minimum>(&m),
+                 RAJA::expt::KernelName("Test"),
+                 RAJA::expt::Reduce<RAJA::operators::maximum>(&ma),
+                 [=] RAJA_HOST_DEVICE (int i, double &r_, double &m_, double &ma_) {
+                   r_ += a[i] * b[i];
+                   m_ = a[i] < m_ ? a[i] : m_;
+                   ma_ = a[i] > m_ ? a[i] : m_;
+                 }
+                 );
+    t.stop();
+    
+    std::cout << "t : " << t.elapsed() << "\n";
+    std::cout << "r : " << r << "\n";
+    std::cout << "m : "  << m  <<"\n";
+    std::cout << "ma : " << ma <<"\n";
+  }
+#endif
+#endif
+
 int sample_sz = 1;
 RAJA::Timer::ElapsedType old_t_sum = 0;
 RAJA::Timer::ElapsedType new_t_sum = 0;
