@@ -89,20 +89,33 @@ RAJA test case and how the work together. In particular, we describe the set
 of basic tests that exercise ``RAJA::forall`` execution with various RAJA
 segment types. 
 
-.. note:: The implementation patter described here is similarly used by 
-          all other RAJA tests. 
+.. note:: The implementation pattern described in the following sections is 
+          similarly used by all other RAJA tests. 
 
 Since these tests integrate multiple RAJA features, it is considered a 
 *functional* test. The files for this test are located in the
-`RAJA/test/functional/forall/segment <https://github.com/LLNL/RAJA/tree/develop/test/functional/forall/segment>`_ directory.
+`RAJA/test/functional/forall/segment <https://github.com/LLNL/RAJA/tree/develop/test/functional/forall/segment>`_ directory. The contents of the directory are::
+
+  $ ls -c1 -R ./test/functional/forall/segment 
+  ./test/functional/forall/segment:
+  tests
+  test-forall-segment.cpp.in
+  CMakeLists.txt
+
+  ./test/functional/forall/segment/tests:
+  test-forall-RangeStrideSegment.hpp
+  test-forall-RangeSegment.hpp
+  test-forall-ListSegment.hpp
+
+Next, we describe these and their relationships.
 
 .. _tests_source-label:
 
 Test Source File
 -----------------
 
-In the directory, there is a `test-forall-segment.cpp.in <https://github.com/LLNL/RAJA/blob/develop/test/functional/forall/segment/test-forall-segment.cpp.in>`_ file, which is the parameterized test source file. It contains header file
-include statements::
+The `test-forall-segment.cpp.in <https://github.com/LLNL/RAJA/blob/develop/test/functional/forall/segment/test-forall-segment.cpp.in>`_ file is the 
+parameterized test source file. It contains header file include statements::
 
   //
   // test/include headers
