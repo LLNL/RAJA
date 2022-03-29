@@ -37,13 +37,14 @@ that change when a new build is added are:
   * the build **Spack spec**, which identifies the compiler and version,
     compiler flags, etc.
 
-For example, the file section for build using a clang compiler along 
-with cuda:: 
+For example, an entry for a build using a clang compiler with cuda is:
 
-ibm_clang_10_0_1_cuda_10_1_168:
-  variables:
-    SPEC: "+cuda cuda_arch=70 %clang@ibm.10.0.1 ^cuda@10.1.168"
-  extends: .build_and_test_on_lassen
+.. code-block:: bash
+
+  ibm_clang_10_0_1_cuda_10_1_168:
+    variables:
+      SPEC: "+cuda cuda_arch=70 %clang@ibm.10.0.1 ^cuda@10.1.168"
+    extends: .build_and_test_on_lassen
 
 To update, change the corresponding spec item, such as clang compiler
 or version, or cuda version. Then, update the label accordingly.
@@ -73,7 +74,9 @@ However, sometimes a particular pipeline will take longer to build and
 run than the default alloted time. In this case, the default time can
 be adjusted in the build spec information in the associated 
 ``<resource>-jobs.yml`` file discussed in the previous section. 
-For example::
+For example:
+
+.. code-block:: bash
 
   xl_16_1_1_7_cuda:
     variables:
