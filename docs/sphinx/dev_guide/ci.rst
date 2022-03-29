@@ -27,7 +27,7 @@ The CI tools used by the RAJA project, and which integrate with GitHub are:
     `RAJA Azure DevOps <https://dev.azure.com/llnl/RAJA>`_ project to learn 
     more about our testing there.
 
-  * **Gitlab** instance in the Livermore Computing (LC) Collaboration Zone (CZ)
+  * **Gitlab** instance in the Livermore Computing (LC) Center
     runs builds and tests in LC resource and compiler environments
     important to many RAJA user applications. Execution of RAJA CI 
     pipelines on the LC Gitlab instance has restrictions described below. If 
@@ -63,7 +63,7 @@ the repo. An alternative procedure we use to handle this is described in
 :ref:`contributing-label`. If you have access to LC resources, you can learn
 more about `LC Gitlab mirroring <https://lc.llnl.gov/confluence/pages/viewpage.action?pageId=662832265>`_.
 
-Gitlab CI (LC CZ) Testing Workflow
+Gitlab CI (LC) Testing Workflow
 --------------------------------------
 
 The figure below shows the high-level steps in the RAJA Gitlab CI testing 
@@ -91,11 +91,11 @@ RAJA repo play in defining these steps.
    figure. This process is triggered when a developer makes a PR on the 
    GitHub project or whenever changes are pushed to the source branch of a PR.
 
-Gitlab CI (LC CZ) Testing Files
+Gitlab CI (LC) Testing Files
 --------------------------------------
 
 The following figure shows directories and files in the RAJA repo that 
-support LC CZ Gitlab CI testing. Files with names in blue are specific to RAJA 
+support LC Gitlab CI testing. Files with names in blue are specific to RAJA 
 and are maintained by the RAJA team. Directories and files with names in red are
 in Git submodules, shared and maintained with other projects.
 

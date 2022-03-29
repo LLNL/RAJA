@@ -200,12 +200,11 @@ Accepting A Pull Request From A Forked Repository
 ===========================================================
 
 Due to LLNL security policies, some RAJA pull requests will not be able to
-be run through all RAJA CI tools. The Livermore Computing (LC) 
-Collaboration Zone (CZ) Gitlab instance restricts which GitHub PRs may 
-automatically run through its CI test pipelines. 
-In particular, a PR made from branch on a forked repository will not trigger 
-Gitlab CI checks. Gitlab CI on internal LLNL platforms will only be run on PRs 
-that are made from branches in the GitHub RAJA repository. 
+be run through all RAJA CI tools. The Livermore Computing (LC) Center
+Gitlab systems restrict which GitHub PRs may automatically run through its 
+CI test pipelines. For example, a PR made from branch on a forked repository 
+will not trigger Gitlab CI checks. Gitlab CI on LC platforms will be run only
+on PRs that are made from branches in the GitHub RAJA repository. 
 See :ref:`ci-label` for more information about RAJA PR testing.
 
 .. note:: **The following process for accepting PR contributions from a fork 
