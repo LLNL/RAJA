@@ -75,12 +75,12 @@ be adjusted in the build spec information in the associated
 ``<resource>-jobs.yml`` file discussed in the previous section. 
 For example::
 
-xl_16_1_1_7_cuda:
-  variables:
-    SPEC: "+cuda %xl@16.1.1.7 cuda_arch=70 ^cuda@10.1.168 ^cmake@3.14.5"
-    DEFAULT_TIME: 60
-  allow_failure: true
-  extends: .build_and_test_on_lassen
+  xl_16_1_1_7_cuda:
+    variables:
+      SPEC: "+cuda %xl@16.1.1.7 cuda_arch=70 ^cuda@10.1.168 ^cmake@3.14.5"
+      DEFAULT_TIME: 60
+    allow_failure: true
+    extends: .build_and_test_on_lassen
 
 
 Adding Test Pipelines
@@ -97,12 +97,12 @@ The tasks in this section apply to RAJA Azure Pipelines CI.
 Changing Builds/Container Images
 ---------------------------------------
 
-The builds we run in Azure are defined in the ``RAJA/azure-pipelines.yml <https://github.com/LLNL/RAJA/blob/develop/azure-pipelines.yml>`_ file.
+The builds we run in Azure are defined in the `RAJA/azure-pipelines.yml <https://github.com/LLNL/RAJA/blob/develop/azure-pipelines.yml>`_ file.
   
 Fill in details describing process to update images for new 
 compilers/versions, etc. For example, explain how the::
  
-FROM ghcr.io/rse-ops/gcc-ubuntu-20.04:gcc-7.3.0 AS gcc7
+  FROM ghcr.io/rse-ops/gcc-ubuntu-20.04:gcc-7.3.0 AS gcc7
 
 stuff works....
 
