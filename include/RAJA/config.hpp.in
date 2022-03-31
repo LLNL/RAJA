@@ -463,7 +463,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #define RAJA_UNROLL RAJA_PRAGMA(clang loop unroll(enable))
-#define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(clang loop unroll_count(N)
+#define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(clang loop unroll_count(N))
 
 
 // note that neither nvcc nor Apple Clang compiler currently doesn't support
