@@ -64,7 +64,7 @@ if(NOT DEFINED BLT_CXX_STD)
     set(BLT_CXX_STD c++14 CACHE STRING "Version of C++ standard")
     message("Using C++ standard: ${BLT_CXX_STD}")
   else() #cmake has no idea what to do, do it ourselves...
-    foreach(flag_var "c++20" "c++17" "c++14" "c++11")
+    foreach(flag_var "c++17" "c++14" "c++11")
       CHECK_CXX_COMPILER_FLAG("-std=${flag_var}" COMPILER_SUPPORTS_${flag_var})
       if(COMPILER_SUPPORTS_${flag_var})
         set(BLT_CXX_STD ${flag_var} CACHE STRING "Version of C++ standard")
