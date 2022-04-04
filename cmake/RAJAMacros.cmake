@@ -12,28 +12,29 @@ macro(raja_add_executable)
 
   cmake_parse_arguments(arg
     "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+  if (NOT arg_DEPENDS_ON)
+    list (APPEND arg_DEPENDS_ON RAJA)
 
-  list (APPEND arg_DEPENDS_ON RAJA)
+    if (RAJA_ENABLE_OPENMP)
+      list (APPEND arg_DEPENDS_ON openmp)
+    endif ()
 
-  if (RAJA_ENABLE_OPENMP)
-    list (APPEND arg_DEPENDS_ON openmp)
-  endif ()
+    if (RAJA_ENABLE_CUDA)
+      list (APPEND arg_DEPENDS_ON cuda)
+    endif ()
 
-  if (RAJA_ENABLE_CUDA)
-    list (APPEND arg_DEPENDS_ON cuda)
-  endif ()
+    if (RAJA_ENABLE_HIP)
+      list (APPEND arg_DEPENDS_ON blt::hip)
+      list (APPEND arg_DEPENDS_ON blt::hip_runtime)
+    endif ()
 
-  if (RAJA_ENABLE_HIP)
-    list (APPEND arg_DEPENDS_ON blt::hip)
-    list (APPEND arg_DEPENDS_ON blt::hip_runtime)
-  endif ()
+    if (RAJA_ENABLE_SYCL)
+      list (APPEND arg_DEPENDS_ON sycl)
+    endif ()
 
-  if (RAJA_ENABLE_SYCL)
-    list (APPEND arg_DEPENDS_ON sycl)
-  endif ()
-
-  if (RAJA_ENABLE_TBB)
-    list (APPEND arg_DEPENDS_ON tbb)
+    if (RAJA_ENABLE_TBB)
+      list (APPEND arg_DEPENDS_ON tbb)
+    endif ()
   endif ()
 
   if (${arg_TEST})
