@@ -1,7 +1,7 @@
 #ifndef NEW_REDUCE_SEQ_REDUCE_HPP
 #define NEW_REDUCE_SEQ_REDUCE_HPP
 
-#include "RAJA/pattern/new_reduce_basic.hpp"
+#include "RAJA/pattern/params/new_reduce_basic.hpp"
 
 namespace RAJA {
 namespace expt {
@@ -23,7 +23,7 @@ namespace detail {
   template<typename EXEC_POL, typename OP, typename T>
   camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::seq_exec> >
   resolve(Reducer<OP, T>& red) {
-    *red.target = OP{}(red.val, *red.target);
+    *red.target = red.val;
   }
 
 } //  namespace detail

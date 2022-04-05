@@ -670,6 +670,7 @@ forall(ExecutionPolicy&& p, Res r, Container&& c, Params... params)
 
   auto f_params = expt::make_forall_param_pack(params...);
   auto loop_body = expt::get_lambda(params...);
+  expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
   util::callPreCapturePlugins(context);

@@ -1,6 +1,7 @@
 #ifndef NEW_REDUCE_HPP
 #define NEW_REDUCE_HPP
 
+#include "RAJA/pattern/params/params_base.hpp"
 #include "RAJA/util/SoAPtr.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -24,7 +25,8 @@ namespace detail
   //
   //
   template <typename Op, typename T>
-  struct Reducer {
+  struct Reducer : public ForallParamBase {
+  //struct Reducer : public ForallParamBase {
     using op = Op;
     using val_type = T;
     RAJA_HOST_DEVICE Reducer() {}

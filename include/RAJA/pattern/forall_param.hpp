@@ -5,19 +5,12 @@
 #include "RAJA/policy/openmp/new_reduce.hpp"
 #include "RAJA/policy/cuda/params/new_reduce.hpp"
 #include "RAJA/policy/cuda/params/kernel_name.hpp"
-#include "RAJA/policy/hip/new_reduce.hpp"
+#include "RAJA/policy/hip/params/new_reduce.hpp"
 
 #if defined(RAJA_EXPT_FORALL)
 #define RAJA_EXPT_FORALL_WARN(Msg)
 #else
 #define RAJA_EXPT_FORALL_WARN(Msg) RAJA_DEPRECATE(Msg)
-#endif
-
-// TODO : Look into this abomination...
-#if !defined(__GNUC__) || (__GNUC__ > 4)
-#define GCC_GT4_CONSTEXPR constexpr
-#else
-#define GCC_GT4_CONSTEXPR
 #endif
 
 namespace RAJA
@@ -79,7 +72,7 @@ namespace expt
     ForallParamPack(){}
 
     RAJA_HOST_DEVICE
-    GCC_GT4_CONSTEXPR
+    constexpr
     auto lambda_args(camp::idx_seq<> )
     {
       return camp::make_tuple();
@@ -87,7 +80,7 @@ namespace expt
 
     template<camp::idx_t Seq>
     RAJA_HOST_DEVICE
-    GCC_GT4_CONSTEXPR
+    constexpr
     auto lambda_args(camp::idx_seq<Seq> )
     {
       return camp::get<Seq>(param_tup).get_lambda_arg_tup();
@@ -95,7 +88,7 @@ namespace expt
 
     template<camp::idx_t First, camp::idx_t Second, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
-    GCC_GT4_CONSTEXPR
+    constexpr
     auto lambda_args(camp::idx_seq<First, Second, Seq...> )
     {
       return camp::tuple_cat_pair(
@@ -109,14 +102,22 @@ namespace expt
     using lambda_params_seq = camp::make_idx_seq_t<count_lambda_args<camp::nil, Params...>()>;
   }; // struct ForallParamPack 
   
+  //===========================================================================
+  RAJA_INLINE static auto get_empty_forall_param_pack(){
+    static ForallParamPack<> p;
+    return p;
+  }
+
   template<camp::idx_t Idx, typename FP>
   RAJA_HOST_DEVICE
-  GCC_GT4_CONSTEXPR
+  constexpr
   auto get_lambda_args(FP& fpp)
       -> decltype(  *camp::get<Idx>( fpp.lambda_args(typename FP::params_seq()) )  ) {
     return (  *camp::get<Idx>( fpp.lambda_args(typename FP::params_seq()) )  );
   }
+  //===========================================================================
   
+  //===========================================================================
   struct ParamMultiplexer {
     template<typename EXEC_POL, typename... Params, typename ...Args, typename FP = ForallParamPack<Params...>>
     static void constexpr init( ForallParamPack<Params...>& f_params, Args&& ...args) {
@@ -131,50 +132,116 @@ namespace expt
       FP::detail_resolve(EXEC_POL(), typename FP::params_seq(), f_params, std::forward<Args>(args)... );
     }
   };
-
-  //TODO :: Figure out where this tuple malarky should go ...
   //===========================================================================
-  // Should this go in camp?
-  template<camp::idx_t... Seq, typename... Ts>
-  constexpr auto tuple_from_seq (const camp::idx_seq<Seq...>&, const camp::tuple<Ts...>& tuple){
-    return camp::make_tuple( camp::get< Seq >(tuple)... );
-  };
 
-  // Should this go in camp?
-  template<typename... Ts>
-  constexpr auto strip_last_elem(const camp::tuple<Ts...>& tuple){
-    return tuple_from_seq(camp::make_idx_seq_t<sizeof...(Ts)-1>{},tuple);
-  };
+  //===========================================================================
+  // DoesThisGoInCamp
+  namespace dtgic {
 
-    template<typename... Args>
-    constexpr auto get_param_tuple(Args&&... args){
-      return strip_last_elem(camp::make_tuple(args...));
+    template<camp::idx_t... Seq, typename... Ts>
+    constexpr auto tuple_from_seq (const camp::idx_seq<Seq...>&, const camp::tuple<Ts...>& tuple){
+      return camp::make_tuple( camp::get< Seq >(tuple)... );
+    };
+
+    template<typename... Ts>
+    constexpr auto strip_last_elem(const camp::tuple<Ts...>& tuple){
+      return tuple_from_seq(camp::make_idx_seq_t<sizeof...(Ts)-1>{},tuple);
+    };
+
+    template<typename First, typename... Ts>
+    constexpr auto strip_first_elem(const camp::list<First, Ts...>&){
+      return camp::list<Ts...>{};
+    }
+
+    template<typename First, typename... Ts>
+    constexpr auto strip_first_elem(const camp::tuple<First, Ts...>&){
+      return camp::tuple<Ts...>{};
     }
 
     template<typename... Ts>
-    constexpr auto make_forall_param_pack_from_tuple(const camp::tuple<Ts...>& tuple) {
-      return ForallParamPack<Ts...>(tuple);
+    constexpr auto decay_remove_pointer_list(const camp::list<Ts...>&){
+      return camp::list<camp::decay<typename std::remove_pointer<Ts>::type>...>{};
     }
+
+    template<typename... Ts>
+    constexpr auto tuple_to_list(const camp::tuple<Ts...>&) {
+      return camp::list<Ts...>{};
+    }
+
+    template<typename... Ts>
+    using get_last_t = camp::at<camp::list<Ts...>, camp::num<sizeof...(Ts)>>; 
+    
+    // all_true trick to perform variadic expansion in static asserts.
+    // https://stackoverflow.com/questions/36933176/how-do-you-static-assert-the-values-in-a-parameter-pack-of-a-variadic-template
+    template<bool...> struct bool_pack;
+    template<bool... bs>
+    using all_true = std::is_same<bool_pack<bs..., true>, bool_pack<true, bs...>>;
+
+    template<typename Base, typename... Ts>
+    using check_types_derive_base = dtgic::all_true<std::is_convertible<Ts, Base>::value...>;
+
+    template <typename F, typename... Args>
+    struct is_invocable :
+      std::is_constructible<
+        std::function<void(Args ...)>,
+        std::reference_wrapper<typename std::remove_reference<F>::type>
+      >{};
+
+  } //  namespace dtgic
 
   //===========================================================================
 
-  //TODO :: static asserts here?
+
+  //===========================================================================
+  // ForallParamPAck generators.
+  template<typename... Ts>
+  constexpr auto make_forall_param_pack_from_tuple(const camp::tuple<Ts...>& tuple) {
+    static_assert(dtgic::check_types_derive_base<detail::ForallParamBase, Ts...>::value,
+        "Forall optional arguments do not derive ForallParamBase. Please see Reducer, ReducerLoc and KernelName for examples.") ;
+    return ForallParamPack<Ts...>(tuple);
+  }
+
   // Make a tuple of the param pack except the final element...
   template<typename... Args>
   constexpr auto make_forall_param_pack(Args&&... args){
-    return make_forall_param_pack_from_tuple( get_param_tuple(args...) );
+    // We assume the last element of the pack is the lambda so we need to strip it from the list.
+    auto stripped_arg_tuple = dtgic::strip_last_elem(camp::make_tuple(args...)); 
+    return make_forall_param_pack_from_tuple(stripped_arg_tuple);
   }
+  //===========================================================================
 
-  //TODO :: static asserts here?
+
+  //===========================================================================
+  
+
+  template<typename T>
+  struct lambda_arg_list : public lambda_arg_list<decltype(&T::operator())> {};
+
+
+  template<typename ReturnT, typename ClassT, typename... Args>
+  struct lambda_arg_list<ReturnT(ClassT::*)(Args...) const> {
+    using type = camp::list<Args...>;
+  
+  };
+
+  //===========================================================================
+
+
   // Lambda should be the last argument in the param pack, just extract it...
   template<typename... Args>
   constexpr auto get_lambda(Args&&... args){
-    return camp::get<sizeof...(Args)-1>( camp::make_tuple(args...) ); 
+    auto lambda = camp::get<sizeof...(Args)-1>( camp::make_tuple(args...) );
+    return lambda; 
   } 
 
-  RAJA_INLINE static auto get_empty_forall_param_pack(){
-    static ForallParamPack<> p;
-    return p;
+  template<typename Lambda, typename ForallParams>
+  constexpr void check_forall_optional_args(const Lambda&, ForallParams& fpp) {
+    using l_args = typename lambda_arg_list<Lambda>::type;
+
+    using user_type_list = decltype( dtgic::decay_remove_pointer_list( dtgic::strip_first_elem( l_args{} ) ) );
+    using expected_type_list = decltype( dtgic::decay_remove_pointer_list( dtgic::tuple_to_list( fpp.lambda_args(typename ForallParams::params_seq())) ) );
+
+    static_assert(std::is_same<user_type_list, expected_type_list>::value, "Incorrect lambda argument types for optional Forall parameters.");
   }
 
   namespace type_traits

@@ -2,7 +2,7 @@
 #define NEW_REDUCE_OMP_REDUCE_HPP
 
 //#include "../util/policy.hpp"
-#include "RAJA/pattern/new_reduce_basic.hpp"
+#include "RAJA/pattern/params/new_reduce_basic.hpp"
 
 namespace RAJA {
 namespace expt {

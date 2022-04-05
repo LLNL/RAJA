@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
-#if 1
+#if 0
 #if defined(RAJA_ENABLE_OPENMP)
   {
     std::cout << "OMP ARRAY Reduction NEW\n";
@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
     std::cout << "ma : " << ma <<"\n";
   }
 #endif
-#if 1
+#if 0
   {
     std::cout << "Basic Reduction RAJA\n";
     RAJA::ReduceSum<RAJA::seq_reduce, double> rr(0);
@@ -276,6 +276,7 @@ int main(int argc, char *argv[])
                      RAJA::expt::Reduce<RAJA::operators::plus>(&r),
                      RAJA::expt::Reduce<RAJA::operators::minimum>(&m),
                      RAJA::expt::Reduce<RAJA::operators::maximum>(&ma),
+                     //int{}
                      [=](int i, double &r_, double &m_, double &ma_) {
                        r_ += a[i] * b[i];
                        m_ = a[i] < m_ ? a[i] : m_;
@@ -291,7 +292,7 @@ int main(int argc, char *argv[])
   }
 #endif
 
-#if 1
+#if 0
 #if defined(RAJA_ENABLE_OPENMP)
   {
     std::cout << "Basic OMP Reduction RAJA w/ NEW REDUCE\n";
