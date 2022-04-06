@@ -567,6 +567,7 @@ T * align_hint(T * x)
 // If we're in CUDA device code, we can use the nvcc unroll pragma
 #if defined(__CUDA_ARCH__) && defined(RAJA_CUDA_ACTIVE)
 #undef RAJA_UNROLL
+#undef RAJA_UNROLL_COUNT
 #define RAJA_UNROLL RAJA_PRAGMA(unroll)
 #define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(unroll N)
 #endif
