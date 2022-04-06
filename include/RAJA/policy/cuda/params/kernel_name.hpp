@@ -6,7 +6,7 @@
 #if defined(RAJA_ENABLE_CUDA)
 
 #include <cuda.h>
-#include "RAJA/pattern/kernel_name.hpp"
+#include "RAJA/pattern/params/kernel_name.hpp"
 
 namespace RAJA {
 namespace expt {

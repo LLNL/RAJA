@@ -331,6 +331,7 @@ int main(int argc, char *argv[])
     RAJA::Timer t;
     t.reset();
     t.start();
+    r = 0;
 
     RAJA::forall<RAJA::cuda_exec<256>>(
                  RAJA::RangeSegment(0, N),

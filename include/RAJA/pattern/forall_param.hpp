@@ -31,8 +31,10 @@ namespace expt
     friend struct ParamMultiplexer;
 
     using Base = camp::tuple<Params...>;
-    using params_seq = camp::make_idx_seq_t< camp::tuple_size<Base>::value >;
     Base param_tup;
+
+    static constexpr size_t param_tup_sz = camp::tuple_size<Base>::value; 
+    using params_seq = camp::make_idx_seq_t< param_tup_sz >;
 
   private:
 
@@ -61,45 +63,32 @@ namespace expt
       CAMP_EXPAND(detail::resolve<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
 
+    // Used to construct the argument TYPES that will be invoked with the lambda.
     template<typename null_t = camp::nil>
-    static size_t constexpr count_lambda_args() { return 0; }
-    template<typename null_t = camp::nil, typename Last>
-    static size_t constexpr count_lambda_args() { return Last::num_lambda_args; }
+    static auto constexpr LAMBDA_ARG_TUP_T() { return camp::tuple<>{}; };
+    template<typename null_t = camp::nil, typename First>
+    static auto constexpr LAMBDA_ARG_TUP_T() { return typename First::ARG_TUP_T(); };
     template<typename null_t = camp::nil, typename First, typename Second, typename... Rest>
-    static size_t constexpr count_lambda_args() { return First::num_lambda_args + count_lambda_args<camp::nil, Second, Rest...>(); }
+    static auto constexpr LAMBDA_ARG_TUP_T() { return camp::tuple_cat_pair(typename First::ARG_TUP_T(), LAMBDA_ARG_TUP_T<camp::nil, Second, Rest...>()); };
+
+    using lambda_arg_tuple_t = decltype(LAMBDA_ARG_TUP_T<camp::nil, Params...>());
+    
+    //Use the size of param_tup to generate the argument list.
+    RAJA_HOST_DEVICE constexpr auto LAMBDA_ARG_TUP_V(camp::num<0>) { return camp::make_tuple(); }
+    RAJA_HOST_DEVICE constexpr auto LAMBDA_ARG_TUP_V(camp::num<1>) { return camp::get<param_tup_sz - 1>(param_tup).get_lambda_arg_tup(); }
+    template<camp::idx_t N>
+    RAJA_HOST_DEVICE constexpr auto LAMBDA_ARG_TUP_V(camp::num<N>) {
+      return camp::tuple_cat_pair(  camp::get<param_tup_sz - N>(param_tup).get_lambda_arg_tup(), LAMBDA_ARG_TUP_V(camp::num<N-1>())  );
+    }
 
   public:
     ForallParamPack(){}
 
-    RAJA_HOST_DEVICE
-    constexpr
-    auto lambda_args(camp::idx_seq<> )
-    {
-      return camp::make_tuple();
-    }
+    RAJA_HOST_DEVICE constexpr lambda_arg_tuple_t lambda_args() {return LAMBDA_ARG_TUP_V(camp::num<sizeof...(Params)>());}
 
-    template<camp::idx_t Seq>
-    RAJA_HOST_DEVICE
-    constexpr
-    auto lambda_args(camp::idx_seq<Seq> )
-    {
-      return camp::get<Seq>(param_tup).get_lambda_arg_tup();
-    }
-
-    template<camp::idx_t First, camp::idx_t Second, camp::idx_t... Seq>
-    RAJA_HOST_DEVICE
-    constexpr
-    auto lambda_args(camp::idx_seq<First, Second, Seq...> )
-    {
-      return camp::tuple_cat_pair(
-               camp::get<First>(param_tup).get_lambda_arg_tup(),
-               lambda_args(camp::idx_seq<Second, Seq...>())
-             );
-    }
+    using lambda_arg_seq = camp::make_idx_seq_t<camp::tuple_size<lambda_arg_tuple_t>::value>;
 
     ForallParamPack(camp::tuple<Params...> t) : param_tup(t) {};
-
-    using lambda_params_seq = camp::make_idx_seq_t<count_lambda_args<camp::nil, Params...>()>;
   }; // struct ForallParamPack 
   
   //===========================================================================
@@ -112,8 +101,8 @@ namespace expt
   RAJA_HOST_DEVICE
   constexpr
   auto get_lambda_args(FP& fpp)
-      -> decltype(  *camp::get<Idx>( fpp.lambda_args(typename FP::params_seq()) )  ) {
-    return (  *camp::get<Idx>( fpp.lambda_args(typename FP::params_seq()) )  );
+      -> decltype(  *camp::get<Idx>( fpp.lambda_args() )  ) {
+    return (  *camp::get<Idx>( fpp.lambda_args() )  );
   }
   //===========================================================================
   
@@ -138,6 +127,7 @@ namespace expt
   // DoesThisGoInCamp
   namespace dtgic {
 
+    // We should do a lot of these with structs...
     template<camp::idx_t... Seq, typename... Ts>
     constexpr auto tuple_from_seq (const camp::idx_seq<Seq...>&, const camp::tuple<Ts...>& tuple){
       return camp::make_tuple( camp::get< Seq >(tuple)... );
@@ -161,6 +151,11 @@ namespace expt
     template<typename... Ts>
     constexpr auto decay_remove_pointer_list(const camp::list<Ts...>&){
       return camp::list<camp::decay<typename std::remove_pointer<Ts>::type>...>{};
+    }
+    
+    template<typename... Ts>
+    constexpr auto list_add_lvalue_ref(const camp::list<Ts...>&){
+      return camp::list<typename std::add_lvalue_reference<Ts>::type...>{};
     }
 
     template<typename... Ts>
@@ -234,15 +229,35 @@ namespace expt
     return lambda; 
   } 
 
+  namespace detail {
+    template<typename LAMBDA_ARGS, typename EXPECTED_ARGS>
+    constexpr void check_forall_optional_args(const LAMBDA_ARGS&, const EXPECTED_ARGS&) {
+      static_assert(std::is_same<LAMBDA_ARGS, EXPECTED_ARGS>::value, "Incorrect lambda argument types for optional Forall parameters. See USER_ARGS and EXPECTED_ARGS list above.");
+    }
+  
+  } //  namespace detail
+
   template<typename Lambda, typename ForallParams>
   constexpr void check_forall_optional_args(const Lambda&, ForallParams& fpp) {
     using l_args = typename lambda_arg_list<Lambda>::type;
 
-    using user_type_list = decltype( dtgic::decay_remove_pointer_list( dtgic::strip_first_elem( l_args{} ) ) );
-    using expected_type_list = decltype( dtgic::decay_remove_pointer_list( dtgic::tuple_to_list( fpp.lambda_args(typename ForallParams::params_seq())) ) );
+    using lambda_arg_type_list = decltype( dtgic::strip_first_elem( l_args{} ) );
 
-    static_assert(std::is_same<user_type_list, expected_type_list>::value, "Incorrect lambda argument types for optional Forall parameters.");
+    // lambda_args should return a tuple of pointer types, we remove the pointers and
+    // add references to generate the appropriate list of expected types.
+    using expected_arg_type_list = decltype( dtgic::list_add_lvalue_ref(
+                                               dtgic::decay_remove_pointer_list(
+                                                 dtgic::tuple_to_list(
+                                                   fpp.lambda_args()
+                                                 )
+                                               )
+                                            ));
+
+    // Calling within another functionlike this helps us to display the type lists with tagged names.
+    detail::check_forall_optional_args(user_arg_type_list{}, expected_arg_type_list{});
   }
+  
+
 
   namespace type_traits
   {
@@ -280,7 +295,7 @@ namespace expt
     return expt::invoke_with_order(
         camp::forward<Params>(params),
         camp::forward<Fn>(f),
-        typename camp::decay<Params>::lambda_params_seq(),
+        typename camp::decay<Params>::lambda_arg_seq(),
         camp::forward<Ts...>(extra)...);
   }
 

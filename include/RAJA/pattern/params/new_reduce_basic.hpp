@@ -41,8 +41,11 @@ namespace detail
     unsigned int * device_count = nullptr;
 #endif
 
-    static constexpr size_t num_lambda_args = 1;
-    RAJA_HOST_DEVICE auto get_lambda_arg_tup() { return camp::make_tuple(&val); }
+    using ARG_TUP_T = camp::tuple<T*>; 
+    RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup() { return camp::make_tuple(&val); }
+
+    using ARG_LIST_T = typename ARG_TUP_T::TList;
+    static constexpr size_t num_lambda_args = camp::tuple_size<ARG_TUP_T>::value ;
   };
 
 } // namespace detail
