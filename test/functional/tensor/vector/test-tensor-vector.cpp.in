@@ -1,0 +1,85 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+
+#include "RAJA_test-tensor.hpp"
+
+using TensorVectorTypes = ::testing::Types<
+	
+#ifdef RAJA_ENABLE_CUDA
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::cuda_warp_register>,
+#endif
+
+#ifdef __AVX__
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx_register>,
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx_register, 2>,
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx_register, 4>,
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx_register, 8>,
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx_register, 16>,
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx_register, 32>,
+#endif
+
+#ifdef __AVX2__
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx2_register>,
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx2_register, 2>,
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx2_register, 4>,
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx2_register, 8>,
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx2_register, 16>,
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx2_register, 32>,
+#endif
+
+#ifdef __AVX512__
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx512_register>,
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx512_register, 2>,
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx512_register, 4>,
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx512_register, 8>,
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx512_register, 16>,
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx512_register, 32>,
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx512_register, 64>,    
+#endif
+
+	// Test defaulted register type
+	RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@>,
+
+    // Test scalar_register type (supported on all platforms)
+    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::scalar_register>
+  >;
+
+
+
+
+
+template <typename T>
+class TestTensorVector : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(TestTensorVector);
+
+
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-tensor-vector-@TENSOR_VECTOR_TEST@.hpp"
+
+
+//
+// Instantiate parameterized test
+//
+
+REGISTER_TYPED_TEST_SUITE_P(TestTensorVector, @TENSOR_VECTOR_TEST@);
+
+                               
+INSTANTIATE_TYPED_TEST_SUITE_P(RAJA, TestTensorVector, TensorVectorTypes);

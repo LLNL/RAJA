@@ -22,8 +22,8 @@
  *  The exercise demonstrates the relative ease with which array data access
  *  can be done using multi-dimensional RAJA Views as compared to C-style
  *  pointer offset arithmetic.
- * 
- *  The five-cell stencil accumulates values in a cell from itself and and 
+ *
+ *  The five-cell stencil accumulates values in a cell from itself and
  *  its four neighbors. Assuming the cells are indexed using (i,j) pairs on
  *  the two dimensional mesh, the stencil computation looks like:
  * 
@@ -209,7 +209,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
 
   RAJA::OffsetLayout<DIM> B_layout =
-      RAJA::make_offset_layout<DIM>({{-1, -1}}, {{Nc_tot-2, Nr_tot-2}});
+      RAJA::make_offset_layout<DIM>({{-1, -1}}, {{Nc_tot-1, Nr_tot-1}});
 
   RAJA::View<int, RAJA::OffsetLayout<DIM>> Bview(B, B_layout);
   RAJA::View<int, RAJA::Layout<DIM>> Aview(A, Nc_int, Nr_int);
@@ -293,7 +293,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                                // is stride-1 
 
   RAJA::OffsetLayout<DIM> pB_layout =
-    RAJA::make_permuted_offset_layout( {{-1, -1}}, {{Nc_tot-2, Nr_tot-2}},
+    RAJA::make_permuted_offset_layout( {{-1, -1}}, {{Nc_tot-1, Nr_tot-1}},
                                        perm );
 
   RAJA::Layout<DIM> pA_layout = 

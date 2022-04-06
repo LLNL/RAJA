@@ -1,0 +1,73 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+
+#include "RAJA_test-tensor.hpp"
+
+
+
+
+
+using TensorRegisterTypes = ::testing::Types<
+	
+#ifdef RAJA_ENABLE_CUDA
+    RAJA::Register<@TENSOR_ELEMENT_TYPE@, RAJA::cuda_warp_register>,
+#endif
+
+#ifdef RAJA_ENABLE_HIP
+    RAJA::Register<@TENSOR_ELEMENT_TYPE@, RAJA::hip_wave_register>,
+#endif
+
+#ifdef __AVX__
+    RAJA::Register<@TENSOR_ELEMENT_TYPE@, RAJA::avx_register>,
+#endif
+
+#ifdef __AVX2__
+    RAJA::Register<@TENSOR_ELEMENT_TYPE@, RAJA::avx2_register>,
+#endif
+
+#ifdef __AVX512__
+    RAJA::Register<@TENSOR_ELEMENT_TYPE@, RAJA::avx512_register>,
+#endif
+
+    // scalar_register is supported on all platforms
+    RAJA::Register<@TENSOR_ELEMENT_TYPE@, RAJA::scalar_register>
+  >;
+
+
+
+
+template <typename T>
+class TestTensorRegister : public ::testing::Test
+{
+};
+
+TYPED_TEST_SUITE_P(TestTensorRegister);
+
+
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-tensor-register-@TENSOR_REGISTER_TEST@.hpp"
+
+
+//
+// Instantiate parameterized test
+//
+
+REGISTER_TYPED_TEST_SUITE_P(TestTensorRegister, @TENSOR_REGISTER_TEST@);
+
+                               
+INSTANTIATE_TYPED_TEST_SUITE_P(RAJA, TestTensorRegister, TensorRegisterTypes);

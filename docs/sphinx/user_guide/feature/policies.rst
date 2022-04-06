@@ -301,6 +301,12 @@ policies have the prefix ``hip_``.
                                                         threads in y-dimension
  cuda/hip_thread_z_loop                   kernel (For)  Same as above, but for
                                                         threads in z-dimension
+ cuda/hip_flatten_block_threads_{xyz}     Teams (Loop)  Reshapes threads in a
+                                                        multi-dimensional thread
+                                                        team into one-dimension,
+                                                        accepts any permutation
+                                                        of dimensions
+                                                        (expt namespace)
  cuda/hip_block_x_direct                  kernel (For)  Map loop iterates
                                                         directly to GPU thread
                                                         blocks in x-dimension,
@@ -317,6 +323,16 @@ policies have the prefix ``hip_``.
                                                         blocks in y-dimension
  cuda/hip_block_z_loop                    kernel (For)  Same as above, but use
                                                         blocks in z-dimension
+ cuda/hip_global_thread_x                 Teams (Loop)  Creates a unique thread
+                                                        id for each thread on the
+                                                        x dimension of the grid
+                                                        (expt namespace)
+ cuda/hip_global_thread_y                 Teams (Loop)  Same as above, but uses
+                                                        threads in y-dimension
+                                                        (expt namespace)
+ cuda/hip_global_thread_z                 Teams (Loop)  Same as above, but uses
+                                                        threads in z-dimension
+                                                        (expt namespace)
  cuda/hip_warp_direct                     kernel (For)  Map work to threads
                                                         in a warp directly.
                                                         Cannot be used in
@@ -634,12 +650,13 @@ omp_atomic                any OpenMP    Atomic operation performed in an OpenMP.
                           policy        multithreading or target kernel; i.e.,
                                         apply ``omp atomic`` pragma.
 cuda/hip_atomic           any CUDA/HIP  Atomic operation performed in a CUDA/HIP
-                                        kernel.
+                          policy        kernel.
 cuda/hip_atomic_explicit  any CUDA/HIP  Atomic operation performed in a CUDA/HIP
-< host_atomic_policy >    any policy    kernel when compiling for the device.
-                          matching the  See description of host_atomic_policy
-                          host atomic   when compiling for the host.
-                          policy
+                          policy        kernel that may also be used in a host
+                                        execution context. The atomic policy
+                                        takes a host atomic policy template
+                                        argument. See additional explanation 
+                                        and example below.
 builtin_atomic            seq_exec,     Compiler *builtin* atomic operation.
                           loop_exec,
                           any OpenMP
@@ -651,6 +668,11 @@ auto_atomic               seq_exec,     Atomic operation *compatible* with loop
                           any CUDA/HIP
                           policy
 ========================= ============= ========================================
+
+.. note:: The ``cuda_atomic_explicit`` and ``hip_atomic_explicit`` policies
+          take a host atomic policy template parameter. They are intended to
+          be used with kernels that are host-device decorated to be used in
+          either a host or device execution context.
 
 Here is an example illustrating use of the ``cuda_atomic_explicit`` policy::
 
@@ -701,8 +723,8 @@ The following memory policies are available to specify memory allocation
 for ``RAJA::LocalArray`` objects:
 
   *  ``RAJA::cpu_tile_mem`` - Allocate CPU memory on the stack
-  *  ``RAJA::cuda/hip_shared_mem`` - Allocate CUDA or Hip shared memory
-  *  ``RAJA::cuda/hip_thread_mem`` - Allocate CUDA or Hip thread private memory
+  *  ``RAJA::cuda/hip_shared_mem`` - Allocate CUDA or HIP shared memory
+  *  ``RAJA::cuda/hip_thread_mem`` - Allocate CUDA or HIP thread private memory
 
 
 .. _loop_elements-kernelpol-label:
@@ -713,7 +735,7 @@ RAJA Kernel Execution Policies
 
 RAJA kernel execution policy constructs form a simple domain specific language
 for composing and transforming complex loops that relies
-**solely on standard C++11 template support**.
+**solely on standard C++14 template support**.
 RAJA kernel policies are constructed using a combination of *Statements* and
 *Statement Lists*. A RAJA Statement is an action, such as execute a loop,
 invoke a lambda, set a thread barrier, etc. A StatementList is an ordered list
@@ -792,7 +814,7 @@ There is one statement specific to OpenMP kernels.
 
 * ``OmpSyncThreads`` applies the OpenMP ``#pragma omp barrier`` directive.
 
-Statement types that lauch CUDA or Hip GPU kernels are listed next. They work 
+Statement types that lauch CUDA or HIP GPU kernels are listed next. They work 
 similarly for each back-end and their names are distinguished by the prefix 
 ``Cuda`` or ``Hip``. For example, ``CudaKernel`` or ``HipKernel``.
 
@@ -804,9 +826,9 @@ similarly for each back-end and their names are distinguished by the prefix
 
 * ``Cuda/HipKernelFixedAsync<num_threads, EnclosedStatements>`` asynchronous version of Cuda/HipKernelFixed.
 
-* ``CudaKernelFixedSM<num_threads, min_blocks_per_sm, EnclosedStatements>`` similar to CudaKernelFixed but enables a minimum number of blocks per sm (specified by min_blocks_per_sm), this can help increase occupancy. This kernel launch is synchronous.  **Note: there is no Hip variant of this statement.**
+* ``CudaKernelFixedSM<num_threads, min_blocks_per_sm, EnclosedStatements>`` similar to CudaKernelFixed but enables a minimum number of blocks per sm (specified by min_blocks_per_sm), this can help increase occupancy. This kernel launch is synchronous.  **Note: there is no HIP variant of this statement.**
 
-* ``CudaKernelFixedSMAsync<num_threads, min_blocks_per_sm, EnclosedStatements>`` asynchronous version of CudaKernelFixedSM. **Note: there is no Hip variant of this statement.**
+* ``CudaKernelFixedSMAsync<num_threads, min_blocks_per_sm, EnclosedStatements>`` asynchronous version of CudaKernelFixedSM. **Note: there is no HIP variant of this statement.**
 
 * ``Cuda/HipKernelOcc<EnclosedStatements>`` similar to CudaKernel but uses the CUDA occupancy calculator to determine the optimal number of threads/blocks. Statement is intended for use with RAJA::cuda/hip_block_{xyz}_loop policies. This kernel launch is synchronous.
 
@@ -816,9 +838,9 @@ similarly for each back-end and their names are distinguished by the prefix
 
 * ``Cuda/HipKernelExpAsync<num_blocks, num_threads, EnclosedStatements>`` asynchronous version of Cuda/HipKernelExp.
 
-* ``Cuda/HipSyncThreads`` invokes CUDA or Hip '__syncthreads()' barrier.
+* ``Cuda/HipSyncThreads`` invokes CUDA or HIP '__syncthreads()' barrier.
 
-* ``Cuda/HipSyncWarp`` invokes CUDA '__syncwarp()' barrier. **Note: warp sync is not supported, so the Hip variant is a no-op.
+* ``Cuda/HipSyncWarp`` invokes CUDA '__syncwarp()' barrier. **Note: warp sync is not supported, so the HIP variant is a no-op.
 
 Statement types that lauch SYCL kernels are listed next. 
 

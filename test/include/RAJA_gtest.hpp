@@ -106,4 +106,87 @@
 #pragma warning( default : 4389 )  // reenable warning
 #endif
 
+
+#if defined(__CUDA_ARCH__)
+
+#define RAJA_ASSERT_EQ(X,Y) \
+{\
+  auto x = (X); \
+  auto y = (Y); \
+  if(x != y){ \
+      asm("trap;"); \
+  } \
+}
+
+#define RAJA_ASSERT_FLOAT_EQ(X,Y) {RAJA_ASSERT_EQ(X,Y);}
+#define RAJA_ASSERT_DOUBLE_EQ(X,Y) {RAJA_ASSERT_EQ(X,Y);}
+#else
+
+#define RAJA_ASSERT_EQ(X,Y) {ASSERT_EQ(X,Y);}
+#define RAJA_ASSERT_FLOAT_EQ(X,Y) {ASSERT_FLOAT_EQ(X,Y);}
+#define RAJA_ASSERT_DOUBLE_EQ(X,Y) {ASSERT_DOUBLE_EQ(X,Y);}
+
+#endif
+/*
+ * A gtest assertion that automatically selects between 3 gtest macros:
+ *   ASSERT_EQ
+ *   ASSERT_FLOAT
+ *   ASSERT_DOUBLE
+ *
+ *  This is useful for templated unit tests, where you're not sure what type
+ *  your comparing... is it a float, double, int, long, etc?!?!
+ *
+ *  Now you can just say ASSERT_SCALAR_EQ(X, Y) and things should just work
+ *
+ */
+#define ASSERT_SCALAR_EQ(X,Y) { \
+  int value_type = RAJA::gtest::getScalarType(X); \
+  switch(value_type){ \
+    case 1: {RAJA_ASSERT_FLOAT_EQ(X,Y);} break; \
+    case 2: {RAJA_ASSERT_DOUBLE_EQ(X,Y);} break; \
+    default: {RAJA_ASSERT_EQ(X,Y);} \
+  }; }
+
+// Traits use by the above maco
+namespace RAJA
+{
+  namespace gtest
+  {
+    template<typename T>
+    struct AssertScalarTraits{
+        static constexpr int value = 0;
+    };
+
+    template<>
+    struct AssertScalarTraits<float>{
+        static constexpr int value = 1;
+    };
+
+    template<>
+    struct AssertScalarTraits<double>{
+        static constexpr int value = 2;
+    };
+
+    template<typename T>
+    inline
+    constexpr
+    int getScalarType(T const &){
+      return AssertScalarTraits<T>::value;
+    }
+
+
+  }
+}
+
+// This always returns a 0, but forces compiler not to compile-out
+// constant values
+#define NO_OPT_ZERO (rand()/RAND_MAX)
+
+// Returns a random value between 1.0 and 2.0, and helps force the compiler
+// to not compile-out constant values
+#define NO_OPT_RAND (1.0+(double)rand()/RAND_MAX)
+
+
+
+
 #endif  // closing endif for header file include guard

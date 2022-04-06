@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,8 +22,8 @@
 #include "test-kernel-nested-loop-@TESTTYPE@@DIM@.hpp"
 
 // Sequential execution policy types
-using SequentialKernel2DExecPols = camp::list< 
-    
+using SequentialKernel2DExecPols = camp::list<
+
   RAJA::KernelPolicy<
     RAJA::statement::For<0, RAJA::loop_exec,
       RAJA::statement::For<1, RAJA::loop_exec,
@@ -61,8 +61,8 @@ using SequentialKernel3DExecPols = camp::list<
 >;
 
 #if defined(RAJA_ENABLE_OPENMP)
-using OpenMPKernel2DExecPols = camp::list< 
-    
+using OpenMPKernel2DExecPols = camp::list<
+
   RAJA::KernelPolicy<
     RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
       RAJA::statement::For<1, RAJA::loop_exec,
@@ -80,7 +80,7 @@ using OpenMPKernel2DExecPols = camp::list<
 >;
 
 using OpenMPKernel3DExecPols = camp::list<
-   
+
   RAJA::KernelPolicy<
     RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
       RAJA::statement::For<1, RAJA::loop_exec,
@@ -101,8 +101,8 @@ using OpenMPKernel3DExecPols = camp::list<
 #endif  // if defined(RAJA_ENABLE_OPENMP)
 
 #if defined(RAJA_ENABLE_TBB)
-using TBBKernel2DExecPols = 
-camp::list< 
+using TBBKernel2DExecPols =
+camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::For<0, RAJA::tbb_for_exec,
@@ -150,7 +150,7 @@ camp::list<
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OpenMPTargetKernel2DExecPols =
-camp::list< 
+camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::Collapse<RAJA::omp_target_parallel_collapse_exec,
@@ -175,7 +175,7 @@ camp::list<
 #endif  // if defined(RAJA_ENABLE_TARGET_OPENMP)
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaKernel2DExecPols = 
+using CudaKernel2DExecPols =
 camp::list<
 
   RAJA::KernelPolicy<
@@ -246,7 +246,7 @@ camp::list<
 #endif  // if defined(RAJA_ENABLE_CUDA)
 
 #if defined(RAJA_ENABLE_HIP)
-using HipKernel2DExecPols = 
+using HipKernel2DExecPols =
 camp::list<
 
   RAJA::KernelPolicy<

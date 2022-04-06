@@ -693,7 +693,9 @@ GPU_TEST(Kernel_gpu, HipReduceA)
   RAJA::kernel<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, 3),
                                      RAJA::RangeSegment(0, 2),
                                      RAJA::RangeSegment(0, 5)),
-                    [=] RAJA_DEVICE(Index_type i, Index_type j, Index_type k) {
+                    [=] RAJA_DEVICE(Index_type RAJA_UNUSED_ARG(i), 
+                                    Index_type RAJA_UNUSED_ARG(j), 
+                                    Index_type RAJA_UNUSED_ARG(k)) {
                       reducer += 1;
                     });
 
@@ -717,7 +719,9 @@ GPU_TEST(Kernel_gpu, HipReduceB)
   RAJA::kernel<Pol>(RAJA::make_tuple(RAJA::RangeSegment(0, 3),
                                      RAJA::RangeSegment(0, 2),
                                      RAJA::RangeSegment(0, 5)),
-                    [=] RAJA_DEVICE(Index_type i, Index_type j, Index_type k) {
+                    [=] RAJA_DEVICE(Index_type RAJA_UNUSED_ARG(i), 
+                                    Index_type RAJA_UNUSED_ARG(j), 
+                                    Index_type RAJA_UNUSED_ARG(k)) {
                       reducer += 1;
                     });
 
@@ -2785,7 +2789,8 @@ GPU_TEST(Kernel, HipWarpLoop3)
 
       RAJA::make_tuple((Index_type)0),
 
-      [=] __device__ (Index_type i, Index_type j) {
+      [=] __device__ (Index_type RAJA_UNUSED_ARG(i), 
+                      Index_type j) {
         value += j;  // j should only be 0..31
       });
 
@@ -2817,7 +2822,8 @@ GPU_TEST(Kernel, HipWarpLoop4)
   RAJA::kernel<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(0, A), RAJA::RangeSegment(0, B)),
 
-      [=] __device__ (Index_type i, Index_type j) {
+      [=] __device__ (Index_type i, 
+                      Index_type RAJA_UNUSED_ARG(j)) {
         trip_count += 1;
         value += i;  // i should only be 0..A-1
       });
@@ -2853,7 +2859,7 @@ GPU_TEST(Kernel, HipThreadMasked1)
   RAJA::kernel<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(0, A), RAJA::RangeSegment(0, B)),
 
-      [=] __device__ (Index_type i, Index_type j) {
+      [=] __device__ (Index_type i, Index_type RAJA_UNUSED_ARG(j)) {
         trip_count += 1;
         value += i;  // i should only be 0..A-1
         max_thread.max(threadIdx.x);
@@ -2892,7 +2898,10 @@ GPU_TEST(Kernel, HipThreadMasked2)
 
       RAJA::make_tuple((Index_type)0, (Index_type)0),
 
-      [=] __device__ (Index_type i, Index_type j, Index_type x, Index_type y) {
+      [=] __device__ (Index_type RAJA_UNUSED_ARG(i), 
+                      Index_type RAJA_UNUSED_ARG(j), 
+                      Index_type RAJA_UNUSED_ARG(x), 
+                      Index_type y) {
         trip_count += 1;
         value += y;  // i should only be 0..3
         max_thread.max(threadIdx.x);
@@ -3100,10 +3109,10 @@ GPU_TEST(Kernel_gpu, HipConditional)
         RAJA::make_tuple((bool)param),
 
         // This only gets executed if param==1
-        [=] RAJA_DEVICE(int i, bool) { trip_count += 2; },
+        [=] RAJA_DEVICE(int RAJA_UNUSED_ARG(i), bool) { trip_count += 2; },
 
         // This always gets executed
-        [=] RAJA_DEVICE(int i, bool) { trip_count += 1; });
+        [=] RAJA_DEVICE(int RAJA_UNUSED_ARG(i), bool) { trip_count += 1; });
 
     long result = (long)trip_count;
 
@@ -3130,7 +3139,7 @@ GPU_TEST(Kernel_gpu, HipExec1)
 
       RAJA::make_tuple(RangeSegment(0, N)),
 
-      [=] __device__(ptrdiff_t i) { trip_count += 1; });
+      [=] __device__(ptrdiff_t RAJA_UNUSED_ARG(i)) { trip_count += 1; });
 
   long result = (long)trip_count;
 
@@ -3162,7 +3171,9 @@ GPU_TEST(Kernel_gpu, HipExec1ab)
                        RangeSegment(0, N),
                        RangeStrideSegment(0, N, 2)),
 
-      [=] __device__(ptrdiff_t i, ptrdiff_t j, ptrdiff_t k) {
+      [=] __device__(ptrdiff_t RAJA_UNUSED_ARG(i), 
+                     ptrdiff_t RAJA_UNUSED_ARG(j), 
+                     ptrdiff_t RAJA_UNUSED_ARG(k)) {
         trip_count += 1;
       });
 
@@ -3196,9 +3207,10 @@ GPU_TEST(Kernel_gpu, HipExec1c)
                        RangeSegment(0, N),
                        RangeSegment(0, N)),
 
-      [=] __device__(RAJA::Index_type i,
-                     RAJA::Index_type j,
-                     RAJA::Index_type k) { trip_count += 1; });
+      [=] __device__(RAJA::Index_type RAJA_UNUSED_ARG(i),
+                     RAJA::Index_type RAJA_UNUSED_ARG(j),
+                     RAJA::Index_type RAJA_UNUSED_ARG(k)) { 
+            trip_count += 1; });
 
   long result = (long)trip_count;
 
@@ -3239,8 +3251,8 @@ GPU_TEST(Kernel_gpu, HipComplexNested)
       segments,
 
       [=] __device__(RAJA::Index_type i,
-                     RAJA::Index_type j,
-                     RAJA::Index_type k) {
+                     RAJA::Index_type RAJA_UNUSED_ARG(j),
+                     RAJA::Index_type RAJA_UNUSED_ARG(k)) {
         trip_count += 1;
         RAJA::atomicAdd<RAJA::auto_atomic>(d_ptr + i, (int)1);
       });
@@ -3281,7 +3293,7 @@ GPU_TEST(Kernel_gpu, HipExec_1blockexec)
 
       RAJA::make_tuple(RangeSegment(0, N)),
 
-      [=] __device__(int i) { trip_count += 1; });
+      [=] __device__(int RAJA_UNUSED_ARG(i)) { trip_count += 1; });
 
   long result = (long)trip_count;
 
@@ -3307,7 +3319,9 @@ GPU_TEST(Kernel_gpu, HipExec_2threadloop)
 
       RAJA::make_tuple(RangeSegment(0, N), RangeSegment(0, N)),
 
-      [=] __device__(ptrdiff_t i, ptrdiff_t j) { trip_count += 1; });
+      [=] __device__(ptrdiff_t RAJA_UNUSED_ARG(i), 
+                     ptrdiff_t RAJA_UNUSED_ARG(j)) 
+            { trip_count += 1; });
 
   long result = (long)trip_count;
 
@@ -3366,7 +3380,9 @@ GPU_TEST(Kernel_gpu, HipExec_3threadloop)
                        RangeSegment(0, N),
                        RangeSegment(0, N)),
 
-      [=] __device__(ptrdiff_t i, ptrdiff_t j, ptrdiff_t k) {
+      [=] __device__(ptrdiff_t RAJA_UNUSED_ARG(i), 
+                     ptrdiff_t RAJA_UNUSED_ARG(j), 
+                     ptrdiff_t RAJA_UNUSED_ARG(k)) {
         trip_count += 1;
       });
 
@@ -3519,7 +3535,7 @@ GPU_TEST(Kernel_gpu, Hyperplane_hip_3d_tiled)
                        RAJA::TypedRangeStrideSegment<ZoneI>(0, N, 1),
                        RAJA::TypedRangeStrideSegment<ZoneJ>(M - 1, -1, -1),
                        RAJA::TypedRangeStrideSegment<ZoneK>(0, O, 1)),
-      [=] __device__(int g, ZoneI i, ZoneJ j, ZoneK k) {
+      [=] __device__(int RAJA_UNUSED_ARG(g), ZoneI i, ZoneJ j, ZoneK k) {
         if (i < 0 || i >= N || j < 0 || j >= M || k < 0 || k >= O) {
           oob_count += 1;
         }
@@ -3633,7 +3649,10 @@ GPU_TEST(Kernel_gpu, HipExec_1threadexec)
                        RangeSegment(0, N),
                        RangeSegment(0, N)),
 
-      [=] __device__(Index_type i, Index_type j, Index_type k, Index_type l) {
+      [=] __device__(Index_type RAJA_UNUSED_ARG(i), 
+                     Index_type RAJA_UNUSED_ARG(j), 
+                     Index_type RAJA_UNUSED_ARG(k), 
+                     Index_type RAJA_UNUSED_ARG(l)) {
         trip_count += 1;
       });
 

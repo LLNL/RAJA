@@ -29,6 +29,7 @@
 
 #include "RAJA/pattern/detail/privatizer.hpp"
 #include "RAJA/pattern/kernel/internal/StatementList.hpp"
+#include "RAJA/pattern/kernel/internal/Template.hpp"
 
 #include <iterator>
 #include <type_traits>
@@ -93,6 +94,11 @@ using index_tuple_from_segments =
     typename camp::apply_l<camp::lambda<camp::tuple>,
                            value_type_list_from_segments<Segments>>::type;
 
+template <typename Segments>
+using index_types_from_segments =
+    typename camp::apply_l<camp::lambda<camp::list>,
+                           value_type_list_from_segments<Segments>>::type;
+
 
 
 
@@ -104,29 +110,38 @@ struct LoopData {
 
   using Self = LoopData<SegmentTuple, ParamTuple, Resource, Bodies...>;
 
+  // Offset tuple holds offset from begin() for each of the segments
   using offset_tuple_t =
       difftype_tuple_from_segments<typename SegmentTuple::TList>;
 
-  using index_tuple_t = index_tuple_from_segments<typename SegmentTuple::TList>;
+  // Used by LoopTypes and various execution policies to determine the
+  // index value type of each segment
+  using index_types_t = index_types_from_segments<typename SegmentTuple::TList>;
 
-
+  // Tuple of segments that can be iterated over
   using segment_tuple_t = SegmentTuple;
   SegmentTuple segment_tuple;
 
+  // Tuple of parameters that are thread privatized
   using param_tuple_t = ParamTuple;
   ParamTuple param_tuple;
 
   Resource res;
 
+  // Lambdas that were passed into the kernel
   using BodiesTuple = camp::tuple<Bodies...>;
   const BodiesTuple bodies;
   offset_tuple_t offset_tuple;
+
+  // Vector sizes of each segment.  This is only used by the vector_exec
+  // policies
+  using vector_sizes_t = tuple_of_n<int, camp::tuple_size<SegmentTuple>::value>;
+  vector_sizes_t vector_sizes;
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr
   LoopData(SegmentTuple const &s, ParamTuple const &p, Resource r, Bodies const &... b)
       : segment_tuple(s), param_tuple(p), res(r), bodies(b...)
   {
-    //assign_begin_all();
   }
   constexpr LoopData(LoopData const &) = default;
   constexpr LoopData(LoopData &&) = default;

@@ -63,6 +63,7 @@ struct LaunchExecute<RAJA::expt::seq_launch_t> {
 template <typename SEGMENT>
 struct LoopExecute<loop_exec, SEGMENT> {
 
+  RAJA_SUPPRESS_HD_WARN
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(
       SEGMENT const &segment,

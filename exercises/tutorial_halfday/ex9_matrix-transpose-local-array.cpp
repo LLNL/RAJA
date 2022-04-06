@@ -177,8 +177,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // tile_fixed statements. Iterations inside a RAJA loop is given by their
   // global iteration number.
   //
+#if 0  // needed for exercises, but if-def'd out to quiet compiler warnings.
   RAJA::RangeSegment row_Range(0, N_r);
   RAJA::RangeSegment col_Range(0, N_c);
+#endif
 
   // Next,  we define a RAJA local array type.
   // The array type is templated on

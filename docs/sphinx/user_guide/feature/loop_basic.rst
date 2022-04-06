@@ -323,7 +323,47 @@ threads within the same team. The *RAJA Teams* abstraction consist of three main
     while thread policies are aliases for RAJA GPU thread policies (for example cuda_thread_direct)
     x,y,z dimensions. On the host, teams and threads may be mapped to sequential
     loop execution or OpenMP threaded regions.
-    
+
 The team loop interface combines concepts from ``RAJA::forall`` and ``RAJA::kernel``.
 Various policies from ``RAJA::kernel`` are compatible with the ``RAJA Teams``
 framework.
+
+.. _loop_elements-CombiningAdapter-label:
+
+--------------------------------
+MultiDimensional loops using Simple loop APIs (RAJA::CombiningAdapter)
+--------------------------------
+
+A ``RAJA::CombiningAdapter`` object provides ways to run perfectly nested loops
+with simple loop APIs like ``RAJA::forall`` and ``RAJA::WorkGroup`` :ref:`workgroup-label`.
+To introduce the ``RAJA ::CombiningAdapter`` interface, consider a (N+1)-level
+C-style loop nest::
+
+  for (int iN = 0; iN < NN; ++iN) {
+    ...
+       for (int i0 = 0; i0 < N0; ++i0) {
+         \\ inner loop body
+       }
+  }
+
+We can use a ``RAJA::CombiningAdapter`` to combine the iteration spaces of the
+loops and pass the adapter to a ``RAJA::forall`` statement to execute them::
+
+  auto adapter = RAJA::make_CombingingAdapter(
+      [=] (int iN, ..., int i0)) {
+        \\ inner loop body
+      }, IN, ..., I0);
+
+  RAJA::forall<exec_policy>(adapter.getRange(), adapter);
+
+A ``RAJA::CombiningAdapter`` object is a template combining a loop body and
+iteration spaces. The maker function template takes a lambda expression for the
+loop body and an arbitrary number of segment arguments. It provides a flattened
+index space via the ``getRange`` method that can be passed as the iteration space
+to the simple loop API. The object itself can be passed into the loop API as the
+loop body. The object's call operator does the conversion of the flat single
+dimensional index into the multi-dimensional index space, calling the provided
+lambda with the appropriate indices.
+
+.. note:: CombiningAdapter currently only supports ``RAJA::RangeSegment`` and
+          ``RAJA::TypedRangeSegment`` segments.

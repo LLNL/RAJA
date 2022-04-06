@@ -46,6 +46,10 @@ raja_add_executable(
   SOURCES tut_reductions.cpp)
 
 raja_add_executable(
+  NAME teams_flatten
+  SOURCES teams_flatten.cpp)
+
+raja_add_executable(
   NAME teams_reductions
   SOURCES teams_reductions.cpp)
 
@@ -108,10 +112,6 @@ raja_add_executable(
 raja_add_executable(
   NAME wave-eqn
   SOURCES wave-eqn.cpp)
-
-raja_add_executable(
-  NAME ltimes
-  SOURCES ltimes.cpp)
 
 raja_add_executable(
   NAME multiview
