@@ -7,6 +7,8 @@
 #include "RAJA/policy/cuda/params/kernel_name.hpp"
 #include "RAJA/policy/hip/params/new_reduce.hpp"
 
+#include "RAJA/util/CombiningAdapter.hpp"
+
 #if defined(RAJA_EXPT_FORALL)
 #define RAJA_EXPT_FORALL_WARN(Msg)
 #else
@@ -127,7 +129,7 @@ namespace expt
   // DoesThisGoInCamp
   namespace dtgic {
 
-    // We should do a lot of these with structs...
+    // Maybe we should do a lot of these with structs...
     template<camp::idx_t... Seq, typename... Ts>
     constexpr auto tuple_from_seq (const camp::idx_seq<Seq...>&, const camp::tuple<Ts...>& tuple){
       return camp::make_tuple( camp::get< Seq >(tuple)... );
@@ -143,13 +145,13 @@ namespace expt
       return camp::list<Ts...>{};
     }
 
-    template<typename First, typename... Ts>
-    constexpr auto strip_first_elem(const camp::tuple<First, Ts...>&){
-      return camp::tuple<Ts...>{};
-    }
+    //template<typename First, typename... Ts>
+    //constexpr auto strip_first_elem(const camp::tuple<First, Ts...>&){
+    //  return camp::tuple<Ts...>{};
+    //}
 
     template<typename... Ts>
-    constexpr auto decay_remove_pointer_list(const camp::list<Ts...>&){
+    constexpr auto list_remove_pointer(const camp::list<Ts...>&){
       return camp::list<camp::decay<typename std::remove_pointer<Ts>::type>...>{};
     }
     
@@ -163,8 +165,8 @@ namespace expt
       return camp::list<Ts...>{};
     }
 
-    template<typename... Ts>
-    using get_last_t = camp::at<camp::list<Ts...>, camp::num<sizeof...(Ts)>>; 
+    //template<typename... Ts>
+    //using get_last_t = camp::at<camp::list<Ts...>, camp::num<sizeof...(Ts)>>; 
     
     // all_true trick to perform variadic expansion in static asserts.
     // https://stackoverflow.com/questions/36933176/how-do-you-static-assert-the-values-in-a-parameter-pack-of-a-variadic-template
@@ -212,6 +214,11 @@ namespace expt
   template<typename T>
   struct lambda_arg_list : public lambda_arg_list<decltype(&T::operator())> {};
 
+  // Not currently used as checking arguments does not account for N args provided to CombiningAdapter lambdas.
+  // This does extract the labmda for when we check this in the future.
+  template<typename Lambda, typename Layout>
+  struct lambda_arg_list<CombiningAdapter<Lambda, Layout>> : public lambda_arg_list<decltype(&Lambda::operator())> {};
+
 
   template<typename ReturnT, typename ClassT, typename... Args>
   struct lambda_arg_list<ReturnT(ClassT::*)(Args...) const> {
@@ -232,29 +239,48 @@ namespace expt
   namespace detail {
     template<typename LAMBDA_ARGS, typename EXPECTED_ARGS>
     constexpr void check_forall_optional_args(const LAMBDA_ARGS&, const EXPECTED_ARGS&) {
-      static_assert(std::is_same<LAMBDA_ARGS, EXPECTED_ARGS>::value, "Incorrect lambda argument types for optional Forall parameters. See USER_ARGS and EXPECTED_ARGS list above.");
+      static_assert(std::is_same<LAMBDA_ARGS, EXPECTED_ARGS>::value,
+        "Incorrect lambda argument types for optional Forall parameters. See USER_ARGS and EXPECTED_ARGS list above.");
     }
-  
   } //  namespace detail
 
-  template<typename Lambda, typename ForallParams>
-  constexpr void check_forall_optional_args(const Lambda&, ForallParams& fpp) {
-    using l_args = typename lambda_arg_list<Lambda>::type;
+  template<typename LAMBDA, typename... EXPECTED_ARGS>
+  constexpr void check_invocable(const LAMBDA&, const camp::list<EXPECTED_ARGS...>&) {
+    static_assert(dtgic::is_invocable<LAMBDA, int, EXPECTED_ARGS...>::value, "LAMBDA Not invocable w/ EXPECTED_ARGS."); 
+  }
 
-    using lambda_arg_type_list = decltype( dtgic::strip_first_elem( l_args{} ) );
+  //// SFINAE on Combining Adapters to just no-op on the check as we can't account for the number of args passed to the lambda for the layout yet.
+  //template<typename Lambda, typename ForallParams>
+  //constexpr 
+  ////concepts::enable_if<
+  ////    RAJA::type_traits::is_CombiningAdapter<Lambda> >
+  //void
+  //check_forall_optional_args(const Lambda&, ForallParams& ) {
+  //}
+
+  template<typename Lambda, typename ForallParams>
+  constexpr 
+  //concepts::enable_if<
+  //    concepts::negate<RAJA::type_traits::is_CombiningAdapter<Lambda>> >
+  void
+  check_forall_optional_args(const Lambda& l, ForallParams& fpp) {
+    //using l_args = typename lambda_arg_list<Lambda>::type;
+
+    //using lambda_arg_type_list = decltype( dtgic::strip_first_elem( l_args{} ) );
 
     // lambda_args should return a tuple of pointer types, we remove the pointers and
     // add references to generate the appropriate list of expected types.
     using expected_arg_type_list = decltype( dtgic::list_add_lvalue_ref(
-                                               dtgic::decay_remove_pointer_list(
+                                               dtgic::list_remove_pointer(
                                                  dtgic::tuple_to_list(
                                                    fpp.lambda_args()
                                                  )
                                                )
                                             ));
 
+    check_invocable(l, expected_arg_type_list{});
     // Calling within another functionlike this helps us to display the type lists with tagged names.
-    detail::check_forall_optional_args(user_arg_type_list{}, expected_arg_type_list{});
+    //detail::check_forall_optional_args(lambda_arg_type_list{}, expected_arg_type_list{});
   }
   
 
