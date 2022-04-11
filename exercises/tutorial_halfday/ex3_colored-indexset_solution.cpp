@@ -216,8 +216,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // The TypedIndexSet is a variadic template, where the template arguments
 // are the segment types that the TypedIndexSet can hold. 
 // 
+#if defined(RAJA_ENABLE_OPENMP) || defined(RAJA_ENABLE_CUDA)
   using SegmentType = RAJA::TypedListSegment<int>;
- 
+#endif
+
 #if defined(RAJA_ENABLE_OPENMP)
 
 //

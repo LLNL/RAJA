@@ -17,6 +17,8 @@ raja_add_test(
   NAME test-simd
   SOURCES test-simd.cpp)
 
+
+
 add_subdirectory(cpu)
 
 if(RAJA_ENABLE_CUDA)

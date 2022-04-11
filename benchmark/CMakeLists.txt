@@ -10,3 +10,7 @@ if (RAJA_ENABLE_CUDA)
     NAME benchmark-host-device-lambda
     SOURCES host-device-lambda-benchmark.cpp)
 endif()
+
+raja_add_benchmark(
+  NAME ltimes
+  SOURCES ltimes.cpp)

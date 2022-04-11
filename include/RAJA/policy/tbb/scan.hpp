@@ -172,7 +172,7 @@ inclusive(
     BinFn f)
 {
   auto adapter = detail::scan_adapter_inclusive<
-      typename std::remove_reference<decltype(*begin)>::type,
+      typename std::remove_reference<decltype(*out)>::type,
       Iter,
       OutIter,
       BinFn>{begin, out, f, BinFn::identity()};
@@ -205,7 +205,7 @@ exclusive(
     T v)
 {
   auto adapter = detail::scan_adapter_exclusive<
-      typename std::remove_reference<decltype(*begin)>::type,
+      typename std::remove_reference<decltype(*out)>::type,
       Iter,
       OutIter,
       BinFn>{begin, out, f, v};

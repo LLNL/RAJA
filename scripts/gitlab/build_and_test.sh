@@ -55,7 +55,7 @@ then
         prefix_opt="--prefix=${prefix}"
     fi
 
-    python scripts/uberenv/uberenv.py --spec="${spec}" ${prefix_opt}
+    python3 scripts/uberenv/uberenv.py --spec="${spec}" ${prefix_opt}
 
 fi
 date
@@ -123,6 +123,12 @@ then
     mkdir -p ${build_dir} && cd ${build_dir}
 
     date
+
+    if [[ "${truehostname}" == "corona" ]]
+    then
+        module unload rocm
+    fi
+
     cmake \
       -C ${hostconfig_path} \
       ${project_dir}

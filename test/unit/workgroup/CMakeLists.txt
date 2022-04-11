@@ -22,7 +22,7 @@ macro( buildunitworkgrouptest TESTNAME SUBTESTNAMES BACKENDS )
                      SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
 
       target_include_directories(test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.exe
-                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+                     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     endforeach()
   endforeach()
 endmacro()

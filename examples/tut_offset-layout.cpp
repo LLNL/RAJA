@@ -176,8 +176,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 // object to simplify multidimensional indexing.
 // An offset layout is constructed by using the make_offset_layout method.
 // The first argument of the layout is an array object with the coordinates of
-// the bottom left corner of the lattice, and the second argument is an array 
-// object of the coordinates of the top right corner.
+// the bottom left corner of the lattice, and the second argument is an array
+// object of the coordinates of the top right corner plus 1.
 // The example uses double braces to initiate the array object and its
 // subobjects.
 //
@@ -185,7 +185,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   const int DIM = 2;
 
   RAJA::OffsetLayout<DIM> layout =
-      RAJA::make_offset_layout<DIM>({{-1, -1}}, {{N_r, N_c}});
+      RAJA::make_offset_layout<DIM>({{-1, -1}}, {{N_r+1, N_c+1}});
 
   RAJA::View<int, RAJA::OffsetLayout<DIM>> inputView(input, layout);
   RAJA::View<int, RAJA::OffsetLayout<DIM>> outputView(output, layout);

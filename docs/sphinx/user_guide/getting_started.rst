@@ -19,14 +19,14 @@ This section will help get you up and running with RAJA quickly.
 Requirements
 ============
 
-The primary requirement for using RAJA is a C++11 compliant compiler.
+The primary requirement for using RAJA is a C++14 compliant compiler.
 Accessing various programming model back-ends requires that they be supported
 by the compiler you chose. Available options and how to enable or disable 
 them are described in :ref:`configopt-label`. To build RAJA in its most basic
 form and use its simplest features:
 
-- C++ compiler with C++11 support
-- `CMake <https://cmake.org/>`_ version 3.9 or greater.
+- C++ compiler with C++14 support
+- `CMake <https://cmake.org/>`_ version 3.14.5 or greater.
 
 
 ==================
@@ -83,7 +83,7 @@ RAJA uses CMake to configure a build. A "bare bones" configuration looks like::
   $ mkdir build-dir && cd build-dir
   $ cmake -DCMAKE_INSTALL_PREFIX=/path/to/install ../
 
-.. note:: * RAJA requires a minimum CMake version of 3.9.
+.. note:: * RAJA requires a minimum CMake version of 3.14.5.
           * Builds must be *out-of-source*.  RAJA does not allow building in
             the source directory, so you must create a build directory and
             run CMake in it.
@@ -216,11 +216,11 @@ HIP
 To run RAJA code on AMD GPUs, one typically uses the HIP compiler and tool 
 chain (which can also be used to compile code for NVIDIA GPUs).
 
-.. note:: RAJA requires version 3.5 or newer of the rocm software stack to 
+.. note:: RAJA requires version 3.5 or newer of the ROCm software stack to 
           use the RAJA HIP back-end.
 
 Also, RAJA relies on the rocPRIM HIP utilities library for some HIP
-functionality. The rocPRIM included in the ROCM install is used by default if
+functionality. The rocPRIM included in the ROCm install is used by default if
 available. RAJA includes a rocPRIM submodule that is used if it is not
 available. To use an external rocPRIM install provide the following option to CMake:
 ``-DRAJA_ENABLE_EXTERNAL_ROCPRIM=On -DROCPRIM_DIR=<pat/to/rocPRIM>``.

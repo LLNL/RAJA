@@ -224,11 +224,14 @@ void hip_occupancy_max_blocks_threads(Func&& func, int shmem_size,
 
   if (data.prev_shmem_size != shmem_size) {
 
-    //not implemented yet
-    // hipErrchk(hipOccupancyMaxPotentialBlockSize(
-    //     &data.max_blocks, &data.max_threads, func, shmem_size));
+#ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
+    hipErrchk(hipOccupancyMaxPotentialBlockSize(
+        &data.max_blocks, &data.max_threads, func, shmem_size));
+#else
+    RAJA_UNUSED_VAR(func);
     data.max_blocks = 64;
     data.max_threads = 1024;
+#endif
 
     data.prev_shmem_size = shmem_size;
 
@@ -255,9 +258,13 @@ void hip_occupancy_max_blocks(Func&& func, int shmem_size,
 
   if (data.prev_shmem_size != shmem_size) {
 
-    // hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor(
-    //     &data.max_blocks, func, num_threads, shmem_size));
+#ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
+    hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor(
+        &data.max_blocks, func, num_threads, shmem_size));
+#else
+    RAJA_UNUSED_VAR(func);
     data.max_blocks = 2;
+#endif
 
     if (data.multiProcessorCount < 0) {
 
@@ -293,10 +300,13 @@ void hip_occupancy_max_blocks(Func&& func, int shmem_size,
   if ( data.prev_shmem_size  != shmem_size ||
        data.prev_num_threads != num_threads ) {
 
-    //not implemented yet
-    // hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor(
-    //     &data.max_blocks, func, num_threads, shmem_size));
+#ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
+    hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor(
+        &data.max_blocks, func, num_threads, shmem_size));
+#else
+    RAJA_UNUSED_VAR(func);
     data.max_blocks = 2;
+#endif
 
     if (data.multiProcessorCount < 0) {
 

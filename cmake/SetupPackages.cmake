@@ -29,17 +29,28 @@ if (RAJA_ENABLE_TBB)
   endif()
 endif ()
 
-if (RAJA_ENABLE_CUDA OR RAJA_ENABLE_EXTERNAL_CUB)
-  find_package(CUB)
-  if (CUB_FOUND)
-    set(RAJA_ENABLE_EXTERNAL_CUB On)
-    blt_import_library(
-      NAME cub
-      INCLUDES ${CUB_INCLUDE_DIRS}
-      TREAT_INCLUDES_AS_SYSTEM ON
-      EXPORTABLE ON)
-  elseif(RAJA_ENABLE_EXTERNAL_CUB)
-    message(FATAL_ERROR "External CUB not found, CUB_DIR=${CUB_DIR}.")
+if (RAJA_ENABLE_CUDA)
+  if (RAJA_ENABLE_EXTERNAL_CUB STREQUAL "VersionDependent")
+    if (CUDA_VERSION_STRING VERSION_GREATER_EQUAL "11.0")
+      set(RAJA_ENABLE_EXTERNAL_CUB ON)
+      message(STATUS "Setting RAJA_ENABLE_EXTERNAL_CUB ON with CUDA_VERSION ${CUDA_VERSION_STRING} >= 11.")
+    else()
+      set(RAJA_ENABLE_EXTERNAL_CUB OFF)
+      message(STATUS "Setting RAJA_ENABLE_EXTERNAL_CUB OFF with CUDA_VERSION ${CUDA_VERSION_STRING} < 11.")
+    endif()
+  endif()
+
+  if (RAJA_ENABLE_EXTERNAL_CUB)
+    find_package(CUB)
+    if (CUB_FOUND)
+      blt_import_library(
+        NAME cub
+        INCLUDES ${CUB_INCLUDE_DIRS}
+        TREAT_INCLUDES_AS_SYSTEM ON
+        EXPORTABLE ON)
+    else()
+      message(FATAL_ERROR "External CUB not found, CUB_DIR=${CUB_DIR}.")
+    endif()
   else()
     message(STATUS "Using RAJA CUB submodule.")
   endif()
@@ -59,23 +70,34 @@ if (RAJA_ENABLE_CUDA AND RAJA_ENABLE_NV_TOOLS_EXT)
   endif()
 endif ()
 
-if (RAJA_ENABLE_HIP OR RAJA_ENABLE_EXTERNAL_ROCPRIM)
-  find_package(RocPRIM)
-  if (ROCPRIM_FOUND)
-    set(RAJA_ENABLE_EXTERNAL_ROCPRIM On)
-    blt_import_library(
-      NAME rocPRIM
-      INCLUDES ${ROCPRIM_INCLUDE_DIRS}
-      TREAT_INCLUDES_AS_SYSTEM ON
-      EXPORTABLE ON)
-  elseif (RAJA_ENABLE_EXTERNAL_ROCPRIM)
+if (RAJA_ENABLE_HIP)
+  if (RAJA_ENABLE_EXTERNAL_ROCPRIM STREQUAL "VersionDependent")
+    if (hip_VERSION VERSION_GREATER_EQUAL "4.0")
+      set(RAJA_ENABLE_EXTERNAL_ROCPRIM ON)
+      message(STATUS "Setting RAJA_ENABLE_EXTERNAL_ROCPRIM ON with hip_VERSION ${hip_VERSION} >= 4.")
+    else()
+      set(RAJA_ENABLE_EXTERNAL_ROCPRIM OFF)
+      message(STATUS "Setting RAJA_ENABLE_EXTERNAL_ROCPRIM OFF with hip_VERSION ${hip_VERSION} < 4.")
+    endif()
+  endif()
+
+  if (RAJA_ENABLE_EXTERNAL_ROCPRIM)
+    find_package(RocPRIM)
+    if (ROCPRIM_FOUND)
+      blt_import_library(
+        NAME rocPRIM
+        INCLUDES ${ROCPRIM_INCLUDE_DIRS}
+        TREAT_INCLUDES_AS_SYSTEM ON
+        EXPORTABLE ON)
+    else()
       message(FATAL_ERROR "External rocPRIM not found, ROCPRIM_DIR=${ROCPRIM_DIR}.")
+    endif()
   else()
     message(STATUS "Using RAJA rocPRIM submodule.")
   endif()
 endif ()
 
-if (ENABLE_HIP AND ENABLE_ROCTX)
+if (RAJA_ENABLE_HIP AND RAJA_ENABLE_ROCTX)
   include(FindRoctracer)
   blt_import_library(NAME roctx
                      INCLUDES ${ROCTX_INCLUDE_DIRS}
@@ -86,7 +108,7 @@ set(TPL_DEPS)
 blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF RAJA_ENABLE_CUDA)
 blt_list_append(TO TPL_DEPS ELEMENTS nvtoolsext IF RAJA_ENABLE_NV_TOOLS_EXT)
 blt_list_append(TO TPL_DEPS ELEMENTS cub IF RAJA_ENABLE_EXTERNAL_CUB)
-blt_list_append(TO TPL_DEPS ELEMENTS hip hip_runtime IF RAJA_ENABLE_HIP)
+blt_list_append(TO TPL_DEPS ELEMENTS blt_hip blt_hip_runtime IF RAJA_ENABLE_HIP)
 blt_list_append(TO TPL_DEPS ELEMENTS rocPRIM IF RAJA_ENABLE_EXTERNAL_ROCPRIM)
 blt_list_append(TO TPL_DEPS ELEMENTS openmp IF RAJA_ENABLE_OPENMP)
 blt_list_append(TO TPL_DEPS ELEMENTS mpi IF RAJA_ENABLE_MPI)
