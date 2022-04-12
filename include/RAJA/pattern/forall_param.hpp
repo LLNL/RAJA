@@ -93,22 +93,14 @@ namespace expt
     ForallParamPack(camp::tuple<Params...> t) : param_tup(t) {};
   }; // struct ForallParamPack 
   
-  //===========================================================================
-  RAJA_INLINE static auto get_empty_forall_param_pack(){
-    static ForallParamPack<> p;
-    return p;
-  }
 
-  template<camp::idx_t Idx, typename FP>
-  RAJA_HOST_DEVICE
-  constexpr
-  auto get_lambda_args(FP& fpp)
-      -> decltype(  *camp::get<Idx>( fpp.lambda_args() )  ) {
-    return (  *camp::get<Idx>( fpp.lambda_args() )  );
-  }
+
   //===========================================================================
-  
-  //===========================================================================
+  //
+  //
+  // ParamMultiplexer is how we hook into the individual calls within forall_impl.
+  //
+  //
   struct ParamMultiplexer {
     template<typename EXEC_POL, typename... Params, typename ...Args, typename FP = ForallParamPack<Params...>>
     static void constexpr init( ForallParamPack<Params...>& f_params, Args&& ...args) {
@@ -125,30 +117,87 @@ namespace expt
   };
   //===========================================================================
 
-  //===========================================================================
-  // DoesThisGoInCamp
-  namespace dtgic {
 
+
+  //===========================================================================
+  //
+  //
+  // ForallParamPack generators.
+  //
+  //
+  RAJA_INLINE static auto get_empty_forall_param_pack(){
+    static ForallParamPack<> p;
+    return p;
+  }
+
+  namespace detail {
+    // all_true trick to perform variadic expansion in static asserts.
+    // https://stackoverflow.com/questions/36933176/how-do-you-static-assert-the-values-in-a-parameter-pack-of-a-variadic-template
+    template<bool...> struct bool_pack;
+    template<bool... bs>
+    using all_true = std::is_same<bool_pack<bs..., true>, bool_pack<true, bs...>>;
+
+    template<typename Base, typename... Ts>
+    using check_types_derive_base = all_true<std::is_convertible<Ts, Base>::value...>;
+  } // namespace detail
+
+
+  template<typename... Ts>
+  constexpr auto make_forall_param_pack_from_tuple(const camp::tuple<Ts...>& tuple) {
+    static_assert(detail::check_types_derive_base<detail::ForallParamBase, Ts...>::value,
+        "Forall optional arguments do not derive ForallParamBase. Please see Reducer, ReducerLoc and KernelName for examples.") ;
+    return ForallParamPack<Ts...>(tuple);
+  }
+
+  
+
+  namespace detail {
     // Maybe we should do a lot of these with structs...
-    template<camp::idx_t... Seq, typename... Ts>
-    constexpr auto tuple_from_seq (const camp::idx_seq<Seq...>&, const camp::tuple<Ts...>& tuple){
+    template<camp::idx_t... Seq, typename TupleType>
+    constexpr auto tuple_from_seq (const camp::idx_seq<Seq...>&, const TupleType& tuple){
       return camp::make_tuple( camp::get< Seq >(tuple)... );
     };
 
     template<typename... Ts>
-    constexpr auto strip_last_elem(const camp::tuple<Ts...>& tuple){
+    constexpr auto strip_last_elem(camp::tuple<Ts...>&& tuple){
       return tuple_from_seq(camp::make_idx_seq_t<sizeof...(Ts)-1>{},tuple);
     };
+  } // namespace detail
 
-    template<typename First, typename... Ts>
-    constexpr auto strip_first_elem(const camp::list<First, Ts...>&){
-      return camp::list<Ts...>{};
-    }
 
-    //template<typename First, typename... Ts>
-    //constexpr auto strip_first_elem(const camp::tuple<First, Ts...>&){
-    //  return camp::tuple<Ts...>{};
-    //}
+  // Make a tuple of the param pack except the final element...
+  template<typename... Args>
+  constexpr auto make_forall_param_pack(Args&&... args){
+    // We assume the last element of the pack is the lambda so we need to strip it from the list.
+    auto stripped_arg_tuple = detail::strip_last_elem(camp::make_tuple(args...)); 
+    return make_forall_param_pack_from_tuple(stripped_arg_tuple);
+  }
+  //===========================================================================
+
+
+
+  //===========================================================================
+  //
+  //
+  // Callable should be the last argument in the param pack, just extract it...
+  //
+  //
+  template<typename... Args>
+  constexpr auto get_lambda(Args&&... args){
+    auto lambda = camp::get<sizeof...(Args)-1>( camp::make_tuple(args...) );
+    return lambda; 
+  } 
+  //===========================================================================
+
+
+
+  //===========================================================================
+  //
+  //
+  // Checking expected argument list against the assumed lambda.
+  //
+  //
+  namespace detail {
 
     template<typename... Ts>
     constexpr auto list_remove_pointer(const camp::list<Ts...>&){
@@ -165,18 +214,7 @@ namespace expt
       return camp::list<Ts...>{};
     }
 
-    //template<typename... Ts>
-    //using get_last_t = camp::at<camp::list<Ts...>, camp::num<sizeof...(Ts)>>; 
-    
-    // all_true trick to perform variadic expansion in static asserts.
-    // https://stackoverflow.com/questions/36933176/how-do-you-static-assert-the-values-in-a-parameter-pack-of-a-variadic-template
-    template<bool...> struct bool_pack;
-    template<bool... bs>
-    using all_true = std::is_same<bool_pack<bs..., true>, bool_pack<true, bs...>>;
-
-    template<typename Base, typename... Ts>
-    using check_types_derive_base = dtgic::all_true<std::is_convertible<Ts, Base>::value...>;
-
+    // TODO : Change to std::is_invocable at c++17
     template <typename F, typename... Args>
     struct is_invocable :
       std::is_constructible<
@@ -184,107 +222,38 @@ namespace expt
         std::reference_wrapper<typename std::remove_reference<F>::type>
       >{};
 
-  } //  namespace dtgic
-
-  //===========================================================================
-
-
-  //===========================================================================
-  // ForallParamPAck generators.
-  template<typename... Ts>
-  constexpr auto make_forall_param_pack_from_tuple(const camp::tuple<Ts...>& tuple) {
-    static_assert(dtgic::check_types_derive_base<detail::ForallParamBase, Ts...>::value,
-        "Forall optional arguments do not derive ForallParamBase. Please see Reducer, ReducerLoc and KernelName for examples.") ;
-    return ForallParamPack<Ts...>(tuple);
-  }
-
-  // Make a tuple of the param pack except the final element...
-  template<typename... Args>
-  constexpr auto make_forall_param_pack(Args&&... args){
-    // We assume the last element of the pack is the lambda so we need to strip it from the list.
-    auto stripped_arg_tuple = dtgic::strip_last_elem(camp::make_tuple(args...)); 
-    return make_forall_param_pack_from_tuple(stripped_arg_tuple);
-  }
-  //===========================================================================
-
-
-  //===========================================================================
-  
-
-  template<typename T>
-  struct lambda_arg_list : public lambda_arg_list<decltype(&T::operator())> {};
-
-  // Not currently used as checking arguments does not account for N args provided to CombiningAdapter lambdas.
-  // This does extract the labmda for when we check this in the future.
-  template<typename Lambda, typename Layout>
-  struct lambda_arg_list<CombiningAdapter<Lambda, Layout>> : public lambda_arg_list<decltype(&Lambda::operator())> {};
-
-
-  template<typename ReturnT, typename ClassT, typename... Args>
-  struct lambda_arg_list<ReturnT(ClassT::*)(Args...) const> {
-    using type = camp::list<Args...>;
-  
-  };
-
-  //===========================================================================
-
-
-  // Lambda should be the last argument in the param pack, just extract it...
-  template<typename... Args>
-  constexpr auto get_lambda(Args&&... args){
-    auto lambda = camp::get<sizeof...(Args)-1>( camp::make_tuple(args...) );
-    return lambda; 
-  } 
-
-  namespace detail {
-    template<typename LAMBDA_ARGS, typename EXPECTED_ARGS>
-    constexpr void check_forall_optional_args(const LAMBDA_ARGS&, const EXPECTED_ARGS&) {
-      static_assert(std::is_same<LAMBDA_ARGS, EXPECTED_ARGS>::value,
-        "Incorrect lambda argument types for optional Forall parameters. See USER_ARGS and EXPECTED_ARGS list above.");
+    template<typename LAMBDA, typename... EXPECTED_ARGS>
+    constexpr void check_invocable(const LAMBDA&, const camp::list<EXPECTED_ARGS...>&) {
+      static_assert(is_invocable<LAMBDA, int, EXPECTED_ARGS...>::value, "LAMBDA Not invocable w/ EXPECTED_ARGS."); 
     }
-  } //  namespace detail
+  } // namespace detail
 
-  template<typename LAMBDA, typename... EXPECTED_ARGS>
-  constexpr void check_invocable(const LAMBDA&, const camp::list<EXPECTED_ARGS...>&) {
-    static_assert(dtgic::is_invocable<LAMBDA, int, EXPECTED_ARGS...>::value, "LAMBDA Not invocable w/ EXPECTED_ARGS."); 
-  }
-
-  //// SFINAE on Combining Adapters to just no-op on the check as we can't account for the number of args passed to the lambda for the layout yet.
-  //template<typename Lambda, typename ForallParams>
-  //constexpr 
-  ////concepts::enable_if<
-  ////    RAJA::type_traits::is_CombiningAdapter<Lambda> >
-  //void
-  //check_forall_optional_args(const Lambda&, ForallParams& ) {
-  //}
 
   template<typename Lambda, typename ForallParams>
   constexpr 
-  //concepts::enable_if<
-  //    concepts::negate<RAJA::type_traits::is_CombiningAdapter<Lambda>> >
   void
   check_forall_optional_args(const Lambda& l, ForallParams& fpp) {
-    //using l_args = typename lambda_arg_list<Lambda>::type;
 
-    //using lambda_arg_type_list = decltype( dtgic::strip_first_elem( l_args{} ) );
-
-    // lambda_args should return a tuple of pointer types, we remove the pointers and
-    // add references to generate the appropriate list of expected types.
-    using expected_arg_type_list = decltype( dtgic::list_add_lvalue_ref(
-                                               dtgic::list_remove_pointer(
-                                                 dtgic::tuple_to_list(
+    using expected_arg_type_list = decltype( detail::list_add_lvalue_ref(
+                                               detail::list_remove_pointer(
+                                                 detail::tuple_to_list(
                                                    fpp.lambda_args()
                                                  )
                                                )
                                             ));
 
-    check_invocable(l, expected_arg_type_list{});
-    // Calling within another functionlike this helps us to display the type lists with tagged names.
-    //detail::check_forall_optional_args(lambda_arg_type_list{}, expected_arg_type_list{});
+    detail::check_invocable(l, expected_arg_type_list{});
   }
+  //===========================================================================
   
 
 
+  //===========================================================================
+  //
+  //
+  // Type trailts for SFINAE work.
+  //
+  //
   namespace type_traits
   {
     template <typename T> struct is_ForallParamPack : std::false_type {};
@@ -294,36 +263,50 @@ namespace expt
     template <typename First, typename... Rest> struct is_ForallParamPack_empty<ForallParamPack<First, Rest...>> : std::false_type {};
     template <> struct is_ForallParamPack_empty<ForallParamPack<>> : std::true_type {};
   }
+  //===========================================================================
 
+
+
+  //===========================================================================
   //
   //
   // Invoke Forall with Params.
   //
   //
-  CAMP_SUPPRESS_HD_WARN
-  template <typename Fn,
-            camp::idx_t... Sequence,
-            typename Params,
-            typename... Ts>
-  RAJA_HOST_DEVICE constexpr auto invoke_with_order(Params&& params,
-                                                    Fn&& f,
-                                                    camp::idx_seq<Sequence...>,
-                                                    Ts&&... extra)
-  {
-    //return f(std::forward<Ts...>(extra...), ( params.template get_lambda_args<Sequence>() )...);
-    return f(std::forward<Ts...>(extra...), ( get_lambda_args<Sequence>(params) )...);
-  }
+  namespace detail {
+    template<camp::idx_t Idx, typename FP>
+    RAJA_HOST_DEVICE
+    constexpr
+    auto get_lambda_args(FP& fpp)
+        -> decltype(  *camp::get<Idx>( fpp.lambda_args() )  ) {
+      return (  *camp::get<Idx>( fpp.lambda_args() )  );
+    }
+
+    CAMP_SUPPRESS_HD_WARN
+    template <typename Fn,
+              camp::idx_t... Sequence,
+              typename Params,
+              typename... Ts>
+    RAJA_HOST_DEVICE constexpr auto invoke_with_order(Params&& params,
+                                                      Fn&& f,
+                                                      camp::idx_seq<Sequence...>,
+                                                      Ts&&... extra)
+    {
+      return f(std::forward<Ts...>(extra...), ( get_lambda_args<Sequence>(params) )...);
+    }
+  } // namespace detail
 
   //CAMP_SUPPRESS_HD_WARN
   template <typename Params, typename Fn, typename... Ts>
   RAJA_HOST_DEVICE constexpr auto invoke_body(Params&& params, Fn&& f, Ts&&... extra)
   {
-    return expt::invoke_with_order(
+    return detail::invoke_with_order(
         camp::forward<Params>(params),
         camp::forward<Fn>(f),
         typename camp::decay<Params>::lambda_arg_seq(),
         camp::forward<Ts...>(extra)...);
   }
+  //===========================================================================
 
 } //  namespace expt
 } //  namespace RAJA
