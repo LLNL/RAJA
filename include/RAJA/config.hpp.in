@@ -372,6 +372,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #endif
 
 #define RAJA_UNROLL RAJA_PRAGMA(unroll)
+#define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(unroll(N))
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 #define RAJA_ALIGN_DATA(d) d
@@ -400,8 +401,10 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #if !defined(__NVCC__)
 #define RAJA_UNROLL RAJA_PRAGMA(GCC unroll 10000)
+#define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(GCC unroll N)
 #else
 #define RAJA_UNROLL RAJA_PRAGMA(unroll)
+#define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(unroll N)
 #endif
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
@@ -429,7 +432,9 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
-#define RAJA_UNROLL 
+#define RAJA_UNROLL
+#define RAJA_UNROLL_COUNT(N)
+
 // FIXME: alignx is breaking CUDA+xlc
 #if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d) d
@@ -458,6 +463,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #define RAJA_UNROLL RAJA_PRAGMA(clang loop unroll(enable))
+#define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(clang loop unroll_count(N))
 
 
 // note that neither nvcc nor Apple Clang compiler currently doesn't support
@@ -499,6 +505,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_SIMD
 #define RAJA_NO_SIMD
 #define RAJA_UNROLL
+#define RAJA_UNROLL_COUNT(N)
 
 #else
 
@@ -509,6 +516,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_SIMD
 #define RAJA_NO_SIMD
 #define RAJA_UNROLL
+#define RAJA_UNROLL_COUNT(N)
 
 #endif
 
@@ -546,10 +554,16 @@ T * align_hint(T * x)
 #define RAJA_UNROLL
 #endif
 
+#ifndef RAJA_UNROLL_COUNT
+#define RAJA_UNROLL_COUNT(N)
+#endif
+
 // If we're in CUDA device code, we can use the nvcc unroll pragma
 #if defined(__CUDA_ARCH__) && defined(RAJA_CUDA_ACTIVE)
 #undef RAJA_UNROLL
+#undef RAJA_UNROLL_COUNT
 #define RAJA_UNROLL RAJA_PRAGMA(unroll)
+#define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(unroll N)
 #endif
 
 #endif // closing endif for header file include guard
