@@ -102,19 +102,81 @@ Changing Builds/Container Images
 
 The builds we run in Azure are defined in the `RAJA/azure-pipelines.yml <https://github.com/LLNL/RAJA/blob/develop/azure-pipelines.yml>`_ file.
   
-Fill in details describing process to update images for new 
-compilers/versions, etc. For example, explain how the::
- 
-  FROM ghcr.io/rse-ops/gcc-ubuntu-20.04:gcc-7.3.0 AS gcc7
+Linux/Docker
+............
 
-stuff works....
+To update or add a new compiler / job to Azure CI we need to edit both ``azure-pipelines.yml`` and ``Dockerfile``.
+
+If we want to add a new Azure pipeline to build with ``compilerX``, then in ``azure-pipelines.yml`` we can add the job like so::
+
+  -job: Docker
+    ...
+    strategy:
+      matrix:
+        ...
+        compilerX: 
+          docker_target: compilerX
+
+Here, ``compilerX:`` defines the name of a job in Azure. ``docker_target: compilerX`` defines a variable ``docker_target``, which is used to determine what part of the ``Dockerfile`` to run.
+
+In the ``Dockerfile`` we will want to add our section that defines the commands for the ``compilerX`` job.::
+
+  FROM ghcr.io/rse-ops/compilerX-ubuntu-20.04:compilerX-XXX AS compilerX
+  ENV GTEST_COLOR=1
+  COPY . /home/raja/workspace
+  WORKDIR /home/raja/workspace/build
+  RUN cmake -DCMAKE_CXX_COMPILER=compilerX ... && \
+      make -j 6 &&\
+      ctest -T test --output-on-failure
+
+Each of our docker builds is built up on a base image mainted by RSE-Ops, a table of available base containers can be found `here <https://rse-ops.github.io/docker-images/>`_. We are also able to add target names to each build with ``AS ...``. This target name correlates to the ``docker_target: ...`` defined in ``azure-pipelines.yml``.
+
+The base containers are shared across multiple projects and are regularly rebuilt. If bugs are fixed in the base containers the changes will be automatically propogated to all projects using them in their Docker builds.
+
+Check `here <https://rse-ops.github.io/docker-images/>`_ for a list of all currently available RSE-Ops containers. Please see the `RSE-Ops Containers Project <https://github.com/rse-ops/docker-images>`_ on Github to get new containers built that aren't yet available.
+
+Windows / MacOs
+...............
+
+We run our Windows / MacOS builds directly on the Azure virtual machine instances. In order to update the Windows / MacOS instance we can change the ``pool`` under ``-job: Windows`` or ``-job: Mac``::
+  
+  -job: Windows
+    ...
+    pool:
+      vmImage: 'windows-2019'
+    ...
+  -job: Mac
+    ...
+    pool:
+      vmImage: 'macOS-latest'
 
 Changing Build/Run Parameters
-------------------------------
+-----------------------------
 
-The commands executed to configure, build, and test RAJA for each 
-pipeline in Azure are located in the `RAJA/Dockerfile <https://github.com/LLNL/RAJA/blob/develop/Dockerfile>`_ file. 
-Each pipeline section begins with a line that ends with ``AS ...`` 
-where the ellipses in the name of a build-test pipeline. The name label
-matches an entry in the Docker test matrix in the 
-``RAJA/azure-pipelines.yml`` file mentioned above.
+Linux/Docker
+............
+
+We can edit the build and run configurations of each docker build, in the ``RUN`` command. Such as adding CMake options or changing the parallel build value of ``make -j N`` for adjusting throughput.
+
+Each base image is built using `spack <https://github.com/spack/spack>`_. For the most part the container environments are set up to run our CMake and build commands out of the box. However, there are a few exceptions where we need to ``spack load`` specific modules into the path.
+
+  * **Clang** requires us to load llvm to for runtime openmp libraries.::
+
+      . /opt/spack/share/spack/setup-env.sh && spack load llvm
+
+    **CUDA** for the cuda runtime.::
+
+      . /opt/spack/share/spack/setup-env.sh && spack load cuda
+
+    **HIP** for the hip runtime and llvm-amdgpu runtime libraries.::
+
+      . /opt/spack/share/spack/setup-env.sh && spack load hip llvm-amdgpu
+
+    **Sycl** requiers us to run setupvars.sh::
+
+      source /opt/view/setvars.sh 
+
+Windows / MacOS
+...............
+
+Windows and MacOS builds / run parameters can be configured directly in ``azure-pipelines.yml``. CMake options can be configured with ``CMAKE_EXTRA_FLAGS`` for each job. The ``-j`` value can also be edited directly in the Azure ``script`` definitions for each job.
