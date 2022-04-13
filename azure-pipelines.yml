@@ -76,6 +76,7 @@ jobs:
       echo ${CID}
       docker cp ${CID}:/home/axom/workspace/build local-build
       docker rm ${CID}
+    displayName: 'Copy test artifacts'
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'cTest'
