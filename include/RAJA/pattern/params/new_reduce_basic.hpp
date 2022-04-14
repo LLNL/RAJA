@@ -28,19 +28,19 @@ struct ValLoc {
   ValLoc(value_type v, RAJA::Index_type l) : val(v), loc(l) {}
 
   void min(value_type v, index_type l) { if (v <  val) { val = v; loc = l; } }
-  void max(value_type v, index_type l) { if (v >= val) { val = v; loc = l; } }
+  void max(value_type v, index_type l) { if (v >  val) { val = v; loc = l; } }
 
   bool constexpr operator < (const ValLoc& rhs) const { return val < rhs.val; }
-  bool constexpr operator <=(const ValLoc& rhs) const { return val <=rhs.val; }
+  bool constexpr operator <=(const ValLoc& rhs) const { return val < rhs.val; }
   bool constexpr operator > (const ValLoc& rhs) const { return val > rhs.val; }
-  bool constexpr operator >=(const ValLoc& rhs) const { return val >=rhs.val; }
+  bool constexpr operator >=(const ValLoc& rhs) const { return val > rhs.val; }
 
   value_type getVal() {return val;}
   RAJA::Index_type getLoc() {return loc;}
 
 private:
   value_type val;
-  index_type loc = 0;
+  index_type loc = -1;
 };
 
 } //  namespace expt
