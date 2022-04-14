@@ -23,12 +23,12 @@ struct ValLoc {
   using index_type = RAJA::Index_type;
   using value_type = T;
 
-  ValLoc() {}
-  ValLoc(value_type v) : val(v) {}
-  ValLoc(value_type v, RAJA::Index_type l) : val(v), loc(l) {}
+  RAJA_HOST_DEVICE ValLoc() {}
+  RAJA_HOST_DEVICE ValLoc(value_type v) : val(v) {}
+  RAJA_HOST_DEVICE ValLoc(value_type v, RAJA::Index_type l) : val(v), loc(l) {}
 
-  void min(value_type v, index_type l) { if (v <  val) { val = v; loc = l; } }
-  void max(value_type v, index_type l) { if (v >  val) { val = v; loc = l; } }
+  RAJA_HOST_DEVICE void min(value_type v, index_type l) { if (v <  val) { val = v; loc = l; } }
+  RAJA_HOST_DEVICE void max(value_type v, index_type l) { if (v >  val) { val = v; loc = l; } }
 
   bool constexpr operator < (const ValLoc& rhs) const { return val <= rhs.val; }
   bool constexpr operator <=(const ValLoc& rhs) const { return val < rhs.val; }
