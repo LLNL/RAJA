@@ -8,7 +8,7 @@
 #
 # List of experimental reduction types for generating test files.
 #
-set(REDUCETYPES ReduceSum ReduceMin ReduceMax ReduceMaxLoc)
+set(REDUCETYPES ReduceSum ReduceMin ReduceMax ReduceMaxLoc ReduceMinLoc)
 
 set(DATATYPES CoreReductionDataTypeList)
 
