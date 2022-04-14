@@ -227,7 +227,9 @@ namespace expt
 
     template<typename LAMBDA, typename... EXPECTED_ARGS>
     constexpr void check_invocable(const LAMBDA&, const camp::list<EXPECTED_ARGS...>&) {
+#if !defined(RAJA_ENABLE_HIP)      
       static_assert(is_invocable<LAMBDA, INDEX_ARGS, EXPECTED_ARGS...>::value, "LAMBDA Not invocable w/ EXPECTED_ARGS."); 
+#endif
     }
   } // namespace detail
 
