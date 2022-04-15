@@ -83,8 +83,6 @@
 
 #include "RAJA/util/resource.hpp"
 
-//#include "RAJA/pattern/forall_param.hpp"
-
 namespace RAJA
 {
 
@@ -192,28 +190,6 @@ forall(Res r, ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
  *
  ******************************************************************************
  */
-//template <typename Res,
-//          typename ExecutionPolicy,
-//          typename Container,
-//          typename IndexType,
-//          typename LoopBody>
-//RAJA_INLINE resources::EventProxy<Res> forall_Icount(Res r,
-//                                                      ExecutionPolicy&& p,
-//                                                      Container&& c,
-//                                                      IndexType&& icount,
-//                                                      LoopBody&& loop_body)
-//{
-//  using std::begin;
-//  using std::distance;
-//  using std::end;
-//  auto range = RangeSegment(0, distance(begin(c), end(c)));
-//  detail::icount_adapter<Container, LoopBody, IndexType> adapted(c,
-//                                                                 loop_body,
-//                                                                 icount);
-//  using policy::sequential::forall_impl;
-//  RAJA_FORCEINLINE_RECURSIVE
-//  return forall_impl(r, std::forward<ExecutionPolicy>(p), range, adapted);
-//}
 template <typename Res,
           typename ExecutionPolicy,
           typename Container,
@@ -318,35 +294,6 @@ inline namespace policy_by_value_interface
  *
  ******************************************************************************
  */
-//template <typename ExecutionPolicy, typename Res, typename IdxSet, typename LoopBody>
-//RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
-//                                                     Res r,
-//                                                     IdxSet&& c,
-//                                                     LoopBody&& loop_body)
-//{
-//  static_assert(type_traits::is_index_set<IdxSet>::value,
-//                "Expected a TypedIndexSet but did not get one. Are you using "
-//                "a TypedIndexSet policy by mistake?");
-//
-//  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
-//  util::callPreCapturePlugins(context);
-//
-//  using RAJA::util::trigger_updates_before;
-//  auto body = trigger_updates_before(loop_body);
-//
-//  util::callPostCapturePlugins(context);
-//
-//  util::callPreLaunchPlugins(context);
-//
-//  RAJA::resources::EventProxy<Res> e = wrap::forall_Icount(
-//      r,
-//      std::forward<ExecutionPolicy>(p),
-//      std::forward<IdxSet>(c),
-//      std::move(body));
-//
-//  util::callPostLaunchPlugins(context);
-//  return e;
-//}
 template <typename ExecutionPolicy, typename Res, typename IdxSet, typename... Params>
 RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
                                                      Res r,
@@ -401,35 +348,6 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
  *
  ******************************************************************************
  */
-//template <typename ExecutionPolicy, typename Res, typename IdxSet, typename LoopBody>
-//RAJA_INLINE concepts::enable_if_t<
-//    resources::EventProxy<Res>,
-//    type_traits::is_indexset_policy<ExecutionPolicy>>
-//forall(ExecutionPolicy&& p, Res r, IdxSet&& c, LoopBody&& loop_body)
-//{
-//  static_assert(type_traits::is_index_set<IdxSet>::value,
-//                "Expected a TypedIndexSet but did not get one. Are you using "
-//                "a TypedIndexSet policy by mistake?");
-//
-//  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
-//  util::callPreCapturePlugins(context);
-//
-//  using RAJA::util::trigger_updates_before;
-//  auto body = trigger_updates_before(loop_body);
-//
-//  util::callPostCapturePlugins(context);
-//
-//  util::callPreLaunchPlugins(context);
-//
-//  resources::EventProxy<Res> e = wrap::forall(
-//      r,
-//      std::forward<ExecutionPolicy>(p),
-//      std::forward<IdxSet>(c),
-//      std::move(body));
-//
-//  util::callPostLaunchPlugins(context);
-//  return e;
-//}
 template <typename ExecutionPolicy, typename Res, typename IdxSet, typename... Params>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<Res>,
@@ -511,51 +429,12 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
  *
  ******************************************************************************
  */
-//template <typename ExecutionPolicy,
-//          typename Res,
-//          typename Container,
-//          typename IndexType,
-//          typename LoopBody>
-//RAJA_INLINE concepts::enable_if_t<
-//    resources::EventProxy<Res>,
-//    type_traits::is_range<Container>,
-//    type_traits::is_integral<IndexType>>
-//forall_Icount(ExecutionPolicy&& p,
-//              Res r,
-//              Container&& c,
-//              IndexType icount,
-//              LoopBody&& loop_body)
-//{
-//  static_assert(type_traits::is_random_access_range<Container>::value,
-//                "Container does not model RandomAccessIterator");
-//
-//  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
-//  util::callPreCapturePlugins(context);
-//
-//  using RAJA::util::trigger_updates_before;
-//  auto body = trigger_updates_before(loop_body);
-//
-//  util::callPostCapturePlugins(context);
-//
-//  util::callPreLaunchPlugins(context);
-//
-//  resources::EventProxy<Res> e = wrap::forall_Icount(
-//      r,
-//      std::forward<ExecutionPolicy>(p),
-//      std::forward<Container>(c),
-//      icount,
-//      std::move(body));
-//
-//  util::callPostLaunchPlugins(context);
-//  return e;
-//}
 template <typename ExecutionPolicy,
           typename Res,
           typename Container,
           typename IndexType,
           typename FirstParam,
           typename... Params>
-          //typename LoopBody>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<Res>,
     type_traits::is_range<Container>,
@@ -566,7 +445,6 @@ forall_Icount(ExecutionPolicy&& p,
               IndexType icount,
               FirstParam first,
               Params... params)
-              //LoopBody&& loop_body)
 {
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
@@ -626,36 +504,6 @@ forall_Icount(ExecutionPolicy&& p,
  *
  ******************************************************************************
  */
-//template <typename ExecutionPolicy, typename Res, typename Container, typename LoopBody>
-//RAJA_INLINE concepts::enable_if_t<
-//    resources::EventProxy<Res>,
-//    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
-//    concepts::negate<type_traits::is_multi_policy<ExecutionPolicy>>,
-//    type_traits::is_range<Container>>
-//forall(ExecutionPolicy&& p, Res r, Container&& c, LoopBody&& loop_body)
-//{
-//  static_assert(type_traits::is_random_access_range<Container>::value,
-//                "Container does not model RandomAccessIterator");
-//
-//  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
-//  util::callPreCapturePlugins(context);
-//
-//  using RAJA::util::trigger_updates_before;
-//  auto body = trigger_updates_before(loop_body);
-//
-//  util::callPostCapturePlugins(context);
-//
-//  util::callPreLaunchPlugins(context);
-//
-//  resources::EventProxy<Res> e =  wrap::forall(
-//      r,
-//      std::forward<ExecutionPolicy>(p),
-//      std::forward<Container>(c),
-//      std::move(body));
-//
-//  util::callPostLaunchPlugins(context);
-//  return e;
-//}
 
 template <typename ExecutionPolicy, typename Res, typename Container, typename... Params>
 RAJA_INLINE concepts::enable_if_t<

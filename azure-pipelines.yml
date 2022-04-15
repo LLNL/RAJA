@@ -65,14 +65,6 @@ jobs:
         docker_target: hip
       sycl:
         docker_target: sycl
-    #gcc5: 
-    #    docker_target: gcc5
-    #  gcc5-debug: 
-    #    docker_target: gcc5-debug
-    #  gcc6:
-    #    docker_target: gcc6
-    #  nvcc10-debug:
-    #    docker_target: nvcc10-debug
   pool:
     vmImage: 'ubuntu-latest'
   variables:

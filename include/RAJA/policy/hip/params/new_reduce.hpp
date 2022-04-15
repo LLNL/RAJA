@@ -1,8 +1,6 @@
 #ifndef NEW_REDUCE_HIP_REDUCE_HPP
 #define NEW_REDUCE_HIP_REDUCE_HPP
 
-//#include "../util/policy.hpp"
-
 #if defined(RAJA_ENABLE_HIP)
 
 #include <hip/hip_runtime.h>
