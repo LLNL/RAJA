@@ -305,23 +305,15 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
 
             hip_root = spec['hip'].prefix
             rocm_root = hip_root + "/.."
+            hip_arch = spec.variants['amdgpu_target'].value
             cfg.write(cmake_cache_entry("HIP_ROOT_DIR",
                                         hip_root))
             cfg.write(cmake_cache_entry("ROCM_ROOT_DIR",
                                         rocm_root))
             cfg.write(cmake_cache_entry("HIP_PATH",
                                         rocm_root + '/llvm/bin'))
-            cfg.write(cmake_cache_entry("CMAKE_HIP_ARCHITECTURES", 'fx906'))
+            cfg.write(cmake_cache_entry("CMAKE_HIP_ARCHITECTURES", hip_arch[0]))
 
-            hipcc_flags = ['--amdgpu-target=gfx906']
-            if "+desul" in spec:
-                hipcc_flags.append('-std=c++14')
-            
-            cfg.write(cmake_cache_entry("HIP_HIPCC_FLAGS", ';'.join(hipcc_flags)))
-
-            #cfg.write(cmake_cache_entry("HIP_RUNTIME_INCLUDE_DIRS",
-            #                            "{0}/include;{0}/../hsa/include".format(hip_root)))
-            #hip_link_flags = "-Wl,--disable-new-dtags -L{0}/lib -L{0}/../lib64 -L{0}/../lib -Wl,-rpath,{0}/lib:{0}/../lib:{0}/../lib64 -lamdhip64 -lhsakmt -lhsa-runtime64".format(hip_root)
             if ('%gcc' in spec) or (using_toolchain):
                 if ('%gcc' in spec):
                     gcc_bin = os.path.dirname(self.compiler.cxx)
@@ -332,8 +324,6 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
                 "--gcc-toolchain={0}".format(gcc_prefix))) 
                 cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS",
                 " -Wl,-rpath {}/lib64".format(gcc_prefix)))
-            #else:
-            #    cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
 
         else:
             cfg.write(cmake_cache_option("ENABLE_HIP", False))
