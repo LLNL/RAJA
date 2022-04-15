@@ -360,6 +360,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
 
         cfg.write(cmake_cache_option("ENABLE_BENCHMARKS", 'tests=benchmarks' in spec))
         cfg.write(cmake_cache_option("ENABLE_TESTS", not 'tests=none' in spec or self.run_tests))
+        cfg.write(cmake_cache_string("camp_DIR", spec['camp'].prefix))
 
         #######################
         # Close and save
