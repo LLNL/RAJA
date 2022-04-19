@@ -20,6 +20,26 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
+Version 2022.03.1 -- Release date 2022-04-xx
+============================================
+
+This is a patch release that contains some minor fixes and improvements.
+This release should function the same as the v2022.03.0 release.
+
+Notable changes include:
+
+  * A C++20 compilation option is added. This required updating the BLT 
+    submodule a couple of commits ahead of v0.5.0, which was included in the
+    v2022.03.0 release.
+  * Loop unroll macros for HIP kernels received some minor rework.
+  * RAJA_UNROLL_COUNT added to allow users to unroll loops for a given
+    number of iterations.
+  * RAJA_UNROLL_COUNT macro was undefined when inside a CUDA device kernel. 
+    This resolves compiler warnings that appeared when using clang as the 
+    host compiler.
+
+
+
 Version 2022.03.0 -- Release date 2022-03-15
 ============================================
 
