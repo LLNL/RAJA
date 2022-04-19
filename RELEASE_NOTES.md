@@ -20,7 +20,7 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
-Version 2022.03.1 -- Release date 2022-04-xx
+Version 2022.03.1 -- Release date 2022-04-20
 ============================================
 
 This is a patch release that contains some minor fixes and improvements.
