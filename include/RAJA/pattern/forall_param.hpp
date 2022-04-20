@@ -2,6 +2,7 @@
 #define FORALL_PARAM_HPP
 
 #include "RAJA/policy/sequential/new_reduce.hpp"
+#include "RAJA/policy/tbb/new_reduce.hpp"
 #include "RAJA/policy/openmp/new_reduce.hpp"
 #include "RAJA/policy/cuda/params/new_reduce.hpp"
 #include "RAJA/policy/cuda/params/kernel_name.hpp"

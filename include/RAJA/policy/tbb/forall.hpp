@@ -32,6 +32,7 @@
 #include "RAJA/index/RangeSegment.hpp"
 #include "RAJA/internal/fault_tolerance.hpp"
 #include "RAJA/pattern/forall.hpp"
+#include "RAJA/pattern/forall_param.hpp"
 #include "RAJA/policy/tbb/policy.hpp"
 #include "RAJA/util/types.hpp"
 
@@ -68,11 +69,65 @@ namespace tbb
  * stealing at the cost of initial start-up overhead for a top-level loop.
  */
 
-template <typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
-                                                               const tbb_for_dynamic& p,
-                                                               Iterable&& iter,
-                                                               Func&& loop_body)
+template <typename Iterable, typename Func, typename ForallParam>
+RAJA_INLINE 
+concepts::enable_if_t<
+  resources::EventProxy<resources::Host>,
+  expt::type_traits::is_ForallParamPack<ForallParam>,
+  concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>
+  >
+forall_impl(resources::Host host_res,
+            const tbb_for_dynamic& p,
+            Iterable&& iter,
+            Func&& loop_body,
+            ForallParam f_params)
+{
+  using std::begin;
+  using std::distance;
+  using std::end;
+  using brange = ::tbb::blocked_range<size_t>;
+  auto b = begin(iter);
+  size_t dist = std::abs(distance(begin(iter), end(iter)));
+
+  expt::ParamMultiplexer::init<tbb_for_dynamic>(f_params);
+
+  f_params = ::tbb::parallel_reduce(
+      brange(0, dist, p.grain_size),
+
+      f_params,
+
+      [=](const brange& r, ForallParam fp) {
+        using RAJA::internal::thread_privatize;
+        auto privatizer = thread_privatize(loop_body);
+        auto body = privatizer.get_priv();
+        for (auto i = r.begin(); i != r.end(); ++i)
+          expt::invoke_body(fp, loop_body, i);
+        return fp;
+      },
+
+      [](ForallParam lhs, ForallParam rhs) -> ForallParam {
+        expt::ParamMultiplexer::combine<tbb_for_dynamic>(lhs, rhs);
+        return rhs;
+      }
+  );
+
+  expt::ParamMultiplexer::resolve<tbb_for_dynamic>(f_params);
+
+  return resources::EventProxy<resources::Host>(host_res);
+}
+
+template <typename Iterable, typename Func, typename ForallParam>
+RAJA_INLINE 
+concepts::enable_if_t<
+  resources::EventProxy<resources::Host>,
+  expt::type_traits::is_ForallParamPack<ForallParam>,
+  expt::type_traits::is_ForallParamPack_empty<ForallParam>
+  >
+forall_impl(resources::Host host_res,
+            const tbb_for_dynamic& p,
+            Iterable&& iter,
+            Func&& loop_body,
+            ForallParam)
 {
   using std::begin;
   using std::distance;
@@ -111,11 +166,18 @@ RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host h
  * correctnes requires the per-thread mapping, you *must* use TBB 2017 or newer
  */
 
-template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
-                                                               const tbb_for_static<ChunkSize>&,
-                                                               Iterable&& iter,
-                                                               Func&& loop_body)
+template <typename Iterable, typename Func, size_t ChunkSize, typename ForallParam>
+RAJA_INLINE 
+concepts::enable_if_t<
+  resources::EventProxy<resources::Host>,
+  expt::type_traits::is_ForallParamPack<ForallParam>,
+  expt::type_traits::is_ForallParamPack_empty<ForallParam>
+  >
+forall_impl(resources::Host host_res,
+            const tbb_for_static<ChunkSize>&,
+            Iterable&& iter,
+            Func&& loop_body,
+            ForallParam)
 {
   using std::begin;
   using std::distance;

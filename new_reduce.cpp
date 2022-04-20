@@ -240,6 +240,44 @@ int main(int argc, char *argv[])
     std::cout << "ma : " << ma <<"\n";
   }
 #endif
+#if 1
+  {
+    std::cout << "Basic TBB Reduction RAJA w/ NEW REDUCE\n";
+
+    using VLD = RAJA::expt::ValLoc<double>;
+    VLD vlm;
+    VLD vlma;
+
+    RAJA::Timer t;
+    t.start();
+    RAJA::forall<RAJA::tbb_for_dynamic>(
+                   RAJA::RangeSegment(0, N),
+                     RAJA::expt::Reduce<RAJA::operators::plus>(&r),
+                     RAJA::expt::Reduce<RAJA::operators::minimum>(&m),
+                     RAJA::expt::Reduce<RAJA::operators::maximum>(&ma),
+                     RAJA::expt::Reduce<RAJA::operators::maximum>(&vlma),
+                     RAJA::expt::Reduce<RAJA::operators::minimum>(&vlm),
+                     //int{}
+                     [=](int i, double &r_, double &m_, double &ma_, VLD &vlma_, VLD &vlm_) {
+                       r_ += a[i] * b[i];
+                       m_ = a[i] < m_ ? a[i] : m_;
+                       ma_ = a[i] > m_ ? a[i] : m_;
+                       vlma_.max(i, i);
+                       vlm_.min(i, i);
+                     }
+                 );
+    t.stop();
+
+    std::cout << "t : " << t.elapsed() << "\n";
+    std::cout << "r : " << r << "\n";
+    std::cout << "m : "  << m  <<"\n";
+    std::cout << "ma : " << ma <<"\n";
+    std::cout << "vlm val : " << vlm.getVal() <<"\n";
+    std::cout << "vlm loc : " << vlm.getLoc() <<"\n";
+    std::cout << "vlma val : " << vlma.getVal() <<"\n";
+    std::cout << "vlma loc : " << vlma.getLoc() <<"\n";
+  }
+#endif
 #if 0
   {
     std::cout << "Basic Reduction RAJA\n";
@@ -265,7 +303,7 @@ int main(int argc, char *argv[])
     std::cout << "ma : " << rma.get() <<"\n";
   }
 #endif
-#if 0
+#if 1
   {
     std::cout << "Basic Reduction RAJA w/ NEW REDUCE\n";
 
@@ -273,7 +311,7 @@ int main(int argc, char *argv[])
     VLD vlm;
     VLD vlma;
     //auto rlvl = RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&vl);
-
+    r = 0;
     RAJA::Timer t;
     t.start();
     RAJA::forall<RAJA::seq_exec>(
@@ -288,8 +326,8 @@ int main(int argc, char *argv[])
                        r_ += a[i] * b[i];
                        m_ = a[i] < m_ ? a[i] : m_;
                        ma_ = a[i] > m_ ? a[i] : m_;
-                       vlma_ = VLD(i, i);
-                       vlm_ = VLD(i, i);
+                       vlma_.max(i, i);
+                       vlm_.min(i, i);
                      }
                  );
     t.stop();
@@ -304,7 +342,7 @@ int main(int argc, char *argv[])
     std::cout << "vlma loc : " << vlma.getLoc() <<"\n";
   }
 #endif
-#if 1
+#if 0
   {
     std::cout << "Basic Reduction RAJA w/ NEW REDUCE LOC\n";
 

@@ -1,9 +1,12 @@
 #ifndef NEW_REDUCE_TBB_REDUCE_HPP
 #define NEW_REDUCE_TBB_REDUCE_HPP
 
-
+#include "RAJA/pattern/params/new_reduce_basic.hpp"
 
 #if defined(RAJA_ENABLE_TBB)
+#include "RAJA/policy/tbb/policy.hpp"
+namespace RAJA {
+namespace expt {
 namespace detail {
 
   // Init
@@ -26,6 +29,8 @@ namespace detail {
   }
 
 } //  namespace detail
+} //  namespace expt
+} //  namespace RAJA
 #endif
 
 #endif //  NEW_REDUCE_SEQ_REDUCE_HPP
