@@ -160,10 +160,29 @@ class LaunchContext : public Grid
 {
 public:
 
+  mutable ::sycl::group<3> *team{nullptr};
+
   LaunchContext(Grid const &base)
       : Grid(base)
   {
   }
+
+  void SetTeamID(::sycl::group<3> *team_) const
+  {
+    team = team_;
+  }
+
+  int GetTeamID(int DIM) const
+  {
+    return team->get_id(DIM);
+  }
+
+  /*
+  SYCL_EXTERNAL ::sycl::group<3> *GetTeam() const
+  {
+    return team;
+  }
+  */
 
   RAJA_HOST_DEVICE
   void teamSync()

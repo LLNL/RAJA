@@ -22,6 +22,10 @@ raja_add_executable(
   SOURCES tut_add-vectors.cpp)
 
 raja_add_executable(
+  NAME sycl_teams
+  SOURCES sycl_teams.cpp)
+
+raja_add_executable(
   NAME tut_dot-product
   SOURCES tut_dot-product.cpp)
 

@@ -33,8 +33,8 @@ namespace RAJA
 namespace expt
 {
 
-template <bool async>
-struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 1>> {
+template <bool async> //switch 1 -> 0, but what should it be ? Ask R. Chen?
+struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
 // sycl_launch_t num_threads set to 1, but not used in launch of kernel
 
   template <typename BODY_IN>
@@ -44,21 +44,56 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 1>> {
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
 
     resources::Sycl sycl_res = resources::Sycl::get_default();
-    
+
     // Global resource was not set, use the resource that was passed to forall
     // Determine if the default SYCL res is being used
     if (!q) {
       q = sycl_res.get_queue();
     }
 
-    // Compute the number of blocks and threads
-    //
+    std::cout<<"launching kernel "<<std::endl;
 
+    const ::sycl::range<3> gridSize(ctx.teams.value[0],
+				    ctx.teams.value[1],
+				    ctx.teams.value[2]);
+
+    const ::sycl::range<3> blockSize(ctx.threads.value[0],
+				     ctx.threads.value[1],
+				     ctx.threads.value[2]);
+
+    std::cout<<"blks "<<ctx.teams.value[0]<<" "
+	     <<ctx.teams.value[1]<<" "<<ctx.teams.value[2]<<std::endl;
+
+
+   q->submit([&](cl::sycl::handler& h) {
+
+       //
+       //If dynamic shared memory is used, we would need to allocate here
+       //
+
+       h.parallel_for_work_group(gridSize, blockSize, [=] (::sycl::group<3> grp) {
+
+	   ctx.SetTeamID(&grp);
+
+	   //ctx.team->parallel_for_work_item(::sycl::range<3>(ctx.threads.value[0],
+	   //ctx.threads.value[1],
+	   //ctx.threads.value[2]),
+	   //[&] (::sycl::h_item<3> item)
+	   //{
+	   body_in(ctx);
+	   //});
+
+	 });
+   });
+
+   if (!async) { q->wait(); }
+
+   std::cout<<"completed kernel launch"<<std::endl;
   }
 
-  
 
-  /*
+
+
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
   exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY_IN &&body_in)
@@ -66,15 +101,15 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 1>> {
 
     using BODY = camp::decay<BODY_IN>;
 
-    auto func = launch_global_fcn<BODY>;
+    //auto func = launch_global_fcn<BODY>;
 
-    Get the concrete resource 
+    //Get the concrete resource
     resources::Sycl sycl_res = res.get<RAJA::resources::Sycl>();
 
     //
     // Compute the number of blocks and threads
     //
-
+#if 0
     sycl_dim_t gridSize{ static_cast<sycl_dim_member_t>(ctx.teams.value[0]),
                          static_cast<sycl_dim_member_t>(ctx.teams.value[1]),
                          static_cast<sycl_dim_member_t>(ctx.teams.value[2]) };
@@ -113,10 +148,11 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 1>> {
 
       RAJA_FT_END;
     }
-  
+#endif
+
     return resources::EventProxy<resources::Resource>(res);
   }
-  */
+
 
 };
 
@@ -246,10 +282,75 @@ struct LaunchExecute<RAJA::policy::sycl::expt::sycl_launch_explicit_t<async, nth
 };
 #endif
 
+
+
+/**************************************************
+*Potential ideas:
+*Introduce the concept of outer/inner loops
+*************************************************/
+template <typename SEGMENT, int DIM>
+struct LoopExecute<sycl_group_012_direct<DIM>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const &ctx,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const int len = segment.end() - segment.begin();
+    {
+      const int bx = ctx.GetTeamID(DIM);
+      if (bx < len) body(*(segment.begin() + bx));
+    }
+  }
+};
+
+//perfectly nested sycl work-item loops
+//need them to be perfectly nested as SYCL
+//adds implicit work-group barriers
+using sycl_local_01_nested_direct = sycl_local_012_direct<0,1>;
+using sycl_local_02_nested_direct = sycl_local_012_direct<0,2>;
+using sycl_local_10_nested_direct = sycl_local_012_direct<1,0>;
+using sycl_local_12_nested_direct = sycl_local_012_direct<1,2>;
+using sycl_local_20_nested_direct = sycl_local_012_direct<2,0>;
+using sycl_local_21_nested_direct = sycl_local_012_direct<2,1>;
+
+using sycl_local_012_nested_direct = sycl_local_012_direct<0,1,2>;
+using sycl_local_021_nested_direct = sycl_local_012_direct<0,2,1>;
+using sycl_local_102_nested_direct = sycl_local_012_direct<1,0,2>;
+using sycl_local_120_nested_direct = sycl_local_012_direct<1,2,0>;
+using sycl_local_201_nested_direct = sycl_local_012_direct<2,0,1>;
+using sycl_local_210_nested_direct = sycl_local_012_direct<2,1,0>;
+
+template <typename SEGMENT, int DIM>
+struct LoopExecute<sycl_local_012_direct<DIM>, SEGMENT> {
+
+  template <typename BODY>
+  //static RAJA_INLINE RAJA_DEVICE SYCL_EXTERNAL void exec(
+  static RAJA_INLINE void exec(
+      LaunchContext const &ctx,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+
+    ctx.team->parallel_for_work_item([&] (::sycl::h_item<3> item)
+    {
+      const int tx = item.get_logical_local_id(DIM);
+      const int len0 = segment.end() - segment.begin();
+      if(tx < len0) body(*(segment.begin() + tx));
+    });
+
+  }
+
+};
+
+
+
   /*************************
     Comment out for now
   **************************/
-#if 0  
+#if 0
 /*
    SYCL global thread mapping
 */
@@ -405,7 +506,7 @@ struct LoopExecute<sycl_flatten_block_threads_direct<DIM0, DIM1>, SEGMENT>
       const int ty = internal::get_sycl_dim<DIM1>(threadIdx);
       const int bx = internal::get_sycl_dim<DIM0>(blockDim);
       const int tid = tx + bx*ty;
-      
+
       if (tid < len) body(*(segment.begin() + tid));
     }
   }
