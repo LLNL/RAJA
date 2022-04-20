@@ -76,11 +76,21 @@ struct sycl_reduce
     : make_policy_pattern_t<RAJA::Policy::sycl, RAJA::Pattern::reduce> {
 };
 
+template<typename Mask>
+struct sycl_local_masked_direct {};
+
+template<typename Mask>
+struct sycl_local_masked_loop {};
+
 }  // namespace sycl
 }  // namespace policy
 
 using policy::sycl::sycl_exec;
 using policy::sycl::sycl_reduce;
+
+using policy::sycl::sycl_local_masked_direct;
+using policy::sycl::sycl_local_masked_loop;
+
 
 /*!
  * Maps indices to SYCL global id
