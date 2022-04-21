@@ -241,6 +241,7 @@ int main(int argc, char *argv[])
   }
 #endif
 #if 1
+#if defined(RAJA_ENABLE_TBB)
   {
     std::cout << "Basic TBB Reduction RAJA w/ NEW REDUCE\n";
 
@@ -277,6 +278,7 @@ int main(int argc, char *argv[])
     std::cout << "vlma val : " << vlma.getVal() <<"\n";
     std::cout << "vlma loc : " << vlma.getLoc() <<"\n";
   }
+#endif
 #endif
 #if 0
   {
