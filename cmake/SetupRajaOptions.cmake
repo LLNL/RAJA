@@ -5,9 +5,6 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ################################################################################
 
-# Enable OpenMP by by default (ENABLE_OPENMP is a BLT option)
-#set(ENABLE_OPENMP On CACHE BOOL "Build OpenMP support")
-
 set(RAJA_ENABLE_WARNINGS_AS_ERRORS Off CACHE BOOL "")
 set(ENABLE_GTEST_DEATH_TESTS On CACHE BOOL "Enable tests asserting failure.")
 
