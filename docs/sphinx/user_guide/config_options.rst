@@ -74,17 +74,26 @@ need to do that using appropriate CMake variables.
 All RAJA options are set like regular CMake variables. RAJA settings for 
 default options, compilers, flags for optimization, etc. can be found in files 
 in the ``RAJA/cmake`` directory and top-level ``CMakeLists.txt`` file. 
-Configuration variables can be set by passing
-arguments to CMake on the command line when CMake is called, or by setting
-options in a CMake *cache file* and passing that file to CMake using the 
-CMake ``-C`` options. For example, to enable RAJA OpenMP functionality, 
-pass the following argument to CMake::
+Configuration variables can be set by passing arguments to CMake on the 
+command line when calling CMake. For example, to enable RAJA OpenMP 
+functionality, pass the following argument to CMake::
 
+    cmake ... \
     -DENABLE_OPENMP=On
+    ...
 
-The RAJA repository contains a collection of CMake cache files 
-(we call them *host-config* files) that may be used as a guide for users trying
-to set their own options. See :ref:`configopt-raja-hostconfig-label`.
+Alternatively, CMake options may be set in a CMake *cache file* and passing 
+that file to CMake using the CMake ``-C`` option; for example::
+
+    cmake ... \
+    -C my_cache_file.cmake
+    ...
+
+The directories ``RAJA/scripts/*-builds`` contain scripts that run CMake for
+various build configurations. These contain cmake invocations that use CMake 
+cache files (we call them *host-config* files) and may be used as a guide for 
+users trying to set their own options. 
+See :ref:`configopt-raja-hostconfig-label`.
 
 Next, we summarize RAJA options and their defaults.
 
@@ -159,7 +168,7 @@ are as follows (names are descriptive of what they enable):
       ==========================   ============================================
       Variable                     Default
       ==========================   ============================================
-      (RAJA_)ENABLE_OPENMP         On
+      (RAJA_)ENABLE_OPENMP         Off
       (RAJA_)ENABLE_CUDA           Off
       (RAJA_)ENABLE_HIP            Off
       RAJA_ENABLE_TARGET_OPENMP    Off (when on, (RAJA_)ENABLE_OPENMP must 
