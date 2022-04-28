@@ -45,8 +45,7 @@ using cuda_policies = camp::list<
 
 using cuda_explicit_policies = camp::list<
   RAJA::expt::LaunchPolicy<RAJA::policy::cuda::expt::cuda_launch_explicit_t<true, 0, 0>>,
-  RAJA::expt::LoopPolicy<RAJA::cuda_block_x_direct>,
-  RAJA::expt::LoopPolicy<RAJA::cuda_thread_x_loop>>;
+  RAJA::expt::LoopPolicy<RAJA::expt::cuda_global_thread_x>>;
 
 using Cuda_launch_policies = camp::list<
         cuda_policies,
@@ -58,13 +57,11 @@ using Cuda_launch_policies = camp::list<
 
 using hip_policies = camp::list<
   RAJA::expt::LaunchPolicy<RAJA::expt::hip_launch_t<true>>,
-  RAJA::expt::LoopPolicy<RAJA::hip_block_x_direct>,
-  RAJA::expt::LoopPolicy<RAJA::hip_thread_x_loop>>;
+  RAJA::expt::LoopPolicy<RAJA::expt::cuda_global_thread_x>>;
 
 using hip_explicit_policies = camp::list<
   RAJA::expt::LaunchPolicy<RAJA::policy::hip::expt::hip_launch_explicit_t<true, 0, 0>>,
-  RAJA::expt::LoopPolicy<RAJA::hip_block_x_direct>,
-  RAJA::expt::LoopPolicy<RAJA::hip_thread_x_loop>>;
+  RAJA::expt::LoopPolicy<RAJA::expt::cuda_global_thread_x>;
 
 using Hip_launch_policies = camp::list<
       hip_policies,
