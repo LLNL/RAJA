@@ -102,6 +102,7 @@ struct Threads {
   RAJA_HOST_DEVICE
   constexpr Threads() : value{1, 1, 1} {}
 
+
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr Threads(int i) : value{i, 1, 1} {}
@@ -137,7 +138,7 @@ public:
   RAJA_INLINE
   Grid() = default;
 
-  Grid(const Teams in_teams,const Threads in_threads, const char *in_kernel_name = nullptr)
+  Grid(Teams in_teams, Threads in_threads, const char *in_kernel_name = nullptr)
     : teams(in_teams), threads(in_threads), kernel_name(in_kernel_name){};
 
 private:
@@ -159,7 +160,7 @@ class LaunchContext : public Grid
 {
 public:
 
-  LaunchContext(Grid const&base)
+  LaunchContext(Grid const &base)
       : Grid(base)
   {
   }
