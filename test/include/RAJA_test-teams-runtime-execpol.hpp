@@ -47,7 +47,7 @@ using Sequential_launch_policies = camp::list<
          RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>,
          RAJA::expt::LoopPolicy<RAJA::loop_exec>,
          RAJA::expt::LoopPolicy<RAJA::loop_exec>>>;
-#endif // Sequential + device policies
+#endif // Sequential
 
 
 #if defined(RAJA_ENABLE_OPENMP)
