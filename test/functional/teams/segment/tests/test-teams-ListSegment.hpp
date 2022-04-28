@@ -15,8 +15,8 @@
 #include <algorithm>
 #include <numeric>
 
-template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallListSegmentTestImpl(INDEX_TYPE N)
+template <typename INDEX_TYPE, typename WORKING_RES, typename LAUNCH_POLICY, typename GLOBAL_THREAD_POICY>
+void TeamsListSegmentTestImpl(INDEX_TYPE N)
 {
 
   // Create and initialize indices in idx_array used to create list segment
@@ -28,7 +28,7 @@ void ForallListSegmentTestImpl(INDEX_TYPE N)
     INDEX_TYPE randval = INDEX_TYPE(rand() % RAJA::stripIndexType(N));
     if ( i < randval ) {
       idx_array.push_back(i);
-    }     
+    }
   }
 
   size_t idxlen = idx_array.size();
@@ -40,7 +40,7 @@ void ForallListSegmentTestImpl(INDEX_TYPE N)
   if (N > 0) {
     idx_vals = &idx_array[0];
   }
-  RAJA::TypedListSegment<INDEX_TYPE> lseg(idx_vals, idxlen, 
+  RAJA::TypedListSegment<INDEX_TYPE> lseg(idx_vals, idxlen,
                                           working_res);
 
   INDEX_TYPE* working_array;
@@ -58,6 +58,9 @@ void ForallListSegmentTestImpl(INDEX_TYPE N)
                                      &check_array,
                                      &test_array);
 
+  constexpr int threads = 256;
+  int blocks = (data_len - 1)/threads + 1;
+
   if ( RAJA::stripIndexType(N) > 0 ) {
 
     for (size_t i = 0; i < idxlen; ++i) {
@@ -66,9 +69,14 @@ void ForallListSegmentTestImpl(INDEX_TYPE N)
 
     working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
-    RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-      working_array[RAJA::stripIndexType(idx)] = idx;
-    }); 
+    RAJA::expt::launch<LAUNCH_POLICY>
+      (RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
+        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+
+        RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, lseg, [&](INDEX_TYPE idx) {
+            working_array[RAJA::stripIndexType(idx)] = idx;
+          });
+      });
 
   } else { // zero-length segment
 
@@ -76,10 +84,15 @@ void ForallListSegmentTestImpl(INDEX_TYPE N)
 
     working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
-    RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-      (void) idx;
-      working_array[0]++;
-    });
+    RAJA::expt::launch<LAUNCH_POLICY>
+      (RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
+        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+
+        RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, lseg, [&](INDEX_TYPE idx) {
+            (void) idx;
+            working_array[0]++;
+          });
+      });
 
   }
 
@@ -96,29 +109,30 @@ void ForallListSegmentTestImpl(INDEX_TYPE N)
 }
 
 
-TYPED_TEST_SUITE_P(ForallListSegmentTest);
+TYPED_TEST_SUITE_P(TeamsListSegmentTest);
 template <typename T>
-class ForallListSegmentTest : public ::testing::Test
+class TeamsListSegmentTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(ForallListSegmentTest, ListSegmentForall)
+TYPED_TEST_P(TeamsListSegmentTest, ListSegmentTeams)
 {
   using INDEX_TYPE       = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<2>>::type;
+  using LAUNCH_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<0>>::type;
+  using GLOBAL_THREAD_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<1>>::type;
 
   // test zero-length list segment
-  ForallListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(INDEX_TYPE(0));
+  TeamsListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(0));
 
-  ForallListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(INDEX_TYPE(13));
+  TeamsListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(13));
 
-  ForallListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(INDEX_TYPE(2047));
+  TeamsListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(2047));
 
-  ForallListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(INDEX_TYPE(32000));
+  TeamsListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(32000));
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallListSegmentTest,
-                            ListSegmentForall);
+REGISTER_TYPED_TEST_SUITE_P(TeamsListSegmentTest,
+                            ListSegmentTeams);
 
 #endif  // __TEST_FORALL_LISTSEGMENT_HPP__
