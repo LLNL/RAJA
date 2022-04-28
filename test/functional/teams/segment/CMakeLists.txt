@@ -9,7 +9,7 @@
 # List of segment types for generating test files.
 #
 #set(SEGTYPES ListSegment RangeSegment)
-set(SEGTYPES RangeSegment)
+set(SEGTYPES RangeSegment RangeStrideSegment)
 
 
 #
