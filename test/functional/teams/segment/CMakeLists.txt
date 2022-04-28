@@ -8,7 +8,10 @@
 #
 # List of segment types for generating test files.
 #
-set(SEGTYPES ListSegment RangeSegment RangeStrideSegment)
+#  TODO: Support list segments with RAJA Teams
+#
+#set(SEGTYPES ListSegment RangeSegment RangeStrideSegment)
+set(SEGTYPES RangeSegment RangeStrideSegment)
 
 
 #

@@ -5,8 +5,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_LISTSEGMENT_HPP__
-#define __TEST_FORALL_LISTSEGMENT_HPP__
+#ifndef __TEST_TEAMS_LISTSEGMENT_HPP__
+#define __TEST_TEAMS_LISTSEGMENT_HPP__
+
+/*
+ * NOTE! This functional test is not currently being exercised
+ * see issue https://github.com/LLNL/RAJA/issues/1259 for details
+ */
 
 #include <cstdio>
 #include <cstdlib>
@@ -135,4 +140,4 @@ TYPED_TEST_P(TeamsListSegmentTest, ListSegmentTeams)
 REGISTER_TYPED_TEST_SUITE_P(TeamsListSegmentTest,
                             ListSegmentTeams);
 
-#endif  // __TEST_FORALL_LISTSEGMENT_HPP__
+#endif  // __TEST_TEAMS_LISTSEGMENT_HPP__
