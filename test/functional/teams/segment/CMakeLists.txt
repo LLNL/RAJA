@@ -8,7 +8,8 @@
 #
 # List of segment types for generating test files.
 #
-set(SEGTYPES ListSegment RangeSegment)
+#set(SEGTYPES ListSegment RangeSegment)
+set(SEGTYPES RangeSegment)
 
 
 #
@@ -18,12 +19,12 @@ set(SEGTYPES ListSegment RangeSegment)
 
 foreach( BACKEND ${TEAMS_BACKENDS} )
   foreach( SEGTYPES ${SEGTYPES} )
-    configure_file( test-teams.cpp.in
-                    test-teams-${SEGTYPES}-${BACKEND}.cpp )
-    raja_add_test( NAME test-teams-${SEGTYPES}-${BACKEND}
-                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-teams-${SEGTYPES}-${BACKEND}.cpp )
+    configure_file( test-teams-segment.cpp.in
+                    test-teams-segment-${SEGTYPES}-${BACKEND}.cpp )
+    raja_add_test( NAME test-teams-segment-${SEGTYPES}-${BACKEND}
+                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-teams-segment-${SEGTYPES}-${BACKEND}.cpp )
 
-    target_include_directories(test-teams-${SEGTYPES}-${BACKEND}.exe
+    target_include_directories(test-teams-segment-${SEGTYPES}-${BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
   endforeach()
 endforeach()

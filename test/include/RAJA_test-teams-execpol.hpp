@@ -18,34 +18,37 @@
 //Launch policies
 using seq_policies = camp::list<
   RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>,
-  RAJA::expt::LoopPolicy<RAJA::loop_exec>,
-  RAJA::expt::LoopPolicy<RAJA::loop_exec>>;
+  RAJA::expt::LoopPolicy<RAJA::loop_exec>
+  >;
 
 using Sequential_launch_policies = camp::list<
-  seq_cuda_policies
+  seq_policies
   >;
 
 #if defined(RAJA_ENABLE_OPENMP)
 using omp_policies = camp::list<
          RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t>,
-         RAJA::expt::LoopPolicy<RAJA::omp_parallel_for_exec>,
-         RAJA::expt::LoopPolicy<RAJA::loop_exec>
+         RAJA::expt::LoopPolicy<RAJA::omp_parallel_for_exec>  
   >;
+
+using OpenMP_launch_policies = camp::list<
+  omp_policies
+  >;
+
 #endif  // RAJA_ENABLE_OPENMP
 
 #if defined(RAJA_ENABLE_CUDA)
 
 using cuda_policies = camp::list<
   RAJA::expt::LaunchPolicy<RAJA::expt::cuda_launch_t<true>>,
-  RAJA::expt::LoopPolicy<RAJA::cuda_block_x_direct>,
-  RAJA::expt::LoopPolicy<RAJA::cuda_thread_x_loop>>;
+  RAJA::expt::LoopPolicy<RAJA::expt::cuda_global_thread_x>>;
 
 using cuda_explicit_policies = camp::list<
   RAJA::expt::LaunchPolicy<RAJA::policy::cuda::expt::cuda_launch_explicit_t<true, 0, 0>>,
   RAJA::expt::LoopPolicy<RAJA::cuda_block_x_direct>,
   RAJA::expt::LoopPolicy<RAJA::cuda_thread_x_loop>>;
 
-using cuda_launch_policies = camp::list<
+using Cuda_launch_policies = camp::list<
         cuda_policies,
         cuda_explicit_policies
          >;
@@ -63,10 +66,10 @@ using hip_explicit_policies = camp::list<
   RAJA::expt::LoopPolicy<RAJA::hip_block_x_direct>,
   RAJA::expt::LoopPolicy<RAJA::hip_thread_x_loop>>;
 
-using hip_launch_policies = camp::list<
-        hip_policies,
-        hip_explicit_policies
-         >;
+using Hip_launch_policies = camp::list<
+      hip_policies,
+      hip_explicit_policies
+       >;
 #endif // RAJA_ENABLE_HIP
 
 

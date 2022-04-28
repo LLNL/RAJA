@@ -21,4 +21,6 @@ endif()
 
 add_subdirectory(run-time-switch)
 
+add_subdirectory(segment)
+
 unset( TEAMS_BACKENDS )
