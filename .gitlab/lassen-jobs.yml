@@ -64,6 +64,11 @@ gcc_8_3_1_cuda_ats_disabled:
   variables:
     SPEC: "+openmp +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.168"
   extends: .build_and_test_on_lassen_ats_disabled
+  
+gcc_8_3_1_cuda_11:
+  variables:
+    SPEC: "+openmp +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.0.2"
+  extends: .build_and_test_on_lassen
 
 xl_16_1_1_11_cuda_10:
   variables:
