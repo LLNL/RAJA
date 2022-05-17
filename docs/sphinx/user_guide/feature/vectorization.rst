@@ -249,9 +249,9 @@ discussed earlier::
   using idx_t = RAJA::expt::VectorIndex<int, vec_t>;
 
   // wrap array pointers in RAJA View objects   
-  auto vX = RAJA::make_view( X, len );
-  auto vY = RAJA::make_view( Y, len );
-  auto vZ = RAJA::make_view( Z, len );
+  auto vX = RAJA::make_view<int, double>( X );
+  auto vY = RAJA::make_view<int, double>( Y );
+  auto vZ = RAJA::make_view<int, double>( Z );
 
   // 'all' knows the length of vX, vY, and vZ from the View objects
   // and it encodes the vector type
