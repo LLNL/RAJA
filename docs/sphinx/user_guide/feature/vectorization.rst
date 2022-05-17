@@ -386,9 +386,9 @@ vector DAXPY operation presented above using square matrices::
   using col_t = RAJA::expt::ColIndex<int, mat_t>;
 
   // wrap array pointers in RAJA View objects (similar to before)
-  auto mX = RAJA::View<double, Layout<3>>( X, N, N );
-  auto mY = RAJA::View<double, Layout<3>>( Y, N, N );
-  auto mZ = RAJA::View<double, Layout<3>>( Z, N, N );
+  auto mX = RAJA::View<double, Layout<2>>( X, N, N );
+  auto mY = RAJA::View<double, Layout<2>>( Y, N, N );
+  auto mZ = RAJA::View<double, Layout<2>>( Z, N, N );
 
   using cpu_launch = RAJA::expt::seq_launch_t;
   using gpu_launch = RAJA::expt::cuda_launch_t<false>; // false => launch
