@@ -30,6 +30,10 @@ raja_add_executable(
   SOURCES tut_indexset-segments.cpp)
 
 raja_add_executable(
+  NAME tut_matrix-multiply
+  SOURCES tut_matrix-multiply.cpp)
+
+raja_add_executable(
   NAME teams_listsegments
   SOURCES teams_listsegments.cpp)
 
