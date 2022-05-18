@@ -49,12 +49,12 @@ namespace RAJA
  *  end() -- returns a StorageT*
  *  size() -- returns size of the Segment iteration space (RAJA::Index_type)
  *
- * NOTE: TypedListSegment supports the option for the segment to own the 
+ * NOTE: TypedListSegment supports the option for the segment to own the
  *       its index data or simply use the index array passed to the constructor.
- *       Owning the index data is the default; an array is created in the 
+ *       Owning the index data is the default; an array is created in the
  *       memory space specified by the camp resource object and the values are
- *       copied from the input array to that. Ownership of the indices is 
- *       determined by an optional ownership enum value passed to the 
+ *       copied from the input array to that. Ownership of the indices is
+ *       determined by an optional ownership enum value passed to the
  *       constructor.
  *
  * Usage:
@@ -62,14 +62,14 @@ namespace RAJA
  * A common C-style loop traversal pattern using an indirection array would be:
  *
  * \verbatim
- * const T* indices = ...; 
+ * const T* indices = ...;
  * for (T i = begin; i < end; ++i) {
  *   // loop body -- use indices[i] as index value
  * }
  * \endverbatim
  *
  * A TypedListSegment would be used with a RAJA forall execution template as:
- * 
+ *
  * \verbatim
  * camp::resources::Resource resource{ camp resource type };
  * TypedListSegment<T> listseg(indices, length, resource);
@@ -81,6 +81,47 @@ namespace RAJA
  *
  ******************************************************************************
  */
+
+template<typename StorageT>
+class ListSegmentWrapper
+{
+
+public:
+
+  //! The underlying value type for index storage
+  using value_type = StorageT;
+
+  //! The underlying terator type
+  using iterator = StorageT*;
+
+  //! Expose underlying index type for consistency with other segment types
+  using IndexType = StorageT;
+
+  // Buffer storage for segment index data
+  value_type* RAJA_RESTRICT m_data;
+
+  // Size of list segment
+  Index_type m_size;
+
+  ListSegmentWrapper(StorageT *data, Index_type size) : m_data(data), m_size(size) {}
+
+  /*!
+   * \brief Get iterator to the beginning of this segment
+   */
+  RAJA_HOST_DEVICE iterator begin() const { return m_data; }
+
+  /*!
+   * \brief Get iterator to the end of this segment
+   */
+  RAJA_HOST_DEVICE iterator end() const { return m_data + m_size; }
+
+  /*!
+   * \brief Get size of this segment (number of indices)
+   */
+  RAJA_HOST_DEVICE Index_type size() const { return m_size; }
+
+};
+
 template <typename StorageT>
 class TypedListSegment
 {
@@ -88,7 +129,7 @@ public:
 
   //@{
   //!   @name Types used in implementation based on template parameter.
- 
+
   //! The underlying value type for index storage
   using value_type = StorageT;
 
@@ -107,11 +148,11 @@ public:
    * \brief Construct a list segment from given array with specified length
    *        and use given camp resource to allocate list segment index data
    *        if owned by this list segment.
-   * 
+   *
    * \param values array of indices defining iteration space of segment
    * \param length number of indices
    * \param resource camp resource defining memory space where index data live
-   * \param owned optional enum value indicating whether segment owns indices (Owned or Unowned). Default is Owned.   
+   * \param owned optional enum value indicating whether segment owns indices (Owned or Unowned). Default is Owned.
    *
    * If 'Unowned' is passed as last argument, the segment will not own its
    * index data. In this case, caller must manage array lifetime properly.
@@ -221,6 +262,8 @@ public:
    */
   RAJA_HOST_DEVICE IndexOwnership getIndexOwnership() const { return m_owned; }
 
+  ListSegmentWrapper<StorageT> MakeListSegmentWrapper() { return ListSegmentWrapper<StorageT>(m_data, m_size); }
+
   //@}
 
   //@{
@@ -235,7 +278,7 @@ public:
    * \return true if segment size is same as given length value and values in
    *         given array match segment index values, else false
    *
-   * Method assumes values in given array and segment indices both live in host 
+   * Method assumes values in given array and segment indices both live in host
    * memory space.
    */
   RAJA_HOST_DEVICE bool indicesEqual(const value_type* container,
@@ -252,9 +295,9 @@ public:
   /*!
    * \brief Compare this segment to another for equality
    *
-   * \return true if both segments are the same size and indices match, 
+   * \return true if both segments are the same size and indices match,
    *         else false
-   * 
+   *
    * Method assumes indices in both segments live in host memory space.
    */
   RAJA_HOST_DEVICE bool operator==(const TypedListSegment& other) const
@@ -265,9 +308,9 @@ public:
   /*!
    * \brief Compare this segment to another for inequality
    *
-   * \return true if segments are not the same size or indices do not match, 
+   * \return true if segments are not the same size or indices do not match,
    *         else false
-   * 
+   *
    * Method assumes indices in both segments live in host memory space.
    */
   RAJA_HOST_DEVICE bool operator!=(const TypedListSegment& other) const
@@ -314,7 +357,7 @@ private:
       if ( from_copy_ctor ) {
 
         m_data = m_resource.allocate<value_type>(m_size);
-        m_resource.memcpy(m_data, container, sizeof(value_type) * m_size); 
+        m_resource.memcpy(m_data, container, sizeof(value_type) * m_size);
 
       } else {
 
@@ -335,7 +378,7 @@ private:
 
       return;
     }
- 
+
     // list segment accesses container data directly.
     // Uh-oh. Using evil const_cast....
     m_data = const_cast<value_type*>(container);
