@@ -1,0 +1,83 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+
+#include "RAJA_test-forall-data.hpp"
+#include "RAJA_test-kernel-nested-loop-types.hpp"
+
+#include "RAJA_test-reducepol.hpp"
+
+#include "test-kernel@RESOURCE@warp-thread-@NESTED_LOOP_TYPE@.hpp"
+
+#if defined(RAJA_ENABLE_CUDA)
+using CudaKernelWarpThreadExecPols = camp::list<
+
+    // Device Depth 1 WarpLoop Exec Pols
+    NestedLoopData<DEVICE_DEPTH_1_REDUCESUM_WARP, RAJA::cuda_warp_loop >,
+    NestedLoopData<DEVICE_DEPTH_1_REDUCESUM_WARPDIRECT_TILE, RAJA::cuda_warp_direct >,
+    NestedLoopData<DEVICE_DEPTH_2_REDUCESUM_WARP, RAJA::cuda_warp_direct >,
+
+    // Device Depth 2 ReduceMask Exec Pols
+    NestedLoopData<DEVICE_DEPTH_2_REDUCESUM_WARPMASK, RAJA::cuda_thread_masked_direct<RAJA::BitMask<6,0>>, RAJA::cuda_thread_masked_loop<RAJA::BitMask<2,6>> >,
+    NestedLoopData<DEVICE_DEPTH_2_REDUCESUM_WARPMASK_FORI, RAJA::cuda_thread_masked_direct<RAJA::BitMask<6,0>>, RAJA::cuda_thread_masked_loop<RAJA::BitMask<2,6>> >,
+
+    // ReduceWarp Exec Pols
+    NestedLoopData<DEVICE_DEPTH_1_REDUCESUM_WARPREDUCE, RAJA::cuda_warp_loop, RAJA::cuda_warp_reduce >,
+    NestedLoopData<DEVICE_DEPTH_2_REDUCESUM_WARPREDUCE, RAJA::cuda_thread_y_loop, RAJA::cuda_warp_loop, RAJA::cuda_warp_reduce >,
+    NestedLoopData<DEVICE_DEPTH_3_REDUCESUM_WARPREDUCE, RAJA::cuda_block_x_loop, RAJA::cuda_thread_y_direct, RAJA::cuda_warp_direct, RAJA::statement::CudaSyncWarp, RAJA::cuda_warp_reduce >
+
+  >;
+
+#endif  // RAJA_ENABLE_CUDA
+
+#if defined(RAJA_ENABLE_HIP)
+  
+using HipKernelWarpThreadExecPols = camp::list<
+
+    // Device Depth 1 WarpLoop Exec Pols
+    NestedLoopData<DEVICE_DEPTH_1_REDUCESUM_WARP, RAJA::hip_warp_loop >,
+    NestedLoopData<DEVICE_DEPTH_1_REDUCESUM_WARPDIRECT_TILE, RAJA::hip_warp_direct >,
+    NestedLoopData<DEVICE_DEPTH_2_REDUCESUM_WARP, RAJA::hip_warp_direct >,
+
+    // Device Depth 2 ReduceMask Exec Pols
+    NestedLoopData<DEVICE_DEPTH_2_REDUCESUM_WARPMASK, RAJA::hip_thread_masked_direct<RAJA::BitMask<6,0>>, RAJA::hip_thread_masked_loop<RAJA::BitMask<2,6>> >,
+    NestedLoopData<DEVICE_DEPTH_2_REDUCESUM_WARPMASK_FORI, RAJA::hip_thread_masked_direct<RAJA::BitMask<6,0>>, RAJA::hip_thread_masked_loop<RAJA::BitMask<2,6>> >,
+
+    // ReduceWarp Exec Pols
+    NestedLoopData<DEVICE_DEPTH_1_REDUCESUM_WARPREDUCE, RAJA::hip_warp_loop, RAJA::hip_warp_reduce >,
+    NestedLoopData<DEVICE_DEPTH_2_REDUCESUM_WARPREDUCE, RAJA::hip_thread_y_loop, RAJA::hip_warp_loop, RAJA::hip_warp_reduce >,
+    NestedLoopData<DEVICE_DEPTH_3_REDUCESUM_WARPREDUCE, RAJA::hip_block_x_loop, RAJA::hip_thread_y_direct, RAJA::hip_warp_direct, RAJA::statement::HipSyncWarp, RAJA::hip_warp_reduce >
+
+  >;
+
+#endif  // RAJA_ENABLE_HIP
+
+//
+// Build out list of supported Nested Loop data for tests' suported types.
+//
+using @NESTED_LOOP_TYPE@KernelWarpThreadExecPols = 
+  KernelExecListBuilder<
+    @NESTED_LOOP_TYPE@SupportedLoopTypeList,
+    @NESTED_LOOP_BACKEND@KernelWarpThreadExecPols
+  >::type;
+
+//
+// Cartesian product of types used in parameterized tests.
+//
+using @NESTED_LOOP_BACKEND@KernelWarpThreadTypes =
+  Test< camp::cartesian_product<@NESTED_LOOP_BACKEND@ResourceList,
+                                @NESTED_LOOP_BACKEND@ReducePols,
+                                @NESTED_LOOP_TYPE@KernelWarpThreadExecPols>>::Types;
+
+//
+// Instantiate parameterized test.
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@NESTED_LOOP_BACKEND@,
+                               KernelWarpThread@NESTED_LOOP_TYPE@Test,
+                               @NESTED_LOOP_BACKEND@KernelWarpThreadTypes);
