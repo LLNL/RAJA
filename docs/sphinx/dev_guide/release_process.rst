@@ -13,11 +13,11 @@ RAJA Release Process
 *******************************************
 
 RAJA is considered part of the **RAJA Portability Suite** set of projects. 
-Currently, the Suite includes `Umpire <https://github.com/LLNL/Umpire>`_,
-`CHAI <https://github.com/LLNL/CHAI>`_, and
-`camp <https://github.com/LLNL/camp>`_, in addition to RAJA. 
-Releases for the Suite are coordinated, meaning that when a non-patch release
-is done for one, a new version release is done for all Suite projects.
+Currently, the Suite includes `Umpire <https://github.com/LLNL/Umpire>`_, `CHAI <https://github.com/LLNL/CHAI>`_, and `camp <https://github.com/LLNL/camp>`_, in addition to RAJA. 
+
+.. important:: Releases for the Suite are coordinated, meaning that when a 
+               non-patch release is done for one, a new version release is 
+               done for all Suite projects.
 
 The RAJA release process includes the following sequence of steps:
 
