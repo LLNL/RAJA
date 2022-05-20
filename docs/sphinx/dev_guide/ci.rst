@@ -27,10 +27,10 @@ The CI tools used by the RAJA project, and which integrate with GitHub are:
     `RAJA Azure DevOps <https://dev.azure.com/llnl/RAJA>`_ project to learn 
     more about our testing there.
 
-  * **Gitlab** instance in the Livermore Computing (LC) Center
+  * **Gitlab** instances in the Livermore Computing (LC) Center
     runs builds and tests in LC resource and compiler environments
     important to many RAJA user applications. Execution of RAJA CI 
-    pipelines on the LC Gitlab instance has restrictions described below. If 
+    pipelines on LC Gitlab resources has restrictions described below. If 
     you have access to LC resources, you can access additional information about
     `LC GitLab CI <https://lc.llnl.gov/confluence/display/GITLAB/GitLab+CI>`_
 
@@ -47,7 +47,7 @@ Gitlab CI
 
 The GItlab CI instance used by the RAJA project lives in the Livermore 
 Computing (LC) Collaboration Zone (CZ). It runs builds and tests in LC 
-resource and compiler environments important to many RAJA user applications.
+resource and compiler environments important to RAJA user applications at LLNL.
 
 Constraints
 -----------
@@ -72,7 +72,7 @@ process. The main steps, which we will discuss in more detail later, are:
   #. A *mirror* of the RAJA GitHub repo in the RAJA Gitlab project is updated
      whenever the RAJA ``develop`` or ``main`` branches are changed as well
      as when any PR branch in the RAJA GitHub project is changed. 
-  #. Gitlab launches CI test pipelines. While running, the Execution and 
+  #. Gitlab launches CI test pipelines. While running, the execution and 
      pass/fail status may be viewed and monitored in the Gitlab CI GUI.
   #. For each resource and compiler combination,
      `Spack <https://github.com/spack/spack>`_ is used to generate a build 
@@ -160,17 +160,19 @@ such as commands and scripts that are run for stages identified in the
     script:
       - salloc -N 1 -p pdebug -t 45 --no-shell --job-name=${ALLOC_NAME}
 
-which defines the resource allocation stage associated with the 
+which contains the resource allocation command associated with the 
 ``r_allocate_resources`` stage identifier on 'ruby'. Analogous stages are 
 defined similarly in other ``RAJA/.gitlab/<resource>-templates.yml`` files.
+
+The ``<resource>-jobs.yml`` files are described in the following sections.
 
 Running a CI build/test pipeline  (steps 3, 4, 5, 6)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The `RAJA/scripts/gitlab/build_and_test.sh <https://github.com/LLNL/RAJA/tree/develop/scripts/gitlab/build_and_test.sh>`_ file defines the steps executed
 for each build and test run as well as information that will appear in the
-log output for each step. First, the script runs the 
-``RAJA/scripts/uberenv/uberenv.py`` script located in the 
+log output for each step. First, the script invokes the 
+``RAJA/scripts/uberenv/uberenv.py`` Python script located in the 
 `uberenv <https://github.com/LLNL/uberenv>`_ submodule::
 
   ...
@@ -188,10 +190,10 @@ file containing a RAJA build specification **(step 3)**. To generate
 a *host-config* file, Spack uses the 
 `RAJA Spack package <https://github.com/LLNL/RAJA/blob/develop/scripts/spack_packages/raja/package.py>`_, plus *Spack spec* information. 
 The ``RAJA/.gitlab/<resource>-jobs.yml`` file defines a build specification
-(*Spack spec*) for each jobs that will be run on the corresponding resource. 
+(*Spack spec*) for each job that will be run on the corresponding resource. 
 For example, in the ``lassen-jobs.yml`` file, you will see an entry such as::
 
-  gcc_8_3_1_cuda:
+  gcc_8_3_1_cuda_10_1_168:
     variables:
       SPEC: "+cuda %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.168"
     extends: .build_and_test_on_lassen
@@ -199,8 +201,8 @@ For example, in the ``lassen-jobs.yml`` file, you will see an entry such as::
 This defines the *Spack spec* for the test job in which CUDA device code will 
 be built with the nvcc 10.1.168 compiler and non-device code will be compiled 
 with the GNU 8.3.1 compiler. In the Gitlab CI GUI, this pipeline will be 
-labeled ``gcc_8_3_1_cuda``. Details for compilers, such as file system paths,
-target architecture, etc. are located in the 
+labeled ``gcc_8_3_1_cuda_10_1_168``. Details for compilers, such as file 
+system paths, target architecture, etc. are located in the 
 ``RAJA/scripts/radiuss-spack-configs/<sys-type>/compilers.yaml`` file for the 
 system type associated with the resource. Analogous information for packages 
 like CUDA and ROCm (HIP) are located in the corresponding 
@@ -258,8 +260,8 @@ Next, it runs the tests **(step 5)**::
 
   ctest --output-on-failure -T test 2>&1 | tee tests_output.txt
 
-Lastly, the script packages the test results in a JUnit XML file, which Gitlab 
-uses for reporting the results in its GUI **(step 6))**::
+Lastly, the script packages the test results into a JUnit XML file that
+Gitlab uses for reporting the results in its GUI **(step 6)**::
 
   echo "Copying Testing xml reports for export"
   tree Testing
@@ -320,8 +322,10 @@ A summary of the configurations we build are:
     **Linux.** The ``- job: Docker`` section contains information for Linux
     test builds. We build and test RAJA using Docker container images generated 
     with recent versions of various compilers. The RAJA project shares these 
-    container images with other open-source LLNL RADIUSS projects. The builds
-    we do at any point in time are located in the ``strategy`` block::
+    images with other open-source LLNL RADIUSS projects and they are maintained
+    in the `RES-ops Docker <https://github.com/rse-ops/docker-images>`_ 
+    project on GitHub. The builds we do at any point in time are located in 
+    the ``strategy`` block::
 
       strategy:
         matrix: 

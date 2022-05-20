@@ -85,9 +85,24 @@ For example:
     allow_failure: true
     extends: .build_and_test_on_lassen
 
+This example explicitly sets the build and test allocation time to 60 minutes:
+``DEFAULT_TIME: 60``. Note that it also allows the pipeline to fail: 
+``allow_failure: true``. We do this in some cases where certain tests are known
+to fail regularly. This allows the overall check status to report as passing,
+even though the test pipeline annotated this way may fail.
+
 
 Adding Test Pipelines
 ---------------------
+
+Adding a test pipeline involves adding a new entry in the 
+``RAJA/.gitlab-ci.yml`` file.
+
+.. important:: Build spec information used in RAJA Gitlab CI pipelines
+               must exist in the ``compilers.yaml`` file and/or 
+               ``packages.yaml`` file for the appropriate system type in
+               the `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_ repo.
+
 
 .. _azure_ci_tasks-label:
 
@@ -118,3 +133,32 @@ Each pipeline section begins with a line that ends with ``AS ...``
 where the ellipses in the name of a build-test pipeline. The name label
 matches an entry in the Docker test matrix in the 
 ``RAJA/azure-pipelines.yml`` file mentioned above.
+
+
+.. _rajaperf_ci_tasks-label:
+
+================================
+RAJA Performance Suite CI Tasks
+================================
+
+The `RAJA Performance Suite <https://github.com/LLNL/RAJAPerf>`_ project CI
+testing processes, directory/file structure, and dependencies ar nearly 
+identical to that for RAJA, which is described in :ref:`ci-label`. Specifically,
+
+  * The RAJA Performance Suite Gitlab CI process is driven by the 
+    `RAJAPerf/.gitlab-ci.yml <https://github.com/LLNL/RAJAPerf/blob/develop/.gitlab-ci.yml>`_ file. 
+  * The ``<resource>-jobs.yml`` and ``<resource>-templates.yml`` files reside 
+    in the 
+    `RAJAPerf/.gitlab <https://github.com/LLNL/RAJAPerf/tree/develop/.gitlab>`_ 
+    directory.
+  * The ``build_and_test.sh`` script resides in the `RAJAPerf/scripts/gitlab <https://github.com/LLNL/RAJAPerf/tree/develop/scripts/gitlab>`_ directory.
+  * The `RAJAPerf/Dockerfile <https://github.com/LLNL/RAJAPerf/blob/develop/Dockerfile>`_ drives the Azure testing pipelines.
+  
+The main difference is that for Gitlab CI, is that the Performance Suite uses 
+the RAJA submodules for ``uberenv`` and ``radiuss-spack-configs`` located in 
+the RAJA submodule to avoid redundant submodules. This is reflected in the
+`RAJAPerf/.uberenv_config.json <https://github.com/LLNL/RAJAPerf/blob/develop/.uberenv_config.json>`_ 
+file which point at the relevant RAJA submodule locations.
+
+Apart from this minor difference, all CI maintenance and development tasks for
+the RAJA Performance Suite follow the guidance in :ref:`ci_tasks-label`.
