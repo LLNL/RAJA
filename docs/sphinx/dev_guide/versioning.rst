@@ -15,7 +15,7 @@ RAJA Release Version Naming
 Prior to the RAJA release in March 2022, the RAJA project used the *Semantic
 Versioning* scheme for assigning release tag names. At the March 2022 release,
 we changed the release naming scheme to use ``YYYY.mm.pp``, for year, month, 
-and patch number. So, for example, the March 2022 release is labeled v2022.03.0.The main motivation for the release naming scheme was to do coordinated releases
+and patch number. So, for example, the March 2022 release is labeled v2022.03.0.The main motivation for the release naming scheme is to do coordinated releases
 with the `Umpire <https://github.com/LLNL/Umpire>`_, 
 `CHAI <https://github.com/LLNL/CHAI>`_, and 
 `camp <https://github.com/LLNL/camp>`_ projects, which are considered parts 

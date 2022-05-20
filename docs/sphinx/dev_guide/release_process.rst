@@ -12,7 +12,14 @@
 RAJA Release Process
 *******************************************
 
-The RAJA release process typically involves the following sequence of steps:
+RAJA is considered part of the **RAJA Portability Suite** set of projects. 
+Currently, the Suite includes `Umpire <https://github.com/LLNL/Umpire>`_,
+`CHAI <https://github.com/LLNL/CHAI>`_, and
+`camp <https://github.com/LLNL/camp>`_, in addition to RAJA. 
+Releases for the Suite are coordinated, meaning that when a non-patch release
+is done for one, a new version release is done for all Suite projects.
+
+The RAJA release process includes the following sequence of steps:
 
   #. Identify all work (features in development, outstanding PRs, etc.) to be 
      to be included in the release.
@@ -49,6 +56,10 @@ The RAJA release process typically involves the following sequence of steps:
      passes all CI checks and is approved, merge the PR. This will ensure that
      all changes done to finalize the release will be included in the develop 
      branch and future work on that branch.
+
+After a RAJA release is done, there a other tasks that typically need to be 
+performed to update content in other projects. These task are described in
+:ref:`post_release-label`.
 
 .. _rcbranch-label:
 
@@ -135,3 +146,36 @@ the key steps for performing a hotfix release are:
   #. Make a PR to merge the main branch into the develop branch. After it 
      passes all CI checks and is approved, merge the PR. This will ensure that
      changes for the bugfix will be included in future development.
+
+.. _post_release-label:
+
+=========================
+Post-release Activities
+=========================
+
+After a RAJA release is complete, other tasks are performed to update content 
+in other repositories, typically. These tasks include:
+
+  * Update the `RAJAProxies <https://github.com/LLNL/RAJAProxies>`_ project
+    to the newly RAJA Portability Suite projects. This typically consists of 
+    updating the submodules to the the new RAJA Portability Suite project 
+    versions, making sure the proxy-apps build and run correctly. When this
+    is done, tag a release for proxy-app project.
+  * Update the `RAJAProxies <https://github.com/LLNL/RAJAProxies>`_ project
+    to the newly RAJA Portability Suite projects. This project is expected to 
+    be consistent with the latest RAJA Portability Suite release. So no need
+    to tag a release after updating.
+  * Update the RAJA Spack package in the 
+    `Spack repository <https://github.com/spack/spack>`_. This requires some
+    knowledge of Spack and attention to details and Spack conventions. Please
+    see :ref:`spack_package-label` for details.
+
+.. _spack_package-label:
+
+=========================
+Spack Package Update
+=========================
+
+Describe how to update the RAJA Spack package....
+
+
