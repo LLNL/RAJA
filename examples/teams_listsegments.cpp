@@ -127,8 +127,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy = RAJA::expt::LaunchPolicy< RAJA::expt::cuda_launch_t<false>>;
   using loop_policy = RAJA::expt::LoopPolicy<RAJA::expt::cuda_global_thread_x>;
 
+
+  //ListSegType idx1_list_cuda_2 = idx1_list_cuda;
+
   //Use wrapper inside RAJA launch method
-  RAJA::ListSegmentWrapper<IdxType> teams_lseg = idx1_list_cuda.MakeListSegmentWrapper();
+  //RAJA::ListSegmentWrapper<IdxType> teams_lseg = idx1_list_cuda.MakeListSegmentWrapper();
+
+  auto teams_lseg = idx1_list_cuda.MakeSpan();
 
   RAJA::expt::launch<launch_policy>
     (RAJA::expt::Grid(RAJA::expt::Teams(1), RAJA::expt::Threads(N)),
@@ -143,6 +148,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         });
   });
   cudaDeviceSynchronize();
+  exit(-1);
 
   checkResult(a, aref, N);
   printResult(a, N);
