@@ -8,11 +8,6 @@
 #ifndef __TEST_TEAMS_LISTSEGMENT_HPP__
 #define __TEST_TEAMS_LISTSEGMENT_HPP__
 
-/*
- * NOTE! This functional test is not currently being exercised
- * see issue https://github.com/LLNL/RAJA/issues/1259 for details
- */
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
