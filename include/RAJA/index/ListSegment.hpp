@@ -221,6 +221,11 @@ public:
    */
   RAJA_HOST_DEVICE IndexOwnership getIndexOwnership() const { return m_owned; }
 
+  /*!
+   * \brief Return a device friendly iteration range
+   */
+  Span<StorageT *, Index_type> MakeSpan() { return Span<StorageT *, Index_type>(m_data, m_size); }
+
   //@}
 
   //@{
