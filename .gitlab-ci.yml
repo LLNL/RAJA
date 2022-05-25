@@ -52,6 +52,7 @@ stages:
   - l_build_and_test
   - b_build_and_test
   - c_build_and_test
+  - t_build_and_test
   - multi_project
 
 # This is the rules that drives the activation of "advanced" jobs. All advanced
@@ -74,6 +75,10 @@ stages:
       junit: junit.xml
 
 .build_toss_4_x86_64_ib_corona_script:
+  script:
+    - srun -p pdebug -t 30 -N 1 scripts/gitlab/build_and_test.sh
+
+.build_toss_4_x86_64_ib_tioga_script:
   script:
     - srun -p pdebug -t 30 -N 1 scripts/gitlab/build_and_test.sh
 
@@ -119,3 +124,5 @@ include:
   - local: .gitlab/lassen-jobs.yml
   - local: .gitlab/corona-templates.yml
   - local: .gitlab/corona-jobs.yml
+  - local: .gitlab/tioga-templates.yml
+  - local: .gitlab/tioga-jobs.yml
