@@ -155,16 +155,39 @@ private:
   Lanes apply(Lanes const &a) { return (lanes = a); }
 };
 
-
+struct int3
+{
+  int x,y,z;
+  int3(int _x=-1,int _y=-1,int _z=-1) :
+    x(_x), y(_y), z(_z)
+  {}
+};
+  
 class LaunchContext : public Grid
 {
 public:
 
+  mutable int3 loc_id;
+  mutable int3 group_id;
+  
   LaunchContext(Grid const &base)
       : Grid(base)
   {
   }
 
+  //Only enable when using SYCL  
+  void setup_loc_id(int tx, int ty, int tz) const {
+    loc_id.x = tx;
+    loc_id.y = ty;
+    loc_id.z = tz;
+  }
+
+  void setup_group_id(int bx, int by, int bz) const {
+    group_id.x = bx;
+    group_id.y = by;
+    group_id.z = bz;
+  }
+  
   RAJA_HOST_DEVICE
   void teamSync()
   {

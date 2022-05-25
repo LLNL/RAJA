@@ -180,8 +180,8 @@ int main(int argc, char *argv[])
        RAJA::expt::loop<threads_y>(ctx, RAJA::RangeSegment(0, Nthreads), [&] (int ty) {
          RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(0, Nthreads), [&] (int tx) {
 
-             printf("RAJA Teams: threadId_x %d threadId_y %d teamId_x %d teamId_y %d \n",
-                    tx, ty, bx, by);
+             //printf("RAJA Teams: threadId_x %d threadId_y %d teamId_x %d teamId_y %d \n",
+	     //tx, ty, bx, by);
 
            });
          });
@@ -201,8 +201,8 @@ int main(int argc, char *argv[])
         for(int ty=0; ty<Nthreads; ++ty) {
           for(int tx=0; tx<Nthreads; ++tx) {
 
-            printf("c-iter: iter_tx %d iter_ty %d iter_bx %d iter_by %d \n",
-                   tx, ty, bx, by);
+            //printf("c-iter: iter_tx %d iter_ty %d iter_bx %d iter_by %d \n",
+	    //tx, ty, bx, by);
           }
         }
 

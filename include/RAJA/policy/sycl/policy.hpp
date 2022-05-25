@@ -72,6 +72,14 @@ struct sycl_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::sycl> {
 };
 
+template <bool Async, int num_threads = 0>
+struct sycl_launch_t : public RAJA::make_policy_pattern_launch_platform_t<
+                       RAJA::Policy::sycl,
+                       RAJA::Pattern::region,
+                       detail::get_launch<Async>::value,
+                       RAJA::Platform::sycl> {
+};
+
 struct sycl_reduce
     : make_policy_pattern_t<RAJA::Policy::sycl, RAJA::Pattern::reduce> {
 };
@@ -82,10 +90,15 @@ struct sycl_reduce
 using policy::sycl::sycl_exec;
 using policy::sycl::sycl_reduce;
 
+namespace expt
+{
+  using policy::sycl::sycl_launch_t;
+}
+  
 /*!
  * Maps indices to SYCL global id
- * Optional WORK_GROUP_SIZE to 
- */ 
+ * Optional WORK_GROUP_SIZE to
+ */
 template<int dim, int WORK_GROUP_SIZE = 1>
 struct sycl_global_012{};
 
@@ -100,7 +113,7 @@ using sycl_global_2 = sycl_global_012<2, WORK_GROUP_SIZE>;
  * Maps segment indices to SYCL group ids.
  * Loops to allow for any value
  */
-template<int dim>
+template<int ... dim>
 struct sycl_group_012_loop{};
 
 using sycl_group_0_loop = sycl_group_012_loop<0>;
@@ -111,7 +124,7 @@ using sycl_group_2_loop = sycl_group_012_loop<2>;
  * Maps segment indices to SYCL local ids.
  * Loops to allow for any value
  */
-template<int dim>
+template<int ... dim>
 struct sycl_local_012_loop{};
 
 using sycl_local_0_loop = sycl_local_012_loop<0>;
@@ -121,7 +134,7 @@ using sycl_local_2_loop = sycl_local_012_loop<2>;
 /*!
  * Maps segment indices to SYCL group ids.
  */
-template<int dim>
+template<int ... dim>
 struct sycl_group_012_direct{};
 
 using sycl_group_0_direct = sycl_group_012_direct<0>;
@@ -131,7 +144,7 @@ using sycl_group_2_direct = sycl_group_012_direct<2>;
 /*!
  * Maps segment indices to SYCL local ids.
  */
-template<int dim>
+template<int ... dim>
 struct sycl_local_012_direct{};
 
 using sycl_local_0_direct = sycl_local_012_direct<0>;
