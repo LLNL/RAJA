@@ -82,6 +82,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
     version('0.4.0', tag='v0.4.0', submodules="True")
 
     variant('openmp', default=True, description='Build OpenMP backend')
+    variant('openmp_target', default=False, description='Build with OpenMP support')
     variant('shared', default=False, description='Build Shared Libs')
     variant('libcpp', default=False, description='Uses libc++ instead of libstdc++')
     variant('tests', default='basic', values=('none', 'basic', 'benchmarks'),
@@ -105,7 +106,11 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
                    when='cuda_arch={0}'.format(sm_))
 
     conflicts('+openmp', when='+rocm')
-
+    conflicts('~openmp', when='+openmp_target', msg='OpenMP target requires OpenMP')
+    # Is this true? ############
+    conflicts('+cuda', when='+rocm')
+    conflicts('+rocm', when='+openmp_target', msg='Cant support both rocm and openmp device backends at once')
+    ############################
     phases = ['hostconfig', 'cmake', 'build', 'install']
 
     def _get_sys_type(self, spec):
@@ -340,8 +345,14 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
 
         # shared vs static libs
         cfg.write(cmake_cache_option("BUILD_SHARED_LIBS","+shared" in spec))
+        cfg.write(cmake_cache_option("ENABLE_OPENMP","+openmp" in spec))
         cfg.write(cmake_cache_option("RAJA_ENABLE_OPENMP","+openmp" in spec))
+        cfg.write(cmake_cache_option("RAJA_ENABLE_TARGET_OPENMP","+openmp_target" in spec))
         cfg.write(cmake_cache_option("RAJA_ENABLE_DESUL_ATOMICS","+desul" in spec))
+
+        if "+openmp_target" in spec:
+            cfg.write(cmake_cache_string("OpenMP_CXX_FLAGS", "-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda"))
+            cfg.write(cmake_cache_option("ENABLE_CUDA", False))
 
         if "+desul" in spec:
             cfg.write(cmake_cache_string("BLT_CXX_STD","c++14"))
