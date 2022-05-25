@@ -61,7 +61,7 @@ void TeamsListSegmentTestImpl(INDEX_TYPE N)
   constexpr int threads = 256;
   int blocks = (data_len - 1)/threads + 1;
 
-  auto teams_lseg = lseg.MakeSpan();
+  auto teams_lseg = RAJA::make_span(lseg);
 
   if ( RAJA::stripIndexType(N) > 0 ) {
 
