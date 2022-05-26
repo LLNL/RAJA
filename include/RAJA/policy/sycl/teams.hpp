@@ -49,12 +49,10 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
       q = sycl_res.get_queue();
     }
 
-    std::cout<<"block size values "<<ctx.threads.value[0]<<" "<<ctx.threads.value[1]<<" "<<ctx.threads.value[2]<<std::endl;
     const ::sycl::range<3> blockSize(ctx.threads.value[0],
 				     ctx.threads.value[1],
 				     ctx.threads.value[2]);
 
-    std::cout<<"number of blocks "<<ctx.teams.value[0]<<" "<<ctx.teams.value[1]<<" "<<ctx.teams.value[2]<<std::endl;
     const ::sycl::range<3> gridSize(ctx.threads.value[0] * ctx.teams.value[0],
 				    ctx.threads.value[1] * ctx.teams.value[1],
 				    ctx.threads.value[2] * ctx.teams.value[2]);
