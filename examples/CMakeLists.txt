@@ -24,6 +24,10 @@ raja_add_executable(
 raja_add_executable(
   NAME sycl_teams
   SOURCES sycl_teams.cpp)
+
+raja_add_executable(
+  NAME sycl_mat_transpose
+  SOURCES sycl_mat_transpose.cpp)
   
 raja_add_executable(
   NAME tut_dot-product
