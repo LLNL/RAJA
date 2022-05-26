@@ -75,7 +75,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   memoryManager::sycl_res = new camp::resources::Resource{camp::resources::Sycl()};
   ::RAJA::sycl::detail::setQueue(memoryManager::sycl_res);
 #endif
-  
+
   //
   // Define num rows/cols in matrix, tile dimensions, and number of tiles
   //
@@ -114,7 +114,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Aview(row, col) = col;
     }
   }
-  // printResult<int>(Aview, N_r, N_c);
+  //printResult<int>(Aview, N_r, N_c);
 
   //----------------------------------------------------------------------------//
   std::cout << "\n Running C-version of shared matrix transpose...\n";
@@ -181,35 +181,97 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_SYCL)
   std::cout << "\n Running RAJA SYCL matrix transpose...\n";
 
+  std::memset(At, 0, N_r * N_c * sizeof(int));
+
   int *d_a = memoryManager::allocate_gpu<int>(N_r * N_c);
   int *d_at = memoryManager::allocate_gpu<int>(N_r * N_c);
 
   memoryManager::sycl_res->memcpy(d_a, A, N_r * N_c * sizeof(int));
   memoryManager::sycl_res->memcpy(d_at, At, N_r * N_c * sizeof(int));
 
-//Macros for accesing data
-#define A_(r, c) d_a[r + N_r*c];
-#define At_(r, c) d_at[c + N_c*r];
-  
+  //Device views
+  RAJA::View<int, RAJA::Layout<DIM>> A_(d_a, N_r, N_c);
+  RAJA::View<int, RAJA::Layout<DIM>> At_(d_at, N_c, N_r);
+
   using launch_policy =
     RAJA::expt::LaunchPolicy<RAJA::expt::sycl_launch_t<false>>;
 
+  using inner0_pol =
+    RAJA::expt::LaunchPolicy<RAJA::sycl_local_0_direct>;
+
+  using inner1_pol =
+    RAJA::expt::LaunchPolicy<RAJA::sycl_local_1_direct>;
+
+  using outer0_pol =
+    RAJA::expt::LaunchPolicy<RAJA::sycl_group_0_direct>;
+
+  using outer1_pol =
+    RAJA::expt::LaunchPolicy<RAJA::sycl_group_1_direct>;
+
+
+   //This kernel will require the following amount of shared memory
+   const int shared_memory = TILE_DIM*TILE_DIM;
+
     RAJA::expt::launch<launch_policy>
-      (RAJA::expt::Grid(RAJA::expt::Teams(outer_Dimr, outer_Dimc),
-		      RAJA::expt::Threads(TILE_DIM, TILE_DIM)),
-     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+      (RAJA::expt::Grid(RAJA::expt::Teams(outer_Dimc, outer_Dimr),
+			RAJA::expt::Threads(TILE_DIM, TILE_DIM),
+			shared_memory),
+       [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
+	RAJA::expt::loop<outer1_pol>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
+	    RAJA::expt::loop<outer0_pol>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
 
+		//Ctx could hold a pointer to a big chunk of shared memory
+		//We can then provide an accessor to offsets of the shared memory
+		int *shared_mem = &ctx.shared_mem_ptr[0];
 
+		//reshape the data
+		int (*Tile)[TILE_DIM] = (int (*)[TILE_DIM]) (shared_mem);
 
-	
+		RAJA::expt::loop<inner1_pol>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
+		   RAJA::expt::loop<inner0_pol>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
 
-	
+		       int col = bx * TILE_DIM + tx;  // Matrix column index
+		       int row = by * TILE_DIM + ty;  // Matrix row index
+
+		       // Bounds check
+		       if (row < N_r && col < N_c) {
+			 Tile[ty][tx] = A_(row, col);
+		       }
+
+		     });
+		 });
+
+		//need a barrier
+		ctx.teamSync();
+
+		RAJA::expt::loop<inner1_pol>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
+		   RAJA::expt::loop<inner0_pol>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
+
+		       int col = bx * TILE_DIM + tx;  // Matrix column index
+		       int row = by * TILE_DIM + ty;  // Matrix row index
+
+		       // Bounds check
+		       if (row < N_r && col < N_c) {
+			 At_(col, row) = Tile[ty][tx];
+		       }
+
+		     });
+		  });
+
+	      });
+	  });
+
     });
-  
+
+  memoryManager::sycl_res->memcpy(At, d_at, N_c * N_r * sizeof(int));
+
+  checkResult<int>(Atview, N_c, N_r);
+//printResult<int>(Atview, N_c, N_r);
+
 #endif
 
-  
+
   return 0;
 }
 
@@ -244,8 +306,9 @@ void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
   std::cout << std::endl;
   for (int row = 0; row < N_r; ++row) {
     for (int col = 0; col < N_c; ++col) {
-      std::cout << "At(" << row << "," << col << ") = " << Atview(row, col)
-                << std::endl;
+      //std::cout << "At(" << row << "," << col << ") = " << Atview(row, col)
+      //<< std::endl;
+      printf("%d ",Atview(row, col));
     }
     std::cout << "" << std::endl;
   }

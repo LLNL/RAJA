@@ -159,10 +159,12 @@ int main(int argc, char *argv[])
   RAJA::resources::Resource res = RAJA::expt::Get_Host_Resource(host_res, select_cpu_or_gpu);
 #endif
 
+  const int shared_mem = 0;
+
   //How the kernel executes now depends on how the resource is constructed (host or device)
   RAJA::expt::launch<launch_policy>
     (res, RAJA::expt::Grid(RAJA::expt::Teams(GRID_SZ),
-                           RAJA::expt::Threads(TEAM_SZ),
+                           RAJA::expt::Threads(TEAM_SZ), shared_mem,
                            "Reduction Kernel"),
      [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx)  {
        RAJA::expt::loop<loop_pol>(ctx, arange, [&] (int i) {

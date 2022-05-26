@@ -134,12 +134,14 @@ public:
   Threads threads;
   Lanes lanes;
   const char *kernel_name{nullptr};
+  int shared_mem_size;
 
   RAJA_INLINE
   Grid() = default;
 
-  Grid(Teams in_teams, Threads in_threads, const char *in_kernel_name = nullptr)
-    : teams(in_teams), threads(in_threads), kernel_name(in_kernel_name){};
+  Grid(Teams in_teams, Threads in_threads, int shared_mem_size_ = 0, const char *in_kernel_name = nullptr)
+    : teams(in_teams), threads(in_threads), shared_mem_size(shared_mem_size_),
+      kernel_name(in_kernel_name){};
 
 private:
   RAJA_HOST_DEVICE
@@ -162,20 +164,38 @@ struct int3
     x(_x), y(_y), z(_z)
   {}
 };
-  
+
+/*
+template <typename T = double>
+struct shared_mem
+{
+  using element_type = T;
+  int size = 0;
+  shared_mem(int size_) : size(size_){};
+};
+*/
+
 class LaunchContext : public Grid
 {
 public:
 
   mutable int3 loc_id;
   mutable int3 group_id;
-  
+
+  //Will have to template on a type
+  mutable int *shared_mem_ptr; //pointer to dynamically allocated shared memory
+
+  mutable cl::sycl::nd_item<3> *itm;
+
+  //int shared_mem; //how much shared memory is needed
+  //shared_mem *my_sharedmem;
+
   LaunchContext(Grid const &base)
       : Grid(base)
   {
   }
 
-  //Only enable when using SYCL  
+  //Only enable when using SYCL
   void setup_loc_id(int tx, int ty, int tz) const {
     loc_id.x = tx;
     loc_id.y = ty;
@@ -187,11 +207,15 @@ public:
     group_id.y = by;
     group_id.z = bz;
   }
-  
+
   RAJA_HOST_DEVICE
   void teamSync()
   {
-#if defined(RAJA_DEVICE_CODE)
+#if defined(RAJA_ENABLE_SYCL)
+    itm->barrier(sycl::access::fence_space::local_space);
+#endif
+
+#if defined(RAJA_DEVICE_CODE) && !defined(RAJA_ENABLE_SYCL)
     __syncthreads();
 #endif
   }
