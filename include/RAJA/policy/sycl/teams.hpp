@@ -49,21 +49,21 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
       q = sycl_res.get_queue();
     }
 
-    std::cout<<"values "<<ctx.teams.value[0]<<" "<<ctx.teams.value[1]<<" "<<ctx.teams.value[2]<<std::endl;
-    const ::sycl::range<3> gridSize(ctx.teams.value[0],
-			      ctx.teams.value[1],
-			      ctx.teams.value[2]);
-
-    std::cout<<"values "<<ctx.threads.value[0]<<" "<<ctx.threads.value[1]<<" "<<ctx.threads.value[2]<<std::endl;    
+    std::cout<<"block size values "<<ctx.threads.value[0]<<" "<<ctx.threads.value[1]<<" "<<ctx.threads.value[2]<<std::endl;
     const ::sycl::range<3> blockSize(ctx.threads.value[0],
-			      ctx.threads.value[1],
-			      ctx.threads.value[2]);
+				     ctx.threads.value[1],
+				     ctx.threads.value[2]);
+
+    std::cout<<"number of blocks "<<ctx.teams.value[0]<<" "<<ctx.teams.value[1]<<" "<<ctx.teams.value[2]<<std::endl;
+    const ::sycl::range<3> gridSize(ctx.threads.value[0] * ctx.teams.value[0],
+				    ctx.threads.value[1] * ctx.teams.value[1],
+				    ctx.threads.value[2] * ctx.teams.value[2]);
 
 
     q->submit([&](cl::sycl::handler& h) {
 
     h.parallel_for
-      (cl::sycl::nd_range<3>{gridSize, blockSize},
+      (cl::sycl::nd_range<3>(gridSize, blockSize),
        [=] (cl::sycl::nd_item<3> itm) {
 
 	 ctx.setup_loc_id(itm.get_local_id(0),
@@ -85,7 +85,8 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
 
   }
 
-#if 0  
+  //Need to rework...
+#if 0
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
   exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY_IN &&body_in)
@@ -143,7 +144,7 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
 
     return resources::EventProxy<resources::Resource>(res);
   }
-#endif  
+#endif
 
 };
 

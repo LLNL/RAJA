@@ -137,7 +137,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::expt::launch<launch_policy>
     (RAJA::expt::Grid(RAJA::expt::Teams(BLKS),
-		      RAJA::expt::Threads(SYCL_BLOCK_SIZE, 2)),
+		      RAJA::expt::Threads(SYCL_BLOCK_SIZE, 1, 1)),
      [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
       /*      
