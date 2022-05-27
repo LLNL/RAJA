@@ -49,6 +49,8 @@ add_subdirectory(single-loop-tile-icount-tcount)
 
 add_subdirectory(tile-variants)
 
+add_subdirectory(warp-thread)
+
 unset( KERNEL_BACKENDS )
 
 #
