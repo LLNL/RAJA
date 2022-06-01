@@ -13,4 +13,4 @@ configure_file(
    using-with-cmake/CMakeLists.txt
    using-with-cmake/using-with-cmake.cpp
    ${PROJECT_BINARY_DIR}/examples/using-with-cmake/host-config.cmake
-   DESTINATION examples/umpire/using-with-cmake)
+   DESTINATION examples/RAJA/using-with-cmake)
