@@ -312,7 +312,7 @@ A summary of the configurations we build are:
         vmImage: 'windows-2019'
 
     **MacOS.** The ``- job: Mac`` section contains information for Mac test 
-    builds. For example, we build and test RAJA using the the MacOS/compiler 
+    builds. For example, we build RAJA using the the MacOS/compiler 
     image provided by the Azure application indicated in the ``pool`` section; 
     for example::
 
@@ -340,14 +340,19 @@ A summary of the configurations we build are:
 
           ...
 
-    The Linux OS image is indicated in the ``pool`` section; 
+    The Linux OS the docker images are run on is indicated in the ``pool`` section; 
     for example::
 
       pool:
         vmImage: 'ubuntu-latest'
 
-For each Linux build and test pipeline, the container images, CMake, build, and
+Docker Builds
+-------------
+
+For each Linux/Docker pipeline, the base container images, CMake, build, and
 test commands are located in `RAJA/Dockerfile <https://github.com/LLNL/RAJA/blob/develop/Dockerfile>`_.
+
+The base container images are built and maintained through the `RSE-Ops <https://rse-ops.github.io/>`_ RADIUSS project. A table of the most up to date containers can be found `here <https://rse-ops.github.io/docker-images/>`_. These images are rebuilt regularly ensuring that we have the most up to date builds of each container / compiler.
 
 .. note:: Please see :ref:`docker_local-label` for more information about
           reproducing Docker builds locally for debugging purposes.
