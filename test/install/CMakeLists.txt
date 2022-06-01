@@ -5,15 +5,12 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-include_directories(include)
+configure_file(
+     using-with-cmake/host-config.cmake.in
+     ${PROJECT_BINARY_DIR}/examples/using-with-cmake/host-config.cmake)
 
-add_subdirectory(integration)
-
-add_subdirectory(functional)
-
-add_subdirectory(unit)
-
-add_subdirectory(old-tests)
-
-add_subdirectory(install)
-
+ install( FILES
+   using-with-cmake/CMakeLists.txt
+   using-with-cmake/using-with-cmake.cpp
+   ${PROJECT_BINARY_DIR}/examples/using-with-cmake/host-config.cmake
+   DESTINATION examples/umpire/using-with-cmake)

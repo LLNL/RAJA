@@ -1,0 +1,27 @@
+###############################################################################
+# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+###############################################################################
+
+# Config related to compiler
+set(CMAKE_C_COMPILER              "@CMAKE_C_COMPILER@"       CACHE PATH "")
+set(CMAKE_CXX_COMPILER            "@CMAKE_CXX_COMPILER@"     CACHE PATH "")
+set(CMAKE_Fortran_COMPILER        "@CMAKE_Fortran_COMPILER@" CACHE PATH "")
+set(CMAKE_CXX_STANDARD            "@CMAKE_CXX_STANDARD@"     CACHE STRING "")
+
+set(CMAKE_C_FLAGS            "@CMAKE_C_FLAGS@"          CACHE STRING "")
+set(CMAKE_CXX_FLAGS          "@CMAKE_CXX_FLAGS@"        CACHE STRING "")
+set(CMAKE_Fortran_FLAGS      "@CMAKE_Fortran_FLAGS@"    CACHE STRING "")
+set(CMAKE_EXE_LINKER_FLAGS   "@CMAKE_EXE_LINKER_FLAGS@" CACHE STRING "")
+
+# MPI
+set(ENABLE_MPI             @ENABLE_MPI@               CACHE BOOL "")
+set(MPI_C_COMPILER         "@MPI_C_COMPILER@"         CACHE PATH "")
+set(MPI_CXX_COMPILER       "@MPI_CXX_COMPILER@"       CACHE PATH "")
+set(MPI_Fortran_COMPILER   "@MPI_Fortran_COMPILER@"   CACHE PATH "")
+set(MPIEXEC_EXECUTABLE     "@MPIEXEC_EXECUTABLE@"     CACHE PATH "")
+set(MPIEXEC_NUMPROC_FLAG   "@MPIEXEC_NUMPROC_FLAG@"   CACHE STRING "")
+
+set(RAJA_DIR        "@CMAKE_INSTALL_PREFIX@" CACHE PATH "")
