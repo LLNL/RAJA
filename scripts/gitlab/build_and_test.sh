@@ -135,7 +135,13 @@ then
       -C ${hostconfig_path} \
       -DCMAKE_INSTALL_PREFIX=${install_dir} \
       ${project_dir}
-    cmake --build . -j ${core_counts[$truehostname]}
+    if ! cmake --build . -j ${core_counts[$truehostname]}
+    then
+        echo "ERROR: compilation failed, building with verbose output..."
+        cmake --build . --verbose -j 1
+    else
+        make install
+    fi
     date
 fi
 
