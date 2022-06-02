@@ -15,7 +15,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   double* b = new double[N];
   double c = 3.14159;
   
-  for (int i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     a[i] = 1.0;
     b[i] = 2.0;
   }
