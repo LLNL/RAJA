@@ -116,7 +116,7 @@ endif ()
 
 if (RAJA_NEEDS_BLT_TPLS)
   blt_export_tpl_targets(EXPORT raja-blt-targets NAMESPACE RAJA)
-  install(EXPORT raja-blt-targets DESTINATION lib/cmake/RAJA)
+  install(EXPORT raja-blt-targets DESTINATION lib/cmake/raja)
 endif ()
 
 foreach(dep ${TPL_DEPS})
