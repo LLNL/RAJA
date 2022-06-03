@@ -21,7 +21,7 @@ clang_9_gcc_8:
 
 clang_11_0_0:
   variables:
-    SPEC: "+openmp %clang@11.0.0"
+    SPEC: "+openmp+openmp_target cxxflags=-std=c++14 %clang@11.0.0"
   extends: .build_and_test_on_lassen
 
 gcc_8_3_1:
