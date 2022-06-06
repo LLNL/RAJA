@@ -61,8 +61,6 @@ void TeamsListSegmentTestImpl(INDEX_TYPE N)
   constexpr int threads = 256;
   int blocks = (data_len - 1)/threads + 1;
 
-  auto teams_lseg = RAJA::make_span(lseg);
-
   if ( RAJA::stripIndexType(N) > 0 ) {
 
     for (size_t i = 0; i < idxlen; ++i) {
@@ -75,7 +73,7 @@ void TeamsListSegmentTestImpl(INDEX_TYPE N)
       (RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-        RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, teams_lseg, [&](INDEX_TYPE idx) {
+        RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, lseg, [&](INDEX_TYPE idx) {
             working_array[RAJA::stripIndexType(idx)] = idx;
           });
       });
@@ -90,7 +88,7 @@ void TeamsListSegmentTestImpl(INDEX_TYPE N)
       (RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-        RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, teams_lseg, [&](INDEX_TYPE idx) {
+        RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, lseg, [&](INDEX_TYPE idx) {
             (void) idx;
             working_array[0]++;
           });

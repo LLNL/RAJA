@@ -34,6 +34,10 @@ raja_add_executable(
   SOURCES tut_matrix-multiply.cpp)
 
 raja_add_executable(
+  NAME teams_listsegments
+  SOURCES teams_listsegments.cpp)
+
+raja_add_executable(
   NAME tut_nested-loop-reorder
   SOURCES tut_nested-loop-reorder.cpp)
 
