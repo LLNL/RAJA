@@ -149,7 +149,7 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
     forall_impl(r, HpExecPolicy{},
                 TypedRangeSegment<idx_t>(0, hp_len),
                 outer_wrapper,
-                expt::get_empty_forall_param_pack());
+                RAJA::expt::get_empty_forall_param_pack());
   }
 };
 

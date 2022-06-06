@@ -86,11 +86,11 @@ void ET_MatrixVectorImpl()
   //
   tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
-    auto rows = RAJA::RowIndex<int, matrix_t>::all();
-    auto cols = RAJA::ColIndex<int, matrix_t>::all();
+    auto rows = RAJA::expt::RowIndex<int, matrix_t>::all();
+    auto cols = RAJA::expt::ColIndex<int, matrix_t>::all();
 
-    auto vrow = RAJA::VectorIndex<int, rvector_t>::all();
-    auto vcol = RAJA::VectorIndex<int, cvector_t>::all();
+    auto vrow = RAJA::expt::VectorIndex<int, rvector_t>::all();
+    auto vcol = RAJA::expt::VectorIndex<int, cvector_t>::all();
 
     data3_d(vcol) = data1_d(rows, cols) * data2_d(vrow);
 
@@ -137,11 +137,11 @@ void ET_MatrixVectorImpl()
       //
       tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
         // Load data using a View
-        auto rows = RAJA::RowIndex<int, matrix_t>::range(0, n_size);
-        auto cols = RAJA::ColIndex<int, matrix_t>::range(0, m_size);
+        auto rows = RAJA::expt::RowIndex<int, matrix_t>::range(0, n_size);
+        auto cols = RAJA::expt::ColIndex<int, matrix_t>::range(0, m_size);
 
-        auto vrow = RAJA::VectorIndex<int, rvector_t>::range(0, m_size);
-        auto vcol = RAJA::VectorIndex<int, cvector_t>::range(0, n_size);
+        auto vrow = RAJA::expt::VectorIndex<int, rvector_t>::range(0, m_size);
+        auto vcol = RAJA::expt::VectorIndex<int, cvector_t>::range(0, n_size);
 
         data3_d(vcol) = data1_d(rows, cols) * data2_d(vrow);
       });
@@ -180,11 +180,11 @@ void ET_MatrixVectorImpl()
   //
   tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
-    auto rows = RAJA::RowIndex<int, matrix_t>::all();
-    auto cols = RAJA::ColIndex<int, matrix_t>::all();
+    auto rows = RAJA::expt::RowIndex<int, matrix_t>::all();
+    auto cols = RAJA::expt::ColIndex<int, matrix_t>::all();
 
-    auto vrow = RAJA::VectorIndex<int, rvector_t>::all();
-    auto vcol = RAJA::VectorIndex<int, cvector_t>::all();
+    auto vrow = RAJA::expt::VectorIndex<int, rvector_t>::all();
+    auto vcol = RAJA::expt::VectorIndex<int, cvector_t>::all();
 
     data3_d(vrow) =  data2_d(vcol) * data1_d(rows, cols);
 
@@ -232,11 +232,11 @@ void ET_MatrixVectorImpl()
       //
       tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
         // Load data using a View
-        auto rows = RAJA::RowIndex<int, matrix_t>::range(0, n_size);
-        auto cols = RAJA::ColIndex<int, matrix_t>::range(0, m_size);
+        auto rows = RAJA::expt::RowIndex<int, matrix_t>::range(0, n_size);
+        auto cols = RAJA::expt::ColIndex<int, matrix_t>::range(0, m_size);
 
-        auto vrow = RAJA::VectorIndex<int, rvector_t>::range(0, m_size);
-        auto vcol = RAJA::VectorIndex<int, cvector_t>::range(0, n_size);
+        auto vrow = RAJA::expt::VectorIndex<int, rvector_t>::range(0, m_size);
+        auto vcol = RAJA::expt::VectorIndex<int, cvector_t>::range(0, n_size);
 
         data3_d(vrow) =  data2_d(vcol) * data1_d(rows, cols);
       });

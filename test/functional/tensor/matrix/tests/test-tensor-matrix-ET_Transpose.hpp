@@ -65,11 +65,11 @@ void ET_TransposeImpl()
   //
   tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
-    auto rows = RAJA::RowIndex<int, matrix_t>::all();
-    auto cols = RAJA::ColIndex<int, matrix_t>::all();
+    auto rows = RAJA::expt::RowIndex<int, matrix_t>::all();
+    auto cols = RAJA::expt::ColIndex<int, matrix_t>::all();
 
-    auto rows_tr = RAJA::RowIndex<int, transpose_t>::all();
-    auto cols_tr = RAJA::ColIndex<int, transpose_t>::all();
+    auto rows_tr = RAJA::expt::RowIndex<int, transpose_t>::all();
+    auto cols_tr = RAJA::expt::ColIndex<int, transpose_t>::all();
 
     output0_d(rows_tr, cols_tr) = input0_d(rows, cols).transpose();
 

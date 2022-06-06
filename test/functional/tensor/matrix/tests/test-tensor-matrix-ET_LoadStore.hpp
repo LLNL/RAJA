@@ -57,8 +57,8 @@ void ET_LoadStoreImpl()
   //
   tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
-    auto rows = RAJA::RowIndex<int, matrix_t>::all();
-    auto cols = RAJA::ColIndex<int, matrix_t>::all();
+    auto rows = RAJA::expt::RowIndex<int, matrix_t>::all();
+    auto cols = RAJA::expt::ColIndex<int, matrix_t>::all();
 
     data2_d(cols, rows) = data1_d(rows, cols);
 
@@ -101,8 +101,8 @@ void ET_LoadStoreImpl()
       //
       tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
         // Load data using a View
-        auto rows = RAJA::RowIndex<int, matrix_t>::range(0, n_size);
-        auto cols = RAJA::ColIndex<int, matrix_t>::range(0, m_size);
+        auto rows = RAJA::expt::RowIndex<int, matrix_t>::range(0, n_size);
+        auto cols = RAJA::expt::ColIndex<int, matrix_t>::range(0, m_size);
 
         data2_d(cols, rows) = data1_d(rows, cols);
       });

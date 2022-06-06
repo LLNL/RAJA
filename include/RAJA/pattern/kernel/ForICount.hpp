@@ -112,7 +112,7 @@ struct StatementExecutor<
 
     auto r = resources::get_resource<ExecPolicy>::type::get_default();
 
-    forall_impl(r, ExecPolicy{}, TypedRangeSegment<len_t>(0, len), for_wrapper, expt::get_empty_forall_param_pack());
+    forall_impl(r, ExecPolicy{}, TypedRangeSegment<len_t>(0, len), for_wrapper, RAJA::expt::get_empty_forall_param_pack());
   }
 };
 
