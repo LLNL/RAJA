@@ -299,16 +299,16 @@ public:
 
   //! Add copy of segment to back end of index set.
   template <typename Tnew>
-  RAJA_INLINE void push_back(Tnew const &val)
+  RAJA_INLINE void push_back(Tnew &&val)
   {
-    push_internal(new Tnew(val), PUSH_BACK, PUSH_COPY);
+    push_internal(new Tnew(std::forward<Tnew>(val)), PUSH_BACK, PUSH_COPY);
   }
 
   //! Add copy of segment to front end of index set.
   template <typename Tnew>
-  RAJA_INLINE void push_front(Tnew const &val)
+  RAJA_INLINE void push_front(Tnew &&val)
   {
-    push_internal(new Tnew(val), PUSH_FRONT, PUSH_COPY);
+    push_internal(new Tnew(std::forward<Tnew>(val)), PUSH_FRONT, PUSH_COPY);
   }
 
   //! Return total length -- sum of lengths of all segments

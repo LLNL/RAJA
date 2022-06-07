@@ -121,7 +121,6 @@ public:
                    camp::resources::Resource resource,
                    IndexOwnership owned = Owned)
   {
-    //m_resource = new camp::resources::Resource(resource);
     initIndexData(values, length, resource, owned);
   }
 
@@ -142,7 +141,6 @@ public:
                    camp::resources::Resource resource)
     : m_resource(nullptr), m_owned(Unowned), m_data(nullptr), m_size(container.size())
   {
-
     if (m_size > 0) {
 
       camp::resources::Resource host_res{camp::resources::Host()};
@@ -178,10 +176,6 @@ public:
     : m_resource(nullptr),
       m_owned(Unowned), m_data(other.m_data), m_size(other.m_size)
   {
-
-    //Comment out for proposed changed
-    //bool from_copy_ctor = true; //won't be needed
-    //initIndexData(other.m_data, other.m_size, Unowned, from_copy_ctor);
   }
 
   //! Copy assignment for list segment
@@ -189,58 +183,58 @@ public:
   //  RAJA method we perform a shallow copy
   RAJA_HOST_DEVICE TypedListSegment& operator=(const TypedListSegment& other)
   {
-    printf("calling typedListSegment& operator=");
-
+    clear();
     m_resource = nullptr;
     m_owned = Unowned;
-    m_data(other.m_data);
-    m_size(other.m_size);
-    //Comment out for proposed changed
-    //bool from_copy_ctor = true; //won't be needed
-    //initIndexData(other.m_data, other.m_size, Unowned, from_copy_ctor);
+    m_data = other.m_data;
+    m_size = other.m_size;
   }
 
     //! move assignment for list segment
   //  As this may be called from a lambda in a
   //  RAJA method we perform a shallow copy
-  RAJA_HOST_DEVICE TypedListSegment& operator=(const TypedListSegment&& rhs)
+  RAJA_HOST_DEVICE TypedListSegment& operator=(TypedListSegment&& rhs)
   {
-    printf("calling typedListSegment&& operator=");
-
+    clear();
     m_resource = *rhs.m_resource;
-    m_owned = Unowned;
-    m_data(rhs.m_data);
-    m_size(rhs.m_size);
+    m_owned = rhs.m_owned;
+    m_data = rhs.m_data;
+    m_size = rhs.m_size;
+
     rhs.m_resource = nullptr;
-    //Comment out for proposed changed
-    //bool from_copy_ctor = true; //won't be needed
-    //initIndexData(other.m_data, other.m_size, Unowned, from_copy_ctor);
+    rhs.m_owned = Unowned;
+    rhs.m_data = nullptr;
+    rhs.m_size = 0;
   }
 
   //! Move constructor for list segment
   RAJA_HOST_DEVICE TypedListSegment(TypedListSegment&& rhs)
-    :
+    : m_resource(rhs.m_resource),
       m_owned(rhs.m_owned), m_data(rhs.m_data), m_size(rhs.m_size)
   {
-    // make the rhs non-owning so it's destructor won't have any side effects
-    m_resource = *rhs.m_resource;
     rhs.m_owned = Unowned;
     rhs.m_resource = nullptr;
+    rhs.m_size = 0;
+    rhs.m_data = nullptr;
   }
 
   //! List segment destructor
   RAJA_HOST_DEVICE ~TypedListSegment()
   {
-    if (m_data != nullptr && m_owned == Owned) {
-      clear();
-    }
+    clear();
   }
 
   //! Clear method to be called
   RAJA_HOST_DEVICE void clear()
   {
-    m_resource->deallocate(m_data);
-    delete m_resource;
+    if (m_data != nullptr && m_owned == Owned) {
+      m_resource->deallocate(m_data);
+      delete m_resource;
+    }
+    m_data = nullptr;
+    m_resource = nullptr;
+    m_owned = Unowned;
+    m_size = 0;
   }
 
   //@}
@@ -359,15 +353,6 @@ private:
     m_owned = container_own;
     if (m_owned == Owned) {
 
-      /* won't be used anymore
-      if ( from_copy_ctor ) {
-        m_data = m_resource->allocate<value_type>(m_size);
-        m_resource->memcpy(m_data, container, sizeof(value_type) * m_size);
-
-      } else
-      */
-      {
-        printf("initializing data, size of %ld! \n", m_size);
         m_resource = new camp::resources::Resource(resource_);
 
         camp::resources::Resource host_res{camp::resources::Host()};
@@ -382,8 +367,6 @@ private:
         m_resource->memcpy(m_data, tmp, sizeof(value_type) * m_size);
 
         host_res.deallocate(tmp);
-
-      }
 
       return;
     }
