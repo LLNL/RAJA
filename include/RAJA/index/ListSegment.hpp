@@ -121,8 +121,8 @@ public:
                    camp::resources::Resource resource,
                    IndexOwnership owned = Owned)
   {
-    m_resource = new camp::resources::Resource(resource);
-    initIndexData(values, length, owned);
+    //m_resource = new camp::resources::Resource(resource);
+    initIndexData(values, length, resource, owned);
   }
 
   /*!
@@ -140,10 +140,8 @@ public:
   template <typename Container>
   TypedListSegment(const Container& container,
                    camp::resources::Resource resource)
-    : m_owned(Unowned), m_data(nullptr), m_size(container.size())
+    : m_resource(nullptr), m_owned(Unowned), m_data(nullptr), m_size(container.size())
   {
-
-    m_resource = new camp::resources::Resource(resource);
 
     if (m_size > 0) {
 
@@ -160,6 +158,7 @@ public:
         ++src;
       }
 
+      m_resource = new camp::resources::Resource(resource);
       m_data = m_resource->allocate<value_type>(m_size);
       m_resource->memcpy(m_data, tmp, sizeof(value_type) * m_size);
       m_owned = Owned;
@@ -179,30 +178,36 @@ public:
     : m_resource(nullptr),
       m_owned(Unowned), m_data(other.m_data), m_size(other.m_size)
   {
-    m_data = const_cast<value_type*>(other.m_data);
 
+    //Comment out for proposed changed
     //bool from_copy_ctor = true; //won't be needed
     //initIndexData(other.m_data, other.m_size, Unowned, from_copy_ctor);
   }
 
   //! Move constructor for list segment
   RAJA_HOST_DEVICE TypedListSegment(TypedListSegment&& rhs)
-    : 
+    :
       m_owned(rhs.m_owned), m_data(rhs.m_data), m_size(rhs.m_size)
   {
     // make the rhs non-owning so it's destructor won't have any side effects
     m_resource = *rhs.m_resource;
     rhs.m_owned = Unowned;
-    //delete resource;
+    rhs.m_resource = nullptr;
   }
 
   //! List segment destructor
   RAJA_HOST_DEVICE ~TypedListSegment()
   {
     if (m_data != nullptr && m_owned == Owned) {
-      m_resource->deallocate(m_data);
-      delete m_resource;
+      clear();
     }
+  }
+
+  //! Clear method to be called
+  RAJA_HOST_DEVICE void clear()
+  {
+    m_resource->deallocate(m_data);
+    delete m_resource;
   }
 
   //@}
@@ -303,8 +308,9 @@ private:
   //
   void initIndexData(const value_type* container,
                      Index_type len,
-                     IndexOwnership container_own,
-                     bool from_copy_ctor = false)
+                     camp::resources::Resource resource_,
+                     IndexOwnership container_own)
+  //bool from_copy_ctor = false) //won't need
   {
 
     // empty list segment
@@ -320,12 +326,15 @@ private:
     m_owned = container_own;
     if (m_owned == Owned) {
 
+      /* won't be used anymore
       if ( from_copy_ctor ) {
-
         m_data = m_resource->allocate<value_type>(m_size);
         m_resource->memcpy(m_data, container, sizeof(value_type) * m_size);
 
-      } else {
+      } else
+      */
+      {
+        m_resource = new camp::resources::Resource(resource_);
 
         camp::resources::Resource host_res{camp::resources::Host()};
 
