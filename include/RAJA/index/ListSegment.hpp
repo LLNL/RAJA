@@ -184,6 +184,39 @@ public:
     //initIndexData(other.m_data, other.m_size, Unowned, from_copy_ctor);
   }
 
+  //! Copy assignment for list segment
+  //  As this may be called from a lambda in a
+  //  RAJA method we perform a shallow copy
+  RAJA_HOST_DEVICE TypedListSegment& operator=(const TypedListSegment& other)
+  {
+    printf("calling typedListSegment& operator=");
+
+    m_resource = nullptr;
+    m_owned = Unowned;
+    m_data(other.m_data);
+    m_size(other.m_size);
+    //Comment out for proposed changed
+    //bool from_copy_ctor = true; //won't be needed
+    //initIndexData(other.m_data, other.m_size, Unowned, from_copy_ctor);
+  }
+
+    //! move assignment for list segment
+  //  As this may be called from a lambda in a
+  //  RAJA method we perform a shallow copy
+  RAJA_HOST_DEVICE TypedListSegment& operator=(const TypedListSegment&& rhs)
+  {
+    printf("calling typedListSegment&& operator=");
+
+    m_resource = *rhs.m_resource;
+    m_owned = Unowned;
+    m_data(rhs.m_data);
+    m_size(rhs.m_size);
+    rhs.m_resource = nullptr;
+    //Comment out for proposed changed
+    //bool from_copy_ctor = true; //won't be needed
+    //initIndexData(other.m_data, other.m_size, Unowned, from_copy_ctor);
+  }
+
   //! Move constructor for list segment
   RAJA_HOST_DEVICE TypedListSegment(TypedListSegment&& rhs)
     :
@@ -334,6 +367,7 @@ private:
       } else
       */
       {
+        printf("initializing data, size of %ld! \n", m_size);
         m_resource = new camp::resources::Resource(resource_);
 
         camp::resources::Resource host_res{camp::resources::Host()};
