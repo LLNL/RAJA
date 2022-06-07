@@ -9,6 +9,14 @@
 ## Here are the CMake dependent options in RAJA.
 ##
 
+set(RAJA_DEPENDENT_OPTIONS ENABLE_OPENMP ENABLE_CUDA ENABLE_HIP ENABLE_CLANG_CUDA ENABLE_COVERAGE ENABLE_TESTS ENABLE_EXAMPLES ENABLE_BENCHMARKS)
+foreach (option ${RAJA_DEPENDENT_OPTIONS})
+   if (${RAJA_${option}})
+      if (NOT ${option})
+         message(WARNING "RAJA_${option} set to On, but ${option} is Off")
+      endif ()
+   endif ()
+endforeach ()
 
 cmake_dependent_option(RAJA_ENABLE_OPENMP "Build with OpenMP support" On "ENABLE_OPENMP" Off)
 cmake_dependent_option(RAJA_ENABLE_CUDA "Build with CUDA support" On "ENABLE_CUDA" Off)
