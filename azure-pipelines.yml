@@ -28,14 +28,14 @@ jobs:
     inputs:
       workingDir: 'build'
       cmakeArgs: '--build . --config Release --verbose -j 4'
-   - task: CmdLine@2
-     inputs:
-       script: 'ctest.exe -T test -C Release'
-       workingDirectory: 'build'
-   - task: PublishTestResults@2
-     inputs:
-       testResultsFormat: 'cTest'
-       testResultsFiles: '**/Test.xml'
+  - task: CmdLine@2
+    inputs:
+      script: 'ctest.exe -T test -C Release'
+      workingDirectory: 'build'
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'cTest'
+      testResultsFiles: '**/Test.xml'
 - job: Docker
   timeoutInMinutes: 360
   strategy:
