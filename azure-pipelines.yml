@@ -111,12 +111,11 @@ jobs:
       make -j 4
     displayName: 'OSX Build'
     condition: eq( variables['Agent.OS'], 'Darwin')
-#  - script: |
-#      cd build
-#      ctest -T test --output-on-failure
-#    displayName: 'OSX Test'
-#    condition: eq( variables['Agent.OS'], 'Darwin')
-#  - task: PublishTestResults@2
-#    inputs:
-#      testResultsFormat: 'cTest'
-#      testResultsFiles: '**/Test.xml'
+  - script: |
+      cd build
+      ctest -T test --output-on-failure
+    displayName: 'OSX Test'
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'cTest'
+      testResultsFiles: '**/Test.xml'
