@@ -41,12 +41,12 @@ jobs:
   timeoutInMinutes: 360
   strategy:
     matrix: 
-      gcc7:
-        docker_target: gcc7
-      gcc8:
-        docker_target: gcc8
-      gcc9:
-        docker_target: gcc9
+#      gcc7:
+#        docker_target: gcc7
+#      gcc8:
+#        docker_target: gcc8
+#      gcc9:
+#        docker_target: gcc9
       gcc11:
         docker_target: gcc11
       clang11:
@@ -55,16 +55,16 @@ jobs:
         docker_target: clang11-debug
       clang13:
         docker_target: clang13
-      nvcc10:
-        docker_target: nvcc10
-      nvcc11:
-        docker_target: nvcc11
-      nvcc11-debug:
-        docker_target: nvcc11-debug
-      hip:
-        docker_target: hip
-      sycl:
-        docker_target: sycl
+#      nvcc10:
+#        docker_target: nvcc10
+#      nvcc11:
+#        docker_target: nvcc11
+#      nvcc11-debug:
+#        docker_target: nvcc11-debug
+#      hip:
+#        docker_target: hip
+#      sycl:
+#        docker_target: sycl
   pool:
     vmImage: 'ubuntu-latest'
   variables:

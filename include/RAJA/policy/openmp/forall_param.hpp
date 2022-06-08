@@ -52,7 +52,6 @@ namespace expt
                 ForallParam&& f_params)
     {
       using EXEC_POL = typename std::decay<decltype(p)>::type;
-
       RAJA::expt::ParamMultiplexer::init<ExecPol>(f_params);
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
@@ -84,7 +83,8 @@ namespace expt
       RAJA_EXTRACT_BED_IT(iter);
       #pragma omp parallel for schedule(static) reduction(combine : f_params)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
-        RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
+        //RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
+        RAJA::expt::invoke_body(f_params, loop_body, *(begin_it + i));
       }
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
@@ -109,7 +109,8 @@ namespace expt
       RAJA_EXTRACT_BED_IT(iter);
       #pragma omp parallel for schedule(static, ChunkSize) reduction(combine : f_params)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
-        RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
+        //RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
+        RAJA::expt::invoke_body(f_params, loop_body, *(begin_it + i));
       }
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
