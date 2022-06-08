@@ -197,7 +197,7 @@ public:
   RAJA_HOST_DEVICE TypedListSegment& operator=(TypedListSegment&& rhs)
   {
     clear();
-    m_resource = *rhs.m_resource;
+    m_resource = rhs.m_resource;
     m_owned = rhs.m_owned;
     m_data = rhs.m_data;
     m_size = rhs.m_size;
