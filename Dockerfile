@@ -43,6 +43,7 @@ COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN . /opt/spack/share/spack/setup-env.sh && spack load llvm && \
     cmake -DCMAKE_CXX_COMPILER=clang++ -DRAJA_ENABLE_TBB=On -DENABLE_OPENMP=On .. && \
+    cd test/functional/forall/reduce-basic && \
     make -j 6 &&\
     ctest -T test --output-on-failure
 
