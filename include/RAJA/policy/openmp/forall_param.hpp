@@ -28,6 +28,7 @@
         : RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(omp_out, omp_in) ) \
         initializer(omp_priv = omp_orig) ")
 
+
 namespace RAJA
 {
 
