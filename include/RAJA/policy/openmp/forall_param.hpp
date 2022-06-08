@@ -64,6 +64,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
       }
       }
+#pragma omp barrier
 
       RAJA::expt::ParamMultiplexer::resolve<ExecPol>(f_params);
     }
@@ -93,6 +94,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
       }
       }
+#pragma omp barrier
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
@@ -122,6 +124,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
       }
       }
+#pragma omp barrier
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
@@ -148,6 +151,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
       }
       }
+#pragma omp barrier
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
@@ -174,6 +178,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
       }
       }
+#pragma omp barrier
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
@@ -204,6 +209,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
       }
       }
+#pragma omp barrier
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
@@ -231,6 +237,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
       }
       }
+#pragma omp barrier
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
@@ -258,6 +265,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
       }
       }
+#pragma omp barrier
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
@@ -285,6 +293,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
       }
       }
+#pragma omp barrier
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
@@ -312,6 +321,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
       }
       }
+#pragma omp barrier
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
@@ -339,6 +349,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
       }
       }
+#pragma omp barrier
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
