@@ -228,10 +228,13 @@ public:
   //! Clear method to be called
   RAJA_HOST_DEVICE void clear()
   {
+#ifndef(RAJA_DEVICE_CODE)
+    //should not get called on the device
     if (m_data != nullptr && m_owned == Owned) {
       m_resource->deallocate(m_data);
       delete m_resource;
     }
+#endif
     m_data = nullptr;
     m_resource = nullptr;
     m_owned = Unowned;
