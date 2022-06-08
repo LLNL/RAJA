@@ -111,7 +111,8 @@ public:
    * \param values array of indices defining iteration space of segment
    * \param length number of indices
    * \param resource camp resource defining memory space where index data live
-   * \param owned optional enum value indicating whether segment owns indices (Owned or Unowned). Default is Owned.
+   * \param owned optional enum value indicating whether segment owns indices 
+   * (Owned or Unowned). Default is Owned.
    *
    * If 'Unowned' is passed as last argument, the segment will not own its
    * index data. In this case, caller must manage array lifetime properly.
