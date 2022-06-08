@@ -62,8 +62,8 @@ namespace expt
       #pragma omp for reduction(combine : f_params)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
-      }
 #pragma omp barrier
+      }
       }
 
       RAJA::expt::ParamMultiplexer::resolve<ExecPol>(f_params);
@@ -92,8 +92,8 @@ namespace expt
       #pragma omp for schedule(static) reduction(combine : f_params)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
-      }
 #pragma omp barrier
+      }
       }
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
@@ -122,8 +122,8 @@ namespace expt
       #pragma omp for schedule(static, ChunkSize) reduction(combine : f_params)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
-      }
 #pragma omp barrier
+      }
       }
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
@@ -149,8 +149,8 @@ namespace expt
       #pragma omp for schedule(runtime) reduction(combine : f_params)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
-      }
 #pragma omp barrier
+      }
       }
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
@@ -176,8 +176,8 @@ namespace expt
       #pragma omp for nowait reduction(combine : f_params)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
-      }
 #pragma omp barrier
+      }
       }
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
@@ -207,8 +207,8 @@ namespace expt
       #pragma omp for schedule(dynamic) reduction(combine : f_params)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
-      }
 #pragma omp barrier
+      }
       }
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
@@ -235,8 +235,8 @@ namespace expt
       #pragma omp for schedule(dynamic, ChunkSize) reduction(combine : f_params)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
-      }
 #pragma omp barrier
+      }
       }
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
@@ -263,8 +263,8 @@ namespace expt
       #pragma omp for schedule(guided) reduction(combine : f_params)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
-      }
 #pragma omp barrier
+      }
       }
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
@@ -291,8 +291,8 @@ namespace expt
       #pragma omp for schedule(guided, ChunkSize) reduction(combine : f_params)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
-      }
 #pragma omp barrier
+      }
       }
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
@@ -319,8 +319,8 @@ namespace expt
       #pragma omp for schedule(static) nowait reduction(combine : f_params)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
-      }
 #pragma omp barrier
+      }
       }
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
@@ -347,8 +347,8 @@ namespace expt
       #pragma omp for schedule(static, ChunkSize) nowait reduction(combine : f_params)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
         RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
-      }
 #pragma omp barrier
+      }
       }
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
