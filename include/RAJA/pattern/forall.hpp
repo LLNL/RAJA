@@ -596,31 +596,47 @@ RAJA_INLINE camp::resources::EventProxy<Res> CallForallIcount::operator()(T cons
 namespace expt
 {
 
-  enum exec_policy {host_seq, host_parallel, device};
+//enum exec_policy {host_seq, host_parallel, device};
 
-  template<typename POLICY_LIST, typename SEGMENT, typename BODY>
-  void dynamic_forall(const exec_policy pol, SEGMENT const &seg, BODY const &body)
+template<camp::idx_t IDX, typename POLICY_LIST>
+struct dynamic_helper
+{
+  //template<typename POLICY_LIST, typename SEGMENT, typename BODY>
+  template<typename SEGMENT, typename BODY>
+  static void launch(const int pol, SEGMENT const &seg, BODY const &body)
   {
 
-    //Instantiate methods
-    switch(pol)
-      {
+    if(IDX==pol){
+      using t_pol = typename camp::at<POLICY_LIST,camp::num<IDX>>::type;
+      RAJA::forall<t_pol>(seg, body);
+    }
+    dynamic_helper<IDX-1, POLICY_LIST>::launch(pol, seg, body);
+  }
 
-      case host_seq:
-        using pol0 = typename camp::at<POLICY_LIST,camp::num<0>>::type;
-        RAJA::forall<pol0>(seg, body);
-        break;
+};
 
-      case host_parallel:
-        using pol1 = typename camp::at<POLICY_LIST,camp::num<1>>::type;
-        RAJA::forall<pol1>(seg, body);
-        break;
+template<typename POLICY_LIST>
+struct dynamic_helper<0, POLICY_LIST>
+{
+  template<typename SEGMENT, typename BODY>
+  static void launch(const int pol, SEGMENT const &seg, BODY const &body)
+  {
 
-      case device:
-        using pol2 = typename camp::at<POLICY_LIST,camp::num<2>>::type;
-        RAJA::forall<pol2>(seg, body);
-        break;
-      }
+    if(0==pol){
+      using t_pol = typename camp::at<POLICY_LIST,camp::num<0>>::type;
+      RAJA::forall<t_pol>(seg, body);
+    }
+  }
+
+};
+
+
+  template<typename POLICY_LIST, typename SEGMENT, typename BODY>
+  void dynamic_forall(const int pol, SEGMENT const &seg, BODY const &body)
+  {
+
+    constexpr int N = camp::size<POLICY_LIST>::value-1;
+    dynamic_helper<N, POLICY_LIST>::launch(pol, seg, body);
 
   }
 }  // namespace expt

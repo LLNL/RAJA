@@ -17,10 +17,10 @@
  *  Vector Addition Example with dynamic policy selection
  *
  *  Computes c = a + b, where a, b, c are vectors of ints.
- *  It illustrates similarities between a  C-style for-loop and a RAJA 
+ *  It illustrates similarities between a  C-style for-loop and a RAJA
  *  forall loop.
  *
- * If CUDA is enabled, CUDA unified memory is used. 
+ * If CUDA is enabled, CUDA unified memory is used.
  */
 
 /*
@@ -41,14 +41,20 @@ const int SYCL_BLOCK_SIZE = 256;
 //
 // Functions for checking and printing results
 //
-void checkResult(int* res, int len); 
+void checkResult(int* res, int len);
 void printResult(int* res, int len);
+
+using policy_list = camp::list<RAJA::loop_exec,
+                               RAJA::omp_parallel_for_exec,
+                               RAJA::cuda_exec<256>>;
+
+enum exec_policy {pol_0, pol_1, pol_2};
 
 int main(int argc, char *argv[])
 {
 
   if(argc != 2) {
-    RAJA_ABORT_OR_THROW("Usage ./run-time-forall {host, host-parallel, device}");
+    RAJA_ABORT_OR_THROW("Usage ./run-time-forall {pol_0, pol_1, pol_2}");
   }
 
   //
@@ -57,9 +63,9 @@ int main(int argc, char *argv[])
   // Example usage ./teams_reductions host or ./teams_reductions device
   //
   std::string exec_space = argv[1];
-  if(!(exec_space.compare("host") == 0 || exec_space.compare("host-parallel") == 0 || 
-       exec_space.compare("device") == 0 )){
-    RAJA_ABORT_OR_THROW("Usage ./teams_reductions host or ./teams_reductions device");
+  if(!(exec_space.compare("pol_0") == 0 || exec_space.compare("pol_1") == 0 ||
+       exec_space.compare("pol_2") == 0 )){
+    RAJA_ABORT_OR_THROW("Usage ./teams_reductions pol_{1,2,3}");
     return 0;
   }
 
@@ -105,19 +111,15 @@ int main(int argc, char *argv[])
 //----------------------------------------------------------------------------//
 // Example of dynamic policy selection for forall
 //----------------------------------------------------------------------------//
-  RAJA::expt::exec_policy dynamic_policy;
-  if(exec_space.compare("host") == 0)
-    { dynamic_policy = RAJA::expt::host_seq; printf("Running RAJA dynamic_forall example on the host \n"); }
-  if(exec_space.compare("host-parallel") == 0)
-    { dynamic_policy = RAJA::expt::host_parallel; printf("Running RAJA dynamic_forall example on the host-parallel \n"); }
-  if(exec_space.compare("device") == 0)
-    { dynamic_policy = RAJA::expt::device; printf("Running RAJA dynamic_forall example on the device \n"); }
+  exec_policy dynamic_policy;
+  if(exec_space.compare("pol_0") == 0)
+    { dynamic_policy = pol_0; printf("Running RAJA dynamic_forall example using pol_0 \n"); }
+  if(exec_space.compare("pol_1") == 0)
+    { dynamic_policy = pol_1; printf("Running RAJA dynamic_forall example using pol_1 \n"); }
+  if(exec_space.compare("pol_2") == 0)
+    { dynamic_policy = pol_2; printf("Running RAJA dynamic_forall example using pol_2 \n"); }
 
-  //Users can provide 3 policies, host seq, host parallel, device
-  using policy_list = camp::list<RAJA::loop_exec,
-                                 RAJA::omp_parallel_for_exec,
-                                 RAJA::cuda_exec<256>>;
-  
+
 
   //policy is chosen from the list
   RAJA::expt::dynamic_forall<policy_list>(dynamic_policy, RAJA::RangeSegment(0, N), [=] RAJA_HOST_DEVICE (int i) {
@@ -149,7 +151,7 @@ int main(int argc, char *argv[])
 //
 // Function to check result and report P/F.
 //
-void checkResult(int* res, int len) 
+void checkResult(int* res, int len)
 {
   bool correct = true;
   for (int i = 0; i < len; i++) {
@@ -173,4 +175,3 @@ void printResult(int* res, int len)
   }
   std::cout << std::endl;
 }
-
