@@ -589,6 +589,43 @@ RAJA_INLINE camp::resources::EventProxy<Res> CallForallIcount::operator()(T cons
 
 }  // namespace detail
 
+//
+// Experimental support for dynamic policy selection
+//
+
+namespace expt
+{
+
+  enum exec_policy {host_seq, host_parallel, device};
+
+  template<typename POLICY_LIST, typename SEGMENT, typename BODY>
+  void dynamic_forall(const exec_policy pol, SEGMENT const &seg, BODY const &body)
+  {
+
+    //Instantiate methods
+    switch(pol)
+      {
+
+      case host_seq:
+        using pol0 = typename camp::at<POLICY_LIST,camp::num<0>>::type;
+        RAJA::forall<pol0>(seg, body);
+        break;
+
+      case host_parallel:
+        using pol1 = typename camp::at<POLICY_LIST,camp::num<1>>::type;
+        RAJA::forall<pol1>(seg, body);
+        break;
+
+      case device:
+        using pol2 = typename camp::at<POLICY_LIST,camp::num<2>>::type;
+        RAJA::forall<pol2>(seg, body);
+        break;
+      }
+
+  }
+}  // namespace expt
+
+
 }  // namespace RAJA
 
 
