@@ -94,8 +94,8 @@ lattice arrays.
    :end-before: _offsetlayout_views_end
    :language: C++
 
-Here, the row index range is :math:`[-1, N_r]`, and the column index 
-range is :math:`[-1, N_c]`. The first argument to each call to the 
+Here, the row index range is :math:`[-1, N_r)`, and the column index 
+range is :math:`[-1, N_c)`. The first argument to each call to the 
 ``RAJA::View`` constructor is a pointer to an array that holds the data for 
 the view; we assume the arrays are properly allocated before these calls.
 
