@@ -229,7 +229,7 @@ public:
   RAJA_HOST_DEVICE void clear()
   {
 
-#if !defined(RAJA_DEVICE_CODE)                                                                                                                                                                               //should not get called on the device
+#if !defined(RAJA_DEVICE_CODE)
     if (m_data != nullptr && m_owned == Owned) {
       m_resource->deallocate(m_data);
       delete m_resource;
@@ -341,7 +341,6 @@ private:
                      Index_type len,
                      camp::resources::Resource resource_,
                      IndexOwnership container_own)
-  //bool from_copy_ctor = false) //won't need
   {
 
     // empty list segment
