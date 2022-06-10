@@ -77,7 +77,7 @@ For this :math:`(N_r + 2) \times (N_c + 2)` lattice case, here is our
   +----------+---------+---------+---------+---------+
 
 Notably :math:`[0, N_r) \times [0, N_c)` corresponds to the interior index
-range over which we apply the stencil, and :math:`[-1,N_r] \times [-1, N_c]`
+range over which we apply the stencil, and :math:`[-1,N_r+1) \times [-1, N_c+1)`
 is the full lattice index range.
 
 ^^^^^^^^^^^^^^^^^^^
@@ -94,8 +94,8 @@ lattice arrays.
    :end-before: _offsetlayout_views_end
    :language: C++
 
-Here, the row index range is :math:`[-1, N_r)`, and the column index 
-range is :math:`[-1, N_c)`. The first argument to each call to the 
+Here, the row index range is :math:`[-1, N_r+1)`, and the column index 
+range is :math:`[-1, N_c+1)`. The first argument to each call to the 
 ``RAJA::View`` constructor is a pointer to an array that holds the data for 
 the view; we assume the arrays are properly allocated before these calls.
 
