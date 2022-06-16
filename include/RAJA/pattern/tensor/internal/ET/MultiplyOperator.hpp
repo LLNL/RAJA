@@ -319,12 +319,17 @@ namespace expt
       }
 
     private:
+
+      template<typename STORAGE, typename TILE_TYPE, typename INDEX=void>
+      struct MultiplyBridge;
+
       template<typename STORAGE, typename TILE_TYPE>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
       void multiply_into_result(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &et_left, RIGHT_OPERAND_TYPE const &et_right)
       {
+        #if 1
         //using LHS_STORAGE = typename LEFT_OPERAND_TYPE::result_type;
 
         // get tile size from matrix type
@@ -335,12 +340,14 @@ namespace expt
         // how do we provide checking for this kind of error?
 
         // tile over row of left and column of right
-        auto left_tile = LEFT_OPERAND_TYPE::result_type::s_get_default_tile();
+        auto left_tile = LEFT_OPERAND_TYPE::result_type::s_get_default_tile().nonstatic();
         left_tile.m_begin[0] = tile.m_begin[0];
         left_tile.m_size[0] = tile.m_size[0];
         left_tile.m_size[1] = tile_size;
 
-        TILE_TYPE right_tile = tile;
+        using RightType = typename TILE_TYPE::nonstatic_self_type;
+
+        RightType right_tile = tile;
         right_tile.m_size[0] = tile_size;
 
         // Do full tiles in k
@@ -373,9 +380,310 @@ namespace expt
           result = left.right_multiply_vector_accumulate(right, result);
         }
 
+          #else
+          MultiplyBridge<STORAGE,TILE_TYPE>::multiply_into_result(result,tile,et_left,et_right)
+          #endif 
       }
 
-    };
+
+      template<typename T>
+      struct Diag{
+          static_assert(!std::is_same<T,void>::value,"diag");
+      };
+
+      template<typename I, TensorTileSize TTS, typename B, typename S>
+      struct Diag< StaticTensorTile<I,TTS,B,S> >{
+          static_assert(std::is_same<I,void>::value,"diag");
+      };
+
+      template<typename STORAGE, typename TILE_TYPE, typename INDEX>
+      struct MultiplyBridge {
+
+          Diag<TILE_TYPE> diag;
+
+          RAJA_INLINE
+          RAJA_HOST_DEVICE
+          static
+          void multiply_into_result(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &et_left, RIGHT_OPERAND_TYPE const &et_right)
+          {
+            //using LHS_STORAGE = typename LEFT_OPERAND_TYPE::result_type;
+    
+            // get tile size from matrix type
+            auto tile_size = left_type::result_type::s_dim_elem(1);
+            auto k_size = et_left.getDimSize(1);
+            // TODO: check that left and right are compatible
+            // m_left.getDimSize(1) == m_right.getDimSize(0)
+            // how do we provide checking for this kind of error?
+    
+            // tile over row of left and column of right
+            auto left_tile = LEFT_OPERAND_TYPE::result_type::s_get_default_tile().nonstatic();
+            left_tile.m_begin[0] = tile.m_begin[0];
+            left_tile.m_size[0] = tile.m_size[0];
+            left_tile.m_size[1] = tile_size;
+    
+            using RightType = typename TILE_TYPE::nonstatic_self_type;
+
+            RightType right_tile = tile;
+            right_tile.m_size[0] = tile_size;
+    
+            // Do full tiles in k
+            decltype(k_size) k = 0;
+            for(;k+tile_size <= k_size; k+= tile_size){
+    
+              // evaluate both sides of operator
+              left_tile.m_begin[1] = k;
+              auto left = et_left.eval(left_tile);
+    
+              right_tile.m_begin[0] = k;
+              auto right = et_right.eval(right_tile);
+    
+              // accumulate product
+              result = left.right_multiply_vector_accumulate(right, result);
+            }
+            // remainder tile in k
+            if(k < k_size){
+              auto &left_part_tile = make_tensor_tile_partial(left_tile);
+              left_part_tile.m_begin[1] = k;
+              left_part_tile.m_size[1] = k_size-k;
+              auto left = et_left.eval(left_part_tile);
+    
+              auto &right_part_tile = make_tensor_tile_partial(right_tile);
+              right_part_tile.m_begin[0] = k;
+              right_part_tile.m_size[0] = k_size-k;
+              auto right = et_right.eval(right_part_tile);
+    
+              // accumulate product of partial tile
+              result = left.right_multiply_vector_accumulate(right, result);
+            }
+    
+          }
+      };
+
+
+
+
+      template<
+          size_t INDEX,
+          typename STORAGE,
+          typename INDEX_TYPE,
+          TensorTileSize TENSOR_SIZE,
+          INDEX_TYPE Begin0, INDEX_TYPE... BeginTail,
+          INDEX_TYPE  Size0, INDEX_TYPE... SizeTail
+      >
+      struct MultiplyBridge <
+          STORAGE,
+          StaticTensorTile <
+              INDEX_TYPE,
+              TENSOR_SIZE,
+              camp::int_seq<INDEX_TYPE, Begin0, BeginTail...>,
+              camp::int_seq<INDEX_TYPE,  Size0,  SizeTail...>
+          >,
+          camp::integral_constant<size_t,INDEX>
+      > {
+
+          using TileType = StaticTensorTile <
+              INDEX_TYPE,
+              TENSOR_SIZE,
+              camp::int_seq<INDEX_TYPE, Begin0, BeginTail...>,
+              camp::int_seq<INDEX_TYPE,  Size0,  SizeTail...>
+          >;
+              
+          RAJA_INLINE
+          RAJA_HOST_DEVICE
+          static
+          void multiply_into_result(STORAGE &result, TileType const &tile, LEFT_OPERAND_TYPE const &et_left, RIGHT_OPERAND_TYPE const &et_right)
+          {
+
+              // get tile size from matrix type
+              const auto tile_size = left_type::result_type::s_dim_elem(1);
+              const auto k_size = et_left.getDimSize(1);
+             
+              auto const offset = INDEX*tile_size;
+
+              if( (offset + tile_size) <= k_size ) {
+    
+                    using LeftType = StaticTensorTile <
+                        INDEX_TYPE,
+                        TENSOR_SIZE,
+                        camp::int_seq<INDEX_TYPE, Begin0,    offset>,
+                        camp::int_seq<INDEX_TYPE,  Size0, tile_size>
+                    >;
+                    // evaluate both sides of operator
+                    auto left = et_left.eval(LeftType());
+
+                    using RightType = StaticTensorTile <
+                        INDEX_TYPE,
+                        TENSOR_SIZE,
+                        camp::int_seq<INDEX_TYPE,    offset>,
+                        camp::int_seq<INDEX_TYPE, tile_size>
+                    >;
+    
+                    auto right = et_right.eval(RightType());
+    
+                    // accumulate product
+                    auto temp = left.right_multiply_vector_accumulate(right, result);
+                    MultiplyBridge<STORAGE,TileType,camp::integral_constant<size_t,INDEX-1>>::multiply_into_result(result,tile,et_left,et_right);
+                    result += temp;
+                    
+              } else {
+
+                    using LeftType = StaticTensorTile <
+                        INDEX_TYPE,
+                        TENSOR_PARTIAL,
+                        camp::int_seq<INDEX_TYPE, Begin0,        offset>,
+                        camp::int_seq<INDEX_TYPE,  Size0, k_size-offset>
+                    >;
+		    auto left = et_left.eval(LeftType());
+	    
+                    using RightType = StaticTensorTile <
+                        INDEX_TYPE,
+                        TENSOR_PARTIAL,
+                        camp::int_seq<INDEX_TYPE,        offset>,
+                        camp::int_seq<INDEX_TYPE, k_size-offset>
+                    >;
+		    auto right = et_right.eval(RightType());
+	    
+		    // accumulate product of partial tile
+		    result = left.right_multiply_vector_accumulate(right, result);
+
+              }
+
+
+            }
+          };
+
+
+      template<
+          typename STORAGE,
+          typename INDEX_TYPE,
+          TensorTileSize TENSOR_SIZE,
+          INDEX_TYPE Begin0, INDEX_TYPE... BeginTail,
+          INDEX_TYPE  Size0, INDEX_TYPE...  SizeTail
+      >
+      struct MultiplyBridge <
+          STORAGE,
+          StaticTensorTile <
+              INDEX_TYPE,
+              TENSOR_SIZE,
+              camp::int_seq<INDEX_TYPE, Begin0, BeginTail...>,
+              camp::int_seq<INDEX_TYPE,  Size0,  SizeTail...>
+          >,
+          camp::integral_constant<size_t,0>
+      > {
+
+          using TileType = StaticTensorTile <
+              INDEX_TYPE,
+              TENSOR_SIZE,
+              camp::int_seq<INDEX_TYPE, Begin0, BeginTail...>,
+              camp::int_seq<INDEX_TYPE,  Size0,  SizeTail...>
+          >;
+              
+          RAJA_INLINE
+          RAJA_HOST_DEVICE
+          static
+          void multiply_into_result(STORAGE &result, TileType const &, LEFT_OPERAND_TYPE const &et_left, RIGHT_OPERAND_TYPE const &et_right)
+          {
+
+              // get tile size from matrix type
+              const auto tile_size = left_type::result_type::s_dim_elem(1);
+              const auto k_size = et_left.getDimSize(1);
+             
+              auto const offset = 0;
+
+              if( (offset + tile_size) <= k_size ) {
+    
+                    using LeftType = StaticTensorTile <
+                        INDEX_TYPE,
+                        TENSOR_SIZE,
+                        camp::int_seq<INDEX_TYPE, Begin0,    offset>,
+                        camp::int_seq<INDEX_TYPE,  Size0, tile_size>
+                    >;
+                    // evaluate both sides of operator
+                    auto left = et_left.eval(LeftType());
+
+                    using RightType = StaticTensorTile <
+                        INDEX_TYPE,
+                        TENSOR_SIZE,
+                        camp::int_seq<INDEX_TYPE,    offset>,
+                        camp::int_seq<INDEX_TYPE, tile_size>
+                    >;
+    
+                    auto right = et_right.eval(RightType());
+    
+                    // accumulate product
+                    auto temp = left.right_multiply_vector_accumulate(right, result);
+                    result += temp;
+                    
+              } else {
+
+                    using LeftType = StaticTensorTile <
+                        INDEX_TYPE,
+                        TENSOR_PARTIAL,
+                        camp::int_seq<INDEX_TYPE, Begin0,        offset>,
+                        camp::int_seq<INDEX_TYPE,  Size0, k_size-offset>
+                    >;
+		    auto left = et_left.eval(LeftType());
+	    
+                    using RightType = StaticTensorTile <
+                        INDEX_TYPE,
+                        TENSOR_PARTIAL,
+                        camp::int_seq<INDEX_TYPE,        offset>,
+                        camp::int_seq<INDEX_TYPE, k_size-offset>
+                    >;
+		    auto right = et_right.eval(RightType());
+	    
+		    // accumulate product of partial tile
+		    result = left.right_multiply_vector_accumulate(right, result);
+
+              }
+
+
+            }
+          };
+
+      template<
+          typename STORAGE,
+          typename INDEX_TYPE,
+          TensorTileSize TENSOR_SIZE,
+          INDEX_TYPE Begin0,  INDEX_TYPE... BeginTail,
+          INDEX_TYPE  Size0,  INDEX_TYPE... SizeTail
+      >
+      struct MultiplyBridge <
+          STORAGE,
+          StaticTensorTile <
+              INDEX_TYPE,
+              TENSOR_SIZE,
+              camp::int_seq<INDEX_TYPE, Begin0, BeginTail...>,
+              camp::int_seq<INDEX_TYPE,  Size0,  SizeTail...>
+          >,
+          void
+      > {
+
+          using TileType = StaticTensorTile <
+              INDEX_TYPE,
+              TENSOR_SIZE,
+              camp::int_seq<INDEX_TYPE, Begin0, BeginTail...>,
+              camp::int_seq<INDEX_TYPE,  Size0,  SizeTail...>
+          >;
+              
+          RAJA_INLINE
+          RAJA_HOST_DEVICE
+          static
+          void multiply_into_result(STORAGE &result, TileType const &tile, LEFT_OPERAND_TYPE const &et_left, RIGHT_OPERAND_TYPE const &et_right)
+          {
+
+              const auto tile_size = left_type::result_type::s_dim_elem(1);
+              const auto k_size = et_left.getDimSize(1);
+              const size_t iter_count = (k_size/tile_size) + ( (k_size%tile_size != 0) ? 1 : 0 );
+
+              MultiplyBridge<STORAGE,TileType,camp::integral_constant<size_t,iter_count>>::multiply_into_result(result,tile,et_left,et_right);
+
+            }
+          };
+
+      };
+
+
 
 
     template<typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE, typename ADD_OPERAND_TYPE>
@@ -466,7 +774,7 @@ namespace expt
         // how do we provide checking for this kind of error?
 
         // tile over row of left and column of right
-        auto right_tile = RIGHT_OPERAND_TYPE::result_type::s_get_default_tile();
+        auto right_tile = RIGHT_OPERAND_TYPE::result_type::s_get_default_tile().nonstatic();
         right_tile.m_begin[1] = tile.m_begin[0];
         right_tile.m_size[1] = tile.m_size[0];
         right_tile.m_size[0] = tile_size;
