@@ -71,6 +71,14 @@ namespace expt
         RAJA_HOST_DEVICE
         static
         constexpr
+        arg_type const strip_by_value(arg_type const arg){
+          return arg;
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
         value_type size(arg_type const &){
           return 1;
         }
@@ -126,6 +134,14 @@ namespace expt
         RAJA_HOST_DEVICE
         static
         constexpr
+        arg_type const strip_by_value(index_type const arg){
+          return (arg_type)arg;
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
         value_type size(index_type const &arg){
           return arg.size();
         }
@@ -136,6 +152,67 @@ namespace expt
         constexpr
         value_type begin(index_type const &arg){
           return arg.begin();
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        value_type dim(){
+          return DIM;
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        value_type num_elem(){
+          return TENSOR_TYPE::s_dim_elem(DIM);
+        }
+    };
+
+
+
+
+    template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM, IDX INDEX_VALUE, strip_index_type_t<IDX> LENGTH_VALUE>
+    struct TensorIndexTraits<RAJA::expt::StaticTensorIndex<
+        RAJA::expt::StaticTensorIndexInner<IDX, TENSOR_TYPE, DIM, INDEX_VALUE, LENGTH_VALUE>
+    >> {
+        using base_type = RAJA::expt::TensorIndex<IDX, TENSOR_TYPE, DIM>;
+        using index_type = RAJA::expt::StaticTensorIndex<RAJA::expt::StaticTensorIndexInner<IDX, TENSOR_TYPE, DIM, INDEX_VALUE, LENGTH_VALUE>>;
+        using arg_type = IDX;
+        using value_type = strip_index_type_t<IDX>;
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        bool isTensorIndex(){
+          return true;
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        arg_type const strip_by_value(index_type const){
+          return INDEX_VALUE;
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        value_type size(index_type const &){
+          return LENGTH_VALUE;
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        value_type begin(index_type const &){
+          return INDEX_VALUE;
         }
 
         RAJA_INLINE
@@ -179,6 +256,17 @@ namespace expt
     typename TensorIndexTraits<ARG>::arg_type const &
     {
       return TensorIndexTraits<ARG>::strip(arg);
+    }
+
+
+    template<typename ARG>
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    constexpr
+    auto stripTensorIndexByValue(ARG const arg) ->
+    typename TensorIndexTraits<ARG>::arg_type const
+    {
+      return TensorIndexTraits<ARG>::strip_by_value(arg);
     }
 
     /*
