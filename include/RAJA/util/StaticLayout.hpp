@@ -152,6 +152,14 @@ struct StaticLayoutBase_impl<IdxLin,
     return camp::seq_at<DIM, sizes>::value;
   }
 
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_begin() const {
+    return 0;
+  }
+
 };
 
 template <typename IdxLin, IdxLin N, IdxLin Idx, IdxLin... Sizes>
@@ -247,6 +255,15 @@ struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
   IndexLinear get_dim_stride() const {
     return Layout{}.get_dim_stride();
   }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_begin() const {
+    return 0;
+  }
+
 
   RAJA_INLINE
   static void print() { Layout::print(); }

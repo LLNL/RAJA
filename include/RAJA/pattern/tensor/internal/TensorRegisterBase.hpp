@@ -83,6 +83,7 @@ namespace expt
       RAJA_INLINE
       self_type operator=(RHS const &rhs)
       {
+
         rhs.store_ref(m_ref);
         return *this;
       }
