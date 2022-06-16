@@ -54,6 +54,9 @@ then
         mkdir -p ${prefix}
         prefix_opt="--prefix=${prefix}"
 
+        # We force Spack to put all generated files (cache and configuration of
+        # all sorts) in a unique location so that there can be no collision
+        # with existing or concurrent Spack.
         spack_user_cache="${prefix}/spack-user-cache"
         export SPACK_DISABLE_LOCAL_CONFIG=""
         export SPACK_USER_CACHE_PATH="${spack_user_cache}"
