@@ -27,8 +27,6 @@
   stage: c_build_and_test
   extends: [.build_toss_4_x86_64_ib_corona_script, .on_corona]
   needs: []
-  variables:
-    SLURM_OVERLAP: 1
 
 .build_and_test_on_corona_advanced:
   extends: [.build_and_test_on_corona, .advanced_pipeline]

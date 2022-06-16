@@ -49,8 +49,6 @@ release_resources (on ruby):
 .build_and_test_on_ruby:
   extends: [.build_toss_3_x86_64_ib_script, .on_ruby]
   stage: r_build_and_test
-  variables:
-    SLURM_OVERLAP: 1
 
 .build_and_test_on_ruby_advanced:
   extends: [.build_and_test_on_ruby, .advanced_pipeline]
