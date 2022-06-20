@@ -25,6 +25,10 @@
 #include <CL/sycl.hpp>
 
 #include "RAJA/policy/PolicyBase.hpp"
+#include "RAJA/policy/loop/policy.hpp"
+
+#include "RAJA/util/Operators.hpp"
+#include "RAJA/util/types.hpp"
 
 #include <cstddef>
 
@@ -76,11 +80,27 @@ struct sycl_reduce
     : make_policy_pattern_t<RAJA::Policy::sycl, RAJA::Pattern::reduce> {
 };
 
+//
+// Sycl atomic policy for using sycl atomics on the device and
+// the provided Policy on the host
+//
+template<typename host_policy>
+struct sycl_atomic_explicit{};
+
+//
+// Default cuda atomic policy uses cuda atomics on the device and non-atomics
+// on the host
+//
+using sycl_atomic = sycl_atomic_explicit<loop_atomic>;
+
 }  // namespace sycl
 }  // namespace policy
 
 using policy::sycl::sycl_exec;
 using policy::sycl::sycl_reduce;
+
+using policy::sycl::sycl_atomic;
+using policy::sycl::sycl_atomic_explicit;
 
 /*!
  * Maps indices to SYCL global id

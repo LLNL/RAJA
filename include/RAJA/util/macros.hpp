@@ -127,6 +127,9 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
 RAJA_HOST_DEVICE
 inline void RAJA_ABORT_OR_THROW(const char *str)
 {
+#if defined(__SYCL_DEVICE_ONLY__)
+  abort();
+#else
   printf ( "%s\n", str );
 #if defined(RAJA_ENABLE_TARGET_OPENMP) && (_OPENMP >= 201511)
   // seg faulting here instead of calling std::abort for omp target
@@ -159,6 +162,7 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
   } else {
     throw std::runtime_error(str);
   }
+#endif
 #endif
 }
 
