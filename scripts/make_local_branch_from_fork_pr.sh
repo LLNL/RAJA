@@ -17,7 +17,7 @@ Help()
    echo "This script will make a branch in a local git repo for a PR from a "
    echo "branch in a forked repo. The script must be run inside the local repo."
    echo 
-   echo "Syntax: make_local_branch_from_fork_pr [-h | -c num | num]"
+   echo "Syntax: make_local_branch_from_fork_pr [-h | -c num | -b num]"
    echo "options:"
    echo "-h       Print this help usage message."
    echo "-c <#>   Check whether there is a PR with given number."

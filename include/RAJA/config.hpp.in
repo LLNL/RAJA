@@ -100,6 +100,12 @@ static_assert(RAJA_HAS_SOME_CXX14,
               "compiler and/or standard library does not claim support for "
               "C++14 features we need");
 
+#if defined(__cpp_lib_is_invocable) && (__cpp_lib_is_invocable >= 201703L)
+#define RAJA_HAS_CXX17_IS_INVOCABLE 1
+#else
+#define RAJA_HAS_CXX17_IS_INVOCABLE 0
+#endif
+
 /*!
  ******************************************************************************
  *
@@ -251,11 +257,17 @@ namespace RAJA {
 #if defined(RAJA_ENABLE_HIP) && defined(__HIPCC__)
 #define RAJA_HIP_ACTIVE
 
-// enable device function pointers with rocm version >= 4.3
 #include <hip/hip_version.h>
 #if (HIP_VERSION_MAJOR > 4) || \
     (HIP_VERSION_MAJOR == 4 && HIP_VERSION_MINOR >= 3)
+// enable device function pointers with rocm version >= 4.3
 #define RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL
+#endif
+#if (HIP_VERSION_MAJOR > 4) || \
+    (HIP_VERSION_MAJOR == 4 && HIP_VERSION_MINOR >= 2)
+// enable occupancy calculator with rocm version >= 4.2
+// can't test older versions thought they may work
+#define RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
 #endif
 #endif // RAJA_ENABLE_HIP && __HIPCC__
 
@@ -371,6 +383,9 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #endif
 
+#define RAJA_UNROLL RAJA_PRAGMA(unroll)
+#define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(unroll(N))
+
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 #define RAJA_ALIGN_DATA(d) d
 #else
@@ -395,6 +410,14 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
+
+#if !defined(__NVCC__)
+#define RAJA_UNROLL RAJA_PRAGMA(GCC unroll 10000)
+#define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(GCC unroll N)
+#else
+#define RAJA_UNROLL RAJA_PRAGMA(unroll)
+#define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(unroll N)
+#endif
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 #define RAJA_ALIGN_DATA(d) d
@@ -421,6 +444,8 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
+#define RAJA_UNROLL
+#define RAJA_UNROLL_COUNT(N)
 
 // FIXME: alignx is breaking CUDA+xlc
 #if defined(RAJA_ENABLE_CUDA)
@@ -437,6 +462,11 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_NO_SIMD RAJA_PRAGMA(simd_level(0))
 #endif
 
+// Detect altivec, but disable if NVCC is being used due to some bad interactions
+#if defined(__ALTIVEC__) && (__ALTIVEC__ == 1) && !defined(__NVCC__)
+#define RAJA_ALTIVEC
+#endif
+
 
 #elif defined(RAJA_COMPILER_CLANG)
 //
@@ -444,6 +474,9 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
+#define RAJA_UNROLL RAJA_PRAGMA(clang loop unroll(enable))
+#define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(clang loop unroll_count(N))
+
 
 // note that neither nvcc nor Apple Clang compiler currently doesn't support
 // the __builtin_assume_aligned attribute
@@ -469,6 +502,11 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_NO_SIMD  RAJA_PRAGMA(clang loop vectorize(disable))
 #endif
 
+// Detect altivec, but only seems to work since Clang 9
+#if defined(__ALTIVEC__) && (__clang_major__ >= 9 ) && (__ALTIVEC__ == 1)
+#define RAJA_ALTIVEC
+#endif
+
 
 // This is the same as undefined compiler, but squelches the warning message
 #elif defined(RAJA_COMPILER_MSVC)
@@ -478,7 +516,8 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_ALIGN_DATA(d) d
 #define RAJA_SIMD
 #define RAJA_NO_SIMD
-
+#define RAJA_UNROLL
+#define RAJA_UNROLL_COUNT(N)
 
 #else
 
@@ -488,6 +527,8 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_ALIGN_DATA(d) d
 #define RAJA_SIMD
 #define RAJA_NO_SIMD
+#define RAJA_UNROLL
+#define RAJA_UNROLL_COUNT(N)
 
 #endif
 
@@ -517,6 +558,24 @@ T * align_hint(T * x)
 #endif
 }
 
+
 }  // closing brace for RAJA namespace
+
+
+#ifndef RAJA_UNROLL
+#define RAJA_UNROLL
+#endif
+
+#ifndef RAJA_UNROLL_COUNT
+#define RAJA_UNROLL_COUNT(N)
+#endif
+
+// If we're in CUDA or HIP device code, we can use the unroll pragma
+#if (defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)) && defined(RAJA_DEVICE_ACTIVE)
+#undef RAJA_UNROLL
+#undef RAJA_UNROLL_COUNT
+#define RAJA_UNROLL RAJA_PRAGMA(unroll)
+#define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(unroll N)
+#endif
 
 #endif // closing endif for header file include guard

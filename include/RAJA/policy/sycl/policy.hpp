@@ -93,6 +93,12 @@ struct sycl_atomic_explicit{};
 //
 using sycl_atomic = sycl_atomic_explicit<loop_atomic>;
 
+template<typename Mask>
+struct sycl_local_masked_direct {};
+
+template<typename Mask>
+struct sycl_local_masked_loop {};
+
 }  // namespace sycl
 }  // namespace policy
 
@@ -101,6 +107,10 @@ using policy::sycl::sycl_reduce;
 
 using policy::sycl::sycl_atomic;
 using policy::sycl::sycl_atomic_explicit;
+
+using policy::sycl::sycl_local_masked_direct;
+using policy::sycl::sycl_local_masked_loop;
+
 
 /*!
  * Maps indices to SYCL global id

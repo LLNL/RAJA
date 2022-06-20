@@ -88,8 +88,8 @@ void ForallRangeSegment2DOffsetViewTestImpl(INDEX_TYPE N)
 
   using view_type = RAJA::View< INDEX_TYPE, RAJA::OffsetLayout<NDIMS> >;
   RAJA::OffsetLayout<NDIMS> layout =
-    RAJA::make_offset_layout<NDIMS>( {{-1, -1}} , {{N, N}} ); 
-  
+    RAJA::make_offset_layout<NDIMS>( {{-1, -1}} , {{N+1, N+1}} );
+
   view_type work_view(working_array, layout);
 
   RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {

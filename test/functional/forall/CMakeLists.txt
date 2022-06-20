@@ -40,11 +40,13 @@ add_subdirectory(reduce-multiple-indexset)
 add_subdirectory(resource-indexset)
 add_subdirectory(resource-segment)
 
-unset( FORALL_BACKENDS ) 
+add_subdirectory(CombiningAdapter)
+
+unset( FORALL_BACKENDS )
 
 
 #
-# Note: Forall atomic tests use their own backend list since atomic 
+# Note: Forall atomic tests use their own backend list since atomic
 #       constructs are defined for only some of the RAJA back-ends.
 list(APPEND FORALL_FAIL_ATOMIC_BACKENDS Sequential)
 list(APPEND FORALL_ATOMIC_BACKENDS Sequential)
@@ -84,7 +86,7 @@ unset( FORALL_FAIL_ATOMIC_BACKENDS )
 
 #
 # Note: Forall region tests define their backend list in the region
-#       test directory since region constructs are defined for only 
+#       test directory since region constructs are defined for only
 #       some of the RAJA back-ends.
 #
 add_subdirectory(region)

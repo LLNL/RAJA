@@ -24,15 +24,15 @@ gcc_8_3_1:
     SPEC: "%gcc@8.3.1 cxxflags='-finline-functions -finline-limit=20000' cflags='-finline-functions -finline-limit=20000'"
   extends: .build_and_test_on_lassen
 
-xl_16_1_1_7:
+xl_16_1_1_11:
   variables:
-    SPEC: "%xl@16.1.1.7 cxxflags='-qthreaded -std=c++14 -O3 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036'"
+    SPEC: "%xl@16.1.1.11 cxxflags='-qthreaded -std=c++14 -O3 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036'"
     DEFAULT_TIME: 50
   extends: .build_and_test_on_lassen
 
-xl_16_1_1_7_gcc_8_3_1:
+xl_16_1_1_11_gcc_8_3_1:
   variables:
-    SPEC: "%xl@16.1.1.7 cxxflags='--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -qthreaded -std=c++14 -O3 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036' cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
+    SPEC: "%xl@16.1.1.11 cxxflags='--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -qthreaded -std=c++14 -O3 -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036' cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
     DEFAULT_TIME: 50
   extends: .build_and_test_on_lassen
 

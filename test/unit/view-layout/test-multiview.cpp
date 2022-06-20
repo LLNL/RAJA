@@ -186,7 +186,7 @@ TYPED_TEST(OffsetLayoutMultiViewUnitTest, View)
    * MultiView is constructed by passing in the layout.
    */
   std::array<RAJA::Index_type, 1> lower{{1}};
-  std::array<RAJA::Index_type, 1> upper{{10}};
+  std::array<RAJA::Index_type, 1> upper{{11}};
   RAJA::MultiView<TypeParam, layout> view(data, RAJA::make_offset_layout<1>(lower, upper));
   RAJA::MultiView<TypeParam, layout,1> view1p(data, RAJA::make_offset_layout<1>(lower, upper));
 
@@ -216,7 +216,7 @@ TYPED_TEST(MultiViewUnitTest, Shift1D)
 
   //Create a view from a base view
   const int DIM = 1;
-  RAJA::OffsetLayout<DIM> layout = RAJA::make_offset_layout<DIM>({{0}},{{N-1}});
+  RAJA::OffsetLayout<DIM> layout = RAJA::make_offset_layout<DIM>({{0}},{{N}});
   RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> A(a,layout);
   RAJA::MultiView<TypeParam, RAJA::Layout<DIM>> B(a,N);
 
@@ -276,7 +276,7 @@ TYPED_TEST(MultiViewUnitTest, Shift2D)
   a[1] = b0;
 
   const int DIM = 2;
-  RAJA::OffsetLayout<DIM> layout = RAJA::make_offset_layout<DIM>({{0,0}},{{N-1,N-1}});
+  RAJA::OffsetLayout<DIM> layout = RAJA::make_offset_layout<DIM>({{0,0}},{{N,N}});
   RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> A(a,layout);
   RAJA::MultiView<TypeParam, RAJA::Layout<DIM>> B(a,N,N);
 
@@ -301,7 +301,7 @@ TYPED_TEST(MultiViewUnitTest, Shift2D)
   //Create a view from a base view with permuted layout
   std::array< RAJA::idx_t, 2> perm {{1, 0}};
   RAJA::OffsetLayout<2> playout =
-    RAJA::make_permuted_offset_layout<2>( {{0, 0}}, {{N-1, N-1}}, perm );
+    RAJA::make_permuted_offset_layout<2>( {{0, 0}}, {{N, N}}, perm );
 
   RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> C(a, playout);
   RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> Cshift = C.shift({{N,N}});

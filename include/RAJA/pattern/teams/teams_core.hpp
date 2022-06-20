@@ -272,6 +272,7 @@ struct LoopExecute;
 template <typename POLICY, typename SEGMENT>
 struct LoopICountExecute;
 
+RAJA_SUPPRESS_HD_WARN
 template <typename POLICY_LIST,
           typename CONTEXT,
           typename SEGMENT,
@@ -300,6 +301,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const &ctx,
                                                           body);
 }
 
+RAJA_SUPPRESS_HD_WARN
 template <typename POLICY_LIST,
           typename CONTEXT,
           typename SEGMENT,
@@ -316,6 +318,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
                                                        body);
 }
 
+RAJA_SUPPRESS_HD_WARN
 template <typename POLICY_LIST,
           typename CONTEXT,
           typename SEGMENT,

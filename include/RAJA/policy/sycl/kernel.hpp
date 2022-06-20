@@ -22,7 +22,7 @@
 //#include "RAJA/policy/sycl/kernel/Conditional.hpp"
 #include "RAJA/policy/sycl/kernel/SyclKernel.hpp"
 #include "RAJA/policy/sycl/kernel/For.hpp"
-//#include "RAJA/policy/sycl/kernel/ForICount.hpp"
+#include "RAJA/policy/sycl/kernel/ForICount.hpp"
 //#include "RAJA/policy/sycl/kernel/Hyperplane.hpp"
 //#include "RAJA/policy/sycl/kernel/InitLocalMem.hpp"
 #include "RAJA/policy/sycl/kernel/Lambda.hpp"
