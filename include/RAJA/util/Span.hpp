@@ -164,6 +164,16 @@ RAJA_HOST_DEVICE RAJA_INLINE Span<IterType, IndexType> make_span(
   return Span<IterType, IndexType>(begin, size);
 }
 
+template <typename Iter>
+RAJA_INLINE auto make_span(Iter &iterable)
+{
+  using std::begin;
+  using std::end;
+  using std::distance;
+  return Span<typename Iter::iterator, decltype(distance(begin(iterable), end(iterable)))>
+    (begin(iterable), end(iterable));
+}
+
 }  // end namespace RAJA
 
 #endif /* RAJA_SPAN_HPP */
