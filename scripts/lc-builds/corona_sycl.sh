@@ -16,7 +16,7 @@
 
 BUILD_SUFFIX=corona-sycl
 : ${BUILD_TYPE:=RelWithDebInfo}
-RAJA_HOSTCONFIG=../host-configs/alcf-builds/corona_sycl.cmake
+RAJA_HOSTCONFIG=../host-configs/lc-builds/corona_sycl.cmake
 
 rm -rf build_${BUILD_SUFFIX}_${USER} >/dev/null
 mkdir build_${BUILD_SUFFIX}_${USER} && cd build_${BUILD_SUFFIX}_${USER}
@@ -40,6 +40,3 @@ cmake \
   "$@" \
   ..
 
-make -j 8
-
-#-DCMAKE_INSTALL_PREFIX=/home/bhomerding/install/raja.${DATE} \
