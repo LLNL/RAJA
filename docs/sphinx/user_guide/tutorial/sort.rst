@@ -42,11 +42,19 @@ This generates the following sequence of values in the ``in`` array::
 
    6 7 2 1 0 9 4 8 5 3 4 9 6 3 7 0 1 8 2 5
 
-and the following sequence of (key, value) pairs in the ``in`` and ``in_vals``
-arrays::
+and the following sequence of (key, value) pairs shown as pairs of values
+in the ``in`` and ``in_vals`` arrays::
 
    (6,0) (7,0) (2,0) (1,0) (0,0) (9,0) (4,0) (8,0) (5,0) (3,0)
    (4,1) (9,1) (6,1) (3,1) (7,1) (0,1) (1,1) (8,1) (2,1) (5,1)
+
+.. note:: In the following sections, we discuss *stable* and *unstable* sort 
+          operations. The difference between them is that a stable sort 
+          preserves the relative order of equal elements, with respect to the 
+          sort comparator operation, while an unstable sort may not preserve 
+          the relative order of equal elements. For the examples below that use 
+          integer arrays, there is no way to tell by inspecting the output 
+          whether relative ordering is preserved for unstable sorts.
 
 ^^^^^^^^^^^^^^^^
 Unstable Sorts
@@ -59,21 +67,24 @@ A sequential unstable sort operation is performed by:
    :end-before: _sort_seq_end
    :language: C++
 
-Since no comparator is passed to the sort method, the default less operation
-is applied and the result generated in the ``out`` array is non-decreasing sort
-on the ``out`` array. The resulting ``out`` array contains the values::
+Since no comparator is passed to the sort method, the default 'less' operation
+``RAJA::operators::less<int>`` is applied and the result generated in the 
+``out`` array is a non-decreasing sequence of values in the ``in`` array; 
+i.e.,::
 
    0 0 1 1 2 2 3 3 4 4 5 5 6 6 7 7 8 8 9 9
 
-We can be explicit about the operation used in the sort by passing the
-less operator to the sort method:
+We can be explicit about the operation used in the sort operation by passing the
+'less' operator to the sort method explicitly:
 
 .. literalinclude:: ../../../../examples/tut_sort.cpp
    :start-after: _sort_seq_less_start
    :end-before: _sort_seq_less_end
    :language: C++
 
-The result in the ``out`` array is the same.
+The result in the ``out`` array is the same as before; i.e.,::
+
+   0 0 1 1 2 2 3 3 4 4 5 5 6 6 7 7 8 8 9 9
 
 An unstable parallel sort operation using OpenMP multi-threading is
 accomplished similarly by replacing the execution policy type:
@@ -86,7 +97,7 @@ accomplished similarly by replacing the execution policy type:
 As is commonly done with RAJA, the only difference between this code and
 the previous one is that the execution policy is different. If we want to
 run the sort on a GPU using CUDA, we would use a CUDA execution policy. This
-will be shown shortly.
+is shown below.
 
 ^^^^^^^^^^^^^^^^
 Stable Sorts
@@ -99,13 +110,14 @@ A sequential stable sort (less) operation is performed by:
    :end-before: _sort_stable_seq_less_end
    :language: C++
 
-This generates the following sequence of values in the output array::
+This generates the following sequence of values in the output array 
+as expected::
 
    0 0 1 1 2 2 3 3 4 4 5 5 6 6 7 7 8 8 9 9
 
 Note that the stable sort result is the same as the unstable sort in this case
-because we are sorting integers. We will show an example of sorting pairs later
-where this is not the case.
+because we are sorting integer arrays. We will show an example of sorting 
+pairs later where this is not the case.
 
 Running the same sort operation on a GPU using CUDA is done by:
 
@@ -122,7 +134,8 @@ Other Comparators
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Using a different comparator allows sorting in a different order.
-Here is a sequential stable sort that uses the greater operator:
+Here is a sequential stable sort that uses the 'greater' operator
+``RAJA::operators::greater<int>``:
 
 .. literalinclude:: ../../../../examples/tut_sort.cpp
    :start-after: _sort_stable_seq_greater_start
@@ -134,18 +147,25 @@ the output array::
 
    9 9 8 8 7 7 6 6 5 5 4 4 3 3 2 2 1 1 0 0
 
-Note that the only operators provided by RAJA that are valid to use in sort
-because they form a strict weak ordering of elements for arithmetic types are
-less and greater. Also note that the the cuda sort backend only supports
-RAJA's operators less and greater.
+.. note:: * The only operators provided by RAJA that are valid to use in sort
+            because they enforce a strict weak ordering of elements for 
+            arithmetic types are 'less' and 'greater'. Users may provide other
+            operators for different sorting operations. 
+          * Also the RAJA CUDA sort back-end only supports RAJA operators 
+            'less' and 'greater'.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Sort Pairs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Sort *Pairs* operations generate the same results as the sort operations
+*Sort pairs* operations generate the same results as the sort operations
 we have just described. However, an additional array of values is also permuted
 to match the sorted array so **two arrays are passed to sort pairs methods.**
+
+.. note:: For ``RAJA::sort_pairs`` algorithms, two arrays are passed. The 
+          first array (*keys*) will be sorted according to the given 
+          comparator operator. The elements in the second array (*values*) 
+          will be reordered based on the final order of the first sorted array.
 
 Here is a sequential unstable sort pairs that uses the less operator:
 
@@ -159,9 +179,10 @@ This generates the following sequence in the output array::
    (0,0) (0,1) (1,0) (1,1) (2,0) (2,1) (3,0) (3,1) (4,0) (4,1)
    (5,1) (5,0) (6,1) (6,0) (7,0) (7,1) (8,0) (8,1) (9,1) (9,0)
 
-Note that some of the pairs with equivalent keys stayed in the same order
+Note that some of the pairs with equivalent *keys* stayed in the same order
 they appeared in the unsorted arrays like ``(8,0) (8,1)``, while others are
-reversed like ``(9,1) (9,0)``.
+reversed like ``(9,1) (9,0)``. This illustrates that relative ordering of
+equal elements may not be preserved in an unstable sort.
 
 Here is a sequential stable sort pairs that uses the greater operator:
 

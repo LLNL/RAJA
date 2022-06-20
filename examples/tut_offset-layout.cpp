@@ -29,11 +29,11 @@
  *                     input(row - 1, col) + input(row + 1, col) +
  *                     input(row, col - 1) + input(row, col + 1)
  *
- *  We assume a lattice has N x N interior nodes 
+ *  We assume a lattice has N_r x N_c interior nodes 
  *  and a padded edge of zeros for a lattice
  *  of size (N_r + 2) x (N_c + 2).  
  *
- *  In the case of N = 3, the input lattice generated
+ *  In the case of N_r = N_c = 3, the input lattice generated
  *  takes the form
  *
  *  ---------------------
@@ -152,7 +152,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       input[id] = 1;
     }
   }
-// printLattice(input, totCellsInRow, totCellsInCol);
+  std::cout << "\ninput lattice:\n"; 
+  printLattice(input, totCellsInRow, totCellsInCol);
 
 //
 // Generate reference solution
@@ -167,7 +168,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                         + input[id - totCellsInCol];
     }
   }
-// printLattice(output_ref, totCellsInRow, totCellsInCol);
+  std::cout << "\noutput reference lattice:\n"; 
+  printLattice(output_ref, totCellsInRow, totCellsInCol);
 
 //----------------------------------------------------------------------------//
 
@@ -226,7 +228,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                  });
   // _offsetlayout_rajaseq_end
 
-  //printLattice(output_ref, totCellsInRow, totCellsInCol);
+  std::cout << "\noutput lattice:\n"; 
+  printLattice(output_ref, totCellsInRow, totCellsInCol);
   checkResult(output, output_ref, totCells);
 
 //----------------------------------------------------------------------------//
@@ -256,7 +259,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                        + inputView(row, col + 1);
                                  });
 
-  //printLattice(output_ref, totCellsInRow, totCellsInCol);
+  std::cout << "\noutput lattice:\n"; 
+  printLattice(output_ref, totCellsInRow, totCellsInCol);
   checkResult(output, output_ref, totCells);
 #endif
 
@@ -289,7 +293,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                        + inputView(row, col + 1);
                                  });
 
-  //printLattice(output, totCellsInRow, totCellsInCol);
+  std::cout << "\noutput lattice:\n"; 
+  printLattice(output, totCellsInRow, totCellsInCol);
   checkResult(output, output_ref, totCells);
 #endif
 
@@ -332,7 +337,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   hipErrchk(hipMemcpy( output, d_output, totCells * sizeof(int), hipMemcpyDeviceToHost ));
 
-  //printLattice(output, totCellsInRow, totCellsInCol);
+  std::cout << "\noutput lattice:\n"; 
+  printLattice(output, totCellsInRow, totCellsInCol);
   checkResult(output, output_ref, totCells);
 
   memoryManager::deallocate_gpu(d_input);

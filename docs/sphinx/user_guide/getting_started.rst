@@ -89,10 +89,8 @@ RAJA uses CMake to configure a build. A "bare bones" configuration looks like::
             run CMake in it.
 
 When you run CMake, it will generate output about the build environment 
-(compiler and version, options, etc.). Some RAJA features, 
-like OpenMP support are enabled by default if, for example, the compiler 
-supports OpenMP. These can be disabled if desired. For a summary of 
-RAJA configuration options, please see :ref:`configopt-label`.
+(compiler and version, options, etc.). For a summary of RAJA configuration 
+options, please see :ref:`configopt-label`.
 
 After CMake successfully completes, you compile RAJA by executing the ``make``
 command in the build directory; i.e.,::

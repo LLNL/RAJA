@@ -45,11 +45,11 @@
 #include<RAJA/policy/tensor/arch/avx.hpp>
 #endif
 
-#ifdef RAJA_ENABLE_CUDA
+#ifdef RAJA_CUDA_ACTIVE
 #include<RAJA/policy/tensor/arch/cuda.hpp>
 #endif
 
-#ifdef RAJA_ENABLE_HIP
+#ifdef RAJA_HIP_ACTIVE
 #include<RAJA/policy/tensor/arch/hip.hpp>
 #endif
 

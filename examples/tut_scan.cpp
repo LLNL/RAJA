@@ -73,11 +73,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::iota(in, in + N, -1);
 
-  // _scan_array_init_end
-
   std::cout << "\n in values...\n";
   printArray(in, N);
   std::cout << "\n";
+  // _scan_array_init_end
+
 
 
 //----------------------------------------------------------------------------//
@@ -132,9 +132,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running sequential inclusive_scan_inplace (minimum)...\n";
 
+  // _scan_inclusive_inplace_seq_min_start
   std::copy_n(in, N, out);
 
-  // _scan_inclusive_inplace_seq_min_start
   RAJA::inclusive_scan_inplace<RAJA::seq_exec>(RAJA::make_span(out, N),
                                                RAJA::operators::minimum<int>{});
   // _scan_inclusive_inplace_seq_min_end
