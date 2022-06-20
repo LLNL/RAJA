@@ -28,15 +28,14 @@ jobs:
     inputs:
       workingDir: 'build'
       cmakeArgs: '--build . --config Release --verbose -j 4'
-#   - task: CmdLine@2
-#     inputs:
-#       script: 'ctest.exe -T test -C Release'
-#       workingDirectory: 'build'
-#     condition: eq( variables['Agent.OS'], 'Windows_NT')
-#   - task: PublishTestResults@2
-#     inputs:
-#       testResultsFormat: 'cTest'
-#       testResultsFiles: '**/Test.xml'
+  - task: CmdLine@2
+    inputs:
+      script: 'ctest.exe -T test -C Release'
+      workingDirectory: 'build'
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'cTest'
+      testResultsFiles: '**/Test.xml'
 - job: Docker
   timeoutInMinutes: 360
   strategy:
@@ -112,12 +111,11 @@ jobs:
       make -j 4
     displayName: 'OSX Build'
     condition: eq( variables['Agent.OS'], 'Darwin')
-#  - script: |
-#      cd build
-#      ctest -T test --output-on-failure
-#    displayName: 'OSX Test'
-#    condition: eq( variables['Agent.OS'], 'Darwin')
-#  - task: PublishTestResults@2
-#    inputs:
-#      testResultsFormat: 'cTest'
-#      testResultsFiles: '**/Test.xml'
+  - script: |
+      cd build
+      ctest -T test --output-on-failure
+    displayName: 'OSX Test'
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'cTest'
+      testResultsFiles: '**/Test.xml'
