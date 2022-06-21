@@ -40,7 +40,7 @@ and output values. We set the input array and print them as follows:
 
 This generates the following sequence of values in the 'in' array::
 
-   3 -1 2 15 7 5 17 9 6 18 1 10 0 14 13 4 11 12 8 16
+   -1 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
 
 ^^^^^^^^^^^^^^^^
 Inclusive Scans
@@ -57,17 +57,19 @@ Since no operator is passed to the scan method, the default 'sum' operation
 is applied and the result generated in the 'out' array is a prefix-sum based 
 on the 'in' array. The resulting 'out' array contains the values::
 
-   3 2 4 19 26 31 48 57 63 81 82 92 92 106 119 123 134 146 154 170
+   -1 -1 0 2 5 9 14 20 27 35 44 54 65 77 90 104 119 135 152 170
 
-We can be explicit about the operation used in the scan by passing the 
-'plus' operator to the scan method:
+We can be explicit about the operation used in the scan by passing the RAJA
+'plus' operator ``RAJA::operators::plus<int>`` to the scan method:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
    :start-after: _scan_inclusive_seq_plus_start
    :end-before: _scan_inclusive_seq_plus_end
    :language: C++
 
-The result in the 'out' array is the same.
+The result in the 'out' array is the same as above; i.e.,::
+
+   -1 -1 0 2 5 9 14 20 27 35 44 54 65 77 90 104 119 135 152 170
 
 An inclusive parallel scan operation using OpenMP multithreading is
 accomplished similarly by replacing the execution policy type:
@@ -77,10 +79,12 @@ accomplished similarly by replacing the execution policy type:
    :end-before: _scan_inclusive_omp_plus_end
    :language: C++
 
-As is commonly done with RAJA, the only difference between this code and
+As expected, this produces the same result as the previous two examples.
+
+As is commonly the case with RAJA, the only difference between this code and
 the previous one is that the execution policy is different. If we want to 
 run the scan on a GPU using CUDA, we would use a CUDA execution policy. This
-will be shown shortly.
+is shown below.
 
 ^^^^^^^^^^^^^^^^
 Exclusive Scans
@@ -95,7 +99,7 @@ A sequential exclusive scan (plus) operation is performed by:
 
 This generates the following sequence of values in the output array::
 
-   0 3 2 4 19 26 31 48 57 63 81 82 92 92 106 119 123 134 146 154
+   0 -1 -1 0 2 5 9 14 20 27 35 44 54 65 77 90 104 119 135 152
 
 Note that the exclusive scan result is different than the inclusive scan 
 result in two ways. The first entry in the result is the `identity` of the
@@ -144,7 +148,7 @@ Here is a sequential exclusive in-place scan that uses the 'maximum' operator:
 
 This generates the following sequence in the output array::
 
-   -2147483648 3 3 3 15 15 15 17 17 17 18 18 18 18 18 18 18 18 18 18
+   -2147483648 -1 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
 
 Note that the first value in the result is the negative of the max int value;
 i.e., the identity of the maximum operator.
@@ -159,7 +163,7 @@ operation using OpenMP is accomplished by:
 
 This generates the following sequence in the output array (as we saw earlier)::
 
-   0 3 2 4 19 26 31 48 57 63 81 82 92 92 106 119 123 134 146 15
+   0 -1 -1 0 2 5 9 14 20 27 35 44 54 65 77 90 104 119 135 152
 
 and the only difference is the execution policy template parameter.
 
