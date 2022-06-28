@@ -158,7 +158,7 @@ in other repositories, typically. These tasks include:
 
   * Update the `RAJAProxies <https://github.com/LLNL/RAJAProxies>`_ project
     to the newly RAJA Portability Suite projects. This typically consists of 
-    updating the submodules to the the new RAJA Portability Suite project 
+    updating the submodules to the new RAJA Portability Suite project 
     versions, making sure the proxy-apps build and run correctly. When this
     is done, tag a release for proxy-app project.
   * Update the RAJA Spack package in the 

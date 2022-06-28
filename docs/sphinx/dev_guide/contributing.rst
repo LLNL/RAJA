@@ -105,7 +105,7 @@ As noted earlier, if you are not a member of the core RAJA development team,
 or a recognized RAJA contributor, then you do not have permission to create a 
 branch in the RAJA GitHub repository. This choice is due to policies enforced 
 by the LLNL organization on GitHub (in which the RAJA project resides) and the
-Livermore Computing (LC) organization (in which we run our GItlab CI testing).
+Livermore Computing (LC) organization (in which we run our Gitlab CI testing).
 Fortunately, you may still contribute to RAJA by `forking the RAJA repo 
 <https://github.com/LLNL/RAJA/fork>`_. Forking creates a copy of the RAJA 
 repository that you own. You can make changes on your local copy and push them 
@@ -180,7 +180,7 @@ reviewed by members of the RAJA team, who will provide comments, suggestions,
 etc. 
 
 As we stated earlier, not all required :ref:`ci-label` checks can be run on a 
-PR made from a branch in a fork of RAJA. When the RAJA team haas agreed to 
+PR made from a branch in a fork of RAJA. When the RAJA team has agreed to 
 accept your work, it will be pulled into the RAJA GitHub repo 
 (see :ref:`prfromfork-label`). Then, it will run through all required testing 
 and receive final reviews and approvals. When it is approved and all CI test 

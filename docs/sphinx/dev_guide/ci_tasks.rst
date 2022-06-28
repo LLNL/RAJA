@@ -32,12 +32,12 @@ The builds for each LC platform on which we run Gitlab CI pipelines are
 defined in ``<resource>-jobs.yml`` files in the `RAJA/.gitlab <https://github.com/LLNL/RAJA/tree/develop/.gitlab>`_ directory. The key items 
 that change when a new build is added are:
 
-  * the unique **label** that identifies the build on a webpage for 
+  * the unique **label** that identifies the build on a web page for 
     a Gitlab CI pipeline, and
   * the build **Spack spec**, which identifies the compiler and version,
     compiler flags, etc.
 
-For example, an entry for a build using a clang compiler with cuda is:
+For example, an entry for a build using a clang compiler with CUDA is:
 
 .. code-block:: bash
 
@@ -71,7 +71,7 @@ also defined in the file using the variable ``DEFAULT_TIME``. These
 commands and settings can remain as is for the most part. 
 
 However, sometimes a particular pipeline will take longer to build and
-run than the default alloted time. In this case, the default time can
+run than the default allotted time. In this case, the default time can
 be adjusted in the build spec information in the associated 
 ``<resource>-jobs.yml`` file discussed in the previous section. 
 For example:
@@ -144,9 +144,9 @@ In the ``Dockerfile`` we will want to add our section that defines the commands 
       make -j 6 &&\
       ctest -T test --output-on-failure
 
-Each of our docker builds is built up on a base image mainted by RSE-Ops, a table of available base containers can be found `here <https://rse-ops.github.io/docker-images/>`_. We are also able to add target names to each build with ``AS ...``. This target name correlates to the ``docker_target: ...`` defined in ``azure-pipelines.yml``.
+Each of our docker builds is built up on a base image maintained by RSE-Ops, a table of available base containers can be found `here <https://rse-ops.github.io/docker-images/>`_. We are also able to add target names to each build with ``AS ...``. This target name correlates to the ``docker_target: ...`` defined in ``azure-pipelines.yml``.
 
-The base containers are shared across multiple projects and are regularly rebuilt. If bugs are fixed in the base containers the changes will be automatically propogated to all projects using them in their Docker builds.
+The base containers are shared across multiple projects and are regularly rebuilt. If bugs are fixed in the base containers the changes will be automatically propagated to all projects using them in their Docker builds.
 
 Check `here <https://rse-ops.github.io/docker-images/>`_ for a list of all currently available RSE-Ops containers. Please see the `RSE-Ops Containers Project <https://github.com/rse-ops/docker-images>`_ on Github to get new containers built that aren't yet available.
 
@@ -175,7 +175,7 @@ We can edit the build and run configurations of each docker build, in the ``RUN`
 
 Each base image is built using `spack <https://github.com/spack/spack>`_. For the most part the container environments are set up to run our CMake and build commands out of the box. However, there are a few exceptions where we need to ``spack load`` specific modules into the path.
 
-  * **Clang** requires us to load llvm to for runtime openmp libraries.::
+  * **Clang** requires us to load LLVM for OpenMP runtime libraries.::
 
       . /opt/spack/share/spack/setup-env.sh && spack load llvm
 
@@ -187,7 +187,7 @@ Each base image is built using `spack <https://github.com/spack/spack>`_. For th
 
       . /opt/spack/share/spack/setup-env.sh && spack load hip llvm-amdgpu
 
-    **Sycl** requires us to run setupvars.sh::
+    **SYCL** requires us to run setupvars.sh::
 
       source /opt/view/setvars.sh 
 
@@ -211,7 +211,7 @@ RAJA Performance Suite CI Tasks
 ================================
 
 The `RAJA Performance Suite <https://github.com/LLNL/RAJAPerf>`_ project CI
-testing processes, directory/file structure, and dependencies ar nearly 
+testing processes, directory/file structure, and dependencies are nearly 
 identical to that for RAJA, which is described in :ref:`ci-label`. Specifically,
 
   * The RAJA Performance Suite Gitlab CI process is driven by the 

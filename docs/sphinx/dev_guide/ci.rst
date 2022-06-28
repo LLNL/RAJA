@@ -45,7 +45,7 @@ The following sections describe basic elements of the operation of the CI tools.
 Gitlab CI
 =========
 
-The GItlab CI instance used by the RAJA project lives in the Livermore 
+The Gitlab CI instance used by the RAJA project lives in the Livermore 
 Computing (LC) Collaboration Zone (CZ). It runs builds and tests in LC 
 resource and compiler environments important to RAJA user applications at LLNL.
 
@@ -140,7 +140,7 @@ In the ``stages`` section above, prefixes 'r_', 'l_', and 'c_' refer to
 resources in the LC on which tests are run. Specifically, the machines 'ruby',
 'lassen', and 'corona', respectively. Jobs that will run in pipeline(s) on each 
 resource are defined in the files listed in the ``include`` section above.
-Note that the stage labels above appear on each Gitlab CI run webpage as the
+Note that the stage labels above appear on each Gitlab CI run web page as the
 title of a column containing other information about what is run in that stage,
 such as build and test jobs.
 
