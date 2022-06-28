@@ -22,10 +22,6 @@ raja_add_executable(
   SOURCES tut_add-vectors.cpp)
 
 raja_add_executable(
-  NAME sycl_teams
-  SOURCES sycl_teams.cpp)
-
-raja_add_executable(
   NAME sycl_mat_transpose
   SOURCES sycl_mat_transpose.cpp)
   

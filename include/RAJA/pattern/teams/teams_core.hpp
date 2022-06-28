@@ -165,16 +165,6 @@ struct int3
   {}
 };
 
-/*
-template <typename T = double>
-struct shared_mem
-{
-  using element_type = T;
-  int size = 0;
-  shared_mem(int size_) : size(size_){};
-};
-*/
-
 class LaunchContext : public Grid
 {
 public:
