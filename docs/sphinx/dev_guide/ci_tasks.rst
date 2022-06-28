@@ -187,13 +187,12 @@ Each base image is built using `spack <https://github.com/spack/spack>`_. For th
 
       . /opt/spack/share/spack/setup-env.sh && spack load hip llvm-amdgpu
 
-    **Sycl** requiers us to run setupvars.sh::
+    **Sycl** requires us to run setupvars.sh::
 
       source /opt/view/setvars.sh 
 
 Windows / MacOS
 ...............
-
 
 Windows and MacOS build / run parameters can be configured directly in ``azure-pipelines.yml``. CMake options can be configured with ``CMAKE_EXTRA_FLAGS`` for each job. The ``-j`` value can also be edited directly in the Azure ``script`` definitions for each job.
 

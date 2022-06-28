@@ -161,10 +161,6 @@ in other repositories, typically. These tasks include:
     updating the submodules to the the new RAJA Portability Suite project 
     versions, making sure the proxy-apps build and run correctly. When this
     is done, tag a release for proxy-app project.
-  * Update the `RAJAProxies <https://github.com/LLNL/RAJAProxies>`_ project
-    to the newly RAJA Portability Suite projects. This project is expected to 
-    be consistent with the latest RAJA Portability Suite release. So no need
-    to tag a release after updating.
   * Update the RAJA Spack package in the 
     `Spack repository <https://github.com/spack/spack>`_. This requires some
     knowledge of Spack and attention to details and Spack conventions. Please
