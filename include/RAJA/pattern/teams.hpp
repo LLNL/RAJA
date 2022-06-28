@@ -39,8 +39,8 @@
 #include "RAJA/policy/openmp/teams.hpp"
 #endif
 
-//#if defined(RAJA_ENABLE_SYCL)
+#if defined(RAJA_ENABLE_SYCL)
 #include "RAJA/policy/sycl/teams.hpp"
-//#endif
+#endif
 
 #endif /* RAJA_pattern_teams_HPP */
