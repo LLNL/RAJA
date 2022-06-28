@@ -60,7 +60,8 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
 
     q->submit([&](cl::sycl::handler& h) {
 
-	auto s_vec = cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write, cl::sycl::access::target::local> (ctx.shared_mem_size, h);
+        auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
+                                        cl::sycl::access::target::local> (ctx.shared_mem_size, h);
 
 	h.parallel_for
 	  (cl::sycl::nd_range<3>(gridSize, blockSize),

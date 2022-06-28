@@ -196,73 +196,78 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy =
     RAJA::expt::LaunchPolicy<RAJA::expt::sycl_launch_t<false>>;
 
-  using inner0_pol =
-    RAJA::expt::LaunchPolicy<RAJA::sycl_local_0_direct>;
+  using inner0 =
+    RAJA::expt::LoopPolicy<RAJA::sycl_local_0_direct>;
 
-  using inner1_pol =
-    RAJA::expt::LaunchPolicy<RAJA::sycl_local_1_direct>;
+  using inner1 =
+    RAJA::expt::LoopPolicy<RAJA::sycl_local_1_direct>;
 
-  using outer0_pol =
-    RAJA::expt::LaunchPolicy<RAJA::sycl_group_0_direct>;
+  using outer0 =
+    RAJA::expt::LoopPolicy<RAJA::sycl_group_0_direct>;
 
-  using outer1_pol =
-    RAJA::expt::LaunchPolicy<RAJA::sycl_group_1_direct>;
+  using outer1 =
+    RAJA::expt::LoopPolicy<RAJA::sycl_group_1_direct>;
 
 
    //This kernel will require the following amount of shared memory
-   const int shared_memory = TILE_DIM*TILE_DIM;
+   const size_t shared_memory = 2*TILE_DIM*TILE_DIM*sizeof(int);
 
-    RAJA::expt::launch<launch_policy>
-      (RAJA::expt::Grid(RAJA::expt::Teams(outer_Dimc, outer_Dimr),
-			RAJA::expt::Threads(TILE_DIM, TILE_DIM),
-			shared_memory),
-       [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+   RAJA::expt::launch<launch_policy>
+     (RAJA::expt::Grid(RAJA::expt::Teams(outer_Dimc, outer_Dimr),
+                       RAJA::expt::Threads(TILE_DIM, TILE_DIM),
+                       shared_memory),
+      [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-	RAJA::expt::loop<outer1_pol>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
-	    RAJA::expt::loop<outer0_pol>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
+       RAJA::expt::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
+           RAJA::expt::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
 
-		//Ctx could hold a pointer to a big chunk of shared memory
-		//We can then provide an accessor to offsets of the shared memory
-		int *shared_mem = &ctx.shared_mem_ptr[0];
+               //ctx points to a a large chunk of memory
+               //getSharedMemory will apply the correct offsetting
+               int *tile_1_mem = ctx.getSharedMemory<int>(TILE_DIM*TILE_DIM);
+               int *tile_2_mem = ctx.getSharedMemory<int>(TILE_DIM*TILE_DIM);
 
-		//reshape the data
-		int (*Tile)[TILE_DIM] = (int (*)[TILE_DIM]) (shared_mem);
+               //reshape the data
+               int (*Tile_1)[TILE_DIM] = (int (*)[TILE_DIM]) (tile_1_mem);
+               int (*Tile_2)[TILE_DIM] = (int (*)[TILE_DIM]) (tile_2_mem);
 
-		RAJA::expt::loop<inner1_pol>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
-		   RAJA::expt::loop<inner0_pol>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
+               RAJA::expt::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
+                   RAJA::expt::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
 
-		       int col = bx * TILE_DIM + tx;  // Matrix column index
-		       int row = by * TILE_DIM + ty;  // Matrix row index
+                       int col = bx * TILE_DIM + tx;  // Matrix column index
+                       int row = by * TILE_DIM + ty;  // Matrix row index
 
-		       // Bounds check
-		       if (row < N_r && col < N_c) {
-			 Tile[ty][tx] = A_(row, col);
-		       }
+                        Tile_1[ty][tx] = 7.0; //scratch pad just to test
 
-		     });
-		 });
+                       // Bounds check
+                       if (row < N_r && col < N_c) {
+                         Tile_2[ty][tx] = A_(row, col);
+                       }
 
-		//need a barrier
-		ctx.teamSync();
+                     });
+                 });
 
-		RAJA::expt::loop<inner1_pol>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
-		   RAJA::expt::loop<inner0_pol>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
+               //need a barrier
+               ctx.teamSync();
 
-		       int col = bx * TILE_DIM + tx;  // Matrix column index
-		       int row = by * TILE_DIM + ty;  // Matrix row index
+               RAJA::expt::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
+                   RAJA::expt::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
 
-		       // Bounds check
-		       if (row < N_r && col < N_c) {
-			 At_(col, row) = Tile[ty][tx];
-		       }
+                       int col = bx * TILE_DIM + tx;  // Matrix column index
+                       int row = by * TILE_DIM + ty;  // Matrix row index
 
-		     });
-		  });
+                       // Bounds check
+                       if (row < N_r && col < N_c) {
+                         At_(col, row) = Tile_2[ty][tx];
+                       }
 
-	      });
-	  });
+                     });
 
-    });
+                 });
+
+             });
+         });
+
+     });
 
   memoryManager::sycl_res->memcpy(At, d_at, N_c * N_r * sizeof(int));
 
