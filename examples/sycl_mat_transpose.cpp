@@ -208,18 +208,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using outer1 =
     RAJA::expt::LoopPolicy<RAJA::sycl_group_1_direct>;
 
-
    //This kernel will require the following amount of shared memory
    const size_t shared_memory = 2*TILE_DIM*TILE_DIM*sizeof(int);
 
    RAJA::expt::launch<launch_policy>
-     (RAJA::expt::Grid(RAJA::expt::Teams(outer_Dimc, outer_Dimr),
-                       RAJA::expt::Threads(TILE_DIM, TILE_DIM),
-                       shared_memory),
+     (RAJA::expt::HOST,RAJA::expt::Grid(RAJA::expt::Teams(outer_Dimc, outer_Dimr),
+                                          RAJA::expt::Threads(TILE_DIM, TILE_DIM),
+                                          shared_memory),
       [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
        RAJA::expt::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
-           RAJA::expt::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
+         RAJA::expt::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
 
                //ctx points to a a large chunk of memory
                //getSharedMemory will apply the correct offsetting
