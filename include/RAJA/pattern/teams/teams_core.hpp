@@ -185,7 +185,9 @@ public:
   //Will have to template on a type
   mutable int *shared_mem_ptr; //pointer to dynamically allocated shared memory
 
+#if defined(RAJA_ENABLE_SYCL)
   mutable cl::sycl::nd_item<3> *itm;
+#endif
 
   //int shared_mem; //how much shared memory is needed
   //shared_mem *my_sharedmem;
