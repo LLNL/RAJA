@@ -212,9 +212,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
    const size_t shared_memory = 2*TILE_DIM*TILE_DIM*sizeof(int);
 
    RAJA::expt::launch<launch_policy>
-     (RAJA::expt::HOST,RAJA::expt::Grid(RAJA::expt::Teams(outer_Dimc, outer_Dimr),
-                                          RAJA::expt::Threads(TILE_DIM, TILE_DIM),
-                                          shared_memory),
+     (RAJA::expt::Grid(RAJA::expt::Teams(outer_Dimc, outer_Dimr),
+		       RAJA::expt::Threads(TILE_DIM, TILE_DIM),
+		       shared_memory),
       [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
        RAJA::expt::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
@@ -222,11 +222,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
                //ctx points to a a large chunk of memory
                //getSharedMemory will apply the correct offsetting
+	       //Consider templating on size to enable stack allocations on the CPU
                int *tile_1_mem = ctx.getSharedMemory<int>(TILE_DIM*TILE_DIM);
-               int *tile_2_mem = ctx.getSharedMemory<int>(TILE_DIM*TILE_DIM);
+	       int *tile_2_mem = ctx.getSharedMemory<int>(TILE_DIM*TILE_DIM);
 
                //reshape the data
-               int (*Tile_1)[TILE_DIM] = (int (*)[TILE_DIM]) (tile_1_mem);
                int (*Tile_2)[TILE_DIM] = (int (*)[TILE_DIM]) (tile_2_mem);
 
                RAJA::expt::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
@@ -234,8 +234,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
                        int col = bx * TILE_DIM + tx;  // Matrix column index
                        int row = by * TILE_DIM + ty;  // Matrix row index
-
-                        Tile_1[ty][tx] = 7.0; //scratch pad just to test
 
                        // Bounds check
                        if (row < N_r && col < N_c) {
