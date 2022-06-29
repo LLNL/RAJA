@@ -188,19 +188,6 @@ public:
   }
 
 #if defined(RAJA_ENABLE_SYCL)
-  //Only enable when using SYCL
-  void setup_loc_id(int tx, int ty, int tz) const {
-    loc_id.x = tx;
-    loc_id.y = ty;
-    loc_id.z = tz;
-  }
-
-  void setup_group_id(int bx, int by, int bz) const {
-    group_id.x = bx;
-    group_id.y = by;
-    group_id.z = bz;
-  }
-
   template<typename T>
   T* getSharedMemory(size_t bytes)
   {
