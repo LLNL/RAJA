@@ -287,7 +287,6 @@ namespace internal
 
 
 
-#if 1
   /*
    * Specialization for Tensor return types and static layout types
    */
@@ -316,7 +315,6 @@ namespace internal
       using range_seq  = camp::int_seq<LinIdx,RangeInts... >;
       using size_seq   = camp::int_seq<LinIdx,SizeInts...  >;
       using stride_seq = camp::int_seq<LinIdx,StrideInts...>;
-      using begin_seq  = typename seq_fill<LinIdx,0,sizeof...(RangeInts)>::Type;
       using LayoutType = RAJA::detail::StaticLayoutBase_impl<LinIdx,range_seq,size_seq,stride_seq>;
 
       // This is the stride-one dimensions w.r.t. the tensor not the View
@@ -368,21 +366,12 @@ namespace internal
           typename ref_type::stride_type(),
           // tile
           {
-              #if 0
-              // begin
-              typename ref_type::tile_type::begin_type(),
-
-              // size
-              typename ref_type::tile_type::size_type(),
-              #else
               new_begin_type(),
               new_size_type()
-              #endif
           }
         });
       }
   };
-#endif
 
 
   } // namespace detail
