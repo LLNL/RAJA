@@ -75,14 +75,6 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
 
              ctx.itm = &itm;
 
-             ctx.setup_loc_id(itm.get_local_id(0),
-                              itm.get_local_id(1),
-                              itm.get_local_id(2));
-
-             ctx.setup_group_id(itm.get_group(0),
-                                itm.get_group(1),
-                                itm.get_group(2));
-
              //Point to shared memory
              ctx.shared_mem_ptr = s_vec.get_pointer().get();
 
@@ -144,14 +136,6 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
            [=] (cl::sycl::nd_item<3> itm) {
 
              ctx.itm = &itm;
-
-             ctx.setup_loc_id(itm.get_local_id(0),
-                              itm.get_local_id(1),
-                              itm.get_local_id(2));
-
-             ctx.setup_group_id(itm.get_group(0),
-                                itm.get_group(1),
-                                itm.get_group(2));
 
              //Point to shared memory
              ctx.shared_mem_ptr = s_vec.get_pointer().get();
@@ -302,51 +286,6 @@ struct LaunchExecute<RAJA::policy::sycl::expt::sycl_launch_explicit_t<async, nth
 
 
 //Rework of the sycl policies
-
-/*
-  SYCL block direct mappings
-*/
-/*
-template <typename SEGMENT, int DIM>
-struct LoopExecute<sycl_group_012_direct<DIM>, SEGMENT> {
-
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const ctx,
-      SEGMENT const &segment,
-      BODY const &body)
-  {
-    const int len = segment.end() - segment.begin();
-    {
-      const int bx = internal::get_sycl_dim<DIM>(ctx.group_id);
-      if (bx < len) body(*(segment.begin() + bx));
-    }
-  }
-};
-*/
-
-/*
-  SYCL thread direct mappings
-*/
-/*
-template <typename SEGMENT, int DIM>
-struct LoopExecute<sycl_local_012_direct<DIM>, SEGMENT> {
-
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const ctx,
-      SEGMENT const &segment,
-      BODY const &body)
-  {
-
-    const int len = segment.end() - segment.begin();
-    {
-      const int tx = internal::get_sycl_dim<DIM>(ctx.loc_id);
-      if (tx < len) body(*(segment.begin() + tx));
-    }
-  }
-};
-*/
 
 //================================================
 //TODO rework rest of the sycl policies . . .
