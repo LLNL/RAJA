@@ -5,7 +5,7 @@ variables:
   COMPILER: 'g++'
 
 jobs:
-- job: Windows #temporarily commenting out until cmake/azure version issue resolved
+- job: Windows 
   strategy:
     matrix:
       shared:
