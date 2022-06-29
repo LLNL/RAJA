@@ -195,7 +195,7 @@ public:
     shared_mem_offset += bytes*sizeof(T);
 
     //TODO add a check to ensure
-    //we do not over allocate shared memory
+    //we do not go beyond our allocated shared mem
     
     return mem_ptr;
   } 

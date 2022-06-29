@@ -211,6 +211,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
    //This kernel will require the following amount of shared memory
    const size_t shared_memory = 2*TILE_DIM*TILE_DIM*sizeof(int);
 
+   //move shared memory arg to launch 2nd arg
    RAJA::expt::launch<launch_policy>
      (RAJA::expt::Grid(RAJA::expt::Teams(outer_Dimc, outer_Dimr),
 		       RAJA::expt::Threads(TILE_DIM, TILE_DIM),
@@ -226,8 +227,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                int *tile_1_mem = ctx.getSharedMemory<int>(TILE_DIM*TILE_DIM);
 	       int *tile_2_mem = ctx.getSharedMemory<int>(TILE_DIM*TILE_DIM);
 
+	       //consider a getSharedMemoryView method
+
+
                //reshape the data
                int (*Tile_2)[TILE_DIM] = (int (*)[TILE_DIM]) (tile_2_mem);
+	       //Use RAJA view
 
                RAJA::expt::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
                    RAJA::expt::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
