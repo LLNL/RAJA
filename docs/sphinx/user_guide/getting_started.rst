@@ -192,13 +192,11 @@ compiler options to nvcc.
 
 To set the CUDA compute architecture for the nvcc compiler, which should be
 chosen based on the NVIDIA GPU hardware you are using, you can use the
-``CUDA_ARCH`` CMake variable. For example, the CMake option::
-
-  -DCUDA_ARCH=sm_60
-
-will tell the compiler to use the `sm_60` SASS architecture in its second
-stage of compilation. It will pick the PTX architecture to use in the first
-stage of compilation that is suitable for the SASS architecture you specify.
+``CUDA_ARCH`` CMake variable. For example, the CMake option 
+``-DCUDA_ARCH=sm_60`` will tell the compiler to use the `sm_60` SASS 
+architecture in its second stage of compilation. It will pick the PTX 
+architecture to use in the first stage of compilation that is suitable for 
+the SASS architecture you specify.
 
 Alternatively, you may specify the PTX and SASS architectures, using
 appropriate nvcc options in the ``CMAKE_CUDA_FLAGS_*`` variables.

@@ -132,20 +132,21 @@ tutorial exercises, etc. are built when RAJA is compiled.
       =========================  =========================================
       (RAJA_)ENABLE_TESTS        On 
       (RAJA_)ENABLE_EXAMPLES     On 
-      (RAJA_)ENABLE_BENCHMARKS   Off
-      (RAJA_)ENABLE_COVERAGE     Off (supported for GNU compilers only)
       RAJA_ENABLE_EXERCISES      On 
+      (RAJA_)ENABLE_BENCHMARKS   Off
       RAJA_ENABLE_REPRODUCERS    Off 
+      (RAJA_)ENABLE_COVERAGE     Off (supported for GNU compilers only)
       =========================  =========================================
 
-RAJA can also be configured to build with compiler warnings reported as
-errors, which may be useful to make sure your application builds cleanly:
+Other configuration options are availe to specialize how RAJA is compiled:
 
-      ================================   ======================
-      Variable                           Default
-      ================================   ======================
-      (RAJA_)ENABLE_WARNINGS_AS_ERRORS   Off
-      ================================   ======================
+      ==================================   =========================
+      Variable                             Default
+      ==================================   =========================
+      (RAJA_)ENABLE_WARNINGS_AS_ERRORS     Off
+      RAJA_ENABLE_FORCEINLINE_RECURSIVE    On (Intel compilers only)
+      RAJA_ALLOW_INCONSISTENT_OPTIONS      Off 
+      ==================================   =========================
 
 RAJA Views/Layouts may be configured to check for out of bounds 
 indexing at run time:
@@ -170,6 +171,7 @@ are as follows (names are descriptive of what they enable):
       ==========================   ============================================
       (RAJA_)ENABLE_OPENMP         Off
       (RAJA_)ENABLE_CUDA           Off
+      RAJA_ENABLE_CLANG_CUDA       Off
       (RAJA_)ENABLE_HIP            Off
       RAJA_ENABLE_TARGET_OPENMP    Off (when on, (RAJA_)ENABLE_OPENMP must 
                                    also be on!)
