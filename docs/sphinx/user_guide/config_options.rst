@@ -22,7 +22,7 @@ their defaults.
 RAJA Option Types
 =============================
 
-Nearly all Cmake options used in RAJA contain the prefix ``RAJA_`` to give 
+Nearly all CMake options used in RAJA contain the prefix ``RAJA_`` to give 
 users flexibility to enable/disable individual compilation features for RAJA, 
 specifically. RAJA contains two types of options, those that exist in 
 RAJA only and those that are similar to standard CMake options or options 
@@ -34,7 +34,7 @@ names, but with the ``RAJA_`` prefix added.
           options that can be controlled with CMake or BLT variants. 
 
             * Dependent options are typically used for *disabling* features.
-              For example, providing the option ``-DRAJA_ENABLE_TESTS=Off``
+              For example, providing the option ``-DRAKE_ENABLE_TESTS=Off``
               to CMake will disable compilation of RAJA tests, even if the 
               option ``-DENABLE_TESTS=On`` is also provided.
 
@@ -148,7 +148,7 @@ errors, which may be useful to make sure your application builds cleanly:
       ================================   ======================
 
 RAJA Views/Layouts may be configured to check for out of bounds 
-indexing at runtime:
+indexing at run time:
 
       =========================   ======================
       Variable                    Default
@@ -156,7 +156,7 @@ indexing at runtime:
       RAJA_ENABLE_BOUNDS_CHECK    Off
       =========================   ======================
 
-Note that RAJA bounds checking is a runtime check and will add 
+Note that RAJA bounds checking is a run time check and will add 
 considerable execution time overhead. Thus, this feature should only be 
 used for correctness checking and should be disabled for production builds.
      
@@ -215,7 +215,7 @@ ensure they use the same include directories when configuring their
 applications.
 
 .. note:: See :ref:`getting_started-label` for more information about
-          setting other options for RAJA back-ends.
+          setting these and other options for RAJA back-ends.
 
 * **Data types, sizes, alignment, etc.**
 
