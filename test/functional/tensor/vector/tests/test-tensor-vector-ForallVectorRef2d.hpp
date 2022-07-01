@@ -101,7 +101,7 @@ void ForallVectorRef2dImpl()
       RAJA::make_tuple(RAJA::TypedRangeSegment<index_t>(0, N),
                        RAJA::TypedRangeSegment<index_t>(0, M)),
 
-      [=](index_t i, idx_t j)
+      [=](index_t i, index_t j)
   {
     Z(i, j) = 3+(X(i, j)*(5/Y(i, j)))+9;
   });

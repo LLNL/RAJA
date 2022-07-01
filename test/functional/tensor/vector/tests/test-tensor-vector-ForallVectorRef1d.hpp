@@ -78,7 +78,7 @@ void ForallVectorRef1dImpl()
     C[i] = 0.0;
   }
   RAJA::forall<RAJA::vector_exec<vector_t>>(RAJA::TypedRangeSegment<int>(0,N/2),
-      [=](idx_t i){
+      [=](int i){
 
      Z[i] = 3 + (X[i]*(5/Y[i])) + 9;
   });
