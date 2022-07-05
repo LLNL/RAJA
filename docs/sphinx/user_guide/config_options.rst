@@ -122,7 +122,8 @@ build process for all of the code.
 The following tables describe which variables set RAJA options and 
 and their default settings:
 
-* **Examples, tests, warnings, etc.**
+Examples, tests, warnings, etc.
+--------------------------------
 
 CMake variables can be used to control whether RAJA tests, examples, 
 tutorial exercises, etc. are built when RAJA is compiled.
@@ -161,7 +162,8 @@ Note that RAJA bounds checking is a run time check and will add
 considerable execution time overhead. Thus, this feature should only be 
 used for correctness checking and should be disabled for production builds.
      
-* **Programming model back-end support**
+Programming model back-end support
+-------------------------------------
 
 Variables that control which RAJA programming model back-ends are enabled
 are as follows (names are descriptive of what they enable):
@@ -219,7 +221,8 @@ applications.
 .. note:: See :ref:`getting_started-label` for more information about
           setting these and other options for RAJA back-ends.
 
-* **Data types, sizes, alignment, etc.**
+Data types, sizes, alignment, etc.
+-------------------------------------
 
 RAJA provides type aliases that can be used to parameterize floating 
 point types in applications, which makes it easier to switch between types.
@@ -308,7 +311,8 @@ in units of **bytes**.
 For details on the options in this section are used, please see the 
 header file ``RAJA/include/RAJA/util/types.hpp``.
 
-* **Timer Options**
+Timer Options
+--------------
 
 RAJA provides a simple portable timer class that is used in RAJA
 example codes to determine execution timing and can be used in other apps
@@ -336,7 +340,8 @@ What these variables mean:
       clock                           Use `clock_t` from time.h
       =============================   ========================================
 
-* **Other RAJA Features**
+Other RAJA Features
+-------------------
    
 RAJA contains some features that are used mainly for development or may
 not be of general interest to RAJA users. These are turned off be default.
