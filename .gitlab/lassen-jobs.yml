@@ -14,7 +14,7 @@ clang_9:
     SPEC: "+openmp %clang@9.0.0"
   extends: .build_and_test_on_lassen
 
-clang_9_gcc_8:
+clang_9_gcc_8_3_1:
   variables:
     SPEC: "+openmp %clang@9.0.0 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
   extends: .build_and_test_on_lassen
@@ -83,18 +83,18 @@ xl_16_1_1_11_gcc_8_3_1_cuda_11_0_2:
 # EXTRAS
 ##########
 
-clang_9_0_0_libcpp (build and test on lassen):
+clang_9_0_0_libcpp:
   variables:
     SPEC: "+openmp %clang@9.0.0+libcpp"
   extends: .build_and_test_on_lassen
 
-clang_9_0_0_memleak (build and test on lassen):
+clang_9_0_0_asan:
   variables:
     SPEC: "+openmp %clang@9.0.0 cxxflags=-fsanitize=address"
     ASAN_OPTIONS: "detect_leaks=1"
   extends: .build_and_test_on_lassen
 
-gcc_8_3_1_cuda_desul_atomics:
+gcc_8_3_1_cuda_10_1_168_desul_atomics:
   variables:
     SPEC: "+openmp +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@11.0.2"
   extends: .build_and_test_on_lassen
