@@ -93,6 +93,7 @@ then
 fi
 
 build_dir="${build_root}/build_${hostconfig//.cmake/}"
+install_dir="${build_root}/install_${hostconfig//.cmake/}"
 
 # Build
 if [[ "${option}" != "--deps-only" && "${option}" != "--test-only" ]]
@@ -101,6 +102,7 @@ then
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     echo "~ Host-config: ${hostconfig_path}"
     echo "~ Build Dir:   ${build_dir}"
+    echo "~ Install Dir: ${install_dir}"
     echo "~ Project Dir: ${project_dir}"
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     echo ""
@@ -131,8 +133,15 @@ then
 
     cmake \
       -C ${hostconfig_path} \
+      -DCMAKE_INSTALL_PREFIX=${install_dir} \
       ${project_dir}
-    cmake --build . -j ${core_counts[$truehostname]}
+    if ! cmake --build . -j ${core_counts[$truehostname]}
+    then
+        echo "ERROR: compilation failed, building with verbose output..."
+        cmake --build . --verbose -j 1
+    else
+        make install
+    fi
     date
 fi
 
@@ -177,6 +186,26 @@ then
     if grep -q "Errors while running CTest" ./tests_output.txt
     then
         echo "ERROR: failure(s) while running CTest" && exit 1
+    fi
+
+    if grep -q -i "ENABLE_HIP.*ON" ${hostconfig_path} || grep -q -i "RAJA_ENABLE_DESUL_ATOMICS.*ON" ${hostconfig_path}
+    then
+        echo "WARNING: not testing install with HIP or desul"
+    else
+        if [[ ! -d ${install_dir} ]]
+        then
+            echo "ERROR: install directory not found : ${install_dir}" && exit 1
+        fi
+
+        cd ${install_dir}/examples/RAJA/using-with-cmake
+        mkdir build && cd build
+        if ! cmake -C ../host-config.cmake ..; then
+        echo "ERROR: running cmake for using-with-cmake test" && exit 1
+        fi
+
+        if ! make; then
+        echo "ERROR: running make for using-with-cmake test" && exit 1
+        fi
     fi
 
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
