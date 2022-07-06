@@ -6,21 +6,39 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _semver-label:
+.. _version-label:
 
-***********************
+****************************
+RAJA Release Version Naming
+****************************
+
+Prior to the RAJA release in March 2022, the RAJA project used the *Semantic
+Versioning* scheme for assigning release tag names. At the March 2022 release,
+we changed the release naming scheme to use ``YYYY.mm.pp``, for year, month, 
+and patch number. So, for example, the March 2022 release is labeled v2022.03.0.The main motivation for the release naming scheme is to do coordinated releases
+with the `Umpire <https://github.com/LLNL/Umpire>`_, 
+`CHAI <https://github.com/LLNL/CHAI>`_, and 
+`camp <https://github.com/LLNL/camp>`_ projects, which are considered parts 
+of the **RAJA Portability Suite**. In a coordinated release, all the projects 
+will have the same release name. If a project requires a patch release between 
+coordinated releases, it will indicate that by incrementing the patch number;
+for example, v2022.03.1.
+
+The following sections describe the Semantic Versioning scheme for reference
+and posterity.
+
+====================
 Semantic Versioning
-***********************
+====================
 
-The RAJA project uses the *semantic* versioning scheme for assigning
-release numbers. Semantic versioning is a methodology for assigning a version
-number to a software release in a way that conveys specific meaning about
-code modifications from version to version.
+Semantic versioning is a 
+methodology for assigning a version number to a software release in a way that 
+conveys specific meaning about code modifications from version to version.
 See `Semantic Versioning <http://semver.org>`_ for a more detailed description.
 
-============================
-Version Numbers and Meaning
-============================
+-------------------------------------
+Semantic Version Numbers and Meaning
+-------------------------------------
 
 Semantic versioning is based on a three part version number `MM.mm.pp`:
 
@@ -41,9 +59,9 @@ Semantic versioning is based on a three part version number `MM.mm.pp`:
     number is always changed when a hotfix branch is merged into main, or when 
     changes are made to main that only contain bug fixes.
 
-===========================================
-What Does a Change in Version Number Mean?
-===========================================
+-----------------------------------------------------
+What Does a Change in Semantic Version Number Mean?
+-----------------------------------------------------
 
 A key consideration in meaning for these three version numbers is that
 the software has a public API. Changes to the API or code functionality

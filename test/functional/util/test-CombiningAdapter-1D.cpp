@@ -19,14 +19,14 @@
 #include <numeric>
 #include <vector>
 
-template < typename IndexType, typename Segment0 >
+template < typename SegIndexType, typename Segment0 >
 void test_CombiningAdapter_1D(Segment0 const& seg0)
 {
   using std::begin; using std::end; using std::distance;
   auto seg0_begin = begin(seg0);
 
   size_t counter0 = 0;
-  auto adapter = RAJA::make_CombiningAdapter([&](IndexType i0) {
+  auto adapter = RAJA::make_CombiningAdapter([&](SegIndexType i0) {
     ASSERT_EQ(seg0_begin[counter0], i0);
     counter0 += 1;
   }, seg0);
@@ -43,17 +43,17 @@ void test_CombiningAdapter_1D(Segment0 const& seg0)
   }
 }
 
-template < typename IndexType, typename SegIndexType >
+template < typename SegIndexType >
 void test_types_CombiningAdapter_1D(SegIndexType ibegin0, SegIndexType iend0)
 {
   RAJA::TypedRangeSegment<SegIndexType> rseg0(ibegin0, iend0);
-  test_CombiningAdapter_1D<IndexType>(rseg0);
+  test_CombiningAdapter_1D<SegIndexType>(rseg0);
 }
 
 TEST(CombiningAdapter, test1D)
 {
-  test_types_CombiningAdapter_1D<int, int>(0, 0);
+  test_types_CombiningAdapter_1D<int>(0, 0);
 
-  test_types_CombiningAdapter_1D<int, int>(0, 15);
-  test_types_CombiningAdapter_1D<long, long>(-8, 16);
+  test_types_CombiningAdapter_1D<int>(0, 15);
+  test_types_CombiningAdapter_1D<long>(-8, 16);
 }

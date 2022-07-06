@@ -61,7 +61,9 @@ TEST(TimerUnitTest, No2)
   RAJA::Timer::ElapsedType elapsed = timer.elapsed();
 
   EXPECT_GT(elapsed, 0.02);
+#if !defined(__APPLE__)
   EXPECT_LT(elapsed, 0.05);
+#endif
 }
 
 
@@ -81,7 +83,9 @@ TEST(TimerUnitTest, No3)
   RAJA::Timer::ElapsedType elapsed = timer.elapsed();
 
   EXPECT_GT(elapsed, 0.02);
+#if !defined(__APPLE__)
   EXPECT_LT(elapsed, 0.05);
+#endif
 
   timer.reset();
   elapsed = timer.elapsed();

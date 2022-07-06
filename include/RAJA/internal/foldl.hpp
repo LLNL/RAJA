@@ -48,6 +48,28 @@ struct foldl_impl<Op, Arg1> {
   using Ret = Arg1;
 };
 
+#if RAJA_HAS_CXX17_IS_INVOCABLE
+
+template <typename Op, typename Arg1, typename Arg2>
+struct foldl_impl<Op, Arg1, Arg2> {
+  using Ret = typename std::invoke_result<Op, Arg1, Arg2>::type;
+};
+
+template <typename Op,
+          typename Arg1,
+          typename Arg2,
+          typename Arg3,
+          typename... Rest>
+struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...> {
+  using Ret = typename foldl_impl<
+      Op,
+      typename std::invoke_result<Op, typename std::invoke_result<Op, Arg1, Arg2>::type,
+                                      Arg3>::type,
+      Rest...>::Ret;
+};
+
+#else
+
 template <typename Op, typename Arg1, typename Arg2>
 struct foldl_impl<Op, Arg1, Arg2> {
   using Ret = typename std::result_of<Op(Arg1, Arg2)>::type;
@@ -65,6 +87,8 @@ struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...> {
                                  Arg3)>::type,
       Rest...>::Ret;
 };
+
+#endif
 
 } // namespace detail
 

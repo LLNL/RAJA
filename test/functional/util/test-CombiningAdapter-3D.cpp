@@ -19,20 +19,21 @@
 #include <numeric>
 #include <vector>
 
-template < typename IndexType, typename Segment0, typename Segment1, typename Segment2 >
+template < typename SegIndexType0, typename SegIndexType1, typename SegIndexType2,
+           typename Segment0, typename Segment1, typename Segment2 >
 void test_CombiningAdapter_3D(Segment0 const& seg0, Segment1 const& seg1, Segment2 const& seg2)
 {
   using std::begin; using std::end; using std::distance;
   auto seg0_begin = begin(seg0);
   auto seg1_begin = begin(seg1);
-  auto seg1_len = seg1.size();
+  size_t seg1_len = static_cast<size_t>(seg1.size());
   auto seg2_begin = begin(seg2);
-  auto seg2_len = seg2.size();
+  size_t seg2_len = static_cast<size_t>(seg2.size());
 
   size_t counter0 = 0;
   size_t counter1 = 0;
   size_t counter2 = 0;
-  auto adapter = RAJA::make_CombiningAdapter([&](IndexType i0, IndexType i1, IndexType i2) {
+  auto adapter = RAJA::make_CombiningAdapter([&](SegIndexType0 i0, SegIndexType1 i1, SegIndexType2 i2) {
     ASSERT_EQ(seg0_begin[counter0], i0);
     ASSERT_EQ(seg1_begin[counter1], i1);
     ASSERT_EQ(seg2_begin[counter2], i2);
@@ -59,7 +60,7 @@ void test_CombiningAdapter_3D(Segment0 const& seg0, Segment1 const& seg1, Segmen
   }
 }
 
-template < typename IndexType, typename SegIndexType0, typename SegIndexType1, typename SegIndexType2 >
+template < typename SegIndexType0, typename SegIndexType1, typename SegIndexType2 >
 void test_types_CombiningAdapter_3D(SegIndexType0 ibegin0, SegIndexType0 iend0,
                                     SegIndexType1 ibegin1, SegIndexType1 iend1,
                                     SegIndexType2 ibegin2, SegIndexType2 iend2)
@@ -67,18 +68,18 @@ void test_types_CombiningAdapter_3D(SegIndexType0 ibegin0, SegIndexType0 iend0,
   RAJA::TypedRangeSegment<SegIndexType0> rseg0(ibegin0, iend0);
   RAJA::TypedRangeSegment<SegIndexType1> rseg1(ibegin1, iend1);
   RAJA::TypedRangeSegment<SegIndexType2> rseg2(ibegin2, iend2);
-  test_CombiningAdapter_3D<IndexType>(rseg0, rseg1, rseg2);
+  test_CombiningAdapter_3D<SegIndexType0, SegIndexType1, SegIndexType2>(rseg0, rseg1, rseg2);
 }
 
 TEST(CombiningAdapter, test3D)
 {
-  test_types_CombiningAdapter_3D<int, int, int, int>(0, 0, 0, 0, 0, 0);
-  test_types_CombiningAdapter_3D<int, int, int, int>(0, 5, 0, 0, 0, 0);
-  test_types_CombiningAdapter_3D<int, int, int, int>(0, 0, 0, 5, 0, 0);
-  test_types_CombiningAdapter_3D<int, int, int, int>(0, 0, 0, 0, 0, 5);
+  test_types_CombiningAdapter_3D<int, int, int>(0, 0, 0, 0, 0, 0);
+  test_types_CombiningAdapter_3D<int, int, int>(0, 5, 0, 0, 0, 0);
+  test_types_CombiningAdapter_3D<int, int, int>(0, 0, 0, 5, 0, 0);
+  test_types_CombiningAdapter_3D<int, int, int>(0, 0, 0, 0, 0, 5);
 
-  test_types_CombiningAdapter_3D<int, int, int, int>(0, 3, 0, 4, 0, 5);
-  test_types_CombiningAdapter_3D<long, int, long, int>(-3, 5, 0, 6, 2, 5);
-  test_types_CombiningAdapter_3D<long, long, int, int>(4, 13, -2, 7, -3, 0);
-  test_types_CombiningAdapter_3D<long, long, long, long>(-8, -2, -5, 3, 1, 4);
+  test_types_CombiningAdapter_3D<int, int, int>(0, 3, 0, 4, 0, 5);
+  test_types_CombiningAdapter_3D<int, long, int>(-3, 5, 0, 6, 2, 5);
+  test_types_CombiningAdapter_3D<long, int, int>(4, 13, -2, 7, -3, 0);
+  test_types_CombiningAdapter_3D<long, long, long>(-8, -2, -5, 3, 1, 4);
 }

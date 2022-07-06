@@ -19,14 +19,14 @@ This section will help get you up and running with RAJA quickly.
 Requirements
 ============
 
-The primary requirement for using RAJA is a C++11 compliant compiler.
+The primary requirement for using RAJA is a C++14 compliant compiler.
 Accessing various programming model back-ends requires that they be supported
 by the compiler you chose. Available options and how to enable or disable 
 them are described in :ref:`configopt-label`. To build RAJA in its most basic
 form and use its simplest features:
 
-- C++ compiler with C++11 support
-- `CMake <https://cmake.org/>`_ version 3.9 or greater.
+- C++ compiler with C++14 support
+- `CMake <https://cmake.org/>`_ version 3.14.5 or greater.
 
 
 ==================
@@ -39,16 +39,8 @@ the command::
 
    $ git clone --recursive https://github.com/LLNL/RAJA.git
 
-The ``--recursive`` argument above is needed to pull in necessary RAJA
-dependencies as Git *submodules*. Current RAJA dependencies are:
-
-- `BLT build system <https://github.com/LLNL/blt>`_
-- `Camp compiler agnostic metaprogramming library  <https://github.com/LLNL/camp>`_
-- `CUB CUDA utilities library <https://github.com/NVlabs/cub>`_
-- `rocPRIM HIP parallel primitives library <https://github.com/ROCmSoftwarePlatform/rocPRIM.git>`_
-
-You probably don't need to know much about these other projects to start
-using RAJA. But, if you want to know more about them, click on the links above.
+The ``--recursive`` argument above is needed to pull in RAJA dependencies as 
+Git *submodules*. 
 
 After running the clone command, a copy of the RAJA repository will reside in
 a ``RAJA`` subdirectory where you ran the clone command. You will be on the 
@@ -68,6 +60,32 @@ Either way, the end result is the same and you should be good to go.
           what is used by the new branch.
 
 ==================
+Dependencies
+==================
+
+RAJA has several dependencies that are required depending on how you want to
+build and use RAJA. The RAJA Git repository contains several submodules that
+contain these dependencies.
+
+Dependencies that are required to build the RAJA code are:
+
+- `BLT build system <https://github.com/LLNL/blt>`_
+- `Camp compiler agnostic metaprogramming library  <https://github.com/LLNL/camp>`_
+
+Other dependencies that users should be aware of are:
+
+- `CUB CUDA utilities library <https://github.com/NVlabs/cub>`_
+- `rocPRIM HIP parallel primitives library <https://github.com/ROCmSoftwarePlatform/rocPRIM.git>`_
+- `desul <https://github.com/desul/desul>`_
+
+These are required to build RAJA features, such as CUDA and HIP back-ends.
+Additional discussion of these, with respect to building RAJA, is provided 
+below. Other than that, you probably don't need to know much about them.
+If you are curious and want to know more, please click on the links above.
+
+Other RAJA submodule dependencies are used to support our CI testing.
+
+==================
 Build and Install
 ==================
 
@@ -83,30 +101,33 @@ RAJA uses CMake to configure a build. A "bare bones" configuration looks like::
   $ mkdir build-dir && cd build-dir
   $ cmake -DCMAKE_INSTALL_PREFIX=/path/to/install ../
 
-.. note:: * RAJA requires a minimum CMake version of 3.9.
+.. note:: * RAJA requires a minimum CMake version of 3.14.5.
           * Builds must be *out-of-source*.  RAJA does not allow building in
             the source directory, so you must create a build directory and
             run CMake in it.
 
+If you want to use a C++ compiler other than the default on your system, 
+you need to pass a path to the compiler using the CMake option
+``-DCMAKE_CXX_COMPILER=path/to/compiler``
+
 When you run CMake, it will generate output about the build environment 
-(compiler and version, options, etc.). Some RAJA features, 
-like OpenMP support are enabled by default if, for example, the compiler 
-supports OpenMP. These can be disabled if desired. For a summary of 
-RAJA configuration options, please see :ref:`configopt-label`.
+(compiler and version, options, etc.). For a summary of RAJA configuration 
+options, please see :ref:`configopt-label`.
 
 After CMake successfully completes, you compile RAJA by executing the ``make``
-command in the build directory; i.e.,::
+command in the build directory::
 
   $ make
 
-If you have access to a multi-core system, you can compile in parallel by 
+If you are on a multi-core system, you can compile in parallel by 
 running ``make -j`` (to build with all available cores) or ``make -j N`` to 
 build using N cores.
 
-.. note:: * RAJA is configured to build its unit tests by default. If you do not
-            disable them with the appropriate CMake option (please see
-            :ref:`configopt-label`), you can run them after the build completes
-            to check if everything is built properly.
+.. note:: * RAJA is configured to build its tests, examples, and tutorial
+            exercises by default. If you do not disable them with the 
+            appropriate CMake option (please see :ref:`configopt-label`), 
+            you can run them after the build completes to check if everything 
+            is built properly.
 
             The easiest way to run the full set of RAJA tests is to type::
 
@@ -116,32 +137,32 @@ build using N cores.
 
             You can also run individual tests by invoking test 
             executables directly. They will be located in the ``test`` 
-            subdirectory in the build space directory. RAJA tests use the 
+            subdirectory in the build space. RAJA tests use the 
             `Google Test framework <https://github.com/google/googletest>`_, 
-            so you can also run tests via Google Test commands.
+            so you can also run and filter tests via Google Test commands.
 
-          * RAJA also contains example and tutorial exercise 
-            programs you can run if you wish. Similar to the RAJA tests, 
-            the examples and exercises are built by default and can be
-            disabled with CMake options (see :ref:`configopt-label`). The 
-            source files for these are located in the ``RAJA/examples`` and 
-            ``RAJA/exercises`` directories, respectively. When built, the
-            executables for the examples and exercises will be located in
-            the ``bin`` subdirectory in the build space directory. Feel free to 
-            experiment by editing the source files and recompiling.
+            The source files for RAJA examples and exercises are located in 
+            the ``RAJA/examples`` and ``RAJA/exercises`` directories, 
+            respectively. When built, the executables for the examples and 
+            exercises will be located in the ``bin`` subdirectory in the build 
+            space. Feel free to experiment by editing the source files,
+            recompiling, and running with your changes. 
 
 .. _build-external-tpl-label:
 
-.. note:: You may use externally-supplied versions of the camp, CUB, and rocPRIM
-          libraries with RAJA if you wish. To do so, pass the following
-          options to CMake:
-            * External camp: -DEXTERNAL_CAMP_SOURCE_DIR=<camp dir name>
+.. note:: You may want or need to use external versions of camp, CUB, or 
+          rocPRIM (i.e., not the RAJA submodules). To do so, you need to use
+          CMake variables to pass a path to a valid installation installation 
+          of each library, etc. Specifically:
+            * External camp: -Dcamp_DIR=<camp dir name>
             * External CUB: -DRAJA_ENABLE_EXTERNAL_CUB=On -DCUB_DIR=<CUB dir name>
-            * External rocPRIM: -DRAJA_ENABLE_EXTERNAL_ROCPRIM=On
-                                -DROCPRIM_DIR=<rocPRIM dir name>
+            * External rocPRIM: -DRAJA_ENABLE_EXTERNAL_ROCPRIM=On -DROCPRIM_DIR=<rocPRIM dir name>
+
+More information about configuring GPU builds with CUDA or HIP is provided
+below.
 
 -----------------
-GPU Builds, etc.
+GPU Builds
 -----------------
 
 CUDA
@@ -150,8 +171,11 @@ CUDA
 To run RAJA code on NVIDIA GPUs, one typically must have a CUDA compiler 
 installed on your system, in addition to a host code compiler. You may need 
 to specify both when you run CMake. The host compiler is specified using the 
-``CMAKE_CXX_COMPILER`` CMake variable. The CUDA compiler is specified with
-the ``CMAKE_CUDA_COMPILER`` variable.
+``CMAKE_CXX_COMPILER`` CMake variable as described earlier. The CUDA software
+stack and compiler are specified using the following CMake options:
+
+  * -DCUDA_TOOLKIT_ROOT_DIR=path/to/cuda/toolkit
+  * -DCMAKE_CUDA_COMPILER=path/to/nvcc
 
 When using the NVIDIA nvcc compiler for RAJA CUDA functionality, the variables:
 
@@ -159,8 +183,8 @@ When using the NVIDIA nvcc compiler for RAJA CUDA functionality, the variables:
   * CMAKE_CUDA_FLAGS_DEBUG
   * CMAKE_CUDA_FLAGS_RELWITHDEBINFO
 
-which corresponding to the standard CMake build types are used to pass flags
-to nvcc.
+correspond to the standard CMake build types and are used to pass additional
+compiler options to nvcc.
 
 .. note:: When nvcc must pass options to the host compiler, the arguments
           can be included using these CMake variables. Host compiler
@@ -168,13 +192,11 @@ to nvcc.
 
 To set the CUDA compute architecture for the nvcc compiler, which should be
 chosen based on the NVIDIA GPU hardware you are using, you can use the
-``CUDA_ARCH`` CMake variable. For example, the CMake option::
-
-  -DCUDA_ARCH=sm_60
-
-will tell the compiler to use the `sm_60` SASS architecture in its second
-stage of compilation. It will pick the PTX architecture to use in the first
-stage of compilation that is suitable for the SASS architecture you specify.
+``CUDA_ARCH`` CMake variable. For example, the CMake option 
+``-DCUDA_ARCH=sm_60`` will tell the compiler to use the `sm_60` SASS 
+architecture in its second stage of compilation. It will pick the PTX 
+architecture to use in the first stage of compilation that is suitable for 
+the SASS architecture you specify.
 
 Alternatively, you may specify the PTX and SASS architectures, using
 appropriate nvcc options in the ``CMAKE_CUDA_FLAGS_*`` variables.
@@ -186,23 +208,24 @@ appropriate nvcc options in the ``CMAKE_CUDA_FLAGS_*`` variables.
 
           * If you do not specify a value for ``CUDA_ARCH``, it will be set to
             `sm_35` by default and CMake will emit a status message 
-            indicatting this choice was made.
+            indicating this choice was made.
 
           * If you give a ``CUDA_ARCH`` value less than `sm_35` (e.g., `sm_30`),
             CMake will report this and stop processing.
 
 Also, RAJA relies on the CUB CUDA utilities library for some CUDA functionality.
-The CUB included in the CUDA toolkit is used by default if available. RAJA
-includes a CUB submodule that is used if it is not available. To use
-an external CUB install provide the following option to CMake:
-``-DRAJA_ENABLE_EXTERNAL_CUB=On -DCUB_DIR=<pat/to/cub>``.
+The CUB included in the CUDA toolkit is used by default, if available. This
+is the case for CUDA version 11 and later. RAJA includes a CUB submodule that 
+can be used with older versions of CUDA. To use an external CUB install 
+provide the following option to CMake:
+``-DRAJA_ENABLE_EXTERNAL_CUB=On -DCUB_DIR=<path/to/cub>``.
 
 .. note:: **It is important to note that the CUDA toolkit version of cub is
           required for compatibility with the CUDA toolkit version of thrust
           starting with CUDA toolkit version v11.0.0. So, if you build
-          RAJA with CUDA version 11 or higher you must use the CUDA
-          toolkit version of CUB to use Thrust and be compatible with libraries
-          that use Thrust.
+          RAJA with CUDA version 11 or higher you should use the version of
+          CUB contained in the CUDA toolkit version you are using to use 
+          Thrust and be compatible with libraries that use Thrust.
 
           *It is important to note that the version of Googletest that
           is used in RAJA version v0.11.0 or newer requires CUDA version
@@ -213,26 +236,39 @@ an external CUB install provide the following option to CMake:
 HIP
 ^^^^
 
-To run RAJA code on AMD GPUs, one typically uses the HIP compiler and tool 
+To run RAJA code on AMD GPUs, one typically uses the ROCm compiler and tool 
 chain (which can also be used to compile code for NVIDIA GPUs).
 
-.. note:: RAJA requires version 3.5 or newer of the rocm software stack to 
+.. note:: RAJA requires version 3.5 or newer of the ROCm software stack to 
           use the RAJA HIP back-end.
 
-Also, RAJA relies on the rocPRIM HIP utilities library for some HIP
-functionality. The rocPRIM included in the ROCM install is used by default if
+Unlike CUDA, you do not specify a host compiler and a device compiler. 
+Typical CMake options to use when building with a ROCm stack are:
+
+  * -DROCM_ROOT_DIR=path/to/rocm
+  * -DHIP_ROOT_DIR=path/to/hip
+  * -DHIP_PATH=path/to/hip/binaries
+  * -DCMAKE_CXX_COMPILER=path/to/rocm/compiler 
+
+Additionally, you use the CMake variable ``CMAKE_HIP_ARCHITECTURES`` to set
+the target compute architecture. For example::
+
+  -DCMAKE_HIP_ARCHITECTURES=gfx908
+
+RAJA relies on the rocPRIM HIP utilities library for some HIP
+functionality. The rocPRIM included in the ROCm install is used by default if
 available. RAJA includes a rocPRIM submodule that is used if it is not
 available. To use an external rocPRIM install provide the following option to CMake:
 ``-DRAJA_ENABLE_EXTERNAL_ROCPRIM=On -DROCPRIM_DIR=<pat/to/rocPRIM>``.
 
-.. note:: When using HIP and targeting NVIDIA GPUs RAJA uses CUB instead of
+.. note:: When using HIP and targeting NVIDIA GPUs, RAJA uses CUB instead of
           rocPRIM. In this case you must use an external CUB install using the
           CMake variables described in the CUDA section.
 
 OpenMP
 ^^^^^^^
 
-To use OpenMP target offlad GPU execution, additional options may need to be
+To use OpenMP target offload GPU execution, additional options may need to be
 passed to the compiler. The variable ``OpenMP_CXX_FLAGS`` is used for this.
 Option syntax follows the CMake *list* pattern. For example, to specify OpenMP 
 target options for NVIDIA GPUs using a clang-based compiler, one may do

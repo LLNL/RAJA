@@ -14,8 +14,8 @@ endif()
 include(CMakeDependentOption)
 
 # Set version number
-set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 14)
+set(RAJA_VERSION_MAJOR 2022)
+set(RAJA_VERSION_MINOR 03)
 set(RAJA_VERSION_PATCHLEVEL 0)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
@@ -44,14 +44,17 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PA
 
 include(cmake/SetupRajaOptions.cmake)
 
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.14.5)
 
 # Detect C++ standard and add appropriate flag _before_ loading BLT
 set(COMPILERS_KNOWN_TO_CMAKE33 AppleClang Clang GNU MSVC)
 
 include(CheckCXXCompilerFlag)
 if(NOT DEFINED BLT_CXX_STD)
-  if("cxx_std_17" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
+  if("cxx_std_20" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
+    set(BLT_CXX_STD c++20 CACHE STRING "Version of C++ standard")
+    message("Using C++ standard: ${BLT_CXX_STD}")
+  elseif("cxx_std_17" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
     set(BLT_CXX_STD c++17 CACHE STRING "Version of C++ standard")
     message("Using C++ standard: ${BLT_CXX_STD}")
   elseif("cxx_std_14" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
