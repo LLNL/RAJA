@@ -128,8 +128,8 @@ foreach(dep ${TPL_DEPS})
     get_target_property(_is_imported ${dep} IMPORTED)
     if(NOT ${_is_imported})
         install(TARGETS              ${dep}
-                EXPORT               RAJA
-                DESTINATION          lib)
+                EXPORT               RAJATargets
+                DESTINATION          lib/cmake/raja)
         # Namespace target to avoid conflicts
         set_target_properties(${dep} PROPERTIES EXPORT_NAME RAJA::${dep})
     endif()
