@@ -115,7 +115,7 @@ if (RAJA_ENABLE_CUDA OR RAJA_ENABLE_HIP OR RAJA_ENABLE_OPENMP OR RAJA_ENABLE_MPI
 endif ()
 
 if (RAJA_NEEDS_BLT_TPLS)
-  blt_export_tpl_targets(EXPORT RAJA NAMESPACE RAJA)
+  blt_export_tpl_targets(EXPORT RAJATargets NAMESPACE RAJA)
   # install(EXPORT raja-blt-targets DESTINATION lib/cmake/raja)
 endif ()
 
