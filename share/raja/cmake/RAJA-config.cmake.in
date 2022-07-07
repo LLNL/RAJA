@@ -37,6 +37,5 @@ if (NOT TARGET camp)
   find_dependency(camp REQUIRED PATHS "@PACKAGE_CMAKE_INSTALL_PREFIX@")
 endif ()
 
-include("${CMAKE_CURRENT_LIST_DIR}/RAJA.cmake")
-
+include("${CMAKE_CURRENT_LIST_DIR}/RAJATargets.cmake")
 check_required_components("@PROJECT_NAME@")

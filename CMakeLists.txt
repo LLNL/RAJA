@@ -283,13 +283,13 @@ blt_add_library(
 
 
 install(TARGETS RAJA
-  EXPORT RAJA
+  EXPORT RAJATargets
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib
   )
 
-install(EXPORT RAJA DESTINATION lib/cmake/raja)
+install(EXPORT RAJATargets DESTINATION lib/cmake/raja)
 
 target_include_directories(RAJA
   PUBLIC
