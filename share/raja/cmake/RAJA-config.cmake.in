@@ -32,6 +32,14 @@
 #
 @PACKAGE_INIT@
 
+include(CMakeFindDependencyMacro)
+
+if (@RAJA_NEEDS_BLT_TPLS@)
+  if (@RAJA_ENABLE_CUDA@)
+    find_dependency(Threads)
+  endif ()
+endif()
+
 if (NOT TARGET camp)
   include(CMakeFindDependencyMacro)
   find_dependency(camp REQUIRED PATHS "@PACKAGE_CMAKE_INSTALL_PREFIX@")
