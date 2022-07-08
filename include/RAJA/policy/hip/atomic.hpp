@@ -183,46 +183,20 @@ template < typename T, typename TypeList >
 using enable_if_is_none_of = std::enable_if_t<concepts::negate<is_any_of<T, TypeList>>::value, T>;
 
 
-#if __HIP_ARCH_HAS_GLOBAL_INT32_ATOMICS__
-#define RAJA_HIP_HAS_INT32_ATOMICS 1
-#else
-#define RAJA_HIP_HAS_INT32_ATOMICS 0
-#endif
-
-#if __HIP_ARCH_HAS_GLOBAL_INT64_ATOMICS__
-#define RAJA_HIP_HAS_INT64_ATOMICS 1
-#else
-#define RAJA_HIP_HAS_INT64_ATOMICS 0
-#endif
-
-#if __HIP_ARCH_HAS_FLOAT_ATOMIC_ADD__
-#define RAJA_HIP_HAS_FP32_ATOMICS 1
-#else
-#define RAJA_HIP_HAS_FP32_ATOMICS 0
-#endif
-
-
 using hip_atomicCommon_builtin_types = list<
-#if RAJA_HIP_HAS_INT32_ATOMICS
-    int
-   ,unsigned int
-#endif
-#if RAJA_HIP_HAS_INT64_ATOMICS
-   ,unsigned long long
-#endif
+      int
+     ,unsigned int
+     ,unsigned long long
     >;
 
 
 using hip_atomicAdd_builtin_types = list<
-#if RAJA_HIP_HAS_INT32_ATOMICS
-    int
-   ,unsigned int
-#endif
-#if RAJA_HIP_HAS_INT64_ATOMICS
-   ,unsigned long long
-#endif
-#if RAJA_HIP_HAS_FP32_ATOMICS
-   ,float
+      int
+     ,unsigned int
+     ,unsigned long long
+     ,float
+#ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
+     ,double
 #endif
     >;
 
@@ -230,20 +204,17 @@ using hip_atomicAdd_builtin_types = list<
  * List of types where HIP builtin atomics are used to implement atomicSub.
  */
 using hip_atomicSub_types = list<
-#if RAJA_HIP_HAS_INT32_ATOMICS
-    int
-   ,unsigned int
-#endif
-#if RAJA_HIP_HAS_FP32_ATOMICS
-   ,float
+      int
+     ,unsigned int
+     ,float
+#ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
+     ,double
 #endif
     >;
 
 using hip_atomicSub_builtin_types = list<
-#if RAJA_HIP_HAS_INT32_ATOMICS
-    int
-   ,unsigned int
-#endif
+      int
+     ,unsigned int
     >;
 
 /*!
@@ -253,9 +224,9 @@ using hip_atomicSub_builtin_types = list<
  * to ensure these lists have different types.
  */
 using hip_atomicSub_via_Add_builtin_types = list<
-    hip_atomicSub_builtin_types
-#if RAJA_HIP_HAS_FP32_ATOMICS
-   ,float
+      float
+#ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
+     ,double
 #endif
     >;
 
@@ -264,17 +235,13 @@ using hip_atomicMin_builtin_types = hip_atomicCommon_builtin_types;
 using hip_atomicMax_builtin_types = hip_atomicCommon_builtin_types;
 
 using hip_atomicIncReset_builtin_types = list<
-#if RAJA_HIP_HAS_INT32_ATOMICS
-    unsigned int
-#endif
+      unsigned int
     >;
 
 using hip_atomicInc_builtin_types = list< >;
 
 using hip_atomicDecReset_builtin_types = list<
-#if RAJA_HIP_HAS_INT32_ATOMICS
-    unsigned int
-#endif
+      unsigned int
     >;
 
 using hip_atomicDec_builtin_types = list< >;
@@ -286,23 +253,13 @@ using hip_atomicOr_builtin_types = hip_atomicCommon_builtin_types;
 using hip_atomicXor_builtin_types = hip_atomicCommon_builtin_types;
 
 using hip_atomicExch_builtin_types = list<
-#if RAJA_HIP_HAS_INT32_ATOMICS
-    int
-   ,unsigned int
-#endif
-#if RAJA_HIP_HAS_INT64_ATOMICS
-   ,unsigned long long
-#endif
-#if RAJA_HIP_HAS_FP32_ATOMICS
-   ,float
-#endif
+      int
+     ,unsigned int
+     ,unsigned long long
+     ,float
     >;
 
-using hip_atomicCAS_builtin_types = list<
-    int
-   ,unsigned int
-   ,unsigned long long
-    >;
+using hip_atomicCAS_builtin_types = hip_atomicCommon_builtin_types;
 
 
 template <typename T, enable_if_is_none_of<T, hip_atomicAdd_builtin_types>* = nullptr>
