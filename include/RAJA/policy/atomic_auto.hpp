@@ -44,6 +44,9 @@
 #elif defined(__HIP_DEVICE_COMPILE__)
 #define RAJA_AUTO_ATOMIC \
   RAJA::hip_atomic {}
+#elif defined(__SYCL_DEVICE_ONLY__)
+#define RAJA_AUTO_ATOMIC \
+  RAJA::sycl_atomic {}
 #elif defined(RAJA_ENABLE_OPENMP)
 #define RAJA_AUTO_ATOMIC \
   RAJA::omp_atomic {}
