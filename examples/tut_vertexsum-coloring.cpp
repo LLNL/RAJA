@@ -285,6 +285,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(vertexvol, 0, N_vert*N_vert * sizeof(double));
 
+  // _raja_openmp_colorindexset_vertexsum_start
   using EXEC_POL3 = RAJA::ExecPolicy<RAJA::seq_segit, 
                                      RAJA::omp_parallel_for_exec>;
 
@@ -295,6 +296,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     vertexvol[ iv[2] ] += elemvol[ie] / 4.0 ;
     vertexvol[ iv[3] ] += elemvol[ie] / 4.0 ;
   });
+  // _raja_openmp_colorindexset_vertexsum_end
 
   checkResult(vertexvol, vertexvol_ref, N_vert);
 //std::cout << "\n Vertex volumes...\n";
@@ -379,6 +381,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   colorset_hip.push_back( SegmentType(&idx2[0], idx2.size(), hip_res) );
   colorset_hip.push_back( SegmentType(&idx3[0], idx3.size(), hip_res) );
 
+  // _raja_hip_colorindexset_vertexsum_start
   using EXEC_POL4 = RAJA::ExecPolicy<RAJA::seq_segit,
                                      RAJA::hip_exec<HIP_BLOCK_SIZE>>;
 
@@ -389,6 +392,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     d_vertexvol[ iv[2] ] += d_elemvol[ie] / 4.0 ;
     d_vertexvol[ iv[3] ] += d_elemvol[ie] / 4.0 ;
   });
+  // _raja_hip_colorindexset_vertexsum_end
 
   hipMemcpy(vertexvol, d_vertexvol, N_vert*N_vert*sizeof(double), hipMemcpyDeviceToHost);
   checkResult(vertexvol, vertexvol_ref, N_vert);

@@ -87,7 +87,7 @@ argument parameter used to choose as specific implementation of the
 the compiler based on what arguments are passed to the ``RAJA::forall`` method;
 i.e., the ``IdxType`` is the stride-1 range::
 
-  RAJA::RangeSegment(0, N)`` 
+  RAJA::RangeSegment(0, N)
 
 and the ``LoopBody`` type is the lambda expression::
 
@@ -155,12 +155,12 @@ Note that the following two attempts will generate compilation errors::
 A Few Notes About Lambda Usage With RAJA 
 ----------------------------------------
 
-There are several issues to note about C++ lambda expressions; in particular, 
-with respect to RAJA usage. We describe them here.
+There are several issues to note about using C++ lambda expressions to 
+represent kernel bodies with RAJA. We describe them here.
 
  * **Prefer by-value lambda capture.** 
 
-   We recommended `capture by-value` for all lambda loop bodies passed to 
+   We recommend `capture by-value` for all lambda kernel bodies passed to 
    RAJA execution methods. To execute a RAJA loop on a non-CPU device, such 
    as a GPU, all variables accessed in the loop body must be passed into the 
    GPU device data environment. Using capture by-value for all RAJA-based 
@@ -171,7 +171,7 @@ with respect to RAJA usage. We describe them here.
 
 |br|
 
- * **Must use 'device' annotation for CUDA device execution.** 
+ * **The  'device' annotation s required for CUDA device execution.** 
 
    Any lambda passed to a CUDA execution context (or function called from a
    CUDA device kernel, for that matter) must be decorated with 
@@ -180,7 +180,7 @@ with respect to RAJA usage. We describe them here.
      RAJA::forall<RAJA::cuda_exec<BLOCK_SIZE>>( range, [=] __device__ (int i) { ... } );
 
    Without this, the code will not compile and generate compiler errors
-   indicating that a 'host' lambda cannot be called from 'device' code.
+   indicating that a 'host' lambda cannot be called in 'device' code.
 
    RAJA provides the macro ``RAJA_DEVICE`` that can be used to help switch
    between host-only or device-only CUDA compilation.
@@ -190,13 +190,17 @@ with respect to RAJA usage. We describe them here.
  * **Use 'host-device' annotation on a lambda carefully.**
 
    RAJA provides the macro ``RAJA_HOST_DEVICE`` to support the dual
-   CUDA annotation ``__ host__ __device__``. This makes a lambda or function
+   annotation ``__ host__ __device__``, which makes a lambda or function
    callable from CPU or CUDA device code. However, when CPU performance is 
    important, **the host-device annotation should be applied carefully on a 
-   lambda that is used in a host (i.e., CPU) execution context**. 
-   Unfortunately, a loop kernel containing a lambda annotated in this way 
-   may run noticeably slower on a CPU than the same lambda with no annotation 
-   depending on the version of the nvcc compiler you are using.
+   lambda that is used in a host (i.e., CPU) execution context**. Although
+   compiler improvements in recent years (esp. nvcc) have signficantly
+   improved support for host-device lambda expressions, a loop kernel 
+   containing a lambda annotated in this way may run noticeably slower on 
+   a CPU than the same lambda with no annotation depending on the version of 
+   the compiler you are using. To be sure that your code is not suffering
+   a performance issue, we recommend comparing CPU execution timings of 
+   important kernels with and without annotations.
     
 |br|
 
@@ -227,7 +231,7 @@ with respect to RAJA usage. We describe them here.
    are properly captured in lambdas for code that will execute on a CPU), 
    attempting to access elements in a local stack array in a CUDA device 
    lambda may generate a compilation error depending on the version of the 
-   nvcc compiler you are using. One solution to this problem is to wrap the 
+   device compiler you are using. One solution to this problem is to wrap the 
    array in a struct; for example::
 
      struct array_wrapper {
@@ -240,7 +244,7 @@ with respect to RAJA usage. We describe them here.
        // access entries of bounds.array
      } );
 
-   This issue appears to be resolved in in the 10.1 release of CUDA. If you 
+   This issue was resolved in the 10.1 release of nvcc. If you 
    are using an earlier version of nvcc, an implementation
    similar to the one above will be required. 
     
@@ -254,9 +258,9 @@ working code examples that are located in  the ``RAJA/examples``
 directory. Additional information about the RAJA features 
 used can be found in :ref:`features-label`.
 
-The examples demonstrate CPU execution (sequential, SIMD, OpenMP
-multithreading) and CUDA GPU execution. Examples that show how to use
-RAJA with other parallel programming model back-ends that are in 
+The examples demonstrate CPU execution (sequential, OpenMP
+multithreading) and GPU execution (CUDA and/or HIP). Examples that show how 
+to use RAJA with other parallel programming model back-ends that are in 
 development will appear in future RAJA releases. For adventurous users who 
 wish to try experimental features, usage is similar to what is shown in the 
 examples here.
@@ -267,6 +271,16 @@ which are described in :ref:`configopt-label`.
 For the purposes of discussion of each example, we assume that any and all 
 data used has been properly allocated and initialized. This is done in the 
 example code files, but is not discussed further here.
+
+Finally, RAJA kernel variants in the examples illustrate how a kernel can be 
+run with different programming model back-ends by simply changing an 
+execution policy type. RAJA application users typically define type aliases 
+for execution policies in header files so that these types can be easily 
+changed, and the code can be compiled to run differently, without changing 
+any loop kernel source code. Another benefit of this approach is that such 
+type changes are easily propagated to many source code site with a change to 
+a single file. However, in the example codes, we make all execution policy 
+types explicit for clarity.
 
 .. _tutorialbasic-label:
 
