@@ -12,19 +12,18 @@
 RAJA Tutorial
 **********************
 
-In addition to the tutorial portion of this RAJA User Guide, we maintain
-a repository of tutorial presentation materials here `RAJA Tutorials Repo <https://github.com/LLNL/RAJA-tutorials>`_.
+This section contains a self-paced tutorial that shows how to use most RAJA
+features by way of a sequence of examples. Complete working codes for 
+the examples are located in the ``RAJA/examples`` directory. You are 
+encouraged to build and run them, as well as modify them to try out different
+variations. 
 
-This RAJA tutorial introduces RAJA concepts and capabilities via a 
-sequence of examples of increasing complexity. Complete working codes for 
-the examples are located in the ``RAJA``examples`` directory. The RAJA 
-tutorial evolves as we add new features to RAJA, so refer to it periodically
-if you are interested in learning about them.
-
-To understand the discussion and code examples, a working knowledge of C++ 
-templates and lambda expressions is required. So, before we begin, we provide 
-a bit of background discussion of basic aspects of how RAJA use employs C++ 
-templates and lambda expressions, which is essential to using RAJA successfully.
+We also maintain a repository of tutorial slide presentations 
+`RAJA Tutorials Repo <https://github.com/LLNL/RAJA-tutorials>`_ which we use 
+when we give in-person or virtual online tutorials in various venues. The 
+presentations complement the material found here. The tutorial material 
+evolves as we add new features to RAJA, so refer to it periodically if you 
+are interested in learning about new things in RAJA.
 
 To understand the GPU examples (e.g., CUDA), it is also important to know the 
 difference between CPU (host) and GPU (device) memory allocations and how 
@@ -36,16 +35,21 @@ of applications that use RAJA prefer to manage memory themselves. Thus, users
 are responsible for ensuring that data is properly allocated and initialized 
 on a GPU device when running GPU code. This can be done using explicit host 
 and device allocation and copying between host and device memory spaces or via 
-unified memory (UM), if available. RAJA developers also support a library 
-called `CHAI <https://github.com/LLNL/CHAI>`_ which complements RAJA by 
-providing a alternative to manual host-device memory copy calls or UM. 
-For more information, see :ref:`plugins-label`.
+unified memory (UM), if available. The RAJA Portability Suite contains other
+libraries, such as `CHAI <https://github.com/LLNL/CHAI>`_ and 
+`Umpire <https://github.com/LLNL/Umpire>`_, that complement RAJA by 
+providing alternatives to manual programming model specific memory operations.
 
 .. _tutorial-lambda-label:
 
 ===============================
 A Little C++ Background
 ===============================
+
+To understand the discussion and code examples, a working knowledge of C++ 
+templates and lambda expressions is required. So, before we begin, we provide 
+a bit of background discussion of basic aspects of how RAJA use employs C++ 
+templates and lambda expressions, which is essential to using RAJA successfully.
 
 RAJA makes heavy use of C++ templates and using RAJA most easily and 
 effectively is done by representing the bodies of loop kernels as C++ lambda 
@@ -58,7 +62,7 @@ C++ Templates
 -----------------------------------
 
 C++ templates enable one to write generic code and have the compiler generate 
-a specific implementation for each set of template parameter types you use.
+a specific implementation for each set of template parameter types specified.
 For example, the ``RAJA::forall`` method to execute loop kernels is a 
 template method defined as::
 
@@ -70,15 +74,22 @@ template method defined as::
   }
 
 Here, "ExecPol", "IdxType", and "LoopBody" are C++ types a user specifies in
-their code; for example::
+their code so they are seen by the compiler when the code is built. 
+For example::
 
   RAJA::forall< RAJA::seq_exec >( RAJA::RangeSegment(0, N), [=](int i) {
     a[i] = b[i] + c[i];
   });
 
-The "IdxType" and "LoopBody" types are deduced by the compiler based on what 
-arguments are passed to the ``RAJA::forall`` method. Here, the loop body type 
-is defined by the lambda expression::
+Here, the execution policy type ``RAJA::seq_exec`` is an explicit template
+argument parameter used to choose as specific implementation of the 
+``RAJA::forall`` method. The ``IdxType`` and ``LoopBody`` types are deduced by 
+the compiler based on what arguments are passed to the ``RAJA::forall`` method;
+i.e., the ``IdxType`` is the stride-1 range::
+
+  RAJA::RangeSegment(0, N)`` 
+
+and the ``LoopBody`` type is the lambda expression::
 
   [=](int i) { a[i] = b[i] + c[i]; }
 
@@ -158,6 +169,7 @@ with respect to RAJA usage. We describe them here.
    by-value can help avoid incorrect CPU code since the compiler will report 
    incorrect usage.
 
+|br|
 
  * **Must use 'device' annotation for CUDA device execution.** 
 
@@ -173,6 +185,7 @@ with respect to RAJA usage. We describe them here.
    RAJA provides the macro ``RAJA_DEVICE`` that can be used to help switch
    between host-only or device-only CUDA compilation.
     
+|br|
 
  * **Use 'host-device' annotation on a lambda carefully.**
 
@@ -185,12 +198,14 @@ with respect to RAJA usage. We describe them here.
    may run noticeably slower on a CPU than the same lambda with no annotation 
    depending on the version of the nvcc compiler you are using.
     
+|br|
 
  * **Cannot use 'break' and 'continue' statements in a lambda.** 
 
    In this regard, a lambda expression is similar to a function. So, if you 
    have loops in your code with these statements, they should be rewritten. 
     
+|br|
 
  * **Global variables are not captured in a lambda.** 
 
@@ -204,6 +219,7 @@ with respect to RAJA usage. We describe them here.
        // use ref_to_global_val
      } );
     
+|br|
 
  * **Local stack arrays may not be captured by CUDA device lambdas.** 
 
@@ -303,6 +319,10 @@ Team based Loops: Nested loops with a thread/team model
 The examples in this section illustrate how to use ``RAJA::expt::launch``
 to create an run-time selectable execution space for expressing algorithms
 in terms of threads and teams.
+
+.. |br| raw:: html
+
+   <br />
 
 .. toctree::
    :maxdepth: 1
