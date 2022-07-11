@@ -152,7 +152,6 @@ struct LaunchDims {
       launch_global.y = launch_local.y * launch_group.y; 
       launch_global.z = launch_local.z * launch_group.z;
     } else {
-	    std::cout << "in the else\n";
       launch_global.x = launch_local.x * ((global.x + (launch_local.x - 1)) / launch_local.x);
       launch_global.y = launch_local.y * ((global.y + (launch_local.y - 1)) / launch_local.y);
       launch_global.z = launch_local.z * ((global.z + (launch_local.z - 1)) / launch_local.z);
