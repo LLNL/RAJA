@@ -39,13 +39,21 @@ foreach( BACKEND ${PLUGIN_BACKENDS} )
 
     configure_file( test-plugin-workgroup.cpp.in
                     test-plugin-workgroup-${DISPATCHER}-${BACKEND}.cpp )
+  if(${BACKEND} STREQUAL "Hip")
+      raja_add_test( NAME test-plugin-workgroup-Known-Hip-Failure-${BACKEND}
+                 SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-plugin-workgroup-${BACKEND}.cpp
+                         plugin_to_test.cpp )
 
-    raja_add_test( NAME test-plugin-workgroup-${DISPATCHER}-${BACKEND}
-               SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-plugin-workgroup-${DISPATCHER}-${BACKEND}.cpp
-                       plugin_to_test.cpp )
+      target_include_directories(test-plugin-workgroup-Known-Hip-Failure-${BACKEND}.exe
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  else()
+      raja_add_test( NAME test-plugin-workgroup-${BACKEND}
+                 SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-plugin-workgroup-${BACKEND}.cpp
+                         plugin_to_test.cpp )
 
-    target_include_directories(test-plugin-workgroup-${DISPATCHER}-${BACKEND}.exe
-                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+      target_include_directories(test-plugin-workgroup-${BACKEND}.exe
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  endif()
 
   endforeach()
 endforeach()
