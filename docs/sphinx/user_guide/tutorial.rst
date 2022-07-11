@@ -278,7 +278,7 @@ execution policy type. RAJA application users typically define type aliases
 for execution policies in header files so that these types can be easily 
 changed, and the code can be compiled to run differently, without changing 
 any loop kernel source code. Another benefit of this approach is that such 
-type changes are easily propagated to many source code site with a change to 
+type changes are easily propagated to many kernels with a change to 
 a single file. However, in the example codes, we make all execution policy 
 types explicit for clarity.
 

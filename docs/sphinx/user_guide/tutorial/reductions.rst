@@ -12,16 +12,27 @@
 Reductions
 ---------------------------------
 
-Key RAJA features shown in this example:
+Key RAJA features shown in this example are:
 
   * ``RAJA::forall`` loop execution template 
   * ``RAJA::RangeSegment`` iteration space construct
   * RAJA reduction types
   * RAJA reduction policies
 
+The file ``RAJA/examples/tut_reductions.cpp`` contains complete 
+working code for the discussion in this section.
+
 In the :ref:`dotproduct-label` example, we showed how to use the RAJA sum 
 reduction type. The following example uses all supported RAJA reduction types: 
 min, max, sum, min-loc, max-loc.
+
+.. note:: RAJA 'min-loc' and 'max-loc' reductions determine the min and max 
+          reduction value, respectively, along with an iteration index at 
+          which the main/max value is found. 
+
+.. note:: Each RAJA reduction type requires a reduction policy that must 
+          be compatible with the execution policy for the kernel in which 
+          it is used.
 
 .. note:: Multiple RAJA reductions can be combined in any RAJA loop kernel 
           execution method, and reduction operations can be combined with 
@@ -43,7 +54,7 @@ We also define a range segment to iterate over the array:
 
 .. literalinclude:: ../../../../examples/tut_reductions.cpp
    :start-after: _reductions_range_start
-   :end-before: _reductions_arange_end
+   :end-before: _reductions_range_end
    :language: C++
 
 With these parameters and data initialization, all the code examples 
@@ -93,9 +104,3 @@ or HIP policies:
    :end-before: _reductions_raja_hippolicy_end
    :language: C++
 
-.. note:: Each RAJA reduction type requires a reduction policy that must 
-          be compatible with the execution policy for the kernel in which 
-          it is used.
-
-The file ``RAJA/examples/tut_reductions.cpp`` contains the complete 
-working example code.

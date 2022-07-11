@@ -249,8 +249,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
 
+  // _scan_exclusive_hip_plus_start
   RAJA::inclusive_scan_inplace<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::make_span(d_out, N),
                                                                RAJA::operators::plus<int>{});
+  // _scan_exclusive_hip_plus_end
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
 

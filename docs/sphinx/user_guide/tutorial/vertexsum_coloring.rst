@@ -50,17 +50,20 @@ surrounding vertices, a C-style version of the vertex sum calculation is:
 RAJA Sequential Variant
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-One way to write a RAJA variant of this kernel is:
+One way to write a RAJA variant of this kernel that preserves the nested
+loop structure of the C-style code above is:
 
 .. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
    :start-after: _raja_seq_vertexsum_start
    :end-before: _raja_seq_vertexsum_end
    :language: C++
 
-Here, we are using the ``RAJA::kernel`` interface to define a nested loop
+Here, we use the ``RAJA::kernel`` interface to define a nested loop
 kernel. The ``RAJA::kernel`` construct uses execution policies that define
 loop nesting and other kernel code in a nested C++ template type. See 
-:ref:`loop_elements-kernel-label` for a description of how this works.
+:ref:`loop_elements-kernel-label` for a description of how this works. However,
+note that the remaining examples in this section use ``RAJA::forall`` and
+list segments to enumerate the elements on the mesh.
 
 Note that neither the C-style nor the ``RAJA::kernel`` version can be 
 guaranteed to run correctly in parallel by simply parallelizing loops.
@@ -141,7 +144,7 @@ Here, we have marked the lambda loop body with the 'RAJA_DEVICE' macro
 and specified the number of threads in a CUDA thread block in the segment
 execution policy.
 
-The RAJA HIP variant is similar and which we show for completeness:
+The RAJA HIP variant, which we show for completeness, is similar:
 
 .. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
    :start-after: _raja_hip_colorindexset_vertexsum_start
