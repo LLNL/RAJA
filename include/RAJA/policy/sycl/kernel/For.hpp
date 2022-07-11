@@ -320,7 +320,7 @@ struct SyclStatementExecutor<
   inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
   {
     auto len = segment_length<ArgumentId>(data);
-    auto i0 = item.get_local_id(Dim);
+    auto i0 = item.get_global_id(Dim);
     auto i_stride = item.get_local_range(Dim);
     auto i = i0;
 
@@ -352,12 +352,15 @@ struct SyclStatementExecutor<
     LaunchDims dims;
     if (Dim == 0) {
       dims.local.x = len;
+      dims.group.x = 1;
     }
     if (Dim == 1) {
       dims.local.y = len;
+      dims.group.y = 1;
     }
     if (Dim == 2) {
       dims.local.z = len;
+      dims.group.z = 1;
     }
 
     // combine with enclosed statements
