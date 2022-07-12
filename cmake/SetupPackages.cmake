@@ -109,16 +109,6 @@ blt_list_append(TO TPL_DEPS ELEMENTS nvtoolsext IF RAJA_ENABLE_NV_TOOLS_EXT)
 blt_list_append(TO TPL_DEPS ELEMENTS cub IF RAJA_ENABLE_EXTERNAL_CUB)
 blt_list_append(TO TPL_DEPS ELEMENTS rocPRIM IF RAJA_ENABLE_EXTERNAL_ROCPRIM)
 
-set(RAJA_NEEDS_BLT_TPLS False)
-if (RAJA_ENABLE_CUDA OR RAJA_ENABLE_HIP OR RAJA_ENABLE_OPENMP OR RAJA_ENABLE_MPI)
-  set(RAJA_NEEDS_BLT_TPLS True)
-endif ()
-
-if (RAJA_NEEDS_BLT_TPLS)
-  blt_export_tpl_targets(EXPORT raja-blt-targets NAMESPACE RAJA)
-  install(EXPORT raja-blt-targets DESTINATION lib/cmake/raja)
-endif ()
-
 foreach(dep ${TPL_DEPS})
     # If the target is EXPORTABLE, add it to the export set
     get_target_property(_is_imported ${dep} IMPORTED)
