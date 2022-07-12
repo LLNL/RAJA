@@ -90,6 +90,7 @@ __MAKE_SYNC_SHUFFLES(__shfl_xor_sync_fixed, __nvvm_shfl_sync_bfly_i32,
                      __nvvm_shfl_sync_bfly_f32, 0x1f, int);
 #pragma pop_macro("__MAKE_SYNC_SHUFFLES")
 #endif
+
 namespace RAJA
 {
 
