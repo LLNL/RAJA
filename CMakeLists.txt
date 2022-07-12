@@ -37,7 +37,7 @@ endif()
 mark_as_advanced(RAJA_LOADED)
 
 # C is required for googletest to find Threads
-project(RAJA LANGUAGES CXX C
+project(RAJA LANGUAGES CXX
   VERSION ${RAJA_LOADED})
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PATH})
