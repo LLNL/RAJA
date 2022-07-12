@@ -11,15 +11,6 @@
 # Note: KERNEL_BACKENDS is defined in ../CMakeLists.txt
 #
 
-#
-# While we're adding SYCL tests, enable it for each test set like this.
-#
-# Eventually, remove this and enable in the top-level CMakeLists.txt file.
-#
-if(RAJA_ENABLE_SYCL)
-  list(APPEND KERNEL_BACKENDS Sycl)
-endif()
-
 foreach( BACKEND ${KERNEL_BACKENDS} )
       configure_file( test-kernel-basic-fission-fusion-loop.cpp.in
                       test-kernel-basic-fission-fusion-loop-${BACKEND}.cpp )

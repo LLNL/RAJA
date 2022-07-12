@@ -161,7 +161,7 @@ struct MultiLambdaNestedLoopExec<DEPTH_2_COLLAPSE, POLICY_DATA> {
     >;
 };
 
-#if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP) or defined(RAJA_ENABLE_SYCL)
 
 template<typename POLICY_DATA>
 struct MultiLambdaNestedLoopExec<DEVICE_DEPTH_2, POLICY_DATA> {

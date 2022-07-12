@@ -18,6 +18,13 @@ if(RAJA_ENABLE_TARGET_OPENMP)
 endif()
 
 #
+# Remove SYCL until kernel reduction support is added
+#
+if(RAJA_ENABLE_SYCL)
+  list(REMOVE_ITEM KERNEL_BACKENDS Sycl)
+endif()
+
+#
 # While we're adding SYCL tests, enable it for each test set like this.
 #
 # Eventually, remove this and enable in the top-level CMakeLists.txt file.
