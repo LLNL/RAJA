@@ -29,7 +29,7 @@
 //#include "RAJA/policy/sycl/kernel/Reduce.hpp"
 //#include "RAJA/policy/sycl/kernel/Sync.hpp"
 #include "RAJA/policy/sycl/kernel/Tile.hpp"
-//#include "RAJA/policy/sycl/kernel/TileTCount.hpp"
+#include "RAJA/policy/sycl/kernel/TileTCount.hpp"
 #include "RAJA/policy/sycl/kernel/internal.hpp"
 
 #endif  // closing endif for header file include guard
