@@ -171,7 +171,7 @@ represent kernel bodies with RAJA. We describe them here.
 
 |br|
 
- * **The  'device' annotation s required for CUDA device execution.** 
+ * **The  'device' annotation is required for CUDA device execution.** 
 
    Any lambda passed to a CUDA execution context (or function called from a
    CUDA device kernel, for that matter) must be decorated with 
