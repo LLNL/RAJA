@@ -171,10 +171,10 @@ represent kernel bodies with RAJA. We describe them here.
 
 |br|
 
- * **The  'device' annotation is required for CUDA device execution.** 
+ * **The  'device' annotation is required for device execution using CUDA or HIP.** 
 
-   Any lambda passed to a CUDA execution context (or function called from a
-   CUDA device kernel, for that matter) must be decorated with 
+   Any lambda passed to a CUDA or HIP execution context (or function called from a
+   device kernel, for that matter) must be decorated with 
    the ``__device__`` annotation; for example::
      
      RAJA::forall<RAJA::cuda_exec<BLOCK_SIZE>>( range, [=] __device__ (int i) { ... } );
@@ -183,7 +183,7 @@ represent kernel bodies with RAJA. We describe them here.
    indicating that a 'host' lambda cannot be called in 'device' code.
 
    RAJA provides the macro ``RAJA_DEVICE`` that can be used to help switch
-   between host-only or device-only CUDA compilation.
+   between host-only or device-only compilation.
     
 |br|
 
