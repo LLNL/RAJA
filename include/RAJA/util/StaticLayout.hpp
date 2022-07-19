@@ -273,6 +273,14 @@ struct StaticLayoutBase_impl<IdxLin,
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr
+  IndexLinear get_dim_size() const {
+    return camp::seq_at<DIM, sizes>::value;
+  }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
   IndexLinear get_dim_begin() const {
     return 0;
   }

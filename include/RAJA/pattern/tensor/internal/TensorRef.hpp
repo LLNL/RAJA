@@ -189,6 +189,7 @@ namespace expt
     struct TensorTile
     {
         using self_type = TensorTile<INDEX_TYPE, TENSOR_SIZE, NUM_DIMS>;
+        using nonstatic_self_type = self_type;
         using index_type = INDEX_TYPE;
         index_type m_begin[NUM_DIMS];
         index_type m_size[NUM_DIMS];
@@ -270,6 +271,7 @@ namespace expt
         using self_type  = StaticTensorTile<INDEX_TYPE, TENSOR_SIZE, begin_seq,size_seq>;
         using index_type = INDEX_TYPE;
 
+        using nonstatic_self_type = TensorTile<INDEX_TYPE,TENSOR_SIZE,sizeof...(BeginInts)>;
 
         using Partial = StaticTensorTile< INDEX_TYPE, TENSOR_PARTIAL, begin_seq, size_seq>; 
         using Full    = StaticTensorTile< INDEX_TYPE, TENSOR_FULL   , begin_seq, size_seq>; 
@@ -285,6 +287,13 @@ namespace expt
         static constexpr camp::idx_t s_num_dims = sizeof...(BeginInts);
         static constexpr TensorTileSize s_tensor_size = TENSOR_SIZE;
 
+        constexpr operator nonstatic_self_type() const {
+            return nonstatic_self_type { {BeginInts...}, {SizeInts...} };
+        }
+
+        constexpr nonstatic_self_type nonstatic() const {
+            return *this;
+        }
         
         template<TensorTileSize S>
         constexpr void copy(StaticTensorTile<INDEX_TYPE, S, begin_seq, size_seq> const &c) const

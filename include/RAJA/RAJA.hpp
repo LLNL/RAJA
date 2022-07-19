@@ -200,4 +200,68 @@ namespace expt{}
   using namespace expt;
 }
 
+
+void check1(double* A, double* x)
+{
+
+    using mat_t = RAJA::expt::RectMatrixRegister<double, RAJA::expt::RowMajorLayout, 16, 4, RAJA::avx2_register>;
+    using row_t = RAJA::expt::RowIndex<int, mat_t>;
+    using col_t = RAJA::expt::ColIndex<int, mat_t>;
+
+    using vec_t = RAJA::expt::VectorRegister<double>;
+    using idx_t = RAJA::expt::VectorIndex<int, vec_t>;
+
+    double y[16];
+
+    auto aa   = RAJA::View<double, RAJA::StaticLayout<RAJA::PERM_IJ,16,4>>( A );
+    auto xV   = RAJA::View<double, RAJA::StaticLayout<RAJA::PERM_I ,16>>  ( x );
+    auto yV   = RAJA::View<double, RAJA::StaticLayout<RAJA::PERM_I ,16>>  ( y );
+    //auto cc   = RAJA::View<double, RAJA::Layout<2>>( C, 16, 4 );
+
+
+    auto rall = row_t::static_all();
+    auto call = col_t::static_all();
+    auto vall = idx_t::static_all();
+
+    yV(vall) = aa(rall,call) * xV(vall);
+    xV(vall) = yV(vall);
+   
+}
+
+
+void check2(double* A, double* x)
+{
+
+
+    using mat_t = RAJA::expt::RectMatrixRegister<double, RAJA::expt::RowMajorLayout, 4, 4, RAJA::avx2_register>;
+    using row_t = RAJA::expt::RowIndex<int, mat_t>;
+    using col_t = RAJA::expt::ColIndex<int, mat_t>;
+
+    double y[16];
+
+    #if 0
+    auto aa   = RAJA::View<double, RAJA::StaticLayout<RAJA::PERM_IJ, 4, 4>>  ( A );
+    auto xx   = RAJA::View<double, RAJA::StaticLayout<RAJA::PERM_IJ, 4, 4>>  ( x );
+    auto yy   = RAJA::View<double, RAJA::StaticLayout<RAJA::PERM_IJ, 4, 4>>  ( y );
+    #else
+    auto aa   = RAJA::View<double, RAJA::Layout<2>>  ( A,  4,4 );
+    auto xx   = RAJA::View<double, RAJA::Layout<2>>  ( x,  4,4 );
+    auto yy   = RAJA::View<double, RAJA::Layout<2>>  ( y,  4,4 );
+    #endif
+
+    auto rall = row_t::static_all();
+    auto call = col_t::static_all();
+
+    for(int i=0; i <4; i++){
+        yy(row_t::static_range<0,1>(),call) += aa(i,0) * xx(row_t::static_range<0,1>(),call);
+        yy(row_t::static_range<1,2>(),call) += aa(i,1) * xx(row_t::static_range<1,2>(),call);
+        yy(row_t::static_range<2,3>(),call) += aa(i,2) * xx(row_t::static_range<2,3>(),call);
+        yy(row_t::static_range<3,4>(),call) += aa(i,3) * xx(row_t::static_range<3,4>(),call);
+    }
+
+    xx(rall,call) = yy(rall,call);
+    
+}
+
+
 #endif  // closing endif for header file include guard
