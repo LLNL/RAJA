@@ -74,17 +74,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
   const int N = 1000;
   const int Nelem = N;
+  const int Nelem_tot = Nelem * Nelem;
   const int Nvert = N + 1;
-  double* areae = memoryManager::allocate<double>(Nelem*Nelem);
-  double* areav = memoryManager::allocate<double>(Nvert*Nvert);
-  double* areav_ref = memoryManager::allocate<double>(Nvert*Nvert);
-  int* e2v_map = memoryManager::allocate<int>(4*Nelem*Nelem);
+  const int Nvert_tot = Nvert * Nvert;
+  double* areae = memoryManager::allocate<double>(Nelem_tot);
+  double* areav = memoryManager::allocate<double>(Nvert_tot);
+  double* areav_ref = memoryManager::allocate<double>(Nvert_tot);
+  int* e2v_map = memoryManager::allocate<int>(4*Nelem_tot);
 
 //
 // Define mesh spacing factor 'h' and set up elem to vertex mapping array.
 //
   double h = 0.1;
 
+#if 0
   for (int j = 0 ; j < Nelem ; ++j) {
     for (int i = 0 ; i < Nelem ; ++i) {
       int ielem = i + j*Nelem ;
@@ -95,19 +98,37 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       e2v_map[imap+3] = ielem + j + 1 + Nvert;
     }
   }
+#else
+  for (int ie = 0; ie < Nelem_tot; ++ie) { 
+    int j = ie / Nelem;
+    int imap = 4 * ie ;
+    e2v_map[imap] = ie + j;
+    e2v_map[imap+1] = ie + j + 1;
+    e2v_map[imap+2] = ie + j + Nvert;
+    e2v_map[imap+3] = ie + j + 1 + Nvert;
+  }
+#endif
 
 //
 // Initialize element areas so each element area 
 // depends on the i,j coordinates of the element.
 //
-  std::memset(areae, 0, Nelem*Nelem * sizeof(double));
+  std::memset(areae, 0, Nelem_tot * sizeof(double));
 
+#if 0
   for (int j = 0 ; j < Nelem ; ++j) {
     for (int i = 0 ; i < Nelem ; ++i) {
       int ielem = i + j*Nelem ;
       areae[ielem] = h*(i+1) * h*(j+1);
     }
   }
+#else
+  for (int ie = 0; ie < Nelem_tot; ++ie) { 
+    int i = ie % Nelem;
+    int j = ie / Nelem;
+    areae[ie] = h*(i+1) * h*(j+1);
+  }
+#endif
 
 //std::cout << "\n Element areas...\n";
 //printMeshData(areae, Nelem, Nelem);
@@ -118,15 +139,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running sequential C-style version of vertex sum...\n";
 
-  std::memset(areav_ref, 0, Nvert*Nvert * sizeof(double));
+  std::memset(areav_ref, 0, Nvert_tot * sizeof(double));
 
+#if 0
   for (int ie = 0; ie < Nelem*Nelem; ++ie) {
       int* iv = &(e2v_map[4*ie]);
       areav_ref[ iv[0] ] += areae[ie] / 4.0 ;
       areav_ref[ iv[1] ] += areae[ie] / 4.0 ;
       areav_ref[ iv[2] ] += areae[ie] / 4.0 ;
       areav_ref[ iv[3] ] += areae[ie] / 4.0 ;
+  } 
+#else
+  for (int ie = 0; ie < Nelem_tot; ++ie) {
+    int* iv = &(e2v_map[4*ie]);
+    areav_ref[ iv[0] ] += areae[ie] / 4.0 ;
+    areav_ref[ iv[1] ] += areae[ie] / 4.0 ;
+    areav_ref[ iv[2] ] += areae[ie] / 4.0 ;
+    areav_ref[ iv[3] ] += areae[ie] / 4.0 ;
   }
+#endif
 
 //std::cout << "\n Vertex areas (reference)...\n";
 //printMeshData(areav_ref, Nvert, jvoff);
@@ -159,6 +190,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
   std::vector< std::vector<int> > idx(4);
 
+#if 0
   for (int j = 0 ; j < Nelem ; ++j) {
     for (int i = 0 ; i < Nelem ; ++i) {
       int ie = i + j*Nelem ;
@@ -177,6 +209,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
     }
   }
+#else
+  for (int ie = 0; ie < Nelem_tot; ++ie) { 
+    int i = ie % Nelem;
+    int j = ie / Nelem;
+    if ( i % 2 == 0 ) {
+      if ( j % 2 == 0 ) {
+        idx[0].push_back(ie);
+      } else {
+        idx[2].push_back(ie);
+      }
+    } else {
+      if ( j % 2 == 0 ) {
+        idx[1].push_back(ie);
+      } else {
+        idx[3].push_back(ie);
+      }
+    }
+  }
+#endif
 
 
 //----------------------------------------------------------------------------//
@@ -188,7 +239,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running C-style OpenMP vertex sum...\n";
 
-  std::memset(areav, 0, Nvert*Nvert * sizeof(double));
+  std::memset(areav, 0, Nvert_tot * sizeof(double));
 
   for (int icol = 0; icol < 4; ++icol) {
      const std::vector<int>& ievec = idx[icol];

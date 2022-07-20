@@ -144,7 +144,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _rajaomp_atomic_histogram_start 
   RAJA::forall<RAJA::omp_parallel_for_exec>(array_range, [=](int i) {
 
-    RAJA::atomicAdd<omp_atomic>(&hist[array[i]], 1);
+    RAJA::atomicAdd<RAJA::omp_atomic>(&hist[array[i]], 1);
 
   });
   // _rajaomp_atomic_histogram_end

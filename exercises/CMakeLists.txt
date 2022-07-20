@@ -5,4 +5,11 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
+raja_add_executable(
+  NAME atomic-histogram
+  SOURCES atomic-histogram.cpp)
+raja_add_executable(
+  NAME atomic-histogram_solution
+  SOURCES atomic-histogram_solution.cpp)
+
 add_subdirectory(tutorial_halfday)

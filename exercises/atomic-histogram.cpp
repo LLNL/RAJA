@@ -126,8 +126,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///           method with RAJA::seq_exec execution policy type and a 
   ///           RAJA::atomicAdd operation with RAJA::seq_atomic policy.
   ///
-  RAJA::forall<RAJA::seq_exec>(array_range, [=](int i) {
-  });
+  //RAJA::forall<RAJA::seq_exec>(array_range, [=](int i) {
+  //});
 
   checkResult(hist, hist_ref, M);
 //printArray(hist, M);

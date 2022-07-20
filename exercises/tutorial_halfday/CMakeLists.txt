@@ -30,14 +30,6 @@ raja_add_executable(
   SOURCES ex3_colored-indexset_solution.cpp)
 
 raja_add_executable(
-  NAME ex4_atomic-histogram
-  SOURCES ex4_atomic-histogram.cpp)
-
-raja_add_executable(
-  NAME ex4_atomic-histogram_solution
-  SOURCES ex4_atomic-histogram_solution.cpp)
-
-raja_add_executable(
   NAME ex5_line-of-sight
   SOURCES ex5_line-of-sight.cpp)
 
