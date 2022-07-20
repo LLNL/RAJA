@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Diff for RAJA Tutorial Exercises. Ignores any RTD tags when diffing the exercise against the solution.
+
+diff ${1}.cpp <(sed -r '/\s*\/{2}\s_.*/d' ${1}_solution.cpp)
