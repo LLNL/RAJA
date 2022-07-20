@@ -29,14 +29,14 @@ Persistent, Protected Branches
 ---------------------------------
 
 The **main** and **develop** branches are the two primary branches we use.
-They always exist and are protected in the RAJA GitHub project in that
-changes to them only occur as a result of approved pull requests. The 
+They always exist and are protected in the RAJA GitHub project, meaning that
+changes to them can only occur as a result of approved pull requests. The 
 distinction between the main and develop branches is an important part of 
 Gitflow.
 
   * The *main* branch records the release history of the project. Each time 
     the main branch is changed, a new tag for a new code version is made. 
-    See :ref:`semver-label` for a description of the version numbering scheme 
+    See :ref:`version-label` for a description of the version labeling scheme 
     we use.
 
   * The *develop* branch is used to integrate and test new features and most
@@ -45,15 +45,15 @@ Gitflow.
 .. important:: **Development never occurs directly on the main branch or 
                develop branch.**
 
-All other branches in the RAJA repo are temporary and are used to perform 
-specific development tasks. When such a branch is no longer needed (e.g., 
-after it is merged), the branch is deleted typically.
+All other branches are temporary and are used to perform specific development 
+tasks. When such a branch is no longer needed (e.g., after it is merged), the 
+branch is deleted typically.
 
 ----------------
 Feature Branches
 ----------------
 
-*Feature* branches are created off of other branches (usually develop) and are 
+A *feature* branch is created from another branch (usually develop) and is 
 used to develop new features, bug fixes, etc. before they are merged to develop
 and eventually main. *Feature branches are temporary*, living only as long as 
 they are needed to complete development tasks they contain.
@@ -78,8 +78,9 @@ When all issues and comments arising in PR review discussion have been
 addressed, the PR has been approved, and all continuous integration checks 
 have passed, the pull request can be merged.
 
-.. important:: **Feature branches never interact directly with the main
-               branch.**
+.. important:: **Feature branches almost never interact directly with the main
+               branch.** One exception is when a bug fix is needed in
+               the main branch to tag a patch release.
 
 ---------------------------
 Other Important Branches
@@ -95,7 +96,7 @@ Gitflow Illustrated
 
 The figure below shows the basics of how branches interact in Gitflow.
 
-.. figure:: git-workflow-gitflow2.png
+.. figure:: ./figures/git-workflow-gitflow2.png
 
    This figure shows typical interactions between key branches in the Gitflow
    workflow. Here, development is shown following the v0.1.0 release. While

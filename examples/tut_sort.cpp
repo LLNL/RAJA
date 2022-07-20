@@ -153,7 +153,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running sequential stable_sort (non-decreasing)...\n";
+  std::cout << "\n Running sequential stable_sort (non-increasing)...\n";
 
   std::copy_n(in, N, out);
 

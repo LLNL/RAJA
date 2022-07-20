@@ -340,7 +340,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
 
         # shared vs static libs
         cfg.write(cmake_cache_option("BUILD_SHARED_LIBS","+shared" in spec))
-        cfg.write(cmake_cache_option("RAJA_ENABLE_OPENMP","+openmp" in spec))
+        cfg.write(cmake_cache_option("ENABLE_OPENMP","+openmp" in spec))
         cfg.write(cmake_cache_option("RAJA_ENABLE_DESUL_ATOMICS","+desul" in spec))
 
         if "+desul" in spec:
@@ -350,6 +350,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
 
         cfg.write(cmake_cache_option("ENABLE_BENCHMARKS", 'tests=benchmarks' in spec))
         cfg.write(cmake_cache_option("ENABLE_TESTS", not 'tests=none' in spec or self.run_tests))
+        cfg.write(cmake_cache_string("camp_DIR", spec['camp'].prefix))
 
         #######################
         # Close and save
