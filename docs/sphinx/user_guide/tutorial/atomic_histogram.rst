@@ -12,13 +12,15 @@
 Computing a Histogram with Atomic Operations
 --------------------------------------------------
 
-Key RAJA features shown in this example are:
+This section contains a working exercise at ``exercises/atomic-histogram.cpp``. 
+
+Key RAJA features shown in this exercise are:
 
   * ``RAJA::forall`` loop execution template 
   * ``RAJA::RangeSegment`` iteration space construct
   * RAJA atomic add operation and RAJA atomic operation policies
 
-The file ``RAJA/exercises/tutorial/ex4_atomic-histogram_solution.cpp`` contains complete 
+The file ``RAJA/exercises/atomic-histogram_solution.cpp`` contains complete 
 working code for the examples discussed in this section.
 
 The example uses an integer array of length 'N' randomly initialized with 
@@ -40,7 +42,7 @@ atomic policies, please see :ref:`atomics-label`.
 
 All code snippets described below use the stride-1 iteration space range:
 
-.. literalinclude:: ../../../../exercises/tutorial/ex4_atomic-histogram_solution.cpp
+.. literalinclude:: ../../../../exercises/atomic-histogram_solution.cpp
    :start-after: _range_atomic_histogram_start
    :end-before: _range_atomic_histogram_end
    :language: C++
@@ -50,7 +52,7 @@ occurrences of each value in the array.
 
 Here is the OpenMP version:
 
-.. literalinclude:: ../../../../exercises/tutorial/ex4_atomic-histogram_solution.cpp
+.. literalinclude:: ../../../../exercises/atomic-histogram_solution.cpp
    :start-after: _rajaomp_atomic_histogram_start
    :end-before: _rajaomp_atomic_histogram_end
    :language: C++
@@ -62,14 +64,14 @@ loop execution policy.
 
 The CUDA and HIP versions are similar:
 
-.. literalinclude:: ../../../../exercises/tutorial/ex4_atomic-histogram_solution.cpp
+.. literalinclude:: ../../../../exercises/atomic-histogram_solution.cpp
    :start-after: _rajacuda_atomic_histogram_start
    :end-before: _rajacuda_atomic_histogram_end
    :language: C++
 
 and:
 
-.. literalinclude:: ../../../../exercises/tutorial/ex4_atomic-histogram_solution.cpp
+.. literalinclude:: ../../../../exercises/atomic-histogram_solution.cpp
    :start-after: _rajahip_atomic_histogram_start
    :end-before: _rajahip_atomic_histogram_end
    :language: C++
@@ -87,14 +89,14 @@ will be applied.
 
 For example, here is the CUDA version that uses the 'auto' atomic policy:
 
-.. literalinclude:: ../../../../exercises/tutorial/ex4_atomic-histogram_solution.cpp
+.. literalinclude:: ../../../../exercises/atomic-histogram_solution.cpp
    :start-after: _rajacuda_atomicauto_histogram_start
    :end-before: _rajacuda_atomicauto_histogram_end
    :language: C++
 
 and the HIP version:
 
-.. literalinclude:: ../../../../exercises/tutorial/ex4_atomic-histogram_solution.cpp
+.. literalinclude:: ../../../../exercises/atomic-histogram_solution.cpp
    :start-after: _rajahip_atomicauto_histogram_start
    :end-before: _rajahip_atomicauto_histogram_end
    :language: C++
