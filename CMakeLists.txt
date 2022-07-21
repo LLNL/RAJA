@@ -179,13 +179,8 @@ endif (NOT TARGET camp)
 set (raja_depends)
 
 if (RAJA_ENABLE_OPENMP)
-  if (TARGET camp::openmp) 
   set (raja_depends
-    camp::openmp) # TODO: figure out policy on this
-  else()
-  set (raja_depends
-    openmp) # TODO: figure out policy on this
-  endif()
+    blt::openmp) # TODO: figure out policy on this
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19)
@@ -209,7 +204,7 @@ endif()
 if (RAJA_ENABLE_CUDA)
   set(raja_depends
     ${raja_depends}
-    cuda)
+    blt::cuda)
   if(RAJA_ENABLE_NV_TOOLS_EXT)
     set(raja_depends
       ${raja_depends}
