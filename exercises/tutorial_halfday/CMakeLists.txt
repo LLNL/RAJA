@@ -6,14 +6,6 @@
 ###############################################################################
 
 raja_add_executable(
-  NAME ex1_vector-addition
-  SOURCES ex1_vector-addition.cpp)
-
-raja_add_executable(
-  NAME ex1_vector-addition_solution
-  SOURCES ex1_vector-addition_solution.cpp)
-
-raja_add_executable(
   NAME ex2_approx-pi
   SOURCES ex2_approx-pi.cpp)
 

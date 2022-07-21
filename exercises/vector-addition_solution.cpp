@@ -208,12 +208,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA CUDA vector addition...\n";
 
+  int *d_a = memoryManager::allocate_gpu<int>(N);
+  int *d_b = memoryManager::allocate_gpu<int>(N);
+  int *d_c = memoryManager::allocate_gpu<int>(N);
+
+  cudaErrchk(cudaMemcpy( d_a, a, N * sizeof(int), cudaMemcpyHostToDevice ));
+  cudaErrchk(cudaMemcpy( d_b, b, N * sizeof(int), cudaMemcpyHostToDevice ));
+
   // _rajacuda_vector_add_start
   RAJA::forall< RAJA::cuda_exec<CUDA_BLOCK_SIZE> >(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) {
-    c[i] = a[i] + b[i];
+    d_c[i] = d_a[i] + d_b[i];
   });
   // _rajacuda_vector_add_end
+
+  cudaErrchk(cudaMemcpy( c, d_c, N * sizeof(int), cudaMemcpyDeviceToHost ));
 
   checkResult(c, c_ref, N);
 //printArray(c, N);
@@ -232,11 +241,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _rajacuda_explicit_vector_add_start
   RAJA::forall<RAJA::cuda_exec_explicit<CUDA_BLOCK_SIZE, 2, Asynchronous>>(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
-    c[i] = a[i] + b[i]; 
+    d_c[i] = d_a[i] + d_b[i]; 
   });    
   // _rajacuda_explicit_vector_add_end
 
-  checkResult(c, N);
+  cudaErrchk(cudaMemcpy( c, d_c, N * sizeof(int), cudaMemcpyDeviceToHost ));
+
+
+  checkResult(c, c_ref, N);
 //printResult(c, N);
 #endif
 
@@ -263,7 +275,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   hipErrchk(hipMemcpy( c, d_c, N * sizeof(int), hipMemcpyDeviceToHost ));
 
-  checkResult(c, N);
+  checkResult(c, c_ref, N);
 //printResult(c, N);
 
   memoryManager::deallocate_gpu(d_a);
@@ -294,7 +306,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   memoryManager::sycl_res->memcpy(c, d_c, N * sizeof(int));
 
-  checkResult(c, N);
+  checkResult(c, c_ref, N);
 //printResult(c, N);
 
   memoryManager::deallocate_gpu(d_a);

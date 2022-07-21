@@ -220,12 +220,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA CUDA vector addition...\n";
 
+  int *d_a = memoryManager::allocate_gpu<int>(N);
+  int *d_b = memoryManager::allocate_gpu<int>(N);
+  int *d_c = memoryManager::allocate_gpu<int>(N);
+
+  cudaErrchk(cudaMemcpy( d_a, a, N * sizeof(int), cudaMemcpyHostToDevice ));
+  cudaErrchk(cudaMemcpy( d_b, b, N * sizeof(int), cudaMemcpyHostToDevice ));
+
   ///
   /// TODO...
   ///
   /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
   ///           method and RAJA::cuda_exec execution policy type.
   ///
+
+  cudaErrchk(cudaMemcpy( c, d_c, N * sizeof(int), cudaMemcpyDeviceToHost ));
 
   checkResult(c, c_ref, N);
 //printArray(c, N);
@@ -247,7 +256,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///           arguments defining 2 blcoks per SM and asynchronous execution.
   ///
 
-  checkResult(c, N);
+  cudaErrchk(cudaMemcpy( c, d_c, N * sizeof(int), cudaMemcpyDeviceToHost ));
+
+  checkResult(c, c_ref, N);
 //printResult(c, N);
 #endif
 
@@ -274,7 +285,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   hipErrchk(hipMemcpy( c, d_c, N * sizeof(int), hipMemcpyDeviceToHost ));
 
-  checkResult(c, N);
+  checkResult(c, c_ref, N);
 //printResult(c, N);
 
   memoryManager::deallocate_gpu(d_a);
@@ -305,7 +316,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   memoryManager::sycl_res->memcpy(c, d_c, N * sizeof(int));
 
-  checkResult(c, N);
+  checkResult(c, c_ref, N);
 //printResult(c, N);
 
   memoryManager::deallocate_gpu(d_a);
