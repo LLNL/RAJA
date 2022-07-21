@@ -16,8 +16,15 @@ raja_add_executable(
   NAME vertexsum-indexset
   SOURCES vertexsum-indexset.cpp)
 raja_add_executable(
-  NAME vertexsum-indexse_solution
-  SOURCES vertexsum-indexse_solution.cpp)
+  NAME vertexsum-indexset_solution
+  SOURCES vertexsum-indexset_solution.cpp)
+
+raja_add_executable(
+  NAME dot-product
+  SOURCES dot-product.cpp)
+raja_add_executable(
+  NAME dot-product_solution
+  SOURCES dot-product_solution.cpp)
 
 raja_add_executable(
   NAME atomic-histogram
