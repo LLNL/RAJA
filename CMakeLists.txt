@@ -144,6 +144,38 @@ if (RAJA_ENABLE_RUNTIME_PLUGINS)
     src/KokkosPluginLoader.cpp)
 endif ()
 
+if (NOT TARGET camp)
+  set(EXTERNAL_CAMP_SOURCE_DIR "" CACHE FILEPATH "build with a specific external
+camp source repository")
+  if (EXTERNAL_CAMP_SOURCE_DIR)
+    message(STATUS "Using external source CAMP from: " ${EXTERNAL_CAMP_SOURCE_DIR})
+    add_subdirectory(${EXTERNAL_CAMP_SOURCE_DIR}
+                     ${CMAKE_CURRENT_BINARY_DIR}/tpl/camp)
+  else (EXTERNAL_CAMP_SOURCE_DIR)
+    if (DEFINED camp_DIR)
+      find_package(camp REQUIRED
+        NO_DEFAULT_PATH
+        PATHS ${camp_DIR}
+        ${camp_DIR}/lib/cmake/camp
+      )
+      message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
+    else ()
+      message(STATUS "Using RAJA CAMP submodule.")
+      # propagate setting for sycl since there's no common enable to use
+      set (CAMP_ENABLE_SYCL ${RAJA_ENABLE_SYCL})
+      add_subdirectory(tpl/camp)
+    endif()
+  endif (EXTERNAL_CAMP_SOURCE_DIR)
+
+  if (RAJA_ENABLE_TARGET_OPENMP)
+    message(STATUS "Setting CAMP_ENABLE_TARGET_OPENMP to ${RAJA_ENABLE_TARGET_OPENMP}")
+    blt_add_target_definitions(
+      TO camp
+      SCOPE INTERFACE
+      TARGET_DEFINITIONS CAMP_ENABLE_TARGET_OPENMP)
+  endif()
+endif (NOT TARGET camp)
+
 set (raja_depends)
 
 if (RAJA_ENABLE_OPENMP)
@@ -230,38 +262,6 @@ if (RAJA_ENABLE_DESUL_ATOMICS)
     ${raja_depends}
     desul_atomics)
 endif ()
-
-if (NOT TARGET camp)
-  set(EXTERNAL_CAMP_SOURCE_DIR "" CACHE FILEPATH "build with a specific external
-camp source repository")
-  if (EXTERNAL_CAMP_SOURCE_DIR)
-    message(STATUS "Using external source CAMP from: " ${EXTERNAL_CAMP_SOURCE_DIR})
-    add_subdirectory(${EXTERNAL_CAMP_SOURCE_DIR}
-                     ${CMAKE_CURRENT_BINARY_DIR}/tpl/camp)
-  else (EXTERNAL_CAMP_SOURCE_DIR)
-    if (DEFINED camp_DIR)
-      find_package(camp REQUIRED
-        NO_DEFAULT_PATH
-        PATHS ${camp_DIR}
-        ${camp_DIR}/lib/cmake/camp
-      )
-      message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
-    else ()
-      message(STATUS "Using RAJA CAMP submodule.")
-      # propagate setting for sycl since there's no common enable to use
-      set (CAMP_ENABLE_SYCL ${RAJA_ENABLE_SYCL})
-      add_subdirectory(tpl/camp)
-    endif()
-  endif (EXTERNAL_CAMP_SOURCE_DIR)
-
-  if (RAJA_ENABLE_TARGET_OPENMP)
-    message(STATUS "Setting CAMP_ENABLE_TARGET_OPENMP to ${RAJA_ENABLE_TARGET_OPENMP}")
-    blt_add_target_definitions(
-      TO camp
-      SCOPE INTERFACE
-      TARGET_DEFINITIONS CAMP_ENABLE_TARGET_OPENMP)
-  endif()
-endif (NOT TARGET camp)
 
 set (raja_defines)
 
