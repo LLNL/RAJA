@@ -12,7 +12,8 @@
 Computing a Histogram with Atomic Operations
 --------------------------------------------------
 
-This section contains a working exercise at ``exercises/atomic-histogram.cpp``. 
+This section contains an exercise to work through in the file 
+``RAJA/exercises/atomic-histogram.cpp``. 
 
 Key RAJA features shown in this exercise are:
 

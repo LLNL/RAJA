@@ -14,14 +14,6 @@ raja_add_executable(
   SOURCES ex2_approx-pi_solution.cpp)
 
 raja_add_executable(
-  NAME ex3_colored-indexset
-  SOURCES ex3_colored-indexset.cpp)
-
-raja_add_executable(
-  NAME ex3_colored-indexset_solution
-  SOURCES ex3_colored-indexset_solution.cpp)
-
-raja_add_executable(
   NAME ex5_line-of-sight
   SOURCES ex5_line-of-sight.cpp)
 
