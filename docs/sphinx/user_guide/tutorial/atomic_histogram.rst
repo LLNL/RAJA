@@ -24,16 +24,16 @@ The file ``RAJA/exercises/atomic-histogram_solution.cpp`` contains complete
 working code for the examples discussed in this section.
 
 The example uses an integer array of length 'N' randomly initialized with 
-values in the interval [0, M). 
+values in the interval [0, M). Each kernel iterates over the array and
+accumulates the number of occurrences of each value in [0, M) in another
+array named 'hist'.
 
 .. literalinclude:: ../../../../exercises/atomic-histogram_solution.cpp
    :start-after: _array_atomic_histogram_start
    :end-before: _array_atomic_histogram_end
    :language: C++
 
-While iterating over the array, the kernel 
-accumulates the number of occurrences of each value in the array in another
-array named 'hist' using atomic add operations. Atomic operations allow one 
+The kernels use atomic operations for the accumulation, which allow one 
 to update a memory location referenced by a specific address in parallel 
 without data races. The example shows how to use RAJA portable atomic 
 operations and that they are used similarly for different programming model 
