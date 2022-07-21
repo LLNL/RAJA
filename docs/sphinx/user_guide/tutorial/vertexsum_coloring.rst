@@ -85,7 +85,7 @@ data races. In other words, we have "colored" the elements as shown in the
 figure below. 
 
 .. figure:: ../figures/vertexsum_color.png
-   :scale: 50 
+   :scale: 20
 
    We partition the mesh elements into four disjoint subsets shown by the colors and numbers so that within each subset no two elements share a vertex.
 
