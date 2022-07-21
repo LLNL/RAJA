@@ -144,7 +144,7 @@ Here is the RAJA variant where we iterate over the
 segments sequentially, and execute each segment in parallel via a CUDA
 kernel launched on a GPU:
 
-.. literalinclude:: ../../../../exercises/tut_vertexsum-coloring.cpp
+.. literalinclude:: ../../../../exercises/vertexsum-coloring.cpp
    :start-after: _raja_vertexarea_cuda_start
    :end-before: _raja_vertexarea_cuda_end
    :language: C++
@@ -156,7 +156,7 @@ live in device memory.
 
 The RAJA HIP variant, which we show for completeness, is similar:
 
-.. literalinclude:: ../../../../exercises/tut_vertexsum-coloring.cpp
+.. literalinclude:: ../../../../exercises/vertexsum-coloring.cpp
    :start-after: _raja_vertexarea_hip_start
    :end-before: _raja_vertexarea_hip_end
    :language: C++
