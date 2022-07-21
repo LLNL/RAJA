@@ -296,9 +296,9 @@ iteration spaces, reductions, atomic operations, scans, and sorts.
    :maxdepth: 1
 
    tutorial/add_vectors.rst
-   tutorial/dot_product.rst
    tutorial/indexset_segments.rst
    tutorial/vertexsum_coloring.rst
+   tutorial/dot_product.rst
    tutorial/reductions.rst
    tutorial/atomic_histogram.rst
    tutorial/scan.rst
