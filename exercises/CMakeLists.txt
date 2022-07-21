@@ -6,6 +6,14 @@
 ###############################################################################
 
 raja_add_executable(
+  NAME vector-addition
+  SOURCES vector-addition.cpp)
+raja_add_executable(
+  NAME vector-addition_solution
+  SOURCES vector-addition_solution.cpp)
+
+
+raja_add_executable(
   NAME atomic-histogram
   SOURCES atomic-histogram.cpp)
 raja_add_executable(

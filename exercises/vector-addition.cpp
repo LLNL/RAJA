@@ -14,7 +14,7 @@
 #include "memoryManager.hpp"
 
 /*
- *  EXERCISE #1: Vector Addition
+ *  Vector Addition Exercise
  *
  *  In this exercise, you will compute c = a + b, where a, b, c are 
  *  integer vectors.
@@ -42,6 +42,14 @@
 const int CUDA_BLOCK_SIZE = 256;
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+const int HIP_BLOCK_SIZE = 256;
+#endif
+
+#if defined(RAJA_ENABLE_SYCL)
+const int SYCL_BLOCK_SIZE = 256;
+#endif
+
 //
 // Functions for checking and printing arrays
 //
@@ -53,6 +61,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
   std::cout << "\n\nExercise #1: RAJA Vector Addition...\n";
+
+#if defined(RAJA_ENABLE_SYCL)
+  memoryManager::sycl_res = new camp::resources::Resource{camp::resources::Sycl()};
+  ::RAJA::sycl::detail::setQueue(memoryManager::sycl_res);
+#endif
 
 //
 // Define vector length
@@ -96,9 +109,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA sequential vector addition...\n";
 
-  using EXEC_POL1 = RAJA::seq_exec;
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
+  ///           method and RAJA::seq_exec execution policy type. 
+  ///
+  /// NOTE: We've done this one for you to help you get started...
+  ///
 
-  RAJA::forall< EXEC_POL1 >(RAJA::RangeSegment(0, N), [=] (int i) { 
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
   });    
 
@@ -115,11 +135,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA SIMD vector addition...\n";
 
-  using EXEC_POL2 = RAJA::simd_exec;
-
-  RAJA::forall< EXEC_POL2 >(RAJA::RangeSegment(0, N), [=] (int i) { 
-    c[i] = a[i] + b[i]; 
-  });    
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
+  ///           method and RAJA::simd_exec execution policy type.
+  ///
 
   checkResult(c, c_ref, N);
 //printArray(c, N);
@@ -134,11 +155,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA loop-exec vector addition...\n";
 
-  using EXEC_POL3 = RAJA::loop_exec;
-
-  RAJA::forall< EXEC_POL3 >(RAJA::RangeSegment(0, N), [=] (int i) { 
-    c[i] = a[i] + b[i];
-  });
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
+  ///           method and RAJA::loop_exec execution policy type.
+  ///
 
   checkResult(c, c_ref, N);
 //printArray(c, N);
@@ -176,11 +198,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA OpenMP multithreaded vector addition...\n";
 
-  using EXEC_POL4 = RAJA::omp_parallel_for_exec;
-
-  RAJA::forall< EXEC_POL4 >(RAJA::RangeSegment(0, N), [=] (int i) { 
-    c[i] = a[i] + b[i]; 
-  });    
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
+  ///           method and RAJA::omp_parallel_for_exec execution policy type.
+  ///
 
   checkResult(c, c_ref, N);
 //printArray(c, N);
@@ -197,14 +220,97 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA CUDA vector addition...\n";
 
-  using EXEC_POL5 = RAJA::cuda_exec<CUDA_BLOCK_SIZE>;
-
-  RAJA::forall< EXEC_POL5 >(RAJA::RangeSegment(0, N), [=] RAJA_DEVICE (int i) {
-    c[i] = a[i] + b[i];
-  });
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
+  ///           method and RAJA::cuda_exec execution policy type.
+  ///
 
   checkResult(c, c_ref, N);
 //printArray(c, N);
+
+//----------------------------------------------------------------------------//
+// RAJA::cuda_exec policy runs the loop as a CUDA kernel asynchronously on a 
+// GPU device with 2 blocks per SM.
+//----------------------------------------------------------------------------//
+
+  std::memset(c, 0, N * sizeof(int));
+
+  std::cout << "\n Running RAJA CUDA explicit (2 blocks per SM) vector addition...\n";
+
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
+  ///           method and RAJA::cuda_exec execution policy type with 
+  ///           arguments defining 2 blcoks per SM and asynchronous execution.
+  ///
+
+  checkResult(c, N);
+//printResult(c, N);
+#endif
+
+//----------------------------------------------------------------------------//
+// RAJA::hip_exec policy runs the loop as a HIP kernel on a GPU device.
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+  std::cout << "\n Running RAJA HIP vector addition...\n";
+
+  int *d_a = memoryManager::allocate_gpu<int>(N);
+  int *d_b = memoryManager::allocate_gpu<int>(N);
+  int *d_c = memoryManager::allocate_gpu<int>(N);
+
+  hipErrchk(hipMemcpy( d_a, a, N * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_b, b, N * sizeof(int), hipMemcpyHostToDevice ));
+
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
+  ///           method and RAJA::hip_exec execution policy type.
+  ///
+
+  hipErrchk(hipMemcpy( c, d_c, N * sizeof(int), hipMemcpyDeviceToHost ));
+
+  checkResult(c, N);
+//printResult(c, N);
+
+  memoryManager::deallocate_gpu(d_a);
+  memoryManager::deallocate_gpu(d_b);
+  memoryManager::deallocate_gpu(d_c);
+#endif
+
+//----------------------------------------------------------------------------//
+// RAJA::sycl_exec policy runs the loop as a SYCL kernel.
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_SYCL)
+  std::cout << "\n Running RAJA SYCL vector addition...\n";
+
+  int *d_a = memoryManager::allocate_gpu<int>(N);
+  int *d_b = memoryManager::allocate_gpu<int>(N);
+  int *d_c = memoryManager::allocate_gpu<int>(N);
+
+  memoryManager::sycl_res->memcpy(d_a, a, N * sizeof(int));
+  memoryManager::sycl_res->memcpy(d_b, b, N * sizeof(int));
+
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
+  ///           method and RAJA::hip_exec execution policy type.
+  ///
+
+  memoryManager::sycl_res->memcpy(c, d_c, N * sizeof(int));
+
+  checkResult(c, N);
+//printResult(c, N);
+
+  memoryManager::deallocate_gpu(d_a);
+  memoryManager::deallocate_gpu(d_b);
+  memoryManager::deallocate_gpu(d_c);
 #endif
 
 //----------------------------------------------------------------------------//
