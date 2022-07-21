@@ -226,7 +226,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // are the segment types that the IndexSet can hold. 
 // 
 #if defined(RAJA_ENABLE_OPENMP) || defined(RAJA_ENABLE_CUDA)
+// _vertexarea_listsegtype_start
   using SegmentType = RAJA::TypedListSegment<int>;
+// _vertexarea_listsegtype_end
 #endif
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -242,12 +244,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // the elements in each subsut. This will be used in the RAJA OpenMP and CUDA 
 // variants of the vertex sum calculation.
 
+// _vertexarea_indexset_start
   RAJA::TypedIndexSet<SegmentType> colorset;
 
   colorset.push_back( SegmentType(&idx[0][0], idx[0].size(), host_res) ); 
   colorset.push_back( SegmentType(&idx[1][0], idx[1].size(), host_res) ); 
   colorset.push_back( SegmentType(&idx[2][0], idx[2].size(), host_res) ); 
-  colorset.push_back( SegmentType(&idx[3][0], idx[3].size(), host_res) ); 
+  colorset.push_back( SegmentType(&idx[3][0], idx[3].size(), host_res) );
+// _vertexarea_indexset_end
 
 //----------------------------------------------------------------------------//
 // RAJA OpenMP vertex sum calculation using IndexSet (sequential iteration 
@@ -258,16 +262,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(areav, 0, Nvert*Nvert * sizeof(double));
 
-  using EXEC_POL3 = RAJA::ExecPolicy<RAJA::seq_segit, 
+// _raja_vertexarea_omp_start
+  using EXEC_POL1 = RAJA::ExecPolicy<RAJA::seq_segit, 
                                      RAJA::omp_parallel_for_exec>;
 
-  RAJA::forall<EXEC_POL3>(colorset, [=](int ie) {
+  RAJA::forall<EXEC_POL1>(colorset, [=](int ie) {
     int* iv = &(e2v_map[4*ie]);
     areav[ iv[0] ] += areae[ie] / 4.0 ;
     areav[ iv[1] ] += areae[ie] / 4.0 ;
     areav[ iv[2] ] += areae[ie] / 4.0 ;
     areav[ iv[3] ] += areae[ie] / 4.0 ;
   });
+// _raja_vertexarea_omp_end
 
   checkResult(areav, areav_ref, Nvert);
 //std::cout << "\n Vertex volumes...\n";
@@ -285,7 +291,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //
 // Resource object used to construct list segment objects with indices
-// living in host (CPU) memory.
+// living in device (GPU) memory.
 //
   camp::resources::Resource cuda_res{camp::resources::Cuda()};
 
@@ -305,20 +311,86 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(areav, 0, Nvert*Nvert * sizeof(double));
 
-  using EXEC_POL4 = RAJA::ExecPolicy<RAJA::seq_segit, 
+  using EXEC_POL2 = RAJA::ExecPolicy<RAJA::seq_segit, 
                                      RAJA::cuda_exec<CUDA_BLOCK_SIZE>>;
 
-  RAJA::forall<EXEC_POL4>(cuda_colorset, [=] RAJA_DEVICE (int ie) {
+// _raja_vertexarea_cuda_start
+  RAJA::forall<EXEC_POL2>(cuda_colorset, [=] RAJA_DEVICE (int ie) {
     int* iv = &(e2v_map[4*ie]);
     areav[ iv[0] ] += areae[ie] / 4.0 ;
     areav[ iv[1] ] += areae[ie] / 4.0 ;
     areav[ iv[2] ] += areae[ie] / 4.0 ;
     areav[ iv[3] ] += areae[ie] / 4.0 ;
   });
+// _raja_vertexarea_cuda_start
 
   checkResult(areav, areav_ref, Nvert);
 //std::cout << "\n Vertex volumes...\n";
 //printMeshData(areav, Nvert, jvoff);
+
+#endif
+
+//----------------------------------------------------------------------------//
+// RAJA HIP vertex sum calculation using IndexSet (sequential iteration
+// over segments, HIP kernel launched for each segment)
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_HIP)
+
+//
+// Allocate and initialize device memory arrays
+//
+  double* d_areae = memoryManager::allocate_gpu<double>(Nelem_tot);
+  double* d_areav = memoryManager::allocate_gpu<double>(Nvert_tot);
+  int* d_e2v_map  = memoryManager::allocate_gpu<int>(4*Nelem_tot);
+
+  hipMemcpy(d_areae, areae, Nelem_tot*sizeof(double), hipMemcpyHostToDevice);
+  hipMemcpy(d_e2v_map, e2v_map, 4*Nelem_tot*sizeof(int), hipMemcpyHostToDevice);
+
+  std::memset(areav, 0, Nvert_tot * sizeof(double));
+  hipMemcpy(d_areav, areav, Nvert_tot*sizeof(double), hipMemcpyHostToDevice);
+
+//
+// Resource object used to construct list segment objects with indices
+// living in device (GPU) memory.
+//
+  camp::resources::Resource hip_res{camp::resources::Hip()};
+
+//
+// Create a RAJA IndexSet with four ListSegments, one for the indices of
+// the elements in each subsut. This will be used in the RAJA OpenMP and CUDA
+// variants of the vertex sum calculation.
+
+  RAJA::TypedIndexSet<SegmentType> hip_colorset;
+
+  hip_colorset.push_back( SegmentType(&idx[0][0], idx[0].size(), hip_res) );
+  hip_colorset.push_back( SegmentType(&idx[1][0], idx[1].size(), hip_res) );
+  hip_colorset.push_back( SegmentType(&idx[2][0], idx[2].size(), hip_res) );
+  hip_colorset.push_back( SegmentType(&idx[3][0], idx[3].size(), hip_res) );
+
+  std::cout << "\n Running RAJA CUDA index set vertex sum...\n";
+
+  using EXEC_POL3 = RAJA::ExecPolicy<RAJA::seq_segit,
+                                     RAJA::hip_exec<HIP_BLOCK_SIZE>>;
+
+// _raja_vertexarea_hip_start
+  RAJA::forall<EXEC_POL3>(hip_colorset, [=] RAJA_DEVICE (int ie) {
+    int* iv = &(d_e2v_map[4*ie]);
+    d_areav[ iv[0] ] += d_areae[ie] / 4.0 ;
+    d_areav[ iv[1] ] += d_areae[ie] / 4.0 ;
+    d_areav[ iv[2] ] += d_areae[ie] / 4.0 ;
+    d_areav[ iv[3] ] += d_areae[ie] / 4.0 ;
+  });
+// _raja_vertexarea_hip_start
+
+  hipMemcpy(areav, d_areav, Nvert_tot*sizeof(double), hipMemcpyDeviceToHost);
+  checkResult(areav, areav_ref, Nvert);
+//std::cout << "\n Vertex volumes...\n";
+//printMeshData(areav, Nvert, jvoff);
+
+  memoryManager::deallocate_gpu(d_areae);
+  memoryManager::deallocate_gpu(d_areav);
+  memoryManager::deallocate_gpu(d_e2v_map);
 
 #endif
 
