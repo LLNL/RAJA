@@ -67,9 +67,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int* hist = memoryManager::allocate<int>(M);
   int* hist_ref = memoryManager::allocate<int>(M);
 
+  // _array_atomic_histogram_start
   for (int i = 0; i < N; ++i) { 
     array[i] = rand() % M;
   }
+  // _array_atomic_histogram_end
 
 
 //----------------------------------------------------------------------------//

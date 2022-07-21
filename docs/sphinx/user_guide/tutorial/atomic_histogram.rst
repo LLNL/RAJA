@@ -24,9 +24,16 @@ The file ``RAJA/exercises/atomic-histogram_solution.cpp`` contains complete
 working code for the examples discussed in this section.
 
 The example uses an integer array of length 'N' randomly initialized with 
-values in the interval [0, M). While iterating over the array, the kernel 
+values in the interval [0, M). 
+
+.. literalinclude:: ../../../../exercises/atomic-histogram_solution.cpp
+   :start-after: _array_atomic_histogram_start
+   :end-before: _array_atomic_histogram_end
+   :language: C++
+
+While iterating over the array, the kernel 
 accumulates the number of occurrences of each value in the array in another
-array named 'bins' using atomic add operations. Atomic operations allow one 
+array named 'hist' using atomic add operations. Atomic operations allow one 
 to update a memory location referenced by a specific address in parallel 
 without data races. The example shows how to use RAJA portable atomic 
 operations and that they are used similarly for different programming model 
@@ -47,7 +54,7 @@ All code snippets described below use the stride-1 iteration space range:
    :end-before: _range_atomic_histogram_end
    :language: C++
 
-and the integer array 'bins' of length 'M' to accumulate the number of 
+and the integer array 'hist' of length 'M' to accumulate the number of 
 occurrences of each value in the array.
 
 Here is the OpenMP version:
