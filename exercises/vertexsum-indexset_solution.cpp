@@ -78,7 +78,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int Nelem_tot = Nelem * Nelem;
   const int Nvert = N + 1;
   const int Nvert_tot = Nvert * Nvert;
-// _vertexsum_define__end
+// _vertexsum_define_end
   double* areae = memoryManager::allocate<double>(Nelem_tot);
   double* areav = memoryManager::allocate<double>(Nvert_tot);
   double* areav_ref = memoryManager::allocate<double>(Nvert_tot);
@@ -322,7 +322,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     areav[ iv[2] ] += areae[ie] / 4.0 ;
     areav[ iv[3] ] += areae[ie] / 4.0 ;
   });
-// _raja_vertexarea_cuda_start
+// _raja_vertexarea_cuda_end
 
   checkResult(areav, areav_ref, Nvert);
 //std::cout << "\n Vertex volumes...\n";
@@ -381,7 +381,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     d_areav[ iv[2] ] += d_areae[ie] / 4.0 ;
     d_areav[ iv[3] ] += d_areae[ie] / 4.0 ;
   });
-// _raja_vertexarea_hip_start
+// _raja_vertexarea_hip_end
 
   hipMemcpy(areav, d_areav, Nvert_tot*sizeof(double), hipMemcpyDeviceToHost);
   checkResult(areav, areav_ref, Nvert);

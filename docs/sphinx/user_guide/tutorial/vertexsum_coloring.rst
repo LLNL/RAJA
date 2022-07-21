@@ -30,8 +30,7 @@ as shown in the figure.
 
 .. figure:: ../figures/vertexsum.jpg
 
-   One quarter of the area of each mesh element is summed to the vertices surrounding the element (left). In other words, the "area" of each vertex is the 
-sum of an area contribution from each element sharing the vertex (right).
+   The "area" of each vertex is the sum of an area contribution from each element sharing the vertex (left). In particular, one quarter of the area of each mesh element is summed to the vertices surrounding the element (right).
 
 Each sum is an average of the area of the four mesh elements that share the 
 vertex. In many "staggered mesh" applications, an operation like this is common 
@@ -87,8 +86,7 @@ figure below.
 
 .. figure:: ../figures/vertexsum_color.jpg
 
-   We partition the mesh elements into four disjoint subsets shown by the colors
-and numbers so that within each subset no two elements share a vertex.
+   We partition the mesh elements into four disjoint subsets shown by the colors and numbers so that within each subset no two elements share a vertex.
 
 For completeness, the computation of the four element indexing arrays is:
 
@@ -151,10 +149,10 @@ kernel launched on a GPU:
    :end-before: _raja_vertexarea_cuda_end
    :language: C++
 
-The only differences here is that we have marked the lambda loop body with the 
-``RAJA_DEVICE`` macro, specified the number of threads in a CUDA thread block 
-in the segment execution policy, and built a new index set with list segments
-created using a CUDA resource so that the indices live in device memory.
+The only differences here are that we have marked the lambda loop body with the 
+``RAJA_DEVICE`` macro, used a CUDA segment execution policy, and built a new 
+index set with list segments created using a CUDA resource so that the indices 
+live in device memory.
 
 The RAJA HIP variant, which we show for completeness, is similar:
 
