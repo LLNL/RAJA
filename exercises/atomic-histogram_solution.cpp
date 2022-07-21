@@ -60,19 +60,20 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // Define array bounds and initialize array to compute histogram of values
   // on. 
   //
+
+  // _array_atomic_histogram_start
   int M = 20;
   int N = 100000;
 
   int* array = memoryManager::allocate<int>(N);
   int* hist = memoryManager::allocate<int>(M);
-  int* hist_ref = memoryManager::allocate<int>(M);
 
-  // _array_atomic_histogram_start
   for (int i = 0; i < N; ++i) { 
     array[i] = rand() % M;
   }
   // _array_atomic_histogram_end
 
+  int* hist_ref = memoryManager::allocate<int>(M);
 
 //----------------------------------------------------------------------------//
 // C-style sequential variant establishes reference solution to compare with.
