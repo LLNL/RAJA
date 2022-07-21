@@ -84,7 +84,7 @@ parallel using an indexing area that we guarantees that we will have no
 data races. In other words, we have "colored" the elements as shown in the
 figure below. 
 
-.. figure:: ../figures/vertexsum.png
+.. figure:: ../figures/vertexsum_color.png
 
    We partition the mesh elements into four disjoint subsets shown by the colors and numbers so that within each subset no two elements share a vertex.
 
@@ -144,7 +144,7 @@ Here is the RAJA variant where we iterate over the
 segments sequentially, and execute each segment in parallel via a CUDA
 kernel launched on a GPU:
 
-.. literalinclude:: ../../../../exercises/vertexsum-coloring.cpp
+.. literalinclude:: ../../../../exercises/vertexsum-indexset_solution.cpp
    :start-after: _raja_vertexarea_cuda_start
    :end-before: _raja_vertexarea_cuda_end
    :language: C++
@@ -156,7 +156,7 @@ live in device memory.
 
 The RAJA HIP variant, which we show for completeness, is similar:
 
-.. literalinclude:: ../../../../exercises/vertexsum-coloring.cpp
+.. literalinclude:: ../../../../exercises/vertexsum-indexset_solution.cpp
    :start-after: _raja_vertexarea_hip_start
    :end-before: _raja_vertexarea_hip_end
    :language: C++
