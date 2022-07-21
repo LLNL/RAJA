@@ -12,13 +12,17 @@
 Mesh Vertex Sum Example: Iteration Space Coloring
 --------------------------------------------------
 
+This section contains an exercise to work through in the file 
+``RAJA/exercises/vertexsum-indexset.cpp``.
+
 Key RAJA features shown in this example are:
 
   * ``RAJA::forall`` loop execution template method
-  * ``RAJA::ListSegment`` iteration space construct
-  * ``RAJA::IndexSet`` iteration space segment container and associated execution policies
+  * ``RAJA::TypedListSegment`` iteration space construct
+  * ``RAJA::TypedIndexSet`` iteration space segment container and 
+    associated execution policies
 
-The file ``RAJA/examples/tut_vertexsum-coloring.cpp`` contains omplete 
+The file ``RAJA/examples/vertexsum-indexset_solution.cpp`` contains omplete 
 working code for examples discussed in this section.
 
 The example computes a sum at each vertex on a logically-Cartesian 2D mesh
@@ -26,25 +30,73 @@ as shown in the figure.
 
 .. figure:: ../figures/vertexsum.jpg
 
-   A portion of the area of each mesh element is summed to the vertices surrounding the element.
+   One quarter of the area of each mesh element is summed to the vertices surrounding the element (left). In other words, the "area" of each vertex is the 
+sum of an area contribution from each element sharing the vertex (right).
 
-Each sum is an average of the area of the mesh elements that share the vertex. 
-In many "staggered mesh" applications, such an operation is common and is 
-often written in a way that presents the algorithm clearly but prevents 
+Each sum is an average of the area of the four mesh elements that share the 
+vertex. In many "staggered mesh" applications, an operation like this is common 
+and is often written in a way that presents the algorithm clearly but prevents 
 parallelization due to potential data races. That is, multiple loop iterates 
 over mesh elements may attempt to write to the same shared vertex memory 
 location at the same time. The example shows how RAJA constructs can be 
 used to enable one to express such an algorithm in parallel and have it
 run correctly without fundamentally changing how it looks in source code.
 
-After defining the number of elements in the mesh, array offsets, and an 
-indirection array that provides the mapping between an element and its four 
-surrounding vertices, a C-style version of the vertex sum calculation is:
+We start by setting the size of the mesh, specifically, the total number of 
+elements and vertices and the number of elements and vertices in each direction:
 
-.. literalinclude:: ../../../../examples/tut_vertexsum-coloring.cpp
-   :start-after: _cstyle_vertexsum_start
-   :end-before: _cstyle_vertexsum_end
+.. literalinclude:: ../../../../exercises/vertexsum-indexset_solution.cpp
+   :start-after: _vertexsum_define_start
+   :end-before: _vertexsum_define_end
    :language: C++
+
+We also set up an array to map each element to its four surrounding vertices
+and set the area of each element:
+
+.. literalinclude:: ../../../../exercises/vertexsum-indexset_solution.cpp
+   :start-after: _vertexsum_elemarea_start
+   :end-before: _vertexsum_elemarea_end
+   :language: C++
+
+Then, a sequential C-style version of the vertex area calculation looks like 
+this:
+
+.. literalinclude:: ../../../../exercises/vertexsum-indexset_solution.cpp
+   :start-after: _cstyle_vertexarea_seq_start
+   :end-before: _cstyle_vertexarea_seq_end
+   :language: C++
+
+We can't parallelize the entire computation at once due to potential race
+conditions where multiple threads may attempt to sum to a shared exlement 
+vertex simultaneously. However, we can parallelize the computation in 
+parts. Here is a C-style OpenMP parallel implementation:
+
+.. literalinclude:: ../../../../exercises/vertexsum-indexset_solution.cpp
+   :start-after: _cstyle_vertexarea_omp_start
+   :end-before: _cstyle_vertexarea_omp_end
+   :language: C++
+
+What we've done is broken up the computation into four parts, each of which
+can safely run in parallel because there are no overlapping writes to the
+same entry in the vertex area array in each parallel section. Note that there 
+is an outer loop on length four, one iteration for each of the elements that 
+share a vertex. Inside the loop, we iterate over a subset of elements in 
+parallel using an indexing area that we guarantees that we will have no
+data races. In other words, we have "colored" the elements as shown in the
+figure below. 
+
+.. figure:: ../figures/vertexsum_color.jpg
+
+   We partition the mesh elements into four disjoint subsets shown by the colors
+and numbers so that within each subset no two elements share a vertex.
+
+For completeness, the computation of the four element indexing arrays is:
+
+.. literalinclude:: ../../../../exercises/vertexsum-indexset_solution.cpp
+   :start-after: _vertexarea_color_start
+   :end-before: _vertexarea_color_end
+   :language: C++
+
 
 ^^^^^^^^^^^^^^^^^^^^^^^
 RAJA Sequential Variant

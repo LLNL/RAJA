@@ -18,7 +18,7 @@
 #include "memoryManager.hpp"
 
 /*
- *  EXERCISE #3: Mesh vertex area with "colored" TypedIndexSet
+ *  Mesh vertex area exercise
  *
  *  In this exercise, you will use a RAJA TypedIndexSet containing 4 
  *  ListSegments to parallelize the mesh vertex area computation.

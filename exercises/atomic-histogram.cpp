@@ -15,7 +15,7 @@
 #include "memoryManager.hpp"
 
 /*
- *  EXERCISE #4: Atomic histogram
+ *  Atomic histogram exercise
  *
  *  In this exercise, you will use use RAJA atomic operations to compute
  *  an array which represents a histogram of values in another array.
