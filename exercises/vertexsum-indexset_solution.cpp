@@ -67,7 +67,7 @@ void printMeshData(double* v, int n, int joff);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nExercise #3: Mesh vertex area with 'colored' IndexSet...\n";
+  std::cout << "\n\nExercise: Mesh vertex area with 'colored' IndexSet...\n";
 
 // _vertexsum_define_start
 //

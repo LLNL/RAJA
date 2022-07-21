@@ -53,7 +53,7 @@ void checkResult(double compdot, double refdot);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nRAJA vector dot product example...\n";
+  std::cout << "\n\nExercise: vector dot product...\n";
 
 #if defined(RAJA_ENABLE_SYCL)
   memoryManager::sycl_res = new camp::resources::Resource{camp::resources::Sycl()};

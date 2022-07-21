@@ -54,7 +54,7 @@ void printArray(int* v, int len);
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nExercise #4: Atomic histogram...\n";
+  std::cout << "\n\nExercise: Atomic histogram...\n";
 
   //
   // Define array bounds and initialize array to compute histogram of values
