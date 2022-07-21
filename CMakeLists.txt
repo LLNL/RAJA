@@ -148,7 +148,7 @@ set (raja_depends)
 
 if (RAJA_ENABLE_OPENMP)
   set (raja_depends
-    openmp)
+    camp::openmp) # TODO: figure out policy on this
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19)
