@@ -26,10 +26,6 @@ raja_add_executable(
   SOURCES tut_dot-product.cpp)
 
 raja_add_executable(
-  NAME tut_indexset-segments
-  SOURCES tut_indexset-segments.cpp)
-
-raja_add_executable(
   NAME tut_matrix-multiply
   SOURCES tut_matrix-multiply.cpp)
 

@@ -6,6 +6,24 @@
 ###############################################################################
 
 raja_add_executable(
+  NAME atomic-histogram
+  SOURCES atomic-histogram.cpp)
+raja_add_executable(
+  NAME atomic-histogram_solution
+  SOURCES atomic-histogram_solution.cpp)
+
+raja_add_executable(
+  NAME dot-product
+  SOURCES dot-product.cpp)
+raja_add_executable(
+  NAME dot-product_solution
+  SOURCES dot-product_solution.cpp)
+
+raja_add_executable(
+  NAME segment-indexset-basics_solution
+  SOURCES segment-indexset-basics_solution.cpp)
+
+raja_add_executable(
   NAME vector-addition
   SOURCES vector-addition.cpp)
 raja_add_executable(
@@ -19,18 +37,5 @@ raja_add_executable(
   NAME vertexsum-indexset_solution
   SOURCES vertexsum-indexset_solution.cpp)
 
-raja_add_executable(
-  NAME dot-product
-  SOURCES dot-product.cpp)
-raja_add_executable(
-  NAME dot-product_solution
-  SOURCES dot-product_solution.cpp)
-
-raja_add_executable(
-  NAME atomic-histogram
-  SOURCES atomic-histogram.cpp)
-raja_add_executable(
-  NAME atomic-histogram_solution
-  SOURCES atomic-histogram_solution.cpp)
 
 add_subdirectory(tutorial_halfday)

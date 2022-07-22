@@ -22,7 +22,7 @@ Key RAJA features shown in this example are:
   * ``RAJA::TypedIndexSet`` iteration space segment container and 
     associated execution policies
 
-The file ``RAJA/exercises/vertexsum-indexset_solution.cpp`` contains omplete 
+The file ``RAJA/exercises/vertexsum-indexset_solution.cpp`` contains complete 
 working code for examples discussed in this section.
 
 The example computes a sum at each vertex on a logically-Cartesian 2D mesh
