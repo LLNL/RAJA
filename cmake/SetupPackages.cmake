@@ -115,8 +115,12 @@ if (RAJA_ENABLE_CUDA OR RAJA_ENABLE_HIP OR RAJA_ENABLE_OPENMP OR RAJA_ENABLE_MPI
 endif ()
 
 if (RAJA_NEEDS_BLT_TPLS)
-  blt_export_tpl_targets(EXPORT RAJATargets NAMESPACE RAJA)
-  # install(EXPORT raja-blt-targets DESTINATION lib/cmake/raja)
+  if (NOT BLT_EXPORTED)
+    set(BLT_EXPORTED On CACHE BOOL "" FORCE)
+    blt_export_tpl_targets(EXPORT bltTargets NAMESPACE blt)
+    install(EXPORT bltTargets
+      DESTINATION  lib/cmake/camp)
+  endif()
 endif ()
 
 foreach(dep ${TPL_DEPS})
