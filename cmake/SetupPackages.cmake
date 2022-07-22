@@ -121,6 +121,9 @@ endif ()
 if (RAJA_NEEDS_BLT_TPLS)
   if (NOT BLT_EXPORTED)
     set(BLT_EXPORTED On CACHE BOOL "" FORCE)
+  blt_import_library(NAME          blt_stub EXPORTABLE On)
+            install(TARGETS blt_stub
+                    EXPORT               bltTargets)
     blt_export_tpl_targets(EXPORT bltTargets NAMESPACE blt)
     install(EXPORT bltTargets
       DESTINATION  lib/cmake/raja)
