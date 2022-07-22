@@ -118,6 +118,7 @@ if (RAJA_NEEDS_BLT_TPLS)
   if (NOT BLT_EXPORTED)
     set(BLT_EXPORTED On CACHE BOOL "" FORCE)
   blt_import_library(NAME          blt_stub EXPORTABLE On)
+  set_target_properties(blt_stub PROPERTIES EXPORT_NAME blt::blt_stub)
             install(TARGETS blt_stub
                     EXPORT               bltTargets)
     blt_export_tpl_targets(EXPORT bltTargets NAMESPACE blt)
