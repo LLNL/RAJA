@@ -123,7 +123,7 @@ if (RAJA_NEEDS_BLT_TPLS)
     set(BLT_EXPORTED On CACHE BOOL "" FORCE)
     blt_export_tpl_targets(EXPORT bltTargets NAMESPACE blt)
     install(EXPORT bltTargets
-      DESTINATION  lib/cmake/camp)
+      DESTINATION  lib/cmake/raja)
   endif()
 endif ()
 
