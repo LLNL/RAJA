@@ -96,6 +96,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
     depends_on('camp')
     depends_on('camp@0.2.2')
     depends_on('camp+rocm', when='+rocm')
+    depends_on('camp+openmp', when='+openmp')
     for val in ROCmPackage.amdgpu_targets:
         depends_on('camp amdgpu_target=%s' % val, when='amdgpu_target=%s' % val)
 
