@@ -15,6 +15,8 @@ option(RAJA_ENABLE_TBB "Build TBB support" Off)
 option(RAJA_ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(RAJA_ENABLE_SYCL "Build SYCL support" Off)
 
+option(RAJA_ENABLE_SIMD "Enable SIMD Vectorization support" On)
+
 option(RAJA_ENABLE_REPRODUCERS "Build issue reproducers" Off)
 
 option(RAJA_ENABLE_EXERCISES "Build exercises " On)
