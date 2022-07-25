@@ -20,6 +20,9 @@ raja_add_executable(
   SOURCES dot-product_solution.cpp)
 
 raja_add_executable(
+  NAME segment-indexset-basics
+  SOURCES segment-indexset-basics.cpp)
+raja_add_executable(
   NAME segment-indexset-basics_solution
   SOURCES segment-indexset-basics_solution.cpp)
 
