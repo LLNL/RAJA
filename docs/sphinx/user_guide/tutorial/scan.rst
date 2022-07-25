@@ -39,14 +39,15 @@ functionality, please see :ref:`scan-label`.
           as shown in the examples below.
 
 Each of the examples below uses the same integer arrays for input
-and output values. We set the input array and print them as follows:
+and output values. We set the input array and print them as such:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
    :start-after: _scan_array_init_start
    :end-before: _scan_array_init_end
    :language: C++
 
-This generates the following sequence of values in the 'in' array::
+This generates the following sequence of values. This sequence will be used as 
+the 'in' array for each of the following examples.::
 
    -1 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
 
@@ -54,7 +55,9 @@ This generates the following sequence of values in the 'in' array::
 Inclusive Scans
 ^^^^^^^^^^^^^^^^
 
-A sequential inclusive scan operation is performed by:
+RAJA's scan operations are intended to be used as standalone operations, and do not 
+need to be used within RAJA execution context such as ``RAJA::forall``. A sequential
+inclusive scan operation can be executed like so:
 
 .. literalinclude:: ../../../../examples/tut_scan.cpp
    :start-after: _scan_inclusive_seq_start
@@ -90,7 +93,7 @@ accomplished similarly by replacing the execution policy type:
 As expected, this produces the same result as the previous two examples.
 
 As is commonly the case with RAJA, the only difference between this code and
-the previous one is that the execution policy is different. If we want to 
+the previous one is the execution policy. If we want to 
 run the scan on a GPU using CUDA, we would use a CUDA execution policy as
 is shown in examples below.
 
@@ -109,12 +112,18 @@ This generates the following sequence of values in the output array::
 
    0 -1 -1 0 2 5 9 14 20 27 35 44 54 65 77 90 104 119 135 152
 
-.. note:: The result of an exclusive scan is similar to the result of an 
-          inclusive, but differs in two ways. First, the first entry in 
-          the exclusive scan result is the `identity` of the operator used.
-          In the example here, it is zero, since the operator is 'plus'. 
-          Second, the output sequence is shifted one position to the right
-          when compared to an inclusive scan.
+The result of an exclusive scan is similar to the result of an 
+inclusive scan, but differs in two ways. First, the first entry in 
+the exclusive scan result is the `identity` of the operator used.
+In the example here, it is zero, since the operator is 'plus'. 
+Second, the output sequence is shifted one position to the right
+when compared to an inclusive scan.
+
+.. note:: The `identity` of an operator is the default value of a given type
+          for that operation. For example:
+          - The identity of an int for a sum operation is 0.
+          - The identity of an int for a maximum operation is -2147483648.
+
 
 Running the same scan operation on a GPU using CUDA is done by:
 
@@ -148,7 +157,7 @@ it in other examples.
 
 This generates the following sequence in the output array::
 
-   3 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+   -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 
 Here is a sequential exclusive in-place scan that uses the 'maximum' operator:
 
