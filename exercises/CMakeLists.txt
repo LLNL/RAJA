@@ -37,5 +37,9 @@ raja_add_executable(
   NAME vertexsum-indexset_solution
   SOURCES vertexsum-indexset_solution.cpp)
 
+raja_add_executable(
+  NAME scan_solution
+  SOURCES scan_solution.cpp)
+
 
 add_subdirectory(tutorial_halfday)
