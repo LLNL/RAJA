@@ -268,7 +268,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
             cfg.write(cmake_cache_entry("CMAKE_CUDA_COMPILER",
                                         cudacompiler))
             cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER", cudacompiler))
-            cfg.write(cmake_cache_entry("CMAKE_CUDA_HOST_COMPILER", cxx_compiler))
+            cfg.write(cmake_cache_entry("CMAKE_CUDA_HOST_COMPILER", cpp_compiler))
 
             if ("xl" in cpp_compiler):
                 cfg.write(cmake_cache_entry("CMAKE_CUDA_FLAGS", "-Xcompiler -O3 -Xcompiler -qxlcompatmacros -Xcompiler -qalias=noansi " + 
