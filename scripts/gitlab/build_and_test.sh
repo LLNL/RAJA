@@ -137,6 +137,8 @@ then
         module unload rocm
     fi
 
+    module load cmake/3.20.2
+
     cmake \
       -C ${hostconfig_path} \
       ${project_dir}

@@ -6,8 +6,9 @@
 
 from spack import *
 
-import socket
+import glob
 import os
+import socket
 
 from os import environ as env
 from os.path import join as pjoin
@@ -106,6 +107,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
                    when='cuda_arch={0}'.format(sm_))
 
     conflicts('+openmp', when='+rocm')
+    depends_on('rocprim', when='+rocm')
 
     phases = ['hostconfig', 'cmake', 'build', 'install']
 
@@ -308,6 +310,15 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
             rocm_root = hip_root + "/.."
             cfg.write(cmake_cache_entry("HIP_ROOT_DIR",
                                         hip_root))
+            # there is only one dir like this, but the version component is unknown
+            cfg.write(
+                cmake_cache_path(
+                    "HIP_CLANG_INCLUDE_PATH",
+                    glob.glob(
+                        "{}/lib/clang/*/include".format(spec['llvm-amdgpu'].prefix)
+                    )[0]
+                )
+            )
             cfg.write(cmake_cache_entry("ROCM_ROOT_DIR",
                                         rocm_root))
             cfg.write(cmake_cache_entry("HIP_PATH",
