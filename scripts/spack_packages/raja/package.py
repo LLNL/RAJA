@@ -208,7 +208,8 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
         cfg.write("# Compilers\n")
         cfg.write("#------------------\n\n".format("-" * 60))
         cfg.write(cmake_cache_entry("CMAKE_C_COMPILER", c_compiler))
-        cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER", cpp_compiler))
+        if not "+cuda" in spec:
+            cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER", cpp_compiler))
 
         # use global spack compiler flags
         cflags = ' '.join(spec.compiler_flags['cflags'])
@@ -266,6 +267,8 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
             cudacompiler = "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc"
             cfg.write(cmake_cache_entry("CMAKE_CUDA_COMPILER",
                                         cudacompiler))
+            cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER", cudacompiler))
+            cfg.write(cmake_cache_entry("CMAKE_CUDA_HOST_COMPILER", cxx_compiler))
 
             if ("xl" in cpp_compiler):
                 cfg.write(cmake_cache_entry("CMAKE_CUDA_FLAGS", "-Xcompiler -O3 -Xcompiler -qxlcompatmacros -Xcompiler -qalias=noansi " + 
