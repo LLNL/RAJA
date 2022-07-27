@@ -22,7 +22,7 @@ Key RAJA features shown in this example are:
     ``RAJA::TypedListSegment`` iteration space constructs
   * ``RAJA::IndexSet`` iteration construct and associated execution policies
 
-The file ``RAJA/examples/segment-indexset-basics_solution.cpp`` contains 
+The file ``RAJA/exercises/segment-indexset-basics_solution.cpp`` contains 
 complete working code for the examples discussed in this section.
 
 Loop variables and their associated iteration spaces are fundamental to

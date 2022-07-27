@@ -11,64 +11,81 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- * EXERCISE #6: Nested Loop Reordering
+ * Nested Loop Basics and Loop Reordering (RAJA::kernel)
  *
- *  In this exercise, you will use RAJA::kernel execution policies 
- *  to permute the order of loops in a triple loop nest. In particular,
- *  you will reorder loop statements in execution policies. The exercise
- *  does no actual computation and just prints out the loop indices to show 
- *  the different orderings.
- *
- *  To avoid the complexity of interpreting parallel output, the execution
- *  policies you will write will use sequential execution.
+ *  In this exercise, we inroduce basic RAJA::kernel mechanic for executing
+ *  nested loop kernels, including using execution policies to permute the 
+ *  nesting order of loops in a loop nest. The exercise does no actual 
+ *  computation and just prints out loop indices to show different
+ *  loop ordering. Also, to avoid difficulty in interpreting parallel 
+ *  output, the execution policies use sequential execution.
  *
  *  RAJA features shown:
- *    - Index range segment
  *    - 'RAJA::kernel' loop abstractions and execution policies
- *    - Nested loop reordering
+ *    - 'RAJA::TypedRangeSegment' iteration spaces
  *    - Strongly-typed loop indices
  */
 
 //
-// Define three named loop index types used in the triply-nested loops.
+// Define three named loop index integer types used in the triply-nested loops.
 // These will trigger compilation errors if lambda index argument ordering 
 // and types do not match the typed range index ordering.  See final
 // example in this file.
 //
-RAJA_INDEX_VALUE(KIDX, "KIDX");
-RAJA_INDEX_VALUE(JIDX, "JIDX"); 
-RAJA_INDEX_VALUE(IIDX, "IIDX"); 
+// _raja_typed_indices_start
+RAJA_INDEX_VALUE_T(KIDX, int, "KIDX");
+RAJA_INDEX_VALUE_T(JIDX, int, "JIDX"); 
+RAJA_INDEX_VALUE_T(IIDX, int, "IIDX"); 
+// _raja_typed_indices_end
 
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nExercise #7: RAJA nested loop reorder example...\n";
+// _range_min_max_start
+  constexpr int imin = 0;
+  constexpr int imax = 2;
+  constexpr int jmin = 1;
+  constexpr int jmax = 3;
+  constexpr int kmin = 2;
+  constexpr int kmax = 4;
+// _range_min_max_end
 
-  std::cout << "\n Running C-style loop nest with loop ordering: K-outer, J-middle, I-inner" 
+//
+// The RAJA variants of the loop nest use the following typed range segments
+// based on the typed indices defined above, outside of main().
+//
+// _raja_typed_index_ranges_start
+  RAJA::TypedRangeSegment<KIDX> KRange(kmin, kmax);
+  RAJA::TypedRangeSegment<JIDX> JRange(jmin, jmax);
+  RAJA::TypedRangeSegment<IIDX> IRange(imin, imax);
+// _raja_typed_index_ranges_end
+ 
+
+  std::cout << "\n\nRAJA::kernel nested loop reorder example...\n";
+
+//----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running C-style loop nest ordering: K-outer, J-middle, I-inner" 
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
-  for (int k = 2; k < 4; ++k) {
-    for (int j = 1; j < 3; ++j) {
-      for (int i = 0; i < 2; ++i) {
+// _cstyle_kji_loops_start
+  for (int k = kmin; k < kmax; ++k) {
+    for (int j = jmin; j < jmax; ++j) {
+      for (int i = imin; i < imax; ++i) {
         printf( " (%d, %d, %d) \n", i, j, k);
       }
     }
   }
+// _cstyle_kji_loops_end
 
-//
-// The RAJA variants of the loop nest used following typed range segments
-// based on the typed indices defined above, outside of main().
-//
-  RAJA::TypedRangeSegment<KIDX> KRange(2, 4);
-  RAJA::TypedRangeSegment<JIDX> JRange(1, 3);
-  RAJA::TypedRangeSegment<IIDX> IRange(0, 2);
- 
 //----------------------------------------------------------------------------//
  
-  std::cout << "\n\n Running RAJA nested loop example (K-outer, J-middle, I-inner)"
+  std::cout << "\n\n Running RAJA nested loop order (K-outer, J-middle, I-inner)"
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
+// _raja_kji_loops_start
   using KJI_EXECPOL = RAJA::KernelPolicy<
                         RAJA::statement::For<2, RAJA::seq_exec,    // k
                           RAJA::statement::For<1, RAJA::seq_exec,  // j
@@ -83,13 +100,29 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   [=] (IIDX i, JIDX j, KIDX k) { 
      printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
   });
-
+// _raja_kji_loops_end
 
 //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
  
-  std::cout << "\n Running RAJA nested loop example (J-outer, I-middle, K-inner)"
+  std::cout << "\n Running C-style loop nest ordering: J-outer, I-middle, K-inner" 
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
+// _cstyle_jik_loops_start
+  for (int j = jmin; j < jmax; ++j) {
+    for (int i = imin; i < imax; ++i) {
+      for (int k = kmin; k < kmax; ++k) {
+        printf( " (%d, %d, %d) \n", i, j, k);
+      }
+    }
+  }
+// _cstyle_jik_loops_end
+
+//----------------------------------------------------------------------------//
+  std::cout << "\n Running RAJA nested loop order (J-outer, I-middle, K-inner)"
+            << "...\n\n" << " (I, J, K)\n" << " ---------\n";
+
+// _raja_jik_loops_start
   using JIK_EXECPOL = RAJA::KernelPolicy<
                         RAJA::statement::For<1, RAJA::seq_exec,    // j
                           RAJA::statement::For<0, RAJA::seq_exec,  // i
@@ -104,13 +137,30 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   [=] (IIDX i, JIDX j, KIDX k) { 
      printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
   });
+// _raja_jik_loops_end
 
+//----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+ 
+  std::cout << "\n Running C-style loop nest ordering: I-outer, K-middle, J-inner" 
+            << "...\n\n" << " (I, J, K)\n" << " ---------\n";
+
+// _cstyle_ikj_loops_start
+  for (int i = imin; i < imax; ++i) {
+    for (int k = kmin; k < kmax; ++k) {
+      for (int j = jmin; j < jmax; ++j) {
+        printf( " (%d, %d, %d) \n", i, j, k);
+      }
+    }
+  }
+// _cstyle_ikj_loops_end
 
 //----------------------------------------------------------------------------//
  
-  std::cout << "\n Running RAJA nested loop example (I-outer, K-middle, J-inner)"
+  std::cout << "\n Running RAJA nested loop order (I-outer, K-middle, J-inner)"
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
+// _raja_ikj_loops_start
   using IKJ_EXECPOL = RAJA::KernelPolicy<
                         RAJA::statement::For<0, RAJA::seq_exec,    // i
                           RAJA::statement::For<2, RAJA::seq_exec,  // k
@@ -125,19 +175,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   [=] (IIDX i, JIDX j, KIDX k) {
      printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
   });
+// _raja_ikj_loops_end
 
 
-#if 0
+//----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+ 
+#if 0  // Enable this code block to generate compiler error.
 //----------------------------------------------------------------------------//
 // The following demonstrates that code will not compile if lambda argument
 // types/order do not match the types/order For statements in the execution
 // policy. To see this, enable this code section and try to compile this file.
 //----------------------------------------------------------------------------//
 
+// _raja_compile_error_start
   RAJA::kernel<IKJ_EXECPOL>( RAJA::make_tuple(IRange, JRange, KRange),
   [=] (JIDX i, IIDX j, KIDX k) {
      printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
   });
+// _raja_compile_error_end
 
 #endif
 

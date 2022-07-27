@@ -12,7 +12,8 @@
 Vector Addition (Basic Loop Execution)
 --------------------------------------
 
-This section contains a working exercise at ``exercises/vector-addition.cpp``. 
+This section contains a working exercise in the file 
+``RAJA/exercises/vector-addition.cpp``. 
 
 Key RAJA features shown in this example are:
 
@@ -20,8 +21,8 @@ Key RAJA features shown in this example are:
   * ``RAJA::RangeSegment`` iteration space construct
   * RAJA execution policies
 
-The file ``RAJA/examples/vector-addition_solution.cpp`` contains complete working code
-for the examples discussed below.
+The file ``RAJA/exercises/vector-addition_solution.cpp`` contains complete 
+working code for the examples discussed below.
 
 In the example, we add two vectors 'a' and 'b' of length N and
 store the result in vector 'c'. A simple C-style loop that does this is:

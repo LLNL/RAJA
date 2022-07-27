@@ -30,14 +30,6 @@ raja_add_executable(
   SOURCES ex6_stencil-offset-layout_solution.cpp)
 
 raja_add_executable(
-  NAME ex7_nested-loop-reorder
-  SOURCES ex7_nested-loop-reorder.cpp)
-
-raja_add_executable(
-  NAME ex7_nested-loop-reorder_solution
-  SOURCES ex7_nested-loop-reorder_solution.cpp)
-
-raja_add_executable(
   NAME ex8_tiled-matrix-transpose
   SOURCES ex8_tiled-matrix-transpose.cpp)
 

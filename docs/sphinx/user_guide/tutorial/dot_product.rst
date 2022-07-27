@@ -12,7 +12,8 @@
 Vector Dot Product (Sum Reduction)
 -----------------------------------
 
-This section contains a working exercise at ``exercises/dot_product.cpp``. 
+This section contains a working exercise in the file 
+``RAJA/exercises/dot_product.cpp``. 
 
 Key RAJA features shown in this example are:
 
@@ -22,8 +23,8 @@ Key RAJA features shown in this example are:
   * ``RAJA::ReduceSum`` sum reduction template
   * RAJA reduction policies
 
-The file ``RAJA/exercises/dot-product_solution.cpp`` contains complete working code
-for the example discussed below.
+The file ``RAJA/exercises/dot-product_solution.cpp`` contains complete working 
+code for the examples discussed below.
 
 In the example, we compute a vector dot product, 'dot = (a,b)', where 
 'a' and 'b' are two vectors of length N and 'dot' is a scalar. Typical
