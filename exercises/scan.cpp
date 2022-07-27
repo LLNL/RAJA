@@ -93,6 +93,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running sequential inclusive_scan (default)...\n";
 
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement an inclusive RAJA scan with RAJA::seq_exec
+  ///           execution policy type. 
+  ///
+  /// NOTE: We've done this one for you to help you get started...
+  ///
+
   // _scan_inclusive_seq_start
   RAJA::inclusive_scan<RAJA::seq_exec>(RAJA::make_span(in, N),
                                        RAJA::make_span(out, N));
@@ -108,11 +117,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::copy_n(in, N, out);
 
-  // _scan_inclusive_seq_plus_start
-  RAJA::inclusive_scan<RAJA::seq_exec>(RAJA::make_span(in, N),
-                                       RAJA::make_span(out, N),
-                                       RAJA::operators::plus<int>{});
-  // _scan_inclusive_seq_plus_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement an inclusive RAJA scan with RAJA::seq_exec
+  ///           execution policy type and an explicit plus operator. 
+  ///
 
   CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
@@ -124,11 +134,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::copy_n(in, N, out);
 
-  // _scan_exclusive_seq_plus_start
-  RAJA::exclusive_scan<RAJA::seq_exec>(RAJA::make_span(in, N),
-                                       RAJA::make_span(out, N),
-                                       RAJA::operators::plus<int>{});
-  // _scan_exclusive_seq_plus_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement an exclusive RAJA scan with RAJA::seq_exec
+  ///           execution policy type and an explicit plus operator. 
+  ///
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
@@ -140,11 +151,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::copy_n(in, N, out);
 
-
-  // _scan_inclusive_inplace_seq_min_start
-  RAJA::inclusive_scan_inplace<RAJA::seq_exec>(RAJA::make_span(out, N),
-                                               RAJA::operators::minimum<int>{});
-  // _scan_inclusive_inplace_seq_min_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement an inclusive inplace RAJA scan with RAJA::seq_exec
+  ///           execution policy type and an explicit minimum operator. 
+  ///
 
   CHECK_INC_SCAN_RESULTS(OP_MIN_INT)
   printArray(out, N);
@@ -156,10 +168,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::copy_n(in, N, out);
 
-  // _scan_exclusive_inplace_seq_max_start
-  RAJA::exclusive_scan_inplace<RAJA::seq_exec>(RAJA::make_span(out, N),
-                                               RAJA::operators::maximum<int>{});
-  // _scan_exclusive_inplace_seq_max_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement an exclusive inplace RAJA scan with RAJA::seq_exec
+  ///           execution policy type and an explicit maximum operator. 
+  ///
 
   CHECK_EXC_SCAN_RESULTS(OP_MAX_INT)
   printArray(out, N);
@@ -174,11 +188,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running OpenMP inclusive_scan (plus)...\n";
 
-  // _scan_inclusive_omp_plus_start
-  RAJA::inclusive_scan<RAJA::omp_parallel_for_exec>(RAJA::make_span(in, N),
-                                                    RAJA::make_span(out, N),
-                                                    RAJA::operators::plus<int>{});
-  // _scan_inclusive_omp_plus_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement an inclusive RAJA scan with RAJA::omp_parallel_for_exec
+  ///           execution policy type and an explicit plus operator. 
+  ///
 
   CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
@@ -190,10 +205,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::copy_n(in, N, out);
 
-  // _scan_exclusive_inplace_omp_plus_start
-  RAJA::exclusive_scan_inplace<RAJA::omp_parallel_for_exec>(RAJA::make_span(out, N),
-                                                            RAJA::operators::plus<int>{});
-  // _scan_exclusive_inplace_omp_plus_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement an exclusive inplace RAJA scan with RAJA::omp_parallel_for_exec
+  ///           execution policy type and an explicit plus operator. 
+  ///
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
@@ -213,10 +230,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::copy_n(in, N, out);
 
-  // _scan_inclusive_inplace_cuda_plus_start
-  RAJA::inclusive_scan_inplace<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::make_span(out, N),
-                                                                 RAJA::operators::plus<int>{});
-  // _scan_inclusive_inplace_cuda_plus_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement an inclusive inplace RAJA scan with RAJA::cuda_exec
+  ///           execution policy type and an explicit plus operator. 
+  ///
 
   CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
@@ -228,10 +247,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::copy_n(in, N, out);
 
-  // _scan_exclusive_inplace_omp_plus_start
-  RAJA::exclusive_scan_inplace<RAJA::omp_parallel_for_exec>(RAJA::make_span(out, N),
-                                                            RAJA::operators::plus<int>{});
-  // _scan_exclusive_inplace_omp_plus_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement an exclusive inplace RAJA scan with RAJA::omp_parallel_for_exec
+  ///           execution policy type and an explicit plus operator. 
+  ///
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
@@ -251,10 +272,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::copy_n(in, N, out);
 
-  // _scan_inclusive_inplace_cuda_plus_start
-  RAJA::inclusive_scan_inplace<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::make_span(out, N),
-                                                                 RAJA::operators::plus<int>{});
-  // _scan_inclusive_inplace_cuda_plus_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement an inclusive inplace RAJA scan with RAJA::cuda_exec
+  ///           execution policy type and an explicit plus operator. 
+  ///
 
   CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
@@ -266,11 +289,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::copy_n(in, N, out);
 
-  // _scan_exclusive_cuda_plus_start
-  RAJA::exclusive_scan<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::make_span(in, N),
-                                                         RAJA::make_span(out, N),
-                                                         RAJA::operators::plus<int>{});
-  // _scan_exclusive_cuda_plus_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement an exclusive RAJA scan with RAJA::cuda_exec
+  ///           execution policy type and an explicit plus operator. 
+  ///
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
@@ -294,10 +318,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
 
-  // _scan_exclusive_hip_plus_start
-  RAJA::inclusive_scan_inplace<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::make_span(d_out, N),
-                                                               RAJA::operators::plus<int>{});
-  // _scan_exclusive_hip_plus_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement an inclusive inplace RAJA scan with RAJA::hip_exec
+  ///           execution policy type and an explicit plus operator. 
+  ///
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
 
@@ -307,13 +333,17 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
+  std::cout << "\n Running HIP exclusive_scan (plus)...\n";
+
   hipErrchk(hipMemcpy( d_in, in, N * sizeof(int), hipMemcpyHostToDevice ));
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
 
-  std::cout << "\n Running HIP exclusive_scan (plus)...\n";
-  RAJA::exclusive_scan<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::make_span(d_in, N),
-                                                       RAJA::make_span(d_out, N),
-                                                       RAJA::operators::plus<int>{});
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement an exclusive RAJA scan with RAJA::hip_exec
+  ///           execution policy type and an explicit plus operator. 
+  ///
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
 

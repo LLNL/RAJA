@@ -38,6 +38,9 @@ raja_add_executable(
   SOURCES vertexsum-indexset_solution.cpp)
 
 raja_add_executable(
+  NAME scan
+  SOURCES scan.cpp)
+raja_add_executable(
   NAME scan_solution
   SOURCES scan_solution.cpp)
 
