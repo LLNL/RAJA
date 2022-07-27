@@ -99,9 +99,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( aref, a0, N * sizeof(double) );
 
+// _csytle_daxpy_start
   for (IdxType i = 0; i < N; i++) {
     aref[i] += b[i] * c;
   }
+// _csytle_daxpy_end
 
 //printResult(a, N);
 
