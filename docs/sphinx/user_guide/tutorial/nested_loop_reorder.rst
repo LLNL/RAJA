@@ -8,14 +8,14 @@
 
 .. _kernelnestedreorder-label:
 
----------------------------------
-Nested Loop Reordering
----------------------------------
+-----------------------------------------------------------
+Basic ``RAJA::kernel`` Mechanics and Nested Loop Reordering
+-----------------------------------------------------------
 
 This section contains an exercise to work through in the file
 ``RAJA/exercises/kernelintro-nested-loop-reorder.cpp``.
 
-Key RAJA features shown in this example:
+Key RAJA features shown in this section are:
 
   * ``RAJA::kernel`` loop iteration templates 
   * RAJA::kernel nested loop execution policies
@@ -25,8 +25,7 @@ Key RAJA features shown in this example:
 The file ``RAJA/exercises/kernelintro-nested-loop-reorder_solution.cpp`` 
 contains complete working code for the examples discussed in this section.
 
-In :ref:`loop_elements-kernel-label`, we introduced the basic mechanics used
-by ``RAJA::kernel`` for representing nested loops. The examples in this
+The examples in this
 section show the nested loop reordering process in more detail. 
 Specifically, we describe how to reorder execution policy statements, which
 is conceptually analogous to how one would reorder levels of a C-style loop
