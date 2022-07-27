@@ -68,17 +68,17 @@ class Camp(CMakePackage, CudaPackage, ROCmPackage):
                 options.append(
                     '-DHIP_HIPCC_FLAGS=--amdgpu-target={0}'.format(arch_str)
                 )
+            # there is only one dir like this, but the version component is unknown
+            options.append(
+                "-DHIP_CLANG_INCLUDE_PATH=" + glob.glob(
+                    "{}/lib/clang/*/include".format(spec['llvm-amdgpu'].prefix)
+                )[0]
+            )
         else:
             options.append('-DENABLE_HIP=OFF')
 
         options.append(self.define_from_variant('ENABLE_TESTS', 'tests'))
         options.append(self.define_from_variant('ENABLE_OPENMP', 'openmp'))
-        # there is only one dir like this, but the version component is unknown
-        options.append(
-                "-DHIP_CLANG_INCLUDE_PATH=" + glob.glob(
-                    "{}/lib/clang/*/include".format(spec['llvm-amdgpu'].prefix)
-                )[0]
-            )
-        )
+
 
         return options
