@@ -42,14 +42,14 @@ RAJA_INDEX_VALUE_T(IIDX, int, "IIDX");
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-// _range_beg_end_start
+// _range_min_max_start
   constexpr int imin = 0;
   constexpr int imax = 2;
   constexpr int jmin = 1;
   constexpr int jmax = 3;
   constexpr int kmin = 2;
   constexpr int kmax = 4;
-// _range_beg_end_end
+// _range_min_max_end
 
 //
 // The RAJA variants of the loop nest use the following typed range segments

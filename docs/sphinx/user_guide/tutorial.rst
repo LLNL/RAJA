@@ -307,13 +307,49 @@ iteration spaces, reductions, atomic operations, scans, and sorts.
 .. _tutorialcomplex-label:
 
 =================================================================
-Complex Loops: Transformations and Advanced RAJA Features
+Complex Loops and Advanced RAJA Features
 =================================================================
 
-The examples in this section illustrate how to use ``RAJA::kernel`` methods
-to execute complex loop kernels, such as nested loops. It also describes
-how to construct kernel execution policies, use different view types and
-tiling mechanisms to transform loop patterns.
+RAJA provides two APIs for expressing complex loop kernels, such as nested
+loops: ``RAJA::kernel`` and ``Teams/RAJA::launch``. 
+
+``RAJA::kernel``
+is analogous to ``RAJA::forall`` in that the semantics involve kernel execution
+templates, execution policies, iteration spaces, and lambda kernel bodies.
+The main differences to ``RAJA::forall`` are that ``RAJA::kernel`` execution
+policies can be much more complicated, ``RAJA::kernel`` requires a tuple
+of iteration spaces (one for each level in a loop nest), and ``RAJA::kernel``
+can accept multiple lambda expressions to express parts of a kernel body.
+Almost all aspects of kernel execution are represented in the execution 
+policies, which support a wide range of compile-time loop transformations and
+advanced features. 
+
+``Teams/RAJA::launch``, in contrast, uses the 
+``RAJA::launch`` template, which takes a ``RAJA::Grid`` type argument for 
+expressing the teams-thread lauh configuration, and a lambda expression
+which takes a ``RAJA::LaunchContext`` argument. The lambda provides an
+execution environment (e.g., CPU or GPU) for a kernel. Within that 
+environment users execute kernel operations using ``RAJA::loop<EXEC_POL>``
+method calls, which take lambda expressions to express loop details.
+
+Which RAJA API to use depends on personal preference (kernel structure
+is more explicit in application source code with teams/launch, and more
+concise but opaque with kernel), portability needs, among other concerns.
+There is a large overlap of algorithms that can be expressed using either
+API, and there are things one can do with one or the other but not both.
+
+In the following sections, we introduce the basic mechanics and features
+of both APIs with examples and exercises. We also present a sequence of 
+matrix-matrix multiplication examples using both APIs to compare and contrast.
+ 
+===========================================================================
+``RAJA::kernel`` Based Loops: Nested loops with complex execution policies 
+===========================================================================
+
+The examples in this section illustrates ``RAJA::kernel`` methods
+to execute nested loop kernels. It describes how to construct kernel execution 
+policies, use different view types and tiling mechanisms to transform loop 
+patterns.
 
 .. toctree::
    :maxdepth: 1
@@ -327,7 +363,7 @@ tiling mechanisms to transform loop patterns.
    tutorial/halo-exchange.rst
 
 =================================================================
-Team based Loops: Nested loops with a thread/team model
+Team based Loops: Nested loops with a team/thread model
 =================================================================
 
 The examples in this section illustrate how to use ``RAJA::expt::launch``
@@ -343,3 +379,12 @@ in terms of threads and teams.
 
    tutorial/teams_basic.rst
    tutorial/naming_kernels.rst
+
+==============================
+Other Advanced RAJA Features
+==============================
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorial/halo-exchange.rst
