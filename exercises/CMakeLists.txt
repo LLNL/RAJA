@@ -20,6 +20,13 @@ raja_add_executable(
   SOURCES dot-product_solution.cpp)
 
 raja_add_executable(
+  NAME kernelintro-nested-loop-reorder
+  SOURCES kernelintro-nested-loop-reorder.cpp)
+raja_add_executable(
+  NAME kernelintro-nested-loop-reorder_solution
+  SOURCES kernelintro-nested-loop-reorder_solution.cpp)
+
+raja_add_executable(
   NAME segment-indexset-basics
   SOURCES segment-indexset-basics.cpp)
 raja_add_executable(

@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _nestedreorder-label:
+.. _kernelnestedreorder-label:
 
 ---------------------------------
 Nested Loop Interchange

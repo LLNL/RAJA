@@ -318,8 +318,8 @@ tiling mechanisms to transform loop patterns.
 .. toctree::
    :maxdepth: 1
 
-   tutorial/matrix_multiply.rst
    tutorial/nested_loop_reorder.rst
+   tutorial/matrix_multiply.rst
    tutorial/permuted-layout.rst
    tutorial/offset-layout.rst
    tutorial/tiled_matrix_transpose.rst

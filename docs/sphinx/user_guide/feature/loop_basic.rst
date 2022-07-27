@@ -254,7 +254,7 @@ with the outermost loop and ending with the innermost loop.
           code.
 
 See :ref:`matmultkernel-label` for a complete example showing RAJA nested
-loop functionality and :ref:`nestedreorder-label` for a detailed example 
+loop functionality and :ref:`kernelnestedreorder-label` for a detailed example 
 describing nested loop reordering.
 
 .. note:: In general, RAJA execution policies for ``RAJA::forall`` and 
