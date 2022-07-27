@@ -139,7 +139,7 @@ then
         module unload rocm
     fi
 
-    module load cmake/3.20.2
+    module load cmake/3.20.2 || modukle load cmake/3.19.2 || module load cmake/3.21.1
 
     cmake \
       -C ${hostconfig_path} \
