@@ -44,5 +44,12 @@ raja_add_executable(
   NAME scan_solution
   SOURCES scan_solution.cpp)
 
+raja_add_executable(
+  NAME sort
+  SOURCES sort.cpp)
+raja_add_executable(
+  NAME sort_solution
+  SOURCES sort_solution.cpp)
+
 
 add_subdirectory(tutorial_halfday)

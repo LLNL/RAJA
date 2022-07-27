@@ -5,6 +5,14 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#define OP_GREATER RAJA::operators::greater<int>
+#define OP_LESS RAJA::operators::less<int>
+
+#define CHECK_UNSTABLE_SORT_RESULT(X) checkUnstableSortResult<X>(in, out, N) 
+#define CHECK_UNSTABLE_SORT_PAIR_RESULT(X) checkUnstableSortResult<X>(in, out, in_vals, out_vals, N) 
+#define CHECK_STABLE_SORT_RESULT(X) checkStableSortResult<X>(in, out, N) 
+#define CHECK_STABLE_SORT_PAIR_RESULT(X) checkStableSortResult<X>(in, out, in_vals, out_vals, N) 
+
 #include <cstdlib>
 #include <iostream>
 #include <algorithm>
@@ -20,9 +28,9 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Sort Example
+ *  Sort Exercise
  *
- *  Example shows how to perform RAJA unstable and stable sort operations
+ *  Exercise demonstrates how to perform RAJA unstable and stable sort operations
  *  for integer arrays, including pairs variant, using different comparators.
  *  Other array data types, comparators, etc. are similar
  *
@@ -113,11 +121,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::copy_n(in, N, out);
 
-  // _sort_seq_start
-  RAJA::sort<RAJA::seq_exec>(RAJA::make_span(out, N));
-  // _sort_seq_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a RAJA sort with RAJA::seq_exec
+  ///           execution policy type. 
+  ///
+  /// NOTE: We've done this one for you to help you get started...
+  ///
 
-  checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
+  RAJA::sort<RAJA::seq_exec>(RAJA::make_span(out, N));
+
+  //checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
+  CHECK_UNSTABLE_SORT_RESULT(OP_LESS);
   printArray(out, N);
   std::cout << "\n";
 
@@ -127,12 +143,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::copy_n(in, N, out);
 
-  // _sort_seq_less_start
-  RAJA::sort<RAJA::seq_exec>(RAJA::make_span(out, N),
-                             RAJA::operators::less<int>{});
-  // _sort_seq_less_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a RAJA sort with RAJA::seq_exec execution
+  ///           policy type and an explicit less operation. 
+  ///
 
-  checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
+  //checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
+  CHECK_UNSTABLE_SORT_RESULT(OP_LESS);
   printArray(out, N);
   std::cout << "\n";
 
@@ -142,12 +161,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::copy_n(in, N, out);
 
-  // _sort_stable_seq_less_start
-  RAJA::stable_sort<RAJA::seq_exec>(RAJA::make_span(out, N),
-                                    RAJA::operators::less<int>{});
-  // _sort_stable_seq_less_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a stable RAJA sort with RAJA::seq_exec execution
+  ///           policy type and an explicit less operation. 
+  ///
 
-  checkStableSortResult<RAJA::operators::less<int>>(in, out, N);
+  //checkStableSortResult<RAJA::operators::less<int>>(in, out, N);
+  CHECK_STABLE_SORT_RESULT(OP_LESS);
   printArray(out, N);
   std::cout << "\n";
 
@@ -157,12 +179,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::copy_n(in, N, out);
 
-  // _sort_stable_seq_greater_start
-  RAJA::stable_sort<RAJA::seq_exec>(RAJA::make_span(out, N),
-                                    RAJA::operators::greater<int>{});
-  // _sort_stable_seq_greater_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a stable RAJA sort with RAJA::seq_exec execution
+  ///           policy type and an explicit greater operation. 
+  ///
 
-  checkStableSortResult<RAJA::operators::greater<int>>(in, out, N);
+  //checkStableSortResult<RAJA::operators::greater<int>>(in, out, N);
+  CHECK_STABLE_SORT_RESULT(OP_GREATER);
   printArray(out, N);
   std::cout << "\n";
 
@@ -173,13 +198,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
   std::copy_n(in_vals, N, out_vals);
 
-  // _sort_pairs_seq_less_start
-  RAJA::sort_pairs<RAJA::seq_exec>(RAJA::make_span(out, N),
-                                   RAJA::make_span(out_vals, N),
-                                   RAJA::operators::less<int>{});
-  // _sort_pairs_seq_less_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a RAJA pair sort with RAJA::seq_exec execution
+  ///           policy type and an explicit less operation. 
+  ///
 
-  checkUnstableSortResult<RAJA::operators::less<int>>(in, out, in_vals, out_vals, N);
+  //checkUnstableSortResult<RAJA::operators::less<int>>(in, out, in_vals, out_vals, N);
+  CHECK_UNSTABLE_SORT_PAIR_RESULT(OP_LESS);
   printArray(out, out_vals, N);
   std::cout << "\n";
 
@@ -190,13 +217,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
   std::copy_n(in_vals, N, out_vals);
 
-  // _sort_stable_pairs_seq_greater_start
-  RAJA::stable_sort_pairs<RAJA::seq_exec>(RAJA::make_span(out, N),
-                                          RAJA::make_span(out_vals, N),
-                                          RAJA::operators::greater<int>{});
-  // _sort_stable_pairs_seq_greater_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a stable RAJA pair sort with RAJA::seq_exec execution
+  ///           policy type and an explicit greater operation. 
+  ///
 
-  checkStableSortResult<RAJA::operators::greater<int>>(in, out, in_vals, out_vals, N);
+  //checkStableSortResult<RAJA::operators::greater<int>>(in, out, in_vals, out_vals, N);
+  CHECK_STABLE_SORT_PAIR_RESULT(OP_GREATER);
   printArray(out, out_vals, N);
   std::cout << "\n";
 
@@ -211,12 +240,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::copy_n(in, N, out);
 
-  // _sort_omp_less_start
-  RAJA::sort<RAJA::omp_parallel_for_exec>(RAJA::make_span(out, N),
-                                          RAJA::operators::less<int>{});
-  // _sort_omp_less_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a RAJA sort with RAJA::omp_parallel_for_exec execution
+  ///           policy type and an explicit less operation. 
+  ///
 
-  checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
+  //checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
+  CHECK_UNSTABLE_SORT_RESULT(OP_LESS);
   printArray(out, N);
   std::cout << "\n";
 
@@ -227,13 +259,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
   std::copy_n(in_vals, N, out_vals);
 
-  // _sort_stable_pairs_omp_greater_start
-  RAJA::stable_sort_pairs<RAJA::omp_parallel_for_exec>(RAJA::make_span(out, N),
-                                                       RAJA::make_span(out_vals, N),
-                                                       RAJA::operators::greater<int>{});
-  // _sort_stable_pairs_omp_greater_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a stable RAJA sort with RAJA::omp_parallel_for_exec execution
+  ///           policy type and an explicit greater operation. 
+  ///
 
-  checkStableSortResult<RAJA::operators::greater<int>>(in, out, in_vals, out_vals, N);
+  //checkStableSortResult<RAJA::operators::greater<int>>(in, out, in_vals, out_vals, N);
+  CHECK_STABLE_SORT_PAIR_RESULT(OP_GREATER);
   printArray(out, out_vals, N);
   std::cout << "\n";
 
@@ -252,13 +286,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
   std::copy_n(in_vals, N, out_vals);
 
-  // _sort_pairs_cuda_greater_start
-  RAJA::sort_pairs<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::make_span(out, N),
-                                                     RAJA::make_span(out_vals, N),
-                                                     RAJA::operators::greater<int>{});
-  // _sort_pairs_cuda_greater_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a RAJA pair sort with RAJA::cuda_exec execution
+  ///           policy type and an explicit greater operation. 
+  ///
 
-  checkUnstableSortResult<RAJA::operators::greater<int>>(in, out, in_vals, out_vals, N);
+  //checkUnstableSortResult<RAJA::operators::greater<int>>(in, out, in_vals, out_vals, N);
+  CHECK_UNSTABLE_SORT_PAIR_RESULT(OP_GREATER);
   printArray(out, out_vals, N);
   std::cout << "\n";
 
@@ -268,12 +304,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::copy_n(in, N, out);
 
-  // _sort_stable_cuda_less_start
-  RAJA::stable_sort<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::make_span(out, N),
-                                                      RAJA::operators::less<int>{});
-  // _sort_stable_cuda_less_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a stable RAJA pair sort with RAJA::cuda_exec execution
+  ///           policy type and an explicit less operation. 
+  ///
 
-  checkStableSortResult<RAJA::operators::less<int>>(in, out, N);
+  //checkStableSortResult<RAJA::operators::less<int>>(in, out, N);
+  CHECK_STABLE_SORT_RESULT(OP_LESS);
   printArray(out, N);
   std::cout << "\n";
 
@@ -298,6 +337,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
   hipErrchk(hipMemcpy( d_out_vals, out_vals, N * sizeof(int), hipMemcpyHostToDevice ));
 
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a RAJA pair sort with RAJA::hip_exec execution
+  ///           policy type and an explicit less operation. 
+  ///
   RAJA::sort_pairs<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::make_span(d_out, N),
                                                    RAJA::make_span(d_out_vals, N),
                                                    RAJA::operators::less<int>{});
@@ -305,7 +350,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
   hipErrchk(hipMemcpy( out_vals, d_out_vals, N * sizeof(int), hipMemcpyDeviceToHost ));
 
-  checkUnstableSortResult<RAJA::operators::less<int>>(in, out, in_vals, out_vals, N);
+  //checkUnstableSortResult<RAJA::operators::less<int>>(in, out, in_vals, out_vals, N);
+  CHECK_UNSTABLE_SORT_PAIR_RESULT(OP_LESS);
   printArray(out, out_vals, N);
   std::cout << "\n";
 
@@ -317,14 +363,17 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
 
-  // _sort_stable_hip_greater_start
-  RAJA::stable_sort<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::make_span(d_out, N),
-                                       RAJA::operators::greater<int>{});
-  // _sort_stable_hip_greater_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a stable RAJA sort with RAJA::hip_exec execution
+  ///           policy type and an explicit less operation. 
+  ///
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
 
-  checkStableSortResult<RAJA::operators::greater<int>>(in, out, N);
+  //checkStableSortResult<RAJA::operators::greater<int>>(in, out, N);
+  CHECK_STABLE_SORT_RESULT(OP_GREATER);
   printArray(out, N);
   std::cout << "\n";
 
