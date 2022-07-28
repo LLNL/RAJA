@@ -38,10 +38,6 @@ raja_add_executable(
   SOURCES tut_vertexsum-coloring.cpp)
 
 raja_add_executable(
-  NAME tut_reductions
-  SOURCES tut_reductions.cpp)
-
-raja_add_executable(
   NAME teams_flatten
   SOURCES teams_flatten.cpp)
 
