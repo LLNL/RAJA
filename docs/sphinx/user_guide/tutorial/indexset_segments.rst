@@ -12,7 +12,7 @@
 Iteration Space Examples: Segments and IndexSets
 -------------------------------------------------
 
-This section contains an exercise to work through in the file
+This section contains a working exercise in the file 
 ``RAJA/exercises/segment-indexset-basics.cpp``.
 
 Key RAJA features shown in this example are:

@@ -12,17 +12,20 @@
 Reductions
 ---------------------------------
 
-Key RAJA features shown in this example are:
+This section contains a working exercise in the file 
+``RAJA/exercises/reductions.cpp``. 
+
+Key RAJA features shown in this section are:
 
   * ``RAJA::forall`` loop execution template 
   * ``RAJA::RangeSegment`` iteration space construct
   * RAJA reduction types
   * RAJA reduction policies
 
-The file ``RAJA/examples/tut_reductions.cpp`` contains complete 
-working code for the discussion in this section.
+The file ``RAJA/exercises/reductions_solution.cpp`` contains working code for the
+examples discussed in this section.
 
-In the :ref:`dotproduct-label` example, we showed how to use the RAJA sum 
+In the :ref:`dotproduct-label` exercise, we showed how to use the RAJA sum 
 reduction type. The following example uses all supported RAJA reduction types: 
 min, max, sum, min-loc, max-loc.
 
@@ -45,14 +48,14 @@ different reduction types do. Specifically, the array is initialized to
 a sequence of alternating values ('1' and '-1'). Then, two values near
 the middle of the array are set to '-100' and '100':
 
-.. literalinclude:: ../../../../examples/tut_reductions.cpp
+.. literalinclude:: ../../../../exercises/reductions_solution.cpp
    :start-after: _reductions_array_init_start
    :end-before: _reductions_array_init_end
    :language: C++
 
 We also define a range segment to iterate over the array:
 
-.. literalinclude:: ../../../../examples/tut_reductions.cpp
+.. literalinclude:: ../../../../exercises/reductions_solution.cpp
    :start-after: _reductions_range_start
    :end-before: _reductions_range_end
    :language: C++
@@ -68,7 +71,7 @@ presented below will generate the following results:
 
 A sequential kernel that exercises all RAJA sequential reduction types is:
  
-.. literalinclude:: ../../../../examples/tut_reductions.cpp
+.. literalinclude:: ../../../../exercises/reductions_solution.cpp
    :start-after: _reductions_raja_seq_start
    :end-before: _reductions_raja_seq_end
    :language: C++
@@ -84,7 +87,7 @@ reduction object. The min-loc/max-loc index values are obtained using
 For parallel multithreading execution via OpenMP, the example can be run 
 by replacing the execution and reduction policies with:
 
-.. literalinclude:: ../../../../examples/tut_reductions.cpp
+.. literalinclude:: ../../../../exercises/reductions_solution.cpp
    :start-after: _reductions_raja_omppolicy_start
    :end-before: _reductions_raja_omppolicy_end
    :language: C++
@@ -92,14 +95,14 @@ by replacing the execution and reduction policies with:
 Similarly, the kernel containing the reductions can be run in parallel
 on a GPU using CUDA policies:
 
-.. literalinclude:: ../../../../examples/tut_reductions.cpp
+.. literalinclude:: ../../../../exercises/reductions_solution.cpp
    :start-after: _reductions_raja_cudapolicy_start
    :end-before: _reductions_raja_cudapolicy_end
    :language: C++
 
 or HIP policies:
 
-.. literalinclude:: ../../../../examples/tut_reductions.cpp
+.. literalinclude:: ../../../../exercises/reductions_solution.cpp
    :start-after: _reductions_raja_hippolicy_start
    :end-before: _reductions_raja_hippolicy_end
    :language: C++

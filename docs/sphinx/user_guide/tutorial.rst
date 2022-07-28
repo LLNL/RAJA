@@ -249,12 +249,12 @@ represent kernel bodies with RAJA. We describe them here.
    similar to the one above will be required. 
     
     
-================
-RAJA Examples
-================
+===========================
+RAJA Examples and Exercises
+===========================
 
 The remainder of this tutorial illustrates how to use RAJA features with
-working code examples that are located in  the ``RAJA/examples`` 
+working code examples and interactive exercises, located in  the ``RAJA/exercises`` 
 directory. Additional information about the RAJA features 
 used can be found in :ref:`features-label`.
 
@@ -268,10 +268,7 @@ examples here.
 All RAJA programming model support features are enabled via CMake options,
 which are described in :ref:`configopt-label`. 
 
-For the purposes of discussion of each example, we assume that any and all 
-data used has been properly allocated and initialized. This is done in the 
-example code files, but is not discussed further here.
-
+# TODO: move this into kernel execution policy introduction.
 Finally, RAJA kernel variants in the examples illustrate how a kernel can be 
 run with different programming model back-ends by simply changing an 
 execution policy type. RAJA application users typically define type aliases 
