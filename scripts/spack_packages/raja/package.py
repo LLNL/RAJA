@@ -95,7 +95,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
     depends_on('blt@0.4.1:', type='build')
 
     depends_on('camp')
-    depends_on('camp@0.2.2')
+    depends_on('camp@main') # TODO: remove this ASAP
     depends_on('camp+rocm', when='+rocm')
     depends_on('camp+openmp', when='+openmp')
     for val in ROCmPackage.amdgpu_targets:
