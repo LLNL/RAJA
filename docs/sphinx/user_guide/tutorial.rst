@@ -248,7 +248,10 @@ represent kernel bodies with RAJA. We describe them here.
    are using an earlier version of nvcc, an implementation
    similar to the one above will be required. 
     
-    
+.. |br| raw:: html
+
+   <br />
+
 ===========================
 RAJA Examples and Exercises
 ===========================
@@ -354,7 +357,8 @@ mechanisms to transform loop patterns. More informatrion can be found in
 .. toctree::
    :maxdepth: 1
 
-   tutorial/nested_loop_reorder.rst
+   tutorial/kernel_nested_loop_reorder.rst
+   tutorial/kernel_exec_pols.rst
 
 =================================================================
 Team based Loops: Nested loops with a team/thread model
@@ -364,15 +368,22 @@ The examples in this section illustrate how to use ``RAJA::expt::launch``
 to create an run-time selectable execution space for expressing algorithms
 in terms of threads and teams.
 
-.. |br| raw:: html
-
-   <br />
-
 .. toctree::
    :maxdepth: 1
 
    tutorial/teams_basic.rst
    tutorial/naming_kernels.rst
+
+===============================================================================
+Comparing ``RAJA::kernel`` and team/thread model: Matrix-matrix multiplication
+===============================================================================
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorial/matrix_multiply.rst
+   tutorial/tiled_matrix_transpose.rst
+   tutorial/matrix_transpose_local_array.rst
 
 ==============================
 Other Advanced RAJA Features
@@ -382,9 +393,13 @@ Other Advanced RAJA Features
    :maxdepth: 1
 
    tutorial/halo-exchange.rst
-   tutorial/matrix_multiply.rst
+
+==============================
+Section To Rework
+==============================
+
+.. toctree::
+   :maxdepth: 1
+
    tutorial/permuted-layout.rst
    tutorial/offset-layout.rst
-   tutorial/tiled_matrix_transpose.rst
-   tutorial/matrix_transpose_local_array.rst
-   tutorial/halo-exchange.rst

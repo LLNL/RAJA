@@ -27,6 +27,10 @@ raja_add_executable(
   SOURCES reductions_solution.cpp)
 
 raja_add_executable(
+  NAME kernelintro-execpols_solution
+  SOURCES kernelintro-execpols_solution.cpp)
+
+raja_add_executable(
   NAME kernelintro-nested-loop-reorder
   SOURCES kernelintro-nested-loop-reorder.cpp)
 raja_add_executable(
