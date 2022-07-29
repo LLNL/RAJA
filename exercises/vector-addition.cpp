@@ -36,18 +36,18 @@
  */
 
 /*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
+  Specify the number of threads in a GPU thread block
 */
 #if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
+//const int CUDA_BLOCK_SIZE = 256;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-const int HIP_BLOCK_SIZE = 256;
+//const int HIP_BLOCK_SIZE = 256;
 #endif
 
 #if defined(RAJA_ENABLE_SYCL)
-const int SYCL_BLOCK_SIZE = 256;
+//const int SYCL_BLOCK_SIZE = 256;
 #endif
 
 //
@@ -233,6 +233,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
   ///           method and RAJA::cuda_exec execution policy type.
   ///
+  ///           NOTE: You will have to uncomment 'CUDA_BLOCK_SIZE' near the
+  ///                 top of the file if you want to use it here. 
+  ///
 
   cudaErrchk(cudaMemcpy( c, d_c, N * sizeof(int), cudaMemcpyDeviceToHost ));
 
@@ -254,6 +257,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
   ///           method and RAJA::cuda_exec execution policy type with 
   ///           arguments defining 2 blcoks per SM and asynchronous execution.
+  ///
+  ///           NOTE: You will have to uncomment 'CUDA_BLOCK_SIZE' near the
+  ///                 top of the file if you want to use it here. 
   ///
 
   cudaErrchk(cudaMemcpy( c, d_c, N * sizeof(int), cudaMemcpyDeviceToHost ));
@@ -281,6 +287,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
   ///           method and RAJA::hip_exec execution policy type.
+  ///
+  ///           NOTE: You will have to uncomment 'HIP_BLOCK_SIZE' near the
+  ///                 top of the file if you want to use it here. 
   ///
 
   hipErrchk(hipMemcpy( c, d_c, N * sizeof(int), hipMemcpyDeviceToHost ));
@@ -312,6 +321,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
   ///           method and RAJA::hip_exec execution policy type.
+  ///
+  ///           NOTE: You will have to uncomment 'SYCL_BLOCK_SIZE' near the
+  ///                 top of the file if you want to use it here. 
   ///
 
   memoryManager::sycl_res->memcpy(c, d_c, N * sizeof(int));

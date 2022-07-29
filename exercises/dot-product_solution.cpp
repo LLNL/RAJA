@@ -30,21 +30,6 @@
  * If CUDA is enabled, CUDA unified memory is used.
  */
 
-/*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
-*/
-#if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-const int HIP_BLOCK_SIZE = 256;
-#endif
-
-#if defined(RAJA_ENABLE_SYCL)
-const int SYCL_BLOCK_SIZE = 256;
-#endif
-
 //
 //  Function to check dot product result.
 //
@@ -138,6 +123,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
+
+  const int CUDA_BLOCK_SIZE = 256;
+
   std::cout << "\n Running RAJA CUDA dot product...\n";
 
   // _rajacuda_dotprod_start
@@ -159,6 +147,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_HIP)
+
+  const int HIP_BLOCK_SIZE = 256;
+
   std::cout << "\n Running RAJA HIP dot product...\n";
 
   int *d_a = memoryManager::allocate_gpu<int>(N);
@@ -189,6 +180,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_SYCL)
+
+  const int SYCL_BLOCK_SIZE = 256;
+
   std::cout << "\n Running RAJA SYCL dot product...\n";
 
   // _rajasycl_dotprod_start

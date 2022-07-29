@@ -44,14 +44,14 @@
  */
 
 /*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
+  Specify the number of threads in a GPU thread block
 */
 #if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 16;
+//const int CUDA_BLOCK_SIZE = 16;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-const int HIP_BLOCK_SIZE = 16;
+//const int HIP_BLOCK_SIZE = 16;
 #endif
 
 //
@@ -292,6 +292,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE: Implement a RAJA pair sort with RAJA::cuda_exec execution
   ///           policy type and an explicit greater operation. 
   ///
+  ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' near the 
+  ///                 top of the file if you want to use it here.
+  ///
 
   //checkUnstableSortResult<RAJA::operators::greater<int>>(in, out, in_vals, out_vals, N);
   CHECK_UNSTABLE_SORT_PAIR_RESULT(OP_GREATER);
@@ -309,6 +312,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement a stable RAJA pair sort with RAJA::cuda_exec execution
   ///           policy type and an explicit less operation. 
+  ///
+  ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' near the 
+  ///                 top of the file if you want to use it here.
   ///
 
   //checkStableSortResult<RAJA::operators::less<int>>(in, out, N);
@@ -343,9 +349,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE: Implement a RAJA pair sort with RAJA::hip_exec execution
   ///           policy type and an explicit less operation. 
   ///
-  RAJA::sort_pairs<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::make_span(d_out, N),
-                                                   RAJA::make_span(d_out_vals, N),
-                                                   RAJA::operators::less<int>{});
+  ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' near the 
+  ///                 top of the file if you want to use it here.
+  ///
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
   hipErrchk(hipMemcpy( out_vals, d_out_vals, N * sizeof(int), hipMemcpyDeviceToHost ));
@@ -368,6 +374,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement a stable RAJA sort with RAJA::hip_exec execution
   ///           policy type and an explicit less operation. 
+  ///
+  ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' near the 
+  ///                 top of the file if you want to use it here.
   ///
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));

@@ -30,21 +30,6 @@
  * If CUDA is enabled, CUDA unified memory is used.
  */
 
-/*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
-*/
-#if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-const int HIP_BLOCK_SIZE = 256;
-#endif
-
-#if defined(RAJA_ENABLE_SYCL)
-const int SYCL_BLOCK_SIZE = 256;
-#endif
-
 //
 //  Function to check dot product result.
 //
@@ -130,7 +115,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement the dot product kernel using a RAJA::omp_parallel_for_exec
-  ///           execution policy type and RAJA::omp_reduce. 
+  ///           execution policy type and RAJA::omp_reduce reduction policy type.
   ///
 
   std::cout << "\t (a, b) = " << dot << std::endl;
@@ -142,13 +127,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
+
+//const int CUDA_BLOCK_SIZE = 256;
+
   std::cout << "\n Running RAJA CUDA dot product...\n";
 
   ///
   /// TODO...
   ///
   /// EXERCISE: Implement the dot product kernel using a RAJA::cuda_exec
-  ///           execution policy type and RAJA::cuda_reduce. 
+  ///           execution policy type and RAJA::cuda_reduce reduction policy type.
+  ///      
+  ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' above.
+  ///                 if you want to use it here. 
   ///
 
   std::cout << "\t (a, b) = " << dot << std::endl;
@@ -159,6 +150,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_HIP)
+
+//const int HIP_BLOCK_SIZE = 256;
+
   std::cout << "\n Running RAJA HIP dot product...\n";
 
   int *d_a = memoryManager::allocate_gpu<int>(N);
@@ -171,7 +165,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement the dot product kernel using a RAJA::hip_exec
-  ///           execution policy type and RAJA::hip_reduce. 
+  ///           execution policy type and RAJA::hip_reduce reduction policy type.
+  ///      
+  ///           NOTE: You will need to uncomment 'HIP_BLOCK_SIZE' above
+  ///                 if you want to use it here. 
   ///
 
   std::cout << "\t (a, b) = " << dot << std::endl;
@@ -185,6 +182,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_SYCL)
+
+//const int SYCL_BLOCK_SIZE = 256;
+
   std::cout << "\n Running RAJA SYCL dot product...\n";
 
   ///
@@ -192,6 +192,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement the dot product kernel using a RAJA::sycl_exec
   ///           execution policy type and RAJA::sycl_reduce. 
+  ///
+  ///           NOTE: You will need to uncomment 'SYCL_BLOCK_SIZE' above
+  ///                 if you want to use it here. 
   ///
 
   std::cout << "\t (a, b) = " << dot << std::endl;

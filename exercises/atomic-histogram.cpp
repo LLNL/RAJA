@@ -38,10 +38,14 @@
  */
 
 /*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
+  Specifies the number of threads in a GPU thread block
 */
 #if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
+//const int CUDA_BLOCK_SIZE = 256;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+//const int HIP_BLOCK_SIZE = 256;
 #endif
 
 //
@@ -199,6 +203,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///           method with RAJA::cuda_exec execution policy type
   ///           and a RAJA::atomicAdd operation with RAJA::cuda_atomic policy.
   ///
+  ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' near the
+  ///                 top of the file if you want to use it here.
+  ///
 
   checkResult(hist, hist_ref, M);
 //printArray(hist, M);
@@ -224,6 +231,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///           method with RAJA::cuda_exec execution policy type
   ///           and a RAJA::atomicAdd operation with RAJA::auto_atomic policy.
   ///
+  ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' near the
+  ///                 top of the file if you want to use it here.
+  ///
    
   checkResult(hist, hist_ref, M);
 //printArray(hist, M);
@@ -246,6 +256,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE: Implement the atomic histogram kernel using a RAJA::forall
   ///           method with RAJA::hip_exec execution policy type
   ///           and a RAJA::atomicAdd operation with RAJA::hip_atomic policy.
+  ///
+  ///           NOTE: You will need to uncomment 'HIP_BLOCK_SIZE' near the
+  ///                 top of the file if you want to use it here.
   ///
 
   checkResult(hist, hist_ref, M);
@@ -271,6 +284,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE: Implement the atomic histogram kernel using a RAJA::forall
   ///           method with RAJA::hip_exec execution policy type
   ///           and a RAJA::atomicAdd operation with RAJA::auto_atomic policy.
+  ///
+  ///           NOTE: You will need to uncomment 'HIP_BLOCK_SIZE' near the
+  ///                 top of the file if you want to use it here.
   ///
    
   checkResult(hist, hist_ref, M);

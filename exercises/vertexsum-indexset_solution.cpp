@@ -51,10 +51,14 @@
  */
 
 /*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
+  Specify the number of threads in a GPU thread block
 */
 #if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE = 256;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+const int HIP_BLOCK_SIZE = 256;
 #endif
 
 //
@@ -225,7 +229,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // The IndexSet is a variadic template, where the template arguments
 // are the segment types that the IndexSet can hold. 
 // 
-#if defined(RAJA_ENABLE_OPENMP) || defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_OPENMP) || defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) 
 // _vertexarea_listsegtype_start
   using SegmentType = RAJA::TypedListSegment<int>;
 // _vertexarea_listsegtype_end
@@ -368,7 +372,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   hip_colorset.push_back( SegmentType(&idx[2][0], idx[2].size(), hip_res) );
   hip_colorset.push_back( SegmentType(&idx[3][0], idx[3].size(), hip_res) );
 
-  std::cout << "\n Running RAJA CUDA index set vertex sum...\n";
+  std::cout << "\n Running RAJA HIP index set vertex sum...\n";
 
 // _raja_vertexarea_hip_start
   using EXEC_POL3 = RAJA::ExecPolicy<RAJA::seq_segit,

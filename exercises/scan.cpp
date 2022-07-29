@@ -37,14 +37,14 @@
  */
 
 /*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
+  Specify the number of threads in a GPU thread block
 */
 #if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 16;
+//const int CUDA_BLOCK_SIZE = 16;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-const int HIP_BLOCK_SIZE = 16;
+//const int HIP_BLOCK_SIZE = 16;
 #endif
 
 //
@@ -234,7 +234,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement an inclusive inplace RAJA scan with RAJA::cuda_exec
-  ///           execution policy type and an explicit plus operator. 
+  ///           execution policy type and an explicit plus operator.
+  ///
+  ///           NOTE: You will have to uncomment 'CUDA_BLOCK_SIZE' near the
+  ///                 of the file if you want to use it here.
   ///
 
   CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
@@ -243,15 +246,18 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running OpenMP exclusive_scan_inplace (plus)...\n";
+  std::cout << "\n Running CUDA exclusive_scan_inplace (plus)...\n";
 
   std::copy_n(in, N, out);
 
   ///
   /// TODO...
   ///
-  /// EXERCISE: Implement an exclusive inplace RAJA scan with RAJA::omp_parallel_for_exec
-  ///           execution policy type and an explicit plus operator. 
+  /// EXERCISE: Implement an exclusive inplace RAJA scan with RAJA::cuda_exec
+  ///           execution policy type and an explicit plus operator.
+  ///
+  ///           NOTE: You will have to uncomment 'CUDA_BLOCK_SIZE' near the
+  ///                 of the file if you want to use it here.
   ///
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
@@ -262,48 +268,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-#if defined(RAJA_ENABLE_CUDA)
-
-//----------------------------------------------------------------------------//
-// Perform a couple of CUDA scans...
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n Running CUDA inclusive_scan_inplace (plus)...\n";
-
-  std::copy_n(in, N, out);
-
-  ///
-  /// TODO...
-  ///
-  /// EXERCISE: Implement an inclusive inplace RAJA scan with RAJA::cuda_exec
-  ///           execution policy type and an explicit plus operator. 
-  ///
-
-  CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
-  printArray(out, N);
-  std::cout << "\n";
-
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n Running CUDA exclusive_scan (plus)...\n";
-
-  std::copy_n(in, N, out);
-
-  ///
-  /// TODO...
-  ///
-  /// EXERCISE: Implement an exclusive RAJA scan with RAJA::cuda_exec
-  ///           execution policy type and an explicit plus operator. 
-  ///
-
-  CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
-  printArray(out, N);
-  std::cout << "\n";
-
-#endif
-
-//----------------------------------------------------------------------------//
-
+  
 #if defined(RAJA_ENABLE_HIP)
 
 //----------------------------------------------------------------------------//
@@ -324,6 +289,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE: Implement an inclusive inplace RAJA scan with RAJA::hip_exec
   ///           execution policy type and an explicit plus operator. 
   ///
+  ///           NOTE: You will have to uncomment 'HIP_BLOCK_SIZE' near the
+  ///                 of the file if you want to use it here.
+  ///
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
 
@@ -343,6 +311,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement an exclusive RAJA scan with RAJA::hip_exec
   ///           execution policy type and an explicit plus operator. 
+  ///
+  ///           NOTE: You will have to uncomment 'HIP_BLOCK_SIZE' near the
+  ///                 of the file if you want to use it here.
   ///
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
