@@ -27,11 +27,11 @@ gcc_8_1_0:
 #    DEFAULT_TIME: 40
 #  extends: .build_and_test_on_ruby
 
-icpc_18_0_2:
-  variables:
-    SPEC: " tests=none %intel@18.0.2"
-    DEFAULT_TIME: 40
-  extends: .build_and_test_on_ruby
+# icpc_18_0_2:
+#   variables:
+#     SPEC: " tests=none %intel@18.0.2"
+#     DEFAULT_TIME: 40
+#   extends: .build_and_test_on_ruby
 
 icpc_19_1_0:
   variables:
