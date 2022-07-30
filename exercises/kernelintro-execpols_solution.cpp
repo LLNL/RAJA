@@ -70,9 +70,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   constexpr int N = 100;
   constexpr int N_tot = N * N * N;
   constexpr double c = 0.0001;
-// _init_define_end
   double* a = memoryManager::allocate<double>(N_tot);
   double* a_ref = memoryManager::allocate<double>(N_tot);
+// _init_define_end
 
 //----------------------------------------------------------------------------//
 // C-style sequential variant establishes reference solution to compare with.
@@ -255,14 +255,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // C-style and RAJA CUDA GPU variants.
 //----------------------------------------------------------------------------//
 
-  //
-  // Define total thread-block size and size of each block dimension
-  //
-  constexpr int block_size = 256; 
-  constexpr int i_block_sz = 32; 
-  constexpr int j_block_sz = block_size / i_block_sz;
-  constexpr int k_block_sz = 1; 
-
   std::cout << "\n Running RAJA CUDA tensor init...\n";
 
   // set tensor data to zero to ensure we initializing it correctly.
@@ -300,10 +292,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // set tensor data to zero to ensure we initializing it correctly.
   std::memset(a, 0, N_tot * sizeof(double));
 
+  //
+  // Define total thread-block size and size of each block dimension
+  //
+// _cuda_blockdim_start
+  constexpr int block_size = 256; 
+  constexpr int i_block_sz = 32; 
+  constexpr int j_block_sz = block_size / i_block_sz;
+  constexpr int k_block_sz = 1; 
+// _cuda_blockdim_end
+
 // _raja_tensorinit_cuda_tiled_direct_start
   using EXEC_POL5 =
     RAJA::KernelPolicy<
-      RAJA::statement::CudaKernelFixed< i_block_sz * j_block_sz,
+      RAJA::statement::CudaKernelFixed< i_block_sz * j_block_sz * k_block_sz,
         RAJA::statement::Tile<1, RAJA::tile_fixed<j_block_sz>,
                                  RAJA::cuda_block_y_direct,
           RAJA::statement::Tile<0, RAJA::tile_fixed<i_block_sz>,
@@ -364,12 +366,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // RAJA HIP GPU variants.
 //----------------------------------------------------------------------------//
 
-  //
-  // Define total thread-block size and size of each block dimension
-  //
-  constexpr int block_size = 256;
-  constexpr int i_block_sz = 32;
-  constexpr int j_block_sz = block_size / i_block_sz;
+  std::cout << "\n Running RAJA HIP tensor init...\n";
 
   // set tensor data to zero to ensure we initializing it correctly.
   std::memset(a, 0, N_tot * sizeof(double));
@@ -399,7 +396,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
        aView(i, j, k) = c * i * j * k ;
     }
   );
-// _raja_tensorinit_cuda_end
+// _raja_tensorinit_hip_end
 
   hipErrchk(hipMemcpy( a, d_a, N_tot * sizeof(double), hipMemcpyDeviceToHost ));
   checkResult(a, a_ref, N_tot);
@@ -408,6 +405,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA HIP tensor init tiled-direct...\n";
 
+  //
+  // Define total thread-block size and size of each block dimension
+  //
+  constexpr int block_size = 256;
+  constexpr int i_block_sz = 32;
+  constexpr int j_block_sz = block_size / i_block_sz;
+  constexpr int k_block_sz = 1; 
+
   // set tensor data to zero to ensure we initializing it correctly.
   std::memset(a, 0, N_tot * sizeof(double));
   hipErrchk(hipMemcpy( d_a, a, N_tot * sizeof(double), hipMemcpyHostToDevice ));
@@ -415,7 +420,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // _raja_tensorinit_hip_tiled_direct_start
   using EXEC_POL7 =
     RAJA::KernelPolicy<
-      RAJA::statement::HipKernelFixed< i_block_sz * j_block_sz,
+      RAJA::statement::HipKernelFixed< i_block_sz * j_block_sz * k_block_sz,
         RAJA::statement::Tile<1, RAJA::tile_fixed<j_block_sz>,
                                  RAJA::hip_block_y_direct,
           RAJA::statement::Tile<0, RAJA::tile_fixed<i_block_sz>,

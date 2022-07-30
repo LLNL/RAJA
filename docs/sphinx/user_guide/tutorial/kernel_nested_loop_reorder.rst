@@ -227,4 +227,4 @@ and the lambda expression argument list.
    :language: C++
 
 Do you see the problem? The last kernel is included in the exercise source
-file, so you can see what happens when you attempt to build it.
+file, so you can see what happens when you attempt to compile it.
