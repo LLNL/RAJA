@@ -201,8 +201,8 @@ For context and comparison, here is the same kernel implementation using
 CUDA directly:
 
 .. literalinclude:: ../../../../exercises/kernelintro-execpols_solution.cpp
-   :start-after: _tensorinit_cuda_tiled_direct_start
-   :end-before: _tensorinit_cuda_tiled_direct_end
+   :start-after: _cuda_tensorinit_tiled_direct_start
+   :end-before: _cuda_tensorinit_tiled_direct_end
    :language: C++
 
 The ``nested_init`` device kernel used here is:
