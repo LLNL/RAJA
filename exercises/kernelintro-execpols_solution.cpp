@@ -369,7 +369,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // set tensor data to zero to ensure we initializing it correctly.
   std::memset(a, 0, N_tot * sizeof(double));
 
-// _tensorinit_cuda_tiled_direct_start
+// _cuda_tensorinit_tiled_direct_start
   dim3 nthreads_per_block(i_block_sz, j_block_sz, k_block_sz);
   static_assert(i_block_sz*j_block_sz*k_block_sz == block_size, 
                 "Invalid block_size");
@@ -382,7 +382,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     <<<nblocks, nthreads_per_block>>>(a, c, N);
   cudaErrchk( cudaGetLastError() );
   cudaErrchk(cudaDeviceSynchronize());
-// _tensorinit_cuda_tiled_direct_end
+// _cuda_tensorinit_tiled_direct_end
 
   checkResult(a, a_ref, N_tot);
 

@@ -130,14 +130,14 @@ and
 The first of these, in which we parallelize the outer 'k' loop simply replaces
 the ``RAJA::loop_exec`` loop execution policy with the 
 ``RAJA::omp_parallel_for_exec`` policy, which applies the same OpenMP
-directive we described for the C-style variant to the outer loop.
+directive to the outer loop we described for the C-style variant.
 
 The RAJA OpenMP collapse variant introduces the ``RAJA::statement::Collapse``
 statement type. We use the ``RAJA::omp_parallel_collapse_exec`` execution
 policy type and indicate that we want to collapse all three loop levels
 in the second template argument ``RAJA::ArgList<2, 1, 0>``. The integer
-values in the list indicate the order of the loops in collapse operation:
-`k` (2) outer, 'j' (1) middle, and 'i' (0) inner. The integers represent
+values in the list indicate the order of the loops in the collapse operation:
+'k' (2) outer, 'j' (1) middle, and 'i' (0) inner. The integers represent
 the order of the lambda arguments and the order of the range segments in the
 iteration space tuple.
 
@@ -167,8 +167,8 @@ coordinate dimension.
           it turns off the device decoration if the code is compiled with
           CUDA (or HIP) disabled.
 
-To execute the kernel with a prescribed thread-block size using RAJA, we 
-could do the following:
+To execute the kernel with a prescribed mapping of iterations to a
+thread-block using RAJA, we could do the following:
 
 .. literalinclude:: ../../../../exercises/kernelintro-execpols_solution.cpp
    :start-after: _raja_tensorinit_cuda_tiled_direct_start
@@ -186,14 +186,14 @@ The ``RAJA::statement::CudaKernelFixed`` statement indicates that we want to
 use a fixed thread-block size of 256 with dimensions (32, 8, 1). To ensure that
 we are mapping the kernel iterations properly in chunks of 256 threads to 
 each thread-block, we use RAJA loop tiling statements in which we specify the
-tile size for each dimension/loop index, such as 
-``RAJA::statement::Tile<1, RAJA::tile_fixed<j_block_sz>`` for the 'j' loop.
-Note that we do not tile the 'k' loop, since the block size is one in that
-dimension. The other main difference with the previous block-stride loop
+tile size for each dimension/loop index. For example, the statement
+``RAJA::statement::Tile<1, RAJA::tile_fixed<j_block_sz>`` is used on the 
+'j' loop. Note that we do not tile the 'k' loop, since the block size is one 
+in that dimension. The other main difference with the previous block-stride loop
 version is that we map iterations within each tile directly to threads in
 a block; for example, using a ``RAJA::cuda_block_y_direct`` policy type
 for the 'j' loop. RAJA *direct* policy types eliminate the block-stride looping,
-which is not necessary here since we prescribed a block-size of 256 which 
+which is not necessary here since we prescribe a block-size of 256 which 
 fits within the thread-block size limitation of the CUDA device programming 
 model.
 
@@ -242,8 +242,8 @@ and the HIP fixed thread-block size, tiled, direct thread mapping version:
    :end-before: _raja_tensorinit_hip_tiled_direct_end
    :language: C++
 
-The only differences is that type names are changed to replace 'CUDA' types 
-with 'HIP' types.
+The only differences are that type names are changed to replace 'CUDA' types 
+with 'HIP' types to use the RAJA HIP back-end.
 
 .. note:: The C++ lambda expression representing the kernel inner loop body
           in a HIP GPU kernel requires the ``__device__`` annotation, the
