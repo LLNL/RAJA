@@ -167,6 +167,10 @@ a template argument as described above.
  omp_for_runtime_exec                   forall,       Same as applying
                                         kernel (For)  'omp for
                                                       schedule(runtime)'
+ omp_parallel_collapse_exec             kernel        Use in Collapse statement
+                                        (Collapse +   to parallelize multiple
+                                         ArgList)     loop levels in loop nest
+                                                      indicated using ArgList
  ====================================== ============= ==========================
 
 .. important:: **RAJA only provides a nowait policy option for static schedule**
