@@ -50,6 +50,7 @@ module load cmake/3.14.5
 ##
 
 cmake \
+  -DBLT_CXX_STD=c++14 \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/intel/intel-${COMP_VER}/bin/icpc \
   -DCMAKE_C_COMPILER=/usr/tce/packages/intel/intel-${COMP_VER}/bin/icc \
