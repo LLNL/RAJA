@@ -27,6 +27,9 @@ raja_add_executable(
   SOURCES reductions_solution.cpp)
 
 raja_add_executable(
+  NAME kernelintro-execpols
+  SOURCES kernelintro-execpols.cpp)
+raja_add_executable(
   NAME kernelintro-execpols_solution
   SOURCES kernelintro-execpols_solution.cpp)
 

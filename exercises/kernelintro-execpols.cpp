@@ -122,26 +122,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // set tensor data to zero to ensure we initializing it correctly.
   std::memset(a, 0, N_tot * sizeof(double));
 
-// _raja_tensorinit_seq_start
-  using EXEC_POL1 =
-    RAJA::KernelPolicy<
-      RAJA::statement::For<2, RAJA::loop_exec,    // k
-        RAJA::statement::For<1, RAJA::loop_exec,  // j
-          RAJA::statement::For<0, RAJA::loop_exec,// i
-            RAJA::statement::Lambda<0>
-          >
-        >
-      >
-    >;
-
-  RAJA::kernel<EXEC_POL1>( RAJA::make_tuple( RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N) ),
-    [=]( int i, int j, int k) {  
-       aView(i, j, k) = c * i * j * k ;
-    }
-  );
-// _raja_tensorinit_seq_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a sequential RAJA::kernel based version of the 
+  ///           the tensor initialization kernel. Hint: recall the 
+  ///           kernelintro-nested-loop-reorder.cpp exercise file used in
+  ///           the previous tutorial section.
+  ///
 
   checkResult(a, a_ref, N_tot);
 
@@ -253,25 +241,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // set tensor data to zero to ensure we initializing it correctly.
   std::memset(a, 0, N_tot * sizeof(double));
 
-// _raja_tensorinit_omp_collapse_start
-  using EXEC_POL4 =
-    RAJA::KernelPolicy<
-      RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                                RAJA::ArgList<2, 1>,    // k, j
-        RAJA::statement::For<0, RAJA::loop_exec,        // i
-          RAJA::statement::Lambda<0>
-        >
-      >
-    >;
-
-  RAJA::kernel<EXEC_POL4>( RAJA::make_tuple( RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N) ),
-    [=]( int i, int j, int k) {
-       aView(i, j, k) = c * i * j * k ;
-    }
-  );
-// _raja_tensorinit_omp_collapse_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement an OpenMP RAJA::kernel based version of the
+  ///           kernel that collapses the outer two (k, j) loops and
+  ///           runs the inner 'i' loop sequentially. Hint: adjust the
+  ///           entries in the 'ArgList' above and insert a 'For' statement
+  ///           statement to execute the inner loop.
+  ///      
 
   checkResult(a, a_ref, N_tot);
 

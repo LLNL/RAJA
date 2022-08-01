@@ -141,24 +141,24 @@ values in the list indicate the order of the loops in the collapse operation:
 the order of the lambda arguments and the order of the range segments in the
 iteration space tuple.
 
-The RAJA-based kernel for parallel GPU execution using the RAJA CUDA
-back-end is:
+The first RAJA-based kernel for parallel GPU execution using the RAJA CUDA
+back-end we introduce is:
 
 .. literalinclude:: ../../../../exercises/kernelintro-execpols_solution.cpp
    :start-after: _raja_tensorinit_cuda_start
    :end-before: _raja_tensorinit_cuda_end
    :language: C++
 
-Here, we introduce the ``RAJA::statement::CudaKernel`` statement type,
-which indicates that a CUDA kernel will be launched. The 'k', 'j', 'i'
+Here, we use the ``RAJA::statement::CudaKernel`` statement type to
+indicate that we want a CUDA kernel to be launched. The 'k', 'j', 'i'
 iteration variables are mapped to CUDA threads using the CUDA execution
 policy types ``RAJA::cuda_thread_z_loop``, ``RAJA::cuda_thread_y_loop``,
-and ``RAJA::cuda_thread_x_loop``, respectively. In other words, we use a 
+and ``RAJA::cuda_thread_x_loop``, respectively. Thus, we use a 
 a three-dimensional CUDA thread-block to map the loop iterations to CUDA
 threads. The ``_loop`` part of each execution policy name indicates that
 the indexing in the associated portion of the mapping will use a block-stride
-loop, which will be guaranteed to work for a tensor of any size in each
-coordinate dimension.
+loop. This is useful to guarantee that the policy will work for any 
+tensor regardless of size in each coordinate dimension.
 
 .. note:: A GPU device kernel body expressed as a C++ lambda expression 
           requires the ``__device__`` decoration. This can be inserted
