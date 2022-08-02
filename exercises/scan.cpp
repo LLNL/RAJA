@@ -236,7 +236,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE: Implement an inclusive inplace RAJA scan with RAJA::cuda_exec
   ///           execution policy type and an explicit plus operator.
   ///
-  ///           NOTE: You will have to uncomment 'CUDA_BLOCK_SIZE' near the
+  ///           NOTE: You will have to uncomment 'CUDA_BLOCK_SIZE' near the top
   ///                 of the file if you want to use it here.
   ///
 
@@ -256,7 +256,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE: Implement an exclusive inplace RAJA scan with RAJA::cuda_exec
   ///           execution policy type and an explicit plus operator.
   ///
-  ///           NOTE: You will have to uncomment 'CUDA_BLOCK_SIZE' near the
+  ///           NOTE: You will have to uncomment 'CUDA_BLOCK_SIZE' near the top
   ///                 of the file if you want to use it here.
   ///
 
@@ -276,7 +276,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE: Implement an exclusive RAJA scan with RAJA::cuda_exec
   ///           execution policy type and an explicit plus operator.
   ///
-  ///           NOTE: You will have to uncomment 'CUDA_BLOCK_SIZE' near the
+  ///           NOTE: You will have to uncomment 'CUDA_BLOCK_SIZE' near the top
   ///                 of the file if you want to use it here.
   ///
 
@@ -288,7 +288,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  
+
 #if defined(RAJA_ENABLE_HIP)
 
 //----------------------------------------------------------------------------//
@@ -309,7 +309,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE: Implement an inclusive inplace RAJA scan with RAJA::hip_exec
   ///           execution policy type and an explicit plus operator. 
   ///
-  ///           NOTE: You will have to uncomment 'HIP_BLOCK_SIZE' near the
+  ///           NOTE: You will have to uncomment 'HIP_BLOCK_SIZE' near the top
   ///                 of the file if you want to use it here.
   ///
 
@@ -332,7 +332,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE: Implement an exclusive RAJA scan with RAJA::hip_exec
   ///           execution policy type and an explicit plus operator. 
   ///
-  ///           NOTE: You will have to uncomment 'HIP_BLOCK_SIZE' near the
+  ///           NOTE: You will have to uncomment 'HIP_BLOCK_SIZE' near the top
   ///                 of the file if you want to use it here.
   ///
 
