@@ -130,7 +130,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// NOTE: We've done this one for you to help you get started...
   ///
 
+  // _sort_seq_start
   RAJA::sort<RAJA::seq_exec>(RAJA::make_span(out, N));
+  // _sort_seq_end
 
   //checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
   CHECK_UNSTABLE_SORT_RESULT(OP_LESS);
@@ -480,7 +482,7 @@ void checkUnstableSortResult(const T* in, const T* out, int N)
     std::cout << "\n\t result -- CORRECT\n";
   }
 }
-///
+
 template <typename Comparator, typename T, typename U>
 void checkUnstableSortResult(const T* in, const T* out,
                              const U* in_vals, const U* out_vals, int N)
@@ -612,7 +614,7 @@ void checkStableSortResult(const T* in, const T* out, int N)
     std::cout << "\n\t result -- CORRECT\n";
   }
 }
-///
+
 template <typename Comparator, typename T, typename U>
 void checkStableSortResult(const T* in, const T* out,
                            const U* in_vals, const U* out_vals, int N)

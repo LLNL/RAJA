@@ -29,7 +29,7 @@
  */
 
 /*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
+  Specify the number of threads in a GPU thread block
 */
 #if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE = 256;
@@ -140,8 +140,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP reductions...\n";
 
+  // _reductions_raja_omppolicy_start
   using EXEC_POL2   = RAJA::omp_parallel_for_exec;
   using REDUCE_POL2 = RAJA::omp_reduce;
+  // _reductions_raja_omppolicy_end
 
   ///
   /// TODO...
@@ -229,8 +231,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int* d_a = memoryManager::allocate_gpu<int>(N);
   hipErrchk(hipMemcpy( d_a, a, N * sizeof(int), hipMemcpyHostToDevice ));
 
+  // _reductions_raja_hippolicy_start
   using EXEC_POL3   = RAJA::hip_exec<HIP_BLOCK_SIZE>;
   using REDUCE_POL3 = RAJA::hip_reduce;
+  // _reductions_raja_hippolicy_end
 
   RAJA::ReduceSum<REDUCE_POL3, int> hip_sum(0);
   RAJA::ReduceMin<REDUCE_POL3, int> hip_min(std::numeric_limits<int>::max());

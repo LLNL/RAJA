@@ -191,8 +191,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _scan_exclusive_inplace_omp_plus_start
-  RAJA::exclusive_scan_inplace<RAJA::omp_parallel_for_exec>(RAJA::make_span(out, N),
-                                                            RAJA::operators::plus<int>{});
+  RAJA::exclusive_scan_inplace<RAJA::omp_parallel_for_exec>(
+      RAJA::make_span(out, N),
+      RAJA::operators::plus<int>{});
   // _scan_exclusive_inplace_omp_plus_end
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
@@ -206,7 +207,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
 
 //----------------------------------------------------------------------------//
-// Perform a couple of CUDA scans...
+// Perform a few CUDA scans...
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running CUDA inclusive_scan_inplace (plus)...\n";
@@ -214,8 +215,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _scan_inclusive_inplace_cuda_plus_start
-  RAJA::inclusive_scan_inplace<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::make_span(out, N),
-                                                                 RAJA::operators::plus<int>{});
+  RAJA::inclusive_scan_inplace<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
+      RAJA::make_span(out, N),
+      RAJA::operators::plus<int>{});
   // _scan_inclusive_inplace_cuda_plus_end
 
   CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
@@ -224,39 +226,17 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running OpenMP exclusive_scan_inplace (plus)...\n";
+  std::cout << "\n Running CUDA exclusive_scan_inplace (plus)...\n";
 
   std::copy_n(in, N, out);
 
-  // _scan_exclusive_inplace_omp_plus_start
-  RAJA::exclusive_scan_inplace<RAJA::omp_parallel_for_exec>(RAJA::make_span(out, N),
-                                                            RAJA::operators::plus<int>{});
-  // _scan_exclusive_inplace_omp_plus_end
+  // _scan_exclusive_inplace_cuda_plus_start
+  RAJA::exclusive_scan_inplace<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
+      RAJA::make_span(out, N),
+      RAJA::operators::plus<int>{});
+  // _scan_exclusive_inplace_cuda_plus_end
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
-  printArray(out, N);
-  std::cout << "\n";
-
-#endif
-
-//----------------------------------------------------------------------------//
-
-#if defined(RAJA_ENABLE_CUDA)
-
-//----------------------------------------------------------------------------//
-// Perform a couple of CUDA scans...
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n Running CUDA inclusive_scan_inplace (plus)...\n";
-
-  std::copy_n(in, N, out);
-
-  // _scan_inclusive_inplace_cuda_plus_start
-  RAJA::inclusive_scan_inplace<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::make_span(out, N),
-                                                                 RAJA::operators::plus<int>{});
-  // _scan_inclusive_inplace_cuda_plus_end
-
-  CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
   std::cout << "\n";
 
@@ -267,9 +247,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _scan_exclusive_cuda_plus_start
-  RAJA::exclusive_scan<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::make_span(in, N),
-                                                         RAJA::make_span(out, N),
-                                                         RAJA::operators::plus<int>{});
+  RAJA::exclusive_scan<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
+      RAJA::make_span(in, N),
+      RAJA::make_span(out, N),
+      RAJA::operators::plus<int>{});
   // _scan_exclusive_cuda_plus_end
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
@@ -279,6 +260,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #endif
 
 //----------------------------------------------------------------------------//
+
 
 #if defined(RAJA_ENABLE_HIP)
 
@@ -295,8 +277,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
 
   // _scan_exclusive_hip_plus_start
-  RAJA::inclusive_scan_inplace<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::make_span(d_out, N),
-                                                               RAJA::operators::plus<int>{});
+  RAJA::inclusive_scan_inplace<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
+      RAJA::make_span(d_out, N),
+      RAJA::operators::plus<int>{});
   // _scan_exclusive_hip_plus_end
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
@@ -307,13 +290,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
+  std::cout << "\n Running HIP exclusive_scan (plus)...\n";
+
   hipErrchk(hipMemcpy( d_in, in, N * sizeof(int), hipMemcpyHostToDevice ));
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
 
-  std::cout << "\n Running HIP exclusive_scan (plus)...\n";
-  RAJA::exclusive_scan<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::make_span(d_in, N),
-                                                       RAJA::make_span(d_out, N),
-                                                       RAJA::operators::plus<int>{});
+  RAJA::exclusive_scan<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
+      RAJA::make_span(d_in, N),
+      RAJA::make_span(d_out, N),
+      RAJA::operators::plus<int>{});
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
 

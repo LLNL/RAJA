@@ -73,6 +73,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n\nExercise: Mesh vertex area with 'colored' IndexSet...\n";
 
+// _vertexsum_define_start
 //
 // 2D mesh has N^2 elements (N+1)^2 vertices.
 //
@@ -81,11 +82,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int Nelem_tot = Nelem * Nelem;
   const int Nvert = N + 1;
   const int Nvert_tot = Nvert * Nvert;
+// _vertexsum_define_end
   double* areae = memoryManager::allocate<double>(Nelem_tot);
   double* areav = memoryManager::allocate<double>(Nvert_tot);
   double* areav_ref = memoryManager::allocate<double>(Nvert_tot);
   int* e2v_map = memoryManager::allocate<int>(4*Nelem_tot);
 
+// _vertexsum_elemarea_start
 //
 // Define mesh spacing factor 'h' and set up elem to vertex mapping array.
 //
@@ -111,6 +114,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     int j = ie / Nelem;
     areae[ie] = h*(i+1) * h*(j+1);
   }
+// _vertexsum_elemarea_end
 
 //std::cout << "\n Element areas...\n";
 //printMeshData(areae, Nelem, Nelem);
@@ -121,6 +125,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running sequential C-style version of vertex sum...\n";
 
+// _cstyle_vertexarea_seq_start
   std::memset(areav_ref, 0, Nvert_tot * sizeof(double));
 
   for (int ie = 0; ie < Nelem_tot; ++ie) {
@@ -130,6 +135,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     areav_ref[ iv[2] ] += areae[ie] / 4.0 ;
     areav_ref[ iv[3] ] += areae[ie] / 4.0 ;
   }
+// _cstyle_vertexarea_seq_end
 
 //std::cout << "\n Vertex areas (reference)...\n";
 //printMeshData(areav_ref, Nvert, jvoff);
@@ -157,6 +163,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // partitioning. 
 //
 
+// _vertexarea_color_start
 //
 // Gather the element indices for each color in a vector.
 //
@@ -179,6 +186,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
     }
   }
+// _vertexarea_color_end
 
 
 //----------------------------------------------------------------------------//
@@ -191,6 +199,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running C-style OpenMP vertex sum...\n";
 
 
+// _cstyle_vertexarea_omp_start
   std::memset(areav, 0, Nvert_tot * sizeof(double));
 
   for (int icol = 0; icol < 4; ++icol) {
@@ -208,6 +217,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      }
 
   }
+// _cstyle_vertexarea_omp_end
 
   checkResult(areav, areav_ref, Nvert);
 //std::cout << "\n Vertex areas (reference)...\n";
@@ -220,7 +230,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // are the segment types that the IndexSet can hold. 
 // 
 #if defined(RAJA_ENABLE_OPENMP) || defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+// _vertexarea_listsegtype_start
   using SegmentType = RAJA::TypedListSegment<int>;
+// _vertexarea_listsegtype_end
 #endif
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -257,6 +269,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(areav, 0, Nvert*Nvert * sizeof(double));
 
+// _raja_vertexarea_omp_start
   using EXEC_POL1 = RAJA::ExecPolicy<RAJA::seq_segit, 
                                      RAJA::omp_parallel_for_exec>;
 
@@ -267,6 +280,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     areav[ iv[2] ] += areae[ie] / 4.0 ;
     areav[ iv[3] ] += areae[ie] / 4.0 ;
   });
+// _raja_vertexarea_omp_end
 
   checkResult(areav, areav_ref, Nvert);
 //std::cout << "\n Vertex volumes...\n";
@@ -296,14 +310,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::TypedIndexSet<SegmentType> cuda_colorset;
 
   cuda_colorset.push_back( SegmentType(&idx[0][0], idx[0].size(), cuda_res) );
-  cuda_colorset.push_back( SegmentType(&idx[1][0], idx[1].size(), cuda_res) );
-  cuda_colorset.push_back( SegmentType(&idx[2][0], idx[2].size(), cuda_res) );
-  cuda_colorset.push_back( SegmentType(&idx[3][0], idx[3].size(), cuda_res) );
+
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Add the three list segments to the index set to account
+  ///           for all mesh elements. Then, run the CUDA kernel variant
+  ///           below to check if it's correct.
+  ///
 
   std::cout << "\n Running RAJA CUDA index set vertex sum...\n";
 
   std::memset(areav, 0, Nvert*Nvert * sizeof(double));
 
+// _raja_vertexarea_cuda_start
   using EXEC_POL2 = RAJA::ExecPolicy<RAJA::seq_segit, 
                                      RAJA::cuda_exec<CUDA_BLOCK_SIZE>>;
 
@@ -314,6 +334,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     areav[ iv[2] ] += areae[ie] / 4.0 ;
     areav[ iv[3] ] += areae[ie] / 4.0 ;
   });
+// _raja_vertexarea_cuda_end
 
   checkResult(areav, areav_ref, Nvert);
 //std::cout << "\n Vertex volumes...\n";
@@ -361,6 +382,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA HIP index set vertex sum...\n";
 
+// _raja_vertexarea_hip_start
   using EXEC_POL3 = RAJA::ExecPolicy<RAJA::seq_segit,
                                      RAJA::hip_exec<HIP_BLOCK_SIZE>>;
 
@@ -371,6 +393,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     d_areav[ iv[2] ] += d_areae[ie] / 4.0 ;
     d_areav[ iv[3] ] += d_areae[ie] / 4.0 ;
   });
+// _raja_vertexarea_hip_end
 
   hipMemcpy(areav, d_areav, Nvert_tot*sizeof(double), hipMemcpyDeviceToHost);
   checkResult(areav, areav_ref, Nvert);

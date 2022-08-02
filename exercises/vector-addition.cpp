@@ -94,9 +94,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running C-style sequential vector addition...\n";
 
+  // _cstyle_vector_add_start
   for (int i = 0; i < N; ++i) {
     c_ref[i] = a[i] + b[i];
   }
+  // _cstyle_vector_add_end
 
 //printArray(c_ref, N);
 
@@ -118,9 +120,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// NOTE: We've done this one for you to help you get started...
   ///
 
+  // _rajaseq_vector_add_start
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
-  });    
+  });
+  // _rajaseq_vector_add_end
 
   checkResult(c, c_ref, N);
 //printArray(c, N);

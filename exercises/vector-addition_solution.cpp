@@ -36,7 +36,7 @@
  */
 
 /*
-  Specifies the number of threads in a GPU thread block
+  Specify the number of threads in a GPU thread block
 */
 #if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE = 256;
@@ -114,7 +114,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _rajaseq_vector_add_start
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
     c[i] = a[i] + b[i]; 
-  });    
+  });
   // _rajaseq_vector_add_end
 
   checkResult(c, c_ref, N);
@@ -246,7 +246,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _rajacuda_explicit_vector_add_end
 
   cudaErrchk(cudaMemcpy( c, d_c, N * sizeof(int), cudaMemcpyDeviceToHost ));
-
 
   checkResult(c, c_ref, N);
 //printResult(c, N);

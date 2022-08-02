@@ -14,7 +14,7 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Vector Dot Product Example
+ *  Vector Dot Product Exercise
  *
  *  Computes dot = (a,b), where a, b are vectors of 
  *  doubles and dot is a scalar double. It illustrates how RAJA

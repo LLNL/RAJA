@@ -264,6 +264,26 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   printArray(out, N);
   std::cout << "\n";
 
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running CUDA exclusive_scan (plus)...\n";
+
+  std::copy_n(in, N, out);
+
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement an exclusive RAJA scan with RAJA::cuda_exec
+  ///           execution policy type and an explicit plus operator.
+  ///
+  ///           NOTE: You will have to uncomment 'CUDA_BLOCK_SIZE' near the
+  ///                 of the file if you want to use it here.
+  ///
+
+  CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
+  printArray(out, N);
+  std::cout << "\n";
+
 #endif
 
 //----------------------------------------------------------------------------//
