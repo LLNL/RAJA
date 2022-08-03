@@ -122,6 +122,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // set tensor data to zero to ensure we initializing it correctly.
   std::memset(a, 0, N_tot * sizeof(double));
 
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Complete sequential RAJA::expt::launch based version of the
+  ///           the tensor initialization kernel.
+  ///
+
 // _raja_tensorinit_seq_start
   using loop_policy_1 = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
   using launch_policy_1 = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
@@ -131,13 +138,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::loop<loop_policy_1>(ctx, RAJA::RangeSegment(0, N), [&] (int k) {
-         RAJA::expt::loop<loop_policy_1>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
-            RAJA::expt::loop<loop_policy_1>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
 
-                aView(i, j, k) = c * i * j * k ;
+          //Add additional loop methods to complete the kernel
 
-            });
-         });
       });
   });
 // _raja_tensorinit_seq_end
@@ -175,24 +178,31 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // set tensor data to zero to ensure we initializing it correctly.
   std::memset(a, 0, N_tot * sizeof(double));
 
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Complete an OpenMP RAJA::expt::launch based version of the
+  ///           kernel that creates a parallel outer loop.
+  ///
+
 // _raja_tensorinit_omp_outer_start
   using omp_policy_2 = RAJA::expt::LoopPolicy<RAJA::omp_for_exec>;
   using loop_policy_2 = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
-  using launch_policy_2 = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
+  using launch_policy_2 = RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t>;
 
   RAJA::expt::launch<launch_policy_2>
     (RAJA::expt::Grid(), //Grid may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::loop<omp_policy_2>(ctx, RAJA::RangeSegment(0, N), [&] (int k) {
+         //TODO: Use the omp_policy_2 to distribute loop iterations
+         //in a RAJA::expt::loop method
          RAJA::expt::loop<loop_policy_2>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
             RAJA::expt::loop<loop_policy_2>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
 
-                aView(i, j, k) = c * i * j * k ;
 
             });
          });
-      });
+
   });
 // _raja_tensorinit_omp_outer_end
 

@@ -35,6 +35,10 @@ raja_add_executable(
   SOURCES kernelintro-execpols_solution.cpp)
 
 raja_add_executable(
+  NAME launchintro-execpols
+  SOURCES launchintro-execpols.cpp)
+
+raja_add_executable(
   NAME launchintro-execpols_solution
   SOURCES launchintro-execpols_solution.cpp)
 
