@@ -29,9 +29,14 @@ raja_add_executable(
 raja_add_executable(
   NAME kernelintro-execpols
   SOURCES kernelintro-execpols.cpp)
+
 raja_add_executable(
   NAME kernelintro-execpols_solution
   SOURCES kernelintro-execpols_solution.cpp)
+
+raja_add_executable(
+  NAME launchintro-execpols_solution
+  SOURCES launchintro-execpols_solution.cpp)
 
 raja_add_executable(
   NAME kernelintro-nested-loop-reorder

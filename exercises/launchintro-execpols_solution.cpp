@@ -18,15 +18,15 @@
 #include "memoryManager.hpp"
 
 /*
- *  RAJA::kernel execution policies
+ *  RAJA::expt::Launch execution policies
  *
  *  In this exercise, you will use a variety of nested-loop execution
  *  policies to initalize entries in a three-dimensional tensor. The
- *  goal of the exercise is to gain familiarity with RAJA::kernel
+ *  goal of the exercise is to gain familiarity with RAJA::expt::Launch
  *  execution policies for various RAJA execution back-ends.
  *
  *  RAJA features you will use:
- *    - `RAJA::kernel` kernel execution template method and exec policies
+ *    - `RAJA::expt::Launch` kernel execution template method and exec policies
  *    - Simple RAJA View/Layout
  *    - RAJA Range segment
  *
@@ -122,14 +122,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // set tensor data to zero to ensure we initializing it correctly.
   std::memset(a, 0, N_tot * sizeof(double));
 
-  ///
-  /// TODO...
-  ///
-  /// EXERCISE: Implement a sequential RAJA::kernel based version of the
-  ///           the tensor initialization kernel. Hint: recall the
-  ///           kernelintro-nested-loop-reorder.cpp exercise file used in
-  ///           the previous tutorial section.
-  ///
+// _raja_tensorinit_seq_start
+  using loop_policy_1 = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
+  using launch_policy_1 = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
+
+  RAJA::expt::launch<launch_policy_1>
+    (RAJA::expt::Grid(), //Grid may be empty when running on the host
+    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+
+      RAJA::expt::loop<loop_policy_1>(ctx, RAJA::RangeSegment(0, N), [&] (int k) {
+         RAJA::expt::loop<loop_policy_1>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
+            RAJA::expt::loop<loop_policy_1>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
+
+                aView(i, j, k) = c * i * j * k ;
+
+            });
+         });
+      });
+  });
+// _raja_tensorinit_seq_end
 
   checkResult(a, a_ref, N_tot);
 
@@ -165,98 +176,45 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(a, 0, N_tot * sizeof(double));
 
 // _raja_tensorinit_omp_outer_start
-  using EXEC_POL2 =
-    RAJA::KernelPolicy<
-      RAJA::statement::For<2, RAJA::omp_parallel_for_exec,    // k
-        RAJA::statement::For<1, RAJA::loop_exec,              // j
-          RAJA::statement::For<0, RAJA::loop_exec,            // i
-            RAJA::statement::Lambda<0>
-          >
-        >
-      >
-    >;
+  using omp_policy_2 = RAJA::expt::LoopPolicy<RAJA::omp_for_exec>;
+  using loop_policy_2 = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
+  using launch_policy_2 = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
 
-  RAJA::kernel<EXEC_POL2>( RAJA::make_tuple( RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N) ),
-    [=]( int i, int j, int k) {
-       aView(i, j, k) = c * i * j * k ;
-    }
-  );
+  RAJA::expt::launch<launch_policy_1>
+    (RAJA::expt::Grid(), //Grid may be empty when running on the host
+    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+
+      RAJA::expt::loop<omp_policy_2>(ctx, RAJA::RangeSegment(0, N), [&] (int k) {
+         RAJA::expt::loop<loop_policy_2>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
+            RAJA::expt::loop<loop_policy_2>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
+
+                aView(i, j, k) = c * i * j * k ;
+
+            });
+         });
+      });
+  });
 // _raja_tensorinit_omp_outer_end
 
   checkResult(a, a_ref, N_tot);
-
+#endif
 //----------------------------------------------------------------------------//
-
-  std::cout << "\n Running C-style OpenMP collapse (3) tensor init...\n";
-
-  // set tensor data to zero to ensure we initializing it correctly.
-  std::memset(a, 0, N_tot * sizeof(double));
-
-  // _cstyle_tensorinit_omp_collapse_start
-  #pragma omp parallel for collapse(3)
-  for (int k = 0; k < N; ++k ) {
-    for (int j = 0; j < N; ++j ) {
-      for (int i = 0; i < N; ++i ) {
-        aView(i, j, k) = c * i * j * k ;
-      }
-    }
-  }
-// _cstyle_tensorinit_omp_collapse_end
-
-  checkResult(a, a_ref, N_tot);
-
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n Running RAJA OpenMP collapse(3) tensor init...\n";
-
-  // set tensor data to zero to ensure we initializing it correctly.
-  std::memset(a, 0, N_tot * sizeof(double));
-
-// _raja_tensorinit_omp_collapse_start
-  using EXEC_POL3 =
-    RAJA::KernelPolicy<
-      RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                                RAJA::ArgList<2, 1, 0>,  // k, j, i
-        RAJA::statement::Lambda<0>
-      >
-    >;
-
-  RAJA::kernel<EXEC_POL3>( RAJA::make_tuple( RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N) ),
-    [=]( int i, int j, int k) {
-       aView(i, j, k) = c * i * j * k ;
-    }
-  );
-// _raja_tensorinit_omp_collapse_end
-
-  checkResult(a, a_ref, N_tot);
-
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n Running RAJA OpenMP collapse(2) tensor init...\n";
-
-  // set tensor data to zero to ensure we initializing it correctly.
-  std::memset(a, 0, N_tot * sizeof(double));
-
-  ///
-  /// TODO...
-  ///
-  /// EXERCISE: Implement an OpenMP RAJA::kernel based version of the
-  ///           kernel that collapses the outer two (k, j) loops and
-  ///           runs the inner 'i' loop sequentially. Hint: adjust the
-  ///           entries in the 'ArgList' above and insert a 'For' statement
-  ///           statement to execute the inner loop.
-  ///
-
-  checkResult(a, a_ref, N_tot);
-
-#endif // if defined(RAJA_ENABLE_OPENMP)
-
 
 #if defined(RAJA_ENABLE_CUDA)
+
+  //
+  // Define total thread-block size and size of each block dimension
+  //
+// _cuda_blockdim_start
+  constexpr int block_size = 256;
+  constexpr int i_block_sz = 32;
+  constexpr int j_block_sz = block_size / i_block_sz;
+  constexpr int k_block_sz = 1;
+
+  const int n_blocks_i = RAJA_DIVIDE_CEILING_INT(N,i_block_sz);
+  const int n_blocks_j = RAJA_DIVIDE_CEILING_INT(N,j_block_sz);
+  const int n_blocks_k = RAJA_DIVIDE_CEILING_INT(N,k_block_sz);
+// _cuda_blockdim_end
 
 //----------------------------------------------------------------------------//
 // C-style and RAJA CUDA GPU variants.
@@ -268,26 +226,29 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(a, 0, N_tot * sizeof(double));
 
 // _raja_tensorinit_cuda_start
-  using EXEC_POL5 =
-    RAJA::KernelPolicy<
-      RAJA::statement::CudaKernel<
-        RAJA::statement::For<2, RAJA::cuda_thread_z_loop,      // k
-          RAJA::statement::For<1, RAJA::cuda_thread_y_loop,    // j
-            RAJA::statement::For<0, RAJA::cuda_thread_x_loop,  // i
-              RAJA::statement::Lambda<0>
-            >
-          >
-        >
-      >
-    >;
+  using cuda_teams_z_3 = RAJA::expt::LoopPolicy<RAJA::cuda_block_z_direct>;
+  using cuda_global_thread_y_3 = RAJA::expt::LoopPolicy<RAJA::cuda_global_thread_y>;
+  using cuda_global_thread_x_3 = RAJA::expt::LoopPolicy<RAJA::cuda_global_thread_x>;
 
-  RAJA::kernel<EXEC_POL5>( RAJA::make_tuple( RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N) ),
-    [=] __device__ ( int i, int j, int k) {
-       aView(i, j, k) = c * i * j * k ;
-    }
-  );
+  const bool async_3 = false;
+  using launch_policy_3 = RAJA::expt::LaunchPolicy<RAJA::expt::cuda_launch_t<async_3>>;
+
+  RAJA::expt::launch<launch_policy_3>
+    (RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_i ,n_blocks_j, n_blocks_k),
+                      RAJA::expt::Threads(i_block_sz, j_block_sz, k_block_sz)),
+    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+
+      RAJA::expt::loop<cuda_teams_z_3>(ctx, RAJA::RangeSegment(0, N), [&] (int k) {
+        RAJA::expt::loop<cuda_global_thread_y_3>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
+          RAJA::expt::loop<cuda_global_thread_x_3>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
+
+            aView(i, j, k) = c * i * j * k ;
+
+          });
+        });
+      });
+  });
+
 // _raja_tensorinit_cuda_end
 
   checkResult(a, a_ref, N_tot);
@@ -299,43 +260,43 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // set tensor data to zero to ensure we initializing it correctly.
   std::memset(a, 0, N_tot * sizeof(double));
 
-  //
-  // Define total thread-block size and size of each block dimension
-  //
-// _cuda_blockdim_start
-  constexpr int block_size = 256;
-  constexpr int i_block_sz = 32;
-  constexpr int j_block_sz = block_size / i_block_sz;
-  constexpr int k_block_sz = 1;
-// _cuda_blockdim_end
-
 // _raja_tensorinit_cuda_tiled_direct_start
-  using EXEC_POL6 =
-    RAJA::KernelPolicy<
-      RAJA::statement::CudaKernelFixed< i_block_sz * j_block_sz * k_block_sz,
-        RAJA::statement::Tile<1, RAJA::tile_fixed<j_block_sz>,
-                                 RAJA::cuda_block_y_direct,
-          RAJA::statement::Tile<0, RAJA::tile_fixed<i_block_sz>,
-                                   RAJA::cuda_block_x_direct,
-            RAJA::statement::For<2, RAJA::cuda_block_z_direct,      // k
-              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,   // j
-                RAJA::statement::For<0, RAJA::cuda_thread_x_direct, // i
-                  RAJA::statement::Lambda<0>
-                >
-              >
-            >
-          >
-        >
-      >
-    >;
+  using cuda_teams_z_4 = RAJA::expt::LoopPolicy<RAJA::cuda_block_z_direct>;
+  using cuda_teams_y_4 = RAJA::expt::LoopPolicy<RAJA::cuda_block_y_direct>;
+  using cuda_teams_x_4 = RAJA::expt::LoopPolicy<RAJA::cuda_block_x_direct>;
 
-  RAJA::kernel<EXEC_POL6>( RAJA::make_tuple( RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N) ),
-    [=] __device__ ( int i, int j, int k) {
-       aView(i, j, k) = c * i * j * k ;
-    }
-  );
+  using cuda_threads_y_4 = RAJA::expt::LoopPolicy<RAJA::cuda_thread_y_direct>;
+  using cuda_threads_x_4 = RAJA::expt::LoopPolicy<RAJA::cuda_thread_x_direct>;
+
+  const bool async_4 = false;
+  using launch_policy_4 = RAJA::expt::LaunchPolicy<RAJA::expt::cuda_launch_t<async_4>>;
+
+  RAJA::expt::launch<launch_policy_4>
+    (RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
+                      RAJA::expt::Threads(i_block_sz, j_block_sz, k_block_sz)),
+    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+
+      RAJA::expt::loop<cuda_teams_z_4>(ctx, RAJA::RangeSegment(0, N), [&] (int k) {
+
+        RAJA::expt::tile<cuda_teams_y_4>
+          (ctx, j_block_sz, RAJA::RangeSegment(0, N), [&] (RAJA::RangeSegment const &j_tile) {
+
+          RAJA::expt::tile<cuda_teams_x_4>
+            (ctx, i_block_sz, RAJA::RangeSegment(0, N), [&] (RAJA::RangeSegment const &i_tile) {
+
+            RAJA::expt::loop<cuda_threads_y_4>(ctx, j_tile, [&] (int j) {
+                RAJA::expt::loop<cuda_threads_x_4>(ctx, i_tile, [&] (int i) {
+
+                    aView(i, j, k) = c * i * j * k ;
+
+                  });
+              });
+
+            });
+          });
+
+      });
+    });
 // _raja_tensorinit_cuda_tiled_direct_end
 
   checkResult(a, a_ref, N_tot);
@@ -369,6 +330,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_HIP)
 
+  //
+  // Define total thread-block size and size of each block dimension
+  //
+  constexpr int block_size = 256;
+  constexpr int i_block_sz = 32;
+  constexpr int j_block_sz = block_size / i_block_sz;
+  constexpr int k_block_sz = 1;
+
+  const int n_blocks_i = RAJA_DIVIDE_CEILING_INT(N,i_block_sz);
+  const int n_blocks_j = RAJA_DIVIDE_CEILING_INT(N,j_block_sz);
+  const int n_blocks_k = RAJA_DIVIDE_CEILING_INT(N,k_block_sz);
+
 //----------------------------------------------------------------------------//
 // RAJA HIP GPU variants.
 //----------------------------------------------------------------------------//
@@ -381,31 +354,34 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 // _3D_raja_device_view_start
   RAJA::View< double, RAJA::Layout<3, int> > d_aView(d_a, N, N, N);
-// _3D_raja_device_view_end
+// _3D_raja_deviceview_end
 
   hipErrchk(hipMemcpy( d_a, a, N_tot * sizeof(double), hipMemcpyHostToDevice ));
 
 // _raja_tensorinit_hip_start
-  using EXEC_POL7 =
-    RAJA::KernelPolicy<
-      RAJA::statement::HipKernel<
-        RAJA::statement::For<2, RAJA::hip_thread_z_loop,      // k
-          RAJA::statement::For<1, RAJA::hip_thread_y_loop,    // j
-            RAJA::statement::For<0, RAJA::hip_thread_x_loop,  // i
-              RAJA::statement::Lambda<0>
-            >
-          >
-        >
-      >
-    >;
+  using hip_teams_z_5 = RAJA::expt::LoopPolicy<RAJA::hip_block_z_direct>;
+  using hip_global_thread_y_5 = RAJA::expt::LoopPolicy<RAJA::hip_global_thread_y>;
+  using hip_global_thread_x_5 = RAJA::expt::LoopPolicy<RAJA::hip_global_thread_x>;
 
-  RAJA::kernel<EXEC_POL7>( RAJA::make_tuple( RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N) ),
-    [=] __device__ ( int i, int j, int k) {
-       d_aView(i, j, k) = c * i * j * k ;
-    }
-  );
+  const bool async_5 = false;
+  using launch_policy_5 = RAJA::expt::LaunchPolicy<RAJA::expt::hip_launch_t<async_5>>;
+
+  RAJA::expt::launch<launch_policy_5>
+    (RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
+                      RAJA::expt::Threads(i_block_sz, j_block_sz, k_block_sz)),
+    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+
+       RAJA::expt::loop<hip_teams_z_5>(ctx, RAJA::RangeSegment(0, N), [&] (int k) {
+           RAJA::expt::loop<hip_global_thread_y_5>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
+               RAJA::expt::loop<hip_global_thread_x_5>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
+
+                   d_aView(i, j, k) = c * i * j * k ;
+
+           });
+         });
+       });
+
+  });
 // _raja_tensorinit_hip_end
 
   hipErrchk(hipMemcpy( a, d_a, N_tot * sizeof(double), hipMemcpyDeviceToHost ));
@@ -415,46 +391,48 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA HIP tensor init tiled-direct...\n";
 
-  //
-  // Define total thread-block size and size of each block dimension
-  //
-  constexpr int block_size = 256;
-  constexpr int i_block_sz = 32;
-  constexpr int j_block_sz = block_size / i_block_sz;
-  constexpr int k_block_sz = 1;
-
   // set tensor data to zero to ensure we initializing it correctly.
   std::memset(a, 0, N_tot * sizeof(double));
   hipErrchk(hipMemcpy( d_a, a, N_tot * sizeof(double), hipMemcpyHostToDevice ));
 
 // _raja_tensorinit_hip_tiled_direct_start
-  using EXEC_POL8 =
-    RAJA::KernelPolicy<
-      RAJA::statement::HipKernelFixed< i_block_sz * j_block_sz * k_block_sz,
-        RAJA::statement::Tile<1, RAJA::tile_fixed<j_block_sz>,
-                                 RAJA::hip_block_y_direct,
-          RAJA::statement::Tile<0, RAJA::tile_fixed<i_block_sz>,
-                                   RAJA::hip_block_x_direct,
-            RAJA::statement::For<2, RAJA::hip_block_z_direct,      // k
-              RAJA::statement::For<1, RAJA::hip_thread_y_direct,   // j
-                RAJA::statement::For<0, RAJA::hip_thread_x_direct, // i
-                  RAJA::statement::Lambda<0>
-                >
-              >
-            >
-          >
-        >
-      >
-    >;
+  using hip_teams_z_6 = RAJA::expt::LoopPolicy<RAJA::hip_block_z_direct>;
+  using hip_teams_y_6 = RAJA::expt::LoopPolicy<RAJA::hip_block_y_direct>;
+  using hip_teams_x_6 = RAJA::expt::LoopPolicy<RAJA::hip_block_x_direct>;
 
-  RAJA::kernel<EXEC_POL8>( RAJA::make_tuple( RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N) ),
-    [=] __device__ ( int i, int j, int k) {
-       d_aView(i, j, k) = c * i * j * k ;
-    }
-  );
-// _raja_tensorinit_hip_tiled_direct_end
+  using hip_threads_y_6 = RAJA::expt::LoopPolicy<RAJA::hip_thread_y_direct>;
+  using hip_threads_x_6 = RAJA::expt::LoopPolicy<RAJA::hip_thread_x_direct>;
+
+  const bool async_6 = false;
+  using launch_policy_6 = RAJA::expt::LaunchPolicy<RAJA::expt::hip_launch_t<async_6>>;
+
+  RAJA::expt::launch<launch_policy_6>
+    (RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
+                      RAJA::expt::Threads(i_block_sz, j_block_sz, k_block_sz)),
+    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+
+      RAJA::expt::loop<hip_teams_z_6>(ctx, RAJA::RangeSegment(0, N), [&] (int k) {
+
+        RAJA::expt::tile<hip_teams_y_6>
+          (ctx, j_block_sz, RAJA::RangeSegment(0, N), [&] (RAJA::RangeSegment const &j_tile) {
+
+          RAJA::expt::tile<hip_teams_x_6>
+            (ctx, i_block_sz, RAJA::RangeSegment(0, N), [&] (RAJA::RangeSegment const &i_tile) {
+
+            RAJA::expt::loop<hip_threads_y_6>(ctx, j_tile, [&] (int j) {
+                RAJA::expt::loop<hip_threads_x_6>(ctx, i_tile, [&] (int i) {
+
+                    d_aView(i, j, k) = c * i * j * k ;
+
+                  });
+              });
+
+            });
+          });
+
+      });
+    });
+// _raja_tensorinit_cuda_tiled_direct_end
 
   hipErrchk(hipMemcpy( a, d_a, N_tot * sizeof(double), hipMemcpyDeviceToHost ));
   checkResult(a, a_ref, N_tot);
