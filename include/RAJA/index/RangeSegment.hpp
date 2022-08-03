@@ -636,22 +636,58 @@ DefineTypeTraitFromConcept(is_range_stride_constructible,
 
 // range creation helpers
 
-template<typename Idx>
-::RAJA::TypedRangeSegment<Idx> range(Idx end)
+/*!
+ * \brief Function to make a TypedRangeSegment for the interval [0, end)
+ *
+ *  \return a newly constructed TypedRangeSegment where the
+ *          value_type is equivilent to the common type of
+ *          @begin and @end. If there is no common type, then
+ *          a compiler error will be produced.
+ */
+template <typename EndT>
+RAJA_HOST_DEVICE TypedRangeSegment<EndT> range(EndT&& end)
 {
-  return ::RAJA::TypedRangeSegment<Idx>(0, len);
+  return {0, end};
 }
 
-template<typename Idx>
-::RAJA::TypedRangeSegment<Idx> range(Idx start, Idx end)
+/*!
+ * \brief Function to make a TypedRangeSegment for the interval [begin, end)
+ *
+ *  \return a newly constructed TypedRangeSegment where the
+ *          value_type is equivilent to the common type of
+ *          @begin and @end. If there is no common type, then
+ *          a compiler error will be produced.
+ */
+template <typename BeginT,
+          typename EndT,
+          typename Common = detail::common_type_t<BeginT, EndT>>
+RAJA_HOST_DEVICE TypedRangeSegment<Common> range(BeginT&& begin,
+                                                      EndT&& end)
 {
-  return ::RAJA::TypedRangeSegment<Idx>(start, end);
+  return {begin, end};
 }
 
-template<typename Idx>
-::RAJA::TypedRangeSegment<Idx> range(Idx start, Idx end, Idx stride)
+/*!
+ * \brief Function to make a TypedRangeStride Segment for the interval 
+ *        [begin, end) with given stride
+ *
+ *  \return a newly constructed TypedRangeStrideSegment where
+ *          the value_type is equivilent to the common type of
+ *          @begin, @end, and @stride. If there is no common
+ *          type, then a compiler error will be produced.
+ */
+template <typename BeginT,
+          typename EndT,
+          typename StrideT,
+          typename Common = detail::common_type_t<BeginT, EndT>>
+RAJA_HOST_DEVICE TypedRangeStrideSegment<Common> range(
+    BeginT&& begin,
+    EndT&& end,
+    StrideT&& stride)
 {
-  return ::RAJA::TypedRangeStrideSegment<Idx>(
+  static_assert(std::is_signed<StrideT>::value, "make_range : stride must be signed.");
+  static_assert(std::is_same<make_signed_t<EndT>, StrideT>::value, "make_range : stride and end must be of similar types.");
+  return {begin, end, stride};
 }
 
 }  // namespace RAJA
