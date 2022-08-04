@@ -75,5 +75,10 @@ raja_add_executable(
   NAME sort_solution
   SOURCES sort_solution.cpp)
 
+raja_add_executable(
+  NAME view-layout_solution
+  SOURCES view-layout_solution.cpp)
+
+
 
 add_subdirectory(tutorial_halfday)
