@@ -135,7 +135,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
   //
-  // Define some dimensions and allocate an array
+  // Define dimensions and allocate arrays
   //
   // _default_views_init_start
   constexpr int Nx = 3;
@@ -145,17 +145,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   int* a = new int[ Ntot ];
   int* aref = new int[ Ntot ];
 
-  int iter{0};
-  for(int i = 0; i < Ntot; ++i)
+  for (int i = 0; i < Ntot; ++i)
   {
-    aref[iter] = i;
-    ++iter;
+    aref[i] = i;
   }
   // _default_views_init_start
 
 //printValues<int>(ref, Ntot);
 
-  std::cout << "\n Running default view cases...\n";
+//----------------------------------------//
+
+  std::cout << "\n Running default layout view cases...\n";
 
   std::cout << "\n\t Running 1D view case...\n";
  
@@ -164,10 +164,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _default_view1D_start 
   RAJA::View< int, RAJA::Layout<1, int> > view_1D(a, Ntot);
 
-  iter = 0;
   for (int i = 0; i < Ntot; ++i) {
-    view_1D(i) = iter;
-    ++iter;
+    view_1D(i) = i;
   }
   // _default_view1D_end 
 
@@ -176,14 +174,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------//
 
-  std::cout << "\n\t Running 2D view case...\n";
+  std::cout << "\n\t Running 2D default layout view case...\n";
 
   std::memset(a, 0, Ntot * sizeof(int));
  
   // _default_view2D_start
   RAJA::View< int, RAJA::Layout<2, int> > view_2D(a, Nx, Ny);
 
-  iter = 0;
+  int iter{0};
   for (int i = 0; i < Nx; ++i) {
     for (int j = 0; j < Ny; ++j) {
       view_2D(i, j) = iter;
@@ -197,7 +195,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------//
 
-  std::cout << "\n\t Running 3D view case...\n";
+  std::cout << "\n\t Running 3D default layout view case...\n";
 
   std::memset(a, 0, Ntot * sizeof(int));
 
@@ -224,11 +222,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running permuted view cases...\n";
+  std::cout << "\n Running permuted layout cases...\n";
 
 //----------------------------------------//
 
-  std::cout << "\n\t Running 2D default perm view case...\n";
+  std::cout << "\n\t Running 2D default permutation view case...\n";
 
   std::memset(a, 0, Ntot * sizeof(int));
 
@@ -252,7 +250,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------//
 
-  std::cout << "\n\t Running 3D default perm view case...\n";
+  std::cout << "\n\t Running 3D default permutation view case...\n";
 
   std::memset(a, 0, Ntot * sizeof(int));
 
@@ -279,7 +277,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------//
 //----------------------------------------//
 
-  std::cout << "\n\t Running 2D perm view case...\n";
+  std::cout << "\n\t Running 2D permuted layout view case...\n";
 
   std::memset(a, 0, Ntot * sizeof(int));
 
@@ -303,7 +301,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------//
 
-  std::cout << "\n\t Running 3D perma view case...\n";
+  std::cout << "\n\t Running 3D perma layout view case...\n";
 
   std::memset(a, 0, Ntot * sizeof(int));
 
@@ -329,7 +327,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------//
 
-  std::cout << "\n\t Running 3D permb view case...\n";
+  std::cout << "\n\t Running 3D permb layout view case...\n";
 
   std::memset(a, 0, Ntot * sizeof(int));
 
@@ -370,20 +368,23 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Multi-dimensional indices to linear indices...\n";
 
-  int lin = -1;
-  int i = -1; 
-  int j = -1; 
-  int k = -1; 
 
   std::cout << "\nperm3a_layout...\n" << std::endl;
 
-  lin = perm3a_layout(1, 2, 0);
+
+  // _perm3d_layout_start
+  int lin = perm3a_layout(1, 2, 0);
   std::cout << "\tperm3a_layout(1, 2, 0) = " << lin << std::endl;
   std::cout << "\t  Should be 7 = 1 + 2 * Nx + 0 * Nx * Ny "
             << "(since perm is {2, 1, 0})" << std::endl;
+
+  int i = -1; 
+  int j = -1; 
+  int k = -1; 
   perm3a_layout.toIndices(7, i, j, k);
   std::cout << "\tperm3a_layout.toIndices(7, i, j, k) --> (i, j, k) = "
             << "(" << i << ", " << j << ", " << k << ")\n" << std::endl;
+  // _perm3d_layout_end
 
   lin = perm3a_layout(2, 3, 1);
   std::cout << "\tperm3a_layout(2, 3, 1) = " << lin << std::endl;
@@ -429,13 +430,169 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\tperm3b_layout.toIndices(15, i, j, k) --> (i, j, k) = "
             << "(" << i << ", " << j << ", " << k << ")\n" << std::endl; 
 
-  
-
 //
 // Clean up.
 //
   delete [] a;
   delete [] aref;
+
+//----------------------------------------------------------------------------//
+//
+// Offset layouts apply offsets to indices
+//
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running offset layout cases...\n";
+
+  //
+  // Define some dimensions, and allocate arrays
+  //
+  constexpr int Ntot_ao = 40;
+  int* ao = new int[ Ntot_ao ];
+  int* ao_ref = new int[ Ntot_ao ];
+
+//----------------------------------------//
+
+  std::cout << "\n\t Running 1D offset layout case...\n";
+
+  //
+  // Set reference solution to compare with
+  //
+
+  std::memset(ao_ref, 0, Ntot_ao * sizeof(int));
+
+  // _cstyle_offlayout1D_start
+  int imin = -5;
+  int imax = 6;
+
+  for (int i = imin; i < imax; ++i) {
+    ao_ref[ i-imin ] = i;
+  }
+  // _cstyle_offlayout1D_end
+
+//printValues<int>(ao_ref, imax-imin);
+
+//----------------------------------------//
+
+  std::memset(ao, 0, Ntot_ao * sizeof(int));
+
+  // _raja_offlayout1D_start
+  RAJA::OffsetLayout<1, int> offlayout_1D = 
+    RAJA::make_offset_layout<1, int>( {{imin}}, {{imax}} ); 
+
+  RAJA::View< int, RAJA::OffsetLayout<1, int> > aoview_1Doff(ao,
+                                                             offlayout_1D);
+
+  for (int i = imin; i < imax; ++i) {
+    aoview_1Doff(i) = i;
+  }
+  // _raja_offlayout1D_end
+
+  checkResult<int>(ao, ao_ref, imax-imin);
+//printValues<int>(ao, 11);
+
+//----------------------------------------//
+
+  std::cout << "\n\t Running 2D offset layout case...\n";
+
+  //
+  // Set reference solution to compare with
+  //
+
+  std::memset(ao_ref, 0, Ntot_ao * sizeof(int));
+
+  // _cstyle_offlayout2D_start
+  imin = -1;
+  imax = 2;
+  int jmin = -5;
+  int jmax = 5;
+
+  iter = 0;
+  for (int i = imin; i < imax; ++i) {
+    for (int j = jmin; j < jmax; ++j) {
+      ao_ref[ (j-jmin) + (i-imin) * (jmax-jmin)  ] = iter;
+      iter++;
+    }
+  }
+  // _cstyle_offlayout2D_end
+
+//printValues<int>(ao_ref, (imax-imin)*(jmax-jmin));
+
+//----------------------------------------//
+
+  std::memset(ao, 0, Ntot_ao * sizeof(int));
+
+  // _raja_offlayout2D_start
+  RAJA::OffsetLayout<2, int> offlayout_2D =
+    RAJA::make_offset_layout<2, int>( {{imin, jmin}}, {{imax, jmax}} );
+
+  RAJA::View< int, RAJA::OffsetLayout<2, int> > aoview_2Doff(ao,
+                                                             offlayout_2D);
+  iter = 0;
+  for (int i = imin; i < imax; ++i) {
+    for (int j = jmin; j < jmax; ++j) {
+      aoview_2Doff(i, j) = iter;
+      iter++;
+    }
+  }
+  // _raja_offlayout2D_end
+
+  checkResult<int>(ao, ao_ref, (imax-imin)*(jmax-jmin));
+//printValues<int>(ao, (imax-imin)*(jmax-jmin)); 
+
+//----------------------------------------//
+
+  std::cout << "\n\t Running 2D permuted offset layout case...\n";
+
+  //
+  // Set reference solution to compare with
+  //
+
+  std::memset(ao, 0, Ntot_ao * sizeof(int));
+
+  // _cstyle_permofflayout2D_start
+  iter = 0;
+  for (int j = jmin; j < jmax; ++j) {
+    for (int i = imin; i < imax; ++i) {
+      ao_ref[ (i-imin) + (j-jmin) * (imax-imin)  ] = iter; 
+      iter++;
+    }
+  }
+  // _cstyle_permofflayout2D_end
+
+//printValues<int>(ao_ref, (imax-imin)*(jmax-jmin));
+
+//----------------------------------------//
+
+  std::memset(ao, 0, Ntot_ao * sizeof(int));
+
+  // _raja_permofflayout2D_start
+  std::array<RAJA::idx_t, 2> perm1D {{1, 0}};
+  RAJA::OffsetLayout<2> permofflayout_2D =
+    RAJA::make_permuted_offset_layout<2>( {{imin, jmin}}, 
+                                          {{imax, jmax}},
+                                          perm1D );
+
+  RAJA::View< int, RAJA::OffsetLayout<2> > aoview_2Dpermoff(ao,
+                                                            permofflayout_2D);
+
+  iter = 0;
+  for (int j = jmin; j < jmax; ++j) {
+    for (int i = imin; i < imax; ++i) {
+      aoview_2Dpermoff(i, j) = iter;
+      iter++;
+    }
+  }
+  // _raja_permofflayout2D_end
+
+  checkResult<int>(ao, ao_ref, (imax-imin)*(jmax-jmin));
+//printValues<int>(ao, (imax-imin)*(jmax-jmin));
+
+//
+// Clean up.
+//
+  delete [] ao;
+  delete [] ao_ref;
 
 //----------------------------------------------------------------------------//
 //----------------------------------------------------------------------------//
