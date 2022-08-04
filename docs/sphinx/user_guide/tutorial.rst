@@ -360,7 +360,7 @@ mechanisms to transform loop patterns. More informatrion can be found in
    tutorial/kernel_exec_pols.rst
 
 =================================================================
-``RAJA::launch`` Nested loops within a kernel execution space
+``RAJA::launch`` : Nested loops within a kernel execution space
 =================================================================
 
 The examples in this section illustrate how to use ``RAJA::expt::launch``
@@ -370,7 +370,8 @@ in terms of nested loops.
 .. toctree::
    :maxdepth: 1
 
-   tutorial/teams_basic.rst
+   tutorial/launch_basic.rst
+   tutorial/launch_exec_pols.rst
    tutorial/naming_kernels.rst
 
 ===============================================================================

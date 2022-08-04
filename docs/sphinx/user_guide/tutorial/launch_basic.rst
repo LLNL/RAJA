@@ -9,7 +9,7 @@
 .. _teamsbasic-label:
 
 ------------------------------
-Team based loops (RAJA Launch)
+RAJA Launch basics
 ------------------------------
 
 Key RAJA features shown in the following examples:
@@ -55,7 +55,7 @@ are executed depends on the template. Following the CUDA/HIP programming models
 we follow a hierarchical structure in which outer loops are executed by thread-teams
 and inner loops are executed by a thread in a team. 
 
-.. literalinclude:: ../../../../examples/tut_teams_basic.cpp
+.. literalinclude:: ../../../../examples/tut_launch_basic.cpp
    :start-after: // _team_loops_start
    :end-before: // _team_loops_end
    :language: C++
@@ -73,7 +73,7 @@ In the example above the ``RAJA::expt::LoopPolicy`` struct holds both the host a
 device loop mapping strategies. On the host, both the team/thread strategies expand
 out to standard C-style loops for execution:
 
-.. literalinclude:: ../../../../examples/tut_teams_basic.cpp
+.. literalinclude:: ../../../../examples/tut_launch_basic.cpp
    :start-after: // _c_style_loops_start
    :end-before: // _c_style_loops_end
    :language: C++
@@ -82,9 +82,9 @@ On the device the ``teams_x/y`` policies will map loop iterations directly to
 CUDA thread blocks, while the ``thread_x/y`` policies will map loop iterations
 directly to threads in a CUDA block. The CUDA equivalent is illustrated below:   
 
-.. literalinclude:: ../../../../examples/tut_teams_basic.cpp
+.. literalinclude:: ../../../../examples/tut_launch_basic.cpp
    :start-after: // _device_loop_start
    :end-before: // _device_loop_end
    :language: C++
    
-The file RAJA/examples/tut_teams_basic.cpp contains the complete working example code.
+The file RAJA/examples/tut_launch_basic.cpp contains the complete working example code.

@@ -12,10 +12,10 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Developing with RAJA Teams
+ *  Developing with RAJA Launch
  *
  *  This example serves as a basic overview of
- *  capabilities with the RAJA Teams API.
+ *  capabilities with the RAJA Launch API.
  *
  *  RAJA features shown:
  *    -  RAJA::expt::launch
@@ -23,7 +23,7 @@
  */
 
 /*
- * The RAJA teams framework enables developers
+ * The RAJA::expt::Launch framework enables developers
  * to expressed algorithms in terms of nested
  * loops within an execution space. RAJA teams
  * enables run time selection of a host or
@@ -53,8 +53,8 @@ using launch_policy = RAJA::expt::LaunchPolicy<
   >;
 
 /*
- * RAJA teams follows a similar thread/block programming model
- * as found in CUDA/HIP/SYCL. Loops within an execution
+ * RAJA launch exposes a thread/block programming model
+ * as used in CUDA/HIP/SYCL. Loops within an execution
  * maybe mapped to either threads or teams. Under this
  * programming model, computation is performed with
  * a collection of threads which are grouped into teams.
@@ -137,17 +137,17 @@ int main(int argc, char *argv[])
 {
 
   if(argc != 2) {
-    RAJA_ABORT_OR_THROW("Usage ./tut_teams_basic host or ./tut_teams_basic device");
+    RAJA_ABORT_OR_THROW("Usage ./tut_launch_basic host or ./tut_launch_basic device");
   }
 
 //
 // Run time policy section is demonstrated in this example by specifying
 // kernel exection space as a command line argument (host or device).
-// Example usage ./tut_teams_basic host or ./tut_teams_basic device
+// Example usage ./tut_launch_basic host or ./tut_launch_basic device
 //
   std::string exec_space = argv[1];
   if(!(exec_space.compare("host") == 0 || exec_space.compare("device") == 0 )){
-    RAJA_ABORT_OR_THROW("Usage ./tut_teams_basic host or ./tut_teams_basic device");
+    RAJA_ABORT_OR_THROW("Usage ./tut_launch_basic host or ./tut_launch_basic device");
     return 0;
   }
 
