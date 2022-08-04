@@ -9,7 +9,7 @@
 .. _teamsbasic-label:
 
 ------------------------------
-Team based loops (RAJA Teams)
+Team based loops (RAJA Launch)
 ------------------------------
 
 Key RAJA features shown in the following examples:
@@ -19,8 +19,8 @@ Key RAJA features shown in the following examples:
   * ``RAJA::expt::loop`` methods to express algorithms
     in terms of nested for loops. 
 
-In this example, we introduce the RAJA Teams framework and discuss
-hierarchical loop-based parallelism. Development with RAJA Teams occurs
+In this example, we introduce the RAJA Launch framework and discuss
+hierarchical loop-based parallelism. Development with RAJA Launch occurs
 inside an execution space. The execution space is launched using the 
 ``RAJA::expt::launch`` method::
 
@@ -33,7 +33,7 @@ inside an execution space. The execution space is launched using the
 
   });
 
-The ``RAJA::expt::launch`` method is templated on both a host and a device launch policy.
+The ``RAJA::expt::launch`` method can be templated on up to two policies (host/device).
 As an example, the following constructs an execution space for a sequential 
 and CUDA kernel::
 
@@ -42,9 +42,9 @@ and CUDA kernel::
 
 Kernel execution on either the host or device is driven by the first argument of
 the method which takes a ``RAJA::expt::ExecPlace`` enum type, either ``HOST`` or ``DEVICE``. 
-Similar to thread, and block programming models, RAJA Teams carries out
+Similar to thread, and block programming models, RAJA Launch carries out
 computation in a predefined compute grid made up of threads which are
-then grouped into teams. The execution space is then enclosed by a host/device
+then grouped into teams when running on the device. The execution space is then enclosed by a host/device
 lambda which takes a ``RAJA::expt::LaunchContext`` object. The ``RAJA::expt::LaunchContext``
 may then be used to control the flow within the kernel, for example creating thread-team
 synchronization points. 
