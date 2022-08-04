@@ -360,12 +360,12 @@ mechanisms to transform loop patterns. More informatrion can be found in
    tutorial/kernel_exec_pols.rst
 
 =================================================================
-Team based Loops: Nested loops with a team/thread model
+``RAJA::launch`` Nested loops within a kernel execution space
 =================================================================
 
 The examples in this section illustrate how to use ``RAJA::expt::launch``
 to create an run-time selectable execution space for expressing algorithms
-in terms of threads and teams.
+in terms of nested loops.
 
 .. toctree::
    :maxdepth: 1
