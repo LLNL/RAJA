@@ -66,8 +66,16 @@ raja_add_executable(
   SOURCES tut_matrix-transpose-local-array.cpp)
 
 raja_add_executable(
+  NAME launch_matrix-transpose-local-array
+  SOURCES launch_matrix-transpose-local-array.cpp)
+
+raja_add_executable(
   NAME tut_tiled-matrix-transpose
   SOURCES tut_tiled-matrix-transpose.cpp)
+
+raja_add_executable(
+  NAME launch_tiled-matrix-transpose
+  SOURCES launch_tiled-matrix-transpose.cpp)
 
 raja_add_executable(
   NAME tut_halo-exchange
