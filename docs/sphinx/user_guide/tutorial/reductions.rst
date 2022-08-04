@@ -60,7 +60,7 @@ We also define a range segment to iterate over the array:
    :end-before: _reductions_range_end
    :language: C++
 
-With these parameters and data initialization, all the code examples 
+With these parameters and data initialization, the code example 
 presented below will generate the following results:
 
  * the sum will be zero
@@ -84,8 +84,8 @@ object is retrieved after the kernel by calling a 'get()' method on the
 reduction object. The min-loc/max-loc index values are obtained using 
 'getLoc()' methods.
 
-For parallel multithreading execution via OpenMP, the example can be run 
-by replacing the execution and reduction policies with:
+For parallel multithreading execution via OpenMP, the exercise can be run with
+the execution and reduction policies:
 
 .. literalinclude:: ../../../../exercises/reductions_solution.cpp
    :start-after: _reductions_raja_omppolicy_start

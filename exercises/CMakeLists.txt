@@ -41,6 +41,18 @@ raja_add_executable(
   SOURCES kernelintro-nested-loop-reorder_solution.cpp)
 
 raja_add_executable(
+  NAME kernel-matrix-transpose_solution
+  SOURCES kernel-matrix-transpose_solution.cpp)
+
+raja_add_executable(
+  NAME kernel-matrix-transpose-tiled_solution
+  SOURCES kernel-matrix-transpose-tiled_solution.cpp)
+
+raja_add_executable(
+  NAME kernel-matrix-transpose-local-array_solution
+  SOURCES kernel-matrix-transpose-local-array_solution.cpp)
+
+raja_add_executable(
   NAME segment-indexset-basics
   SOURCES segment-indexset-basics.cpp)
 raja_add_executable(
@@ -78,7 +90,5 @@ raja_add_executable(
 raja_add_executable(
   NAME view-layout_solution
   SOURCES view-layout_solution.cpp)
-
-
 
 add_subdirectory(tutorial_halfday)
