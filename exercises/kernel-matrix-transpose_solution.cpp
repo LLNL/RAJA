@@ -197,7 +197,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                              Atview(col, row) = Aview(row, col);
       
   });
-  // _raja_mattranspose_cuda_start
+  // _raja_mattranspose_cuda_end
 
   checkResult<int>(Atview, N_c, N_r);
   //printResult<int>(Atview, N_c, N_r);

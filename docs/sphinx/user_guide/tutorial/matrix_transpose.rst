@@ -70,9 +70,6 @@ policy. The complete CUDA implementation is:
 A working exercise for matrix-transpose can be found at ``RAJA/exercises/kernel-matrix-transpose.cpp``. 
 
 
-A more advanced version using RAJA local arrays for CPU cache blocking and
-using GPU shared memory is discussed in :ref:`matrixtransposelocalarray-label`.
-
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 RAJA::launch Implementation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

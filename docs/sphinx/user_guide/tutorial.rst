@@ -378,7 +378,7 @@ in terms of threads and teams.
 Comparing ``RAJA::kernel`` and ``RAJA::launch``: Matrix-Transpose
 ===============================================================================
 
-In the following section we are going to look at ``RAJA::kernel`` and
+In the following section we will look at ``RAJA::kernel`` and
 ``RAJA::launch`` implementations of a matrix transpose alogorithm. These 
 sections will demonstrate the implementation differences of the two execution
 contexts as we build upon each example with more complex features.
