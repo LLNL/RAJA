@@ -311,8 +311,7 @@ Complex Loops and Advanced RAJA Features
 =================================================================
 
 RAJA provides two APIs for expressing complex loop kernels, such as nested
-loops: ``RAJA::kernel`` and ``RAJA::launch`` 
-(often referred to as "RAJA Teams").
+loops: ``RAJA::kernel`` and ``RAJA::launch`` .
 
 ``RAJA::kernel``
 is analogous to ``RAJA::forall`` in that the semantics involve kernel execution

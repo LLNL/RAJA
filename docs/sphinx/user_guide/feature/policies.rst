@@ -305,7 +305,7 @@ policies have the prefix ``hip_``.
                                                         threads in y-dimension
  cuda/hip_thread_z_loop                   kernel (For)  Same as above, but for
                                                         threads in z-dimension
- cuda/hip_flatten_block_threads_{xyz}     Teams (Loop)  Reshapes threads in a
+ cuda/hip_flatten_block_threads_{xyz}     Launch (Loop)  Reshapes threads in a
                                                         multi-dimensional thread
                                                         team into one-dimension,
                                                         accepts any permutation
@@ -327,14 +327,14 @@ policies have the prefix ``hip_``.
                                                         blocks in y-dimension
  cuda/hip_block_z_loop                    kernel (For)  Same as above, but use
                                                         blocks in z-dimension
- cuda/hip_global_thread_x                 Teams (Loop)  Creates a unique thread
+ cuda/hip_global_thread_x                 Launch (Loop)  Creates a unique thread
                                                         id for each thread on the
                                                         x dimension of the grid
                                                         (expt namespace)
- cuda/hip_global_thread_y                 Teams (Loop)  Same as above, but uses
+ cuda/hip_global_thread_y                 Launch (Loop)  Same as above, but uses
                                                         threads in y-dimension
                                                         (expt namespace)
- cuda/hip_global_thread_z                 Teams (Loop)  Same as above, but uses
+ cuda/hip_global_thread_z                 Launch (Loop)  Same as above, but uses
                                                         threads in z-dimension
                                                         (expt namespace)
  cuda/hip_warp_direct                     kernel (For)  Map work to threads
