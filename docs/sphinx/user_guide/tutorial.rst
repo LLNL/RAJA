@@ -361,7 +361,7 @@ mechanisms to transform loop patterns. More informatrion can be found in
    tutorial/kernel_exec_pols.rst
 
 =================================================================
-Team based Loops: Nested loops with a team/thread model
+Launch based Loops: Nested loops with a team/thread model
 =================================================================
 
 The examples in this section illustrate how to use ``RAJA::expt::launch``
@@ -375,14 +375,19 @@ in terms of threads and teams.
    tutorial/naming_kernels.rst
 
 ===============================================================================
-Comparing ``RAJA::kernel`` and team/thread model: Matrix-matrix multiplication
+Comparing ``RAJA::kernel`` and ``RAJA::launch``: Matrix-Transpose
 ===============================================================================
+
+In the following section we are going to look at ``RAJA::kernel`` and
+``RAJA::launch`` implementations of a matrix transpose alogorithm. These 
+sections will demonstrate the implementation differences of the two execution
+contexts as we build upon each example with more complex features.
 
 .. toctree::
    :maxdepth: 1
 
-   tutorial/matrix_multiply.rst
-   tutorial/tiled_matrix_transpose.rst
+   tutorial/matrix_transpose.rst
+   tutorial/matrix_transpose_tiled.rst
    tutorial/matrix_transpose_local_array.rst
 
 ==============================
