@@ -75,5 +75,17 @@ raja_add_executable(
   NAME sort_solution
   SOURCES sort_solution.cpp)
 
+raja_add_executable(
+  NAME kernel-matrix-transpose_solution
+  SOURCES kernel-matrix-transpose_solution.cpp)
+
+raja_add_executable(
+  NAME kernel-matrix-transpose-tiled_solution
+  SOURCES kernel-matrix-transpose-tiled_solution.cpp)
+
+raja_add_executable(
+  NAME kernel-matrix-transpose-local-array_solution
+  SOURCES kernel-matrix-transpose-local-array_solution.cpp)
+
 
 add_subdirectory(tutorial_halfday)

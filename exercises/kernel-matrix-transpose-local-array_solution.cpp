@@ -14,9 +14,9 @@
 #include "memoryManager.hpp"
 
 /*
- *  Matrix Transpose Example
+ *  Matrix Transpose Exercise
  *
- *  In this example, an input matrix A of dimension N_r x N_c is
+ *  In this exercise, an input matrix A of dimension N_r x N_c is
  *  transposed and returned as a second matrix At of size N_c x N_r.
  *
  *  This operation is carried out using a local memory tiling
@@ -30,7 +30,7 @@
  *  data into the tile; while outer loops will iterate over the number
  *  of tiles needed to carry out the transpose.
  *
- *  RAJA variants of the example use RAJA local arrays as tile memory.
+ *  RAJA variants of the exercise use RAJA local arrays as tile memory.
  *  Furthermore, the tiling pattern is handled by RAJA's tile statements.
  *  For CPU execution, RAJA local arrays are used to improve
  *  performance via cache blocking. For CUDA GPU execution,
@@ -69,7 +69,7 @@ void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nRAJA shared matrix transpose example...\n";
+  std::cout << "\n\nRAJA shared matrix transpose exercise...\n";
 
   //
   // Define num rows/cols in matrix, tile dimensions, and number of tiles
@@ -195,7 +195,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // the array memory has not been allocated.
 
   //--------------------------------------------------------------------------//
-  std::cout << "\n Running RAJA - sequential matrix transpose example ...\n";
+  std::cout << "\n Running RAJA - sequential matrix transpose exercise ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -243,7 +243,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // printResult<int>(Atview, N_c, N_r);
 
   //--------------------------------------------------------------------------//
-  std::cout << "\n Running RAJA - sequential matrix transpose example with args in statement ...\n";
+  std::cout << "\n Running RAJA - sequential matrix transpose exercise with args in statement ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -298,7 +298,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_OPENMP)
   //--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - OpenMP (parallel outer loop) matrix "
-               "transpose example ...\n";
+               "transpose exercise ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -365,7 +365,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - OpenMP (parallel inner loops) matrix "
-               "transpose example ...\n";
+               "transpose exercise ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -433,7 +433,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //--------------------------------------------------------------------------//
 #if defined(RAJA_ENABLE_CUDA)
-  std::cout << "\n Running RAJA - CUDA matrix transpose example ...\n";
+  std::cout << "\n Running RAJA - CUDA matrix transpose exercise ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -512,7 +512,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_HIP)
   //--------------------------------------------------------------------------//
-  std::cout << "\n Running RAJA - HIP matrix transpose example ...\n";
+  std::cout << "\n Running RAJA - HIP matrix transpose exercise ...\n";
 
   int *d_A = memoryManager::allocate_gpu<int>(N_r * N_c);
   int *d_At = memoryManager::allocate_gpu<int>(N_r * N_c);
