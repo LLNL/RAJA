@@ -25,6 +25,8 @@
  *    - Layout permutations 
  *    - OffsetLayout
  *    - OffsetLayout permutations 
+ *
+ * NOTE: no RAJA kernel execution methods are used in these examples.
  */
 
 //
@@ -47,10 +49,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 //----------------------------------------------------------------------------//
 
+  // _matmult_init_start
   //
-  // Define dimensionality (2) and size N x N of matrices.
+  // Define the size of N x N of matrices.
   //
-  constexpr int Matrix_DIM = 2;
   constexpr int N = 4;
 
   //
@@ -69,6 +71,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Cref[ col + N*row ] = 0.0;
     }
   }
+  // _matmult_init_end
 
 //printValues<double>(A, N*N); 
 //printValues<double>(B, N*N); 
@@ -102,9 +105,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Note: we use default Layout 
   //
   // _matmult_views_start
-  RAJA::View< double, RAJA::Layout<Matrix_DIM, int> > Aview(A, N, N);
-  RAJA::View< double, RAJA::Layout<Matrix_DIM, int> > Bview(B, N, N);
-  RAJA::View< double, RAJA::Layout<Matrix_DIM, int> > Cview(C, N, N);
+  RAJA::View< double, RAJA::Layout<2, int> > Aview(A, N, N);
+  RAJA::View< double, RAJA::Layout<2, int> > Bview(B, N, N);
+  RAJA::View< double, RAJA::Layout<2, int> > Cview(C, N, N);
   // _matmult_views_end
 
   // _cstyle_matmult_views_start

@@ -303,6 +303,7 @@ iteration spaces, reductions, atomic operations, scans, and sorts.
    tutorial/atomic_histogram.rst
    tutorial/scan.rst
    tutorial/sort.rst
+   tutorial/view_layout.rst
 
 .. _tutorialcomplex-label:
 
