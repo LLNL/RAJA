@@ -52,17 +52,17 @@ which we define as:
    :end-before: _matmult_views_end
    :language: C++
 
-Here we define three ``RAJA::View`` objects (``Aview``, ``Bview``, ``Cview``)
-that *wrap* the array data pointers (``A``, ``B``, ``C``). We pass a data 
+Here we define three ``RAJA::View`` objects ('Aview', 'Bview', 'Cview')
+that *wrap* the array data pointers ('A', 'B', 'C'). We pass a data 
 pointer as the first argument to each view constructor and then the extent of
 each matrix dimension as the second and third arguments. The matrices are 
-square and each extent is ``N``. Here, the template parameters to ``RAJA::View``
-are the array data type, ``double``, and a ``RAJA::Layout``. Specifically::
+square and each extent is 'N'. Here, the template parameters to ``RAJA::View``
+are the array data type, 'double', and a ``RAJA::Layout``. Specifically::
 
   RAJA::Layout<2, int>
 
 means that each View represents a two-dimensional default data layout, and that
-we will use index values of type ``int`` to index into the arrays. 
+we will use index values of type 'int' to index into the arrays. 
 
 Using the ``RAJA::View`` objects, we can access the data entries for the rows 
 and columns using a more natural, less error-prone syntax:
