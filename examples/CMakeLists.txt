@@ -6,8 +6,8 @@
 ###############################################################################
 
 raja_add_executable(
-  NAME tut_teams_basic
-  SOURCES tut_teams_basic.cpp)
+  NAME tut_launch_basic
+  SOURCES tut_launch_basic.cpp)
 
 raja_add_executable(
   NAME resource-forall
