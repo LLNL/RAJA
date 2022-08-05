@@ -88,6 +88,9 @@ raja_add_executable(
   SOURCES sort_solution.cpp)
 
 raja_add_executable(
+  NAME view-layout
+  SOURCES view-layout.cpp)
+raja_add_executable(
   NAME view-layout_solution
   SOURCES view-layout_solution.cpp)
 
