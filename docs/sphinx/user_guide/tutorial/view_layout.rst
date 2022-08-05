@@ -147,7 +147,7 @@ Then, in three dimensions:
 
 These two examples access the data with stride-1 ordering, the same as the
 earlier examples, which is shown by the nested loop ordering.  
-The identity permutation in two dimensions is ``{0, 1}`` and is ``{0, 1, 2}``
+The identity permutation in two dimensions is '{0, 1}' and is '{0, 1, 2}'
 for three dimensions. The method ``RAJA::make_permuted_layout`` is used to 
 create a ``RAJA::Layout`` object with a permutation. The method takes two 
 arguments, the extents of each dimension and the permutation.
@@ -163,13 +163,13 @@ Next, we permute the striding order for the two-dimensional example:
    :end-before: _perm_view2D_end
    :language: C++
 
-Read from right to left, the permutation ``{1, 0}`` specifies that the first
+Read from right to left, the permutation '{1, 0}' specifies that the first
 index 'i' is stride-1 and the second index 'j' has stride equal to the 
 extent of the first Layout dimension 'Nx'. This is evident in the for-loop
 ordering.
 
 Here is the three-dimensional case, where we have reversed the striding order
-using the permutation ``{2, 1, 0}``:
+using the permutation '{2, 1, 0}':
 
 .. literalinclude:: ../../../../exercises/view-layout_solution.cpp
    :start-after: _perma_view3D_start
@@ -184,21 +184,20 @@ here is another three-dimensional permutation:
    :end-before: _permb_view3D_end
    :language: C++
 
-The permutation is ``{1, 2, 0}`` so to make the data access stride-1, we
-move the 'j' loop to the outer, the 'k' loop to the middle, and leave the 'i'
-loop on the inner.
+The permutation is '{1, 2, 0}' so to make the data access stride-1, we
+swap the 'j' and 'k' loops and leave the 'i' loop as the inner loop.
 
 Multi-dimensional Indices and Linear Indices
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``RAJA::Layout`` types provide methods to convert between linear indices and
-multi-dimensional indices and vice versa. Recall the Layout ``perma_layout`` 
-from above that was created with the permutation ``{2, 1, 0}``. To get the 
-linear index corresponding to the index triple ``(1, 2, 0)``, you can do::
+multi-dimensional indices and vice versa. Recall the Layout 'perma_layout' 
+from above that was created with the permutation '{2, 1, 0}'. To get the 
+linear index corresponding to the index triple '(1, 2, 0)', you can do::
 
   int lin = perm3a_layout(1, 2, 0);
 
-The value of `lin` is 7 = 1 + 2 * Nx + 0 * Nx * Ny. To get the index triple
+The value of 'lin' is 7 = 1 + 2 * Nx + 0 * Nx * Ny. To get the index triple
 for linear index 7, you can do::
 
   int i, j, k;
@@ -206,8 +205,8 @@ for linear index 7, you can do::
 
 This sets 'i' to 1, 'j' to 2, and 'k' to 0.  
 
-Similarly for the Layout ``permb_layout``, which was created with the 
-permutation ``{1, 2, 0}``::
+Similarly for the Layout 'permb_layout', which was created with the 
+permutation '{1, 2, 0}'::
 
   lin = perm3b_layout(1, 2, 0); 
 
@@ -287,7 +286,7 @@ Here is a similar example where we permute the (i, j) index stride ordering:
    :end-before: _raja_permofflayout2D_end
    :language: C++ 
 
-The permutation ``{1, 0}`` is passed as the third argument to 
+The permutation '{1, 0}' is passed as the third argument to 
 ``RAJA::make_offset_layout``. From the ordering of the for-loops, we can see 
 that the 'i' index is stride-1 and the 'j' index has stride equal to the 
 extent of the 'i' dimension since executing the for-loop nest strides through 
