@@ -360,6 +360,7 @@ mechanisms to transform loop patterns. More informatrion can be found in
 
    tutorial/kernel_nested_loop_reorder.rst
    tutorial/kernel_exec_pols.rst
+   tutorial/offset-layout-5pt-stencil.rst
 
 =================================================================
 Launch based Loops: Nested loops with a team/thread model
@@ -408,4 +409,3 @@ Section To Rework
    :maxdepth: 1
 
    tutorial/permuted-layout.rst
-   tutorial/offset-layout.rst

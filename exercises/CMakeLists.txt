@@ -53,6 +53,13 @@ raja_add_executable(
   SOURCES kernel-matrix-transpose-local-array_solution.cpp)
 
 raja_add_executable(
+  NAME offset-layout-stencil
+  SOURCES offset-layout-stencil.cpp)
+raja_add_executable(
+  NAME offset-layout-stencil_solution
+  SOURCES offset-layout-stencil_solution.cpp)
+
+raja_add_executable(
   NAME segment-indexset-basics
   SOURCES segment-indexset-basics.cpp)
 raja_add_executable(
