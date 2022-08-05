@@ -324,16 +324,16 @@ Almost all aspects of kernel execution are represented in the execution
 policies, which support a wide range of compile-time loop transformations and
 advanced features. 
 
-``RAJA::launch``, in contrast, uses the 
-``RAJA::launch`` template, which takes a ``RAJA::Grid`` type argument for 
+``RAJA::expt::launch``, in contrast, uses the 
+``RAJA::expt::launch`` template, which takes a ``RAJA::expt::Grid`` type argument for 
 expressing the teams-thread lauch configuration, and a lambda expression
-which takes a ``RAJA::LaunchContext`` argument. The lambda provides an
+which takes a ``RAJA::expt::LaunchContext`` argument. The lambda provides an
 execution environment (e.g., CPU or GPU) for a kernel. Within that 
-environment users execute kernel operations using ``RAJA::loop<EXEC_POL>``
+environment users execute kernel operations using ``RAJA::expt::loop<EXEC_POL>``
 method calls, which take lambda expressions to express loop details.
 
 Which RAJA API to use depends on personal preference (kernel structure
-is more explicit in application source code with ``RAJA::launch``, and more
+is more explicit in application source code with ``RAJA::expt::launch``, and more
 concise and arguably more opaque with ``RAJA::kernel``), and other concerns,
 such as portability requirements, runtime policy selection, etc.
 There is a large overlap of algorithms that can be expressed using either

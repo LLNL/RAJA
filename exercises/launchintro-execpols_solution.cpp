@@ -178,7 +178,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // _raja_tensorinit_omp_outer_start
   using omp_policy_2 = RAJA::expt::LoopPolicy<RAJA::omp_for_exec>;
   using loop_policy_2 = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
-  using launch_policy_2 = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
+  using launch_policy_2 = RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t>;
 
   RAJA::expt::launch<launch_policy_2>
     (RAJA::expt::Grid(), //Grid may be empty when running on the host
