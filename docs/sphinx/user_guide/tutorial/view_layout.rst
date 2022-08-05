@@ -28,7 +28,7 @@ The examples in this section illustrate RAJA View and Layout concepts
 and usage patterns. The goal is for you to gain an understanding of how
 to use RAJA Views and Layouts to simplify and transform array data access
 operations. None of the examples use RAJA kernel execution methods, such
-as ``RAJA::forall``. The initent is to focus on RAJA View and Layout mechanics.
+as ``RAJA::forall``. The intent is to focus on RAJA View and Layout mechanics.
 
 Consider a basic C-style implementation of a matrix-matrix multiplication
 operation, where we use :math:`N \times N` matrices:
@@ -72,14 +72,16 @@ and columns using a more natural, less error-prone syntax:
    :end-before: _cstyle_matmult_views_end
    :language: C++
 
-Default layouts use row-major data ordering
+Default Layouts Use Row-major Ordering
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The default data layout ordering in RAJA is *row-major*, which is the 
 convention for multi-dimensional array indexing in C and C++. This means that 
 the rightmost index will be stride-1, the index to the left of the rightmost 
 index will have stride equal to the extent of the rightmost dimension, etc. 
-This is described in more detail in :ref:`view-label`.
+
+.. note:: RAJA Layouts and Views support any number of dimensions. Please
+          see :ref:`view-label` for details.
 
 To illustrate the default data layout striding, we next show simple
 one-, two-, and three-dimensional examples where the for-loop ordering 
@@ -114,10 +116,180 @@ The three-dimensional version is:
    :end-before: _default_view3D_end
    :language: C++
 
-It's worth repeating that the data array access in all three variants using 
-``RAJA::View`` objects is strice-1. Next, we will show how to permute 
-the data striding order using permuted RAJA Layouts.
+It's worth repeating that the data array access in all three variants shown
+here using ``RAJA::View`` objects is stride-1. Next, we will show how to 
+permute the data striding order using permuted Layouts.
 
-Permuted layouts change the data striding order
+RAJA Layout types support other data access patterns with different striding 
+orders, offsets, and permutations. To this point, we have used the default 
+Layout constructor. RAJA provides methods to generate Layouts for different 
+indexing patterns. We describe these in the next several sections.
+
+Permuted Layouts Change Data Striding Order
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Every ``RAJA::Layout`` object has a permutation. When a permutation is not 
+specified at creation, a Layout will use the identity permutation. Here are
+examples where the identity permutation is explicitly provided. First, in
+two dimensions:
+
+.. literalinclude:: ../../../../exercises/view-layout_solution.cpp
+   :start-after: _default_perm_view2D_start
+   :end-before: _default_perm_view2D_end
+   :language: C++
+
+Then, in three dimensions:
+
+.. literalinclude:: ../../../../exercises/view-layout_solution.cpp
+   :start-after: _default_perm_view3D_start
+   :end-before: _default_perm_view3D_end
+   :language: C++
+
+These two examples access the data with stride-1 ordering, the same as the
+earlier examples, which is shown by the nested loop ordering.  
+The identity permutation in two dimensions is ``{0, 1}`` and is ``{0, 1, 2}``
+for three dimensions. The method ``RAJA::make_permuted_layout`` is used to 
+create a ``RAJA::Layout`` object with a permutation. The method takes two 
+arguments, the extents of each dimension and the permutation.
+
+.. note:: If a permuted Layout is created with the *identity permutation*
+          (e.g., {0,1,2}), the Layout is the same as if it were created by
+          calling the Layout constructor directly with no permutation.
+
+Next, we permute the striding order for the two-dimensional example:
+
+.. literalinclude:: ../../../../exercises/view-layout_solution.cpp
+   :start-after: _perm_view2D_start
+   :end-before: _perm_view2D_end
+   :language: C++
+
+Read from right to left, the permutation ``{1, 0}`` specifies that the first
+index 'i' is stride-1 and the second index 'j' has stride equal to the 
+extent of the first Layout dimension 'Nx'. This is evident in the for-loop
+ordering.
+
+Here is the three-dimensional case, where we have reversed the striding order
+using the permutation ``{2, 1, 0}``:
+
+.. literalinclude:: ../../../../exercises/view-layout_solution.cpp
+   :start-after: _perma_view3D_start
+   :end-before: _perma_view3D_end
+   :language: C++
+
+The data access remains stride-1 due to the for-loop reordering. For fun, 
+here is another three-dimensional permutation:
+
+.. literalinclude:: ../../../../exercises/view-layout_solution.cpp
+   :start-after: _permb_view3D_start
+   :end-before: _permb_view3D_end
+   :language: C++
+
+The permutation is ``{1, 2, 0}`` so to make the data access stride-1, we
+move the 'j' loop to the outer, the 'k' loop to the middle, and leave the 'i'
+loop on the inner.
+
+Multi-dimensional Indices and Linear Indices
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``RAJA::Layout`` types provide methods to convert between linear indices and
+multi-dimensional indices and vice versa. Recall the Layout ``perma_layout`` 
+from above that was created with the permutation ``{2, 1, 0}``. To get the 
+linear index corresponding to the index triple ``(1, 2, 0)``, you can do::
+
+  int lin = perm3a_layout(1, 2, 0);
+
+The value of `lin` is 7 = 1 + 2 * Nx + 0 * Nx * Ny. To get the index triple
+for linear index 7, you can do::
+
+  int i, j, k;
+  perm3a_layout.toIndices(7, i, j, k);
+
+This sets 'i' to 1, 'j' to 2, and 'k' to 0.  
+
+Similarly for the Layout ``permb_layout``, which was created with the 
+permutation ``{1, 2, 0}``::
+
+  lin = perm3b_layout(1, 2, 0); 
+
+sets 'lin' to 13 = 1 + 0 * Nx + 2 * Nx * Nz and::
+
+  perm3b_layout.toIndices(13, i, j, k);
+
+sets 'i' to 1, 'j' to 2, and 'k' to 0.
+
+There are more examples in the exercise file associated with this section. 
+Feel free to experiment.
+
+One important item to note is that, by default, there is no bounds checking
+on indices passed to a ``RAJA::View`` data access method or ``RAJA::Layout``
+index computation methods. Therefore, it is a users responsibility that 
+indices passed to these methods are in bounds to avoid accessing data outside 
+of the View or computing invalid indices. 
+
+.. note:: RAJA provides a CMake variable ``RAJA_ENABLE_BOUNDS_CHECK`` to 
+          turn run time bounds checking on or off when the code is compiled.
+          Enabling bounds checking is useful for debugging and to ensure
+          your code is correct. However, when enabled, bounds checking adds
+          noticeable run time overhead. So it should not be enabled for
+          a production build. 
+   
+Offset Layouts Apply Offsets to Indices
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The last topic we cover in this exercise is the ``RAJA::OffsetLayout`` type.
+We first illustrate the concept of an offset with a C-style loop:
+
+.. literalinclude:: ../../../../exercises/view-layout_solution.cpp
+   :start-after: _cstyle_offlayout1D_start
+   :end-before: _cstyle_offlayout1D_end
+   :language: C++
+
+Here, the for-loop runs from 'imin' to 'imax-1' (i.e., -5 to 5). To avoid 
+out-of-bounds negative indexing, we subtract 'imin' (i.e., -5) from the loop 
+index 'i'. 
+
+To do the same thing with RAJA, we create a ``RAJA::OffsetLayout`` object
+and use it to index into the array:
+
+.. literalinclude:: ../../../../exercises/view-layout_solution.cpp
+   :start-after: _raja_offlayout1D_start
+   :end-before: _raja_offlayout1D_end
+   :language: C++
+
+``RAJA::OffsetLayout`` is a different type than ``RAJA::Layout`` because
+it adds offset information. The arguments to the ``RAJA::make_offset_layout``
+method are the index bounds.
+
+As expected, the two dimensional case is similar. First, the C-style loop:
+
+.. literalinclude:: ../../../../exercises/view-layout_solution.cpp
+   :start-after: _cstyle_offlayout2D_start
+   :end-before: _cstyle_offlayout2D_end
+   :language: C++
+
+and the version using a ``RAJA::OffsetLayout`` object:
+
+.. literalinclude:: ../../../../exercises/view-layout_solution.cpp
+   :start-after: _raja_offlayout2D_start
+   :end-before: _raja_offlayout2D_end
+   :language: C++
+
+Note that the first argument passed to ``RAJA::make_offset_layout`` contains
+the lower bounds for 'i' and 'j' and the second argument contains the upper
+bounds. Also, the 'j' index is stride-1 by default, which is the same as the
+non-offset Layout usage.
+
+Just like ``RAJA::Layout`` has a permutation, so does ``RAJA::OffsetLayout``.
+Here is a similar example where we permute the (i, j) index stride ordering:
+
+.. literalinclude:: ../../../../exercises/view-layout_solution.cpp
+   :start-after: _raja_permofflayout2D_start
+   :end-before: _raja_permofflayout2D_end
+   :language: C++ 
+
+The permutation ``{1, 0}`` is passed as the third argument to 
+``RAJA::make_offset_layout``. From the ordering of the for-loops, we can see 
+that the 'i' index is stride-1 and the 'j' index has stride equal to the 
+extent of the 'i' dimension since executing the for-loop nest strides through 
+the data with unit stride.
 

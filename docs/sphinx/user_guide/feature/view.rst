@@ -167,7 +167,7 @@ stride, the third index (index 2 - extent 11) has stride 5, and the
 second index (index 1 - extent 7) has stride 55 (= 5*11).
 
 .. note:: If a permuted layout is created with the *identity permutation* 
-          (e.g., {0,1,2}, the layout is the same as if it were created by 
+          (e.g., {0,1,2}), the layout is the same as if it were created by 
           calling the Layout constructor directly with no permutation.
 
 The first argument to ``RAJA::make_permuted_layout`` is a C++ array whose
