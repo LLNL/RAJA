@@ -9,7 +9,7 @@
 .. _launchintro-label:
 
 ------------------------------
-``RAJA::expt::Launch`` basics
+``RAJA::expt::Launch`` Basics
 ------------------------------
 
 Key RAJA features shown in the following examples:
