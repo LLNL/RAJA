@@ -170,7 +170,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                         + input[id - totCellsInCol];
     }
   }
-// _stencil_output_ref_start
+// _stencil_output_ref_end
 
   std::cout << "\noutput reference lattice:\n"; 
   printLattice(output_ref, totCellsInRow, totCellsInCol);
