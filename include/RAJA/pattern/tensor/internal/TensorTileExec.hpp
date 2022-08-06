@@ -327,8 +327,7 @@ namespace expt
     template<typename STORAGE, typename INDEX_TYPE, TensorTileSize TENSOR_SIZE, typename BEGIN, typename SIZE, typename BODY, camp::idx_t ... IDX_SEQ, camp::idx_t ... DIM_SEQ>
     RAJA_INLINE
     RAJA_HOST_DEVICE
-    void tensorTileExec_expanded( StaticTensorTile<INDEX_TYPE,TENSOR_SIZE, BEGIN, SIZE>
-const &orig_tile, BODY && body, camp::idx_seq<IDX_SEQ...> const &, camp::idx_seq<DIM_SEQ...> const &)
+    void tensorTileExec_expanded( StaticTensorTile<INDEX_TYPE,TENSOR_SIZE, BEGIN, SIZE> const &orig_tile, BODY && body, camp::idx_seq<IDX_SEQ...> const &, camp::idx_seq<DIM_SEQ...> const &)
     {
 
       using InputType = StaticTensorTile<

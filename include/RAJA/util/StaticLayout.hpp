@@ -40,7 +40,7 @@ namespace detail
 {
 
 
-template <typename IdxLin, typename Range, typename Sizes, typename Strides>
+template <typename IdxLin, typename Range, typename Sizes, typename Strides, typename DimTypeList=void>
 struct StaticLayoutBase_impl;
 
 
@@ -51,7 +51,8 @@ template <typename IdxLin,
 struct StaticLayoutBase_impl<IdxLin,
                              camp::int_seq<IdxLin, RangeInts...>,
                              camp::int_seq<IdxLin, Sizes...>,
-                             camp::int_seq<IdxLin, Strides...>> {
+                             camp::int_seq<IdxLin, Strides...>,
+                             void> {
 
   using IndexLinear = IdxLin;
   using sizes = camp::int_seq<IdxLin, Sizes...>;
@@ -208,17 +209,29 @@ struct StrideCalculator<IdxLin,
 };
 
 
-template <typename Layout, typename DimTypeList>
-struct TypedStaticLayoutImpl;
 
-template <typename Layout, typename... DimTypes>
-struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
+template <typename IdxLin,
+          IdxLin... RangeInts,
+          IdxLin... Sizes,
+          IdxLin... Strides,
+          typename... DimTypes>
+struct StaticLayoutBase_impl<IdxLin,
+                             camp::int_seq<IdxLin, RangeInts...>,
+                             camp::int_seq<IdxLin, Sizes...>,
+                             camp::int_seq<IdxLin, Strides...>,
+                             camp::list<DimTypes...>> {
 
-  using IndexLinear = typename Layout::IndexLinear;
+
+  using IndexLinear = IdxLin;
+  using ranges      = camp::int_seq<IdxLin, RangeInts...>;
+  using sizes       = camp::int_seq<IdxLin, Sizes...>;
+  using strides     = camp::int_seq<IdxLin, Strides...>;  
+
+  using InnerLayout = StaticLayoutBase_impl<IdxLin,ranges,sizes,strides,void>;
 
   static
   constexpr
-  camp::idx_t stride_one_dim = Layout::stride_one_dim;
+  camp::idx_t stride_one_dim = InnerLayout::stride_one_dim;
 
   static constexpr IndexLinear n_dims = sizeof...(DimTypes);
   /*!
@@ -231,12 +244,12 @@ struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
   static RAJA_INLINE RAJA_HOST_DEVICE constexpr IndexLinear s_oper(
       DimTypes... indices)
   {
-    return Layout::s_oper(stripIndexType(indices)...);
+    return InnerLayout::s_oper(stripIndexType(indices)...);
   }
 
 
-  static constexpr IndexLinear s_size = Layout::s_size;
-  static constexpr IndexLinear s_size_noproj = Layout::s_size_noproj;
+  static constexpr IndexLinear s_size = InnerLayout::s_size;
+  static constexpr IndexLinear s_size_noproj = InnerLayout::s_size_noproj;
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr static IndexLinear size()
   {
@@ -253,7 +266,15 @@ struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
   RAJA_HOST_DEVICE
   constexpr
   IndexLinear get_dim_stride() const {
-    return Layout{}.get_dim_stride();
+    return InnerLayout{}.get_dim_stride();
+  }
+
+  template<camp::idx_t DIM>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr
+  IndexLinear get_dim_size() const {
+    return camp::seq_at<DIM, sizes>::value;
   }
 
   template<camp::idx_t DIM>
@@ -266,15 +287,22 @@ struct TypedStaticLayoutImpl<Layout, camp::list<DimTypes...>> {
 
 
   RAJA_INLINE
-  static void print() { Layout::print(); }
+  static void print() { InnerLayout::print(); }
+
 };
 
-template <typename Perm, typename IdxLin, typename Sizes, typename Indexes>
+
+
+
+
+template <typename Perm, typename IdxLin, typename Sizes, typename Indexes, typename TypeList>
 struct StaticLayoutMaker
 {
   using strides = typename detail::StrideCalculator<IdxLin, Indexes, Perm, Sizes>::strides;
-  using type = StaticLayoutBase_impl<IdxLin, Indexes, Sizes, strides>;
+  using type = StaticLayoutBase_impl<IdxLin, Indexes, Sizes, strides,TypeList>;
 };
+
+
 
 }  // namespace detail
 
@@ -284,16 +312,21 @@ using StaticLayoutT = typename detail::StaticLayoutMaker<
     Perm,
     IdxLin,
     camp::int_seq<IdxLin, Sizes...>,
-    camp::make_int_seq_t<IdxLin, sizeof...(Sizes)>
+    camp::make_int_seq_t<IdxLin, sizeof...(Sizes)>,
+    void
     >::type;
 
 template <typename Perm, camp::idx_t... Sizes>
 using StaticLayout = StaticLayoutT<Perm, camp::idx_t, Sizes...>;
 
 template <typename Perm, typename IdxLin, typename TypeList, camp::idx_t... Sizes>
-using TypedStaticLayout =
-    detail::TypedStaticLayoutImpl<StaticLayoutT<Perm, IdxLin, Sizes...>, TypeList>;
-
+using TypedStaticLayout = typename detail::StaticLayoutMaker<
+    Perm,
+    IdxLin,
+    camp::int_seq<IdxLin, Sizes...>,
+    camp::make_int_seq_t<IdxLin, sizeof...(Sizes)>,
+    TypeList
+    >::type;
 
 }  // namespace RAJA
 
