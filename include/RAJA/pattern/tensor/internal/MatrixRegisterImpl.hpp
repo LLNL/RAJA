@@ -252,8 +252,7 @@ namespace expt
 
 
       template<typename POINTER_TYPE, typename INDEX_TYPE, RAJA::internal::expt::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
-      struct RefBridge
-      <RAJA::internal::expt::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 2, STRIDE_ONE_DIM>>
+      struct RefBridge <RAJA::internal::expt::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 2, STRIDE_ONE_DIM>>
       {
 
           using RefType = RAJA::internal::expt::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 2, STRIDE_ONE_DIM>;

@@ -294,7 +294,8 @@ namespace internal
       camp::idx_t VecHead, camp::idx_t ... VecSeq,
       typename ... INDEX_TYPES,
       typename ElementType, typename PointerType, typename LinIdx,
-      LinIdx... RangeInts, LinIdx... SizeInts, LinIdx... StrideInts
+      LinIdx... RangeInts, LinIdx... SizeInts, LinIdx... StrideInts,
+      typename DIM_LIST
   >
   struct ViewReturnHelper<
       camp::idx_seq<VecHead,VecSeq...>,
@@ -305,7 +306,8 @@ namespace internal
           LinIdx,
           camp::int_seq<LinIdx,RangeInts...>,
           camp::int_seq<LinIdx,SizeInts...>,
-          camp::int_seq<LinIdx,StrideInts...>
+          camp::int_seq<LinIdx,StrideInts...>,
+          DIM_LIST
       >
   > {
       static constexpr camp::idx_t s_num_dims = sizeof...(VecSeq) + 1;
@@ -315,7 +317,7 @@ namespace internal
       using range_seq  = camp::int_seq<LinIdx,RangeInts... >;
       using size_seq   = camp::int_seq<LinIdx,SizeInts...  >;
       using stride_seq = camp::int_seq<LinIdx,StrideInts...>;
-      using LayoutType = RAJA::detail::StaticLayoutBase_impl<LinIdx,range_seq,size_seq,stride_seq>;
+      using LayoutType = RAJA::detail::StaticLayoutBase_impl<LinIdx,range_seq,size_seq,stride_seq,DIM_LIST>;
 
       // This is the stride-one dimensions w.r.t. the tensor not the View
       // For example:
