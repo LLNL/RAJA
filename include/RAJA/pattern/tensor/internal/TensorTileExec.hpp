@@ -129,6 +129,7 @@ namespace expt
                  ? ((orig_begin + orig_size) - tile_begin + step_size - 1) / step_size
                  : 0;
 
+
         using IterCount = camp::integral_constant<typename TTYPE::index_type,iter_count>;
         using DimSeq = camp::idx_seq<DIM0,DIM_REST...>;
         using IdxSeq = typename camp::detail::gen_seq<typename TTYPE::index_type,IterCount>::type;
@@ -277,12 +278,36 @@ namespace expt
     template<typename STORAGE, camp::idx_t DIM0, camp::idx_t IDX, camp::idx_t ... IDX_REST>
     struct StaticTensorTileExec<STORAGE, camp::idx_seq<DIM0>, camp::idx_seq<IDX,IDX_REST...>>{
 
+      using NextExec = StaticTensorTileExec<STORAGE,camp::idx_seq<DIM0>,camp::idx_seq<IDX_REST...>>;
+
       template<typename OTILE, typename TTYPE, typename BODY>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      static void exec(OTILE const &, TTYPE const &tile, BODY && body) {
-          // execute body, passing in the current tile
-          body(tile);
+      static void exec(OTILE const & otile, TTYPE const &tile, BODY && body) {
+            auto constexpr orig_begin = OTILE::begin_type::value_at(DIM0);
+            auto constexpr orig_size =  OTILE:: size_type::value_at(DIM0);
+    
+            auto constexpr tile_begin = TTYPE::begin_type::value_at(DIM0);
+
+            using NextBegin = camp::integral_constant<typename TTYPE::index_type,tile_begin+STORAGE::s_dim_elem(DIM0)>;
+            using TailSize  = camp::integral_constant<typename TTYPE::index_type,(orig_begin+orig_size)-tile_begin>;
+
+            using NextTile  = typename expt::SetStaticTensorTileBegin<TTYPE,NextBegin,(size_t)DIM0>::Type;
+
+            using TailTile  = typename expt::SetStaticTensorTileSize <TTYPE,TailSize ,(size_t)DIM0>::Type;
+            using PartTile  = typename TailTile::Partial;
+
+    
+            static_assert( (tile_begin + STORAGE::s_dim_elem(DIM0) ) <= (orig_begin + orig_size+ STORAGE::s_dim_elem(DIM0) ), "OOB" );
+     
+            if( (tile_begin + STORAGE::s_dim_elem(DIM0) ) <= (orig_begin + orig_size) ){
+               body(tile);
+               NextTile next_tile;
+               NextExec::exec(otile, next_tile, body);
+            } else if ( tile_begin < (orig_begin + orig_size ) ) {
+               PartTile part_tile;
+               body(part_tile);
+            }
       }
 
     };
