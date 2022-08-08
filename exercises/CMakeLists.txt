@@ -50,6 +50,9 @@ raja_add_executable(
   SOURCES kernelintro-nested-loop-reorder_solution.cpp)
 
 raja_add_executable(
+  NAME kernel-matrix-transpose
+  SOURCES kernel-matrix-transpose.cpp)
+raja_add_executable(
   NAME kernel-matrix-transpose_solution
   SOURCES kernel-matrix-transpose_solution.cpp)
 
@@ -58,9 +61,16 @@ raja_add_executable(
   SOURCES launch-matrix-transpose_solution.cpp)
 
 raja_add_executable(
+  NAME kernel-matrix-transpose-tiled
+  SOURCES kernel-matrix-transpose-tiled.cpp)
+
+raja_add_executable(
   NAME kernel-matrix-transpose-tiled_solution
   SOURCES kernel-matrix-transpose-tiled_solution.cpp)
 
+raja_add_executable(
+  NAME kernel-matrix-transpose-local-array
+  SOURCES kernel-matrix-transpose-local-array.cpp)
 raja_add_executable(
   NAME kernel-matrix-transpose-local-array_solution
   SOURCES kernel-matrix-transpose-local-array_solution.cpp)
