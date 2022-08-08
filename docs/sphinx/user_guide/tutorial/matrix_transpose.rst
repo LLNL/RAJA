@@ -76,7 +76,7 @@ RAJA::expt::launch Implementation
 
 For ``RAJA::expt::launch`` variants, we use ``RAJA::expt::loop`` methods to express
 the hierachy of loops within the kernel execution space. For a sequential dispatch
-we template the launch policy using ``RAJA::expt::seq_launch_t`` and the loop methods
+we template the launch method using the ``RAJA::expt::seq_launch_t`` type and the loop methods
 with ``RAJA::loop_exec``. The complete sequential RAJA variant is:
 
 .. literalinclude:: ../../../../exercises/launch-matrix-transpose_solution.cpp

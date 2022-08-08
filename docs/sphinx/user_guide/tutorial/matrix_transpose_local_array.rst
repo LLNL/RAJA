@@ -227,7 +227,7 @@ kernel is:
    :end-before: // _mattranspose_localarray_raja_end
    :language: C++
 
-In this example ``RAJA::expt::tile methods`` are used to create tiles
+In this example ``RAJA::expt::tile`` methods are used to create tiles
 of the outer 'row' and 'col' iteration spaces. The ``RAJA::expt::tile`` methods
 take an additional argument specifying the tile size. To traverse the tile
 we use the ``RAJA::expt::loop_icount`` methods, which are similar to ``RAJA::kernel``
