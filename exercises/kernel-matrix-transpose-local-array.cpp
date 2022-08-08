@@ -200,12 +200,23 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   // _mattranspose_localarray_raja_start
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Uncomment this code block.
+  ///
+  /*
   using SEQ_EXEC_POL_I =
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
         RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
 
-          RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
+          ///
+          /// TODO...
+          ///
+          /// EXERCISE: Initialize the local memory statement as position 2 
+          ///           in the paramater list.
+          ///
 
           RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
             RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
@@ -239,6 +250,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
 
   );
+  */
   // _mattranspose_localarray_raja_end
 
   checkResult<int>(Atview, N_c, N_r);
@@ -252,6 +264,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Uncomment this code block.
+  ///
+  /*
   using OPENMP_EXEC_1_POL =
   RAJA::KernelPolicy<
     //
@@ -271,11 +289,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           // loops. These loops copy data from the global matrices
           // to the local tile.
           //
-          RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-                                       RAJA::statement::Lambda<0>
-            >
-          >,
+
+          ///
+          /// TODO...
+          ///
+          /// EXERCISE: Use two ForICount statements with loop_exec to call the first lambda.
+          ///
+
           //
           // (2) Execution policies for the second set of inner
           // loops. These loops copy data from the local tile to
@@ -284,11 +304,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           //     swapped! This enables us to swap which
           //     index has unit stride.
           //
-          RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-                                       RAJA::statement::Lambda<1>
-            >
-          >
+
+          ///
+          /// TODO...
+          ///
+          /// EXERCISE: Use two ForICount statements with loop_exec to call the second lambda.
+          ///
         >
       >
     >
@@ -311,6 +332,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     }
   );
+  */
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -572,6 +594,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using RAJA::Params;
 
   // _mattranspose_localarray_raja_lambdaargs_start
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Uncomment this code block.
+  ///
+  /*
   using SEQ_EXEC_POL_II =
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
@@ -610,10 +638,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Atview(col, row) = Tile_Array(ty, tx);
     }
   );
+  */
   // _mattranspose_localarray_raja_lambdaargs_end
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
+
 //--------------------------------------------------------------------------//
 
   return 0;
