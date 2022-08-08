@@ -38,16 +38,16 @@ raja_add_executable(
   SOURCES tut_vertexsum-coloring.cpp)
 
 raja_add_executable(
-  NAME teams_flatten
-  SOURCES teams_flatten.cpp)
+  NAME launch_flatten
+  SOURCES launch_flatten.cpp)
 
 raja_add_executable(
-  NAME teams_reductions
-  SOURCES teams_reductions.cpp)
+  NAME launch_reductions
+  SOURCES launch_reductions.cpp)
 
 raja_add_executable(
-  NAME resource-runtime-teams
-  SOURCES resource-runtime-teams.cpp)
+  NAME resource-runtime-launch
+  SOURCES resource-runtime-launch.cpp)
 
 raja_add_executable(
   NAME tut_atomic-histogram
@@ -86,12 +86,12 @@ raja_add_executable(
   SOURCES pi-reduce_vs_atomic.cpp)
 
 raja_add_executable(
-  NAME raja-teams
-  SOURCES raja-teams.cpp)
+  NAME raja-launch
+  SOURCES raja-launch.cpp)
 
 raja_add_executable(
-  NAME teams_matrix-multiply
-  SOURCES teams_matrix-multiply.cpp)
+  NAME launch_matrix-multiply
+  SOURCES launch_matrix-multiply.cpp)
 
 raja_add_executable(
   NAME jacobi
@@ -128,7 +128,7 @@ raja_add_executable(
   SOURCES resource-kernel.cpp)
 
 raja_add_executable(
-  NAME resource-teams
-  SOURCES resource-teams.cpp)
+  NAME resource-launch
+  SOURCES resource-launch.cpp)
 
 add_subdirectory(plugin)

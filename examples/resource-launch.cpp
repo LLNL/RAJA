@@ -14,7 +14,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
 #if defined(RAJA_ENABLE_CUDA)
-  std::cout << "\n Running RAJA Resource Teams on Multiple Streams...\n";
+  std::cout << "\n Running RAJA Resource Launch on Multiple Streams...\n";
 
   constexpr int N = 10;
   constexpr int M = 1000000;
@@ -42,7 +42,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::resources::Event e =
         RAJA::expt::launch<launch_policy>(res_cuda,
         RAJA::expt::Grid(RAJA::expt::Teams(64),
-                         RAJA::expt::Threads(1), "RAJA Teams kernel"),
+                         RAJA::expt::Threads(1), "RAJA Launch kernel"),
       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx)  {
 
        RAJA::expt::loop<teams_x>(ctx, m_range, [&] (int j) {

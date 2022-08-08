@@ -14,10 +14,10 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Thread Flatten Example using RAJA Teams
+ *  Thread Flatten Example using RAJA Launch
  *
  *  This example illustrates use of the "flatten"
- *  policy inside RAJA Teams
+ *  policy inside RAJA Launch
  *
  *  The flatten policy enables reshaping
  *  multi-dimensional thread teams to 1D
@@ -70,7 +70,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   RAJA::expt::Grid grid(RAJA::expt::Teams(1),
                         RAJA::expt::Threads(N, N),
-                        "Teams Flatten Kernel");
+                        "Launch Flatten Kernel");
 
   //
   // Resource object for host, used to allocate memory

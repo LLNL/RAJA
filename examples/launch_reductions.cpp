@@ -14,7 +14,7 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Reduction Example using RAJA Teams
+ *  Reduction Example using RAJA Launch
  *
  *  This example illustrates use of the RAJA reduction types: min, max,
  *  sum, min-loc, and max-loc.
@@ -70,25 +70,25 @@ int main(int argc, char *argv[])
 {
 
   if(argc != 2) {
-    RAJA_ABORT_OR_THROW("Usage ./teams_reductions host or ./tut_reductions device");
+    RAJA_ABORT_OR_THROW("Usage ./launch_reductions host or ./launch_reductions device");
   }
 
   //
   // Run time policy section is demonstrated in this example by specifying
   // kernel exection space as a command line argument (host or device).
-  // Example usage ./teams_reductions host or ./teams_reductions device
+  // Example usage ./launch_reductions host or ./launch_reductions device
   //
   std::string exec_space = argv[1];
   if(!(exec_space.compare("host") == 0 || exec_space.compare("device") == 0 )){
-    RAJA_ABORT_OR_THROW("Usage ./teams_reductions host or ./teams_reductions device");
+    RAJA_ABORT_OR_THROW("Usage ./launch_reductions host or ./launch_reductions device");
     return 0;
   }
 
   RAJA::expt::ExecPlace select_cpu_or_gpu;
   if(exec_space.compare("host") == 0)
-    { select_cpu_or_gpu = RAJA::expt::HOST; printf("Running RAJA-Teams reductions example on the host \n"); }
+    { select_cpu_or_gpu = RAJA::expt::HOST; printf("Running RAJA-Launch reductions example on the host \n"); }
   if(exec_space.compare("device") == 0)
-    { select_cpu_or_gpu = RAJA::expt::DEVICE; printf("Running RAJA-Teams reductions example on the device \n"); }
+    { select_cpu_or_gpu = RAJA::expt::DEVICE; printf("Running RAJA-Launch reductions example on the device \n"); }
 
   // _reductions_array_init_start
 //
