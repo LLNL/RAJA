@@ -112,9 +112,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA sequential vector addition...\n";
 
   // _rajaseq_vector_add_start
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
-    c[i] = a[i] + b[i]; 
-  });
+  RAJA::forall< RAJA::seq_exec >(
+    RAJA::TypedRangeSegment<int>(0, N), [=] (int i) {
+      c[i] = a[i] + b[i];
+    }
+  );
   // _rajaseq_vector_add_end
 
   checkResult(c, c_ref, N);
@@ -130,9 +132,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA SIMD vector addition...\n";
 
-  RAJA::forall< RAJA::simd_exec >(RAJA::RangeSegment(0, N), [=] (int i) { 
-    c[i] = a[i] + b[i]; 
-  });    
+  RAJA::forall<RAJA::simd_exec>(
+    RAJA::TypedRangeSegment<int>(0, N), [=] (int i) { 
+      c[i] = a[i] + b[i]; 
+    }
+  );    
 
   checkResult(c, c_ref, N);
 //printArray(c, N);
@@ -147,9 +151,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA loop-exec vector addition...\n";
 
-  RAJA::forall< RAJA::loop_exec >(RAJA::RangeSegment(0, N), [=] (int i) { 
-    c[i] = a[i] + b[i];
-  });
+  RAJA::forall< RAJA::loop_exec >(
+    RAJA::TypedRangeSegment<int>(0, N), [=] (int i) { 
+      c[i] = a[i] + b[i];
+    }
+  );
 
   checkResult(c, c_ref, N);
 //printArray(c, N);
@@ -188,9 +194,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA OpenMP multithreaded vector addition...\n";
 
   // _rajaomp_vector_add_start
-  RAJA::forall< RAJA::omp_parallel_for_exec >(RAJA::RangeSegment(0, N), [=] (int i) { 
-    c[i] = a[i] + b[i]; 
-  });    
+  RAJA::forall< RAJA::omp_parallel_for_exec >(
+    RAJA::TypedRangeSegment<int>(0, N), [=] (int i) { 
+      c[i] = a[i] + b[i]; 
+    }
+  );    
   // _rajaomp_vector_add_end
 
   checkResult(c, c_ref, N);
@@ -216,7 +224,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk(cudaMemcpy( d_b, b, N * sizeof(int), cudaMemcpyHostToDevice ));
 
   // _rajacuda_vector_add_start
-  RAJA::forall< RAJA::cuda_exec<CUDA_BLOCK_SIZE> >(RAJA::RangeSegment(0, N), 
+  RAJA::forall< RAJA::cuda_exec<CUDA_BLOCK_SIZE> >(RAJA::TypedRangeSegment<int>(0, N), 
     [=] RAJA_DEVICE (int i) {
     d_c[i] = d_a[i] + d_b[i];
   });
@@ -239,7 +247,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const bool Asynchronous = false;
 
   // _rajacuda_explicit_vector_add_start
-  RAJA::forall<RAJA::cuda_exec_explicit<CUDA_BLOCK_SIZE, 2, Asynchronous>>(RAJA::RangeSegment(0, N), 
+  RAJA::forall<RAJA::cuda_exec_explicit<CUDA_BLOCK_SIZE, 2, Asynchronous>>(RAJA::TypedRangeSegment<int>(0, N), 
     [=] RAJA_DEVICE (int i) { 
     d_c[i] = d_a[i] + d_b[i]; 
   });    
@@ -266,7 +274,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( d_b, b, N * sizeof(int), hipMemcpyHostToDevice ));
 
   // _rajahip_vector_add_start
-  RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
+  RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::TypedRangeSegment<int>(0, N),
     [=] RAJA_DEVICE (int i) {
     d_c[i] = d_a[i] + d_b[i];
   });
@@ -297,7 +305,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   memoryManager::sycl_res->memcpy(d_b, b, N * sizeof(int));
 
   // _rajasycl_vector_add_start
-  RAJA::forall<RAJA::sycl_exec<SYCL_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
+  RAJA::forall<RAJA::sycl_exec<SYCL_BLOCK_SIZE>>(RAJA::TypedRangeSegment<int>(0, N),
     [=] RAJA_DEVICE (int i) {
     d_c[i] = d_a[i] + d_b[i];
   });

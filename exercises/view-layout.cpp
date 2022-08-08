@@ -202,19 +202,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(a, 0, Ntot * sizeof(int));
 
-  // _default_view3D_start    
-  RAJA::View< int, RAJA::Layout<3, int> > view_3D(a, Nx, Ny, Nz);
-
-  iter = 0;
-  for (int i = 0; i < Nx; ++i) {
-    for (int j = 0; j < Ny; ++j) {
-      for (int k = 0; k < Nz; ++k) {
-        view_3D(i, j, k) = iter;
-        ++iter;
-      }
-    }
-  }
-  // _default_view3D_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a triple loop nest using a RAJA::View and 
+  ///           three-dimensional RAJA::Layout that iterates over the
+  ///           data array 'a' with unit stride.
+  ///
 
   checkResult<int>(a, aref, Nx*Ny*Nz);
 //printValues<int>(a, Nx*Ny*Nz);
@@ -257,22 +251,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(a, 0, Ntot * sizeof(int));
 
-  // _default_perm_view3D_start
-  std::array<RAJA::idx_t, 3> defperm3 {{0, 1, 2}};
-  RAJA::Layout< 3, int > defperm3_layout =
-    RAJA::make_permuted_layout( {{Nx, Ny, Nz}}, defperm3);
-  RAJA::View< int, RAJA::Layout<3, int> > defperm_view_3D(a, defperm3_layout);
-
-  iter = 0;
-  for (int i = 0; i < Nx; ++i) {
-    for (int j = 0; j < Ny; ++j) {
-      for (int k = 0; k < Nz; ++k) {
-        defperm_view_3D(i, j, k) = iter;
-        ++iter;
-      }
-    }
-  }
-  // _default_perm_view3D_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a triple loop nest using a RAJA::View and
+  ///           three-dimensional RAJA::Layout with the identity permutation.
+  ///
 
   checkResult<int>(a, aref, Nx*Ny*Nz);
 //printValues<int>(a, Nx*Ny*Nz);
@@ -308,22 +292,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(a, 0, Ntot * sizeof(int));
 
-  // _perma_view3D_start
-  std::array<RAJA::idx_t, 3> perm3a {{2, 1, 0}};
-  RAJA::Layout< 3, int > perm3a_layout =
-    RAJA::make_permuted_layout( {{Nx, Ny, Nz}}, perm3a);
-  RAJA::View< int, RAJA::Layout<3, int> > perm3a_view_3D(a, perm3a_layout);
-
-  iter = 0;
-  for (int k = 0; k < Nz; ++k) {
-    for (int j = 0; j < Ny; ++j) {
-      for (int i = 0; i < Nx; ++i) {
-        perm3a_view_3D(i, j, k) = iter;
-        ++iter;
-      }
-    }
-  }
-  // _perma_view3D_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a triple loop nest using a RAJA::View and
+  ///           three-dimensional RAJA::Layout with the permutation
+  ///           {2, 1, 0}. 
+  ///
+  ///           Name the Layout object 'perm3a_layout' so it can be used
+  ///           with the index conversion methods in the section below.
+  ///           Uncomment those methods if you want to try them with the
+  ///           Layout object you create here.
+  ///
 
   checkResult<int>(a, aref, Nx*Ny*Nz);
 //printValues<int>(a, Nx*Ny*Nz);
@@ -381,10 +361,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\nperm3a_layout...\n" << std::endl;
 
   int lin = -1;
-  int i = -1;
-  int j = -1;
-  int k = -1;
+  int i = -1; 
+  int j = -1; 
+  int k = -1; 
 
+/*
   // _perm3d_layout_start
   lin = perm3a_layout(1, 2, 0);
   std::cout << "\tperm3a_layout(1, 2, 0) = " << lin << std::endl;
@@ -415,6 +396,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   perm3a_layout.toIndices(21, i, j, k);
   std::cout << "\tperm3a_layout.toIndices(21, i, j, k) --> (i, j, k) = "
             << "(" << i << ", " << j << ", " << k << ")\n" << std::endl;
+*/
 
 //----------------------------------------------------------------------------//
 
@@ -444,10 +426,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\tperm3b_layout(0, 2, 1) = " << lin << std::endl;
   std::cout << "\t  Should be 15 = 0 + 1 * Nx + 2 * Nx * Nz "
             << "(since perm is {1, 2, 0})" << std::endl;
-
   perm3b_layout.toIndices(15, i, j, k);
   std::cout << "\tperm3b_layout.toIndices(15, i, j, k) --> (i, j, k) = "
             << "(" << i << ", " << j << ", " << k << ")\n" << std::endl; 
+
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a triple loop nest using a RAJA::View and
+  ///           three-dimensional RAJA::Layout that iterates over the
+  ///           data array 'a' with unit stride.
+  ///
 
 //----------------------------------------------------------------------------//
 //
@@ -535,20 +524,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(ao, 0, Ntot_ao * sizeof(int));
 
-  // _raja_offlayout2D_start
-  RAJA::OffsetLayout<2, int> offlayout_2D =
-    RAJA::make_offset_layout<2, int>( {{imin, jmin}}, {{imax, jmax}} );
-
-  RAJA::View< int, RAJA::OffsetLayout<2, int> > aoview_2Doff(ao,
-                                                             offlayout_2D);
-  iter = 0;
-  for (int i = imin; i < imax; ++i) {
-    for (int j = jmin; j < jmax; ++j) {
-      aoview_2Doff(i, j) = iter;
-      iter++;
-    }
-  }
-  // _raja_offlayout2D_end
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement a double loop nest using a RAJA::View and
+  ///           two-dimensional RAJA::OffsetLayout which performs the
+  ///           same operations as the C-style example above.
+  ///
 
   checkResult<int>(ao, ao_ref, (imax-imin)*(jmax-jmin));
 //printValues<int>(ao, (imax-imin)*(jmax-jmin)); 
