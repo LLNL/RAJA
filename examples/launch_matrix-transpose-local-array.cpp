@@ -78,7 +78,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int N_r = 267;
   const int N_c = 251;
 
-  const int TILE_DIM = 16;
+  constexpr int TILE_DIM = 16;
 
   const int outer_Dimc = (N_c - 1) / TILE_DIM + 1;
   const int outer_Dimr = (N_r - 1) / TILE_DIM + 1;
