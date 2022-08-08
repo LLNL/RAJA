@@ -203,12 +203,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >; 
 
-  RAJA::kernel<TILED_KERNEL_EXEC_POL_OMP>(
-                          RAJA::make_tuple(col_Range, row_Range), 
-                          [=](int col, int row) {
-
-    Atview(col, row) = Aview(row, col);
-
+  RAJA::kernel<TILED_KERNEL_EXEC_POL_OMP>( RAJA::make_tuple(col_Range, row_Range), 
+    [=](int col, int row) {
+      Atview(col, row) = Aview(row, col);
   });
 
   checkResult<int>(Atview, N_c, N_r);
@@ -236,12 +233,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       > // closes Tile 1
     >; // closes policy list
       
-  RAJA::kernel<TILED_KERNEL_EXEC_POL_OMP2>(
-                        RAJA::make_tuple(col_Range, row_Range), 
-                        [=](int col, int row) {
-
-    Atview(col, row) = Aview(row, col);
-
+  RAJA::kernel<TILED_KERNEL_EXEC_POL_OMP2>( RAJA::make_tuple(col_Range, row_Range), 
+    [=](int col, int row) {
+      Atview(col, row) = Aview(row, col);
   });
 
   checkResult<int>(Atview, N_c, N_r);
@@ -256,6 +250,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
   
+  // _raja_mattranspose_cuda_start
   using TILED_KERNEL_EXEC_POL_CUDA = 
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
@@ -271,13 +266,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::kernel<TILED_KERNEL_EXEC_POL_CUDA>(
-                           RAJA::make_tuple(col_Range, row_Range), 
-                           [=] RAJA_DEVICE (int col, int row) {
-                             
-                             Atview(col, row) = Aview(row, col);
-      
+  RAJA::kernel<TILED_KERNEL_EXEC_POL_CUDA>( RAJA::make_tuple(col_Range, row_Range), 
+    [=] RAJA_DEVICE (int col, int row) {
+      Atview(col, row) = Aview(row, col);
   });
+  // _raja_mattranspose_cuda_end
 
   checkResult<int>(Atview, N_c, N_r);
   //printResult<int>(Atview, N_c, N_r);
@@ -313,12 +306,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::kernel<TILED_KERNEL_EXEC_POL_HIP>(
-                           RAJA::make_tuple(col_Range, row_Range),
-                           [=] RAJA_DEVICE (int col, int row) {
-
-                             d_Atview(col, row) = d_Aview(row, col);
-
+  RAJA::kernel<TILED_KERNEL_EXEC_POL_HIP>( RAJA::make_tuple(col_Range, row_Range),
+    [=] RAJA_DEVICE (int col, int row) {
+      d_Atview(col, row) = d_Aview(row, col);
   });
 
   hipErrchk(hipMemcpy( At, d_At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost ));
