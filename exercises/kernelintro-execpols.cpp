@@ -285,7 +285,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::kernel<EXEC_POL5>( RAJA::make_tuple(
+  RAJA::kernel<EXEC_POL5>(
     RAJA::make_tuple( RAJA::TypedRangeSegment<int>(0, N),
                       RAJA::TypedRangeSegment<int>(0, N),
                       RAJA::TypedRangeSegment<int>(0, N) ),
@@ -404,7 +404,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::kernel<EXEC_POL7>( RAJA::make_tuple(
+  RAJA::kernel<EXEC_POL7>(
     RAJA::make_tuple( RAJA::TypedRangeSegment<int>(0, N),
                       RAJA::TypedRangeSegment<int>(0, N),
                       RAJA::TypedRangeSegment<int>(0, N) ),
@@ -454,7 +454,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::kernel<EXEC_POL8>( RAJA::make_tuple(
+  RAJA::kernel<EXEC_POL8>(
     RAJA::make_tuple( RAJA::TypedRangeSegment<int>(0, N),
                       RAJA::TypedRangeSegment<int>(0, N),
                       RAJA::TypedRangeSegment<int>(0, N) ),

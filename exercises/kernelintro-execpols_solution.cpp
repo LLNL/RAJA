@@ -430,9 +430,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::kernel<EXEC_POL7>( RAJA::make_tuple( RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N) ),
+  RAJA::kernel<EXEC_POL7>(
+    RAJA::make_tuple( RAJA::TypedRangeSegment<int>(0, N),
+                      RAJA::TypedRangeSegment<int>(0, N),
+                      RAJA::TypedRangeSegment<int>(0, N) ),
+
     [=] __device__ ( int i, int j, int k) {
        aView(i, j, k) = c * i * j * k ;
     }
@@ -478,9 +480,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::kernel<EXEC_POL8>( RAJA::make_tuple( RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N),
-                                             RAJA::RangeSegment(0, N) ),
+  RAJA::kernel<EXEC_POL8>(
+     RAJA::make_tuple( RAJA::TypedRangeSegment<int>(0, N),
+                       RAJA::TypedRangeSegment<int>(0, N),
+                       RAJA::TypedRangeSegment<int>(0, N) ),
+
     [=] __device__ ( int i, int j, int k) {
        aView(i, j, k) = c * i * j * k ;
     }
