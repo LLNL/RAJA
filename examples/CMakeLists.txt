@@ -18,20 +18,8 @@ raja_add_executable(
   SOURCES tut_daxpy.cpp)
 
 raja_add_executable(
-  NAME tut_add-vectors
-  SOURCES tut_add-vectors.cpp)
-
-raja_add_executable(
-  NAME tut_dot-product
-  SOURCES tut_dot-product.cpp)
-
-raja_add_executable(
   NAME tut_matrix-multiply
   SOURCES tut_matrix-multiply.cpp)
-
-raja_add_executable(
-  NAME tut_nested-loop-reorder
-  SOURCES tut_nested-loop-reorder.cpp)
 
 raja_add_executable(
   NAME tut_vertexsum-coloring
@@ -48,14 +36,6 @@ raja_add_executable(
 raja_add_executable(
   NAME resource-runtime-teams
   SOURCES resource-runtime-teams.cpp)
-
-raja_add_executable(
-  NAME tut_atomic-histogram
-  SOURCES tut_atomic-histogram.cpp)
-
-raja_add_executable(
-  NAME tut_offset-layout
-  SOURCES tut_offset-layout.cpp)
 
 raja_add_executable(
   NAME tut_batched-matrix-multiply
