@@ -15,9 +15,9 @@
 
 
 /*
- * RAJA Teams Example: Upper Triangular Pattern + Shared Memory
+ * RAJA Launch Example: Upper Triangular Pattern + Shared Memory
  *
- * Teams introduces hierarchal parallelism through the concept of
+ * Launch introduces hierarchal parallelism through the concept of
  * teams and threads.  Computation is executed in a pre-defined grid
  * composed of threads and grouped into teams. The teams model enables
  * developers to express parallelism through loops over teams, and inner loops
@@ -100,7 +100,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   camp::resources::Hip device_res;
 #endif
 
-  std::cout << "\n Running RAJA-Teams examples...\n";
+  std::cout << "\n Running RAJA-Launch examples...\n";
   int num_of_backends = 1;
 #if defined(RAJA_DEVICE_ACTIVE)
   num_of_backends++;
