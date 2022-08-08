@@ -145,8 +145,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // tile_fixed statements. Iterations inside a RAJA loop is given by their
   // global iteration number. 
   //
-  RAJA::RangeSegment row_Range(0, N_r);
-  RAJA::RangeSegment col_Range(0, N_c);
+  RAJA::TypedRangeSegment<int> row_Range(0, N_r);
+  RAJA::TypedRangeSegment<int> col_Range(0, N_c);
 
   //----------------------------------------------------------------------------//
   std::cout << "\n Running sequential tiled matrix transpose ...\n";

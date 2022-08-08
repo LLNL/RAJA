@@ -89,7 +89,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 // Define index range for iterating over a elements in all examples
 //
   // _reductions_range_start
-  RAJA::RangeSegment arange(0, N);
+  RAJA::TypedRangeSegment<int> arange(0, N);
   // _reductions_range_end
 
 //----------------------------------------------------------------------------//

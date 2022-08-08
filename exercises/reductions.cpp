@@ -89,7 +89,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 // Define index range for iterating over a elements in all examples
 //
   // _reductions_range_start
-  RAJA::RangeSegment arange(0, N);
+  RAJA::TypedRangeSegment<int> arange(0, N);
   // _reductions_range_end
 
 //----------------------------------------------------------------------------//
@@ -141,8 +141,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA OpenMP reductions...\n";
 
   // _reductions_raja_omppolicy_start
+  /*
   using EXEC_POL2   = RAJA::omp_parallel_for_exec;
   using REDUCE_POL2 = RAJA::omp_reduce;
+  */
   // _reductions_raja_omppolicy_end
 
   ///
@@ -153,7 +155,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   /// TODO...
   ///
-  /// EXERCISE: Remove comments for remainder of openmp section.
+  /// EXERCISE: Remove comments for remainder of openmp section and uncomment
+  ///           policy types above to use in kernel.
   ///
   /*
   RAJA::forall<EXEC_POL2>(arange, [=](int i) {

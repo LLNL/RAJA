@@ -224,8 +224,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::kernel_param<SEQ_EXEC_POL_I>( RAJA::make_tuple(RAJA::RangeSegment(0, N_c),
-                                                       RAJA::RangeSegment(0, N_r)),
+  RAJA::kernel_param<SEQ_EXEC_POL_I>( 
+    RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
+                     RAJA::TypedRangeSegment<int>(0, N_r)),
 
     RAJA::make_tuple((int)0, (int)0, Tile_Array),
 
@@ -235,8 +236,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     [=](int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
       Atview(col, row) = Tile_Array(ty, tx);
+    }
 
-  });
+  );
   // _mattranspose_localarray_raja_end
 
   checkResult<int>(Atview, N_c, N_r);
@@ -277,8 +279,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::kernel_param<SEQ_EXEC_POL_II>( RAJA::make_tuple(RAJA::RangeSegment(0, N_c),
-                                                        RAJA::RangeSegment(0, N_r)),
+  RAJA::kernel_param<SEQ_EXEC_POL_II>( 
+    RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
+                     RAJA::TypedRangeSegment<int>(0, N_r)),
 
     RAJA::make_tuple(Tile_Array),
 
@@ -288,8 +291,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     [=](int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
       Atview(col, row) = Tile_Array(ty, tx);
-
-  });
+    }
+  );
   // _mattranspose_localarray_raja_lambdaargs_end
 
   checkResult<int>(Atview, N_c, N_r);
@@ -345,20 +348,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
    >;
 
   RAJA::kernel_param<OPENMP_EXEC_1_POL>(
-      RAJA::make_tuple(RAJA::RangeSegment(0, N_c), RAJA::RangeSegment(0, N_r)),
-      RAJA::make_tuple((int)0, (int)0, Tile_Array),
+    RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
+                     RAJA::TypedRangeSegment<int>(0, N_r)),
+    RAJA::make_tuple((int)0, (int)0, Tile_Array),
 
-      [=](int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
+    [=](int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
 
-        Tile_Array(ty, tx) = Aview(row, col);
+      Tile_Array(ty, tx) = Aview(row, col);
 
-      },
+    },
 
-      [=](int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
+    [=](int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
 
-        Atview(col, row) = Tile_Array(ty, tx);
+      Atview(col, row) = Tile_Array(ty, tx);
 
-      });
+    }
+  );
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -412,20 +417,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   >;
 
   RAJA::kernel_param<OPENMP_EXEC_2_POL>(
-      RAJA::make_tuple(RAJA::RangeSegment(0, N_c), RAJA::RangeSegment(0, N_r)),
-      RAJA::make_tuple((int)0, (int)0, Tile_Array),
+    RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
+                     RAJA::TypedRangeSegment<int>(0, N_r)),
+    RAJA::make_tuple((int)0, (int)0, Tile_Array),
 
-      [=](int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
+    [=](int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
 
-        Tile_Array(ty, tx) = Aview(row, col);
+      Tile_Array(ty, tx) = Aview(row, col);
 
-      },
+    },
 
-      [=](int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
+    [=](int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
 
-        Atview(col, row) = Tile_Array(ty, tx);
+      Atview(col, row) = Tile_Array(ty, tx);
 
-      });
+    }
+  );
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_r, N_c);
@@ -489,20 +496,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   RAJA::kernel_param<CUDA_EXEC_POL>(
-      RAJA::make_tuple(RAJA::RangeSegment(0, N_c), RAJA::RangeSegment(0, N_r)),
-      RAJA::make_tuple((int)0, (int)0, Tile_Array),
+    RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
+                     RAJA::TypedRangeSegment<int>(0, N_r)),
+    RAJA::make_tuple((int)0, (int)0, Tile_Array),
 
-      [=] RAJA_DEVICE (int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
+    [=] RAJA_DEVICE (int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
 
-        Tile_Array(ty, tx) = Aview(row, col);
+      Tile_Array(ty, tx) = Aview(row, col);
 
-      },
+    },
 
-      [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
+    [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
 
-        Atview(col, row) = Tile_Array(ty, tx);
+      Atview(col, row) = Tile_Array(ty, tx);
 
-      });
+    }
+  );
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -582,20 +591,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   RAJA::kernel_param<HIP_EXEC_POL>(
-      RAJA::make_tuple(RAJA::RangeSegment(0, N_c), RAJA::RangeSegment(0, N_r)),
-      RAJA::make_tuple((int)0, (int)0, Tile_Array),
+    RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
+                     RAJA::TypedRangeSegment<int>(0, N_r)),
+    RAJA::make_tuple((int)0, (int)0, Tile_Array),
 
-      [=] RAJA_DEVICE (int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
+    [=] RAJA_DEVICE (int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
 
-        Tile_Array(ty, tx) = d_Aview(row, col);
+      Tile_Array(ty, tx) = d_Aview(row, col);
 
-      },
+    },
 
-      [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
+    [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
 
-        d_Atview(col, row) = Tile_Array(ty, tx);
+      d_Atview(col, row) = Tile_Array(ty, tx);
 
-      });
+    }
+  );
 
   hipErrchk(hipMemcpy( At, d_At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost ));
   checkResult<int>(Atview, N_c, N_r);
