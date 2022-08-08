@@ -18,7 +18,7 @@ This section contains an exercise to work through in the file
 Key RAJA features shown in this section are:
 
   * ``RAJA::expt::launch`` loop iteration templates 
-  * RAJA::launch nested loop methods and execution policies
+  *  ``RAJA::expt::launch`` nested loop methods and execution policies
 
 The file ``RAJA/exercises/launchintro-execpols_solution.cpp`` 
 contains complete working code for the examples discussed in this section.
@@ -141,13 +141,12 @@ iteration variables are mapped to CUDA threads and blocks using the CUDA executi
 policy types ``RAJA::cuda_block_z_direct``, ``RAJA::expt::cuda_global_thread_y``,
 and ``RAJA::expt::cuda_global_thread_x``, respectively. Thus, we use a 
 a two-dimensional CUDA thread-block and three-dimensional compute grid
-to map the loop iterations to CUDA threads. In comparison to RAJA-CUDA example int
-:ref:`_kernelexecpols-label`, ``RAJA::expt::loop`` methods support execution
-policies which enable mapping directly to a the global id of a compute grid.
+to map the loop iterations to CUDA threads. In comparison to RAJA-CUDA example in
+:ref:`kernelexecpols-label` , ``RAJA::expt::loop`` methods support execution
+policies which enable mapping directly to the global thread ID of a compute grid.
 
-To be explcit with loop tiling for platform portable solution we can
-dispatch the kernel usng a combination of ``RAJA::expt::tile`` and ``RAJA::expt::loop``
-methods as below:
+Using a combination of combination of ``RAJA::expt::tile`` and ``RAJA::expt::loop``
+we can create a loop tiling platform portable solution as illustrated below:
 
 .. literalinclude:: ../../../../exercises/launchintro-execpols_solution.cpp
    :start-after: _raja_tensorinit_cuda_tiled_direct_start
@@ -156,7 +155,7 @@ methods as below:
 
 The ``RAJA::expt::tile`` methods are used to partition an iteration space into
 tiles to be used within a ``RAJA::expt::loop`` method. The ``{i,j,k}_block_sz``
-in the ``RAJA::expt::tile`` argument specifies the tile size. In the case of GPU
+in the ``RAJA::expt::tile`` function specifies the tile size. In the case of GPU
 programming models we define the tile size to correspond to the number of threads
 in a given dimension. Execution tile and loop execution policies are chosen
 to have CUDA blocks and threads mapp directly to tiles and entries in a tile.
