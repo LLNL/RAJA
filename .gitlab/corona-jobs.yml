@@ -5,12 +5,12 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 #############################################################################
 
-hip_5.1.0_clang_13_0_0 (build and test on corona):
+hip_5.1.1_clang_13_0_0 (build and test on corona):
   variables:
-    SPEC: "+rocm~openmp amdgpu_target=gfx906 %clang@13.0.0 ^blt@develop ^hip@5.1.0"
+    SPEC: "+rocm~openmp amdgpu_target=gfx906 %clang@13.0.0 ^blt@develop ^hip@5.1.1"
   extends: .build_and_test_on_corona
 
-hip_5.1.0_clang_13_0_0_desul_atomics (build and test on corona):
+hip_5.1.1_clang_13_0_0_desul_atomics (build and test on corona):
   variables:
-    SPEC: "+rocm~openmp +desul amdgpu_target=gfx906 %clang@13.0.0 ^blt@develop ^hip@5.1.0"
+    SPEC: "+rocm~openmp +desul amdgpu_target=gfx906 %clang@13.0.0 ^blt@develop ^hip@5.1.1"
   extends: .build_and_test_on_corona

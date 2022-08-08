@@ -13,7 +13,7 @@ Matrix Transpose with Local Array
 ---------------------------------
 
 This section extends the discussion in :ref:`tiledmatrixtranspose-label`, 
-where only loop tiling is considered. Here, we combine loop tiling with 
+khere only loop tiling is considered. Here, we combine loop tiling with 
 ``RAJA::LocalArray`` objects which enable us to store data for each tile in
 CPU stack-allocated arrays or GPU thread local and shared memory to be used 
 within kernels. For more information about ``RAJA::LocalArray``, please 
@@ -26,6 +26,11 @@ Key RAJA features shown in this example include:
   * ``RAJA::statement::ForICount`` type
   * ``RAJA::LocalArray``
   * Specifying lambda arguments through statements
+
+The files ``RAJA/exercises/kernel-matrix-transpose-local-array_solution.cpp`` and
+``RAJA/exercises/launch-matrix-transpose-local-array_solution.cpp`` contain the complete
+solutions for the examples described in this section, including OpenMP, CUDA,
+and HIP variants.
 
 As in :ref:`tiledmatrixtranspose-label`, this example computes the transpose 
 of an input matrix :math:`A` of size :math:`N_r \times N_c` and stores the 
@@ -43,7 +48,7 @@ of rows and columns in the matrix A. As in the :ref:`tiledmatrixtranspose-label`
 example, we start by defining the number of rows and columns in the matrices, 
 the tile dimensions, and the number of tiles.
 
-.. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
+.. literalinclude:: ../../../../exercises/kernel-matrix-transpose-local-array_solution.cpp
    :start-after: // _mattranspose_localarray_dims_start
    :end-before: // _mattranspose_localarray_dims_end
    :language: C++
@@ -51,7 +56,7 @@ the tile dimensions, and the number of tiles.
 We also use RAJA View objects to simplify the multi-dimensional indexing
 as in the :ref:`tiledmatrixtranspose-label` example.
 
-.. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
+.. literalinclude:: ../../../../exercises/kernel-matrix-transpose-local-array_solution.cpp
    :start-after: // _mattranspose_localarray_views_start
    :end-before: // _mattranspose_localarray_views_end
    :language: C++
@@ -59,7 +64,7 @@ as in the :ref:`tiledmatrixtranspose-label` example.
 The complete sequential C++ implementation of the tiled transpose operation 
 using a stack-allocated local array for the tiles is:
 
-.. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
+.. literalinclude:: ../../../../exercises/kernel-matrix-transpose-local-array_solution.cpp
    :start-after: // _mattranspose_localarray_cstyle_start
    :end-before: // _mattranspose_localarray_cstyle_end
    :language: C++
@@ -94,7 +99,7 @@ For the RAJA version of the matrix transpose kernel above, we define the
 type of the ``RAJA::LocalArray`` used for matrix entries in a tile and
 create an object to represent it: 
 
-.. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
+.. literalinclude:: ../../../../exercises/kernel-matrix-transpose-local-array_solution.cpp
    :start-after: // _mattranspose_localarray_start
    :end-before: // _mattranspose_localarray_end
    :language: C++
@@ -108,7 +113,7 @@ of matrix transpose with RAJA.
 The complete RAJA sequential CPU variant with kernel execution policy and 
 kernel is:
 
-.. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
+.. literalinclude:: ../../../../exercises/kernel-matrix-transpose-local-array_solution.cpp
    :start-after: // _mattranspose_localarray_raja_start
    :end-before: // _mattranspose_localarray_raja_end
    :language: C++
@@ -176,7 +181,7 @@ between the two variants is due to the fact that in this second one, we use
 takes and in which order. Here is the complete version including
 execution policy and kernel:
 
-.. literalinclude:: ../../../../examples/tut_matrix-transpose-local-array.cpp
+   .. literalinclude:: ../../../../exercises/kernel-matrix-transpose-local-array_solution.cpp
    :start-after: // _mattranspose_localarray_raja_lambdaargs_start
    :end-before: // _mattranspose_localarray_raja_lambdaargs_end
    :language: C++
@@ -198,6 +203,11 @@ lambda shows the two ways to specify the local tile index args; we can use an
 statement. Lastly, there is only one entry in the parameter
 tuple in this case, the local tile array. The placeholders are not needed.
 
-The file ``RAJA/examples/tut_matrix-transpose-local-array.cpp`` contains the 
-complete working example code for the examples described in this section along 
-with OpenMP, CUDA, and HIP variants.
+An interactive exercise for matrix-transpose with local-array can be found at
+``RAJA/exercises/kernel-matrix-transpose-tiled-local-array.cpp``. 
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RAJA::launch Implementation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Write about RAJA Launch variant here.

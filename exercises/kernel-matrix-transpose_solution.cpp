@@ -160,12 +160,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       > 
     >; 
 
-  RAJA::kernel<KERNEL_EXEC_POL_OMP>(
-                          RAJA::make_tuple(col_Range, row_Range), 
-                          [=](int col, int row) {
-
-    Atview(col, row) = Aview(row, col);
-
+  RAJA::kernel<KERNEL_EXEC_POL_OMP>( RAJA::make_tuple(col_Range, row_Range), 
+    [=](int col, int row) {
+      Atview(col, row) = Aview(row, col);
   });
 
   checkResult<int>(Atview, N_c, N_r);
@@ -190,12 +187,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::kernel<KERNEL_EXEC_POL_CUDA>(
-                           RAJA::make_tuple(col_Range, row_Range), 
-                           [=] RAJA_DEVICE (int col, int row) {
-                             
-                             Atview(col, row) = Aview(row, col);
-      
+  RAJA::kernel<KERNEL_EXEC_POL_CUDA>( RAJA::make_tuple(col_Range, row_Range), 
+    [=] RAJA_DEVICE (int col, int row) {
+      Atview(col, row) = Aview(row, col);
   });
   // _raja_mattranspose_cuda_end
 

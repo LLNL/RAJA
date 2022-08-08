@@ -25,7 +25,7 @@ In this basic example, we compute the transpose of an input matrix
 :math:`A` of size :math:`N_r \times N_c` and store the result in a second 
 matrix :math:`At` of size :math:`N_c \times N_r`.
 
-We start with a non-RAJA C++ implementation.
+We start with a non-RAJA C++ implementation. First we define our matrix dimensions.
 
 .. literalinclude:: ../../../../exercises/kernel-matrix-transpose_solution.cpp
    :start-after: // _mattranspose_dims_start
@@ -67,7 +67,8 @@ policy. The complete CUDA implementation is:
    :end-before: // _raja_mattranspose_cuda_end
    :language: C++
 
-A working exercise for matrix-transpose can be found at ``RAJA/exercises/kernel-matrix-transpose.cpp``. 
+An interactive exercise for matrix-transpose can be found at
+``RAJA/exercises/kernel-matrix-transpose.cpp``. 
 
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
