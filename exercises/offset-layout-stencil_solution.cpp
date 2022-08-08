@@ -323,8 +323,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   hipErrchk(hipMemcpy( d_input, input, totCells * sizeof(int), hipMemcpyHostToDevice ));
 
-  RAJA::View<int, RAJA::OffsetLayout<DIM>> d_inputView (d_input, layout);
-  RAJA::View<int, RAJA::OffsetLayout<DIM>> d_outputView(d_output, layout);
+  RAJA::View<int, RAJA::OffsetLayout<DIM, int>> d_inputView (d_input, layout);
+  RAJA::View<int, RAJA::OffsetLayout<DIM, int>> d_outputView(d_output, layout);
 
   // _offsetlayout_rajahip_start
   using NESTED_EXEC_POL4 =
