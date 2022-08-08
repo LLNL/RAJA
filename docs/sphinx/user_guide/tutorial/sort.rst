@@ -12,19 +12,16 @@
 Parallel Sort Operations
 --------------------------------------------------
 
-This section contains a working exercise in the file 
-``RAJA/exercises/sort.cpp``. 
+This section contains an exercise file ``RAJA/exercises/sort.cpp``
+for you to work through if you wish to get some practice with RAJA. The
+file ``RAJA/exercises/sort_solution.cpp`` contains complete
+working code for the examples discussed in this section. You can use the
+solution file to check your work and for guidance if you get stuck.
 
 Key RAJA features shown in this section are:
 
-  * ``RAJA::sort`` operation
-  * ``RAJA::sort_pairs`` operation
-  * ``RAJA::stable_sort`` operation
-  * ``RAJA::stable_sort_pairs`` operation
+  * ``RAJA::sort``, ``RAJA::sort_pairs``, ``RAJA::stable_sort``, and ``RAJA::stable_sort_pairs`` operations and execution policies
   * RAJA comparators for different types of sorts; e.g., less, greater
-
-The file ``RAJA/exercises/sort_solution.cpp`` contains complete working code
-for the examples presented in this section.
 
 We show examples of RAJA sequential, OpenMP, CUDA, and HIP sort operations 
 and describe how different sort orderings can be achieved by passing different 

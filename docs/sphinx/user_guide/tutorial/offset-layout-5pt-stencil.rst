@@ -12,18 +12,17 @@
 Five-point Stencil Computation (Offset Layout)
 ------------------------------------------------
 
-This section contains an exercise to work through in the file
-``RAJA/exercises/offset-layout-stencil.cpp``. 
+This section contains an exercise file ``RAJA/exercises/offset-layout-stencil.cpp``
+for you to work through if you wish to get some practice with RAJA. The
+file ``RAJA/exercises/offset-layout-stencil.cpp`` contains
+complete working code for the examples discussed in this section. You can use
+the solution file to check your work and for guidance if you get stuck.
 
 Key RAJA features shown in the following example:
 
-  * ``RAJA::Kernel`` loop execution template
-  *  RAJA kernel execution policies
+  * ``RAJA::Kernel`` loop execution template and execution policies
   * ``RAJA::View`` multi-dimensional data access
   * ``RAJA:make_offset_layout`` method to create an offset Layout
-
-The file ``RAJA/exercises/offset-layout-stencil_solution.cpp`` contains 
-complete working code for the examples discussed in this section.
 
 The examples in this section apply a five-point stencil to the interior cells 
 of a two-dimensional lattice and stores a resulting sum in a second 

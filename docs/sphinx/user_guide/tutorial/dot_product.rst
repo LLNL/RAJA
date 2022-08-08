@@ -12,19 +12,17 @@
 Vector Dot Product (Sum Reduction)
 -----------------------------------
 
-This section contains a working exercise in the file 
-``RAJA/exercises/dot_product.cpp``. 
+This section contains an exercise file ``RAJA/exercises/dot-product.cpp``
+for you to work through if you wish to get some practice with RAJA. The
+file ``RAJA/exercises/dot-product_solution.cpp`` contains complete
+working code for the examples discussed in this section. You can use the
+solution file to check your work and for guidance if you get stuck.
 
 Key RAJA features shown in this example are:
 
-  * ``RAJA::forall`` loop execution template
-  * ``RAJA::RangeSegment`` iteration space construct
-  * RAJA execution policies
-  * ``RAJA::ReduceSum`` sum reduction template
-  * RAJA reduction policies
-
-The file ``RAJA/exercises/dot-product_solution.cpp`` contains complete working 
-code for the examples discussed below.
+  * ``RAJA::forall`` loop execution template and execution policies
+  * ``RAJA::TypedRangeSegment`` iteration space construct
+  * ``RAJA::ReduceSum`` sum reduction template and reduction policies
 
 In the example, we compute a vector dot product, 'dot = (a,b)', where 
 'a' and 'b' are two vectors of length N and 'dot' is a scalar. Typical
