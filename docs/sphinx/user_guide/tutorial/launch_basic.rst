@@ -20,11 +20,11 @@ Key RAJA features shown in the following examples:
     in terms of nested for loops.
 
 In this example, we introduce the RAJA Launch framework and discuss
-hierarchical loop-based parallelism. The RAJA Launch currently lives
+hierarchical loop-based parallelism. The RAJA Launch API currently lives
 under the RAJA experiemental namespace, ``RAJA::expt``, and will be
 promoted to the standard RAJA namespace in the next release.
 Development with RAJA Launch occurs inside an execution space.
-The execution space is launched using the
+The kernel execution space is dispatched using the
 ``RAJA::expt::launch`` method::
 
   RAJA::expt::launch<launch_policy>(RAJA::expt::ExecPlace ,
@@ -45,12 +45,12 @@ and CUDA kernel dispatch::
 
 Kernel execution on either the host or device is driven by the first argument of
 the method which takes a ``RAJA::expt::ExecPlace`` enum type, either ``HOST`` or ``DEVICE``.
-Similar to thread and block programming models, RAJA Launch carries out
+Similar to GPU thread and block programming models, RAJA Launch carries out
 computation in a predefined compute grid made up of threads which are
-then grouped into teams when running on the device. The execution space is then enclosed by a host/device
-lambda which takes a ``RAJA::expt::LaunchContext`` object. The ``RAJA::expt::LaunchContext``
-may then be used to control the flow within the kernel, for example creating thread-team
-synchronization points.
+then grouped into teams when executing on the device. The execution space is then enclosed
+by a host/device lambda which takes a ``RAJA::expt::LaunchContext`` object.
+The ``RAJA::expt::LaunchContext`` may then be used to control the flow within the kernel,
+for example creating thread-team synchronization points.
 
 Inside the execution space the ``RAJA::expt::loop`` methods enable developers
 to express their code in terms of nested loops. The manner in which the loops
