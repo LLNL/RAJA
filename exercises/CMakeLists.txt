@@ -57,6 +57,10 @@ raja_add_executable(
   SOURCES kernel-matrix-transpose_solution.cpp)
 
 raja_add_executable(
+  NAME launch-matrix-transpose
+  SOURCES launch-matrix-transpose.cpp)
+
+raja_add_executable(
   NAME launch-matrix-transpose_solution
   SOURCES launch-matrix-transpose_solution.cpp)
 
@@ -86,6 +90,7 @@ raja_add_executable(
 raja_add_executable(
   NAME launch-matrix-transpose-local-array
   SOURCES launch-matrix-transpose-local-array.cpp)
+
 raja_add_executable(
   NAME launch-matrix-transpose-local-array_solution
   SOURCES launch-matrix-transpose-local-array_solution.cpp)

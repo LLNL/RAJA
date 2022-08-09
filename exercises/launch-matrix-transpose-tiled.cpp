@@ -211,10 +211,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE: Create a launch_policy_2 that will create an omp parallel region
   ///           
 
-
-    //RAJA::expt::launch<launch_policy_2>
-    //(RAJA::expt::Grid(), //Grid may be empty when running on the cpu
-    //[=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+  /*
+  RAJA::expt::launch<launch_policy_2>
+    (RAJA::expt::Grid(), //Grid may be empty when running on the cpu
+     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::tile<omp_for_pol_2>
         (ctx, TILE_DIM, row_Range, [&] (RAJA::RangeSegment const &row_tile) {
@@ -233,7 +233,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           });
         });
 
-      //});
+    });
+*/
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -262,11 +263,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement the cuda launch policy to dispatch the kernel below
   ///           on the GPU
-  
-  //RAJA::expt::launch<cuda_launch_policy>
-  //(RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_c, n_blocks_r),
-  //RAJA::expt::Threads(c_block_sz, r_block_sz)),
-  //[=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+
+/*
+  RAJA::expt::launch<cuda_launch_policy>
+    (RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_c, n_blocks_r),
+                      RAJA::expt::Threads(c_block_sz, r_block_sz)),
+     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::tile<cuda_teams_y>
         (ctx, TILE_DIM, row_Range, [&] (RAJA::RangeSegment const &row_tile) {
@@ -285,7 +287,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           });
         });
 
-      //});
+    });
+*/
 
   checkResult<int>(Atview, N_c, N_r);
   //printResult<int>(Atview, N_c, N_r);

@@ -249,21 +249,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
             RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
 
-            RAJA::expt::loop_icount<loop_pol_2>(ctx, row_tile, [&] (int row, int ty) {
+            //RAJA::expt::loop_icount<loop_pol_2>(ctx, row_tile, [&] (int row, int ty) {
                 RAJA::expt::loop_icount<loop_pol_2>(ctx, col_tile, [&] (int col, int tx) {
 
-                    Tile_Array[ty][tx] = Aview(row, col);
+                    //Tile_Array[ty][tx] = Aview(row, col);
 
                   });
-              });
+                //});
 
-            RAJA::expt::loop_icount<loop_pol_2>(ctx, col_tile, [&] (int col, int tx) {
-                RAJA::expt::loop_icount<loop_pol_2>(ctx, row_tile, [&] (int row, int ty) {
+                RAJA::expt::loop_icount<loop_pol_2>(ctx, col_tile, [&] (int col, int tx) {
+                    //RAJA::expt::loop_icount<loop_pol_2>(ctx, row_tile, [&] (int row, int ty) {
 
-                    Atview(col, row) = Tile_Array[ty][tx];
+                    //Atview(col, row) = Tile_Array[ty][tx];
 
+                    //});
                   });
-              });
 
           });
         //});
