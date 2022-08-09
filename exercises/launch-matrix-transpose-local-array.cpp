@@ -30,20 +30,18 @@
  *  data into the tile; while outer loops will iterate over the number
  *  of tiles needed to carry out the transpose.
  *
- *  RAJA variants of the example use RAJA local arrays as tile memory.
- *  Furthermore, the tiling pattern is handled by RAJA's tile statements.
- *  For CPU execution, RAJA local arrays are used to improve
+ *  RAJA variants of the example use RAJA_TEAM_SHARED_MEMORY as tile memory.
+ *  Furthermore, the tiling pattern is handled by RAJA's tile methods.
+ *  For CPU execution, RAJA_TEAM_SHARED_MEMORY are used to improve
  *  performance via cache blocking. For CUDA GPU execution,
  *  RAJA shared memory is mapped to CUDA shared memory which
  *  enables threads in the same thread block to share data.
  *
  *  RAJA features shown:
- *    - Basic usage of 'RAJA::kernel' abstractions for nested loops
- *       - Multiple lambdas
- *       - Options for specifying lambda arguments
- *       - Tile statement
- *       - ForICount statement
- *       - RAJA local arrays
+ *    - Basic usage of 'RAJA::expt::launch' abstractions for nested loops
+ *       - tile methods
+ *       - loop_icount methods
+ *       - RAJA_TEAM_SHARED_MEMORY
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
@@ -193,13 +191,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
             RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
 
-            RAJA::expt::loop_icount<loop_pol_1>(ctx, row_tile, [&] (int row, int ty) {
-                RAJA::expt::loop_icount<loop_pol_1>(ctx, col_tile, [&] (int col, int tx) {
-
-                    Tile_Array[ty][tx] = Aview(row, col);
-
-                  });
-              });
+	    ///
+	    /// TODO ...
+	    ///
+	    /// Exercise Implement loop_icount methods to load tiles of the input matrix
+	    /// into RAJA_TEAM_SHARED_MEMORY
+	    ///
 
             RAJA::expt::loop_icount<loop_pol_1>(ctx, col_tile, [&] (int col, int tx) {
                 RAJA::expt::loop_icount<loop_pol_1>(ctx, row_tile, [&] (int row, int ty) {
@@ -229,7 +226,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This policy loops over tiles sequentially while exposing parallelism on
   // one of the inner loops.
   //
-  using omp_pol_2 = RAJA::expt::LoopPolicy<RAJA::omp_for_exec>;
+
+  ///
+  /// TODO...
+  ///
+  /// EXERCISE: Implement an omp_pol_2 that will distribute loop iterations
+  ///            within the omp parallel region
+  ///
+  
   using loop_pol_2 = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
   using launch_policy_2 = RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t>;
 
@@ -237,8 +241,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     (RAJA::expt::Grid(), //Grid may be empty when only running on the cpu
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::tile<omp_pol_2>
-        (ctx, TILE_DIM, RAJA::RangeSegment(0, N_r), [&] (RAJA::RangeSegment const &row_tile) {
+      //RAJA::expt::tile<omp_pol_2>
+      //(ctx, TILE_DIM, RAJA::RangeSegment(0, N_r), [&] (RAJA::RangeSegment const &row_tile) {
 
         RAJA::expt::tile<loop_pol_2>
           (ctx, TILE_DIM, RAJA::RangeSegment(0, N_c), [&] (RAJA::RangeSegment const &col_tile) {
@@ -262,7 +266,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               });
 
           });
-        });
+        //});
 
     });
 
@@ -281,11 +285,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int n_blocks_c = RAJA_DIVIDE_CEILING_INT(N_c, c_block_sz);
   const int n_blocks_r = RAJA_DIVIDE_CEILING_INT(N_r, r_block_sz);
 
-  using cuda_teams_y = RAJA::expt::LoopPolicy<RAJA::cuda_block_y_direct>;
-  using cuda_teams_x = RAJA::expt::LoopPolicy<RAJA::cuda_block_x_direct>;
-
-  using cuda_threads_y = RAJA::expt::LoopPolicy<RAJA::cuda_thread_y_direct>;
-  using cuda_threads_x = RAJA::expt::LoopPolicy<RAJA::cuda_thread_x_direct>;
+  /// TODO...
+  ///
+  /// EXERCISE: Define loop policies to mapp loop iterations to blocks, threads directly
+  ///
 
   const bool cuda_async = false;
   using cuda_launch_policy = RAJA::expt::LaunchPolicy<RAJA::expt::cuda_launch_t<cuda_async>>;
@@ -294,7 +297,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     (RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_c, n_blocks_r),
                       RAJA::expt::Threads(c_block_sz, r_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
-
+      /*
       RAJA::expt::tile<cuda_teams_y>
         (ctx, TILE_DIM, RAJA::RangeSegment(0, N_r), [&] (RAJA::RangeSegment const &row_tile) {
 
@@ -321,7 +324,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           });
         });
-
+      */
     });
 
   checkResult<int>(Atview, N_c, N_r);

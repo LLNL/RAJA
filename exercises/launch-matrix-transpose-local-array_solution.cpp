@@ -30,20 +30,18 @@
  *  data into the tile; while outer loops will iterate over the number
  *  of tiles needed to carry out the transpose.
  *
- *  RAJA variants of the example use RAJA local arrays as tile memory.
- *  Furthermore, the tiling pattern is handled by RAJA's tile statements.
- *  For CPU execution, RAJA local arrays are used to improve
+ *  RAJA variants of the example use RAJA_TEAM_SHARED_MEMORY as tile memory.
+ *  Furthermore, the tiling pattern is handled by RAJA's tile methods.
+ *  For CPU execution, RAJA_TEAM_SHARED_MEMORY are used to improve
  *  performance via cache blocking. For CUDA GPU execution,
  *  RAJA shared memory is mapped to CUDA shared memory which
  *  enables threads in the same thread block to share data.
  *
  *  RAJA features shown:
- *    - Basic usage of 'RAJA::kernel' abstractions for nested loops
- *       - Multiple lambdas
- *       - Options for specifying lambda arguments
- *       - Tile statement
- *       - ForICount statement
- *       - RAJA local arrays
+ *    - Basic usage of 'RAJA::expt::launch' abstractions for nested loops
+ *       - tile methods
+ *       - loop_icount methods
+ *       - RAJA_TEAM_SHARED_MEMORY
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
