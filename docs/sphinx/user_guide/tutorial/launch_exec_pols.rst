@@ -6,34 +6,31 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _kernelexecpols-label:
+.. _launchexecpols-label:
 
 -----------------------------------------------------------
 ``RAJA::expt::Launch`` Execution Policies
 -----------------------------------------------------------
 
-This section contains an exercise to work through in the file
-``RAJA/exercises/launchintro-execpols.cpp``.
+This section contains an exercise file ``RAJA/exercises/launchintro-execpols.cpp``
+for you to work through if you wish to get some practice with RAJA. The
+file ``RAJA/exercises/launchintro-execpols_solution.cpp`` contains
+complete working code for the examples discussed in this section. You can use
+the solution file to check your work and for guidance if you get stuck.
 
 Key RAJA features shown in this section are:
 
-  * ``RAJA::expt::launch`` loop iteration templates 
-  *  ``RAJA::expt::launch`` nested loop methods and execution policies
+  * ``RAJA::expt::launch`` kernel execution environment template
+  * ``RAJA::expt::loop`` loop execution template and execution policies
 
-The file ``RAJA/exercises/launchintro-execpols_solution.cpp`` 
-contains complete working code for the examples discussed in this section.
-
-The examples in this section illustrate various execution policies for
-``RAJA::expt::launch``. The goal is for you to gain an understanding of how
-execution policies are constructed and used to perform various nested
+The examples in this section illustrate how to contruct nested loop kernels
+inside an ``RAJA::expt::launch`` execution environment. In particular,
+the goal is for you to gain an understanding of how to use execution policies
+with nested ``RAJA::expt::loop`` method calls to perform various nested
 loop execution patterns. All examples use the same simple kernel, which
 is a three-level loop nest to initialize the entries in a three-dimensional
-tensor.
-
-.. note:: The C++ lambda expression representing the kernel inner loop body
-          is identical for all RAJA variants of the kernel, whether we are
-          executing the kernel on a CPU sequentially or in parallel with 
-          OpenMP, or in parallel on a GPU (CUDA or HIP).
+tensor. The kernels perform the same operations as the examples in 
+:ref:`kernelexecpols-label`. 
 
 We begin by defining some constants used throughout the examples and allocating
 arrays to represent the tensor data:
@@ -92,8 +89,9 @@ The corresponding RAJA sequential version using ``RAJA::expt::launch`` is:
 
 This should be familiar to the reader who has read through the preceding
 :ref:`launchintro-label` section of this tutorial. As this launch method is
-templated on a host execution policy the ``RAJA::expt::Grid`` object can be defined without
-arguments as loop methods will get dispatched as standard C-Style for loops.
+templated on a host execution policy the ``RAJA::expt::Grid`` object can be 
+defined without arguments as loop methods will get dispatched as standard 
+C-Style for-loops.
      
 Suppose we wanted to parallelize the outer 'k' loop using OpenMP multithreading.
 A C-style version of this is:
@@ -116,9 +114,10 @@ The corresponding RAJA versions of the C-style OpenMP variants is:
 With the OpenMP version above, ``RAJA::expt::launch`` method is templated with
 a ``RAJA::expt::omp_launch_t`` execution policy. The omp launch policy is used
 to create an OpenMP parallel region, loop iterations may then be distributed
-using ``RAJA::expt::loop`` methods templated on ``RAJA::omp_for_exec`` execution policies.
-As before, the ``RAJA::expt::Grid`` object maybe be intialized without grid dimensions as
-the CPU does not require specifying a compute grid.
+using ``RAJA::expt::loop`` methods templated on ``RAJA::omp_for_exec`` 
+execution policies. As before, the ``RAJA::expt::Grid`` object may be 
+intialized without grid dimensions as the CPU does not require specifying a 
+compute grid.
 
 The first RAJA-based kernel for parallel GPU execution using the RAJA CUDA
 back-end we introduce is:
@@ -137,16 +136,18 @@ where we have defined the CUDA thread-block dimensions as:
 
 Here, we use the ``RAJA::expt::cuda_launch_t`` policy type to
 indicate that we want a CUDA kernel to be launched. The 'k', 'j', 'i'
-iteration variables are mapped to CUDA threads and blocks using the CUDA execution
-policy types ``RAJA::cuda_block_z_direct``, ``RAJA::expt::cuda_global_thread_y``,
-and ``RAJA::expt::cuda_global_thread_x``, respectively. Thus, we use a 
-a two-dimensional CUDA thread-block and three-dimensional compute grid
-to map the loop iterations to CUDA threads. In comparison to RAJA-CUDA example in
-:ref:`kernelexecpols-label` , ``RAJA::expt::loop`` methods support execution
-policies which enable mapping directly to the global thread ID of a compute grid.
+iteration variables are mapped to CUDA threads and blocks using the CUDA 
+execution policy types ``RAJA::cuda_block_z_direct``, 
+``RAJA::expt::cuda_global_thread_y``, and ``RAJA::expt::cuda_global_thread_x``,
+respectively. Thus, we use a two-dimensional CUDA thread-block and 
+three-dimensional compute grid to map the loop iterations to CUDA threads. In 
+comparison to the RAJA-CUDA example in :ref:`kernelexecpols-label` , 
+``RAJA::expt::loop`` methods support execution policies which enable mapping 
+directly to the global thread ID of a compute grid.
 
-Using a combination of combination of ``RAJA::expt::tile`` and ``RAJA::expt::loop``
-we can create a loop tiling platform portable solution as illustrated below:
+Using a combination of combination of ``RAJA::expt::tile`` and 
+``RAJA::expt::loop`` methods, we can create a loop tiling platform portable 
+implementation:
 
 .. literalinclude:: ../../../../exercises/launchintro-execpols_solution.cpp
    :start-after: _raja_tensorinit_cuda_tiled_direct_start
@@ -155,10 +156,11 @@ we can create a loop tiling platform portable solution as illustrated below:
 
 The ``RAJA::expt::tile`` methods are used to partition an iteration space into
 tiles to be used within a ``RAJA::expt::loop`` method. The ``{i,j,k}_block_sz``
-in the ``RAJA::expt::tile`` function specifies the tile size. In the case of GPU
-programming models we define the tile size to correspond to the number of threads
-in a given dimension. Execution tile and loop execution policies are chosen
-to have CUDA blocks and threads mapp directly to tiles and entries in a tile.
+arguments passed to the ``RAJA::expt::tile`` function specifies the tile size
+for each loop. In the case of GPU programming models, we define the tile size 
+to correspond to the number of threads in a given dimension. Execution tile 
+and loop execution policies are chosen to have CUDA blocks and threads map 
+directly to tiles and entries in a tile.
 	      
 For context and comparison, here is the same kernel implementation using
 CUDA directly:
@@ -179,27 +181,27 @@ A few differences between the CUDA and RAJA-CUDA versions are worth noting.
 First, the CUDA version uses the CUDA ``dim3`` construct to express the 
 threads-per-block and number of thread-blocks to use: i.e., the 
 ``nthreads_per_block`` and ``nblocks`` variable definitions. The
-``RAJA::expt::launch`` API takes compute dimensions through a
+``RAJA::expt::launch`` interface takes compute dimensions through a
 ``RAJA::expt::Grid`` object. RAJA provides a macro ``RAJA_DIVIDE_CEILING_INT``
 to perform the proper arithmetic to calculate the number of blocks based on
 the size of the tensor and the block size in each dimension. Second, the
-mapping of thread identifiers to the (i,j,k) indices is explicit in the device kernel.
-Third, an explicit check of the (i,j,k) values is required in the CUDA implementation 
-to avoid addressing memory out-of-bounds; i.e., 
-``if ( i < N && j < N && k < N )...``. The RAJA kernel variants set similar
+mapping of thread identifiers to the (i,j,k) indices is explicit in the device 
+kernel. Third, an explicit check of the (i,j,k) values is required in the CUDA 
+implementation to avoid addressing memory out-of-bounds; i.e., 
+``if ( i < N && j < N && k < N )...``. The RAJA variants set similar
 definitions internally and **mask out indices that would be out-of-bounds.**
 
 Lastly, we show the RAJA HIP variants of the kernel, which are semantically
-identical to the RAJA CUDA variants.
-
-The RAJA-HIP global-thread variant:
+identical to the RAJA CUDA variants. First, the RAJA Launch HIP global-thread 
+variant:
 
 .. literalinclude:: ../../../../exercises/launchintro-execpols_solution.cpp
    :start-after: _raja_tensorinit_hip_start
    :end-before: _raja_tensorinit_hip_end
    :language: C++
 
-and the HIP fixed thread-block size, tiled, direct thread mapping version:
+and then the RAJA Launch HIP fixed thread-block size, tiled, direct thread 
+mapping version:
 
 .. literalinclude:: ../../../../exercises/launchintro-execpols_solution.cpp
    :start-after: _raja_tensorinit_hip_tiled_direct_start

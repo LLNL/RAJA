@@ -432,7 +432,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
       });
     });
-// _raja_tensorinit_cuda_tiled_direct_end
+// _raja_tensorinit_hip_tiled_direct_end
 
   hipErrchk(hipMemcpy( a, d_a, N_tot * sizeof(double), hipMemcpyDeviceToHost ));
   checkResult(a, a_ref, N_tot);

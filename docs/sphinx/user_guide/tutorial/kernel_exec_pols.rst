@@ -27,7 +27,8 @@ The examples in this section illustrate various execution policies for
 execution policies are constructed and used to perform various nested
 loop execution patterns. All examples use the same simple kernel, which
 is a three-level loop nest to initialize the entries in a three-dimensional
-tensor.
+tensor. The kernels perform the same operations as the examples in 
+:ref:`launchexecpols-label`.
 
 .. note:: The C++ lambda expression representing the kernel inner loop body
           is identical for all RAJA variants of the kernel, whether we are
