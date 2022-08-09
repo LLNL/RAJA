@@ -170,18 +170,19 @@ int main(int argc, char *argv[])
   // __compute_grid_end
  
   RAJA::expt::launch<launch_policy>(select_cpu_or_gpu,
-  RAJA::expt::Grid(RAJA::expt::Teams(Nteams,Nteams),
-                        RAJA::expt::Threads(Nthreads,Nthreads)),
-  [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
-   // _team_loops_start
-   RAJA::expt::loop<teams_y>(ctx, RAJA::RangeSegment(0, Nteams), [&] (int by) {
-     RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, Nteams), [&] (int bx) {
+    RAJA::expt::Grid(RAJA::expt::Teams(Nteams,Nteams),
+                     RAJA::expt::Threads(Nthreads,Nthreads)),
 
-       RAJA::expt::loop<threads_y>(ctx, RAJA::RangeSegment(0, Nthreads), [&] (int ty) {
-         RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(0, Nthreads), [&] (int tx) {
+    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-             printf("RAJA Teams: threadId_x %d threadId_y %d teamId_x %d teamId_y %d \n",
-                    tx, ty, bx, by);
+    // _team_loops_start
+     RAJA::expt::loop<teams_y>(ctx, RAJA::TypedRangeSegment<int>(0, Nteams), [&] (int by) {
+       RAJA::expt::loop<teams_x>(ctx, RAJA::TypedRangeSegment<int>(0, Nteams), [&] (int bx) {
+
+         RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0, Nthreads), [&] (int ty) {
+           RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0, Nthreads),       [&] (int tx) {
+               printf("RAJA Teams: threadId_x %d threadId_y %d teamId_x %d teamId_y %d \n",
+                      tx, ty, bx, by);
 
            });
          });
