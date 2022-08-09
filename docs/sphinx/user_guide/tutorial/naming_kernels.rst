@@ -16,7 +16,7 @@ Key RAJA feature shown in the following example:
 
   *  Naming kernels using the ``Grid`` object in ``RAJA::ext::Launch`` methods.
 
-In this example we illustrate kernel naming capabilities within the RAJA Teams
+In this example we illustrate kernel naming capabilities within the RAJA Launch
 framework for use with NVTX or ROCTX region naming capabilities.
 
 Recalling the ``RAJA::expt::launch`` API, naming a kernel is done using the third
@@ -53,7 +53,7 @@ the resulting json file can be viewed using tools such as `perfetto
 
 As future work we plan to add support to other profiling tools; API changes may occur
 based on user feedback and integration with other tools. Enabling NVTX profiling
-with RAJA Teams requires RAJA to be configured with RAJA_ENABLE_NV_TOOLS_EXT=ON.
+with RAJA Launch requires RAJA to be configured with RAJA_ENABLE_NV_TOOLS_EXT=ON.
 or RAJA_ENABLE_ROCTX=ON for ROCTX profiling on AMD platforms platforms.
 
 The file RAJA/examples/teams_reductions.cpp contains a complete working example code.

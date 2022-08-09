@@ -12,19 +12,21 @@
 Vector Addition (Basic Loop Execution)
 --------------------------------------
 
+This section contains an exercise file ``RAJA/exercises/vector-addition.cpp`` 
+for you to work through if you wish to get some practice with RAJA. The 
+file ``RAJA/exercises/vector-addition_solution.cpp`` contains complete 
+working code for the examples discussed in this section. You can use the 
+solution file to check your work and for guidance if you get stuck.
+
 Key RAJA features shown in this example are:
 
-  * ``RAJA::forall`` loop execution template
-  * ``RAJA::RangeSegment`` iteration space construct
-  * RAJA execution policies
-
-The file ``RAJA/examples/tut_add-vectors.cpp`` contains complete working code
-for the examples discussed below.
+  * ``RAJA::forall`` loop execution template and execution policies
+  * ``RAJA::TypedRangeSegment`` iteration space construct
 
 In the example, we add two vectors 'a' and 'b' of length N and
 store the result in vector 'c'. A simple C-style loop that does this is:
 
-.. literalinclude:: ../../../../examples/tut_add-vectors.cpp
+.. literalinclude:: ../../../../exercises/vector-addition_solution.cpp
    :start-after: _cstyle_vector_add_start
    :end-before: _cstyle_vector_add_end
    :language: C++ 
@@ -46,7 +48,7 @@ execution policy template type that specifies how the loop is to run
 For the RAJA sequential variant, we use the ``RAJA::seq_exec`` execution
 policy type:
 
-.. literalinclude:: ../../../../examples/tut_add-vectors.cpp
+.. literalinclude:: ../../../../exercises/vector-addition_solution.cpp
    :start-after: _rajaseq_vector_add_start
    :end-before: _rajaseq_vector_add_end
    :language: C++ 
@@ -70,7 +72,7 @@ beneficial for performance, but the optimizations are not forced.
 To run the kernel with OpenMP multithreaded parallelism on a CPU, we use the
 ``RAJA::omp_parallel_for_exec`` execution policy:
 
-.. literalinclude:: ../../../../examples/tut_add-vectors.cpp
+.. literalinclude:: ../../../../exercises/vector-addition_solution.cpp
    :start-after: _rajaomp_vector_add_start
    :end-before: _rajaomp_vector_add_end
    :language: C++ 
@@ -87,7 +89,7 @@ you wrote the kernel using OpenMP pragmas directly::
 To run the kernel on a CUDA GPU device, we use the ``RAJA::cuda_exec``
 policy:
 
-.. literalinclude:: ../../../../examples/tut_add-vectors.cpp
+.. literalinclude:: ../../../../exercises/vector-addition_solution.cpp
    :start-after: _rajacuda_vector_add_start
    :end-before: _rajacuda_vector_add_end
    :language: C++ 
@@ -103,7 +105,7 @@ boolean argument expressing asynchronous execution can be omitted, and is
 ``false`` by default (a similar defaulted argument is also supported for other
 RAJA CUDA policies):
 
-.. literalinclude:: ../../../../examples/tut_add-vectors.cpp
+.. literalinclude:: ../../../../exercises/vector-addition_solution.cpp
    :start-after: _rajacuda_explicit_vector_add_start
    :end-before: _rajacuda_explicit_vector_add_end
    :language: C++ 
@@ -115,7 +117,7 @@ This can be done directly or by using the ``RAJA_DEVICE`` macro.
 Similarly, to run the kernel on a GPU using the RAJA HIP back-end, 
 we use the ``RAJA::hip_exec`` policy:
 
-.. literalinclude:: ../../../../examples/tut_add-vectors.cpp
+.. literalinclude:: ../../../../exercises/vector-addition_solution.cpp
    :start-after: _rajahip_vector_add_start
    :end-before: _rajahip_vector_add_end
    :language: C++

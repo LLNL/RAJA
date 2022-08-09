@@ -14,7 +14,7 @@ Elements of Loop Execution
 
 In this section, we describe the basic elements of RAJA loop kernel 
 execution.  ``RAJA::forall``, ``RAJA::kernel``, and ``RAJA::expt::launch`` 
-(aka *RAJA Teams*) template methods comprise the RAJA interface for loop 
+template methods comprise the RAJA interface for loop 
 execution. ``RAJA::forall`` methods execute simple, non-nested loops, 
 ``RAJA::kernel`` methods support nested loops and other complex loop 
 kernels and transformations, and ``RAJA::expt::launch`` creates an execution 
@@ -254,7 +254,7 @@ with the outermost loop and ending with the innermost loop.
           code.
 
 See :ref:`matmultkernel-label` for a complete example showing RAJA nested
-loop functionality and :ref:`nestedreorder-label` for a detailed example 
+loop functionality and :ref:`kernelnestedreorder-label` for a detailed example 
 describing nested loop reordering.
 
 .. note:: In general, RAJA execution policies for ``RAJA::forall`` and 
@@ -267,19 +267,19 @@ available ``RAJA::statement`` types can be found in
 :ref:`loop_elements-kernelpol-label`.
 
 --------------------------------
-Team based loops (RAJA::launch)
+Hierachial loops (RAJA::launch)
 --------------------------------
 
-The *RAJA Teams* framework aims to unify thread/block based
+The *RAJA Launch* framework aims to unify thread/block based
 programming models such as CUDA/HIP/SYCL while maintaining portability on
 host backends (OpenMP, sequential). When using the ``RAJA::kernel`` 
 interface, developers express all aspects of nested loop execution in the
 execution policy type on which the ``RAJA::kernel`` method is templated.
 In contrast, the ``RAJA::launch`` interface allows users to express 
 nested loop execution in a manner that more closely reflects how one would
-write conventional nested C-style for-loop code.  Additionally, *RAJA Teams* 
+write conventional nested C-style for-loop code.  Additionally, *RAJA Launch* 
 introduces run-time host or device selectable kernel execution. The main 
-application of *RAJA Teams* is imperfectly nested loops. Using the 
+application of *RAJA Launch* is imperfectly nested loops. Using the 
 ``RAJA::expt::launch method`` developers are provided with an execution 
 space enabling them to express algorithms in terms of nested
 ``RAJA::expt::loop`` statements::
@@ -302,12 +302,12 @@ space enabling them to express algorithms in terms of nested
 
   });
   
-The underlying idea of *RAJA Teams* is to enable developers to express nested
+The underlying idea of *RAJA Launch* is to enable developers to express hierarchical
 parallelism in terms of teams and threads. Similar to the CUDA programming model,
 development is done using a collection of threads, threads are grouped into teams.
 Using the ``RAJA::expt::loop`` methods iterations of the loop may be executed by threads
 or teams (depending on the execution policy). The launch context serves to synchronize
-threads within the same team. The *RAJA Teams* abstraction consist of three main concepts.
+threads within the same team. The *RAJA Launch* abstraction consist of three main concepts.
 
   * *Launch Method*: creates an execution space in which developers may express 
     their algorithm in terms of nested ``RAJA::expt::loop`` statements. The loops are then
@@ -325,7 +325,7 @@ threads within the same team. The *RAJA Teams* abstraction consist of three main
     loop execution or OpenMP threaded regions.
 
 The team loop interface combines concepts from ``RAJA::forall`` and ``RAJA::kernel``.
-Various policies from ``RAJA::kernel`` are compatible with the ``RAJA Teams``
+Various policies from ``RAJA::kernel`` are compatible with the ``RAJA::launch``
 framework.
 
 .. _loop_elements-CombiningAdapter-label:

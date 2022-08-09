@@ -12,19 +12,29 @@
 Computing a Histogram with Atomic Operations
 --------------------------------------------------
 
-Key RAJA features shown in this example are:
+This section contains an exercise file ``RAJA/exercises/atomic-histogram.cpp``
+for you to work through if you wish to get some practice with RAJA. The
+file ``RAJA/exercises/atomic-histogram_solution.cpp`` contains complete
+working code for the examples discussed in this section. You can use the
+solution file to check your work and for guidance if you get stuck.
 
-  * ``RAJA::forall`` loop execution template 
-  * ``RAJA::RangeSegment`` iteration space construct
+Key RAJA features shown in this exercise are:
+
+  * ``RAJA::forall`` loop execution template and execution policies
+  * ``RAJA::TypedRangeSegment`` iteration space construct
   * RAJA atomic add operation and RAJA atomic operation policies
 
-The file ``RAJA/examples/tut_atomic-histogram.cpp`` contains complete 
-working code for the examples discussed in this section.
-
 The example uses an integer array of length 'N' randomly initialized with 
-values in the interval [0, M). While iterating over the array, the kernel 
-accumulates the number of occurrences of each value in the array in another
-array named 'bins' using atomic add operations. Atomic operations allow one 
+values in the interval [0, M). Each kernel iterates over the array and
+accumulates the number of occurrences of each value in [0, M) in another
+array named 'hist'.
+
+.. literalinclude:: ../../../../exercises/atomic-histogram_solution.cpp
+   :start-after: _array_atomic_histogram_start
+   :end-before: _array_atomic_histogram_end
+   :language: C++
+
+The kernels use atomic operations for the accumulation, which allow one 
 to update a memory location referenced by a specific address in parallel 
 without data races. The example shows how to use RAJA portable atomic 
 operations and that they are used similarly for different programming model 
@@ -40,17 +50,17 @@ atomic policies, please see :ref:`atomics-label`.
 
 All code snippets described below use the stride-1 iteration space range:
 
-.. literalinclude:: ../../../../examples/tut_atomic-histogram.cpp
+.. literalinclude:: ../../../../exercises/atomic-histogram_solution.cpp
    :start-after: _range_atomic_histogram_start
    :end-before: _range_atomic_histogram_end
    :language: C++
 
-and the integer array 'bins' of length 'M' to accumulate the number of 
+and the integer array 'hist' of length 'M' to accumulate the number of 
 occurrences of each value in the array.
 
 Here is the OpenMP version:
 
-.. literalinclude:: ../../../../examples/tut_atomic-histogram.cpp
+.. literalinclude:: ../../../../exercises/atomic-histogram_solution.cpp
    :start-after: _rajaomp_atomic_histogram_start
    :end-before: _rajaomp_atomic_histogram_end
    :language: C++
@@ -62,14 +72,14 @@ loop execution policy.
 
 The CUDA and HIP versions are similar:
 
-.. literalinclude:: ../../../../examples/tut_atomic-histogram.cpp
+.. literalinclude:: ../../../../exercises/atomic-histogram_solution.cpp
    :start-after: _rajacuda_atomic_histogram_start
    :end-before: _rajacuda_atomic_histogram_end
    :language: C++
 
 and:
 
-.. literalinclude:: ../../../../examples/tut_atomic-histogram.cpp
+.. literalinclude:: ../../../../exercises/atomic-histogram_solution.cpp
    :start-after: _rajahip_atomic_histogram_start
    :end-before: _rajahip_atomic_histogram_end
    :language: C++
@@ -87,14 +97,14 @@ will be applied.
 
 For example, here is the CUDA version that uses the 'auto' atomic policy:
 
-.. literalinclude:: ../../../../examples/tut_atomic-histogram.cpp
+.. literalinclude:: ../../../../exercises/atomic-histogram_solution.cpp
    :start-after: _rajacuda_atomicauto_histogram_start
    :end-before: _rajacuda_atomicauto_histogram_end
    :language: C++
 
 and the HIP version:
 
-.. literalinclude:: ../../../../examples/tut_atomic-histogram.cpp
+.. literalinclude:: ../../../../exercises/atomic-histogram_solution.cpp
    :start-after: _rajahip_atomicauto_histogram_start
    :end-before: _rajahip_atomicauto_histogram_end
    :language: C++

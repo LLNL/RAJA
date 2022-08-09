@@ -12,16 +12,16 @@
 Parallel Sort Operations
 --------------------------------------------------
 
+This section contains an exercise file ``RAJA/exercises/sort.cpp``
+for you to work through if you wish to get some practice with RAJA. The
+file ``RAJA/exercises/sort_solution.cpp`` contains complete
+working code for the examples discussed in this section. You can use the
+solution file to check your work and for guidance if you get stuck.
+
 Key RAJA features shown in this section are:
 
-  * ``RAJA::sort`` operation
-  * ``RAJA::sort_pairs`` operation
-  * ``RAJA::stable_sort`` operation
-  * ``RAJA::stable_sort_pairs`` operation
+  * ``RAJA::sort``, ``RAJA::sort_pairs``, ``RAJA::stable_sort``, and ``RAJA::stable_sort_pairs`` operations and execution policies
   * RAJA comparators for different types of sorts; e.g., less, greater
-
-The file ``RAJA/examples/tut_sort.cpp`` contains complete working code
-for the examples presented in this section.
 
 We show examples of RAJA sequential, OpenMP, CUDA, and HIP sort operations 
 and describe how different sort orderings can be achieved by passing different 
@@ -40,7 +40,7 @@ compares. For a summary of available RAJA sorts, please see :ref:`sort-label`.
 Each of the examples below uses the same integer arrays for input
 and output values. We set the input array and print them as follows:
 
-.. literalinclude:: ../../../../examples/tut_sort.cpp
+.. literalinclude:: ../../../../exercises/sort_solution.cpp
    :start-after: _sort_array_init_start
    :end-before: _sort_array_init_end
    :language: C++
@@ -69,7 +69,7 @@ Unstable Sorts
 
 A sequential unstable sort operation is performed by:
 
-.. literalinclude:: ../../../../examples/tut_sort.cpp
+.. literalinclude:: ../../../../exercises/sort_solution.cpp
    :start-after: _sort_seq_start
    :end-before: _sort_seq_end
    :language: C++
@@ -84,7 +84,7 @@ i.e.,::
 We can be explicit about the operation used in the sort operation by passing the
 'less' operator to the sort method explicitly:
 
-.. literalinclude:: ../../../../examples/tut_sort.cpp
+.. literalinclude:: ../../../../exercises/sort_solution.cpp
    :start-after: _sort_seq_less_start
    :end-before: _sort_seq_less_end
    :language: C++
@@ -97,7 +97,7 @@ An unstable parallel sort operation using OpenMP multi-threading is
 accomplished similarly by replacing the execution policy type with
 and OpenMP policy:
 
-.. literalinclude:: ../../../../examples/tut_sort.cpp
+.. literalinclude:: ../../../../exercises/sort_solution.cpp
    :start-after: _sort_omp_less_start
    :end-before: _sort_omp_less_end
    :language: C++
@@ -113,7 +113,7 @@ Stable Sorts
 
 A sequential stable sort (less) operation is performed by:
 
-.. literalinclude:: ../../../../examples/tut_sort.cpp
+.. literalinclude:: ../../../../exercises/sort_solution.cpp
    :start-after: _sort_stable_seq_less_start
    :end-before: _sort_stable_seq_less_end
    :language: C++
@@ -129,7 +129,7 @@ pairs later where this is not the case.
 
 Running the same sort operation on a GPU using CUDA is done by:
 
-.. literalinclude:: ../../../../examples/tut_sort.cpp
+.. literalinclude:: ../../../../exercises/sort_solution.cpp
    :start-after: _sort_stable_cuda_less_start
    :end-before: _sort_stable_cuda_less_end
    :language: C++
@@ -145,14 +145,14 @@ Using a different comparator allows sorting in a different order.
 Here is a sequential stable sort that uses the 'greater' operator
 ``RAJA::operators::greater<int>``:
 
-.. literalinclude:: ../../../../examples/tut_sort.cpp
+.. literalinclude:: ../../../../exercises/sort_solution.cpp
    :start-after: _sort_stable_seq_greater_start
    :end-before: _sort_stable_seq_greater_end
    :language: C++
 
 and similarly for HIP:
 
-.. literalinclude:: ../../../../examples/tut_sort.cpp
+.. literalinclude:: ../../../../exercises/sort_solution.cpp
    :start-after: _sort_stable_hip_greater_start
    :end-before: _sort_stable_hip_greater_end
    :language: C++
@@ -184,7 +184,7 @@ to match the sorted array so **two arrays are passed to sort pairs methods.**
 
 Here is a sequential unstable sort pairs that uses the less operator:
 
-.. literalinclude:: ../../../../examples/tut_sort.cpp
+.. literalinclude:: ../../../../exercises/sort_solution.cpp
    :start-after: _sort_pairs_seq_less_start
    :end-before: _sort_pairs_seq_less_end
    :language: C++
@@ -201,7 +201,7 @@ equal elements may not be preserved in an unstable sort.
 
 Here is a sequential stable sort pairs that uses the greater operator:
 
-.. literalinclude:: ../../../../examples/tut_sort.cpp
+.. literalinclude:: ../../../../exercises/sort_solution.cpp
    :start-after: _sort_stable_pairs_seq_greater_start
    :end-before: _sort_stable_pairs_seq_greater_end
    :language: C++
@@ -217,7 +217,7 @@ appeared in the unsorted arrays.
 As you may expect at this point, running an stable sort pairs
 operation using OpenMP is accomplished by:
 
-.. literalinclude:: ../../../../examples/tut_sort.cpp
+.. literalinclude:: ../../../../exercises/sort_solution.cpp
    :start-after: _sort_stable_pairs_omp_greater_start
    :end-before: _sort_stable_pairs_omp_greater_end
    :language: C++
@@ -231,7 +231,7 @@ and the only difference is the execution policy template parameter.
 
 Lastly, we show a parallel unstable sort pairs operation using CUDA:
 
-.. literalinclude:: ../../../../examples/tut_sort.cpp
+.. literalinclude:: ../../../../exercises/sort_solution.cpp
    :start-after: _sort_pairs_cuda_greater_start
    :end-before: _sort_pairs_cuda_greater_end
    :language: C++

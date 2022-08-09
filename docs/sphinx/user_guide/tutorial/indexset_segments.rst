@@ -8,208 +8,347 @@
 
 .. _indexset-label:
 
------------------------------------------
-Iteration Spaces: IndexSets and Segments
------------------------------------------
+-------------------------------------------------
+Iteration Space Examples: Segments and IndexSets
+-------------------------------------------------
+
+This section contains an exercise file ``RAJA/exercises/segment-indexset-basics.cpp``.  for you to work through if you wish to get some practice with RAJA. The 
+file ``RAJA/exercises/segment-indexset-basics_solution.cpp`` contains complete 
+working code for the examples discussed in this section. You can use the 
+solution file to check your work and for guidance if you get stuck.
 
 Key RAJA features shown in this example are:
 
   * ``RAJA::forall`` loop execution template
-  * ``RAJA::RangeSegment`` (i.e., ``RAJA::TypedRangeSegment``) iteration space construct
-  * ``RAJA::TypedListSegment`` iteration space construct
-  * ``RAJA::IndexSet`` iteration construct and associated execution policies
+  * ``RAJA::TypedRangeSegment``, ``RAJA::TypedRangeStrideSegment``, and 
+    ``RAJA::TypedListSegment`` iteration space constructs
+  * ``RAJA::TypedIndexSet`` container and associated execution policies
 
-The file ``RAJA/examples/tut_indexset-segments.cpp`` contains working code
-for the examples discussed in this section.
+Loop variables and their associated iteration spaces are fundamental to
+writing loop kernels in RAJA. RAJA provides some basic iteration space types
+that serve as flexible building blocks that can be used to form a variety
+of loop iteration patterns. These types can be used to define a particular
+order for loop iterates, aggregate and partition iterates, as well as other
+configurations. Although the constructs described in the section are 
+useful in numerical computations and parallel execution, the examples only 
+contain print statements and sequential execution. The goal is to show you 
+how to use RAJA iteration space constructs. 
 
-The example uses a simple daxpy kernel and its usage of RAJA is similar to
-previous simple loop examples. 
-
-.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
-   :start-after: _csytle_daxpy_start
-   :end-before: _csytle_daxpy_end
-   :language: C++
-
-The examples in this section focuse on how to use RAJA index sets and iteration 
+The examples in this section focus on how to use RAJA index sets and iteration 
 space segments, such as index ranges and lists of indices. Lists of indices 
 are important for algorithms that use indirection arrays for irregular array 
 accesses. Combining different segment types, such as ranges and lists in an 
 index set allows a user to launch different iteration patterns in a single loop 
 execution construct (i.e., one kernel). This is something that is not 
 supported by other programming models and abstractions and is unique to RAJA. 
-Applying these concepts judiciously can increase performance by allowing 
+Applying these concepts judiciously can help improve performance by allowing 
 compilers to optimize for specific segment types (e.g., SIMD for range 
 segments) while providing the flexibility of indirection arrays for general
 indexing patterns.
-
-.. note:: For the following examples, it is useful to remember that all
-          RAJA segment types are templates, where the type of the index
-          value is the template argument. So for example, the basic RAJA
-          range segment type is ``RAJA::TypedRangeSegment<T>``. The type
-          ``RAJA::RangeSegment`` used here (for convenience) is a type alias 
-          for ``RAJA::TypedRangeSegment<RAJA::Index_type>``, where the
-          template parameter is a default index type that RAJA defines.
-
-For a summary discussion of RAJA segment and index set concepts, please 
-see :ref:`index-label`.
 
 ^^^^^^^^^^^^^^^^^^^^^
 RAJA Segments
 ^^^^^^^^^^^^^^^^^^^^^
 
-In previous examples, we have seen how to define a contiguous range of loop
-indices [0, N) with a ``RAJA::RangeSegment(0, N)`` object and use it in a RAJA
-loop execution template to run a loop kernel over the range. For example:
+A RAJA **Segment** represents a set of loop indices that one wants to
+execute as a unit. RAJA provides Segment types for contiguous index ranges,
+constant (non-unit) stride ranges, and arbitrary lists of indices. These
+types are:
 
-.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
-   :start-after: _rajaseq_daxpy_range_start
-   :end-before: _rajaseq_daxpy_range_end
+   * ``RAJA::TypedRangeSegment`` represents a stride-1 range
+   * ``RAJA::TypedRangeStrideSegment`` represents a (non-unit) stride range
+   * ``RAJA::TypedListSegment`` represents an arbitrary set of indices
+
+These segment types are passes to ``RAJA::forall`` and other RAJA kernel
+execution mechanisms to define the iteration space for a kernel.
+
+After we briefly introduce these types, we will present several examples using
+them.
+
+TypedRangeSegment
+^^^^^^^^^^^^^^^^^^^
+
+A ``RAJA::TypedRangeSegment`` is the fundamental type for defining a
+stride-1 (i.e., contiguous) range of indices. This is illustrated in the
+figure below.
+
+.. figure:: ../figures/RangeSegment.png
+
+   A range segment defines a stride-1 index range [beg, end).
+
+One creates a range segment object as follows::
+
+   // A stride-1 index range [beg, end) using type int.
+   RAJA::TypedRangeSegment<int> my_range(beg, end);
+
+Any integral type can be given as the template parameter.
+
+.. note:: When using a RAJA range segment, no loop iterations will be run when:
+            * begin >= end
+
+TypedRangeStrideSegment
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A ``RAJA::TypedRangeStrideSegment`` defines a range with a constant stride,
+including negative stride values. This is illustrated in the
+figure below.
+
+.. figure:: ../figures/RangeStrideSegment.png
+
+   A range-stride segment defines an index range with arbitrary stride [beg, end, stride). In the figure the stride is 2.
+
+One creates a range stride segment object as follows::
+
+   // A stride-3 index range [beg, end) using type int.
+   RAJA::TypedRangeStrideSegment<int> my_stride2_range(beg, end, 3);
+
+   // A index range with -1 stride [0, N-1) using type int
+   RAJA::TypedRangeStrideSegment<int> my_neg1_range( N-1, -1, -1);
+
+Any integral type can be given as the template parameter.
+
+When the negative-stride segment above is passed to a ``RAJA::forall`` method,
+for example, the loop will run in reverse order with iterates::
+
+  N-1  N-2  N-3 ... 1 0
+
+.. note:: When using a RAJA strided range, no loop iterations will be run
+          under the following conditions:
+            * Stride > 0 and begin > end
+            * Stride < 0 and begin < end
+            * Stride == 0
+
+TypedListSegment
+^^^^^^^^^^^^^^^^^^
+
+A ``RAJA::TypedListSegment`` is used to define an arbitrary set of loop
+indices, akin to an indirection array. This is illustrated in the figure below.
+
+.. figure:: ../figures/ListSegment.png
+
+   A list segment defines an arbitrary collection of indices. Here, we have a list segment with 5 irregularly-spaced indices.
+
+One creates a list segment object by passing a container of integral values to 
+a list segment constructor. For example::
+
+   // Create a vector holding some integer index values
+   std::vector<int> idx = {0, 2, 3, 4, 7, 8, 9, 53};
+
+   // Create list segment with these loop indices where the indices are
+   // stored in the CUDA device memory space
+   camp::resources::Resource cuda_res{camp::resources::Cuda()};
+   RAJA::TypedListSegment<int> idx_list( idx[0], cuda_res );
+
+   // Alternatively
+   RAJA::TypedListSegment<int> idx_list( &idx[0], idx.size(),
+                                         cuda_res );
+
+When the list segment above is passed to a ``RAJA::forall`` method,
+for example, the loop will run with iterates::
+
+  0 2 3 4 7 8 9 53
+
+Note that a ``RAJA::TypedListSegment`` constructor can take a pointer to
+an array of indices and an array length. If the indices are
+in a container, such as ``std::vector`` that provides ``begin()``, ``end()``,
+and ``size()`` methods, the length argument is not required.
+
+Currently, a camp resource object must be passed to a list segment constructor
+to copy the indices in the indices into the proper memory space for a kernel
+to execute. In the example, we use a CUDA resource which will copy the indices
+into GPU device memory.
+
+^^^^^^^^^^^
+IndexSets
+^^^^^^^^^^^
+
+A ``RAJA::TypedIndexSet`` is a container that can hold an arbitrary collection
+of segment objects. The following figure shows an index set with two contiguous
+ranges and an irregularly-spaced list of indices.
+
+.. figure:: ../figures/IndexSet.png
+
+   An index set with two range segments and one list segment.
+
+We can create such an index set as follows::
+
+   // Create an index set that can hold range and list segments with
+   // int index value type
+   RAJA::TypedIndexSet< RAJA::TypedRangeSegment<int>, 
+                        RAJA::TypedListSegment<int> > iset;
+
+   // Add two range segments and one list segment to the index set
+   iset.push_back( RAJA::TypedRangeSegment<int>( ... ) );
+   iset.push_back( RAJA::TypedListSegment<int>(...) );
+   iset.push_back( RAJA::TypedRangeSegment<int>( ... ) );
+
+A ``RAJA::TypedIndexSet`` object can be passed to a RAJA kernel execution 
+method, such as ``RAJA::forall`` to execute all segments in the index set
+with one method call. We will show this in detail in the examples below.
+
+.. note:: It is the responsibility of the user to ensure that segments are
+          defined properly when using RAJA index sets. For example, if the
+          same index appears in multiple segments, the corresponding loop
+          iteration will be run multiple times.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Segment and IndexSet Examples
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The examples in this section illustrate how the  segment types that RAJA 
+provides can be used to define kernel iteration spaces. We use the following
+type aliases to make the code more compact:
+
+.. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
+   :start-after: _raja_segment_type_start
+   :end-before: _raja_segment_type_end
    :language: C++
 
-We can accomplish the same result by enumerating the indices in a 
-``RAJA::TypedListSegment`` object. Here, we assemble the indices in a standard 
-vector, create a list segment from that, and then pass the list segment to the 
-forall execution template:
 
-.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
-   :start-after: _rajaseq_daxpy_list_start
-   :end-before: _rajaseq_daxpy_list_end
+Stride-1 Indexing
+^^^^^^^^^^^^^^^^^^^
+
+Consider a simple C-style kernel that prints a contiguous sequence of values:
+
+.. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
+   :start-after: _csytle_range1_start
+   :end-before: _csytle_range1_end
    :language: C++
 
-Note that we are using the following type aliases:
+When run, the kernel prints the following sequence, as expected::
 
-.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
-   :start-after: _raja_list_segment_type_start
-   :end-before: _raja_list_segment_type_end
+  0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+
+Three RAJA variants of the kernel using a ``RAJA::TypedRangeSegment``, a
+``RAJA::TypedRangeStrideSegment``, and a ``RAJA::TypedListSegment`` are:
+
+.. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
+   :start-after: _raja_range1_start
+   :end-before: _raja_range1_end
    :language: C++
 
-Recall from discussion in :ref:`index-label` that ``RAJA::Index_type`` is
-a default index type that RAJA defines and which is used in some RAJA
-constructs as a convenience for users who want a simple mechanism to apply
-index types consistently.
-
-It is important to understand what happens when using list segments.
-During loop execution, indices stored in the list segment are passed to the 
-loop body one-by-one, effectively mimicking an indirection array except that
-the indirection does not appear explicitly in the array indexing in the loop 
-body. 
-
-Another simple example helps to reinforce the list segment concept.
-We can reverse the order of the indices, run the loop backwards with 
-a new list segment object:
-
-.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
-   :start-after: _raja_list_segment_daxpy_reverse_start
-   :end-before: _raja_list_segment_daxpy_reverse_end
+.. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
+   :start-after: _raja_striderange1_start
+   :end-before: _raja_striderange1_end
    :language: C++
 
-Alternatively, we can also use a RAJA strided range segment to run the loop 
-in reverse by giving it a stride of -1. For example:
-
-.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
-   :start-after: _raja_range_segment_daxpy_negstride_start
-   :end-before: _raja_range_segment_daxpy_negstride_end
+.. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
+   :start-after: _raja_list1_start
+   :end-before: _raja_list1_end
    :language: C++
 
-The fact that RAJA always passes loop index values to a lambda kernel
-explains why we can run a kernel with different segment types in a single,
-portable RAJA-based kernel. Try doing this sort of thing with straight C code.
+Each of these prints the same integer sequence shown above. 
 
-^^^^^^^^^^^^^^^^^^^^^
-RAJA IndexSets
-^^^^^^^^^^^^^^^^^^^^^
+One interesting thing to note is that with ``RAJA::TypedListSegment`` and
+``RAJA::forall``, the actual iteration value is passed to the lambda loop body.
+So the indirection array concept is not visible. In contrast, in C-style code, 
+one has to manually retrieve the index value from the indirection array to 
+achieve the desired result. For example:
 
-The ``RAJA::TypedIndexSet`` template is a container that can hold
-any number of segments, of the same or different types. An index set object 
-can be passed to a RAJA loop execution method, just like a segment, to
-run a loop kernel. When the loop is run, the execution method iterates 
-over the segments and the loop indices in each segment. Thus, the loop 
-iterates can be grouped into different segments to partition the iteration 
-space and iterate over the loop kernel chunks (defined by segments), in 
-serial, in parallel, or in some specific dependency ordering. Individual 
-segments can be executed in serial or parallel.
-
-When an index set is defined, the segment types it may hold must be specified
-as template arguments. For example, here we create an index set that can
-hold list segments. Then, we add the list segment we created earlier to it
-and run the loop:
-
-.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
-   :start-after: _raja_indexset_list_daxpy_start
-   :end-before: _raja_indexset_list_daxpy_end
+.. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
+   :start-after: _cstyle_list1_start
+   :end-before: _cstyle_list1_end
    :language: C++
 
-You are probably wondering: What is the 'SEQ_ISET_EXECPOL' type used for the 
-execution policy? 
+Non-unit Stride Indexing 
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Well, it is similar to execution policy types we have seen up to this point, 
-except that it specifies a two-level policy -- one for iterating over the 
-segments and one for executing the iterates defined by each segment. In the 
-example, we specify that we should do each of these operations sequentially 
-by defining the policy as follows:
+Consider the following C-style kernel that prints the integer sequence 
+discussed earlier in reverse order:
 
-.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
-   :start-after: _raja_seq_indexset_policy_daxpy_start
-   :end-before: _raja_seq_indexset_policy_daxpy_end
+.. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
+   :start-after: _cstyle_negstriderange1_start
+   :end-before: _cstyle_negstriderange1_end
    :language: C++
 
-Next, we perform the daxpy operation by partitioning the iteration space into
-two range segments:
+We can accomplish the same result using a ``RAJA::TypedRangeStrideSegment``:
 
-.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
-   :start-after: _raja_indexset_2ranges_daxpy_start
-   :end-before: _raja_indexset_2ranges_daxpy_end
+.. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
+   :start-after: _raja_negstriderange1_start
+   :end-before: _raja_negstriderange1_end
    :language: C++
 
-The first range segment is used to run the index range [0, N/2) and the
-second is used to run the range [N/2, N).
+Alternatively, we can use a ``RAJA::TypedListSegment``, where we reverse the
+index array we used earlier to define the appropriate list segment:
 
-We can also break up the iteration space into three segments, 2 ranges 
-and 1 list:
-
-.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
-   :start-after: _raja_indexset_2ranges_1list_daxpy_start 
-   :end-before: _raja_indexset_2ranges_1list_daxpy_end
+.. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
+   :start-after: _raja_negstridelist1_start
+   :end-before: _raja_negstridelist1_end
    :language: C++
 
-The first range segment runs the index range [0, N/3), the list segment
-enumerates the indices in the interval [N/3, 2*N/3), and the second range
-segment runs the range [2*N/3, N). Note that we use the same execution
-policy as before. 
+The more common use of the ``RAJA::TypedRangeStrideSegment`` type is to run
+constant strided loops with a positive non-unit stride. For example:
 
-Before we end the discussion of these examples, we demonstrate a few more 
-index set execution policy variations. To run the previous three segment 
-code by iterating over the segments sequentially and executing each 
-segment in parallel using OpenMP multithreading, we would use this policy 
-definition:
-
-.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
-   :start-after: _raja_indexset_ompinnerpolicy_daxpy_start
-   :end-before: _raja_indexset_ompinnerpolicy_daxpy_end
+.. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
+   :start-after: _raja_range2_start
+   :end-before: _raja_range2_end
    :language: C++
 
-If we wanted to iterate over the segments in parallel using OpenMP 
-multi-threading and execute each segment sequentially, we would use the
-following policy:
+The C-style equivalent of this is:
 
-.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
-   :start-after: _raja_indexset_ompouterpolicy_daxpy_start
-   :end-before: _raja_indexset_ompouterpolicy_daxpy_end
-   :language: C++ 
-
-Finally, to iterate over the segments sequentially and execute each segment in
-parallel on a GPU using either CUDA or HIP kernel, we would use a policy,
-such as:
- 
-.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
-   :start-after: _raja_indexset_cudapolicy_daxpy_start
-   :end-before: _raja_indexset_cudapolicy_daxpy_end
+.. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
+   :start-after: _cstyle_range2_start
+   :end-before: _cstyle_range2_end
    :language: C++
 
-or:
+IndexSets: Complex Iteration Spaces
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
-   :start-after: _raja_indexset_hippolicy_daxpy_start
-   :end-before: _raja_indexset_hippolicy_daxpy_end
+We noted earlier that ``RAJA::TypedIndexSet`` objects can be used to partition
+iteration spaces into disjoint parts. Among other things, this can be useful to
+expose parallelism in algorithms that would otherwise require significant 
+transformation to do so. Please see :ref:`vertexsum-label` for discussion of
+an example that illustrates this.
+
+Here is an example that uses two ``RAJA::TypedRangeSegment`` objects in an
+index set to represent an iteration space broken into two disjoint 
+contiguous intervals:
+
+.. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
+   :start-after: _raja_indexset_2ranges_start
+   :end-before: _raja_indexset_2ranges_end
    :language: C++
 
+The integer sequence that is printed is::
+
+  0  1  2  3  4  5  6  7  8  9  15  16  17  18  19
+
+as we expect. 
+
+The execution policy type when using a RAJA index set is a 
+*two-level* policy. The first level specifies how to iterate over the segments
+in the index set, such as sequentially or in parallel using OpenMP. The second
+level is the execution policy used to execute each segment. Here, the
+execution policy type we use is:
+
+.. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
+   :start-after: _raja_seq_indexset_policy_start
+   :end-before: _raja_seq_indexset_policy_end
+   :language: C++  
+
+.. note:: Iterating over the indices of all segments in a RAJA index set
+          requires a two-level execution policy, with two template parameters,
+          as shown above. The first parameter specifies how to iterate over
+          the segments. The second parameter specifies how each segment will
+          execute. See :ref:`indexsetpolicy-label` for more information about
+          RAJA index set execution policies.
+  
+It is worth noting that a C-style version of this kernel requires either 
+an indirection array to run in one loop or two for-loops. For example:
+
+.. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
+   :start-after: _cstyle_2ranges_start
+   :end-before: _cstyle_2ranges_end
+   :language: C++
+
+Finally, we show an example that uses an index set holding two range segments
+and one list segment to partition an iteration space into three parts:
+
+.. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
+   :start-after: _raja_indexset_3segs_start
+   :end-before: _raja_indexset_3segs_end
+   :language: C++
+
+The integer sequence that is printed is::
+
+  0  1  2  3  4  5  6  7  10  11  14  20  22  24  25  26  27
