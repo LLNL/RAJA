@@ -23,7 +23,7 @@ Key RAJA features shown in this section are:
   * ``RAJA::expt::launch`` kernel execution environment template
   * ``RAJA::expt::loop`` loop execution template and execution policies
 
-The examples in this section illustrate how to contruct nested loop kernels
+The examples in this section illustrate how to construct nested loop kernels
 inside an ``RAJA::expt::launch`` execution environment. In particular,
 the goal is for you to gain an understanding of how to use execution policies
 with nested ``RAJA::expt::loop`` method calls to perform various nested
@@ -116,7 +116,7 @@ a ``RAJA::expt::omp_launch_t`` execution policy. The omp launch policy is used
 to create an OpenMP parallel region, loop iterations may then be distributed
 using ``RAJA::expt::loop`` methods templated on ``RAJA::omp_for_exec`` 
 execution policies. As before, the ``RAJA::expt::Grid`` object may be 
-intialized without grid dimensions as the CPU does not require specifying a 
+initialized without grid dimensions as the CPU does not require specifying a 
 compute grid.
 
 The first RAJA-based kernel for parallel GPU execution using the RAJA CUDA
