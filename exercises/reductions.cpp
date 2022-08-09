@@ -32,7 +32,7 @@
   Specify the number of threads in a GPU thread block
 */
 #if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
+//const int CUDA_BLOCK_SIZE = 256;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
@@ -89,7 +89,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 // Define index range for iterating over a elements in all examples
 //
   // _reductions_range_start
-  RAJA::TypedRangeSegment<int> arange(0, N);
+//RAJA::TypedRangeSegment<int> arange(0, N);
   // _reductions_range_end
 
 //----------------------------------------------------------------------------//
@@ -105,6 +105,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Remove comments for remainder of sequential section.
+  ///
+  ///           Uncomment 'arange' variable above so it can be used in kernel.
   ///
   /*
   RAJA::ReduceSum<REDUCE_POL1, int> seq_sum(0);
@@ -152,6 +154,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Define Reduce(Sum, Min, Max, MinLoc, MaxLoc) to complete this exercise.
   ///
+  ///           Uncomment 'arange' variable above so it can be used in kernel.
+  ///
 
   /// TODO...
   ///
@@ -197,6 +201,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Define Reduce(Sum, Min, Max, MinLoc, MaxLoc) to complete this exercise.
+  ///
+  ///           Uncomment 'arange' variable above so it can be used in kernel.
   ///
 
   /// TODO...

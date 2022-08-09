@@ -248,10 +248,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
-  constexpr int c_block_sz = TILE_DIM;
-  constexpr int r_block_sz = TILE_DIM;
-  const int n_blocks_c = RAJA_DIVIDE_CEILING_INT(N_c, c_block_sz);
-  const int n_blocks_r = RAJA_DIVIDE_CEILING_INT(N_r, r_block_sz);
+//constexpr int c_block_sz = TILE_DIM;
+//constexpr int r_block_sz = TILE_DIM;
+//const int n_blocks_c = RAJA_DIVIDE_CEILING_INT(N_c, c_block_sz);
+//const int n_blocks_r = RAJA_DIVIDE_CEILING_INT(N_r, r_block_sz);
 
   using cuda_teams_y = RAJA::expt::LoopPolicy<RAJA::cuda_block_y_direct>;
   using cuda_teams_x = RAJA::expt::LoopPolicy<RAJA::cuda_block_x_direct>;
@@ -263,6 +263,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement the cuda launch policy to dispatch the kernel below
   ///           on the GPU
+  ///
+  ///           When you uncomment kernel code below, you will also need to 
+  ///           uncomment variables above that are used within it.
+  ///
 
 /*
   RAJA::expt::launch<cuda_launch_policy>

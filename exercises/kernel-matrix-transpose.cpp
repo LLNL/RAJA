@@ -112,8 +112,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Here, we define RAJA range segments to establish the iteration spaces.
   // Iterations inside a RAJA loop is given by their global iteration number. 
   //
-  RAJA::TypedRangeSegment<int> row_Range(0, N_r);
-  RAJA::TypedRangeSegment<int> col_Range(0, N_c);
+//RAJA::TypedRangeSegment<int> row_Range(0, N_r);
+//RAJA::TypedRangeSegment<int> col_Range(0, N_c);
 
   //----------------------------------------------------------------------------//
   std::cout << "\n Running sequential matrix transpose ...\n";
@@ -130,6 +130,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement a sequential RAJA::kernel execution policy for a
   ///           basic matrix transpose.
+  ///   
+  ///           Uncomment 'row_Range' and 'col_Range' objects above so they
+  ///           can be used in the kernel. 
   ///
 
   ///
@@ -163,6 +166,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement an openmp RAJA::kernel execution policy for a
   ///           basic matrix transpose.
+  ///   
+  ///           Uncomment 'row_Range' and 'col_Range' objects above so they
+  ///           can be used in the kernel. 
   ///
 
   ///
@@ -194,6 +200,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement a CUDA RAJA::kernel execution policy for a
   ///           basic matrix transpose.
+  ///   
+  ///           Uncomment 'row_Range' and 'col_Range' objects above so they
+  ///           can be used in the kernel. 
   ///
 
   ///
