@@ -146,8 +146,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // tile_fixed statements. Iterations inside a RAJA loop is given by their
   // global iteration number.
   //
-  RAJA::RangeSegment row_Range(0, N_r);
-  RAJA::RangeSegment col_Range(0, N_c);
+  RAJA::TypedRangeSegment<int> row_Range(0, N_r);
+  RAJA::TypedRangeSegment<int> col_Range(0, N_c);
 
   //----------------------------------------------------------------------------//
   std::cout << "\n Running sequential tiled matrix transpose ...\n";
@@ -167,10 +167,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::tile<loop_pol_1>
-        (ctx, TILE_DIM, row_Range, [&] (RAJA::RangeSegment const &row_tile) {
+        (ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
         RAJA::expt::tile<loop_pol_1>
-          (ctx, TILE_DIM, col_Range, [&] (RAJA::RangeSegment const &col_tile) {
+          (ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
             RAJA::expt::loop<loop_pol_1>(ctx, row_tile, [&] (int row) {
 
@@ -217,10 +217,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::tile<omp_for_pol_2>
-        (ctx, TILE_DIM, row_Range, [&] (RAJA::RangeSegment const &row_tile) {
+        (ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
         RAJA::expt::tile<loop_pol_2>
-          (ctx, TILE_DIM, col_Range, [&] (RAJA::RangeSegment const &col_tile) {
+          (ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
             RAJA::expt::loop<loop_pol_2>(ctx, row_tile, [&] (int row) {
                 RAJA::expt::loop<loop_pol_2>(ctx, col_tile, [&] (int col) {
@@ -275,10 +275,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::tile<cuda_teams_y>
-        (ctx, TILE_DIM, row_Range, [&] (RAJA::RangeSegment const &row_tile) {
+        (ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
         RAJA::expt::tile<cuda_teams_x>
-          (ctx, TILE_DIM, col_Range, [&] (RAJA::RangeSegment const &col_tile) {
+          (ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
             RAJA::expt::loop<cuda_threads_y>(ctx, row_tile, [&] (int row) {
                 RAJA::expt::loop<cuda_threads_x>(ctx, col_tile, [&] (int col) {
@@ -333,10 +333,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::tile<hip_teams_y>
-        (ctx, TILE_DIM, row_Range, [&] (RAJA::RangeSegment const &row_tile) {
+        (ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
         RAJA::expt::tile<hip_teams_x>
-          (ctx, TILE_DIM, col_Range, [&] (RAJA::RangeSegment const &col_tile) {
+          (ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
             RAJA::expt::loop<hip_threads_y>(ctx, row_tile, [&] (int row) {
                 RAJA::expt::loop<hip_threads_x>(ctx, col_tile, [&] (int col) {

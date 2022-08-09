@@ -130,9 +130,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     (RAJA::expt::Grid(), //Grid may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::loop<loop_policy_1>(ctx, RAJA::RangeSegment(0, N), [&] (int k) {
-         RAJA::expt::loop<loop_policy_1>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
-            RAJA::expt::loop<loop_policy_1>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
+      RAJA::expt::loop<loop_policy_1>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int k) {
+         RAJA::expt::loop<loop_policy_1>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int j) {
+            RAJA::expt::loop<loop_policy_1>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int i) {
 
                 aView(i, j, k) = c * i * j * k ;
 
@@ -184,9 +184,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     (RAJA::expt::Grid(), //Grid may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::loop<omp_policy_2>(ctx, RAJA::RangeSegment(0, N), [&] (int k) {
-         RAJA::expt::loop<loop_policy_2>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
-            RAJA::expt::loop<loop_policy_2>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
+      RAJA::expt::loop<omp_policy_2>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int k) {
+         RAJA::expt::loop<loop_policy_2>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int j) {
+            RAJA::expt::loop<loop_policy_2>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int i) {
 
                 aView(i, j, k) = c * i * j * k ;
 
@@ -238,9 +238,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                       RAJA::expt::Threads(i_block_sz, j_block_sz, k_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::loop<cuda_teams_z_3>(ctx, RAJA::RangeSegment(0, N), [&] (int k) {
-        RAJA::expt::loop<cuda_global_thread_y_3>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
-          RAJA::expt::loop<cuda_global_thread_x_3>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
+      RAJA::expt::loop<cuda_teams_z_3>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int k) {
+        RAJA::expt::loop<cuda_global_thread_y_3>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int j) {
+          RAJA::expt::loop<cuda_global_thread_x_3>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int i) {
 
             aView(i, j, k) = c * i * j * k ;
 
@@ -276,13 +276,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                       RAJA::expt::Threads(i_block_sz, j_block_sz, k_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::loop<cuda_teams_z_4>(ctx, RAJA::RangeSegment(0, N), [&] (int k) {
+      RAJA::expt::loop<cuda_teams_z_4>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int k) {
 
         RAJA::expt::tile<cuda_teams_y_4>
-          (ctx, j_block_sz, RAJA::RangeSegment(0, N), [&] (RAJA::RangeSegment const &j_tile) {
+          (ctx, j_block_sz, RAJA::TypedRangeSegment<int>(0, N), [&] (RAJA::TypedRangeSegment<int> const &j_tile) {
 
           RAJA::expt::tile<cuda_teams_x_4>
-            (ctx, i_block_sz, RAJA::RangeSegment(0, N), [&] (RAJA::RangeSegment const &i_tile) {
+            (ctx, i_block_sz, RAJA::TypedRangeSegment<int>(0, N), [&] (RAJA::TypedRangeSegment<int> const &i_tile) {
 
             RAJA::expt::loop<cuda_threads_y_4>(ctx, j_tile, [&] (int j) {
                 RAJA::expt::loop<cuda_threads_x_4>(ctx, i_tile, [&] (int i) {
@@ -371,9 +371,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                       RAJA::expt::Threads(i_block_sz, j_block_sz, k_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-       RAJA::expt::loop<hip_teams_z_5>(ctx, RAJA::RangeSegment(0, N), [&] (int k) {
-           RAJA::expt::loop<hip_global_thread_y_5>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
-               RAJA::expt::loop<hip_global_thread_x_5>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
+       RAJA::expt::loop<hip_teams_z_5>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int k) {
+           RAJA::expt::loop<hip_global_thread_y_5>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int j) {
+               RAJA::expt::loop<hip_global_thread_x_5>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int i) {
 
                    d_aView(i, j, k) = c * i * j * k ;
 
@@ -411,13 +411,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                       RAJA::expt::Threads(i_block_sz, j_block_sz, k_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::loop<hip_teams_z_6>(ctx, RAJA::RangeSegment(0, N), [&] (int k) {
+      RAJA::expt::loop<hip_teams_z_6>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int k) {
 
         RAJA::expt::tile<hip_teams_y_6>
-          (ctx, j_block_sz, RAJA::RangeSegment(0, N), [&] (RAJA::RangeSegment const &j_tile) {
+          (ctx, j_block_sz, RAJA::TypedRangeSegment<int>(0, N), [&] (RAJA::TypedRangeSegment<int> const &j_tile) {
 
           RAJA::expt::tile<hip_teams_x_6>
-            (ctx, i_block_sz, RAJA::RangeSegment(0, N), [&] (RAJA::RangeSegment const &i_tile) {
+            (ctx, i_block_sz, RAJA::TypedRangeSegment<int>(0, N), [&] (RAJA::TypedRangeSegment<int> const &i_tile) {
 
             RAJA::expt::loop<hip_threads_y_6>(ctx, j_tile, [&] (int j) {
                 RAJA::expt::loop<hip_threads_x_6>(ctx, i_tile, [&] (int i) {
