@@ -20,18 +20,18 @@
 /*
  *  RAJA::kernel execution policies
  *
- *  In this exercise, you will use a variety of nested-loop execution 
+ *  In this exercise, you will use a variety of nested-loop execution
  *  policies to initalize entries in a three-dimensional tensor. The
- *  goal of the exercise is to gain familiarity with RAJA::kernel 
+ *  goal of the exercise is to gain familiarity with RAJA::kernel
  *  execution policies for various RAJA execution back-ends.
  *
  *  RAJA features you will use:
  *    - `RAJA::kernel` kernel execution template method and exec policies
- *    - Simple RAJA View/Layout 
+ *    - Simple RAJA View/Layout
  *    - RAJA Range segment
  *
  * If CUDA is enabled, CUDA unified memory is used.
- * If HIP is enabled, HIP global device memory is used, with explicit 
+ * If HIP is enabled, HIP global device memory is used, with explicit
  * host-device mem copy operations.
  */
 
@@ -92,7 +92,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 //----------------------------------------------------------------------------//
-// We introduce a RAJA View to wrap the tensor data pointer and simplify 
+// We introduce a RAJA View to wrap the tensor data pointer and simplify
 // multi-dimensional indexing.
 // We use this in the rest of the examples in this file.
 //----------------------------------------------------------------------------//
@@ -139,7 +139,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                       RAJA::TypedRangeSegment<int>(0, N),
                       RAJA::TypedRangeSegment<int>(0, N) ),
 
-    [=]( int i, int j, int k) {  
+    [=]( int i, int j, int k) {
        aView(i, j, k) = c * i * j * k ;
     }
   );
@@ -169,7 +169,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
 // _cstyle_tensorinit_omp_outer_end
 
-  checkResult(a, a_ref, N_tot); 
+  checkResult(a, a_ref, N_tot);
 
 //----------------------------------------------------------------------------//
 
@@ -285,7 +285,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #endif // if defined(RAJA_ENABLE_OPENMP)
 
- 
+
 #if defined(RAJA_ENABLE_CUDA)
 
 //----------------------------------------------------------------------------//
@@ -335,10 +335,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Define total thread-block size and size of each block dimension
   //
 // _cuda_blockdim_start
-  constexpr int block_size = 256; 
-  constexpr int i_block_sz = 32; 
+  constexpr int block_size = 256;
+  constexpr int i_block_sz = 32;
   constexpr int j_block_sz = block_size / i_block_sz;
-  constexpr int k_block_sz = 1; 
+  constexpr int k_block_sz = 1;
 // _cuda_blockdim_end
 
 // _raja_tensorinit_cuda_tiled_direct_start
@@ -383,14 +383,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 // _cuda_tensorinit_tiled_direct_start
   dim3 nthreads_per_block(i_block_sz, j_block_sz, k_block_sz);
-  static_assert(i_block_sz*j_block_sz*k_block_sz == block_size, 
+  static_assert(i_block_sz*j_block_sz*k_block_sz == block_size,
                 "Invalid block_size");
 
   dim3 nblocks(static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, i_block_sz)),
                static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, j_block_sz)),
                static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, k_block_sz)));
 
-  nested_init<i_block_sz, j_block_sz, k_block_sz> 
+  nested_init<i_block_sz, j_block_sz, k_block_sz>
     <<<nblocks, nthreads_per_block>>>(a, c, N);
   cudaErrchk( cudaGetLastError() );
   cudaErrchk(cudaDeviceSynchronize());
@@ -412,9 +412,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // set tensor data to zero to ensure we initializing it correctly.
   std::memset(a, 0, N_tot * sizeof(double));
   double *d_a = memoryManager::allocate_gpu<double>(N_tot);
-  hipErrchk(hipMemcpy( d_a, a, N_tot * sizeof(double), hipMemcpyHostToDevice ));
 
-  std::cout << "\n Running RAJA HIP tensor init...\n";
+// _3D_raja_device_view_start
+  RAJA::View< double, RAJA::Layout<3, int> > d_aView(d_a, N, N, N);
+// _3D_raja_device_view_end
+
+  hipErrchk(hipMemcpy( d_a, a, N_tot * sizeof(double), hipMemcpyHostToDevice ));
 
 // _raja_tensorinit_hip_start
   using EXEC_POL7 =
@@ -436,7 +439,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                       RAJA::TypedRangeSegment<int>(0, N) ),
 
     [=] __device__ ( int i, int j, int k) {
-       aView(i, j, k) = c * i * j * k ;
+       d_aView(i, j, k) = c * i * j * k ;
     }
   );
 // _raja_tensorinit_hip_end
@@ -454,7 +457,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   constexpr int block_size = 256;
   constexpr int i_block_sz = 32;
   constexpr int j_block_sz = block_size / i_block_sz;
-  constexpr int k_block_sz = 1; 
+  constexpr int k_block_sz = 1;
 
   // set tensor data to zero to ensure we initializing it correctly.
   std::memset(a, 0, N_tot * sizeof(double));
@@ -486,7 +489,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                        RAJA::TypedRangeSegment<int>(0, N) ),
 
     [=] __device__ ( int i, int j, int k) {
-       aView(i, j, k) = c * i * j * k ;
+       d_aView(i, j, k) = c * i * j * k ;
     }
   );
 // _raja_tensorinit_hip_tiled_direct_end

@@ -15,15 +15,15 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Matrix Multiplication Examples using RAJA Teams
+ *  Matrix Multiplication Examples using RAJA Launch
  *
  *  Example computes the product of two square matrices and introduces
- *  RAJA Teams loop capabilities via a sequence of implementations.
+ *  RAJA Launch loop capabilities via a sequence of implementations.
  *
  *  RAJA features shown:
  *    - Index range segment
  *    - View abstraction
- *    - Basic usage of 'RAJA Teams' abstractions for nested loops
+ *    - Basic usage of 'RAJA Launch' abstractions for nested loops
  *
  *  If CUDA is enabled, CUDA unified memory is used.
  */
