@@ -12,18 +12,17 @@
 Iteration Space Examples: Segments and IndexSets
 -------------------------------------------------
 
-This section contains a working exercise in the file 
-``RAJA/exercises/segment-indexset-basics.cpp``.
+This section contains an exercise file ``RAJA/exercises/segment-indexset-basics.cpp``.  for you to work through if you wish to get some practice with RAJA. The 
+file ``RAJA/exercises/segment-indexset-basics_solution.cpp`` contains complete 
+working code for the examples discussed in this section. You can use the 
+solution file to check your work and for guidance if you get stuck.
 
 Key RAJA features shown in this example are:
 
   * ``RAJA::forall`` loop execution template
   * ``RAJA::TypedRangeSegment``, ``RAJA::TypedRangeStrideSegment``, and 
     ``RAJA::TypedListSegment`` iteration space constructs
-  * ``RAJA::IndexSet`` iteration construct and associated execution policies
-
-The file ``RAJA/exercises/segment-indexset-basics_solution.cpp`` contains 
-complete working code for the examples discussed in this section.
+  * ``RAJA::TypedIndexSet`` container and associated execution policies
 
 Loop variables and their associated iteration spaces are fundamental to
 writing loop kernels in RAJA. RAJA provides some basic iteration space types

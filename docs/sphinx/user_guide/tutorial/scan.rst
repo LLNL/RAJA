@@ -12,19 +12,19 @@
 Parallel Scan Operations
 --------------------------------------------------
 
-This section contains a working exercise in the file 
-``RAJA/exercises/scan.cpp``. 
+This section contains an exercise file ``RAJA/exercises/scan.cpp``
+for you to work through if you wish to get some practice with RAJA. The
+file ``RAJA/exercises/scan_solution.cpp`` contains complete
+working code for the examples discussed in this section. You can use the
+solution file to check your work and for guidance if you get stuck.
 
 Key RAJA features shown in this section are:
 
-  * ``RAJA::inclusive_scan`` operation
-  * ``RAJA::inclusive_scan_inplace`` operation
-  * ``RAJA::exclusive_scan`` operation
-  * ``RAJA::exclusive_scan_inplace`` operation
-  * RAJA operators for different types of scans; e.g., plus, minimum, maximum, etc.
-
-The file ``RAJA/exercises/scan_solution.cpp`` contains working code for the
-examples discussed in this section.
+  * ``RAJA::inclusive_scan``, ``RAJA::inclusive_scan_inplace``,
+    ``RAJA::exclusive_scan``, and ``RAJA::exclusive_scan_inplace`` operations
+    and execution policies
+  * RAJA operators for different types of scans; e.g., plus, minimum, maximum, 
+    etc.
 
 In this section, we present examples of RAJA sequential, OpenMP,
 and CUDA scan operations and show how different scan operations can be 

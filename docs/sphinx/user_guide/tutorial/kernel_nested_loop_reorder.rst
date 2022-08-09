@@ -12,18 +12,17 @@
 Basic ``RAJA::kernel`` Mechanics and Nested Loop Reordering
 -----------------------------------------------------------
 
-This section contains an exercise to work through in the file
-``RAJA/exercises/kernelintro-nested-loop-reorder.cpp``.
+This section contains an exercise file ``RAJA/exercises/kernelintro-nested-loop-reorder.cpp``
+for you to work through if you wish to get some practice with RAJA. The
+file ``RAJA/exercises/kernelintro-nested-loop-reorder_solution.cpp`` contains 
+complete working code for the examples discussed in this section. You can use 
+the solution file to check your work and for guidance if you get stuck.
 
 Key RAJA features shown in this section are:
 
-  * ``RAJA::kernel`` loop iteration templates 
-  * RAJA::kernel nested loop execution policies
+  * ``RAJA::kernel`` loop iteration templates and execution policies
   * Nested loop reordering
   * RAJA strongly-types indices
-
-The file ``RAJA/exercises/kernelintro-nested-loop-reorder_solution.cpp`` 
-contains complete working code for the examples discussed in this section.
 
 The examples in this
 section show the nested loop reordering process in more detail. 

@@ -12,18 +12,17 @@
 Reductions
 ---------------------------------
 
-This section contains a working exercise in the file 
-``RAJA/exercises/reductions.cpp``. 
+This section contains an exercise file ``RAJA/exercises/reductions.cpp``
+for you to work through if you wish to get some practice with RAJA. The
+file ``RAJA/exercises/reductions_solution.cpp`` contains complete
+working code for the examples discussed in this section. You can use the
+solution file to check your work and for guidance if you get stuck.
 
 Key RAJA features shown in this section are:
 
-  * ``RAJA::forall`` loop execution template 
-  * ``RAJA::RangeSegment`` iteration space construct
-  * RAJA reduction types
-  * RAJA reduction policies
-
-The file ``RAJA/exercises/reductions_solution.cpp`` contains working code for the
-examples discussed in this section.
+  * ``RAJA::forall`` loop execution template and execution policies
+  * ``RAJA::TypedRangeSegment`` iteration space construct
+  * RAJA reduction types and reduction policies
 
 In the :ref:`dotproduct-label` exercise, we showed how to use the RAJA sum 
 reduction type. The following example uses all supported RAJA reduction types: 

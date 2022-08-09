@@ -12,17 +12,17 @@
 RAJA Views and Layouts
 -----------------------------------------------------------
 
-This section contains an exercise to work through in the file
-``RAJA/exercises/view-layout.cpp``.
+This section contains an exercise file ``RAJA/exercises/view-layout.cpp``
+for you to work through if you wish to get some practice with RAJA. The
+file ``RAJA/exercises/view-layout_solution.cpp`` contains complete
+working code for the examples discussed in this section. You can use the
+solution file to check your work and for guidance if you get stuck.
 
 Key RAJA features shown in this section are:
 
   * ``RAJA::View`` 
-  * ``RAJA::Layout`` 
-  * ``RAJA::OffsetLayout``
-
-The file ``RAJA/exercises/view-layout_solution.cpp`` 
-contains complete working code for the examples discussed in this section.
+  * ``RAJA::Layout`` and ``RAJA::OffsetLayout`` constructs 
+  * Layout permutations
 
 The examples in this section illustrate RAJA View and Layout concepts
 and usage patterns. The goal is for you to gain an understanding of how

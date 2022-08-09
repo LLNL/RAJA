@@ -19,18 +19,17 @@ CPU stack-allocated arrays or GPU thread local and shared memory to be used
 within kernels. For more information about ``RAJA::LocalArray``, please 
 see :ref:`local_array-label`.
 
-Key RAJA features shown in this example include:
+The files ``RAJA/exercises/kernel-matrix-transpose-local-array_solution.cpp`` 
+and ``RAJA/exercises/launch-matrix-transpose-local-array_solution.cpp`` contain
+complete working code for the examples discussed in this section.
 
-  * ``RAJA::kernel_param`` method with multiple lambda expressions
-  * ``RAJA::statement::Tile`` type
-  * ``RAJA::statement::ForICount`` type
-  * ``RAJA::LocalArray``
-  * Specifying lambda arguments through statements
+Key RAJA features shown in this example are:
 
-The files ``RAJA/exercises/kernel-matrix-transpose-local-array_solution.cpp`` and
-``RAJA/exercises/launch-matrix-transpose-local-array_solution.cpp`` contain the complete
-solutions for the examples described in this section, including OpenMP, CUDA,
-and HIP variants.
+  * ``RAJA::kernel_param`` method and execution policy usage with multiple lambdas
+  * ``RAJA::statement::Tile`` type for loop tiling
+  * ``RAJA::statement::ForICount`` type for generating global and local tile indices
+  * ``RAJA::LocalArray`` type for thread-local tile memory arrays.
+  * ``RAJA::launch`` kernel execution interface
 
 As in :ref:`tiledmatrixtranspose-label`, this example computes the transpose 
 of an input matrix :math:`A` of size :math:`N_r \times N_c` and stores the 

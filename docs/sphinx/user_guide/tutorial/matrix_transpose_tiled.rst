@@ -12,17 +12,18 @@
 Tiled Matrix Transpose
 ----------------------
 
-This section extends the discussion in :ref:`matrixtranspose-label`.
+This section extends the discussion in :ref:`matrixtranspose-label` by adding
+loop tiling to the matrix transpose kernel.
+
+The files ``RAJA/exercises/kernel-matrix-transpose-tiled_solution.cpp`` and
+``RAJA/exercises/launch-matrix-transpose-tiled_solution.cpp`` contain
+complete working code for the examples discussed in this section.
 
 Key RAJA features shown in this example are:
 
-  * ``RAJA::kernel`` usage with multiple lambdas
-  * ``RAJA::statement::Tile`` type
-
-The files ``RAJA/exercises/kernel-matrix-transpose-tiled_solution.cpp`` and
-``RAJA/exercises/launch-matrix-transpose-tiled_solution.cpp`` contain the complete
-solutions for the examples described in this section, including OpenMP, CUDA,
-and HIP variants.
+  * ``RAJA::kernel`` method and execution policy usage with multiple lambdas
+  * ``RAJA::statement::Tile`` type for loop tiling 
+  * ``RAJA::launch`` kernel execution interface
 
 In this example, we are still computing the transpose of an input matrix 
 :math:`A` of size :math:`N_r \times N_c` and storing the result in a second 

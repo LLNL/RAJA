@@ -12,8 +12,11 @@
 Mesh Vertex Sum Example: Iteration Space Coloring
 --------------------------------------------------
 
-This section contains an exercise to work through in the file 
-``RAJA/exercises/vertexsum-indexset.cpp``.
+This section contains an exercise file ``RAJA/exercises/vertexsum-indexset.cpp``
+for you to work through if you wish to get some practice with RAJA. The
+file ``RAJA/exercises/vertexsum-indexset_solution.cpp`` contains complete
+working code for the examples discussed in this section. You can use the
+solution file to check your work and for guidance if you get stuck.
 
 Key RAJA features shown in this example are:
 
@@ -21,9 +24,6 @@ Key RAJA features shown in this example are:
   * ``RAJA::TypedListSegment`` iteration space construct
   * ``RAJA::TypedIndexSet`` iteration space segment container and 
     associated execution policies
-
-The file ``RAJA/exercises/vertexsum-indexset_solution.cpp`` contains complete 
-working code for examples discussed in this section.
 
 The example computes a sum at each vertex on a logically-Cartesian 2D mesh
 as shown in the figure.

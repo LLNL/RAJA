@@ -12,17 +12,17 @@
 Computing a Histogram with Atomic Operations
 --------------------------------------------------
 
-This section contains an exercise to work through in the file 
-``RAJA/exercises/atomic-histogram.cpp``. 
+This section contains an exercise file ``RAJA/exercises/atomic-histogram.cpp``
+for you to work through if you wish to get some practice with RAJA. The
+file ``RAJA/exercises/atomic-histogram_solution.cpp`` contains complete
+working code for the examples discussed in this section. You can use the
+solution file to check your work and for guidance if you get stuck.
 
 Key RAJA features shown in this exercise are:
 
-  * ``RAJA::forall`` loop execution template 
-  * ``RAJA::RangeSegment`` iteration space construct
+  * ``RAJA::forall`` loop execution template and execution policies
+  * ``RAJA::TypedRangeSegment`` iteration space construct
   * RAJA atomic add operation and RAJA atomic operation policies
-
-The file ``RAJA/exercises/atomic-histogram_solution.cpp`` contains complete 
-working code for the examples discussed in this section.
 
 The example uses an integer array of length 'N' randomly initialized with 
 values in the interval [0, M). Each kernel iterates over the array and
