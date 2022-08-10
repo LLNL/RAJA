@@ -13,9 +13,9 @@
 /*
  * Nested Loop Basics and Loop Reordering (RAJA::kernel)
  *
- *  In this exercise, we inroduce basic RAJA::kernel mechanic for executing
+ *  In this exercise, we introduce the basic RAJA::kernel mechanic for executing
  *  nested loop kernels, including using execution policies to permute the 
- *  nesting order of loops in a loop nest. The exercise does no actual 
+ *  order of loops in a loop nest. The exercise performs no actual 
  *  computation and just prints out loop indices to show different
  *  loop ordering. Also, to avoid difficulty in interpreting parallel 
  *  output, the execution policies use sequential execution.
@@ -67,7 +67,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running C-style loop nest ordering: K-outer, J-middle, I-inner" 
+  std::cout << "\n Running C-style nested loop order: K-outer, J-middle, I-inner" 
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
 // _cstyle_kji_loops_start
@@ -105,7 +105,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 //----------------------------------------------------------------------------//
  
-  std::cout << "\n Running C-style loop nest ordering: J-outer, I-middle, K-inner" 
+  std::cout << "\n Running C-style nested loop order: J-outer, I-middle, K-inner" 
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
 // _cstyle_jik_loops_start
@@ -142,7 +142,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 //----------------------------------------------------------------------------//
  
-  std::cout << "\n Running C-style loop nest ordering: I-outer, K-middle, J-inner" 
+  std::cout << "\n Running C-style nested loop order: I-outer, K-middle, J-inner" 
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
 // _cstyle_ikj_loops_start
