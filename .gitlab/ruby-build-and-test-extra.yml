@@ -5,49 +5,40 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ##############################################################################
 
-clang_10_0_1:
-  variables:
-    SPEC: "+openmp %clang@10.0.1"
-  extends: .build_and_test_on_ruby
-
-clang_9_0_0:
-  variables:
-    SPEC: "+openmp %clang@9.0.0"
-  extends: .build_and_test_on_ruby
-
 clang_9_openmp_off:
   variables:
     SPEC: "~openmp %clang@9.0.0"
   extends: .build_and_test_on_ruby
 
+# Overriding shared config for longer run
 gcc_8_1_0:
   variables:
     SPEC: "+openmp %gcc@8.1.0"
-    DEFAULT_TIME: 60
+    RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
   extends: .build_and_test_on_ruby
 
 gcc_8_1_0_openmp_default:
   variables:
     SPEC: "%gcc@8.1.0"
-    DEFAULT_TIME: 60
+    RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
   extends: .build_and_test_on_ruby
 
 #icpc_17_0_2:
 #  variables:
 #    SPEC: "%intel@17.0.2"
-#    DEFAULT_TIME: 40
+#    RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=40 --nodes=1"
 #  extends: .build_and_test_on_ruby
 
-# icpc_18_0_2:
-#   variables:
-#     SPEC: " tests=none %intel@18.0.2"
-#     DEFAULT_TIME: 40
-#   extends: .build_and_test_on_ruby
+#icpc_18_0_2:
+#  variables:
+#    SPEC: " tests=none %intel@18.0.2"
+#    RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=40 --nodes=1"
+#  extends: .build_and_test_on_ruby
 
 icpc_19_1_0:
   variables:
     SPEC: "+openmp %intel@19.1.0"
-    DEFAULT_TIME: 40
+    RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=40 --nodes=1"
   extends: .build_and_test_on_ruby
 
 # EXTRAS
@@ -55,7 +46,7 @@ icpc_19_1_0:
 #gcc_4_9_3:
 #  variables:
 #    SPEC: "%gcc@4.9.3"
-#    DEFAULT_TIME: 60
+#    RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
 #  extends: .build_and_test_on_ruby
 
 clang_10_0_1_desul_atomics:

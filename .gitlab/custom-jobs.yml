@@ -1,0 +1,15 @@
+###############################################################################
+# Copyright (c) 2022, Lawrence Livermore National Security, LLC and RADIUSS
+# project contributors. See the COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (MIT)
+###############################################################################
+
+# Configuration shared by build and test jobs specific to this project.
+# Not all configuration can be shared. Here projects can fine tune the
+# CI behavior.
+# See Umpire for an example (export junit test reports).
+.custom_build_and_test:
+  artifacts:
+    reports:
+      junit: junit.xml

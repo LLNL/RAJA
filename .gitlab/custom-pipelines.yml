@@ -1,0 +1,22 @@
+###############################################################################
+# Copyright (c) 2022, Lawrence Livermore National Security, LLC and RADIUSS
+# project contributors. See the COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (MIT)
+###############################################################################
+
+# Trigger a build-and-test pipeline for ruby, corona and lassen
+ruby-build-and-test:
+  variables:
+    CI_MACHINE: "ruby"
+  extends: [.build-and-test]
+
+corona-build-and-test:
+  variables:
+    CI_MACHINE: "corona"
+  extends: [.build-and-test]
+
+lassen-build-and-test:
+  variables:
+    CI_MACHINE: "lassen"
+  extends: [.build-and-test]

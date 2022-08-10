@@ -1,0 +1,16 @@
+#############################################################################
+# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+#############################################################################
+
+# With GitLab CI, included files cannot be empty.
+variables:
+  INCLUDED_FILE_CANNOT_BE_EMPTY: "True"
+
+## Template for extra jobs defined by the project.
+#<job-name (usually spec or description)>:
+#  variables:
+#    SPEC: "<spack spec without package name>"
+#  extends: .build_and_test_on_ruby

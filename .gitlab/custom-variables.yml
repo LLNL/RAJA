@@ -1,0 +1,58 @@
+###############################################################################
+# Copyright (c) 2022, Lawrence Livermore National Security, LLC and RADIUSS
+# project contributors. See the COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (MIT)
+###############################################################################
+
+# We define the following GitLab pipeline variables:
+variables:
+
+# Use a service user to run CI. This prevents from running pipelines as an
+# actual user.
+  LLNL_SERVICE_USER: ""
+
+# Use the service user workspace. Solves permission issues, stores everything
+# at the same location whoever triggers a pipeline.
+#  CUSTOM_CI_BUILDS_DIR: ""
+
+# Tells Gitlab to recursively update the submodules when cloning the project.
+  GIT_SUBMODULE_STRATEGY: recursive
+
+# We build the projects in the CI clone directory.
+# TODO: add a clean-up mechanism
+  BUILD_ROOT: ${CI_PROJECT_DIR}
+
+# On LLNL's ruby, this pipeline creates only one allocation shared among jobs
+# in order to save time and resources. This allocation has to be uniquely named
+# so that we are sure to retrieve it and avoid collisions.
+  ALLOC_NAME: ${CI_PROJECT_NAME}_ci_${CI_PIPELINE_ID}
+
+# Ruby
+# Arguments for top level allocation
+  RUBY_BUILD_AND_TEST_SHARED_ALLOC: "--partition=pdebug --time=45 --nodes=1"
+# Arguments for job level allocation
+  RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=45 --nodes=1"
+# Project specific variants for ruby
+  PROJECT_RUBY_VARIANTS: "+openmp "
+# Project specific deps for ruby
+  PROJECT_RUBY_DEPS: ""
+
+# Corona
+# Arguments for top level allocation
+  CORONA_BUILD_AND_TEST_SHARED_ALLOC: "--exclusive --partition=pdebug --time=45 --nodes=1"
+# Arguments for job level allocation
+  CORONA_BUILD_AND_TEST_JOB_ALLOC: "--time=45 --nodes=1"
+# Project specific variants for corona
+  PROJECT_CORONA_VARIANTS: "~openmp "
+# Project specific deps for corona
+  PROJECT_CORONA_DEPS: "^blt@develop "
+
+# Lassen and Butte use a different job scheduler (spectrum lsf) that does not
+# allow pre-allocation the same way slurm does.
+# Arguments for job level allocation
+  LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 30"
+# Project specific variants for lassen
+  PROJECT_LASSEN_VARIANTS: "+openmp "
+# Project specific deps for lassen
+  PROJECT_LASSEN_DEPS: ""

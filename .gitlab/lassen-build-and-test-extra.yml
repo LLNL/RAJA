@@ -9,21 +9,12 @@
 # CPU ONLY
 ##########
 
-clang_9:
-  variables:
-    SPEC: "+openmp %clang@9.0.0"
-  extends: .build_and_test_on_lassen
-
-clang_9_gcc_8_3_1:
-  variables:
-    SPEC: "+openmp %clang@9.0.0 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
-  extends: .build_and_test_on_lassen
-
 clang_11_0_0:
   variables:
     SPEC: "+openmp %clang@11.0.0"
   extends: .build_and_test_on_lassen
 
+# Overriding shared spec
 gcc_8_3_1:
   variables:
     SPEC: "+openmp %gcc@8.3.1 cxxflags='-finline-functions -finline-limit=20000' cflags='-finline-functions -finline-limit=20000'"
@@ -32,13 +23,13 @@ gcc_8_3_1:
 xl_16_1_1_11:
   variables:
     SPEC: "+openmp %xl@16.1.1.11 cxxflags='-qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036'"
-    DEFAULT_TIME: 50
+    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 50"
   extends: .build_and_test_on_lassen
 
 xl_16_1_1_11_gcc_8_3_1:
   variables:
     SPEC: "+openmp %xl@16.1.1.11 cxxflags='--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036' cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
-    DEFAULT_TIME: 50
+    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 50"
   extends: .build_and_test_on_lassen
 
 ##########
@@ -63,19 +54,20 @@ gcc_8_3_1_cuda_11_0_2:
 gcc_8_3_1_cuda_11_5_0_ats_disabled:
   variables:
     SPEC: "+openmp +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0"
-  extends: .build_and_test_on_lassen_ats_disabled
+    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 --atsdisable -W 60"
+  extends: .build_and_test_on_lassen
 
 xl_16_1_1_11_cuda_11_0_2:
   variables:
     SPEC: "+openmp +cuda %xl@16.1.1.11 cxxflags='-qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036' cuda_arch=70 ^cuda@11.0.2 ^cmake@3.14.5"
-    DEFAULT_TIME: 60
+    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 60"
   allow_failure: true
   extends: .build_and_test_on_lassen
 
 xl_16_1_1_11_gcc_8_3_1_cuda_11_0_2:
   variables:
     SPEC: "+openmp +cuda %xl@16.1.1.11 cxxflags='--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036' cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cuda_arch=70 ^cuda@11.0.2 ^cmake@3.14.5"
-    DEFAULT_TIME: 60
+    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 60"
   allow_failure: true
   extends: .build_and_test_on_lassen
 
