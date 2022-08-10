@@ -90,9 +90,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   // _cstyle_mattranspose_start
-  //
-  // Loops to iterate over matrix dimensions
-  //
   for (int row = 0; row < N_r; ++row) {
     for (int col = 0; col < N_c; ++col) {
         Atview(col, row) = Aview(row, col);

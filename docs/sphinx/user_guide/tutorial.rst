@@ -380,10 +380,10 @@ in terms of nested loops.
 Comparing ``RAJA::kernel`` and ``RAJA::expt::launch``: Matrix-Transpose
 ===============================================================================
 
-In the following section we will look at ``RAJA::kernel`` and
-``RAJA::expt::launch`` implementations of a matrix transpose alogorithm. These
-sections will demonstrate the implementation differences of the two execution
-contexts as we build upon each example with more complex features.
+In this section, we compare ``RAJA::kernel`` and ``RAJA::expt::launch`` 
+implementations of a matrix transpose alogorithm. We illustrate 
+implementation differences of the two interfaces as we build upon each 
+example with more complex features.
 
 .. toctree::
    :maxdepth: 1

@@ -90,9 +90,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   // _cstyle_mattranspose_start
-  //
-  // Loops to iterate over matrix dimensions
-  //
   for (int row = 0; row < N_r; ++row) {
     for (int col = 0; col < N_c; ++col) {
         Atview(col, row) = Aview(row, col);
@@ -127,8 +124,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using loop_policy_seq = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
   using launch_policy_seq = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
 
-  RAJA::expt::launch<launch_policy_seq>
-    (RAJA::expt::Grid(), //Grid may be empty when running on the host
+  RAJA::expt::launch<launch_policy_seq>(
+    RAJA::expt::Grid(), //Grid may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::loop<loop_policy_seq>(ctx, row_Range, [&] (int row) {
@@ -136,7 +133,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 	  /// TODO...
 	  ///
-	  /// EXERCISE: Implement the loop body to carry out the transpose
+	  /// EXERCISE: Implement the kernel body for the transpose operation
 	  ///
 
         });
@@ -160,8 +157,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using loop_policy_omp = RAJA::expt::LoopPolicy<RAJA::omp_for_exec>;
   using launch_policy_omp = RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t>;
 
-  RAJA::expt::launch<launch_policy_seq>
-    (RAJA::expt::Grid(), //Grid may be empty when running on the host
+  RAJA::expt::launch<launch_policy_seq>(
+    RAJA::expt::Grid(), //Grid may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
 
@@ -193,8 +190,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const bool async = false; //execute asynchronously
   using launch_policy_cuda = RAJA::expt::LaunchPolicy<RAJA::expt::cuda_launch_t<async>>;
 
-  RAJA::expt::launch<launch_policy_cuda>
-    (RAJA::expt::Grid(RAJA::expt::Teams(1), RAJA::expt::Threads(16,16)),
+  RAJA::expt::launch<launch_policy_cuda>(
+    RAJA::expt::Grid(RAJA::expt::Teams(1), RAJA::expt::Threads(16,16)),
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::loop<cuda_thread_y>(ctx, row_Range, [&] (int row) {

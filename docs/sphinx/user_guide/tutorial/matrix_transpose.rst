@@ -12,27 +12,36 @@
 Matrix Transpose
 ----------------------
 
-The files ``RAJA/exercises/kernel-matrix-transpose_solution.cpp`` and
+This section describes the implementation of a matrix transpose kernel using
+both ``RAJA::kernel`` and ``RAJA::expt::launch`` interfaces. The intent
+is to compare and contrast the two.
+
+There are exercise files 
+``RAJA/exercises/kernel-matrix-transpose.cpp`` and
+``RAJA/exercises/launch-matrix-transpose.cpp`` for you to work through if you 
+wish to get some practice with RAJA. The files 
+``RAJA/exercises/kernel-matrix-transpose_solution.cpp`` and
 ``RAJA/exercises/launch-matrix-transpose_solution.cpp`` contain
-complete working code for the examples discussed in this section.
+complete working code for the examples. You can use the solution files to 
+check your work and for guidance if you get stuck.
 
 Key RAJA features shown in this example are:
 
   * ``RAJA::kernel`` method and execution policy usage with multiple lambdas
-  * ``RAJA::launch`` kernel execution interface
+  * ``RAJA::expt::launch`` kernel execution interface
 
-In this basic example, we compute the transpose of an input matrix
+In the example, we compute the transpose of an input matrix
 :math:`A` of size :math:`N_r \times N_c` and store the result in a second
 matrix :math:`At` of size :math:`N_c \times N_r`.
 
-We start with a non-RAJA C++ implementation. First we define our matrix dimensions.
+First we define our matrix dimensions
 
 .. literalinclude:: ../../../../exercises/kernel-matrix-transpose_solution.cpp
    :start-after: // _mattranspose_dims_start
    :end-before: // _mattranspose_dims_end
    :language: C++
 
-Then, we wrap the matrix data pointers in ``RAJA::View`` objects to
+and wrap the data pointers for the matrices in ``RAJA::View`` objects to
 simplify the multi-dimensional indexing:
 
 .. literalinclude:: ../../../../exercises/kernel-matrix-transpose_solution.cpp
@@ -40,61 +49,69 @@ simplify the multi-dimensional indexing:
    :end-before: // _mattranspose_views_end
    :language: C++
 
-Then, the non-RAJA C++ implementation looks like this:
+Then, a C-style for-loop implementation looks like this:
 
 .. literalinclude:: ../../../../exercises/kernel-matrix-transpose_solution.cpp
    :start-after: // _cstyle_mattranspose_start
    :end-before: // _cstyle_mattranspose_end
    :language: C++
 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-RAJA::kernel Implementation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``RAJA::kernel`` Implementation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For ``RAJA::kernel`` variants, we use ``RAJA::statement::For`` types
-for the loops. The complete sequential RAJA variant is:
+For ``RAJA::kernel`` variants, we use ``RAJA::statement::For`` and 
+``RAJA::statement::Lambda`` statement types in the execution policies.
+The complete sequential ``RAJA::kernel`` variant is:
 
 .. literalinclude:: ../../../../exercises/kernel-matrix-transpose_solution.cpp
    :start-after: // _raja_mattranspose_start
    :end-before: // _raja_mattranspose_end
    :language: C++
 
-To execute the ``RAJA::kernel`` variant on the GPU we must redefine our execution
-policy. The complete CUDA implementation is:
+A CUDA ``RAJA::kernel`` variant for the GPU is similar with different policies
+in the ``RAJA::statement::For`` statements. The complete CUDA variant is:
 
 .. literalinclude:: ../../../../exercises/kernel-matrix-transpose_solution.cpp
    :start-after: // _raja_mattranspose_cuda_start
    :end-before: // _raja_mattranspose_cuda_end
    :language: C++
 
-An interactive exercise for matrix-transpose can be found at
-``RAJA/exercises/kernel-matrix-transpose.cpp``. 
+A notable difference between the CPU and GPU execution policy is the insertion 
+of the ``RAJA::statement::CudaKernel`` type in the GPU version, which indicates
+that the execution will launch a CUDA device kernel.
 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-RAJA::expt::launch Implementation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``RAJA::expt::launch`` Implementation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For ``RAJA::expt::launch`` variants, we use ``RAJA::expt::loop`` methods to express
-the hierachy of loops within the kernel execution space. For a sequential dispatch
-we template the launch method using the ``RAJA::expt::seq_launch_t`` type and the loop methods
-with ``RAJA::loop_exec``. The complete sequential RAJA variant is:
+For ``RAJA::expt::launch`` variants, we use ``RAJA::expt::loop`` methods 
+to express a loop hierarchy within the kernel execution space. For a sequential 
+implementation, we pass the ``RAJA::expt::seq_launch_t`` template parameter
+to the launch method and pass the ``RAJA::loop_exec`` parameter to the loop 
+methods. The complete sequential ``RAJA::expt::launch`` variant is:
 
 .. literalinclude:: ../../../../exercises/launch-matrix-transpose_solution.cpp
    :start-after: // _raja_mattranspose_start
    :end-before: // _raja_mattranspose_end
    :language: C++
 
-To execute the ``RAJA::expt::launch`` variant on the GPU we must redefine our execution
-policy. The complete CUDA implementation is:
+A CUDA ``RAJA::expt::launch`` variant for the GPU is similar with different 
+policies in the ``RAJA::expt::loop`` methods. The complete 
+``RAJA::expt::launch`` variant is:
 
 .. literalinclude:: ../../../../exercises/launch-matrix-transpose_solution.cpp
    :start-after: // _raja_mattranspose_cuda_start
    :end-before: // _raja_mattranspose_cuda_end
    :language: C++
 
-A notable difference between running on the GPU in contrast to the CPU using ``RAJA::expt::launch``
-is the construction of the compute grid; the implicit construction of the compute grid is unique
-to ``RAJA::kernel`` as it determines number of CUDA threads and blocks based on the provided
-``RAJA::RangeSegment``.
+A notable difference between the CPU and GPU ``RAJA::expt::launch`` 
+implementations is the definition of the compute grid. For the CPU
+version, the argument list is empty for the ``RAJA::expt::Grid`` constructor.
+For the CUDA GPU implementation, we define a 'Team' of one two-dimensional 
+thread-block with 16 x 16 = 256 threads.
 
-A working exercise for matrix-transpose can be found at ``RAJA/exercises/launch-matrix-transpose.cpp``.
+Lastly, in the CUDA ``RAJA::kernel`` variant above, the thread-block size and
+and number of blocks to launch is determined by the implementation of the 
+``RAJA::kernel`` execution policy constructs using the sizes of the 
+``RAJA::TypedRangeSegment`` objects in the iteration space tuple.
