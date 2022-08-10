@@ -30,9 +30,9 @@ variables:
 
 # Ruby
 # Arguments for top level allocation
-  RUBY_BUILD_AND_TEST_SHARED_ALLOC: "--partition=pdebug --time=45 --nodes=1"
+  RUBY_BUILD_AND_TEST_SHARED_ALLOC: "--partition=pdebug --time=60 --nodes=1"
 # Arguments for job level allocation
-  RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=45 --nodes=1"
+  RUBY_BUILD_AND_TEST_JOB_ALLOC: "--exclusive --time=45 --nodes=1"
 # Project specific variants for ruby
   PROJECT_RUBY_VARIANTS: "+openmp "
 # Project specific deps for ruby
@@ -40,9 +40,9 @@ variables:
 
 # Corona
 # Arguments for top level allocation
-  CORONA_BUILD_AND_TEST_SHARED_ALLOC: "--exclusive --partition=pdebug --time=45 --nodes=1"
+  CORONA_BUILD_AND_TEST_SHARED_ALLOC: "--exclusive --partition=pdebug --time=60 --nodes=1"
 # Arguments for job level allocation
-  CORONA_BUILD_AND_TEST_JOB_ALLOC: "--time=45 --nodes=1"
+  CORONA_BUILD_AND_TEST_JOB_ALLOC: "--exclusive --time=45 --nodes=1"
 # Project specific variants for corona
   PROJECT_CORONA_VARIANTS: "~openmp "
 # Project specific deps for corona
