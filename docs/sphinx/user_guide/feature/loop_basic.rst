@@ -267,7 +267,7 @@ available ``RAJA::statement`` types can be found in
 :ref:`loop_elements-kernelpol-label`.
 
 --------------------------------
-Hierachial loops (RAJA::launch)
+Hierarchical loops (RAJA::launch)
 --------------------------------
 
 The *RAJA Launch* framework aims to unify thread/block based
