@@ -15,8 +15,7 @@ Tiled Matrix Transpose with Local Array
 This section extends the discussion in :ref:`tiledmatrixtranspose-label`
 by adding *local array* objects which are used to store data for each tile in
 CPU stack-allocated arrays or GPU thread local and shared memory to be used 
-within kernels. For more information about ``RAJA::LocalArray``, please 
-see :ref:`local_array-label`.
+within kernels.
 
 There are exercise files
 ``RAJA/exercises/kernel-matrix-transpose-local-array.cpp`` and
@@ -189,7 +188,7 @@ additional template parameters in the ``RAJA::statement::Lambda`` types to
 indicate which arguments each lambda expression takes and in which order. 
 Here is the complete version including execution policy and kernel:
 
-   .. literalinclude:: ../../../../exercises/kernel-matrix-transpose-local-array_solution.cpp
+.. literalinclude:: ../../../../exercises/kernel-matrix-transpose-local-array_solution.cpp
    :start-after: // _raja_mattranspose_lambdaargs_start
    :end-before: // _raja_mattranspose_lambdaargs_start
    :language: C++
