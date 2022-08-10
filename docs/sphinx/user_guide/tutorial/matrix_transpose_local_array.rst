@@ -83,12 +83,13 @@ using a stack-allocated local array for the tiles is:
 ``RAJA::kernel`` Variants
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-RAJA provides mechanisms to tile loops and use *local arrays*
-in kernels so that algorithm patterns like the kernel above can be 
-implemented with RAJA. A ``RAJA::LocalArray`` type specifies an object whose
-memory is created inside a kernel using a statement type in a RAJA 
-kernel execution policy. The local array data is only usable within the kernel.
-See :ref:`local_array-label` for more information. 
+The ``RAJA::kernel`` interface provides mechanisms to tile loops and use 
+*local arrays* in kernels so that algorithm patterns like the C-style kernel 
+above can be implemented with RAJA. When, using ``RAJA::kernel``, a 
+``RAJA::LocalArray`` type specifies an object whose memory is created inside 
+a kernel using a statement type in a RAJA kernel execution policy. The local 
+array data is only usable within the kernel. See :ref:`local_array-label` for 
+more information. 
 
 ``RAJA::kernel`` methods also support loop tiling statements which determine 
 the number of tiles needed to perform an operation based on tile size and
@@ -216,42 +217,42 @@ previous example are not needed.
           the same. Another use case for the template parameter argument
           specification just described is to be able to pass only the
           arguments used in a lambda expression; i.e., different lambdas
-          may have different argumenet lists.
+          may have different argument lists.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-RAJA::expt::Launch Version of Tiled Loops with RAJA_TEAM_SHARED memory
+``RAJA::expt::launch`` Variants
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-RAJA provides mechanisms to tile loops and use *local arrays*
-in kernels so that algorithm patterns like we just described can be 
-implemented with RAJA. Using the ``RAJA_TEAM_SHARED`` macro will create
-GPU shared memory or memory on the stack when dispatching on the CPU.
+The ``RAJA::expt::launch`` interface provides mechanisms to tile loops and use 
+*local arrays* in kernels to support algorithm patterns like the C-style kernel 
+above. When, using ``RAJA::expt::launch``, the ``RAJA_TEAM_SHARED`` macro is
+used to create a GPU shared memory array or a CPU stack memory array inside
+a kernel.
 
 ``RAJA::expt::launch`` support methods for tiling over an iteration space
-via ``RAJA::expt::tile``, and the ``RAJA::expt::loop_icount`` methods are
-used to return the global iteration index and the local tile offset.
+using ``RAJA::expt::tile`` and ``RAJA::expt::loop_icount`` methods to tile
+loops and generate global iteration indices and local tile offsets.
 Moreover, lambda expressions for these methods will not be invoked for
 iterations outside the bounds of an iteration space when tile dimensions
 do not divide evenly the size of the iteration space; thus, no conditional
 checks on loop bounds are needed inside inner loops.
 
-The complete RAJA sequential CPU variant with kernel execution policy and 
+A complete RAJA sequential CPU variant with kernel execution policy and 
 kernel is:
 
-.. literalinclude:: ../../../../exercises/launch_matrix-transpose-local-array_solution.cpp
+.. literalinclude:: ../../../../exercises/launch-matrix-transpose-local-array_solution.cpp
    :start-after: // _mattranspose_localarray_raja_start
    :end-before: // _mattranspose_localarray_raja_end
    :language: C++
 
-In this example ``RAJA::expt::tile`` methods are used to create tiles
-of the outer 'row' and 'col' iteration spaces. The ``RAJA::expt::tile`` methods
-take an additional argument specifying the tile size. To traverse the tile
-we use the ``RAJA::expt::loop_icount`` methods, which are similar to ``RAJA::kernel``
-ForICount statements. The ``RAJA::expt::loop_icount`` will generate the global and
-local index with respect to the tile. The local tile index is necessary as we use it
-to load entries from the global memory to ``RAJA_TEAM_SHARED`` memory.
-
-An interactive exercise for matrix-transpose with local-array can be found at
-``RAJA/exercises/launch-matrix-transpose-tiled-local-array.cpp``.
+Here, the ``RAJA::expt::tile`` method is used to create tiles of the outer 
+'row' and 'col' iteration spaces. The ``RAJA::expt::tile`` method
+takes an additional argument specifying the tile size for the corresponding 
+loop. To traverse the tile, we use the ``RAJA::expt::loop_icount`` method, 
+which is similar to the ``RAJA::ForICount`` statement used in a 
+``RAJA::kernel`` execution policy. A ``RAJA::expt::loop_icount`` method call
+will generate local tile index associated with the outer global index.
+The local tile index is necessary as we use it to read and write entries 
+from/to global memory to ``RAJA_TEAM_SHARED`` memory array.
 
 
