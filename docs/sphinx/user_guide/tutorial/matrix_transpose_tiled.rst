@@ -117,7 +117,7 @@ for the outer loop tiling and ``RAJA::expt::loop`` methods
 to iterate within the tiles. The complete sequential tiled 
 ``RAJA::expt::launch`` variant is:
 
-.. literalinclude:: ../../../../exercises/launch-tiled-matrix-transpose_solution.cpp
+.. literalinclude:: ../../../../exercises/launch-matrix-transpose-tiled_solution.cpp
    :start-after: // _raja_tiled_mattranspose_start
    :end-before: // _raja_tiled_mattranspose_end
    :language: C++
@@ -133,7 +133,7 @@ A CUDA ``RAJA::expt::launch`` tiled variant for the GPU is similar with
 different policies in the ``RAJA::expt::loop`` methods. The complete
 ``RAJA::expt::launch`` variant is:
 
-.. literalinclude:: ../../../../exercises/launch-matrix-transpose_solution.cpp
+.. literalinclude:: ../../../../exercises/launch-matrix-transpose-tiled_solution.cpp
    :start-after: // _raja_mattranspose_cuda_start
    :end-before: // _raja_mattranspose_cuda_end
    :language: C++
