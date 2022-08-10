@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-    // _team_loops_start
+     // _team_loops_start
      RAJA::expt::loop<teams_y>(ctx, RAJA::TypedRangeSegment<int>(0, Nteams), [&] (int by) {
        RAJA::expt::loop<teams_x>(ctx, RAJA::TypedRangeSegment<int>(0, Nteams), [&] (int bx) {
 
@@ -196,11 +196,11 @@ int main(int argc, char *argv[])
   //Equivalent C style loops
   if(select_cpu_or_gpu == RAJA::expt::HOST) {
     // _c_style_loops_start
-    for(int by=0; by<Nteams; ++by) {
-      for(int bx=0; bx<Nteams; ++bx) {
+    for (int by=0; by<Nteams; ++by) {
+      for (int bx=0; bx<Nteams; ++bx) {
 
-        for(int ty=0; ty<Nthreads; ++ty) {
-          for(int tx=0; tx<Nthreads; ++tx) {
+        for (int ty=0; ty<Nthreads; ++ty) {
+          for (int tx=0; tx<Nthreads; ++tx) {
 
             printf("c-iter: iter_tx %d iter_ty %d iter_bx %d iter_by %d \n",
                    tx, ty, bx, by);
