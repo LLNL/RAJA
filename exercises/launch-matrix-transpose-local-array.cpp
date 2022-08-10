@@ -30,9 +30,9 @@
  *  data into the tile; while outer loops will iterate over the number
  *  of tiles needed to carry out the transpose.
  *
- *  RAJA variants of the example use RAJA_TEAM_SHARED_MEMORY as tile memory.
+ *  RAJA variants of the example use RAJA_TEAM_SHARED as tile memory.
  *  Furthermore, the tiling pattern is handled by RAJA's tile methods.
- *  For CPU execution, RAJA_TEAM_SHARED_MEMORY are used to improve
+ *  For CPU execution, RAJA_TEAM_SHARED are used to improve
  *  performance via cache blocking. For CUDA GPU execution,
  *  RAJA shared memory is mapped to CUDA shared memory which
  *  enables threads in the same thread block to share data.
@@ -41,7 +41,7 @@
  *    - Basic usage of 'RAJA::expt::launch' abstractions for nested loops
  *       - tile methods
  *       - loop_icount methods
- *       - RAJA_TEAM_SHARED_MEMORY
+ *       - RAJA_TEAM_SHARED
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
@@ -179,35 +179,33 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using loop_pol_1 = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
   using launch_policy_1 = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
 
-  RAJA::expt::launch<launch_policy_1>
-    (RAJA::expt::Grid(), //Grid may be empty when only running on the cpu
+  RAJA::expt::launch<launch_policy_1>(
+    RAJA::expt::Grid(), //Grid may be empty when only running on the cpu
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::tile<loop_pol_1>
-        (ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r), [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::expt::tile<loop_pol_1>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r), [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::expt::tile<loop_pol_1>
-          (ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c), [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::expt::tile<loop_pol_1>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c), [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
-            RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
+          RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
 
-	    ///
-	    /// TODO ...
-	    ///
-	    /// Exercise Implement loop_icount methods to load tiles of the input matrix
-	    /// into RAJA_TEAM_SHARED_MEMORY
-	    ///
+	  ///
+	  /// TODO ...
+	  ///
+	  /// Exercise Implement loop_icount methods to load tiles of the 
+          /// input matrix into the RAJA_TEAM_SHARED memory array
+	  ///
 
-            RAJA::expt::loop_icount<loop_pol_1>(ctx, col_tile, [&] (int col, int tx) {
-                RAJA::expt::loop_icount<loop_pol_1>(ctx, row_tile, [&] (int row, int ty) {
+          RAJA::expt::loop_icount<loop_pol_1>(ctx, col_tile, [&] (int col, int tx) {
+            RAJA::expt::loop_icount<loop_pol_1>(ctx, row_tile, [&] (int row, int ty) {
 
-                    Atview(col, row) = Tile_Array[ty][tx];
+              Atview(col, row) = Tile_Array[ty][tx];
 
-                  });
-              });
-
+            });
           });
+
         });
+      });
 
     });
   // _mattranspose_localarray_raja_end
@@ -237,36 +235,34 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using loop_pol_2 = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
   using launch_policy_2 = RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t>;
 
-  RAJA::expt::launch<launch_policy_2>
-    (RAJA::expt::Grid(), //Grid may be empty when only running on the cpu
+  RAJA::expt::launch<launch_policy_2>(
+    RAJA::expt::Grid(), //Grid may be empty when only running on the cpu
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      //RAJA::expt::tile<omp_pol_2>
-      //(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r), [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      //RAJA::expt::tile<omp_pol_2>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r), [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::expt::tile<loop_pol_2>
-          (ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c), [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+          RAJA::expt::tile<loop_pol_2>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c), [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
-          //RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
+            //RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
 
             //RAJA::expt::loop_icount<loop_pol_2>(ctx, row_tile, [&] (int row, int ty) {
-                RAJA::expt::loop_icount<loop_pol_2>(ctx, col_tile, [&] (int col, int tx) {
+              RAJA::expt::loop_icount<loop_pol_2>(ctx, col_tile, [&] (int col, int tx) {
 
-                    //Tile_Array[ty][tx] = Aview(row, col);
+                //Tile_Array[ty][tx] = Aview(row, col);
 
-                  });
-                //});
+              });
+          //});
 
-                RAJA::expt::loop_icount<loop_pol_2>(ctx, col_tile, [&] (int col, int tx) {
-                    //RAJA::expt::loop_icount<loop_pol_2>(ctx, row_tile, [&] (int row, int ty) {
+            RAJA::expt::loop_icount<loop_pol_2>(ctx, col_tile, [&] (int col, int tx) {
+              //RAJA::expt::loop_icount<loop_pol_2>(ctx, row_tile, [&] (int row, int ty) {
 
-                    //Atview(col, row) = Tile_Array[ty][tx];
+                 //Atview(col, row) = Tile_Array[ty][tx];
 
-                    //});
-                  });
+              //});
+              });
 
           });
-        //});
+      //});
 
     });
 
@@ -293,39 +289,37 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const bool cuda_async = false;
   using cuda_launch_policy = RAJA::expt::LaunchPolicy<RAJA::expt::cuda_launch_t<cuda_async>>;
 
-  RAJA::expt::launch<cuda_launch_policy>
-    (RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_c, n_blocks_r),
-                      RAJA::expt::Threads(c_block_sz, r_block_sz)),
+  RAJA::expt::launch<cuda_launch_policy>(
+    RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_c, n_blocks_r),
+                     RAJA::expt::Threads(c_block_sz, r_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
       /*
-      RAJA::expt::tile<cuda_teams_y>
-        (ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r), [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::expt::tile<cuda_teams_y>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r), [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::expt::tile<cuda_teams_x>
-          (ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c), [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::expt::tile<cuda_teams_x>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c), [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
-            RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
+          RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
 
-            RAJA::expt::loop_icount<cuda_threads_y>(ctx, row_tile, [&] (int row, int ty) {
-                RAJA::expt::loop_icount<cuda_threads_x>(ctx, col_tile, [&] (int col, int tx) {
-
-                    Tile_Array[ty][tx] = Aview(row, col);
-
-                  });
-              });
-
+          RAJA::expt::loop_icount<cuda_threads_y>(ctx, row_tile, [&] (int row, int ty) {
             RAJA::expt::loop_icount<cuda_threads_x>(ctx, col_tile, [&] (int col, int tx) {
-                RAJA::expt::loop_icount<cuda_threads_y>(ctx, row_tile, [&] (int row, int ty) {
 
-                    Atview(col, row) = Tile_Array[ty][tx];
+              Tile_Array[ty][tx] = Aview(row, col);
 
-                  });
-              });
-
+            });
           });
+
+          RAJA::expt::loop_icount<cuda_threads_x>(ctx, col_tile, [&] (int col, int tx) {
+            RAJA::expt::loop_icount<cuda_threads_y>(ctx, row_tile, [&] (int row, int ty) {
+
+              Atview(col, row) = Tile_Array[ty][tx];
+
+            });
+          });
+
         });
+      });
       */
-    });
+  });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -367,37 +361,35 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const bool hip_async = false;
   using hip_launch_policy = RAJA::expt::LaunchPolicy<RAJA::expt::hip_launch_t<hip_async>>;
 
-  RAJA::expt::launch<hip_launch_policy>
-    (RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_c, n_blocks_r),
-                      RAJA::expt::Threads(c_block_sz, r_block_sz)),
+  RAJA::expt::launch<hip_launch_policy>(
+    RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_c, n_blocks_r),
+                     RAJA::expt::Threads(c_block_sz, r_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::tile<hip_teams_y>
-        (ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r), [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::expt::tile<hip_teams_y>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r), [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::expt::tile<hip_teams_x>
-          (ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c), [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::expt::tile<hip_teams_x>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c), [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
-            RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
+          RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
 
-            RAJA::expt::loop_icount<hip_threads_y>(ctx, row_tile, [&] (int row, int ty) {
-                RAJA::expt::loop_icount<hip_threads_x>(ctx, col_tile, [&] (int col, int tx) {
-
-                    Tile_Array[ty][tx] = d_Aview(row, col);
-
-                  });
-              });
-
+          RAJA::expt::loop_icount<hip_threads_y>(ctx, row_tile, [&] (int row, int ty) {
             RAJA::expt::loop_icount<hip_threads_x>(ctx, col_tile, [&] (int col, int tx) {
-                RAJA::expt::loop_icount<hip_threads_y>(ctx, row_tile, [&] (int row, int ty) {
 
-                    d_Atview(col, row) = Tile_Array[ty][tx];
+              Tile_Array[ty][tx] = d_Aview(row, col);
 
-                  });
-              });
-
+            });
           });
+
+          RAJA::expt::loop_icount<hip_threads_x>(ctx, col_tile, [&] (int col, int tx) {
+            RAJA::expt::loop_icount<hip_threads_y>(ctx, row_tile, [&] (int row, int ty) {
+
+              d_Atview(col, row) = Tile_Array[ty][tx];
+
+            });
+          });
+
         });
+      });
 
     });
 

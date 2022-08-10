@@ -68,8 +68,9 @@ Then, the C-style for-loop implementation looks like this:
    :end-before: // _cstyle_tiled_mattranspose_end
    :language: C++
 
-Note that we need to include a bounds check in the code to avoid indexing out 
-of bounds when the tile sizes do not divide the matrix dimensions evenly.
+.. note:: * To prevent indexing out of bounds, when the tile dimensions do not
+            divide evenly the matrix dimensions, we use a bounds check in the
+            inner loops.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ``RAJA::kernel`` Variants

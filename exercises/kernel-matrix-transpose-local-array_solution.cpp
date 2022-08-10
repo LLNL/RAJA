@@ -571,7 +571,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using RAJA::Offsets;
   using RAJA::Params;
 
-  // _mattranspose_localarray_raja_lambdaargs_start
+  // _raja_mattranspose_lambdaargs_start
   using SEQ_EXEC_POL_II =
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
@@ -610,7 +610,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Atview(col, row) = Tile_Array(ty, tx);
     }
   );
-  // _mattranspose_localarray_raja_lambdaargs_end
+  // _raja_mattranspose_lambdaargs_start
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
