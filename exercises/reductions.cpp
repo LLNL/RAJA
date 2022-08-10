@@ -237,6 +237,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_HIP)
   std::cout << "\n Running RAJA HIP reductions...\n";
 
+  RAJA::TypedRangeSegment<int> arange1(0, N);
+
   int* d_a = memoryManager::allocate_gpu<int>(N);
   hipErrchk(hipMemcpy( d_a, a, N * sizeof(int), hipMemcpyHostToDevice ));
 
@@ -251,7 +253,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::ReduceMinLoc<REDUCE_POL3, int> hip_minloc(std::numeric_limits<int>::max(), -1);
   RAJA::ReduceMaxLoc<REDUCE_POL3, int> hip_maxloc(std::numeric_limits<int>::min(), -1);
 
-  RAJA::forall<EXEC_POL3>(arange, [=] RAJA_DEVICE (int i) {
+  RAJA::forall<EXEC_POL3>(arange1, [=] RAJA_DEVICE (int i) {
 
     hip_sum += d_a[i];
 

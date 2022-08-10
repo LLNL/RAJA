@@ -13,7 +13,7 @@
 /*
  * Nested Loop Basics and Loop Reordering (RAJA::kernel)
  *
- *  In this exercise, we introduce the basic RAJA::kernel mechanic for executing
+ *  In this exercise, we introduce basic RAJA::kernel mechanics for executing
  *  nested loop kernels, including using execution policies to permute the 
  *  order of loops in a loop nest. The exercise performs no actual 
  *  computation and just prints out loop indices to show different
