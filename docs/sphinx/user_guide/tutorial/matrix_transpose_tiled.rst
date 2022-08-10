@@ -12,33 +12,41 @@
 Tiled Matrix Transpose
 ----------------------
 
-This section extends the discussion in :ref:`matrixtranspose-label` by adding
-loop tiling to the matrix transpose kernel.
+This section describes the implementation of a tiled matrix transpose kernel 
+using both ``RAJA::kernel`` and ``RAJA::expt::launch`` interfaces. The intent
+is to compare and contrast the two. The discussion builds on 
+:ref:`matrixtranspose-label` by adding tiling to the matrix transpose 
+implementation.
 
-The files ``RAJA/exercises/kernel-matrix-transpose-tiled_solution.cpp`` and
+There are exercise files
+``RAJA/exercises/kernel-matrix-transpose-tiled.cpp`` and
+``RAJA/exercises/launch-matrix-transpose-tiled.cpp`` for you to work through 
+if you wish to get some practice with RAJA. The files
+``RAJA/exercises/kernel-matrix-transpose-tiled_solution.cpp`` and
 ``RAJA/exercises/launch-matrix-transpose-tiled_solution.cpp`` contain
-complete working code for the examples discussed in this section.
+complete working code for the examples. You can use the solution files to
+check your work and for guidance if you get stuck.
 
 Key RAJA features shown in this example are:
 
-  * ``RAJA::kernel`` method and execution policy usage with multiple lambdas
-  * ``RAJA::statement::Tile`` type for loop tiling 
-  * ``RAJA::launch`` kernel execution interface
+  * ``RAJA::kernel`` method and execution policies using the ``RAJA::statement::Tile`` type for loop tiling
+  * ``RAJA::expt::launch`` kernel execution interface
 
 In this example, we are still computing the transpose of an input matrix 
 :math:`A` of size :math:`N_r \times N_c` and storing the result in a second 
 matrix :math:`At` of size :math:`N_c \times N_r`.
 
 We will compute the matrix transpose using a tiling algorithm, which iterates 
-over tiles of the matrix A and performs a transpose copy of a tile without 
-storing the tile in another array. The algorithm is expressed as a collection 
-of outer and inner loops. Iterations of the inner loop will transpose each tile,
-while outer loops iterate over the tiles.
+over tiles of the matrix A and performs a transpose operation on each tile.
+The algorithm is expressed as a collection of outer and inner loops. 
+Iterations of the inner loop will transpose each tile, while outer loops 
+iterate over the tiles.
 
-We start with a non-RAJA C++ implementation, where we choose tile
-dimensions smaller than the matrix dimensions. Note that we do not assume 
+As in :ref:`matrixtranspose-label`, we start by defining the matrix dimensions.
+Additionally, we define a tile size smaller than the matrix dimensions and 
+determine the number of tiles in each dimension. Note that we do not assume 
 that tiles divide evenly the number of rows and and columns of the matrix.
-However, we do assume square tiles. First, we define matrix dimensions: 
+However, we do assume square tiles.
 
 .. literalinclude:: ../../../../exercises/kernel-matrix-transpose-tiled_solution.cpp
    :start-after: // _tiled_mattranspose_dims_start
@@ -53,7 +61,7 @@ simplify the multi-dimensional indexing:
    :end-before: // _tiled_mattranspose_views_end
    :language: C++
 
-Then, the non-RAJA C++ implementation looks like this:
+Then, the C-style for-loop implementation looks like this:
 
 .. literalinclude:: ../../../../exercises/kernel-matrix-transpose-tiled_solution.cpp
    :start-after: // _cstyle_tiled_mattranspose_start
@@ -63,9 +71,9 @@ Then, the non-RAJA C++ implementation looks like this:
 Note that we need to include a bounds check in the code to avoid indexing out 
 of bounds when the tile sizes do not divide the matrix dimensions evenly.
 
-^^^^^^^^^^^^^^^^^^^^^
-RAJA::kernel Variants
-^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``RAJA::kernel`` Variants
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For ``RAJA::kernel`` variants, we use ``RAJA::statement::Tile`` types
 for the outer loop tiling and ``RAJA::tile_fixed`` types to 
@@ -79,46 +87,63 @@ indicate the tile dimensions. The complete sequential RAJA variant is:
 The ``RAJA::statement::Tile`` types compute the number of tiles needed to 
 iterate over all matrix entries in each dimension and generate iteration 
 index bounds for each tile, which are used to generate loops for the inner  
-``RAJA::statement::For`` types. Thus, the bounds checking logic in the 
-non-RAJA variant is not needed. Note that the integer template parameters
-to these statement types refer to the entries in the iteration space tuple
-passed to the ``RAJA::kernel`` method.
+``RAJA::statement::For`` types. Thus, the explicit bounds checking logic in the 
+C-style variant is not needed. Note that the integer template parameters
+in the ``RAJA::statement::For`` types refer to the entries in the iteration 
+space tuple passed to the ``RAJA::kernel`` method.
 
-To execute the ``RAJA::kernel`` variant on the GPU we must redefine our execution 
-policy. The complete CUDA implementation is:
+The ``RAJA::kernel`` CUDA variant is similar with the sequential execution
+policies replaced with CUDA execution policies:
 
 .. literalinclude:: ../../../../exercises/kernel-matrix-transpose-tiled_solution.cpp
    :start-after: // _raja_mattranspose_cuda_start
    :end-before: // _raja_mattranspose_cuda_end
    :language: C++
 
-When executing on the GPU we use the tile size for our CUDA block dimensions.
+A notable difference between the CPU and GPU execution policy is the insertion
+of the ``RAJA::statement::CudaKernel`` type in the GPU version, which indicates
+that the execution will launch a CUDA device kernel.
 
-An interactive exercise for matrix-transpose with tiling can be found at
-``RAJA/exercises/kernel-matrix-transpose-tiled.cpp``. 
+The CUDA thread-block dimensions are set based on the tile dimensions and the
+iterates withing each tile are mapped directly to GPU threads in each block
+due to the ``RAJA::cuda_thread_{x, y}_direct`` policies.
 
-^^^^^^^^^^^^^^^^^^^^^
-RAJA::expt::launch Variants
-^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``RAJA::expt::launch`` Variants
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For ``RAJA::exp::launch`` variants, we use ``RAJA::expt::tile`` methods
-for the outer loop tiling and standard ``RAJA::expt::loop`` methods
-to iterate within the tiles generated by the ``RAJA::expt::tile`` method.
-The complete sequential RAJA variant is:
+for the outer loop tiling and ``RAJA::expt::loop`` methods
+to iterate within the tiles. The complete sequential tiled 
+``RAJA::expt::launch`` variant is:
 
 .. literalinclude:: ../../../../exercises/launch-tiled-matrix-transpose_solution.cpp
    :start-after: // _raja_tiled_mattranspose_start
    :end-before: // _raja_tiled_mattranspose_end
    :language: C++
 
-The ``RAJA::expt::tile`` method computes the number of tiles needed to 
-iterate over all matrix entries in each dimension and generate a corresponding
-iteration space for each tile, which are used to generate loops for the inner  
-``RAJA::expt::loop`` types. Thus, the bounds checking logic in the 
-non-RAJA variant is not needed.
+Similar to the ``RAJA::statement::Tile`` type in the ``RAJA::kernel`` variant
+above, the ``RAJA::expt::tile`` method computes the number of tiles needed to 
+iterate over all matrix entries in each dimension and generates a corresponding
+iteration space for each tile, which is used to generate loops for the inner  
+``RAJA::expt::loop`` methods. Thus, the explicit bounds checking logic in the 
+C-style variant is not needed.
 
-The file ``RAJA/exercise/launch_tiled-matrix-transpose.cpp`` contains the complete working example code for the examples described in this section, including
-OpenMP, CUDA, and HIP variants.
+A CUDA ``RAJA::expt::launch`` tiled variant for the GPU is similar with 
+different policies in the ``RAJA::expt::loop`` methods. The complete
+``RAJA::expt::launch`` variant is:
 
-A more advanced version using RAJA ``TEAM_SHARED_MEMORY`` for CPU cache blocking and
-using GPU shared memory is discussed in :ref:`matrixtransposelocalarray-label`.
+.. literalinclude:: ../../../../exercises/launch-matrix-transpose_solution.cpp
+   :start-after: // _raja_mattranspose_cuda_start
+   :end-before: // _raja_mattranspose_cuda_end
+   :language: C++
+
+A notable difference between the CPU and GPU ``RAJA::expt::launch``
+implementations is the definition of the compute grid. For the CPU
+version, the argument list is empty for the ``RAJA::expt::Grid`` constructor.
+For the CUDA GPU implementation, we define a 'Team' of one two-dimensional
+thread-block with 16 x 16 = 256 threads.
+
+
+
+

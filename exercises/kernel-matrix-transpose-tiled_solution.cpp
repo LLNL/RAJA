@@ -258,7 +258,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_loop,
             RAJA::statement::For<1, RAJA::cuda_thread_x_direct,
               RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                                      RAJA::statement::Lambda<0> 
+                RAJA::statement::Lambda<0> 
               >
             >
           >
@@ -298,7 +298,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_x_loop,
             RAJA::statement::For<1, RAJA::hip_thread_x_direct,
               RAJA::statement::For<0, RAJA::hip_thread_y_direct,
-                                      RAJA::statement::Lambda<0>
+                RAJA::statement::Lambda<0>
               >
             >
           >

@@ -12,8 +12,8 @@
 Matrix Transpose
 ----------------------
 
-This section describes the implementation of a matrix transpose kernel using
-both ``RAJA::kernel`` and ``RAJA::expt::launch`` interfaces. The intent
+This section describes the implementation of a basic matrix transpose kernel 
+using both ``RAJA::kernel`` and ``RAJA::expt::launch`` interfaces. The intent
 is to compare and contrast the two.
 
 There are exercise files 
@@ -27,7 +27,7 @@ check your work and for guidance if you get stuck.
 
 Key RAJA features shown in this example are:
 
-  * ``RAJA::kernel`` method and execution policy usage with multiple lambdas
+  * ``RAJA::kernel`` method and execution policies
   * ``RAJA::expt::launch`` kernel execution interface
 
 In the example, we compute the transpose of an input matrix
@@ -81,6 +81,11 @@ A notable difference between the CPU and GPU execution policy is the insertion
 of the ``RAJA::statement::CudaKernel`` type in the GPU version, which indicates
 that the execution will launch a CUDA device kernel.
 
+In the CUDA ``RAJA::kernel`` variant above, the thread-block size and
+and number of blocks to launch is determined by the implementation of the 
+``RAJA::kernel`` execution policy constructs using the sizes of the 
+``RAJA::TypedRangeSegment`` objects in the iteration space tuple.
+
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ``RAJA::expt::launch`` Implementation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -110,8 +115,3 @@ implementations is the definition of the compute grid. For the CPU
 version, the argument list is empty for the ``RAJA::expt::Grid`` constructor.
 For the CUDA GPU implementation, we define a 'Team' of one two-dimensional 
 thread-block with 16 x 16 = 256 threads.
-
-Lastly, in the CUDA ``RAJA::kernel`` variant above, the thread-block size and
-and number of blocks to launch is determined by the implementation of the 
-``RAJA::kernel`` execution policy constructs using the sizes of the 
-``RAJA::TypedRangeSegment`` objects in the iteration space tuple.

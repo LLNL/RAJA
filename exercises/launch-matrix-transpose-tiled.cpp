@@ -162,31 +162,34 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using loop_pol_1 = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
   using launch_policy_1 = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
 
-  RAJA::expt::launch<launch_policy_1>
-    (RAJA::expt::Grid(), //Grid may be empty when running on the cpu
+  RAJA::expt::launch<launch_policy_1>(
+    RAJA::expt::Grid(), //Grid may be empty when running on the cpu
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::tile<loop_pol_1>
-        (ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::expt::tile<loop_pol_1>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::expt::tile<loop_pol_1>
-          (ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::expt::tile<loop_pol_1>(ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
-            RAJA::expt::loop<loop_pol_1>(ctx, row_tile, [&] (int row) {
+          RAJA::expt::loop<loop_pol_1>(ctx, row_tile, [&] (int row) {
 
-	      /// TODO...
-	      ///
-	      /// EXERCISE: Implement a loop method that takes a col_tile returns
-	      ///           the global index to the column iteration
+            /// 
+	    /// TODO...
+	    ///
+	    /// EXERCISE: Implement a loop method that takes a col_tile and 
+            ///           returns the global index to the column iteration
+            ///
+            /// Uncomment the statement below to run the kernel and check the 
+            /// result. 
+            /// 
 	      
-	      //Atview(col, row) = Aview(row, col);
+	    //Atview(col, row) = Aview(row, col);
 
-	    });
-              
           });
+              
         });
+      });
 
-    });
+  });
   // _raja_tiled_mattranspose_end
 
   checkResult<int>(Atview, N_c, N_r);
@@ -209,18 +212,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Create a launch_policy_2 that will create an omp parallel region
+  ///
+  /// Uncomment the kernel below to run it and check the result. 
+  /// 
   ///           
 
   /*
-  RAJA::expt::launch<launch_policy_2>
-    (RAJA::expt::Grid(), //Grid may be empty when running on the cpu
+  RAJA::expt::launch<launch_policy_2>(
+    RAJA::expt::Grid(), //Grid may be empty when running on the cpu
      [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::tile<omp_for_pol_2>
-        (ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::expt::tile<omp_for_pol_2>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::expt::tile<loop_pol_2>
-          (ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::expt::tile<loop_pol_2>(ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
             RAJA::expt::loop<loop_pol_2>(ctx, row_tile, [&] (int row) {
                 RAJA::expt::loop<loop_pol_2>(ctx, col_tile, [&] (int col) {
@@ -269,29 +273,27 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
 
 /*
-  RAJA::expt::launch<cuda_launch_policy>
-    (RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_c, n_blocks_r),
-                      RAJA::expt::Threads(c_block_sz, r_block_sz)),
-     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+  RAJA::expt::launch<cuda_launch_policy>(
+    RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_c, n_blocks_r),
+                     RAJA::expt::Threads(c_block_sz, r_block_sz)),
+    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::tile<cuda_teams_y>
-        (ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::expt::tile<cuda_teams_y>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::expt::tile<cuda_teams_x>
-          (ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::expt::tile<cuda_teams_x>(ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
-            RAJA::expt::loop<cuda_threads_y>(ctx, row_tile, [&] (int row) {
-                RAJA::expt::loop<cuda_threads_x>(ctx, col_tile, [&] (int col) {
+          RAJA::expt::loop<cuda_threads_y>(ctx, row_tile, [&] (int row) {
+            RAJA::expt::loop<cuda_threads_x>(ctx, col_tile, [&] (int col) {
 
-                    Atview(col, row) = Aview(row, col);
+              Atview(col, row) = Aview(row, col);
 
-                  });
-              });
-
+            });
           });
-        });
 
-    });
+        });
+      });
+
+  });
 */
 
   checkResult<int>(Atview, N_c, N_r);
@@ -327,29 +329,27 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const bool hip_async = false;
   using hip_launch_policy = RAJA::expt::LaunchPolicy<RAJA::expt::hip_launch_t<hip_async>>;
 
-  RAJA::expt::launch<hip_launch_policy>
-    (RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_c, n_blocks_r),
-                      RAJA::expt::Threads(c_block_sz, r_block_sz)),
+  RAJA::expt::launch<hip_launch_policy>(
+    RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_c, n_blocks_r),
+                     RAJA::expt::Threads(c_block_sz, r_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::tile<hip_teams_y>
-        (ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::expt::tile<hip_teams_y>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::expt::tile<hip_teams_x>
-          (ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::expt::tile<hip_teams_x>(ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
-            RAJA::expt::loop<hip_threads_y>(ctx, row_tile, [&] (int row) {
-                RAJA::expt::loop<hip_threads_x>(ctx, col_tile, [&] (int col) {
+          RAJA::expt::loop<hip_threads_y>(ctx, row_tile, [&] (int row) {
+            RAJA::expt::loop<hip_threads_x>(ctx, col_tile, [&] (int col) {
 
-                    Atview(col, row) = Aview(row, col);
+              Atview(col, row) = Aview(row, col);
 
-                  });
-              });
-
+            });
           });
-        });
 
-    });
+        });
+      });
+
+  });
 
   hipErrchk(hipMemcpy( At, d_At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost ));
   checkResult<int>(Atview, N_c, N_r);
