@@ -224,6 +224,8 @@ an explicit check of the (i,j,k) values is required in the CUDA implementation
 to avoid addressing memory out-of-bounds; i.e., 
 ``if ( i < N && j < N && k < N )...``. The RAJA kernel variants set similar
 definitions internally and **mask out indices that would be out-of-bounds.**
+Fourth, we inserted some additional error checking with ``static_assert``
+and ``cudaErrchk`` to catch device errors if there are any.
 
 Lastly, we show the RAJA HIP variants of the kernel, which are semantically
 identical to the RAJA CUDA variants.
