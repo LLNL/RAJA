@@ -47,9 +47,10 @@
  */
 
 //
-// Define dimensionality of matrices
+// Define dimensionality of matrices and tile size
 //
 const int DIM = 2;
+#define TILE_DIM (16)  // #define to appease msvc
 
 //
 // Function for checking results
@@ -75,8 +76,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _mattranspose_localarray_dims_start
   constexpr int N_r = 267;
   constexpr int N_c = 251;
-
-  constexpr int TILE_DIM = 16;
 
   constexpr int outer_Dimc = (N_c - 1) / TILE_DIM + 1;
   constexpr int outer_Dimr = (N_r - 1) / TILE_DIM + 1;
