@@ -17,7 +17,7 @@
 /*
  * RAJA Launch Example: Upper Triangular Pattern + Shared Memory
  *
- * Launch introduces hierarchal parallelism through the concept of
+ * Launch introduces hierarchical parallelism through the concept of
  * teams and threads.  Computation is executed in a pre-defined grid
  * composed of threads and grouped into teams. The teams model enables
  * developers to express parallelism through loops over teams, and inner loops
