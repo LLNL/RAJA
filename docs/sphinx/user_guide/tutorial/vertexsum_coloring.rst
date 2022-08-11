@@ -66,7 +66,7 @@ this:
    :language: C++
 
 We can't parallelize the entire computation at once due to potential race
-conditions where multiple threads may attempt to sum to a shared exlement 
+conditions where multiple threads may attempt to sum to a shared element 
 vertex simultaneously. However, we can parallelize the computation in 
 parts. Here is a C-style OpenMP parallel implementation:
 
