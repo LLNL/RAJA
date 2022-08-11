@@ -32,11 +32,11 @@
   Specify the number of threads in a GPU thread block
 */
 #if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
+constexpr int CUDA_BLOCK_SIZE = 256;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-const int HIP_BLOCK_SIZE = 256;
+constexpr int HIP_BLOCK_SIZE = 256;
 #endif
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
@@ -48,7 +48,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
 // Define array length
 //
-  const int N = 1000000;
+  constexpr int N = 1000000;
 
 //
 // Allocate array data and initialize data to alternating sequence of 1, -1.
@@ -66,10 +66,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
 // Set min and max loc values
 //
-  const int minloc_ref = N / 2;
+  constexpr int minloc_ref = N / 2;
   a[minloc_ref] = -100;
 
-  const int maxloc_ref = N / 2 + 1;
+  constexpr int maxloc_ref = N / 2 + 1;
   a[maxloc_ref] = 100;
   // _reductions_array_init_end
 

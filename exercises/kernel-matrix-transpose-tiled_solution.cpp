@@ -41,7 +41,7 @@
 //
 // Define dimensionality of matrices
 //
-const int DIM = 2;
+constexpr int DIM = 2;
 
 //
 // Function for checking results
@@ -65,13 +65,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Define num rows/cols in matrix, tile dimensions, and number of tiles.
   //
   // _tiled_mattranspose_dims_start
-  const int N_r = 56;
-  const int N_c = 75;
+  constexpr int N_r = 56;
+  constexpr int N_c = 75;
 
-  const int TILE_DIM = 16;
+  constexpr int TILE_DIM = 16;
 
-  const int outer_Dimc = (N_c - 1) / TILE_DIM + 1;
-  const int outer_Dimr = (N_r - 1) / TILE_DIM + 1;
+  constexpr int outer_Dimc = (N_c - 1) / TILE_DIM + 1;
+  constexpr int outer_Dimr = (N_r - 1) / TILE_DIM + 1;
   // _tiled_mattranspose_dims_end
 
   //

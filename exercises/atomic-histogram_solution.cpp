@@ -66,8 +66,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
 
   // _array_atomic_histogram_start
-  int M = 20;
-  int N = 100000;
+  constexpr int M = 20;
+  constexpr int N = 100000;
 
   int* array = memoryManager::allocate<int>(N);
   int* hist = memoryManager::allocate<int>(M);

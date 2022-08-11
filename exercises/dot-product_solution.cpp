@@ -48,7 +48,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Define vector length
 //
-  const int N = 1000000;
+  constexpr int N = 1000000;
 
 //
 // Allocate and initialize vector data
