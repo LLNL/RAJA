@@ -73,13 +73,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Define num rows/cols in matrix, tile dimensions, and number of tiles
   //
   // _mattranspose_localarray_dims_start
-  const int N_r = 267;
-  const int N_c = 251;
+  constexpr int N_r = 267;
+  constexpr int N_c = 251;
 
-  const int TILE_DIM = 16;
+  constexpr int TILE_DIM = 16;
 
-  const int outer_Dimc = (N_c - 1) / TILE_DIM + 1;
-  const int outer_Dimr = (N_r - 1) / TILE_DIM + 1;
+  constexpr int outer_Dimc = (N_c - 1) / TILE_DIM + 1;
+  constexpr int outer_Dimr = (N_r - 1) / TILE_DIM + 1;
   // _mattranspose_localarray_dims_end
 
   //
