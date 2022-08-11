@@ -5,12 +5,8 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 #############################################################################
 
-# With GitLab CI, included files cannot be empty.
-variables:
-  INCLUDED_FILE_CANNOT_BE_EMPTY: "True"
+rocm_5_1_1_clang_13_0_0_desul_atomics:
+  variables:
+    SPEC: "+rocm ~openmp +desul amdgpu_target=gfx906 %clang@13.0.0 ^hip@5.1.1 ^blt@develop"
+  extends: .build_and_test_on_corona
 
-## Template for extra jobs defined by the project.
-#<job-name (usually spec or description)>:
-#  variables:
-#    SPEC: "<spack spec without package name>"
-#  extends: .build_and_test_on_ruby
