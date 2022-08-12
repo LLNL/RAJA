@@ -213,8 +213,8 @@ Stride-1 Indexing
 Consider a simple C-style kernel that prints a contiguous sequence of values:
 
 .. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
-   :start-after: _csytle_range1_start
-   :end-before: _csytle_range1_end
+   :start-after: _cstyle_range1_start
+   :end-before: _cstyle_range1_end
    :language: C++
 
 When run, the kernel prints the following sequence, as expected::

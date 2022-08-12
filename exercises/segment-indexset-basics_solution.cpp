@@ -63,11 +63,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running C-version range kernel...\n";
 
-// _csytle_range1_start
+// _cstyle_range1_start
   for (IdxType i = 0; i < 20; i++) {
     std::cout << i << "  "; 
   }
-// _csytle_range1_end
+// _cstyle_range1_end
 
   std::cout << std::endl;
 
@@ -136,11 +136,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running C-version negative stride kernel...\n";
 
-  // _csytle_negstriderange1_start
+  // _cstyle_negstriderange1_start
   for (IdxType i = 19; i > -1; i--) {
     std::cout << i << "  ";
   }
-  // _csytle_negstriderange1_end
+  // _cstyle_negstriderange1_end
 
   std::cout << std::endl;
 
@@ -182,11 +182,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running C-version stride-2 range kernel...\n";
 
-  // _csytle_range2_start
+  // _cstyle_range2_start
   for (IdxType i = 0; i < 20; i += 2) {
     std::cout << i << "  ";
   }
-  // _csytle_range2_end
+  // _cstyle_range2_end
 
   std::cout << std::endl;
 
@@ -244,14 +244,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running C-version of two segment kernel...\n";
 
-  // _csytle_2ranges_start
+  // _cstyle_2ranges_start
   for (IdxType i = 0; i < 10; ++i) {
     std::cout << i << "  ";
   }
   for (IdxType i = 15; i < 20; ++i) {
     std::cout << i << "  ";
   }
-  // _csytle_2ranges_end
+  // _cstyle_2ranges_end
 
   std::cout << std::endl;
 
