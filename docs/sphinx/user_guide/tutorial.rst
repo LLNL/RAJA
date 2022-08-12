@@ -47,7 +47,7 @@ providing alternatives to manual programming model specific memory operations.
 .. note:: Most of the CUDA GPU exercises use unified memory (UM) via a simple
           memory manager capability provided in a file in the ``RAJA/exercises``
           directory. HIP GPU exercises use explicit host and device memory
-          allocations an explicit memory copy operations to move data between
+          allocations and explicit memory copy operations to move data between
           the two.
 
 .. _tutorial-lambda-label:
@@ -333,18 +333,20 @@ expression kernel bodies. The main differences between ``RAJA::kernel`` and
 ``RAJA::forall`` are:
 
   * ``RAJA::kernel`` requires a tuple of iteration spaces, one for each level 
-     in a loop nest, whereas ``RAJA::forall`` takes exactly one iteration
-     space
+    in a loop nest, whereas ``RAJA::forall`` takes exactly one iteration
+    space
   * ``RAJA::kernel`` can accept multiple lambda expressions to express 
     different parts of a kernel body, whereas ``RAJA::forall`` accepts
     exactly one lambda expression
+  * ``RAJA::kernel`` execution policies are more complicated than those 
+    for ``RAJA::forall``. ``RAJA::forall`` policies essentially represent 
+    the kernel execution back-end only. ``RAJA::kernel`` execution policies 
+    enable complex compile time algorithm transformations to be done without 
+    changing the kernel code. 
 
-Also, ``RAJA::kernel`` execution policies are more complicated than those for 
-``RAJA::forall``, which essentially represent the kernel execution environment
-only. ``RAJA::kernel`` execution policies enable complex compile time
-algorithm transformations to be done without changing the kernel code. Some
-examples of this will be shown in the following exercises. Please see 
-:ref:`loop_elements-kernelpol-label` for more information.
+The following exercises illustrate the most common features of ``RAJA::kernel``
+execution policies. Please see :ref:`loop_elements-kernelpol-label` for more 
+information about other capabilities ``RAJA::kernel`` provides.
 
 An alternative to ``RAJA::kernel`` is the ``RAJA::expt::launch``
 template, which takes a ``RAJA::expt::Grid`` type argument for
@@ -357,9 +359,9 @@ kernel operations using ``RAJA::expt::loop<EXEC_POL>`` method calls, which
 take lambda expressions to express loop details.
 
 .. note:: A key difference between the ``RAJA::kernel`` and 
-          ``RAJA::expt::launch`` approaches is that almost all kernel 
-          execution are expressed in the execution policy when using
-          ``RAJA::kernel``, whereas for ``RAJA::expt::launch`` the 
+          ``RAJA::expt::launch`` approaches is that almost all of the
+          kernel execution pattern is expressed in the execution policy 
+          when using ``RAJA::kernel``, whereas with ``RAJA::expt::launch`` the 
           kernel execution pattern is expressed mostly in the lambda
           expression kernel body. 
 
@@ -379,7 +381,7 @@ of both APIs with examples and exercises. We also present a sequence of
 matrix-matrix multiplication examples using both APIs to compare and contrast.
 
 ===========================================================================
-``RAJA::kernel`` Based Loops: Nested loops with complex execution policies
+Nested Loops with ``RAJA::kernel``
 ===========================================================================
 
 The examples in this section illustrate various features of the
@@ -396,7 +398,7 @@ mechanisms to transform loop patterns. More information can be found in
    tutorial/offset-layout-5pt-stencil.rst
 
 =================================================================
-``RAJA::expt::launch`` : Nested loops within a kernel execution space
+Nested Loops with ``RAJA::expt::launch``
 =================================================================
 
 The examples in this section illustrate how to use ``RAJA::expt::launch``
