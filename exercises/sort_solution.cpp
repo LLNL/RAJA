@@ -47,11 +47,11 @@
   Specify the number of threads in a GPU thread block
 */
 #if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 16;
+constexpr int CUDA_BLOCK_SIZE = 16;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-const int HIP_BLOCK_SIZE = 16;
+constexpr int HIP_BLOCK_SIZE = 16;
 #endif
 
 //
@@ -84,7 +84,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
 // Define array length
 //
-  const int N = 20;
+  constexpr int N = 20;
 
 //
 // Allocate and initialize vector data

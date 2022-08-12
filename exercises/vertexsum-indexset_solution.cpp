@@ -54,11 +54,11 @@
   Specify the number of threads in a GPU thread block
 */
 #if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
+constexpr int CUDA_BLOCK_SIZE = 256;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-const int HIP_BLOCK_SIZE = 256;
+constexpr int HIP_BLOCK_SIZE = 256;
 #endif
 
 //
@@ -77,11 +77,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // 2D mesh has N^2 elements (N+1)^2 vertices.
 //
-  const int N = 1000;
-  const int Nelem = N;
-  const int Nelem_tot = Nelem * Nelem;
-  const int Nvert = N + 1;
-  const int Nvert_tot = Nvert * Nvert;
+  constexpr int N = 1000;
+  constexpr int Nelem = N;
+  constexpr int Nelem_tot = Nelem * Nelem;
+  constexpr int Nvert = N + 1;
+  constexpr int Nvert_tot = Nvert * Nvert;
 // _vertexsum_define_end
   double* areae = memoryManager::allocate<double>(Nelem_tot);
   double* areav = memoryManager::allocate<double>(Nvert_tot);
@@ -92,7 +92,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Define mesh spacing factor 'h' and set up elem to vertex mapping array.
 //
-  double h = 0.1;
+  constexpr double h = 0.1;
 
   for (int ie = 0; ie < Nelem_tot; ++ie) { 
     int j = ie / Nelem;
