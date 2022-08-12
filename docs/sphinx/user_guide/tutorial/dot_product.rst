@@ -9,7 +9,7 @@
 .. _dotproduct-label:
 
 -----------------------------------
-Vector Dot Product (Sum Reduction)
+Sum Reduction: Vector Dot Product
 -----------------------------------
 
 This section contains an exercise file ``RAJA/exercises/dot-product.cpp``

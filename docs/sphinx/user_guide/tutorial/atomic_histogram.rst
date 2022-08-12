@@ -9,7 +9,7 @@
 .. _atomichist-label:
 
 --------------------------------------------------
-Computing a Histogram with Atomic Operations
+Atomic Operations: Computing a Histogram
 --------------------------------------------------
 
 This section contains an exercise file ``RAJA/exercises/atomic-histogram.cpp``

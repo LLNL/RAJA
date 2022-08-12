@@ -136,11 +136,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running C-version negative stride kernel...\n";
 
-// _csytle_negstriderange1_start
+  // _csytle_negstriderange1_start
   for (IdxType i = 19; i > -1; i--) {
     std::cout << i << "  ";
   }
-// _csytle_negstriderange1_end
+  // _csytle_negstriderange1_end
 
   std::cout << std::endl;
 
@@ -182,11 +182,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running C-version stride-2 range kernel...\n";
 
-// _csytle_range2_start
+  // _csytle_range2_start
   for (IdxType i = 0; i < 20; i += 2) {
     std::cout << i << "  ";
   }
-// _csytle_range2_end
+  // _csytle_range2_end
 
   std::cout << std::endl;
 
@@ -223,14 +223,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // example implementations.
 //
 
-  // _raja_seq_indexset_policy_start
-  using SEQ_ISET_EXECPOL = RAJA::ExecPolicy<RAJA::seq_segit,
-                                            RAJA::seq_exec>;
-  // _raja_seq_indexset_policy__end
-
   std::cout << "\n Running RAJA index set (2 RangeSegments) kernel...\n";
 
   // _raja_indexset_2ranges_start
+  using SEQ_ISET_EXECPOL = RAJA::ExecPolicy<RAJA::seq_segit,
+                                            RAJA::seq_exec>;
+
   IndexSetType is2;
   is2.push_back( RangeSegType(0, 10) );
   is2.push_back( RangeSegType(15, 20) );
@@ -246,14 +244,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running C-version of two segment kernel...\n";
 
-// _csytle_2ranges_start
+  // _csytle_2ranges_start
   for (IdxType i = 0; i < 10; ++i) {
     std::cout << i << "  ";
   }
   for (IdxType i = 15; i < 20; ++i) {
     std::cout << i << "  ";
   }
-// _csytle_2ranges_end
+  // _csytle_2ranges_end
 
   std::cout << std::endl;
 

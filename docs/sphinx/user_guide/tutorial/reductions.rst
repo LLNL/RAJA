@@ -9,7 +9,7 @@
 .. _reductions-label:
 
 ---------------------------------
-Reductions
+Reduction Types
 ---------------------------------
 
 This section contains an exercise file ``RAJA/exercises/reductions.cpp``
