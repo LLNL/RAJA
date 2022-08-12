@@ -80,7 +80,7 @@ can safely run in parallel because there are no overlapping writes to the
 same entry in the vertex area array in each parallel section. Note that there 
 is an outer loop on length four, one iteration for each of the elements that 
 share a vertex. Inside the loop, we iterate over a subset of elements in 
-parallel using an indexing area that we guarantees that we will have no
+parallel using an indexing area that guarantees that we will have no
 data races. In other words, we have "colored" the elements as shown in the
 figure below. 
 
