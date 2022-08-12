@@ -259,8 +259,8 @@ Consider the following C-style kernel that prints the integer sequence
 discussed earlier in reverse order:
 
 .. literalinclude:: ../../../../exercises/segment-indexset-basics_solution.cpp
-   :start-after: _csytle_negstriderange1_start
-   :end-before: _csytle_negstriderange1_end
+   :start-after: _cstyle_negstriderange1_start
+   :end-before: _cstyle_negstriderange1_end
    :language: C++
 
 We can accomplish the same result using a ``RAJA::TypedRangeStrideSegment``:
