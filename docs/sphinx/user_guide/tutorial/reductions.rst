@@ -8,9 +8,9 @@
 
 .. _reductions-label:
 
----------------------------------
-Reduction Types
----------------------------------
+-----------------------------------------------------
+Reduction Types and Kernels with Multiple Reductions
+-----------------------------------------------------
 
 This section contains an exercise file ``RAJA/exercises/reductions.cpp``
 for you to work through if you wish to get some practice with RAJA. The
@@ -32,16 +32,15 @@ min, max, sum, min-loc, max-loc.
           reduction value, respectively, along with an iteration index at 
           which the main/max value is found. 
 
-.. note:: Each RAJA reduction type requires a reduction policy that must 
-          be compatible with the execution policy for the kernel in which 
-          it is used.
-
 .. note:: Multiple RAJA reductions can be combined in any RAJA loop kernel 
           execution method, and reduction operations can be combined with 
           any other kernel operations. 
 
-We start by allocating an array (the memory manager in the example uses 
-CUDA Unified Memory if CUDA is enabled) and initializing its values in a 
+.. note:: Each RAJA reduction type requires a reduction policy that must 
+          be compatible with the execution policy for the kernel in which 
+          it is used.
+
+We start by allocating an array and initializing its values in a 
 manner that makes the example mildly interesting and able to show what the 
 different reduction types do. Specifically, the array is initialized to
 a sequence of alternating values ('1' and '-1'). Then, two values near
@@ -68,7 +67,8 @@ presented below will generate the following results:
  * the min loc will be N/2
  * the max loc will be N/2 + 1
 
-A sequential kernel that exercises all RAJA sequential reduction types is:
+A sequential kernel that exercises all RAJA sequential reduction types 
+along with operations after the kernel to print the reduced values is:
  
 .. literalinclude:: ../../../../exercises/reductions_solution.cpp
    :start-after: _reductions_raja_seq_start
@@ -77,8 +77,9 @@ A sequential kernel that exercises all RAJA sequential reduction types is:
 
 Note that each reduction object takes an initial value at construction. Also,
 within the kernel, updating each reduction is done via an operator or method
-that is basically what you would expect (i.e., '+=' for sum, 'min()' for min,
-etc.). After the kernel executes, the reduced value computed by each reduction 
+that is basically what you would expect for the type of reduction 
+(e.g., '+=' for sum, 'min()' for min, etc.). After the kernel executes, the 
+reduced value computed by each reduction 
 object is retrieved after the kernel by calling a 'get()' method on the 
 reduction object. The min-loc/max-loc index values are obtained using 
 'getLoc()' methods.
