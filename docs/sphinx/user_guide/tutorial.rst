@@ -334,10 +334,10 @@ expression kernel bodies. The main differences between ``RAJA::kernel`` and
 
   * ``RAJA::kernel`` requires a tuple of iteration spaces, one for each level 
     in a loop nest, whereas ``RAJA::forall`` takes exactly one iteration
-    space
+    space.
   * ``RAJA::kernel`` can accept multiple lambda expressions to express 
     different parts of a kernel body, whereas ``RAJA::forall`` accepts
-    exactly one lambda expression
+    exactly one lambda expression.
   * ``RAJA::kernel`` execution policies are more complicated than those 
     for ``RAJA::forall``. ``RAJA::forall`` policies essentially represent 
     the kernel execution back-end only. ``RAJA::kernel`` execution policies 

@@ -9,7 +9,7 @@
 .. _addvectors-label:
 
 --------------------------------------
-Vector Addition (Basic Loop Execution)
+Basic Loop Execution: Vector Addition
 --------------------------------------
 
 This section contains an exercise file ``RAJA/exercises/vector-addition.cpp`` 
@@ -38,14 +38,17 @@ RAJA Variants
 For the RAJA variants of the vector addition kernel, we replace the C-style 
 for-loop with a call to the ``RAJA::forall`` loop execution template method.
 The method takes an iteration space and the vector addition loop body as
-a C++ lambda expression. We pass a ``RAJA::RangeSegment(0, N)`` object, which 
-describes a contiguous sequence of integral values [0, N) for the iteration
-space (for more information about RAJA loop indexing concepts, 
+a C++ lambda expression. We pass the object::
+
+  RAJA::TypedRangeSegment<int>(0, N)
+
+for the iteration space, which is contiguous sequence of integral 
+values [0, N) (for more information about RAJA loop indexing concepts, 
 see :ref:`index-label`). The loop execution template method requires an 
 execution policy template type that specifies how the loop is to run
 (for more information about RAJA execution policies, see :ref:`policies-label`).
 
-For the RAJA sequential variant, we use the ``RAJA::seq_exec`` execution
+For a RAJA sequential variant, we use the ``RAJA::seq_exec`` execution
 policy type:
 
 .. literalinclude:: ../../../../exercises/vector-addition_solution.cpp
@@ -61,11 +64,11 @@ execution policy::
 
   RAJA::simd_exec
 
-Alternatively, RAJA provides a *loop execution* policy::
+An alternative RAJA policy is::
 
   RAJA::loop_exec
 
-which allows the compiler to generate optimizations based on when its internal
+which allows the compiler to generate optimizations based on how its internal
 heuristics suggest that it is safe to do so and potentially 
 beneficial for performance, but the optimizations are not forced.
 
@@ -79,7 +82,7 @@ To run the kernel with OpenMP multithreaded parallelism on a CPU, we use the
 
 This will distribute the loop iterations across CPU threads and run the 
 loop over threads in parallel. In particular, this is what you would get if
-you wrote the kernel using OpenMP pragmas directly::
+you wrote the kernel using a C-style loop with an OpenMP pragma directly::
 
   #pragma omp parallel for
   for (int i = 0; i < N; ++i) {
@@ -94,27 +97,29 @@ policy:
    :end-before: _rajacuda_vector_add_end
    :language: C++ 
 
+Since the lambda defining the loop body will be passed to a device kernel, 
+it must be decorated with the ``__device__`` attribute.
+This can be done directly or by using the ``RAJA_DEVICE`` macro.
+
 Note that the CUDA execution policy type requires a template argument 
 ``CUDA_BLOCK_SIZE``, which specifies the number of threads to run in each 
 CUDA thread block launched to run the kernel.
 
 For additional performance tuning options, the ``RAJA::cuda_exec_explicit`` 
-policy is also provided, which allows a user to specify the number of thread 
-blocks allocated per streaming multiprocessor (SM). Note that the third 
-boolean argument expressing asynchronous execution can be omitted, and is 
-``false`` by default (a similar defaulted argument is also supported for other
-RAJA CUDA policies):
+policy is also provided, which allows a user to specify the minimum number 
+of thread blocks to launch at a time on each streaming multiprocessor (SM):
 
 .. literalinclude:: ../../../../exercises/vector-addition_solution.cpp
    :start-after: _rajacuda_explicit_vector_add_start
    :end-before: _rajacuda_explicit_vector_add_end
    :language: C++ 
 
-Since the lambda defining the loop body will be passed to a device kernel, 
-it must be decorated with the ``__device__`` attribute.
-This can be done directly or by using the ``RAJA_DEVICE`` macro.
+Note that the third boolean template argument is used to express whether the
+kernel launch is synchronous or asynchronous. This is optional and is 
+'false' by default. A similar defaulted optional argument is supported for 
+other RAJA GPU (e.g., CUDA or HIP) policies.
 
-Similarly, to run the kernel on a GPU using the RAJA HIP back-end, 
+Lastly, to run the kernel on a GPU using the RAJA HIP back-end, 
 we use the ``RAJA::hip_exec`` policy:
 
 .. literalinclude:: ../../../../exercises/vector-addition_solution.cpp
