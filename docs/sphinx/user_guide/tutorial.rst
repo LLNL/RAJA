@@ -12,11 +12,14 @@
 RAJA Tutorial
 **********************
 
-This section contains a self-paced tutorial that shows how to use most RAJA
-features by way of a sequence of examples. Complete working codes for
-the examples are located in the ``RAJA/examples`` directory. You are
-encouraged to build and run them, as well as modify them to try out different
-variations.
+This section contains a self-paced tutorial that shows how to use many RAJA
+features by way of a sequence of examples and exercises. Each exercise is 
+located in files in the ``RAJA/exercises`` directory, one *exercise* file with 
+code sections removed and comments containing instructions to fill in the 
+missing code parts and one *solution* file containing complete working code to 
+compare with and for guidance if you get stuck working on the exercise file.
+You are encouraged to build and run the exercises and modify them to try out 
+different variations.
 
 We also maintain a repository of tutorial slide presentations
 `RAJA Tutorials Repo <https://github.com/LLNL/RAJA-tutorials>`_ which we use
@@ -30,15 +33,22 @@ difference between CPU (host) and GPU (device) memory allocations and how
 transfers between those memory spaces work. For a detailed discussion, see
 `Device Memory <http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory>`_.
 
-RAJA does not provide a memory model. This is by design as developers of many
-of applications that use RAJA prefer to manage memory themselves. Thus, users
-are responsible for ensuring that data is properly allocated and initialized
-on a GPU device when running GPU code. This can be done using explicit host
-and device allocation and copying between host and device memory spaces or via
-unified memory (UM), if available. The RAJA Portability Suite contains other
-libraries, such as `CHAI <https://github.com/LLNL/CHAI>`_ and
+It is important to note that RAJA does not provide a memory model. This is by 
+design as application developers who use RAJA prefer to manage memory 
+in different ways. Thus, users are responsible for ensuring that data is 
+properly allocated and initialized on a GPU device when running GPU code. 
+This can be done using explicit host and device allocation and copying between 
+host and device memory spaces or via unified memory (UM), if available. 
+The RAJA Portability Suite contains other libraries, namely
+`CHAI <https://github.com/LLNL/CHAI>`_ and
 `Umpire <https://github.com/LLNL/Umpire>`_, that complement RAJA by
 providing alternatives to manual programming model specific memory operations.
+
+.. note:: Most of the CUDA GPU exercises use unified memory (UM) via a simple
+          memory manager capability provided in a file in the ``RAJA/exercises``
+          directory. HIP GPU exercises use explicit host and device memory
+          allocations an explicit memory copy operations to move data between
+          the two.
 
 .. _tutorial-lambda-label:
 
@@ -49,22 +59,23 @@ A Little C++ Background
 To understand the discussion and code examples, a working knowledge of C++
 templates and lambda expressions is required. So, before we begin, we provide
 a bit of background discussion of basic aspects of how RAJA use employs C++
-templates and lambda expressions, which is essential to using RAJA successfully.
+templates and lambda expressions, which is essential to use RAJA successfully.
 
-RAJA makes heavy use of C++ templates and using RAJA most easily and
-effectively is done by representing the bodies of loop kernels as C++ lambda
-expressions. Alternatively, C++ functors can be used, but they make
-application source code more complex, potentially placing a significant
-negative burden on source code readability and maintainability.
+RAJA is almost an entirely header-only library that makes heavy use of 
+C++ templates. Using RAJA most easily and effectively is done by representing 
+the bodies of loop kernels as C++ lambda expressions. Alternatively, C++ 
+functors can be used, but they make application source code more complex, 
+potentially placing a significant negative burden on source code readability 
+and maintainability.
 
 -----------------------------------
 C++ Templates
 -----------------------------------
 
-C++ templates enable one to write generic code and have the compiler generate
-a specific implementation for each set of template parameter types specified.
-For example, the ``RAJA::forall`` method to execute loop kernels is a
-template method defined as::
+C++ templates enable one to write type-generic code and have the compiler 
+generate an implementation for each set of template parameter types specified.
+For example, the ``RAJA::forall`` method to execute loop kernels is 
+essentially method defined as::
 
   template <typename ExecPol,
             typename IdxType,
@@ -73,21 +84,28 @@ template method defined as::
      ...
   }
 
-Here, "ExecPol", "IdxType", and "LoopBody" are C++ types a user specifies in
-their code so they are seen by the compiler when the code is built.
+Here, "ExecPol", "IdxType", and "LoopBody" are C++ types that a user specifies 
+in her code and which are seen by the compiler when the code is built.
 For example::
 
-  RAJA::forall< RAJA::seq_exec >( RAJA::RangeSegment(0, N), [=](int i) {
+  RAJA::forall< RAJA::loop_exec >( RAJA::TypedRangeSegment<int>(0, N), [=](int i) {
     a[i] = b[i] + c[i];
   });
 
-Here, the execution policy type ``RAJA::seq_exec`` is an explicit template
-argument parameter used to choose as specific implementation of the
-``RAJA::forall`` method. The ``IdxType`` and ``LoopBody`` types are deduced by
-the compiler based on what arguments are passed to the ``RAJA::forall`` method;
-i.e., the ``IdxType`` is the stride-1 range::
+is a sequential CPU RAJA kernel that performs an element-by-element vector sum.
+The C-style analogue of this kernel is::
 
-  RAJA::RangeSegment(0, N)
+  for (int i = 0; i < N; ++i) {
+    a[i] = b[i] + c[i];
+  }
+
+The execution policy type ``RAJA::loop_exec`` template argument
+is used to choose as specific implementation of the
+``RAJA::forall`` method. The ``IdxType`` and ``LoopBody`` types are deduced by
+the compiler based the arguments passed to the ``RAJA::forall`` method;
+i.e., the ``IdxType`` is the stride-1 index range::
+
+  RAJA::TypedRangeSegment<int>(0, N)
 
 and the ``LoopBody`` type is the lambda expression::
 
@@ -117,16 +135,19 @@ are just like arguments in a regular C++ method. Variables in the capture list
 are initialized when the lambda expression is created, while those in the
 parameter list are set when the lambda expression is called. The body of a
 lambda expression is similar to the body of an ordinary C++ method.
-RAJA templates, such as ``RAJA::forall`` and ``RAJA::kernel`` pass arguments
-to lambdas based on usage and context; e.g., loop iteration indices.
+RAJA kernel execution templates, such as ``RAJA::forall`` and ``RAJA::kernel``
+that we will describe in detail later, pass arguments
+to lambdas based on usage and context such as loop iteration indices.
 
-A C++ lambda expression can capture variables in the capture list by value
-or by reference. This is similar to how arguments to C++ methods are passed;
+A C++ lambda expression can capture variables in the capture list *by value*
+or *by reference*. This is similar to how arguments to C++ methods are passed;
 i.e., *pass-by-reference* or *pass-by-value*. However, there are some subtle
 differences between lambda variable capture rules and those for ordinary
-methods. Variables mentioned in the capture list with no extra symbols are
-captured by value. Capture-by-reference is accomplished by using the
-reference symbol '&' before the variable name; for example::
+methods. **Variables included in the capture list with no extra symbols are
+captured by value.** Variables captured by value are effectively *const* 
+inside the lambda expression body and cannot be written to. 
+Capture-by-reference is accomplished by using the reference symbol '&' before 
+the variable name similar to C++ method arguments.  For example::
 
   int x;
   int y = 100;
@@ -149,7 +170,8 @@ Note that the following two attempts will generate compilation errors::
   [x, &y](){ x = y; };  // error: cannot assign to 'x' since it is captured
                         //        by value.
 
-**Specifically, a variable hat is captured by value is read-only.**
+.. note:: A variable that is captured by value in a lambda expression is 
+          **read-only.**
 
 ----------------------------------------
 A Few Notes About Lambda Usage With RAJA
@@ -171,7 +193,7 @@ represent kernel bodies with RAJA. We describe them here.
 
 |br|
 
- * **The  'device' annotation is required for device execution using CUDA or HIP.**
+ * **The '__device__' annotation is required for device execution using CUDA or HIP.**
 
    Any lambda passed to a CUDA or HIP execution context (or function called from a
    device kernel, for that matter) must be decorated with
@@ -191,16 +213,16 @@ represent kernel bodies with RAJA. We describe them here.
 
    RAJA provides the macro ``RAJA_HOST_DEVICE`` to support the dual
    annotation ``__ host__ __device__``, which makes a lambda or function
-   callable from CPU or CUDA device code. However, when CPU performance is
+   callable from CPU or GPU device code. However, when CPU performance is
    important, **the host-device annotation should be applied carefully on a
    lambda that is used in a host (i.e., CPU) execution context**. Although
-   compiler improvements in recent years (esp. nvcc) have signficantly
+   compiler improvements in recent years have significantly
    improved support for host-device lambda expressions, a loop kernel
    containing a lambda annotated in this way may run noticeably slower on
    a CPU than the same lambda with no annotation depending on the version of
-   the compiler you are using. To be sure that your code is not suffering
-   a performance issue, we recommend comparing CPU execution timings of
-   important kernels with and without annotations.
+   the compiler (e.g., nvcc) you are using. To be sure that your code does not 
+   suffer in performance, we recommend comparing CPU execution timings of
+   important kernels with and without the ``__host__ __device__`` annotation.
 
 |br|
 
@@ -213,7 +235,7 @@ represent kernel bodies with RAJA. We describe them here.
 
  * **Global variables are not captured in a lambda.**
 
-   This fact is due to the C++ standard. If you need (read-only) access to a
+   This fact is due to the C++ standard. If you need access to a
    global variable inside a lambda expression, one solution is to make a local
    reference to it; for example::
 
@@ -244,9 +266,8 @@ represent kernel bodies with RAJA. We describe them here.
        // access entries of bounds.array
      } );
 
-   This issue was resolved in the 10.1 release of nvcc. If you
-   are using an earlier version of nvcc, an implementation
-   similar to the one above will be required.
+   This issue was resolved in the 10.1 release of CUDA. If you are using an 
+   earlier version, an implementation similar to the one above will be required.
 
 .. |br| raw:: html
 
@@ -257,30 +278,20 @@ RAJA Examples and Exercises
 ===========================
 
 The remainder of this tutorial illustrates how to use RAJA features with
-working code examples and interactive exercises, located in  the ``RAJA/exercises``
-directory. Additional information about the RAJA features
-used can be found in :ref:`features-label`.
+working code examples and interactive exercises. Files containing the 
+exercise source code are located in  the ``RAJA/exercises`` directory. 
+Additional information about the RAJA features used can be found 
+in :ref:`features-label`.
 
-The examples demonstrate CPU execution (sequential, OpenMP
+The examples demonstrate CPU execution (sequential and OpenMP
 multithreading) and GPU execution (CUDA and/or HIP). Examples that show how
-to use RAJA with other parallel programming model back-ends that are in
-development will appear in future RAJA releases. For adventurous users who
-wish to try experimental features, usage is similar to what is shown in the
+to use RAJA with other parallel programming model back-ends will appear in 
+future RAJA releases. For adventurous users who wish to try experimental 
+RAJA back-end support, usage is similar to what is shown in the
 examples here.
 
 All RAJA programming model support features are enabled via CMake options,
 which are described in :ref:`configopt-label`.
-
-# TODO: move this into kernel execution policy introduction.
-Finally, RAJA kernel variants in the examples illustrate how a kernel can be
-run with different programming model back-ends by simply changing an
-execution policy type. RAJA application users typically define type aliases
-for execution policies in header files so that these types can be easily
-changed, and the code can be compiled to run differently, without changing
-any loop kernel source code. Another benefit of this approach is that such
-type changes are easily propagated to many kernels with a change to
-a single file. However, in the example codes, we make all execution policy
-types explicit for clarity.
 
 .. _tutorialbasic-label:
 
@@ -290,7 +301,8 @@ Simple Loops and Basic RAJA Features
 
 The examples in this section illustrate how to use ``RAJA::forall`` methods
 to execute simple loop kernels; i.e., non-nested loops. It also describes
-iteration spaces, reductions, atomic operations, scans, and sorts.
+iteration spaces, reductions, atomic operations, scans, sorts, and RAJA
+data views. 
 
 .. toctree::
    :maxdepth: 1
@@ -311,34 +323,56 @@ iteration spaces, reductions, atomic operations, scans, and sorts.
 Complex Loops and Advanced RAJA Features
 =================================================================
 
-RAJA provides two APIs for expressing complex loop kernels, such as nested
-loops: ``RAJA::kernel`` and ``RAJA::launch`` .
+RAJA provides two APIs for writing complex loop kernels involving nested
+loops: ``RAJA::kernel`` and ``RAJA::launch``. We briefly describe them here.
+The tutorial sections provide much more detailed descriptions.
 
-``RAJA::kernel``
-is analogous to ``RAJA::forall`` in that the semantics involve kernel execution
-templates, execution policies, iteration spaces, and lambda kernel bodies.
-The main differences with ``RAJA::forall`` are that ``RAJA::kernel`` execution
-policies can be much more complicated, ``RAJA::kernel`` requires a tuple
-of iteration spaces (one for each level in a loop nest), and ``RAJA::kernel``
-can accept multiple lambda expressions to express parts of a kernel body.
-Almost all aspects of kernel execution are represented in the execution
-policies, which support a wide range of compile-time loop transformations and
-advanced features.
+``RAJA::kernel`` is analogous to ``RAJA::forall`` in that the semantics involve
+kernel execution templates, execution policies, iteration spaces, and lambda 
+expression kernel bodies. The main differences between ``RAJA::kernel`` and
+``RAJA::forall`` are:
 
-``RAJA::expt::launch``, in contrast, uses the
-``RAJA::expt::launch`` template, which takes a ``RAJA::expt::Grid`` type argument for
-expressing the teams-thread lauch configuration, and a lambda expression
-which takes a ``RAJA::expt::LaunchContext`` argument. The lambda provides an
-execution environment (e.g., CPU or GPU) for a kernel. Within that
-environment users execute kernel operations using ``RAJA::expt::loop<EXEC_POL>``
-method calls, which take lambda expressions to express loop details.
+  * ``RAJA::kernel`` requires a tuple of iteration spaces, one for each level 
+     in a loop nest, whereas ``RAJA::forall`` takes exactly one iteration
+     space
+  * ``RAJA::kernel`` can accept multiple lambda expressions to express 
+    different parts of a kernel body, whereas ``RAJA::forall`` accepts
+    exactly one lambda expression
 
-Which RAJA API to use depends on personal preference (kernel structure
-is more explicit in application source code with ``RAJA::expt::launch``, and more
-concise and arguably more opaque with ``RAJA::kernel``), and other concerns,
-such as portability requirements, runtime policy selection, etc.
-There is a large overlap of algorithms that can be expressed using either
-API, and there are things that one can do with one or the other but not both.
+Also, ``RAJA::kernel`` execution policies are more complicated than those for 
+``RAJA::forall``, which essentially represent the kernel execution environment
+only. ``RAJA::kernel`` execution policies enable complex compile time
+algorithm transformations to be done without changing the kernel code. Some
+examples of this will be shown in the following exercises. Please see 
+:ref:`loop_elements-kernelpol-label` for more information.
+
+An alternative to ``RAJA::kernel`` is the ``RAJA::expt::launch``
+template, which takes a ``RAJA::expt::Grid`` type argument for
+expressing the teams-thread launch configuration, and a lambda expression
+which takes a ``RAJA::expt::LaunchContext`` argument. Code written inside 
+the lambda expression body will execute in the execution environment 
+(e.g., CPU or GPU) specified by the template parameter supplied to the
+``RAJA::expt::launch`` method. Within that environment, a user executes 
+kernel operations using ``RAJA::expt::loop<EXEC_POL>`` method calls, which 
+take lambda expressions to express loop details.
+
+.. note:: A key difference between the ``RAJA::kernel`` and 
+          ``RAJA::expt::launch`` approaches is that almost all kernel 
+          execution are expressed in the execution policy when using
+          ``RAJA::kernel``, whereas for ``RAJA::expt::launch`` the 
+          kernel execution pattern is expressed mostly in the lambda
+          expression kernel body. 
+
+One may argue that ``RAJA::kernel`` is more portable and flexible in that it 
+enables compile time code transformations without changing kernel body code.
+On the other hand, ``RAJA::expt::launch`` is simpler and more intuitive, but 
+may require more code changes for algorithm changes. Which interface to use 
+depends on personal preference (kernel structure is more explicit in 
+application source code with ``RAJA::expt::launch``, and more concise and 
+arguably more opaque with ``RAJA::kernel``), and other concerns, such as 
+portability requirements, run time policy selection, etc. There is a large 
+overlap of algorithms that can be expressed using either interface, and there 
+are things that one can do with one or the other but not both.
 
 In the following sections, we introduce the basic mechanics and features
 of both APIs with examples and exercises. We also present a sequence of
@@ -351,7 +385,7 @@ matrix-matrix multiplication examples using both APIs to compare and contrast.
 The examples in this section illustrate various features of the
 ``RAJA::kernel`` API used to execute nested loop kernels. It describes how to
 construct kernel execution policies, use different view types and tiling
-mechanisms to transform loop patterns. More informatrion can be found in
+mechanisms to transform loop patterns. More information can be found in
 :ref:`loop_elements-kernel-label`.
 
 .. toctree::
@@ -381,7 +415,7 @@ Comparing ``RAJA::kernel`` and ``RAJA::expt::launch``: Matrix-Transpose
 ===============================================================================
 
 In this section, we compare ``RAJA::kernel`` and ``RAJA::expt::launch`` 
-implementations of a matrix transpose alogorithm. We illustrate 
+implementations of a matrix transpose algorithm. We illustrate 
 implementation differences of the two interfaces as we build upon each 
 example with more complex features.
 
