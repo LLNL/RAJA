@@ -152,7 +152,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   {
     aref[i] = i;
   }
-  // _default_views_init_start
+  // _default_views_init_end
 
 //printValues<int>(ref, Ntot);
 
