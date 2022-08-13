@@ -138,10 +138,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running sequential inclusive_scan_inplace (minimum)...\n";
 
+  // _scan_inclusive_inplace_seq_min_start
   std::copy_n(in, N, out);
 
-
-  // _scan_inclusive_inplace_seq_min_start
   RAJA::inclusive_scan_inplace<RAJA::seq_exec>(RAJA::make_span(out, N),
                                                RAJA::operators::minimum<int>{});
   // _scan_inclusive_inplace_seq_min_end
@@ -276,11 +275,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
 
-  // _scan_exclusive_hip_plus_start
+  // _scan_inclusive_inplace_hip_plus_start
   RAJA::inclusive_scan_inplace<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
       RAJA::make_span(d_out, N),
       RAJA::operators::plus<int>{});
-  // _scan_exclusive_hip_plus_end
+  // _scan_inclusive_inplace_hip_plus_end
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
 

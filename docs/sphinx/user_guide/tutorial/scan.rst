@@ -26,23 +26,23 @@ Key RAJA features shown in this section are:
   * RAJA operators for different types of scans; e.g., plus, minimum, maximum, 
     etc.
 
-In this section, we present examples of RAJA sequential, OpenMP,
-and CUDA scan operations and show how different scan operations can be 
+In this section, we present examples of various RAJA scan operations using
+multiple RAJA execution back-ends. Different scan operations can be 
 performed by passing different RAJA operators to the RAJA scan template 
 methods. Each operator is a template type, where the template argument is 
 the type of the values it operates on. For a summary of RAJA scan 
 functionality, please see :ref:`scan-label`. 
 
 .. note:: RAJA scan operations use the same execution policy types that 
-          ``RAJA::forall`` loop execution templates do.
+          ``RAJA::forall`` kernel execution templates do.
 
 .. note:: RAJA scan operations take 'span' arguments to express the sequential
           index range of array entries used in the scan. Typically, these
-          scan objects are created using the ``RAJA::make_span`` method
+          span objects are created using the ``RAJA::make_span`` method
           as shown in the examples below.
 
 Each of the examples below uses the same integer arrays for input
-and output values. We set the input array and print them as such:
+and output values. We initialize the input array and print its values as such:
 
 .. literalinclude:: ../../../../exercises/scan_solution.cpp
    :start-after: _scan_array_init_start
@@ -58,8 +58,8 @@ the 'in' array for each of the following examples.::
 Inclusive Scans
 ^^^^^^^^^^^^^^^^
 
-RAJA's scan operations are intended to be used as standalone operations, and do not 
-need to be used within RAJA execution context such as ``RAJA::forall``. A sequential
+RAJA's scan operations are standalone operations. That is, they cannot be 
+combined with other operations in a kernel. A sequential
 inclusive scan operation can be executed like so:
 
 .. literalinclude:: ../../../../exercises/scan_solution.cpp
@@ -67,11 +67,14 @@ inclusive scan operation can be executed like so:
    :end-before: _scan_inclusive_seq_end
    :language: C++
 
-Since no operator is passed to the scan method, the default 'sum' operation 
+Since no operator is passed to the scan method, the default 'plus' operation 
 is applied and the result generated in the 'out' array is a prefix-sum based 
 on the 'in' array. The resulting 'out' array contains the values::
 
    -1 -1 0 2 5 9 14 20 27 35 44 54 65 77 90 104 119 135 152 170
+
+In particular, each entry in the output array is a *partial sum* of all 
+input array entries up to that array index.
 
 We can be explicit about the operation used in the scan by passing the RAJA
 'plus' operator ``RAJA::operators::plus<int>`` to the scan method:
@@ -81,9 +84,7 @@ We can be explicit about the operation used in the scan by passing the RAJA
    :end-before: _scan_inclusive_seq_plus_end
    :language: C++
 
-The result in the 'out' array is the same as above::
-
-   -1 -1 0 2 5 9 14 20 27 35 44 54 65 77 90 104 119 135 152 170
+The result in the 'out' array is the same as above.
 
 An inclusive parallel scan operation using OpenMP multithreading is
 accomplished similarly by replacing the execution policy type:
@@ -99,6 +100,9 @@ As is commonly the case with RAJA, the only difference between this code and
 the previous one is the execution policy. If we want to 
 run the scan on a GPU using CUDA, we would use a CUDA execution policy as
 is shown in examples below.
+
+.. note:: If no operator is passed to a RAJA scan operation, the default
+          plus operator is used, resulting in a prefix-sum. 
 
 ^^^^^^^^^^^^^^^^
 Exclusive Scans
@@ -117,7 +121,7 @@ This generates the following sequence of values in the output array::
 
 The result of an exclusive scan is similar to the result of an 
 inclusive scan, but differs in two ways. First, the first entry in 
-the exclusive scan result is the `identity` of the operator used.
+the exclusive scan output array is the `identity` of the operator used.
 In the example here, it is zero, since the operator is 'plus'. 
 Second, the output sequence is shifted one position to the right
 when compared to an inclusive scan.
@@ -153,14 +157,16 @@ Here is a sequential inclusive in-place scan that uses the 'minimum' operator:
    :end-before: _scan_inclusive_inplace_seq_min_end
    :language: C++
 
-Note that, in the example before the scan operation is called, we copy the 
-input array into the output array so the result is generated in the output 
-array. Doing this, we avoid having to re-initialize the input array to use 
-it in other examples. 
+Note that, before the scan operation is invoked, we copy the 
+input array into the output array to provide the scan input array we want.
 
 This generates the following sequence in the output array::
 
    -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+
+Since the operator used in the scan is 'minimum' and the smallest values in
+the input array is the first entry, the result is an array with that value
+in all array slots.
 
 Here is a sequential exclusive in-place scan that uses the 'maximum' operator:
 
@@ -174,7 +180,7 @@ This generates the following sequence in the output array::
    -2147483648 -1 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
 
 Since it is an exclusive scan, the first value in the result is the negative 
-of the max int value, which is the identity of the maximum operator.
+of the max int value, which is the identity of the 'maximum' operator.
 
 As you may expect at this point, running an exclusive in-place prefix-sum
 operation using OpenMP is accomplished by: 
@@ -197,12 +203,9 @@ Lastly, we show a parallel inclusive in-place prefix-sum operation using CUDA:
    :end-before: _scan_inclusive_inplace_cuda_plus_end
    :language: C++
 
-and the same for HIP:
+and the same using the RAJA HIP back-end:
 
 .. literalinclude:: ../../../../exercises/scan_solution.cpp
    :start-after: _scan_inclusive_inplace_hip_plus_start
    :end-before: _scan_inclusive_inplace_hip_plus_end
    :language: C++
-
-.. note:: RAJA scans for the HIP back-end are similar to those for CUDA.
-
