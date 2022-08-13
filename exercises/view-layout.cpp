@@ -268,7 +268,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(a, 0, Ntot * sizeof(int));
 
-  // _perm_view2D_start
+  // _perm_2D_start
   std::array<RAJA::idx_t, 2> perm2 {{1, 0}};
   RAJA::Layout< 2, int > perm2_layout =
     RAJA::make_permuted_layout( {{Nx, Ny}}, perm2);
@@ -281,7 +281,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       ++iter;
     }
   }
-  // _perm_view2D_end
+  // _perm_2D_end
 
   checkResult<int>(a, aref, Nx*Ny);
 //printValues<int>(a, Nx*Ny);

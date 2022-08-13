@@ -163,14 +163,14 @@ arguments, the extents of each dimension and the permutation.
 Next, we permute the striding order for the two-dimensional example:
 
 .. literalinclude:: ../../../../exercises/view-layout_solution.cpp
-   :start-after: _perm_view2D_start
-   :end-before: _perm_view2D_end
+   :start-after: _perm_2D_start
+   :end-before: _perm_2D_end
    :language: C++
 
 Read from right to left, the permutation '{1, 0}' specifies that the first
-index 'i' is stride-1 and the second index 'j' has stride equal to the 
-extent of the first Layout dimension 'Nx'. This is evident in the for-loop
-ordering.
+(zero) index 'i' is stride-1 and the second index (one) 'j' has stride equal 
+to the extent of the first Layout dimension 'Nx'. This is evident in the 
+for-loop ordering.
 
 Here is the three-dimensional case, where we have reversed the striding order
 using the permutation '{2, 1, 0}':
