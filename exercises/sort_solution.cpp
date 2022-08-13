@@ -119,9 +119,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running sequential sort (default)...\n";
 
+  // _sort_seq_start
   std::copy_n(in, N, out);
 
-  // _sort_seq_start
   RAJA::sort<RAJA::seq_exec>(RAJA::make_span(out, N));
   // _sort_seq_end
 
@@ -337,8 +337,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
 
   // _sort_stable_hip_greater_start
-  RAJA::stable_sort<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::make_span(d_out, N),
-                                       RAJA::operators::greater<int>{});
+  RAJA::stable_sort<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
+    RAJA::make_span(d_out, N),
+    RAJA::operators::greater<int>{});
   // _sort_stable_hip_greater_end
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));

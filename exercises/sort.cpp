@@ -119,8 +119,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running sequential sort (default)...\n";
 
-  std::copy_n(in, N, out);
-
   ///
   /// TODO...
   ///
@@ -131,6 +129,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///
 
   // _sort_seq_start
+  std::copy_n(in, N, out);
+
   RAJA::sort<RAJA::seq_exec>(RAJA::make_span(out, N));
   // _sort_seq_end
 
