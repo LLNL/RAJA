@@ -9,7 +9,7 @@
 .. _kernelnestedreorder-label:
 
 -----------------------------------------------------------
-Basic ``RAJA::kernel`` Mechanics and Nested Loop Reordering
+Basic ``RAJA::kernel`` Mechanics and Nested Loop Ordering
 -----------------------------------------------------------
 
 This section contains an exercise file ``RAJA/exercises/kernelintro-nested-loop-reorder.cpp``
@@ -27,10 +27,10 @@ Key RAJA features shown in this section are:
 The examples in this
 section show the nested loop reordering process in more detail. 
 Specifically, we describe how to reorder execution policy statements, which
-is conceptually analogous to how one would reorder levels of a C-style loop
+is conceptually analogous to how one would reorder for-loops in a C-style loop
 nest. We also introduce strongly-typed index variables that can help users 
 write correct nested loop code with RAJA. The examples do not perform any 
-actual computation; each kernel simply prints out the loop indices in the 
+computation; each kernel simply prints out the loop indices in the 
 order that the iteration spaces are traversed. Thus, only sequential execution 
 policies are used to avoid complications resulting from print statements
 used in parallel programs. The mechanics shown here work the same way for 
@@ -38,7 +38,7 @@ parallel RAJA execution policies.
 
 Before we dive into code, we reiterate important features that 
 represent the main differences between nested-loop RAJA and the 
-``RAJA::forall`` loop construct for simple (i.e., non-nested) loops: 
+``RAJA::forall`` construct for simple, non-nested loop kernels: 
 
   * An index space (e.g., range segment) and lambda index argument are 
     required for each level in a loop nest. This example contains
@@ -47,8 +47,8 @@ represent the main differences between nested-loop RAJA and the
 
   * The index spaces for the nested loop levels are specified in a RAJA tuple 
     object. The order of spaces in the tuple must match the order of index 
-    arguments to the lambda for this to be correct, in general. RAJA provides 
-    strongly-typed indices to help with this, which we show here.
+    arguments to the lambda for this to be correct in general. RAJA provides 
+    strongly-typed indices to help with this, which we show below.
 
   * An execution policy is required for each level in a loop nest. These
     are specified as nested statements in the ``RAJA::KernelPolicy`` type.
@@ -66,8 +66,9 @@ index variables (i, j, k):
    :end-before: _raja_typed_indices_end
    :language: C++
 
-Specifically, the 'i' index variable type is ``IIDX`` which is an alias to
-``int`` type, etc.
+Specifically, the 'i' index variable type is ``IIDX``, the 'j' index variable
+is ``JIDX``, and the 'k' variable is ``KIDX``, which are aliases to
+``int`` type.
 
 We also define [min, max) intervals for each loop index:
 
@@ -105,6 +106,10 @@ The ``RAJA::kernel`` version of this is:
    :end-before: _raja_kji_loops_end
    :language: C++
 
+The integer template parameters in the ``RAJA::statement::For`` types 
+represent the lambda expression index argument and the range types in the
+iteration space tuple argument to ``RAJA::kernel``.
+
 Both kernels generate the same output, as expected::
 
   (I, J, K)
@@ -141,7 +146,8 @@ lambda expression in the ``RAJA::kernel`` argument list following the
 iteration space tuple. Since there is only one lambda expression, we reference
 it with the '0' identifier. Sometimes more complicated kernels require multiple
 lambda expressions, so we need a way to specify where they will appear in the
-generated executable code.
+generated executable code. We show examples of this in the matrix transpose
+discussion later in the tutorial.
 
 Each level in the loop nest is identified by a
 ``RAJA::statement::For`` type, which identifies the iteration space and
@@ -149,8 +155,8 @@ execution policy for the level. Here, each level uses a
 sequential execution policy, which is for illustration purposes.
 The integer that appears as the first template argument to each 
 ``RAJA::statement::For`` type corresponds to the index of a range in the tuple 
-and also to the associated lambda index argument; i.e., '0' is for 'i', 
-'1' is for 'j', and '2' is for 'k'. 
+and also to the associated lambda index argument; i.e., '0' for 'i', 
+'1' for 'j', and '2' for 'k'. 
 
 The integer argument to each ``RAJA::statement::For`` type is needed so 
 that the levels in the loop nest can be reordered by changing the policy 
@@ -184,8 +190,8 @@ which is the same as the corresponding C-style version:
    :language: C++
 
 Note that we have simply reordered the nesting of the ``RAJA::statement::For``
-types in the execution policy. This is analogous to reordering the 'for' 
-statements in C-style version.
+types in the execution policy. This is analogous to reordering the for-loops 
+in C-style version.
 
 For completeness, we permute the loops again so that the 'i' loop 
 is the outermost, the 'k' loop is in the middle, and the 'j' loop is the 

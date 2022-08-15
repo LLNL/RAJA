@@ -42,24 +42,24 @@ RAJA_INDEX_VALUE_T(IIDX, int, "IIDX");
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-// _range_min_max_start
+  // _range_min_max_start
   constexpr int imin = 0;
   constexpr int imax = 2;
   constexpr int jmin = 1;
   constexpr int jmax = 3;
   constexpr int kmin = 2;
   constexpr int kmax = 4;
-// _range_min_max_end
+  // _range_min_max_end
 
 //
 // The RAJA variants of the loop nest use the following typed range segments
 // based on the typed indices defined above, outside of main().
 //
-// _raja_typed_index_ranges_start
+  // _raja_typed_index_ranges_start
   RAJA::TypedRangeSegment<KIDX> KRange(kmin, kmax);
   RAJA::TypedRangeSegment<JIDX> JRange(jmin, jmax);
   RAJA::TypedRangeSegment<IIDX> IRange(imin, imax);
-// _raja_typed_index_ranges_end
+  // _raja_typed_index_ranges_end
  
 
   std::cout << "\n\nRAJA::kernel nested loop reorder example...\n";
@@ -70,7 +70,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running C-style nested loop order: K-outer, J-middle, I-inner" 
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
-// _cstyle_kji_loops_start
+  // _cstyle_kji_loops_start
   for (int k = kmin; k < kmax; ++k) {
     for (int j = jmin; j < jmax; ++j) {
       for (int i = imin; i < imax; ++i) {
@@ -78,14 +78,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
     }
   }
-// _cstyle_kji_loops_end
+  // _cstyle_kji_loops_end
 
 //----------------------------------------------------------------------------//
  
   std::cout << "\n\n Running RAJA nested loop order (K-outer, J-middle, I-inner)"
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
-// _raja_kji_loops_start
+  // _raja_kji_loops_start
   using KJI_EXECPOL = RAJA::KernelPolicy<
                         RAJA::statement::For<2, RAJA::seq_exec,    // k
                           RAJA::statement::For<1, RAJA::seq_exec,  // j
@@ -100,7 +100,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   [=] (IIDX i, JIDX j, KIDX k) { 
      printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
   });
-// _raja_kji_loops_end
+  // _raja_kji_loops_end
 
 //----------------------------------------------------------------------------//
 //----------------------------------------------------------------------------//
@@ -108,7 +108,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running C-style nested loop order: J-outer, I-middle, K-inner" 
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
-// _cstyle_jik_loops_start
+  // _cstyle_jik_loops_start
   for (int j = jmin; j < jmax; ++j) {
     for (int i = imin; i < imax; ++i) {
       for (int k = kmin; k < kmax; ++k) {
@@ -116,7 +116,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
     }
   }
-// _cstyle_jik_loops_end
+  // _cstyle_jik_loops_end
 
 //----------------------------------------------------------------------------//
   std::cout << "\n Running RAJA nested loop order (J-outer, I-middle, K-inner)"
@@ -135,7 +135,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running C-style nested loop order: I-outer, K-middle, J-inner" 
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
-// _cstyle_ikj_loops_start
+  // _cstyle_ikj_loops_start
   for (int i = imin; i < imax; ++i) {
     for (int k = kmin; k < kmax; ++k) {
       for (int j = jmin; j < jmax; ++j) {
@@ -143,7 +143,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
     }
   }
-// _cstyle_ikj_loops_end
+  // _cstyle_ikj_loops_end
 
 //----------------------------------------------------------------------------//
  
@@ -168,12 +168,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // policy. To see this, enable this code section and try to compile this file.
 //----------------------------------------------------------------------------//
 
-// _raja_compile_error_start
+  // _raja_compile_error_start
   RAJA::kernel<IKJ_EXECPOL>( RAJA::make_tuple(IRange, JRange, KRange),
   [=] (JIDX i, IIDX j, KIDX k) {
      printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
   });
-// _raja_compile_error_end
+  // _raja_compile_error_end
 
 #endif
 
