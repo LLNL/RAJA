@@ -323,11 +323,13 @@ data views.
 Complex Loops and Advanced RAJA Features
 =================================================================
 
-RAJA provides two APIs for writing complex loop kernels involving nested
-loops: ``RAJA::kernel`` and ``RAJA::launch``. We briefly describe them here.
-The tutorial sections provide much more detailed descriptions.
+RAJA provides two APIs for writing complex kernels involving nested
+loops: ``RAJA::kernel`` that has been available for several years and 
+``RAJA::expt::launch``, which is more recent and which will be moved out of
+the ``expt`` namespace soon. We briefly introduce both interfaces here.
+The tutorial sections that follow provide much more detailed descriptions.
 
-``RAJA::kernel`` is analogous to ``RAJA::forall`` in that the semantics involve
+``RAJA::kernel`` is analogous to ``RAJA::forall`` in that it involves
 kernel execution templates, execution policies, iteration spaces, and lambda 
 expression kernel bodies. The main differences between ``RAJA::kernel`` and
 ``RAJA::forall`` are:
@@ -337,26 +339,24 @@ expression kernel bodies. The main differences between ``RAJA::kernel`` and
     space.
   * ``RAJA::kernel`` can accept multiple lambda expressions to express 
     different parts of a kernel body, whereas ``RAJA::forall`` accepts
-    exactly one lambda expression.
+    exactly one lambda expression for a kernel body.
   * ``RAJA::kernel`` execution policies are more complicated than those 
     for ``RAJA::forall``. ``RAJA::forall`` policies essentially represent 
     the kernel execution back-end only. ``RAJA::kernel`` execution policies 
     enable complex compile time algorithm transformations to be done without 
     changing the kernel code. 
 
-The following exercises illustrate the most common features of ``RAJA::kernel``
-execution policies. Please see :ref:`loop_elements-kernelpol-label` for more 
-information about other capabilities ``RAJA::kernel`` provides.
-
-An alternative to ``RAJA::kernel`` is the ``RAJA::expt::launch``
-template, which takes a ``RAJA::expt::Grid`` type argument for
-expressing the teams-thread launch configuration, and a lambda expression
-which takes a ``RAJA::expt::LaunchContext`` argument. Code written inside 
-the lambda expression body will execute in the execution environment 
-(e.g., CPU or GPU) specified by the template parameter supplied to the
-``RAJA::expt::launch`` method. Within that environment, a user executes 
+The following exercises illustrate the common usage of ``RAJA::kernel``
+and ````RAJA::expt::launch``. Please see :ref:`loop_elements-kernelpol-label` 
+for more information about other execution policy constructs ``RAJA::kernel`` 
+provides. ``RAJA::expt::launch`` takes a ``RAJA::expt::Grid`` type argument for
+representing a teams-thread launch configuration, and a lambda expression
+which takes a ``RAJA::expt::LaunchContext`` argument. ``RAJA::expt::launch``
+allows an optional run time choice of execution environment, either CPU or GPU.
+Code written inside the lambda expression body will execute in the chosen 
+execution environment. Within that environment, a user executes 
 kernel operations using ``RAJA::expt::loop<EXEC_POL>`` method calls, which 
-take lambda expressions to express loop details.
+take lambda expressions to express loop body operations.
 
 .. note:: A key difference between the ``RAJA::kernel`` and 
           ``RAJA::expt::launch`` approaches is that almost all of the
@@ -365,20 +365,22 @@ take lambda expressions to express loop details.
           kernel execution pattern is expressed mostly in the lambda
           expression kernel body. 
 
-One may argue that ``RAJA::kernel`` is more portable and flexible in that it 
-enables compile time code transformations without changing kernel body code.
-On the other hand, ``RAJA::expt::launch`` is simpler and more intuitive, but 
-may require more code changes for algorithm changes. Which interface to use 
-depends on personal preference (kernel structure is more explicit in 
-application source code with ``RAJA::expt::launch``, and more concise and 
-arguably more opaque with ``RAJA::kernel``), and other concerns, such as 
-portability requirements, run time policy selection, etc. There is a large 
-overlap of algorithms that can be expressed using either interface, and there 
-are things that one can do with one or the other but not both.
+One may argue that ``RAJA::kernel`` is more portable and flexible in that
+the execution policy enables compile time code transformations without 
+changing kernel body code. On the other hand, ``RAJA::expt::launch`` is 
+less opaque and more intuitive, but may require kernel body code changes for
+algorithm changes. Which interface to use depends on personal preference
+and other concerns, such as portability requirements, the need for run time 
+execution selection, etc. Kernel structure is more explicit in application 
+source code with ``RAJA::expt::launch``, and more concise and arguably more 
+opaque with ``RAJA::kernel``. There is a large overlap of algorithms that can 
+be expressed with either interface. However, there are things that one can do 
+with one or the other but not both.
 
 In the following sections, we introduce the basic mechanics and features
 of both APIs with examples and exercises. We also present a sequence of
-matrix-matrix multiplication examples using both APIs to compare and contrast.
+matrix transpose examples using both APIs to compare and contrast
+them.
 
 ===========================================================================
 Nested Loops with ``RAJA::kernel``
@@ -386,7 +388,7 @@ Nested Loops with ``RAJA::kernel``
 
 The examples in this section illustrate various features of the
 ``RAJA::kernel`` API used to execute nested loop kernels. It describes how to
-construct kernel execution policies, use different view types and tiling
+construct kernel execution policies and use different view types and tiling
 mechanisms to transform loop patterns. More information can be found in
 :ref:`loop_elements-kernel-label`.
 
@@ -402,8 +404,8 @@ Nested Loops with ``RAJA::expt::launch``
 =================================================================
 
 The examples in this section illustrate how to use ``RAJA::expt::launch``
-to create an run-time selectable execution space for expressing algorithms
-in terms of nested loops.
+to create an run time selectable execution space for expressing algorithms
+as nested loops.
 
 .. toctree::
    :maxdepth: 1
