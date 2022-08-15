@@ -20,12 +20,12 @@ the solution file to check your work and for guidance if you get stuck.
 
 Key RAJA features shown in the following example:
 
-  * ``RAJA::Kernel`` loop execution template and execution policies
+  * ``RAJA::kernel`` loop execution template and execution policies
   * ``RAJA::View`` multi-dimensional data access
   * ``RAJA:make_offset_layout`` method to create an offset Layout
 
 The examples in this section apply a five-point stencil to the interior cells 
-of a two-dimensional lattice and stores a resulting sum in a second 
+of a two-dimensional lattice and store a resulting sum in a second 
 lattice of equal size. The five-point stencil associated with a lattice cell
 accumulates the value in the cell and each of its four neighbors. We use 
 ``RAJA::View`` and ``RAJA::OffsetLayout`` constructs to simplify 
@@ -116,23 +116,24 @@ RAJA Offset Layouts
 
 We use the ``RAJA::make_offset_layout`` method to construct a 
 ``RAJA::OffsetLayout`` object that we use to create ``RAJA::View`` objects
-for our input and output data arrays. Then, we create two ``RAJA::View`` 
-objects for each of the input and output lattice arrays. For more information
-about RAJA View and Layout types, please see :ref:`view_layout-label`.
+for our input and output data arrays:
 
 .. literalinclude:: ../../../../exercises/offset-layout-stencil_solution.cpp
-   :start-after: _stencil_output_ref_start
-   :end-before: _stencil_output_ref_end
+   :start-after: _offsetlayout_views_start
+   :end-before: _offsetlayout_views_end
    :language: C++
 
 Here, the row index range is :math:`[-1, N_r+1)`, and the column index 
 range is :math:`[-1, N_c+1)`. The first argument to each call to the 
 ``RAJA::View`` constructor is the pointer to the array that holds the View
-data; we assume the arrays are properly allocated before these calls.
+data. THe second argument is the ``RAJA::OffSetLayout`` object.
 
 ``RAJA::OffsetLayout`` objects allow us to write loops over
 data arrays using non-zero based indexing and without having to manually 
 compute offsets into the arrays.
+
+For more information about RAJA View and Layout types, please see 
+:ref:`view_layout-label`.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 RAJA Kernel Variants
@@ -155,8 +156,8 @@ Now, we have all the ingredients to implement the stencil computation using
    :end-before: _offsetlayout_rajaseq_end
    :language: C++
 
-This RAJA variant does essentially the same thing as the C-style variant 
-introduced earlier.
+This RAJA variant does the computation as the C-style variant 
+introduced above.
 
 Since the input and output arrays are distinct, the stencil computation is
 data parallel. Thus, we can use ``RAJA::kernel`` and an appropriate 
@@ -189,10 +190,12 @@ and HIP
 The only difference between the CPU and GPU variants is that the RAJA macro
 ``RAJA_DEVICE`` is used to decorate the lambda expression with the 
 ``__device__`` annotation, which is required when capturing a lambda for use
-in a GPU device environment.
+in a GPU device environment as we have discussed in other examples in this
+tutorial.
 
 One other point to note is that the CUDA variant in the exercise files 
 uses Unified Memory and the HIP variant uses distinct host and device memory
 arrays, with explicit host-device data copy operations. Thus, new 
 ``RAJA::View`` objects were created for the HIP variant to wrap the 
-device data pointers used in the HIP kernel.
+device data pointers used in the HIP kernel. Please see the exercise files
+for this example for details.

@@ -348,7 +348,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                        + d_inputView(row, col - 1)
                                        + d_inputView(row, col + 1);
                                  });
-  // _offsetlayout_rajahip_start
+  // _offsetlayout_rajahip_end
 
   hipErrchk(hipMemcpy( output, d_output, totCells * sizeof(int), hipMemcpyDeviceToHost ));
 

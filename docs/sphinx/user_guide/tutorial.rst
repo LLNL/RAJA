@@ -379,8 +379,9 @@ with one or the other but not both.
 
 In the following sections, we introduce the basic mechanics and features
 of both APIs with examples and exercises. We also present a sequence of
-matrix transpose examples using both APIs to compare and contrast
-them.
+execution policy examples and matrix transpose examples using both 
+``RAJA::kernel`` and ``RAJA::expt::launch`` to compare and contrast the
+two interfaces.
 
 ===========================================================================
 Nested Loops with ``RAJA::kernel``
