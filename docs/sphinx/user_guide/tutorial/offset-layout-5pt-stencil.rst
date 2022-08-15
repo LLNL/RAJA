@@ -126,7 +126,7 @@ for our input and output data arrays:
 Here, the row index range is :math:`[-1, N_r+1)`, and the column index 
 range is :math:`[-1, N_c+1)`. The first argument to each call to the 
 ``RAJA::View`` constructor is the pointer to the array that holds the View
-data. THe second argument is the ``RAJA::OffSetLayout`` object.
+data. The second argument is the ``RAJA::OffsetLayout`` object.
 
 ``RAJA::OffsetLayout`` objects allow us to write loops over
 data arrays using non-zero based indexing and without having to manually 
