@@ -27,9 +27,9 @@ In this example, we introduce the RAJA Launch framework and discuss
 hierarchical loop-based parallelism. The RAJA Launch API currently lives
 under the RAJA experimental namespace, ``RAJA::expt``, and will be
 promoted to the standard RAJA namespace in the next release.
-Development with RAJA Launch occurs inside an execution space.
-The kernel execution space is dispatched using the
-``RAJA::expt::launch`` method::
+Kernel execution details with RAJA Launch occur inside the lambda expression
+passed to the ``RAJA::expt::launch`` method, which defines an execution
+space::
 
   RAJA::expt::launch<launch_policy>(RAJA::expt::ExecPlace ,
   RAJA::expt::Grid(RAJA::expt::Teams(Nteams,Nteams),
@@ -40,8 +40,9 @@ The kernel execution space is dispatched using the
 
   });
 
-The ``RAJA::expt::launch`` method can be templated on up to two policies 
-(host and device). As an example, the following creates an execution space 
+The ``RAJA::expt::launch`` method accepts a ``RAJA::expt::LaunchPolicy``
+template parameter that can be defined using up to two policies 
+(host and device). For example, the following creates an execution space 
 for a sequential and CUDA kernel dispatch::
 
   using launch_policy = RAJA::expt::LaunchPolicy
@@ -57,21 +58,21 @@ then enclosed by a host/device lambda which takes a
 ``RAJA::expt::LaunchContext`` object, which may be used to control the flow 
 within the kernel, for example by creating thread-team synchronization points.
 
-Inside the execution space, developers express a kernel using nested
+Inside the execution space, developers write a kernel using nested
 ``RAJA::expt::loop`` methods. The manner in which each loop is executed 
-is determined by the ``RAJA::expt::loop`` template parameter type, which
+is determined by a template parameter type, which
 indicates how the corresponding iterates are mapped to the Teams/Threads
 configuration defined by the ``RAJA::expt::Grid`` type passed as the second
-argument to the ``RAJA::expt::launch`` method. Following the CUDA/HIP 
-programming models we follow a hierarchical structure in which outer loops 
-are executed by thread-teams and inner loops are executed by a thread in a team.
+argument to the ``RAJA::expt::launch`` method. Following the CUDA and HIP 
+programming models this defines an hierarchical structure in which outer loops 
+are executed by thread-teams and inner loops are executed by threads in a team.
 
 .. literalinclude:: ../../../../examples/tut_launch_basic.cpp
    :start-after: // _team_loops_start
    :end-before: // _team_loops_end
    :language: C++
 
-The mapping between teams and threads and teams to the underlying programming 
+The mapping between teams and threads to the underlying programming 
 model depends on how the ``RAJA::expt::loop`` template parameter types are
 defined. For example, we may define host and device mapping strategies as::
 
@@ -80,9 +81,9 @@ defined. For example, we may define host and device mapping strategies as::
   using thread_x = RAJA::expt::LoopPolicy<RAJA::loop_exec,
                                           RAJA::cuda_block_x_direct>;
 
-Here, the ``RAJA::expt::LoopPolicy`` type holds both the host and device loop 
-mapping strategies. On the host, both the team/thread strategies expand
-out to standard C-style loops for execution:
+Here, the ``RAJA::expt::LoopPolicy`` type holds both the host (CPU) and 
+device (CUDA GPU) loop mapping strategies. On the host, both the team/thread 
+strategies expand out to standard C-style loops for execution:
 
 .. literalinclude:: ../../../../examples/tut_launch_basic.cpp
    :start-after: // _c_style_loops_start
