@@ -11,15 +11,6 @@
 set(INDEXSETTESTTYPES IndexSet IcountIndexSet)
 
 #
-# While we're adding SYCL tests, enable it for each test set like this.
-#
-# Eventually, remove this and enable in the top-level CMakeLists.txt file.
-#
-if(RAJA_ENABLE_SYCL)
-  list(APPEND FORALL_BACKENDS Sycl)
-endif()
-
-#
 # Generate tests for each enabled RAJA back-end.
 #
 # Note: FORALL_BACKENDS is defined in ../CMakeLists.txt

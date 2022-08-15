@@ -225,11 +225,9 @@ struct SyclStatementExecutor<
 
     // compute trip count
     diff_t len = segment.end() - segment.begin();
-//    diff_t t_init = get_sycl_dim<BlockDim>(blockIdx);
     diff_t t_init = item.get_group(BlockDim);
     diff_t i_init = t_init * chunk_size;
-//    diff_t t_stride = get_sycl_dim<BlockDim>(gridDim);
-    diff_t t_stride = item.get_local_range(BlockDim);
+    diff_t t_stride = item.get_group_range(BlockDim);
     diff_t i_stride = t_stride * chunk_size;
 
     // Iterate through grid stride of chunks
