@@ -28,12 +28,14 @@ inside an ``RAJA::expt::launch`` execution environment. In particular,
 the goal is for you to gain an understanding of how to use execution policies
 with nested ``RAJA::expt::loop`` method calls to perform various nested
 loop execution patterns. All examples use the same simple kernel, which
-is a three-level loop nest to initialize the entries in a three-dimensional
-tensor. The kernels perform the same operations as the examples in 
-:ref:`kernelexecpols-label`. 
+is a three-level loop nest to initialize the entries in an array. The kernels 
+perform the same operations as the examples in :ref:`kernelexecpols-label`.
+By comparing the two sets of examples, you will gain an understanding of the
+differences between the ``RAJA::kernel`` and the ``RAJA::expt::launch`` 
+interfaces.
 
 We begin by defining some constants used throughout the examples and allocating
-arrays to represent the tensor data:
+arrays to represent the array data:
 
 .. literalinclude:: ../../../../exercises/launchintro-execpols_solution.cpp
    :start-after: _init_define_start
@@ -56,7 +58,7 @@ of other variants for correctness:
 
 Note that we manually compute the pointer offsets for the (i,j,k) indices. 
 To simplify the remaining kernel variants we introduce a ``RAJA::View``
-object, which wraps the tensor data pointer and simplifies the multi-dimensional
+object, which wraps the array data pointer and simplifies the multi-dimensional
 indexing:
 
 .. literalinclude:: ../../../../exercises/launchintro-execpols_solution.cpp
@@ -64,8 +66,9 @@ indexing:
    :end-before: _3D_raja_view_end
    :language: C++
 
-Here ``aView`` is a three-dimensional View with extent ``N`` in each
-coordinate based on a three-dimensional ``RAJA::Layout`` object using
+Here 'aView' is a three-dimensional View with extent 'N' in each
+coordinate based on a three-dimensional ``RAJA::Layout`` object where the
+array entries will be accessed using indices of type 'int'.
 indices of type ``int``. Please see :ref:`view-label` for more information 
 about the View and Layout types that RAJA provides for various indexing
 patterns and data layouts.
@@ -77,8 +80,8 @@ Using the View, the C-style kernel looks like:
    :end-before: _cstyle_tensorinit_view_seq_end
    :language: C++
 
-Notice how accessing each (i,j,k) entry in the tensor is more natural using
-the View.
+Notice how accessing each (i,j,k) entry in the array is more natural,
+and less error prone, using the View.
 
 The corresponding RAJA sequential version using ``RAJA::expt::launch`` is:
 
@@ -88,10 +91,10 @@ The corresponding RAJA sequential version using ``RAJA::expt::launch`` is:
    :language: C++
 
 This should be familiar to the reader who has read through the preceding
-:ref:`launchintro-label` section of this tutorial. As this launch method is
-templated on a host execution policy the ``RAJA::expt::Grid`` object can be 
-defined without arguments as loop methods will get dispatched as standard 
-C-Style for-loops.
+:ref:`launchintro-label` section of this tutorial. As the ``RAJA::expt::launch``
+method is templated on a host execution policy the ``RAJA::expt::Grid`` object 
+can be defined without arguments as loop methods will get dispatched as 
+standard C-Style for-loops.
      
 Suppose we wanted to parallelize the outer 'k' loop using OpenMP multithreading.
 A C-style version of this is:
@@ -104,7 +107,7 @@ A C-style version of this is:
 where we have placed the OpenMP directive ``#pragma omp parallel for`` before
 the outer loop of the kernel.
 
-The corresponding RAJA versions of the C-style OpenMP variants is:
+The corresponding RAJA versions of the C-style OpenMP variant is:
 
 .. literalinclude:: ../../../../exercises/launchintro-execpols_solution.cpp
    :start-after: _raja_tensorinit_omp_outer_start
@@ -112,7 +115,7 @@ The corresponding RAJA versions of the C-style OpenMP variants is:
    :language: C++
 
 With the OpenMP version above, ``RAJA::expt::launch`` method is templated with
-a ``RAJA::expt::omp_launch_t`` execution policy. The omp launch policy is used
+a ``RAJA::expt::omp_launch_t`` execution policy. The policy is used
 to create an OpenMP parallel region, loop iterations may then be distributed
 using ``RAJA::expt::loop`` methods templated on ``RAJA::omp_for_exec`` 
 execution policies. As before, the ``RAJA::expt::Grid`` object may be 
@@ -145,18 +148,22 @@ comparison to the RAJA-CUDA example in :ref:`kernelexecpols-label` ,
 ``RAJA::expt::loop`` methods support execution policies which enable mapping 
 directly to the global thread ID of a compute grid.
 
-Using a combination of combination of ``RAJA::expt::tile`` and 
-``RAJA::expt::loop`` methods, we can create a loop tiling platform portable 
-implementation:
+Using a combination of ``RAJA::expt::tile`` and ``RAJA::expt::loop`` methods, 
+we can create a loop tiling platform portable implementation. Here, is a 
+CUDA variant: 
 
 .. literalinclude:: ../../../../exercises/launchintro-execpols_solution.cpp
    :start-after: _raja_tensorinit_cuda_tiled_direct_start
    :end-before: _raja_tensorinit_cuda_tiled_direct_end
    :language: C++
 
+We consider the kernel to be portable, because all of the execution policy types
+and execution parameters can be replaced by other types and values without
+changing the kernel code directly. 
+
 The ``RAJA::expt::tile`` methods are used to partition an iteration space into
-tiles to be used within a ``RAJA::expt::loop`` method. The ``{i,j,k}_block_sz``
-arguments passed to the ``RAJA::expt::tile`` function specifies the tile size
+tiles to be used within a ``RAJA::expt::loop`` method. The '{i,j,k}_block_sz'
+arguments passed to the ``RAJA::expt::tile`` function specify the tile size
 for each loop. In the case of GPU programming models, we define the tile size 
 to correspond to the number of threads in a given dimension. Execution tile 
 and loop execution policies are chosen to have CUDA blocks and threads map 
@@ -183,18 +190,19 @@ threads-per-block and number of thread-blocks to use: i.e., the
 ``nthreads_per_block`` and ``nblocks`` variable definitions. The
 ``RAJA::expt::launch`` interface takes compute dimensions through a
 ``RAJA::expt::Grid`` object. RAJA provides a macro ``RAJA_DIVIDE_CEILING_INT``
-to perform the proper arithmetic to calculate the number of blocks based on
-the size of the tensor and the block size in each dimension. Second, the
+to perform the proper integer arithmetic to calculate the number of blocks 
+based on the size of the array and the block size in each dimension. Second, the
 mapping of thread identifiers to the (i,j,k) indices is explicit in the device 
 kernel. Third, an explicit check of the (i,j,k) values is required in the CUDA 
 implementation to avoid addressing memory out-of-bounds; i.e., 
 ``if ( i < N && j < N && k < N )...``. The RAJA variants set similar
 definitions internally and **mask out indices that would be out-of-bounds.**
-Fourth, we inserted some additional error checking with ``static_assert``
-and ``cudaErrchk`` to catch device errors if there are any.
+Note that we also inserted additional error checking with ``static_assert``
+and ``cudaErrchk``, which is a RAJA macro, for printing CUDA device error
+codes, to catch device errors if there are any.
 
 Lastly, we show the RAJA HIP variants of the kernel, which are semantically
-identical to the RAJA CUDA variants. First, the RAJA Launch HIP global-thread 
+identical to the RAJA CUDA variants. First, the RAJA-HIP global-thread 
 variant:
 
 .. literalinclude:: ../../../../exercises/launchintro-execpols_solution.cpp

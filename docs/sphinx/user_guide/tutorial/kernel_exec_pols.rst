@@ -32,6 +32,9 @@ for all kernel variants described here, whether we are executing the kernel
 on a CPU sequentially or in parallel with OpenMP, or in parallel on a GPU 
 (CUDA or HIP). The kernels perform the same operations as the examples in the
 :ref:`launchexecpols-label` tutorial section, which uses ``RAJA::expt::launch``.
+By comparing the two sets of examples, you will gain an understanding of the
+differences between the ``RAJA::kernel`` and the ``RAJA::expt::launch`` 
+interfaces.
 
 We begin by defining some constants used throughout the examples and 
 allocating two arrays:
@@ -65,9 +68,9 @@ indexing:
    :end-before: _3D_raja_view_end
    :language: C++
 
-Here ``aView`` is a three-dimensional View with extent ``N`` in each
+Here 'aView' is a three-dimensional View with extent 'N' in each
 coordinate based on a three-dimensional ``RAJA::Layout`` object where the
-array entries will be accessed using indices of type ``int``. Please see 
+array entries will be accessed using indices of type 'int'. Please see 
 :ref:`view-label` for more information about the View and Layout types that 
 RAJA provides for various indexing patterns and data layouts.
 
@@ -223,16 +226,16 @@ and ``cudaErrchk``, which is a RAJA macro, for printing CUDA device error
 codes, to catch device errors if there are any.
 
 Lastly, we show the RAJA HIP variants of the kernel, which are semantically
-identical to the RAJA CUDA variants we just described.
-
-The RAJA-HIP block-stride loop variant:
+identical to the RAJA CUDA variants we just described. First, the RAJA-HIP 
+block-stride loop variant:
 
 .. literalinclude:: ../../../../exercises/kernelintro-execpols_solution.cpp
    :start-after: _raja_tensorinit_hip_start
    :end-before: _raja_tensorinit_hip_end
    :language: C++
 
-and the HIP fixed thread-block size, tiled, direct thread mapping version:
+and then the RAJA-HIP fixed thread-block size, tiled, direct thread mapping 
+version:
 
 .. literalinclude:: ../../../../exercises/kernelintro-execpols_solution.cpp
    :start-after: _raja_tensorinit_hip_tiled_direct_start
