@@ -12,9 +12,13 @@
 Matrix Transpose
 ----------------------
 
-This section describes the implementation of a basic matrix transpose kernel 
-using both ``RAJA::kernel`` and ``RAJA::expt::launch`` interfaces. The intent
-is to compare and contrast the two.
+In :ref:`kernelexecpols-label` and :ref:`launchexecpols-label` we presented
+a simple array initialization kernel using ``RAJA::kernel`` and 
+``RAJA::expt::launch`` interfaces, respectively, and discussed some
+comparisons of the two. This section describes the implementation of a 
+matrix transpose kernel using both ``RAJA::kernel`` and ``RAJA::expt::launch`` 
+interfaces. The intent is to compare and contrast the two, as well as introduce
+additional features of the interfaces.
 
 There are exercise files 
 ``RAJA/exercises/kernel-matrix-transpose.cpp`` and
@@ -27,8 +31,8 @@ check your work and for guidance if you get stuck.
 
 Key RAJA features shown in this example are:
 
-  * ``RAJA::kernel`` method and execution policies
-  * ``RAJA::expt::launch`` kernel execution interface
+  * ``RAJA::kernel`` method and kernel execution policies
+  * ``RAJA::expt::launch`` method and kernel execution interface
 
 In the example, we compute the transpose of an input matrix
 :math:`A` of size :math:`N_r \times N_c` and store the result in a second
@@ -70,7 +74,7 @@ The complete sequential ``RAJA::kernel`` variant is:
    :language: C++
 
 A CUDA ``RAJA::kernel`` variant for the GPU is similar with different policies
-in the ``RAJA::statement::For`` statements. The complete CUDA variant is:
+in the ``RAJA::statement::For`` statements:
 
 .. literalinclude:: ../../../../exercises/kernel-matrix-transpose_solution.cpp
    :start-after: // _raja_mattranspose_cuda_start
@@ -91,7 +95,7 @@ and number of blocks to launch is determined by the implementation of the
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For ``RAJA::expt::launch`` variants, we use ``RAJA::expt::loop`` methods 
-to express a loop hierarchy within the kernel execution space. For a sequential 
+to write a loop hierarchy within the kernel execution space. For a sequential 
 implementation, we pass the ``RAJA::expt::seq_launch_t`` template parameter
 to the launch method and pass the ``RAJA::loop_exec`` parameter to the loop 
 methods. The complete sequential ``RAJA::expt::launch`` variant is:
