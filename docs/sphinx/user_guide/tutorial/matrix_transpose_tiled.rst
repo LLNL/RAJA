@@ -68,8 +68,8 @@ The C-style for-loop implementation looks like this:
    :language: C++
 
 .. note:: To prevent indexing out of bounds, when the tile dimensions do not
-          divide evenly the matrix dimensions, we use a bounds check in the
-          inner loops.
+          divide evenly the matrix dimensions, the algorithm requires a 
+          bounds check in the inner loops.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ``RAJA::kernel`` Variants

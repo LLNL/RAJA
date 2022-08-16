@@ -30,10 +30,11 @@ Key RAJA features shown in this example are:
 
   * ``RAJA::kernel_param`` method and execution policy usage with multiple lambda expressions
   * ``RAJA::statement::Tile`` type for loop tiling
-  * ``RAJA::statement::ForICount`` type for generating global and local tile indices
+  * ``RAJA::statement::ForICount`` type for generating local tile indices
   * ``RAJA::LocalArray`` type for thread-local tile memory arrays
   * ``RAJA::launch`` kernel execution interface
-  * ``RAJA::loop_icount`` method to generate local tile indices for Launch
+  * ``RAJA::expt::tile`` type for loop tiling
+  * ``RAJA::expt::loop_icount`` method to generate local tile indices for Launch
   * ``RAJA_TEAM_SHARED`` macro for thread-local tile memory arrays
 
 As in :ref:`tiledmatrixtranspose-label`, this example computes the transpose 
@@ -47,7 +48,7 @@ matrix.
 
 We choose tile dimensions smaller than the dimensions of the matrix and note 
 that it is not necessary for the tile dimensions to divide evenly the number
-of rows and columns in the matrix A. As in the :ref:`tiledmatrixtranspose-label`
+of rows and columns in the matrix. As in the :ref:`tiledmatrixtranspose-label`
 example, we start by defining the number of rows and columns in the matrices, 
 the tile dimensions, and the number of tiles.
 
@@ -85,7 +86,7 @@ using a stack-allocated local array for the tiles is:
 
 The ``RAJA::kernel`` interface provides mechanisms to tile loops and use 
 *local arrays* in kernels so that algorithm patterns like the C-style kernel 
-above can be implemented with RAJA. When, using ``RAJA::kernel``, a 
+above can be implemented with RAJA. When using ``RAJA::kernel``, a 
 ``RAJA::LocalArray`` type specifies an object whose memory is created inside 
 a kernel using a statement type in a RAJA kernel execution policy. The local 
 array data is only usable within the kernel. See :ref:`local_array-label` for 
@@ -108,10 +109,10 @@ create an object to represent it:
    :end-before: // _mattranspose_localarray_end
    :language: C++
 
-The template parameters that define the type are: array data type, data stride
-permutation for the array indices (here the identity permutation is given, so
-the default RAJA conventions apply; i.e., the rightmost array index will be 
-stride-1), and the array dimensions. Next, we compare two 
+The template parameters that define the type are: the array data type, the 
+data stride permutation for the array indices (here the identity permutation 
+is given, so the default RAJA conventions apply; i.e., the rightmost array 
+index will be stride-1), and the array dimensions. Next, we compare two 
 ``RAJA::kernel`` implementations of the matrix transpose operation.
 
 The complete RAJA sequential CPU variant with kernel execution policy and 
@@ -124,7 +125,7 @@ kernel is:
 
 In the execution policy, the ``RAJA::statement::Tile`` types define
 tiling of the outer 'row' (iteration space tuple index '1') and 'col' 
-(iteration space tuple index '0') loops, including tile sizes 
+(iteration space tuple index '0') loops, as well as tile sizes 
 (``RAJA::tile_fixed`` types) and loop execution policies. Next, 
 the ``RAJA::statement::InitLocalMem`` type allocates the local tile array
 based on the memory policy type (here, we use ``RAJA::cpu_tile_mem`` for
@@ -140,7 +141,7 @@ lambda expression invocation statements ``RAJA::statement::Lambda<0>`` for
 the first lambda passed as an argument to the ``RAJA::kernel_param`` method
 and ``RAJA::statement::Lambda<1>`` for the second lambda argument.
 
-Note that the loops over tiles use ``RAJA::statement::ForICount`` types 
+Note that the loops within tiles use ``RAJA::statement::ForICount`` types 
 rather than ``RAJA::statement::For`` types that we saw in the 
 tiled matrix transpose example in :ref:`tiledmatrixtranspose-label`.
 The ``RAJA::statement::ForICount`` type generates local tile indices that 
@@ -149,9 +150,8 @@ memory array. As the reader will observe, there is no local tile index
 computation needed in the lambdas for the RAJA version of the kernel as a 
 result. The first integer template parameter for each 
 ``RAJA::statement::ForICount`` type indicates the item in the iteration space 
-tuple passed to the ``RAJA::kernel_param`` method to which it applies; this 
-is similar to ``RAJA::statement::For`` usage we have seen in other 
-``RAJA::kernel`` examples. The second template parameter for each 
+tuple passed to the ``RAJA::kernel_param`` method to which it applies. 
+The second template parameter for each 
 ``RAJA::statement::ForICount`` type indicates the position in the parameter 
 tuple passed to the ``RAJA::kernel_param`` method that will hold the 
 associated local tile index. For more detailed discussion of RAJA loop tiling 
@@ -160,9 +160,9 @@ statement types, please see :ref:`tiling-label`.
 Now that we have described the execution policy in some detail, let's pull 
 everything together by briefly walking though the call to the 
 ``RAJA::kernel_param`` method, which is similar to ``RAJA::kernel`` but takes
-additional arguments needed to executing the operations involving local
-time indices and the local memory array. The first argument is a tuple of 
-iteration spaces that define the iteration ranges for the level in the loop 
+additional arguments needed to execute the operations involving local
+tile indices and the local memory array. The first argument is a tuple of 
+iteration spaces that define the iteration ranges for the levels in the loop 
 nest. Again, the first integer parameters given to the ``RAJA::statement::Tile``
 and ``RAJA::statement::ForICount`` types identify the tuple entry to which 
 they apply. The second argument::
@@ -176,15 +176,19 @@ earlier. Next, two lambda expression arguments are passed to the
 ``RAJA::kernel_param`` method for reading and writing the input and output 
 matrix entries, respectively.
 
-Note that each lambda expression takes the same five arguments. The first two 
-are the matrix global column and row indices associated with the iteration 
+.. note:: ``RAJA::kernel_param`` accepts a parameter tuple argument after
+          the iteration space tuple, which enables the parameters to be 
+          used in multiple lambda expressions in a kernel.
+
+In the kernel, both lambda expressions take the same five arguments. The first 
+two are the matrix global column and row indices associated with the iteration 
 space tuple. The next three arguments correspond to the parameter tuple entries.
 The first two of these are the local tile indices used to access entries in the 
 ``RAJA::LocalArray`` object memory. The last argument is a reference to the 
 ``RAJA::LocalArray`` object itself.
 
 The next ``RAJA::kernel_param`` variant we present works the same as the one 
-above. The main differences between the two variants is that we include 
+above. It is different from the previous version since we include 
 additional template parameters in the ``RAJA::statement::Lambda`` types to 
 indicate which arguments each lambda expression takes and in which order. 
 Here is the complete version including execution policy and kernel:
@@ -206,18 +210,19 @@ As a consequence of specifying lambda arguments, there are two main differences.
 The local tile indices are properly computed and passed to the lambda 
 expressions as a result of the ``RAJA::Offsets`` types that appear
 in the lambda statement types. The ``RAJA::statement::Lambda`` type for each
-lambda shows the two ways to specify the local tile index args; we can use an
-``Offsets`` statement for each argument, or include multiple segment ids in one
-statement. Lastly, there is only one entry in the parameter
+lambda shows the two ways to specify the local tile index arguments; we can 
+use an ``Offsets`` statement for each argument, or include multiple segment 
+ids in one statement. Lastly, there is only one entry in the parameter
 tuple in this case, the local tile array. The placeholders in the
 previous example are not needed.
 
 .. note:: In this example, we need all five arguments in each lambda 
           expression so the lambda expression argument lists are 
           the same. Another use case for the template parameter argument
-          specification just described is to be able to pass only the
-          arguments used in a lambda expression; i.e., different lambdas
-          may have different argument lists.
+          specification described here is to be able to pass only the
+          arguments used in a lambda expression. In particular when we use
+          multiple lambda expressions to represent a kernel, each lambda
+          can have a different argument lists from the others.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ``RAJA::expt::launch`` Variants
@@ -245,12 +250,13 @@ kernel is:
    :end-before: // _mattranspose_localarray_raja_end
    :language: C++
 
-Here, the ``RAJA::expt::tile`` method is used to create tiles of the outer 
+Here, the ``RAJA::expt::tile`` method is used to create tilings of the outer 
 'row' and 'col' iteration spaces. The ``RAJA::expt::tile`` method
 takes an additional argument specifying the tile size for the corresponding 
 loop. To traverse the tile, we use the ``RAJA::expt::loop_icount`` method, 
 which is similar to the ``RAJA::ForICount`` statement used in a 
-``RAJA::kernel`` execution policy. A ``RAJA::expt::loop_icount`` method call
+``RAJA::kernel`` execution policy as shown above. A 
+``RAJA::expt::loop_icount`` method call
 will generate local tile index associated with the outer global index.
 The local tile index is necessary as we use it to read and write entries 
 from/to global memory to ``RAJA_TEAM_SHARED`` memory array.
