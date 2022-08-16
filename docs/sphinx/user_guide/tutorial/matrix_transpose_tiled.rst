@@ -29,18 +29,17 @@ check your work and for guidance if you get stuck.
 
 Key RAJA features shown in this example are:
 
-  * ``RAJA::kernel`` method and execution policies using the ``RAJA::statement::Tile`` type for loop tiling
-  * ``RAJA::expt::launch`` kernel execution interface
+  * ``RAJA::kernel`` method and execution policies, and the ``RAJA::statement::Tile`` type
+  * ``RAJA::expt::launch`` method and execution policies, and the ``RAJA::expt::tile`` type
 
-In this example, we are still computing the transpose of an input matrix 
+As in :ref:`matrixtranspose-label`, we compute the transpose of an input matrix 
 :math:`A` of size :math:`N_r \times N_c` and storing the result in a second 
 matrix :math:`At` of size :math:`N_c \times N_r`.
 
 We will compute the matrix transpose using a tiling algorithm, which iterates 
-over tiles of the matrix A and performs a transpose operation on each tile.
-The algorithm is expressed as a collection of outer and inner loops. 
-Iterations of the inner loop will transpose each tile, while outer loops 
-iterate over the tiles.
+over tiles and transposes the matrix entries in each tile.
+The algorithm involves outer and inner loops to iterate over the tiles and
+matrix entries within each tile, respectively.
 
 As in :ref:`matrixtranspose-label`, we start by defining the matrix dimensions.
 Additionally, we define a tile size smaller than the matrix dimensions and 
@@ -61,16 +60,16 @@ simplify the multi-dimensional indexing:
    :end-before: // _tiled_mattranspose_views_end
    :language: C++
 
-Then, the C-style for-loop implementation looks like this:
+The C-style for-loop implementation looks like this:
 
 .. literalinclude:: ../../../../exercises/kernel-matrix-transpose-tiled_solution.cpp
    :start-after: // _cstyle_tiled_mattranspose_start
    :end-before: // _cstyle_tiled_mattranspose_end
    :language: C++
 
-.. note:: * To prevent indexing out of bounds, when the tile dimensions do not
-            divide evenly the matrix dimensions, we use a bounds check in the
-            inner loops.
+.. note:: To prevent indexing out of bounds, when the tile dimensions do not
+          divide evenly the matrix dimensions, we use a bounds check in the
+          inner loops.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ``RAJA::kernel`` Variants
@@ -93,8 +92,8 @@ C-style variant is not needed. Note that the integer template parameters
 in the ``RAJA::statement::For`` types refer to the entries in the iteration 
 space tuple passed to the ``RAJA::kernel`` method.
 
-The ``RAJA::kernel`` CUDA variant is similar with the sequential execution
-policies replaced with CUDA execution policies:
+The ``RAJA::kernel`` CUDA variant is similar with sequential policies replaced 
+with CUDA execution policies:
 
 .. literalinclude:: ../../../../exercises/kernel-matrix-transpose-tiled_solution.cpp
    :start-after: // _raja_mattranspose_cuda_start
