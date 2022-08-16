@@ -413,7 +413,7 @@ as nested loops.
 
    tutorial/launch_basic.rst
    tutorial/launch_exec_pols.rst
-   tutorial/naming_kernels.rst
+   tutorial/launch_naming_kernels.rst
 
 ===============================================================================
 Comparing ``RAJA::kernel`` and ``RAJA::expt::launch``: Matrix-Transpose
