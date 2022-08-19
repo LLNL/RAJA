@@ -84,6 +84,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA sequential dot product...\n";
 
+  dot = 0.0;
+
   // _rajaseq_dotprod_start
   RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot(0.0);
 
@@ -103,6 +105,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP dot product...\n";
+
+  dot = 0.0;
 
   // _rajaomp_dotprod_start
   RAJA::ReduceSum<RAJA::omp_reduce, double> ompdot(0.0);
@@ -128,6 +132,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA CUDA dot product...\n";
 
+  dot = 0.0;
+
   // _rajacuda_dotprod_start
   RAJA::ReduceSum<RAJA::cuda_reduce, double> cudot(0.0);
 
@@ -151,6 +157,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int HIP_BLOCK_SIZE = 256;
 
   std::cout << "\n Running RAJA HIP dot product...\n";
+
+  dot = 0.0;
 
   int *d_a = memoryManager::allocate_gpu<int>(N);
   int *d_b = memoryManager::allocate_gpu<int>(N);
@@ -184,6 +192,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int SYCL_BLOCK_SIZE = 256;
 
   std::cout << "\n Running RAJA SYCL dot product...\n";
+
+  dot = 0.0;
 
   // _rajasycl_dotprod_start
   RAJA::ReduceSum<RAJA::sycl_reduce, double> hpdot(0.0);
