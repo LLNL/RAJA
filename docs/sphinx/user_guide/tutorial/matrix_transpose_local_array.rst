@@ -24,7 +24,9 @@ through if you wish to get some practice with RAJA. The files
 ``RAJA/exercises/kernel-matrix-transpose-local-array._solutioncpp`` and
 ``RAJA/exercises/launch-matrix-transpose-local-array_solution.cpp`` contain
 complete working code for the examples. You can use the solution files to
-check your work and for guidance if you get stuck.
+check your work and for guidance if you get stuck. To build
+the exercises execute ``make (kernel/launch)-matrix-transpose-local-array`` and ``make (kernel/launch)-matrix-transpose-local-array_solution``
+from the build directory.
 
 Key RAJA features shown in this example are:
 

@@ -16,7 +16,9 @@ This section contains an exercise file ``RAJA/exercises/vertexsum-indexset.cpp``
 for you to work through if you wish to get some practice with RAJA. The
 file ``RAJA/exercises/vertexsum-indexset_solution.cpp`` contains complete
 working code for the examples discussed in this section. You can use the
-solution file to check your work and for guidance if you get stuck.
+solution file to check your work and for guidance if you get stuck. To build
+the exercises execute ``make vertexsum-indexset`` and ``make vertexsum-indexset_solution``
+from the build directory.
 
 Key RAJA features shown in this example are:
 
