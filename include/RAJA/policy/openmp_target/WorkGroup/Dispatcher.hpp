@@ -34,13 +34,13 @@ namespace detail
 // get the device function pointer by opening a target region and writing out
 // the pointer to the function call
 template < typename T, typename Dispatcher_T >
-inline typename Dispatcher_T::call_sig get_Dispatcher_omp_target_call()
+inline typename Dispatcher_T::invoker_type get_Dispatcher_omp_target_call()
 {
-  typename Dispatcher_T::call_sig ptr = nullptr;
+  typename Dispatcher_T::invoker_type ptr = nullptr;
 
   #pragma omp target map(tofrom : ptr)
   {
-    ptr = &Dispatcher_T::template host_call<T>;
+    ptr = &Dispatcher_T::template s_host_call<T>;
   }
 
   return ptr;
@@ -49,9 +49,9 @@ inline typename Dispatcher_T::call_sig get_Dispatcher_omp_target_call()
 // get the device function pointer and store it so it can be used
 // multiple times
 template < typename T, typename Dispatcher_T >
-inline typename Dispatcher_T::call_sig get_cached_Dispatcher_omp_target_call()
+inline typename Dispatcher_T::invoker_type get_cached_Dispatcher_omp_target_call()
 {
-  static typename Dispatcher_T::call_sig ptr =
+  static typename Dispatcher_T::invoker_type ptr =
       get_Dispatcher_omp_target_call<T, Dispatcher_T>();
   return ptr;
 }
@@ -64,9 +64,9 @@ template < typename T, typename Dispatcher_T >
 inline const Dispatcher_T* get_Dispatcher(omp_target_work const&)
 {
   static Dispatcher_T dispatcher{
-        &Dispatcher_T::template move_construct_destroy<T>,
+        &Dispatcher_T::template s_move_construct_destroy<T>,
         get_cached_Dispatcher_omp_target_call<T, Dispatcher_T>(),
-        &Dispatcher_T::template destroy<T>,
+        &Dispatcher_T::template s_destroy<T>,
         sizeof(T)
       };
   return &dispatcher;

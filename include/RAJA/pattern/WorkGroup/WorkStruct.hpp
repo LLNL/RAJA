@@ -75,7 +75,7 @@ struct WorkStruct<size, Dispatcher<DispatcherID, CallArgs...>>
     true_value_type* value_ptr = static_cast<true_value_type*>(ptr);
 
     value_ptr->dispatcher = dispatcher;
-    value_ptr->call_function_ptr = dispatcher->call_function_ptr;
+    value_ptr->invoke = dispatcher->invoke;
     new(&value_ptr->obj) holder(std::forward<holder_ctor_args>(ctor_args)...);
   }
 
@@ -85,26 +85,26 @@ struct WorkStruct<size, Dispatcher<DispatcherID, CallArgs...>>
                     WorkStruct* value_src)
   {
     value_dst->dispatcher = value_src->dispatcher;
-    value_dst->call_function_ptr = value_src->call_function_ptr;
-    value_dst->dispatcher->move_construct_destroy_function_ptr(&value_dst->obj, &value_src->obj);
+    value_dst->invoke = value_src->invoke;
+    value_dst->dispatcher->move_construct_destroy(&value_dst->obj, &value_src->obj);
   }
 
   // destroy the value ptr
   static RAJA_INLINE
   void destroy(WorkStruct* value_ptr)
   {
-    value_ptr->dispatcher->destroy_function_ptr(&value_ptr->obj);
+    value_ptr->dispatcher->destroy(&value_ptr->obj);
   }
 
   // call the call operator of the value ptr with args
   static RAJA_HOST_DEVICE RAJA_INLINE
   void call(const WorkStruct* value_ptr, CallArgs... args)
   {
-    value_ptr->call_function_ptr(&value_ptr->obj, std::forward<CallArgs>(args)...);
+    value_ptr->invoke(&value_ptr->obj, std::forward<CallArgs>(args)...);
   }
 
   const dispatcher_type* dispatcher;
-  typename dispatcher_type::call_sig call_function_ptr;
+  typename dispatcher_type::invoker_type invoke;
   typename std::aligned_storage<size, alignof(std::max_align_t)>::type obj;
 };
 

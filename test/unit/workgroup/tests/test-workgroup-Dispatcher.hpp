@@ -16,30 +16,32 @@
 
 
 template  < typename ForOnePol,
+            typename Invoker,
             typename ... CallArgs >
 typename  std::enable_if<
             !std::is_base_of<RunOnDevice, ForOnePol>::value
           >::type
-call_dispatcher( void(*call_function)(CallArgs...),
+call_dispatcher( Invoker invoker,
                  CallArgs... callArgs )
 {
   forone<ForOnePol>( [=] () {
-    call_function(callArgs...);
+    invoker(callArgs...);
   });
 }
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 template  < typename ForOnePol,
+            typename Invoker,
             typename ... CallArgs >
 typename  std::enable_if<
             std::is_base_of<RunOnDevice, ForOnePol>::value
           >::type
-call_dispatcher( void(*call_function)(CallArgs...),
+call_dispatcher( Invoker invoker,
                  CallArgs... callArgs )
 {
-  RAJA::tuple<CallArgs...> callArgs_device_lambda_workaround(callArgs...);
+  RAJA::tuple<CallArgs...> lambda_capturable_callArgs(callArgs...);
   forone<ForOnePol>( [=] RAJA_DEVICE () {
-    camp::invoke(callArgs_device_lambda_workaround, call_function);
+    camp::invoke(lambda_capturable_callArgs, invoker);
   });
 }
 #endif
@@ -112,6 +114,7 @@ void testWorkGroupDispatcherSingle(RAJA::xargs<Args...>)
   camp::resources::Resource host_res{camp::resources::Host()};
 
   using Dispatcher_type = RAJA::detail::Dispatcher<void, IndexType, Args...>;
+  using Invoker_type = typename Dispatcher_type::invoker_type;
   using Dispatcher_cptr_type = typename Dispatcher_type::void_cptr_wrapper;
   const Dispatcher_type* dispatcher =
       RAJA::detail::get_Dispatcher<TestCallable, Dispatcher_type>(ExecPolicy{});
@@ -158,7 +161,7 @@ void testWorkGroupDispatcherSingle(RAJA::xargs<Args...>)
   ASSERT_FALSE(old_obj->moved_from);
 
 
-  dispatcher->move_construct_destroy_function_ptr(new_obj, old_obj);
+  dispatcher->move_construct_destroy(new_obj, old_obj);
 
   ASSERT_TRUE(new_obj->move_constructed);
   ASSERT_FALSE(new_obj->moved_from);
@@ -175,8 +178,8 @@ void testWorkGroupDispatcherSingle(RAJA::xargs<Args...>)
   work_res.memcpy(wrk_obj, new_obj, sizeof(TestCallable) * 1);
 
   // move a value onto device and fiddle
-  call_dispatcher<ForOnePol, Dispatcher_cptr_type, IndexType, Args...>(
-      dispatcher->call_function_ptr, wrk_obj, (IndexType)1, Args{}...);
+  call_dispatcher<ForOnePol, Invoker_type, Dispatcher_cptr_type, IndexType, Args...>(
+      dispatcher->invoke, wrk_obj, (IndexType)1, Args{}...);
 
   work_res.memcpy(testCall, workCall, sizeof(IndexType) * 3);
 
@@ -185,7 +188,7 @@ void testWorkGroupDispatcherSingle(RAJA::xargs<Args...>)
   ASSERT_EQ(testCall[2], chckCall[2]);
 
 
-  dispatcher->destroy_function_ptr(new_obj);
+  dispatcher->destroy(new_obj);
 
   ASSERT_EQ(testDtor[0], chckDtor[0]);
   ASSERT_EQ(testDtor[1], chckDtor[1]);

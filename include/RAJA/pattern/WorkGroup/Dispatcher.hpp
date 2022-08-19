@@ -63,16 +63,16 @@ template < typename DispatcherID, typename ... CallArgs >
 struct Dispatcher {
   using void_ptr_wrapper = DispatcherVoidPtrWrapper<DispatcherID>;
   using void_cptr_wrapper = DispatcherVoidConstPtrWrapper<DispatcherID>;
-  using move_sig = void(*)(void_ptr_wrapper /*dest*/, void_ptr_wrapper /*src*/);
-  using call_sig = void(*)(void_cptr_wrapper /*obj*/, CallArgs... /*args*/);
-  using destroy_sig = void(*)(void_ptr_wrapper /*obj*/);
+  using mover_type = void(*)(void_ptr_wrapper /*dest*/, void_ptr_wrapper /*src*/);
+  using invoker_type = void(*)(void_cptr_wrapper /*obj*/, CallArgs... /*args*/);
+  using destroyer_type = void(*)(void_ptr_wrapper /*obj*/);
 
   ///
   /// move construct an object of type T in dest as a copy of a T from src and
   /// destroy the T obj in src
   ///
   template < typename T >
-  static void move_construct_destroy(void_ptr_wrapper dest, void_ptr_wrapper src)
+  static void s_move_construct_destroy(void_ptr_wrapper dest, void_ptr_wrapper src)
   {
     T* dest_as_T = static_cast<T*>(dest.ptr);
     T* src_as_T = static_cast<T*>(src.ptr);
@@ -84,14 +84,14 @@ struct Dispatcher {
   /// call the call operator of the object of type T in obj with args
   ///
   template < typename T >
-  static void host_call(void_cptr_wrapper obj, CallArgs... args)
+  static void s_host_call(void_cptr_wrapper obj, CallArgs... args)
   {
     const T* obj_as_T = static_cast<const T*>(obj.ptr);
     (*obj_as_T)(std::forward<CallArgs>(args)...);
   }
   ///
   template < typename T >
-  static RAJA_DEVICE void device_call(void_cptr_wrapper obj, CallArgs... args)
+  static RAJA_DEVICE void s_device_call(void_cptr_wrapper obj, CallArgs... args)
   {
     const T* obj_as_T = static_cast<const T*>(obj.ptr);
     (*obj_as_T)(std::forward<CallArgs>(args)...);
@@ -101,15 +101,15 @@ struct Dispatcher {
   /// destoy the object of type T in obj
   ///
   template < typename T >
-  static void destroy(void_ptr_wrapper obj)
+  static void s_destroy(void_ptr_wrapper obj)
   {
     T* obj_as_T = static_cast<T*>(obj.ptr);
     (*obj_as_T).~T();
   }
 
-  move_sig move_construct_destroy_function_ptr;
-  call_sig call_function_ptr;
-  destroy_sig destroy_function_ptr;
+  mover_type move_construct_destroy;
+  invoker_type invoke;
+  destroyer_type destroy;
   size_t size;
 };
 
