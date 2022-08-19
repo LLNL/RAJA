@@ -20,18 +20,16 @@ kernels and transformations, and ``RAJA::expt::launch`` creates an execution
 space in which kernels are written in terms of nested loops using 
 the ``RAJA::expt::loop`` method.
 
-.. note:: * The ``forall`` , and ``kernel`` methods are in the
-            namespace ``RAJA``, while ``launch`` is found under
-            the RAJA namespace for experimental features ``RAJA::expt``.
-            ``RAJA::expt::launch`` will be moved to the ``RAJA`` namespace
-            in a future RAJA release.
-
-The following sections describe the basic aspects of these methods.
+.. note:: * The ``forall`` , and ``kernel`` methods are in the ``RAJA`` 
+            namespace, while ``launch`` is in the RAJA namespace for 
+            experimental features ``RAJA::expt``.  ``RAJA::expt::launch`` 
+            will be moved to the ``RAJA`` namespace in a future RAJA release.
 
 For more information on RAJA execution policies and iteration space constructs, 
 see :ref:`policies-label` and :ref:`index-label`, respectively. 
 
-Various examples showing how to use ``RAJA::forall``, ``RAJA::kernel``, ``RAJA::launch`` methods may be found in the :ref:`tutorial-label`. Links to specific
+The following sections describe the basic aspects of these methods.
+Detailed examples showing how to use ``RAJA::forall``, ``RAJA::kernel``, ``RAJA::launch`` methods may be found in the :ref:`tutorial-label`. Links to specific
 RAJA tutorial sections are provided in the sections below.
 
 .. _loop_elements-forall-label:
@@ -277,9 +275,7 @@ The ``RAJA::expt::launch`` template is an alternative interface to
 ``RAJA::kernel`` that may be preferred for certain types of complex kernels
 or based on coding style preferences.
  
-..note :: ``RAJA::expt::launch`` will be moved out of the ``expt`` namespace 
-          in a future RAJA release, after which it will appear as 
-          ``RAJA::launch``.
+..note :: ``RAJA::expt::launch`` will be moved out of the ``expt`` namespace in a future RAJA release, after which it will appear as ``RAJA::launch``.
 
 ``RAJA::expt::launch`` optionally allows either host or device execution
 to be chosen at run time. The method takes an execution policy type that
@@ -297,7 +293,7 @@ In contrast, the ``RAJA::launch`` interface allows users to express
 nested loop execution in a manner that more closely reflects how one would
 write conventional nested C-style for-loop code. For example, here is an
 example of a ``RAJA::expt::launch`` kernel that copies values from an array in
-into a *shared memory* array.
+into a *shared memory* array::
 
   RAJA::expt::launch<launch_policy>(select_CPU_or_GPU)
   RAJA::expt::Grid(RAJA::expt::Teams(NE), RAJA::expt::Threads(Q1D)),
@@ -326,11 +322,11 @@ execution policy type. The launch context serves to synchronize threads within
 the same team. The ``RAJA::expt::launch`` interface has three main concepts:
 
   * ``RAJA::expt::launch`` template. This creates an execution environment in 
-     which a kernel implementation is written using nested ``RAJA::expt::loop``
-     statements. The launch policy template parameter used with the 
-     ``RAJA::expt::launch`` method enables specification of both a host and 
-     device execution environment, which enables run time selection of 
-     kernel execution.
+    which a kernel implementation is written using nested ``RAJA::expt::loop``
+    statements. The launch policy template parameter used with the 
+    ``RAJA::expt::launch`` method enables specification of both a host and 
+    device execution environment, which enables run time selection of 
+    kernel execution.
 
   * ``RAJA::expt::Grid`` type. This type takes a number of teams and and a 
     number of threads as arguments.
