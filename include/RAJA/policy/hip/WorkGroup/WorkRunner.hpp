@@ -216,7 +216,7 @@ struct WorkRunner<
   using index_type = INDEX_T;
   using resource_type = resources::Hip;
 
-  using vtable_type = Vtable<RAJA::hip_work<BLOCK_SIZE, true>, Args...>;
+  using dispatcher_type = Dispatcher<RAJA::hip_work<BLOCK_SIZE, true>, Args...>;
 
   WorkRunner() = default;
 
@@ -243,7 +243,7 @@ struct WorkRunner<
 
   // The policy indicating where the call function is invoked
   // in this case the values are called on the device
-  using vtable_exec_policy = exec_policy;
+  using dispatcher_exec_policy = exec_policy;
 
   // runner interfaces with storage to enqueue so the runner can get
   // information from the segment and loop at enqueue time
@@ -275,7 +275,7 @@ struct WorkRunner<
       //     gridSize, blockSize, shmem, stream, std::forward<LoopBody>(loop_body));
 
       storage.template emplace<holder>(
-          get_Vtable<holder, vtable_type>(vtable_exec_policy{}),
+          get_Dispatcher<holder, dispatcher_type>(dispatcher_exec_policy{}),
           std::forward<Iterable>(iter), std::forward<LoopBody>(loop_body));
     }
   }

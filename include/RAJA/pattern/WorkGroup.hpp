@@ -218,7 +218,7 @@ private:
   using workrunner_type = detail::WorkRunner<
       exec_policy, order_policy, Allocator, index_type, Args...>;
   using storage_type = detail::WorkStorage<
-      storage_policy, Allocator, typename workrunner_type::vtable_type>;
+      storage_policy, Allocator, typename workrunner_type::dispatcher_type>;
 
   friend workgroup_type;
   friend worksite_type;

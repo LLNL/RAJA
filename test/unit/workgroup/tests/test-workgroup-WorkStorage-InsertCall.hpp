@@ -27,18 +27,18 @@ void testWorkGroupWorkStorageInsertCall()
 {
   bool success = true;
 
-  using Vtable_type = RAJA::detail::Vtable<void, void*, bool*, bool*>;
+  using Dispatcher_type = RAJA::detail::Dispatcher<void, void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,
-                                                      Vtable_type
+                                                      Dispatcher_type
                                                     >;
   using WorkStruct_type = typename WorkStorage_type::value_type;
 
   using callable = TestCallable<double>;
 
-  const Vtable_type* vtable = RAJA::detail::get_Vtable<
-      callable, Vtable_type>(RAJA::seq_work{});
+  const Dispatcher_type* dispatcher = RAJA::detail::get_Dispatcher<
+      callable, Dispatcher_type>(RAJA::seq_work{});
 
   {
     auto test_empty = [&](WorkStorage_type& container) {
@@ -54,7 +54,7 @@ void testWorkGroupWorkStorageInsertCall()
       ASSERT_FALSE(c.move_constructed);
       ASSERT_FALSE(c.moved_from);
 
-      container.template emplace<callable>(vtable, std::move(c));
+      container.template emplace<callable>(dispatcher, std::move(c));
 
       ASSERT_FALSE(c.move_constructed);
       ASSERT_TRUE(c.moved_from);

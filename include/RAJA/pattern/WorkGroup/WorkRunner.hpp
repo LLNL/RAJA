@@ -27,7 +27,7 @@
 
 #include "RAJA/pattern/forall.hpp"
 
-#include "RAJA/pattern/WorkGroup/Vtable.hpp"
+#include "RAJA/pattern/WorkGroup/Dispatcher.hpp"
 #include "RAJA/policy/WorkGroup.hpp"
 
 
@@ -164,7 +164,7 @@ struct WorkRunnerForallOrdered_base
   using resource_type = typename resources::get_resource<FORALL_EXEC_POLICY>::type;
 
   using forall_exec_policy = FORALL_EXEC_POLICY;
-  using vtable_type = Vtable<void, resource_type, Args...>;
+  using dispatcher_type = Dispatcher<void, resource_type, Args...>;
 
   WorkRunnerForallOrdered_base() = default;
 
@@ -181,7 +181,7 @@ struct WorkRunnerForallOrdered_base
 
   // The policy indicating where the call function is invoked
   // in this case the values are called on the host in a loop
-  using vtable_exec_policy = RAJA::loop_work;
+  using dispatcher_exec_policy = RAJA::loop_work;
 
   // runner interfaces with storage to enqueue so the runner can get
   // information from the segment and loop at enqueue time
@@ -191,7 +191,7 @@ struct WorkRunnerForallOrdered_base
     using holder = holder_type<camp::decay<segment_T>, camp::decay<loop_T>>;
 
     storage.template emplace<holder>(
-        get_Vtable<holder, vtable_type>(vtable_exec_policy{}),
+        get_Dispatcher<holder, dispatcher_type>(dispatcher_exec_policy{}),
         std::forward<segment_T>(seg), std::forward<loop_T>(loop));
   }
 

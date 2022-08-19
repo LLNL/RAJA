@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA workgroup Vtable.
+ * \brief   Header file containing RAJA workgroup Dispatcher.
  *
  ******************************************************************************
  */
@@ -15,14 +15,14 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_loop_WorkGroup_Vtable_HPP
-#define RAJA_loop_WorkGroup_Vtable_HPP
+#ifndef RAJA_sequential_WorkGroup_Dispatcher_HPP
+#define RAJA_sequential_WorkGroup_Dispatcher_HPP
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/policy/loop/policy.hpp"
+#include "RAJA/policy/sequential/policy.hpp"
 
-#include "RAJA/pattern/WorkGroup/Vtable.hpp"
+#include "RAJA/policy/loop/WorkGroup/Dispatcher.hpp"
 
 
 namespace RAJA
@@ -32,18 +32,12 @@ namespace detail
 {
 
 /*!
- * Populate and return a Vtable object
- */
-template < typename T, typename Vtable_T >
-inline const Vtable_T* get_Vtable(loop_work const&)
+* Populate and return a Dispatcher object
+*/
+template < typename T, typename Dispatcher_T >
+inline const Dispatcher_T* get_Dispatcher(seq_work const&)
 {
-  static Vtable_T vtable{
-        &Vtable_T::template move_construct_destroy<T>,
-        &Vtable_T::template host_call<T>,
-        &Vtable_T::template destroy<T>,
-        sizeof(T)
-      };
-  return &vtable;
+  return get_Dispatcher<T, Dispatcher_T>(loop_work{});
 }
 
 }  // namespace detail

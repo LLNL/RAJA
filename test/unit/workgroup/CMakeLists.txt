@@ -29,33 +29,33 @@ endmacro()
 
 
 set(BACKENDS Sequential)
-set(Vtable_BACKENDS Sequential)
+set(Dispatcher_BACKENDS Sequential)
 set(WorkStorage_BACKENDS Sequential)
 
 if(RAJA_ENABLE_TBB)
   list(APPEND BACKENDS TBB)
-  list(APPEND Vtable_BACKENDS TBB)
+  list(APPEND Dispatcher_BACKENDS TBB)
 endif()
 
 if(RAJA_ENABLE_OPENMP)
   list(APPEND BACKENDS OpenMP)
-  list(APPEND Vtable_BACKENDS OpenMP)
+  list(APPEND Dispatcher_BACKENDS OpenMP)
 endif()
 
 if(RAJA_ENABLE_TARGET_OPENMP)
   list(APPEND BACKENDS OpenMPTarget)
-  list(APPEND Vtable_BACKENDS OpenMPTarget)
+  list(APPEND Dispatcher_BACKENDS OpenMPTarget)
 endif()
 
 if(RAJA_ENABLE_CUDA)
   list(APPEND BACKENDS Cuda)
-  list(APPEND Vtable_BACKENDS Cuda)
+  list(APPEND Dispatcher_BACKENDS Cuda)
 endif()
 
 if(RAJA_ENABLE_HIP)
   list(APPEND BACKENDS Hip)
   if(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
-    list(APPEND Vtable_BACKENDS Hip)
+    list(APPEND Dispatcher_BACKENDS Hip)
   endif()
 endif()
 
@@ -71,15 +71,15 @@ if(RAJA_TEST_EXHAUSTIVE OR NOT RAJA_COMPILER MATCHES "RAJA_COMPILER_Intel")
   unset(Enqueue_SUBTESTS)
 endif()
 
-set(Vtable_SUBTESTS Single)
-buildunitworkgrouptest(Vtable      "${Vtable_SUBTESTS}"      "${Vtable_BACKENDS}")
+set(Dispatcher_SUBTESTS Single)
+buildunitworkgrouptest(Dispatcher      "${Dispatcher_SUBTESTS}"      "${Dispatcher_BACKENDS}")
 
 set(WorkStorage_SUBTESTS Constructor Iterator InsertCall Multiple)
 buildunitworkgrouptest(WorkStorage "${WorkStorage_SUBTESTS}" "${WorkStorage_BACKENDS}")
 
-unset(Vtable_SUBTESTS)
+unset(Dispatcher_SUBTESTS)
 unset(WorkStorage_SUBTESTS)
 
 unset(BACKENDS)
-unset(Vtable_BACKENDS)
+unset(Dispatcher_BACKENDS)
 unset(WorkStorage_BACKENDS)

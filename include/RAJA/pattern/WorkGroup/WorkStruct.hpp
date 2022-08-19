@@ -23,7 +23,7 @@
 #include <utility>
 #include <cstddef>
 
-#include "RAJA/pattern/WorkGroup/Vtable.hpp"
+#include "RAJA/pattern/WorkGroup/Dispatcher.hpp"
 
 
 namespace RAJA
@@ -35,7 +35,7 @@ namespace detail
 /*!
  * A struct that gives a generic way to layout memory for different loops
  */
-template < size_t size, typename Vtable_T >
+template < size_t size, typename Dispatcher_T >
 struct WorkStruct;
 
 /*!
@@ -44,22 +44,22 @@ struct WorkStruct;
  *   offsetof(GenericWorkStruct<>, obj) == offsetof(WorkStruct<size>, obj)
  *   sizeof(GenericWorkStruct) <= sizeof(WorkStruct<size>)
  */
-template < typename Vtable_T >
-using GenericWorkStruct = WorkStruct<alignof(std::max_align_t), Vtable_T>;
+template < typename Dispatcher_T >
+using GenericWorkStruct = WorkStruct<alignof(std::max_align_t), Dispatcher_T>;
 
-template < size_t size, typename VtableID, typename ... CallArgs >
-struct WorkStruct<size, Vtable<VtableID, CallArgs...>>
+template < size_t size, typename DispatcherID, typename ... CallArgs >
+struct WorkStruct<size, Dispatcher<DispatcherID, CallArgs...>>
 {
-  using vtable_type = Vtable<VtableID, CallArgs...>;
+  using dispatcher_type = Dispatcher<DispatcherID, CallArgs...>;
 
   // construct a WorkStruct with a value of type holder from the args and
   // check a variety of constraints at compile time
   template < typename holder, typename ... holder_ctor_args >
   static RAJA_INLINE
-  void construct(void* ptr, const vtable_type* vtable, holder_ctor_args&&... ctor_args)
+  void construct(void* ptr, const dispatcher_type* dispatcher, holder_ctor_args&&... ctor_args)
   {
-    using true_value_type = WorkStruct<sizeof(holder), vtable_type>;
-    using value_type = GenericWorkStruct<vtable_type>;
+    using true_value_type = WorkStruct<sizeof(holder), dispatcher_type>;
+    using value_type = GenericWorkStruct<dispatcher_type>;
 
     static_assert(sizeof(holder) <= sizeof(true_value_type::obj),
         "holder must fit in WorkStruct::obj");
@@ -74,8 +74,8 @@ struct WorkStruct<size, Vtable<VtableID, CallArgs...>>
 
     true_value_type* value_ptr = static_cast<true_value_type*>(ptr);
 
-    value_ptr->vtable = vtable;
-    value_ptr->call_function_ptr = vtable->call_function_ptr;
+    value_ptr->dispatcher = dispatcher;
+    value_ptr->call_function_ptr = dispatcher->call_function_ptr;
     new(&value_ptr->obj) holder(std::forward<holder_ctor_args>(ctor_args)...);
   }
 
@@ -84,16 +84,16 @@ struct WorkStruct<size, Vtable<VtableID, CallArgs...>>
   void move_destroy(WorkStruct* value_dst,
                     WorkStruct* value_src)
   {
-    value_dst->vtable = value_src->vtable;
+    value_dst->dispatcher = value_src->dispatcher;
     value_dst->call_function_ptr = value_src->call_function_ptr;
-    value_dst->vtable->move_construct_destroy_function_ptr(&value_dst->obj, &value_src->obj);
+    value_dst->dispatcher->move_construct_destroy_function_ptr(&value_dst->obj, &value_src->obj);
   }
 
   // destroy the value ptr
   static RAJA_INLINE
   void destroy(WorkStruct* value_ptr)
   {
-    value_ptr->vtable->destroy_function_ptr(&value_ptr->obj);
+    value_ptr->dispatcher->destroy_function_ptr(&value_ptr->obj);
   }
 
   // call the call operator of the value ptr with args
@@ -103,8 +103,8 @@ struct WorkStruct<size, Vtable<VtableID, CallArgs...>>
     value_ptr->call_function_ptr(&value_ptr->obj, std::forward<CallArgs>(args)...);
   }
 
-  const vtable_type* vtable;
-  typename vtable_type::call_sig call_function_ptr;
+  const dispatcher_type* dispatcher;
+  typename dispatcher_type::call_sig call_function_ptr;
   typename std::aligned_storage<size, alignof(std::max_align_t)>::type obj;
 };
 

@@ -28,11 +28,11 @@ void testWorkGroupWorkStorageMultiple(
 {
   bool success = true;
 
-  using Vtable_type = RAJA::detail::Vtable<void, void*, bool*, bool*>;
+  using Dispatcher_type = RAJA::detail::Dispatcher<void, void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,
-                                                      Vtable_type
+                                                      Dispatcher_type
                                                     >;
   using WorkStruct_type = typename WorkStorage_type::value_type;
 
@@ -63,12 +63,12 @@ void testWorkGroupWorkStorageMultiple(
   using callable1 = TestCallable<type1>;
   using callable2 = TestCallable<type2>;
 
-  const Vtable_type* vtable0 = RAJA::detail::get_Vtable<
-      callable0, Vtable_type>(RAJA::seq_work{});
-  const Vtable_type* vtable1 = RAJA::detail::get_Vtable<
-      callable1, Vtable_type>(RAJA::seq_work{});
-  const Vtable_type* vtable2 = RAJA::detail::get_Vtable<
-      callable2, Vtable_type>(RAJA::seq_work{});
+  const Dispatcher_type* dispatcher0 = RAJA::detail::get_Dispatcher<
+      callable0, Dispatcher_type>(RAJA::seq_work{});
+  const Dispatcher_type* dispatcher1 = RAJA::detail::get_Dispatcher<
+      callable1, Dispatcher_type>(RAJA::seq_work{});
+  const Dispatcher_type* dispatcher2 = RAJA::detail::get_Dispatcher<
+      callable2, Dispatcher_type>(RAJA::seq_work{});
 
   {
     auto test_empty = [&](WorkStorage_type& container) {
@@ -85,7 +85,7 @@ void testWorkGroupWorkStorageMultiple(
         vec0.emplace_back(make_type0(init_val0, i));
         ASSERT_FALSE(vec0[i].move_constructed);
         ASSERT_FALSE(vec0[i].moved_from);
-        container.template emplace<callable0>(vtable0, std::move(vec0[i]));
+        container.template emplace<callable0>(dispatcher0, std::move(vec0[i]));
         ASSERT_FALSE(vec0[i].move_constructed);
         ASSERT_TRUE (vec0[i].moved_from);
       }
@@ -96,7 +96,7 @@ void testWorkGroupWorkStorageMultiple(
         vec1.emplace_back(make_type1(init_val1, i));
         ASSERT_FALSE(vec1[i].move_constructed);
         ASSERT_FALSE(vec1[i].moved_from);
-        container.template emplace<callable1>(vtable1, std::move(vec1[i]));
+        container.template emplace<callable1>(dispatcher1, std::move(vec1[i]));
         ASSERT_FALSE(vec1[i].move_constructed);
         ASSERT_TRUE (vec1[i].moved_from);
       }
@@ -107,7 +107,7 @@ void testWorkGroupWorkStorageMultiple(
         vec2.emplace_back(make_type2(init_val2, i));
         ASSERT_FALSE(vec2[i].move_constructed);
         ASSERT_FALSE(vec2[i].moved_from);
-        container.template emplace<callable2>(vtable2, std::move(vec2[i]));
+        container.template emplace<callable2>(dispatcher2, std::move(vec2[i]));
         ASSERT_FALSE(vec2[i].move_constructed);
         ASSERT_TRUE (vec2[i].moved_from);
       }

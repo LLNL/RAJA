@@ -27,17 +27,17 @@ void testWorkGroupWorkStorageIterator()
 {
   bool success = true;
 
-  using Vtable_type = RAJA::detail::Vtable<void, void*, bool*, bool*>;
+  using Dispatcher_type = RAJA::detail::Dispatcher<void, void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,
-                                                      Vtable_type
+                                                      Dispatcher_type
                                                     >;
 
   using callable = TestCallable<int>;
 
-  const Vtable_type* vtable = RAJA::detail::get_Vtable<
-      callable, Vtable_type>(RAJA::seq_work{});
+  const Dispatcher_type* dispatcher = RAJA::detail::get_Dispatcher<
+      callable, Dispatcher_type>(RAJA::seq_work{});
 
   {
     WorkStorage_type container(Allocator{});
@@ -50,7 +50,7 @@ void testWorkGroupWorkStorageIterator()
     ASSERT_TRUE(container.begin() <= container.end());
     ASSERT_TRUE(container.begin() >= container.end());
 
-    container.template emplace<callable>(vtable, callable{-1});
+    container.template emplace<callable>(dispatcher, callable{-1});
 
     ASSERT_EQ(container.end()-container.begin(), (std::ptrdiff_t)1);
     ASSERT_TRUE(container.begin() < container.end());

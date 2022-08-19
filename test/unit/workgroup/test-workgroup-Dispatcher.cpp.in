@@ -6,21 +6,21 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA workgroup vtable.
+/// Source file containing tests for RAJA workgroup dispatcher.
 ///
 
-#include "test-workgroup-Vtable.hpp"
+#include "test-workgroup-Dispatcher.hpp"
 
-using @BACKEND@BasicWorkGroupVtable@SUBTESTNAME@Types =
+using @BACKEND@BasicWorkGroupDispatcher@SUBTESTNAME@Types =
   Test< camp::cartesian_product< @BACKEND@ExecPolicyList,
                                  IndexTypeTypeList,
                                  XargsTypeList,
                                  @BACKEND@ResourceList,
                                  @BACKEND@ForoneList > >::Types;
 
-REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicVtable@SUBTESTNAME@UnitTest,
-                            BasicWorkGroupVtable@SUBTESTNAME@);
+REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicDispatcher@SUBTESTNAME@UnitTest,
+                            BasicWorkGroupDispatcher@SUBTESTNAME@);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@BasicTest,
-                               WorkGroupBasicVtable@SUBTESTNAME@UnitTest,
-                               @BACKEND@BasicWorkGroupVtable@SUBTESTNAME@Types);
+                               WorkGroupBasicDispatcher@SUBTESTNAME@UnitTest,
+                               @BACKEND@BasicWorkGroupDispatcher@SUBTESTNAME@Types);

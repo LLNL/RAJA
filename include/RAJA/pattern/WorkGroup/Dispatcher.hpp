@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Header file providing RAJA Vtable for workgroup.
+ * \brief   Header file providing RAJA Dispatcher for workgroup.
  *
  ******************************************************************************
  */
@@ -15,8 +15,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_PATTERN_WORKGROUP_Vtable_HPP
-#define RAJA_PATTERN_WORKGROUP_Vtable_HPP
+#ifndef RAJA_PATTERN_WORKGROUP_Dispatcher_HPP
+#define RAJA_PATTERN_WORKGROUP_Dispatcher_HPP
 
 
 #include "RAJA/config.hpp"
@@ -31,38 +31,38 @@ namespace detail
 {
 
 template < typename >
-struct VtableVoidPtrWrapper
+struct DispatcherVoidPtrWrapper
 {
   void* ptr;
-  VtableVoidPtrWrapper() = default;
+  DispatcherVoidPtrWrapper() = default;
   // implicit constructor from void*
-  RAJA_HOST_DEVICE VtableVoidPtrWrapper(void* p) : ptr(p) { }
+  RAJA_HOST_DEVICE DispatcherVoidPtrWrapper(void* p) : ptr(p) { }
 };
 
 template < typename >
-struct VtableVoidConstPtrWrapper
+struct DispatcherVoidConstPtrWrapper
 {
   const void* ptr;
-  VtableVoidConstPtrWrapper() = default;
+  DispatcherVoidConstPtrWrapper() = default;
   // implicit constructor from const void*
-  RAJA_HOST_DEVICE VtableVoidConstPtrWrapper(const void* p) : ptr(p) { }
+  RAJA_HOST_DEVICE DispatcherVoidConstPtrWrapper(const void* p) : ptr(p) { }
 };
 
 /*!
- * A vtable abstraction
+ * A dispatcher abstraction
  *
  * Provides function pointers for basic functions.
  *
- * VtableID is used to differentiate function pointers based on their
+ * DispatcherID is used to differentiate function pointers based on their
  * function signature. This is helpful to avoid function signature collisions
  * with functions that will not be used through this class. This is useful
  * during device linking when functions with high register counts may cause
  * device linking to fail.
  */
-template < typename VtableID, typename ... CallArgs >
-struct Vtable {
-  using void_ptr_wrapper = VtableVoidPtrWrapper<VtableID>;
-  using void_cptr_wrapper = VtableVoidConstPtrWrapper<VtableID>;
+template < typename DispatcherID, typename ... CallArgs >
+struct Dispatcher {
+  using void_ptr_wrapper = DispatcherVoidPtrWrapper<DispatcherID>;
+  using void_cptr_wrapper = DispatcherVoidConstPtrWrapper<DispatcherID>;
   using move_sig = void(*)(void_ptr_wrapper /*dest*/, void_ptr_wrapper /*src*/);
   using call_sig = void(*)(void_cptr_wrapper /*obj*/, CallArgs... /*args*/);
   using destroy_sig = void(*)(void_ptr_wrapper /*obj*/);
@@ -114,11 +114,11 @@ struct Vtable {
 };
 
 /*!
- * Populate and return a pointer to a Vtable object for the given policy.
- * NOTE: there is a function overload is in each policy/WorkGroup/Vtable.hpp
+ * Populate and return a pointer to a Dispatcher object for the given policy.
+ * NOTE: there is a function overload is in each policy/WorkGroup/Dispatcher.hpp
  */
-// template < typename T, typename Vtable_T >
-// inline const Vtable_T* get_Vtable(work_policy const&);
+// template < typename T, typename Dispatcher_T >
+// inline const Dispatcher_T* get_Dispatcher(work_policy const&);
 
 }  // namespace detail
 
