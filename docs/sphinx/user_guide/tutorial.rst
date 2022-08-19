@@ -415,6 +415,8 @@ as nested loops.
    tutorial/launch_exec_pols.rst
    tutorial/launch_naming_kernels.rst
 
+.. _tutorialmatrixtranspose-label:
+
 ===============================================================================
 Comparing ``RAJA::kernel`` and ``RAJA::expt::launch``: Matrix-Transpose
 ===============================================================================

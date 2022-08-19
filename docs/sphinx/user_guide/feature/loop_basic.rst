@@ -12,52 +12,27 @@
 Elements of Loop Execution
 ==============================================
 
-In this section, we describe the basic elements of RAJA loop kernel 
-execution.  ``RAJA::forall``, ``RAJA::kernel``, and ``RAJA::expt::launch`` 
-template methods comprise the RAJA interface for loop 
+The ``RAJA::forall``, ``RAJA::kernel``, and ``RAJA::expt::launch`` 
+template methods comprise the RAJA interface for kernel
 execution. ``RAJA::forall`` methods execute simple, non-nested loops, 
 ``RAJA::kernel`` methods support nested loops and other complex loop 
 kernels and transformations, and ``RAJA::expt::launch`` creates an execution 
-space in which algorithms are expressed in terms of nested loops using 
+space in which kernels are written in terms of nested loops using 
 the ``RAJA::expt::loop`` method.
 
 .. note:: * The ``forall`` , and ``kernel`` methods are in the
             namespace ``RAJA``, while ``launch`` is found under
             the RAJA namespace for experimental features ``RAJA::expt``.
+            ``RAJA::expt::launch`` will be moved to the ``RAJA`` namespace
+            in a future RAJA release.
 
-          * A ``RAJA::forall`` loop execution method is a template on an
-            *execution policy* type. A ``RAJA::forall`` method takes two 
-            arguments:
-
-              * an iteration space object, such as a contiguous range of loop
-                indices, and
-              * a single lambda expression representing the loop body.
-
-          * Each ``RAJA::kernel`` method is a template on a policy that
-            contains statements with *execution policy* types appropriate for
-            the kernel structure; e.g., an execution policy for each level in a
-            loop nest. A ``RAJA::kernel`` method takes multiple arguments:
-
-              * a *tuple* of iteration space objects, and
-              * one or more lambda expressions representing portions of
-                the loop kernel body.
-
-          * The ``RAJA::expt::launch`` method is a template on both host and
-            device policies to create an execution space for kernels.
-            Since both host and device poilices are specified, the launch 
-            method can be used to select at run-time whether to run a kernel
-            on the host or device.  Algorithms are expressed inside the 
-            execution space as nested loops using ``RAJA::loop`` methods.
-
-              * Hierarchical parallelism can be expressed using the thread and
-                thread-team model with ``RAJA::expt::loop`` methods as found in
-                programming models such as CUDA/HIP.
-
-Various examples showing how to use ``RAJA::forall``, ``RAJA::kernel``, ``RAJA::launch``
-methods may be found in the :ref:`tutorial-label`.
+The following sections describe the basic aspects of these methods.
 
 For more information on RAJA execution policies and iteration space constructs, 
 see :ref:`policies-label` and :ref:`index-label`, respectively. 
+
+Various examples showing how to use ``RAJA::forall``, ``RAJA::kernel``, ``RAJA::launch`` methods may be found in the :ref:`tutorial-label`. Links to specific
+RAJA tutorial sections are provided in the sections below.
 
 .. _loop_elements-forall-label:
 
@@ -65,27 +40,28 @@ see :ref:`policies-label` and :ref:`index-label`, respectively.
 Simple Loops (RAJA::forall)
 ---------------------------
 
-As noted earlier, a ``RAJA::forall`` template executes simple 
-(i.e., non-nested) loops. For example, a C-style loop that adds two vectors,
-like this::
+Consider a C-style loop that adds two vectors::
 
   for (int i = 0; i < N; ++i) {
     c[i] = a[i] + b[i];
   }
 
-may be written using RAJA as::
+This may be written using ``RAJA::forall`` as::
 
   RAJA::forall<exec_policy>(RAJA::RangeSegment(0, N), [=] (int i) {
     c[i] = a[i] + b[i];
   });
 
-A ``RAJA::forall`` method is a template on an execution policy type and takes
-two arguments: an object describing the loop iteration space, such as a RAJA 
-range segment (shown here), and a lambda expression for the loop body. Applying 
-different loop execution policies enables the loop to run in different ways; 
-e.g., using different programming model back-ends. Different iteration space 
-objects enable the loop iterates to be partitioned, reordered, run in 
-different threads, etc. 
+A ``RAJA::forall`` loop execution method is a template that takes an
+*execution policy* type template parameter. A ``RAJA::forall`` method takes
+two arguments: an iteration space object, such as a contiguous range of loop
+indices as shown here, and a single lambda expression representing the loop 
+kernel body.
+
+Applying different loop execution policies enables the loop to run in 
+different ways; e.g., using different programming model back-ends. Different 
+iteration space objects enable the loop iterates to be partitioned, reordered, 
+run in different threads, etc. 
 
 .. note:: Changing loop execution policy types and iteration space constructs
           enables loops to run in different ways by recompiling the code and 
@@ -103,6 +79,17 @@ simpler and less verbose for that use case.
           excessive overhead for copying data into the lambda data environment
           when captured by value.
 
+Please see the following tutorial sections for detailed examples that use
+``RAJA::forall``:
+
+ * :ref:`addvectors-label`
+ * :ref:`dotproduct-label`
+ * :ref:`reductions-label`
+ * :ref:`atomichist-label`
+ * :ref:`indexset-label`
+ * :ref:`vertexsum-label`
+
+
 .. _loop_elements-kernel-label:
 
 ----------------------------
@@ -110,8 +97,19 @@ Complex Loops (RAJA::kernel)
 ----------------------------
 
 A ``RAJA::kernel`` template provides ways to compose and execute arbitrary 
-loop nests and other complex kernels. To introduce the RAJA *kernel* interface,
-consider a (N+1)-level C-style loop nest::
+loop nests and other complex kernels. 
+The ``RAJA::kernel`` interface employs similar concepts to ``RAJA::forall``
+but extends it to support much more complex kernel structures.
+Each ``RAJA::kernel`` method is a template that takes an *execution policy* 
+type template parameter. The execution policy can be an arbitrarily complex
+sequence of nested templates that define a kernel execution pattern.
+loop nest. In its simplest form, ``RAJA::kernel`` takes two arguments: 
+a *tuple* of iteration space objects, and a lambda kernel inner loop body.
+In more complex usage, ``RAJA::kernel`` will take multiple lambda expressions 
+representing different portions of the loop kernel body.
+
+To introduce the RAJA *kernel* interface, consider a (N+1)-level C-style loop 
+nest::
 
   for (int iN = 0; iN < NN; ++iN) {
     ...
@@ -120,8 +118,8 @@ consider a (N+1)-level C-style loop nest::
        }
   }
 
-Note that we could write this by nesting ``RAJA::forall`` statements and
-it would work for some execution policy choices::
+It is important to note that we do not recommend writing a RAJA version of 
+this by nesting ``RAJA::forall`` statements. For example::
 
   RAJA::forall<exec_policyN>(IN, [=] (int iN) {
     ...
@@ -131,7 +129,8 @@ it would work for some execution policy choices::
     ...
   }
 
-However, this approach treats each loop level as an independent entity. This
+This would work for some execution policy choices, but not in general.
+Also, this approach treats each loop level as an independent entity, which
 makes it difficult to parallelize the levels in the loop nest together. So it
 may limit the amount of parallelism that can be exposed and the types of 
 parallelism that may be used. For example, if an OpenMP or CUDA
@@ -140,15 +139,15 @@ would be run sequentially in each thread. It also makes it difficult to perform
 transformations like loop interchange and loop collapse without changing the 
 source code, which breaks RAJA encapsulation.
 
-.. note:: **We do not recommend nesting ``RAJA::forall`` statements.**
+.. note:: **We do not recommend using nested ``RAJA::forall`` statements.**
 
-The RAJA *kernel* interface facilitates parallel execution and compile-time
+The ``RAJA::kernel`` interface facilitates parallel execution and compile-time
 transformation of arbitrary loop nests and other complex loop structures. 
-It can treat a complex loop structure as a single entity, which simplifies 
+It can treat a complex loop structure as a single entity, which enables 
 the ability to transform and apply different parallel execution patterns by 
-changing the execution policy type and *not the kernel code*.
+changing the execution policy type and **not the kernel code**, in many cases.
 
-The loop above nest may be written using the RAJA kernel interface as::
+The C-style loop above nest may be written using ``RAJA::kernel`` as::
 
     using KERNEL_POL = 
       RAJA::KernelPolicy< RAJA::statement::For<N, exec_policyN, 
@@ -169,17 +168,13 @@ The loop above nest may be written using the RAJA kernel interface as::
 
     );
 
-A ``RAJA::kernel`` method takes a ``RAJA::KernelPolicy`` type template 
-parameter, and a tuple of iteration spaces and a sequence of lambda 
-expressions as arguments. 
-
 In the case we discuss here, the execution policy contains a nested sequence
-of ``RAJA::statement::For`` statements, one for each level in the loop nest. 
-Each ``For`` statement takes three template parameters: 
+of ``RAJA::statement::For`` types, indicating an iteration over each level in 
+the loop nest.  Each of these statement types takes three template parameters: 
 
-  * an integral index parameter that binds the ``For`` statement to the item 
-    in the iteration space tuple corresponding to that index,
-  * an execution policy type for the associated loop nest level, and
+  * an integral index parameter that binds the statement to the item 
+    in the iteration space tuple corresponding to that index
+  * an execution policy type for the associated loop nest level
   * an *enclosed statement list* (described in :ref:`loop_elements-kernelpol-label`).
 
 .. note:: The nesting of ``RAJA::statement::For`` types is analogous to the
@@ -189,7 +184,7 @@ Each ``For`` statement takes three template parameters:
 
 Here, the innermost type in the kernel policy is a 
 ``RAJA::statement::Lambda<0>`` type indicating that the first lambda expression
-(argument zero of the sequence of lambdas passed to the ``RAJA::kernel`` method)
+(argument zero of a sequence of lambdas passed to the ``RAJA::kernel`` method)
 will comprise the inner loop body. We only have one lambda in this example 
 but, in general, we can have any number of lambdas and we can use any subset 
 of them, with ``RAJA::statement::Lambda`` types placed appropriately in the
@@ -197,18 +192,19 @@ execution policy, to construct a loop kernel. For example, placing
 ``RAJA::statement::Lambda`` types between ``RAJA::statement::For`` statements 
 enables non-perfectly nested loops.
 
-RAJA offers two types of lambda statements. The first as illustratated
-above, requires that each lambda expression passed to a ``RAJA::kernel`` method
+RAJA offers two types of ``RAJA::statement::Lambda`` statements. The simplest 
+for illustrated
+above requires that each lambda expression passed to a ``RAJA::kernel`` method
 **must take an index argument for each iteration space in the tuple**.
 With this type of lambda statement, the entire iteration space must be active 
 in a containing ``For`` construct.  A compile time ``static_assert`` will be 
 triggered if any of the arguments are undefined, indicating that something
 is not correct.
 
-The second type of lambda statement, an extension of the first, takes additional
-template parameters which specify which iteration space indices are passed
-as lambda arguments. The result is that a kernel lambda only needs to accept
-iteration space index arguments that are used in the lambda body.
+A second ``RAJA::statement::Lambda`` type, which is an extension of the first, 
+takes additional template parameters which specify which iteration spaces 
+are passed as lambda arguments. The result is that a kernel lambda only needs 
+to accept iteration space index arguments that are used in the lambda body.
 
 The kernel policy list with lambda arguments may be written as::
 
@@ -222,12 +218,14 @@ The kernel policy list with lambda arguments may be written as::
                           > 
                         >;
 
-The template parameter ``RAJA::Segs`` is used to specify which elements in the
-segment tuple are used to pass arguments to a lambda. RAJA offers other 
-types such as ``RAJA::Offsets``, and ``RAJA::Params`` to identify offsets and 
-parameters in segments and param tuples respectively to be used as lambda 
-argumentsx. See :ref:`matrixmultiply-label` and 
-:ref:`matrixtransposelocalarray-label` for detailed  examples.
+The template parameter ``RAJA::Segs`` is used to specify indices from which 
+elements in the segment tuple are passed as arguments to the lambda, and in
+which argument order. Here, we pass all segment indices so the lambda kernel
+body definition could be identical to on passed to the previous RAJA version.
+RAJA offers other types such as ``RAJA::Offsets``, and ``RAJA::Params`` to 
+identify offsets and parameters in segments and parameter tuples that could be
+passed to ``RAJA::kernel`` methods. See :ref:`matrixmultiply-label`
+for an example.
 
 .. note:: Unless lambda arguments are specified in RAJA lambda statements,
           the loop index arguments for each lambda expression used in a RAJA
@@ -253,36 +251,53 @@ with the outermost loop and ending with the innermost loop.
           changing the order of 'for-loop' statements in C-style nested loop 
           code.
 
-See :ref:`matmultkernel-label` for a complete example showing RAJA nested
-loop functionality and :ref:`kernelnestedreorder-label` for a detailed example 
-describing nested loop reordering.
-
 .. note:: In general, RAJA execution policies for ``RAJA::forall`` and 
           ``RAJA::kernel`` are different. A summary of all RAJA execution 
           policies that may be used with ``RAJA::forall`` or ``RAJA::kernel`` 
           may be found in :ref:`policies-label`. 
 
-Finally, a discussion of how to construct ``RAJA::KernelPolicy`` types and 
+A discussion of how to construct ``RAJA::KernelPolicy`` types and 
 available ``RAJA::statement`` types can be found in 
 :ref:`loop_elements-kernelpol-label`.
 
---------------------------------
-Hierarchical loops (RAJA::launch)
---------------------------------
+Please see the following tutorial sections for detailed examples that use
+``RAJA::kernel``:
 
-The *RAJA Launch* framework aims to unify thread/block based
+ * :ref:`kernelnestedreorder-label`
+ * :ref:`kernelexecpols-label`
+ * :ref:`matrixmultiply-label`
+ * :ref:`tutorialmatrixtranspose-label`
+ * :ref:`offset-label`
+
+------------------------------------------
+Hierarchical loops (RAJA::expt::launch)
+------------------------------------------
+
+The ``RAJA::expt::launch`` template is an alternative interface to 
+``RAJA::kernel`` that may be preferred for certain types of complex kernels
+or based on coding style preferences.
+ 
+..note :: ``RAJA::expt::launch`` will be moved out of the ``expt`` namespace 
+          in a future RAJA release, after which it will appear as 
+          ``RAJA::launch``.
+
+``RAJA::expt::launch`` optionally allows either host or device execution
+to be chosen at run time. The method takes an execution policy type that
+will define the execution environment inside a lambda expression for a kernel 
+to be run on a host, device, or either. Kernel algorithms are written inside 
+main lambda expression using ``RAJA::expt::loop`` methods.
+
+The ``RAJA::expt::launch`` framework aims to unify thread/block based
 programming models such as CUDA/HIP/SYCL while maintaining portability on
-host backends (OpenMP, sequential). When using the ``RAJA::kernel`` 
-interface, developers express all aspects of nested loop execution in the
-execution policy type on which the ``RAJA::kernel`` method is templated.
+host back-ends (OpenMP, sequential). As we showed earlier, when using the 
+``RAJA::kernel`` interface, developers express all aspects of nested loop 
+execution in an execution policy type on which the ``RAJA::kernel`` method 
+is templated.
 In contrast, the ``RAJA::launch`` interface allows users to express 
 nested loop execution in a manner that more closely reflects how one would
-write conventional nested C-style for-loop code.  Additionally, *RAJA Launch* 
-introduces run-time host or device selectable kernel execution. The main 
-application of *RAJA Launch* is imperfectly nested loops. Using the 
-``RAJA::expt::launch method`` developers are provided with an execution 
-space enabling them to express algorithms in terms of nested
-``RAJA::expt::loop`` statements::
+write conventional nested C-style for-loop code. For example, here is an
+example of a ``RAJA::expt::launch`` kernel that copies values from an array in
+into a *shared memory* array.
 
   RAJA::expt::launch<launch_policy>(select_CPU_or_GPU)
   RAJA::expt::Grid(RAJA::expt::Teams(NE), RAJA::expt::Threads(Q1D)),
@@ -302,31 +317,44 @@ space enabling them to express algorithms in terms of nested
 
   });
   
-The underlying idea of *RAJA Launch* is to enable developers to express hierarchical
-parallelism in terms of teams and threads. Similar to the CUDA programming model,
-development is done using a collection of threads, threads are grouped into teams.
-Using the ``RAJA::expt::loop`` methods iterations of the loop may be executed by threads
-or teams (depending on the execution policy). The launch context serves to synchronize
-threads within the same team. The *RAJA Launch* abstraction consist of three main concepts.
+The idea underlying ``RAJA::expt::launch`` is to enable developers to express 
+hierarchical parallelism in terms of teams and threads. Similar to the CUDA 
+programming model, development is done using a collection of threads, and 
+threads are grouped into teams. Using the ``RAJA::expt::loop`` methods 
+iterations of the loop may be executed by threads or teams depending on the 
+execution policy type. The launch context serves to synchronize threads within 
+the same team. The ``RAJA::expt::launch`` interface has three main concepts:
 
-  * *Launch Method*: creates an execution space in which developers may express 
-    their algorithm in terms of nested ``RAJA::expt::loop`` statements. The loops are then
-    executed by threads or thread-teams. The method is templated on both a host
-    and device execution space and enables run-time selection of the execution environment.
+  * ``RAJA::expt::launch`` template. This creates an execution environment in 
+     which a kernel implementation is written using nested ``RAJA::expt::loop``
+     statements. The launch policy template parameter used with the 
+     ``RAJA::expt::launch`` method enables specification of both a host and 
+     device execution environment, which enables run time selection of 
+     kernel execution.
 
-  * *Resources*: holds a number of teams and threads (akin to CUDA blocks/threads).
+  * ``RAJA::expt::Grid`` type. This type takes a number of teams and and a 
+    number of threads as arguments.
 
-  * *Loops*: are used to express hierarchical parallelism. Work within a loop is mapped to either teams or threads. Team shared memory
-    is available by using the ``RAJA_TEAM_SHARED`` macro. Team shared memory enables
-    threads in a given team to share data. In practice, team policies are typically
-    aliases for RAJA GPU block policies in the x,y,z dimensions (for example cuda_block_direct),
-    while thread policies are aliases for RAJA GPU thread policies (for example cuda_thread_direct)
-    x,y,z dimensions. On the host, teams and threads may be mapped to sequential
-    loop execution or OpenMP threaded regions.
+  * ``RAJA::expt::loop`` template. These are used to define hierarchical 
+    parallel execution of a kernel. Operations within a loop are mapped to 
+    either teams or threads based on the execution policy template parameter 
+    provided. 
 
-The team loop interface combines concepts from ``RAJA::forall`` and ``RAJA::kernel``.
-Various policies from ``RAJA::kernel`` are compatible with the ``RAJA::launch``
-framework.
+Team shared memory is available by using the ``RAJA_TEAM_SHARED`` macro. Team 
+shared memory enables threads in a given team to share data. In practice, 
+team policies are typically aliases for RAJA GPU block policies in the 
+x,y,z dimensions, while thread policies are aliases for RAJA GPU thread 
+policies in the x,y,z dimensions. In a host execution environment, teams and 
+threads may be mapped to sequential loop execution or OpenMP threaded regions.
+Often, the ``RAJA::expt::Grid`` method can take an empty argument list for
+host execution. 
+
+Please see the following tutorial sections for detailed examples that use
+``RAJA::expt::launch``:
+
+ * :ref:`launchintro-label`
+ * :ref:`launchexecpols-label`
+ * :ref:`tutorialmatrixtranspose-label`
 
 .. _loop_elements-CombiningAdapter-label:
 
@@ -335,7 +363,8 @@ MultiDimensional loops using Simple loop APIs (RAJA::CombiningAdapter)
 --------------------------------
 
 A ``RAJA::CombiningAdapter`` object provides ways to run perfectly nested loops
-with simple loop APIs like ``RAJA::forall`` and ``RAJA::WorkGroup`` :ref:`workgroup-label`.
+with simple loop APIs like ``RAJA::forall`` and those described in 
+:ref:`workgroup-label`.
 To introduce the ``RAJA ::CombiningAdapter`` interface, consider a (N+1)-level
 C-style loop nest::
 
@@ -357,13 +386,13 @@ loops and pass the adapter to a ``RAJA::forall`` statement to execute them::
   RAJA::forall<exec_policy>(adapter.getRange(), adapter);
 
 A ``RAJA::CombiningAdapter`` object is a template combining a loop body and
-iteration spaces. The maker function template takes a lambda expression for the
-loop body and an arbitrary number of segment arguments. It provides a flattened
-index space via the ``getRange`` method that can be passed as the iteration space
-to the simple loop API. The object itself can be passed into the loop API as the
-loop body. The object's call operator does the conversion of the flat single
-dimensional index into the multi-dimensional index space, calling the provided
-lambda with the appropriate indices.
+iteration spaces. The ``RAJA::make_CombingingAdapter`` template method takes 
+a lambda expression for the loop body and an arbitrary number of index 
+arguments. It provides a *flattened* iteration space via the ``getRange`` 
+method that can be passed as the iteration space to the ``RAJA::forall``
+method, for example. The object's call operator does the conversion of the 
+flat single dimensional index into the multi-dimensional index space, calling 
+the provided lambda with the appropriate indices.
 
 .. note:: CombiningAdapter currently only supports ``RAJA::RangeSegment`` and
           ``RAJA::TypedRangeSegment`` segments.

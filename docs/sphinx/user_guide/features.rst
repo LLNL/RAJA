@@ -12,7 +12,10 @@
 RAJA Features
 ************************
 
-The following sections describe key aspects of the main RAJA features.
+The following sections describe the main RAJA features. They are intended
+to introduce users to the features and basic usage and also to provide
+a syntax reference guide. The sections contain links to RAJA tutorial 
+materials that provide detailed examples of usage.
 
 .. toctree::
    :maxdepth: 2
