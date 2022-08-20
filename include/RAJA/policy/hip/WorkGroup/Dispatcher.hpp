@@ -34,64 +34,66 @@ namespace RAJA
 namespace detail
 {
 
-#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+namespace hip
+{
 
 // global function that gets the device function pointer and
-// writes it into a pinned ptrptr
-template < typename T, typename Dispatcher_T >
-__global__ void get_Dispatcher_hip_device_call_global(
-    typename Dispatcher_T::invoker_type* ptrptr)
+// writes it into a pinned ptr
+template < typename invoker_type, typename InvokerGetter >
+__global__ void get_invoker_global(
+    invoker_type* ptr, InvokerGetter invokerGetter)
 {
-  *ptrptr = &Dispatcher_T::template s_device_call<T>;
+  *ptr = invokerGetter();
 }
 
-// allocate the pinned ptrptr buffer
-inline void* get_Dispatcher_hip_device_call_ptrptr()
+// get the pinned ptr buffer
+inline void* get_cached_invoker_ptr(size_t nbytes)
 {
-  void* ptrptr = nullptr;
-  hipErrchk(hipHostMalloc(&ptrptr, sizeof(typename Dispatcher<void>::invoker_type)));
-  return ptrptr;
-}
-
-// get the pinned ptrptr buffer
-inline void* get_cached_Dispatcher_hip_device_call_ptrptr()
-{
-  static void* ptrptr = get_Dispatcher_hip_device_call_ptrptr();
-  return ptrptr;
+  static size_t cached_nbytes = 0;
+  static void* ptr = nullptr;
+  if (nbytes > cached_nbytes) {
+    cached_nbytes = 0;
+    hipErrchk(hipHostFree(ptr));
+    hipErrchk(hipHostMalloc(&ptr, nbytes));
+    cached_nbytes = nbytes;
+  }
+  return ptr;
 }
 
 // mutex that guards against concurrent use of
-// get_cached_Dispatcher_hip_device_call_ptrptr()
-inline std::mutex& get_Dispatcher_hip_mutex()
+// pinned buffer and get_cached_invoker_ptr()
+inline std::mutex& get_invoker_mutex()
 {
   static std::mutex s_mutex;
   return s_mutex;
 }
 
-template < typename T, typename Dispatcher_T >
-inline typename Dispatcher_T::invoker_type get_Dispatcher_hip_device_call()
+// get the device function pointer by calling a global function to
+// write it into a pinned ptr, beware different instantiates of this
+// function may run concurrently
+template < typename invoker_type, typename InvokerGetter >
+inline auto get_invoker(InvokerGetter&& invokerGetter)
 {
-  const std::lock_guard<std::mutex> lock(get_Dispatcher_hip_mutex());
+  const std::lock_guard<std::mutex> lock(get_invoker_mutex());
 
-  typename Dispatcher_T::invoker_type* ptrptr =
-      static_cast<typename Dispatcher_T::invoker_type*>(
-        get_cached_Dispatcher_hip_device_call_ptrptr());
-  auto func = get_Dispatcher_hip_device_call_global<T, Dispatcher_T>;
-  hipLaunchKernelGGL(func,
-      dim3(1), dim3(1), 0, 0, ptrptr);
+  auto ptr = static_cast<invoker_type*>(get_cached_invoker_ptr(sizeof(invoker_type)));
+  auto func = get_invoker_global<invoker_type, std::decay_t<InvokerGetter>>;
+  hipLaunchKernelGGL(func, dim3(1), dim3(1), 0, 0,
+                     ptr, std::forward<InvokerGetter>(invokerGetter));
   hipErrchk(hipGetLastError());
   hipErrchk(hipDeviceSynchronize());
 
-  return *ptrptr;
+  return *ptr;
 }
 
-template < typename T, typename Dispatcher_T >
-inline typename Dispatcher_T::invoker_type get_cached_Dispatcher_hip_device_call()
+template < typename invoker_type, typename InvokerGetter >
+inline auto get_cached_invoker(InvokerGetter&& invokerGetter)
 {
-  static typename Dispatcher_T::invoker_type ptr =
-      get_Dispatcher_hip_device_call<T, Dispatcher_T>();
-  return ptr;
+  static auto invoker = get_invoker<invoker_type>(std::forward<InvokerGetter>(invokerGetter));
+  return invoker;
 }
+
+}  // namespace hip
 
 /*!
 * Populate and return a Dispatcher object where the
@@ -100,16 +102,15 @@ inline typename Dispatcher_T::invoker_type get_cached_Dispatcher_hip_device_call
 template < typename T, typename Dispatcher_T, size_t BLOCK_SIZE, bool Async >
 inline const Dispatcher_T* get_Dispatcher(hip_work<BLOCK_SIZE, Async> const&)
 {
+  using invoker_type = typename Dispatcher_T::invoker_type;
   static Dispatcher_T dispatcher{
-        &Dispatcher_T::template s_move_construct_destroy<T>,
-        get_cached_Dispatcher_hip_device_call<T, Dispatcher_T>(),
-        &Dispatcher_T::template s_destroy<T>,
-        sizeof(T)
-      };
+        Dispatcher_T::template makeDeviceDispatcher<T>(
+          [](auto&& invokerGetter) {
+            return hip::get_cached_invoker<invoker_type>(
+                std::forward<decltype(invokerGetter)>(invokerGetter));
+          }) };
   return &dispatcher;
 }
-
-#endif
 
 }  // namespace detail
 

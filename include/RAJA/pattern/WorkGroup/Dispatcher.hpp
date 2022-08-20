@@ -21,6 +21,8 @@
 
 #include "RAJA/config.hpp"
 
+#include "RAJA/policy/WorkGroup.hpp"
+
 #include <utility>
 
 
@@ -48,19 +50,29 @@ struct DispatcherVoidConstPtrWrapper
   RAJA_HOST_DEVICE DispatcherVoidConstPtrWrapper(const void* p) : ptr(p) { }
 };
 
+
 /*!
- * A dispatcher abstraction
- *
- * Provides function pointers for basic functions.
+ * A dispatcher abstraction that provides an interface to some basic
+ * functionality that is implemented differently based on the dispatch_policy.
  *
  * DispatcherID is used to differentiate function pointers based on their
- * function signature. This is helpful to avoid function signature collisions
+ * function signature.
+ */
+template < typename dispatch_policy, typename DispatcherID, typename ... CallArgs >
+struct Dispatcher;
+
+/*!
+ * Version of Dispatcher that acts essentially like a vtable. It implements
+ * the interface with function pointers.
+ *
+ * DispatcherID can be helpful to avoid function signature collisions
  * with functions that will not be used through this class. This is useful
  * during device linking when functions with high register counts may cause
  * device linking to fail.
  */
 template < typename DispatcherID, typename ... CallArgs >
-struct Dispatcher {
+struct Dispatcher<::RAJA::indirect_function_call_dispatch, DispatcherID, CallArgs...> {
+  using dispatch_policy = ::RAJA::indirect_function_call_dispatch;
   using void_ptr_wrapper = DispatcherVoidPtrWrapper<DispatcherID>;
   using void_cptr_wrapper = DispatcherVoidConstPtrWrapper<DispatcherID>;
   using mover_type = void(*)(void_ptr_wrapper /*dest*/, void_ptr_wrapper /*src*/);
@@ -84,21 +96,21 @@ struct Dispatcher {
   /// call the call operator of the object of type T in obj with args
   ///
   template < typename T >
-  static void s_host_call(void_cptr_wrapper obj, CallArgs... args)
+  static void s_host_invoke(void_cptr_wrapper obj, CallArgs... args)
   {
     const T* obj_as_T = static_cast<const T*>(obj.ptr);
     (*obj_as_T)(std::forward<CallArgs>(args)...);
   }
   ///
   template < typename T >
-  static RAJA_DEVICE void s_device_call(void_cptr_wrapper obj, CallArgs... args)
+  static RAJA_DEVICE void s_device_invoke(void_cptr_wrapper obj, CallArgs... args)
   {
     const T* obj_as_T = static_cast<const T*>(obj.ptr);
     (*obj_as_T)(std::forward<CallArgs>(args)...);
   }
 
   ///
-  /// destoy the object of type T in obj
+  /// destroy the object of type T in obj
   ///
   template < typename T >
   static void s_destroy(void_ptr_wrapper obj)
@@ -107,6 +119,36 @@ struct Dispatcher {
     (*obj_as_T).~T();
   }
 
+  template<typename T>
+  static Dispatcher makeHostDispatcher() {
+    return { &s_move_construct_destroy<T>,
+             &s_host_invoke<T>,
+             &s_destroy<T>,
+             sizeof(T)
+           };
+  }
+
+  template < typename T >
+  struct InvokerGetter {
+    RAJA_DEVICE invoker_type operator()() {
+      return &s_device_invoke<T>;
+    }
+  };
+
+  template< typename T, typename GetInvoker >
+  static Dispatcher makeDeviceDispatcher(GetInvoker&& getInvoker) {
+    return { &s_move_construct_destroy<T>,
+             std::forward<GetInvoker>(getInvoker)(InvokerGetter<T>{}),
+             &s_destroy<T>,
+             sizeof(T)
+           };
+  }
+
+  mover_type move_construct_destroy;
+  invoker_type invoke;
+  destroyer_type destroy;
+  size_t size;
+};
   mover_type move_construct_destroy;
   invoker_type invoke;
   destroyer_type destroy;

@@ -34,65 +34,67 @@ namespace RAJA
 namespace detail
 {
 
+namespace cuda
+{
+
 // global function that gets the device function pointer and
-// writes it into a pinned ptrptr
-template < typename T, typename Dispatcher_T >
-__global__ void get_Dispatcher_cuda_device_call_global(
-    typename Dispatcher_T::invoker_type* ptrptr)
+// writes it into a pinned ptr
+template < typename invoker_type, typename InvokerGetter >
+__global__ void get_invoker_global(
+    invoker_type* ptr, InvokerGetter invokerGetter)
 {
-  *ptrptr = &Dispatcher_T::template s_device_call<T>;
+  *ptr = invokerGetter();
 }
 
-// allocate the pinned ptrptr buffer
-inline void* get_Dispatcher_cuda_device_call_ptrptr()
+// get the pinned ptr buffer
+inline void* get_cached_invoker_ptr(size_t nbytes)
 {
-  void* ptrptr = nullptr;
-  cudaErrchk(cudaMallocHost(&ptrptr, sizeof(typename Dispatcher<void>::invoker_type)));
-  return ptrptr;
-}
-
-// get the pinned ptrptr buffer
-inline void* get_cached_Dispatcher_cuda_device_call_ptrptr()
-{
-  static void* ptrptr = get_Dispatcher_cuda_device_call_ptrptr();
-  return ptrptr;
+  static size_t cached_nbytes = 0;
+  static void* ptr = nullptr;
+  if (nbytes > cached_nbytes) {
+    cached_nbytes = 0;
+    cudaErrchk(cudaFreeHost(ptr));
+    cudaErrchk(cudaMallocHost(&ptr, nbytes));
+    cached_nbytes = nbytes;
+  }
+  return ptr;
 }
 
 // mutex that guards against concurrent use of
-// get_cached_Dispatcher_cuda_device_call_ptrptr()
-inline std::mutex& get_Dispatcher_cuda_mutex()
+// pinned buffer and get_cached_invoker_ptr()
+inline std::mutex& get_invoker_mutex()
 {
   static std::mutex s_mutex;
   return s_mutex;
 }
 
 // get the device function pointer by calling a global function to
-// write it into a pinned ptrptr, beware different instantiates of this
+// write it into a pinned ptr, beware different instantiates of this
 // function may run concurrently
-template < typename T, typename Dispatcher_T >
-inline typename Dispatcher_T::invoker_type get_Dispatcher_cuda_device_call()
+template < typename invoker_type, typename InvokerGetter >
+inline auto get_invoker(InvokerGetter&& invokerGetter)
 {
-  const std::lock_guard<std::mutex> lock(get_Dispatcher_cuda_mutex());
+  const std::lock_guard<std::mutex> lock(get_invoker_mutex());
 
-  typename Dispatcher_T::invoker_type* ptrptr =
-      static_cast<typename Dispatcher_T::invoker_type*>(
-        get_cached_Dispatcher_cuda_device_call_ptrptr());
-  get_Dispatcher_cuda_device_call_global<T, Dispatcher_T><<<1,1>>>(ptrptr);
+  auto ptr = static_cast<invoker_type*>(get_cached_invoker_ptr(sizeof(invoker_type)));
+  get_invoker_global<invoker_type, std::decay_t<InvokerGetter>><<<1,1>>>(
+      ptr, std::forward<InvokerGetter>(invokerGetter));
   cudaErrchk(cudaGetLastError());
   cudaErrchk(cudaDeviceSynchronize());
 
-  return *ptrptr;
+  return *ptr;
 }
 
 // get the device function pointer and store it so it can be used
 // multiple times
-template < typename T, typename Dispatcher_T >
-inline typename Dispatcher_T::invoker_type get_cached_Dispatcher_cuda_device_call()
+template < typename invoker_type, typename InvokerGetter >
+inline auto get_cached_invoker(InvokerGetter&& invokerGetter)
 {
-  static typename Dispatcher_T::invoker_type ptr =
-      get_Dispatcher_cuda_device_call<T, Dispatcher_T>();
-  return ptr;
+  static auto invoker = get_invoker<invoker_type>(std::forward<InvokerGetter>(invokerGetter));
+  return invoker;
 }
+
+}  // namespace cuda
 
 /*!
 * Populate and return a Dispatcher object where the
@@ -101,12 +103,13 @@ inline typename Dispatcher_T::invoker_type get_cached_Dispatcher_cuda_device_cal
 template < typename T, typename Dispatcher_T, size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async >
 inline const Dispatcher_T* get_Dispatcher(cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async> const&)
 {
+  using invoker_type = typename Dispatcher_T::invoker_type;
   static Dispatcher_T dispatcher{
-        &Dispatcher_T::template s_move_construct_destroy<T>,
-        get_cached_Dispatcher_cuda_device_call<T, Dispatcher_T>(),
-        &Dispatcher_T::template s_destroy<T>,
-        sizeof(T)
-      };
+        Dispatcher_T::template makeDeviceDispatcher<T>(
+          [](auto&& invokerGetter) {
+            return cuda::get_cached_invoker<invoker_type>(
+              std::forward<decltype(invokerGetter)>(invokerGetter));
+          }) };
   return &dispatcher;
 }
 

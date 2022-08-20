@@ -113,7 +113,8 @@ void testWorkGroupDispatcherSingle(RAJA::xargs<Args...>)
   camp::resources::Resource work_res{WORKING_RES()};
   camp::resources::Resource host_res{camp::resources::Host()};
 
-  using Dispatcher_type = RAJA::detail::Dispatcher<void, IndexType, Args...>;
+  using Dispatcher_type = RAJA::detail::Dispatcher<
+      RAJA::indirect_function_call_dispatch, void, IndexType, Args...>;
   using Invoker_type = typename Dispatcher_type::invoker_type;
   using Dispatcher_cptr_type = typename Dispatcher_type::void_cptr_wrapper;
   const Dispatcher_type* dispatcher =

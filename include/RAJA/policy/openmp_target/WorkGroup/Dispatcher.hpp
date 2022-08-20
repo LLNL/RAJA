@@ -31,30 +31,34 @@ namespace RAJA
 namespace detail
 {
 
+namespace omp_target
+{
+
 // get the device function pointer by opening a target region and writing out
 // the pointer to the function call
-template < typename T, typename Dispatcher_T >
-inline typename Dispatcher_T::invoker_type get_Dispatcher_omp_target_call()
+template < typename invoker_type, typename InvokerGetter >
+inline auto get_invoker(InvokerGetter invokerGetter)
 {
-  typename Dispatcher_T::invoker_type ptr = nullptr;
+  invoker_type invoker;
 
-  #pragma omp target map(tofrom : ptr)
+  #pragma omp target map(tofrom : invoker) map(to : invokerGetter)
   {
-    ptr = &Dispatcher_T::template s_host_call<T>;
+    invoker = invokerGetter();
   }
 
-  return ptr;
+  return invoker;
 }
 
 // get the device function pointer and store it so it can be used
 // multiple times
-template < typename T, typename Dispatcher_T >
-inline typename Dispatcher_T::invoker_type get_cached_Dispatcher_omp_target_call()
+template < typename invoker_type, typename InvokerGetter >
+inline auto get_cached_invoker(InvokerGetter&& invokerGetter)
 {
-  static typename Dispatcher_T::invoker_type ptr =
-      get_Dispatcher_omp_target_call<T, Dispatcher_T>();
-  return ptr;
+  static auto invoker = get_invoker<invoker_type>(std::forward<InvokerGetter>(invokerGetter));
+  return invoker;
 }
+
+}  // namespace omp_target
 
 /*!
 * Populate and return a Dispatcher object where the
@@ -63,12 +67,13 @@ inline typename Dispatcher_T::invoker_type get_cached_Dispatcher_omp_target_call
 template < typename T, typename Dispatcher_T >
 inline const Dispatcher_T* get_Dispatcher(omp_target_work const&)
 {
+  using invoker_type = typename Dispatcher_T::invoker_type;
   static Dispatcher_T dispatcher{
-        &Dispatcher_T::template s_move_construct_destroy<T>,
-        get_cached_Dispatcher_omp_target_call<T, Dispatcher_T>(),
-        &Dispatcher_T::template s_destroy<T>,
-        sizeof(T)
-      };
+        Dispatcher_T::template makeDeviceDispatcher<T>(
+          [](auto&& invokerGetter) {
+            return omp_target::get_cached_invoker<invoker_type>(
+              std::forward<decltype(invokerGetter)>(invokerGetter));
+          }) };
   return &dispatcher;
 }
 

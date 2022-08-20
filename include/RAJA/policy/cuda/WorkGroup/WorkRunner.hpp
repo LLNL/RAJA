@@ -37,12 +37,14 @@ namespace detail
  * and returns any per run resources
  */
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async,
+          typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
         RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
         RAJA::ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
@@ -50,6 +52,7 @@ struct WorkRunner<
         RAJA::cuda_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>,
         RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
         RAJA::ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
@@ -58,6 +61,7 @@ struct WorkRunner<
         RAJA::cuda_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>,
         RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
         RAJA::ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>;
@@ -92,12 +96,14 @@ struct WorkRunner<
  * and returns any per run resources
  */
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async,
+          typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
         RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
         RAJA::reverse_ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
@@ -105,6 +111,7 @@ struct WorkRunner<
         RAJA::cuda_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>,
         RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
         RAJA::reverse_ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
@@ -113,6 +120,7 @@ struct WorkRunner<
         RAJA::cuda_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>,
         RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
         RAJA::reverse_ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>;
@@ -199,23 +207,26 @@ __launch_bounds__(BLOCK_SIZE, BLOCKS_PER_SM) __global__
  * by the average number of iterates per loop
  */
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async,
+          typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
         RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
         RAJA::policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
 {
   using exec_policy = RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>;
   using order_policy = RAJA::policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average;
+  using dispatch_policy = DISPATCH_POLICY_T;
   using Allocator = ALLOCATOR_T;
   using index_type = INDEX_T;
   using resource_type = resources::Cuda;
 
-  using dispatcher_type = Dispatcher<RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, true>, Args...>;
+  using dispatcher_type = Dispatcher<dispatch_policy, RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, true>, Args...>;
 
   WorkRunner() = default;
 

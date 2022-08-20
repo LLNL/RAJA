@@ -28,7 +28,8 @@ void testWorkGroupWorkStorageMultiple(
 {
   bool success = true;
 
-  using Dispatcher_type = RAJA::detail::Dispatcher<void, void*, bool*, bool*>;
+  using Dispatcher_type = RAJA::detail::Dispatcher<
+      RAJA::indirect_function_call_dispatch, void, void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,

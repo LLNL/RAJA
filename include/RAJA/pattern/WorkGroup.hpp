@@ -219,7 +219,7 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
 
 private:
   using workrunner_type = detail::WorkRunner<
-      exec_policy, order_policy, Allocator, index_type, Args...>;
+      exec_policy, order_policy, dispatch_policy, Allocator, index_type, Args...>;
   using storage_type = detail::WorkStorage<
       storage_policy, Allocator, typename workrunner_type::dispatcher_type>;
 

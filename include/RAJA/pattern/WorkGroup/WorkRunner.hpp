@@ -140,6 +140,7 @@ private:
  */
 template <typename EXEC_POLICY_T,
           typename ORDER_POLICY_T,
+          typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
@@ -152,6 +153,7 @@ struct WorkRunner;
 template <typename FORALL_EXEC_POLICY,
           typename EXEC_POLICY_T,
           typename ORDER_POLICY_T,
+          typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
@@ -159,12 +161,13 @@ struct WorkRunnerForallOrdered_base
 {
   using exec_policy = EXEC_POLICY_T;
   using order_policy = ORDER_POLICY_T;
+  using dispatch_policy = DISPATCH_POLICY_T;
   using Allocator = ALLOCATOR_T;
   using index_type = INDEX_T;
   using resource_type = typename resources::get_resource<FORALL_EXEC_POLICY>::type;
 
   using forall_exec_policy = FORALL_EXEC_POLICY;
-  using dispatcher_type = Dispatcher<void, resource_type, Args...>;
+  using dispatcher_type = Dispatcher<dispatch_policy, void, resource_type, Args...>;
 
   WorkRunnerForallOrdered_base() = default;
 
@@ -209,6 +212,7 @@ struct WorkRunnerForallOrdered_base
 template <typename FORALL_EXEC_POLICY,
           typename EXEC_POLICY_T,
           typename ORDER_POLICY_T,
+          typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
@@ -217,6 +221,7 @@ struct WorkRunnerForallOrdered
       FORALL_EXEC_POLICY,
       EXEC_POLICY_T,
       ORDER_POLICY_T,
+      DISPATCH_POLICY_T,
       ALLOCATOR_T,
       INDEX_T,
       Args...>
@@ -225,6 +230,7 @@ struct WorkRunnerForallOrdered
       FORALL_EXEC_POLICY,
       EXEC_POLICY_T,
       ORDER_POLICY_T,
+      DISPATCH_POLICY_T,
       ALLOCATOR_T,
       INDEX_T,
       Args...>;
@@ -255,6 +261,7 @@ struct WorkRunnerForallOrdered
 template <typename FORALL_EXEC_POLICY,
           typename EXEC_POLICY_T,
           typename ORDER_POLICY_T,
+          typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
@@ -263,6 +270,7 @@ struct WorkRunnerForallReverse
       FORALL_EXEC_POLICY,
       EXEC_POLICY_T,
       ORDER_POLICY_T,
+      DISPATCH_POLICY_T,
       ALLOCATOR_T,
       INDEX_T,
       Args...>
@@ -271,6 +279,7 @@ struct WorkRunnerForallReverse
       FORALL_EXEC_POLICY,
       EXEC_POLICY_T,
       ORDER_POLICY_T,
+      DISPATCH_POLICY_T,
       ALLOCATOR_T,
       INDEX_T,
       Args...>;

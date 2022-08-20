@@ -37,12 +37,14 @@ namespace detail
  * and returns any per run resources
  */
 template <size_t BLOCK_SIZE, bool Async,
+          typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
         RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
@@ -50,6 +52,7 @@ struct WorkRunner<
         RAJA::hip_exec_async<BLOCK_SIZE>,
         RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
@@ -58,6 +61,7 @@ struct WorkRunner<
         RAJA::hip_exec_async<BLOCK_SIZE>,
         RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>;
@@ -92,12 +96,14 @@ struct WorkRunner<
  * and returns any per run resources
  */
 template <size_t BLOCK_SIZE, bool Async,
+          typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
         RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::reverse_ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
@@ -105,6 +111,7 @@ struct WorkRunner<
         RAJA::hip_exec_async<BLOCK_SIZE>,
         RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::reverse_ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
@@ -113,6 +120,7 @@ struct WorkRunner<
         RAJA::hip_exec_async<BLOCK_SIZE>,
         RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::reverse_ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>;
@@ -200,23 +208,26 @@ __launch_bounds__(BLOCK_SIZE, 1) __global__
  * by the average number of iterates per loop
  */
 template <size_t BLOCK_SIZE, bool Async,
+          typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
         RAJA::hip_work<BLOCK_SIZE, Async>,
         RAJA::policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
 {
   using exec_policy = RAJA::hip_work<BLOCK_SIZE, Async>;
   using order_policy = RAJA::policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average;
+  using dispatch_policy =  DISPATCH_POLICY_T;
   using Allocator = ALLOCATOR_T;
   using index_type = INDEX_T;
   using resource_type = resources::Hip;
 
-  using dispatcher_type = Dispatcher<RAJA::hip_work<BLOCK_SIZE, true>, Args...>;
+  using dispatcher_type = Dispatcher<dispatch_policy, RAJA::hip_work<BLOCK_SIZE, true>, Args...>;
 
   WorkRunner() = default;
 
