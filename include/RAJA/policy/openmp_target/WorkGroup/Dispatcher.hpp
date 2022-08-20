@@ -34,35 +34,34 @@ namespace detail
 namespace omp_target
 {
 
-// get the device function pointer by opening a target region and writing out
-// the pointer to the function call
-template < typename invoker_type, typename InvokerGetter >
-inline auto get_invoker(InvokerGetter invokerGetter)
+// create the invoker in a target region using the factory, map the invoker
+// back, and return the invoker created in the target region
+template < typename invoker_type, typename InvokerFactory >
+inline auto get_invoker(InvokerFactory invokerFactory)
 {
   invoker_type invoker;
 
-  #pragma omp target map(tofrom : invoker) map(to : invokerGetter)
+  #pragma omp target map(tofrom : invoker) map(to : invokerFactory)
   {
-    invoker = invokerGetter();
+    invoker = invokerFactory();
   }
 
   return invoker;
 }
 
-// get the device function pointer and store it so it can be used
+// get the device invoker and store it so it can be used
 // multiple times
-template < typename invoker_type, typename InvokerGetter >
-inline auto get_cached_invoker(InvokerGetter&& invokerGetter)
+template < typename invoker_type, typename InvokerFactory >
+inline auto get_cached_invoker(InvokerFactory&& invokerFactory)
 {
-  static auto invoker = get_invoker<invoker_type>(std::forward<InvokerGetter>(invokerGetter));
+  static auto invoker = get_invoker<invoker_type>(std::forward<InvokerFactory>(invokerFactory));
   return invoker;
 }
 
 }  // namespace omp_target
 
 /*!
-* Populate and return a Dispatcher object where the
-* call operator is a device function
+* Populate and return a Dispatcher object that can be used in omp target regions
 */
 template < typename T, typename Dispatcher_T >
 inline const Dispatcher_T* get_Dispatcher(omp_target_work const&)
@@ -70,9 +69,9 @@ inline const Dispatcher_T* get_Dispatcher(omp_target_work const&)
   using invoker_type = typename Dispatcher_T::invoker_type;
   static Dispatcher_T dispatcher{
         Dispatcher_T::template makeDeviceDispatcher<T>(
-          [](auto&& invokerGetter) {
+          [](auto&& invokerFactory) {
             return omp_target::get_cached_invoker<invoker_type>(
-              std::forward<decltype(invokerGetter)>(invokerGetter));
+              std::forward<decltype(invokerFactory)>(invokerFactory));
           }) };
   return &dispatcher;
 }

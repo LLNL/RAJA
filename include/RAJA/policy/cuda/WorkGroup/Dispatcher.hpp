@@ -37,13 +37,13 @@ namespace detail
 namespace cuda
 {
 
-// global function that gets the device function pointer and
-// writes it into a pinned ptr
-template < typename invoker_type, typename InvokerGetter >
+// global function that creates the invoker on the device using the
+// factory and writes it into a pinned ptr
+template < typename invoker_type, typename InvokerFactory >
 __global__ void get_invoker_global(
-    invoker_type* ptr, InvokerGetter invokerGetter)
+    invoker_type* ptr, InvokerFactory invokerFactory)
 {
-  *ptr = invokerGetter();
+  *ptr = invokerFactory();
 }
 
 // get the pinned ptr buffer
@@ -71,14 +71,14 @@ inline std::mutex& get_invoker_mutex()
 // get the device function pointer by calling a global function to
 // write it into a pinned ptr, beware different instantiates of this
 // function may run concurrently
-template < typename invoker_type, typename InvokerGetter >
-inline auto get_invoker(InvokerGetter&& invokerGetter)
+template < typename invoker_type, typename InvokerFactory >
+inline auto get_invoker(InvokerFactory&& invokerFactory)
 {
   const std::lock_guard<std::mutex> lock(get_invoker_mutex());
 
   auto ptr = static_cast<invoker_type*>(get_cached_invoker_ptr(sizeof(invoker_type)));
-  get_invoker_global<invoker_type, std::decay_t<InvokerGetter>><<<1,1>>>(
-      ptr, std::forward<InvokerGetter>(invokerGetter));
+  get_invoker_global<invoker_type, std::decay_t<InvokerFactory>><<<1,1>>>(
+      ptr, std::forward<InvokerFactory>(invokerFactory));
   cudaErrchk(cudaGetLastError());
   cudaErrchk(cudaDeviceSynchronize());
 
@@ -87,18 +87,17 @@ inline auto get_invoker(InvokerGetter&& invokerGetter)
 
 // get the device function pointer and store it so it can be used
 // multiple times
-template < typename invoker_type, typename InvokerGetter >
-inline auto get_cached_invoker(InvokerGetter&& invokerGetter)
+template < typename invoker_type, typename InvokerFactory >
+inline auto get_cached_invoker(InvokerFactory&& invokerFactory)
 {
-  static auto invoker = get_invoker<invoker_type>(std::forward<InvokerGetter>(invokerGetter));
+  static auto invoker = get_invoker<invoker_type>(std::forward<InvokerFactory>(invokerFactory));
   return invoker;
 }
 
 }  // namespace cuda
 
 /*!
-* Populate and return a Dispatcher object where the
-* call operator is a device function
+* Populate and return a Dispatcher object that can be used in device code
 */
 template < typename T, typename Dispatcher_T, size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async >
 inline const Dispatcher_T* get_Dispatcher(cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async> const&)
@@ -106,9 +105,9 @@ inline const Dispatcher_T* get_Dispatcher(cuda_work_explicit<BLOCK_SIZE, BLOCKS_
   using invoker_type = typename Dispatcher_T::invoker_type;
   static Dispatcher_T dispatcher{
         Dispatcher_T::template makeDeviceDispatcher<T>(
-          [](auto&& invokerGetter) {
+          [](auto&& invokerFactory) {
             return cuda::get_cached_invoker<invoker_type>(
-              std::forward<decltype(invokerGetter)>(invokerGetter));
+              std::forward<decltype(invokerFactory)>(invokerFactory));
           }) };
   return &dispatcher;
 }

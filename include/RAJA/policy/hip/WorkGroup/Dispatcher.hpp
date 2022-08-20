@@ -37,13 +37,13 @@ namespace detail
 namespace hip
 {
 
-// global function that gets the device function pointer and
-// writes it into a pinned ptr
-template < typename invoker_type, typename InvokerGetter >
+// global function that creates the invoker on the device using the
+// factory and writes it into a pinned ptr
+template < typename invoker_type, typename InvokerFactory >
 __global__ void get_invoker_global(
-    invoker_type* ptr, InvokerGetter invokerGetter)
+    invoker_type* ptr, InvokerFactory invokerFactory)
 {
-  *ptr = invokerGetter();
+  *ptr = invokerFactory();
 }
 
 // get the pinned ptr buffer
@@ -71,33 +71,32 @@ inline std::mutex& get_invoker_mutex()
 // get the device function pointer by calling a global function to
 // write it into a pinned ptr, beware different instantiates of this
 // function may run concurrently
-template < typename invoker_type, typename InvokerGetter >
-inline auto get_invoker(InvokerGetter&& invokerGetter)
+template < typename invoker_type, typename InvokerFactory >
+inline auto get_invoker(InvokerFactory&& invokerFactory)
 {
   const std::lock_guard<std::mutex> lock(get_invoker_mutex());
 
   auto ptr = static_cast<invoker_type*>(get_cached_invoker_ptr(sizeof(invoker_type)));
-  auto func = get_invoker_global<invoker_type, std::decay_t<InvokerGetter>>;
+  auto func = get_invoker_global<invoker_type, std::decay_t<InvokerFactory>>;
   hipLaunchKernelGGL(func, dim3(1), dim3(1), 0, 0,
-                     ptr, std::forward<InvokerGetter>(invokerGetter));
+                     ptr, std::forward<InvokerFactory>(invokerFactory));
   hipErrchk(hipGetLastError());
   hipErrchk(hipDeviceSynchronize());
 
   return *ptr;
 }
 
-template < typename invoker_type, typename InvokerGetter >
-inline auto get_cached_invoker(InvokerGetter&& invokerGetter)
+template < typename invoker_type, typename InvokerFactory >
+inline auto get_cached_invoker(InvokerFactory&& invokerFactory)
 {
-  static auto invoker = get_invoker<invoker_type>(std::forward<InvokerGetter>(invokerGetter));
+  static auto invoker = get_invoker<invoker_type>(std::forward<InvokerFactory>(invokerFactory));
   return invoker;
 }
 
 }  // namespace hip
 
 /*!
-* Populate and return a Dispatcher object where the
-* call operator is a device function
+* Populate and return a Dispatcher object that can be used in device code
 */
 template < typename T, typename Dispatcher_T, size_t BLOCK_SIZE, bool Async >
 inline const Dispatcher_T* get_Dispatcher(hip_work<BLOCK_SIZE, Async> const&)
@@ -105,9 +104,9 @@ inline const Dispatcher_T* get_Dispatcher(hip_work<BLOCK_SIZE, Async> const&)
   using invoker_type = typename Dispatcher_T::invoker_type;
   static Dispatcher_T dispatcher{
         Dispatcher_T::template makeDeviceDispatcher<T>(
-          [](auto&& invokerGetter) {
+          [](auto&& invokerFactory) {
             return hip::get_cached_invoker<invoker_type>(
-                std::forward<decltype(invokerGetter)>(invokerGetter));
+                std::forward<decltype(invokerFactory)>(invokerFactory));
           }) };
   return &dispatcher;
 }

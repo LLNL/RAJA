@@ -119,6 +119,9 @@ struct Dispatcher<::RAJA::indirect_function_call_dispatch, DispatcherID, CallArg
     (*obj_as_T).~T();
   }
 
+  ///
+  /// create a Dispatcher that can be used on the host for objects of type T
+  ///
   template<typename T>
   static Dispatcher makeHostDispatcher() {
     return { &s_move_construct_destroy<T>,
@@ -128,17 +131,28 @@ struct Dispatcher<::RAJA::indirect_function_call_dispatch, DispatcherID, CallArg
            };
   }
 
+  // This can't be a cuda device lambda due to compiler limitations
   template < typename T >
-  struct InvokerGetter {
+  struct DeviceInvokerFactory {
     RAJA_DEVICE invoker_type operator()() {
       return &s_device_invoke<T>;
     }
   };
 
-  template< typename T, typename GetInvoker >
-  static Dispatcher makeDeviceDispatcher(GetInvoker&& getInvoker) {
+  ///
+  /// create a Dispatcher that can be used on the device for objects of type T
+  ///
+  /// To do this the invoker_type must be created on the device to get the
+  /// device function pointer. The createOnDevice parameter is responsible for
+  /// providing the device context and returning the invoker object created.
+  /// The createOnDevice object uses an invoker factory provided as an argument
+  /// to create the invoker object. This allows for a separation between
+  /// object creation and the device context (cuda, hip, etc) and copying.
+  ///
+  template< typename T, typename CreateOnDevice >
+  static Dispatcher makeDeviceDispatcher(CreateOnDevice&& createOnDevice) {
     return { &s_move_construct_destroy<T>,
-             std::forward<GetInvoker>(getInvoker)(InvokerGetter<T>{}),
+             std::forward<CreateOnDevice>(createOnDevice)(DeviceInvokerFactory<T>{}),
              &s_destroy<T>,
              sizeof(T)
            };
