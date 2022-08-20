@@ -34,28 +34,28 @@ namespace detail
 namespace omp_target
 {
 
-// create the invoker in a target region using the factory, map the invoker
-// back, and return the invoker created in the target region
-template < typename invoker_type, typename InvokerFactory >
-inline auto get_invoker(InvokerFactory invokerFactory)
+// create the value in a target region using the factory, map the value
+// back, and return the value created in the target region
+template < typename Factory >
+inline auto get_value(Factory factory)
 {
-  invoker_type invoker;
+  typename std::decay_t<Factory>::value_type value;
 
-  #pragma omp target map(tofrom : invoker) map(to : invokerFactory)
+  #pragma omp target map(tofrom : value) map(to : factory)
   {
-    invoker = invokerFactory();
+    value = factory();
   }
 
-  return invoker;
+  return value;
 }
 
-// get the device invoker and store it so it can be used
+// get the device value and store it so it can be used
 // multiple times
-template < typename invoker_type, typename InvokerFactory >
-inline auto get_cached_invoker(InvokerFactory&& invokerFactory)
+template < typename Factory >
+inline auto get_cached_value(Factory&& factory)
 {
-  static auto invoker = get_invoker<invoker_type>(std::forward<InvokerFactory>(invokerFactory));
-  return invoker;
+  static auto value = get_value(std::forward<Factory>(factory));
+  return value;
 }
 
 }  // namespace omp_target
@@ -66,12 +66,11 @@ inline auto get_cached_invoker(InvokerFactory&& invokerFactory)
 template < typename T, typename Dispatcher_T >
 inline const Dispatcher_T* get_Dispatcher(omp_target_work const&)
 {
-  using invoker_type = typename Dispatcher_T::invoker_type;
   static Dispatcher_T dispatcher{
         Dispatcher_T::template makeDeviceDispatcher<T>(
-          [](auto&& invokerFactory) {
-            return omp_target::get_cached_invoker<invoker_type>(
-              std::forward<decltype(invokerFactory)>(invokerFactory));
+          [](auto&& factory) {
+            return omp_target::get_cached_value(
+                std::forward<decltype(factory)>(factory));
           }) };
   return &dispatcher;
 }

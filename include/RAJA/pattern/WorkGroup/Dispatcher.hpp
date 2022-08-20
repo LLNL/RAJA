@@ -137,7 +137,8 @@ struct Dispatcher<::RAJA::indirect_function_call_dispatch, DispatcherID, CallArg
   // This can't be a cuda device lambda due to compiler limitations
   template < typename T >
   struct DeviceInvokerFactory {
-    RAJA_DEVICE invoker_type operator()() {
+    using value_type = invoker_type;
+    RAJA_DEVICE value_type operator()() {
       return &s_device_invoke<T>;
     }
   };

@@ -37,17 +37,17 @@ namespace detail
 namespace hip
 {
 
-// global function that creates the invoker on the device using the
+// global function that creates the value on the device using the
 // factory and writes it into a pinned ptr
-template < typename invoker_type, typename InvokerFactory >
-__global__ void get_invoker_global(
-    invoker_type* ptr, InvokerFactory invokerFactory)
+template < typename Factory >
+__global__ void get_value_global(
+    typename Factory::value_type* ptr, Factory factory)
 {
-  *ptr = invokerFactory();
+  *ptr = factory();
 }
 
 // get the pinned ptr buffer
-inline void* get_cached_invoker_ptr(size_t nbytes)
+inline void* get_cached_value_ptr(size_t nbytes)
 {
   static size_t cached_nbytes = 0;
   static void* ptr = nullptr;
@@ -61,8 +61,8 @@ inline void* get_cached_invoker_ptr(size_t nbytes)
 }
 
 // mutex that guards against concurrent use of
-// pinned buffer and get_cached_invoker_ptr()
-inline std::mutex& get_invoker_mutex()
+// pinned buffer and get_cached_value_ptr()
+inline std::mutex& get_value_mutex()
 {
   static std::mutex s_mutex;
   return s_mutex;
@@ -71,26 +71,27 @@ inline std::mutex& get_invoker_mutex()
 // get the device function pointer by calling a global function to
 // write it into a pinned ptr, beware different instantiates of this
 // function may run concurrently
-template < typename invoker_type, typename InvokerFactory >
-inline auto get_invoker(InvokerFactory&& invokerFactory)
+template < typename Factory >
+inline auto get_value(Factory&& factory)
 {
-  const std::lock_guard<std::mutex> lock(get_invoker_mutex());
+  using value_type = typename std::decay_t<Factory>::value_type;
+  const std::lock_guard<std::mutex> lock(get_value_mutex());
 
-  auto ptr = static_cast<invoker_type*>(get_cached_invoker_ptr(sizeof(invoker_type)));
-  auto func = get_invoker_global<invoker_type, std::decay_t<InvokerFactory>>;
+  auto ptr = static_cast<value_type*>(get_cached_value_ptr(sizeof(value_type)));
+  auto func = get_value_global<std::decay_t<Factory>>;
   hipLaunchKernelGGL(func, dim3(1), dim3(1), 0, 0,
-                     ptr, std::forward<InvokerFactory>(invokerFactory));
+                     ptr, std::forward<Factory>(factory));
   hipErrchk(hipGetLastError());
   hipErrchk(hipDeviceSynchronize());
 
   return *ptr;
 }
 
-template < typename invoker_type, typename InvokerFactory >
-inline auto get_cached_invoker(InvokerFactory&& invokerFactory)
+template < typename Factory >
+inline auto get_cached_value(Factory&& factory)
 {
-  static auto invoker = get_invoker<invoker_type>(std::forward<InvokerFactory>(invokerFactory));
-  return invoker;
+  static auto value = get_value(std::forward<Factory>(factory));
+  return value;
 }
 
 }  // namespace hip
@@ -101,12 +102,11 @@ inline auto get_cached_invoker(InvokerFactory&& invokerFactory)
 template < typename T, typename Dispatcher_T, size_t BLOCK_SIZE, bool Async >
 inline const Dispatcher_T* get_Dispatcher(hip_work<BLOCK_SIZE, Async> const&)
 {
-  using invoker_type = typename Dispatcher_T::invoker_type;
   static Dispatcher_T dispatcher{
         Dispatcher_T::template makeDeviceDispatcher<T>(
-          [](auto&& invokerFactory) {
-            return hip::get_cached_invoker<invoker_type>(
-                std::forward<decltype(invokerFactory)>(invokerFactory));
+          [](auto&& factory) {
+            return hip::get_cached_value(
+                std::forward<decltype(factory)>(factory));
           }) };
   return &dispatcher;
 }
