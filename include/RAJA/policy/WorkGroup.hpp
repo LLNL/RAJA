@@ -61,6 +61,11 @@ struct indirect_function_call_dispatch
     : RAJA::make_policy_pattern_t<Policy::undefined,
                                   Pattern::workgroup_dispatch> {
 };
+template < typename ... Callables >
+struct direct_dispatch
+    : RAJA::make_policy_pattern_t<Policy::undefined,
+                                  Pattern::workgroup_dispatch> {
+};
 
 template < typename EXEC_POLICY_T,
            typename ORDER_POLICY_T,
@@ -92,6 +97,7 @@ using policy::workgroup::ragged_array_of_objects;
 using policy::workgroup::constant_stride_array_of_objects;
 
 using policy::workgroup::indirect_function_call_dispatch;
+using policy::workgroup::direct_dispatch;
 
 using policy::workgroup::WorkGroupPolicy;
 
