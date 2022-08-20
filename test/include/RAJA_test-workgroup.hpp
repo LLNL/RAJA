@@ -20,6 +20,22 @@
 
 namespace detail {
 
+struct indirect_function_call_dispatch_typer {
+  template < typename ... >
+  using type = ::RAJA::indirect_function_call_dispatch;
+};
+
+struct indirect_virtual_function_dispatch_typer {
+  template < typename ... >
+  using type = ::RAJA::indirect_virtual_function_dispatch;
+};
+
+struct direct_dispatch_typer {
+  template < typename ... Ts >
+  using type = ::RAJA::direct_dispatch<Ts...>;
+};
+
+
 template < typename Resource >
 struct ResourceAllocator
 {
@@ -397,6 +413,14 @@ using HipOrderPolicyList   =
               >;
 using HipStoragePolicyList = SequentialStoragePolicyList;
 #endif
+
+
+//
+// Dispatch policy types
+//
+using DispatchTyperList = camp::list<detail::indirect_function_call_dispatch_typer,
+                                     detail::indirect_virtual_function_dispatch_typer,
+                                     detail::direct_dispatch_typer>;
 
 
 //

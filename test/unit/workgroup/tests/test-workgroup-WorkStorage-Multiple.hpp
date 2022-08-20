@@ -21,21 +21,13 @@
 
 
 template <typename StoragePolicy,
+          typename DispatchTyper,
           typename Allocator
           >
 void testWorkGroupWorkStorageMultiple(
     const size_t num0, const size_t num1, const size_t num2)
 {
   bool success = true;
-
-  using Dispatcher_type = RAJA::detail::Dispatcher<
-      RAJA::indirect_function_call_dispatch, void, void*, bool*, bool*>;
-  using WorkStorage_type = RAJA::detail::WorkStorage<
-                                                      StoragePolicy,
-                                                      Allocator,
-                                                      Dispatcher_type
-                                                    >;
-  using WorkStruct_type = typename WorkStorage_type::value_type;
 
   using type0 = double;
   using type1 = TestArray<double, 6>;
@@ -63,6 +55,17 @@ void testWorkGroupWorkStorageMultiple(
   using callable0 = TestCallable<type0>;
   using callable1 = TestCallable<type1>;
   using callable2 = TestCallable<type2>;
+
+  using DispatchPolicy = typename DispatchTyper::template type<callable0, callable1, callable2>;
+  using Dispatcher_type = RAJA::detail::Dispatcher<
+      DispatchPolicy, void, void*, bool*, bool*>;
+  using WorkStorage_type = RAJA::detail::WorkStorage<
+                                                      StoragePolicy,
+                                                      Allocator,
+                                                      Dispatcher_type
+                                                    >;
+  using WorkStruct_type = typename WorkStorage_type::value_type;
+
 
   const Dispatcher_type* dispatcher0 = RAJA::detail::get_Dispatcher<
       callable0, Dispatcher_type>(RAJA::seq_work{});
@@ -229,12 +232,13 @@ TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageMultipleUnitTest);
 TYPED_TEST_P(WorkGroupBasicWorkStorageMultipleUnitTest, BasicWorkGroupWorkStorageMultiple)
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
+  using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
+  using Allocator = typename camp::at<TypeParam, camp::num<2>>::type;
 
   std::mt19937 rng(std::random_device{}());
   std::uniform_int_distribution<size_t> dist(0, 128);
 
-  testWorkGroupWorkStorageMultiple< StoragePolicy, Allocator >(
+  testWorkGroupWorkStorageMultiple< StoragePolicy, DispatchTyper, Allocator >(
       dist(rng), dist(rng), dist(rng));
 }
 

@@ -21,21 +21,24 @@
 
 
 template <typename StoragePolicy,
+          typename DispatchTyper,
           typename Allocator
           >
 void testWorkGroupWorkStorageIterator()
 {
   bool success = true;
 
+  using callable = TestCallable<int>;
+
+  using DispatchPolicy = typename DispatchTyper::template type<callable>;
   using Dispatcher_type = RAJA::detail::Dispatcher<
-      RAJA::indirect_function_call_dispatch, void, void*, bool*, bool*>;
+      DispatchPolicy, void, void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,
                                                       Dispatcher_type
                                                     >;
 
-  using callable = TestCallable<int>;
 
   const Dispatcher_type* dispatcher = RAJA::detail::get_Dispatcher<
       callable, Dispatcher_type>(RAJA::seq_work{});
@@ -95,9 +98,10 @@ TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageIteratorUnitTest);
 TYPED_TEST_P(WorkGroupBasicWorkStorageIteratorUnitTest, BasicWorkGroupWorkStorageIterator)
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
+  using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
+  using Allocator = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  testWorkGroupWorkStorageIterator< StoragePolicy, Allocator >();
+  testWorkGroupWorkStorageIterator< StoragePolicy, DispatchTyper, Allocator >();
 }
 
 #endif  //__TEST_WORKGROUP_WORKSTORAGEITERATOR__

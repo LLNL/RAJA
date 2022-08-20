@@ -21,14 +21,16 @@
 
 
 template <typename StoragePolicy,
+          typename DispatchTyper,
           typename Allocator
           >
 void testWorkGroupWorkStorageConstructor()
 {
   bool success = true;
 
+  using DispatchPolicy = typename DispatchTyper::template type<>;
   using Dispatcher_type = RAJA::detail::Dispatcher<
-      RAJA::indirect_function_call_dispatch, void, void*, bool*, bool*>;
+      DispatchPolicy, void, void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,
@@ -79,9 +81,10 @@ TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageConstructorUnitTest);
 TYPED_TEST_P(WorkGroupBasicWorkStorageConstructorUnitTest, BasicWorkGroupWorkStorageConstructor)
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
+  using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
+  using Allocator = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  testWorkGroupWorkStorageConstructor< StoragePolicy, Allocator >();
+  testWorkGroupWorkStorageConstructor< StoragePolicy, DispatchTyper, Allocator >();
 }
 
 

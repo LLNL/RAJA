@@ -102,6 +102,7 @@ public:
 };
 
 template < typename ExecPolicy,
+           typename DispatchTyper,
            typename IndexType,
            typename WORKING_RES,
            typename ForOnePol,
@@ -110,11 +111,13 @@ void testWorkGroupDispatcherSingle(RAJA::xargs<Args...>)
 {
   using TestCallable = DispatcherTestCallable<IndexType, Args...>;
 
+
   camp::resources::Resource work_res{WORKING_RES()};
   camp::resources::Resource host_res{camp::resources::Host()};
 
+  using DispatchPolicy = typename DispatchTyper::template type<TestCallable>;
   using Dispatcher_type = RAJA::detail::Dispatcher<
-      RAJA::indirect_function_call_dispatch, void, IndexType, Args...>;
+      DispatchPolicy, void, IndexType, Args...>;
   using Invoker_type = typename Dispatcher_type::invoker_type;
   using Dispatcher_cptr_type = typename Dispatcher_type::void_cptr_wrapper;
   const Dispatcher_type* dispatcher =
@@ -217,12 +220,13 @@ TYPED_TEST_SUITE_P(WorkGroupBasicDispatcherSingleUnitTest);
 TYPED_TEST_P(WorkGroupBasicDispatcherSingleUnitTest, BasicWorkGroupDispatcherSingle)
 {
   using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<1>>::type;
-  using Args = typename camp::at<TypeParam, camp::num<2>>::type;
-  using ResourceType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using ForOneType = typename camp::at<TypeParam, camp::num<4>>::type;
+  using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
+  using IndexType = typename camp::at<TypeParam, camp::num<2>>::type;
+  using Args = typename camp::at<TypeParam, camp::num<3>>::type;
+  using ResourceType = typename camp::at<TypeParam, camp::num<4>>::type;
+  using ForOneType = typename camp::at<TypeParam, camp::num<5>>::type;
 
-  testWorkGroupDispatcherSingle< ExecPolicy, IndexType, ResourceType, ForOneType >(
+  testWorkGroupDispatcherSingle< ExecPolicy, DispatchTyper, IndexType, ResourceType, ForOneType >(
       Args{});
 }
 

@@ -21,6 +21,7 @@
 template <typename ExecPolicy,
           typename OrderPolicy,
           typename StoragePolicy,
+          typename DispatchTyper,
           typename IndexType,
           typename Allocator,
           typename ... Args
@@ -31,15 +32,17 @@ void testWorkGroupEnqueueMultiple(RAJA::xargs<Args...>, bool do_instantiate, siz
 
   using callable = EnqueueTestCallable<IndexType, Args...>;
 
+  using DispatchPolicy = typename DispatchTyper::template type<callable>;
+
   using WorkPool_type = RAJA::WorkPool<
-                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
                     IndexType,
                     RAJA::xargs<Args...>,
                     Allocator
                   >;
 
   using WorkGroup_type = RAJA::WorkGroup<
-                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
                     IndexType,
                     RAJA::xargs<Args...>,
                     Allocator
@@ -91,15 +94,16 @@ TYPED_TEST_P(WorkGroupBasicEnqueueMultipleUnitTest, BasicWorkGroupEnqueueMultipl
   using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
   using StoragePolicy = typename camp::at<TypeParam, camp::num<2>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using Xargs = typename camp::at<TypeParam, camp::num<4>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
+  using DispatchTyper = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IndexType = typename camp::at<TypeParam, camp::num<4>>::type;
+  using Xargs = typename camp::at<TypeParam, camp::num<5>>::type;
+  using Allocator = typename camp::at<TypeParam, camp::num<6>>::type;
 
   std::mt19937 rng(std::random_device{}());
   std::uniform_int_distribution<size_t> dist(0, 128);
 
-  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, false, dist(rng), dist(rng));
-  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{}, true, dist(rng), dist(rng));
+  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator >(Xargs{}, false, dist(rng), dist(rng));
+  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator >(Xargs{}, true, dist(rng), dist(rng));
 }
 
 #endif  //__TEST_WORKGROUP_ENQUEUEMULTIPLE__

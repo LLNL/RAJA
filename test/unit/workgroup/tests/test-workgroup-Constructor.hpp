@@ -18,6 +18,7 @@
 template <typename ExecPolicy,
           typename OrderPolicy,
           typename StoragePolicy,
+          typename DispatchTyper,
           typename IndexType,
           typename Allocator,
           typename ... Xargs
@@ -26,9 +27,11 @@ void testWorkGroupConstructorSingle(RAJA::xargs<Xargs...>)
 {
   bool success = true;
 
+  using DispatchPolicy = typename DispatchTyper::template type<>;
+
   {
     RAJA::WorkPool<
-                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
                     IndexType,
                     RAJA::xargs<Xargs...>,
                     Allocator
@@ -39,7 +42,7 @@ void testWorkGroupConstructorSingle(RAJA::xargs<Xargs...>)
     ASSERT_EQ(pool.storage_bytes(), (size_t)0);
 
     RAJA::WorkGroup<
-                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
                     IndexType,
                     RAJA::xargs<Xargs...>,
                     Allocator
@@ -50,7 +53,7 @@ void testWorkGroupConstructorSingle(RAJA::xargs<Xargs...>)
     ASSERT_EQ(pool.storage_bytes(), (size_t)0);
 
     RAJA::WorkSite<
-                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
                     IndexType,
                     RAJA::xargs<Xargs...>,
                     Allocator
@@ -58,7 +61,7 @@ void testWorkGroupConstructorSingle(RAJA::xargs<Xargs...>)
         site = group.run(Xargs{}...);
 
     using resource_type = typename RAJA::WorkPool<
-                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                    RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
                     IndexType,
                     RAJA::xargs<Xargs...>,
                     Allocator
@@ -90,11 +93,12 @@ TYPED_TEST_P(WorkGroupBasicConstructorSingleUnitTest, BasicWorkGroupConstructorS
   using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
   using StoragePolicy = typename camp::at<TypeParam, camp::num<2>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using Xargs = typename camp::at<TypeParam, camp::num<4>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
+  using DispatchTyper = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IndexType = typename camp::at<TypeParam, camp::num<4>>::type;
+  using Xargs = typename camp::at<TypeParam, camp::num<5>>::type;
+  using Allocator = typename camp::at<TypeParam, camp::num<6>>::type;
 
-  testWorkGroupConstructorSingle< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator >(Xargs{});
+  testWorkGroupConstructorSingle< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator >(Xargs{});
 }
 
 #endif  //__TEST_WORKGROUP_CONSTRUCTOR__
