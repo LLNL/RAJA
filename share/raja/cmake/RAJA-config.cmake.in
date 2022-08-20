@@ -32,11 +32,28 @@
 #
 @PACKAGE_INIT@
 
+include(CMakeFindDependencyMacro)
+
+if (@RAJA_NEEDS_BLT_TPLS@)
+  include("${CMAKE_CURRENT_LIST_DIR}/raja-blt-targets.cmake")
+
+  if (@RAJA_ENABLE_CUDA@)
+    find_dependency(Threads)
+  endif ()
+endif()
+
 if (NOT TARGET camp)
-  include(CMakeFindDependencyMacro)
-  find_dependency(camp REQUIRED PATHS "@PACKAGE_CMAKE_INSTALL_PREFIX@")
+  set(RAJA_CAMP_DIR "@camp_DIR@")
+  if(NOT camp_DIR) 
+    set(camp_DIR ${RAJA_CAMP_DIR}) 
+  endif()
+
+  find_dependency(camp CONFIG NO_DEFAULT_PATH PATHS 
+    ${camp_DIR}
+    ${camp_DIR}/lib/cmake/camp
+    @PACKAGE_CMAKE_INSTALL_PREFIX@
+    @PACKAGE_CMAKE_INSTALL_PREFIX@/lib/cmake/camp)
 endif ()
 
 include("${CMAKE_CURRENT_LIST_DIR}/RAJA.cmake")
-
 check_required_components("@PROJECT_NAME@")
