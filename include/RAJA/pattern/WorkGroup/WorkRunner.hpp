@@ -167,7 +167,28 @@ struct WorkRunnerForallOrdered_base
   using resource_type = typename resources::get_resource<FORALL_EXEC_POLICY>::type;
 
   using forall_exec_policy = FORALL_EXEC_POLICY;
-  using dispatcher_type = Dispatcher<dispatch_policy, void, resource_type, Args...>;
+
+  // The type that will hold the segment and loop body in work storage
+  struct holder_type {
+    template < typename T >
+    using type = HoldForall<forall_exec_policy,
+                            typename camp::at<T, camp::num<0>>::type, // segment_type
+                            typename camp::at<T, camp::num<1>>::type, // loop_type
+                            index_type, Args...>;
+  };
+  ///
+  template < typename T >
+  using holder_type_t = typename holder_type::template type<T>;
+
+  // The policy indicating where the call function is invoked
+  // in this case the values are called on the host in a loop
+  using dispatcher_exec_policy = RAJA::loop_work;
+
+  // The Dispatcher policy with holder_types used internally to handle the
+  // ranges and callables passed in by the user.
+  using dispatcher_holder_policy = dispatcher_transform_types_t<dispatch_policy, holder_type>;
+
+  using dispatcher_type = Dispatcher<dispatcher_holder_policy, void, resource_type, Args...>;
 
   WorkRunnerForallOrdered_base() = default;
 
@@ -177,21 +198,12 @@ struct WorkRunnerForallOrdered_base
   WorkRunnerForallOrdered_base(WorkRunnerForallOrdered_base &&) = default;
   WorkRunnerForallOrdered_base& operator=(WorkRunnerForallOrdered_base &&) = default;
 
-  // The type  that will hold the segment and loop body in work storage
-  template < typename segment_type, typename loop_type >
-  using holder_type = HoldForall<forall_exec_policy, segment_type, loop_type,
-                                 index_type, Args...>;
-
-  // The policy indicating where the call function is invoked
-  // in this case the values are called on the host in a loop
-  using dispatcher_exec_policy = RAJA::loop_work;
-
   // runner interfaces with storage to enqueue so the runner can get
   // information from the segment and loop at enqueue time
   template < typename WorkContainer, typename segment_T, typename loop_T >
   inline void enqueue(WorkContainer& storage, segment_T&& seg, loop_T&& loop)
   {
-    using holder = holder_type<camp::decay<segment_T>, camp::decay<loop_T>>;
+    using holder = holder_type_t<camp::list<camp::decay<segment_T>, camp::decay<loop_T>>>;
 
     storage.template emplace<holder>(
         get_Dispatcher<holder, dispatcher_type>(dispatcher_exec_policy{}),

@@ -30,9 +30,11 @@ void testWorkGroupEnqueueMultiple(RAJA::xargs<Args...>, bool do_instantiate, siz
 {
   IndexType success = (IndexType)1;
 
+  using range_segment = RAJA::TypedRangeSegment<IndexType>;
   using callable = EnqueueTestCallable<IndexType, Args...>;
 
-  using DispatchPolicy = typename DispatchTyper::template type<callable>;
+  using DispatchPolicy = typename DispatchTyper::template type<
+      camp::list<range_segment, callable> >;
 
   using WorkPool_type = RAJA::WorkPool<
                     RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
@@ -59,7 +61,7 @@ void testWorkGroupEnqueueMultiple(RAJA::xargs<Args...>, bool do_instantiate, siz
 
       {
         for (size_t i = 0; i < num; ++i) {
-          pool.enqueue(RAJA::TypedRangeSegment<IndexType>{0, 1}, callable{&success, IndexType(0)});
+          pool.enqueue(range_segment{0, 1}, callable{&success, IndexType(0)});
         }
 
         ASSERT_EQ(pool.num_loops(), (size_t)num);

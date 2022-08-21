@@ -54,6 +54,15 @@ struct DispatcherVoidConstPtrWrapper
 };
 
 
+// Transforms one dispatch policy into another by creating a dispatch policy
+// of holder_type objects. See usage in WorkRunner for more explanation.
+template < typename dispatch_policy, typename holder_type >
+struct dispatcher_transform_types;
+///
+template < typename dispatch_policy, typename holder_type >
+using dispatcher_transform_types_t =
+    typename dispatcher_transform_types<dispatch_policy, holder_type>::type;
+
 /*!
  * A dispatcher abstraction that provides an interface to some basic
  * functionality that is implemented differently based on the dispatch_policy.
@@ -63,6 +72,12 @@ struct DispatcherVoidConstPtrWrapper
  */
 template < typename dispatch_policy, typename DispatcherID, typename ... CallArgs >
 struct Dispatcher;
+
+
+template < typename holder_type >
+struct dispatcher_transform_types<::RAJA::indirect_function_call_dispatch, holder_type> {
+  using type = ::RAJA::indirect_function_call_dispatch;
+};
 
 /*!
  * Version of Dispatcher that acts essentially like a vtable. It implements
@@ -168,6 +183,11 @@ struct Dispatcher<::RAJA::indirect_function_call_dispatch, DispatcherID, CallArg
   size_t size;
 };
 
+
+template < typename holder_type >
+struct dispatcher_transform_types<::RAJA::indirect_virtual_function_dispatch, holder_type> {
+  using type = ::RAJA::indirect_virtual_function_dispatch;
+};
 
 /*!
  * Version of Dispatcher that uses a class hierarchy and virtual functions to
@@ -297,6 +317,12 @@ struct Dispatcher<::RAJA::indirect_virtual_function_dispatch, DispatcherID, Call
   size_t size;
 };
 
+
+// direct_dispatch expects a list of types
+template < typename ... Ts, typename holder_type >
+struct dispatcher_transform_types<::RAJA::direct_dispatch<Ts...>, holder_type> {
+  using type = ::RAJA::direct_dispatch<typename holder_type::template type<Ts>...>;
+};
 
 /*!
  * Version of Dispatcher that does direct dispatch to zero callable types.

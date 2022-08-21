@@ -226,7 +226,27 @@ struct WorkRunner<
   using index_type = INDEX_T;
   using resource_type = resources::Cuda;
 
-  using dispatcher_type = Dispatcher<dispatch_policy, RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, true>, Args...>;
+  // The type that will hold the segment and loop body in work storage
+  struct holder_type {
+    template < typename T >
+    using type = HoldCudaDeviceXThreadblockLoop<
+        typename camp::at<T, camp::num<0>>::type, // ITERABLE
+        typename camp::at<T, camp::num<1>>::type, // LOOP_BODY
+        index_type, Args...>;
+  };
+  ///
+  template < typename T >
+  using holder_type_t = typename holder_type::template type<T>;
+
+  // The policy indicating where the call function is invoked
+  // in this case the values are called on the device
+  using dispatcher_exec_policy = exec_policy;
+
+  // The Dispatcher policy with holder_types used internally to handle the
+  // ranges and callables passed in by the user.
+  using dispatcher_holder_policy = dispatcher_transform_types_t<dispatch_policy, holder_type>;
+
+  using dispatcher_type = Dispatcher<dispatcher_holder_policy, RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, true>, Args...>;
 
   WorkRunner() = default;
 
@@ -246,15 +266,6 @@ struct WorkRunner<
     return *this;
   }
 
-  // The type  that will hold the segment and loop body in work storage
-  template < typename ITERABLE, typename LOOP_BODY >
-  using holder_type = HoldCudaDeviceXThreadblockLoop<ITERABLE, LOOP_BODY,
-                                 index_type, Args...>;
-
-  // The policy indicating where the call function is invoked
-  // in this case the values are called on the device
-  using dispatcher_exec_policy = exec_policy;
-
   // runner interfaces with storage to enqueue so the runner can get
   // information from the segment and loop at enqueue time
   template < typename WorkContainer, typename Iterable, typename LoopBody >
@@ -265,7 +276,7 @@ struct WorkRunner<
     using ITERABLE  = camp::decay<Iterable>;
     using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
-    using holder = holder_type<ITERABLE, LOOP_BODY>;
+    using holder = holder_type_t<camp::list<ITERABLE, LOOP_BODY>>;
 
     // using true_value_type = typename WorkContainer::template true_value_type<holder>;
 
