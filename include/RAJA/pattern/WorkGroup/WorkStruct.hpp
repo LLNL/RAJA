@@ -96,9 +96,16 @@ struct WorkStruct<size, Dispatcher<platform, dispatch_policy, DispatcherID, Call
     value_ptr->dispatcher->destroy(&value_ptr->obj);
   }
 
-  // call the call operator of the value ptr with args
-  static RAJA_HOST_DEVICE RAJA_INLINE
-  void call(const WorkStruct* value_ptr, CallArgs... args)
+  // invoke the call operator of the value ptr with args
+  static RAJA_INLINE
+  void host_call(const WorkStruct* value_ptr, CallArgs... args)
+  {
+    value_ptr->invoke(&value_ptr->obj, std::forward<CallArgs>(args)...);
+  }
+  ///
+  // invoke the call operator of the value ptr with args
+  static RAJA_DEVICE RAJA_INLINE
+  void device_call(const WorkStruct* value_ptr, CallArgs... args)
   {
     value_ptr->invoke(&value_ptr->obj, std::forward<CallArgs>(args)...);
   }

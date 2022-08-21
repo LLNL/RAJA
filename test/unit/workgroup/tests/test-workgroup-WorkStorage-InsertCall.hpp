@@ -77,7 +77,7 @@ void testWorkGroupWorkStorageInsertCall()
       double test_val = -1;
       bool move_constructed = false;
       bool moved_from = true;
-      WorkStruct_type::call(&*iter, (void*)&test_val, &move_constructed, &moved_from);
+      WorkStruct_type::host_call(&*iter, (void*)&test_val, &move_constructed, &moved_from);
 
       ASSERT_EQ(test_val, init_val);
       ASSERT_TRUE(move_constructed);

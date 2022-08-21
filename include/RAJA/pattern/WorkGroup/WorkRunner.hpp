@@ -260,7 +260,7 @@ struct WorkRunnerForallOrdered
 
     auto end = storage.end();
     for (auto iter = storage.begin(); iter != end; ++iter) {
-      value_type::call(&*iter, r, args...);
+      value_type::host_call(&*iter, r, args...);
     }
 
     return run_storage;
@@ -309,7 +309,7 @@ struct WorkRunnerForallReverse
 
     auto begin = storage.begin();
     for (auto iter = storage.end(); iter != begin; --iter) {
-      value_type::call(&*(iter-1), r, args...);
+      value_type::host_call(&*(iter-1), r, args...);
     }
 
     return run_storage;

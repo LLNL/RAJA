@@ -196,7 +196,7 @@ __launch_bounds__(BLOCK_SIZE, BLOCKS_PER_SM) __global__
   const index_type i_loop = blockIdx.y;
   // TODO: cache pointer to value_type in shared memory
   // TODO: cache holder (value_type::obj) in shared memory
-  value_type::call(&iter[i_loop], args...);
+  value_type::device_call(&iter[i_loop], args...);
 }
 
 

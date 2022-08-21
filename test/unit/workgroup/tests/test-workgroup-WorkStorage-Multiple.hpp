@@ -139,7 +139,7 @@ void testWorkGroupWorkStorageMultiple(
           type0 val{};
           bool move_constructed = false;
           bool moved_from = true;
-          WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
+          WorkStruct_type::host_call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
           type0 expected = make_type0(init_val0, i);
           ASSERT_EQ(val, expected);
@@ -153,7 +153,7 @@ void testWorkGroupWorkStorageMultiple(
           type1 val{};
           bool move_constructed = false;
           bool moved_from = true;
-          WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
+          WorkStruct_type::host_call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
           type1 expected = make_type1(init_val1, i);
           ASSERT_EQ(val, expected);
@@ -167,7 +167,7 @@ void testWorkGroupWorkStorageMultiple(
           type2 val{};
           bool move_constructed = false;
           bool moved_from = true;
-          WorkStruct_type::call(&*iter, (void*)&val, &move_constructed, &moved_from);
+          WorkStruct_type::host_call(&*iter, (void*)&val, &move_constructed, &moved_from);
 
           type2 expected = make_type2(init_val2, i);
           ASSERT_EQ(val, expected);
