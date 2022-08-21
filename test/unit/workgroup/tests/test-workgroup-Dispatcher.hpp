@@ -111,13 +111,13 @@ void testWorkGroupDispatcherSingle(RAJA::xargs<Args...>)
 {
   using TestCallable = DispatcherTestCallable<IndexType, Args...>;
 
-
   camp::resources::Resource work_res{WORKING_RES()};
   camp::resources::Resource host_res{camp::resources::Host()};
 
+  static constexpr Platform platform = RAJA::platform_of<ExecPolicy>::value;
   using DispatchPolicy = typename DispatchTyper::template type<TestCallable>;
   using Dispatcher_type = RAJA::detail::Dispatcher<
-      DispatchPolicy, void, IndexType, Args...>;
+      platform, DispatchPolicy, void, IndexType, Args...>;
   using Invoker_type = typename Dispatcher_type::invoker_type;
   using Dispatcher_cptr_type = typename Dispatcher_type::void_cptr_wrapper;
   const Dispatcher_type* dispatcher =

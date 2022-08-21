@@ -55,6 +55,10 @@ struct DispatcherVoidConstPtrWrapper
 };
 
 
+constexpr bool dispatcher_use_host_invoke(Platform platform) {
+  return !(platform == Platform::cuda || platform == Platform::hip);
+}
+
 // Transforms one dispatch policy into another by creating a dispatch policy
 // of holder_type objects. See usage in WorkRunner for more explanation.
 template < typename dispatch_policy, typename holder_type >
@@ -71,7 +75,7 @@ using dispatcher_transform_types_t =
  * DispatcherID is used to differentiate function pointers based on their
  * function signature.
  */
-template < typename dispatch_policy, typename DispatcherID, typename ... CallArgs >
+template < Platform platform, typename dispatch_policy, typename DispatcherID, typename ... CallArgs >
 struct Dispatcher;
 
 
@@ -89,14 +93,12 @@ struct dispatcher_transform_types<::RAJA::indirect_function_call_dispatch, holde
  * during device linking when functions with high register counts may cause
  * device linking to fail.
  */
-template < typename DispatcherID, typename ... CallArgs >
-struct Dispatcher<::RAJA::indirect_function_call_dispatch, DispatcherID, CallArgs...> {
+template < Platform platform, typename DispatcherID, typename ... CallArgs >
+struct Dispatcher<platform, ::RAJA::indirect_function_call_dispatch, DispatcherID, CallArgs...> {
+  static constexpr bool use_host_invoke = dispatcher_use_host_invoke(platform);
   using dispatch_policy = ::RAJA::indirect_function_call_dispatch;
   using void_ptr_wrapper = DispatcherVoidPtrWrapper<DispatcherID>;
   using void_cptr_wrapper = DispatcherVoidConstPtrWrapper<DispatcherID>;
-  using mover_type = void(*)(void_ptr_wrapper /*dest*/, void_ptr_wrapper /*src*/);
-  using invoker_type = void(*)(void_cptr_wrapper /*obj*/, CallArgs... /*args*/);
-  using destroyer_type = void(*)(void_ptr_wrapper /*obj*/);
 
   ///
   /// move construct an object of type T in dest as a copy of a T from src and
@@ -138,17 +140,9 @@ struct Dispatcher<::RAJA::indirect_function_call_dispatch, DispatcherID, CallArg
     (*obj_as_T).~T();
   }
 
-  ///
-  /// create a Dispatcher that can be used on the host for objects of type T
-  ///
-  template<typename T>
-  static inline Dispatcher makeHostDispatcher() {
-    return { mover_type{&s_move_construct_destroy<T>},
-             invoker_type{&s_host_invoke<T>},
-             destroyer_type{&s_destroy<T>},
-             sizeof(T)
-           };
-  }
+  using mover_type = void(*)(void_ptr_wrapper /*dest*/, void_ptr_wrapper /*src*/);
+  using invoker_type = void(*)(void_cptr_wrapper /*obj*/, CallArgs... /*args*/);
+  using destroyer_type = void(*)(void_ptr_wrapper /*obj*/);
 
   // This can't be a cuda device lambda due to compiler limitations
   template < typename T >
@@ -160,6 +154,18 @@ struct Dispatcher<::RAJA::indirect_function_call_dispatch, DispatcherID, CallArg
   };
 
   ///
+  /// create a Dispatcher that can be used on the host for objects of type T
+  ///
+  template< typename T,
+            bool uhi = use_host_invoke, std::enable_if_t<uhi>* = nullptr >
+  static inline Dispatcher makeDispatcher() {
+    return { mover_type{&s_move_construct_destroy<T>},
+             invoker_type{&s_host_invoke<T>},
+             destroyer_type{&s_destroy<T>},
+             sizeof(T)
+           };
+  }
+  ///
   /// create a Dispatcher that can be used on the device for objects of type T
   ///
   /// To do this the invoker_type must be created on the device to get the
@@ -169,8 +175,9 @@ struct Dispatcher<::RAJA::indirect_function_call_dispatch, DispatcherID, CallArg
   /// to create the invoker object. This allows for a separation between
   /// object creation and the device context (cuda, hip, etc) and copying.
   ///
-  template< typename T, typename CreateOnDevice >
-  static inline Dispatcher makeDeviceDispatcher(CreateOnDevice&& createOnDevice) {
+  template< typename T, typename CreateOnDevice,
+            bool uhi = use_host_invoke, std::enable_if_t<!uhi>* = nullptr >
+  static inline Dispatcher makeDispatcher(CreateOnDevice&& createOnDevice) {
     return { mover_type{&s_move_construct_destroy<T>},
              invoker_type{std::forward<CreateOnDevice>(createOnDevice)(DeviceInvokerFactory<T>{})},
              destroyer_type{&s_destroy<T>},
@@ -199,26 +206,34 @@ struct dispatcher_transform_types<::RAJA::indirect_virtual_function_dispatch, ho
  * during device linking when functions with high register counts may cause
  * device linking to fail.
  */
-template < typename DispatcherID, typename ... CallArgs >
-struct Dispatcher<::RAJA::indirect_virtual_function_dispatch, DispatcherID, CallArgs...> {
+template < Platform platform, typename DispatcherID, typename ... CallArgs >
+struct Dispatcher<platform, ::RAJA::indirect_virtual_function_dispatch, DispatcherID, CallArgs...> {
+  static constexpr bool use_host_invoke = dispatcher_use_host_invoke(platform);
   using dispatch_policy = ::RAJA::indirect_virtual_function_dispatch;
   using void_ptr_wrapper = DispatcherVoidPtrWrapper<DispatcherID>;
   using void_cptr_wrapper = DispatcherVoidConstPtrWrapper<DispatcherID>;
 
   struct impl_base {
     virtual void move_destroy(void_ptr_wrapper dest, void_ptr_wrapper src) const = 0;
-    virtual RAJA_HOST_DEVICE void call(void_cptr_wrapper obj, CallArgs... args) const = 0;
     virtual void destroy(void_ptr_wrapper obj) const = 0;
   };
 
+  struct host_impl_base {
+    virtual void call(void_cptr_wrapper obj, CallArgs... args) const = 0;
+  };
+
+  struct device_impl_base {
+    virtual RAJA_DEVICE void call(void_cptr_wrapper obj, CallArgs... args) const = 0;
+  };
+
   template < typename T >
-  struct impl_type : impl_base
+  struct base_impl_type : impl_base
   {
     ///
     /// move construct an object of type T in dest as a copy of a T from src and
     /// destroy the T obj in src
     ///
-    void move_destroy(void_ptr_wrapper dest, void_ptr_wrapper src) const override
+    virtual void move_destroy(void_ptr_wrapper dest, void_ptr_wrapper src) const override
     {
       T* dest_as_T = static_cast<T*>(dest.ptr);
       T* src_as_T = static_cast<T*>(src.ptr);
@@ -227,21 +242,38 @@ struct Dispatcher<::RAJA::indirect_virtual_function_dispatch, DispatcherID, Call
     }
 
     ///
+    /// destroy the object of type T in obj
+    ///
+    virtual void destroy(void_ptr_wrapper obj) const override
+    {
+      T* obj_as_T = static_cast<T*>(obj.ptr);
+      (*obj_as_T).~T();
+    }
+  };
+
+  template < typename T >
+  struct host_impl_type : base_impl_type<T>, host_impl_base
+  {
+    ///
     /// call the call operator of the object of type T in obj with args
     ///
-    RAJA_HOST_DEVICE void call(void_cptr_wrapper obj, CallArgs... args) const override
+    virtual void call(void_cptr_wrapper obj, CallArgs... args) const override
     {
       const T* obj_as_T = static_cast<const T*>(obj.ptr);
       (*obj_as_T)(std::forward<CallArgs>(args)...);
     }
+  };
 
+  template < typename T >
+  struct device_impl_type : base_impl_type<T>, device_impl_base
+  {
     ///
-    /// destroy the object of type T in obj
+    /// call the call operator of the object of type T in obj with args
     ///
-    void destroy(void_ptr_wrapper obj) const override
+    virtual RAJA_DEVICE void call(void_cptr_wrapper obj, CallArgs... args) const override
     {
-      T* obj_as_T = static_cast<T*>(obj.ptr);
-      (*obj_as_T).~T();
+      const T* obj_as_T = static_cast<const T*>(obj.ptr);
+      (*obj_as_T)(std::forward<CallArgs>(args)...);
     }
   };
 
@@ -253,13 +285,24 @@ struct Dispatcher<::RAJA::indirect_virtual_function_dispatch, DispatcherID, Call
     }
   };
 
-  struct invoker_type {
-    impl_base* m_impl;
-    RAJA_HOST_DEVICE void operator()(void_cptr_wrapper obj, CallArgs... args) const
+  struct host_invoker_type {
+    host_impl_base* m_impl;
+    void operator()(void_cptr_wrapper obj, CallArgs... args) const
     {
       m_impl->call(obj, std::forward<CallArgs>(args)...);
     }
   };
+  ///
+  struct device_invoker_type {
+    device_impl_base* m_impl;
+    RAJA_DEVICE void operator()(void_cptr_wrapper obj, CallArgs... args) const
+    {
+      m_impl->call(obj, std::forward<CallArgs>(args)...);
+    }
+  };
+  using invoker_type = std::conditional_t<use_host_invoke,
+                                          host_invoker_type,
+                                          device_invoker_type>;
 
   struct destroyer_type {
     impl_base* m_impl;
@@ -269,28 +312,28 @@ struct Dispatcher<::RAJA::indirect_virtual_function_dispatch, DispatcherID, Call
     }
   };
 
-  ///
-  /// create a Dispatcher that can be used on the host for objects of type T
-  ///
-  template<typename T>
-  static inline Dispatcher makeHostDispatcher() {
-    static impl_type<T> s_host_impl;
-    return { mover_type{&s_host_impl},
-             invoker_type{&s_host_impl},
-             destroyer_type{&s_host_impl},
-             sizeof(T)
-           };
-  }
-
   // This can't be a cuda device lambda due to compiler limitations
   template < typename T >
   struct DeviceImplTypeFactory {
-    using value_type = impl_type<T>;
+    using value_type = device_impl_type<T>;
     RAJA_DEVICE value_type operator()() {
       return {};
     }
   };
 
+  ///
+  /// create a Dispatcher that can be used on the host for objects of type T
+  ///
+  template< typename T,
+            bool uhi = use_host_invoke, std::enable_if_t<uhi>* = nullptr >
+  static inline Dispatcher makeDispatcher() {
+    static host_impl_type<T> s_host_impl;
+    return { mover_type{&s_host_impl},
+             host_invoker_type{&s_host_impl},
+             destroyer_type{&s_host_impl},
+             sizeof(T)
+           };
+  }
   ///
   /// create a Dispatcher that can be used on the device for objects of type T
   ///
@@ -301,12 +344,13 @@ struct Dispatcher<::RAJA::indirect_virtual_function_dispatch, DispatcherID, Call
   /// to create the invoker object. This allows for a separation between
   /// object creation and the device context (cuda, hip, etc) and copying.
   ///
-  template< typename T, typename CreateOnDevice >
-  static inline Dispatcher makeDeviceDispatcher(CreateOnDevice&& createOnDevice) {
-    static impl_type<T> s_device_impl{
+  template< typename T, typename CreateOnDevice,
+            bool uhi = use_host_invoke, std::enable_if_t<!uhi>* = nullptr>
+  static inline Dispatcher makeDispatcher(CreateOnDevice&& createOnDevice) {
+    static device_impl_type<T> s_device_impl{
         std::forward<CreateOnDevice>(createOnDevice)(DeviceImplTypeFactory<T>{}) };
     return { mover_type{&s_device_impl},
-             invoker_type{&s_device_impl},
+             device_invoker_type{&s_device_impl},
              destroyer_type{&s_device_impl},
              sizeof(T)
            };
@@ -329,8 +373,9 @@ struct dispatcher_transform_types<::RAJA::direct_dispatch<Ts...>, holder_type> {
  * Version of Dispatcher that does direct dispatch to zero callable types.
  * It implements the interface with callable objects.
  */
-template < typename DispatcherID, typename ... CallArgs >
-struct Dispatcher<::RAJA::direct_dispatch<>, DispatcherID, CallArgs...> {
+template < Platform platform, typename DispatcherID, typename ... CallArgs >
+struct Dispatcher<platform, ::RAJA::direct_dispatch<>, DispatcherID, CallArgs...> {
+  static constexpr bool use_host_invoke = dispatcher_use_host_invoke(platform);
   using dispatch_policy = ::RAJA::direct_dispatch<>;
   using void_ptr_wrapper = DispatcherVoidPtrWrapper<DispatcherID>;
   using void_cptr_wrapper = DispatcherVoidConstPtrWrapper<DispatcherID>;
@@ -347,10 +392,17 @@ struct Dispatcher<::RAJA::direct_dispatch<>, DispatcherID, CallArgs...> {
   ///
   /// call the call operator of the object of type T in obj with args
   ///
-  struct invoker_type {
-    RAJA_HOST_DEVICE void operator()(void_cptr_wrapper, CallArgs...) const
+  struct host_invoker_type {
+    void operator()(void_cptr_wrapper, CallArgs...) const
     { }
   };
+  struct device_invoker_type {
+    RAJA_DEVICE void operator()(void_cptr_wrapper, CallArgs...) const
+    { }
+  };
+  using invoker_type = std::conditional_t<use_host_invoke,
+                                          host_invoker_type,
+                                          device_invoker_type>;
 
   ///
   /// destroy the object of type T in obj
@@ -363,20 +415,21 @@ struct Dispatcher<::RAJA::direct_dispatch<>, DispatcherID, CallArgs...> {
   ///
   /// create a Dispatcher that can be used on the host for objects of type T
   ///
-  template< typename T >
-  static inline Dispatcher makeHostDispatcher() {
-    return {mover_type{}, invoker_type{}, destroyer_type{}, sizeof(T)};
+  template< typename T,
+            bool uhi = use_host_invoke, std::enable_if_t<uhi>* = nullptr >
+  static inline Dispatcher makeDispatcher() {
+    return {mover_type{}, host_invoker_type{}, destroyer_type{}, sizeof(T)};
   }
-
   ///
   /// create a Dispatcher that can be used on the device for objects of type T
   ///
   /// Ignore the CreateOnDevice object as the same invoker object can be used
   /// on the host and device.
   ///
-  template< typename T, typename CreateOnDevice >
-  static inline Dispatcher makeDeviceDispatcher(CreateOnDevice&&) {
-    return makeHostDispatcher<T>();
+  template< typename T, typename CreateOnDevice,
+            bool uhi = use_host_invoke, std::enable_if_t<!uhi>* = nullptr >
+  static inline Dispatcher makeDispatcher(CreateOnDevice&&) {
+    return {mover_type{}, device_invoker_type{}, destroyer_type{}, sizeof(T)};
   }
 
   mover_type move_construct_destroy;
@@ -389,8 +442,9 @@ struct Dispatcher<::RAJA::direct_dispatch<>, DispatcherID, CallArgs...> {
  * Version of Dispatcher that does direct dispatch to a single callable type.
  * It implements the interface with callable objects.
  */
-template < typename T, typename DispatcherID, typename ... CallArgs >
-struct Dispatcher<::RAJA::direct_dispatch<T>, DispatcherID, CallArgs...> {
+template < Platform platform, typename T, typename DispatcherID, typename ... CallArgs >
+struct Dispatcher<platform, ::RAJA::direct_dispatch<T>, DispatcherID, CallArgs...> {
+  static constexpr bool use_host_invoke = dispatcher_use_host_invoke(platform);
   using dispatch_policy = ::RAJA::direct_dispatch<T>;
   using void_ptr_wrapper = DispatcherVoidPtrWrapper<DispatcherID>;
   using void_cptr_wrapper = DispatcherVoidConstPtrWrapper<DispatcherID>;
@@ -412,13 +466,23 @@ struct Dispatcher<::RAJA::direct_dispatch<T>, DispatcherID, CallArgs...> {
   ///
   /// call the call operator of the object of type T in obj with args
   ///
-  struct invoker_type {
-    RAJA_HOST_DEVICE void operator()(void_cptr_wrapper obj, CallArgs... args) const
+  struct host_invoker_type {
+    void operator()(void_cptr_wrapper obj, CallArgs... args) const
     {
       const T* obj_as_T = static_cast<const T*>(obj.ptr);
       (*obj_as_T)(std::forward<CallArgs>(args)...);
     }
   };
+  struct device_invoker_type {
+    RAJA_DEVICE void operator()(void_cptr_wrapper obj, CallArgs... args) const
+    {
+      const T* obj_as_T = static_cast<const T*>(obj.ptr);
+      (*obj_as_T)(std::forward<CallArgs>(args)...);
+    }
+  };
+  using invoker_type = std::conditional_t<use_host_invoke,
+                                          host_invoker_type,
+                                          device_invoker_type>;
 
   ///
   /// destroy the object of type T in obj
@@ -434,21 +498,23 @@ struct Dispatcher<::RAJA::direct_dispatch<T>, DispatcherID, CallArgs...> {
   ///
   /// create a Dispatcher that can be used on the host for objects of type T
   ///
-  template< typename U >
-  static inline Dispatcher makeHostDispatcher() {
+  template< typename U,
+            bool uhi = use_host_invoke, std::enable_if_t<uhi>* = nullptr >
+  static inline Dispatcher makeDispatcher() {
     static_assert(std::is_same<T, U>::value, "U must be in direct_dispatch types");
-    return {mover_type{}, invoker_type{}, destroyer_type{}, sizeof(T)};
+    return {mover_type{}, host_invoker_type{}, destroyer_type{}, sizeof(T)};
   }
-
   ///
   /// create a Dispatcher that can be used on the device for objects of type T
   ///
   /// Ignore the CreateOnDevice object as the same invoker object can be used
   /// on the host and device.
   ///
-  template< typename U, typename CreateOnDevice >
-  static inline Dispatcher makeDeviceDispatcher(CreateOnDevice&&) {
-    return makeHostDispatcher<U>();
+  template< typename U, typename CreateOnDevice,
+            bool uhi = use_host_invoke, std::enable_if_t<!uhi>* = nullptr >
+  static inline Dispatcher makeDispatcher(CreateOnDevice&&) {
+    static_assert(std::is_same<T, U>::value, "U must be in direct_dispatch types");
+    return {mover_type{}, device_invoker_type{}, destroyer_type{}, sizeof(T)};
   }
 
   mover_type move_construct_destroy;
@@ -462,9 +528,10 @@ struct Dispatcher<::RAJA::direct_dispatch<T>, DispatcherID, CallArgs...> {
  * It implements the interface with callable objects.
  */
 template < typename T0, typename T1, typename ... TNs,
-           typename DispatcherID, typename ... CallArgs >
-struct Dispatcher<::RAJA::direct_dispatch<T0, T1, TNs...>,
+           Platform platform, typename DispatcherID, typename ... CallArgs >
+struct Dispatcher<platform, ::RAJA::direct_dispatch<T0, T1, TNs...>,
                   DispatcherID, CallArgs...> {
+  static constexpr bool use_host_invoke = dispatcher_use_host_invoke(platform);
   using dispatch_policy = ::RAJA::direct_dispatch<T0, T1, TNs...>;
   using void_ptr_wrapper = DispatcherVoidPtrWrapper<DispatcherID>;
   using void_cptr_wrapper = DispatcherVoidConstPtrWrapper<DispatcherID>;
@@ -507,10 +574,10 @@ struct Dispatcher<::RAJA::direct_dispatch<T0, T1, TNs...>,
   ///
   /// call the call operator of the object of type T in obj with args
   ///
-  struct invoker_type {
+  struct host_invoker_type {
     id_type id;
 
-    RAJA_HOST_DEVICE void operator()(void_cptr_wrapper obj, CallArgs... args) const
+    void operator()(void_cptr_wrapper obj, CallArgs... args) const
     {
       impl_helper(callable_indices{}, callable_types{},
                   obj, std::forward<CallArgs>(args)...);
@@ -531,6 +598,33 @@ struct Dispatcher<::RAJA::direct_dispatch<T0, T1, TNs...>,
       (*obj_as_T)(std::forward<CallArgs>(args)...);
     }
   };
+  struct device_invoker_type {
+    id_type id;
+
+    RAJA_DEVICE void operator()(void_cptr_wrapper obj, CallArgs... args) const
+    {
+      impl_helper(callable_indices{}, callable_types{},
+                  obj, std::forward<CallArgs>(args)...);
+    }
+
+  private:
+    template < int ... id_types, typename ... Ts >
+    RAJA_DEVICE void impl_helper(camp::int_seq<int, id_types...>, camp::list<Ts...>,
+              void_cptr_wrapper obj, CallArgs... args) const
+    {
+      camp::sink(((id_types == id) ? (impl<Ts>(obj, std::forward<CallArgs>(args)...), 0) : 0)...);
+    }
+
+    template < typename T >
+    RAJA_DEVICE void impl(void_cptr_wrapper obj, CallArgs... args) const
+    {
+      const T* obj_as_T = static_cast<const T*>(obj.ptr);
+      (*obj_as_T)(std::forward<CallArgs>(args)...);
+    }
+  };
+  using invoker_type = std::conditional_t<use_host_invoke,
+                                          host_invoker_type,
+                                          device_invoker_type>;
 
   ///
   /// destroy the object of type T in obj
@@ -577,22 +671,25 @@ struct Dispatcher<::RAJA::direct_dispatch<T0, T1, TNs...>,
   ///
   /// create a Dispatcher that can be used on the host for objects of type T
   ///
-  template<typename T>
-  static inline Dispatcher makeHostDispatcher() {
+  template< typename T,
+            bool uhi = use_host_invoke, std::enable_if_t<uhi>* = nullptr >
+  static inline Dispatcher makeDispatcher() {
     static constexpr id_type id = get_id<T>(callable_indices{}, callable_types{});
     static_assert(id != id_type(-1), "T must be in direct_dispatch types");
-    return {mover_type{id}, invoker_type{id}, destroyer_type{id}, sizeof(T)};
+    return {mover_type{id}, host_invoker_type{id}, destroyer_type{id}, sizeof(T)};
   }
-
   ///
   /// create a Dispatcher that can be used on the device for objects of type T
   ///
   /// Ignore the CreateOnDevice object as the same invoker object can be used
   /// on the host and device.
   ///
-  template< typename T, typename CreateOnDevice >
-  static inline Dispatcher makeDeviceDispatcher(CreateOnDevice&&) {
-    return makeHostDispatcher<T>();
+  template< typename T, typename CreateOnDevice,
+            bool uhi = use_host_invoke, std::enable_if_t<!uhi>* = nullptr >
+  static inline Dispatcher makeDispatcher(CreateOnDevice&&) {
+    static constexpr id_type id = get_id<T>(callable_indices{}, callable_types{});
+    static_assert(id != id_type(-1), "T must be in direct_dispatch types");
+    return {mover_type{id}, device_invoker_type{id}, destroyer_type{id}, sizeof(T)};
   }
 
   mover_type move_construct_destroy;

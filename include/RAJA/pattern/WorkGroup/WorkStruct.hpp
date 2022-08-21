@@ -47,10 +47,10 @@ struct WorkStruct;
 template < typename Dispatcher_T >
 using GenericWorkStruct = WorkStruct<alignof(std::max_align_t), Dispatcher_T>;
 
-template < size_t size, typename dispatch_policy, typename DispatcherID, typename ... CallArgs >
-struct WorkStruct<size, Dispatcher<dispatch_policy, DispatcherID, CallArgs...>>
+template < size_t size, Platform platform, typename dispatch_policy, typename DispatcherID, typename ... CallArgs >
+struct WorkStruct<size, Dispatcher<platform, dispatch_policy, DispatcherID, CallArgs...>>
 {
-  using dispatcher_type = Dispatcher<dispatch_policy, DispatcherID, CallArgs...>;
+  using dispatcher_type = Dispatcher<platform, dispatch_policy, DispatcherID, CallArgs...>;
 
   // construct a WorkStruct with a value of type holder from the args and
   // check a variety of constraints at compile time

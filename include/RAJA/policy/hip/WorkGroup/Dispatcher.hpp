@@ -103,7 +103,7 @@ template < typename T, typename Dispatcher_T, size_t BLOCK_SIZE, bool Async >
 inline const Dispatcher_T* get_Dispatcher(hip_work<BLOCK_SIZE, Async> const&)
 {
   static Dispatcher_T dispatcher{
-        Dispatcher_T::template makeDeviceDispatcher<T>(
+        Dispatcher_T::template makeDispatcher<T>(
           [](auto&& factory) {
             return hip::get_cached_value(
                 std::forward<decltype(factory)>(factory));

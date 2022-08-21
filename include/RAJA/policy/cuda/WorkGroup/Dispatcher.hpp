@@ -104,7 +104,7 @@ template < typename T, typename Dispatcher_T, size_t BLOCK_SIZE, size_t BLOCKS_P
 inline const Dispatcher_T* get_Dispatcher(cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async> const&)
 {
   static Dispatcher_T dispatcher{
-        Dispatcher_T::template makeDeviceDispatcher<T>(
+        Dispatcher_T::template makeDispatcher<T>(
           [](auto&& factory) {
             return cuda::get_cached_value(
                 std::forward<decltype(factory)>(factory));

@@ -246,7 +246,7 @@ struct WorkRunner<
   // ranges and callables passed in by the user.
   using dispatcher_holder_policy = dispatcher_transform_types_t<dispatch_policy, holder_type>;
 
-  using dispatcher_type = Dispatcher<dispatcher_holder_policy, RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, true>, Args...>;
+  using dispatcher_type = Dispatcher<Platform::cuda, dispatcher_holder_policy, RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, true>, Args...>;
 
   WorkRunner() = default;
 

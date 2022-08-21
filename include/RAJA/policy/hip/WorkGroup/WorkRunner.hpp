@@ -247,7 +247,7 @@ struct WorkRunner<
   // ranges and callables passed in by the user.
   using dispatcher_holder_policy = dispatcher_transform_types_t<dispatch_policy, holder_type>;
 
-  using dispatcher_type = Dispatcher<dispatcher_holder_policy, RAJA::hip_work<BLOCK_SIZE, true>, Args...>;
+  using dispatcher_type = Dispatcher<Platform::hip, dispatcher_holder_policy, RAJA::hip_work<BLOCK_SIZE, true>, Args...>;
 
   WorkRunner() = default;
 

@@ -37,7 +37,7 @@ namespace detail
 template < typename T, typename Dispatcher_T >
 inline const Dispatcher_T* get_Dispatcher(loop_work const&)
 {
-  static Dispatcher_T dispatcher{ Dispatcher_T::template makeHostDispatcher<T>() };
+  static Dispatcher_T dispatcher{ Dispatcher_T::template makeDispatcher<T>() };
   return &dispatcher;
 }
 

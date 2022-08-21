@@ -28,9 +28,10 @@ void testWorkGroupWorkStorageConstructor()
 {
   bool success = true;
 
+  static constexpr Platform platform = Platform::host;
   using DispatchPolicy = typename DispatchTyper::template type<>;
   using Dispatcher_type = RAJA::detail::Dispatcher<
-      DispatchPolicy, void, void*, bool*, bool*>;
+      platform, DispatchPolicy, void, void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,

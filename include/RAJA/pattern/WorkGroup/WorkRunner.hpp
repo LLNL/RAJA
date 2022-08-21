@@ -188,7 +188,7 @@ struct WorkRunnerForallOrdered_base
   // ranges and callables passed in by the user.
   using dispatcher_holder_policy = dispatcher_transform_types_t<dispatch_policy, holder_type>;
 
-  using dispatcher_type = Dispatcher<dispatcher_holder_policy, void, resource_type, Args...>;
+  using dispatcher_type = Dispatcher<Platform::host, dispatcher_holder_policy, void, resource_type, Args...>;
 
   WorkRunnerForallOrdered_base() = default;
 
