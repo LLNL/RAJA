@@ -114,7 +114,7 @@ struct Dispatcher<platform, ::RAJA::indirect_function_call_dispatch, DispatcherI
   }
 
   ///
-  /// call the call operator of the object of type T in obj with args
+  /// invoke the call operator of the object of type T in obj with args
   ///
   template < typename T >
   static void s_host_invoke(void_cptr_wrapper obj, CallArgs... args)
@@ -219,11 +219,11 @@ struct Dispatcher<platform, ::RAJA::indirect_virtual_function_dispatch, Dispatch
   };
 
   struct host_impl_base {
-    virtual void call(void_cptr_wrapper obj, CallArgs... args) const = 0;
+    virtual void invoke(void_cptr_wrapper obj, CallArgs... args) const = 0;
   };
 
   struct device_impl_base {
-    virtual RAJA_DEVICE void call(void_cptr_wrapper obj, CallArgs... args) const = 0;
+    virtual RAJA_DEVICE void invoke(void_cptr_wrapper obj, CallArgs... args) const = 0;
   };
 
   template < typename T >
@@ -255,9 +255,9 @@ struct Dispatcher<platform, ::RAJA::indirect_virtual_function_dispatch, Dispatch
   struct host_impl_type : base_impl_type<T>, host_impl_base
   {
     ///
-    /// call the call operator of the object of type T in obj with args
+    /// invoke the call operator of the object of type T in obj with args
     ///
-    virtual void call(void_cptr_wrapper obj, CallArgs... args) const override
+    virtual void invoke(void_cptr_wrapper obj, CallArgs... args) const override
     {
       const T* obj_as_T = static_cast<const T*>(obj.ptr);
       (*obj_as_T)(std::forward<CallArgs>(args)...);
@@ -268,9 +268,9 @@ struct Dispatcher<platform, ::RAJA::indirect_virtual_function_dispatch, Dispatch
   struct device_impl_type : base_impl_type<T>, device_impl_base
   {
     ///
-    /// call the call operator of the object of type T in obj with args
+    /// invoke the call operator of the object of type T in obj with args
     ///
-    virtual RAJA_DEVICE void call(void_cptr_wrapper obj, CallArgs... args) const override
+    virtual RAJA_DEVICE void invoke(void_cptr_wrapper obj, CallArgs... args) const override
     {
       const T* obj_as_T = static_cast<const T*>(obj.ptr);
       (*obj_as_T)(std::forward<CallArgs>(args)...);
@@ -289,7 +289,7 @@ struct Dispatcher<platform, ::RAJA::indirect_virtual_function_dispatch, Dispatch
     host_impl_base* m_impl;
     void operator()(void_cptr_wrapper obj, CallArgs... args) const
     {
-      m_impl->call(obj, std::forward<CallArgs>(args)...);
+      m_impl->invoke(obj, std::forward<CallArgs>(args)...);
     }
   };
   ///
@@ -297,7 +297,7 @@ struct Dispatcher<platform, ::RAJA::indirect_virtual_function_dispatch, Dispatch
     device_impl_base* m_impl;
     RAJA_DEVICE void operator()(void_cptr_wrapper obj, CallArgs... args) const
     {
-      m_impl->call(obj, std::forward<CallArgs>(args)...);
+      m_impl->invoke(obj, std::forward<CallArgs>(args)...);
     }
   };
   using invoker_type = std::conditional_t<use_host_invoke,
@@ -390,7 +390,7 @@ struct Dispatcher<platform, ::RAJA::direct_dispatch<>, DispatcherID, CallArgs...
   };
 
   ///
-  /// call the call operator of the object of type T in obj with args
+  /// invoke the call operator of the object of type T in obj with args
   ///
   struct host_invoker_type {
     void operator()(void_cptr_wrapper, CallArgs...) const
@@ -464,7 +464,7 @@ struct Dispatcher<platform, ::RAJA::direct_dispatch<T>, DispatcherID, CallArgs..
   };
 
   ///
-  /// call the call operator of the object of type T in obj with args
+  /// invoke the call operator of the object of type T in obj with args
   ///
   struct host_invoker_type {
     void operator()(void_cptr_wrapper obj, CallArgs... args) const
@@ -572,7 +572,7 @@ struct Dispatcher<platform, ::RAJA::direct_dispatch<T0, T1, TNs...>,
   };
 
   ///
-  /// call the call operator of the object of type T in obj with args
+  /// invoke the call operator of the object of type T in obj with args
   ///
   struct host_invoker_type {
     id_type id;
