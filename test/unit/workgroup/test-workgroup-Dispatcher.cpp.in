@@ -13,7 +13,7 @@
 
 using @BACKEND@BasicWorkGroupDispatcher@SUBTESTNAME@Types =
   Test< camp::cartesian_product< @BACKEND@ExecPolicyList,
-                                 DispatchTyperList,
+                                 @DISPATCHER@DispatchTyperList,
                                  IndexTypeTypeList,
                                  XargsTypeList,
                                  @BACKEND@ResourceList,

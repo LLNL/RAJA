@@ -114,7 +114,7 @@ void testWorkGroupDispatcherSingle(RAJA::xargs<Args...>)
   camp::resources::Resource work_res{WORKING_RES()};
   camp::resources::Resource host_res{camp::resources::Host()};
 
-  static constexpr Platform platform = RAJA::platform_of<ExecPolicy>::value;
+  static constexpr auto platform = RAJA::platform_of<ExecPolicy>::value;
   using DispatchPolicy = typename DispatchTyper::template type<TestCallable>;
   using Dispatcher_type = RAJA::detail::Dispatcher<
       platform, DispatchPolicy, void, IndexType, Args...>;

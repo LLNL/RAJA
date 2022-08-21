@@ -30,7 +30,7 @@ void testWorkGroupWorkStorageInsertCall()
 
   using callable = TestCallable<double>;
 
-  static constexpr Platform platform = Platform::host;
+  static constexpr auto platform = RAJA::Platform::host;
   using DispatchPolicy = typename DispatchTyper::template type<callable>;
   using Dispatcher_type = RAJA::detail::Dispatcher<
       platform, DispatchPolicy, void, void*, bool*, bool*>;

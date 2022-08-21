@@ -416,11 +416,11 @@ using HipStoragePolicyList = SequentialStoragePolicyList;
 
 
 //
-// Dispatch policy types
+// Dispatch policy type lists, broken up for compile time reasons
 //
-using DispatchTyperList = camp::list<detail::indirect_function_call_dispatch_typer,
-                                     detail::indirect_virtual_function_dispatch_typer,
-                                     detail::direct_dispatch_typer>;
+using IndirectFunctionDispatchTyperList = camp::list<detail::indirect_function_call_dispatch_typer>;
+using IndirectVirtualDispatchTyperList = camp::list<detail::indirect_virtual_function_dispatch_typer>;
+using DirectDispatchTyperList = camp::list<detail::direct_dispatch_typer>;
 
 
 //

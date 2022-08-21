@@ -13,7 +13,7 @@
 
 using @BACKEND@BasicWorkGroupWorkStorage@SUBTESTNAME@Types =
   Test< camp::cartesian_product< @BACKEND@StoragePolicyList,
-                                 DispatchTyperList,
+                                 @DISPATCHER@DispatchTyperList,
                                  WorkStorageAllocatorList > >::Types;
 
 REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorage@SUBTESTNAME@UnitTest,

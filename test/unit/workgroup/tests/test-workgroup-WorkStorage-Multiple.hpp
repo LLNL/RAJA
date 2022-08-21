@@ -56,7 +56,7 @@ void testWorkGroupWorkStorageMultiple(
   using callable1 = TestCallable<type1>;
   using callable2 = TestCallable<type2>;
 
-  static constexpr Platform platform = Platform::host;
+  static constexpr auto platform = RAJA::Platform::host;
   using DispatchPolicy = typename DispatchTyper::template type<callable0, callable1, callable2>;
   using Dispatcher_type = RAJA::detail::Dispatcher<
       platform, DispatchPolicy, void, void*, bool*, bool*>;

@@ -13,16 +13,18 @@
 # hipcc_cmake_linker_helper because it expects the path to hipcc as the first
 # argument
 #
-macro( buildunitworkgrouptest TESTNAME SUBTESTNAMES BACKENDS )
+macro( buildunitworkgrouptest TESTNAME SUBTESTNAMES DISPATCHERS BACKENDS )
   foreach( BACKEND ${BACKENDS} )
-    foreach( SUBTESTNAME ${SUBTESTNAMES} )
-      configure_file( test-workgroup-${TESTNAME}.cpp.in
-                      test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
-      raja_add_test( NAME test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}
-                     SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
+    foreach( DISPATCHER ${DISPATCHERS} )
+      foreach( SUBTESTNAME ${SUBTESTNAMES} )
+        configure_file( test-workgroup-${TESTNAME}.cpp.in
+                        test-workgroup-${TESTNAME}-${SUBTESTNAME}-${DISPATCHER}-${BACKEND}.cpp )
+        raja_add_test( NAME test-workgroup-${TESTNAME}-${SUBTESTNAME}-${DISPATCHER}-${BACKEND}
+                       SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-workgroup-${TESTNAME}-${SUBTESTNAME}-${DISPATCHER}-${BACKEND}.cpp )
 
-      target_include_directories(test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.exe
-                     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+        target_include_directories(test-workgroup-${TESTNAME}-${SUBTESTNAME}-${DISPATCHER}-${BACKEND}.exe
+                       PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+      endforeach()
     endforeach()
   endforeach()
 endmacro()
@@ -59,26 +61,32 @@ if(RAJA_ENABLE_HIP)
   endif()
 endif()
 
+
+set(DISPATCHERS IndirectFunction IndirectVirtual Direct)
+
+
 # reduce travis build times with intel compiler
 if(RAJA_TEST_EXHAUSTIVE OR NOT RAJA_COMPILER MATCHES "RAJA_COMPILER_Intel")
   set(Constructor_SUBTESTS Single)
-  buildunitworkgrouptest(Constructor "${Constructor_SUBTESTS}" "${BACKENDS}")
+  buildunitworkgrouptest(Constructor "${Constructor_SUBTESTS}" "${DISPATCHERS}" "${BACKENDS}")
 
   set(Enqueue_SUBTESTS Single Multiple)
-  buildunitworkgrouptest(Enqueue     "${Enqueue_SUBTESTS}"     "${BACKENDS}")
+  buildunitworkgrouptest(Enqueue     "${Enqueue_SUBTESTS}"     "${DISPATCHERS}" "${BACKENDS}")
 
   unset(Constructor_SUBTESTS)
   unset(Enqueue_SUBTESTS)
 endif()
 
 set(Dispatcher_SUBTESTS Single)
-buildunitworkgrouptest(Dispatcher      "${Dispatcher_SUBTESTS}"      "${Dispatcher_BACKENDS}")
+buildunitworkgrouptest(Dispatcher    "${Dispatcher_SUBTESTS}"  "${DISPATCHERS}" "${Dispatcher_BACKENDS}")
 
 set(WorkStorage_SUBTESTS Constructor Iterator InsertCall Multiple)
-buildunitworkgrouptest(WorkStorage "${WorkStorage_SUBTESTS}" "${WorkStorage_BACKENDS}")
+buildunitworkgrouptest(WorkStorage "${WorkStorage_SUBTESTS}"   "${DISPATCHERS}" "${WorkStorage_BACKENDS}")
 
 unset(Dispatcher_SUBTESTS)
 unset(WorkStorage_SUBTESTS)
+
+unset(DISPATCHERS)
 
 unset(BACKENDS)
 unset(Dispatcher_BACKENDS)
