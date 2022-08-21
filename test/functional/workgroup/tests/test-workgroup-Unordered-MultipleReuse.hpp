@@ -21,6 +21,7 @@
 template <typename ExecPolicy,
           typename OrderPolicy,
           typename StoragePolicy,
+          typename DispatchTyper,
           typename IndexType,
           typename Allocator,
           typename WORKING_RES
@@ -30,27 +31,6 @@ void testWorkGroupUnorderedMultiple(
     IndexType num1, IndexType num2, IndexType num3,
     IndexType pool_reuse, IndexType group_reuse)
 {
-  using WorkPool_type = RAJA::WorkPool<
-                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                  IndexType,
-                  RAJA::xargs<>,
-                  Allocator
-                >;
-
-  using WorkGroup_type = RAJA::WorkGroup<
-                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                  IndexType,
-                  RAJA::xargs<>,
-                  Allocator
-                >;
-
-  using WorkSite_type = RAJA::WorkSite<
-                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
-                  IndexType,
-                  RAJA::xargs<>,
-                  Allocator
-                >;
-
   ASSERT_GT(min_end, max_begin);
   IndexType N = min_end + max_begin;
 
@@ -114,39 +94,84 @@ void testWorkGroupUnorderedMultiple(
                                 &check_array3,
                                 &test_array3);
 
+  type1 const test_val1(5);
+  type2 const test_val2(7);
+  type3 const test_val3(11);
+
+  using range_segment = RAJA::TypedRangeSegment<IndexType>;
+
+  struct callable1 {
+    type1* working_ptr1;
+    type1 const test_val1;
+    RAJA_HOST_DEVICE void operator()(IndexType i) const {
+          working_ptr1[i] += type1(i) + test_val1;
+    }
+  };
+
+  struct callable2 {
+    type2* working_ptr2;
+    type2 const test_val2;
+    RAJA_HOST_DEVICE void operator()(IndexType i) const {
+          working_ptr2[i] += type2(i) + test_val2;
+    }
+  };
+
+  struct callable3 {
+    type3* working_ptr3;
+    type3 const test_val3;
+    RAJA_HOST_DEVICE void operator()(IndexType i) const {
+          working_ptr3[i] += type3(i) + test_val3;
+    }
+  };
+
+  using DispatchPolicy = typename DispatchTyper::template type<
+      camp::list<range_segment, callable1>,
+      camp::list<range_segment, callable2>,
+      camp::list<range_segment, callable3> >;
+
+  using WorkPool_type = RAJA::WorkPool<
+                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
+                  IndexType,
+                  RAJA::xargs<>,
+                  Allocator
+                >;
+
+  using WorkGroup_type = RAJA::WorkGroup<
+                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
+                  IndexType,
+                  RAJA::xargs<>,
+                  Allocator
+                >;
+
+  using WorkSite_type = RAJA::WorkSite<
+                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
+                  IndexType,
+                  RAJA::xargs<>,
+                  Allocator
+                >;
 
   WorkPool_type pool(Allocator{});
 
   for (IndexType pr = 0; pr < pool_reuse; pr++) {
 
-    type1 test_val1(5);
-    type2 test_val2(7);
-    type3 test_val3(11);
-
     // fill_pool(pool, type1(5), type2(7), type3(11));
     {
       for (IndexType j = IndexType(0); j < num1; j++) {
         type1* working_ptr1 = working_array1 + N * j;
-        pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin1[j], end1[j] },
-            [=] RAJA_HOST_DEVICE (IndexType i) {
-          working_ptr1[i] += type1(i) + test_val1;
-        });
+        pool.enqueue(range_segment{ begin1[j], end1[j] },
+            callable1{working_ptr1, test_val1});
       }
 
       for (IndexType j = IndexType(0); j < num2; j++) {
         type2* working_ptr2 = working_array2 + N * j;
-        pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin2[j], end2[j] },
-            [=] RAJA_HOST_DEVICE (IndexType i) {
-          working_ptr2[i] += type2(i) + test_val2;
-        });
+        pool.enqueue(range_segment{ begin2[j], end2[j] },
+            callable2{working_ptr2, test_val2});
       }
 
       for (IndexType j = IndexType(0); j < num3; j++) {
         type3* working_ptr3 = working_array3 + N * j;
-        pool.enqueue(RAJA::TypedRangeSegment<IndexType>{ begin3[j], end3[j] },
-            [=] RAJA_HOST_DEVICE (IndexType i) {
-          working_ptr3[i] += type3(i) + test_val3;
-        });
+        pool.enqueue(range_segment{ begin3[j], end3[j] },
+            callable3{working_ptr3, test_val3});
       }
     }
 
@@ -298,9 +323,10 @@ TYPED_TEST_P(WorkGroupBasicUnorderedMultipleReuseFunctionalTest, BasicWorkGroupU
   using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
   using StoragePolicy = typename camp::at<TypeParam, camp::num<2>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<4>>::type;
-  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<5>>::type;
+  using DispatchTyper = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IndexType = typename camp::at<TypeParam, camp::num<4>>::type;
+  using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
+  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<6>>::type;
 
   std::mt19937 rng(std::random_device{}());
   using dist_type = std::uniform_int_distribution<IndexType>;
@@ -312,7 +338,7 @@ TYPED_TEST_P(WorkGroupBasicUnorderedMultipleReuseFunctionalTest, BasicWorkGroupU
   IndexType pool_reuse  = dist_type(IndexType(0), IndexType(8))(rng);
   IndexType group_reuse = dist_type(IndexType(0), IndexType(8))(rng);
 
-  testWorkGroupUnorderedMultiple< ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE >(
+  testWorkGroupUnorderedMultiple< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator, WORKING_RESOURCE >(
       rng, IndexType(96), IndexType(4000), num1, num2, num3, pool_reuse, group_reuse);
 }
 
