@@ -25,6 +25,7 @@
 
 #include "camp/number.hpp"
 #include "camp/list.hpp"
+#include "camp/helpers.hpp"
 
 #include <utility>
 
@@ -490,7 +491,7 @@ struct Dispatcher<::RAJA::direct_dispatch<T0, T1, TNs...>,
     void impl_helper(camp::int_seq<int, id_types...>, camp::list<Ts...>,
               void_ptr_wrapper dest, void_ptr_wrapper src) const
     {
-      camp::sink(((id_types == id) ? impl<Ts>(dest, src) : ((void)0))...);
+      camp::sink(((id_types == id) ? (impl<Ts>(dest, src), 0) : 0)...);
     }
 
     template < typename T >
@@ -520,7 +521,7 @@ struct Dispatcher<::RAJA::direct_dispatch<T0, T1, TNs...>,
     void impl_helper(camp::int_seq<int, id_types...>, camp::list<Ts...>,
               void_cptr_wrapper obj, CallArgs... args) const
     {
-      camp::sink(((id_types == id) ? impl<Ts>(obj, std::forward<CallArgs>(args)...) : ((void)0))...);
+      camp::sink(((id_types == id) ? (impl<Ts>(obj, std::forward<CallArgs>(args)...), 0) : 0)...);
     }
 
     template < typename T >
@@ -548,7 +549,7 @@ struct Dispatcher<::RAJA::direct_dispatch<T0, T1, TNs...>,
     void impl_helper(camp::int_seq<int, id_types...>, camp::list<Ts...>,
               void_ptr_wrapper obj) const
     {
-      camp::sink(((id_types == id) ? impl<Ts>(obj) : ((void)0))...);
+      camp::sink(((id_types == id) ? (impl<Ts>(obj), 0) : 0)...);
     }
 
     template < typename T >
@@ -569,7 +570,7 @@ struct Dispatcher<::RAJA::direct_dispatch<T0, T1, TNs...>,
   static constexpr id_type get_id(camp::int_seq<int, id_types...>, camp::list<Ts...>)
   {
     id_type id{-1};
-    camp::sink((std::is_same<T, Ts>::value ? (id = id_types) : (id_type(0)))...);
+    camp::sink((std::is_same<T, Ts>::value ? ((id = id_types), 0) : 0)...);
     return id;
   }
 
