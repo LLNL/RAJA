@@ -16,7 +16,9 @@ This section contains an exercise file ``RAJA/exercises/offset-layout-stencil.cp
 for you to work through if you wish to get some practice with RAJA. The
 file ``RAJA/exercises/offset-layout-stencil.cpp`` contains
 complete working code for the examples discussed in this section. You can use
-the solution file to check your work and for guidance if you get stuck.
+the solution file to check your work and for guidance if you get stuck. To build
+the exercises execute ``make offset-layout-stencil`` and ``make offset-layout-stencil_solution``
+from the build directory.
 
 Key RAJA features shown in the following example:
 

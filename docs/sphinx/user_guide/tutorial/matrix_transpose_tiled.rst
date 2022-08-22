@@ -25,7 +25,9 @@ if you wish to get some practice with RAJA. The files
 ``RAJA/exercises/kernel-matrix-transpose-tiled_solution.cpp`` and
 ``RAJA/exercises/launch-matrix-transpose-tiled_solution.cpp`` contain
 complete working code for the examples. You can use the solution files to
-check your work and for guidance if you get stuck.
+check your work and for guidance if you get stuck. To build
+the exercises execute ``make (kernel/launch)-matrix-transpose-tiled`` and ``make (kernel/launch)-matrix-transpose-tiled_solution``
+from the build directory.
 
 Key RAJA features shown in this example are:
 

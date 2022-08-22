@@ -16,7 +16,9 @@ This section contains an exercise file ``RAJA/exercises/scan.cpp``
 for you to work through if you wish to get some practice with RAJA. The
 file ``RAJA/exercises/scan_solution.cpp`` contains complete
 working code for the examples discussed in this section. You can use the
-solution file to check your work and for guidance if you get stuck.
+solution file to check your work and for guidance if you get stuck. To build
+the exercises execute ``make scan`` and ``make scan_solution``
+from the build directory.
 
 Key RAJA features shown in this section are:
 

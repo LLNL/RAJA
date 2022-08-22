@@ -1,5 +1,3 @@
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -84,6 +82,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA sequential dot product...\n";
 
+  dot = 0.0;
+
   ///
   /// TODO...
   ///
@@ -111,6 +111,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP dot product...\n";
 
+  dot = 0.0;
+
   ///
   /// TODO...
   ///
@@ -131,6 +133,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //const int CUDA_BLOCK_SIZE = 256;
 
   std::cout << "\n Running RAJA CUDA dot product...\n";
+
+  dot = 0.0;
 
   ///
   /// TODO...
@@ -154,6 +158,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //const int HIP_BLOCK_SIZE = 256;
 
   std::cout << "\n Running RAJA HIP dot product...\n";
+
+  dot = 0.0;
 
   int *d_a = memoryManager::allocate_gpu<int>(N);
   int *d_b = memoryManager::allocate_gpu<int>(N);
@@ -186,6 +192,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //const int SYCL_BLOCK_SIZE = 256;
 
   std::cout << "\n Running RAJA SYCL dot product...\n";
+
+  dot = 0.0;
 
   ///
   /// TODO...

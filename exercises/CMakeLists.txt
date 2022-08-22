@@ -73,7 +73,7 @@ raja_add_executable(
   SOURCES kernel-matrix-transpose-tiled_solution.cpp)
 
 raja_add_executable(
-  NAME lanch-matrix-transpose-tiled
+  NAME launch-matrix-transpose-tiled
   SOURCES launch-matrix-transpose-tiled.cpp)
 
 raja_add_executable(

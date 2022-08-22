@@ -16,7 +16,9 @@ This section contains an exercise file ``RAJA/exercises/launchintro-execpols.cpp
 for you to work through if you wish to get some practice with RAJA. The
 file ``RAJA/exercises/launchintro-execpols_solution.cpp`` contains
 complete working code for the examples discussed in this section. You can use
-the solution file to check your work and for guidance if you get stuck.
+the solution file to check your work and for guidance if you get stuck. To build
+the exercises execute ``make launchintro-execpols`` and ``make launchintro-execpols_solution``
+from the build directory.
 
 Key RAJA features shown in this section are:
 
