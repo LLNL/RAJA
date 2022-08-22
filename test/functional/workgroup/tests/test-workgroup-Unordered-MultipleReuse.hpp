@@ -18,6 +18,35 @@
 #include <random>
 
 
+// These are defined here due to cuda limitations
+template < typename IndexType, typename type1 >
+struct callable1 {
+  type1* working_ptr1;
+  type1 const test_val1;
+  RAJA_HOST_DEVICE void operator()(IndexType i) const {
+        working_ptr1[i] += type1(i) + test_val1;
+  }
+};
+
+template < typename IndexType, typename type2 >
+struct callable2 {
+  type2* working_ptr2;
+  type2 const test_val2;
+  RAJA_HOST_DEVICE void operator()(IndexType i) const {
+        working_ptr2[i] += type2(i) + test_val2;
+  }
+};
+
+template < typename IndexType, typename type3 >
+struct callable3 {
+  type3* working_ptr3;
+  type3 const test_val3;
+  RAJA_HOST_DEVICE void operator()(IndexType i) const {
+        working_ptr3[i] += type3(i) + test_val3;
+  }
+};
+
+
 template <typename ExecPolicy,
           typename OrderPolicy,
           typename StoragePolicy,
@@ -100,34 +129,10 @@ void testWorkGroupUnorderedMultiple(
 
   using range_segment = RAJA::TypedRangeSegment<IndexType>;
 
-  struct callable1 {
-    type1* working_ptr1;
-    type1 const test_val1;
-    RAJA_HOST_DEVICE void operator()(IndexType i) const {
-          working_ptr1[i] += type1(i) + test_val1;
-    }
-  };
-
-  struct callable2 {
-    type2* working_ptr2;
-    type2 const test_val2;
-    RAJA_HOST_DEVICE void operator()(IndexType i) const {
-          working_ptr2[i] += type2(i) + test_val2;
-    }
-  };
-
-  struct callable3 {
-    type3* working_ptr3;
-    type3 const test_val3;
-    RAJA_HOST_DEVICE void operator()(IndexType i) const {
-          working_ptr3[i] += type3(i) + test_val3;
-    }
-  };
-
   using DispatchPolicy = typename DispatchTyper::template type<
-      camp::list<range_segment, callable1>,
-      camp::list<range_segment, callable2>,
-      camp::list<range_segment, callable3> >;
+      camp::list<range_segment, callable1<IndexType, type1>>,
+      camp::list<range_segment, callable2<IndexType, type2>>,
+      camp::list<range_segment, callable3<IndexType, type3>> >;
 
   using WorkPool_type = RAJA::WorkPool<
                   RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
@@ -159,19 +164,19 @@ void testWorkGroupUnorderedMultiple(
       for (IndexType j = IndexType(0); j < num1; j++) {
         type1* working_ptr1 = working_array1 + N * j;
         pool.enqueue(range_segment{ begin1[j], end1[j] },
-            callable1{working_ptr1, test_val1});
+            callable1<IndexType, type1>{working_ptr1, test_val1});
       }
 
       for (IndexType j = IndexType(0); j < num2; j++) {
         type2* working_ptr2 = working_array2 + N * j;
         pool.enqueue(range_segment{ begin2[j], end2[j] },
-            callable2{working_ptr2, test_val2});
+            callable2<IndexType, type2>{working_ptr2, test_val2});
       }
 
       for (IndexType j = IndexType(0); j < num3; j++) {
         type3* working_ptr3 = working_array3 + N * j;
         pool.enqueue(range_segment{ begin3[j], end3[j] },
-            callable3{working_ptr3, test_val3});
+            callable3<IndexType, type3>{working_ptr3, test_val3});
       }
     }
 

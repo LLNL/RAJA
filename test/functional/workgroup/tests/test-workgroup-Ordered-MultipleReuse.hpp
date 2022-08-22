@@ -19,6 +19,56 @@
 #include <vector>
 
 
+// These are defined here due to cuda limitations
+template < typename IndexType, typename type1 >
+struct callable11 {
+  type1* working_ptr1;
+  RAJA_HOST_DEVICE void operator()(IndexType i) const {
+    working_ptr1[i] += type1(i);
+  }
+};
+template < typename IndexType, typename type1 >
+struct callable12 {
+  type1* working_ptr1;
+  type1 const test_val1;
+  RAJA_HOST_DEVICE void operator()(IndexType i) const {
+    working_ptr1[i] += test_val1;
+  }
+};
+
+template < typename IndexType, typename type2 >
+struct callable21 {
+  type2* working_ptr2;
+  RAJA_HOST_DEVICE void operator()(IndexType i) const {
+    working_ptr2[i] += type2(i);
+  }
+};
+template < typename IndexType, typename type2 >
+struct callable22 {
+  type2* working_ptr2;
+  type2 const test_val2;
+  RAJA_HOST_DEVICE void operator()(IndexType i) const {
+    working_ptr2[i] += test_val2;
+  }
+};
+
+template < typename IndexType, typename type3 >
+struct callable31 {
+  type3* working_ptr3;
+  RAJA_HOST_DEVICE void operator()(IndexType i) const {
+    working_ptr3[i] += type3(i);
+  }
+};
+template < typename IndexType, typename type3 >
+struct callable32 {
+  type3* working_ptr3;
+  type3 const test_val3;
+  RAJA_HOST_DEVICE void operator()(IndexType i) const {
+    working_ptr3[i] += test_val3;
+  }
+};
+
+
 template <typename ExecPolicy,
           typename OrderPolicy,
           typename StoragePolicy,
@@ -101,55 +151,14 @@ void testWorkGroupOrderedMultiple(
 
   using range_segment = RAJA::TypedRangeSegment<IndexType>;
 
-  struct callable11 {
-    type1* working_ptr1;
-    RAJA_HOST_DEVICE void operator()(IndexType i) const {
-      working_ptr1[i] += type1(i);
-    }
-  };
-  struct callable12 {
-    type1* working_ptr1;
-    type1 const test_val1;
-    RAJA_HOST_DEVICE void operator()(IndexType i) const {
-      working_ptr1[i] += test_val1;
-    }
-  };
-
-  struct callable21 {
-    type2* working_ptr2;
-    RAJA_HOST_DEVICE void operator()(IndexType i) const {
-      working_ptr2[i] += type2(i);
-    }
-  };
-  struct callable22 {
-    type2* working_ptr2;
-    type2 const test_val2;
-    RAJA_HOST_DEVICE void operator()(IndexType i) const {
-      working_ptr2[i] += test_val2;
-    }
-  };
-
-  struct callable31 {
-    type3* working_ptr3;
-    RAJA_HOST_DEVICE void operator()(IndexType i) const {
-      working_ptr3[i] += type3(i);
-    }
-  };
-  struct callable32 {
-    type3* working_ptr3;
-    type3 const test_val3;
-    RAJA_HOST_DEVICE void operator()(IndexType i) const {
-      working_ptr3[i] += test_val3;
-    }
-  };
 
   using DispatchPolicy = typename DispatchTyper::template type<
-      camp::list<range_segment, callable11>,
-      camp::list<range_segment, callable12>,
-      camp::list<range_segment, callable21>,
-      camp::list<range_segment, callable22>,
-      camp::list<range_segment, callable31>,
-      camp::list<range_segment, callable32> >;
+      camp::list<range_segment, callable11<IndexType, type1>>,
+      camp::list<range_segment, callable12<IndexType, type1>>,
+      camp::list<range_segment, callable21<IndexType, type2>>,
+      camp::list<range_segment, callable22<IndexType, type2>>,
+      camp::list<range_segment, callable31<IndexType, type3>>,
+      camp::list<range_segment, callable32<IndexType, type3>> >;
 
   using WorkPool_type = RAJA::WorkPool<
                   RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
@@ -186,25 +195,25 @@ void testWorkGroupOrderedMultiple(
       for (IndexType j = IndexType(0); j < num1; j++) {
         type1* working_ptr1 = working_array1 + N * j;
         pool.enqueue(range_segment{ begin1[j], end1[j] },
-            callable11{working_ptr1});
+            callable11<IndexType, type1>{working_ptr1});
         pool.enqueue(range_segment{ begin1[j], end1[j] },
-            callable12{working_ptr1, test_val1});
+            callable12<IndexType, type1>{working_ptr1, test_val1});
       }
 
       for (IndexType j = IndexType(0); j < num2; j++) {
         type2* working_ptr2 = working_array2 + N * j;
         pool.enqueue(range_segment{ begin2[j], end2[j] },
-            callable21{working_ptr2});
+            callable21<IndexType, type2>{working_ptr2});
         pool.enqueue(range_segment{ begin2[j], end2[j] },
-            callable22{working_ptr2, test_val2});
+            callable22<IndexType, type2>{working_ptr2, test_val2});
       }
 
       for (IndexType j = IndexType(0); j < num3; j++) {
         type3* working_ptr3 = working_array3 + N * j;
         pool.enqueue(range_segment{ begin3[j], end3[j] },
-            callable31{working_ptr3});
+            callable31<IndexType, type3>{working_ptr3});
         pool.enqueue(range_segment{ begin3[j], end3[j] },
-            callable32{working_ptr3, test_val3});
+            callable32<IndexType, type3>{working_ptr3, test_val3});
       }
     }
 
