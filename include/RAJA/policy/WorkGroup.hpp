@@ -35,23 +35,36 @@ namespace policy
 namespace workgroup
 {
 
+/// execute the enqueued loops in the order they were enqueued
+/// Note this is intended for debugging, the WorkGroup abstraction is intended
+/// to allow running loops in an unordered fashion (loop fusion)
 struct ordered
     : RAJA::make_policy_pattern_t<Policy::undefined,
                                   Pattern::workgroup_order> {
 };
+/// execute the enqueued loops in the reverse order from the order that they
+/// were enqueued
+/// Note this is intended for debugging, the WorkGroup abstraction is intended
+/// to allow running loops in an unordered fashion (loop fusion)
 struct reverse_ordered
     : RAJA::make_policy_pattern_t<Policy::undefined,
                                   Pattern::workgroup_order> {
 };
 
+/// store an array of pointers to the enqueued objects. The enqueued objects
+/// are stored in separate allocations.
 struct array_of_pointers
     : RAJA::make_policy_pattern_t<Policy::undefined,
                                   Pattern::workgroup_storage> {
 };
+/// store an array of pointers to the enqueued objects. The enqueued objects
+/// are stored in a single compact array.
 struct ragged_array_of_objects
     : RAJA::make_policy_pattern_t<Policy::undefined,
                                   Pattern::workgroup_storage> {
 };
+/// store an array of the enqueued objects with padding such that the objects
+/// can be accessed using a constant stride from the beginning of the array.
 struct constant_stride_array_of_objects
     : RAJA::make_policy_pattern_t<Policy::undefined,
                                   Pattern::workgroup_storage> {
