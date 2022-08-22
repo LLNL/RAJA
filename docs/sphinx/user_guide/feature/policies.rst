@@ -12,15 +12,15 @@
 Policies
 ==================
 
-This section describes RAJA policies for loop kernel execution,
-scans, sorts, reductions, atomics, etc. Each policy is a type that is passed to
-a RAJA template method or class to specialize its behavior. Typically, the
-policy indicates which programming model back-end to use and sometimes
-specifies additional information about the execution pattern, such as
-number of CUDA threads per thread block, whether execution is synchronous
-or asynchronous, etc.
+RAJA kernel execution methods take an execution policy type template parameter
+to specialize execution behavior. Typically, the policy indicates which 
+programming model back-end to use and other information about the execution 
+pattern, such as number of CUDA threads per thread block, whether execution is 
+synchronous or asynchronous, etc. This section describes RAJA policies for 
+loop kernel execution, scans, sorts, reductions, atomics, etc. Please
+detailed examples in :ref:`tutorial-label` for a variety of use cases.
 
-As RAJA functionality evolves, new policies will be added and some may
+As RAJA functionality evolves, new policies are added and some may
 be redefined and to work in new ways.
 
 .. note:: * All RAJA policies are in the namespace ``RAJA``.
@@ -81,11 +81,11 @@ policies. Typically, they work by providing an *outer policy* and an
 flexibility to create more complex execution patterns.
 
 
-.. note:: To control the number of threads used by OpenMP policies
+.. note:: To control the number of threads used by OpenMP policies,
           set the value of the environment variable 'OMP_NUM_THREADS' (which is
           fixed for duration of run), or call the OpenMP routine
           'omp_set_num_threads(nthreads)' in your application, which allows 
-          one to change the number of threads at runtime.
+          one to change the number of threads at run time.
 
 The full policies are described in the following table. Partial policies
 are described in other tables below.
@@ -173,24 +173,18 @@ a template argument as described above.
                                                       indicated using ArgList
  ====================================== ============= ==========================
 
-.. important:: **RAJA only provides a nowait policy option for static schedule**
-               since that is the only schedule case that can be used with
-               nowait and be correct in general when chaining multiple loops
-               in a single parallel region. Paraphrasing the OpenMP standard:
+.. important:: **RAJA only provides a nowait policy option for static 
+               scheduling** since that is the only schedule case that can be 
+               used with nowait and be correct in general when executing 
+               multiple loops in a single parallel region. Paraphrasing the 
+               OpenMP standard:
                *programs that depend on which thread executes a particular
                loop iteration under any circumstance other than static schedule
                are non-conforming.*
 
 .. note:: As in the RAJA full policies for OpenMP scheduling, the ``ChunkSize``
           is optional. If not provided, the default chunk size that the OpenMP 
-          implementation applies will be used. For this case,
-          the RAJA policy syntax is 
-          ``omp_for_{static|dynamic|guided}_exec< >``, which will result 
-          in the OpenMP pragma 
-          ``omp for schedule({static|dynamic|guided})`` being applied.
-          Similarly, for ``nowait`` static policy, the RAJA policy syntax is
-          ``omp_for_nowait_static_exec< >``, which will result in the OpenMP 
-          pragma ``omp for schedule(static) nowait`` being applied.
+          implementation applies will be used.
 
 .. note:: As noted above, RAJA inner OpenMP policies must only be used within an
           **existing** parallel region to work properly. Embedding an inner 
@@ -234,8 +228,8 @@ a template argument as described above.
 Threading Building Block (TBB) Parallel CPU Policies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-RAJA provides a basic set of TBB execution policies for users who would like
-to try it.
+RAJA provides a basic set of TBB execution policies for use with the 
+RAJA TBB back-end, which supports a subset of RAJA features.
 
  ====================================== ============= ==========================
  Threading Building Blocks Policies     Works with    Brief description
@@ -265,7 +259,7 @@ to try it.
 
             // do some more parallel work
 
-          This allows changing number of workers at runtime.
+          This allows changing number of workers at run time.
 
 
 GPU Policies for CUDA and HIP
@@ -395,8 +389,8 @@ Several notable constraints apply to RAJA CUDA/HIP *thread-direct* policies.
             different thread dimensions), the product of sizes of the
             corresponding iteration spaces cannot be greater than the
             maximum allowable threads per block. Typically, this is
-            equ:math:`\leq` 1024; e.g., attempting to launch a CUDA kernel
-            with more than 1024 threads per block will cause the CUDA runtime
+            1024 threads per block. Attempting to execute a kernel with more
+            than the maximum allowed the CUDA runtime
             to complain about *illegal launch parameters.*
           * **Thread-direct policies are recommended only for certain loop
             patterns, such as tiling.**
@@ -525,14 +519,14 @@ device, for example. They are summarized in the following table.
 RAJA IndexSet Execution Policies
 -----------------------------------------------------
 
-When an IndexSet iteration space is used in RAJA, such as passing an IndexSet
-to a ``RAJA::forall`` method, an index set execution policy is required. An
-index set execution policy is a **two-level policy**: an 'outer' policy for
-iterating over segments in the index set, and an 'inner' policy used to
-execute the iterations defined by each segment. An index set execution policy
-type has the form::
+When an IndexSet iteration space is used in RAJA by passing an IndexSet
+to a ``RAJA::forall`` method, for example, an index set execution policy is 
+required. An index set execution policy is a **two-level policy**: an 'outer' 
+policy for iterating over segments in the index set, and an 'inner' policy 
+used to execute the iterations defined by each segment. An index set execution 
+policy type has the form::
 
-  RAJA::ExecPolicy< segment_iteration_policy, segment_execution_policy>
+  RAJA::ExecPolicy< segment_iteration_policy, segment_execution_policy >
 
 See :ref:`indexsets-label` for more information.
 
@@ -563,7 +557,7 @@ tbb_segit                              Iterate over index set segments in
 Parallel Region Policies
 -------------------------
 
-Earlier, we discussed an example using the ``RAJA::region`` construct to
+Earlier, we discussed using the ``RAJA::region`` construct to
 execute multiple kernels in an OpenMP parallel region. To support source code 
 portability, RAJA provides a sequential region concept that can be used to 
 surround code that uses execution back-ends other than OpenMP. For example::
@@ -629,7 +623,8 @@ sycl_reduce             any SYCL      Reduction in a SYCL kernel (device
 ======================= ============= ==========================================
 
 .. note:: RAJA reductions used with SIMD execution policies are not
-          guaranteed to generate correct results at present.
+          guaranteed to generate correct results. So they should not be used
+          for kernels containing reductions.
 
 .. _atomicpolicy-label:
 
@@ -684,10 +679,9 @@ Here is an example illustrating use of the ``cuda_atomic_explicit`` policy::
     RAJA::atomicAdd< RAJA::cuda_atomic_explicit<omp_atomic> >(&sum, 1);
   };
 
-  RAJA::forall< RAJA::cuda_exec<BLOCK_SIZE> >(RAJA::RangeSegment seg(0, N), kernel);
+  RAJA::forall< RAJA::cuda_exec<BLOCK_SIZE> >(RAJA::TypedRangeSegment<int> seg(0, N), kernel);
 
-  RAJA::forall< RAJA::omp_parallel_for_exec >(RAJA::RangeSegment seg(0, N),
-      kernel);
+  RAJA::forall< RAJA::omp_parallel_for_exec >(RAJA::TypedRangeSegment<int> seg(0, N), kernel);
 
 In this case, the atomic operation knows when it is compiled for the device
 in a CUDA kernel context and the CUDA atomic operation is applied. Similarly
@@ -696,7 +690,7 @@ used and the OpenMP version of the atomic operation is applied.
 
 Here is an example illustrating use of the ``auto_atomic`` policy::
 
-  RAJA::forall< RAJA::cuda_exec<BLOCK_SIZE> >(RAJA::RangeSegment seg(0, N),
+  RAJA::forall< RAJA::cuda_exec<BLOCK_SIZE> >(RAJA::TypedRangeSegment<int> seg(0, N),
     [=] RAJA_DEVICE (RAJA::Index_type i) {
 
     RAJA::atomicAdd< RAJA::auto_atomic >(&sum, 1);
@@ -709,7 +703,8 @@ execution policy was used, the OpenMP version of the atomic operation would
 be used.
 
 .. note:: * There are no RAJA atomic policies for TBB (Intel Threading Building
-            Blocks) execution contexts at present.
+            Blocks) execution contexts since reductions are not supported
+            for the RAJA TBB back-end.
           * The ``builtin_atomic`` policy may be preferable to the
             ``omp_atomic`` policy in terms of performance.
 
@@ -747,18 +742,20 @@ of Statements that are composed in the order that they appear in the kernel
 policy to construct a kernel. A Statement may contain an enclosed StatmentList. Thus, a ``RAJA::KernelPolicy`` type is really just a StatementList.
 
 The main Statement types provided by RAJA are ``RAJA::statement::For`` and
-``RAJA::statement::Lambda``, that we have shown above. A 'For' Statement
-indicates a for-loop structure and takes three template arguments:
-'ArgId', 'ExecPolicy', and 'EnclosedStatements'. The ArgID identifies the
-position of the item it applies to in the iteration space tuple argument to the
-``RAJA::kernel`` method. The ExecPolicy is the RAJA execution policy to
-use on that loop/iteration space (similar to ``RAJA::forall``).
-EnclosedStatements contain whatever is nested within the template parameter
-list to form a StatementList, which will be executed for each iteration of
-the loop. The ``RAJA::statement::Lambda<LambdaID>`` invokes the lambda
-corresponding to its position (LambdaID) in the sequence of lambda expressions
-in the ``RAJA::kernel`` argument list. For example, a simple sequential
-for-loop::
+``RAJA::statement::Lambda``, that we discussed in 
+:ref:`loop_elements-kernel-label`. 
+A ``RAJA::statement::For<ArgID, ExecPolicy, Enclosed Satements>`` type 
+indicates a for-loop structure. The ``ArgID`` parameter is an integral constant
+that identifies the position of the iteration space in the iteration space 
+tuple passed to the ``RAJA::kernel`` method to be used for the loop. The 
+``ExecPolicy`` is the RAJA execution policy to use on the loop, which is 
+similar to ``RAJA::forall`` usage. The ``EnclosedStatements`` type is a 
+nested template parameter that contains whatever is needed to execute the 
+kernel and which forms a valid StatementList. The 
+``RAJA::statement::Lambda<LambdaID>``
+type invokes the lambda expression corresponding to its position 'LambdaID' 
+in the sequence of lambda expressions in the ``RAJA::kernel`` argument list. 
+For example, a simple sequential for-loop::
 
   for (int i = 0; i < N; ++i) {
     // loop body
@@ -774,7 +771,7 @@ can be represented using the RAJA kernel interface as::
     >;
 
   RAJA::kernel<KERNEL_POLICY>(
-    RAJA::make_tuple(N_range),
+    RAJA::make_tuple(range),
     [=](int i) {
       // loop body
     }
@@ -791,15 +788,16 @@ RAJA::kernel Statement Types
 The list below summarizes the current collection of statement types that
 can be used with ``RAJA::kernel`` and ``RAJA::kernel_param``. More detailed
 explanation along with examples of how they are used can be found in
-:ref:`tutorial-label`.
+the ``RAJA::kernel`` examples in :ref:`tutorial-label`.
 
-.. note::  * ``RAJA::kernel_param`` functions similar to ``RAJA::kernel`` 
-             except that the second argument is a *tuple of parameters* used 
-             in a kernel for local arrays, thread local variables, tiling 
-             information, etc.
+.. note:: All of the statement types described below are in the namespace 
+          ``RAJA::statement``. For brevity, we omit the namespaces in
+          the discussion in this section.
 
-.. note:: * All of the statement types described below are in the namespace 
-            ``RAJA::statement``. For breavity, we omit the namespaces.
+.. note::  ``RAJA::kernel_param`` functions similarly to ``RAJA::kernel`` 
+           except that the second argument is a *tuple of parameters* used 
+           in a kernel for local arrays, thread local variables, tiling 
+           information, etc.
 
 Several RAJA statements can be specialized with auxilliary types, which are
 described in :ref:`auxilliarypolicy_label`.
@@ -881,7 +879,7 @@ RAJA provides some statement types that apply in specific kernel scenarios.
 Auxilliary Types
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following list summarizes auxillary types used in the above statments. These
+The following list summarizes auxillary types used in the above statements. These
 types live in the ``RAJA`` namespace.
 
   * ``tile_fixed<TileSize>`` tile policy argument to a ``Tile`` or ``TileTCount`` statement; partitions loop iterations into tiles of a fixed size specified by ``TileSize``. This statement type can be used as the ``TilePolicy`` template paramter in the ``Tile`` statements above.
@@ -896,6 +894,5 @@ types live in the ``RAJA`` namespace.
 
   * ``ValuesT<T, ...>`` argument to a Lambda statement; used to specify compile time constants, of type T, that will be used as lambda arguments.
 
-
 Examples that show how to use a variety of these statement types can be found
-in :ref:`tutorialcomplex-label`.
+in :ref:`loop_elements-kernel-label`.

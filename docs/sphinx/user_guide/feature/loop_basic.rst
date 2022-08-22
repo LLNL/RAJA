@@ -46,7 +46,7 @@ Consider a C-style loop that adds two vectors::
 
 This may be written using ``RAJA::forall`` as::
 
-  RAJA::forall<exec_policy>(RAJA::RangeSegment(0, N), [=] (int i) {
+  RAJA::forall<exec_policy>(RAJA::TypesRangeSegment<int>(0, N), [=] (int i) {
     c[i] = a[i] + b[i];
   });
 
@@ -59,7 +59,8 @@ kernel body.
 Applying different loop execution policies enables the loop to run in 
 different ways; e.g., using different programming model back-ends. Different 
 iteration space objects enable the loop iterates to be partitioned, reordered, 
-run in different threads, etc. 
+run in different threads, etc. Please see :ref:`index-label` for details
+about RAJA iteration spaces. 
 
 .. note:: Changing loop execution policy types and iteration space constructs
           enables loops to run in different ways by recompiling the code and 
@@ -158,7 +159,9 @@ The C-style loop above nest may be written using ``RAJA::kernel`` as::
                         >;
   
     RAJA::kernel< KERNEL_POL >(
-      RAJA::make_tuple(RAJA::RangeSegment(0, NN), ..., RAJA::RangeSegment(0, N0),
+      RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, NN), 
+                       ..., 
+                       RAJA::TypedRangeSegment<int>(0, N0),
 
       [=] (int iN, ... , int i0) {
          // inner loop body
@@ -301,11 +304,11 @@ into a *shared memory* array::
   RAJA::expt::Grid(RAJA::expt::Teams(NE), RAJA::expt::Threads(Q1D)),
   [=] RAJA_HOST_DEVICE (RAJA::expt::Launch ctx) {
 
-    RAJA::expt::loop<team_x> (ctx, RAJA::RangeSegment(0, teamRange), [&] (int bx) {
+    RAJA::expt::loop<team_x> (ctx, RAJA::RAJA::TypedRangeSegment<int>(0, teamRange), [&] (int bx) {
 
       RAJA_TEAM_SHARED double s_A[SHARE_MEM_SIZE];
 
-      RAJA::expt::loop<thread_x> (ctx, RAJA::RangeSegment(0, threadRange), [&] (int tx) {
+      RAJA::expt::loop<thread_x> (ctx, RAJA::RAJA::TypedRangeSegment<int>(0, threadRange), [&] (int tx) {
         s_A[tx] = tx;
       });
 
@@ -392,5 +395,5 @@ method, for example. The object's call operator does the conversion of the
 flat single dimensional index into the multi-dimensional index space, calling 
 the provided lambda with the appropriate indices.
 
-.. note:: CombiningAdapter currently only supports ``RAJA::RangeSegment`` and
+.. note:: CombiningAdapter currently only supports
           ``RAJA::TypedRangeSegment`` segments.
