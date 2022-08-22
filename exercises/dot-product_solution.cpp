@@ -160,11 +160,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   dot = 0.0;
 
-  int *d_a = memoryManager::allocate_gpu<int>(N);
-  int *d_b = memoryManager::allocate_gpu<int>(N);
+  double *d_a = memoryManager::allocate_gpu<double>(N);
+  double *d_b = memoryManager::allocate_gpu<double>(N);
 
-  hipErrchk(hipMemcpy( d_a, a, N * sizeof(int), hipMemcpyHostToDevice ));
-  hipErrchk(hipMemcpy( d_b, b, N * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_a, a, N * sizeof(double), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_b, b, N * sizeof(double), hipMemcpyHostToDevice ));
 
   // _rajahip_dotprod_start
   RAJA::ReduceSum<RAJA::hip_reduce, double> hpdot(0.0);
