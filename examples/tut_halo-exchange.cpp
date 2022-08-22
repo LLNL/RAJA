@@ -1346,6 +1346,7 @@ int main(int argc, char **argv)
   }
 
 
+#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
 //----------------------------------------------------------------------------//
 // RAJA::WorkGroup with hip_work allows deferred kernel fusion execution
 //----------------------------------------------------------------------------//
@@ -1383,11 +1384,7 @@ int main(int argc, char **argv)
 
     using workgroup_policy = RAJA::WorkGroupPolicy <
                                  RAJA::hip_work_async<HIP_WORKGROUP_BLOCK_SIZE>,
-#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
                                  RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
-#else
-                                 RAJA::ordered,
-#endif
                                  RAJA::constant_stride_array_of_objects,
                                  RAJA::indirect_function_call_dispatch >;
 
@@ -1528,6 +1525,7 @@ int main(int argc, char **argv)
     checkResult(vars, vars_ref, var_size, num_vars);
     //printResult(vars, var_size, num_vars);
   }
+#endif
 
 //----------------------------------------------------------------------------//
 // RAJA::WorkGroup with hip_work allows deferred kernel fusion execution
@@ -1583,11 +1581,7 @@ int main(int argc, char **argv)
 
     using workgroup_policy = RAJA::WorkGroupPolicy <
                                  RAJA::hip_work_async<HIP_WORKGROUP_BLOCK_SIZE>,
-#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
                                  RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
-#else
-                                 RAJA::ordered,
-#endif
                                  RAJA::constant_stride_array_of_objects,
                                  RAJA::direct_dispatch<camp::list<range_segment, Packer>,
                                                        camp::list<range_segment, UnPacker>>

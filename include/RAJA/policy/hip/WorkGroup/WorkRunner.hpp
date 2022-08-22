@@ -151,8 +151,6 @@ struct WorkRunner<
 };
 
 
-#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
-
 /*!
  * A body and segment holder for storing loops that will be executed
  * on the device
@@ -367,6 +365,33 @@ struct WorkRunner<
 private:
   index_type m_total_iterations = 0;
 };
+
+#if !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+
+/// leave unsupported runner types incomplete
+template <size_t BLOCK_SIZE, bool Async,
+          typename ALLOCATOR_T,
+          typename INDEX_T,
+          typename ... Args>
+struct WorkRunner<
+        RAJA::hip_work<BLOCK_SIZE, Async>,
+        RAJA::policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average,
+        RAJA::indirect_function_call_dispatch,
+        ALLOCATOR_T,
+        INDEX_T,
+        Args...>;
+///
+template <size_t BLOCK_SIZE, bool Async,
+          typename ALLOCATOR_T,
+          typename INDEX_T,
+          typename ... Args>
+struct WorkRunner<
+        RAJA::hip_work<BLOCK_SIZE, Async>,
+        RAJA::policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average,
+        RAJA::indirect_virtual_function_dispatch,
+        ALLOCATOR_T,
+        INDEX_T,
+        Args...>;
 
 #endif
 
