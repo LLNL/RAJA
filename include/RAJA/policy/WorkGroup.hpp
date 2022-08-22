@@ -57,15 +57,22 @@ struct constant_stride_array_of_objects
                                   Pattern::workgroup_storage> {
 };
 
+/// Dispatch using function pointers to make indirect function calls
 struct indirect_function_call_dispatch
     : RAJA::make_policy_pattern_t<Policy::undefined,
                                   Pattern::workgroup_dispatch> {
 };
+/// Dispatch using virtual functions to make indirect function calls
 struct indirect_virtual_function_dispatch
     : RAJA::make_policy_pattern_t<Policy::undefined,
                                   Pattern::workgroup_dispatch> {
 };
-template < typename ... Callables >
+/// Dispatch using an implementation equivalent to a switch statement to select
+/// the type from RangeAndCallables and directly call the object.
+/// RangeAndCallables is a pack of types of the form camp::list<Range, Callable>
+/// where pairs of Range and Callable are the types of the range and callable
+/// objects that may be passed to WorkPool enqueue.
+template < typename ... RangeAndCallables >
 struct direct_dispatch
     : RAJA::make_policy_pattern_t<Policy::undefined,
                                   Pattern::workgroup_dispatch> {
