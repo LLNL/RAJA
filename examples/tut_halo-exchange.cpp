@@ -489,7 +489,8 @@ int main(int argc, char **argv)
     using workgroup_policy = RAJA::WorkGroupPolicy <
                                  RAJA::loop_work,
                                  RAJA::ordered,
-                                 RAJA::ragged_array_of_objects >;
+                                 RAJA::ragged_array_of_objects,
+                                 RAJA::indirect_function_call_dispatch >;
 
     using workpool = RAJA::WorkPool< workgroup_policy,
                                      int,
@@ -733,7 +734,8 @@ int main(int argc, char **argv)
     using workgroup_policy = RAJA::WorkGroupPolicy <
                                  RAJA::omp_work,
                                  RAJA::ordered,
-                                 RAJA::ragged_array_of_objects >;
+                                 RAJA::ragged_array_of_objects,
+                                 RAJA::indirect_function_call_dispatch >;
 
     using workpool = RAJA::WorkPool< workgroup_policy,
                                      int,
@@ -1047,7 +1049,8 @@ int main(int argc, char **argv)
     using workgroup_policy = RAJA::WorkGroupPolicy <
                                  RAJA::cuda_work_async<CUDA_WORKGROUP_BLOCK_SIZE>,
                                  RAJA::unordered_cuda_loop_y_block_iter_x_threadblock_average,
-                                 RAJA::constant_stride_array_of_objects >;
+                                 RAJA::constant_stride_array_of_objects,
+                                 RAJA::indirect_function_call_dispatch >;
 
     using workpool = RAJA::WorkPool< workgroup_policy,
                                      int,
@@ -1385,7 +1388,8 @@ int main(int argc, char **argv)
 #else
                                  RAJA::ordered,
 #endif
-                                 RAJA::constant_stride_array_of_objects >;
+                                 RAJA::constant_stride_array_of_objects,
+                                 RAJA::indirect_function_call_dispatch >;
 
     using workpool = RAJA::WorkPool< workgroup_policy,
                                      int,
