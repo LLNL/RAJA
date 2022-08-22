@@ -252,7 +252,7 @@ struct Dispatcher<platform, ::RAJA::indirect_virtual_function_dispatch, Dispatch
   };
 
   template < typename T >
-  struct host_impl_type : base_impl_type<T>, host_impl_base
+  struct host_impl_type : host_impl_base
   {
     ///
     /// invoke the call operator of the object of type T in obj with args
@@ -265,7 +265,7 @@ struct Dispatcher<platform, ::RAJA::indirect_virtual_function_dispatch, Dispatch
   };
 
   template < typename T >
-  struct device_impl_type : base_impl_type<T>, device_impl_base
+  struct device_impl_type : device_impl_base
   {
     ///
     /// invoke the call operator of the object of type T in obj with args
@@ -315,9 +315,10 @@ struct Dispatcher<platform, ::RAJA::indirect_virtual_function_dispatch, Dispatch
   // This can't be a cuda device lambda due to compiler limitations
   template < typename T >
   struct DeviceImplTypeFactory {
-    using value_type = device_impl_type<T>;
+    using value_type = device_impl_type<T>*;
     RAJA_DEVICE value_type operator()() {
-      return {};
+      static device_impl_type<T> s_device_impl;
+      return &s_device_impl;
     }
   };
 
@@ -327,10 +328,11 @@ struct Dispatcher<platform, ::RAJA::indirect_virtual_function_dispatch, Dispatch
   template< typename T,
             bool uhi = use_host_invoke, std::enable_if_t<uhi>* = nullptr >
   static inline Dispatcher makeDispatcher() {
+    static base_impl_type<T> s_base_impl;
     static host_impl_type<T> s_host_impl;
-    return { mover_type{&s_host_impl},
+    return { mover_type{&s_base_impl},
              host_invoker_type{&s_host_impl},
-             destroyer_type{&s_host_impl},
+             destroyer_type{&s_base_impl},
              sizeof(T)
            };
   }
@@ -347,11 +349,12 @@ struct Dispatcher<platform, ::RAJA::indirect_virtual_function_dispatch, Dispatch
   template< typename T, typename CreateOnDevice,
             bool uhi = use_host_invoke, std::enable_if_t<!uhi>* = nullptr>
   static inline Dispatcher makeDispatcher(CreateOnDevice&& createOnDevice) {
-    static device_impl_type<T> s_device_impl{
+    static base_impl_type<T> s_base_impl;
+    static device_impl_type<T>* s_device_impl_ptr{
         std::forward<CreateOnDevice>(createOnDevice)(DeviceImplTypeFactory<T>{}) };
-    return { mover_type{&s_device_impl},
-             device_invoker_type{&s_device_impl},
-             destroyer_type{&s_device_impl},
+    return { mover_type{&s_base_impl},
+             device_invoker_type{s_device_impl_ptr},
+             destroyer_type{&s_base_impl},
              sizeof(T)
            };
   }
