@@ -20,10 +20,11 @@ template <typename ExecPolicy,
           typename StoragePolicy,
           typename DispatchTyper,
           typename IndexType,
-          typename Allocator,
-          typename ... Xargs
+          typename Allocator
           >
-void testWorkGroupConstructorSingle(RAJA::xargs<Xargs...>)
+struct testWorkGroupConstructorSingle {
+template < typename ... Xargs >
+void operator()(RAJA::xargs<Xargs...>) const
 {
   bool success = true;
 
@@ -79,6 +80,46 @@ void testWorkGroupConstructorSingle(RAJA::xargs<Xargs...>)
 
   ASSERT_TRUE(success);
 }
+};
+
+
+#if defined(RAJA_ENABLE_HIP) && !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+
+/// leave unsupported types untested
+template <size_t BLOCK_SIZE, bool Async,
+          typename StoragePolicy,
+          typename IndexType,
+          typename Allocator
+          >
+struct testWorkGroupConstructorSingle<RAJA::hip_work<BLOCK_SIZE, Async>,
+                                      RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
+                                      StoragePolicy,
+                                      detail::indirect_function_call_dispatch_typer
+                                      IndexType,
+                                      Allocator> {
+template < typename ... Xargs >
+void operator()(RAJA::xargs<Xargs...>) const
+{ }
+};
+///
+template <size_t BLOCK_SIZE, bool Async,
+          typename StoragePolicy,
+          typename IndexType,
+          typename Allocator
+          >
+struct testWorkGroupConstructorSingle<RAJA::hip_work<BLOCK_SIZE, Async>,
+                                      RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
+                                      StoragePolicy,
+                                      detail::indirect_virtual_function_dispatch_typer
+                                      IndexType,
+                                      Allocator> {
+template < typename ... Xargs >
+void operator()(RAJA::xargs<Xargs...>) const
+{ }
+};
+
+#endif
+
 
 template <typename T>
 class WorkGroupBasicConstructorSingleUnitTest : public ::testing::Test
@@ -98,7 +139,7 @@ TYPED_TEST_P(WorkGroupBasicConstructorSingleUnitTest, BasicWorkGroupConstructorS
   using Xargs = typename camp::at<TypeParam, camp::num<5>>::type;
   using Allocator = typename camp::at<TypeParam, camp::num<6>>::type;
 
-  testWorkGroupConstructorSingle< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator >(Xargs{});
+  testWorkGroupConstructorSingle< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator >{}(Xargs{});
 }
 
 #endif  //__TEST_WORKGROUP_CONSTRUCTOR__

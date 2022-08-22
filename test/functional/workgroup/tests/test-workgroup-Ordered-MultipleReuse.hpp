@@ -77,10 +77,11 @@ template <typename ExecPolicy,
           typename Allocator,
           typename WORKING_RES
           >
-void testWorkGroupOrderedMultiple(
+struct testWorkGroupOrderedMultiple {
+void operator()(
     std::mt19937& rng, IndexType max_begin, IndexType min_end,
     IndexType num1, IndexType num2, IndexType num3,
-    IndexType pool_reuse, IndexType group_reuse)
+    IndexType pool_reuse, IndexType group_reuse) const
 {
   ASSERT_GT(min_end, max_begin);
   IndexType N = min_end + max_begin;
@@ -355,6 +356,54 @@ void testWorkGroupOrderedMultiple(
                                   check_array3,
                                   test_array3);
 }
+};
+
+
+#if defined(RAJA_ENABLE_HIP) && !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+
+/// leave unsupported types untested
+template <size_t BLOCK_SIZE, bool Async,
+          typename StoragePolicy,
+          typename IndexType,
+          typename Allocator,
+          typename WORKING_RES
+          >
+struct testWorkGroupOrderedMultiple<RAJA::hip_work<BLOCK_SIZE, Async>,
+                                    RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
+                                    StoragePolicy,
+                                    detail::indirect_function_call_dispatch_typer
+                                    IndexType,
+                                    Allocator,
+                                    WORKING_RES> {
+void operator()(
+    std::mt19937&, IndexType, IndexType,
+    IndexType, IndexType, IndexType,
+    IndexType, IndexType) const
+{ }
+};
+///
+template <size_t BLOCK_SIZE, bool Async,
+          typename StoragePolicy,
+          typename IndexType,
+          typename Allocator,
+          typename WORKING_RES
+          >
+struct testWorkGroupOrderedMultiple<RAJA::hip_work<BLOCK_SIZE, Async>,
+                                    RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
+                                    StoragePolicy,
+                                    detail::indirect_virtual_function_dispatch_typer
+                                    IndexType,
+                                    Allocator,
+                                    WORKING_RES> {
+void operator()(
+    std::mt19937&, IndexType, IndexType,
+    IndexType, IndexType, IndexType,
+    IndexType, IndexType) const
+{ }
+};
+
+#endif
+
 
 
 template <typename T>
@@ -385,7 +434,8 @@ TYPED_TEST_P(WorkGroupBasicOrderedMultipleReuseFunctionalTest, BasicWorkGroupOrd
   IndexType pool_reuse  = dist_type(IndexType(0), IndexType(8))(rng);
   IndexType group_reuse = dist_type(IndexType(0), IndexType(8))(rng);
 
-  testWorkGroupOrderedMultiple< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator, WORKING_RESOURCE >(
+  testWorkGroupOrderedMultiple< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper,
+                                IndexType, Allocator, WORKING_RESOURCE >{}(
       rng, IndexType(96), IndexType(4000), num1, num2, num3, pool_reuse, group_reuse);
 }
 

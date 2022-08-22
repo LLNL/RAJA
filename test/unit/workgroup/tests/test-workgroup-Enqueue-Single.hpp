@@ -23,10 +23,11 @@ template <typename ExecPolicy,
           typename StoragePolicy,
           typename DispatchTyper,
           typename IndexType,
-          typename Allocator,
-          typename ... Args
+          typename Allocator
           >
-void testWorkGroupEnqueueMultiple(RAJA::xargs<Args...>, bool do_instantiate, size_t rep, size_t num)
+struct testWorkGroupEnqueueSingle {
+template < typename ... Args >
+void operator()(RAJA::xargs<Args...>, bool do_instantiate, size_t rep, size_t num) const
 {
   IndexType success = (IndexType)1;
 
@@ -81,6 +82,47 @@ void testWorkGroupEnqueueMultiple(RAJA::xargs<Args...>, bool do_instantiate, siz
 
   ASSERT_EQ(success, (IndexType)1);
 }
+};
+
+
+#if defined(RAJA_ENABLE_HIP) && !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+
+/// leave unsupported types untested
+template <size_t BLOCK_SIZE, bool Async,
+          typename StoragePolicy,
+          typename IndexType,
+          typename Allocator
+          >
+struct testWorkGroupEnqueueSingle<RAJA::hip_work<BLOCK_SIZE, Async>,
+                                  RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
+                                  StoragePolicy,
+                                  detail::indirect_function_call_dispatch_typer
+                                  IndexType,
+                                  Allocator> {
+template < typename ... Args >
+void operator()(
+    RAJA::xargs<Args...>, bool, size_t, size_t) const
+{ }
+};
+///
+template <size_t BLOCK_SIZE, bool Async,
+          typename StoragePolicy,
+          typename IndexType,
+          typename Allocator
+          >
+struct testWorkGroupEnqueueSingle<RAJA::hip_work<BLOCK_SIZE, Async>,
+                                  RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
+                                  StoragePolicy,
+                                  detail::indirect_virtual_function_dispatch_typer
+                                  IndexType,
+                                  Allocator> {
+template < typename ... Args >
+void operator()(
+    RAJA::xargs<Args...>, bool, size_t, size_t) const
+{ }
+};
+
+#endif
 
 
 template <typename T>
@@ -101,8 +143,8 @@ TYPED_TEST_P(WorkGroupBasicEnqueueSingleUnitTest, BasicWorkGroupEnqueueSingle)
   using Xargs = typename camp::at<TypeParam, camp::num<5>>::type;
   using Allocator = typename camp::at<TypeParam, camp::num<6>>::type;
 
-  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator >(Xargs{}, false, 1, 1);
-  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator >(Xargs{}, true, 1, 1);
+  testWorkGroupEnqueueSingle< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator >{}(Xargs{}, false, 1, 1);
+  testWorkGroupEnqueueSingle< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator >{}(Xargs{}, true, 1, 1);
 }
 
 #endif  //__TEST_WORKGROUP_ENQUEUESINGLE__

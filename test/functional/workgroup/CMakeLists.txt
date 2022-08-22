@@ -18,28 +18,14 @@ macro( buildfunctionalworkgrouptest TESTNAME SUBTESTNAMES DISPATCHERS BACKENDS )
     foreach( DISPATCHER ${DISPATCHERS} )
       foreach( SUBTESTNAME ${SUBTESTNAMES} )
 
-        if(${DISPATCHER} IN_LIST INDIRECT_DISPATCHERS)
-          set(RAJA_USING_INDIRECT_DISPATCHER TRUE)
-        endif()
+        configure_file( test-workgroup-${TESTNAME}.cpp.in
+                        test-workgroup-${TESTNAME}-${SUBTESTNAME}-${DISPATCHER}-${BACKEND}.cpp )
 
-        if(${BACKEND} STREQUAL "Hip" AND RAJA_USING_INDIRECT_DISPATCHER)
-          set(RAJA_USING_HIP_INDIRECT_DISPATCHER TRUE)
-        endif()
+        raja_add_test( NAME test-workgroup-${TESTNAME}-${SUBTESTNAME}-${DISPATCHER}-${BACKEND}
+                       SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-workgroup-${TESTNAME}-${SUBTESTNAME}-${DISPATCHER}-${BACKEND}.cpp )
 
-        # skip hip tests with indirect dispatchers
-        if(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL OR NOT RAJA_USING_HIP_INDIRECT_DISPATCHER)
-          configure_file( test-workgroup-${TESTNAME}.cpp.in
-                          test-workgroup-${TESTNAME}-${SUBTESTNAME}-${DISPATCHER}-${BACKEND}.cpp )
-
-          raja_add_test( NAME test-workgroup-${TESTNAME}-${SUBTESTNAME}-${DISPATCHER}-${BACKEND}
-                         SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-workgroup-${TESTNAME}-${SUBTESTNAME}-${DISPATCHER}-${BACKEND}.cpp )
-
-          target_include_directories( test-workgroup-${TESTNAME}-${SUBTESTNAME}-${DISPATCHER}-${BACKEND}.exe
-                                      PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests )
-        endif()
-
-        unset(RAJA_USING_HIP_INDIRECT_DISPATCHER)
-        unset(RAJA_USING_INDIRECT_DISPATCHER)
+        target_include_directories( test-workgroup-${TESTNAME}-${SUBTESTNAME}-${DISPATCHER}-${BACKEND}.exe
+                                    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests )
 
       endforeach()
     endforeach()
@@ -77,7 +63,6 @@ endif()
 
 
 set(DISPATCHERS IndirectFunction IndirectVirtual Direct)
-set(INDIRECT_DISPATCHERS IndirectFunction IndirectVirtual)
 
 
 set(Ordered_SUBTESTS Single MultipleReuse)
@@ -101,7 +86,6 @@ if(RAJA_ENABLE_TARGET_OPENMP)
 endif()
 
 unset(DISPATCHERS)
-unset(INDIRECT_DISPATCHERS)
 unset(BACKENDS)
 unset(Ordered_SUBTESTS)
 unset(Unordered_SUBTESTS)

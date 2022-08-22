@@ -27,7 +27,8 @@ template <typename ExecPolicy,
           typename Allocator,
           typename WORKING_RES
           >
-void testWorkGroupOrderedSingle(IndexType begin, IndexType end)
+struct testWorkGroupOrderedSingle {
+void operator()(IndexType begin, IndexType end) const
 {
   ASSERT_GE(begin, (IndexType)0);
   ASSERT_GE(end, begin);
@@ -127,6 +128,49 @@ void testWorkGroupOrderedSingle(IndexType begin, IndexType end)
                                       check_array,
                                       test_array);
 }
+};
+
+
+#if defined(RAJA_ENABLE_HIP) && !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+
+/// leave unsupported types untested
+template <size_t BLOCK_SIZE, bool Async,
+          typename StoragePolicy,
+          typename IndexType,
+          typename Allocator,
+          typename WORKING_RES
+          >
+struct testWorkGroupOrderedSingle<RAJA::hip_work<BLOCK_SIZE, Async>,
+                                  RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
+                                  StoragePolicy,
+                                  detail::indirect_function_call_dispatch_typer
+                                  IndexType,
+                                  Allocator,
+                                  WORKING_RES> {
+void operator()(
+    IndexType, IndexType) const
+{ }
+};
+///
+template <size_t BLOCK_SIZE, bool Async,
+          typename StoragePolicy,
+          typename IndexType,
+          typename Allocator,
+          typename WORKING_RES
+          >
+struct testWorkGroupOrderedSingle<RAJA::hip_work<BLOCK_SIZE, Async>,
+                                  RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
+                                  StoragePolicy,
+                                  detail::indirect_virtual_function_dispatch_typer
+                                  IndexType,
+                                  Allocator,
+                                  WORKING_RES> {
+void operator()(
+    IndexType, IndexType) const
+{ }
+};
+
+#endif
 
 
 template <typename T>
@@ -159,9 +203,9 @@ TYPED_TEST_P(WorkGroupBasicOrderedSingleFunctionalTest, BasicWorkGroupOrderedSin
   IndexType b3 = dist_type(e2, IndexType(1023))(rng);
   IndexType e3 = dist_type(b3, IndexType(1024))(rng);
 
-  testWorkGroupOrderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator, WORKING_RESOURCE >(b1, e1);
-  testWorkGroupOrderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator, WORKING_RESOURCE >(b2, e2);
-  testWorkGroupOrderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator, WORKING_RESOURCE >(b3, e3);
+  testWorkGroupOrderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator, WORKING_RESOURCE >{}(b1, e1);
+  testWorkGroupOrderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator, WORKING_RESOURCE >{}(b2, e2);
+  testWorkGroupOrderedSingle< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator, WORKING_RESOURCE >{}(b3, e3);
 }
 
 #endif  //__TEST_WORKGROUP_ORDERED_SINGLE__

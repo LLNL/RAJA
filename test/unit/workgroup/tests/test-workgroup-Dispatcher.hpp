@@ -105,9 +105,10 @@ template < typename ExecPolicy,
            typename DispatchTyper,
            typename IndexType,
            typename WORKING_RES,
-           typename ForOnePol,
-           typename ... Args >
-void testWorkGroupDispatcherSingle(RAJA::xargs<Args...>)
+           typename ForOnePol >
+struct testWorkGroupDispatcherSingle {
+template < typename ... Args >
+void operator()(RAJA::xargs<Args...>) const
 {
   using TestCallable = DispatcherTestCallable<IndexType, Args...>;
 
@@ -208,6 +209,51 @@ void testWorkGroupDispatcherSingle(RAJA::xargs<Args...>)
   host_res.deallocate( chckDtor );
   host_res.deallocate( testDtor );
 }
+};
+
+
+#if defined(RAJA_ENABLE_HIP) && !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+
+template < typename ExecPolicy,
+           typename DispatchTyper,
+           typename IndexType,
+           typename WORKING_RES,
+           typename ForOnePol,
+           typename ... Args >
+struct testWorkGroupDispatcherSingle {
+
+/// leave unsupported types untested
+template <size_t BLOCK_SIZE, bool Async,
+          typename IndexType,
+           typename WORKING_RES,
+          typename ForOnePol
+          >
+struct testWorkGroupDispatcherSingle<RAJA::hip_work<BLOCK_SIZE, Async>,
+                                     detail::indirect_function_call_dispatch_typer
+                                     IndexType,
+                                     WORKING_RES,
+                                     ForOnePol> {
+template < typename ... Args >
+void operator()(RAJA::xargs<Args...>) const
+{ }
+};
+///
+template <size_t BLOCK_SIZE, bool Async,
+          typename IndexType,
+           typename WORKING_RES,
+          typename ForOnePol
+          >
+struct testWorkGroupDispatcherSingle<RAJA::hip_work<BLOCK_SIZE, Async>,
+                                     detail::indirect_virtual_function_dispatch_typer
+                                     IndexType,
+                                     WORKING_RES,
+                                     ForOnePol> {
+template < typename ... Args >
+void operator()(RAJA::xargs<Args...>) const
+{ }
+};
+
+#endif
 
 
 template <typename T>
@@ -226,7 +272,7 @@ TYPED_TEST_P(WorkGroupBasicDispatcherSingleUnitTest, BasicWorkGroupDispatcherSin
   using ResourceType = typename camp::at<TypeParam, camp::num<4>>::type;
   using ForOneType = typename camp::at<TypeParam, camp::num<5>>::type;
 
-  testWorkGroupDispatcherSingle< ExecPolicy, DispatchTyper, IndexType, ResourceType, ForOneType >(
+  testWorkGroupDispatcherSingle< ExecPolicy, DispatchTyper, IndexType, ResourceType, ForOneType >{}(
       Args{});
 }
 
