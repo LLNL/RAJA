@@ -149,7 +149,11 @@ struct Dispatcher<platform, ::RAJA::indirect_function_call_dispatch, DispatcherI
   struct DeviceInvokerFactory {
     using value_type = invoker_type;
     RAJA_DEVICE value_type operator()() {
+#if defined(RAJA_ENABLE_HIP) && !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+      return nullptr;
+#else
       return &s_device_invoke<T>;
+#endif
     }
   };
 
@@ -317,8 +321,12 @@ struct Dispatcher<platform, ::RAJA::indirect_virtual_function_dispatch, Dispatch
   struct DeviceImplTypeFactory {
     using value_type = device_impl_type<T>*;
     RAJA_DEVICE value_type operator()() {
+#if defined(RAJA_ENABLE_HIP) && !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+      return nullptr;
+#else
       static device_impl_type<T> s_device_impl;
       return &s_device_impl;
+#endif
     }
   };
 
