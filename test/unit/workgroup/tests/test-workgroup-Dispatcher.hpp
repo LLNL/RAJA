@@ -214,14 +214,6 @@ void operator()(RAJA::xargs<Args...>) const
 
 #if defined(RAJA_ENABLE_HIP) && !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
 
-template < typename ExecPolicy,
-           typename DispatchTyper,
-           typename IndexType,
-           typename WORKING_RES,
-           typename ForOnePol,
-           typename ... Args >
-struct testWorkGroupDispatcherSingle {
-
 /// leave unsupported types untested
 template <size_t BLOCK_SIZE, bool Async,
           typename IndexType,
@@ -229,7 +221,7 @@ template <size_t BLOCK_SIZE, bool Async,
           typename ForOnePol
           >
 struct testWorkGroupDispatcherSingle<RAJA::hip_work<BLOCK_SIZE, Async>,
-                                     detail::indirect_function_call_dispatch_typer
+                                     detail::indirect_function_call_dispatch_typer,
                                      IndexType,
                                      WORKING_RES,
                                      ForOnePol> {
@@ -244,7 +236,7 @@ template <size_t BLOCK_SIZE, bool Async,
           typename ForOnePol
           >
 struct testWorkGroupDispatcherSingle<RAJA::hip_work<BLOCK_SIZE, Async>,
-                                     detail::indirect_virtual_function_dispatch_typer
+                                     detail::indirect_virtual_function_dispatch_typer,
                                      IndexType,
                                      WORKING_RES,
                                      ForOnePol> {

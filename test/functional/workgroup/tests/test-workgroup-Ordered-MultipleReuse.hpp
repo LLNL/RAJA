@@ -371,7 +371,7 @@ template <size_t BLOCK_SIZE, bool Async,
 struct testWorkGroupOrderedMultiple<RAJA::hip_work<BLOCK_SIZE, Async>,
                                     RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
                                     StoragePolicy,
-                                    detail::indirect_function_call_dispatch_typer
+                                    detail::indirect_function_call_dispatch_typer,
                                     IndexType,
                                     Allocator,
                                     WORKING_RES> {
@@ -391,7 +391,7 @@ template <size_t BLOCK_SIZE, bool Async,
 struct testWorkGroupOrderedMultiple<RAJA::hip_work<BLOCK_SIZE, Async>,
                                     RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
                                     StoragePolicy,
-                                    detail::indirect_virtual_function_dispatch_typer
+                                    detail::indirect_virtual_function_dispatch_typer,
                                     IndexType,
                                     Allocator,
                                     WORKING_RES> {
