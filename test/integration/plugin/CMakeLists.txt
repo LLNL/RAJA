@@ -36,25 +36,17 @@ set(DISPATCHERS Direct IndirectFunction IndirectVirtual)
 
 foreach( BACKEND ${PLUGIN_BACKENDS} )
   foreach( DISPATCHER ${DISPATCHERS} )
+
     configure_file( test-plugin-workgroup.cpp.in
                     test-plugin-workgroup-${DISPATCHER}-${BACKEND}.cpp )
 
-    #Some tests are known to fail for Hip, mark those tests (Will not be run in Gitlab CI)
-    if(${BACKEND} STREQUAL "Hip")
-        raja_add_test( NAME test-plugin-workgroup-Known-Hip-Failure-${DISPATCHER}-${BACKEND}
-                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-plugin-workgroup-${DISPATCHER}-${BACKEND}.cpp
-                           plugin_to_test.cpp )
+    raja_add_test( NAME test-plugin-workgroup-${DISPATCHER}-${BACKEND}
+               SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-plugin-workgroup-${DISPATCHER}-${BACKEND}.cpp
+                       plugin_to_test.cpp )
 
-        target_include_directories(test-plugin-workgroup-Known-Hip-Failure-${DISPATCHER}-${BACKEND}.exe
-                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-    else()
-        raja_add_test( NAME test-plugin-workgroup-${DISPATCHER}-${BACKEND}
-                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-plugin-workgroup-${DISPATCHER}-${BACKEND}.cpp
-                           plugin_to_test.cpp )
+    target_include_directories(test-plugin-workgroup-${DISPATCHER}-${BACKEND}.exe
+                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
-        target_include_directories(test-plugin-workgroup-${DISPATCHER}-${BACKEND}.exe
-                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-    endif()
   endforeach()
 endforeach()
 
