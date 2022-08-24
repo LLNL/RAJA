@@ -24,28 +24,35 @@
 template <typename ExecPolicy,
           typename OrderPolicy,
           typename StoragePolicy,
+          typename DispatchTyper,
           typename IndexType,
           typename Allocator,
           typename WORKINGRES,
           RAJA::Platform PLATFORM>
-void PluginWorkGroupTestImpl()
+struct PluginWorkGroupTestImpl {
+void operator()() const
 {
+  using range_segment = RAJA::TypedRangeSegment<IndexType>;
+
+  using DispatchPolicy = typename DispatchTyper::template type<
+      camp::list<range_segment, PluginTestCallable> >;
+
   using WorkPool_type = RAJA::WorkPool<
-                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
                   IndexType,
                   RAJA::xargs<>,
                   Allocator
                 >;
 
   using WorkGroup_type = RAJA::WorkGroup<
-                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
                   IndexType,
                   RAJA::xargs<>,
                   Allocator
                 >;
 
   using WorkSite_type = RAJA::WorkSite<
-                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy>,
+                  RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
                   IndexType,
                   RAJA::xargs<>,
                   Allocator
@@ -71,8 +78,7 @@ void PluginWorkGroupTestImpl()
   WorkPool_type pool(Allocator{});
 
   for (int i = 0; i < 10; i++) {
-    pool.enqueue(RAJA::TypedRangeSegment<IndexType>{i,i+1},
-        PluginTestCallable{data});
+    pool.enqueue(range_segment{i,i+1}, PluginTestCallable{data});
   }
 
   {
@@ -156,6 +162,51 @@ void PluginWorkGroupTestImpl()
 
   plugin_test_resource->deallocate(data);
 }
+};
+
+
+#if defined(RAJA_ENABLE_HIP) && !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+
+/// leave unsupported types untested
+template <size_t BLOCK_SIZE, bool Async,
+          typename StoragePolicy,
+          typename IndexType,
+          typename Allocator,
+          typename WORKINGRES,
+          RAJA::Platform PLATFORM
+          >
+struct PluginWorkGroupTestImpl<RAJA::hip_work<BLOCK_SIZE, Async>,
+                               RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
+                               StoragePolicy,
+                               detail::indirect_function_call_dispatch_typer,
+                               IndexType,
+                               Allocator,
+                               WORKINGRES,
+                               PLATFORM> {
+void operator()() const
+{ }
+};
+///
+template <size_t BLOCK_SIZE, bool Async,
+          typename StoragePolicy,
+          typename IndexType,
+          typename Allocator,
+          typename WORKINGRES,
+          RAJA::Platform PLATFORM
+          >
+struct PluginWorkGroupTestImpl<RAJA::hip_work<BLOCK_SIZE, Async>,
+                               RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
+                               StoragePolicy,
+                               detail::indirect_virtual_function_dispatch_typer,
+                               IndexType,
+                               Allocator,
+                               WORKINGRES,
+                               PLATFORM> {
+void operator()() const
+{ }
+};
+
+#endif
 
 
 TYPED_TEST_SUITE_P(PluginWorkGroupTest);
@@ -169,12 +220,13 @@ TYPED_TEST_P(PluginWorkGroupTest, PluginWorkGroup)
   using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
   using StoragePolicy = typename camp::at<TypeParam, camp::num<2>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<4>>::type;
-  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<5>>::type;
-  using PlatformHolder = typename camp::at<TypeParam, camp::num<6>>::type;
+  using DispatchTyper = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IndexType = typename camp::at<TypeParam, camp::num<4>>::type;
+  using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
+  using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<6>>::type;
+  using PlatformHolder = typename camp::at<TypeParam, camp::num<7>>::type;
 
-  PluginWorkGroupTestImpl<ExecPolicy, OrderPolicy, StoragePolicy, IndexType, Allocator, WORKING_RESOURCE, PlatformHolder::platform>( );
+  PluginWorkGroupTestImpl<ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator, WORKING_RESOURCE, PlatformHolder::platform>{}( );
 }
 
 REGISTER_TYPED_TEST_SUITE_P(PluginWorkGroupTest,
