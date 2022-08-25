@@ -9,7 +9,7 @@
 .. _vertexsum-label:
 
 --------------------------------------------------
-Mesh Vertex Sum Example: Iteration Space Coloring
+Iteration Space Coloring: Mesh Vertex Sum
 --------------------------------------------------
 
 This section contains an exercise file ``RAJA/exercises/vertexsum-indexset.cpp``

@@ -9,7 +9,7 @@
 .. _view_layout-label:
 
 -----------------------------------------------------------
-RAJA Views and Layouts
+Data Views and Layouts
 -----------------------------------------------------------
 
 This section contains an exercise file ``RAJA/exercises/view-layout.cpp``

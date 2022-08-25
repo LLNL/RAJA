@@ -9,7 +9,7 @@
 .. _offset-label:
 
 ------------------------------------------------
-Five-point Stencil Computation (Offset Layout)
+OffsetLayout: Five-point Stencil
 ------------------------------------------------
 
 This section contains an exercise file ``RAJA/exercises/offset-layout-stencil.cpp``

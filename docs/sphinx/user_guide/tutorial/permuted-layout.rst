@@ -9,7 +9,7 @@
 .. _permuted-layout-label:
 
 ---------------------------------------------
-Batched Matrix-Multiply (Permuted Layouts)
+Permuted Layout: Batched Matrix-Multiply
 ---------------------------------------------
 
 Key RAJA features shown in the following example:

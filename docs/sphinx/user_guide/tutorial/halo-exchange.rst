@@ -9,7 +9,7 @@
 .. _halo_exchange-label:
 
 ------------------------------------
-Halo Exchange (Workgroup Constructs)
+Workgroup Constructs: Halo Exchange
 ------------------------------------
 
 Key RAJA features shown in this example:
