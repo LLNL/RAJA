@@ -245,7 +245,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA CUDA explicit (2 blocks per SM) vector addition...\n";
 
   // _rajacuda_explicit_vector_add_start
-  const bool Asynchronous = false;
+  const bool Asynchronous = true;
 
   RAJA::forall<RAJA::cuda_exec_explicit<CUDA_BLOCK_SIZE, 2, Asynchronous>>(RAJA::TypedRangeSegment<int>(0, N), 
     [=] RAJA_DEVICE (int i) { 

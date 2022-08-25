@@ -260,7 +260,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
   ///           method and RAJA::cuda_exec execution policy type with 
-  ///           arguments defining 2 blcoks per SM and asynchronous execution.
+  ///           arguments defining 2 blocks per SM and asynchronous execution.
   ///
   ///           NOTE: You will have to uncomment 'CUDA_BLOCK_SIZE' near the
   ///                 top of the file if you want to use it here. 
