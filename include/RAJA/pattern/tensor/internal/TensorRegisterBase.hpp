@@ -241,24 +241,6 @@ namespace expt
         return (dim==0) ? self_type::s_num_elem : 0;
       }
 
-#if 0
-
-      /*!
-       * Gets the default tile of this tensor
-       * That tile always start at 0, and extends to the full tile sizes
-       */
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      static
-      constexpr TensorTile<int, TENSOR_FULL, s_num_dims>
-      s_get_default_tile()
-      {
-        return TensorTile<int, TENSOR_FULL, s_num_dims>{
-          {int(SIZES*0)...},
-          {int(SIZES)...}
-        };
-      }
-#else
 
       RAJA_HOST_DEVICE
       RAJA_INLINE
@@ -269,7 +251,6 @@ namespace expt
         return StaticTensorTile<int, TENSOR_FULL, camp::int_seq<int,int(SIZES*0)...>, camp::int_seq<int,int(SIZES)...>>();
       }
 
-#endif
 
 
       /*!
