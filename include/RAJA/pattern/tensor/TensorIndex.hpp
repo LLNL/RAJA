@@ -68,7 +68,7 @@ namespace expt
         return self_type(begin, value_type(stripIndexType(end-begin)));
       }
 
-      template<index_type BEGIN, value_type END>
+      template<value_type BEGIN, value_type END>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
