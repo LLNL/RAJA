@@ -255,21 +255,6 @@ namespace expt
       {
         return StaticTensorTile<int, TENSOR_FULL, camp::int_seq<int,int(SIZES*0)...>, camp::int_seq<int,int(SIZES)...>>();
       }
-#else
-
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      static
-      constexpr StaticTensorTile<int, TENSOR_FULL, camp::int_seq<int,int(SIZES*0)...>, camp::int_seq<int,int(SIZES)...>>
-      s_get_default_tile()
-      {
-        return StaticTensorTile<int, TENSOR_FULL, camp::int_seq<int,int(SIZES*0)...>, camp::int_seq<int,int(SIZES)...>>();
-      }
-
-#endif
-
-
-
 
       /*!
        * @brief convenience routine to allow Vector classes to use
