@@ -12,28 +12,33 @@
 Computing a Histogram with Atomic Operations
 --------------------------------------------------
 
-Key RAJA features shown in this example:
+Key RAJA features shown in this example are:
 
   * ``RAJA::forall`` loop execution template 
   * ``RAJA::RangeSegment`` iteration space construct
-  * RAJA atomic add operation
+  * RAJA atomic add operation and RAJA atomic operation policies
+
+The file ``RAJA/examples/tut_atomic-histogram.cpp`` contains complete 
+working code for the examples discussed in this section.
 
 The example uses an integer array of length 'N' randomly initialized with 
 values in the interval [0, M). While iterating over the array, the kernel 
-accumulates the number of occurrences of each value in the array using atomic 
-add operations. Atomic operations allow one to update a memory location 
-referenced by a specific address in parallel without data races. The example 
-shows how to use RAJA portable atomic operations and that they are used 
-similarly for different programming model back-ends. 
+accumulates the number of occurrences of each value in the array in another
+array named 'bins' using atomic add operations. Atomic operations allow one 
+to update a memory location referenced by a specific address in parallel 
+without data races. The example shows how to use RAJA portable atomic 
+operations and that they are used similarly for different programming model 
+back-ends. 
 
-.. note:: Each RAJA reduction operation requires an atomic policy type
+.. note:: Each RAJA atomic operation requires an atomic policy type
           parameter that must be compatible with the execution policy for 
-          the kernel in which it is used.
+          the kernel in which it is used. This is similar to the reduction
+          policies we described in :ref:`dotproduct-label`.
 
 For a complete description of supported RAJA atomic operations and 
 atomic policies, please see :ref:`atomics-label`.
 
-All code snippets described below use the loop range:
+All code snippets described below use the stride-1 iteration space range:
 
 .. literalinclude:: ../../../../examples/tut_atomic-histogram.cpp
    :start-after: _range_atomic_histogram_start
@@ -97,5 +102,3 @@ and the HIP version:
 The same CUDA and HIP loop execution policies as in the previous examples 
 are used.
 
-The file ``RAJA/examples/tut_atomic-histogram.cpp`` contains the complete 
-working example code.

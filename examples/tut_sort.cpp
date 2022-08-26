@@ -95,13 +95,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::fill(in_vals      , in_vals + N/2, 0);
   std::fill(in_vals + N/2, in_vals + N  , 1);
 
-  // _sort_array_init_end
-
   std::cout << "\n in keys...\n";
   printArray(in, N);
   std::cout << "\n in (key, value) pairs...\n";
   printArray(in, in_vals, N);
   std::cout << "\n";
+
+  // _sort_array_init_end
 
 
 //----------------------------------------------------------------------------//
@@ -153,7 +153,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running sequential stable_sort (non-decreasing)...\n";
+  std::cout << "\n Running sequential stable_sort (non-increasing)...\n";
 
   std::copy_n(in, N, out);
 
@@ -317,8 +317,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
 
+  // _sort_stable_hip_greater_start
   RAJA::stable_sort<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::make_span(d_out, N),
                                        RAJA::operators::greater<int>{});
+  // _sort_stable_hip_greater_end
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
 
@@ -330,6 +332,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   memoryManager::deallocate_gpu(d_out_vals);
 
 #endif
+
 
 //----------------------------------------------------------------------------//
 

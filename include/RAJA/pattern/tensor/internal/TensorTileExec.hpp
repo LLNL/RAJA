@@ -277,8 +277,8 @@ namespace expt
 
     template<typename STORAGE, camp::idx_t DIM0, camp::idx_t IDX, camp::idx_t ... IDX_REST>
     struct StaticTensorTileExec<STORAGE, camp::idx_seq<DIM0>, camp::idx_seq<IDX,IDX_REST...>>{
-
       using NextExec = StaticTensorTileExec<STORAGE,camp::idx_seq<DIM0>,camp::idx_seq<IDX_REST...>>;
+
 
       template<typename OTILE, typename TTYPE, typename BODY>
       RAJA_HOST_DEVICE

@@ -37,17 +37,20 @@ TYPED_TEST(ListSegmentUnitTest, Constructors)
   }
 
   RAJA::TypedListSegment<TypeParam> list1( &idx[0], idx.size(), host_res);
-  RAJA::TypedListSegment<TypeParam> copied(list1);
+  ASSERT_EQ(list1.size(), idx.size());
+  ASSERT_EQ(list1.getIndexOwnership(), RAJA::Owned);
 
+  RAJA::TypedListSegment<TypeParam> copied(list1);
   ASSERT_EQ(list1, copied);
+  ASSERT_EQ(copied.getIndexOwnership(), RAJA::Unowned);
 
   RAJA::TypedListSegment<TypeParam> moved(std::move(list1));
-
+  ASSERT_EQ(list1.size(), 0);
   ASSERT_EQ(moved, copied);
 
   RAJA::TypedListSegment<TypeParam> container(idx, host_res);
-
-  ASSERT_EQ(list1, container); 
+  ASSERT_EQ(container.getIndexOwnership(), RAJA::Owned);
+  ASSERT_EQ(moved, container); 
 }
 
 TYPED_TEST(ListSegmentUnitTest, Swaps)

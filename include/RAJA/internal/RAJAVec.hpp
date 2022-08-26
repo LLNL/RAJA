@@ -21,6 +21,7 @@
 
 #include "RAJA/config.hpp"
 
+#include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <utility>

@@ -12,12 +12,14 @@
 Vector Addition (Basic Loop Execution)
 --------------------------------------
 
-Key RAJA features shown in this example:
+Key RAJA features shown in this example are:
 
   * ``RAJA::forall`` loop execution template
   * ``RAJA::RangeSegment`` iteration space construct
   * RAJA execution policies
 
+The file ``RAJA/examples/tut_add-vectors.cpp`` contains complete working code
+for the examples discussed below.
 
 In the example, we add two vectors 'a' and 'b' of length N and
 store the result in vector 'c'. A simple C-style loop that does this is:
@@ -31,18 +33,10 @@ store the result in vector 'c'. A simple C-style loop that does this is:
 RAJA Variants
 ^^^^^^^^^^^^^^^^^^^^^
 
-The RAJA variants of the vector addition operation illustrate how the 
-same kernel can be run with a variety of different programming model
-back-ends by simply swapping out the execution policy. This can be done
-by defining type aliases in a header file so that execution policy types
-can be easily switched, and the code can be compiled to run differently,
-without changing the loop kernel code. In the example code, we
-make all execution policy types explicit for clarity.
-
-For the RAJA variants, we replace the C-style for-loop with a call to the 
-``RAJA::forall`` loop execution template method.
+For the RAJA variants of the vector addition kernel, we replace the C-style 
+for-loop with a call to the ``RAJA::forall`` loop execution template method.
 The method takes an iteration space and the vector addition loop body as
-a C++ lambda expression. We pass a ``RAJA::RangeSegment`` object, which 
+a C++ lambda expression. We pass a ``RAJA::RangeSegment(0, N)`` object, which 
 describes a contiguous sequence of integral values [0, N) for the iteration
 space (for more information about RAJA loop indexing concepts, 
 see :ref:`index-label`). The loop execution template method requires an 
@@ -69,8 +63,8 @@ Alternatively, RAJA provides a *loop execution* policy::
 
   RAJA::loop_exec
 
-This policy allows the compiler to generate optimizations, such as SIMD if 
-compiler heuristics suggest that it is safe to do so and potentially 
+which allows the compiler to generate optimizations based on when its internal
+heuristics suggest that it is safe to do so and potentially 
 beneficial for performance, but the optimizations are not forced.
 
 To run the kernel with OpenMP multithreaded parallelism on a CPU, we use the
@@ -82,7 +76,13 @@ To run the kernel with OpenMP multithreaded parallelism on a CPU, we use the
    :language: C++ 
 
 This will distribute the loop iterations across CPU threads and run the 
-loop over threads in parallel.
+loop over threads in parallel. In particular, this is what you would get if
+you wrote the kernel using OpenMP pragmas directly::
+
+  #pragma omp parallel for
+  for (int i = 0; i < N; ++i) {
+    c[i] = a[i] + b[i];
+  }
 
 To run the kernel on a CUDA GPU device, we use the ``RAJA::cuda_exec``
 policy:
@@ -92,15 +92,16 @@ policy:
    :end-before: _rajacuda_vector_add_end
    :language: C++ 
 
-Note that the CUDA execution policy type accepts a template argument 
-``CUDA_BLOCK_SIZE``, which specifies that each CUDA thread block launched 
-to execute the kernel will have the given number threads in the block.
+Note that the CUDA execution policy type requires a template argument 
+``CUDA_BLOCK_SIZE``, which specifies the number of threads to run in each 
+CUDA thread block launched to run the kernel.
 
-For performance tuning, the ``RAJA::cuda_exec_explicit`` policy is also
-provided. This allows the user to specify the number of blocks allocated
-per streaming multiprocessor (SM) to allow additional block level
-parallelism. Note that the third boolean argument representing asynchronous
-execution can be omitted, and is ``false`` by default:
+For additional performance tuning options, the ``RAJA::cuda_exec_explicit`` 
+policy is also provided, which allows a user to specify the number of thread 
+blocks allocated per streaming multiprocessor (SM). Note that the third 
+boolean argument expressing asynchronous execution can be omitted, and is 
+``false`` by default (a similar defaulted argument is also supported for other
+RAJA CUDA policies):
 
 .. literalinclude:: ../../../../examples/tut_add-vectors.cpp
    :start-after: _rajacuda_explicit_vector_add_start
@@ -108,7 +109,7 @@ execution can be omitted, and is ``false`` by default:
    :language: C++ 
 
 Since the lambda defining the loop body will be passed to a device kernel, 
-it must be decorated with the ``__device__`` attribute when it is defined. 
+it must be decorated with the ``__device__`` attribute.
 This can be done directly or by using the ``RAJA_DEVICE`` macro.
 
 Similarly, to run the kernel on a GPU using the RAJA HIP back-end, 
@@ -119,5 +120,3 @@ we use the ``RAJA::hip_exec`` policy:
    :end-before: _rajahip_vector_add_end
    :language: C++
 
-The file ``RAJA/examples/tut_add-vectors.cpp`` contains the complete 
-working example code.
