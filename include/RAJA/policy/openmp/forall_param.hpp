@@ -271,7 +271,7 @@ namespace expt
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
       RAJA_EXTRACT_BED_IT(iter);
-#pragma omp parllel
+#pragma omp parallel
       {
       #pragma omp for schedule(static) nowait reduction(combine : f_params)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
@@ -297,7 +297,7 @@ namespace expt
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
       RAJA_EXTRACT_BED_IT(iter);
-#pragma omp prallel
+#pragma omp parallel
       {
       #pragma omp for schedule(static, ChunkSize) nowait reduction(combine : f_params)
       for (decltype(distance_it) i = 0; i < distance_it; ++i) {
