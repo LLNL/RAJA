@@ -1,6 +1,6 @@
 ###############################################################################
-# Copyright (c) 2016-2020, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -15,7 +15,7 @@
 # We define the following GitLab pipeline variables:
 #
 # GIT_SUBMODULE_STRATEGY:
-# Tells Gitlab to recursively update the submodules when cloning umpire
+# Tells Gitlab to recursively update the submodules when cloning RAJA
 #
 # ALLOC_NAME:
 # On LLNL's ruby, this pipeline creates only one allocation shared among jobs
@@ -75,7 +75,7 @@ stages:
 
 .build_toss_4_x86_64_ib_corona_script:
   script:
-    - srun -p pdebug -t 30 -N 1 scripts/gitlab/build_and_test.sh
+    - flux mini run --time-limit=30m --nodes=1 scripts/gitlab/build_and_test.sh
 
 # Lassen uses a different job scheduler (spectrum lsf) that does not
 # allow pre-allocation the same way slurm does.
@@ -96,7 +96,8 @@ stages:
 .build_blueos_3_ppc64le_ib_p9_script:
   extends: .build_blueos_3_ppc64le_ib_script
 
-# If testing develop branch, trigger CHAI pipeline with this version of RAJA.
+# If testing develop branch, trigger RAJAPerf pipeline with this version of 
+# RAJA.
 # TODO: Once spack allows to clone a specific commit on demand, then point to the exact commit.
 #       This will prevent from sticking to a branch (here develop).
 #       MP_BRANCH is short for "Multi-Project Branch" and will usually be develop.

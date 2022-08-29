@@ -6,8 +6,9 @@
 
 from spack import *
 
-import socket
+import glob
 import os
+import socket
 
 from os import environ as env
 from os.path import join as pjoin
@@ -94,8 +95,9 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
     depends_on('blt@0.4.1:', type='build')
 
     depends_on('camp')
-    depends_on('camp@0.2.2')
+    depends_on('camp@main') # TODO: remove this ASAP
     depends_on('camp+rocm', when='+rocm')
+    depends_on('camp+openmp', when='+openmp')
     for val in ROCmPackage.amdgpu_targets:
         depends_on('camp amdgpu_target=%s' % val, when='amdgpu_target=%s' % val)
 
@@ -105,6 +107,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
                    when='cuda_arch={0}'.format(sm_))
 
     conflicts('+openmp', when='+rocm')
+    depends_on('rocprim', when='+rocm')
 
     phases = ['hostconfig', 'cmake', 'build', 'install']
 
@@ -308,6 +311,15 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
             hip_arch = spec.variants['amdgpu_target'].value
             cfg.write(cmake_cache_entry("HIP_ROOT_DIR",
                                         hip_root))
+            # there is only one dir like this, but the version component is unknown
+            cfg.write(
+                cmake_cache_path(
+                    "HIP_CLANG_INCLUDE_PATH",
+                    glob.glob(
+                        "{}/lib/clang/*/include".format(spec['llvm-amdgpu'].prefix)
+                    )[0]
+                )
+            )
             cfg.write(cmake_cache_entry("ROCM_ROOT_DIR",
                                         rocm_root))
             cfg.write(cmake_cache_entry("HIP_PATH",
@@ -340,7 +352,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
 
         # shared vs static libs
         cfg.write(cmake_cache_option("BUILD_SHARED_LIBS","+shared" in spec))
-        cfg.write(cmake_cache_option("RAJA_ENABLE_OPENMP","+openmp" in spec))
+        cfg.write(cmake_cache_option("ENABLE_OPENMP","+openmp" in spec))
         cfg.write(cmake_cache_option("RAJA_ENABLE_DESUL_ATOMICS","+desul" in spec))
 
         if "+desul" in spec:
@@ -350,6 +362,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
 
         cfg.write(cmake_cache_option("ENABLE_BENCHMARKS", 'tests=benchmarks' in spec))
         cfg.write(cmake_cache_option("ENABLE_TESTS", not 'tests=none' in spec or self.run_tests))
+        cfg.write(cmake_cache_string("camp_DIR", spec['camp'].prefix))
 
         #######################
         # Close and save

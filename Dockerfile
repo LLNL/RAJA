@@ -41,7 +41,7 @@ FROM ghcr.io/rse-ops/clang-ubuntu-20.04:llvm-11.0.0 AS clang11
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN . /opt/spack/share/spack/setup-env.sh && spack load llvm && \
+RUN . /opt/spack/share/spack/setup-env.sh && export LD_LIBRARY_PATH=/opt/view/lib:$LD_LIBRARY_PATH && \
     cmake -DCMAKE_CXX_COMPILER=clang++ -DRAJA_ENABLE_TBB=On -DENABLE_OPENMP=On .. && \
     cd test/functional/forall/reduce-basic && \
     make -j 6 &&\
@@ -51,7 +51,7 @@ FROM ghcr.io/rse-ops/clang-ubuntu-20.04:llvm-11.0.0 AS clang11-debug
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN . /opt/spack/share/spack/setup-env.sh && spack load llvm && \
+RUN . /opt/spack/share/spack/setup-env.sh && export LD_LIBRARY_PATH=/opt/view/lib:$LD_LIBRARY_PATH && \
     cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On -DCMAKE_BUILD_TYPE=Debug .. && \
     make -j 6 &&\
     ctest -T test --output-on-failure
@@ -60,7 +60,7 @@ FROM ghcr.io/rse-ops/clang-ubuntu-22.04:llvm-13.0.0 AS clang13
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN . /opt/spack/share/spack/setup-env.sh && spack load llvm && \
+RUN . /opt/spack/share/spack/setup-env.sh && export LD_LIBRARY_PATH=/opt/view/lib:$LD_LIBRARY_PATH && \
     cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On -DCMAKE_BUILD_TYPE=Release .. && \
     make -j 6 &&\
     ctest -T test --output-on-failure

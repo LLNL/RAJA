@@ -34,8 +34,8 @@ namespace RAJA
 {
 
 ///
-/// Enumeration used to indicate whether IndexSet objects own data
-/// representing their indices.
+/// Enumeration used to indicate whether ListSegment object owns data
+/// representing its indices.
 ///
 enum IndexOwnership { Unowned, Owned };
 

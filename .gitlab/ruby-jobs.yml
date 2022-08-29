@@ -5,17 +5,28 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ##############################################################################
 
-clang_10:
+clang_10_0_1:
   variables:
-    SPEC: "%clang@10.0.1"
+    SPEC: "+openmp %clang@10.0.1"
   extends: .build_and_test_on_ruby
 
-clang_9:
+clang_9_0_0:
   variables:
-    SPEC: "%clang@9.0.0"
+    SPEC: "+openmp %clang@9.0.0"
+  extends: .build_and_test_on_ruby
+
+clang_9_openmp_off:
+  variables:
+    SPEC: "~openmp %clang@9.0.0"
   extends: .build_and_test_on_ruby
 
 gcc_8_1_0:
+  variables:
+    SPEC: "+openmp %gcc@8.1.0"
+    DEFAULT_TIME: 60
+  extends: .build_and_test_on_ruby
+
+gcc_8_1_0_openmp_default:
   variables:
     SPEC: "%gcc@8.1.0"
     DEFAULT_TIME: 60
@@ -27,15 +38,15 @@ gcc_8_1_0:
 #    DEFAULT_TIME: 40
 #  extends: .build_and_test_on_ruby
 
-icpc_18_0_2:
-  variables:
-    SPEC: " tests=none %intel@18.0.2"
-    DEFAULT_TIME: 40
-  extends: .build_and_test_on_ruby
+# icpc_18_0_2:
+#   variables:
+#     SPEC: " tests=none %intel@18.0.2"
+#     DEFAULT_TIME: 40
+#   extends: .build_and_test_on_ruby
 
 icpc_19_1_0:
   variables:
-    SPEC: "%intel@19.1.0"
+    SPEC: "+openmp %intel@19.1.0"
     DEFAULT_TIME: 40
   extends: .build_and_test_on_ruby
 
@@ -47,7 +58,7 @@ icpc_19_1_0:
 #    DEFAULT_TIME: 60
 #  extends: .build_and_test_on_ruby
 
-clang_10_desul_atomics:
+clang_10_0_1_desul_atomics:
   variables:
     SPEC: "+openmp +desul %clang@10.0.1 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
   extends: .build_and_test_on_ruby
