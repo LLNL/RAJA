@@ -16,7 +16,7 @@ namespace detail {
       combine                               \
       : decltype(f_params)                  \
       : combine<EXEC_POL>(omp_out, omp_in) )\
-      initializer(omp_priv = omp_orig)
+      //initializer(omp_priv = omp_in)
 
     #pragma omp parallel for reduction(combine : f_params)
     for (int i = 0; i < N; ++i) {

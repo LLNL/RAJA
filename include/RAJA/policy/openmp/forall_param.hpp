@@ -26,7 +26,7 @@
       _Pragma(" omp declare reduction( combine \
         : typename std::remove_reference<decltype(f_params)>::type \
         : RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(omp_out, omp_in) ) \
-        initializer(omp_priv = omp_orig) ")
+        //initializer(omp_priv = omp_in) ")
 
 namespace RAJA
 {
