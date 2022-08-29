@@ -5,66 +5,65 @@ variables:
   COMPILER: 'g++'
 
 jobs:
-#- job: Windows #temporarily commenting out until cmake/azure version issue resolved
-#  strategy:
-#    matrix:
-#      shared:
-#        SHARED_ARGS: '-DBUILD_SHARED_LIBS=On -DCMAKE_CXX_FLAGS="/DRAJASHAREDDLL_EXPORTS" '
-#      static:
-#        SHARED_ARGS: '-DBUILD_SHARED_LIBS=Off'
-#  pool:
-#    vmImage: 'windows-2019'
-#  variables:
-#    CMAKE_EXTRA_FLAGS: '-DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off -DBLT_CXX_STD="" -DCMAKE_CXX_STANDARD=17'
-#  steps:
-#  - checkout: self
-#    clean: boolean
-#    submodules: recursive
-#  - task: CMake@1
-#    inputs:
-#      workingDir: 'build'
-#      cmakeArgs: '$(CMAKE_EXTRA_FLAGS) $(SHARED_ARGS) ../'
-#  - task: CMake@1
-#    inputs:
-#      workingDir: 'build'
-#      cmakeArgs: '--build . --config Release --verbose -j 4'
-##   - task: CmdLine@2
-##     inputs:
-##       script: 'ctest.exe -T test -C Release'
-##       workingDirectory: 'build'
-##     condition: eq( variables['Agent.OS'], 'Windows_NT')
-##   - task: PublishTestResults@2
-##     inputs:
-##       testResultsFormat: 'cTest'
-##       testResultsFiles: '**/Test.xml'
+- job: Windows 
+  strategy:
+    matrix:
+      shared:
+        SHARED_ARGS: '-DBUILD_SHARED_LIBS=On -DCMAKE_CXX_FLAGS="/DRAJASHAREDDLL_EXPORTS" '
+      static:
+        SHARED_ARGS: '-DBUILD_SHARED_LIBS=Off'
+  pool:
+    vmImage: 'windows-2019'
+  variables:
+    CMAKE_EXTRA_FLAGS: '-DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off -DBLT_CXX_STD="" -DCMAKE_CXX_STANDARD=17'
+  steps:
+  - checkout: self
+    clean: boolean
+    submodules: recursive
+  - task: CMake@1
+    inputs:
+      workingDir: 'build'
+      cmakeArgs: '$(CMAKE_EXTRA_FLAGS) $(SHARED_ARGS) ../'
+  - task: CMake@1
+    inputs:
+      workingDir: 'build'
+      cmakeArgs: '--build . --config Release --verbose -j 4'
+  - task: CmdLine@2
+    inputs:
+      script: 'ctest.exe -T test -C Release'
+      workingDirectory: 'build'
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'cTest'
+      testResultsFiles: '**/Test.xml'
 - job: Docker
   timeoutInMinutes: 360
   strategy:
     matrix: 
-#      gcc7:
-#        docker_target: gcc7
-#      gcc8:
-#        docker_target: gcc8
-#      gcc9:
-#        docker_target: gcc9
+      gcc7:
+        docker_target: gcc7
+      gcc8:
+        docker_target: gcc8
+      gcc9:
+        docker_target: gcc9
       gcc11:
         docker_target: gcc11
       clang11:
         docker_target: clang11
-#      clang11-debug:
-#        docker_target: clang11-debug
-#      clang13:
-#        docker_target: clang13
-#      nvcc10:
-#        docker_target: nvcc10
-#      nvcc11:
-#        docker_target: nvcc11
-#      nvcc11-debug:
-#        docker_target: nvcc11-debug
-#      hip:
-#        docker_target: hip
-#      sycl:
-#        docker_target: sycl
+      clang11-debug:
+        docker_target: clang11-debug
+      clang13:
+        docker_target: clang13
+      nvcc10:
+        docker_target: nvcc10
+      nvcc11:
+        docker_target: nvcc11
+      nvcc11-debug:
+        docker_target: nvcc11-debug
+      hip:
+        docker_target: hip
+      sycl:
+        docker_target: sycl
   pool:
     vmImage: 'ubuntu-latest'
   variables:
@@ -74,7 +73,7 @@ jobs:
   - checkout: self
     clean: boolean
     submodules: recursive
-  - task: Docker@2
+  - task: Docker@1
     inputs:
       command: build
       dockerFile: 'Dockerfile'
@@ -94,30 +93,29 @@ jobs:
     inputs:
       testResultsFormat: 'cTest'
       testResultsFiles: '**/Test.xml'
-#- job: Mac 
-#  pool:
-#    vmImage: 'macOS-latest'
-#  variables:
-#    CMAKE_EXTRA_FLAGS: '-DENABLE_OPENMP=Off'
-#  steps:
-#  - checkout: self
-#    clean: boolean
-#    submodules: recursive
-#  - task: CMake@1
-#    inputs:
-#      workingDir: 'build'
-#      cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../'
-#  - script: |
-#      cd build
-#      make -j 4
-#    displayName: 'OSX Build'
-#    condition: eq( variables['Agent.OS'], 'Darwin')
-##  - script: |
-##      cd build
-##      ctest -T test --output-on-failure
-##    displayName: 'OSX Test'
-##    condition: eq( variables['Agent.OS'], 'Darwin')
-##  - task: PublishTestResults@2
-##    inputs:
-##      testResultsFormat: 'cTest'
-##      testResultsFiles: '**/Test.xml'
+- job: Mac 
+  pool:
+    vmImage: 'macOS-latest'
+  variables:
+    CMAKE_EXTRA_FLAGS: '-DENABLE_OPENMP=Off'
+  steps:
+  - checkout: self
+    clean: boolean
+    submodules: recursive
+  - task: CMake@1
+    inputs:
+      workingDir: 'build'
+      cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../'
+  - script: |
+      cd build
+      make -j 4
+    displayName: 'OSX Build'
+    condition: eq( variables['Agent.OS'], 'Darwin')
+  - script: |
+      cd build
+      ctest -T test --output-on-failure
+    displayName: 'OSX Test'
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'cTest'
+      testResultsFiles: '**/Test.xml'
