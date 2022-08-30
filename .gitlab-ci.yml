@@ -48,7 +48,7 @@ stages:
     include:
       - local: '.gitlab/custom-jobs.yml'
       - project: 'radiuss/radiuss-shared-ci'
-        ref: woptim/update-to-xl_16_1_1_11
+        ref: v2022.09.rc
         file: '${CI_MACHINE}-build-and-test.yml'
       - local: '.gitlab/${CI_MACHINE}-build-and-test-extra.yml'
     strategy: depend
