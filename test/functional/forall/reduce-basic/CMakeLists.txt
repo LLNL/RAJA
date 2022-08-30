@@ -74,7 +74,6 @@ unset( REDUCETYPES )
 # List of core reduction types for generating test files.
 #
 set(REDUCETYPES ReduceSum ReduceMin ReduceMax ReduceMinLoc ReduceMaxLoc)
-set(EXPT_REDUCETYPES ReduceMax)
 
 set(DATATYPES CoreReductionDataTypeList)
 
