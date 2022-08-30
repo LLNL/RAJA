@@ -96,5 +96,5 @@ clang_9_0_0_asan:
 
 gcc_8_3_1_cuda_10_1_168_desul_atomics:
   variables:
-    SPEC: "+openmp +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@11.1.0"
+    SPEC: "+openmp +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.168"
   extends: .build_and_test_on_lassen
