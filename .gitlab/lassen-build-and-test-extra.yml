@@ -20,12 +20,13 @@ gcc_8_3_1:
     SPEC: "+openmp %gcc@8.3.1 cxxflags=\"-finline-functions -finline-limit=20000\" cflags=\"-finline-functions -finline-limit=20000\""
   extends: .build_and_test_on_lassen
 
-# Overriding shared spec: Longer allocation
+# Overriding shared spec: Longer allocation + Allow failures
 pgi_20_4_gcc_8_3_1:
   variables:
     SPEC: "${PROJECT_LASSEN_VARIANTS} %pgi@20.4 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ${PROJECT_LASSEN_DEPS}"
     LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 120"
   extends: .build_and_test_on_lassen
+  allow_failure: true
 
 # Overriding shared spec: Extra flags
 xl_16_1_1_11:
