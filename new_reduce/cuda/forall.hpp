@@ -3,6 +3,8 @@
 
 #include <RAJA/RAJA.hpp>
 
+#if defined(RAJA_ENABLE_CUDA)
+
 #include "RAJA/util/SoAArray.hpp"
 #include "RAJA/util/SoAPtr.hpp"
 #include "RAJA/util/basic_mempool.hpp"
@@ -11,7 +13,6 @@
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/forall.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
 namespace detail {
 
 using cuda_dim_t = dim3;

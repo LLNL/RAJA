@@ -1,7 +1,7 @@
 #ifndef NEW_REDUCE_CUDA_REDUCE_HPP
 #define NEW_REDUCE_CUDA_REDUCE_HPP
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_CUDA_ACTIVE)
 
 #include <cuda.h>
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"

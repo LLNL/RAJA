@@ -3,7 +3,7 @@
 
 //#include "../util/policy.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_CUDA_ACTIVE)
 
 #include <cuda.h>
 #include "RAJA/pattern/params/kernel_name.hpp"

@@ -4,10 +4,10 @@
 #include "RAJA/pattern/params/params_base.hpp"
 #include "RAJA/util/SoAPtr.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_CUDA_ACTIVE)
 #define DEVICE cuda
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
-#elif defined(RAJA_ENABLE_HIP)
+#elif defined(RAJA_HIP_ACTIVE)
 #define DEVICE hip
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
 #endif
@@ -88,7 +88,7 @@ namespace detail
     value_type *target = nullptr;
     value_type val = op::identity();
 
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_CUDA_ACTIVE) || defined(RAJA_HIP_ACTIVE)
     // Device related attributes.
     value_type * devicetarget = nullptr;
     RAJA::detail::SoAPtr<value_type, RAJA::DEVICE::device_mempool_type> device_mem;

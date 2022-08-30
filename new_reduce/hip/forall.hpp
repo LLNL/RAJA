@@ -3,6 +3,8 @@
 
 #include <RAJA/RAJA.hpp>
 
+#if defined(RAJA_ENABLE_HIP)
+
 #include "RAJA/util/SoAArray.hpp"
 #include "RAJA/util/SoAPtr.hpp"
 #include "RAJA/util/basic_mempool.hpp"
@@ -11,7 +13,6 @@
 #include "RAJA/policy/hip/policy.hpp"
 #include "RAJA/policy/hip/forall.hpp"
 
-#if defined(RAJA_ENABLE_HIP)
 namespace detail {
 
 using hip_dim_t = dim3;
