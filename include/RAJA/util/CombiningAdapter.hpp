@@ -94,6 +94,7 @@ private:
   Lambda m_lambda;
   Layout m_layout;
 
+  RAJA_SUPPRESS_HD_WARN
   template < camp::idx_t... RangeInts >
   RAJA_HOST_DEVICE inline auto call_helper(IndexLinear linear_index,
                                            camp::idx_seq<RangeInts...>)
@@ -104,6 +105,7 @@ private:
     return m_lambda(camp::get<RangeInts>(indices)...);
   }
   ///
+  RAJA_SUPPRESS_HD_WARN
   template < camp::idx_t... RangeInts >
   RAJA_HOST_DEVICE inline auto call_helper(IndexLinear linear_index,
                                            camp::idx_seq<RangeInts...>) const
@@ -213,6 +215,7 @@ auto make_CombiningAdapter_from_layout(Lambda&& lambda, Layout&& layout)
       std::forward<Lambda>(lambda), std::forward<Layout>(layout));
 }
 ///
+RAJA_SUPPRESS_HD_WARN
 template <typename Lambda, typename... IdxTs>
 RAJA_INLINE
 auto make_CombiningAdapter(Lambda&& lambda, ::RAJA::TypedRangeSegment<IdxTs> const&... segs)
@@ -235,6 +238,7 @@ auto make_CombiningAdapter(Lambda&& lambda, ::RAJA::TypedRangeSegment<IdxTs> con
                                            std::move(offset_layout));
 }
 ///
+RAJA_SUPPRESS_HD_WARN
 template <typename Perm, typename Lambda, typename... IdxTs>
 RAJA_INLINE
 auto make_PermutedCombiningAdapter(Lambda&& lambda, ::RAJA::TypedRangeSegment<IdxTs> const&... segs)
