@@ -9,7 +9,7 @@ on:
 env:
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}/developer
+  IMAGE_NAME: llnl/raja/developer
 
 jobs:
 
