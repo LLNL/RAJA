@@ -1,17 +1,3 @@
-
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA index set and segment iteration
- *          template methods for OpenMP.
- *
- *          These methods should work on any platform that supports OpenMP.
- *
- ******************************************************************************
- */
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
@@ -161,9 +147,6 @@ namespace expt
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
 
-// TODO : GCC < 4 does not like how we are defining the types in omp combine
-// when there is a default template argument...
-#if !defined(__GNUC__) || (__GNUC__ > 4)
     //
     // omp for schedule(dynamic)
     //
@@ -307,7 +290,6 @@ namespace expt
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
-#endif // !defined(__GNUC__) || (__GNUC__ > 4)
 
   } //  namespace internal
 
