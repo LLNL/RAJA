@@ -65,12 +65,12 @@ forall_impl(resources::Host host_res,
             const omp_parallel_exec<InnerPolicy>&,
             Iterable&& iter,
             Func&& loop_body,
-            ForallParam)
+            ForallParam f_params)
 {
   RAJA::region<RAJA::omp_parallel_region>([&]() {
     using RAJA::internal::thread_privatize;
     auto body = thread_privatize(loop_body);
-    forall_impl(host_res, InnerPolicy{}, iter, body.get_priv(), RAJA::expt::get_empty_forall_param_pack());
+    forall_impl(host_res, InnerPolicy{}, iter, body.get_priv(), f_params);
   });
   return resources::EventProxy<resources::Host>(host_res);
 }
@@ -93,7 +93,6 @@ namespace internal
                                Iterable&& iter,
                                Func&& loop_body)
   {
-    //std::cout << "check\n";
     RAJA_EXTRACT_BED_IT(iter);
     #pragma omp for
     for (decltype(distance_it) i = 0; i < distance_it; ++i) {
@@ -329,7 +328,6 @@ forall_impl(resources::Host host_res,
   internal::forall_impl_nowait(Schedule{}, std::forward<Iterable>(iter), std::forward<Func>(loop_body));
   return resources::EventProxy<resources::Host>(host_res);
 }
-
 
 //
 //////////////////////////////////////////////////////////////////////

@@ -85,4 +85,4 @@ unset( FORALL_FAIL_ATOMIC_BACKENDS )
 #       test directory since region constructs are defined for only
 #       some of the RAJA back-ends.
 #
-#add_subdirectory(region)
+add_subdirectory(region)
