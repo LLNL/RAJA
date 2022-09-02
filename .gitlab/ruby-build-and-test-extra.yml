@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ##############################################################################
 
-clang_9_openmp_off:
+clang_9_0_0_openmp_off:
   variables:
     SPEC: "~openmp %clang@9.0.0"
   extends: .build_and_test_on_ruby
@@ -49,13 +49,13 @@ icpc_19_1_0:
 #    RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
 #  extends: .build_and_test_on_ruby
 
-clang_10_0_1_desul_atomics:
+clang_10_0_1_gcc_8_3_1_desul_atomics:
   variables:
     SPEC: "+openmp +desul %clang@10.0.1 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
   extends: .build_and_test_on_ruby
 
 # Overriding shared spec: Allow failures
-pgi_20_1:
+pgi_20_1_gcc_local_8_3_1:
   variables:
     SPEC: "${PROJECT_RUBY_VARIANTS} %pgi@20.1 cxxflags\"=-rc=/usr/workspace/umpire/pgi/x86_64/local-gcc-8.3.1-rc\" cflags\"=-rc=/usr/workspace/umpire/pgi/x86_64/local-gcc-8.3.1-rc\" fflags=\"-rc=/usr/workspace/umpire/pgi/x86_64/local-gcc-8.3.1-rc\" ${PROJECT_RUBY_DEPS}"
   extends: .build_and_test_on_ruby
