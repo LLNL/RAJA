@@ -87,14 +87,14 @@ gcc_8_3_1_cuda_11_5_0_ats_disabled:
     LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 --atsdisable -W 60"
   extends: .build_and_test_on_lassen
 
-# Overriding shared spec: Extra flags
+# Overriding shared spec: Extra flags + Allow failure
 xl_16_1_1_11_cuda_11_0_2:
   variables:
     SPEC: "+openmp +cuda %xl@16.1.1.11 cxxflags=\"-qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" cuda_arch=70 ^cuda@11.0.2 ^cmake@3.14.5"
   allow_failure: true
   extends: .build_and_test_on_lassen
 
-# Overriding shared spec: Extra flags
+# Overriding shared spec: Extra flags + Allow failure
 xl_16_1_1_11_gcc_8_3_1_cuda_11_0_2:
   variables:
     SPEC: "+openmp +cuda %xl@16.1.1.11 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cuda_arch=70 ^cuda@11.0.2 ^cmake@3.14.5"
@@ -116,7 +116,7 @@ clang_9_0_0_asan:
     ASAN_OPTIONS: "detect_leaks=1"
   extends: .build_and_test_on_lassen
 
-gcc_8_3_1_cuda_10_1_168_desul_atomics:
+gcc_8_3_1_cuda_11_0_2_desul_atomics:
   variables:
     SPEC: "+openmp +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@11.0.2"
   extends: .build_and_test_on_lassen
