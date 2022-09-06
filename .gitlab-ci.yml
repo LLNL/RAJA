@@ -75,7 +75,7 @@ stages:
 
 .build_toss_4_x86_64_ib_corona_script:
   script:
-    - flux mini run --time-limit=30m --nodes=1 scripts/gitlab/build_and_test.sh
+    - flux mini run --time-limit=40m --nodes=1 scripts/gitlab/build_and_test.sh
 
 # Lassen uses a different job scheduler (spectrum lsf) that does not
 # allow pre-allocation the same way slurm does.

@@ -114,6 +114,10 @@ struct cuda_work_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::cuda> {
 };
 
+/// execute the enqueued loops in an unordered fashion by mapping loops to
+/// blocks in the y direction and loop iterations to threads in the x direction
+/// with the size of the x direction being the average of the iteration counts
+/// of all the loops
 struct unordered_cuda_loop_y_block_iter_x_threadblock_average
     : public RAJA::make_policy_pattern_platform_t<
                        RAJA::Policy::cuda,
