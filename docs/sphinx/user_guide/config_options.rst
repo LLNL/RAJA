@@ -193,8 +193,6 @@ Other programming model specific compilation options are also available:
       CUDA_ARCH                                sm_35 (based on hardware support)
       RAJA_ENABLE_EXTERNAL_ROCPRIM             Off
       RAJA_ENABLE_ROCTX                        Off
-      RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL   Off (enables device function 
-                                               pointers in HIP back-end)
       ======================================   =================================
 
 Turning the ``(RAJA_)ENABLE_CLANG_CUDA`` variable on will build CUDA 
