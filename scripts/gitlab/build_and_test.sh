@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# Initialize modules for users not using bash as a default shell
+if test -e /usr/share/lmod/lmod/init/bash
+then
+  . /usr/share/lmod/lmod/init/bash
+fi
+
 ###############################################################################
 # Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
