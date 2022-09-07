@@ -258,9 +258,10 @@ namespace RAJA {
 #define RAJA_HIP_ACTIVE
 
 #include <hip/hip_version.h>
-#if (HIP_VERSION_MAJOR > 4) || \
-    (HIP_VERSION_MAJOR == 4 && HIP_VERSION_MINOR >= 3)
-// enable device function pointers with rocm version >= 4.3
+#if (HIP_VERSION_MAJOR > 5) || \
+    (HIP_VERSION_MAJOR == 5 && HIP_VERSION_MINOR >= 1)
+// enable device function pointers with rocm version >= 5.1
+// this used to be set to 4.3, but tests start passing with 5.1
 #define RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL
 #define RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
 #endif
