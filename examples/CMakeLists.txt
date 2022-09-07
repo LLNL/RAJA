@@ -14,8 +14,8 @@ raja_add_executable(
   SOURCES resource-forall.cpp)
 
 raja_add_executable(
-  NAME run-time-forall
-  SOURCES run-time-forall.cpp)
+  NAME dynamic-forall
+  SOURCES dynamic-forall.cpp)
 
 raja_add_executable(
   NAME tut_daxpy

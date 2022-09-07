@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
   if(exec_space.compare("pol_2") == 0)
     { dynamic_policy = pol_2; printf("Running RAJA dynamic_forall example using pol_2 \n"); }
 
-
+ 
 
   //policy is chosen from the list
   RAJA::expt::dynamic_forall<policy_list>(dynamic_policy, RAJA::RangeSegment(0, N), [=] RAJA_HOST_DEVICE (int i) {
