@@ -111,7 +111,7 @@ void ET_LoadStoreImpl()
     data4_d(cols, rows) = data3_d(SArows, SRcols);  // mixed static_all and static_range
     data5_d(cols, rows) = data3_d(SArows, SAcols);  // static_all
     data6_d(cols, rows) = data3_d(SRrows, SRcols);  // static_range
-    data7_d(cols, rows) = data3_d(rows, SRcols);  // mixed static_range and non-static
+    data7_d(cols, rows) = data3_d(rows, SRcols);    // mixed static_range and non-static
 
   });
 
@@ -195,6 +195,9 @@ void ET_LoadStoreImpl()
   tensor_free<policy_t>(data2_ptr);
   tensor_free<policy_t>(data3_ptr);
   tensor_free<policy_t>(data4_ptr);
+  tensor_free<policy_t>(data5_ptr);
+  tensor_free<policy_t>(data6_ptr);
+  tensor_free<policy_t>(data7_ptr);
 }
 
 
