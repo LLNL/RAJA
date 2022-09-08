@@ -42,3 +42,11 @@ variables:
   PROJECT_LASSEN_DEPS: ""
 
 
+# Configuration shared by build and test jobs specific to this project.
+# Not all configuration can be shared. Here projects can fine tune the
+# CI behavior.
+# See Umpire for an example (export junit test reports).
+.custom_build_and_test:
+  artifacts:
+    reports:
+      junit: junit.xml

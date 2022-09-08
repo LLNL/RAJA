@@ -61,8 +61,7 @@ stages:
   stage: build-and-test
   trigger:
     include:
-      - local: '.gitlab/custom-variables.yml'
-      - local: '.gitlab/custom-jobs.yml'
+      - local: '.gitlab/custom-jobs-and-variables.yml'
       - project: 'radiuss/radiuss-shared-ci'
         ref: v2022.09.rc
         file: '${CI_MACHINE}-build-and-test.yml'
