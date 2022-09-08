@@ -1,5 +1,3 @@
-###############################################################################
-# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,10 +20,6 @@ raja_add_executable(
   SOURCES tut_matrix-multiply.cpp)
 
 raja_add_executable(
-  NAME tut_vertexsum-coloring
-  SOURCES tut_vertexsum-coloring.cpp)
-
-raja_add_executable(
   NAME launch_flatten
   SOURCES launch_flatten.cpp)
 
@@ -36,26 +30,6 @@ raja_add_executable(
 raja_add_executable(
   NAME resource-runtime-launch
   SOURCES resource-runtime-launch.cpp)
-
-raja_add_executable(
-  NAME tut_batched-matrix-multiply
-  SOURCES tut_batched-matrix-multiply.cpp)
-
-raja_add_executable(
-  NAME tut_matrix-transpose-local-array
-  SOURCES tut_matrix-transpose-local-array.cpp)
-
-raja_add_executable(
-  NAME launch_matrix-transpose-local-array
-  SOURCES launch_matrix-transpose-local-array.cpp)
-
-raja_add_executable(
-  NAME tut_tiled-matrix-transpose
-  SOURCES tut_tiled-matrix-transpose.cpp)
-
-raja_add_executable(
-  NAME launch_tiled-matrix-transpose
-  SOURCES launch_tiled-matrix-transpose.cpp)
 
 raja_add_executable(
   NAME tut_halo-exchange

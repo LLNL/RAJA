@@ -398,6 +398,7 @@ mechanisms to transform loop patterns. More information can be found in
 
    tutorial/kernel_nested_loop_reorder.rst
    tutorial/kernel_exec_pols.rst
+   tutorial/permuted-layout-batch-matrix-multiply.rst
    tutorial/offset-layout-5pt-stencil.rst
 
 =================================================================
@@ -440,11 +441,4 @@ Other Advanced RAJA Features
 
    tutorial/halo-exchange.rst
 
-==============================
-Section To Rework
-==============================
 
-.. toctree::
-   :maxdepth: 1
-
-   tutorial/permuted-layout.rst
