@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: (MIT)
 ###############################################################################
 
+# Uncomment pipelines to subscribe to a shared pipeline.
+
 # Trigger a build-and-test pipeline for ruby, corona and lassen
 ruby-build-and-test:
   variables:
