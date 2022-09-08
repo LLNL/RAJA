@@ -56,50 +56,45 @@
  * execution policy and architecture.
  *
  *  RAJA features shown:
- *    - `forall` loop iteration template method
- *    -  RAJA View
- *    -  RAJA make_permuted_layout
+ *    - RAJA::forall kernel execution method
+ *    - RAJA::View
+ *    - RAJA::Layout
+ *    - RAJA::make_permuted_layout method
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
 
 /*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
-*/
+ * Define number of threads in a GPU thread block
+ */
 #if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
+constexpr int CUDA_BLOCK_SIZE = 256;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-const int HIP_BLOCK_SIZE = 256;
+constexpr int HIP_BLOCK_SIZE = 256;
 #endif
-
-//
-// By default a RAJA::Index_type
-// is a long int
-//
-using RAJA::Index_type;
 
 //
 //Function for checking results
 //
 template <typename T>
-void checkResult(T C, Index_type noMat, int nRows, int nCols);
+void checkResult(T C, int nMat, int nRows, int nCols);
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nRAJA batched matrix multiplication example...\n";
+  std::cout << "\n\nRAJA batched matrix multiplication exercise...\n";
 
 // Dimensions of matrices
-  const int N_c = 3;
-  const int N_r = 3;
+  constexpr int N_c = 3;
+  constexpr int N_r = 3;
 
 // Number of matrices
-  const Index_type N = 8000000;
+  constexpr int N = 8000000;
 
 // Number of iterations
-  const int NITER = 20;
+  constexpr int NITER = 20;
 
   std::cout << "\n Number of matrices to be multiplied: " << N << " \n \n";
 
@@ -108,7 +103,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // and variable to store minimum run time
 //
   auto timer = RAJA::Timer();
-  double minRun;
+  double minRun = std::numeric_limits<double>::max();
 
 //
 // Allocate space for data in layout 1
@@ -135,9 +130,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   auto layout1 =
       RAJA::make_permuted_layout( {{N, N_r, N_c}}, perm1 );
 
-  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Aview(A, layout1);
-  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Bview(B, layout1);
-  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> Cview(C, layout1);
+  RAJA::View<double, RAJA::Layout<3, int, 2>> Aview(A, layout1);
+  RAJA::View<double, RAJA::Layout<3, int, 2>> Bview(B, layout1);
+  RAJA::View<double, RAJA::Layout<3, int, 2>> Cview(C, layout1);
   // _permutedlayout_defviews_end
 
 //
@@ -157,13 +152,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   auto layout2 =
       RAJA::make_permuted_layout( {{N, N_r, N_c}}, perm2 );
 
-  RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Aview2(A2, layout2);
-  RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Bview2(B2, layout2);
-  RAJA::View<double, RAJA::Layout<3, Index_type, 0>> Cview2(C2, layout2);
+  RAJA::View<double, RAJA::Layout<3, int, 0>> Aview2(A2, layout2);
+  RAJA::View<double, RAJA::Layout<3, int, 0>> Bview2(B2, layout2);
+  RAJA::View<double, RAJA::Layout<3, int, 0>> Cview2(C2, layout2);
   // _permutedlayout_permviews_end
 
 //
-// Initialize data
+// Initialize data for layout 1 and layout 2 arrays/views.
+//
+// When OpenMP is enabled, we use an OpenMP exec policy for
+// "first touch" initialization.
 //
 #if defined(RAJA_ENABLE_OPENMP)
   using INIT_POL = RAJA::omp_parallel_for_exec;
@@ -171,9 +169,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using INIT_POL = RAJA::loop_exec;
 #endif
 
-  RAJA::forall<INIT_POL>(RAJA::RangeSegment(0, N), [=](Index_type e) {
-    for (Index_type row = 0; row < N_r; ++row) {
-      for (Index_type col = 0; col < N_c; ++col) {
+  RAJA::forall<INIT_POL>(RAJA::RangeSegment(0, N), [=](int e) {
+    for (int row = 0; row < N_r; ++row) {
+      for (int col = 0; col < N_c; ++col) {
         Aview(e, row, col) = row;
         Bview(e, row, col) = col;
         Cview(e, row, col) = 0;
@@ -185,12 +183,121 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   });
 
+
+//----------------------------------------------------------------------------//
+
+  std::cout << " \n Running batched matrix multiplication"
+            << " with layout 1 (RAJA - sequential) ... " << std::endl;
+
+  minRun = std::numeric_limits<double>::max();
+  for (int i = 0; i < NITER; ++i) {
+
+    timer.start();
+    // _permutedlayout_batchedmatmult_loop_start
+    RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(0, N), [=](int e) {
+
+      Cview(e, 0, 0) = Aview(e, 0, 0) * Bview(e, 0, 0)
+                       + Aview(e, 0, 1) * Bview(e, 1, 0)
+                       + Aview(e, 0, 2) * Bview(e, 2, 0);
+      Cview(e, 0, 1) = Aview(e, 0, 0) * Bview(e, 0, 1)
+                       + Aview(e, 0, 1) * Bview(e, 1, 1)
+                       + Aview(e, 0, 2) * Bview(e, 2, 1);
+      Cview(e, 0, 2) = Aview(e, 0, 0) * Bview(e, 0, 2)
+                       + Aview(e, 0, 1) * Bview(e, 1, 2)
+                       + Aview(e, 0, 2) * Bview(e, 2, 2);
+
+      Cview(e, 1, 0) = Aview(e, 1, 0) * Bview(e, 0, 0)
+                       + Aview(e, 1, 1) * Bview(e, 1, 0)
+                       + Aview(e, 1, 2) * Bview(e, 2, 0);
+      Cview(e, 1, 1) = Aview(e, 1, 0) * Bview(e, 0, 1)
+                       + Aview(e, 1, 1) * Bview(e, 1, 1)
+                       + Aview(e, 1, 2) * Bview(e, 2, 1);
+      Cview(e, 1, 2) = Aview(e, 1, 0) * Bview(e, 0, 2)
+                       + Aview(e, 1, 1) * Bview(e, 1, 2)
+                       + Aview(e, 1, 2) * Bview(e, 2, 2);
+
+      Cview(e, 2, 0) = Aview(e, 2, 0) * Bview(e, 0, 0)
+                       + Aview(e, 2, 1) * Bview(e, 1, 0)
+                       + Aview(e, 2, 2) * Bview(e, 2, 0);
+      Cview(e, 2, 1) = Aview(e, 2, 0) * Bview(e, 0, 1)
+                       + Aview(e, 2, 1) * Bview(e, 1, 1)
+                       + Aview(e, 2, 2) * Bview(e, 2, 1);
+      Cview(e, 2, 2) = Aview(e, 2, 0) * Bview(e, 0, 2)
+                       + Aview(e, 2, 1) * Bview(e, 1, 2)
+                       + Aview(e, 2, 2) * Bview(e, 2, 2);
+    });
+    // _permutedlayout_batchedmatmult_loop_end
+    timer.stop();
+
+    RAJA::Timer::ElapsedType tMin = timer.elapsed();
+    if (tMin < minRun) minRun = tMin;
+    timer.reset();
+  }
+    
+  std::cout << "\trun time : " << minRun << " seconds" << std::endl;
+  checkResult(Cview, N, N_r, N_c);
+
+//----------------------------------------------------------------------------//
+
+  std::cout << " \n Running batched matrix multiplication"
+            << " with layout 2 (RAJA - sequential) ... " << std::endl;
+
+  minRun = std::numeric_limits<double>::max();
+  for (int i = 0; i < NITER; ++i) {
+
+    timer.start();
+    // _permutedlayout2_batchedmatmult_loop_start
+    RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(0, N), [=](int e) {
+
+      Cview2(e, 0, 0) = Aview2(e, 0, 0) * Bview2(e, 0, 0)
+                        + Aview2(e, 0, 1) * Bview2(e, 1, 0)
+                        + Aview2(e, 0, 2) * Bview2(e, 2, 0);
+      Cview2(e, 0, 1) = Aview2(e, 0, 0) * Bview2(e, 0, 1)
+                        + Aview2(e, 0, 1) * Bview2(e, 1, 1)
+                        + Aview2(e, 0, 2) * Bview2(e, 2, 1);
+      Cview2(e, 0, 2) = Aview2(e, 0, 0) * Bview2(e, 0, 2)
+                        + Aview2(e, 0, 1) * Bview2(e, 1, 2)
+                        + Aview2(e, 0, 2) * Bview2(e, 2, 2);
+
+      Cview2(e, 1, 0) = Aview2(e, 1, 0) * Bview2(e, 0, 0)
+                        + Aview2(e, 1, 1) * Bview2(e, 1, 0)
+                        + Aview2(e, 1, 2) * Bview2(e, 2, 0);
+      Cview2(e, 1, 1) = Aview2(e, 1, 0) * Bview2(e, 0, 1)
+                        + Aview2(e, 1, 1) * Bview2(e, 1, 1)
+                        + Aview2(e, 1, 2) * Bview2(e, 2, 1);
+      Cview2(e, 1, 2) = Aview2(e, 1, 0) * Bview2(e, 0, 2)
+                        + Aview2(e, 1, 1) * Bview2(e, 1, 2)
+                        + Aview2(e, 1, 2) * Bview2(e, 2, 2);
+
+      Cview2(e, 2, 0) = Aview2(e, 2, 0) * Bview2(e, 0, 0)
+                        + Aview2(e, 2, 1) * Bview2(e, 1, 0)
+                        + Aview2(e, 2, 2) * Bview2(e, 2, 0);
+      Cview2(e, 2, 1) = Aview2(e, 2, 0) * Bview2(e, 0, 1)
+                        + Aview2(e, 2, 1) * Bview2(e, 1, 1)
+                        + Aview2(e, 2, 2) * Bview2(e, 2, 1);
+      Cview2(e, 2, 2) = Aview2(e, 2, 0) * Bview2(e, 0, 2)
+                        + Aview2(e, 2, 1) * Bview2(e, 1, 2)
+                        + Aview2(e, 2, 2) * Bview2(e, 2, 2);
+
+    });
+    // _permutedlayout2_batchedmatmult_loop_end
+    timer.stop();
+
+    RAJA::Timer::ElapsedType tMin = timer.elapsed();
+    if (tMin < minRun) minRun = tMin;
+    timer.reset();
+  }
+  std::cout<< "\trun time : "<< minRun << " seconds" << std::endl;
+  checkResult(Cview2, N, N_r, N_c);
+
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-  std::cout << " \n Performing batched matrix multiplication"
+  std::cout << " \n Running batched matrix multiplication"
             << " with layout 1 (RAJA - omp parallel for) ... " << std::endl;
+
+  std::memset(C, 0, N_c * N_r * N * sizeof(double));
 
   minRun = std::numeric_limits<double>::max();
   for (int i = 0; i < NITER; ++i) {
@@ -198,7 +305,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     timer.start();
     // _permutedlayout_batchedmatmult_omp_start
     RAJA::forall<RAJA::omp_parallel_for_exec>(
-        RAJA::RangeSegment(0, N), [=](Index_type e) {
+        RAJA::RangeSegment(0, N), [=](int e) {
 
           Cview(e, 0, 0) = Aview(e, 0, 0) * Bview(e, 0, 0)
                            + Aview(e, 0, 1) * Bview(e, 1, 0)
@@ -244,15 +351,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  std::cout << " \n Performing batched matrix multiplication"
+  std::cout << " \n Running batched matrix multiplication"
             << " with layout 2 (RAJA - omp parallel for) ... " << std::endl;
+
+  std::memset(C2, 0, N_c * N_r * N * sizeof(double));
 
   minRun = std::numeric_limits<double>::max();
   for (int i = 0; i < NITER; ++i) {
 
     timer.start();
     RAJA::forall<RAJA::omp_parallel_for_exec>(
-        RAJA::RangeSegment(0, N), [=](Index_type e) {
+        RAJA::RangeSegment(0, N), [=](int e) {
 
           Cview2(e, 0, 0) = Aview2(e, 0, 0) * Bview2(e, 0, 0)
                             + Aview2(e, 0, 1) * Bview2(e, 1, 0)
@@ -296,121 +405,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #endif
 
-//----------------------------------------------------------------------------//
-
-  std::cout << " \n Performing batched matrix multiplication"
-            << " with layout 1 (RAJA - sequential) ... " << std::endl;
-
-  minRun = std::numeric_limits<double>::max();
-  for (int i = 0; i < NITER; ++i) {
-
-    timer.start();
-    RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(0, N), [=](Index_type e) {
-
-      Cview(e, 0, 0) = Aview(e, 0, 0) * Bview(e, 0, 0)
-                       + Aview(e, 0, 1) * Bview(e, 1, 0)
-                       + Aview(e, 0, 2) * Bview(e, 2, 0);
-      Cview(e, 0, 1) = Aview(e, 0, 0) * Bview(e, 0, 1)
-                       + Aview(e, 0, 1) * Bview(e, 1, 1)
-                       + Aview(e, 0, 2) * Bview(e, 2, 1);
-      Cview(e, 0, 2) = Aview(e, 0, 0) * Bview(e, 0, 2)
-                       + Aview(e, 0, 1) * Bview(e, 1, 2)
-                       + Aview(e, 0, 2) * Bview(e, 2, 2);
-
-      Cview(e, 1, 0) = Aview(e, 1, 0) * Bview(e, 0, 0)
-                       + Aview(e, 1, 1) * Bview(e, 1, 0)
-                       + Aview(e, 1, 2) * Bview(e, 2, 0);
-      Cview(e, 1, 1) = Aview(e, 1, 0) * Bview(e, 0, 1)
-                       + Aview(e, 1, 1) * Bview(e, 1, 1)
-                       + Aview(e, 1, 2) * Bview(e, 2, 1);
-      Cview(e, 1, 2) = Aview(e, 1, 0) * Bview(e, 0, 2)
-                       + Aview(e, 1, 1) * Bview(e, 1, 2)
-                       + Aview(e, 1, 2) * Bview(e, 2, 2);
-
-      Cview(e, 2, 0) = Aview(e, 2, 0) * Bview(e, 0, 0)
-                       + Aview(e, 2, 1) * Bview(e, 1, 0)
-                       + Aview(e, 2, 2) * Bview(e, 2, 0);
-      Cview(e, 2, 1) = Aview(e, 2, 0) * Bview(e, 0, 1)
-                       + Aview(e, 2, 1) * Bview(e, 1, 1)
-                       + Aview(e, 2, 2) * Bview(e, 2, 1);
-      Cview(e, 2, 2) = Aview(e, 2, 0) * Bview(e, 0, 2)
-                       + Aview(e, 2, 1) * Bview(e, 1, 2)
-                       + Aview(e, 2, 2) * Bview(e, 2, 2);
-    });
-    timer.stop();
-
-    RAJA::Timer::ElapsedType tMin = timer.elapsed();
-    if (tMin < minRun) minRun = tMin;
-    timer.reset();
-  }
-    
-  std::cout << "\trun time : " << minRun << " seconds" << std::endl;
-  checkResult(Cview, N, N_r, N_c);
-
-//----------------------------------------------------------------------------//
-
-  std::cout << " \n Performing batched matrix multiplication"
-            << " with layout 2 (RAJA - sequential) ... " << std::endl;
-
-  minRun = std::numeric_limits<double>::max();
-  for (int i = 0; i < NITER; ++i) {
-
-    timer.start();
-    RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(0, N), [=](Index_type e) {
-
-      Cview2(e, 0, 0) = Aview2(e, 0, 0) * Bview2(e, 0, 0)
-                        + Aview2(e, 0, 1) * Bview2(e, 1, 0)
-                        + Aview2(e, 0, 2) * Bview2(e, 2, 0);
-      Cview2(e, 0, 1) = Aview2(e, 0, 0) * Bview2(e, 0, 1)
-                        + Aview2(e, 0, 1) * Bview2(e, 1, 1)
-                        + Aview2(e, 0, 2) * Bview2(e, 2, 1);
-      Cview2(e, 0, 2) = Aview2(e, 0, 0) * Bview2(e, 0, 2)
-                        + Aview2(e, 0, 1) * Bview2(e, 1, 2)
-                        + Aview2(e, 0, 2) * Bview2(e, 2, 2);
-
-      Cview2(e, 1, 0) = Aview2(e, 1, 0) * Bview2(e, 0, 0)
-                        + Aview2(e, 1, 1) * Bview2(e, 1, 0)
-                        + Aview2(e, 1, 2) * Bview2(e, 2, 0);
-      Cview2(e, 1, 1) = Aview2(e, 1, 0) * Bview2(e, 0, 1)
-                        + Aview2(e, 1, 1) * Bview2(e, 1, 1)
-                        + Aview2(e, 1, 2) * Bview2(e, 2, 1);
-      Cview2(e, 1, 2) = Aview2(e, 1, 0) * Bview2(e, 0, 2)
-                        + Aview2(e, 1, 1) * Bview2(e, 1, 2)
-                        + Aview2(e, 1, 2) * Bview2(e, 2, 2);
-
-      Cview2(e, 2, 0) = Aview2(e, 2, 0) * Bview2(e, 0, 0)
-                        + Aview2(e, 2, 1) * Bview2(e, 1, 0)
-                        + Aview2(e, 2, 2) * Bview2(e, 2, 0);
-      Cview2(e, 2, 1) = Aview2(e, 2, 0) * Bview2(e, 0, 1)
-                        + Aview2(e, 2, 1) * Bview2(e, 1, 1)
-                        + Aview2(e, 2, 2) * Bview2(e, 2, 1);
-      Cview2(e, 2, 2) = Aview2(e, 2, 0) * Bview2(e, 0, 2)
-                        + Aview2(e, 2, 1) * Bview2(e, 1, 2)
-                        + Aview2(e, 2, 2) * Bview2(e, 2, 2);
-
-    });
-    timer.stop();
-
-    RAJA::Timer::ElapsedType tMin = timer.elapsed();
-    if (tMin < minRun) minRun = tMin;
-    timer.reset();
-  }
-  std::cout<< "\trun time : "<< minRun << " seconds" << std::endl;
-  checkResult(Cview2, N, N_r, N_c);
 
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
 
-  std::cout << " \n Performing batched matrix multiplication"
+  std::cout << " \n Running batched matrix multiplication"
             << " with layout 1 (RAJA - cuda) ... " << std::endl;
+
+  std::memset(C, 0, N_c * N_r * N * sizeof(double));
 
   minRun = std::numeric_limits<double>::max();
   for (int i = 0; i < NITER; ++i) {
 
     timer.start();
     RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-        RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(Index_type e) {
+        RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(int e) {
 
           Cview(e, 0, 0) = Aview(e, 0, 0) * Bview(e, 0, 0)
                            + Aview(e, 0, 1) * Bview(e, 1, 0)
@@ -455,15 +465,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  std::cout << " \n Performing batched matrix multiplication"
+  std::cout << " \n Running batched matrix multiplication"
             << " with layout 2 (RAJA - cuda) ... " << std::endl;
+
+  std::memset(C2, 0, N_c * N_r * N * sizeof(double));
 
   minRun = std::numeric_limits<double>::max();
   for (int i = 0; i < NITER; ++i) {
 
     timer.start();
     RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-        RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(Index_type e) {
+        RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(int e) {
 
           Cview2(e, 0, 0) = Aview2(e, 0, 0) * Bview2(e, 0, 0)
                             + Aview2(e, 0, 1) * Bview2(e, 1, 0)
@@ -510,7 +522,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_HIP)
 
-  std::cout << " \n Performing batched matrix multiplication"
+  std::cout << " \n Running batched matrix multiplication"
             << " with layout 1 (RAJA - hip) ... " << std::endl;
 
   double *d_A = memoryManager::allocate_gpu<double>(N_c * N_r * N);
@@ -521,13 +533,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double *d_B2 = memoryManager::allocate_gpu<double>(N_c * N_r * N);
   double *d_C2 = memoryManager::allocate_gpu<double>(N_c * N_r * N);
 
-  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> d_Aview(d_A, layout1);
-  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> d_Bview(d_B, layout1);
-  RAJA::View<double, RAJA::Layout<3, Index_type, 2>> d_Cview(d_C, layout1);
+  RAJA::View<double, RAJA::Layout<3, int, 2>> d_Aview(d_A, layout1);
+  RAJA::View<double, RAJA::Layout<3, int, 2>> d_Bview(d_B, layout1);
+  RAJA::View<double, RAJA::Layout<3, int, 2>> d_Cview(d_C, layout1);
 
-  RAJA::View<double, RAJA::Layout<3, Index_type, 0>> d_Aview2(d_A2, layout2);
-  RAJA::View<double, RAJA::Layout<3, Index_type, 0>> d_Bview2(d_B2, layout2);
-  RAJA::View<double, RAJA::Layout<3, Index_type, 0>> d_Cview2(d_C2, layout2);
+  RAJA::View<double, RAJA::Layout<3, int, 0>> d_Aview2(d_A2, layout2);
+  RAJA::View<double, RAJA::Layout<3, int, 0>> d_Bview2(d_B2, layout2);
+  RAJA::View<double, RAJA::Layout<3, int, 0>> d_Cview2(d_C2, layout2);
 
   hipErrchk(hipMemcpy( d_A, A, N_c * N_r * N * sizeof(double), hipMemcpyHostToDevice ));
   hipErrchk(hipMemcpy( d_B, B, N_c * N_r * N * sizeof(double), hipMemcpyHostToDevice ));
@@ -539,7 +551,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     timer.start();
     RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
-        RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(Index_type e) {
+        RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(int e) {
 
           d_Cview(e, 0, 0) = d_Aview(e, 0, 0) * d_Bview(e, 0, 0)
                            + d_Aview(e, 0, 1) * d_Bview(e, 1, 0)
@@ -586,7 +598,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-  std::cout << " \n Performing batched matrix multiplication"
+  std::cout << " \n Running batched matrix multiplication"
             << " with layout 2 (RAJA - hip) ... " << std::endl;
 
   minRun = std::numeric_limits<double>::max();
@@ -594,7 +606,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     timer.start();
     RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
-        RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(Index_type e) {
+        RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(int e) {
 
           d_Cview2(e, 0, 0) = d_Aview2(e, 0, 0) * d_Bview2(e, 0, 0)
                             + d_Aview2(e, 0, 1) * d_Bview2(e, 1, 0)
@@ -667,11 +679,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // check result
 //
 template <typename T>
-void checkResult(T C, Index_type noMat, int nRows, int nCols)
+void checkResult(T C, int nMat, int nRows, int nCols)
 {
 
   bool status = true;
-  for (int e = 0; e < noMat; ++e) {
+  for (int e = 0; e < nMat; ++e) {
     for (int row = 0; row < nRows; ++row) {
       for (int col = 0; col < nCols; ++col) {
         if (std::abs(C(e, row, col) - row * col * nCols) > 10e-12) {

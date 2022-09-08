@@ -82,7 +82,8 @@
  *  RAJA features shown:
  *    - RAJA::kernel kernel execution method and execution policies
  *    - RAJA::View 
- *    - RAJA::Layout
+ *    - RAJA::OffsetLayout
+ *    - RAJA::make_offset_layout method
  *
  * For the CUDA implementation, we use unified memory to hold the lattice data.
  * For HIP, we use explicit host-device memory and manually copy data between
