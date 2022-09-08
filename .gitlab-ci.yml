@@ -86,7 +86,6 @@ trigger-rajaperf:
     branch: develop
     strategy: depend
 
-# Import parameters and pipelines defined by the project
+# pipelines subscribed by the project
 include:
-  #  - local: .gitlab/custom-variables.yml
-  - local: .gitlab/custom-pipelines.yml
+  - local: .gitlab/subscribed-pipelines.yml
