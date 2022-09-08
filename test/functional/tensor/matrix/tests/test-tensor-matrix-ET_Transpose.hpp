@@ -39,13 +39,13 @@ void ET_TransposeImpl()
   RAJA::View<element_t, RAJA::Layout<2>> input0_d(input0_ptr,  N, M);
 
 
-  // alloc input1
+  // alloc input1 with StaticLayout
 
   std::vector<element_t> input1_vec(N*M);
-  RAJA::View<element_t, RAJA::Layout<2>> input1_h(input1_vec.data(), N, M);
+  RAJA::View<element_t, RAJA::StaticLayout<RAJA::PERM_IJ,N,M>> input1_h(input1_vec.data());
 
   element_t *input1_ptr = tensor_malloc<policy_t>(input1_vec);
-  RAJA::View<element_t, RAJA::Layout<2>> input1_d(input1_ptr,  N, M);
+  RAJA::View<element_t, RAJA::StaticLayout<RAJA::PERM_IJ,N,M>> input1_d(input1_ptr);
 
 
 
