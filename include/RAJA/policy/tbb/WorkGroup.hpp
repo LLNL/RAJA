@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA Vtable and WorkRunner constructs.
+ * \brief   Header file containing RAJA Dispatcher and WorkRunner constructs.
  *
  ******************************************************************************
  */
@@ -18,7 +18,7 @@
 #ifndef RAJA_tbb_WorkGroup_HPP
 #define RAJA_tbb_WorkGroup_HPP
 
-#include "RAJA/policy/tbb/WorkGroup/Vtable.hpp"
+#include "RAJA/policy/tbb/WorkGroup/Dispatcher.hpp"
 #include "RAJA/policy/tbb/WorkGroup/WorkRunner.hpp"
 
 

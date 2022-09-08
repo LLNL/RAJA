@@ -28,6 +28,7 @@ releases.
                   * a work execution policy.
                   * a work ordering policy.
                   * a work storage policy.
+                  * a work dispatch policy.
               * an index type that is the first argument to the loop bodies.
               * a list of extra argument types that are the rest of the arguments to
                 the loop bodies.
@@ -52,19 +53,20 @@ Policies
 --------
 
 The behavior of the RAJA workgroup constructs is determined by a policy.
-The ``RAJA::WorkGroupPolicy`` has three components, a work execution policy,
-a work ordering policy, and a work storage policy. ``RAJA::WorkPool``,
-``RAJA::WorkGroup``, and ``RAJA::WorkSite`` class templates all
-take the same policy and template arguments.  For example::
+The ``RAJA::WorkGroupPolicy`` has four components, a work execution policy,
+a work ordering policy, a work storage policy, and a work dispatch policy.
+``RAJA::WorkPool``, ``RAJA::WorkGroup``, and ``RAJA::WorkSite`` class templates
+all take the same policy and template arguments.  For example::
 
   using workgroup_policy = RAJA::WorkGroupPolicy <
                                RAJA::seq_work,
                                RAJA::ordered,
-                               RAJA::ragged_array_of_objects >;
+                               RAJA::ragged_array_of_objects,
+                               RAJA::indirect_function_call_dispatch >;
 
 is a workgroup policy that will run loops sequentially on the host in the order
-they were enqueued and store the loop bodies sequentially in single buffer in
-memory.
+they were enqueued, stores the loop bodies sequentially in single buffer in
+memory, and dispatches each loop using a function pointer.
 
 The work execution policy acts like the execution policies used with ``RAJA::forall``
 and determines the backend used to run the loops and the parallelism within each
@@ -98,7 +100,7 @@ The work ordering policy acts like the segment iteration execution policies when
 used when iterating over the loops and the parallelism between each loop.
 
  ====================================== ========================================
- Work Execution Policies                Brief description
+ Work Ordering Policies                 Brief description
  ====================================== ========================================
  ordered                                Execute loops sequentially in the order
                                         they were enqueued using forall.
@@ -138,6 +140,23 @@ implement the workstorage constructs.
                                         between loop data items, reallocating
                                         and/or changing the stride and moving
                                         the loop  data items as needed.
+ ====================================== ========================================
+
+The work dispatch policy determines the technique used to dispatch from type
+erased storage to the loops or iterations of each range and loop body pair.
+
+ ====================================== ========================================
+ Work Dispatch Policies                 Brief description
+ ====================================== ========================================
+ indirect_function_call_dispatch        Dispatch using function pointers.
+ indirect_virtual_function_dispatch     Dispatch using virtual functions in a
+                                        class hierarchy.
+ direct_dispatch<                       Dispatch using a switch statement like
+     camp::list<Range, Callable>...>    coding to pick the right pair of
+                                        Range and Callable types from the
+                                        template parameter pack. You may only
+                                        enqueue a range and callable pair that
+                                        is in the list of types in the policy.
  ====================================== ========================================
 
 
