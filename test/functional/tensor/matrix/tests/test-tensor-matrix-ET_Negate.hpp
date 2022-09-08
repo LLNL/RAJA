@@ -150,6 +150,7 @@ void ET_NegateImpl()
   // Free data
   //
   tensor_free<policy_t>(input0_ptr);
+  tensor_free<policy_t>(input1_ptr);
   tensor_free<policy_t>(output0_ptr);
   tensor_free<policy_t>(output1_ptr);
   tensor_free<policy_t>(output2_ptr);
