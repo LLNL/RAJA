@@ -38,8 +38,8 @@ gcc_8_3_1:
 pgi_20_4_gcc_8_3_1:
   extends: .build_and_test_on_lassen
   variables:
-    SPEC: "${PROJECT_LASSEN_VARIANTS} %pgi@20.4 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ${PROJECT_LASSEN_DEPS}"
     LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 120 -q pdebug"
+    SPEC: "${PROJECT_LASSEN_VARIANTS} %pgi@20.4 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ${PROJECT_LASSEN_DEPS}"
   allow_failure: true
 
 # Overriding shared spec: Extra flags
@@ -67,8 +67,8 @@ clang_9_0_0_cuda_11_0_2:
 ibm_clang_9_0_0_gcc_8_3_1_cuda_10_1_168:
   extends: .build_and_test_on_lassen
   variables:
-    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %clang@ibm.9.0.0 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ^cuda@10.1.168 ${PROJECT_LASSEN_DEPS}"
     LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 120 -q pdebug"
+    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %clang@ibm.9.0.0 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ^cuda@10.1.168 ${PROJECT_LASSEN_DEPS}"
   allow_failure: true
 
 clang_11_0_0_cuda_11_5_0:
@@ -84,8 +84,8 @@ gcc_8_3_1_cuda_11_0_2:
 gcc_8_3_1_cuda_11_5_0_ats_disabled:
   extends: .build_and_test_on_lassen
   variables:
-    SPEC: "+openmp +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0"
     LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 --atsdisable -W 60"
+    SPEC: "+openmp +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0"
 
 # Overriding shared spec: Extra flags + Allow failure
 xl_16_1_1_12_cuda_11_0_2:
