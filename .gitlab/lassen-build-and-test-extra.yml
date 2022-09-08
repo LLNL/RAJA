@@ -38,7 +38,7 @@ gcc_8_3_1:
 pgi_20_4_gcc_8_3_1:
   extends: .build_and_test_on_lassen
   variables:
-    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 120 -q pdebug"
+    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 80 -q pdebug"
     SPEC: "${PROJECT_LASSEN_VARIANTS} %pgi@20.4 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ${PROJECT_LASSEN_DEPS}"
   allow_failure: true
 
