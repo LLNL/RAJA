@@ -10,29 +10,18 @@
 # at Lawrence Livermore National Laboratory (LLNL).
 #
 # This entire pipeline is LLNL-specific
-# #############################################################################
+#
+# Important note: This file is a template provided by
+# llnl/radiuss-shared-ci. It should not require any change from the project to
+# get started but could feature project-specific stages.
+#
+# However, each project should provide:
+# - .gitlab/custom-jobs-and-variables.yml
+# - .gitlab/custom-pipelines.yml
+# - .gitlab/${MACHINE}-build-and-test-extra.yml
+###############################################################################
 
 # We define the following GitLab pipeline variables:
-#
-# GIT_SUBMODULE_STRATEGY:
-# Tells Gitlab to recursively update the submodules when cloning RAJA
-#
-# ALLOC_NAME:
-# On LLNL's ruby, this pipeline creates only one allocation shared among jobs
-# in order to save time and resources. This allocation has to be uniquely named
-# so that we are sure to retrieve it.
-#
-# BUILD_ROOT:
-# The path to the shared resources between all jobs. The BUILD_ROOT is unique to
-# the pipeline, preventing any form of concurrency with other pipelines. This
-# also means that the BUILD_ROOT directory will never be cleaned.
-#
-# DEFAULT_TIME:
-# Default time to let the Lassen jobs run will be 30 minutes. However, if it is
-# a job that requires more time, it will be overwritten in the lassen template
-# file.
-# TODO: add a clean-up mechanism
-
 variables:
   MP_BRANCH: "develop"
 # Use a service user to run CI. This prevents from running pipelines as an
@@ -46,6 +35,9 @@ variables:
 # We build the projects in the CI clone directory.
 # TODO: add a clean-up mechanism
   BUILD_ROOT: ${CI_PROJECT_DIR}
+
+# We organize the build-and-test stage in sub-pipelines. Each sub-pipeline
+# corresponds to a test batch on a given machine.
 
 # High level stages
 stages:
