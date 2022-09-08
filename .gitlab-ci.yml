@@ -17,7 +17,7 @@
 #
 # However, each project should provide:
 # - .gitlab/custom-jobs-and-variables.yml
-# - .gitlab/custom-pipelines.yml
+# - .gitlab/subscribed-pipelines.yml
 # - .gitlab/${MACHINE}-build-and-test-extra.yml
 ###############################################################################
 
@@ -27,7 +27,7 @@ variables:
 # Use a service user to run CI. This prevents from running pipelines as an
 # actual user.
   LLNL_SERVICE_USER: ""
-# Use the service user workspace. Solves permission issues, stores everything
+# Use a service user workspace. Solves permission issues, stores everything
 # at the same location whoever triggers a pipeline.
 #  CUSTOM_CI_BUILDS_DIR: ""
 # Tells Gitlab to recursively update the submodules when cloning the project.
