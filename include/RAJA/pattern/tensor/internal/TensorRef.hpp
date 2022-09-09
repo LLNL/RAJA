@@ -449,7 +449,7 @@ namespace expt
 
         static constexpr camp::idx_t    s_num_dims         = REF_TYPE::s_num_dims;
         static constexpr camp::idx_t    s_stride_one_dim   = REF_TYPE::s_stride_one_dim;
-        static constexpr TensorTileSize s_ref_tensor_size  = REF_TYPE::s_tensor_size;
+        static constexpr TensorTileSize s_ref_tensor_size  = TILE_TYPE::s_tensor_size;
         using pointer_type    = typename REF_TYPE::pointer_type;
         using ref_index_type  = typename REF_TYPE::index_type;
         
