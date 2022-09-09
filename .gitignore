@@ -1,3 +1,6 @@
+.cache
+.idea
+*.sync-conflict-*
 *.pyc
 *.o
 *.a
