@@ -89,9 +89,9 @@ raja_add_executable(
   NAME offset-layout-stencil_solution
   SOURCES offset-layout-stencil_solution.cpp)
 
-#raja_add_executable(
-#  NAME permuted-layout-batch-matrix-multiply
-#  SOURCES permuted-layout-batch-matrix-multiply.cpp) 
+raja_add_executable(
+  NAME permuted-layout-batch-matrix-multiply
+  SOURCES permuted-layout-batch-matrix-multiply.cpp) 
 raja_add_executable(
   NAME permuted-layout-batch-matrix-multiply_solution
   SOURCES permuted-layout-batch-matrix-multiply_solution.cpp) 
