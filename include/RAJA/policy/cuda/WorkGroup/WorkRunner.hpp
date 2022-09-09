@@ -37,12 +37,14 @@ namespace detail
  * and returns any per run resources
  */
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async,
+          typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
         RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
         RAJA::ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
@@ -50,6 +52,7 @@ struct WorkRunner<
         RAJA::cuda_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>,
         RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
         RAJA::ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
@@ -58,6 +61,7 @@ struct WorkRunner<
         RAJA::cuda_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>,
         RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
         RAJA::ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>;
@@ -92,12 +96,14 @@ struct WorkRunner<
  * and returns any per run resources
  */
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async,
+          typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
         RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
         RAJA::reverse_ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
@@ -105,6 +111,7 @@ struct WorkRunner<
         RAJA::cuda_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>,
         RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
         RAJA::reverse_ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
@@ -113,6 +120,7 @@ struct WorkRunner<
         RAJA::cuda_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>,
         RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
         RAJA::reverse_ordered,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>;
@@ -188,7 +196,7 @@ __launch_bounds__(BLOCK_SIZE, BLOCKS_PER_SM) __global__
   const index_type i_loop = blockIdx.y;
   // TODO: cache pointer to value_type in shared memory
   // TODO: cache holder (value_type::obj) in shared memory
-  value_type::call(&iter[i_loop], args...);
+  value_type::device_call(&iter[i_loop], args...);
 }
 
 
@@ -199,23 +207,46 @@ __launch_bounds__(BLOCK_SIZE, BLOCKS_PER_SM) __global__
  * by the average number of iterates per loop
  */
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async,
+          typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename ... Args>
 struct WorkRunner<
         RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
         RAJA::policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average,
+        DISPATCH_POLICY_T,
         ALLOCATOR_T,
         INDEX_T,
         Args...>
 {
   using exec_policy = RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>;
   using order_policy = RAJA::policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average;
+  using dispatch_policy = DISPATCH_POLICY_T;
   using Allocator = ALLOCATOR_T;
   using index_type = INDEX_T;
   using resource_type = resources::Cuda;
 
-  using vtable_type = Vtable<RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, true>, Args...>;
+  // The type that will hold the segment and loop body in work storage
+  struct holder_type {
+    template < typename T >
+    using type = HoldCudaDeviceXThreadblockLoop<
+        typename camp::at<T, camp::num<0>>::type, // ITERABLE
+        typename camp::at<T, camp::num<1>>::type, // LOOP_BODY
+        index_type, Args...>;
+  };
+  ///
+  template < typename T >
+  using holder_type_t = typename holder_type::template type<T>;
+
+  // The policy indicating where the call function is invoked
+  // in this case the values are called on the device
+  using dispatcher_exec_policy = exec_policy;
+
+  // The Dispatcher policy with holder_types used internally to handle the
+  // ranges and callables passed in by the user.
+  using dispatcher_holder_policy = dispatcher_transform_types_t<dispatch_policy, holder_type>;
+
+  using dispatcher_type = Dispatcher<Platform::cuda, dispatcher_holder_policy, RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, true>, Args...>;
 
   WorkRunner() = default;
 
@@ -235,15 +266,6 @@ struct WorkRunner<
     return *this;
   }
 
-  // The type  that will hold the segment and loop body in work storage
-  template < typename ITERABLE, typename LOOP_BODY >
-  using holder_type = HoldCudaDeviceXThreadblockLoop<ITERABLE, LOOP_BODY,
-                                 index_type, Args...>;
-
-  // The policy indicating where the call function is invoked
-  // in this case the values are called on the device
-  using vtable_exec_policy = exec_policy;
-
   // runner interfaces with storage to enqueue so the runner can get
   // information from the segment and loop at enqueue time
   template < typename WorkContainer, typename Iterable, typename LoopBody >
@@ -254,7 +276,7 @@ struct WorkRunner<
     using ITERABLE  = camp::decay<Iterable>;
     using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
-    using holder = holder_type<ITERABLE, LOOP_BODY>;
+    using holder = holder_type_t<camp::list<ITERABLE, LOOP_BODY>>;
 
     // using true_value_type = typename WorkContainer::template true_value_type<holder>;
 
@@ -274,7 +296,7 @@ struct WorkRunner<
       //     gridSize, blockSize, shmem, stream, std::forward<LoopBody>(loop_body));
 
       storage.template emplace<holder>(
-          get_Vtable<holder, vtable_type>(vtable_exec_policy{}),
+          get_Dispatcher<holder, dispatcher_type>(dispatcher_exec_policy{}),
           std::forward<Iterable>(iter), std::forward<LoopBody>(loop_body));
     }
   }
