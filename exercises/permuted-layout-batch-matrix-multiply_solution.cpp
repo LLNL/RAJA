@@ -169,7 +169,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using INIT_POL = RAJA::loop_exec;
 #endif
 
-  RAJA::forall<INIT_POL>(RAJA::RangeSegment(0, N), [=](int e) {
+  RAJA::forall<INIT_POL>(RAJA::TypedRangeSegment<int>(0, N), [=](int e) {
     for (int row = 0; row < N_r; ++row) {
       for (int col = 0; col < N_c; ++col) {
         Aview(e, row, col) = row;
@@ -194,38 +194,40 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     timer.start();
     // _permutedlayout_batchedmatmult_loop_start
-    RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(0, N), [=](int e) {
+    RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<int>(0, N),
+      [=](int e) {
 
-      Cview(e, 0, 0) = Aview(e, 0, 0) * Bview(e, 0, 0)
-                       + Aview(e, 0, 1) * Bview(e, 1, 0)
-                       + Aview(e, 0, 2) * Bview(e, 2, 0);
-      Cview(e, 0, 1) = Aview(e, 0, 0) * Bview(e, 0, 1)
-                       + Aview(e, 0, 1) * Bview(e, 1, 1)
-                       + Aview(e, 0, 2) * Bview(e, 2, 1);
-      Cview(e, 0, 2) = Aview(e, 0, 0) * Bview(e, 0, 2)
-                       + Aview(e, 0, 1) * Bview(e, 1, 2)
-                       + Aview(e, 0, 2) * Bview(e, 2, 2);
+        Cview(e, 0, 0) = Aview(e, 0, 0) * Bview(e, 0, 0)
+                         + Aview(e, 0, 1) * Bview(e, 1, 0)
+                         + Aview(e, 0, 2) * Bview(e, 2, 0);
+        Cview(e, 0, 1) = Aview(e, 0, 0) * Bview(e, 0, 1)
+                         + Aview(e, 0, 1) * Bview(e, 1, 1)
+                         + Aview(e, 0, 2) * Bview(e, 2, 1);
+        Cview(e, 0, 2) = Aview(e, 0, 0) * Bview(e, 0, 2)
+                         + Aview(e, 0, 1) * Bview(e, 1, 2)
+                         + Aview(e, 0, 2) * Bview(e, 2, 2);
 
-      Cview(e, 1, 0) = Aview(e, 1, 0) * Bview(e, 0, 0)
-                       + Aview(e, 1, 1) * Bview(e, 1, 0)
-                       + Aview(e, 1, 2) * Bview(e, 2, 0);
-      Cview(e, 1, 1) = Aview(e, 1, 0) * Bview(e, 0, 1)
-                       + Aview(e, 1, 1) * Bview(e, 1, 1)
-                       + Aview(e, 1, 2) * Bview(e, 2, 1);
-      Cview(e, 1, 2) = Aview(e, 1, 0) * Bview(e, 0, 2)
-                       + Aview(e, 1, 1) * Bview(e, 1, 2)
-                       + Aview(e, 1, 2) * Bview(e, 2, 2);
+        Cview(e, 1, 0) = Aview(e, 1, 0) * Bview(e, 0, 0)
+                         + Aview(e, 1, 1) * Bview(e, 1, 0)
+                         + Aview(e, 1, 2) * Bview(e, 2, 0);
+        Cview(e, 1, 1) = Aview(e, 1, 0) * Bview(e, 0, 1)
+                         + Aview(e, 1, 1) * Bview(e, 1, 1)
+                         + Aview(e, 1, 2) * Bview(e, 2, 1);
+        Cview(e, 1, 2) = Aview(e, 1, 0) * Bview(e, 0, 2)
+                         + Aview(e, 1, 1) * Bview(e, 1, 2)
+                         + Aview(e, 1, 2) * Bview(e, 2, 2);
 
-      Cview(e, 2, 0) = Aview(e, 2, 0) * Bview(e, 0, 0)
-                       + Aview(e, 2, 1) * Bview(e, 1, 0)
-                       + Aview(e, 2, 2) * Bview(e, 2, 0);
-      Cview(e, 2, 1) = Aview(e, 2, 0) * Bview(e, 0, 1)
-                       + Aview(e, 2, 1) * Bview(e, 1, 1)
-                       + Aview(e, 2, 2) * Bview(e, 2, 1);
-      Cview(e, 2, 2) = Aview(e, 2, 0) * Bview(e, 0, 2)
-                       + Aview(e, 2, 1) * Bview(e, 1, 2)
-                       + Aview(e, 2, 2) * Bview(e, 2, 2);
-    });
+        Cview(e, 2, 0) = Aview(e, 2, 0) * Bview(e, 0, 0)
+                         + Aview(e, 2, 1) * Bview(e, 1, 0)
+                         + Aview(e, 2, 2) * Bview(e, 2, 0);
+        Cview(e, 2, 1) = Aview(e, 2, 0) * Bview(e, 0, 1)
+                         + Aview(e, 2, 1) * Bview(e, 1, 1)
+                         + Aview(e, 2, 2) * Bview(e, 2, 1);
+        Cview(e, 2, 2) = Aview(e, 2, 0) * Bview(e, 0, 2)
+                         + Aview(e, 2, 1) * Bview(e, 1, 2)
+                         + Aview(e, 2, 2) * Bview(e, 2, 2);
+      }
+    );
     // _permutedlayout_batchedmatmult_loop_end
     timer.stop();
 
@@ -247,39 +249,41 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     timer.start();
     // _permutedlayout2_batchedmatmult_loop_start
-    RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(0, N), [=](int e) {
+    RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<int>(0, N), 
+      [=](int e) {
 
-      Cview2(e, 0, 0) = Aview2(e, 0, 0) * Bview2(e, 0, 0)
-                        + Aview2(e, 0, 1) * Bview2(e, 1, 0)
-                        + Aview2(e, 0, 2) * Bview2(e, 2, 0);
-      Cview2(e, 0, 1) = Aview2(e, 0, 0) * Bview2(e, 0, 1)
-                        + Aview2(e, 0, 1) * Bview2(e, 1, 1)
-                        + Aview2(e, 0, 2) * Bview2(e, 2, 1);
-      Cview2(e, 0, 2) = Aview2(e, 0, 0) * Bview2(e, 0, 2)
-                        + Aview2(e, 0, 1) * Bview2(e, 1, 2)
-                        + Aview2(e, 0, 2) * Bview2(e, 2, 2);
+        Cview2(e, 0, 0) = Aview2(e, 0, 0) * Bview2(e, 0, 0)
+                          + Aview2(e, 0, 1) * Bview2(e, 1, 0)
+                          + Aview2(e, 0, 2) * Bview2(e, 2, 0);
+        Cview2(e, 0, 1) = Aview2(e, 0, 0) * Bview2(e, 0, 1)
+                          + Aview2(e, 0, 1) * Bview2(e, 1, 1)
+                          + Aview2(e, 0, 2) * Bview2(e, 2, 1);
+        Cview2(e, 0, 2) = Aview2(e, 0, 0) * Bview2(e, 0, 2)
+                          + Aview2(e, 0, 1) * Bview2(e, 1, 2)
+                          + Aview2(e, 0, 2) * Bview2(e, 2, 2);
 
-      Cview2(e, 1, 0) = Aview2(e, 1, 0) * Bview2(e, 0, 0)
-                        + Aview2(e, 1, 1) * Bview2(e, 1, 0)
-                        + Aview2(e, 1, 2) * Bview2(e, 2, 0);
-      Cview2(e, 1, 1) = Aview2(e, 1, 0) * Bview2(e, 0, 1)
-                        + Aview2(e, 1, 1) * Bview2(e, 1, 1)
-                        + Aview2(e, 1, 2) * Bview2(e, 2, 1);
-      Cview2(e, 1, 2) = Aview2(e, 1, 0) * Bview2(e, 0, 2)
-                        + Aview2(e, 1, 1) * Bview2(e, 1, 2)
-                        + Aview2(e, 1, 2) * Bview2(e, 2, 2);
+        Cview2(e, 1, 0) = Aview2(e, 1, 0) * Bview2(e, 0, 0)
+                          + Aview2(e, 1, 1) * Bview2(e, 1, 0)
+                          + Aview2(e, 1, 2) * Bview2(e, 2, 0);
+        Cview2(e, 1, 1) = Aview2(e, 1, 0) * Bview2(e, 0, 1)
+                          + Aview2(e, 1, 1) * Bview2(e, 1, 1)
+                          + Aview2(e, 1, 2) * Bview2(e, 2, 1);
+        Cview2(e, 1, 2) = Aview2(e, 1, 0) * Bview2(e, 0, 2)
+                          + Aview2(e, 1, 1) * Bview2(e, 1, 2)
+                          + Aview2(e, 1, 2) * Bview2(e, 2, 2);
 
-      Cview2(e, 2, 0) = Aview2(e, 2, 0) * Bview2(e, 0, 0)
-                        + Aview2(e, 2, 1) * Bview2(e, 1, 0)
-                        + Aview2(e, 2, 2) * Bview2(e, 2, 0);
-      Cview2(e, 2, 1) = Aview2(e, 2, 0) * Bview2(e, 0, 1)
-                        + Aview2(e, 2, 1) * Bview2(e, 1, 1)
-                        + Aview2(e, 2, 2) * Bview2(e, 2, 1);
-      Cview2(e, 2, 2) = Aview2(e, 2, 0) * Bview2(e, 0, 2)
-                        + Aview2(e, 2, 1) * Bview2(e, 1, 2)
-                        + Aview2(e, 2, 2) * Bview2(e, 2, 2);
+        Cview2(e, 2, 0) = Aview2(e, 2, 0) * Bview2(e, 0, 0)
+                          + Aview2(e, 2, 1) * Bview2(e, 1, 0)
+                          + Aview2(e, 2, 2) * Bview2(e, 2, 0);
+        Cview2(e, 2, 1) = Aview2(e, 2, 0) * Bview2(e, 0, 1)
+                          + Aview2(e, 2, 1) * Bview2(e, 1, 1)
+                          + Aview2(e, 2, 2) * Bview2(e, 2, 1);
+        Cview2(e, 2, 2) = Aview2(e, 2, 0) * Bview2(e, 0, 2)
+                          + Aview2(e, 2, 1) * Bview2(e, 1, 2)
+                          + Aview2(e, 2, 2) * Bview2(e, 2, 2);
 
-    });
+      }
+    );
     // _permutedlayout2_batchedmatmult_loop_end
     timer.stop();
 
@@ -304,40 +308,41 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     timer.start();
     // _permutedlayout_batchedmatmult_omp_start
-    RAJA::forall<RAJA::omp_parallel_for_exec>(
-        RAJA::RangeSegment(0, N), [=](int e) {
+    RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::TypedRangeSegment<int>(0, N), 
+      [=](int e) {
 
-          Cview(e, 0, 0) = Aview(e, 0, 0) * Bview(e, 0, 0)
-                           + Aview(e, 0, 1) * Bview(e, 1, 0)
-                           + Aview(e, 0, 2) * Bview(e, 2, 0);
-          Cview(e, 0, 1) = Aview(e, 0, 0) * Bview(e, 0, 1)
-                           + Aview(e, 0, 1) * Bview(e, 1, 1)
-                           + Aview(e, 0, 2) * Bview(e, 2, 1);
-          Cview(e, 0, 2) = Aview(e, 0, 0) * Bview(e, 0, 2)
-                           + Aview(e, 0, 1) * Bview(e, 1, 2)
-                           + Aview(e, 0, 2) * Bview(e, 2, 2);
+        Cview(e, 0, 0) = Aview(e, 0, 0) * Bview(e, 0, 0)
+                         + Aview(e, 0, 1) * Bview(e, 1, 0)
+                         + Aview(e, 0, 2) * Bview(e, 2, 0);
+        Cview(e, 0, 1) = Aview(e, 0, 0) * Bview(e, 0, 1)
+                         + Aview(e, 0, 1) * Bview(e, 1, 1)
+                         + Aview(e, 0, 2) * Bview(e, 2, 1);
+        Cview(e, 0, 2) = Aview(e, 0, 0) * Bview(e, 0, 2)
+                         + Aview(e, 0, 1) * Bview(e, 1, 2)
+                         + Aview(e, 0, 2) * Bview(e, 2, 2);
 
-          Cview(e, 1, 0) = Aview(e, 1, 0) * Bview(e, 0, 0)
-                           + Aview(e, 1, 1) * Bview(e, 1, 0)
-                           + Aview(e, 1, 2) * Bview(e, 2, 0);
-          Cview(e, 1, 1) = Aview(e, 1, 0) * Bview(e, 0, 1)
-                           + Aview(e, 1, 1) * Bview(e, 1, 1)
-                           + Aview(e, 1, 2) * Bview(e, 2, 1);
-          Cview(e, 1, 2) = Aview(e, 1, 0) * Bview(e, 0, 2)
-                           + Aview(e, 1, 1) * Bview(e, 1, 2)
-                           + Aview(e, 1, 2) * Bview(e, 2, 2);
+        Cview(e, 1, 0) = Aview(e, 1, 0) * Bview(e, 0, 0)
+                         + Aview(e, 1, 1) * Bview(e, 1, 0)
+                         + Aview(e, 1, 2) * Bview(e, 2, 0);
+        Cview(e, 1, 1) = Aview(e, 1, 0) * Bview(e, 0, 1)
+                         + Aview(e, 1, 1) * Bview(e, 1, 1)
+                         + Aview(e, 1, 2) * Bview(e, 2, 1);
+        Cview(e, 1, 2) = Aview(e, 1, 0) * Bview(e, 0, 2)
+                         + Aview(e, 1, 1) * Bview(e, 1, 2)
+                         + Aview(e, 1, 2) * Bview(e, 2, 2);
 
-          Cview(e, 2, 0) = Aview(e, 2, 0) * Bview(e, 0, 0)
-                           + Aview(e, 2, 1) * Bview(e, 1, 0)
-                           + Aview(e, 2, 2) * Bview(e, 2, 0);
-          Cview(e, 2, 1) = Aview(e, 2, 0) * Bview(e, 0, 1)
-                           + Aview(e, 2, 1) * Bview(e, 1, 1)
-                           + Aview(e, 2, 2) * Bview(e, 2, 1);
-          Cview(e, 2, 2) = Aview(e, 2, 0) * Bview(e, 0, 2)
-                           + Aview(e, 2, 1) * Bview(e, 1, 2)
-                           + Aview(e, 2, 2) * Bview(e, 2, 2);
+        Cview(e, 2, 0) = Aview(e, 2, 0) * Bview(e, 0, 0)
+                         + Aview(e, 2, 1) * Bview(e, 1, 0)
+                         + Aview(e, 2, 2) * Bview(e, 2, 0);
+        Cview(e, 2, 1) = Aview(e, 2, 0) * Bview(e, 0, 1)
+                         + Aview(e, 2, 1) * Bview(e, 1, 1)
+                         + Aview(e, 2, 2) * Bview(e, 2, 1);
+        Cview(e, 2, 2) = Aview(e, 2, 0) * Bview(e, 0, 2)
+                         + Aview(e, 2, 1) * Bview(e, 1, 2)
+                         + Aview(e, 2, 2) * Bview(e, 2, 2);
 
-        });
+      }
+    );
     // _permutedlayout_batchedmatmult_omp_end
     timer.stop();
 
@@ -360,40 +365,41 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int i = 0; i < NITER; ++i) {
 
     timer.start();
-    RAJA::forall<RAJA::omp_parallel_for_exec>(
-        RAJA::RangeSegment(0, N), [=](int e) {
+    RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::TypedRangeSegment<int>(0, N), 
+      [=](int e) {
 
-          Cview2(e, 0, 0) = Aview2(e, 0, 0) * Bview2(e, 0, 0)
-                            + Aview2(e, 0, 1) * Bview2(e, 1, 0)
-                            + Aview2(e, 0, 2) * Bview2(e, 2, 0);
-          Cview2(e, 0, 1) = Aview2(e, 0, 0) * Bview2(e, 0, 1)
-                            + Aview2(e, 0, 1) * Bview2(e, 1, 1)
-                            + Aview2(e, 0, 2) * Bview2(e, 2, 1);
-          Cview2(e, 0, 2) = Aview2(e, 0, 0) * Bview2(e, 0, 2)
-                            + Aview2(e, 0, 1) * Bview2(e, 1, 2)
-                            + Aview2(e, 0, 2) * Bview2(e, 2, 2);
+        Cview2(e, 0, 0) = Aview2(e, 0, 0) * Bview2(e, 0, 0)
+                          + Aview2(e, 0, 1) * Bview2(e, 1, 0)
+                          + Aview2(e, 0, 2) * Bview2(e, 2, 0);
+        Cview2(e, 0, 1) = Aview2(e, 0, 0) * Bview2(e, 0, 1)
+                          + Aview2(e, 0, 1) * Bview2(e, 1, 1)
+                          + Aview2(e, 0, 2) * Bview2(e, 2, 1);
+        Cview2(e, 0, 2) = Aview2(e, 0, 0) * Bview2(e, 0, 2)
+                          + Aview2(e, 0, 1) * Bview2(e, 1, 2)
+                          + Aview2(e, 0, 2) * Bview2(e, 2, 2);
 
-          Cview2(e, 1, 0) = Aview2(e, 1, 0) * Bview2(e, 0, 0)
-                            + Aview2(e, 1, 1) * Bview2(e, 1, 0)
-                            + Aview2(e, 1, 2) * Bview2(e, 2, 0);
-          Cview2(e, 1, 1) = Aview2(e, 1, 0) * Bview2(e, 0, 1)
-                            + Aview2(e, 1, 1) * Bview2(e, 1, 1)
-                            + Aview2(e, 1, 2) * Bview2(e, 2, 1);
-          Cview2(e, 1, 2) = Aview2(e, 1, 0) * Bview2(e, 0, 2)
-                            + Aview2(e, 1, 1) * Bview2(e, 1, 2)
-                            + Aview2(e, 1, 2) * Bview2(e, 2, 2);
+        Cview2(e, 1, 0) = Aview2(e, 1, 0) * Bview2(e, 0, 0)
+                          + Aview2(e, 1, 1) * Bview2(e, 1, 0)
+                          + Aview2(e, 1, 2) * Bview2(e, 2, 0);
+        Cview2(e, 1, 1) = Aview2(e, 1, 0) * Bview2(e, 0, 1)
+                          + Aview2(e, 1, 1) * Bview2(e, 1, 1)
+                          + Aview2(e, 1, 2) * Bview2(e, 2, 1);
+        Cview2(e, 1, 2) = Aview2(e, 1, 0) * Bview2(e, 0, 2)
+                          + Aview2(e, 1, 1) * Bview2(e, 1, 2)
+                          + Aview2(e, 1, 2) * Bview2(e, 2, 2);
 
-          Cview2(e, 2, 0) = Aview2(e, 2, 0) * Bview2(e, 0, 0)
-                            + Aview2(e, 2, 1) * Bview2(e, 1, 0)
-                            + Aview2(e, 2, 2) * Bview2(e, 2, 0);
-          Cview2(e, 2, 1) = Aview2(e, 2, 0) * Bview2(e, 0, 1)
-                            + Aview2(e, 2, 1) * Bview2(e, 1, 1)
-                            + Aview2(e, 2, 2) * Bview2(e, 2, 1);
-          Cview2(e, 2, 2) = Aview2(e, 2, 0) * Bview2(e, 0, 2)
-                            + Aview2(e, 2, 1) * Bview2(e, 1, 2)
-                            + Aview2(e, 2, 2) * Bview2(e, 2, 2);
+        Cview2(e, 2, 0) = Aview2(e, 2, 0) * Bview2(e, 0, 0)
+                          + Aview2(e, 2, 1) * Bview2(e, 1, 0)
+                          + Aview2(e, 2, 2) * Bview2(e, 2, 0);
+        Cview2(e, 2, 1) = Aview2(e, 2, 0) * Bview2(e, 0, 1)
+                          + Aview2(e, 2, 1) * Bview2(e, 1, 1)
+                          + Aview2(e, 2, 2) * Bview2(e, 2, 1);
+        Cview2(e, 2, 2) = Aview2(e, 2, 0) * Bview2(e, 0, 2)
+                          + Aview2(e, 2, 1) * Bview2(e, 1, 2)
+                          + Aview2(e, 2, 2) * Bview2(e, 2, 2);
 
-        });
+      }
+    );
     timer.stop();
 
     RAJA::Timer::ElapsedType tMin = timer.elapsed();
@@ -419,40 +425,41 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int i = 0; i < NITER; ++i) {
 
     timer.start();
-    RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-        RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(int e) {
+    RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::TypedRangeSegment<int>(0, N), 
+      [=] RAJA_DEVICE(int e) {
 
-          Cview(e, 0, 0) = Aview(e, 0, 0) * Bview(e, 0, 0)
-                           + Aview(e, 0, 1) * Bview(e, 1, 0)
-                           + Aview(e, 0, 2) * Bview(e, 2, 0);
-          Cview(e, 0, 1) = Aview(e, 0, 0) * Bview(e, 0, 1)
-                           + Aview(e, 0, 1) * Bview(e, 1, 1)
-                           + Aview(e, 0, 2) * Bview(e, 2, 1);
-          Cview(e, 0, 2) = Aview(e, 0, 0) * Bview(e, 0, 2)
-                           + Aview(e, 0, 1) * Bview(e, 1, 2)
-                           + Aview(e, 0, 2) * Bview(e, 2, 2);
+        Cview(e, 0, 0) = Aview(e, 0, 0) * Bview(e, 0, 0)
+                         + Aview(e, 0, 1) * Bview(e, 1, 0)
+                         + Aview(e, 0, 2) * Bview(e, 2, 0);
+        Cview(e, 0, 1) = Aview(e, 0, 0) * Bview(e, 0, 1)
+                         + Aview(e, 0, 1) * Bview(e, 1, 1)
+                         + Aview(e, 0, 2) * Bview(e, 2, 1);
+        Cview(e, 0, 2) = Aview(e, 0, 0) * Bview(e, 0, 2)
+                         + Aview(e, 0, 1) * Bview(e, 1, 2)
+                         + Aview(e, 0, 2) * Bview(e, 2, 2);
 
-          Cview(e, 1, 0) = Aview(e, 1, 0) * Bview(e, 0, 0)
-                           + Aview(e, 1, 1) * Bview(e, 1, 0)
-                           + Aview(e, 1, 2) * Bview(e, 2, 0);
-          Cview(e, 1, 1) = Aview(e, 1, 0) * Bview(e, 0, 1)
-                           + Aview(e, 1, 1) * Bview(e, 1, 1)
-                           + Aview(e, 1, 2) * Bview(e, 2, 1);
-          Cview(e, 1, 2) = Aview(e, 1, 0) * Bview(e, 0, 2)
-                           + Aview(e, 1, 1) * Bview(e, 1, 2)
-                           + Aview(e, 1, 2) * Bview(e, 2, 2);
+        Cview(e, 1, 0) = Aview(e, 1, 0) * Bview(e, 0, 0)
+                         + Aview(e, 1, 1) * Bview(e, 1, 0)
+                         + Aview(e, 1, 2) * Bview(e, 2, 0);
+        Cview(e, 1, 1) = Aview(e, 1, 0) * Bview(e, 0, 1)
+                         + Aview(e, 1, 1) * Bview(e, 1, 1)
+                         + Aview(e, 1, 2) * Bview(e, 2, 1);
+        Cview(e, 1, 2) = Aview(e, 1, 0) * Bview(e, 0, 2)
+                         + Aview(e, 1, 1) * Bview(e, 1, 2)
+                         + Aview(e, 1, 2) * Bview(e, 2, 2);
 
-          Cview(e, 2, 0) = Aview(e, 2, 0) * Bview(e, 0, 0)
-                           + Aview(e, 2, 1) * Bview(e, 1, 0)
-                           + Aview(e, 2, 2) * Bview(e, 2, 0);
-          Cview(e, 2, 1) = Aview(e, 2, 0) * Bview(e, 0, 1)
-                           + Aview(e, 2, 1) * Bview(e, 1, 1)
-                           + Aview(e, 2, 2) * Bview(e, 2, 1);
-          Cview(e, 2, 2) = Aview(e, 2, 0) * Bview(e, 0, 2)
-                           + Aview(e, 2, 1) * Bview(e, 1, 2)
-                           + Aview(e, 2, 2) * Bview(e, 2, 2);
+        Cview(e, 2, 0) = Aview(e, 2, 0) * Bview(e, 0, 0)
+                         + Aview(e, 2, 1) * Bview(e, 1, 0)
+                         + Aview(e, 2, 2) * Bview(e, 2, 0);
+        Cview(e, 2, 1) = Aview(e, 2, 0) * Bview(e, 0, 1)
+                         + Aview(e, 2, 1) * Bview(e, 1, 1)
+                         + Aview(e, 2, 2) * Bview(e, 2, 1);
+        Cview(e, 2, 2) = Aview(e, 2, 0) * Bview(e, 0, 2)
+                         + Aview(e, 2, 1) * Bview(e, 1, 2)
+                         + Aview(e, 2, 2) * Bview(e, 2, 2);
 
-        });
+      }
+    );
     timer.stop();
 
     RAJA::Timer::ElapsedType tMin = timer.elapsed();
@@ -474,40 +481,41 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int i = 0; i < NITER; ++i) {
 
     timer.start();
-    RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-        RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(int e) {
+    RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::TypedRangeSegment<int>(0, N), 
+      [=] RAJA_DEVICE(int e) {
 
-          Cview2(e, 0, 0) = Aview2(e, 0, 0) * Bview2(e, 0, 0)
-                            + Aview2(e, 0, 1) * Bview2(e, 1, 0)
-                            + Aview2(e, 0, 2) * Bview2(e, 2, 0);
-          Cview2(e, 0, 1) = Aview2(e, 0, 0) * Bview2(e, 0, 1)
-                            + Aview2(e, 0, 1) * Bview2(e, 1, 1)
-                            + Aview2(e, 0, 2) * Bview2(e, 2, 1);
-          Cview2(e, 0, 2) = Aview2(e, 0, 0) * Bview2(e, 0, 2)
-                            + Aview2(e, 0, 1) * Bview2(e, 1, 2)
-                            + Aview2(e, 0, 2) * Bview2(e, 2, 2);
+        Cview2(e, 0, 0) = Aview2(e, 0, 0) * Bview2(e, 0, 0)
+                          + Aview2(e, 0, 1) * Bview2(e, 1, 0)
+                          + Aview2(e, 0, 2) * Bview2(e, 2, 0);
+        Cview2(e, 0, 1) = Aview2(e, 0, 0) * Bview2(e, 0, 1)
+                          + Aview2(e, 0, 1) * Bview2(e, 1, 1)
+                          + Aview2(e, 0, 2) * Bview2(e, 2, 1);
+        Cview2(e, 0, 2) = Aview2(e, 0, 0) * Bview2(e, 0, 2)
+                          + Aview2(e, 0, 1) * Bview2(e, 1, 2)
+                          + Aview2(e, 0, 2) * Bview2(e, 2, 2);
 
-          Cview2(e, 1, 0) = Aview2(e, 1, 0) * Bview2(e, 0, 0)
-                            + Aview2(e, 1, 1) * Bview2(e, 1, 0)
-                            + Aview2(e, 1, 2) * Bview2(e, 2, 0);
-          Cview2(e, 1, 1) = Aview2(e, 1, 0) * Bview2(e, 0, 1)
-                            + Aview2(e, 1, 1) * Bview2(e, 1, 1)
-                            + Aview2(e, 1, 2) * Bview2(e, 2, 1);
-          Cview2(e, 1, 2) = Aview2(e, 1, 0) * Bview2(e, 0, 2)
-                            + Aview2(e, 1, 1) * Bview2(e, 1, 2)
-                            + Aview2(e, 1, 2) * Bview2(e, 2, 2);
+        Cview2(e, 1, 0) = Aview2(e, 1, 0) * Bview2(e, 0, 0)
+                          + Aview2(e, 1, 1) * Bview2(e, 1, 0)
+                          + Aview2(e, 1, 2) * Bview2(e, 2, 0);
+        Cview2(e, 1, 1) = Aview2(e, 1, 0) * Bview2(e, 0, 1)
+                          + Aview2(e, 1, 1) * Bview2(e, 1, 1)
+                          + Aview2(e, 1, 2) * Bview2(e, 2, 1);
+        Cview2(e, 1, 2) = Aview2(e, 1, 0) * Bview2(e, 0, 2)
+                          + Aview2(e, 1, 1) * Bview2(e, 1, 2)
+                          + Aview2(e, 1, 2) * Bview2(e, 2, 2);
 
-          Cview2(e, 2, 0) = Aview2(e, 2, 0) * Bview2(e, 0, 0)
-                            + Aview2(e, 2, 1) * Bview2(e, 1, 0)
-                            + Aview2(e, 2, 2) * Bview2(e, 2, 0);
-          Cview2(e, 2, 1) = Aview2(e, 2, 0) * Bview2(e, 0, 1)
-                            + Aview2(e, 2, 1) * Bview2(e, 1, 1)
-                            + Aview2(e, 2, 2) * Bview2(e, 2, 1);
-          Cview2(e, 2, 2) = Aview2(e, 2, 0) * Bview2(e, 0, 2)
-                            + Aview2(e, 2, 1) * Bview2(e, 1, 2)
-                            + Aview2(e, 2, 2) * Bview2(e, 2, 2);
+        Cview2(e, 2, 0) = Aview2(e, 2, 0) * Bview2(e, 0, 0)
+                          + Aview2(e, 2, 1) * Bview2(e, 1, 0)
+                          + Aview2(e, 2, 2) * Bview2(e, 2, 0);
+        Cview2(e, 2, 1) = Aview2(e, 2, 0) * Bview2(e, 0, 1)
+                          + Aview2(e, 2, 1) * Bview2(e, 1, 1)
+                          + Aview2(e, 2, 2) * Bview2(e, 2, 1);
+        Cview2(e, 2, 2) = Aview2(e, 2, 0) * Bview2(e, 0, 2)
+                          + Aview2(e, 2, 1) * Bview2(e, 1, 2)
+                          + Aview2(e, 2, 2) * Bview2(e, 2, 2);
 
-        });
+      }
+    );
     timer.stop();
 
     RAJA::Timer::ElapsedType tMin = timer.elapsed();
@@ -550,40 +558,41 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int i = 0; i < NITER; ++i) {
 
     timer.start();
-    RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
-        RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(int e) {
+    RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::TypedRangeSegment<int>(0, N), 
+      [=] RAJA_DEVICE(int e) {
 
-          d_Cview(e, 0, 0) = d_Aview(e, 0, 0) * d_Bview(e, 0, 0)
+        d_Cview(e, 0, 0) = d_Aview(e, 0, 0) * d_Bview(e, 0, 0)
                            + d_Aview(e, 0, 1) * d_Bview(e, 1, 0)
                            + d_Aview(e, 0, 2) * d_Bview(e, 2, 0);
-          d_Cview(e, 0, 1) = d_Aview(e, 0, 0) * d_Bview(e, 0, 1)
+        d_Cview(e, 0, 1) = d_Aview(e, 0, 0) * d_Bview(e, 0, 1)
                            + d_Aview(e, 0, 1) * d_Bview(e, 1, 1)
                            + d_Aview(e, 0, 2) * d_Bview(e, 2, 1);
-          d_Cview(e, 0, 2) = d_Aview(e, 0, 0) * d_Bview(e, 0, 2)
+        d_Cview(e, 0, 2) = d_Aview(e, 0, 0) * d_Bview(e, 0, 2)
                            + d_Aview(e, 0, 1) * d_Bview(e, 1, 2)
                            + d_Aview(e, 0, 2) * d_Bview(e, 2, 2);
 
-          d_Cview(e, 1, 0) = d_Aview(e, 1, 0) * d_Bview(e, 0, 0)
+        d_Cview(e, 1, 0) = d_Aview(e, 1, 0) * d_Bview(e, 0, 0)
                            + d_Aview(e, 1, 1) * d_Bview(e, 1, 0)
                            + d_Aview(e, 1, 2) * d_Bview(e, 2, 0);
-          d_Cview(e, 1, 1) = d_Aview(e, 1, 0) * d_Bview(e, 0, 1)
+        d_Cview(e, 1, 1) = d_Aview(e, 1, 0) * d_Bview(e, 0, 1)
                            + d_Aview(e, 1, 1) * d_Bview(e, 1, 1)
                            + d_Aview(e, 1, 2) * d_Bview(e, 2, 1);
-          d_Cview(e, 1, 2) = d_Aview(e, 1, 0) * d_Bview(e, 0, 2)
+        d_Cview(e, 1, 2) = d_Aview(e, 1, 0) * d_Bview(e, 0, 2)
                            + d_Aview(e, 1, 1) * d_Bview(e, 1, 2)
                            + d_Aview(e, 1, 2) * d_Bview(e, 2, 2);
 
-          d_Cview(e, 2, 0) = d_Aview(e, 2, 0) * d_Bview(e, 0, 0)
+        d_Cview(e, 2, 0) = d_Aview(e, 2, 0) * d_Bview(e, 0, 0)
                            + d_Aview(e, 2, 1) * d_Bview(e, 1, 0)
                            + d_Aview(e, 2, 2) * d_Bview(e, 2, 0);
-          d_Cview(e, 2, 1) = d_Aview(e, 2, 0) * d_Bview(e, 0, 1)
+        d_Cview(e, 2, 1) = d_Aview(e, 2, 0) * d_Bview(e, 0, 1)
                            + d_Aview(e, 2, 1) * d_Bview(e, 1, 1)
                            + d_Aview(e, 2, 2) * d_Bview(e, 2, 1);
-          d_Cview(e, 2, 2) = d_Aview(e, 2, 0) * d_Bview(e, 0, 2)
+        d_Cview(e, 2, 2) = d_Aview(e, 2, 0) * d_Bview(e, 0, 2)
                            + d_Aview(e, 2, 1) * d_Bview(e, 1, 2)
                            + d_Aview(e, 2, 2) * d_Bview(e, 2, 2);
 
-        });
+      }
+    );
     timer.stop();
 
     RAJA::Timer::ElapsedType tMin = timer.elapsed();
@@ -605,40 +614,41 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int i = 0; i < NITER; ++i) {
 
     timer.start();
-    RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
-        RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(int e) {
+    RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::TypedRangeSegment<int>(0, N), 
+      [=] RAJA_DEVICE(int e) {
 
-          d_Cview2(e, 0, 0) = d_Aview2(e, 0, 0) * d_Bview2(e, 0, 0)
+        d_Cview2(e, 0, 0) = d_Aview2(e, 0, 0) * d_Bview2(e, 0, 0)
                             + d_Aview2(e, 0, 1) * d_Bview2(e, 1, 0)
                             + d_Aview2(e, 0, 2) * d_Bview2(e, 2, 0);
-          d_Cview2(e, 0, 1) = d_Aview2(e, 0, 0) * d_Bview2(e, 0, 1)
+        d_Cview2(e, 0, 1) = d_Aview2(e, 0, 0) * d_Bview2(e, 0, 1)
                             + d_Aview2(e, 0, 1) * d_Bview2(e, 1, 1)
                             + d_Aview2(e, 0, 2) * d_Bview2(e, 2, 1);
-          d_Cview2(e, 0, 2) = d_Aview2(e, 0, 0) * d_Bview2(e, 0, 2)
+        d_Cview2(e, 0, 2) = d_Aview2(e, 0, 0) * d_Bview2(e, 0, 2)
                             + d_Aview2(e, 0, 1) * d_Bview2(e, 1, 2)
                             + d_Aview2(e, 0, 2) * d_Bview2(e, 2, 2);
 
-          d_Cview2(e, 1, 0) = d_Aview2(e, 1, 0) * d_Bview2(e, 0, 0)
+        d_Cview2(e, 1, 0) = d_Aview2(e, 1, 0) * d_Bview2(e, 0, 0)
                             + d_Aview2(e, 1, 1) * d_Bview2(e, 1, 0)
                             + d_Aview2(e, 1, 2) * d_Bview2(e, 2, 0);
-          d_Cview2(e, 1, 1) = d_Aview2(e, 1, 0) * d_Bview2(e, 0, 1)
+        d_Cview2(e, 1, 1) = d_Aview2(e, 1, 0) * d_Bview2(e, 0, 1)
                             + d_Aview2(e, 1, 1) * d_Bview2(e, 1, 1)
                             + d_Aview2(e, 1, 2) * d_Bview2(e, 2, 1);
-          d_Cview2(e, 1, 2) = d_Aview2(e, 1, 0) * d_Bview2(e, 0, 2)
+        d_Cview2(e, 1, 2) = d_Aview2(e, 1, 0) * d_Bview2(e, 0, 2)
                             + d_Aview2(e, 1, 1) * d_Bview2(e, 1, 2)
                             + d_Aview2(e, 1, 2) * d_Bview2(e, 2, 2);
 
-          d_Cview2(e, 2, 0) = d_Aview2(e, 2, 0) * d_Bview2(e, 0, 0)
+        d_Cview2(e, 2, 0) = d_Aview2(e, 2, 0) * d_Bview2(e, 0, 0)
                             + d_Aview2(e, 2, 1) * d_Bview2(e, 1, 0)
                             + d_Aview2(e, 2, 2) * d_Bview2(e, 2, 0);
-          d_Cview2(e, 2, 1) = d_Aview2(e, 2, 0) * d_Bview2(e, 0, 1)
+        d_Cview2(e, 2, 1) = d_Aview2(e, 2, 0) * d_Bview2(e, 0, 1)
                             + d_Aview2(e, 2, 1) * d_Bview2(e, 1, 1)
                             + d_Aview2(e, 2, 2) * d_Bview2(e, 2, 1);
-          d_Cview2(e, 2, 2) = d_Aview2(e, 2, 0) * d_Bview2(e, 0, 2)
+        d_Cview2(e, 2, 2) = d_Aview2(e, 2, 0) * d_Bview2(e, 0, 2)
                             + d_Aview2(e, 2, 1) * d_Bview2(e, 1, 2)
                             + d_Aview2(e, 2, 2) * d_Bview2(e, 2, 2);
 
-        });
+      }
+    );
     timer.stop();
 
     RAJA::Timer::ElapsedType tMin = timer.elapsed();
