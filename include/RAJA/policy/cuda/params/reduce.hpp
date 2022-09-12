@@ -6,7 +6,7 @@
 #include <cuda.h>
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #include "RAJA/policy/cuda/reduce.hpp"
-#include "RAJA/pattern/params/new_reduce_basic.hpp"
+#include "RAJA/pattern/params/reducer.hpp"
 
 namespace RAJA {
 namespace expt {

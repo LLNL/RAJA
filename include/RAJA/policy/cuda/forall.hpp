@@ -30,7 +30,7 @@
 
 #include "RAJA/pattern/forall.hpp"
 
-#include "RAJA/pattern/forall_param.hpp"
+#include "RAJA/pattern/params/forall.hpp"
 
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"

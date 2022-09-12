@@ -35,7 +35,7 @@
 
 #include "RAJA/util/resource.hpp"
 
-#include "RAJA/pattern/forall_param.hpp"
+#include "RAJA/pattern/params/forall.hpp"
 
 namespace RAJA
 {

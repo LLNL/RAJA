@@ -1,12 +1,12 @@
 #ifndef FORALL_PARAM_HPP
 #define FORALL_PARAM_HPP
 
-#include "RAJA/policy/sequential/new_reduce.hpp"
-#include "RAJA/policy/tbb/new_reduce.hpp"
-#include "RAJA/policy/openmp/new_reduce.hpp"
-#include "RAJA/policy/cuda/params/new_reduce.hpp"
+#include "RAJA/policy/sequential/params/reduce.hpp"
+#include "RAJA/policy/tbb/params/reduce.hpp"
+#include "RAJA/policy/openmp/params/reduce.hpp"
+#include "RAJA/policy/cuda/params/reduce.hpp"
 #include "RAJA/policy/cuda/params/kernel_name.hpp"
-#include "RAJA/policy/hip/params/new_reduce.hpp"
+#include "RAJA/policy/hip/params/reduce.hpp"
 
 #include "RAJA/util/CombiningAdapter.hpp"
 

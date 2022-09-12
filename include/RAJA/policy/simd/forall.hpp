@@ -37,7 +37,7 @@
 
 #include "RAJA/policy/simd/policy.hpp"
 
-#include "RAJA/pattern/forall_param.hpp"
+#include "RAJA/pattern/params/forall.hpp"
 
 namespace RAJA
 {

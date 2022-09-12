@@ -43,9 +43,9 @@
 #include "RAJA/pattern/forall.hpp"
 #include "RAJA/pattern/region.hpp"
 
-#include "RAJA/pattern/forall_param.hpp"
+#include "RAJA/pattern/params/forall.hpp"
 
-#include "RAJA/policy/openmp/forall_param.hpp"
+#include "RAJA/policy/openmp/params/forall.hpp"
 
 namespace RAJA
 {

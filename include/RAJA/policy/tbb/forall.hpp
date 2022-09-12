@@ -32,7 +32,7 @@
 #include "RAJA/index/RangeSegment.hpp"
 #include "RAJA/internal/fault_tolerance.hpp"
 #include "RAJA/pattern/forall.hpp"
-#include "RAJA/pattern/forall_param.hpp"
+#include "RAJA/pattern/params/forall.hpp"
 #include "RAJA/policy/tbb/policy.hpp"
 #include "RAJA/util/types.hpp"
 

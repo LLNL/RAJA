@@ -6,7 +6,7 @@
 #include <hip/hip_runtime.h>
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
 #include "RAJA/policy/hip/reduce.hpp"
-#include "RAJA/pattern/params/new_reduce_basic.hpp"
+#include "RAJA/pattern/params/reducer.hpp"
 
 namespace RAJA {
 namespace expt {

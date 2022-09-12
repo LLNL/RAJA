@@ -32,7 +32,7 @@
 
 #include "RAJA/internal/fault_tolerance.hpp"
 
-#include "RAJA/pattern/forall_param.hpp"
+#include "RAJA/pattern/params/forall.hpp"
 
 using RAJA::concepts::enable_if;
 
