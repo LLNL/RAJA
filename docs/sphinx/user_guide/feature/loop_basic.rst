@@ -87,6 +87,7 @@ Please see the following tutorial sections for detailed examples that use
  * :ref:`atomichist-label`
  * :ref:`indexset-label`
  * :ref:`vertexsum-label`
+ * :ref:`permuted-layout-label`
 
 
 .. _loop_elements-kernel-label:

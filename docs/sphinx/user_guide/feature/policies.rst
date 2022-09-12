@@ -528,8 +528,6 @@ policy type has the form::
 
   RAJA::ExecPolicy< segment_iteration_policy, segment_execution_policy >
 
-See :ref:`indexsets-label` for more information.
-
 In general, any policy that can be used with a ``RAJA::forall`` method
 can be used as the segment execution policy. The following policies are
 available to use for the outer segment iteration policy:

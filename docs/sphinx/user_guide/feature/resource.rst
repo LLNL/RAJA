@@ -147,7 +147,8 @@ execution policy suport.
 
 .. note:: The ``RAJA::resources::Omp`` resource is still under development.
 
-IndexSet policies require two execution policies (see :ref:`indexsets-label`). 
+IndexSet policies require two execution policies 
+(see :ref:`indexsetpolicy-label`). 
 Currently, users may only pass a single resource to a forall method taking
 an IndexSet argument. This resource is used for the inner execution of 
 each Segment in the IndexSet::
