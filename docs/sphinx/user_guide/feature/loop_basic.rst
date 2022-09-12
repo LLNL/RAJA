@@ -83,7 +83,7 @@ Please see the following tutorial sections for detailed examples that use
 
  * :ref:`addvectors-label`
  * :ref:`dotproduct-label`
- * :ref:`reductions-label`
+ * :ref:`reduction-ex-label`
  * :ref:`atomichist-label`
  * :ref:`indexset-label`
  * :ref:`vertexsum-label`
@@ -360,9 +360,9 @@ Please see the following tutorial sections for detailed examples that use
 
 .. _loop_elements-CombiningAdapter-label:
 
---------------------------------
-MultiDimensional loops using Simple loop APIs (RAJA::CombiningAdapter)
---------------------------------
+------------------------------------------------------------------------
+Multi-dimensional loops using simple loop APIs (RAJA::CombiningAdapter)
+------------------------------------------------------------------------
 
 A ``RAJA::CombiningAdapter`` object provides ways to run perfectly nested loops
 with simple loop APIs like ``RAJA::forall`` and those described in 

@@ -64,7 +64,7 @@ execution mechanisms to define the iteration space for a kernel.
 .. note:: Iterating over the indices of all segments in a RAJA index set 
           requires a two-level execution policy, with two template parameters,
           as shown above. The first parameter specifies how to iterate over 
-          the seqments. The second parameter specifies how each segment will 
+          the segments. The second parameter specifies how each segment will 
           execute. See :ref:`indexsetpolicy-label` for more information about 
           RAJA index set execution policies.
 

@@ -814,7 +814,7 @@ There is one statement specific to OpenMP kernels.
 
 * ``OmpSyncThreads`` applies the OpenMP ``#pragma omp barrier`` directive.
 
-Statement types that lauch CUDA or HIP GPU kernels are listed next. They work 
+Statement types that launch CUDA or HIP GPU kernels are listed next. They work 
 similarly for each back-end and their names are distinguished by the prefix 
 ``Cuda`` or ``Hip``. For example, ``CudaKernel`` or ``HipKernel``.
 
@@ -842,7 +842,7 @@ similarly for each back-end and their names are distinguished by the prefix
 
 * ``Cuda/HipSyncWarp`` invokes CUDA '__syncwarp()' barrier. **Note: warp sync is not supported, so the HIP variant is a no-op.
 
-Statement types that lauch SYCL kernels are listed next. 
+Statement types that launch SYCL kernels are listed next. 
 
 * ``SyclKernel<EnclosedStatements>`` launches ``EnclosedStatements`` as a SYCL kernel.  This kernel launch is synchronous.
 
@@ -877,10 +877,10 @@ RAJA provides some statement types that apply in specific kernel scenarios.
 Auxilliary Types
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following list summarizes auxillary types used in the above statements. These
+The following list summarizes auxilliary types used in the above statements. These
 types live in the ``RAJA`` namespace.
 
-  * ``tile_fixed<TileSize>`` tile policy argument to a ``Tile`` or ``TileTCount`` statement; partitions loop iterations into tiles of a fixed size specified by ``TileSize``. This statement type can be used as the ``TilePolicy`` template paramter in the ``Tile`` statements above.
+  * ``tile_fixed<TileSize>`` tile policy argument to a ``Tile`` or ``TileTCount`` statement; partitions loop iterations into tiles of a fixed size specified by ``TileSize``. This statement type can be used as the ``TilePolicy`` template parameter in the ``Tile`` statements above.
  
   * ``tile_dynamic<ParamIdx>`` TilePolicy argument to a Tile or TileTCount statement; partitions loop iterations into tiles of a size specified by a ``TileSize{}`` positional parameter argument. This statement type can be used as the ``TilePolicy`` template paramter in the ``Tile`` statements above.
 
