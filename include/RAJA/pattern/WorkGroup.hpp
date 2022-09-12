@@ -193,12 +193,14 @@ struct WorkSite {
 template <typename EXEC_POLICY_T,
           typename ORDER_POLICY_T,
           typename STORAGE_POLICY_T,
+          typename DISPATCH_POLICY_T,
           typename INDEX_T,
           typename ... Args,
           typename ALLOCATOR_T>
 struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
                                 ORDER_POLICY_T,
-                                STORAGE_POLICY_T>,
+                                STORAGE_POLICY_T,
+                                DISPATCH_POLICY_T>,
                 INDEX_T,
                 xargs<Args...>,
                 ALLOCATOR_T>
@@ -206,7 +208,8 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
   using exec_policy = EXEC_POLICY_T;
   using order_policy = ORDER_POLICY_T;
   using storage_policy = STORAGE_POLICY_T;
-  using policy = WorkGroupPolicy<exec_policy, order_policy, storage_policy>;
+  using dispatch_policy = DISPATCH_POLICY_T;
+  using policy = WorkGroupPolicy<exec_policy, order_policy, storage_policy, dispatch_policy>;
   using index_type = INDEX_T;
   using xarg_type = xargs<Args...>;
   using Allocator = ALLOCATOR_T;
@@ -216,9 +219,9 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
 
 private:
   using workrunner_type = detail::WorkRunner<
-      exec_policy, order_policy, Allocator, index_type, Args...>;
+      exec_policy, order_policy, dispatch_policy, Allocator, index_type, Args...>;
   using storage_type = detail::WorkStorage<
-      storage_policy, Allocator, typename workrunner_type::vtable_type>;
+      storage_policy, Allocator, typename workrunner_type::dispatcher_type>;
 
   friend workgroup_type;
   friend worksite_type;
@@ -302,12 +305,14 @@ private:
 template <typename EXEC_POLICY_T,
           typename ORDER_POLICY_T,
           typename STORAGE_POLICY_T,
+          typename DISPATCH_POLICY_T,
           typename INDEX_T,
           typename ... Args,
           typename ALLOCATOR_T>
 struct WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
                                  ORDER_POLICY_T,
-                                 STORAGE_POLICY_T>,
+                                 STORAGE_POLICY_T,
+                                 DISPATCH_POLICY_T>,
                  INDEX_T,
                  xargs<Args...>,
                  ALLOCATOR_T>
@@ -315,7 +320,8 @@ struct WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
   using exec_policy = EXEC_POLICY_T;
   using order_policy = ORDER_POLICY_T;
   using storage_policy = STORAGE_POLICY_T;
-  using policy = WorkGroupPolicy<exec_policy, order_policy, storage_policy>;
+  using dispatch_policy = DISPATCH_POLICY_T;
+  using policy = WorkGroupPolicy<exec_policy, order_policy, storage_policy, dispatch_policy>;
   using index_type = INDEX_T;
   using xarg_type = xargs<Args...>;
   using Allocator = ALLOCATOR_T;
@@ -372,12 +378,14 @@ private:
 template <typename EXEC_POLICY_T,
           typename ORDER_POLICY_T,
           typename STORAGE_POLICY_T,
+          typename DISPATCH_POLICY_T,
           typename INDEX_T,
           typename ... Args,
           typename ALLOCATOR_T>
 struct WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
                                 ORDER_POLICY_T,
-                                STORAGE_POLICY_T>,
+                                STORAGE_POLICY_T,
+                                DISPATCH_POLICY_T>,
                 INDEX_T,
                 xargs<Args...>,
                 ALLOCATOR_T>
@@ -385,7 +393,8 @@ struct WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
   using exec_policy = EXEC_POLICY_T;
   using order_policy = ORDER_POLICY_T;
   using storage_policy = STORAGE_POLICY_T;
-  using policy = WorkGroupPolicy<exec_policy, order_policy, storage_policy>;
+  using dispatch_policy = DISPATCH_POLICY_T;
+  using policy = WorkGroupPolicy<exec_policy, order_policy, storage_policy, dispatch_policy>;
   using index_type = INDEX_T;
   using xarg_type = xargs<Args...>;
   using Allocator = ALLOCATOR_T;
@@ -439,17 +448,18 @@ private:
 template <typename EXEC_POLICY_T,
           typename ORDER_POLICY_T,
           typename STORAGE_POLICY_T,
+          typename DISPATCH_POLICY_T,
           typename INDEX_T,
           typename ... Args,
           typename ALLOCATOR_T>
 inline
 typename WorkPool<
-    WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T>,
+    WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T, DISPATCH_POLICY_T>,
     INDEX_T,
     xargs<Args...>,
     ALLOCATOR_T>::workgroup_type
 WorkPool<
-    WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T>,
+    WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T, DISPATCH_POLICY_T>,
     INDEX_T,
     xargs<Args...>,
     ALLOCATOR_T>::instantiate()
@@ -465,21 +475,22 @@ WorkPool<
 template <typename EXEC_POLICY_T,
           typename ORDER_POLICY_T,
           typename STORAGE_POLICY_T,
+          typename DISPATCH_POLICY_T,
           typename INDEX_T,
           typename ... Args,
           typename ALLOCATOR_T>
 inline
 typename WorkGroup<
-    WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T>,
+    WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T, DISPATCH_POLICY_T>,
     INDEX_T,
     xargs<Args...>,
     ALLOCATOR_T>::worksite_type
 WorkGroup<
-    WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T>,
+    WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T, DISPATCH_POLICY_T>,
     INDEX_T,
     xargs<Args...>,
     ALLOCATOR_T>::run(typename WorkGroup<
-                          WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T>,
+                          WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T, DISPATCH_POLICY_T>,
                           INDEX_T,
                           xargs<Args...>,
                           ALLOCATOR_T>::resource_type r,
