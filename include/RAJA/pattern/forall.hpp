@@ -605,10 +605,10 @@ struct dynamic_helper
   template<typename SEGMENT, typename BODY>
   static void launch(const int pol, SEGMENT const &seg, BODY const &body)
   {
-
     if(IDX==pol){
       using t_pol = typename camp::at<POLICY_LIST,camp::num<IDX>>::type;
       RAJA::forall<t_pol>(seg, body);
+      return;
     }
     dynamic_helper<IDX-1, POLICY_LIST>::launch(pol, seg, body);
   }
@@ -621,11 +621,12 @@ struct dynamic_helper<0, POLICY_LIST>
   template<typename SEGMENT, typename BODY>
   static void launch(const int pol, SEGMENT const &seg, BODY const &body)
   {
-
     if(0==pol){
       using t_pol = typename camp::at<POLICY_LIST,camp::num<0>>::type;
       RAJA::forall<t_pol>(seg, body);
+      return;
     }
+    RAJA_ABORT_OR_THROW("Policy enum not supported: ");
   }
 
 };
@@ -636,6 +637,9 @@ struct dynamic_helper<0, POLICY_LIST>
   {
 
     constexpr int N = camp::size<POLICY_LIST>::value-1;
+    if(pol >= N)  {
+      RAJA_ABORT_OR_THROW("Policy enum not supported");
+    }
     dynamic_helper<N, POLICY_LIST>::launch(pol, seg, body);
 
   }

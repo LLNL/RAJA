@@ -45,29 +45,25 @@ void checkResult(int* res, int len);
 void printResult(int* res, int len);
 
 using policy_list = camp::list<RAJA::loop_exec,
+                               RAJA::simd_exec,
                                RAJA::omp_parallel_for_exec,
-                               RAJA::cuda_exec<256>>;
-
-enum exec_policy {pol_0, pol_1, pol_2};
+                               RAJA::cuda_exec<256>,
+                               RAJA::cuda_exec<512>>;
 
 int main(int argc, char *argv[])
 {
 
   if(argc != 2) {
-    RAJA_ABORT_OR_THROW("Usage ./run-time-forall {pol_0, pol_1, pol_2}");
+    RAJA_ABORT_OR_THROW("Usage ./dynamic-forall N");
   }
 
   //
   // Run time policy section is demonstrated in this example by specifying
-  // kernel exection space as a command line argument (host, host-parallel, device).
-  // Example usage ./teams_reductions host or ./teams_reductions device
+  // kernel exection space as a command line argument
+  // Example usage ./dynamic_forall policy policy#
   //
-  std::string exec_space = argv[1];
-  if(!(exec_space.compare("pol_0") == 0 || exec_space.compare("pol_1") == 0 ||
-       exec_space.compare("pol_2") == 0 )){
-    RAJA_ABORT_OR_THROW("Usage ./teams_reductions pol_{1,2,3}");
-    return 0;
-  }
+
+  const int dynamic_policy = std::stoi(argv[1]);
 
   std::cout << "\n\nRAJA vector addition example...\n";
 
@@ -111,24 +107,13 @@ int main(int argc, char *argv[])
 //----------------------------------------------------------------------------//
 // Example of dynamic policy selection for forall
 //----------------------------------------------------------------------------//
-  exec_policy dynamic_policy;
-  if(exec_space.compare("pol_0") == 0)
-    { dynamic_policy = pol_0; printf("Running RAJA dynamic_forall example using pol_0 \n"); }
-  if(exec_space.compare("pol_1") == 0)
-    { dynamic_policy = pol_1; printf("Running RAJA dynamic_forall example using pol_1 \n"); }
-  if(exec_space.compare("pol_2") == 0)
-    { dynamic_policy = pol_2; printf("Running RAJA dynamic_forall example using pol_2 \n"); }
-
  
-
   //policy is chosen from the list
   RAJA::expt::dynamic_forall<policy_list>(dynamic_policy, RAJA::RangeSegment(0, N), [=] RAJA_HOST_DEVICE (int i) {
 
       c[i] = a[i] + b[i];
 
   });
-
-
   // _rajaseq_vector_add_end
 
   checkResult(c, N);
