@@ -150,15 +150,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 /// 
 /// TODO: Uncomment these range segments so you can use them in the 
 ///       non-HIP exercises in this file.
-
-#if !defined(RAJA_ENABLE_HIP)
 /*
-#endif
   RAJA::TypedRangeSegment<int> row_Range(0, N_r);
   RAJA::TypedRangeSegment<int> col_Range(0, N_c);
-#if !defined(RAJA_ENABLE_HIP)
 */
-#endif
 
   //----------------------------------------------------------------------------//
   std::cout << "\n Running sequential tiled matrix transpose ...\n";
@@ -319,6 +314,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_HIP)
   std::cout << "\n Running hip tiled matrix transpose ...\n";
 
+  RAJA::TypedRangeSegment<int> row_Range2(0, N_r);
+  RAJA::TypedRangeSegment<int> col_Range2(0, N_c);
+
   int* d_A  = memoryManager::allocate_gpu<int>(N_r * N_c);
   int* d_At = memoryManager::allocate_gpu<int>(N_r * N_c);
 
@@ -348,9 +346,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                      RAJA::expt::Threads(c_block_sz, r_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::tile<hip_teams_y>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::expt::tile<hip_teams_y>(ctx, TILE_DIM, row_Range2, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::expt::tile<hip_teams_x>(ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::expt::tile<hip_teams_x>(ctx, TILE_DIM, col_Range2, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
           RAJA::expt::loop<hip_threads_y>(ctx, row_tile, [&] (int row) {
             RAJA::expt::loop<hip_threads_x>(ctx, col_tile, [&] (int col) {
