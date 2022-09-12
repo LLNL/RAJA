@@ -20,16 +20,8 @@ raja_add_executable(
   SOURCES dot-product_solution.cpp)
 
 raja_add_executable(
-  NAME reductions
-  SOURCES reductions.cpp)
-raja_add_executable(
-  NAME reductions_solution
-  SOURCES reductions_solution.cpp)
-
-raja_add_executable(
   NAME kernelintro-execpols
   SOURCES kernelintro-execpols.cpp)
-
 raja_add_executable(
   NAME kernelintro-execpols_solution
   SOURCES kernelintro-execpols_solution.cpp)
@@ -37,7 +29,6 @@ raja_add_executable(
 raja_add_executable(
   NAME launchintro-execpols
   SOURCES launchintro-execpols.cpp)
-
 raja_add_executable(
   NAME launchintro-execpols_solution
   SOURCES launchintro-execpols_solution.cpp)
@@ -59,7 +50,6 @@ raja_add_executable(
 raja_add_executable(
   NAME launch-matrix-transpose
   SOURCES launch-matrix-transpose.cpp)
-
 raja_add_executable(
   NAME launch-matrix-transpose_solution
   SOURCES launch-matrix-transpose_solution.cpp)
@@ -67,7 +57,6 @@ raja_add_executable(
 raja_add_executable(
   NAME kernel-matrix-transpose-tiled
   SOURCES kernel-matrix-transpose-tiled.cpp)
-
 raja_add_executable(
   NAME kernel-matrix-transpose-tiled_solution
   SOURCES kernel-matrix-transpose-tiled_solution.cpp)
@@ -75,7 +64,6 @@ raja_add_executable(
 raja_add_executable(
   NAME launch-matrix-transpose-tiled
   SOURCES launch-matrix-transpose-tiled.cpp)
-
 raja_add_executable(
   NAME launch-matrix-transpose-tiled_solution
   SOURCES launch-matrix-transpose-tiled_solution.cpp)
@@ -90,7 +78,6 @@ raja_add_executable(
 raja_add_executable(
   NAME launch-matrix-transpose-local-array
   SOURCES launch-matrix-transpose-local-array.cpp)
-
 raja_add_executable(
   NAME launch-matrix-transpose-local-array_solution
   SOURCES launch-matrix-transpose-local-array_solution.cpp)
@@ -103,11 +90,39 @@ raja_add_executable(
   SOURCES offset-layout-stencil_solution.cpp)
 
 raja_add_executable(
+  NAME permuted-layout-batch-matrix-multiply
+  SOURCES permuted-layout-batch-matrix-multiply.cpp) 
+raja_add_executable(
+  NAME permuted-layout-batch-matrix-multiply_solution
+  SOURCES permuted-layout-batch-matrix-multiply_solution.cpp) 
+
+raja_add_executable(
+  NAME reductions
+  SOURCES reductions.cpp)
+raja_add_executable(
+  NAME reductions_solution
+  SOURCES reductions_solution.cpp)
+
+raja_add_executable(
+  NAME scan
+  SOURCES scan.cpp)
+raja_add_executable(
+  NAME scan_solution
+  SOURCES scan_solution.cpp)
+
+raja_add_executable(
   NAME segment-indexset-basics
   SOURCES segment-indexset-basics.cpp)
 raja_add_executable(
   NAME segment-indexset-basics_solution
   SOURCES segment-indexset-basics_solution.cpp)
+
+raja_add_executable(
+  NAME sort
+  SOURCES sort.cpp)
+raja_add_executable(
+  NAME sort_solution
+  SOURCES sort_solution.cpp)
 
 raja_add_executable(
   NAME vector-addition
@@ -122,20 +137,6 @@ raja_add_executable(
 raja_add_executable(
   NAME vertexsum-indexset_solution
   SOURCES vertexsum-indexset_solution.cpp)
-
-raja_add_executable(
-  NAME scan
-  SOURCES scan.cpp)
-raja_add_executable(
-  NAME scan_solution
-  SOURCES scan_solution.cpp)
-
-raja_add_executable(
-  NAME sort
-  SOURCES sort.cpp)
-raja_add_executable(
-  NAME sort_solution
-  SOURCES sort_solution.cpp)
 
 raja_add_executable(
   NAME view-layout

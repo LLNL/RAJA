@@ -125,7 +125,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(hist, 0, M * sizeof(int));
 
   // _range_atomic_histogram_start
-  RAJA::TypedRangeSegment<int> array_range(0,N);
+  //RAJA::TypedRangeSegment<int> array_range(0,N);
   // _range_atomic_histogram_end
 
   ///
@@ -134,6 +134,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE: Implement the atomic histogram kernel using a RAJA::forall
   ///           method with RAJA::seq_exec execution policy type and a 
   ///           RAJA::atomicAdd operation with RAJA::seq_atomic policy.
+  ///
+  ///           You will need to uncomment the range segment definition
+  ///           above to use it in the kernel.
   ///
   //RAJA::forall<RAJA::seq_exec>(array_range, [=](int i) {
   //});

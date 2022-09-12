@@ -134,7 +134,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _cstyle_tiled_mattranspose_end
 
   checkResult<int>(Atview, N_c, N_r);
-  // printResult<int>(Atview, N_c, N_r);
+  //printResult<int>(Atview, N_c, N_r);
   //----------------------------------------------------------------------------//
 
   //
@@ -317,7 +317,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           RAJA::expt::loop<hip_threads_y>(ctx, row_tile, [&] (int row) {
             RAJA::expt::loop<hip_threads_x>(ctx, col_tile, [&] (int col) {
 
-              Atview(col, row) = Aview(row, col);
+              d_Atview(col, row) = d_Aview(row, col);
 
            });
          });

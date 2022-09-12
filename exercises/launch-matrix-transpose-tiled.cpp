@@ -146,8 +146,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // tile_fixed statements. Iterations inside a RAJA loop is given by their
   // global iteration number.
   //
+
+/// 
+/// TODO: Uncomment these range segments so you can use them in the 
+///       non-HIP exercises in this file.
+/*
   RAJA::TypedRangeSegment<int> row_Range(0, N_r);
   RAJA::TypedRangeSegment<int> col_Range(0, N_c);
+*/
 
   //----------------------------------------------------------------------------//
   std::cout << "\n Running sequential tiled matrix transpose ...\n";
@@ -159,36 +165,37 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // tile_fixed corresponds to the dimension size of the tile.
   //
   // _raja_tiled_mattranspose_start
-  using loop_pol_1 = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
+  //using loop_pol_1 = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
   using launch_policy_1 = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
 
   RAJA::expt::launch<launch_policy_1>(
     RAJA::expt::Grid(), //Grid may be empty when running on the cpu
-    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext /*ctx*/) {
 
+      /*
       RAJA::expt::tile<loop_pol_1>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
         RAJA::expt::tile<loop_pol_1>(ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
           RAJA::expt::loop<loop_pol_1>(ctx, row_tile, [&] (int row) {
 
-            /// 
-	    /// TODO...
-	    ///
-	    /// EXERCISE: Implement a loop method that takes a col_tile and 
-            ///           returns the global index to the column iteration
-            ///
-            /// Uncomment the statement below to run the kernel and check the 
-            /// result. 
-            /// 
-	      
-	    //Atview(col, row) = Aview(row, col);
+              /// 
+              /// TODO...
+              ///
+              /// EXERCISE: Implement a loop method that takes a col_tile and 
+              ///           returns the global index to the column iteration
+              ///
+              /// Uncomment the statement below to run the kernel and check the 
+              /// result. 
+              /// 
+              
+              //Atview(col, row) = Aview(row, col);
 
           });
               
         });
       });
-
+      */
   });
   // _raja_tiled_mattranspose_end
 
@@ -205,8 +212,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This policy loops over tiles sequentially while exposing parallelism on
   // one of the inner loops.
   //
-  using omp_for_pol_2 = RAJA::expt::LoopPolicy<RAJA::omp_for_exec>;
-  using loop_pol_2 = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
+  //using omp_for_pol_2 = RAJA::expt::LoopPolicy<RAJA::omp_for_exec>;
+  //using loop_pol_2 = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
 
   ///
   /// TODO...
@@ -252,16 +259,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
-//constexpr int c_block_sz = TILE_DIM;
-//constexpr int r_block_sz = TILE_DIM;
-//const int n_blocks_c = RAJA_DIVIDE_CEILING_INT(N_c, c_block_sz);
-//const int n_blocks_r = RAJA_DIVIDE_CEILING_INT(N_r, r_block_sz);
+  /*
+  constexpr int c_block_sz = TILE_DIM;
+  constexpr int r_block_sz = TILE_DIM;
+  const int n_blocks_c = RAJA_DIVIDE_CEILING_INT(N_c, c_block_sz);
+  const int n_blocks_r = RAJA_DIVIDE_CEILING_INT(N_r, r_block_sz);
 
   using cuda_teams_y = RAJA::expt::LoopPolicy<RAJA::cuda_block_y_direct>;
   using cuda_teams_x = RAJA::expt::LoopPolicy<RAJA::cuda_block_x_direct>;
 
   using cuda_threads_y = RAJA::expt::LoopPolicy<RAJA::cuda_thread_y_direct>;
   using cuda_threads_x = RAJA::expt::LoopPolicy<RAJA::cuda_thread_x_direct>;
+  */
 
   /// TODO...
   ///
@@ -305,6 +314,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_HIP)
   std::cout << "\n Running hip tiled matrix transpose ...\n";
 
+  RAJA::TypedRangeSegment<int> row_Range2(0, N_r);
+  RAJA::TypedRangeSegment<int> col_Range2(0, N_c);
+
   int* d_A  = memoryManager::allocate_gpu<int>(N_r * N_c);
   int* d_At = memoryManager::allocate_gpu<int>(N_r * N_c);
 
@@ -334,9 +346,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                      RAJA::expt::Threads(c_block_sz, r_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::tile<hip_teams_y>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::expt::tile<hip_teams_y>(ctx, TILE_DIM, row_Range2, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::expt::tile<hip_teams_x>(ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::expt::tile<hip_teams_x>(ctx, TILE_DIM, col_Range2, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
           RAJA::expt::loop<hip_threads_y>(ctx, row_tile, [&] (int row) {
             RAJA::expt::loop<hip_threads_x>(ctx, col_tile, [&] (int col) {

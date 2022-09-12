@@ -191,11 +191,11 @@ struct random_access_iterator : iterator_base
 /*!
  * A storage container for work groups
  */
-template < typename STORAGE_POLICY_T, typename ALLOCATOR_T, typename Vtable_T >
+template < typename STORAGE_POLICY_T, typename ALLOCATOR_T, typename Dispatcher_T >
 class WorkStorage;
 
-template < typename ALLOCATOR_T, typename Vtable_T >
-class WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, Vtable_T>
+template < typename ALLOCATOR_T, typename Dispatcher_T >
+class WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, Dispatcher_T>
 {
   using allocator_traits_type = std::allocator_traits<ALLOCATOR_T>;
   using propagate_on_container_copy_assignment =
@@ -208,12 +208,12 @@ class WorkStorage<RAJA::array_of_pointers, ALLOCATOR_T, Vtable_T>
       "WorkStorage expects an allocator for 'char's.");
 public:
   using storage_policy = RAJA::array_of_pointers;
-  using vtable_type = Vtable_T;
+  using dispatcher_type = Dispatcher_T;
 
   template < typename holder >
-  using true_value_type = WorkStruct<sizeof(holder), vtable_type>;
+  using true_value_type = WorkStruct<sizeof(holder), dispatcher_type>;
 
-  using value_type = GenericWorkStruct<vtable_type>;
+  using value_type = GenericWorkStruct<dispatcher_type>;
   using allocator_type = ALLOCATOR_T;
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
@@ -338,10 +338,10 @@ public:
   }
 
   template < typename holder, typename ... holder_ctor_args >
-  void emplace(const vtable_type* vtable, holder_ctor_args&&... ctor_args)
+  void emplace(const dispatcher_type* dispatcher, holder_ctor_args&&... ctor_args)
   {
     m_vec.emplace_back(create_value<holder>(
-        vtable, std::forward<holder_ctor_args>(ctor_args)...));
+        dispatcher, std::forward<holder_ctor_args>(ctor_args)...));
   }
 
   // destroy all stored loops, deallocates all storage
@@ -390,7 +390,7 @@ private:
 
   // allocate and construct value in storage
   template < typename holder, typename ... holder_ctor_args >
-  pointer_and_size create_value(const vtable_type* vtable,
+  pointer_and_size create_value(const dispatcher_type* dispatcher,
                                 holder_ctor_args&&... ctor_args)
   {
     const size_type value_size = sizeof(true_value_type<holder>);
@@ -399,7 +399,7 @@ private:
         allocator_traits_type::allocate(m_aloc, value_size));
 
     value_type::template construct<holder>(
-        value_ptr, vtable, std::forward<holder_ctor_args>(ctor_args)...);
+        value_ptr, dispatcher, std::forward<holder_ctor_args>(ctor_args)...);
 
     return pointer_and_size{value_ptr, value_size};
   }
@@ -429,8 +429,8 @@ private:
   }
 };
 
-template < typename ALLOCATOR_T, typename Vtable_T >
-class WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Vtable_T>
+template < typename ALLOCATOR_T, typename Dispatcher_T >
+class WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Dispatcher_T>
 {
   using allocator_traits_type = std::allocator_traits<ALLOCATOR_T>;
   using propagate_on_container_copy_assignment =
@@ -443,12 +443,12 @@ class WorkStorage<RAJA::ragged_array_of_objects, ALLOCATOR_T, Vtable_T>
       "WorkStorage expects an allocator for 'char's.");
 public:
   using storage_policy = RAJA::ragged_array_of_objects;
-  using vtable_type = Vtable_T;
+  using dispatcher_type = Dispatcher_T;
 
   template < typename holder >
-  using true_value_type = WorkStruct<sizeof(holder), vtable_type>;
+  using true_value_type = WorkStruct<sizeof(holder), dispatcher_type>;
 
-  using value_type = GenericWorkStruct<vtable_type>;
+  using value_type = GenericWorkStruct<dispatcher_type>;
   using allocator_type = ALLOCATOR_T;
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
@@ -568,11 +568,11 @@ public:
   }
 
   template < typename holder, typename ... holder_ctor_args >
-  void emplace(const vtable_type* vtable, holder_ctor_args&&... ctor_args)
+  void emplace(const dispatcher_type* dispatcher, holder_ctor_args&&... ctor_args)
   {
     size_type value_offset = storage_size();
     size_type value_size   = create_value<holder>(value_offset,
-        vtable, std::forward<holder_ctor_args>(ctor_args)...);
+        dispatcher, std::forward<holder_ctor_args>(ctor_args)...);
     m_offsets.emplace_back(value_offset);
     m_array_end += value_size;
   }
@@ -698,7 +698,7 @@ private:
   // and store the loop body
   template < typename holder, typename ... holder_ctor_args >
   size_type create_value(size_type value_offset,
-                         const vtable_type* vtable,
+                         const dispatcher_type* dispatcher,
                          holder_ctor_args&&... ctor_args)
   {
     const size_type value_size = sizeof(true_value_type<holder>);
@@ -710,7 +710,7 @@ private:
     pointer value_ptr = reinterpret_cast<pointer>(m_array_begin + value_offset);
 
     value_type::template construct<holder>(
-        value_ptr, vtable, std::forward<holder_ctor_args>(ctor_args)...);
+        value_ptr, dispatcher, std::forward<holder_ctor_args>(ctor_args)...);
 
     return value_size;
   }
@@ -732,10 +732,10 @@ private:
   }
 };
 
-template < typename ALLOCATOR_T, typename Vtable_T >
+template < typename ALLOCATOR_T, typename Dispatcher_T >
 class WorkStorage<RAJA::constant_stride_array_of_objects,
                   ALLOCATOR_T,
-                  Vtable_T>
+                  Dispatcher_T>
 {
   using allocator_traits_type = std::allocator_traits<ALLOCATOR_T>;
   using propagate_on_container_copy_assignment =
@@ -748,12 +748,12 @@ class WorkStorage<RAJA::constant_stride_array_of_objects,
       "WorkStorage expects an allocator for 'char's.");
 public:
   using storage_policy = RAJA::constant_stride_array_of_objects;
-  using vtable_type = Vtable_T;
+  using dispatcher_type = Dispatcher_T;
 
   template < typename holder >
-  using true_value_type = WorkStruct<sizeof(holder), vtable_type>;
+  using true_value_type = WorkStruct<sizeof(holder), dispatcher_type>;
 
-  using value_type = GenericWorkStruct<vtable_type>;
+  using value_type = GenericWorkStruct<dispatcher_type>;
   using allocator_type = ALLOCATOR_T;
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
@@ -873,9 +873,9 @@ public:
   }
 
   template < typename holder, typename ... holder_ctor_args >
-  void emplace(const vtable_type* vtable, holder_ctor_args&&... ctor_args)
+  void emplace(const dispatcher_type* dispatcher, holder_ctor_args&&... ctor_args)
   {
-    create_value<holder>(vtable, std::forward<holder_ctor_args>(ctor_args)...);
+    create_value<holder>(dispatcher, std::forward<holder_ctor_args>(ctor_args)...);
     m_array_end += m_stride;
   }
 
@@ -1003,7 +1003,7 @@ private:
   // ensure there is enough storage to store the loop body
   // and construct the body in storage.
   template < typename holder, typename ... holder_ctor_args >
-  void create_value(const vtable_type* vtable,
+  void create_value(const dispatcher_type* dispatcher,
                     holder_ctor_args&&... ctor_args)
   {
     const size_type value_size = sizeof(true_value_type<holder>);
@@ -1020,7 +1020,7 @@ private:
     pointer value_ptr = reinterpret_cast<pointer>(m_array_begin + value_offset);
 
     value_type::template construct<holder>(
-        value_ptr, vtable, std::forward<holder_ctor_args>(ctor_args)...);
+        value_ptr, dispatcher, std::forward<holder_ctor_args>(ctor_args)...);
   }
 
   // move construct the loop body in value from other and

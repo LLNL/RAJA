@@ -82,7 +82,8 @@
  *  RAJA features shown:
  *    - RAJA::kernel kernel execution method and execution policies
  *    - RAJA::View 
- *    - RAJA::Layout
+ *    - RAJA::OffsetLayout
+ *    - RAJA::make_offset_layout method
  *
  * For the CUDA implementation, we use unified memory to hold the lattice data.
  * For HIP, we use explicit host-device memory and manually copy data between
@@ -318,10 +319,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running five-point stencil (RAJA-Kernel - "
                "hip)...\n";
 
-  int* d_input  = memoryManager::allocate_gpu<int>(totCells * sizeof(int));
-  int* d_output = memoryManager::allocate_gpu<int>(totCells * sizeof(int));
+  std::memset(output, 0, totCells * sizeof(int));
+
+  int* d_input  = memoryManager::allocate_gpu<int>(totCells);
+  int* d_output = memoryManager::allocate_gpu<int>(totCells);
 
   hipErrchk(hipMemcpy( d_input, input, totCells * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_output, output, totCells * sizeof(int), hipMemcpyHostToDevice ));
 
   RAJA::View<int, RAJA::OffsetLayout<DIM, int>> d_inputView (d_input, layout);
   RAJA::View<int, RAJA::OffsetLayout<DIM, int>> d_outputView(d_output, layout);

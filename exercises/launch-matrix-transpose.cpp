@@ -128,8 +128,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Grid(), //Grid may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::loop<loop_policy_seq>(ctx, row_Range, [&] (int row) {
-        RAJA::expt::loop<loop_policy_seq>(ctx, col_Range, [&] (int col) {
+      RAJA::expt::loop<loop_policy_seq>(ctx, row_Range, [&] (int /*row*/) {
+        RAJA::expt::loop<loop_policy_seq>(ctx, col_Range, [&] (int /*col*/) {
 
 	  /// TODO...
 	  ///
@@ -153,13 +153,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // This policy loops sequentially while exposing parallelism on
   // one of the inner loops.
-  //
-  using loop_policy_omp = RAJA::expt::LoopPolicy<RAJA::omp_for_exec>;
+  
+  //uncomment to use in example below
+  //using loop_policy_omp = RAJA::expt::LoopPolicy<RAJA::omp_for_exec>;
   using launch_policy_omp = RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t>;
 
-  RAJA::expt::launch<launch_policy_seq>(
+  RAJA::expt::launch<launch_policy_omp>(
     RAJA::expt::Grid(), //Grid may be empty when running on the host
-    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext /*ctx*/) {
 
 
       /// TODO...

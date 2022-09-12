@@ -8,9 +8,16 @@
 
 .. _tutorial-label:
 
-**********************
+****************************
+RAJA Tutorial and Examples
+****************************
+
+The following sections contain tutorial material and examples that describe
+how to use RAJA features.
+
+===============
 RAJA Tutorial
-**********************
+===============
 
 This section contains a self-paced tutorial that shows how to use many RAJA
 features by way of a sequence of examples and exercises. Each exercise is 
@@ -316,6 +323,7 @@ data views.
    tutorial/scan.rst
    tutorial/sort.rst
    tutorial/view_layout.rst
+   tutorial/permuted-layout-batch-matrix-multiply.rst
 
 .. _tutorialcomplex-label:
 
@@ -433,20 +441,13 @@ example with more complex features.
    tutorial/matrix_transpose_tiled.rst
    tutorial/matrix_transpose_local_array.rst
 
-==============================
-Other Advanced RAJA Features
-==============================
+==========================================
+Other RAJA Features Usage Examples
+==========================================
 
 .. toctree::
    :maxdepth: 1
 
    tutorial/halo-exchange.rst
 
-==============================
-Section To Rework
-==============================
 
-.. toctree::
-   :maxdepth: 1
-
-   tutorial/permuted-layout.rst
