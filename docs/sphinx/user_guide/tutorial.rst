@@ -8,9 +8,16 @@
 
 .. _tutorial-label:
 
-**********************
+****************************
+RAJA Tutorial and Examples
+****************************
+
+The following sections contain tutorial material and examples that describe
+how to use RAJA features.
+
+===============
 RAJA Tutorial
-**********************
+===============
 
 This section contains a self-paced tutorial that shows how to use many RAJA
 features by way of a sequence of examples and exercises. Each exercise is 
@@ -432,9 +439,9 @@ example with more complex features.
    tutorial/matrix_transpose_tiled.rst
    tutorial/matrix_transpose_local_array.rst
 
-==============================
-Other Advanced RAJA Features
-==============================
+==========================================
+Other RAJA Features Usage Examples
+==========================================
 
 .. toctree::
    :maxdepth: 1
