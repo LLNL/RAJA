@@ -16,7 +16,7 @@
 /*
  *  Vector Addition Example with resource + dynamic policy selection
  *
- *  Computes c = a + b, where a, b, c are vectors of ints using 
+ *  Computes c = a + b, where a, b, c are vectors of ints using
  *  a policy selected at run-time
  *
  * If CUDA is enabled, CUDA unified memory is used.
@@ -35,10 +35,10 @@ using cuda_policy_list = camp::list<RAJA::cuda_exec<256>,
 #endif
 
 
-int main(int argc, char *argv[])
-{
 
 #if defined(RAJA_ENABLE_CUDA)
+int main(int argc, char *argv[])
+{
 
   if(argc != 2) {
     RAJA_ABORT_OR_THROW("Usage ./dynamic-forall N");
@@ -95,9 +95,9 @@ int main(int argc, char *argv[])
 
   RAJA::expt::dynamic_forall<cuda_policy_list>
   (res_gpu, pol, RAJA::RangeSegment(0, N), [=] RAJA_HOST_DEVICE (int i)   {
-     
+
     c[i] = a[i] + b[i];
-    
+
   });
 
   checkResult(c, N);
@@ -112,13 +112,16 @@ int main(int argc, char *argv[])
   memoryManager::deallocate(b);
   memoryManager::deallocate(c);
 
-#else
-  std::cout << "Please build with CUDA to run this example ...\n";
-#endif
-
   std::cout << "\n DONE!...\n";
 
   return 0;
+#else
+
+int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
+{
+  std::cout << "Please build with CUDA to run this example ...\n";
+  return 0;
+#endif
 }
 
 //
