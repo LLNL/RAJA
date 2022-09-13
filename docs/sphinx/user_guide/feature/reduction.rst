@@ -27,8 +27,8 @@ Also
 .. note:: * Each RAJA reduction type is templated on a **reduction policy** 
             and a **reduction value type** for the reduction variable. The
             **reduction policy type must be compatible with the execution
-            policy used by the kernel.** For example, in a CUDA kernel,
-            a CUDA reduction policy must be used. 
+            policy used by the kernel in which it is used.** For example, in 
+            a CUDA kernel, a CUDA reduction policy must be used. 
           * Each RAJA reduction type accepts an **initial reduction value or 
             values** at construction (see below).
           * Each RAJA reduction type has a 'get' method to access reduced
