@@ -28,14 +28,14 @@
 void checkResult(int* res, int len);
 void printResult(int* res, int len);
 
-using policy_list = camp::list<RAJA::loop_exec,
-                               RAJA::simd_exec,
+using policy_list = camp::list<RAJA::loop_exec
+                               ,RAJA::simd_exec
 #if defined(RAJA_ENABLE_OPENMP)
-                               RAJA::omp_parallel_for_exec,
+                               ,RAJA::omp_parallel_for_exec
 #endif
 #if defined(RAJA_ENABLE_CUDA)
-                               RAJA::cuda_exec<256>,
-                               RAJA::cuda_exec<512>
+                               ,RAJA::cuda_exec<256>
+                               ,RAJA::cuda_exec<512>
 #endif
                                >;
 
