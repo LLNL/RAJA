@@ -18,6 +18,10 @@ raja_add_executable(
   SOURCES dynamic-forall.cpp)
 
 raja_add_executable(
+  NAME cuda-dynamic-forall
+  SOURCES cuda-dynamic-forall.cpp)
+
+raja_add_executable(
   NAME tut_daxpy
   SOURCES tut_daxpy.cpp)
 

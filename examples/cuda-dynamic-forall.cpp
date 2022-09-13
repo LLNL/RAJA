@@ -14,9 +14,9 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Vector Addition Example with dynamic policy selection
+ *  Vector Addition Example with resource + dynamic policy selection
  *
- *  Computes c = a + b, where a, b, c are vectors of ints.
+ *  Computes c = a + b, where a, b, c are vectors of ints using 
  *  a policy selected at run-time
  *
  * If CUDA is enabled, CUDA unified memory is used.
@@ -28,19 +28,17 @@
 void checkResult(int* res, int len);
 void printResult(int* res, int len);
 
-using policy_list = camp::list<RAJA::loop_exec,
-                               RAJA::simd_exec,
-#if defined(RAJA_ENABLE_OPENMP)
-                               RAJA::omp_parallel_for_exec,
-#endif
 #if defined(RAJA_ENABLE_CUDA)
-                               RAJA::cuda_exec<256>,
-                               RAJA::cuda_exec<512>
+using cuda_policy_list = camp::list<RAJA::cuda_exec<256>,
+                                    RAJA::cuda_exec<512>,
+                                    RAJA::cuda_exec<1024>>;
 #endif
-                               >;
+
 
 int main(int argc, char *argv[])
 {
+
+#if defined(RAJA_ENABLE_CUDA)
 
   if(argc != 2) {
     RAJA_ABORT_OR_THROW("Usage ./dynamic-forall N");
@@ -93,14 +91,17 @@ int main(int argc, char *argv[])
 // Example of dynamic policy selection for forall
 //----------------------------------------------------------------------------//
 
-  //policy is chosen from the list
-  RAJA::expt::dynamic_forall<policy_list>(pol, RAJA::RangeSegment(0, N), [=] RAJA_HOST_DEVICE (int i)   {
-      c[i] = a[i] + b[i];
+  RAJA::resources::Cuda res_gpu;
+
+  RAJA::expt::dynamic_forall<cuda_policy_list>
+  (res_gpu, pol, RAJA::RangeSegment(0, N), [=] RAJA_HOST_DEVICE (int i)   {
+     
+    c[i] = a[i] + b[i];
+    
   });
-  // _rajaseq_vector_add_end
 
   checkResult(c, N);
-//printResult(c, N);
+  //printResult(c, N);
 
 
 //----------------------------------------------------------------------------//
@@ -110,6 +111,10 @@ int main(int argc, char *argv[])
   memoryManager::deallocate(a);
   memoryManager::deallocate(b);
   memoryManager::deallocate(c);
+
+#else
+  std::cout << "Please build with CUDA to run this example ...\n";
+#endif
 
   std::cout << "\n DONE!...\n";
 

@@ -596,12 +596,19 @@ RAJA_INLINE camp::resources::EventProxy<Res> CallForallIcount::operator()(T cons
 namespace expt
 {
 
-//enum exec_policy {host_seq, host_parallel, device};
-
 template<camp::idx_t IDX, typename POLICY_LIST>
 struct dynamic_helper
 {
-  //template<typename POLICY_LIST, typename SEGMENT, typename BODY>
+  template<typename SEGMENT, typename Res, typename BODY>
+  static RAJA::resources::EventProxy<Res> launch(Res r, const int pol, SEGMENT const &seg, BODY const &body)
+  {
+    if(IDX==pol){
+      using t_pol = typename camp::at<POLICY_LIST,camp::num<IDX>>::type;
+      return RAJA::forall<t_pol>(r, seg, body);
+    }
+    return dynamic_helper<IDX-1, POLICY_LIST>::launch(r, pol, seg, body);
+  }
+
   template<typename SEGMENT, typename BODY>
   static void launch(const int pol, SEGMENT const &seg, BODY const &body)
   {
@@ -629,6 +636,16 @@ struct dynamic_helper<0, POLICY_LIST>
     RAJA_ABORT_OR_THROW("Policy enum not supported: ");
   }
 
+
+  template<typename SEGMENT, typename Res, typename BODY>
+  static RAJA::resources::EventProxy<Res> launch(Res r, const int pol, SEGMENT const &seg, BODY const &body)
+  {
+    if(pol != 0) RAJA_ABORT_OR_THROW("Policy enum not supported: ");
+
+    using t_pol = typename camp::at<POLICY_LIST,camp::num<0>>::type;
+    return RAJA::forall<t_pol>(r, seg, body);
+  }
+
 };
 
 
@@ -643,6 +660,19 @@ struct dynamic_helper<0, POLICY_LIST>
     dynamic_helper<N, POLICY_LIST>::launch(pol, seg, body);
 
   }
+
+
+  template<typename POLICY_LIST, typename Res, typename SEGMENT, typename BODY>
+  void dynamic_forall(Res r, const int pol, SEGMENT const &seg, BODY const &body)
+  {
+
+    constexpr int N = camp::size<POLICY_LIST>::value-1;
+    if(pol >= N)  {
+      RAJA_ABORT_OR_THROW("Policy enum not supported");
+    }
+    dynamic_helper<N, POLICY_LIST>::launch(r, pol, seg, body);
+  }
+
 }  // namespace expt
 
 
