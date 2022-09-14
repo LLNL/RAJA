@@ -9,46 +9,48 @@
 /// Header file containing tests for RAJA workgroup constructors.
 ///
 
-#ifndef __TEST_WORKGROUP_VTABLE__
-#define __TEST_WORKGROUP_VTABLE__
+#ifndef __TEST_WORKGROUP_DISPATCHER__
+#define __TEST_WORKGROUP_DISPATCHER__
 
 #include "RAJA_test-workgroup.hpp"
 
 
 template  < typename ForOnePol,
+            typename Invoker,
             typename ... CallArgs >
 typename  std::enable_if<
             !std::is_base_of<RunOnDevice, ForOnePol>::value
           >::type
-call_dispatcher( void(*call_function)(CallArgs...),
+call_dispatcher( Invoker invoker,
                  CallArgs... callArgs )
 {
   forone<ForOnePol>( [=] () {
-    call_function(callArgs...);
+    invoker(callArgs...);
   });
 }
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 template  < typename ForOnePol,
+            typename Invoker,
             typename ... CallArgs >
 typename  std::enable_if<
             std::is_base_of<RunOnDevice, ForOnePol>::value
           >::type
-call_dispatcher( void(*call_function)(CallArgs...),
+call_dispatcher( Invoker invoker,
                  CallArgs... callArgs )
 {
-  RAJA::tuple<CallArgs...> callArgs_device_lambda_workaround(callArgs...);
+  RAJA::tuple<CallArgs...> lambda_capturable_callArgs(callArgs...);
   forone<ForOnePol>( [=] RAJA_DEVICE () {
-    camp::invoke(callArgs_device_lambda_workaround, call_function);
+    camp::invoke(lambda_capturable_callArgs, invoker);
   });
 }
 #endif
 
 template < typename IndexType,
            typename ... Args >
-struct VtableTestCallable
+struct DispatcherTestCallable
 {
-  VtableTestCallable(IndexType* _ptr_call, IndexType _val_call,
+  DispatcherTestCallable(IndexType* _ptr_call, IndexType _val_call,
                      IndexType* _ptr_dtor, IndexType _val_dtor)
     : ptr_call(_ptr_call)
     , val_call(_val_call)
@@ -56,10 +58,10 @@ struct VtableTestCallable
     , val_dtor(_val_dtor)
   { }
 
-  VtableTestCallable(VtableTestCallable const&) = delete;
-  VtableTestCallable& operator=(VtableTestCallable const&) = delete;
+  DispatcherTestCallable(DispatcherTestCallable const&) = delete;
+  DispatcherTestCallable& operator=(DispatcherTestCallable const&) = delete;
 
-  VtableTestCallable(VtableTestCallable&& o)
+  DispatcherTestCallable(DispatcherTestCallable&& o)
     : ptr_call(o.ptr_call)
     , val_call(o.val_call)
     , ptr_dtor(o.ptr_dtor)
@@ -68,7 +70,7 @@ struct VtableTestCallable
   {
     o.moved_from = true;
   }
-  VtableTestCallable& operator=(VtableTestCallable&& o)
+  DispatcherTestCallable& operator=(DispatcherTestCallable&& o)
   {
     ptr_call = o.ptr_call;
     val_call = o.val_call;
@@ -78,7 +80,7 @@ struct VtableTestCallable
     return *this;
   }
 
-  ~VtableTestCallable()
+  ~DispatcherTestCallable()
   {
     *ptr_dtor = val_dtor;
   }
@@ -100,21 +102,27 @@ public:
 };
 
 template < typename ExecPolicy,
+           typename DispatchTyper,
            typename IndexType,
            typename WORKING_RES,
-           typename ForOnePol,
-           typename ... Args >
-void testWorkGroupVtableSingle(RAJA::xargs<Args...>)
+           typename ForOnePol >
+struct testWorkGroupDispatcherSingle {
+template < typename ... Args >
+void operator()(RAJA::xargs<Args...>) const
 {
-  using TestCallable = VtableTestCallable<IndexType, Args...>;
+  using TestCallable = DispatcherTestCallable<IndexType, Args...>;
 
   camp::resources::Resource work_res{WORKING_RES()};
   camp::resources::Resource host_res{camp::resources::Host()};
 
-  using Vtable_type = RAJA::detail::Vtable<void, IndexType, Args...>;
-  using Vtable_cptr_type = typename Vtable_type::void_cptr_wrapper;
-  const Vtable_type* vtable =
-      RAJA::detail::get_Vtable<TestCallable, Vtable_type>(ExecPolicy{});
+  static constexpr auto platform = RAJA::platform_of<ExecPolicy>::value;
+  using DispatchPolicy = typename DispatchTyper::template type<TestCallable>;
+  using Dispatcher_type = RAJA::detail::Dispatcher<
+      platform, DispatchPolicy, void, IndexType, Args...>;
+  using Invoker_type = typename Dispatcher_type::invoker_type;
+  using Dispatcher_cptr_type = typename Dispatcher_type::void_cptr_wrapper;
+  const Dispatcher_type* dispatcher =
+      RAJA::detail::get_Dispatcher<TestCallable, Dispatcher_type>(ExecPolicy{});
 
   TestCallable* old_obj = host_res.allocate<TestCallable>(1);
   TestCallable* new_obj = host_res.allocate<TestCallable>(1);
@@ -158,7 +166,7 @@ void testWorkGroupVtableSingle(RAJA::xargs<Args...>)
   ASSERT_FALSE(old_obj->moved_from);
 
 
-  vtable->move_construct_destroy_function_ptr(new_obj, old_obj);
+  dispatcher->move_construct_destroy(new_obj, old_obj);
 
   ASSERT_TRUE(new_obj->move_constructed);
   ASSERT_FALSE(new_obj->moved_from);
@@ -175,8 +183,8 @@ void testWorkGroupVtableSingle(RAJA::xargs<Args...>)
   work_res.memcpy(wrk_obj, new_obj, sizeof(TestCallable) * 1);
 
   // move a value onto device and fiddle
-  call_dispatcher<ForOnePol, Vtable_cptr_type, IndexType, Args...>(
-      vtable->call_function_ptr, wrk_obj, (IndexType)1, Args{}...);
+  call_dispatcher<ForOnePol, Invoker_type, Dispatcher_cptr_type, IndexType, Args...>(
+      dispatcher->invoke, wrk_obj, (IndexType)1, Args{}...);
 
   work_res.memcpy(testCall, workCall, sizeof(IndexType) * 3);
 
@@ -185,7 +193,7 @@ void testWorkGroupVtableSingle(RAJA::xargs<Args...>)
   ASSERT_EQ(testCall[2], chckCall[2]);
 
 
-  vtable->destroy_function_ptr(new_obj);
+  dispatcher->destroy(new_obj);
 
   ASSERT_EQ(testDtor[0], chckDtor[0]);
   ASSERT_EQ(testDtor[1], chckDtor[1]);
@@ -201,25 +209,63 @@ void testWorkGroupVtableSingle(RAJA::xargs<Args...>)
   host_res.deallocate( chckDtor );
   host_res.deallocate( testDtor );
 }
+};
+
+
+#if defined(RAJA_ENABLE_HIP) && !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+
+/// leave unsupported types untested
+template <size_t BLOCK_SIZE, bool Async,
+          typename IndexType,
+           typename WORKING_RES,
+          typename ForOnePol
+          >
+struct testWorkGroupDispatcherSingle<RAJA::hip_work<BLOCK_SIZE, Async>,
+                                     detail::indirect_function_call_dispatch_typer,
+                                     IndexType,
+                                     WORKING_RES,
+                                     ForOnePol> {
+template < typename ... Args >
+void operator()(RAJA::xargs<Args...>) const
+{ }
+};
+///
+template <size_t BLOCK_SIZE, bool Async,
+          typename IndexType,
+           typename WORKING_RES,
+          typename ForOnePol
+          >
+struct testWorkGroupDispatcherSingle<RAJA::hip_work<BLOCK_SIZE, Async>,
+                                     detail::indirect_virtual_function_dispatch_typer,
+                                     IndexType,
+                                     WORKING_RES,
+                                     ForOnePol> {
+template < typename ... Args >
+void operator()(RAJA::xargs<Args...>) const
+{ }
+};
+
+#endif
 
 
 template <typename T>
-class WorkGroupBasicVtableSingleUnitTest : public ::testing::Test
+class WorkGroupBasicDispatcherSingleUnitTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_SUITE_P(WorkGroupBasicVtableSingleUnitTest);
+TYPED_TEST_SUITE_P(WorkGroupBasicDispatcherSingleUnitTest);
 
-TYPED_TEST_P(WorkGroupBasicVtableSingleUnitTest, BasicWorkGroupVtableSingle)
+TYPED_TEST_P(WorkGroupBasicDispatcherSingleUnitTest, BasicWorkGroupDispatcherSingle)
 {
   using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<1>>::type;
-  using Args = typename camp::at<TypeParam, camp::num<2>>::type;
-  using ResourceType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using ForOneType = typename camp::at<TypeParam, camp::num<4>>::type;
+  using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
+  using IndexType = typename camp::at<TypeParam, camp::num<2>>::type;
+  using Args = typename camp::at<TypeParam, camp::num<3>>::type;
+  using ResourceType = typename camp::at<TypeParam, camp::num<4>>::type;
+  using ForOneType = typename camp::at<TypeParam, camp::num<5>>::type;
 
-  testWorkGroupVtableSingle< ExecPolicy, IndexType, ResourceType, ForOneType >(
+  testWorkGroupDispatcherSingle< ExecPolicy, DispatchTyper, IndexType, ResourceType, ForOneType >{}(
       Args{});
 }
 
-#endif  //__TEST_WORKGROUP_VTABLE__
+#endif  //__TEST_WORKGROUP_DISPATCHER__

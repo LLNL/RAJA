@@ -89,9 +89,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int i = 0; i < N; ++i) {
     dot += a[i] * b[i];
   }
-  // _csytle_dotprod_end
 
   std::cout << "\t (a, b) = " << dot << std::endl;
+  // _csytle_dotprod_end
 
   double dot_ref = dot;
 

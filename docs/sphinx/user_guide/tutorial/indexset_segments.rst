@@ -12,18 +12,27 @@
 Iteration Spaces: IndexSets and Segments
 -----------------------------------------
 
-Key RAJA features shown in this example:
+Key RAJA features shown in this example are:
 
   * ``RAJA::forall`` loop execution template
   * ``RAJA::RangeSegment`` (i.e., ``RAJA::TypedRangeSegment``) iteration space construct
   * ``RAJA::TypedListSegment`` iteration space construct
   * ``RAJA::IndexSet`` iteration construct and associated execution policies
 
+The file ``RAJA/examples/tut_indexset-segments.cpp`` contains working code
+for the examples discussed in this section.
+
 The example uses a simple daxpy kernel and its usage of RAJA is similar to
-previous simple loop examples. The example
-focuses on how to use RAJA index sets and iteration space segments, such 
-as index ranges and lists of indices. These features are important for 
-applications and algorithms that use indirection arrays for irregular array 
+previous simple loop examples. 
+
+.. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
+   :start-after: _csytle_daxpy_start
+   :end-before: _csytle_daxpy_end
+   :language: C++
+
+The examples in this section focuse on how to use RAJA index sets and iteration 
+space segments, such as index ranges and lists of indices. Lists of indices 
+are important for algorithms that use indirection arrays for irregular array 
 accesses. Combining different segment types, such as ranges and lists in an 
 index set allows a user to launch different iteration patterns in a single loop 
 execution construct (i.e., one kernel). This is something that is not 
@@ -49,7 +58,7 @@ RAJA Segments
 ^^^^^^^^^^^^^^^^^^^^^
 
 In previous examples, we have seen how to define a contiguous range of loop
-indices [0, N) with a ``RAJA::RangeSegment`` object and use it in a RAJA
+indices [0, N) with a ``RAJA::RangeSegment(0, N)`` object and use it in a RAJA
 loop execution template to run a loop kernel over the range. For example:
 
 .. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
@@ -82,9 +91,12 @@ index types consistently.
 It is important to understand what happens when using list segments.
 During loop execution, indices stored in the list segment are passed to the 
 loop body one-by-one, effectively mimicking an indirection array except that
-the indirection does not appear in the loop body. For example, we 
-can reverse the order of the indices, run the loop with a new list segment 
-object, and get the same result since the loop is `data-parallel`:
+the indirection does not appear explicitly in the array indexing in the loop 
+body. 
+
+Another simple example helps to reinforce the list segment concept.
+We can reverse the order of the indices, run the loop backwards with 
+a new list segment object:
 
 .. literalinclude:: ../../../../examples/tut_indexset-segments.cpp
    :start-after: _raja_list_segment_daxpy_reverse_start
@@ -99,9 +111,9 @@ in reverse by giving it a stride of -1. For example:
    :end-before: _raja_range_segment_daxpy_negstride_end
    :language: C++
 
-The fact that RAJA always passes loop index values to lambdas in a kernel
-explains why we can run a kernel with multiple segment types in a single 
-RAJA construct as we discuss next. 
+The fact that RAJA always passes loop index values to a lambda kernel
+explains why we can run a kernel with different segment types in a single,
+portable RAJA-based kernel. Try doing this sort of thing with straight C code.
 
 ^^^^^^^^^^^^^^^^^^^^^
 RAJA IndexSets
@@ -201,5 +213,3 @@ or:
    :end-before: _raja_indexset_hippolicy_daxpy_end
    :language: C++
 
-The file ``RAJA/examples/tut_indexset-segments.cpp`` contains working code
-for these examples.
