@@ -489,7 +489,8 @@ int main(int argc, char **argv)
     using workgroup_policy = RAJA::WorkGroupPolicy <
                                  RAJA::loop_work,
                                  RAJA::ordered,
-                                 RAJA::ragged_array_of_objects >;
+                                 RAJA::ragged_array_of_objects,
+                                 RAJA::indirect_function_call_dispatch >;
 
     using workpool = RAJA::WorkPool< workgroup_policy,
                                      int,
@@ -733,7 +734,8 @@ int main(int argc, char **argv)
     using workgroup_policy = RAJA::WorkGroupPolicy <
                                  RAJA::omp_work,
                                  RAJA::ordered,
-                                 RAJA::ragged_array_of_objects >;
+                                 RAJA::ragged_array_of_objects,
+                                 RAJA::indirect_function_call_dispatch >;
 
     using workpool = RAJA::WorkPool< workgroup_policy,
                                      int,
@@ -1047,7 +1049,8 @@ int main(int argc, char **argv)
     using workgroup_policy = RAJA::WorkGroupPolicy <
                                  RAJA::cuda_work_async<CUDA_WORKGROUP_BLOCK_SIZE>,
                                  RAJA::unordered_cuda_loop_y_block_iter_x_threadblock_average,
-                                 RAJA::constant_stride_array_of_objects >;
+                                 RAJA::constant_stride_array_of_objects,
+                                 RAJA::indirect_function_call_dispatch >;
 
     using workpool = RAJA::WorkPool< workgroup_policy,
                                      int,
@@ -1343,11 +1346,12 @@ int main(int argc, char **argv)
   }
 
 
+#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
 //----------------------------------------------------------------------------//
 // RAJA::WorkGroup with hip_work allows deferred kernel fusion execution
 //----------------------------------------------------------------------------//
   {
-    std::cout << "\n Running RAJA Hip workgroup halo exchange...\n";
+    std::cout << "\n Running RAJA Hip indirect dispatch workgroup halo exchange...\n";
 
     double minCycle = std::numeric_limits<double>::max();
 
@@ -1380,12 +1384,9 @@ int main(int argc, char **argv)
 
     using workgroup_policy = RAJA::WorkGroupPolicy <
                                  RAJA::hip_work_async<HIP_WORKGROUP_BLOCK_SIZE>,
-#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
                                  RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
-#else
-                                 RAJA::ordered,
-#endif
-                                 RAJA::constant_stride_array_of_objects >;
+                                 RAJA::constant_stride_array_of_objects,
+                                 RAJA::indirect_function_call_dispatch >;
 
     using workpool = RAJA::WorkPool< workgroup_policy,
                                      int,
@@ -1487,6 +1488,196 @@ int main(int argc, char **argv)
 
       hipErrchk(hipDeviceSynchronize());
       // _halo_exchange_hip_workgroup_unpacking_end
+
+      }
+      timer.stop();
+
+      RAJA::Timer::ElapsedType tCycle = timer.elapsed();
+      if (tCycle < minCycle) minCycle = tCycle;
+      timer.reset();
+    }
+
+    for (int l = 0; l < num_neighbors; ++l) {
+
+      memoryManager::deallocate_gpu(buffers[l]);
+
+    }
+
+
+    std::swap(vars,               hip_vars);
+    std::swap(pack_index_lists,   hip_pack_index_lists);
+    std::swap(unpack_index_lists, hip_unpack_index_lists);
+
+    for (int v = 0; v < num_vars; ++v) {
+      hipErrchk(hipMemcpy( vars[v], hip_vars[v], var_size * sizeof(double), hipMemcpyDeviceToHost ));
+      memoryManager::deallocate_gpu(hip_vars[v]);
+    }
+
+    for (int l = 0; l < num_neighbors; ++l) {
+      memoryManager::deallocate_gpu(hip_pack_index_lists[l]);
+      memoryManager::deallocate_gpu(hip_unpack_index_lists[l]);
+    }
+
+
+    std::cout<< "\tmin cycle run time : " << minCycle << " seconds" << std::endl;
+
+    // check results against reference copy
+    checkResult(vars, vars_ref, var_size, num_vars);
+    //printResult(vars, var_size, num_vars);
+  }
+#endif
+
+//----------------------------------------------------------------------------//
+// RAJA::WorkGroup with hip_work allows deferred kernel fusion execution
+//----------------------------------------------------------------------------//
+  {
+    std::cout << "\n Running RAJA Hip direct dispatch workgroup halo exchange...\n";
+
+    double minCycle = std::numeric_limits<double>::max();
+
+
+    std::vector<double*> hip_vars(num_vars, nullptr);
+    std::vector<int*>    hip_pack_index_lists(num_neighbors, nullptr);
+    std::vector<int*>    hip_unpack_index_lists(num_neighbors, nullptr);
+
+    for (int v = 0; v < num_vars; ++v) {
+      hip_vars[v] = memoryManager::allocate_gpu<double>(var_size);
+    }
+
+    for (int l = 0; l < num_neighbors; ++l) {
+      int pack_len = pack_index_list_lengths[l];
+      hip_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
+      hipErrchk(hipMemcpy( hip_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int), hipMemcpyHostToDevice ));
+
+      int unpack_len = unpack_index_list_lengths[l];
+      hip_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
+      hipErrchk(hipMemcpy( hip_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int), hipMemcpyHostToDevice ));
+    }
+
+    std::swap(vars,               hip_vars);
+    std::swap(pack_index_lists,   hip_pack_index_lists);
+    std::swap(unpack_index_lists, hip_unpack_index_lists);
+
+
+    using forall_policy = RAJA::hip_exec_async<HIP_BLOCK_SIZE>;
+
+    struct Packer {
+      double* buffer;
+      double* var;
+      int* list;
+      RAJA_DEVICE void operator() (int i) const {
+        buffer[i] = var[list[i]];
+      }
+    };
+
+    struct UnPacker {
+      double* buffer;
+      double* var;
+      int* list;
+      RAJA_DEVICE void operator()(int i) const {
+        var[list[i]] = buffer[i];
+      }
+    };
+
+    using workgroup_policy = RAJA::WorkGroupPolicy <
+                                 RAJA::hip_work_async<HIP_WORKGROUP_BLOCK_SIZE>,
+                                 RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
+                                 RAJA::constant_stride_array_of_objects,
+                                 RAJA::direct_dispatch<camp::list<range_segment, Packer>,
+                                                       camp::list<range_segment, UnPacker>>
+                                 >;
+
+    using workpool = RAJA::WorkPool< workgroup_policy,
+                                     int,
+                                     RAJA::xargs<>,
+                                     pinned_allocator<char> >;
+
+    using workgroup = RAJA::WorkGroup< workgroup_policy,
+                                       int,
+                                       RAJA::xargs<>,
+                                       pinned_allocator<char> >;
+
+    using worksite = RAJA::WorkSite< workgroup_policy,
+                                     int,
+                                     RAJA::xargs<>,
+                                     pinned_allocator<char> >;
+
+    std::vector<double*> buffers(num_neighbors, nullptr);
+
+    for (int l = 0; l < num_neighbors; ++l) {
+
+      int buffer_len = num_vars * pack_index_list_lengths[l];
+
+      buffers[l] = memoryManager::allocate_gpu<double>(buffer_len);
+
+    }
+
+    workpool pool_pack  (pinned_allocator<char>{});
+    workpool pool_unpack(pinned_allocator<char>{});
+
+    for (int c = 0; c < num_cycles; ++c ) {
+      timer.start();
+      {
+
+      // set vars
+      for (int v = 0; v < num_vars; ++v) {
+
+        double* var = vars[v];
+
+        RAJA::forall<forall_policy>(range_segment(0, var_size), [=] RAJA_DEVICE (int i) {
+          var[i] = i + v;
+        });
+      }
+
+      for (int l = 0; l < num_neighbors; ++l) {
+
+        double* buffer = buffers[l];
+        int* list = pack_index_lists[l];
+        int  len  = pack_index_list_lengths[l];
+
+        // pack
+        for (int v = 0; v < num_vars; ++v) {
+
+          double* var = vars[v];
+
+          pool_pack.enqueue(range_segment(0, len), Packer{buffer, var, list});
+
+          buffer += len;
+        }
+      }
+
+      workgroup group_pack = pool_pack.instantiate();
+
+      worksite site_pack = group_pack.run();
+
+      hipErrchk(hipDeviceSynchronize());
+
+      // send all messages
+
+      // recv all messages
+
+      for (int l = 0; l < num_neighbors; ++l) {
+
+        double* buffer = buffers[l];
+        int* list = unpack_index_lists[l];
+        int  len  = unpack_index_list_lengths[l];
+
+        // unpack
+        for (int v = 0; v < num_vars; ++v) {
+
+          double* var = vars[v];
+
+          pool_unpack.enqueue(range_segment(0, len), UnPacker{buffer, var, list});
+
+          buffer += len;
+        }
+      }
+
+      workgroup group_unpack = pool_unpack.instantiate();
+
+      worksite site_unpack = group_unpack.run();
+
+      hipErrchk(hipDeviceSynchronize());
 
       }
       timer.stop();

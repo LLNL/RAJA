@@ -12,7 +12,7 @@
 Parallel Sort Operations
 --------------------------------------------------
 
-Key RAJA features shown in this section:
+Key RAJA features shown in this section are:
 
   * ``RAJA::sort`` operation
   * ``RAJA::sort_pairs`` operation
@@ -20,15 +20,22 @@ Key RAJA features shown in this section:
   * ``RAJA::stable_sort_pairs`` operation
   * RAJA comparators for different types of sorts; e.g., less, greater
 
-Below, we present examples of RAJA sequential, OpenMP,
-and CUDA sort operations and show how different sort orderings can be
-achieved by passing different RAJA comparators to the RAJA sort template
-methods. Each comparator is a template type, where the template argument is
-the type of the values it compares. For a summary of RAJA sort
-functionality, please see :ref:`sort-label`.
+The file ``RAJA/examples/tut_sort.cpp`` contains complete working code
+for the examples presented in this section.
+
+We show examples of RAJA sequential, OpenMP, CUDA, and HIP sort operations 
+and describe how different sort orderings can be achieved by passing different 
+RAJA comparators to the RAJA sort template methods. Each comparator is a 
+template type, where the template argument is the type of the values it 
+compares. For a summary of available RAJA sorts, please see :ref:`sort-label`.
 
 .. note:: RAJA sort operations use the same execution policy types that
           ``RAJA::forall`` loop execution templates do.
+
+.. note:: RAJA sort operations take 'span' arguments to express the sequential
+          index range of array entries used in the sort. Typically, these
+          scan objects are created using the ``RAJA::make_span`` method
+          as shown in the examples below.
 
 Each of the examples below uses the same integer arrays for input
 and output values. We set the input array and print them as follows:
@@ -38,7 +45,7 @@ and output values. We set the input array and print them as follows:
    :end-before: _sort_array_init_end
    :language: C++
 
-This generates the following sequence of values in the ``in`` array::
+This produces the following sequence of values in the ``in`` array::
 
    6 7 2 1 0 9 4 8 5 3 4 9 6 3 7 0 1 8 2 5
 
@@ -87,17 +94,18 @@ The result in the ``out`` array is the same as before; i.e.,::
    0 0 1 1 2 2 3 3 4 4 5 5 6 6 7 7 8 8 9 9
 
 An unstable parallel sort operation using OpenMP multi-threading is
-accomplished similarly by replacing the execution policy type:
+accomplished similarly by replacing the execution policy type with
+and OpenMP policy:
 
 .. literalinclude:: ../../../../examples/tut_sort.cpp
    :start-after: _sort_omp_less_start
    :end-before: _sort_omp_less_end
    :language: C++
 
-As is commonly done with RAJA, the only difference between this code and
+As is common with RAJA, the only difference between this code and
 the previous one is that the execution policy is different. If we want to
-run the sort on a GPU using CUDA, we would use a CUDA execution policy. This
-is shown below.
+run the sort on a GPU using CUDA or HIP, we would use a CUDA or HIP execution 
+policy. This is shown in examples that follow.
 
 ^^^^^^^^^^^^^^^^
 Stable Sorts
@@ -111,7 +119,7 @@ A sequential stable sort (less) operation is performed by:
    :language: C++
 
 This generates the following sequence of values in the output array 
-as expected::
+as expected based on the examples we have seen previously::
 
    0 0 1 1 2 2 3 3 4 4 5 5 6 6 7 7 8 8 9 9
 
@@ -142,8 +150,15 @@ Here is a sequential stable sort that uses the 'greater' operator
    :end-before: _sort_stable_seq_greater_end
    :language: C++
 
-This generates the following sequence of values in non-increasing order in
-the output array::
+and similarly for HIP:
+
+.. literalinclude:: ../../../../examples/tut_sort.cpp
+   :start-after: _sort_stable_hip_greater_start
+   :end-before: _sort_stable_hip_greater_end
+   :language: C++
+
+Both of these sorts generate the following sequence of values in 
+non-increasing order in the output array::
 
    9 9 8 8 7 7 6 6 5 5 4 4 3 3 2 2 1 1 0 0
 
@@ -159,7 +174,7 @@ Sort Pairs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 *Sort pairs* operations generate the same results as the sort operations
-we have just described. However, an additional array of values is also permuted
+we have just described. Additionally, a second array of values is also permuted
 to match the sorted array so **two arrays are passed to sort pairs methods.**
 
 .. note:: For ``RAJA::sort_pairs`` algorithms, two arrays are passed. The 
@@ -180,7 +195,7 @@ This generates the following sequence in the output array::
    (5,1) (5,0) (6,1) (6,0) (7,0) (7,1) (8,0) (8,1) (9,1) (9,0)
 
 Note that some of the pairs with equivalent *keys* stayed in the same order
-they appeared in the unsorted arrays like ``(8,0) (8,1)``, while others are
+that they appeared in the unsorted arrays like ``(8,0) (8,1)``, while others are
 reversed like ``(9,1) (9,0)``. This illustrates that relative ordering of
 equal elements may not be preserved in an unstable sort.
 
@@ -223,5 +238,3 @@ Lastly, we show a parallel unstable sort pairs operation using CUDA:
 
 .. note:: RAJA sorts for the HIP back-end are similar to those for CUDA.
 
-The file ``RAJA/examples/tut_sort.cpp`` contains the complete
-working example code.
