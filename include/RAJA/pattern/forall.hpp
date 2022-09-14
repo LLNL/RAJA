@@ -600,24 +600,24 @@ template<camp::idx_t IDX, typename POLICY_LIST>
 struct dynamic_helper
 {
   template<typename SEGMENT, typename Res, typename BODY>
-  static RAJA::resources::EventProxy<Res> launch(Res r, const int pol, SEGMENT const &seg, BODY const &body)
+  static RAJA::resources::EventProxy<Res> invoke_forall(Res r, const int pol, SEGMENT const &seg, BODY const &body)
   {
     if(IDX==pol){
       using t_pol = typename camp::at<POLICY_LIST,camp::num<IDX>>::type;
       return RAJA::forall<t_pol>(r, seg, body);
     }
-    return dynamic_helper<IDX-1, POLICY_LIST>::launch(r, pol, seg, body);
+    return dynamic_helper<IDX-1, POLICY_LIST>::invoke_forall(r, pol, seg, body);
   }
 
   template<typename SEGMENT, typename BODY>
-  static void launch(const int pol, SEGMENT const &seg, BODY const &body)
+  static void invoke_forall(const int pol, SEGMENT const &seg, BODY const &body)
   {
     if(IDX==pol){
       using t_pol = typename camp::at<POLICY_LIST,camp::num<IDX>>::type;
       RAJA::forall<t_pol>(seg, body);
       return;
     }
-    dynamic_helper<IDX-1, POLICY_LIST>::launch(pol, seg, body);
+    dynamic_helper<IDX-1, POLICY_LIST>::invoke_forall(pol, seg, body);
   }
 
 };
@@ -626,7 +626,7 @@ template<typename POLICY_LIST>
 struct dynamic_helper<0, POLICY_LIST>
 {
   template<typename SEGMENT, typename BODY>
-  static void launch(const int pol, SEGMENT const &seg, BODY const &body)
+  static void invoke_forall(const int pol, SEGMENT const &seg, BODY const &body)
   {
     if(0==pol){
       using t_pol = typename camp::at<POLICY_LIST,camp::num<0>>::type;
@@ -638,7 +638,7 @@ struct dynamic_helper<0, POLICY_LIST>
 
 
   template<typename SEGMENT, typename Res, typename BODY>
-  static RAJA::resources::EventProxy<Res> launch(Res r, const int pol, SEGMENT const &seg, BODY const &body)
+  static RAJA::resources::EventProxy<Res> invoke_forall(Res r, const int pol, SEGMENT const &seg, BODY const &body)
   {
     if(pol != 0) RAJA_ABORT_OR_THROW("Policy enum not supported: ");
 
@@ -657,7 +657,7 @@ struct dynamic_helper<0, POLICY_LIST>
     if(pol >= N)  {
       RAJA_ABORT_OR_THROW("Policy enum not supported");
     }
-    dynamic_helper<N, POLICY_LIST>::launch(pol, seg, body);
+    dynamic_helper<N, POLICY_LIST>::invoke_forall(pol, seg, body);
 
   }
 
@@ -670,7 +670,7 @@ struct dynamic_helper<0, POLICY_LIST>
     if(pol >= N)  {
       RAJA_ABORT_OR_THROW("Policy enum not supported");
     }
-    dynamic_helper<N, POLICY_LIST>::launch(r, pol, seg, body);
+    dynamic_helper<N, POLICY_LIST>::invoke_forall(r, pol, seg, body);
   }
 
 }  // namespace expt
