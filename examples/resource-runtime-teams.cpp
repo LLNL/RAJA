@@ -38,6 +38,9 @@ using device_loop = RAJA::expt::cuda_global_thread_x;
 #elif defined(RAJA_ENABLE_HIP)
 using device_launch = RAJA::expt::hip_launch_t<true>;
 using device_loop = RAJA::expt::hip_global_thread_x;
+#elif defined(RAJA_ENABLE_SYCL)
+using device_launch = RAJA::expt::sycl_launch_t<true>;
+using device_loop = RAJA::expt::sycl_global_item_0;
 #endif
 
 using launch_policy = RAJA::expt::LaunchPolicy<host_launch
@@ -56,6 +59,8 @@ using loop_pol = RAJA::expt::LoopPolicy<host_loop
 using reduce_policy = RAJA::cuda_reduce;
 #elif defined(RAJA_ENABLE_HIP)
 using reduce_policy = RAJA::hip_reduce;
+#elif defined(RAJA_ENABLE_SYCL)
+using reduce_policy = RAJA::sycl_reduce;
 #else
 using reduce_policy = RAJA::seq_reduce;
 #endif
@@ -150,6 +155,10 @@ int main(int argc, char *argv[])
 #endif
 #if defined(RAJA_ENABLE_HIP)
   RAJA::resources::Hip device_res;
+#endif
+
+#if defined(RAJA_ENABLE_SYCL)
+  RAJA::resources::Sycl device_res;
 #endif
 
   //Get typed erased resource - it will internally store if we are running on the host or device

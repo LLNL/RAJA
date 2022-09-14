@@ -47,7 +47,7 @@ using device_launch = RAJA::expt::hip_launch_t<false>;
 
 using launch_policy = RAJA::expt::LaunchPolicy<
   host_launch
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
   ,device_launch
 #endif
   >;
@@ -110,7 +110,7 @@ using threads_y = RAJA::expt::LoopPolicy<RAJA::loop_exec
 #endif
                                          >;
 
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_CUDA)
 __global__ void gpuKernel()
 {
   //Equivalent CUDA/HIP style thread/block mapping
@@ -135,6 +135,8 @@ __global__ void gpuKernel()
 
 int main(int argc, char *argv[])
 {
+
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 
   if(argc != 2) {
     RAJA_ABORT_OR_THROW("Usage ./tut_teams_basic host or ./tut_teams_basic device");
@@ -168,7 +170,7 @@ int main(int argc, char *argv[])
   const int Nteams  = 2;
   const int Nthreads = 2;
   // __compute_grid_end
- 
+
   RAJA::expt::launch<launch_policy>(select_cpu_or_gpu,
   RAJA::expt::Grid(RAJA::expt::Teams(Nteams,Nteams),
                         RAJA::expt::Threads(Nthreads,Nthreads)),
@@ -216,7 +218,7 @@ int main(int argc, char *argv[])
 // The following launches equivalent
 // device kernels
 //
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
   // Define thread block dimensions
   dim3 blockdim(Nthreads, Nthreads);
   // Define grid dimensions to match the RAJA version above
@@ -233,6 +235,10 @@ int main(int argc, char *argv[])
   if(select_cpu_or_gpu == RAJA::expt::DEVICE)
     hipLaunchKernelGGL((gpuKernel), dim3(griddim), dim3(blockdim), 0, 0);
   hipDeviceSynchronize();
+#endif
+
+#else
+  std::cout << "Please build with CUDA or HIP to run this example ...\n";
 #endif
 
   return 0;

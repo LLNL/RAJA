@@ -41,6 +41,9 @@ using device_loop = RAJA::expt::cuda_global_thread_x;
 #elif defined(RAJA_ENABLE_HIP)
 using device_launch = RAJA::expt::hip_launch_t<false>;
 using device_loop = RAJA::expt::hip_global_thread_x;
+#elif defined(RAJA_ENABLE_SYCL)
+using device_launch = RAJA::expt::sycl_launch_t<false>;
+using device_loop = RAJA::expt::sycl_global_item_0;
 #endif
 
 using launch_policy = RAJA::expt::LaunchPolicy<host_launch
@@ -59,6 +62,8 @@ using loop_pol = RAJA::expt::LoopPolicy<host_loop
 using reduce_policy = RAJA::cuda_reduce;
 #elif defined(RAJA_ENABLE_HIP)
 using reduce_policy = RAJA::hip_reduce;
+#elif defined(RAJA_ENABLE_SYCL)
+using reduce_policy = RAJA::sycl_reduce;
 #elif defined(RAJA_ENABLE_OPENMP)
 using reduce_policy = RAJA::omp_reduce;
 #else
@@ -73,6 +78,11 @@ int main(int argc, char *argv[])
     RAJA_ABORT_OR_THROW("Usage ./teams_reductions host or ./tut_reductions device");
   }
 
+#if defined(RAJA_ENABLE_SYCL)
+  memoryManager::sycl_res = new camp::resources::Resource{camp::resources::Sycl()};
+  ::RAJA::sycl::detail::setQueue(memoryManager::sycl_res);
+#endif
+  
   //
   // Run time policy section is demonstrated in this example by specifying
   // kernel exection space as a command line argument (host or device).
@@ -152,23 +162,24 @@ int main(int argc, char *argv[])
   const int shared_mem = 0;
 
   RAJA::expt::launch<launch_policy>
-    (select_cpu_or_gpu,
+    (*memoryManager::sycl_res,//select_cpu_or_gpu,
      RAJA::expt::Grid(RAJA::expt::Teams(GRID_SZ),
 		      RAJA::expt::Threads(TEAM_SZ), shared_mem,
                            "Reduction Kernel"),
      [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx)
      {
 
-       RAJA::expt::loop<loop_pol>(ctx, arange, [&] (int i) {
+        RAJA::expt::loop<loop_pol>(ctx, RAJA::RangeSegment(0, N), [=] (int i) {
 
            kernel_sum += a[i];
-
+	    /*
            kernel_min.min(a[i]);
            kernel_max.max(a[i]);
 
            kernel_minloc.minloc(a[i], i);
            kernel_maxloc.maxloc(a[i], i);
-         });
+	   */
+       });
 
     });
 

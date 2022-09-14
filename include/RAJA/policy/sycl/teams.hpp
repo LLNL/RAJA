@@ -31,11 +31,12 @@ namespace RAJA
 namespace expt
 {
 
-template <bool async> //switch 1 -> 0, but what should it be ? Ask R. Chen?
+template <bool async>
 struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
-// sycl_launch_t num_threads set to 1, but not used in launch of kernel
 
-  template <typename BODY_IN>
+  //If the launch lambda is trivially copyable
+  template <typename BODY_IN,
+	    typename std::enable_if<std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
   static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
   {
 
@@ -90,8 +91,84 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
     if (!async) { q->wait(); }
   }
 
+  //If the launch lambda is not trivially copyable
+  template <typename BODY_IN,
+	    typename std::enable_if<!std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
+  static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
+  {
 
-  template <typename BODY_IN>
+    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+
+    resources::Sycl sycl_res = resources::Sycl::get_default();
+
+    // Global resource was not set, use the resource that was passed to forall
+    // Determine if the default SYCL res is being used
+    if (!q) {
+      q = sycl_res.get_queue();
+    }
+
+    const ::sycl::range<3> blockSize(ctx.threads.value[0],
+				     ctx.threads.value[1],
+				     ctx.threads.value[2]);
+
+    const ::sycl::range<3> gridSize(ctx.threads.value[0] * ctx.teams.value[0],
+				    ctx.threads.value[1] * ctx.teams.value[1],
+				    ctx.threads.value[2] * ctx.teams.value[2]);
+
+    std::cout<<"Lambda is not trivially copyable"<<std::endl;
+    
+    // Only launch kernel if we have something to iterate over
+    constexpr size_t zero = 0;
+    if ( ctx.threads.value[0]  > zero && ctx.threads.value[1]  > zero && ctx.threads.value[2] > zero &&
+         ctx.teams.value[0] > zero && ctx.teams.value[1] > zero && ctx.teams.value[2]> zero ) {
+
+      RAJA_FT_BEGIN
+
+      //
+      // Kernel body is nontrivially copyable, create space on device and copy to
+      // Workaround until "is_device_copyable" is supported
+      //
+      using LOOP_BODY = camp::decay<BODY_IN>;
+      LOOP_BODY* lbody;
+      lbody = (LOOP_BODY*) cl::sycl::malloc_device(sizeof(LOOP_BODY), *q);
+      q->memcpy(lbody, &body_in, sizeof(LOOP_BODY)).wait();
+
+      //lbody = (LOOP_BODY*) cl::sycl::malloc_device(sizeof(LOOP_BODY), *q);
+      //q->memcpy(lbody, &loop_body, sizeof(LOOP_BODY)).wait();
+      
+      std::cout<<"running code"<<std::endl;
+      q->submit([&](cl::sycl::handler& h) {
+
+	  //auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
+	  //cl::sycl::access::target::local> (ctx.shared_mem_size, h);
+
+        h.parallel_for
+          (cl::sycl::nd_range<3>(gridSize, blockSize),
+           [=] (cl::sycl::nd_item<3> itm) {
+
+	    ctx.itm = &itm;
+	     
+             //Point to shared memory
+	    //ctx.shared_mem_ptr = s_vec.get_pointer().get();
+
+             (*lbody)(ctx);
+
+	  });
+
+	}).wait();
+
+      std::cout<<"completed code run"<<std::endl;  
+       cl::sycl::free(lbody, *q);
+
+      RAJA_FT_END;
+    }
+
+    if (!async) { q->wait(); }
+  }
+
+ //If the launch lambda is trivially copyable
+  template <typename BODY_IN,
+	    typename std::enable_if<std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
   static resources::EventProxy<resources::Resource>
   exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY_IN &&body_in)
   {
@@ -153,156 +230,96 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
     return resources::EventProxy<resources::Resource>(res);
   }
 
-
-};
-
-//Need to rework ...
-//Question: Does SYCL support launch bounds??
-#if 0
-template <typename BODY, int num_threads, size_t BLOCKS_PER_SM>
-__launch_bounds__(num_threads, BLOCKS_PER_SM) __global__
-    void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
-{
-  using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(body_in);
-  auto& body = privatizer.get_priv();
-  body(ctx);
-}
-
-template <bool async, int nthreads, size_t BLOCKS_PER_SM>
-struct LaunchExecute<RAJA::policy::sycl::expt::sycl_launch_explicit_t<async, nthreads, BLOCKS_PER_SM>> {
-
-  template <typename BODY_IN>
-  static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
-  {
-    using BODY = camp::decay<BODY_IN>;
-
-    auto func = launch_global_fcn_fixed<BODY, nthreads, BLOCKS_PER_SM>;
-
-    resources::Sycl sycl_res = resources::Sycl::get_default();
-
-    //
-    // Compute the number of blocks and threads
-    //
-
-    sycl_dim_t gridSize{ static_cast<sycl_dim_member_t>(ctx.teams.value[0]),
-                         static_cast<sycl_dim_member_t>(ctx.teams.value[1]),
-                         static_cast<sycl_dim_member_t>(ctx.teams.value[2]) };
-
-    sycl_dim_t blockSize{ static_cast<sycl_dim_member_t>(ctx.threads.value[0]),
-                          static_cast<sycl_dim_member_t>(ctx.threads.value[1]),
-                          static_cast<sycl_dim_member_t>(ctx.threads.value[2]) };
-
-    // Only launch kernel if we have something to iterate over
-    constexpr sycl_dim_member_t zero = 0;
-    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
-         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
-
-      RAJA_FT_BEGIN;
-
-      //
-      // Setup shared memory buffers
-      //
-      size_t shmem = 0;
-
-      {
-        //
-        // Privatize the loop_body, using make_launch_body to setup reductions
-        //
-        BODY body = RAJA::sycl::make_launch_body(
-            gridSize, blockSize, shmem, sycl_res, std::forward<BODY_IN>(body_in));
-
-        //
-        // Launch the kernel
-        //
-        void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::sycl::launch((const void*)func, gridSize, blockSize, args, shmem, sycl_res, async, ctx.kernel_name);
-      }
-
-      RAJA_FT_END;
-    }
-
-  }
-
-  template <typename BODY_IN>
+  //If the launch lambda is not trivially copyable
+  template <typename BODY_IN,
+	    typename std::enable_if<!std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
   static resources::EventProxy<resources::Resource>
   exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY_IN &&body_in)
   {
-    using BODY = camp::decay<BODY_IN>;
 
-    auto func = launch_global_fcn_fixed<BODY, nthreads, BLOCKS_PER_SM>;
+    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
 
     /*Get the concrete resource */
     resources::Sycl sycl_res = res.get<RAJA::resources::Sycl>();
 
+    // Global resource was not set, use the resource that was passed to forall
+    // Determine if the default SYCL res is being used
+    if (!q) {
+      q = sycl_res.get_queue();
+    }
+
     //
     // Compute the number of blocks and threads
     //
 
-    sycl_dim_t gridSize{ static_cast<sycl_dim_member_t>(ctx.teams.value[0]),
-                         static_cast<sycl_dim_member_t>(ctx.teams.value[1]),
-                         static_cast<sycl_dim_member_t>(ctx.teams.value[2]) };
+    const ::sycl::range<3> blockSize(ctx.threads.value[0],
+				     ctx.threads.value[1],
+				     ctx.threads.value[2]);
 
-    sycl_dim_t blockSize{ static_cast<sycl_dim_member_t>(ctx.threads.value[0]),
-                          static_cast<sycl_dim_member_t>(ctx.threads.value[1]),
-                          static_cast<sycl_dim_member_t>(ctx.threads.value[2]) };
+    const ::sycl::range<3> gridSize(ctx.threads.value[0] * ctx.teams.value[0],
+				    ctx.threads.value[1] * ctx.teams.value[1],
+				    ctx.threads.value[2] * ctx.teams.value[2]);
 
     // Only launch kernel if we have something to iterate over
-    constexpr sycl_dim_member_t zero = 0;
-    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
-         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
+    constexpr size_t zero = 0;
+    if ( ctx.threads.value[0]  > zero && ctx.threads.value[1]  > zero && ctx.threads.value[2] > zero &&
+         ctx.teams.value[0] > zero && ctx.teams.value[1] > zero && ctx.teams.value[2]> zero ) {
 
       RAJA_FT_BEGIN;
 
+      std::cout<<" 1. Lambda is not trivially copyable"<<std::endl;
+      
       //
-      // Setup shared memory buffers
+      // Kernel body is nontrivially copyable, create space on device and copy to
+      // Workaround until "is_device_copyable" is supported
       //
-      size_t shmem = 0;
+      using LOOP_BODY = camp::decay<BODY_IN>;
+      LOOP_BODY* lbody;
+      lbody = (LOOP_BODY*) cl::sycl::malloc_device(sizeof(LOOP_BODY), *q);
+      q->memcpy(lbody, &body_in, sizeof(LOOP_BODY)).wait();
+      
+      q->submit([&](cl::sycl::handler& h) {
 
-      {
-        //
-        // Privatize the loop_body, using make_launch_body to setup reductions
-        //
-        BODY body = RAJA::sycl::make_launch_body(
-            gridSize, blockSize, shmem, sycl_res, std::forward<BODY_IN>(body_in));
+        auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
+                                        cl::sycl::access::target::local> (ctx.shared_mem_size, h);
 
-        //
-        // Launch the kernel
-        //
-        void *args[] = {(void*)&ctx, (void*)&body};
-        {
-          RAJA::sycl::launch((const void*)func, gridSize, blockSize, args, shmem, sycl_res, async, ctx.kernel_name);
-        }
-      }
+        h.parallel_for
+          (cl::sycl::nd_range<3>(gridSize, blockSize),
+           [=] (cl::sycl::nd_item<3> itm) {
+
+             ctx.itm = &itm;
+
+             //Point to shared memory
+             ctx.shared_mem_ptr = s_vec.get_pointer().get();
+
+	     (*lbody)(ctx);
+
+           });
+
+      });
 
       RAJA_FT_END;
+
     }
 
     return resources::EventProxy<resources::Resource>(res);
   }
 
+
 };
-#endif
-
-
-//Rework of the sycl policies
-
-//================================================
-//TODO rework rest of the sycl policies . . .
-//================================================
 
 /*
    SYCL global thread mapping
 */
 template<int ... DIM>
-struct sycl_global_thread;
+struct sycl_global_item;
 
-using sycl_global_thread_0 = sycl_global_thread<0>;
-using sycl_global_thread_1 = sycl_global_thread<1>;
-using sycl_global_thread_2 = sycl_global_thread<2>;
+using sycl_global_item_0 = sycl_global_item<0>;
+using sycl_global_item_1 = sycl_global_item<1>;
+using sycl_global_item_2 = sycl_global_item<2>;
 
 template <typename SEGMENT, int DIM>
-struct LoopExecute<sycl_global_thread<DIM>, SEGMENT> {
+struct LoopExecute<sycl_global_item<DIM>, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -313,24 +330,24 @@ struct LoopExecute<sycl_global_thread<DIM>, SEGMENT> {
 
     const int len = segment.end() - segment.begin();
     {
-      const int tx =
-        ctx.itm->get_group(DIM) * ctx.itm->get_local_range(DIM) +
-        ctx.itm->get_local_id(DIM);
+      //const int tx =
+        //ctx.itm->get_group(DIM) * ctx.itm->get_local_range(DIM) +
+        //ctx.itm->get_local_id(DIM);
 
-      if (tx < len) body(*(segment.begin() + tx));
+      //if (tx < len) body(*(segment.begin() + tx));
     }
   }
 };
 
-using sycl_global_thread_01 = sycl_global_thread<0,1>;
-using sycl_global_thread_02 = sycl_global_thread<0,2>;
-using sycl_global_thread_10 = sycl_global_thread<1,0>;
-using sycl_global_thread_12 = sycl_global_thread<1,2>;
-using sycl_global_thread_20 = sycl_global_thread<2,0>;
-using sycl_global_thread_21 = sycl_global_thread<2,1>;
+using sycl_global_item_01 = sycl_global_item<0,1>;
+using sycl_global_item_02 = sycl_global_item<0,2>;
+using sycl_global_item_10 = sycl_global_item<1,0>;
+using sycl_global_item_12 = sycl_global_item<1,2>;
+using sycl_global_item_20 = sycl_global_item<2,0>;
+using sycl_global_item_21 = sycl_global_item<2,1>;
 
 template <typename SEGMENT, int DIM0, int DIM1>
-struct LoopExecute<sycl_global_thread<DIM0, DIM1>, SEGMENT> {
+struct LoopExecute<sycl_global_item<DIM0, DIM1>, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -358,15 +375,15 @@ struct LoopExecute<sycl_global_thread<DIM0, DIM1>, SEGMENT> {
 };
 
 
-using sycl_global_thread_012 = sycl_global_thread<0,1,2>;
-using sycl_global_thread_021 = sycl_global_thread<0,2,1>;
-using sycl_global_thread_102 = sycl_global_thread<1,0,2>;
-using sycl_global_thread_120 = sycl_global_thread<1,2,0>;
-using sycl_global_thread_201 = sycl_global_thread<2,0,1>;
-using sycl_global_thread_210 = sycl_global_thread<2,1,0>;
+using sycl_global_item_012 = sycl_global_item<0,1,2>;
+using sycl_global_item_021 = sycl_global_item<0,2,1>;
+using sycl_global_item_102 = sycl_global_item<1,0,2>;
+using sycl_global_item_120 = sycl_global_item<1,2,0>;
+using sycl_global_item_201 = sycl_global_item<2,0,1>;
+using sycl_global_item_210 = sycl_global_item<2,1,0>;
 
 template <typename SEGMENT, int DIM0, int DIM1, int DIM2>
-struct LoopExecute<sycl_global_thread<DIM0, DIM1, DIM2>, SEGMENT> {
+struct LoopExecute<sycl_global_item<DIM0, DIM1, DIM2>, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
