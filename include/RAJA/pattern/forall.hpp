@@ -600,7 +600,7 @@ struct IsHostResource {
   static const bool value = false;
 
   static resources::EventProxy<resources::Resource>
-  invoke_forall(RAJA::resources::Resource r, const int pol, SEGMENT const &seg, BODY const &body)
+  invoke_forall(RAJA::resources::Resource r, SEGMENT const &seg, BODY const &body)
   {
 #if defined(RAJA_CUDA_ACTIVE)
     RAJA::forall<t_pol>(r.get<RAJA::resources::Cuda>(), seg, body);
@@ -618,7 +618,7 @@ template<typename t_pol, typename SEGMENT, typename BODY>
 struct IsHostResource<RAJA::resources::Host, t_pol, SEGMENT, BODY> {
 static const bool value = true;
   static resources::EventProxy<resources::Resource>
-  invoke_forall(RAJA::resources::Resource r, const int pol, SEGMENT const &seg, BODY const &body)
+  invoke_forall(RAJA::resources::Resource r, SEGMENT const &seg, BODY const &body)
   {
     RAJA::forall<t_pol>(r.get<RAJA::resources::Host>(), seg, body);
     return resources::EventProxy<resources::Resource>(r);
@@ -637,7 +637,7 @@ struct dynamic_helper
 
     if(IDX==pol){
       return IsHostResource<typename resources::get_resource<t_pol>::type,
-                            t_pol, SEGMENT, BODY>::invoke_forall(r, pol, seg, body);
+                            t_pol, SEGMENT, BODY>::invoke_forall(r, seg, body);
     }
 
     return dynamic_helper<IDX-1, POLICY_LIST>::invoke_forall(r, pol, seg, body);
@@ -680,8 +680,7 @@ struct dynamic_helper<0, POLICY_LIST>
     using t_pol = typename camp::at<POLICY_LIST,camp::num<0>>::type;
 
     return IsHostResource<typename resources::get_resource<t_pol>::type,
-                          t_pol, SEGMENT, BODY>::invoke_forall(r, pol, seg, body);
-
+                          t_pol, SEGMENT, BODY>::invoke_forall(r, seg, body);
   }
 
 };
