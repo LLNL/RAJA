@@ -5,9 +5,12 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ##############################################################################
 
-##########
-# CPU ONLY
-##########
+########################
+# Overridden shared jobs
+########################
+# We duplicate the shared jobs description and add necessary changes for RAJA.
+# We keep ${PROJECT_<MACHINE>_VARIANTS} and ${PROJECT_<MACHINE>_DEPS} So that
+# the comparison with the original job is easier.
 
 # Overriding shared spec: Allow failures
 ibm_clang_9_0_0:
@@ -22,11 +25,6 @@ ibm_clang_9_0_0_gcc_8_3_1:
     SPEC: "${PROJECT_LASSEN_VARIANTS} %clang@ibm.9.0.0 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ${PROJECT_LASSEN_DEPS}"
   extends: .build_and_test_on_lassen
   allow_failure: true
-
-clang_11_0_0:
-  variables:
-    SPEC: "${PROJECT_LASSEN_VARIANTS} %clang@11.0.0 ${PROJECT_LASSEN_DEPS}"
-  extends: .build_and_test_on_lassen
 
 # Overriding shared spec: Extra flags
 gcc_8_3_1:
@@ -54,37 +52,12 @@ xl_16_1_1_12_gcc_8_3_1:
     SPEC: "${PROJECT_LASSEN_VARIANTS} %xl@16.1.1.12 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 ${PROJECT_LASSEN_DEPS}"
   extends: .build_and_test_on_lassen
 
-##########
-# CUDA
-##########
-
-clang_9_0_0_cuda_11_0_2:
-  variables:
-    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda cuda_arch=70 %clang@9.0.0 ^cuda@11.0.2 ${PROJECT_LASSEN_DEPS}"
-  extends: .build_and_test_on_lassen
-
 # Overriding shared spec: Allow failures
 ibm_clang_9_0_0_gcc_8_3_1_cuda_10_1_168:
   extends: .build_and_test_on_lassen
   variables:
     SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %clang@ibm.9.0.0 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ^cuda@10.1.168 ${PROJECT_LASSEN_DEPS}"
   allow_failure: true
-
-clang_11_0_0_cuda_11_5_0:
-  variables:
-    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda cuda_arch=70 %clang@11.0.0 ^cuda@11.5.0 ${PROJECT_LASSEN_DEPS}"
-  extends: .build_and_test_on_lassen
-
-gcc_8_3_1_cuda_11_0_2:
-  variables:
-    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.0.2 ${PROJECT_LASSEN_DEPS}"
-  extends: .build_and_test_on_lassen
-
-gcc_8_3_1_cuda_11_5_0_ats_disabled:
-  extends: .build_and_test_on_lassen
-  variables:
-    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 --atsdisable -W 60"
-    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0 ${PROJECT_LASSEN_DEPS}"
 
 # Overriding shared spec: Longer allocation + Extra flags + Allow failure
 xl_16_1_1_12_cuda_11_0_2:
@@ -102,22 +75,64 @@ xl_16_1_1_12_gcc_8_3_1_cuda_11_0_2:
   allow_failure: true
   extends: .build_and_test_on_lassen
 
+
+############
+# Extra jobs
+############
+# We do not recommend using ${PROJECT_<MACHINE>_VARIANTS} and
+# ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is not reason not to fully
+# describe the spec here.
+
+##########
+# CPU ONLY
+##########
+
+clang_11_0_0:
+  variables:
+    SPEC: "+openmp %clang@11.0.0"
+  extends: .build_and_test_on_lassen
+
+##########
+# CUDA
+##########
+
+clang_9_0_0_cuda_11_0_2:
+  variables:
+    SPEC: "$+openmp +cuda cuda_arch=70 %clang@9.0.0 ^cuda@11.0.2"
+  extends: .build_and_test_on_lassen
+
+clang_11_0_0_cuda_11_5_0:
+  variables:
+    SPEC: "+openmp +cuda cuda_arch=70 %clang@11.0.0 ^cuda@11.5.0"
+  extends: .build_and_test_on_lassen
+
+gcc_8_3_1_cuda_11_0_2:
+  variables:
+    SPEC: "+openmp +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.0.2"
+  extends: .build_and_test_on_lassen
+
+gcc_8_3_1_cuda_11_5_0_ats_disabled:
+  extends: .build_and_test_on_lassen
+  variables:
+    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 --atsdisable -W 60"
+    SPEC: "+openmp +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0"
+
 ##########
 # EXTRAS
 ##########
 
 clang_9_0_0_libcpp:
   variables:
-    SPEC: "${PROJECT_LASSEN_VARIANTS} %clang@9.0.0+libcpp ${PROJECT_LASSEN_DEPS}"
+    SPEC: "+openmp %clang@9.0.0+libcpp"
   extends: .build_and_test_on_lassen
 
 clang_9_0_0_asan:
   variables:
-    SPEC: "${PROJECT_LASSEN_VARIANTS} %clang@9.0.0 cxxflags=-fsanitize=address ${PROJECT_LASSEN_DEPS}"
+    SPEC: "+openmp %clang@9.0.0 cxxflags=-fsanitize=address"
     ASAN_OPTIONS: "detect_leaks=1"
   extends: .build_and_test_on_lassen
 
 gcc_8_3_1_cuda_11_0_2_desul_atomics:
   variables:
-    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@11.0.2 ${PROJECT_LASSEN_DEPS}"
+    SPEC: "+openmp +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@11.0.2"
   extends: .build_and_test_on_lassen
