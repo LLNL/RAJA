@@ -28,15 +28,20 @@
 void checkResult(int* res, int len);
 void printResult(int* res, int len);
 
+using policy_list = camp::list<RAJA::loop_exec
+                               ,RAJA::simd_exec
 #if defined(RAJA_ENABLE_CUDA)
-using cuda_policy_list = camp::list<RAJA::cuda_exec<256>,
-                                    RAJA::cuda_exec<512>,
-                                    RAJA::cuda_exec<1024>>;
+                               ,RAJA::cuda_exec<256>
+                               ,RAJA::cuda_exec<512>
 #endif
 
+#if defined(RAJA_ENABLE_HIP)
+                               ,RAJA::hip_exec<256>
+                               ,RAJA::hip_exec<512>
+#endif
+                               >;
 
 
-#if defined(RAJA_ENABLE_CUDA)
 int main(int argc, char *argv[])
 {
 
@@ -51,6 +56,13 @@ int main(int argc, char *argv[])
   //
 
   const int pol = std::stoi(argv[1]);
+
+  RAJA::expt::ExecPlace select_cpu_or_gpu;
+  if(pol < 2) {
+    select_cpu_or_gpu = RAJA::expt::HOST;
+  }else {
+    select_cpu_or_gpu = RAJA::expt::DEVICE;
+  }
 
   std::cout << "\n\nRAJA vector addition example...\n";
   std::cout << "Using policy # "<<pol<<std::endl;
@@ -91,10 +103,24 @@ int main(int argc, char *argv[])
 // Example of dynamic policy selection for forall
 //----------------------------------------------------------------------------//
 
-  RAJA::resources::Cuda res_gpu;
+  RAJA::resources::Host host_res;
+#if defined(RAJA_ENABLE_CUDA)
+  RAJA::resources::Cuda device_res;
+#endif
+#if defined(RAJA_ENABLE_HIP)
+  RAJA::resources::Hip device_res;
+#endif
 
-  RAJA::expt::dynamic_forall<cuda_policy_list>
-  (res_gpu, pol, RAJA::RangeSegment(0, N), [=] RAJA_HOST_DEVICE (int i)   {
+  //RAJA::resources::Cuda res_gpu;
+  //Get typed erased resource - it will internally store if we are running on the host or device
+#if defined(RAJA_DEVICE_ACTIVE)
+  RAJA::resources::Resource res = RAJA::expt::Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
+#else
+  RAJA::resources::Resource res = RAJA::expt::Get_Host_Resource(host_res, select_cpu_or_gpu);
+#endif
+
+  RAJA::expt::dynamic_forall<policy_list>
+  (res, pol, RAJA::RangeSegment(0, N), [=] RAJA_HOST_DEVICE (int i)   {
 
     c[i] = a[i] + b[i];
 
@@ -115,13 +141,6 @@ int main(int argc, char *argv[])
   std::cout << "\n DONE!...\n";
 
   return 0;
-#else
-
-int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
-{
-  std::cout << "Please build with CUDA to run this example ...\n";
-  return 0;
-#endif
 }
 
 //
