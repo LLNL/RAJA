@@ -9,8 +9,11 @@
 .. _halo_exchange-label:
 
 ------------------------------------
-Halo Exchange (Workgroup Constructs)
+Workgroup Constructs: Halo Exchange
 ------------------------------------
+
+The example code discussed in this section can be found in the file
+``RAJA/examples/tut_halo-exchange.cpp``.
 
 Key RAJA features shown in this example:
 
