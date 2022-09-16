@@ -15,14 +15,14 @@
 # Overriding shared config for longer run
 gcc_8_1_0:
   variables:
-    SPEC: "${PROJECT_RUBY_VARIANTS} %gcc@8.1.0 ${PROJECT_RUBY_DEPS}"
+    SPEC: " ${PROJECT_RUBY_VARIANTS} %gcc@8.1.0 ${PROJECT_RUBY_DEPS}"
     RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
   extends: .build_and_test_on_ruby
 
 # Overriding shared spec: Allow failures
 pgi_20_1_gcc_local_8_3_1:
   variables:
-    SPEC: "${PROJECT_RUBY_VARIANTS} %pgi@20.1 cxxflags\"=-rc=/usr/workspace/umpire/pgi/x86_64/local-gcc-8.3.1-rc\" cflags\"=-rc=/usr/workspace/umpire/pgi/x86_64/local-gcc-8.3.1-rc\" fflags=\"-rc=/usr/workspace/umpire/pgi/x86_64/local-gcc-8.3.1-rc\" ${PROJECT_RUBY_DEPS}"
+    SPEC: " ${PROJECT_RUBY_VARIANTS} %pgi@20.1 cxxflags\"=-rc=/usr/workspace/umpire/pgi/x86_64/local-gcc-8.3.1-rc\" cflags\"=-rc=/usr/workspace/umpire/pgi/x86_64/local-gcc-8.3.1-rc\" fflags=\"-rc=/usr/workspace/umpire/pgi/x86_64/local-gcc-8.3.1-rc\" ${PROJECT_RUBY_DEPS}"
   extends: .build_and_test_on_ruby
   allow_failure: true
 
@@ -35,24 +35,24 @@ pgi_20_1_gcc_local_8_3_1:
 
 clang_9_0_0_openmp_off:
   variables:
-    SPEC: "~openmp %clang@9.0.0"
+    SPEC: " ~openmp %clang@9.0.0"
   extends: .build_and_test_on_ruby
 
 gcc_8_1_0_openmp_default:
   variables:
-    SPEC: "%gcc@8.1.0"
+    SPEC: " %gcc@8.1.0"
     RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
   extends: .build_and_test_on_ruby
 
 icpc_19_1_0:
   variables:
-    SPEC: "+openmp %intel@19.1.0"
+    SPEC: " +openmp %intel@19.1.0"
     RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=40 --nodes=1"
   extends: .build_and_test_on_ruby
 
 # EXTRAS
 clang_10_0_1_gcc_8_3_1_desul_atomics:
   variables:
-    SPEC: "+openmp +desul %clang@10.0.1 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
+    SPEC: " +openmp +desul %clang@10.0.1 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
   extends: .build_and_test_on_ruby
 
