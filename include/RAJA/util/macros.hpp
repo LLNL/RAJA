@@ -34,8 +34,8 @@
 // this stuff in an application.
 //
 #if (defined(RAJA_ENABLE_CUDA) && defined(__CUDA_ARCH__)) \
- || (defined(RAJA_ENABLE_HIP) && defined(__HIP_DEVICE_COMPILE__))
- || (defined(RAJA_ENABLE_SYCL) && defined(_SYCL_DEVICE_ONLY))
+  || (defined(RAJA_ENABLE_HIP) && defined(__HIP_DEVICE_COMPILE__)) \
+  || (defined(RAJA_ENABLE_SYCL) && defined(__SYCL_DEVICE_ONLY__))
 #define RAJA_DEVICE_CODE
 #endif
 
