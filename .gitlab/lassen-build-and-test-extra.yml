@@ -36,8 +36,8 @@ gcc_8_3_1:
 pgi_20_4_gcc_8_3_1:
   extends: .build_and_test_on_lassen
   variables:
-    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 80 -q pdebug"
     SPEC: " ${PROJECT_LASSEN_VARIANTS} %pgi@20.4 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ${PROJECT_LASSEN_DEPS}"
+    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 80"
   allow_failure: true
 
 # Overriding shared spec: Extra flags
@@ -62,16 +62,16 @@ ibm_clang_9_0_0_gcc_8_3_1_cuda_10_1_168:
 # Overriding shared spec: Longer allocation + Extra flags + Allow failure
 xl_16_1_1_12_cuda_11_0_2:
   variables:
-    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 120 -q pdebug"
     SPEC: " ${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags=\"-qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" cuda_arch=70 ^cuda@11.0.2 ^cmake@3.14.5 ${PROJECT_LASSEN_DEPS}"
+    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 120"
   allow_failure: true
   extends: .build_and_test_on_lassen
 
 # Overriding shared spec: Longer allocation + Extra flags + Allow failure
 xl_16_1_1_12_gcc_8_3_1_cuda_11_0_2:
   variables:
-    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 120 -q pdebug"
     SPEC: " ${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cuda_arch=70 ^cuda@11.0.2 ^cmake@3.14.5 ${PROJECT_LASSEN_DEPS}"
+    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 120"
   allow_failure: true
   extends: .build_and_test_on_lassen
 
@@ -80,7 +80,7 @@ xl_16_1_1_12_gcc_8_3_1_cuda_11_0_2:
 # Extra jobs
 ############
 # We do not recommend using ${PROJECT_<MACHINE>_VARIANTS} and
-# ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is not reason not to fully
+# ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is no reason not to fully
 # describe the spec here.
 
 ##########
@@ -114,8 +114,8 @@ gcc_8_3_1_cuda_11_0_2:
 gcc_8_3_1_cuda_11_5_0_ats_disabled:
   extends: .build_and_test_on_lassen
   variables:
-    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 --atsdisable -W 60"
     SPEC: " +openmp +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0"
+    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 --atsdisable -W 60"
 
 ##########
 # EXTRAS

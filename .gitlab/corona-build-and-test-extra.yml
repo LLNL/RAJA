@@ -18,7 +18,7 @@
 # Extra jobs
 ############
 # We do not recommend using ${PROJECT_<MACHINE>_VARIANTS} and
-# ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is not reason not to fully
+# ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is no reason not to fully
 # describe the spec here.
 
 rocm_5_1_1_clang_13_0_0_desul_atomics:

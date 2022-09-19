@@ -30,7 +30,7 @@ pgi_20_1_gcc_local_8_3_1:
 # Extra jobs
 ############
 # We do not recommend using ${PROJECT_<MACHINE>_VARIANTS} and
-# ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is not reason not to fully
+# ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is no reason not to fully
 # describe the spec here.
 
 clang_9_0_0_openmp_off:
