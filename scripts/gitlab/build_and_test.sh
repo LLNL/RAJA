@@ -26,6 +26,23 @@ hostconfig=${HOST_CONFIG:-""}
 spec=${SPEC:-""}
 job_unique_id=${CI_JOB_ID:-""}
 
+prefix=""
+
+if [[ -d /dev/shm ]]
+then
+    prefix="/dev/shm/${hostname}"
+    if [[ -z ${job_unique_id} ]]; then
+      job_unique_id=manual_job_$(date +%s)
+      while [[ -d ${prefix}-${job_unique_id} ]] ; do
+          sleep 1
+          job_unique_id=manual_job_$(date +%s)
+      done
+    fi
+
+    prefix="${prefix}-${job_unique_id}"
+    mkdir -p ${prefix}
+fi
+
 # Dependencies
 date
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
@@ -47,17 +64,6 @@ then
 
     if [[ -d /dev/shm ]]
     then
-        prefix="/dev/shm/${hostname}"
-        if [[ -z ${job_unique_id} ]]; then
-          job_unique_id=manual_job_$(date +%s)
-          while [[ -d ${prefix}-${job_unique_id} ]] ; do
-              sleep 1
-              job_unique_id=manual_job_$(date +%s)
-          done
-        fi
-
-        prefix="${prefix}-${job_unique_id}"
-        mkdir -p ${prefix}
         prefix_opt="--prefix=${prefix}"
 
         # We force Spack to put all generated files (cache and configuration of
@@ -108,13 +114,18 @@ hostconfig=$(basename ${hostconfig_path})
 # Build Directory
 if [[ -z ${build_root} ]]
 then
-    build_root="/dev/shm$(pwd)"
+    if [[ -d /dev/shm ]]
+    then
+        build_root="${prefix}"
+    else
+        build_root="$(pwd)"
+    fi
 else
     build_root="${build_root}"
 fi
 
-build_dir="${build_root}/build_${job_unique_id}_${hostconfig//.cmake/}"
-install_dir="${build_root}/install_${job_unique_id}_${hostconfig//.cmake/}"
+build_dir="${build_root}/build_${hostconfig//.cmake/}"
+install_dir="${build_root}/install_${hostconfig//.cmake/}"
 
 # TODO: This is from Umpire, could it work with RAJA ?
 #cmake_exe=`grep 'CMake executable' ${hostconfig_path} | cut -d ':' -f 2 | xargs`
