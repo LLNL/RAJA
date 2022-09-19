@@ -157,13 +157,13 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
         if "+libcpp" in spec:
             cflags += " ".join([cflags,"-DGTEST_HAS_CXXABI_H_=0"])
         if cflags:
-            entries.append(cmake_cache_option("CMAKE_C_FLAGS", cflags))
+            entries.append(cmake_cache_string("CMAKE_C_FLAGS", cflags))
 
         cxxflags = " ".join(spec.compiler_flags["cxxflags"])
         if "+libcpp" in spec:
             cxxflags += " ".join([cxxflags,"-stdlib=libc++ -DGTEST_HAS_CXXABI_H_=0"])
         if cxxflags:
-            entries.append(cmake_cache_option("CMAKE_CXX_FLAGS", cxxflags))
+            entries.append(cmake_cache_string("CMAKE_CXX_FLAGS", cxxflags))
 
         if "+desul" in spec:
             entries.append(cmake_cache_string("BLT_CXX_STD","c++14"))
