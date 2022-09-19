@@ -16,20 +16,8 @@ raja_add_executable(
   SOURCES tut_daxpy.cpp)
 
 raja_add_executable(
-  NAME tut_add-vectors
-  SOURCES tut_add-vectors.cpp)
-
-raja_add_executable(
   NAME sycl_mat_transpose
   SOURCES sycl_mat_transpose.cpp)
-  
-raja_add_executable(
-  NAME tut_dot-product
-  SOURCES tut_dot-product.cpp)
-
-raja_add_executable(
-  NAME tut_indexset-segments
-  SOURCES tut_indexset-segments.cpp)
 
 raja_add_executable(
   NAME tut_matrix-multiply

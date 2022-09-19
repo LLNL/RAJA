@@ -12,6 +12,7 @@
 
 #include "RAJA/RAJA.hpp"
 #include "camp/resource.hpp"
+#include "memoryManager.hpp"
 
 
 /*
@@ -48,6 +49,10 @@ using launch_policy = RAJA::expt::LaunchPolicy<
     ,
     RAJA::expt::hip_launch_t<false>
 #endif
+#if defined(RAJA_ENABLE_SYCL)
+    ,
+    RAJA::expt::sycl_launch_t<false>
+#endif
     >;
 
 /*
@@ -68,6 +73,10 @@ using teams_x = RAJA::expt::LoopPolicy<
                                        ,
                                        RAJA::hip_block_x_direct
 #endif
+#if defined(RAJA_ENABLE_SCYL)
+                                       ,
+                                       RAJA::sycl_group_0_direct
+#endif
                                        >;
 /*
  * Define thread policies.
@@ -81,6 +90,10 @@ using threads_x = RAJA::expt::LoopPolicy<RAJA::loop_exec
 #if defined(RAJA_ENABLE_HIP)
                                          ,
                                          RAJA::hip_thread_x_loop
+#endif
+#if defined(RAJA_ENABLE_SYCL)
+                                         ,
+                                         RAJA::sycl_local_0_loop
 #endif
                                          >;
 
@@ -98,6 +111,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_HIP)
   camp::resources::Hip device_res;
+#endif
+
+#if defined(RAJA_ENABLE_SYCL)
+    memoryManager::sycl_res = new camp::resources::Resource{camp::resources::Sycl()};
+  ::RAJA::sycl::detail::setQueue(memoryManager::sycl_res);
+  camp::resources::Sycl device_res;
 #endif
 
   std::cout << "\n Running RAJA-Launch examples...\n";
@@ -153,14 +172,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     RAJA::View<int, RAJA::Layout<2>> D(Ddat, N_tri, N_tri);
 
-    RAJA::expt::launch<launch_policy>(select_cpu_or_gpu,
-       RAJA::expt::Grid(RAJA::expt::Teams(N_tri), RAJA::expt::Threads(N_tri)),
+    const size_t shared_memory = sizeof(int);
+
+    //TODO need to fix, segfaults if we cycle between cpu and gpu options
+
+    RAJA::expt::launch<launch_policy>
+      //(select_cpu_or_gpu,
+       (RAJA::expt::DEVICE,
+       RAJA::expt::Grid(RAJA::expt::Teams(N_tri),
+			RAJA::expt::Threads(N_tri),
+			shared_memory),
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
          RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {
 
-           // Array shared within threads of the same team
-           RAJA_TEAM_SHARED int s_A[1];
+	   // Array shared within threads of the same team
+	   int *s_A = ctx.getSharedMemory<int>(1);
 
            RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
               s_A[c] = r;
@@ -170,10 +197,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
            RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
                D(r, c) = r * N_tri + c;
-               printf("r=%d, c=%d : D=%d : s_A = %d \n", r, c, D(r, c), s_A[0]);
+
+	       //SYCL does not support printf
+               //printf("r=%d, c=%d : D=%d : s_A = %d \n", r, c, D(r, c), s_A[0]);
            });  // loop c
 
          });  // loop r
+
        });  // outer lambda
 
     if (select_cpu_or_gpu == RAJA::expt::HOST) {
