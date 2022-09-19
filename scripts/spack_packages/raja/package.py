@@ -53,7 +53,8 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
     # TODO: figure out gtest dependency and then set this default True
     # and remove the +tests conflict below.
     variant("tests", default=False, description="Build tests")
-    variant("desul", default=False, description='Build Desul Atomics backend')
+    variant("libcpp", default=False, description="Uses libc++ instead of libstdc++")
+    variant("desul", default=False, description="Build Desul Atomics backend")
 
     depends_on("blt")
     depends_on("blt@0.5.0:", type="build", when="@0.14.1:")
@@ -94,6 +95,7 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
         return sys_type
 
     @property
+    # TODO: name cache file conditionally to cuda and libcpp variants
     def cache_name(self):
         hostname = socket.gethostname()
         if "SYS_TYPE" in env:
@@ -145,6 +147,19 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
         option_prefix = "RAJA_" if spec.satisfies("@0.14.0:") else ""
 
         entries.append(cmake_cache_option("RAJA_ENABLE_DESUL_ATOMICS", "+desul" in spec))
+
+        # use global spack compiler flags
+        cflags = " ".join(spec.compiler_flags["cflags"])
+        if "+libcpp" in spec:
+            cflags += " ".join([cflags,"-DGTEST_HAS_CXXABI_H_=0"])
+        if cflags:
+            entries.append(cmake_cache_entry("CMAKE_C_FLAGS", cflags))
+
+        cxxflags = " ".join(spec.compiler_flags["cxxflags"])
+        if "+libcpp" in spec:
+            cxxflags += " ".join([cxxflags,"-stdlib=libc++ -DGTEST_HAS_CXXABI_H_=0"])
+        if cxxflags:
+            entries.append(cmake_cache_entry("CMAKE_CXX_FLAGS", cxxflags))
 
         if "+desul" in spec:
             entries.append(cmake_cache_string("BLT_CXX_STD","c++14"))
