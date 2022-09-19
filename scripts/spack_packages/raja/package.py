@@ -53,6 +53,7 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
     # TODO: figure out gtest dependency and then set this default True
     # and remove the +tests conflict below.
     variant("tests", default=False, description="Build tests")
+    variant("desul", default=False, description='Build Desul Atomics backend')
 
     depends_on("blt")
     depends_on("blt@0.5.0:", type="build", when="@0.14.1:")
@@ -142,6 +143,13 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
         entries = []
 
         option_prefix = "RAJA_" if spec.satisfies("@0.14.0:") else ""
+
+        entries.append(cmake_cache_option("RAJA_ENABLE_DESUL_ATOMICS", "+desul" in spec))
+
+        if "+desul" in spec:
+            entries.append(cmake_cache_string("BLT_CXX_STD","c++14"))
+            if "+cuda" in spec:
+                entries.append(cmake_cache_string("CMAKE_CUDA_STANDARD", "14"))
 
         entries.append(cmake_cache_path("BLT_SOURCE_DIR", spec["blt"].prefix))
         if "camp" in self.spec:
