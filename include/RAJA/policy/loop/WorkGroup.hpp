@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA Vtable and WorkRunner constructs.
+ * \brief   Header file containing RAJA Dispatcher and WorkRunner constructs.
  *
  ******************************************************************************
  */
@@ -18,7 +18,7 @@
 #ifndef RAJA_loop_WorkGroup_HPP
 #define RAJA_loop_WorkGroup_HPP
 
-#include "RAJA/policy/loop/WorkGroup/Vtable.hpp"
+#include "RAJA/policy/loop/WorkGroup/Dispatcher.hpp"
 #include "RAJA/policy/loop/WorkGroup/WorkRunner.hpp"
 
 #endif  // closing endif for header file include guard
