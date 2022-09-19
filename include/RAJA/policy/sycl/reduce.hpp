@@ -219,7 +219,7 @@ struct TargetReduce
     return *this;
 #else
     auto i = 0;
-    Reducer{}(val.device[i], rhsVal);
+    Reducer{}(val.host[i], rhsVal);
     return *this;
 #endif
   }
@@ -234,7 +234,7 @@ struct TargetReduce
     return *this;
 #else
     auto i = 0;
-    Reducer{}(val.device[i], rhsVal);
+    Reducer{}(val.host[i], rhsVal);
     return *this;
 #endif
   }
