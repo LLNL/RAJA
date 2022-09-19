@@ -103,10 +103,11 @@ but extends it to support much more complex kernel structures.
 Each ``RAJA::kernel`` method is a template that takes an *execution policy* 
 type template parameter. The execution policy can be an arbitrarily complex
 sequence of nested templates that define a kernel execution pattern.
-loop nest. In its simplest form, ``RAJA::kernel`` takes two arguments: 
-a *tuple* of iteration space objects, and a lambda kernel inner loop body.
-In more complex usage, ``RAJA::kernel`` will take multiple lambda expressions 
-representing different portions of the loop kernel body.
+In its simplest form, ``RAJA::kernel`` takes two arguments: 
+a *tuple* of iteration space objects, and a lambda expression representing
+the kernel inner loop body. In more complex usage, ``RAJA::kernel`` can take 
+multiple lambda expressions representing different portions of the loop 
+kernel body.
 
 To introduce the RAJA *kernel* interface, consider a (N+1)-level C-style loop 
 nest::
@@ -194,14 +195,13 @@ execution policy, to construct a loop kernel. For example, placing
 ``RAJA::statement::Lambda`` types between ``RAJA::statement::For`` statements 
 enables non-perfectly nested loops.
 
-RAJA offers two types of ``RAJA::statement::Lambda`` statements. The simplest 
-for illustrated
-above requires that each lambda expression passed to a ``RAJA::kernel`` method
-**must take an index argument for each iteration space in the tuple**.
-With this type of lambda statement, the entire iteration space must be active 
-in a containing ``For`` construct.  A compile time ``static_assert`` will be 
-triggered if any of the arguments are undefined, indicating that something
-is not correct.
+RAJA offers two types of ``RAJA::statement::Lambda`` statements. The simplest
+form, shown above, requires that each lambda expression passed to a 
+``RAJA::kernel`` method **must take an index argument for each iteration 
+space.** With this type of lambda statement, the entire iteration space must 
+be active in a surrounding ``For`` construct.  A compile time ``static_assert``
+will be triggered if any of the arguments are undefined, indicating that 
+something is not correct.
 
 A second ``RAJA::statement::Lambda`` type, which is an extension of the first, 
 takes additional template parameters which specify which iteration spaces 

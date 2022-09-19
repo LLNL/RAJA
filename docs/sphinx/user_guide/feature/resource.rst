@@ -175,8 +175,8 @@ on a GPU stream. Currently, CUDA and HIP are the only resource types that
 enable asynchronous threading. 
 
 .. note:: Support for OpenMP CPU multithreading, which would use the 
-          ``RAJA::resources::Host`` resource type, and OpenMP target offload,
-          which would use the ``RAJA::resources::Omp`` resource type, are
+          ``RAJA::resources::Host`` resource type, and OpenMP target offload
+          which would use the ``RAJA::resources::Omp`` resource type,
           is incomplete and under development.
 
 The resource type passed to one of the methods listed above must be a 
@@ -265,7 +265,7 @@ complete::
 All methods listed above near the beginning of the RAJA resource discussion
 return an event object so users can access the event associated with the 
 method call. This allows one to set up dependencies between resource objects 
-and operations and define and control asynchronous execution patterns.
+and operations, as well as define and control asynchronous execution patterns.
 
 .. note:: An Event object is only created if a user explicitly sets the event 
           returned by the ``RAJA::forall`` call to a variable. This avoids 
@@ -338,9 +338,7 @@ stream associated with the resource ``res_gpu1``:
    :language: C++
 
 Next, we enqueue a memcpy operation on the resource ``res_gpu1`` to copy 
-the GPU array ``d_array`` to the host array ``h_array``. **I think we need to
-add a wait call or a device sync call before the memcpy operation since the
-kernel execution is asynchronous --RDH**:
+the GPU array ``d_array`` to the host array ``h_array``:
 
 .. literalinclude:: ../../../../examples/resource-forall.cpp
    :start-after: _raja_res_memcpy_start
