@@ -192,7 +192,7 @@ the outer loop is now the 'col' loop and is still sequential:
           and others, can be done by switching the ``RAJA::KernelPolicy`` 
           type with no changes to the loop kernel code.
 
-In :ref:`nestedreorder-label`, we provide a more detailed discussion of the
+In :ref:`kernelnestedreorder-label`, we provide a more detailed discussion of the
 mechanics of loop nest reordering. Next, we show other variations of the 
 matrix multiplication kernel that illustrate other ``RAJA::kernel`` features. 
 
