@@ -189,10 +189,13 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
         else:
             entries.append(cmake_cache_option("ENABLE_EXERCISES", "+exercises" in spec))
 
-        # Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS which
-        # is used by the spack compiler wrapper.  This can go away when BLT
-        # removes -Werror from GTest flags
-        if self.spec.satisfies("%clang target=ppc64le:") or ( not self.run_tests and not "+tests" in spec):
+        ### #TODO: Treat the workaround when building tests with spack wrapper
+        ### #      For now, removing it to test CI, which builds tests outside of wrapper.
+        ### # Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS which
+        ### # is used by the spack compiler wrapper.  This can go away when BLT
+        ### # removes -Werror from GTest flags
+        ### if self.spec.satisfies("%clang target=ppc64le:") or ( not self.run_tests and not "+tests" in spec):
+        if not self.run_tests and not "+tests" in spec:
             entries.append(cmake_cache_option("ENABLE_TESTS", False))
         else:
             entries.append(cmake_cache_option("ENABLE_TESTS", True))
