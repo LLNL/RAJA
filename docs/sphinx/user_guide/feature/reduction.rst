@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _reductions-label:
+.. _feat-reductions-label:
 
 ====================
 Reduction Operations
@@ -37,7 +37,7 @@ Also
 Please see the following tutorial sections for detailed examples that use
 RAJA reductions:
 
- * :ref:`reduction-ex-label`.
+ * :ref:`tut-reduction-label`.
 
 
 ----------------

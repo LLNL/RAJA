@@ -44,7 +44,7 @@ Examples showing how to use RAJA workgroup methods may be found in
 the :ref:`tutorial-label`.
 
 For more information on RAJA work policies and iteration space constructs,
-see :ref:`policies-label` and :ref:`index-label`, respectively.
+see :ref:`feat-policies-label` and :ref:`feat-index-label`, respectively.
 
 .. _workgroup-Policies-label:
 

@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _view-label:
+.. _feat-view-label:
 
 ===============
 View and Layout
@@ -36,11 +36,11 @@ multi-dimensional indexing and different indexing layouts, RAJA provides
 Please see the following tutorial sections for detailed examples that use
 RAJA Views and Layouts:
 
- * :ref:`view_layout-label`
- * :ref:`offset-label`
- * :ref:`permuted-layout-label`
- * :ref:`kernelexecpols-label`
- * :ref:`launchexecpols-label`
+ * :ref:`tut-view_layout-label`
+ * :ref:`tut-offsetlayout-label`
+ * :ref:`tut-permutedlayout-label`
+ * :ref:`tut-kernelexecpols-label`
+ * :ref:`tut-launchexecpols-label`
 
 ----------
 RAJA Views
@@ -282,7 +282,7 @@ which is the extent of the first index (:math:`[-1, 2)`).
           ``RAJA::View`` data access operator when they are not needed.
 
 Complete examples illustrating ``RAJA::Layouts`` and ``RAJA::Views``  may 
-be found in the :ref:`offset-label` and :ref:`permuted-layout-label`
+be found in the :ref:`tut-offsetlayout-label` and :ref:`tut-permutedlayout-label`
 tutorial sections.
 
 Typed Layouts

@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _offset-label:
+.. _tut-offsetlayout-label:
 
 ------------------------------------------------
 OffsetLayout: Five-point Stencil

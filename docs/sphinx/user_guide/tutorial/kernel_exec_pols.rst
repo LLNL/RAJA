@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _kernelexecpols-label:
+.. _tut-kernelexecpols-label:
 
 -----------------------------------------------------------
 ``RAJA::kernel`` Execution Policies
@@ -73,7 +73,7 @@ indexing:
 Here 'aView' is a three-dimensional View with extent 'N' in each
 coordinate based on a three-dimensional ``RAJA::Layout`` object where the
 array entries will be accessed using indices of type 'int'. Please see 
-:ref:`view-label` for more information about the View and Layout types that 
+:ref:`feat-view-label` for more information about the View and Layout types that 
 RAJA provides for various indexing patterns and data layouts.
 
 Using the View, the C-style kernel now looks like:

@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _policies-label:
+.. _feat-policies-label:
 
 ==================
 Policies

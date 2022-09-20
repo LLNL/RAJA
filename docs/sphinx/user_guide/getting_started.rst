@@ -204,7 +204,7 @@ appropriate nvcc options in the ``CMAKE_CUDA_FLAGS_*`` variables.
 .. note:: **RAJA requires a minimum CUDA architecture level of `sm_35` to use
           all supported CUDA features.** Mostly, the architecture level affects
           which RAJA CUDA atomic operations are available and how they are
-          implemented inside RAJA. This is described in :ref:`atomics-label`.
+          implemented inside RAJA. This is described in :ref:`feat-atomics-label`.
 
           * If you do not specify a value for ``CUDA_ARCH``, it will be set to
             `sm_35` by default and CMake will emit a status message 

@@ -20,8 +20,8 @@ A few important notes:
 .. note:: * All RAJA sort operations are in the namespace ``RAJA``.
           * Each RAJA sort operation is a template on an *execution policy*
             parameter. The same policy types used for ``RAJA::forall`` methods
-            may be used for RAJA sorts. Please see :ref:`policies-label` for
-            more information.
+            may be used for RAJA sorts. Please see :ref:`feat-policies-label` 
+            for more information.
           * RAJA sort operations accept an optional *comparator* argument so
             users can perform different types of sort operations. If
             no operator is given, the default is a *less than* operation and

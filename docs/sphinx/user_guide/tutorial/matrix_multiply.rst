@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _matrixmultiply-label:
+.. _tut-matrixmultiply-label:
 
 ------------------------------------
 Matrix Multiplication (Nested Loops)
@@ -53,7 +53,7 @@ for each of the three matrices:
 We show the most basic RAJA view usage here -- to simplify multi-dimensional
 array indexing. RAJA views can be used to abstract a variety of different 
 data layouts and access patterns, including stride permutations, offsets, etc. 
-For more information about RAJA views, see :ref:`view-label`.
+For more information about RAJA views, see :ref:`feat-view-label`.
 
 We also use the following ``RAJA::RangeSegment`` objects to define the matrix 
 row and column and dot product iteration spaces:

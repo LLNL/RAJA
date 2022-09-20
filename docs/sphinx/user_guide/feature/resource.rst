@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _resource-label:
+.. _feat-resource-label:
 
 =========
 Resources

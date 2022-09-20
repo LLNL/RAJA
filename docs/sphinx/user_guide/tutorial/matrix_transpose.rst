@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _matrixtranspose-label:
+.. _tut-matrixtranspose-label:
 
 ----------------------
 Matrix Transpose

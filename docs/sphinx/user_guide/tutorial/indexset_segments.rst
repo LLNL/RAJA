@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _indexset-label:
+.. _tut-indexset-label:
 
 -------------------------------------------------
 Iteration Spaces: Segments and IndexSets

@@ -26,7 +26,7 @@ the ``RAJA::expt::loop`` method.
           will be moved to the ``RAJA`` namespace in a future RAJA release.
 
 For more information on RAJA execution policies and iteration space constructs, 
-see :ref:`policies-label` and :ref:`index-label`, respectively. 
+see :ref:`feat-policies-label` and :ref:`feat-index-label`, respectively. 
 
 The following sections describe the basic aspects of these methods.
 Detailed examples showing how to use ``RAJA::forall``, ``RAJA::kernel``, ``RAJA::launch`` methods may be found in the :ref:`tutorial-label`. Links to specific
@@ -59,7 +59,7 @@ kernel body.
 Applying different loop execution policies enables the loop to run in 
 different ways; e.g., using different programming model back-ends. Different 
 iteration space objects enable the loop iterates to be partitioned, reordered, 
-run in different threads, etc. Please see :ref:`index-label` for details
+run in different threads, etc. Please see :ref:`feat-index-label` for details
 about RAJA iteration spaces. 
 
 .. note:: Changing loop execution policy types and iteration space constructs
@@ -72,7 +72,7 @@ While loop execution using ``RAJA::forall`` methods is a subset of
 simpler and less verbose for that use case.
 
 .. note:: Data arrays in lambda expressions used with RAJA are typically 
-          RAJA Views (see :ref:`view-label`) or bare pointers as shown in
+          RAJA Views (see :ref:`feat-view-label`) or bare pointers as shown in
           the code snippets above. Using something like 'std::vector' is
           non-portable (won't work in GPU kernels, generally) and would add 
           excessive overhead for copying data into the lambda data environment
@@ -81,13 +81,13 @@ simpler and less verbose for that use case.
 Please see the following tutorial sections for detailed examples that use
 ``RAJA::forall``:
 
- * :ref:`addvectors-label`
- * :ref:`dotproduct-label`
- * :ref:`reduction-ex-label`
- * :ref:`atomichist-label`
- * :ref:`indexset-label`
- * :ref:`vertexsum-label`
- * :ref:`permuted-layout-label`
+ * :ref:`tut-addvectors-label`
+ * :ref:`tut-dotproduct-label`
+ * :ref:`tut-reduction-label`
+ * :ref:`tut-atomichist-label`
+ * :ref:`tut-indexset-label`
+ * :ref:`tut-vertexsum-label`
+ * :ref:`tut-permutedlayout-label`
 
 
 .. _loop_elements-kernel-label:
@@ -226,7 +226,7 @@ which argument order. Here, we pass all segment indices so the lambda kernel
 body definition could be identical to on passed to the previous RAJA version.
 RAJA offers other types such as ``RAJA::Offsets``, and ``RAJA::Params`` to 
 identify offsets and parameters in segments and parameter tuples that could be
-passed to ``RAJA::kernel`` methods. See :ref:`matrixmultiply-label`
+passed to ``RAJA::kernel`` methods. See :ref:`tut-matrixmultiply-label`
 for an example.
 
 .. note:: Unless lambda arguments are specified in RAJA lambda statements,
@@ -256,7 +256,7 @@ with the outermost loop and ending with the innermost loop.
 .. note:: In general, RAJA execution policies for ``RAJA::forall`` and 
           ``RAJA::kernel`` are different. A summary of all RAJA execution 
           policies that may be used with ``RAJA::forall`` or ``RAJA::kernel`` 
-          may be found in :ref:`policies-label`. 
+          may be found in :ref:`feat-policies-label`. 
 
 A discussion of how to construct ``RAJA::KernelPolicy`` types and 
 available ``RAJA::statement`` types can be found in 
@@ -265,11 +265,11 @@ available ``RAJA::statement`` types can be found in
 Please see the following tutorial sections for detailed examples that use
 ``RAJA::kernel``:
 
- * :ref:`kernelnestedreorder-label`
- * :ref:`kernelexecpols-label`
- * :ref:`matrixmultiply-label`
- * :ref:`tutorialmatrixtranspose-label`
- * :ref:`offset-label`
+ * :ref:`tut-kernelnestedreorder-label`
+ * :ref:`tut-kernelexecpols-label`
+ * :ref:`tut-matrixmultiply-label`
+ * :ref:`tut-matrixtranspose-label`
+ * :ref:`tut-offsetlayout-label`
 
 ------------------------------------------
 Hierarchical loops (RAJA::expt::launch)
@@ -354,9 +354,9 @@ host execution.
 Please see the following tutorial sections for detailed examples that use
 ``RAJA::expt::launch``:
 
- * :ref:`launchintro-label`
- * :ref:`launchexecpols-label`
- * :ref:`tutorialmatrixtranspose-label`
+ * :ref:`tut-launchintro-label`
+ * :ref:`tut-launchexecpols-label`
+ * :ref:`tut-matrixtranspose-label`
 
 .. _loop_elements-CombiningAdapter-label:
 

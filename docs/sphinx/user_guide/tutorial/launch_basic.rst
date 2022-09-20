@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _launchintro-label:
+.. _tut-launchintro-label:
 
 ------------------------------
 ``RAJA::expt::Launch`` Basics

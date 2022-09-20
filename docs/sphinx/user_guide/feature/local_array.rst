@@ -93,7 +93,7 @@ two-dimensional and one one-dimensional and creates an instance of each type.
 The template arguments for the ``RAJA::LocalArray`` types are:
 
   * Array data type
-  * Index permutation (see :ref:`view-label` for more on RAJA permutations)
+  * Index permutation (see :ref:`feat-view-label` for more on RAJA permutations)
   * Array dimensions
 
 .. note:: ``RAJA::LocalArray`` types support arbitrary dimensions and sizes.

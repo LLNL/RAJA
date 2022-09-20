@@ -9,7 +9,7 @@
 .. _feat-scan-label:
 
 ================
-Scans
+Scan Operations
 ================
 
 RAJA provides portable parallel scan operations, which are basic
@@ -20,8 +20,8 @@ A few important notes:
 .. note:: * All RAJA scan operations are in the namespace ``RAJA``.
           * Each RAJA scan operation is a template on an *execution policy*
             parameter. The same policy types used for ``RAJA::forall`` methods
-            may be used for RAJA scans. Please see :ref:`policies-label` for
-            more information.
+            may be used for RAJA scans. Please see :ref:`feat-policies-label` 
+            for more information.
           * RAJA scan operations accept an optional *operator* argument so
             users can perform different types of scan operations. If
             no operator is given, the default is a 'plus' operation and

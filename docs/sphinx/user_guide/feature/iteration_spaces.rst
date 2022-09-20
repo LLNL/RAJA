@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _index-label:
+.. _feat-index-label:
 
 ================================
 Indices, Segments, and IndexSets
@@ -26,8 +26,8 @@ concepts and types.
 Please see the following tutorial sections for detailed examples that use
 RAJA iteration space concepts:
 
- * :ref:`indexset-label`
- * :ref:`vertexsum-label`
+ * :ref:`tut-indexset-label`
+ * :ref:`tut-vertexsum-label`
 
 .. _indices-label:
 
@@ -73,7 +73,7 @@ execution mechanisms to define the iteration space for a kernel.
           same index appears in multiple segments, the corresponding loop
           iteration will be run multiple times.
 
-Please see :ref:`indexset-label` for a detailed discussion of how to create
+Please see :ref:`tut-indexset-label` for a detailed discussion of how to create
 and use these segment types.
 
 Segment Types and Iteration

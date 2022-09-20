@@ -39,7 +39,7 @@ Currently, the main abstractions developed in RAJA so far are:
   * ``Matrix`` builds on ``Register`` to provide arbitrary-sized
     matrices, column-major and row-major layouts, and operations on them.
 
-Finally, these capabilities integrate with RAJA :ref:`view-label` 
+Finally, these capabilities integrate with RAJA :ref:`feat-view-label` 
 capabilities, which implements am expression-template system that allows 
 a user to write linear algebra expressions on arbitrarily sized scalars, 
 vectors, and matrices and have the appropriate SIMD/SIMT instructions

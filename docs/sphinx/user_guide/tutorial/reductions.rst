@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _reduction-ex-label:
+.. _tut-reduction-label:
 
 -----------------------------------------------------
 Reduction Types and Kernels with Multiple Reductions

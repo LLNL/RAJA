@@ -6,11 +6,11 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _atomics-label:
+.. _feat-atomics-label:
 
-========
-Atomics
-========
+===================
+Atomic Operations
+===================
 
 RAJA provides portable atomic operations that can be used to update values
 at arbitrary memory locations while avoiding data races. They are described
@@ -44,7 +44,7 @@ no longer be used.
 Please see the following tutorial sections for detailed examples that use
 RAJA atomic operations:
 
- * :ref:`atomichist-label`.
+ * :ref:`tut-atomichist-label`.
 
 .. _atomic-ops:
 
