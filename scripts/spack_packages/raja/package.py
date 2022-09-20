@@ -194,6 +194,8 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
         else:
             entries.append(cmake_cache_option("ENABLE_TESTS", True))
 
+        entries.append(cmake_cache_option("RAJA_HOST_CONFIG_LOADED", True))
+
         return entries
 
     def cmake_args(self):
