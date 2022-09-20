@@ -139,6 +139,9 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
                 entries.append(
                     cmake_cache_string("HIP_HIPCC_FLAGS", "--amdgpu-target={0}".format(arch_str))
                 )
+                entries.append(
+                    cmake_cache_string("CMAKE_HIP_ARCHITECTURES", arch_str)
+                )
         else:
             entries.append(cmake_cache_option("ENABLE_HIP", False))
 
