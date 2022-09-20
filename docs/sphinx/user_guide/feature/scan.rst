@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _scan-label:
+.. _feat-scan-label:
 
 ================
 Scans
@@ -20,7 +20,8 @@ A few important notes:
 .. note:: * All RAJA scan operations are in the namespace ``RAJA``.
           * Each RAJA scan operation is a template on an *execution policy*
             parameter. The same policy types used for ``RAJA::forall`` methods
-            may be used for RAJA scans. Please see :ref:`policies-label`.
+            may be used for RAJA scans. Please see :ref:`policies-label` for
+            more information.
           * RAJA scan operations accept an optional *operator* argument so
             users can perform different types of scan operations. If
             no operator is given, the default is a 'plus' operation and
@@ -34,12 +35,13 @@ Also:
           be automatically set to the location of the CUB or rocPRIM library 
           for the CUDA or rocPRIM installation specified when either back-end
           is enabled. More details for configuring the CUB or rocPRIM library 
-          with RAJA are available in the :ref:`getting_started-label` section.
+          for a RAJA build can be found here: 
+          :ref:`build-external-tpl <build-external-tpl-label>`.
 
 Please see the following tutorial sections for detailed examples that use
 RAJA scan operations:
 
- * :ref:`scan-label`.
+ * :ref:`tut-scan-label`.
 
 -----------------
 Scan Operations
@@ -95,7 +97,7 @@ scan operation above will be a *prefix-sum* since there is no operator argument
 given; i.e., the output array will contain partial sums of the input array. The
 second scan will apply the operator that is passed. Note that container
 arguments can be generated from iterators using ``RAJA::make_span(begin, len)``.
-This is shown in the examples in :ref:`scan-label`.
+This is shown in the examples in :ref:`tut-scan-label`.
 
 RAJA also provides *in-place* scans:
 
@@ -120,7 +122,7 @@ and
  * ``RAJA::exclusive_scan_inplace< exec_policy >(in_container)``
  * ``RAJA::exclusive_scan_inplace< exec_policy >(in_container, <operator>)``
 
-.. _scanops-label:
+.. _feat-scanops-label:
 
 --------------------
 RAJA Scan Operators

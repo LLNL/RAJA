@@ -865,7 +865,7 @@ object according to a memory policy. See :ref:`localarraypolicy-label` for more 
 
 RAJA provides some statement types that apply in specific kernel scenarios.
 
-* ``Reduce< ReducePolicy, Operator, ParamId, EnclosedStatements >`` reduces a value across threads in a multi-threaded code region to a single thread. The ``ReducePolicy`` is similar to what it represents for RAJA reduction types. ``ParamId`` specifies the position of the reduction value in the parameter tuple passed to the ``RAJA::kernel_param`` method. ``Operator`` is the binary operator used in the reduction; typically, this will be one of the operators that can be used with RAJA scans (see :ref:`scanops-label`). After the reduction is complete, the ``EnclosedStatements`` execute on the thread that received the final reduced value.
+* ``Reduce< ReducePolicy, Operator, ParamId, EnclosedStatements >`` reduces a value across threads in a multi-threaded code region to a single thread. The ``ReducePolicy`` is similar to what it represents for RAJA reduction types. ``ParamId`` specifies the position of the reduction value in the parameter tuple passed to the ``RAJA::kernel_param`` method. ``Operator`` is the binary operator used in the reduction; typically, this will be one of the operators that can be used with RAJA scans (see :ref:`feat-scanops-label`). After the reduction is complete, the ``EnclosedStatements`` execute on the thread that received the final reduced value.
 
 * ``If< Conditional >`` chooses which portions of a policy to run based on run-time evaluation of conditional statement; e.g., true or false, equal to some value, etc.
 

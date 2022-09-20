@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _sort-label:
+.. _tut-sort-label:
 
 --------------------------------------------------
 Parallel Sort Operations
@@ -30,7 +30,7 @@ back-ends and describe how different sort orderings can be achieved by
 passing different RAJA comparators to the RAJA sort template methods. Each 
 comparator is a template type, where the template argument is the type of 
 the values it compares. For a summary of available RAJA sorts, please see 
-:ref:`sort-label`.
+:ref:`feat-sort-label`.
 
 .. note:: RAJA sort operations use the same execution policy types that
           ``RAJA::forall`` loop execution templates do.
