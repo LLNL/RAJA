@@ -31,7 +31,7 @@ materials that provide detailed examples of usage.
    feature/resource
    feature/local_array
    feature/tiling
-   feature/plugins
    feature/workgroup
    feature/vectorization
+   feature/plugins
 

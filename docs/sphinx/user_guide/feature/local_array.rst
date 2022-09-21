@@ -106,9 +106,10 @@ with a statement type ``RAJA::statement::InitLocalMem`` inserted between the
 nested 'For' statements, which allocates the memory for the local arrays when 
 the kernel executes. The ``InitLocalMem`` statement type has two parameters.
 One for the memory type ``RAJA::cpu_tile_mem``, and one for specifying which
-parameter tuple entries correspond to the local arrays. The local
-array initialization is done in the first lambda expression, and the local
-array values are printed in the second lambda expression.
+parameter tuple entries correspond to the local arrays 
+``RAJA::ParamList<0, 1>``. The local array initialization is done in the first 
+lambda expression, and the local array values are printed in the second lambda 
+expression.
 
 .. note:: ``RAJA::LocalArray`` types support arbitrary dimensions and extents
           in each dimension.

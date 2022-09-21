@@ -158,7 +158,7 @@ The second template parameter for each
 ``RAJA::statement::ForICount`` type indicates the position in the parameter 
 tuple passed to the ``RAJA::kernel_param`` method that will hold the 
 associated local tile index. For more detailed discussion of RAJA loop tiling 
-statement types, please see :ref:`tiling-label`.
+statement types, please see :ref:`feat-tiling-label`.
 
 Now that we have described the execution policy in some detail, let's pull 
 everything together by briefly walking though the call to the 
