@@ -31,7 +31,7 @@ Also:
 
 .. note:: For scans using the CUDA or HIP back-end, RAJA implementation uses 
           the NVIDIA CUB library or AMD rocPRIM library, respectively. 
-          Typically, the CMake variable ``CUB_DIR`` or ``ROCPRIM_DIR` will 
+          Typically, the CMake variable ``CUB_DIR`` or ``ROCPRIM_DIR`` will 
           be automatically set to the location of the CUB or rocPRIM library 
           for the CUDA or rocPRIM installation specified when either back-end
           is enabled. More details for configuring the CUB or rocPRIM library 

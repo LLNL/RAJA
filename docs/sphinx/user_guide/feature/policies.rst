@@ -169,7 +169,7 @@ a template argument as described above.
                                                       schedule(runtime)'
  omp_parallel_collapse_exec             kernel        Use in Collapse statement
                                         (Collapse +   to parallelize multiple
-                                         ArgList)     loop levels in loop nest
+                                        ArgList)      loop levels in loop nest
                                                       indicated using ArgList
  ====================================== ============= ==========================
 
@@ -299,7 +299,7 @@ policies have the prefix ``hip_``.
                                                         threads in y-dimension
  cuda/hip_thread_z_loop                   kernel (For)  Same as above, but for
                                                         threads in z-dimension
- cuda/hip_flatten_block_threads_{xyz}     Launch (Loop)  Reshapes threads in a
+ cuda/hip_flatten_block_threads_{xyz}     Launch (Loop) Reshapes threads in a
                                                         multi-dimensional thread
                                                         team into one-dimension,
                                                         accepts any permutation
@@ -321,14 +321,14 @@ policies have the prefix ``hip_``.
                                                         blocks in y-dimension
  cuda/hip_block_z_loop                    kernel (For)  Same as above, but use
                                                         blocks in z-dimension
- cuda/hip_global_thread_x                 Launch (Loop)  Creates a unique thread
-                                                        id for each thread on the
-                                                        x dimension of the grid
+ cuda/hip_global_thread_x                 Launch (Loop) Creates a unique thread
+                                                        id for each thread on 
+                                                        x-dimension of the grid
                                                         (expt namespace)
- cuda/hip_global_thread_y                 Launch (Loop)  Same as above, but uses
+ cuda/hip_global_thread_y                 Launch (Loop) Same as above, but uses
                                                         threads in y-dimension
                                                         (expt namespace)
- cuda/hip_global_thread_z                 Launch (Loop)  Same as above, but uses
+ cuda/hip_global_thread_z                 Launch (Loop) Same as above, but uses
                                                         threads in z-dimension
                                                         (expt namespace)
  cuda/hip_warp_direct                     kernel (For)  Map work to threads
@@ -818,7 +818,7 @@ Statement types that launch CUDA or HIP GPU kernels are listed next. They work
 similarly for each back-end and their names are distinguished by the prefix 
 ``Cuda`` or ``Hip``. For example, ``CudaKernel`` or ``HipKernel``.
 
-* ``Cuda/HipKernel< EnclosedStatements>`` launches ``EnclosedStatements' as a GPU kernel; e.g., a loop nest where the iteration spaces of each loop level are associated with threads and/or thread blocks as described by the execution policies applied to them. This kernel launch is synchronous.
+* ``Cuda/HipKernel< EnclosedStatements>`` launches ``EnclosedStatements`` as a GPU kernel; e.g., a loop nest where the iteration spaces of each loop level are associated with threads and/or thread blocks as described by the execution policies applied to them. This kernel launch is synchronous.
 
 * ``Cuda/HipKernelAsync< EnclosedStatements>`` asynchronous version of Cuda/HipKernel.
 
@@ -838,9 +838,9 @@ similarly for each back-end and their names are distinguished by the prefix
 
 * ``Cuda/HipKernelExpAsync<num_blocks, num_threads, EnclosedStatements>`` asynchronous version of Cuda/HipKernelExp.
 
-* ``Cuda/HipSyncThreads`` invokes CUDA or HIP '__syncthreads()' barrier.
+* ``Cuda/HipSyncThreads`` invokes CUDA or HIP ``__syncthreads()`` barrier.
 
-* ``Cuda/HipSyncWarp`` invokes CUDA '__syncwarp()' barrier. **Note: warp sync is not supported, so the HIP variant is a no-op.
+* ``Cuda/HipSyncWarp`` invokes CUDA ``__syncwarp()`` barrier. Warp sync is not supported in HIP, so the HIP variant is a no-op.
 
 Statement types that launch SYCL kernels are listed next. 
 

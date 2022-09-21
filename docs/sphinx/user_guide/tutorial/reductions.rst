@@ -26,7 +26,7 @@ Key RAJA features shown in this section are:
   * ``RAJA::TypedRangeSegment`` iteration space construct
   * RAJA reduction types and reduction policies
 
-In the :ref:`dotproduct-label` exercise, we showed how to use the RAJA sum 
+In the :ref:`tut-dotproduct-label` exercise, we showed how to use the RAJA sum 
 reduction type. The following example uses all supported RAJA reduction types: 
 min, max, sum, min-loc, max-loc.
 

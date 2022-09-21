@@ -16,19 +16,19 @@ RAJA provides portable atomic operations that can be used to update values
 at arbitrary memory locations while avoiding data races. They are described
 in this section.
 
-.. note:: * All RAJA atomic operations are in the namespace ``RAJA``.
+.. note:: All RAJA atomic operations are in the namespace ``RAJA``.
 
-.. note:: * Each RAJA atomic operation is templated on an **atomic policy**.
-            The **atomic policy type must be compatible with the execution
-            policy used by the kernel in which it is used.** For example, in 
-            a CUDA kernel, a CUDA atomic policy must be used.
+.. note:: Each RAJA atomic operation is templated on an *atomic policy*
+          type, which **must be compatible with the execution policy used by 
+          the kernel in which it is used.** For example, in 
+          a CUDA kernel, a CUDA atomic policy type must be used.
 
 For more information about available RAJA atomic policies, please see
 :ref:`atomicpolicy-label`.
 
-.. note:: * RAJA support for CUDA atomic operations may be specific to
-            the compute architecture for which the code is compiled. Please 
-            see :ref:`cudaatomics-label` for more information.
+.. note:: RAJA support for CUDA atomic operations may be specific to
+          the compute architecture for which the code is compiled. Please 
+          see :ref:`cudaatomics-label` for more information.
 
 RAJA currently supports two different implementations of atomic operations
 via the same basic interface. The default implementation is the original one
@@ -54,9 +54,9 @@ Atomic Operations
 
 RAJA atomic support the most common atomic operations.
 
-.. note:: * Each atomic method described below returns the value of 
-            the potentially modified argument (i.e., \*acc) immediately before 
-            the atomic operation is applied, in case a user requires it.
+.. note:: Each atomic method described below returns the value of 
+          the potentially modified argument (i.e., \*acc) immediately before 
+          the atomic operation is applied, in case a user requires it.
 
 ^^^^^^^^^^^
 Arithmetic

@@ -12,7 +12,7 @@
 Tiled Matrix Transpose with Local Array
 -----------------------------------------
 
-This section extends the discussion in :ref:`tiledmatrixtranspose-label`
+This section extends the discussion in :ref:`tut-tiledmatrixtranspose-label`
 by adding *local array* objects which are used to store data for each tile in
 CPU stack-allocated arrays or GPU thread local and shared memory to be used 
 within kernels.
@@ -39,10 +39,10 @@ Key RAJA features shown in this example are:
   * ``RAJA::expt::loop_icount`` method to generate local tile indices for Launch
   * ``RAJA_TEAM_SHARED`` macro for thread-local tile memory arrays
 
-As in :ref:`tiledmatrixtranspose-label`, this example computes the transpose 
-of an input matrix :math:`A` of size :math:`N_r \times N_c` and stores the 
-result in a second matrix :math:`At` of size :math:`N_c \times N_r`. The 
-operation uses a local memory tiling algorithm. The algorithm tiles the outer 
+As in :ref:`tut-tiledmatrixtranspose-label`, this example computes the 
+transpose of an input matrix :math:`A` of size :math:`N_r \times N_c` and 
+stores the result in a second matrix :math:`At` of size :math:`N_c \times N_r`.
+The operation uses a local memory tiling algorithm, which tiles the outer 
 loops and iterates over tiles in inner loops. The algorithm first loads 
 input matrix entries into a local two-dimensional array for a tile, and then 
 reads from the tile swapping the row and column indices to generate the output 
@@ -50,9 +50,10 @@ matrix.
 
 We choose tile dimensions smaller than the dimensions of the matrix and note 
 that it is not necessary for the tile dimensions to divide evenly the number
-of rows and columns in the matrix. As in the :ref:`tiledmatrixtranspose-label`
-example, we start by defining the number of rows and columns in the matrices, 
-the tile dimensions, and the number of tiles.
+of rows and columns in the matrix. As in the 
+:ref:`tut-tiledmatrixtranspose-label` example, we start by defining the number 
+of rows and columns in the matrices, the tile dimensions, and the number of 
+tiles.
 
 .. literalinclude:: ../../../../exercises/kernel-matrix-transpose-local-array_solution.cpp
    :start-after: // _mattranspose_localarray_dims_start
@@ -60,7 +61,7 @@ the tile dimensions, and the number of tiles.
    :language: C++
 
 We also use RAJA View objects to simplify the multi-dimensional indexing
-as in the :ref:`tiledmatrixtranspose-label` example.
+as in the :ref:`tut-tiledmatrixtranspose-label` example.
 
 .. literalinclude:: ../../../../exercises/kernel-matrix-transpose-local-array_solution.cpp
    :start-after: // _mattranspose_localarray_views_start
@@ -145,7 +146,7 @@ and ``RAJA::statement::Lambda<1>`` for the second lambda argument.
 
 Note that the loops within tiles use ``RAJA::statement::ForICount`` types 
 rather than ``RAJA::statement::For`` types that we saw in the 
-tiled matrix transpose example in :ref:`tiledmatrixtranspose-label`.
+tiled matrix transpose example in :ref:`tut-tiledmatrixtranspose-label`.
 The ``RAJA::statement::ForICount`` type generates local tile indices that 
 are passed to lambda loop body expressions to index into the local tile
 memory array. As the reader will observe, there is no local tile index 

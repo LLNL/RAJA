@@ -123,30 +123,30 @@ If you are on a multi-core system, you can compile in parallel by
 running ``make -j`` (to build with all available cores) or ``make -j N`` to 
 build using N cores.
 
-.. note:: * RAJA is configured to build its tests, examples, and tutorial
-            exercises by default. If you do not disable them with the 
-            appropriate CMake option (please see :ref:`configopt-label`), 
-            you can run them after the build completes to check if everything 
-            is built properly.
+.. note:: RAJA is configured to build its tests, examples, and tutorial
+          exercises by default. If you do not disable them with the 
+          appropriate CMake option (please see :ref:`configopt-label`), 
+          you can run them after the build completes to check if everything 
+          is built properly.
 
-            The easiest way to run the full set of RAJA tests is to type::
+          The easiest way to run the full set of RAJA tests is to type::
 
-               $ make test
+             $ make test
 
-            in the build directory after the build completes.
+          in the build directory after the build completes.
 
-            You can also run individual tests by invoking test 
-            executables directly. They will be located in the ``test`` 
-            subdirectory in the build space. RAJA tests use the 
-            `Google Test framework <https://github.com/google/googletest>`_, 
-            so you can also run and filter tests via Google Test commands.
+          You can also run individual tests by invoking test 
+          executables directly. They will be located in the ``test`` 
+          subdirectory in the build space. RAJA tests use the 
+          `Google Test framework <https://github.com/google/googletest>`_, 
+          so you can also run and filter tests via Google Test commands.
 
-            The source files for RAJA examples and exercises are located in 
-            the ``RAJA/examples`` and ``RAJA/exercises`` directories, 
-            respectively. When built, the executables for the examples and 
-            exercises will be located in the ``bin`` subdirectory in the build 
-            space. Feel free to experiment by editing the source files,
-            recompiling, and running with your changes. 
+          The source files for RAJA examples and exercises are located in 
+          the ``RAJA/examples`` and ``RAJA/exercises`` directories, 
+          respectively. When built, the executables for the examples and 
+          exercises will be located in the ``bin`` subdirectory in the build 
+          space. Feel free to experiment by editing the source files,
+          recompiling, and running with your changes. 
 
 .. _build-external-tpl-label:
 
@@ -220,14 +220,14 @@ can be used with older versions of CUDA. To use an external CUB install
 provide the following option to CMake:
 ``-DRAJA_ENABLE_EXTERNAL_CUB=On -DCUB_DIR=<path/to/cub>``.
 
-.. note:: **It is important to note that the CUDA toolkit version of cub is
+.. note:: It is important to note that the CUDA toolkit version of cub is
           required for compatibility with the CUDA toolkit version of thrust
           starting with CUDA toolkit version v11.0.0. So, if you build
           RAJA with CUDA version 11 or higher you should use the version of
           CUB contained in the CUDA toolkit version you are using to use 
           Thrust and be compatible with libraries that use Thrust.
 
-          *It is important to note that the version of Googletest that
+.. note:: It is important to note that the version of Googletest that
           is used in RAJA version v0.11.0 or newer requires CUDA version
           9.2.x or newer when compiling with nvcc. Thus, if you build
           RAJA with CUDA enabled and want to also enable RAJA tests, you

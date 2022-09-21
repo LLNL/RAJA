@@ -12,13 +12,13 @@
 Matrix Transpose
 ----------------------
 
-In :ref:`kernelexecpols-label` and :ref:`launchexecpols-label` we presented
-a simple array initialization kernel using ``RAJA::kernel`` and 
-``RAJA::expt::launch`` interfaces, respectively, and discussed some
-comparisons of the two. This section describes the implementation of a 
-matrix transpose kernel using both ``RAJA::kernel`` and ``RAJA::expt::launch`` 
-interfaces. The intent is to compare and contrast the two, as well as introduce
-additional features of the interfaces.
+In :ref:`tut-kernelexecpols-label` and :ref:`tut-launchexecpols-label`,
+we presented a simple array initialization kernel using ``RAJA::kernel`` and 
+``RAJA::expt::launch`` interfaces, respectively, and compared the two. This 
+section describes the implementation of a matrix transpose kernel using both 
+``RAJA::kernel`` and ``RAJA::expt::launch`` interfaces. The intent is to 
+compare and contrast the two, as well as introduce additional features of the 
+interfaces.
 
 There are exercise files 
 ``RAJA/exercises/kernel-matrix-transpose.cpp`` and

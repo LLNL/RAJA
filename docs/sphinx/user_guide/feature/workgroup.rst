@@ -22,16 +22,14 @@ that the RAJA workgroup constructs API is still being developed and may change i
 releases.
 
 .. note:: * All **workgroup** constructs are in the namespace ``RAJA``.
-          * The ``RAJA::WorkPool``, ``RAJA::WorkGroup``, and ``RAJA::WorkSite`` class templates
-            are templated on:
+          * The ``RAJA::WorkPool``, ``RAJA::WorkGroup``, and ``RAJA::WorkSite`` class templates are templated on:
               * a WorkGroup policy which is composed of:
                   * a work execution policy.
                   * a work ordering policy.
                   * a work storage policy.
                   * a work dispatch policy.
               * an index type that is the first argument to the loop bodies.
-              * a list of extra argument types that are the rest of the arguments to
-                the loop bodies.
+              * a list of extra argument types that are the rest of the arguments to the loop bodies.
               * an allocator type to be used for the memory used to store and
                 manage the loop bodies.
           * The ``RAJA::WorkPool::enqueue`` method takes two arguments:
@@ -99,25 +97,24 @@ The work ordering policy acts like the segment iteration execution policies when
 ``RAJA::forall`` is used with a ``RAJA::IndexSet`` and determines the backend
 used when iterating over the loops and the parallelism between each loop.
 
- ====================================== ========================================
- Work Ordering Policies                 Brief description
- ====================================== ========================================
- ordered                                Execute loops sequentially in the order
-                                        they were enqueued using forall.
- reverse_ordered                        Execute loops sequentially in the
-                                        reverse of the order order they were
-                                        enqueued using forall.
- unordered_cuda_loop_y_block_iter_x_threadblock_average
-                                        Execute loops in parallel by mapping
-                                        each loop to a set of cuda blocks with
-                                        the same index in the y direction in
-                                        a cuda kernel. Each loop is given a
-                                        number of threads over one of more
-                                        blocks in the x direction equal to the
-                                        average number of iterations of all the
-                                        loops rounded up to a multiple of the
-                                        block size.
- ====================================== ========================================
+ ======================================================= ========================================
+ Work Ordering Policies                                  Brief description
+ ======================================                  ========================================
+ ordered                                                 Execute loops sequentially in the order
+                                                         they were enqueued using forall.
+ reverse_ordered                                         Execute loops sequentially in the
+                                                         reverse of the order order they were
+                                                         enqueued using forall.
+ unordered_cuda_loop_y_block_iter_x_threadblock_average  Execute loops in parallel by mapping
+                                                         each loop to a set of cuda blocks with
+                                                         the same index in the y direction in
+                                                         a cuda kernel. Each loop is given a
+                                                         number of threads over one of more
+                                                         blocks in the x direction equal to the
+                                                         average number of iterations of all the
+                                                         loops rounded up to a multiple of the
+                                                         block size.
+ ======================================                  ========================================
 
 The work storage policy determines the strategy used to allocate and layout the
 storage used to store the ranges, loop bodies, and other data necessary to

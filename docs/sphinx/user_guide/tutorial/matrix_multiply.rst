@@ -192,8 +192,8 @@ the outer loop is now the 'col' loop and is still sequential:
           and others, can be done by switching the ``RAJA::KernelPolicy`` 
           type with no changes to the loop kernel code.
 
-In :ref:`kernelnestedreorder-label`, we provide a more detailed discussion of the
-mechanics of loop nest reordering. Next, we show other variations of the 
+In :ref:`tut-kernelnestedreorder-label`, we provide a more detailed discussion 
+of the mechanics of loop nest ordering. Next, we show other variations of the 
 matrix multiplication kernel that illustrate other ``RAJA::kernel`` features. 
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -327,7 +327,8 @@ The analogous HIP policy is:
    :end-before: _matmult_3lambdakernel_hiptiled_end
    :language: C++
 
-In :ref:`tiledmatrixtranspose-label` and :ref:`matrixtransposelocalarray-label`,
+In :ref:`tu-tiledmatrixtranspose-label` and 
+:ref:`tut-matrixtransposelocalarray-label`,
 we will discuss loop tiling in more detail including how it can be used to 
 improve performance of certain algorithms.
 

@@ -12,13 +12,14 @@
 ``RAJA::kernel`` Execution Policies
 -----------------------------------------------------------
 
-This section contains an exercise file ``RAJA/exercises/kernelintro-execpols.cpp``
-for you to work through if you wish to get some practice with RAJA. The
-file ``RAJA/exercises/kernelintro-execpols_solution.cpp`` contains
+This section contains an exercise file 
+``RAJA/exercises/kernelintro-execpols.cpp`` for you to work through if you 
+wish to get some practice with RAJA. The file 
+``RAJA/exercises/kernelintro-execpols_solution.cpp`` contains
 complete working code for the examples discussed in this section. You can use
 the solution file to check your work and for guidance if you get stuck. To build
-the exercises execute ``make kernelintro-execpols`` and ``make kernelintro-execpols_solution``
-from the build directory.
+the exercises execute ``make kernelintro-execpols`` and 
+``make kernelintro-execpols_solution`` from the build directory.
 
 Key RAJA features shown in this section are:
 
@@ -33,10 +34,10 @@ The C++ lambda expression representing the kernel inner loop body is identical
 for all kernel variants described here, whether we are executing the kernel 
 on a CPU sequentially or in parallel with OpenMP, or in parallel on a GPU 
 (CUDA or HIP). The kernels perform the same operations as the examples in the
-:ref:`launchexecpols-label` tutorial section, which uses ``RAJA::expt::launch``.
-By comparing the two sets of examples, you will gain an understanding of the
-differences between the ``RAJA::kernel`` and the ``RAJA::expt::launch`` 
-interfaces.
+:ref:`tut-launchexecpols-label` tutorial section, which uses 
+``RAJA::expt::launch``. By comparing the two sets of examples, you will gain 
+an understanding of the differences between the ``RAJA::kernel`` and the 
+``RAJA::expt::launch`` interfaces.
 
 We begin by defining some constants used throughout the examples and 
 allocating two arrays:
@@ -94,7 +95,7 @@ The corresponding RAJA sequential version using ``RAJA::kernel`` is:
    :language: C++
 
 This should be familiar to the reader who has read the preceding
-:ref:`kernelnestedreorder-label` section of this tutorial.
+:ref:`tut-kernelnestedreorder-label` section of this tutorial.
 
 Suppose we wanted to parallelize the outer 'k' loop using OpenMP multithreading.
 A C-style version of this is:
