@@ -193,6 +193,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<int, RAJA::Layout<DIM>> A_(d_a, N_r, N_c);
   RAJA::View<int, RAJA::Layout<DIM>> At_(d_at, N_c, N_r);
 
+  /*
   using launch_policy =
     RAJA::expt::LaunchPolicy<
 #if defined(RAJA_DEVICE_ACTIVE)
@@ -227,17 +228,34 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::loop_exec,
 #endif
       RAJA::sycl_group_1_direct>;
+  */
+
+    using launch_policy =
+    RAJA::expt::LaunchPolicy<
+      RAJA::expt::sycl_launch_t<false>>;
+
+  using inner0 =
+    RAJA::expt::LoopPolicy<RAJA::sycl_local_0_direct>;
+
+  using inner1 =
+    RAJA::expt::LoopPolicy<RAJA::sycl_local_1_direct>;
+
+  using outer0 =
+    RAJA::expt::LoopPolicy<RAJA::sycl_group_0_direct>;
+
+  using outer1 =
+    RAJA::expt::LoopPolicy<RAJA::sycl_group_1_direct>;
+
 
 
    //This kernel will require the following amount of shared memory
-   const size_t shared_memory = 2*TILE_DIM*TILE_DIM*sizeof(int);
+   const size_t shared_memory_size = 2*TILE_DIM*TILE_DIM*sizeof(int);
 
    //move shared memory arg to launch 2nd arg
    RAJA::expt::launch<launch_policy>
-     (RAJA::expt::DEVICE,
+     (shared_memory_size,
       RAJA::expt::Grid(RAJA::expt::Teams(outer_Dimc, outer_Dimr),
-		       RAJA::expt::Threads(TILE_DIM, TILE_DIM),
-		       shared_memory),
+		       RAJA::expt::Threads(TILE_DIM, TILE_DIM)),
       [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
        RAJA::expt::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){

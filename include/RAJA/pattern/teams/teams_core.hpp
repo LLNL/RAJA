@@ -28,7 +28,8 @@
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
-#if defined(RAJA_DEVICE_CODE)
+#if defined(RAJA_DEVICE_CODE) && !defined(RAJA_ENABLE_SYCL)
+RAJA_DEPRECATE("RAJA_TEAM_SHARED is not supported with SYCL, please use dyanmic shared mem")
 #define RAJA_TEAM_SHARED __shared__
 #else
 #define RAJA_TEAM_SHARED
@@ -134,14 +135,13 @@ public:
   Threads threads;
   Lanes lanes;
   const char *kernel_name{nullptr};
-  size_t shared_mem_size; //In bytes
+  //size_t shared_mem_size; //In bytes
 
   RAJA_INLINE
   Grid() = default;
 
-  Grid(Teams in_teams, Threads in_threads, size_t shared_mem_size_ = 0, const char *in_kernel_name = nullptr)
-    : teams(in_teams), threads(in_threads), shared_mem_size(shared_mem_size_),
-      kernel_name(in_kernel_name){};
+  Grid(Teams in_teams, Threads in_threads, const char *in_kernel_name = nullptr)
+    : teams(in_teams), threads(in_threads), kernel_name(in_kernel_name){};
 
 private:
   RAJA_HOST_DEVICE
@@ -220,29 +220,29 @@ struct LaunchExecute;
 
 //Policy based launch
 template <typename LAUNCH_POLICY, typename BODY>
-void launch(Grid const &grid, BODY const &body)
+void launch(size_t shared_mem, Grid const &grid, BODY const &body)
 {
   //Take the first policy as we assume the second policy is not user defined.
   //We rely on the user to pair launch and loop policies correctly.
   using launch_t = LaunchExecute<typename LAUNCH_POLICY::host_policy_t>;
-  launch_t::exec(LaunchContext(grid), body);
+  launch_t::exec(shared_mem, LaunchContext(grid), body);
 }
 
 
 //Run time based policy launch
 template <typename POLICY_LIST, typename BODY>
-void launch(ExecPlace place, Grid const &grid, BODY const &body)
+void launch(size_t shared_mem,ExecPlace place, Grid const &grid, BODY const &body)
 {
   switch (place) {
     case HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      launch_t::exec(LaunchContext(grid), body);
+      launch_t::exec(shared_mem, LaunchContext(grid), body);
       break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
     case DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      launch_t::exec(LaunchContext(grid), body);
+      launch_t::exec(shared_mem, LaunchContext(grid), body);
       break;
     }
 #endif
@@ -271,7 +271,7 @@ RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::expt::ExecPlace de
 //Launch API which takes team resource struct
 template <typename POLICY_LIST, typename BODY>
 resources::EventProxy<resources::Resource>
-launch(RAJA::resources::Resource res, Grid const &grid, BODY const &body)
+launch(RAJA::resources::Resource res, size_t shared_mem, Grid const &grid, BODY const &body)
 {
 
   ExecPlace place;
@@ -284,12 +284,12 @@ launch(RAJA::resources::Resource res, Grid const &grid, BODY const &body)
   switch (place) {
     case HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      return launch_t::exec(res, LaunchContext(grid), body); break;
+      return launch_t::exec(res, shared_mem, LaunchContext(grid), body); break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
     case DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      return launch_t::exec(res, LaunchContext(grid), body); break;
+      return launch_t::exec(res, shared_mem, LaunchContext(grid), body); break;
     }
 #endif
     default: {

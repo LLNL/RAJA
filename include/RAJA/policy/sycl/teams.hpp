@@ -37,7 +37,7 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
   //If the launch lambda is trivially copyable
   template <typename BODY_IN,
 	    typename std::enable_if<std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
-  static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
+  static void exec(size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
   {
 
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
@@ -68,7 +68,7 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
       q->submit([&](cl::sycl::handler& h) {
 
         auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
-                                        cl::sycl::access::target::local> (ctx.shared_mem_size, h);
+                                        cl::sycl::access::target::local> (shared_mem_size, h);
 
         h.parallel_for
           (cl::sycl::nd_range<3>(gridSize, blockSize),
@@ -94,7 +94,7 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
   //If the launch lambda is not trivially copyable
   template <typename BODY_IN,
 	    typename std::enable_if<!std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
-  static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
+  static void exec(size_t shared_mem, LaunchContext const &ctx, BODY_IN &&body_in)
   {
 
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
@@ -170,7 +170,7 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
   template <typename BODY_IN,
 	    typename std::enable_if<std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY_IN &&body_in)
+  exec(RAJA::resources::Resource res, size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
   {
 
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
@@ -206,7 +206,7 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
       q->submit([&](cl::sycl::handler& h) {
 
         auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
-                                        cl::sycl::access::target::local> (ctx.shared_mem_size, h);
+                                        cl::sycl::access::target::local> (shared_mem_size, h);
 
         h.parallel_for
           (cl::sycl::nd_range<3>(gridSize, blockSize),
@@ -234,7 +234,7 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
   template <typename BODY_IN,
 	    typename std::enable_if<!std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY_IN &&body_in)
+  exec(RAJA::resources::Resource res, size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
   {
 
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
@@ -281,7 +281,7 @@ struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
       q->submit([&](cl::sycl::handler& h) {
 
         auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
-                                        cl::sycl::access::target::local> (ctx.shared_mem_size, h);
+                                        cl::sycl::access::target::local> (shared_mem_size, h);
 
         h.parallel_for
           (cl::sycl::nd_range<3>(gridSize, blockSize),
@@ -330,11 +330,11 @@ struct LoopExecute<sycl_global_item<DIM>, SEGMENT> {
 
     const int len = segment.end() - segment.begin();
     {
-      //const int tx =
-        //ctx.itm->get_group(DIM) * ctx.itm->get_local_range(DIM) +
-        //ctx.itm->get_local_id(DIM);
+      const int tx =
+        ctx.itm->get_group(DIM) * ctx.itm->get_local_range(DIM) +
+        ctx.itm->get_local_id(DIM);
 
-      //if (tx < len) body(*(segment.begin() + tx));
+      if (tx < len) body(*(segment.begin() + tx));
     }
   }
 };
