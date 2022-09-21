@@ -99,7 +99,7 @@ used when iterating over the loops and the parallelism between each loop.
 
  ======================================================= ========================================
  Work Ordering Policies                                  Brief description
- ======================================                  ========================================
+ ======================================================= ========================================
  ordered                                                 Execute loops sequentially in the order
                                                          they were enqueued using forall.
  reverse_ordered                                         Execute loops sequentially in the
@@ -114,7 +114,7 @@ used when iterating over the loops and the parallelism between each loop.
                                                          average number of iterations of all the
                                                          loops rounded up to a multiple of the
                                                          block size.
- ======================================                  ========================================
+ ======================================================= ========================================
 
 The work storage policy determines the strategy used to allocate and layout the
 storage used to store the ranges, loop bodies, and other data necessary to
@@ -203,14 +203,14 @@ policies::
 
   using Allocator = std::allocator<char>;
 
-.. note:: * The allocator type must use template argument char.
+.. note:: * The allocator type must use template argument ``char``.
           * Allocators must provide memory that is accessible where it is used.
               * Ordered work order policies only require memory that is accessible
                 where loop bodies are enqueued.
               * Unordered work order policies require memory that is accessible
                 from both where the loop bodies are enqueued and from where the
                 loop is executed based on the work execution policy.
-                  * For example when using cuda work exeution policies with cuda
+                  * For example when using cuda work exeution policies with CUDA
                     unordered work order policies pinned memory is a good choice
                     because it is always accessible on the host and device.
 

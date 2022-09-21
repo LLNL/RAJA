@@ -251,7 +251,7 @@ int main(int argc, char **argv)
   std::vector<int*> unpack_index_lists(num_neighbors, nullptr);
   std::vector<int > unpack_index_list_lengths(num_neighbors, 0);
   create_unpack_lists(unpack_index_lists, unpack_index_list_lengths, halo_width, grid_dims);
-  // _halo_exchange_index_list_generatete_end
+  // _halo_exchange_index_list_generate_end
 
 
   //
