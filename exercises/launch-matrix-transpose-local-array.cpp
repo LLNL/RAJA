@@ -290,7 +290,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const bool cuda_async = false;
   using cuda_launch_policy = RAJA::expt::LaunchPolicy<RAJA::expt::cuda_launch_t<cuda_async>>;
 
-  RAJA::expt::launch<cuda_launch_policy>(
+  RAJA::expt::launch<cuda_launch_policy>(dynamic_shared_mem,
     RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_c, n_blocks_r),
                      RAJA::expt::Threads(c_block_sz, r_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext /*ctx*/) {

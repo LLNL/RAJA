@@ -45,7 +45,7 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 1>> {
 // cuda_launch_t num_threads set to 1, but not used in launch of kernel
 
   template <typename BODY_IN>
-  static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
+  static void exec(size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -98,7 +98,7 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 1>> {
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY_IN &&body_in)
+  exec(RAJA::resources::Resource res, size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -169,7 +169,7 @@ template <bool async, int nthreads, size_t BLOCKS_PER_SM>
 struct LaunchExecute<RAJA::policy::cuda::expt::cuda_launch_explicit_t<async, nthreads, BLOCKS_PER_SM>> {
 
   template <typename BODY_IN>
-  static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
+  static void exec(size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -222,7 +222,7 @@ struct LaunchExecute<RAJA::policy::cuda::expt::cuda_launch_explicit_t<async, nth
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY_IN &&body_in)
+  exec(RAJA::resources::Resource res, size_t shared_mem_size_t, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 

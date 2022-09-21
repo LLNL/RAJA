@@ -250,7 +250,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_3 = RAJA::expt::LaunchPolicy<RAJA::expt::cuda_launch_t<async_3>>;
 
   RAJA::expt::launch<launch_policy_3>
-    (RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_i ,n_blocks_j, n_blocks_k),
+    (dynamic_shared_mem, RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_i ,n_blocks_j, n_blocks_k),
                       RAJA::expt::Threads(i_block_sz, j_block_sz, k_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
@@ -288,7 +288,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_4 = RAJA::expt::LaunchPolicy<RAJA::expt::cuda_launch_t<async_4>>;
 
   RAJA::expt::launch<launch_policy_4>
-    (RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
+    (dynamic_shared_mem, RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
                       RAJA::expt::Threads(i_block_sz, j_block_sz, k_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 

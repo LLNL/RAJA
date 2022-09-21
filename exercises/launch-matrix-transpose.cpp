@@ -192,7 +192,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const bool async = false; //execute asynchronously
   using launch_policy_cuda = RAJA::expt::LaunchPolicy<RAJA::expt::cuda_launch_t<async>>;
 
-  RAJA::expt::launch<launch_policy_cuda>(
+  RAJA::expt::launch<launch_policy_cuda>(dynamic_shared_mem,
     RAJA::expt::Grid(RAJA::expt::Teams(1), RAJA::expt::Threads(16,16)),
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
