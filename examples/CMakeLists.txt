@@ -20,6 +20,10 @@ raja_add_executable(
   SOURCES sycl_mat_transpose.cpp)
 
 raja_add_executable(
+  NAME dynamic_mat_transpose
+  SOURCES dynamic_mat_transpose.cpp)
+
+raja_add_executable(
   NAME tut_matrix-multiply
   SOURCES tut_matrix-multiply.cpp)
 
