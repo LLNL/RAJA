@@ -70,6 +70,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   constexpr int N = 100;
   constexpr int N_tot = N * N * N;
   constexpr double c = 0.0001;
+  const size_t dynamic_shared_mem = 0;
   double* a = memoryManager::allocate<double>(N_tot);
   double* a_ref = memoryManager::allocate<double>(N_tot);
 // _init_define_end
@@ -127,7 +128,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_1 = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
 
   RAJA::expt::launch<launch_policy_1>
-    (RAJA::expt::Grid(), //Grid may be empty when running on the host
+    (dynamic_shared_mem, RAJA::expt::Grid(), //Grid may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::loop<loop_policy_1>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int k) {
@@ -181,7 +182,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_2 = RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t>;
 
   RAJA::expt::launch<launch_policy_2>
-    (RAJA::expt::Grid(), //Grid may be empty when running on the host
+    (dynamic_shared_mem, RAJA::expt::Grid(), //Grid may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::loop<omp_policy_2>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int k) {

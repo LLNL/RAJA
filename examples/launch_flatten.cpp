@@ -66,6 +66,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   constexpr int NN = N*N;
 
   //
+  // dynamic shared memory used in kernel
+  //
+  constexpr size_t dynamic_shared_mem = 0;
+
+  //
   // Configure grid size
   //
   RAJA::expt::Grid grid(RAJA::expt::Teams(1),
@@ -97,9 +102,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<int, RAJA::Layout<2>> d_A_2DView(d_A_ptr, N, N);
   RAJA::View<int, RAJA::Layout<1>> d_A_1DView(d_A_ptr, NN);
 
-
   RAJA::expt::launch<device_launch>
-    (grid, [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
+    (dynamic_shared_mem, grid, [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
      {
 
        RAJA::expt::loop<device_inner_pol1>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
@@ -127,7 +131,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<int, RAJA::Layout<1>> h_A_1DView(h_A_ptr, NN);
 
   RAJA::expt::launch<host_launch>
-    (grid, [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
+    (dynamic_shared_mem, grid, [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
     {
 
        RAJA::expt::loop<host_loop>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {

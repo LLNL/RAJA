@@ -70,6 +70,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   constexpr int TILE_DIM = 16;
 
+  constexpr size_t dynamic_shared_mem = 0;
+
   constexpr int outer_Dimc = (N_c - 1) / TILE_DIM + 1;
   constexpr int outer_Dimr = (N_r - 1) / TILE_DIM + 1;
   // _tiled_mattranspose_dims_end
@@ -163,7 +165,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_1 = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
 
   RAJA::expt::launch<launch_policy_1>(
-    RAJA::expt::Grid(), //Grid may be empty when running on the cpu
+    dynamic_shared_mem, RAJA::expt::Grid(), //Grid may be empty when running on the cpu
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::tile<loop_pol_1>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
@@ -202,7 +204,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_2 = RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t>;
 
   RAJA::expt::launch<launch_policy_2>(
-    RAJA::expt::Grid(), //Grid may be empty when running on the cpu
+    dynamic_shared_mem, RAJA::expt::Grid(), //Grid may be empty when running on the cpu
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::tile<omp_for_pol_2>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {

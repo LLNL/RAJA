@@ -35,6 +35,7 @@ void TeamsRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
   constexpr int threads = 256;
   int blocks = (data_len - 1)/threads + 1;
+  constexpr size_t dynamic_shared_mem = 0;
 
   if ( RAJA::stripIndexType(N) > 0 ) {
 
@@ -43,7 +44,7 @@ void TeamsRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
     std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
 
     RAJA::expt::launch<LAUNCH_POLICY>
-      (RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
+      (dynamic_shared_mem, RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
   
         RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
@@ -58,7 +59,7 @@ void TeamsRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
     working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
     RAJA::expt::launch<LAUNCH_POLICY>
-      (RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
+      (dynamic_shared_mem, RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
   
         RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {

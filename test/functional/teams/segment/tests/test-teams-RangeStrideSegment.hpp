@@ -42,6 +42,8 @@ void TeamsRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
   constexpr int threads = 256;
   int blocks = (data_len - 1)/threads + 1;
 
+  const size_t dynamic_shared_mem = 0;
+
   if ( RAJA::stripIndexType(N) > 0 ) {
 
     INDEX_TYPE idx = first;
@@ -49,9 +51,9 @@ void TeamsRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
       test_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
       idx += stride; 
     }
-
+    
     RAJA::expt::launch<LAUNCH_POLICY>
-      (RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
+      (dynamic_shared_mem, RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
   
         RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
@@ -63,7 +65,7 @@ void TeamsRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
   } else { // zero-length segment
 
     RAJA::expt::launch<LAUNCH_POLICY>
-      (RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
+      (dynamic_shared_mem, RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
   
         RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {

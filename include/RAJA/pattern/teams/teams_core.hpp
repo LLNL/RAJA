@@ -29,7 +29,6 @@
 #include "camp/tuple.hpp"
 
 #if defined(RAJA_DEVICE_CODE) && !defined(RAJA_ENABLE_SYCL)
-RAJA_DEPRECATE("RAJA_TEAM_SHARED is not supported with SYCL, please use dyanmic shared mem")
 #define RAJA_TEAM_SHARED __shared__
 #else
 #define RAJA_TEAM_SHARED
@@ -231,7 +230,7 @@ void launch(size_t shared_mem, Grid const &grid, BODY const &body)
 
 //Run time based policy launch
 template <typename POLICY_LIST, typename BODY>
-void launch(size_t shared_mem,ExecPlace place, Grid const &grid, BODY const &body)
+void launch(ExecPlace place, size_t shared_mem, Grid const &grid, BODY const &body)
 {
   switch (place) {
     case HOST: {

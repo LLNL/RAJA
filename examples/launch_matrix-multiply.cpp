@@ -220,6 +220,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int NTeams = (N - 1)/THREAD_SZ + 1;
 
 //
+// Dynamic shared memory size for kernel
+//
+  const size_t dynamic_shared_mem = 0;
+
+//
 // Allocate and initialize matrix data.
 //
   double *A = memoryManager::allocate<double>(N * N);
@@ -320,7 +325,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //two for loops.
 
   // _matmult_basickernel_start
-  RAJA::expt::launch<launch_policy>(RAJA::expt::HOST,
+  RAJA::expt::launch<launch_policy>(RAJA::expt::HOST, dynamic_shared_mem,
    RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
                          RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
@@ -361,7 +366,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using omp_row_policy0 = RAJA::expt::LoopPolicy<loop_policy>;
 
-  RAJA::expt::launch<omp_launch_policy>(RAJA::expt::Grid(),
+  RAJA::expt::launch<omp_launch_policy>(dynamic_shared_mem, RAJA::expt::Grid(),
        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
    RAJA::expt::loop<omp_col_policy0>(ctx, col_range, [&] (int col) {
@@ -394,6 +399,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using global_thread_xy = RAJA::expt::LoopPolicy<RAJA::omp_for_exec>;
 
    RAJA::expt::launch<omp_launch_policy>(RAJA::expt::HOST,
+                                         dynamic_shared_mem,
                                          RAJA::expt::Grid(),
    [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
@@ -431,9 +437,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // and col = threadIdx.x in the kernel.
   //
   //
-   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
-    RAJA::expt::Grid(RAJA::expt::Teams(N),
-                          RAJA::expt::Threads(N)),
+   RAJA::expt::launch<launch_policy>
+     (RAJA::expt::DEVICE, dynamic_shared_mem,
+      RAJA::expt::Grid(RAJA::expt::Teams(N),
+                       RAJA::expt::Threads(N)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
     RAJA::expt::loop<teams_x>(ctx, col_range, [&] (int col) {
@@ -468,6 +475,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // The tiling capabilities in RAJA will also mask out of bounds iterations.
   //
   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
+                                    dynamic_shared_mem,                                    
     RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
                           RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
@@ -528,8 +536,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   //
    RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
-    RAJA::expt::Grid(RAJA::expt::Teams(N),
-                          RAJA::expt::Threads(N)),
+                                     dynamic_shared_mem,
+        RAJA::expt::Grid(RAJA::expt::Teams(N),
+                         RAJA::expt::Threads(N)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
      RAJA::expt::loop<teams_x>(ctx, col_range, [&] (int col) {
@@ -568,6 +577,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // The tiling capabilities in RAJA will also mask out of bounds iterations.
   //
   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
+                                    dynamic_shared_mem,
     RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
                           RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
@@ -617,6 +627,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // to add a barrier ensuring all threads have loaded/read from shared memory
   //
   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
+                                    dynamic_shared_mem,
     RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
                           RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
      [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {

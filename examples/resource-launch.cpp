@@ -19,6 +19,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   constexpr int N = 10;
   constexpr int M = 1000000;
 
+  const size_t dynamic_shared_mem = 0;
+
   RAJA::resources::Cuda def_cuda_res{RAJA::resources::Cuda::get_default()};
   RAJA::resources::Host def_host_res{RAJA::resources::Host::get_default()};
   int* d_array = def_cuda_res.allocate<int>(N*M);
@@ -40,7 +42,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::resources::Cuda res_cuda;
 
       RAJA::resources::Event e =
-        RAJA::expt::launch<launch_policy>(res_cuda,
+        RAJA::expt::launch<launch_policy>(res_cuda, dynamic_shared_mem,
         RAJA::expt::Grid(RAJA::expt::Teams(64),
                          RAJA::expt::Threads(1), "RAJA Launch kernel"),
       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx)  {

@@ -55,6 +55,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _mattranspose_dims_start
   constexpr int N_r = 56;
   constexpr int N_c = 75;
+  constexpr size_t dynamic_shared_mem = 0;
   // _mattranspose_dims_end
 
   //
@@ -125,7 +126,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_seq = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
 
   RAJA::expt::launch<launch_policy_seq>(
-    RAJA::expt::Grid(), //Grid may be empty when running on the host
+    dynamic_shared_mem, RAJA::expt::Grid(), //Grid may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::loop<loop_policy_seq>(ctx, row_Range, [&] (int row) {
@@ -155,7 +156,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_omp = RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t>;
 
   RAJA::expt::launch<launch_policy_omp>(
-    RAJA::expt::Grid(), //Grid may be empty when running on the host
+    dynamic_shared_mem, RAJA::expt::Grid(), //Grid may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
 
       RAJA::expt::loop<loop_policy_omp>(ctx, row_Range, [&] (int row) {

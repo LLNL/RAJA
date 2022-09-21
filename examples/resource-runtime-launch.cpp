@@ -172,8 +172,8 @@ int main(int argc, char *argv[])
   
   //How the kernel executes now depends on how the resource is constructed (host or device)
   RAJA::expt::launch<launch_policy>
-    (res, RAJA::expt::Grid(RAJA::expt::Teams(GRID_SZ),
-                           RAJA::expt::Threads(TEAM_SZ), shared_mem,
+    (res, shared_mem, RAJA::expt::Grid(RAJA::expt::Teams(GRID_SZ),
+                           RAJA::expt::Threads(TEAM_SZ),
                            "Reduction Kernel"),
      [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx)  {
        RAJA::expt::loop<loop_pol>(ctx, arange, [&] (int i) {

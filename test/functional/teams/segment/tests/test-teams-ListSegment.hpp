@@ -60,6 +60,7 @@ void TeamsListSegmentTestImpl(INDEX_TYPE N)
 
   constexpr int threads = 256;
   int blocks = (data_len - 1)/threads + 1;
+  constexpr size_t dynamic_shared_mem = 0;
 
   if ( RAJA::stripIndexType(N) > 0 ) {
 
@@ -70,7 +71,7 @@ void TeamsListSegmentTestImpl(INDEX_TYPE N)
     working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
     RAJA::expt::launch<LAUNCH_POLICY>
-      (RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
+      (dynamic_shared_mem, RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
         RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, lseg, [&](INDEX_TYPE idx) {
@@ -85,7 +86,7 @@ void TeamsListSegmentTestImpl(INDEX_TYPE N)
     working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
     RAJA::expt::launch<LAUNCH_POLICY>
-      (RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
+      (dynamic_shared_mem, RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
         RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, lseg, [&](INDEX_TYPE idx) {
