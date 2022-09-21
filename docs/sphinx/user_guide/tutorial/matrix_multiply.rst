@@ -327,7 +327,7 @@ The analogous HIP policy is:
    :end-before: _matmult_3lambdakernel_hiptiled_end
    :language: C++
 
-In :ref:`tu-tiledmatrixtranspose-label` and 
+In :ref:`tut-tiledmatrixtranspose-label` and 
 :ref:`tut-matrixtransposelocalarray-label`,
 we will discuss loop tiling in more detail including how it can be used to 
 improve performance of certain algorithms.

@@ -21,13 +21,13 @@ represents an executable form of those loops and when run makes a ``RAJA::WorkSi
 that the RAJA workgroup constructs API is still being developed and may change in later RAJA
 releases.
 
-.. note:: * All **workgroup** constructs are in the namespace ``RAJA``.
+.. note:: * All workgroup constructs are in the namespace ``RAJA``.
           * The ``RAJA::WorkPool``, ``RAJA::WorkGroup``, and ``RAJA::WorkSite`` class templates are templated on:
               * a WorkGroup policy which is composed of:
-                  * a work execution policy.
-                  * a work ordering policy.
-                  * a work storage policy.
-                  * a work dispatch policy.
+                  * a work execution policy
+                  * a work ordering policy
+                  * a work storage policy
+                  * a work dispatch policy
               * an index type that is the first argument to the loop bodies.
               * a list of extra argument types that are the rest of the arguments to the loop bodies.
               * an allocator type to be used for the memory used to store and
@@ -210,9 +210,10 @@ policies::
               * Unordered work order policies require memory that is accessible
                 from both where the loop bodies are enqueued and from where the
                 loop is executed based on the work execution policy.
-                  * For example when using cuda work exeution policies with CUDA
-                    unordered work order policies pinned memory is a good choice
-                    because it is always accessible on the host and device.
+
+                  For example, when using cuda work exeution policies with CUDA
+                  unordered work order policies, pinned memory is a good choice
+                  because it is always accessible on the host and device.
 
 
 .. _workgroup-WorkPool-label:

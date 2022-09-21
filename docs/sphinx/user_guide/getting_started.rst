@@ -154,6 +154,7 @@ build using N cores.
           rocPRIM (i.e., not the RAJA submodules). To do so, you need to use
           CMake variables to pass a path to a valid installation installation 
           of each library, etc. Specifically:
+
             * External camp: -Dcamp_DIR=<camp dir name>
             * External CUB: -DRAJA_ENABLE_EXTERNAL_CUB=On -DCUB_DIR=<CUB dir name>
             * External rocPRIM: -DRAJA_ENABLE_EXTERNAL_ROCPRIM=On -DROCPRIM_DIR=<rocPRIM dir name>
