@@ -595,10 +595,13 @@ RAJA_INLINE camp::resources::EventProxy<Res> CallForallIcount::operator()(T cons
 namespace expt
 {
 
+
+
 template<typename T, typename t_pol, typename SEGMENT, typename BODY>
 struct IsHostResource {
   static const bool value = false;
 
+#if defined(RAJA_DEVICE_ACTIVE)
   static resources::EventProxy<resources::Resource>
   invoke_forall(RAJA::resources::Resource r, SEGMENT const &seg, BODY const &body)
   {
@@ -612,6 +615,7 @@ struct IsHostResource {
 
     return resources::EventProxy<resources::Resource>(r);
   }
+#endif
 };
 
 template<typename t_pol, typename SEGMENT, typename BODY>
