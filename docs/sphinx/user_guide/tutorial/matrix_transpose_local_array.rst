@@ -92,8 +92,8 @@ The ``RAJA::kernel`` interface provides mechanisms to tile loops and use
 above can be implemented with RAJA. When using ``RAJA::kernel``, a 
 ``RAJA::LocalArray`` type specifies an object whose memory is created inside 
 a kernel using a statement type in a RAJA kernel execution policy. The local 
-array data is only usable within the kernel. See :ref:`local_array-label` for 
-more information. 
+array data is only usable within the kernel. See :ref:`feat-local_array-label` 
+for more information. 
 
 ``RAJA::kernel`` methods also support loop tiling statements which determine 
 the number of tiles needed to perform an operation based on tile size and

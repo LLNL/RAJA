@@ -714,7 +714,7 @@ Local Array Memory Policies
 
 ``RAJA::LocalArray`` types must use a memory policy indicating
 where the memory for the local array will live. These policies are described
-in :ref:`local_array-label`.
+in :ref:`feat-local_array-label`.
 
 The following memory policies are available to specify memory allocation
 for ``RAJA::LocalArray`` objects:
@@ -858,7 +858,7 @@ e.g., by allowing CPU cache blocking or use of GPU shared memory.
 * ``ForICount< ArgId, ParamId, ExecPolicy, EnclosedStatements >`` abstracts an inner for-loop within an outer tiling loop **where it is necessary to obtain the local iteration index in each tile**. The ``ArgId`` indicates which entry in the iteration space tuple to which the loop applies and the ``ParamId`` indicates the position of the tile index parameter in the parameter tuple. The ``ExecPolicy`` and ``EnclosedStatements`` are similar to what they represent in a ``statement::For`` type.
 
 It is often advantageous to use local arrays for data accessed in tiled loops.
-RAJA provides a statement for allocating data in a :ref:`local_array-label`
+RAJA provides a statement for allocating data in a :ref:`feat-local_array-label`
 object according to a memory policy. See :ref:`localarraypolicy-label` for more information about such policies.
 
 * ``InitLocalMem< MemPolicy, ParamList<...>, EnclosedStatements >`` allocates memory for a ``RAJA::LocalArray`` object used in kernel. The ``ParamList`` entries indicate which local array objects in a tuple will be initialized. The ``EnclosedStatements`` contain the code in which the local array will be accessed; e.g., initialization operations.
