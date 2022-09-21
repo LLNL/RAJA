@@ -38,7 +38,7 @@ This May be written as a loop nest that iterates over five tiles of size two::
   }
 
 Next, we show how loop tiling can be written using RAJA with variations that
-use different ``RAJA::kernel`` statement types.
+use different ``RAJA::kernel`` execution policy statement types.
 
 Here is a way to write the tiled loop kernel above using ``RAJA::kernel``::
 
@@ -115,5 +115,5 @@ parameter '0') and the local tile loop index is the third lambda argument
 
 .. note:: The global loop indices always appear as the first lambda expression
           arguments. Then, the parameter tuples identified by the integers 
-          in the ``Param`` statement types given for the loop statement 
+          in the ``RAJA::Param`` statement types given for the loop statement 
           types follow.
