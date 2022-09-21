@@ -64,7 +64,7 @@ row and column and dot product iteration spaces:
    :language: C++
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Should I Use RAJA::forall For Nested Loops?
+Should I Use RAJA::for all For Nested Loops?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We begin by walking through some RAJA variants of the matrix multiplication 
@@ -240,7 +240,7 @@ to specify which arguments each lambda takes and in which order. For example:
    :language: C++
 
 By using ``RAJA::statement::Lambda`` parameters in this way, the code 
-potentially indicates more clearly which areguments are used. Of course, this 
+potentially indicates more clearly which arguments are used. Of course, this 
 makes the execution policy more verbose, but that is typically hidden away 
 in a header file. Statements such as ``RAJA::Segs``, and 
 ``RAJA::Params`` identify the positions of the segments and params 

@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _halo_exchange-label:
+.. _tut-halo_exchange-label:
 
 ------------------------------------
 Workgroup Constructs: Halo Exchange
@@ -138,7 +138,7 @@ and unpack the buffer data into the grid variable array:
    :language: C++
 
 
-For parallel multi-threading execution via OpenMP, the example can be run
+For parallel multithreading execution via OpenMP, the example can be run
 by replacing the execution policy with:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
@@ -187,7 +187,7 @@ unpacking the data:
 This reorganization has the downside of not overlapping the message sends with
 packing and the message receives with unpacking.
 
-For parallel multi-threading execution via OpenMP, the example using workgroup
+For parallel multithreading execution via OpenMP, the example using workgroup
 can be run by replacing the policies and types with:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp

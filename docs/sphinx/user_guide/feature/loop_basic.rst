@@ -267,9 +267,9 @@ Please see the following tutorial sections for detailed examples that use
 
  * :ref:`tut-kernelnestedreorder-label`
  * :ref:`tut-kernelexecpols-label`
- * :ref:`tut-matrixmultiply-label`
  * :ref:`tut-matrixtranspose-label`
  * :ref:`tut-offsetlayout-label`
+ * :ref:`tut-matrixmultiply-label`
 
 ------------------------------------------
 Hierarchical loops (RAJA::expt::launch)
