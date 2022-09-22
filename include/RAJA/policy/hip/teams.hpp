@@ -49,7 +49,7 @@ template <bool async>
 struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
 
   template <typename BODY_IN>
-  static void exec(size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
+  static void exec(const size_t shmem, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -76,11 +76,6 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
 
       RAJA_FT_BEGIN;
 
-      //
-      // Setup shared memory buffers
-      //
-      size_t shmem = 0;
-
       {
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
@@ -102,7 +97,7 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
+  exec(RAJA::resources::Resource res, const size_t shmem, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -128,11 +123,6 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
          blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
 
       RAJA_FT_BEGIN;
-
-      //
-      // Setup shared memory buffers
-      //
-      size_t shmem = 0;
 
       {
         //
@@ -175,7 +165,7 @@ template <bool async, int nthreads>
 struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
 
   template <typename BODY_IN>
-  static void exec(size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
+  static void exec(const size_t shmem, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -202,11 +192,6 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
 
       RAJA_FT_BEGIN;
 
-      //
-      // Setup shared memory buffers
-      //
-      size_t shmem = 0;
-
       {
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
@@ -228,7 +213,7 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
+  exec(RAJA::resources::Resource res, const size_t shmem, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -254,11 +239,6 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
          blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
 
       RAJA_FT_BEGIN;
-
-      //
-      // Setup shared memory buffers
-      //
-      size_t shmem = 0;
 
       {
         //
