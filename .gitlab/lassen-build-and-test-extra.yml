@@ -101,9 +101,9 @@ clang_12_0_1_cuda_11_5_0:
     SPEC: " +openmp +cuda cuda_arch=70 %clang@12.0.1 ^cuda@11.5.0"
   extends: .build_and_test_on_lassen
 
-clang_14_0_5_cuda_11_5_0:
+clang_14_0_5_cuda_11_7_0:
   variables:
-    SPEC: " +openmp +cuda cuda_arch=70 %clang@14.0.5 ^cuda@11.5.0"
+    SPEC: " +openmp +cuda cuda_arch=70 %clang@14.0.5 ^cuda@11.7.0"
   extends: .build_and_test_on_lassen
 
 gcc_8_3_1_cuda_11_0_2:
