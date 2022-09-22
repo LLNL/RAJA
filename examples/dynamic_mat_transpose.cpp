@@ -142,6 +142,15 @@ using inner1 = RAJA::expt::LoopPolicy<RAJA::loop_exec
 #endif
                                          >;
 
+template<typename T>
+void switch_ptrs(T *A, T *d_A)
+{
+  T *tmp_ptr;
+  tmp_ptr = d_A;
+  d_A = A;
+  A = tmp_ptr;
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -279,25 +288,73 @@ int main(int argc, char *argv[])
 
   std::cout << "\n Running RAJA matrix transpose w/ dynamic shared memory ...\n";
 
-  constexpr size_t dynamic_shared_mem = TILE_DIM * TILE_DIM;
+  int *d_A =  memoryManager::allocate_gpu<int>(N_r * N_c);
+  int *d_At = memoryManager::allocate_gpu<int>(N_r * N_c);
+
+  hipErrchk(hipMemcpy( d_A, A, N_r * N_c * sizeof(int), hipMemcpyHostToDevice ));
+
+  //switch host/device pointers so we can reuse the views
+  switch_ptrs(d_A, A);
+  switch_ptrs(d_At, At);
+
+  constexpr size_t dynamic_shared_mem = TILE_DIM * TILE_DIM * sizeof(int);
 
   RAJA::expt::launch<launch_policy>(select_cpu_or_gpu, dynamic_shared_mem,
     RAJA::expt::Grid(RAJA::expt::Teams(outer_Dimr, outer_Dimc),
                      RAJA::expt::Threads(TILE_DIM, TILE_DIM)),
-       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) 
+       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx)
   {
-    
+
     RAJA::expt::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
         RAJA::expt::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
-        
-            int *tile_1_mem = ctx.getSharedMemory<int>(TILE_DIM*TILE_DIM);
 
-    
+            int *tile_1_mem = ctx.getSharedMemory<int>(TILE_DIM*TILE_DIM);
+            //reshape the data
+            int (*Tile_1)[TILE_DIM] = (int (*)[TILE_DIM]) (tile_1_mem);
+
+            RAJA::expt::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
+              RAJA::expt::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
+
+                  int col = bx * TILE_DIM + tx;  // Matrix column index
+                  int row = by * TILE_DIM + ty;  // Matrix row index
+
+                  // Bounds check
+                  if (row < N_r && col < N_c) {
+                    Tile_1[ty][tx] = Aview(row, col);
+                  }
+
+                });
+              });
+
+            //need a barrier
+            ctx.teamSync();
+
+            RAJA::expt::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
+              RAJA::expt::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
+
+                  int col = bx * TILE_DIM + tx;  // Matrix column index
+                  int row = by * TILE_DIM + ty;  // Matrix row index
+
+                  // Bounds check
+                  if (row < N_r && col < N_c) {
+                    Atview(col, row) = Tile_1[ty][tx];
+                  }
+
+                });
+              });
+
+          });
       });
-    });                                      
 
   });
 
+  switch_ptrs(d_At, At);
+  switch_ptrs(d_A, A);
+
+  hipErrchk(hipMemcpy( d_At, At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost ));
+
+
+  checkResult<int>(Atview, N_c, N_r);
   //----------------------------------------------------------------------------//
 
 
