@@ -37,6 +37,11 @@ __global__ void launch_global_fcn(LaunchContext ctx, BODY body_in)
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(body_in);
   auto& body = privatizer.get_priv();
+
+  //Set pointer to shared memory
+  extern __shared__ char raja_shmem_ptr[];
+  ctx.shared_mem_ptr = raja_shmem_ptr;
+
   body(ctx);
 }
 
@@ -45,7 +50,7 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 1>> {
 // cuda_launch_t num_threads set to 1, but not used in launch of kernel
 
   template <typename BODY_IN>
-  static void exec(size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
+  static void exec(const size_t shmem, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -72,11 +77,6 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 1>> {
 
       RAJA_FT_BEGIN;
 
-      //
-      // Setup shared memory buffers
-      //
-      size_t shmem = 0;
-
       {
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
@@ -98,7 +98,7 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 1>> {
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
+  exec(RAJA::resources::Resource res, const size_t shmem, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -125,11 +125,6 @@ struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 1>> {
          blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
 
       RAJA_FT_BEGIN;
-
-      //
-      // Setup shared memory buffers
-      //
-      size_t shmem = 0;
 
       {
         //
@@ -162,6 +157,11 @@ __launch_bounds__(num_threads, BLOCKS_PER_SM) __global__
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(body_in);
   auto& body = privatizer.get_priv();
+
+  //Set pointer to shared memory
+  extern __shared__ char raja_shmem_ptr[];
+  ctx.shared_mem_ptr = raja_shmem_ptr;
+
   body(ctx);
 }
 
@@ -169,7 +169,7 @@ template <bool async, int nthreads, size_t BLOCKS_PER_SM>
 struct LaunchExecute<RAJA::policy::cuda::expt::cuda_launch_explicit_t<async, nthreads, BLOCKS_PER_SM>> {
 
   template <typename BODY_IN>
-  static void exec(size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
+  static void exec(const size_t shmem, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -196,11 +196,6 @@ struct LaunchExecute<RAJA::policy::cuda::expt::cuda_launch_explicit_t<async, nth
 
       RAJA_FT_BEGIN;
 
-      //
-      // Setup shared memory buffers
-      //
-      size_t shmem = 0;
-
       {
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
@@ -222,7 +217,7 @@ struct LaunchExecute<RAJA::policy::cuda::expt::cuda_launch_explicit_t<async, nth
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, size_t shared_mem_size_t, LaunchContext const &ctx, BODY_IN &&body_in)
+  exec(RAJA::resources::Resource res, const size_t shmem, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -249,11 +244,6 @@ struct LaunchExecute<RAJA::policy::cuda::expt::cuda_launch_explicit_t<async, nth
          blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
 
       RAJA_FT_BEGIN;
-
-      //
-      // Setup shared memory buffers
-      //
-      size_t shmem = 0;
 
       {
         //

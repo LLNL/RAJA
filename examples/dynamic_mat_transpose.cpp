@@ -289,17 +289,18 @@ int main(int argc, char *argv[])
   std::cout << "\n Running RAJA matrix transpose w/ dynamic shared memory ...\n";
 
   int *d_A = nullptr, *d_At = nullptr;
+
 #if defined(RAJA_ENABLE_HIP)
   if(select_cpu_or_gpu == RAJA::expt::DEVICE) {
     d_A =  memoryManager::allocate_gpu<int>(N_r * N_c);
     d_At = memoryManager::allocate_gpu<int>(N_r * N_c);
+
+    hipErrchk(hipMemcpy( d_A, A, N_r * N_c * sizeof(int), hipMemcpyHostToDevice ));
+
+    //switch host/device pointers so we can reuse the views
+    switch_ptrs(d_A, A);
+    switch_ptrs(d_At, At);
   }
-
-  hipErrchk(hipMemcpy( d_A, A, N_r * N_c * sizeof(int), hipMemcpyHostToDevice ));
-
-  //switch host/device pointers so we can reuse the views
-  switch_ptrs(d_A, A);
-  switch_ptrs(d_At, At);
 #endif
 
 
@@ -355,10 +356,12 @@ int main(int argc, char *argv[])
   });
 
 #if defined(RAJA_ENABLE_HIP)
-  switch_ptrs(d_At, At);
-  switch_ptrs(d_A, A);
+  if(select_cpu_or_gpu == RAJA::expt::DEVICE) {
+    switch_ptrs(d_At, At);
+    switch_ptrs(d_A, A);
 
-  hipErrchk(hipMemcpy( d_At, At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost ));
+    hipErrchk(hipMemcpy( d_At, At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost ));
+  }
 #endif
 
 
