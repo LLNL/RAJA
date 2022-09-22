@@ -384,7 +384,6 @@ int main(int argc, char *argv[])
   checkResult<int>(Atview, N_c, N_r);
   //----------------------------------------------------------------------------//
 
-
   return 0;
 }
 
