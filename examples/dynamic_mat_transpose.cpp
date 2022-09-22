@@ -65,6 +65,82 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
+using launch_policy = RAJA::expt::LaunchPolicy<
+#if defined(RAJA_ENABLE_OPENMP)
+    RAJA::expt::omp_launch_t
+#else
+    RAJA::expt::seq_launch_t
+#endif
+#if defined(RAJA_ENABLE_CUDA)
+    ,
+    RAJA::expt::cuda_launch_t<false>
+#endif
+#if defined(RAJA_ENABLE_HIP)
+    ,
+    RAJA::expt::hip_launch_t<false>
+#endif
+    >;
+
+/*
+ * Define team policies.
+ * Up to 3 dimension are supported: x,y,z
+ */
+using outer0 = RAJA::expt::LoopPolicy<
+#if defined(RAJA_ENABLE_OPENMP)
+                                       RAJA::omp_parallel_for_exec
+#else
+                                       RAJA::loop_exec
+#endif
+#if defined(RAJA_ENABLE_CUDA)
+                                       ,
+                                       RAJA::cuda_block_x_direct
+#endif
+#if defined(RAJA_ENABLE_HIP)
+                                       ,
+                                       RAJA::hip_block_x_direct
+#endif
+                                       >;
+
+using outer1 = RAJA::expt::LoopPolicy<
+#if defined(RAJA_ENABLE_OPENMP)
+                                       RAJA::omp_parallel_for_exec
+#else
+                                       RAJA::loop_exec
+#endif
+#if defined(RAJA_ENABLE_CUDA)
+                                       ,
+                                       RAJA::cuda_block_y_direct
+#endif
+#if defined(RAJA_ENABLE_HIP)
+                                       ,
+                                       RAJA::hip_block_y_direct
+#endif
+                                       >;
+/*
+ * Define thread policies.
+ * Up to 3 dimension are supported: x,y,z
+ */
+using inner0 = RAJA::expt::LoopPolicy<RAJA::loop_exec
+#if defined(RAJA_ENABLE_CUDA)
+                                         ,
+                                         RAJA::cuda_thread_x_direct
+#endif
+#if defined(RAJA_ENABLE_HIP)
+                                         ,
+                                         RAJA::hip_thread_x_direct
+#endif
+                                         >;
+
+using inner1 = RAJA::expt::LoopPolicy<RAJA::loop_exec
+#if defined(RAJA_ENABLE_CUDA)
+                                         ,
+                                         RAJA::cuda_thread_y_direct
+#endif
+#if defined(RAJA_ENABLE_HIP)
+                                         ,
+                                         RAJA::hip_thread_y_direct
+#endif
+                                         >;
 
 int main(int argc, char *argv[])
 {
@@ -203,11 +279,23 @@ int main(int argc, char *argv[])
 
   std::cout << "\n Running RAJA matrix transpose w/ dynamic shared memory ...\n";
 
-  /*
-    Fill in code here...
+  constexpr size_t dynamic_shared_mem = TILE_DIM * TILE_DIM;
 
-   */
+  RAJA::expt::launch<launch_policy>(select_cpu_or_gpu, dynamic_shared_mem,
+    RAJA::expt::Grid(RAJA::expt::Teams(outer_Dimr, outer_Dimc),
+                     RAJA::expt::Threads(TILE_DIM, TILE_DIM)),
+       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) 
+  {
+    
+    RAJA::expt::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
+        RAJA::expt::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
+        
+            int *tile_1_mem = ctx.GetSharedMemory<int>(TILE_DIM*TILE_DIM);
+    
+        })
+    });                                      
 
+  });
 
   //----------------------------------------------------------------------------//
 

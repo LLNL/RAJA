@@ -44,7 +44,7 @@ template <bool async>
 struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
 
   template <typename BODY_IN>
-  static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
+  static void exec(size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -97,7 +97,7 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY_IN &&body_in)
+  exec(RAJA::resources::Resource res, size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -165,7 +165,7 @@ template <bool async, int nthreads>
 struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
 
   template <typename BODY_IN>
-  static void exec(LaunchContext const &ctx, BODY_IN &&body_in)
+  static void exec(size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -218,7 +218,7 @@ struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY_IN &&body_in)
+  exec(RAJA::resources::Resource res, size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
