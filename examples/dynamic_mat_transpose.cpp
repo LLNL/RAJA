@@ -95,6 +95,10 @@ using outer0 = RAJA::expt::LoopPolicy<
                                        ,
                                        RAJA::hip_block_x_direct
 #endif
+#if defined(RAJA_ENABLE_SYCL)
+                                       ,
+                                       RAJA::sycl_group_0_direct
+#endif
                                        >;
 
 using outer1 = RAJA::expt::LoopPolicy<
@@ -106,6 +110,10 @@ using outer1 = RAJA::expt::LoopPolicy<
 #if defined(RAJA_ENABLE_HIP)
                                        ,
                                        RAJA::hip_block_y_direct
+#endif
+#if defined(RAJA_ENABLE_SYCL)
+                                       ,
+                                       RAJA::sycl_group_1_direct
 #endif
                                        >;
 /*
@@ -127,6 +135,10 @@ using inner0 = RAJA::expt::LoopPolicy<
                                          ,
                                          RAJA::hip_thread_x_direct
 #endif
+#if defined(RAJA_ENABLE_SYCL)
+                                        ,
+                                         RAJA::sycl_local_0_direct
+#endif
                                          >;
 
 using inner1 = RAJA::expt::LoopPolicy<RAJA::loop_exec
@@ -137,6 +149,10 @@ using inner1 = RAJA::expt::LoopPolicy<RAJA::loop_exec
 #if defined(RAJA_ENABLE_HIP)
                                          ,
                                          RAJA::hip_thread_y_direct
+#endif
+#if defined(RAJA_ENABLE_SYCL)
+                                        ,
+                                         RAJA::sycl_local_1_direct
 #endif
                                          >;
 
@@ -313,9 +329,6 @@ int main(int argc, char *argv[])
     RAJA::expt::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
         RAJA::expt::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
 
-    //RAJA::expt::loop<outer1>(ctx, RAJA::RangeSegment(0, 1), [&] (int by){
-    //RAJA::expt::loop<outer0>(ctx, RAJA::RangeSegment(0, 1), [&] (int bx){
-
             int *tile_1_mem = ctx.getSharedMemory<int>(TILE_DIM*TILE_DIM);
 
             //reshape the data
@@ -370,150 +383,6 @@ int main(int argc, char *argv[])
 
   checkResult<int>(Atview, N_c, N_r);
   //----------------------------------------------------------------------------//
-
-
-
-
-
-#if defined(RAJA_ENABLE_SYCL)
-  std::cout << "\n Running RAJA SYCL matrix transpose...\n";
-
-  std::memset(At, 0, N_r * N_c * sizeof(int));
-
-  int *d_a = memoryManager::allocate_gpu<int>(N_r * N_c);
-  int *d_at = memoryManager::allocate_gpu<int>(N_r * N_c);
-
-  memoryManager::sycl_res->memcpy(d_a, A, N_r * N_c * sizeof(int));
-  memoryManager::sycl_res->memcpy(d_at, At, N_r * N_c * sizeof(int));
-
-  //Device views
-  RAJA::View<int, RAJA::Layout<DIM>> A_(d_a, N_r, N_c);
-  RAJA::View<int, RAJA::Layout<DIM>> At_(d_at, N_c, N_r);
-
-  /*
-  using launch_policy =
-    RAJA::expt::LaunchPolicy<
-#if defined(RAJA_DEVICE_ACTIVE)
-      RAJA::expt::seq_launch_t,
-#endif
-      RAJA::expt::sycl_launch_t<false>>;
-
-  using inner0 =
-    RAJA::expt::LoopPolicy<
-#if defined(RAJA_DEVICE_ACTIVE)
-      RAJA::loop_exec,
-#endif
-      RAJA::sycl_local_0_direct>;
-
-  using inner1 =
-    RAJA::expt::LoopPolicy<
-#if defined(RAJA_DEVICE_ACTIVE)
-      RAJA::loop_exec,
-#endif
-      RAJA::sycl_local_1_direct>;
-
-  using outer0 =
-    RAJA::expt::LoopPolicy<
-#if defined(RAJA_DEVICE_ACTIVE)
-      RAJA::loop_exec,
-#endif
-    RAJA::sycl_group_0_direct>;
-
-  using outer1 =
-    RAJA::expt::LoopPolicy<
-#if defined(RAJA_DEVICE_ACTIVE)
-      RAJA::loop_exec,
-#endif
-      RAJA::sycl_group_1_direct>;
-  */
-
-    using launch_policy =
-    RAJA::expt::LaunchPolicy<
-      RAJA::expt::sycl_launch_t<false>>;
-
-  using inner0 =
-    RAJA::expt::LoopPolicy<RAJA::sycl_local_0_direct>;
-
-  using inner1 =
-    RAJA::expt::LoopPolicy<RAJA::sycl_local_1_direct>;
-
-  using outer0 =
-    RAJA::expt::LoopPolicy<RAJA::sycl_group_0_direct>;
-
-  using outer1 =
-    RAJA::expt::LoopPolicy<RAJA::sycl_group_1_direct>;
-
-
-
-   //This kernel will require the following amount of shared memory
-   const size_t shared_memory_size = 2*TILE_DIM*TILE_DIM*sizeof(int);
-
-   //move shared memory arg to launch 2nd arg
-   RAJA::expt::launch<launch_policy>
-     (shared_memory_size,
-      RAJA::expt::Grid(RAJA::expt::Teams(outer_Dimc, outer_Dimr),
-		       RAJA::expt::Threads(TILE_DIM, TILE_DIM)),
-      [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
-
-       RAJA::expt::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
-         RAJA::expt::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
-
-               //ctx points to a a large chunk of memory
-               //getSharedMemory will apply the correct offsetting
-	       //Consider templating on size to enable stack allocations on the CPU
-               int *tile_1_mem = ctx.getSharedMemory<int>(TILE_DIM*TILE_DIM);
-	       int *tile_2_mem = ctx.getSharedMemory<int>(TILE_DIM*TILE_DIM);
-
-	       //consider a getSharedMemoryView method
-
-
-               //reshape the data
-               int (*Tile_2)[TILE_DIM] = (int (*)[TILE_DIM]) (tile_2_mem);
-	       //Use RAJA view
-
-               RAJA::expt::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
-                   RAJA::expt::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
-
-                       int col = bx * TILE_DIM + tx;  // Matrix column index
-                       int row = by * TILE_DIM + ty;  // Matrix row index
-
-                       // Bounds check
-                       if (row < N_r && col < N_c) {
-                         Tile_2[ty][tx] = A_(row, col);
-                       }
-
-                     });
-                 });
-
-               //need a barrier
-               ctx.teamSync();
-
-               RAJA::expt::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
-                   RAJA::expt::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
-
-                       int col = bx * TILE_DIM + tx;  // Matrix column index
-                       int row = by * TILE_DIM + ty;  // Matrix row index
-
-                       // Bounds check
-                       if (row < N_r && col < N_c) {
-                         At_(col, row) = Tile_2[ty][tx];
-                       }
-
-                     });
-
-                 });
-
-             });
-         });
-
-     });
-
-  memoryManager::sycl_res->memcpy(At, d_at, N_c * N_r * sizeof(int));
-
-  checkResult<int>(Atview, N_c, N_r);
-//printResult<int>(Atview, N_c, N_r);
-
-#endif
 
 
   return 0;
