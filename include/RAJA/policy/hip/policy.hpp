@@ -259,59 +259,6 @@ using policy::hip::hip_synchronize;
 
 using policy::hip::hip_launch_t;
 
-/*!
- * Maps segment indices to HIP threads.
- * This is the lowest overhead mapping, but requires that there are enough
- * physical threads to fit all of the direct map requests.
- * For example, a segment of size 2000 will not fit, and trigger a runtime
- * error.
- */
-template<int ... dim>
-struct hip_thread_xyz_direct{};
-
-using hip_thread_x_direct = hip_thread_xyz_direct<0>;
-using hip_thread_y_direct = hip_thread_xyz_direct<1>;
-using hip_thread_z_direct = hip_thread_xyz_direct<2>;
-
-
-/*!
- * Maps segment indices to HIP threads.
- * Uses block-stride looping to exceed the maximum number of physical threads
- */
-template<int ... dim>
-struct hip_thread_xyz_loop{};
-
-using hip_thread_x_loop = hip_thread_xyz_loop<0>;
-using hip_thread_y_loop = hip_thread_xyz_loop<1>;
-using hip_thread_z_loop = hip_thread_xyz_loop<2>;
-
-
-/*!
- * Maps segment indices to HIP blocks.
- * This is the lowest overhead mapping, but requires that there are enough
- * physical blocks to fit all of the direct map requests.
- */
-template<int ... dim>
-struct hip_block_xyz_direct{};
-
-using hip_block_x_direct = hip_block_xyz_direct<0>;
-using hip_block_y_direct = hip_block_xyz_direct<1>;
-using hip_block_z_direct = hip_block_xyz_direct<2>;
-
-
-/*!
- * Maps segment indices to HIP blocks.
- * Uses grid-stride looping to exceed the maximum number of blocks
- */
-template<int ... dim>
-struct hip_block_xyz_loop{};
-
-using hip_block_x_loop = hip_block_xyz_loop<0>;
-using hip_block_y_loop = hip_block_xyz_loop<1>;
-using hip_block_z_loop = hip_block_xyz_loop<2>;
-
-
-
 
 namespace internal{
 
@@ -394,8 +341,132 @@ void set_hip_dim(dim_t &d, HipDimIdxT value)
 {
   return HipDimHelper<dim>::set(d, value);
 }
+
+
+/// Type representing thread indexing within a block
+/// block_size is fixed
+template<int dim, HipDimIdxT t_block_size>
+struct HipIndexThread {
+
+  template < typename IdxT = HipDimIdxT >
+  RAJA_DEVICE
+  static inline constexpr
+  auto index() { return static_cast<IdxT>(HipDimHelper<dim>::get(threadIdx)); }
+
+  template < typename IdxT = HipDimIdxT >
+  RAJA_DEVICE
+  static inline constexpr
+  auto size() { return static_cast<IdxT>(t_block_size); }
+};
+/// unless t_block_size is 0 then block_size is dynamic
+template<int dim>
+struct HipIndexThread<dim, 0> {
+
+  template < typename IdxT = HipDimIdxT >
+  RAJA_DEVICE
+  inline static constexpr
+  auto index() { return static_cast<IdxT>(HipDimHelper<dim>::get(threadIdx)); }
+
+  template < typename IdxT = HipDimIdxT >
+  RAJA_DEVICE
+  inline static constexpr
+  auto size() { return static_cast<IdxT>(HipDimHelper<dim>::get(blockDim)); }
+};
+
+/// Type representing block indexing within a grid
+/// grid_size is fixed
+template<int dim, HipDimIdxT t_grid_size>
+struct HipIndexBlock {
+
+  template < typename IdxT = HipDimIdxT >
+  RAJA_DEVICE
+  inline static constexpr
+  auto index() { return static_cast<IdxT>(HipDimHelper<dim>::get(blockIdx)); }
+
+  template < typename IdxT = HipDimIdxT >
+  RAJA_DEVICE
+  inline static constexpr
+  auto size() { return static_cast<IdxT>(t_grid_size); }
+};
+/// unless t_grid_size is 0 then grid_size is dynamic
+template<int dim>
+struct HipIndexBlock<dim, 0> {
+
+  template < typename IdxT = HipDimIdxT >
+  RAJA_DEVICE
+  inline static constexpr
+  auto index() { return static_cast<IdxT>(HipDimHelper<dim>::get(blockIdx)); }
+
+  template < typename IdxT = HipDimIdxT >
+  RAJA_DEVICE
+  inline static constexpr
+  auto size() { return static_cast<IdxT>(HipDimHelper<dim>::get(gridDim)); }
+};
+
+
+template<typename Indexer>
+struct HipIndexDirect {
+  using indexer_type = Indexer;
+};
+
+template<typename Indexer>
+struct HipIndexLoop {
+  using indexer_type = Indexer;
+};
+
 } // namespace internal
 
+
+/*!
+ * Maps segment indices to HIP threads.
+ * This is the lowest overhead mapping, but requires that there are enough
+ * physical threads to fit all of the direct map requests.
+ * For example, a segment of size 2000 will not fit, and trigger a runtime
+ * error.
+ */
+template<int ... dim>
+struct hip_thread_xyz_direct{};
+
+using hip_thread_x_direct = internal::HipIndexDirect<internal::HipIndexThread<0, 0>>; // hip_thread_xyz_direct<0>;
+using hip_thread_y_direct = internal::HipIndexDirect<internal::HipIndexThread<1, 0>>; // hip_thread_xyz_direct<1>;
+using hip_thread_z_direct = internal::HipIndexDirect<internal::HipIndexThread<2, 0>>; // hip_thread_xyz_direct<2>;
+
+
+/*!
+ * Maps segment indices to HIP threads.
+ * Uses block-stride looping to exceed the maximum number of physical threads
+ */
+template<int ... dim>
+struct hip_thread_xyz_loop{};
+
+using hip_thread_x_loop = internal::HipIndexLoop<internal::HipIndexThread<0, 0>>; // hip_thread_xyz_loop<0>;
+using hip_thread_y_loop = internal::HipIndexLoop<internal::HipIndexThread<1, 0>>; // hip_thread_xyz_loop<1>;
+using hip_thread_z_loop = internal::HipIndexLoop<internal::HipIndexThread<2, 0>>; // hip_thread_xyz_loop<2>;
+
+
+/*!
+ * Maps segment indices to HIP blocks.
+ * This is the lowest overhead mapping, but requires that there are enough
+ * physical blocks to fit all of the direct map requests.
+ */
+template<int ... dim>
+struct hip_block_xyz_direct{};
+
+using hip_block_x_direct = internal::HipIndexDirect<internal::HipIndexBlock<0, 0>>; // hip_block_xyz_direct<0>;
+using hip_block_y_direct = internal::HipIndexDirect<internal::HipIndexBlock<1, 0>>; // hip_block_xyz_direct<1>;
+using hip_block_z_direct = internal::HipIndexDirect<internal::HipIndexBlock<2, 0>>; // hip_block_xyz_direct<2>;
+
+
+/*!
+ * Maps segment indices to HIP blocks.
+ * Uses grid-stride looping to exceed the maximum number of blocks
+ */
+template<int ... dim>
+struct hip_block_xyz_loop{};
+
+using hip_block_x_loop = internal::HipIndexLoop<internal::HipIndexBlock<0, 0>>; // hip_block_xyz_loop<0>;
+using hip_block_y_loop = internal::HipIndexLoop<internal::HipIndexBlock<1, 0>>; // hip_block_xyz_loop<1>;
+using hip_block_z_loop = internal::HipIndexLoop<internal::HipIndexBlock<2, 0>>; // hip_block_xyz_loop<2>;
 
 }  // namespace RAJA
 

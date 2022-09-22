@@ -326,6 +326,80 @@ void hip_occupancy_max_blocks(Func&& func, int shmem_size,
 }
 
 
+template<typename Indexer>
+struct HipIndexDimensioner;
+
+
+/// Type representing thread indexing within a block
+/// block_size is fixed
+template<int dim, HipDimIdxT t_block_size>
+struct HipIndexDimensioner<HipIndexThread<dim, t_block_size>> {
+
+  template < typename IdxT >
+  static inline
+  LaunchDims get_dimensions(IdxT)
+  {
+    LaunchDims dims;
+    set_hip_dim<dim>(dims.threads, t_block_size);
+
+    return dims;
+  }
+};
+/// unless t_block_size is 0 then block_size is dynamic
+template<int dim>
+struct HipIndexDimensioner<HipIndexThread<dim, 0>> {
+
+  template < typename IdxT >
+  static inline
+  LaunchDims get_dimensions(IdxT len)
+  {
+    LaunchDims dims;
+    set_hip_dim<dim>(dims.threads, len);
+
+    return dims;
+  }
+};
+
+/// Type representing block indexing within a grid
+/// grid_size is fixed
+template<int dim, HipDimIdxT t_grid_size>
+struct HipIndexDimensioner<HipIndexBlock<dim, t_grid_size>> {
+
+  template < typename IdxT >
+  static inline
+  LaunchDims get_dimensions(IdxT)
+  {
+    LaunchDims dims;
+    set_hip_dim<dim>(dims.blocks, t_grid_size);
+
+    return dims;
+  }
+};
+/// unless t_grid_size is 0 then grid_size is dynamic
+template<int dim>
+struct HipIndexDimensioner<HipIndexBlock<dim, 0>> {
+
+  template < typename IdxT = HipDimIdxT >
+  RAJA_DEVICE
+  inline static constexpr
+  auto index() { return static_cast<IdxT>(HipDimHelper<dim>::get(blockIdx)); }
+
+  template < typename IdxT = HipDimIdxT >
+  RAJA_DEVICE
+  inline static constexpr
+  auto size() { return static_cast<IdxT>(HipDimHelper<dim>::get(gridDim)); }
+
+  template < typename IdxT >
+  static inline
+  LaunchDims get_dimensions(IdxT len)
+  {
+    LaunchDims dims;
+    set_hip_dim<dim>(dims.blocks, len);
+
+    return dims;
+  }
+};
+
 
 template <camp::idx_t cur_stmt, camp::idx_t num_stmts, typename StmtList>
 struct HipStatementListExecutorHelper {
