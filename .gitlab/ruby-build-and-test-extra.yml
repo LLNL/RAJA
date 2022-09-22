@@ -50,7 +50,7 @@ icpc_19_1_0:
     RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=40 --nodes=1"
   extends: .build_and_test_on_ruby
 
-# EXTRAS
+# OTHERS
 clang_10_0_1_gcc_8_3_1_desul_atomics:
   variables:
     SPEC: " +openmp +desul %clang@10.0.1 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
