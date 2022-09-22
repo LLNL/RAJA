@@ -315,6 +315,8 @@ using hip_block_z_loop = hip_block_xyz_loop<2>;
 
 namespace internal{
 
+using HipDimIdxT = std::decay_t<decltype(camp::val<dim3>().x)>;
+
 template<int dim>
 struct HipDimHelper;
 
@@ -323,20 +325,16 @@ struct HipDimHelper<0>{
 
   template<typename dim_t>
   RAJA_HOST_DEVICE
-  inline
-  static
-  constexpr
-  auto get(dim_t const &d) ->
-    decltype(d.x)
+  inline static constexpr
+  auto get(dim_t const &d)
   {
     return d.x;
   }
 
   template<typename dim_t>
   RAJA_HOST_DEVICE
-  inline
-  static
-  void set(dim_t &d, int value)
+  inline static
+  void set(dim_t &d, HipDimIdxT value)
   {
     d.x = value;
   }
@@ -347,20 +345,16 @@ struct HipDimHelper<1>{
 
   template<typename dim_t>
   RAJA_HOST_DEVICE
-  inline
-  static
-  constexpr
-  auto get(dim_t const &d) ->
-    decltype(d.y)
+  inline static constexpr
+  auto get(dim_t const &d)
   {
     return d.y;
   }
 
   template<typename dim_t>
   RAJA_HOST_DEVICE
-  inline
-  static
-  void set(dim_t &d, int value)
+  inline static
+  void set(dim_t &d, HipDimIdxT value)
   {
     d.y = value;
   }
@@ -371,20 +365,16 @@ struct HipDimHelper<2>{
 
   template<typename dim_t>
   RAJA_HOST_DEVICE
-  inline
-  static
-  constexpr
-  auto get(dim_t const &d) ->
-    decltype(d.z)
+  inline static constexpr
+  auto get(dim_t const &d)
   {
     return d.z;
   }
 
   template<typename dim_t>
-  inline
-  static
   RAJA_HOST_DEVICE
-  void set(dim_t &d, int value)
+  inline static
+  void set(dim_t &d, HipDimIdxT value)
   {
     d.z = value;
   }
@@ -393,15 +383,14 @@ struct HipDimHelper<2>{
 template<int dim, typename dim_t>
 RAJA_HOST_DEVICE
 constexpr
-auto get_hip_dim(dim_t const &d) ->
-  decltype(HipDimHelper<dim>::get(d))
+auto get_hip_dim(dim_t const &d)
 {
   return HipDimHelper<dim>::get(d);
 }
 
 template<int dim, typename dim_t>
 RAJA_HOST_DEVICE
-void set_hip_dim(dim_t &d, int value)
+void set_hip_dim(dim_t &d, HipDimIdxT value)
 {
   return HipDimHelper<dim>::set(d, value);
 }
