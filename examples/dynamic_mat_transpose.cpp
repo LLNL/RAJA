@@ -86,11 +86,7 @@ using launch_policy = RAJA::expt::LaunchPolicy<
  * Up to 3 dimension are supported: x,y,z
  */
 using outer0 = RAJA::expt::LoopPolicy<
-#if defined(RAJA_ENABLE_OPENMP)
-                                       RAJA::omp_parallel_for_exec
-#else
                                        RAJA::loop_exec
-#endif
 #if defined(RAJA_ENABLE_CUDA)
                                        ,
                                        RAJA::cuda_block_x_direct
@@ -102,11 +98,7 @@ using outer0 = RAJA::expt::LoopPolicy<
                                        >;
 
 using outer1 = RAJA::expt::LoopPolicy<
-#if defined(RAJA_ENABLE_OPENMP)
-                                       RAJA::omp_parallel_for_exec
-#else
                                        RAJA::loop_exec
-#endif
 #if defined(RAJA_ENABLE_CUDA)
                                        ,
                                        RAJA::cuda_block_y_direct
@@ -120,7 +112,13 @@ using outer1 = RAJA::expt::LoopPolicy<
  * Define thread policies.
  * Up to 3 dimension are supported: x,y,z
  */
-using inner0 = RAJA::expt::LoopPolicy<RAJA::loop_exec
+using inner0 = RAJA::expt::LoopPolicy<
+#if defined(RAJA_ENABLE_OPENMP)
+                                         RAJA::omp_for_exec
+#else
+                                         RAJA::loop_exec
+#endif
+
 #if defined(RAJA_ENABLE_CUDA)
                                          ,
                                          RAJA::cuda_thread_x_direct
@@ -314,6 +312,9 @@ int main(int argc, char *argv[])
 
     RAJA::expt::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
         RAJA::expt::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
+
+    //RAJA::expt::loop<outer1>(ctx, RAJA::RangeSegment(0, 1), [&] (int by){
+    //RAJA::expt::loop<outer0>(ctx, RAJA::RangeSegment(0, 1), [&] (int bx){
 
             int *tile_1_mem = ctx.getSharedMemory<int>(TILE_DIM*TILE_DIM);
 

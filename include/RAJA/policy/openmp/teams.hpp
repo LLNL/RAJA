@@ -36,18 +36,18 @@ struct LaunchExecute<RAJA::expt::omp_launch_t> {
   static void exec(const size_t shared_mem, LaunchContext const &ctx, BODY const &body)
   {
     RAJA::region<RAJA::omp_parallel_region>([&]() {
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
-      
-      std::cout<<"allocating bytes of shared_mem = "<<shared_mem<<std::endl;
-      //AV is this what we want??
-      char *kernel_local_mem = new char[shared_mem];
-      ctx.shared_mem_ptr = kernel_local_mem;
 
-      loop_body.get_priv()(ctx);
+        using RAJA::internal::thread_privatize;
+        auto loop_body = thread_privatize(body);
+        auto my_ctx = thread_privatize(ctx);
+        char *kernel_local_mem = new char[shared_mem];
 
-      delete[] kernel_local_mem;
-      ctx.shared_mem_ptr = nullptr;
+        my_ctx.get_priv().shared_mem_ptr = kernel_local_mem;
+
+        loop_body.get_priv()(my_ctx.get_priv());
+
+        delete[] kernel_local_mem;
+        my_ctx.get_priv().shared_mem_ptr = nullptr;
     });
   }
 
@@ -56,17 +56,17 @@ struct LaunchExecute<RAJA::expt::omp_launch_t> {
   exec(RAJA::resources::Resource res, const size_t shared_mem, LaunchContext const &ctx, BODY const &body)
   {
     RAJA::region<RAJA::omp_parallel_region>([&]() {
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
+        using RAJA::internal::thread_privatize;
+        auto loop_body = thread_privatize(body);
+        auto my_ctx = thread_privatize(ctx);
+        char *kernel_local_mem = new char[shared_mem];
 
-      //AV is this what we want??
-      char *kernel_local_mem = new char[shared_mem];
-      ctx.shared_mem_ptr = kernel_local_mem;
+        my_ctx.get_priv().shared_mem_ptr = kernel_local_mem;
 
-      loop_body.get_priv()(ctx);
+        loop_body.get_priv()(my_ctx.get_priv());
 
-      delete[] kernel_local_mem;
-      ctx.shared_mem_ptr = nullptr;
+        delete[] kernel_local_mem;
+        my_ctx.get_priv().shared_mem_ptr = nullptr;
     });
 
     return resources::EventProxy<resources::Resource>(res);
