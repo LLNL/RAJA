@@ -186,20 +186,20 @@ public:
   {
   }
 
-#if defined(RAJA_ENABLE_SYCL)
+  //#if defined(RAJA_ENABLE_SYCL)
   template<typename T>
-  T* getSharedMemory(size_t bytes)
+  RAJA_HOST_DEVICE T* getSharedMemory(size_t bytes)
   {
     T * mem_ptr = &((T*) shared_mem_ptr)[shared_mem_offset];
     shared_mem_offset += bytes*sizeof(T);
 
     //TODO add a check to ensure
     //we do not go beyond our allocated shared mem
-    
+
     return mem_ptr;
-  } 
-  
-#endif  
+  }
+
+  //#endif
 
   RAJA_HOST_DEVICE
   void teamSync()

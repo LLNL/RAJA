@@ -37,6 +37,11 @@ __global__ void launch_global_fcn(LaunchContext ctx, BODY body_in)
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(body_in);
   auto& body = privatizer.get_priv();
+
+  //Set pointer to shared memory
+  extern __shared__ char raja_shmem_ptr[];
+  ctx.shared_mem_ptr = raja_shmem_ptr;
+
   body(ctx);
 }
 
@@ -158,6 +163,11 @@ static void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(body_in);
   auto& body = privatizer.get_priv();
+
+  //Set pointer to shared memory
+  extern __shared__ char raja_shmem_ptr[];
+  ctx.shared_mem_ptr = raja_shmem_ptr;
+
   body(ctx);
 }
 

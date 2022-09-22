@@ -290,9 +290,10 @@ int main(int argc, char *argv[])
     RAJA::expt::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
         RAJA::expt::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
         
-            int *tile_1_mem = ctx.GetSharedMemory<int>(TILE_DIM*TILE_DIM);
+            int *tile_1_mem = ctx.getSharedMemory<int>(TILE_DIM*TILE_DIM);
+
     
-        })
+      });
     });                                      
 
   });
