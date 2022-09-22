@@ -30,58 +30,6 @@ namespace RAJA
 namespace internal
 {
 
-
-
-/*
- * Executor for thread work sharing loop inside HipKernel.
- * Mapping directly from threadIdx.xyz to indices
- * Assigns the loop iterate to offset ArgumentId
- * Assigns the loop count to param ParamId
- */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename ParamId,
-          int ThreadDim,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<
-    Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::hip_thread_xyz_direct<ThreadDim>, EnclosedStmts...>,
-    Types>
-    : public HipStatementExecutor<
-        Data,
-        statement::For<ArgumentId, RAJA::hip_thread_xyz_direct<ThreadDim>, EnclosedStmts...>, Types> {
-
-  using Base = HipStatementExecutor<
-        Data,
-        statement::For<ArgumentId, RAJA::hip_thread_xyz_direct<ThreadDim>, EnclosedStmts...>,
-        Types>;
-
-  using typename Base::enclosed_stmts_t;
-  using typename Base::diff_t;
-
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
-  {
-    diff_t len = segment_length<ArgumentId>(data);
-    diff_t i = get_hip_dim<ThreadDim>(dim3(threadIdx.x,threadIdx.y,threadIdx.z));
-
-    // assign thread id directly to offset
-    data.template assign_offset<ArgumentId>(i);
-    data.template assign_param<ParamId>(i);
-
-    // execute enclosed statements if in bounds
-    enclosed_stmts_t::exec(data, thread_active && (i<len));
-
-  }
-};
-
-
-
-
-
 /*
  * Executor for thread work sharing loop inside HipKernel.
  * Mapping directly from threadIdx.xyz to indices
@@ -249,7 +197,6 @@ struct HipStatementExecutor<
 };
 
 
-
 /*
  * Executor for thread work sharing loop inside HipKernel.
  * Mapping directly from a warp lane
@@ -321,8 +268,6 @@ struct HipStatementExecutor<
 };
 
 
-
-
 /*
  * Executor for thread work sharing loop inside HipKernel.
  * Mapping directly from a warp lane
@@ -379,9 +324,6 @@ struct HipStatementExecutor<
   }
 
 };
-
-
-
 
 
 /*
@@ -452,35 +394,31 @@ struct HipStatementExecutor<
 };
 
 
-
-
-
 /*
- * Executor for thread work sharing loop inside HipKernel.
- * Provides a block-stride loop (stride of blockDim.xyz) for
- * each thread in xyz.
- * Assigns the loop iterate to offset ArgumentId
- * Assigns the loop offset to param ParamId
+ * Executor for work sharing inside HipKernel.
+ * Provides a direct mapping.
+ * Assigns the loop index to offset ArgumentId
+ * Assigns the loop index to param ParamId
  */
 template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
-          int ThreadDim,
+          typename Indexer,
           typename... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::hip_thread_xyz_loop<ThreadDim>, EnclosedStmts...>,
+    statement::ForICount<ArgumentId, ParamId, RAJA::internal::HipIndexDirect<Indexer>, EnclosedStmts...>,
     Types>
     : public HipStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::hip_thread_xyz_loop<ThreadDim>, EnclosedStmts...>,
+        statement::For<ArgumentId, RAJA::internal::HipIndexDirect<Indexer>, EnclosedStmts...>,
         Types> {
 
   using Base = HipStatementExecutor<
-        Data,
-        statement::For<ArgumentId, RAJA::hip_thread_xyz_loop<ThreadDim>, EnclosedStmts...>,
-        Types>;
+      Data,
+      statement::For<ArgumentId, RAJA::internal::HipIndexDirect<Indexer>, EnclosedStmts...>,
+      Types>;
 
   using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
@@ -488,12 +426,57 @@ struct HipStatementExecutor<
   static
   inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
-    // block stride loop
+    // grid stride loop
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i_init = get_hip_dim<ThreadDim>(dim3(threadIdx.x,threadIdx.y,threadIdx.z));
-    diff_t i_stride = get_hip_dim<ThreadDim>(dim3(blockDim.x,blockDim.y,blockDim.z));
+    diff_t i = Indexer::template index<diff_t>();
 
-    // Iterate through grid stride of chunks
+    // Assign the index to the argument and param
+    data.template assign_offset<ArgumentId>(i);
+    data.template assign_param<ParamId>(i);
+
+    // execute enclosed statements
+    enclosed_stmts_t::exec(data, thread_active && (i < len));
+  }
+};
+
+/*
+ * Executor for work sharing inside HipKernel.
+ * Provides a strided loop.
+ * Assigns the loop index to offset ArgumentId
+ * Assigns the loop index to param ParamId
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          typename Indexer,
+          typename... EnclosedStmts,
+          typename Types>
+struct HipStatementExecutor<
+    Data,
+    statement::ForICount<ArgumentId, ParamId, RAJA::internal::HipIndexLoop<Indexer>, EnclosedStmts...>,
+    Types>
+    : public HipStatementExecutor<
+        Data,
+        statement::For<ArgumentId, RAJA::internal::HipIndexLoop<Indexer>, EnclosedStmts...>,
+        Types> {
+
+  using Base = HipStatementExecutor<
+      Data,
+      statement::For<ArgumentId, RAJA::internal::HipIndexLoop<Indexer>, EnclosedStmts...>,
+      Types>;
+
+  using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
+
+  static
+  inline RAJA_DEVICE void exec(Data &data, bool thread_active)
+  {
+    // grid stride loop
+    diff_t len = segment_length<ArgumentId>(data);
+    diff_t i_init = Indexer::template index<diff_t>();
+    diff_t i_stride = Indexer::template size<diff_t>();
+
+    // Iterate through chunks
     for (diff_t ii = 0; ii < len; ii += i_stride) {
       diff_t i = ii + i_init;
 
@@ -501,113 +484,12 @@ struct HipStatementExecutor<
       // but mask off threads without work
       bool have_work = i < len;
 
-      // Assign the x thread to the argument
+      // Assign the index to the argument and param
       data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);
 
       // execute enclosed statements
       enclosed_stmts_t::exec(data, thread_active && have_work);
-    }
-  }
-};
-
-
-
-/*
- * Executor for block work sharing inside HipKernel.
- * Provides a direct mapping of each block in xyz.
- * Assigns the loop index to offset ArgumentId
- * Assigns the loop index to param ParamId
- */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename ParamId,
-          int BlockDim,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<
-    Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::hip_block_xyz_direct<BlockDim>, EnclosedStmts...>,
-    Types>
-    : public HipStatementExecutor<
-        Data,
-        statement::For<ArgumentId, RAJA::hip_block_xyz_direct<BlockDim>, EnclosedStmts...>,
-        Types> {
-
-  using Base = HipStatementExecutor<
-      Data,
-      statement::For<ArgumentId, RAJA::hip_block_xyz_direct<BlockDim>, EnclosedStmts...>,
-      Types>;
-
-  using typename Base::enclosed_stmts_t;
-  using typename Base::diff_t;
-
-  static
-  inline RAJA_DEVICE void exec(Data &data, bool thread_active)
-  {
-    // grid stride loop
-    diff_t len = segment_length<ArgumentId>(data);
-    diff_t i = get_hip_dim<BlockDim>(blockIdx);
-
-    if (i < len) {
-
-      // Assign the x thread to the argument
-      data.template assign_offset<ArgumentId>(i);
-      data.template assign_param<ParamId>(i);
-
-      // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-    }
-  }
-};
-
-/*
- * Executor for block work sharing inside HipKernel.
- * Provides a grid-stride loop (stride of gridDim.xyz) for
- * each block in xyz.
- * Assigns the loop index to offset ArgumentId
- * Assigns the loop index to param ParamId
- */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename ParamId,
-          int BlockDim,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<
-    Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::hip_block_xyz_loop<BlockDim>, EnclosedStmts...>,
-    Types>
-    : public HipStatementExecutor<
-        Data,
-        statement::For<ArgumentId, RAJA::hip_block_xyz_loop<BlockDim>, EnclosedStmts...>,
-        Types> {
-
-  using Base = HipStatementExecutor<
-      Data,
-      statement::For<ArgumentId, RAJA::hip_block_xyz_loop<BlockDim>, EnclosedStmts...>,
-      Types>;
-
-  using typename Base::enclosed_stmts_t;
-  using typename Base::diff_t;
-
-  static
-  inline RAJA_DEVICE void exec(Data &data, bool thread_active)
-  {
-    // grid stride loop
-    diff_t len = segment_length<ArgumentId>(data);
-    diff_t i_init = get_hip_dim<BlockDim>(blockIdx);
-    diff_t i_stride = get_hip_dim<BlockDim>(gridDim);
-
-    // Iterate through grid stride of chunks
-    for (diff_t i = i_init; i < len; i += i_stride) {
-
-      // Assign the x thread to the argument
-      data.template assign_offset<ArgumentId>(i);
-      data.template assign_param<ParamId>(i);
-
-      // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
     }
   }
 };
