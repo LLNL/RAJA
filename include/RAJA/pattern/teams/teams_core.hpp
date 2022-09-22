@@ -186,17 +186,33 @@ public:
   {
   }
 
-  //#if defined(RAJA_ENABLE_SYCL)
   template<typename T>
   RAJA_HOST_DEVICE T* getSharedMemory(size_t bytes)
   {
+    //#if defined(RAJA_DEVICE_CODE)
+    //printf("getting device shared memory\n");
     T * mem_ptr = &((T*) shared_mem_ptr)[shared_mem_offset];
     shared_mem_offset += bytes*sizeof(T);
-
-    //TODO add a check to ensure
-    //we do not go beyond our allocated shared mem
-
     return mem_ptr;
+
+    /*
+#else
+    printf("getting host shared memory\n");
+    //T stack_mem[bytes];
+    //T * mem_ptr = &stack_mem[0];
+    T * mem_ptr = T [bytes];
+    return mem_ptr;
+#endif
+    */
+
+  }
+
+  RAJA_HOST_DEVICE void releaseSharedMemory()
+  {
+    //printf("Releasing dynamic shared memory");
+#if !defined(RAJA_DEVICE_CODE)
+  shared_mem_offset = 0;
+#endif
   }
 
   //#endif

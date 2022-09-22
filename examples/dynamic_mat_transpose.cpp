@@ -316,6 +316,7 @@ int main(int argc, char *argv[])
         RAJA::expt::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
 
             int *tile_1_mem = ctx.getSharedMemory<int>(TILE_DIM*TILE_DIM);
+
             //reshape the data
             int (*Tile_1)[TILE_DIM] = (int (*)[TILE_DIM]) (tile_1_mem);
 
@@ -350,6 +351,7 @@ int main(int argc, char *argv[])
                 });
               });
 
+            ctx.releaseSharedMemory();
           });
       });
 
