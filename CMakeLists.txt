@@ -351,7 +351,3 @@ endif ()
 if (RAJA_ENABLE_BENCHMARKS)
   add_subdirectory(benchmark)
 endif ()
-
-raja_add_executable(
-  NAME new_reduce
-  SOURCES new_reduce.cpp)
