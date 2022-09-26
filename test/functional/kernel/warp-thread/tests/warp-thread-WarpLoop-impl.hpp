@@ -120,7 +120,7 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARP&,
                             RAJA::make_tuple(RAJA::TypedRangeSegment<RAJA::Index_type>(0, flatSize)),
                             RAJA::make_tuple((RAJA::Index_type)0),
                             work_res,
-                            [=] RAJA_HOST_DEVICE (RAJA::Index_type i, RAJA::Index_type j) {
+                            [=] RAJA_HOST_DEVICE (RAJA::Index_type RAJA_UNUSED_ARG(i), RAJA::Index_type j) {
                               worksum += j; // j should only be 0..31
                             });
 
