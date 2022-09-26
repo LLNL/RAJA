@@ -614,7 +614,7 @@ namespace expt
       dynamic_helper<IDX-1, POLICY_LIST>::invoke_forall(pol, seg, body);
     }
 
-    template<typename SEGMENT, typename T, typename BODY>
+    template<typename SEGMENT, typename BODY>
     static resources::EventProxy<resources::Resource>
     invoke_forall(RAJA::resources::Resource r, const int pol, SEGMENT const &seg, BODY const &body)
     {
