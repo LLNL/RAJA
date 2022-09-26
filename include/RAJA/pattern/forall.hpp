@@ -599,19 +599,13 @@ namespace expt
 
 template<typename T, typename t_pol, typename SEGMENT, typename BODY>
 struct IsHostResource {
-  static const bool value = false;
 
 #if defined(RAJA_DEVICE_ACTIVE)
   static resources::EventProxy<resources::Resource>
   invoke_forall(RAJA::resources::Resource r, SEGMENT const &seg, BODY const &body)
   {
-#if defined(RAJA_CUDA_ACTIVE)
-    RAJA::forall<t_pol>(r.get<RAJA::resources::Cuda>(), seg, body);
-#endif
 
-#if defined(RAJA_HIP_ACTIVE)
-    RAJA::forall<t_pol>(r.get<RAJA::resources::Hip>(), seg, body);
-#endif
+    RAJA::forall<t_pol>(r.get<T>(), seg, body);
 
     return resources::EventProxy<resources::Resource>(r);
   }
@@ -620,7 +614,7 @@ struct IsHostResource {
 
 template<typename t_pol, typename SEGMENT, typename BODY>
 struct IsHostResource<RAJA::resources::Host, t_pol, SEGMENT, BODY> {
-static const bool value = true;
+
   static resources::EventProxy<resources::Resource>
   invoke_forall(RAJA::resources::Resource r, SEGMENT const &seg, BODY const &body)
   {
@@ -632,6 +626,17 @@ static const bool value = true;
 template<camp::idx_t IDX, typename POLICY_LIST>
 struct dynamic_helper
 {
+  template<typename SEGMENT, typename BODY>
+  static void invoke_forall(const int pol, SEGMENT const &seg, BODY const &body)
+  {
+    if(IDX==pol){
+      using t_pol = typename camp::at<POLICY_LIST,camp::num<IDX>>::type;
+      RAJA::forall<t_pol>(seg, body);
+      return;
+    }
+    dynamic_helper<IDX-1, POLICY_LIST>::invoke_forall(pol, seg, body);
+  }
+
   template<typename SEGMENT, typename BODY>
   static resources::EventProxy<resources::Resource>
   invoke_forall(RAJA::resources::Resource r, const int pol, SEGMENT const &seg, BODY const &body)
@@ -645,17 +650,6 @@ struct dynamic_helper
     }
 
     return dynamic_helper<IDX-1, POLICY_LIST>::invoke_forall(r, pol, seg, body);
-  }
-
-  template<typename SEGMENT, typename BODY>
-  static void invoke_forall(const int pol, SEGMENT const &seg, BODY const &body)
-  {
-    if(IDX==pol){
-      using t_pol = typename camp::at<POLICY_LIST,camp::num<IDX>>::type;
-      RAJA::forall<t_pol>(seg, body);
-      return;
-    }
-    dynamic_helper<IDX-1, POLICY_LIST>::invoke_forall(pol, seg, body);
   }
 
 };
@@ -673,7 +667,6 @@ struct dynamic_helper<0, POLICY_LIST>
     }
     RAJA_ABORT_OR_THROW("Policy enum not supported: ");
   }
-
 
   template<typename SEGMENT, typename BODY>
   static resources::EventProxy<resources::Resource>
@@ -693,12 +686,14 @@ struct dynamic_helper<0, POLICY_LIST>
   template<typename POLICY_LIST, typename SEGMENT, typename BODY>
   void dynamic_forall(const int pol, SEGMENT const &seg, BODY const &body)
   {
+    constexpr int N = camp::size<POLICY_LIST>::value;
 
-    constexpr int N = camp::size<POLICY_LIST>::value-1;
-    if(pol > N)  {
+    static_assert(N > 0, "RAJA policy list must not be empty");
+
+    if(pol > N-1)  {
       RAJA_ABORT_OR_THROW("Policy enum not supported");
     }
-    dynamic_helper<N, POLICY_LIST>::invoke_forall(pol, seg, body);
+    dynamic_helper<N-1, POLICY_LIST>::invoke_forall(pol, seg, body);
 
   }
 
@@ -707,13 +702,14 @@ struct dynamic_helper<0, POLICY_LIST>
   resources::EventProxy<resources::Resource>
   dynamic_forall(RAJA::resources::Resource r, const int pol, SEGMENT const &seg, BODY const &body)
   {
+    constexpr int N = camp::size<POLICY_LIST>::value;
+    static_assert(N > 0, "RAJA policy list must not be empty");
 
-    constexpr int N = camp::size<POLICY_LIST>::value-1;
-    if(pol > N)  {
+    if(pol > N-1)  {
       RAJA_ABORT_OR_THROW("Policy enum not supported");
     }
 
-    return dynamic_helper<N, POLICY_LIST>::invoke_forall(r, pol, seg, body);
+    return dynamic_helper<N-1, POLICY_LIST>::invoke_forall(r, pol, seg, body);
   }
 
 }  // namespace expt
