@@ -104,6 +104,10 @@ raja_add_executable(
   SOURCES reductions_solution.cpp)
 
 raja_add_executable(
+  NAME forall-param-reductions_solution
+  SOURCES forall-param-reductions_solution.cpp)
+
+raja_add_executable(
   NAME scan
   SOURCES scan.cpp)
 raja_add_executable(
