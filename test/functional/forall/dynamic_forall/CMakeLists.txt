@@ -8,7 +8,7 @@
 #
 # List of segment types for generating test files.
 #
-set(TEST_TYPES BasicShared)
+set(TEST_TYPES DynamicRangeSegmentForall)
 
 foreach( BACKEND ${DYNAMIC_BACKENDS} )
   foreach( TESTTYPE ${TEST_TYPES} )

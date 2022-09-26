@@ -27,6 +27,8 @@ if(RAJA_ENABLE_TARGET_OPENMP)
   list(APPEND FORALL_BACKENDS OpenMPTarget)
 endif()
 
+add_subdirectory(dynamic_forall)
+
 add_subdirectory(indexset)
 add_subdirectory(indexset-view)
 
