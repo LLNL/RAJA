@@ -595,8 +595,6 @@ RAJA_INLINE camp::resources::EventProxy<Res> CallForallIcount::operator()(T cons
 namespace expt
 {
 
-
-
 template<typename T, typename t_pol, typename SEGMENT, typename BODY>
 struct IsHostResource {
 
