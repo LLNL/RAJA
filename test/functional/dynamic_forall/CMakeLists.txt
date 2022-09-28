@@ -21,4 +21,6 @@ endif()
 
 add_subdirectory(segment)
 
+add_subdirectory(resource-segment)
+
 unset( DYNAMIC_BACKENDS )
