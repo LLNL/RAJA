@@ -610,6 +610,7 @@ namespace expt
       if(IDX==pol){
         using t_pol = typename camp::at<POLICY_LIST,camp::num<IDX>>::type;
         RAJA::forall<t_pol>(seg, body);
+        return;
       }
       dynamic_helper<IDX-1, POLICY_LIST>::invoke_forall(pol, seg, body);
     }
@@ -645,6 +646,7 @@ namespace expt
       if(0==pol){
         using t_pol = typename camp::at<POLICY_LIST,camp::num<0>>::type;
         RAJA::forall<t_pol>(seg, body);
+        return;
       }
       RAJA_ABORT_OR_THROW("Policy enum not supported ");
     }
