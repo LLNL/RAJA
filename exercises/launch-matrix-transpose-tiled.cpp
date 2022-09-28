@@ -343,7 +343,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const bool hip_async = false;
   using hip_launch_policy = RAJA::expt::LaunchPolicy<RAJA::expt::hip_launch_t<hip_async>>;
 
-  RAJA::expt::launch<hip_launch_policy>(
+  RAJA::expt::launch<hip_launch_policy>
+    (dynamic_shared_mem,
     RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_c, n_blocks_r),
                      RAJA::expt::Threads(c_block_sz, r_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
