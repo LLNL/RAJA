@@ -46,8 +46,6 @@ struct LaunchExecute<RAJA::expt::seq_launch_t> {
   template <typename BODY>
   static void exec(const size_t shared_mem, LaunchContext const &ctx, BODY const &body)
   {
-    //AV is this what we want??
-    std::cout<<"1. allocating bytes of shared_mem = "<<shared_mem<<std::endl;
     char *kernel_local_mem = new char[shared_mem];
     ctx.shared_mem_ptr = kernel_local_mem;
 
@@ -61,9 +59,6 @@ struct LaunchExecute<RAJA::expt::seq_launch_t> {
   static resources::EventProxy<resources::Resource>
   exec(RAJA::resources::Resource res, const size_t shared_mem, LaunchContext const &ctx, BODY const &body)
   {
-
-    std::cout<<"allocating bytes of shared_mem = "<<shared_mem<<std::endl;
-    //AV is this what we want??
     char *kernel_local_mem = new char[shared_mem];
     ctx.shared_mem_ptr = kernel_local_mem;
 
