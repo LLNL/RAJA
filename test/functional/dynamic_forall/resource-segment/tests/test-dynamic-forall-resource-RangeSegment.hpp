@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_DYANMIC_FORALL_RANGESEGMENT_HPP__
-#define __TEST_DYANMIC_FORALL_RANGESEGMENT_HPP__
+#ifndef __TEST_DYANMIC_FORALL_RESOURCE_RANGESEGMENT_HPP__
+#define __TEST_DYANMIC_FORALL_RESOURCE_RANGESEGMENT_HPP__
 
 #include <numeric>
 #include <iostream>
