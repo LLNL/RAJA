@@ -89,11 +89,7 @@ struct sycl_reduce
 
 using policy::sycl::sycl_exec;
 using policy::sycl::sycl_reduce;
-
-namespace expt
-{
-  using policy::sycl::sycl_launch_t;
-}
+using policy::sycl::sycl_launch_t;
   
 /*!
  * Maps indices to SYCL global id

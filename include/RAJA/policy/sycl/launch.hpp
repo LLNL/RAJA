@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing user interface for RAJA::Teams::sycl
+ * \brief   RAJA header file containing user interface for RAJA::launch::sycl
  *
  ******************************************************************************
  */
@@ -15,10 +15,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_teams_sycl_HPP
-#define RAJA_pattern_teams_sycl_HPP
+#ifndef RAJA_pattern_launch_sycl_HPP
+#define RAJA_pattern_launch_sycl_HPP
 
-#include "RAJA/pattern/teams/teams_core.hpp"
+#include "RAJA/pattern/launch/launch_core.hpp"
 #include "RAJA/pattern/detail/privatizer.hpp"
 #include "RAJA/policy/sycl/policy.hpp"
 #include "RAJA/policy/sycl/MemUtils_SYCL.hpp"

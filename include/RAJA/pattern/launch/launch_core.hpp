@@ -159,8 +159,6 @@ public:
   mutable void *shared_mem_ptr;
 
 #if defined(RAJA_ENABLE_SYCL)
-  mutable int3 loc_id;
-  mutable int3 group_id;
   mutable cl::sycl::nd_item<3> *itm;
 #endif
 
