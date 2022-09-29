@@ -130,9 +130,7 @@ struct Grid {
 public:
   Teams teams;
   Threads threads;
-  Lanes lanes;
   const char *kernel_name{nullptr};
-  //size_t shared_mem_size; //In bytes
 
   RAJA_INLINE
   Grid() = default;
@@ -149,17 +147,6 @@ private:
   RAJA_INLINE
   Threads apply(Threads const &a) { return (threads = a); }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  Lanes apply(Lanes const &a) { return (lanes = a); }
-};
-
-struct int3
-{
-  int x,y,z;
-  int3(int _x=-1,int _y=-1,int _z=-1) :
-    x(_x), y(_y), z(_z)
-  {}
 };
 
 class LaunchContext : public Grid
