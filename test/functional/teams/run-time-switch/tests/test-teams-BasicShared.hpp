@@ -30,31 +30,31 @@ void TeamsBasicSharedTestImpl()
 
 
   //Select platform
-  RAJA::expt::ExecPlace select_cpu_or_gpu;
+  RAJA::ExecPlace select_cpu_or_gpu;
   if (working_res.get_platform()  == camp::resources::Platform::host){
-    select_cpu_or_gpu = RAJA::expt::HOST;
+    select_cpu_or_gpu = RAJA::HOST;
   }else{  
-    select_cpu_or_gpu = RAJA::expt::DEVICE;
+    select_cpu_or_gpu = RAJA::DEVICE;
   }
 
 
-  RAJA::expt::launch<LAUNCH_POLICY>(select_cpu_or_gpu,
-    RAJA::expt::Grid(RAJA::expt::Teams(N), RAJA::expt::Threads(N)),
-        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+  RAJA::launch<LAUNCH_POLICY>(select_cpu_or_gpu,
+    RAJA::Grid(RAJA::Teams(N), RAJA::Threads(N)),
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-          RAJA::expt::loop<TEAM_POLICY>(ctx, RAJA::RangeSegment(0, N), [&](int r) {
+          RAJA::loop<TEAM_POLICY>(ctx, RAJA::RangeSegment(0, N), [&](int r) {
 
                 // Array shared within threads of the same team
                 RAJA_TEAM_SHARED int s_A[1];
 
-                RAJA::expt::loop<THREAD_POLICY>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
+                RAJA::loop<THREAD_POLICY>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
                     s_A[c] = r; 
                 });
 
                 ctx.teamSync();
 
                 //broadcast shared value to all threads and write to array
-                RAJA::expt::loop<THREAD_POLICY>(ctx, RAJA::RangeSegment(0, N), [&](int c) {
+                RAJA::loop<THREAD_POLICY>(ctx, RAJA::RangeSegment(0, N), [&](int c) {
                     const int idx = c + N*r;
                     working_array[idx] = s_A[0];
                 });  // loop j

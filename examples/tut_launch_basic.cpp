@@ -18,12 +18,12 @@
  *  capabilities with the RAJA Launch API.
  *
  *  RAJA features shown:
- *    -  RAJA::expt::launch
- *    -  RAJA::expt::loop
+ *    -  RAJA::launch
+ *    -  RAJA::loop
  */
 
 /*
- * The RAJA::expt::Launch framework enables developers
+ * The RAJA::Launch framework enables developers
  * to expressed algorithms in terms of nested
  * loops within an execution space. RAJA teams
  * enables run time selection of a host or
@@ -34,18 +34,18 @@
 */
 
 // __host_launch_start
-using host_launch = RAJA::expt::seq_launch_t;
+using host_launch = RAJA::seq_launch_t;
 // __host_launch_end
 
 #if defined(RAJA_ENABLE_CUDA)
 // __device_launch_start
-using device_launch = RAJA::expt::cuda_launch_t<false>;
+using device_launch = RAJA::cuda_launch_t<false>;
 // __device_launch_end
 #elif defined(RAJA_ENABLE_HIP)
-using device_launch = RAJA::expt::hip_launch_t<false>;
+using device_launch = RAJA::hip_launch_t<false>;
 #endif
 
-using launch_policy = RAJA::expt::LaunchPolicy<
+using launch_policy = RAJA::LaunchPolicy<
   host_launch
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
   ,device_launch
@@ -64,7 +64,7 @@ using launch_policy = RAJA::expt::LaunchPolicy<
  * On the host the loops expands to standard C style for loops.
  */
 
-using teams_x = RAJA::expt::LoopPolicy<
+using teams_x = RAJA::LoopPolicy<
                                        RAJA::loop_exec
 #if defined(RAJA_ENABLE_CUDA)
                                        ,
@@ -76,7 +76,7 @@ using teams_x = RAJA::expt::LoopPolicy<
 #endif
                                        >;
 
-using teams_y = RAJA::expt::LoopPolicy<
+using teams_y = RAJA::LoopPolicy<
                                        RAJA::loop_exec
 #if defined(RAJA_ENABLE_CUDA)
                                        ,
@@ -88,7 +88,7 @@ using teams_y = RAJA::expt::LoopPolicy<
 #endif
                                        >;
 
-using threads_x = RAJA::expt::LoopPolicy<RAJA::loop_exec
+using threads_x = RAJA::LoopPolicy<RAJA::loop_exec
 #if defined(RAJA_ENABLE_CUDA)
                                          ,
                                          RAJA::cuda_thread_x_direct
@@ -99,7 +99,7 @@ using threads_x = RAJA::expt::LoopPolicy<RAJA::loop_exec
 #endif
                                          >;
 
-using threads_y = RAJA::expt::LoopPolicy<RAJA::loop_exec
+using threads_y = RAJA::LoopPolicy<RAJA::loop_exec
 #if defined(RAJA_ENABLE_CUDA)
                                          ,
                                          RAJA::cuda_thread_y_direct
@@ -153,11 +153,11 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  RAJA::expt::ExecPlace select_cpu_or_gpu;
+  RAJA::ExecPlace select_cpu_or_gpu;
   if(exec_space.compare("host") == 0)
-    { select_cpu_or_gpu = RAJA::expt::HOST; printf("Running RAJA-Teams on the host \n"); }
+    { select_cpu_or_gpu = RAJA::HOST; printf("Running RAJA-Teams on the host \n"); }
   if(exec_space.compare("device") == 0)
-    { select_cpu_or_gpu = RAJA::expt::DEVICE; printf("Running RAJA-Teams on the device \n"); }
+    { select_cpu_or_gpu = RAJA::DEVICE; printf("Running RAJA-Teams on the device \n"); }
 
 //
 // The following three kernels illustrate loop based parallelism
@@ -171,18 +171,18 @@ int main(int argc, char *argv[])
   const int Nthreads = 2;
   // __compute_grid_end
 
-  RAJA::expt::launch<launch_policy>(select_cpu_or_gpu,
-    RAJA::expt::Grid(RAJA::expt::Teams(Nteams,Nteams),
-                     RAJA::expt::Threads(Nthreads,Nthreads)),
+  RAJA::launch<launch_policy>(select_cpu_or_gpu,
+    RAJA::Grid(RAJA::Teams(Nteams,Nteams),
+                     RAJA::Threads(Nthreads,Nthreads)),
 
-    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+    [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
      // _team_loops_start
-     RAJA::expt::loop<teams_y>(ctx, RAJA::TypedRangeSegment<int>(0, Nteams), [&] (int by) {
-       RAJA::expt::loop<teams_x>(ctx, RAJA::TypedRangeSegment<int>(0, Nteams), [&] (int bx) {
+     RAJA::loop<teams_y>(ctx, RAJA::TypedRangeSegment<int>(0, Nteams), [&] (int by) {
+       RAJA::loop<teams_x>(ctx, RAJA::TypedRangeSegment<int>(0, Nteams), [&] (int bx) {
 
-         RAJA::expt::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0, Nthreads), [&] (int ty) {
-           RAJA::expt::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0, Nthreads),       [&] (int tx) {
+         RAJA::loop<threads_y>(ctx, RAJA::TypedRangeSegment<int>(0, Nthreads), [&] (int ty) {
+           RAJA::loop<threads_x>(ctx, RAJA::TypedRangeSegment<int>(0, Nthreads),       [&] (int tx) {
                printf("RAJA Teams: threadId_x %d threadId_y %d teamId_x %d teamId_y %d \n",
                       tx, ty, bx, by);
 
@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
    });
 
   //Equivalent C style loops
-  if(select_cpu_or_gpu == RAJA::expt::HOST) {
+  if(select_cpu_or_gpu == RAJA::HOST) {
     // _c_style_loops_start
     for (int by=0; by<Nteams; ++by) {
       for (int bx=0; bx<Nteams; ++bx) {
@@ -228,13 +228,13 @@ int main(int argc, char *argv[])
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-  if(select_cpu_or_gpu == RAJA::expt::DEVICE)
+  if(select_cpu_or_gpu == RAJA::DEVICE)
     gpuKernel<<<griddim, blockdim>>>();
   cudaDeviceSynchronize();
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-  if(select_cpu_or_gpu == RAJA::expt::DEVICE)
+  if(select_cpu_or_gpu == RAJA::DEVICE)
     hipLaunchKernelGGL((gpuKernel), dim3(griddim), dim3(blockdim), 0, 0);
   hipDeviceSynchronize();
 #endif

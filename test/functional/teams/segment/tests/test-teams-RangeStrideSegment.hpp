@@ -52,11 +52,11 @@ void TeamsRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
       idx += stride; 
     }
     
-    RAJA::expt::launch<LAUNCH_POLICY>
-      (dynamic_shared_mem, RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+    RAJA::launch<LAUNCH_POLICY>
+      (dynamic_shared_mem, RAJA::Grid(RAJA::Teams(blocks), RAJA::Threads(threads)),
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
   
-        RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
+        RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
             working_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
           });
 
@@ -64,11 +64,11 @@ void TeamsRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
 
   } else { // zero-length segment
 
-    RAJA::expt::launch<LAUNCH_POLICY>
-      (dynamic_shared_mem, RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+    RAJA::launch<LAUNCH_POLICY>
+      (dynamic_shared_mem, RAJA::Grid(RAJA::Teams(blocks), RAJA::Threads(threads)),
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
   
-        RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
+        RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
             working_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
             (void) idx;
             working_array[0]++;

@@ -70,11 +70,11 @@ void TeamsListSegmentTestImpl(INDEX_TYPE N)
 
     working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
-    RAJA::expt::launch<LAUNCH_POLICY>
-      (dynamic_shared_mem, RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+    RAJA::launch<LAUNCH_POLICY>
+      (dynamic_shared_mem, RAJA::Grid(RAJA::Teams(blocks), RAJA::Threads(threads)),
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-        RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, lseg, [&](INDEX_TYPE idx) {
+        RAJA::loop<GLOBAL_THREAD_POICY>(ctx, lseg, [&](INDEX_TYPE idx) {
             working_array[RAJA::stripIndexType(idx)] = idx;
           });
       });
@@ -85,11 +85,11 @@ void TeamsListSegmentTestImpl(INDEX_TYPE N)
 
     working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
-    RAJA::expt::launch<LAUNCH_POLICY>
-      (dynamic_shared_mem, RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+    RAJA::launch<LAUNCH_POLICY>
+      (dynamic_shared_mem, RAJA::Grid(RAJA::Teams(blocks), RAJA::Threads(threads)),
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-        RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, lseg, [&](INDEX_TYPE idx) {
+        RAJA::loop<GLOBAL_THREAD_POICY>(ctx, lseg, [&](INDEX_TYPE idx) {
             (void) idx;
             working_array[0]++;
           });

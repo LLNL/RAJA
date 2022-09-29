@@ -195,35 +195,35 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   /*
   using launch_policy =
-    RAJA::expt::LaunchPolicy<
+    RAJA::LaunchPolicy<
 #if defined(RAJA_DEVICE_ACTIVE)
-      RAJA::expt::seq_launch_t,
+      RAJA::seq_launch_t,
 #endif
-      RAJA::expt::sycl_launch_t<false>>;
+      RAJA::sycl_launch_t<false>>;
 
   using inner0 =
-    RAJA::expt::LoopPolicy<
+    RAJA::LoopPolicy<
 #if defined(RAJA_DEVICE_ACTIVE)
       RAJA::loop_exec,
 #endif
       RAJA::sycl_local_0_direct>;
 
   using inner1 =
-    RAJA::expt::LoopPolicy<
+    RAJA::LoopPolicy<
 #if defined(RAJA_DEVICE_ACTIVE)
       RAJA::loop_exec,
 #endif
       RAJA::sycl_local_1_direct>;
 
   using outer0 =
-    RAJA::expt::LoopPolicy<
+    RAJA::LoopPolicy<
 #if defined(RAJA_DEVICE_ACTIVE)
       RAJA::loop_exec,
 #endif
     RAJA::sycl_group_0_direct>;
 
   using outer1 =
-    RAJA::expt::LoopPolicy<
+    RAJA::LoopPolicy<
 #if defined(RAJA_DEVICE_ACTIVE)
       RAJA::loop_exec,
 #endif
@@ -231,20 +231,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   */
 
     using launch_policy =
-    RAJA::expt::LaunchPolicy<
-      RAJA::expt::sycl_launch_t<false>>;
+    RAJA::LaunchPolicy<
+      RAJA::sycl_launch_t<false>>;
 
   using inner0 =
-    RAJA::expt::LoopPolicy<RAJA::sycl_local_0_direct>;
+    RAJA::LoopPolicy<RAJA::sycl_local_0_direct>;
 
   using inner1 =
-    RAJA::expt::LoopPolicy<RAJA::sycl_local_1_direct>;
+    RAJA::LoopPolicy<RAJA::sycl_local_1_direct>;
 
   using outer0 =
-    RAJA::expt::LoopPolicy<RAJA::sycl_group_0_direct>;
+    RAJA::LoopPolicy<RAJA::sycl_group_0_direct>;
 
   using outer1 =
-    RAJA::expt::LoopPolicy<RAJA::sycl_group_1_direct>;
+    RAJA::LoopPolicy<RAJA::sycl_group_1_direct>;
 
 
 
@@ -252,14 +252,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
    const size_t shared_memory_size = 2*TILE_DIM*TILE_DIM*sizeof(int);
 
    //move shared memory arg to launch 2nd arg
-   RAJA::expt::launch<launch_policy>
+   RAJA::launch<launch_policy>
      (shared_memory_size,
-      RAJA::expt::Grid(RAJA::expt::Teams(outer_Dimc, outer_Dimr),
-		       RAJA::expt::Threads(TILE_DIM, TILE_DIM)),
-      [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+      RAJA::Grid(RAJA::Teams(outer_Dimc, outer_Dimr),
+		       RAJA::Threads(TILE_DIM, TILE_DIM)),
+      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
-       RAJA::expt::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
-         RAJA::expt::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
+       RAJA::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
+         RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
 
                //ctx points to a a large chunk of memory
                //getSharedMemory will apply the correct offsetting
@@ -274,8 +274,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                int (*Tile_2)[TILE_DIM] = (int (*)[TILE_DIM]) (tile_2_mem);
 	       //Use RAJA view
 
-               RAJA::expt::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
-                   RAJA::expt::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
+               RAJA::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
+                   RAJA::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
 
                        int col = bx * TILE_DIM + tx;  // Matrix column index
                        int row = by * TILE_DIM + ty;  // Matrix row index
@@ -291,8 +291,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                //need a barrier
                ctx.teamSync();
 
-               RAJA::expt::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
-                   RAJA::expt::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
+               RAJA::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
+                   RAJA::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
 
                        int col = bx * TILE_DIM + tx;  // Matrix column index
                        int row = by * TILE_DIM + ty;  // Matrix row index

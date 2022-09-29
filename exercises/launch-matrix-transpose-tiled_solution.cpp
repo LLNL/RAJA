@@ -32,7 +32,7 @@
  *  and columns of the matrix.
  *
  *  RAJA features shown:
- *    - Basic usage of 'RAJA::expt::launch' abstractions for nested loops
+ *    - Basic usage of 'RAJA::launch' abstractions for nested loops
  *    - tiling method
  *
  * If CUDA is enabled, CUDA unified memory is used.
@@ -161,19 +161,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // tile_fixed corresponds to the dimension size of the tile.
   //
   // _raja_tiled_mattranspose_start
-  using loop_pol_1 = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
-  using launch_policy_1 = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
+  using loop_pol_1 = RAJA::LoopPolicy<RAJA::loop_exec>;
+  using launch_policy_1 = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
-  RAJA::expt::launch<launch_policy_1>(
-    dynamic_shared_mem, RAJA::expt::Grid(), //Grid may be empty when running on the cpu
-    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+  RAJA::launch<launch_policy_1>(
+    dynamic_shared_mem, RAJA::Grid(), //Grid may be empty when running on the cpu
+    [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
-      RAJA::expt::tile<loop_pol_1>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::tile<loop_pol_1>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::expt::tile<loop_pol_1>(ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::tile<loop_pol_1>(ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
-          RAJA::expt::loop<loop_pol_1>(ctx, row_tile, [&] (int row) {
-            RAJA::expt::loop<loop_pol_1>(ctx, col_tile, [&] (int col) {
+          RAJA::loop<loop_pol_1>(ctx, row_tile, [&] (int row) {
+            RAJA::loop<loop_pol_1>(ctx, col_tile, [&] (int col) {
 
               Atview(col, row) = Aview(row, col);
 
@@ -199,20 +199,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This policy loops over tiles sequentially while exposing parallelism on
   // one of the inner loops.
   //
-  using omp_for_pol_2 = RAJA::expt::LoopPolicy<RAJA::omp_for_exec>;
-  using loop_pol_2 = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
-  using launch_policy_2 = RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t>;
+  using omp_for_pol_2 = RAJA::LoopPolicy<RAJA::omp_for_exec>;
+  using loop_pol_2 = RAJA::LoopPolicy<RAJA::loop_exec>;
+  using launch_policy_2 = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
-  RAJA::expt::launch<launch_policy_2>(
-    dynamic_shared_mem, RAJA::expt::Grid(), //Grid may be empty when running on the cpu
-    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+  RAJA::launch<launch_policy_2>(
+    dynamic_shared_mem, RAJA::Grid(), //Grid may be empty when running on the cpu
+    [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
-      RAJA::expt::tile<omp_for_pol_2>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::tile<omp_for_pol_2>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::expt::tile<loop_pol_2>(ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::tile<loop_pol_2>(ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
-          RAJA::expt::loop<loop_pol_2>(ctx, row_tile, [&] (int row) {
-            RAJA::expt::loop<loop_pol_2>(ctx, col_tile, [&] (int col) {
+          RAJA::loop<loop_pol_2>(ctx, row_tile, [&] (int row) {
+            RAJA::loop<loop_pol_2>(ctx, col_tile, [&] (int col) {
 
               Atview(col, row) = Aview(row, col);
 
@@ -242,26 +242,26 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int n_blocks_r = RAJA_DIVIDE_CEILING_INT(N_r, r_block_sz);
   
   // _raja_mattranspose_cuda_start
-  using cuda_teams_y = RAJA::expt::LoopPolicy<RAJA::cuda_block_y_direct>;
-  using cuda_teams_x = RAJA::expt::LoopPolicy<RAJA::cuda_block_x_direct>;
+  using cuda_teams_y = RAJA::LoopPolicy<RAJA::cuda_block_y_direct>;
+  using cuda_teams_x = RAJA::LoopPolicy<RAJA::cuda_block_x_direct>;
 
-  using cuda_threads_y = RAJA::expt::LoopPolicy<RAJA::cuda_thread_y_direct>;
-  using cuda_threads_x = RAJA::expt::LoopPolicy<RAJA::cuda_thread_x_direct>;
+  using cuda_threads_y = RAJA::LoopPolicy<RAJA::cuda_thread_y_direct>;
+  using cuda_threads_x = RAJA::LoopPolicy<RAJA::cuda_thread_x_direct>;
 
   const bool cuda_async = false;
-  using cuda_launch_policy = RAJA::expt::LaunchPolicy<RAJA::expt::cuda_launch_t<cuda_async>>;
+  using cuda_launch_policy = RAJA::LaunchPolicy<RAJA::cuda_launch_t<cuda_async>>;
 
-  RAJA::expt::launch<cuda_launch_policy>(dynamic_shared_mem,
-    RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_c, n_blocks_r),
-                     RAJA::expt::Threads(c_block_sz, r_block_sz)),
-    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+  RAJA::launch<cuda_launch_policy>(dynamic_shared_mem,
+    RAJA::Grid(RAJA::Teams(n_blocks_c, n_blocks_r),
+                     RAJA::Threads(c_block_sz, r_block_sz)),
+    [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
-      RAJA::expt::tile<cuda_teams_y>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::tile<cuda_teams_y>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::expt::tile<cuda_teams_x>(ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::tile<cuda_teams_x>(ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
-          RAJA::expt::loop<cuda_threads_y>(ctx, row_tile, [&] (int row) {
-            RAJA::expt::loop<cuda_threads_x>(ctx, col_tile, [&] (int col) {
+          RAJA::loop<cuda_threads_y>(ctx, row_tile, [&] (int row) {
+            RAJA::loop<cuda_threads_x>(ctx, col_tile, [&] (int col) {
 
               Atview(col, row) = Aview(row, col);
 
@@ -298,26 +298,26 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int n_blocks_c = RAJA_DIVIDE_CEILING_INT(N_c, c_block_sz);
   const int n_blocks_r = RAJA_DIVIDE_CEILING_INT(N_r, r_block_sz);
 
-  using hip_teams_y = RAJA::expt::LoopPolicy<RAJA::hip_block_y_direct>;
-  using hip_teams_x = RAJA::expt::LoopPolicy<RAJA::hip_block_x_direct>;
+  using hip_teams_y = RAJA::LoopPolicy<RAJA::hip_block_y_direct>;
+  using hip_teams_x = RAJA::LoopPolicy<RAJA::hip_block_x_direct>;
 
-  using hip_threads_y = RAJA::expt::LoopPolicy<RAJA::hip_thread_y_direct>;
-  using hip_threads_x = RAJA::expt::LoopPolicy<RAJA::hip_thread_x_direct>;
+  using hip_threads_y = RAJA::LoopPolicy<RAJA::hip_thread_y_direct>;
+  using hip_threads_x = RAJA::LoopPolicy<RAJA::hip_thread_x_direct>;
 
   const bool hip_async = false;
-  using hip_launch_policy = RAJA::expt::LaunchPolicy<RAJA::expt::hip_launch_t<hip_async>>;
+  using hip_launch_policy = RAJA::LaunchPolicy<RAJA::hip_launch_t<hip_async>>;
 
-  RAJA::expt::launch<hip_launch_policy>(dynamic_shared_mem,
-    RAJA::expt::Grid(RAJA::expt::Teams(n_blocks_c, n_blocks_r),
-                     RAJA::expt::Threads(c_block_sz, r_block_sz)),
-    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+  RAJA::launch<hip_launch_policy>(dynamic_shared_mem,
+    RAJA::Grid(RAJA::Teams(n_blocks_c, n_blocks_r),
+                     RAJA::Threads(c_block_sz, r_block_sz)),
+    [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
-      RAJA::expt::tile<hip_teams_y>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::tile<hip_teams_y>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::expt::tile<hip_teams_x> (ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::tile<hip_teams_x> (ctx, TILE_DIM, col_Range, [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
-          RAJA::expt::loop<hip_threads_y>(ctx, row_tile, [&] (int row) {
-            RAJA::expt::loop<hip_threads_x>(ctx, col_tile, [&] (int col) {
+          RAJA::loop<hip_threads_y>(ctx, row_tile, [&] (int row) {
+            RAJA::loop<hip_threads_x>(ctx, col_tile, [&] (int col) {
 
               d_Atview(col, row) = d_Aview(row, col);
 
