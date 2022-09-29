@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_TEAMS_LISTSEGMENT_HPP__
-#define __TEST_TEAMS_LISTSEGMENT_HPP__
+#ifndef __TEST_LAUNCH_LISTSEGMENT_HPP__
+#define __TEST_LAUNCH_LISTSEGMENT_HPP__
 
 #include <cstdio>
 #include <cstdlib>
@@ -16,7 +16,7 @@
 #include <numeric>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename LAUNCH_POLICY, typename GLOBAL_THREAD_POICY>
-void TeamsListSegmentTestImpl(INDEX_TYPE N)
+void LaunchListSegmentTestImpl(INDEX_TYPE N)
 {
 
   // Create and initialize indices in idx_array used to create list segment
@@ -110,13 +110,13 @@ void TeamsListSegmentTestImpl(INDEX_TYPE N)
 }
 
 
-TYPED_TEST_SUITE_P(TeamsListSegmentTest);
+TYPED_TEST_SUITE_P(LaunchListSegmentTest);
 template <typename T>
-class TeamsListSegmentTest : public ::testing::Test
+class LaunchListSegmentTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(TeamsListSegmentTest, ListSegmentTeams)
+TYPED_TEST_P(LaunchListSegmentTest, ListSegmentTeams)
 {
   using INDEX_TYPE       = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -124,16 +124,16 @@ TYPED_TEST_P(TeamsListSegmentTest, ListSegmentTeams)
   using GLOBAL_THREAD_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<1>>::type;
 
   // test zero-length list segment
-  TeamsListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(0));
+  LaunchListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(0));
 
-  TeamsListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(13));
+  LaunchListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(13));
 
-  TeamsListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(2047));
+  LaunchListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(2047));
 
-  TeamsListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(32000));
+  LaunchListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(32000));
 }
 
-REGISTER_TYPED_TEST_SUITE_P(TeamsListSegmentTest,
+REGISTER_TYPED_TEST_SUITE_P(LaunchListSegmentTest,
                             ListSegmentTeams);
 
 #endif  // __TEST_TEAMS_LISTSEGMENT_HPP__

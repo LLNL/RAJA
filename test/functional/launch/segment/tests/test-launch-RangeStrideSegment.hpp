@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_TEAMS_RANGESTRIDESEGMENT_HPP__
-#define __TEST_TEAMS_RANGESTRIDESEGMENT_HPP__
+#ifndef __TEST_LAUNCH_RANGESTRIDESEGMENT_HPP__
+#define __TEST_LAUNCH_RANGESTRIDESEGMENT_HPP__
 
 #include <cstring>
 
 template <typename INDEX_TYPE, typename DIFF_TYPE, 
           typename WORKING_RES, typename LAUNCH_POLICY, typename GLOBAL_THREAD_POICY>
-void TeamsRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last, 
+void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last, 
                                       DIFF_TYPE stride)
 {
   RAJA::TypedRangeStrideSegment<INDEX_TYPE> r1(RAJA::stripIndexType(first), RAJA::stripIndexType(last), stride);
@@ -90,9 +90,9 @@ void TeamsRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
 }
 
 
-TYPED_TEST_SUITE_P(TeamsRangeStrideSegmentTest);
+TYPED_TEST_SUITE_P(LaunchRangeStrideSegmentTest);
 template <typename T>
-class TeamsRangeStrideSegmentTest : public ::testing::Test
+class LaunchRangeStrideSegmentTest : public ::testing::Test
 {
 };
 
@@ -106,17 +106,17 @@ template <typename INDEX_TYPE, typename DIFF_TYPE, typename WORKING_RES, typenam
   typename std::enable_if<std::is_signed<RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
 void runNegativeStrideTests()
 {
-  TeamsRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(-10), INDEX_TYPE(-1), DIFF_TYPE(2));
-  TeamsRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(0), DIFF_TYPE(2));
-  TeamsRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(5), DIFF_TYPE(3));
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(-10), INDEX_TYPE(-1), DIFF_TYPE(2));
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(0), DIFF_TYPE(2));
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(5), DIFF_TYPE(3));
 
 // Test negative strides
-  TeamsRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(10), INDEX_TYPE(-1), DIFF_TYPE(-1));
-  TeamsRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(10), INDEX_TYPE(0), DIFF_TYPE(-2));
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(10), INDEX_TYPE(-1), DIFF_TYPE(-1));
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(10), INDEX_TYPE(0), DIFF_TYPE(-2));
 }
 
 
-TYPED_TEST_P(TeamsRangeStrideSegmentTest, RangeStrideSegmentTeams)
+TYPED_TEST_P(LaunchRangeStrideSegmentTest, RangeStrideSegmentTeams)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -124,22 +124,22 @@ TYPED_TEST_P(TeamsRangeStrideSegmentTest, RangeStrideSegmentTeams)
   using GLOBAL_THREAD_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<1>>::type;
   using DIFF_TYPE   = typename std::make_signed<RAJA::strip_index_type_t<INDEX_TYPE>>::type;
 
-  TeamsRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(0), INDEX_TYPE(20), DIFF_TYPE(1));
-  TeamsRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(1), INDEX_TYPE(20), DIFF_TYPE(1));
-  TeamsRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(0), INDEX_TYPE(20), DIFF_TYPE(2));
-  TeamsRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(1), INDEX_TYPE(20), DIFF_TYPE(2));
-  TeamsRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(0), INDEX_TYPE(21), DIFF_TYPE(2));
-  TeamsRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(1), INDEX_TYPE(21), DIFF_TYPE(2));
-  TeamsRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(1), INDEX_TYPE(255), DIFF_TYPE(2));
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(0), INDEX_TYPE(20), DIFF_TYPE(1));
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(1), INDEX_TYPE(20), DIFF_TYPE(1));
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(0), INDEX_TYPE(20), DIFF_TYPE(2));
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(1), INDEX_TYPE(20), DIFF_TYPE(2));
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(0), INDEX_TYPE(21), DIFF_TYPE(2));
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(1), INDEX_TYPE(21), DIFF_TYPE(2));
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(1), INDEX_TYPE(255), DIFF_TYPE(2));
 
 // Test size zero segments
-  TeamsRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(0), INDEX_TYPE(20), DIFF_TYPE(-2));
-  TeamsRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(1), INDEX_TYPE(20), DIFF_TYPE(-2));
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(0), INDEX_TYPE(20), DIFF_TYPE(-2));
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(1), INDEX_TYPE(20), DIFF_TYPE(-2));
 
   runNegativeStrideTests<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(TeamsRangeStrideSegmentTest,
+REGISTER_TYPED_TEST_SUITE_P(LaunchRangeStrideSegmentTest,
                             RangeStrideSegmentTeams);
 
 #endif  // __TEST_TEAMS_RANGESTRIDESEGMENT_HPP__

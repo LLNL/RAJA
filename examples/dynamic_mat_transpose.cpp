@@ -32,7 +32,8 @@
  *
  *  RAJA variants of the example use RAJA dynamic shared memory as tile memory.
  *  RAJA shared memory is mapped to device shared memory which
- *  enables threads in the same thread block to share data.
+ *  enables threads in the same thread block to share data. Host versions
+ *  of the algorithms will use a dynamically sized array
  *
  *  RAJA features shown:
  *    - Basic usage of 'RAJA::launch' abstractions for nested loops
@@ -296,9 +297,11 @@ int main(int argc, char *argv[])
 
   std::cout << "\n Running RAJA matrix transpose w/ dynamic shared memory ...\n";
 
+#if defined(RAJA_ENABLE_HIP)
+
+  //Hip requires device side pointers
   int *d_A = nullptr, *d_At = nullptr;
 
-#if defined(RAJA_ENABLE_HIP)
   if(select_cpu_or_gpu == RAJA::DEVICE) {
     d_A =  memoryManager::allocate_gpu<int>(N_r * N_c);
     d_At = memoryManager::allocate_gpu<int>(N_r * N_c);
@@ -323,8 +326,11 @@ int main(int argc, char *argv[])
     RAJA::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
         RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
 
+            using shmem_type = int; constexpr int tile_dim = 2;
+            using vidx_type = int; constexpr int vunit_stride = 1;            
 
-            auto Tile_1 = ctx.getSharedMemoryView<int, 2, int, 1>(TILE_DIM*TILE_DIM, TILE_DIM, TILE_DIM);
+            //Returns a RAJA view for simplified indexing
+            auto Tile_1 = ctx.getSharedMemoryView<shmem_type, tile_dim, vidx_type, vunit_stride>(TILE_DIM*TILE_DIM, TILE_DIM, TILE_DIM);
 
             RAJA::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
               RAJA::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
