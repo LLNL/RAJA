@@ -30,20 +30,14 @@
  *  data into the tile; while outer loops will iterate over the number
  *  of tiles needed to carry out the transpose.
  *
- *  RAJA variants of the example use RAJA local arrays as tile memory.
- *  Furthermore, the tiling pattern is handled by RAJA's tile statements.
- *  For CPU execution, RAJA local arrays are used to improve
- *  performance via cache blocking. For CUDA GPU execution,
- *  RAJA shared memory is mapped to CUDA shared memory which
+ *  RAJA variants of the example use RAJA dynamic shared memory as tile memory.
+ *  RAJA shared memory is mapped to device shared memory which
  *  enables threads in the same thread block to share data.
  *
  *  RAJA features shown:
- *    - Basic usage of 'RAJA::kernel' abstractions for nested loops
- *       - Multiple lambdas
- *       - Options for specifying lambda arguments
- *       - Tile statement
- *       - ForICount statement
- *       - RAJA local arrays
+ *    - Basic usage of 'RAJA::launch' abstractions for nested loops
+ *    - Hierachial parallism
+ *    - Dynamic shared memory
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
@@ -329,10 +323,8 @@ int main(int argc, char *argv[])
     RAJA::expt::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
         RAJA::expt::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
 
-            int *tile_1_mem = ctx.getSharedMemory<int>(TILE_DIM*TILE_DIM);
 
-            //reshape the data
-            int (*Tile_1)[TILE_DIM] = (int (*)[TILE_DIM]) (tile_1_mem);
+            auto Tile_1 = ctx.getSharedMemoryView<int, 2, int, 1>(TILE_DIM*TILE_DIM, TILE_DIM, TILE_DIM);
 
             RAJA::expt::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
               RAJA::expt::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
@@ -342,7 +334,7 @@ int main(int argc, char *argv[])
 
                   // Bounds check
                   if (row < N_r && col < N_c) {
-                    Tile_1[ty][tx] = Aview(row, col);
+                    Tile_1(ty,tx) = Aview(row, col);
                   }
 
                 });
@@ -359,7 +351,7 @@ int main(int argc, char *argv[])
 
                   // Bounds check
                   if (row < N_r && col < N_c) {
-                    Atview(col, row) = Tile_1[ty][tx];
+                    Atview(col, row) = Tile_1(ty, tx);
                   }
 
                 });

@@ -24,6 +24,7 @@
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/plugins.hpp"
 #include "RAJA/util/types.hpp"
+#include "RAJA/util/View.hpp"
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
@@ -168,18 +169,16 @@ class LaunchContext : public Grid
 {
 public:
 
-  //Will have to template on a type
   mutable size_t shared_mem_offset;
-  mutable void *shared_mem_ptr; //pointer to dynamically allocated shared memory
+
+  //pointer to dynamically allocated shared memory
+  mutable void *shared_mem_ptr;
 
 #if defined(RAJA_ENABLE_SYCL)
   mutable int3 loc_id;
   mutable int3 group_id;
   mutable cl::sycl::nd_item<3> *itm;
 #endif
-
-  //int shared_mem; //how much shared memory is needed
-  //shared_mem *my_sharedmem;
 
   LaunchContext(Grid const &base)
     : Grid(base), shared_mem_offset(0)
@@ -195,16 +194,22 @@ public:
     return mem_ptr;
   }
 
+  template<typename T, size_t DIM, typename IDX_T, ptrdiff_t z_stride, typename arg, typename... args>
+  RAJA_HOST_DEVICE auto getSharedMemoryView(size_t bytes, arg idx, args... idxs)
+  {
+    T * mem_ptr = &((T*) shared_mem_ptr)[shared_mem_offset];
+
+    shared_mem_offset += bytes*sizeof(T);
+    return RAJA::View<T, RAJA::Layout<DIM, IDX_T, z_stride>>(mem_ptr, idx, idxs...);
+  }
+
   RAJA_HOST_DEVICE void releaseSharedMemory()
   {
-    //printf("Releasing dynamic shared memory");
     //on the cpu we want to restart the count
 #if !defined(RAJA_DEVICE_CODE)
   shared_mem_offset = 0;
 #endif
   }
-
-  //#endif
 
   RAJA_HOST_DEVICE
   void teamSync()
