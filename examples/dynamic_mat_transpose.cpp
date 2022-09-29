@@ -328,11 +328,10 @@ int main(int argc, char *argv[])
 
             //specify view properties
             using shmem_type = int; constexpr int tile_dim = 2;
-            using vidx_type = int; constexpr int vunit_stride = 1;
             const size_t shmem_size = TILE_DIM*TILE_DIM;
 
             //Returns a RAJA view for simplified indexing
-            auto Tile_1 = ctx.getSharedMemoryView<shmem_type, tile_dim, vidx_type, vunit_stride>(shmem_size, TILE_DIM, TILE_DIM);
+	    auto Tile_1 = ctx.getSharedMemoryView<shmem_type, tile_dim>(shmem_size, TILE_DIM, TILE_DIM);
 
             RAJA::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
               RAJA::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
