@@ -16,10 +16,6 @@ raja_add_executable(
   SOURCES tut_daxpy.cpp)
 
 raja_add_executable(
-  NAME sycl_mat_transpose
-  SOURCES sycl_mat_transpose.cpp)
-
-raja_add_executable(
   NAME dynamic_mat_transpose
   SOURCES dynamic_mat_transpose.cpp)
 
