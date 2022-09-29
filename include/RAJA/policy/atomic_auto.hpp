@@ -22,6 +22,10 @@
 
 #include "RAJA/util/macros.hpp"
 
+#if defined(RAJA_ENABLE_OPENMP)
+#include "RAJA/policy/openmp/atomic.hpp"
+#endif
+
 #if !defined(RAJA_ENABLE_DESUL_ATOMICS)
     #include "RAJA/policy/sequential/atomic.hpp"
 #endif
