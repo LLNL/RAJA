@@ -19,11 +19,11 @@ This section will help get you up and running with RAJA quickly.
 Requirements
 ============
 
-The primary requirement for using RAJA is a C++14 compliant compiler.
-Accessing various programming model back-ends requires that they be supported
+The primary requirement for using RAJA is a C++14 standard compliant compiler.
+Using various programming model back-ends requires that they be supported
 by the compiler you chose. Available options and how to enable or disable 
 them are described in :ref:`configopt-label`. To build RAJA in its most basic
-form and use its simplest features:
+form and use its simplest features, you will need:
 
 - C++ compiler with C++14 support
 - `CMake <https://cmake.org/>`_ version 3.14.5 or greater.
@@ -50,21 +50,25 @@ If you do not pass the ``--recursive`` argument to the ``git clone``
 command, you can type the following commands after cloning::
 
   $ cd RAJA
-  $ git submodule init
-  $ git submodule update
+  $ git submodule update --init --recursive
 
 Either way, the end result is the same and you should be good to go.
 
-.. note:: Any time you switch branches in RAJA, you need to re-run the
-          'git submodule update' command to set the Git submodules to
-          what is used by the new branch.
+.. note:: * If you switch branches in a RAJA repo, you may need to run the
+            command ``git submodule update`` set the Git submodule versions to
+            what is used by the new branch.
+          * If the set of submodules in the new branch is different than the
+            previous branch you were on, you may need to run the command
+            ``git submodule update --init --recursive``.
+
+.. _getting_started_depend-label:
 
 ==================
 Dependencies
 ==================
 
 RAJA has several dependencies that are required depending on how you want to
-build and use RAJA. The RAJA Git repository contains several submodules that
+build and use it. The RAJA Git repository contains several submodules that
 contain these dependencies.
 
 Dependencies that are required to build the RAJA code are:
@@ -74,16 +78,31 @@ Dependencies that are required to build the RAJA code are:
 
 Other dependencies that users should be aware of are:
 
-- `CUB CUDA utilities library <https://github.com/NVlabs/cub>`_
-- `rocPRIM HIP parallel primitives library <https://github.com/ROCmSoftwarePlatform/rocPRIM.git>`_
-- `desul <https://github.com/desul/desul>`_
+- `CUB CUDA utilities library <https://github.com/NVlabs/cub>`_ is required for using the RAJA CUDA back-end.
+- `rocPRIM HIP parallel primitives library <https://github.com/ROCmSoftwarePlatform/rocPRIM.git>`_ is required for using the RAJA HIP back-end.
+- `Desul <https://github.com/desul/desul>`_ is required if you want to use Desul atomics in RAJA instead of our current default atomics. Note that we plan to switch over to Desul atomics exclusively at some point.
 
-These are required to build RAJA features, such as CUDA and HIP back-ends.
-Additional discussion of these, with respect to building RAJA, is provided 
-below. Other than that, you probably don't need to know much about them.
-If you are curious and want to know more, please click on the links above.
+Additional discussion of these dependencies, with respect to building RAJA, is 
+provided in :ref:`getting_started_build-label`. Other than that, you probably 
+don't need to know much about them. If you are curious and want to know more, 
+please click on the link to the library you want to know about above.
 
-Other RAJA submodule dependencies are used to support our CI testing.
+.. note:: You may want or need to use external versions of camp, CUB, or 
+          rocPRIM instead of the RAJA submodules. To do so, you need to use
+          CMake variables to pass a path to a valid installation of each 
+          library. Specifically:
+
+            * External camp: -Dcamp_DIR=<camp dir name>
+            * External CUB: -DRAJA_ENABLE_EXTERNAL_CUB=On -DCUB_DIR=<CUB dir name>
+            * External rocPRIM: -DRAJA_ENABLE_EXTERNAL_ROCPRIM=On -DROCPRIM_DIR=<rocPRIM dir name>
+
+More information about configuring GPU builds with CUDA or HIP is provided
+in :ref:`getting_started_build_gpu-label`
+
+RAJA includes other submodule dependencies, which are used to support our 
+Gitlab CI testing. These are described in the RAJA Developer Guide. 
+
+.. _getting_started_build-label:
 
 ==================
 Build and Install
@@ -92,23 +111,21 @@ Build and Install
 Building and installing RAJA can be very easy or more complicated, depending
 on which features you want to use and how easy it is to use your system.
 
---------------
-Building RAJA
---------------
-
-RAJA uses CMake to configure a build. A "bare bones" configuration looks like::
+RAJA uses CMake to configure a build. A "bare bones" configuration, and build
+and install looks like::
 
   $ mkdir build-dir && cd build-dir
   $ cmake -DCMAKE_INSTALL_PREFIX=/path/to/install ../
+  $ make  (or make -j <N>)
+  $ make install
 
-.. note:: * RAJA requires a minimum CMake version of 3.14.5.
-          * Builds must be *out-of-source*.  RAJA does not allow building in
-            the source directory, so you must create a build directory and
-            run CMake in it.
+.. note:: RAJA builds must be *out-of-source*. In particular, RAJA does not al
+          low building in its source directory. You must create a build 
+          directory and run CMake in it.
 
 If you want to use a C++ compiler other than the default on your system, 
-you need to pass a path to the compiler using the CMake option
-``-DCMAKE_CXX_COMPILER=path/to/compiler``
+you need to pass a path to the compiler using the standard CMake option
+``-DCMAKE_CXX_COMPILER=path/to/compiler``.
 
 When you run CMake, it will generate output about the build environment 
 (compiler and version, options, etc.). For a summary of RAJA configuration 
@@ -148,19 +165,7 @@ build using N cores.
           space. Feel free to experiment by editing the source files,
           recompiling, and running with your changes. 
 
-.. _build-external-tpl-label:
-
-.. note:: You may want or need to use external versions of camp, CUB, or 
-          rocPRIM (i.e., not the RAJA submodules). To do so, you need to use
-          CMake variables to pass a path to a valid installation installation 
-          of each library, etc. Specifically:
-
-            * External camp: -Dcamp_DIR=<camp dir name>
-            * External CUB: -DRAJA_ENABLE_EXTERNAL_CUB=On -DCUB_DIR=<CUB dir name>
-            * External rocPRIM: -DRAJA_ENABLE_EXTERNAL_ROCPRIM=On -DROCPRIM_DIR=<rocPRIM dir name>
-
-More information about configuring GPU builds with CUDA or HIP is provided
-below.
+.. _getting_started_build_gpu-label:
 
 -----------------
 GPU Builds
