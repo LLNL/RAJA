@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_TEAMS_BASIC_SHARED_HPP__
-#define __TEST_TEAMS_BASIC_SHARED_HPP__
+#ifndef __TEST_LAUNCH_BASIC_SHARED_HPP__
+#define __TEST_LAUNCH_BASIC_SHARED_HPP__
 
 #include <numeric>
 
 template <typename WORKING_RES, typename LAUNCH_POLICY, typename TEAM_POLICY, typename THREAD_POLICY>
-void TeamsBasicSharedTestImpl()
+void LaunchBasicSharedTestImpl()
 {
 
   int N = 1000;
@@ -79,13 +79,13 @@ void TeamsBasicSharedTestImpl()
 }
 
 
-TYPED_TEST_SUITE_P(TeamsBasicSharedTest);
+TYPED_TEST_SUITE_P(LaunchBasicSharedTest);
 template <typename T>
-class TeamsBasicSharedTest : public ::testing::Test
+class LaunchBasicSharedTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(TeamsBasicSharedTest, BasicSharedTeams)
+TYPED_TEST_P(LaunchBasicSharedTest, BasicSharedTeams)
 {
 
   using WORKING_RES = typename camp::at<TypeParam, camp::num<0>>::type;
@@ -93,12 +93,12 @@ TYPED_TEST_P(TeamsBasicSharedTest, BasicSharedTeams)
   using TEAM_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<1>>::type, camp::num<1>>::type;
   using THREAD_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<1>>::type, camp::num<2>>::type;
 
-  TeamsBasicSharedTestImpl<WORKING_RES, LAUNCH_POLICY, TEAM_POLICY, THREAD_POLICY>();
+  LaunchBasicSharedTestImpl<WORKING_RES, LAUNCH_POLICY, TEAM_POLICY, THREAD_POLICY>();
 
 
 }
 
-REGISTER_TYPED_TEST_SUITE_P(TeamsBasicSharedTest,
+REGISTER_TYPED_TEST_SUITE_P(LaunchBasicSharedTest,
                             BasicSharedTeams);
 
 #endif  // __TEST_BASIC_SHARED_HPP__
