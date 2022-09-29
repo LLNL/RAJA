@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _tiledmatrixtranspose-label:
+.. _tut-tiledmatrixtranspose-label:
 
 ----------------------
 Tiled Matrix Transpose
@@ -15,7 +15,7 @@ Tiled Matrix Transpose
 This section describes the implementation of a tiled matrix transpose kernel 
 using both ``RAJA::kernel`` and ``RAJA::expt::launch`` interfaces. The intent
 is to compare and contrast the two. The discussion builds on 
-:ref:`matrixtranspose-label` by adding tiling to the matrix transpose 
+:ref:`tut-matrixtranspose-label` by adding tiling to the matrix transpose 
 implementation.
 
 There are exercise files
@@ -26,7 +26,8 @@ if you wish to get some practice with RAJA. The files
 ``RAJA/exercises/launch-matrix-transpose-tiled_solution.cpp`` contain
 complete working code for the examples. You can use the solution files to
 check your work and for guidance if you get stuck. To build
-the exercises execute ``make (kernel/launch)-matrix-transpose-tiled`` and ``make (kernel/launch)-matrix-transpose-tiled_solution``
+the exercises execute ``make (kernel/launch)-matrix-transpose-tiled`` and 
+``make (kernel/launch)-matrix-transpose-tiled_solution``
 from the build directory.
 
 Key RAJA features shown in this example are:
@@ -34,20 +35,20 @@ Key RAJA features shown in this example are:
   * ``RAJA::kernel`` method and execution policies, and the ``RAJA::statement::Tile`` type
   * ``RAJA::expt::launch`` method and execution policies, and the ``RAJA::expt::tile`` type
 
-As in :ref:`matrixtranspose-label`, we compute the transpose of an input matrix 
-:math:`A` of size :math:`N_r \times N_c` and storing the result in a second 
-matrix :math:`At` of size :math:`N_c \times N_r`.
+As in :ref:`tut-matrixtranspose-label`, we compute the transpose of an input 
+matrix :math:`A` of size :math:`N_r \times N_c` and storing the result in a 
+second matrix :math:`At` of size :math:`N_c \times N_r`.
 
 We will compute the matrix transpose using a tiling algorithm, which iterates 
 over tiles and transposes the matrix entries in each tile.
 The algorithm involves outer and inner loops to iterate over the tiles and
 matrix entries within each tile, respectively.
 
-As in :ref:`matrixtranspose-label`, we start by defining the matrix dimensions.
-Additionally, we define a tile size smaller than the matrix dimensions and 
-determine the number of tiles in each dimension. Note that we do not assume 
-that tiles divide evenly the number of rows and and columns of the matrix.
-However, we do assume square tiles.
+As in :ref:`tut-matrixtranspose-label`, we start by defining the matrix 
+dimensions. Additionally, we define a tile size smaller than the matrix 
+dimensions and determine the number of tiles in each dimension. Note that we 
+do not assume that tiles divide evenly the number of rows and and columns of 
+the matrix. However, we do assume square tiles.
 
 .. literalinclude:: ../../../../exercises/kernel-matrix-transpose-tiled_solution.cpp
    :start-after: // _tiled_mattranspose_dims_start

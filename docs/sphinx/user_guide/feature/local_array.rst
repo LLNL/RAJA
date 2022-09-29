@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _local_array-label:
+.. _feat-local_array-label:
 
 ===========
 Local Array
@@ -15,7 +15,7 @@ Local Array
 This section introduces RAJA *local arrays*. A ``RAJA::LocalArray`` is an
 array object with one or more dimensions whose memory is allocated when a 
 RAJA kernel is executed and only lives within the scope of the kernel 
-execution. To motivate the concept and usage, consider a simple C++ example
+execution. To motivate the concept and usage, consider a simple C example
 in which we construct and use two arrays in nested loops::
 
            for(int k = 0; k < 7; ++k) { //k loop
@@ -35,9 +35,10 @@ in which we construct and use two arrays in nested loops::
            }
 
 Here, two stack-allocated arrays are defined inside the outer 'k' loop and 
-used in both inner 'j' loops. This loop pattern may be also be expressed 
-using RAJA local arrays in a ``RAJA::kernel_param`` kernel. We show a 
-RAJA variant below, which matches the implementation above, and then discuss 
+used in both inner 'j' loops. 
+
+This loop pattern may be also be written using RAJA local arrays in a 
+``RAJA::kernel_param`` kernel. We show this next, and then discuss 
 its constituent parts::
 
   // 
@@ -73,8 +74,8 @@ its constituent parts::
   // Define the kernel
   // 
 
-  RAJA::kernel_param<POL> ( RAJA::make_tuple(RAJA::RangeSegment(0,5), 
-                                             RAJA::RangeSegment(0,7)),
+  RAJA::kernel_param<POL> ( RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0,5),
+                                             RAJA::TypedRangeSegment<int<(0,7)),
                             RAJA::make_tuple(kernel_a_array, kernel_b_array),
 
     [=] (int j, int k, RAJA_a_array& kernel_a_array, RAJA_b_array& kernel_b_array) {
@@ -93,25 +94,30 @@ two-dimensional and one one-dimensional and creates an instance of each type.
 The template arguments for the ``RAJA::LocalArray`` types are:
 
   * Array data type
-  * Index permutation (see :ref:`view-label` for more on RAJA permutations)
+  * Index striding order (see :ref:`feat-view-label` for details)
   * Array dimensions
 
-.. note:: ``RAJA::LocalArray`` types support arbitrary dimensions and sizes.
+The local array instances are passed to the kernel in a tuple after the 
+iteration space tuple. 
 
 The kernel policy is a two-level nested loop policy (see 
 :ref:`loop_elements-kernel-label` for information about RAJA kernel policies) 
 with a statement type ``RAJA::statement::InitLocalMem`` inserted between the 
-nested for-loops which allocates the memory for the local arrays when the 
-kernel executes.  The ``InitLocalMem`` statement type uses a 'CPU tile' memory 
-type, for the two entries '0' and '1' in the kernel parameter tuple 
-(second argument to ``RAJA::kernel_param``). Then, the inner initialization 
-loop and inner print loop are run with the respective lambda bodies defined 
-in the kernel.
+nested 'For' statements, which allocates the memory for the local arrays when 
+the kernel executes. The ``InitLocalMem`` statement type has two parameters.
+One for the memory type ``RAJA::cpu_tile_mem``, and one for specifying which
+parameter tuple entries correspond to the local arrays 
+``RAJA::ParamList<0, 1>``. The local array initialization is done in the first 
+lambda expression, and the local array values are printed in the second lambda 
+expression.
+
+.. note:: ``RAJA::LocalArray`` types support arbitrary dimensions and extents
+          in each dimension.
 
 -------------------
 Memory Policies
 -------------------
 
-``RAJA::LocalArray`` supports CPU stack-allocated memory and CUDA GPU shared
-memory and thread private memory. See :ref:`localarraypolicy-label` for a
-discussion of available memory policies.
+``RAJA::LocalArray`` supports CPU stack-allocated memory and CUDA or HIP GPU 
+shared memory and thread private memory. See :ref:`localarraypolicy-label` 
+for a discussion of available memory policies.

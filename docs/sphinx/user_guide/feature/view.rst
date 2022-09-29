@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _view-label:
+.. _feat-view-label:
 
 ===============
 View and Layout
@@ -31,7 +31,16 @@ to access a matrix entry in row `r` and column `c`. However, this solution has
 limitations; e.g., additional macro definitions may be needed when adopting a 
 different matrix data layout or when using other matrices. To facilitate
 multi-dimensional indexing and different indexing layouts, RAJA provides 
-``RAJA::View`` and ``RAJA::Layout`` classes.
+``RAJA::View``, ``RAJA::Layout``, and ``RAJA::OffsetLayout`` classes.
+
+Please see the following tutorial sections for detailed examples that use
+RAJA Views and Layouts:
+
+ * :ref:`tut-view_layout-label`
+ * :ref:`tut-offsetlayout-label`
+ * :ref:`tut-permutedlayout-label`
+ * :ref:`tut-kernelexecpols-label`
+ * :ref:`tut-launchexecpols-label`
 
 ----------
 RAJA Views
@@ -273,7 +282,7 @@ which is the extent of the first index (:math:`[-1, 2)`).
           ``RAJA::View`` data access operator when they are not needed.
 
 Complete examples illustrating ``RAJA::Layouts`` and ``RAJA::Views``  may 
-be found in the :ref:`offset-label` and :ref:`permuted-layout-label`
+be found in the :ref:`tut-offsetlayout-label` and :ref:`tut-permutedlayout-label`
 tutorial sections.
 
 Typed Layouts
@@ -283,7 +292,7 @@ RAJA provides typed variants of ``RAJA::Layout`` and ``RAJA::OffsetLayout``
 that enable users to specify integral index types. Usage requires 
 specifying types for the linear index and the multi-dimensional indicies. 
 The following example creates two two-dimensional typed layouts where the 
-linear index is of type TIL and the '(x, y)' indices for accesingg the data 
+linear index is of type TIL and the '(x, y)' indices for accessing the data 
 have types TIX and TIY::
 
    RAJA_INDEX_VALUE(TIX, "TIX");
@@ -405,5 +414,5 @@ runtime bounds checking for RAJA views. This may be a useful debugging aid for
 users. When attempting to use an index value that is out of bounds,
 RAJA will abort the program and print the index that is out of bounds and
 the value of the index and bounds for it. Since the bounds checking is a runtime
-operation, it incurs non-negligible overhead. When bounds checkoing is turned 
+operation, it incurs non-negligible overhead. When bounds checking is turned 
 off (default case), there is no additional run time overhead incurred. 

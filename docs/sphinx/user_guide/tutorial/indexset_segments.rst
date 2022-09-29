@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _indexset-label:
+.. _tut-indexset-label:
 
 -------------------------------------------------
 Iteration Spaces: Segments and IndexSets
@@ -116,6 +116,7 @@ for example, the loop will run in reverse order with iterates::
 
 .. note:: When using a RAJA strided range, no loop iterations will be run
           under the following conditions:
+
             * Stride > 0 and begin > end
             * Stride < 0 and begin < end
             * Stride == 0
@@ -301,8 +302,8 @@ IndexSets: Complex Iteration Spaces
 We noted earlier that ``RAJA::TypedIndexSet`` objects can be used to partition
 iteration spaces into disjoint parts. Among other things, this can be useful to
 expose parallelism in algorithms that would otherwise require significant 
-code transformation to do so. Please see :ref:`vertexsum-label` for discussion 
-of an example that illustrates this.
+code transformation to do so. Please see :ref:`tut-vertexsum-label` for 
+discussion of an example that illustrates this.
 
 Here is an example that uses two ``RAJA::TypedRangeSegment`` objects in an
 index set to represent an iteration space broken into two disjoint 
