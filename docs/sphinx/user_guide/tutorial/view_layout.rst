@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _view_layout-label:
+.. _tut-view_layout-label:
 
 -----------------------------------------------------------
 Data Views and Layouts
@@ -87,7 +87,7 @@ so on.
 
 .. note:: RAJA Layouts and Views support any number of dimensions and
           the default data access ordering is *row-major*. Please
-          see :ref:`view-label` for more details.
+          see :ref:`feat-view-label` for more details.
 
 To illustrate the default data layout striding, we next show simple
 one-, two-, and three-dimensional examples where the for-loop ordering 

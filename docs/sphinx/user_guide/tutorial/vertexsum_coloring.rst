@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _vertexsum-label:
+.. _tut-vertexsum-label:
 
 --------------------------------------------------
 Iteration Space Coloring: Mesh Vertex Sum
