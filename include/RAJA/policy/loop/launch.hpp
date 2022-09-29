@@ -15,10 +15,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_teams_loop_HPP
-#define RAJA_pattern_teams_loop_HPP
+#ifndef RAJA_pattern_launch_loop_HPP
+#define RAJA_pattern_launch_loop_HPP
 
-#include "RAJA/pattern/teams/teams_core.hpp"
+#include "RAJA/pattern/launch/launch_core.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/policy/loop/policy.hpp"
 
@@ -26,11 +26,8 @@
 namespace RAJA
 {
 
-namespace expt
-{
-
 template <>
-struct LaunchExecute<RAJA::expt::null_launch_t> {
+struct LaunchExecute<RAJA::null_launch_t> {
   template <typename BODY>
   static void exec(LaunchContext const& RAJA_UNUSED_ARG(ctx),
                    BODY const& RAJA_UNUSED_ARG(body))
@@ -41,7 +38,7 @@ struct LaunchExecute<RAJA::expt::null_launch_t> {
 
 
 template <>
-struct LaunchExecute<RAJA::expt::seq_launch_t> {
+struct LaunchExecute<RAJA::seq_launch_t> {
 
   template <typename BODY>
   static void exec(const size_t shared_mem, LaunchContext const &ctx, BODY const &body)
@@ -256,8 +253,6 @@ struct TileICountExecute<loop_exec, SEGMENT> {
   }
 
 };
-
-}  // namespace expt
 
 }  // namespace RAJA
 #endif

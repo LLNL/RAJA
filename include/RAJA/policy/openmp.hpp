@@ -41,7 +41,7 @@
 #include "RAJA/policy/openmp/scan.hpp"
 #include "RAJA/policy/openmp/sort.hpp"
 #include "RAJA/policy/openmp/synchronize.hpp"
-#include "RAJA/policy/openmp/teams.hpp"
+#include "RAJA/policy/openmp/launch.hpp"
 #include "RAJA/policy/openmp/WorkGroup.hpp"
 
 

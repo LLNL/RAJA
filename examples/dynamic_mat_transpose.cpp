@@ -59,19 +59,19 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
-using launch_policy = RAJA::expt::LaunchPolicy<
+using launch_policy = RAJA::LaunchPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
-    RAJA::expt::omp_launch_t
+    RAJA::omp_launch_t
 #else
-    RAJA::expt::seq_launch_t
+    RAJA::seq_launch_t
 #endif
 #if defined(RAJA_ENABLE_CUDA)
     ,
-    RAJA::expt::cuda_launch_t<false>
+    RAJA::cuda_launch_t<false>
 #endif
 #if defined(RAJA_ENABLE_HIP)
     ,
-    RAJA::expt::hip_launch_t<false>
+    RAJA::hip_launch_t<false>
 #endif
     >;
 
@@ -79,7 +79,7 @@ using launch_policy = RAJA::expt::LaunchPolicy<
  * Define team policies.
  * Up to 3 dimension are supported: x,y,z
  */
-using outer0 = RAJA::expt::LoopPolicy<
+using outer0 = RAJA::LoopPolicy<
                                        RAJA::loop_exec
 #if defined(RAJA_ENABLE_CUDA)
                                        ,
@@ -95,7 +95,7 @@ using outer0 = RAJA::expt::LoopPolicy<
 #endif
                                        >;
 
-using outer1 = RAJA::expt::LoopPolicy<
+using outer1 = RAJA::LoopPolicy<
                                        RAJA::loop_exec
 #if defined(RAJA_ENABLE_CUDA)
                                        ,
@@ -114,7 +114,7 @@ using outer1 = RAJA::expt::LoopPolicy<
  * Define thread policies.
  * Up to 3 dimension are supported: x,y,z
  */
-using inner0 = RAJA::expt::LoopPolicy<
+using inner0 = RAJA::LoopPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
                                          RAJA::omp_for_exec
 #else
@@ -135,7 +135,7 @@ using inner0 = RAJA::expt::LoopPolicy<
 #endif
                                          >;
 
-using inner1 = RAJA::expt::LoopPolicy<RAJA::loop_exec
+using inner1 = RAJA::LoopPolicy<RAJA::loop_exec
 #if defined(RAJA_ENABLE_CUDA)
                                          ,
                                          RAJA::cuda_thread_y_direct
@@ -179,11 +179,11 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  RAJA::expt::ExecPlace select_cpu_or_gpu;
+  RAJA::ExecPlace select_cpu_or_gpu;
   if(exec_space.compare("host") == 0)
-    { select_cpu_or_gpu = RAJA::expt::HOST; printf("Running RAJA-Launch reductions example on the host \n"); }
+    { select_cpu_or_gpu = RAJA::HOST; printf("Running RAJA-Launch reductions example on the host \n"); }
   if(exec_space.compare("device") == 0)
-    { select_cpu_or_gpu = RAJA::expt::DEVICE; printf("Running RAJA-Launch reductions example on the device \n"); }
+    { select_cpu_or_gpu = RAJA::DEVICE; printf("Running RAJA-Launch reductions example on the device \n"); }
 
 
 
@@ -299,7 +299,7 @@ int main(int argc, char *argv[])
   int *d_A = nullptr, *d_At = nullptr;
 
 #if defined(RAJA_ENABLE_HIP)
-  if(select_cpu_or_gpu == RAJA::expt::DEVICE) {
+  if(select_cpu_or_gpu == RAJA::DEVICE) {
     d_A =  memoryManager::allocate_gpu<int>(N_r * N_c);
     d_At = memoryManager::allocate_gpu<int>(N_r * N_c);
 
@@ -314,20 +314,20 @@ int main(int argc, char *argv[])
 
   constexpr size_t dynamic_shared_mem = TILE_DIM * TILE_DIM * sizeof(int);
 
-  RAJA::expt::launch<launch_policy>(select_cpu_or_gpu, dynamic_shared_mem,
-    RAJA::expt::Grid(RAJA::expt::Teams(outer_Dimr, outer_Dimc),
-                     RAJA::expt::Threads(TILE_DIM, TILE_DIM)),
-       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx)
+  RAJA::launch<launch_policy>(select_cpu_or_gpu, dynamic_shared_mem,
+    RAJA::Grid(RAJA::Teams(outer_Dimr, outer_Dimc),
+                     RAJA::Threads(TILE_DIM, TILE_DIM)),
+       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
   {
 
-    RAJA::expt::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
-        RAJA::expt::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
+    RAJA::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
+        RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
 
 
             auto Tile_1 = ctx.getSharedMemoryView<int, 2, int, 1>(TILE_DIM*TILE_DIM, TILE_DIM, TILE_DIM);
 
-            RAJA::expt::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
-              RAJA::expt::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
+            RAJA::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
+              RAJA::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
 
                   int col = bx * TILE_DIM + tx;  // Matrix column index
                   int row = by * TILE_DIM + ty;  // Matrix row index
@@ -343,8 +343,8 @@ int main(int argc, char *argv[])
             //need a barrier
             ctx.teamSync();
 
-            RAJA::expt::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
-              RAJA::expt::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
+            RAJA::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
+              RAJA::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
 
                   int col = bx * TILE_DIM + tx;  // Matrix column index
                   int row = by * TILE_DIM + ty;  // Matrix row index
@@ -364,7 +364,7 @@ int main(int argc, char *argv[])
   });
 
 #if defined(RAJA_ENABLE_HIP)
-  if(select_cpu_or_gpu == RAJA::expt::DEVICE) {
+  if(select_cpu_or_gpu == RAJA::DEVICE) {
     switch_ptrs(d_At, At);
     switch_ptrs(d_A, A);
 

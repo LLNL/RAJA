@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing user interface for RAJA::Teams::cuda
+ * \brief   RAJA header file containing user interface for RAJA::launch::cuda
  *
  ******************************************************************************
  */
@@ -15,10 +15,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_teams_cuda_HPP
-#define RAJA_pattern_teams_cuda_HPP
+#ifndef RAJA_pattern_launch_cuda_HPP
+#define RAJA_pattern_launch_cuda_HPP
 
-#include "RAJA/pattern/teams/teams_core.hpp"
+#include "RAJA/pattern/launch/launch_core.hpp"
 #include "RAJA/pattern/detail/privatizer.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
@@ -26,9 +26,6 @@
 #include "RAJA/util/resource.hpp"
 
 namespace RAJA
-{
-
-namespace expt
 {
 
 template <typename BODY>
@@ -46,7 +43,7 @@ __global__ void launch_global_fcn(LaunchContext ctx, BODY body_in)
 }
 
 template <bool async>
-struct LaunchExecute<RAJA::expt::cuda_launch_t<async, 1>> {
+struct LaunchExecute<RAJA::cuda_launch_t<async, 1>> {
 // cuda_launch_t num_threads set to 1, but not used in launch of kernel
 
   template <typename BODY_IN>
@@ -166,7 +163,7 @@ __launch_bounds__(num_threads, BLOCKS_PER_SM) __global__
 }
 
 template <bool async, int nthreads, size_t BLOCKS_PER_SM>
-struct LaunchExecute<RAJA::policy::cuda::expt::cuda_launch_explicit_t<async, nthreads, BLOCKS_PER_SM>> {
+struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads, BLOCKS_PER_SM>> {
 
   template <typename BODY_IN>
   static void exec(const size_t shmem, LaunchContext const &ctx, BODY_IN &&body_in)
@@ -1133,8 +1130,6 @@ struct TileICountExecute<cuda_block_xyz_direct<DIM>, SEGMENT> {
     }
   }
 };
-
-}  // namespace expt
 
 }  // namespace RAJA
 #endif

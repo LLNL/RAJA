@@ -28,9 +28,6 @@
 namespace RAJA
 {
 
-namespace expt
-{
-
 template <typename BODY>
 __global__ void launch_global_fcn(LaunchContext ctx, BODY body_in)
 {
@@ -46,7 +43,7 @@ __global__ void launch_global_fcn(LaunchContext ctx, BODY body_in)
 }
 
 template <bool async>
-struct LaunchExecute<RAJA::expt::hip_launch_t<async, 0>> {
+struct LaunchExecute<RAJA::hip_launch_t<async, 0>> {
 
   template <typename BODY_IN>
   static void exec(const size_t shmem, LaunchContext const &ctx, BODY_IN &&body_in)
@@ -162,7 +159,7 @@ static void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
 }
 
 template <bool async, int nthreads>
-struct LaunchExecute<RAJA::expt::hip_launch_t<async, nthreads>> {
+struct LaunchExecute<RAJA::hip_launch_t<async, nthreads>> {
 
   template <typename BODY_IN>
   static void exec(const size_t shmem, LaunchContext const &ctx, BODY_IN &&body_in)
@@ -1125,8 +1122,6 @@ struct TileICountExecute<hip_block_xyz_direct<DIM>, SEGMENT> {
     }
   }
 };
-
-}  // namespace expt
 
 }  // namespace RAJA
 #endif

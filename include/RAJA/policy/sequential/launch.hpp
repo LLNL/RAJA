@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing user interface for RAJA::Teams::simd
+ * \brief   RAJA header file containing user interface for RAJA::Teams::seq
  *
  ******************************************************************************
  */
@@ -15,21 +15,18 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_teams_simd_HPP
-#define RAJA_pattern_teams_simd_HPP
+#ifndef RAJA_pattern_launch_sequential_HPP
+#define RAJA_pattern_launch_sequential_HPP
 
-#include "RAJA/pattern/teams/teams_core.hpp"
-#include "RAJA/policy/simd/policy.hpp"
+#include "RAJA/pattern/launch/launch_core.hpp"
+#include "RAJA/policy/sequential/policy.hpp"
 
 
 namespace RAJA
 {
 
-namespace expt
-{
-
 template <typename SEGMENT>
-struct LoopExecute<simd_exec, SEGMENT> {
+struct LoopExecute<seq_exec, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(
@@ -39,7 +36,7 @@ struct LoopExecute<simd_exec, SEGMENT> {
   {
 
     const int len = segment.end() - segment.begin();
-    RAJA_SIMD
+    RAJA_NO_SIMD
     for (int i = 0; i < len; i++) {
       body(*(segment.begin() + i));
     }
@@ -47,7 +44,7 @@ struct LoopExecute<simd_exec, SEGMENT> {
 };
 
 template <typename SEGMENT>
-struct LoopICountExecute<simd_exec, SEGMENT> {
+struct LoopICountExecute<seq_exec, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(
@@ -57,14 +54,12 @@ struct LoopICountExecute<simd_exec, SEGMENT> {
   {
 
     const int len = segment.end() - segment.begin();
-    RAJA_SIMD
+    RAJA_NO_SIMD
     for (int i = 0; i < len; i++) {
       body(*(segment.begin() + i), i);
     }
   }
 };
-
-}  // namespace expt
 
 }  // namespace RAJA
 #endif

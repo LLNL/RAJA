@@ -15,8 +15,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_teams_core_HPP
-#define RAJA_pattern_teams_core_HPP
+#ifndef RAJA_pattern_launch_core_HPP
+#define RAJA_pattern_launch_core_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/internal/get_platform.hpp"
@@ -36,9 +36,6 @@
 #endif
 
 namespace RAJA
-{
-
-namespace expt
 {
 
 // GPU or CPU threads available
@@ -263,14 +260,14 @@ void launch(ExecPlace place, size_t shared_mem, Grid const &grid, BODY const &bo
 // Helper function to retrieve a resource based on the run-time policy - if a device is active
 #if defined(RAJA_DEVICE_ACTIVE)
 template<typename T, typename U>
-RAJA::resources::Resource Get_Runtime_Resource(T host_res, U device_res, RAJA::expt::ExecPlace device){
-  if(device == RAJA::expt::DEVICE) {return RAJA::resources::Resource(device_res);}
+RAJA::resources::Resource Get_Runtime_Resource(T host_res, U device_res, RAJA::ExecPlace device){
+  if(device == RAJA::DEVICE) {return RAJA::resources::Resource(device_res);}
   else { return RAJA::resources::Resource(host_res); }
 }
 #else
 template<typename T>
-RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::expt::ExecPlace device){
-  if(device == RAJA::expt::DEVICE) {RAJA_ABORT_OR_THROW("Device is not enabled");}
+RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::ExecPlace device){
+  if(device == RAJA::DEVICE) {RAJA_ABORT_OR_THROW("Device is not enabled");}
 
   return RAJA::resources::Resource(host_res);
 }
@@ -285,9 +282,9 @@ launch(RAJA::resources::Resource res, size_t shared_mem, Grid const &grid, BODY 
 
   ExecPlace place;
   if(res.get_platform() == camp::resources::v1::Platform::host) {
-    place = RAJA::expt::HOST;
+    place = RAJA::HOST;
   }else{
-    place = RAJA::expt::DEVICE;
+    place = RAJA::DEVICE;
   }
 
   switch (place) {
@@ -467,8 +464,6 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile_icount(CONTEXT const &ctx,
                                                           segment1,
                                                           body);
 }
-
-}  // namespace expt
 
 }  // namespace RAJA
 #endif

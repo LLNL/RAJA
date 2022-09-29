@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing user interface for RAJA::Teams::openmp
+ * \brief   RAJA header file containing user interface for RAJA::launch::openmp
  *
  ******************************************************************************
  */
@@ -15,21 +15,18 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_teams_openmp_HPP
-#define RAJA_pattern_teams_openmp_HPP
+#ifndef RAJA_pattern_launch_openmp_HPP
+#define RAJA_pattern_launch_openmp_HPP
 
-#include "RAJA/pattern/teams/teams_core.hpp"
+#include "RAJA/pattern/launch/launch_core.hpp"
 #include "RAJA/policy/openmp/policy.hpp"
 
 
 namespace RAJA
 {
 
-namespace expt
-{
-
 template <>
-struct LaunchExecute<RAJA::expt::omp_launch_t> {
+struct LaunchExecute<RAJA::omp_launch_t> {
 
 
   template <typename BODY>
@@ -512,8 +509,6 @@ struct TileICountExecute<omp_for_exec, SEGMENT> {
     }
   }
 };
-
-}  // namespace expt
 
 }  // namespace RAJA
 #endif

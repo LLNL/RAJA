@@ -36,7 +36,7 @@
 #include "RAJA/policy/hip/sort.hpp"
 #include "RAJA/policy/hip/kernel.hpp"
 #include "RAJA/policy/hip/synchronize.hpp"
-#include "RAJA/policy/hip/teams.hpp"
+#include "RAJA/policy/hip/launch.hpp"
 #include "RAJA/policy/hip/WorkGroup.hpp"
 
 

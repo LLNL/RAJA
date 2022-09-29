@@ -28,11 +28,8 @@
 namespace RAJA
 {
 
-namespace expt
-{
-
 template <bool async>
-struct LaunchExecute<RAJA::expt::sycl_launch_t<async, 0>> {
+struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 
   //If the launch lambda is trivially copyable
   template <typename BODY_IN,
@@ -1173,9 +1170,6 @@ struct TileICountExecute<sycl_group_012_direct<DIM>, SEGMENT> {
     }
   }
 };
-
-
-}  // namespace expt
 
 }  // namespace RAJA
 #endif
