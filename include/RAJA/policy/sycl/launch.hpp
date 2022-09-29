@@ -91,7 +91,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
   //If the launch lambda is not trivially copyable
   template <typename BODY_IN,
 	    typename std::enable_if<!std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
-  static void exec(size_t shared_mem, LaunchContext const &ctx, BODY_IN &&body_in)
+  static void exec(size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
   {
 
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
@@ -113,7 +113,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 				    ctx.threads.value[2] * ctx.teams.value[2]);
 
     std::cout<<"Lambda is not trivially copyable"<<std::endl;
-    
+
     // Only launch kernel if we have something to iterate over
     constexpr size_t zero = 0;
     if ( ctx.threads.value[0]  > zero && ctx.threads.value[1]  > zero && ctx.threads.value[2] > zero &&
@@ -130,31 +130,26 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
       lbody = (LOOP_BODY*) cl::sycl::malloc_device(sizeof(LOOP_BODY), *q);
       q->memcpy(lbody, &body_in, sizeof(LOOP_BODY)).wait();
 
-      //lbody = (LOOP_BODY*) cl::sycl::malloc_device(sizeof(LOOP_BODY), *q);
-      //q->memcpy(lbody, &loop_body, sizeof(LOOP_BODY)).wait();
-      
-      std::cout<<"running code"<<std::endl;
       q->submit([&](cl::sycl::handler& h) {
 
-	  //auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
-	  //cl::sycl::access::target::local> (ctx.shared_mem_size, h);
+	  auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
+					  cl::sycl::access::target::local> (shared_mem_size, h);
 
         h.parallel_for
           (cl::sycl::nd_range<3>(gridSize, blockSize),
            [=] (cl::sycl::nd_item<3> itm) {
 
 	    ctx.itm = &itm;
-	     
-             //Point to shared memory
-	    //ctx.shared_mem_ptr = s_vec.get_pointer().get();
 
-             (*lbody)(ctx);
+	    //Point to shared memory
+	    ctx.shared_mem_ptr = s_vec.get_pointer().get();
+
+	    (*lbody)(ctx);
 
 	  });
 
 	}).wait();
 
-      std::cout<<"completed code run"<<std::endl;  
        cl::sycl::free(lbody, *q);
 
       RAJA_FT_END;
@@ -265,7 +260,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
       RAJA_FT_BEGIN;
 
       std::cout<<" 1. Lambda is not trivially copyable"<<std::endl;
-      
+
       //
       // Kernel body is nontrivially copyable, create space on device and copy to
       // Workaround until "is_device_copyable" is supported
@@ -274,7 +269,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
       LOOP_BODY* lbody;
       lbody = (LOOP_BODY*) cl::sycl::malloc_device(sizeof(LOOP_BODY), *q);
       q->memcpy(lbody, &body_in, sizeof(LOOP_BODY)).wait();
-      
+
       q->submit([&](cl::sycl::handler& h) {
 
         auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
