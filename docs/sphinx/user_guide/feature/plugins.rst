@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _plugins-label:
+.. _feat-plugins-label:
 
 ========
 Plugins
@@ -36,50 +36,41 @@ can be added to a project as easily as making a shared object file and setting
 ``RAJA_PLUGINS`` to the appropriate path.
 
 ^^^^^^^^^^^^^^^^^^^
-Quick Start Guide
+Plugins Quick Start
 ^^^^^^^^^^^^^^^^^^^
 
 **Static Plugins**
 
-1. Build RAJA normally.
-
-2. Either use an ``#include`` statement within the code or compiler flags to load your plugin file with your project at compile time. A brief example of this would be something like ``g++ project.cpp plugin.cpp -lRAJA -fopenmp -ldl -o project``.
-
-3. When you run your project, your plugin should work.
+#. Build RAJA normally.
+#. Use an ``#include`` statement in your code or pass options to the compiler to load your plugin file with your project at compile time. For example: ``g++ project.cpp plugin.cpp -lRAJA -ldl -o project``.
+#. When you run your project, your plugin should work.
 
 **Dynamic Plugins**
 
-1. Build RAJA normally.
-
-2. Compile your plugin to be a shared object file with a .so extension. A brief 
-example of this would be something like ``g++ plugin.cpp -lRAJA -fopenmp -fPIC -shared -o plugin.so``.
-
-3. Set the environment variable ``RAJA_PLUGINS`` to be the path of your .so file. 
-This can either be the path to its directory or to the shared object file itself. 
-If the path is to a directory, it will attempt to load all .so files in that 
-directory.
-
-4. When you run your project, your plugins should work.
+#. Build RAJA normally.
+#. Compile your plugin to be a shared object file with ``.so`` extension. For example: ``g++ plugin.cpp -lRAJA -fPIC -shared -o plugin.so``.
+#. Set the environment variable ``RAJA_PLUGINS`` to the path of your ``.so`` file.  This can either be the path to its directory or to the shared object file itself. If the path is a directory, all ``.so`` files in that directory will be loaded.
+#. When you run your project, your plugins should work.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Interfacing with Plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The RAJA plugin API allows for limited interfacing between a project and a 
-plugin. There are a couple of functions that allow for this to take place, 
+plugin. There are a couple of methods to call in your code:
 ``init_plugins`` and ``finalize_plugins``. These will call the corresponding 
-``init`` and ``finalize`` functions, respectively, of *every* currently loaded 
+``init`` and ``finalize`` methods, respectively, of *every* currently loaded 
 plugin. It's worth noting that plugins don't require either an init or finalize
-function by default.
+method by default.
 
-* ``RAJA::util::init_plugins();`` - Will call the ``init`` function of every 
+* ``RAJA::util::init_plugins();`` will call the ``init`` method of every 
   currently loaded plugin.
 
-* ``RAJA::util::init_plugins("path/to/plugins");`` - Does the same as the above
-  call to ``init_plugins``, but will also dynamically load plugins located at 
-  the path specified.
+* ``RAJA::util::init_plugins("path/to/plugins");`` will call the ``init`` 
+  method of every currently loaded plugin and, in addition, will also 
+  dynamically load plugins located at the given path.
 
-* ``RAJA::util::finalize_plugins();`` - Will call the ``finalize`` function of 
+* ``RAJA::util::finalize_plugins();`` will call the ``finalize`` method of 
   every currently loaded plugin. 
 
 
@@ -88,51 +79,56 @@ Creating Plugins For RAJA
 --------------------------
 
 Plugins are classes derived from the ``RAJA::util::PluginStrategy`` base class
-and implement the required functions for the API. An example implementation 
-can be found at the bottom of this page.
+and implement the required virtual methods for the API. An example 
+implementation can be found at the bottom of this page.
 
-^^^^^^^^^^^
-Functions
-^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+Plugin API methods
+^^^^^^^^^^^^^^^^^^^^
 
-The ``preLaunch`` and ``postLaunch`` functions are automatically called by 
-RAJA before and after executing a kernel that uses ``RAJA::forall`` or 
-``RAJA::kernel`` methods.
+The following list summarizes the virtual methods in the 
+``RAJA::util::PluginStrategy`` base class.
 
-* ``void init(const PluginOptions& p) override {}`` - runs on all plugins when 
-  a user calls ``init_plugins``
+* ``void init(const PluginOptions& p) override {}`` is called on all plugins 
+  when a user calls ``init_plugins()``
 
-* ``void preCapture(const PluginContext& p) override {}`` - is called before 
-  lambda capture in ``RAJA::forall`` or ``RAJA::kernel``.
+* ``void preCapture(const PluginContext& p) override {}`` is called before 
+  lambda capture in RAJA kernel execution methods.
 
-* ``void postCapture(const PluginContext& p) override {}`` - is called after 
-  lambda capture in ``RAJA::forall`` or ``RAJA::kernel``.
+* ``void postCapture(const PluginContext& p) override {}`` is called after 
+  lambda capture in RAJA kernel execution methods.
 
-* ``void preLaunch(const PluginContext& p) override {}`` - is called before 
-  ``RAJA::forall`` or ``RAJA::kernel`` runs a kernel.
+* ``void preLaunch(const PluginContext& p) override {}`` is called before 
+  a RAJA kernel execution method runs a kernel.
 
-* ``void postLaunch(const PluginContext& p) override {}`` - is called after 
-  ``RAJA::forall`` or ``RAJA::kernel`` runs a kernel.
+* ``void postLaunch(const PluginContext& p) override {}`` is called after 
+  a RAJA kernel execution method runs a kernel.
 
-* ``void finalize() override {}`` - Runs on all plugins when a user calls 
+* ``void finalize() override {}`` is called on all plugins when a user calls 
   ``finalize_plugins``. This will also unload all currently loaded plugins.
 
-``init`` and ``finalize`` are never called by RAJA by default and are only 
-called when a user calls ``RAJA::util::init_plugins()`` or 
-``RAJA::util::finalize_plugin()``, respectively.
+.. note:: The pre/post methods above are automatically called
+          before and after executing a kernel with ``RAJA::forall`` or 
+          ``RAJA::kernel`` kernel execution methods.
+
+.. note:: The ``init`` and ``finalize`` methods are never called by
+          default and are only called when a user calls 
+          ``RAJA::util::init_plugins()`` or ``RAJA::util::finalize_plugin()``, 
+          respectively.
 
 ^^^^^^^^^^^^^^^^^
 Static Loading
 ^^^^^^^^^^^^^^^^^
 
-If a plugin is to be loaded into a project at compile time, adding the 
-following method call will add the plugin to the RAJA ``PluginRegistry`` and will 
-be loaded every time the compiled executable is run. This requires the plugin 
-to be loaded with either an ``#include`` statement within a project or with
-source code line such as::
+If a plugin is to be loaded into a project at compile time, it must be
+loaded with either an ``#include`` statement in the project source code or
+by calling the following method in the project source code, which adds the 
+plugin to the RAJA ``PluginRegistry`::`
 
   static RAJA::util::PluginRegistry::add<PluginName> P("Name", "Description");
 
+In either case, the plugin will be loaded every time the compiled 
+project executable is run.
 
 ^^^^^^^^^^^^^^^^^
 Dynamic Loading
@@ -142,39 +138,40 @@ If a plugin is to be dynamically loaded in a project at run time, the RAJA
 plugin API requires a few conditions to be met. The following must be true 
 about the plugin, not necessarily of the project using it.
 
-1. **The plugin must have the following factory function.** This will return 
-   a pointer to an instance of your plugin. Note that using ``extern "C"`` is 
-   required to search for the ``getPlugin()`` method call for the dynamically 
-   loaded plugin correctly::
+#. The plugin must have the following factory method that returns
+   a pointer to an instance of your plugin::
 
-     extern "C" RAJA::util::PluginStrategy *getPlugin ()
+     extern "C" RAJA::util::PluginStrategy* getPlugin()
      {
        return new MyPluginName;
      }
   
+   Note that using ``extern "C"`` is required to search for the ``getPlugin()``
+   method call for the dynamically loaded plugin correctly.
 
-2. **The plugin must be compiled to be a shared object with a .so extension.** 
-   A simple example containing required flags would be: ``g++ plugin.cpp -lRAJA -fopenmp -fPIC -shared -o plugin.so``. 
+#. The plugin must be compiled to be a shared object with a ``.so`` extension. 
+   For example: ``g++ plugin.cpp -lRAJA -fPIC -shared -o plugin.so``. 
 
-   At the moment, RAJA will only attempt to load files with .so extensions. 
+   At the moment, RAJA will only attempt to load files with ``.so`` extensions. 
    It's worth noting why these flags (or their equivalents) are important. 
 
-     * ``-lRAJA -fopenmp`` are standard flags for compiling the RAJA library. 
+     * ``-lRAJA`` is a standard flag for linking the RAJA library. 
 
      * ``-fPIC`` tells the compiler to produce *position independent code*, 
        which prevents conflicts in the address space of the executable. 
 
      * ``-shared`` will let the compiler know that you want the resulting 
        object file to be shared, removing the need for a *main* as well as 
-       giving dynamically loaded executables access to functions flagged 
+       giving dynamically loaded executables access to methods flagged 
        with ``extern "C"``.
 
-3. **The** ``RAJA_PLUGINS`` **environment variable has been set**, or a user 
-   has made a call to ``RAJA::util::init_plugins("path");`` with a path 
-   specified to either a directory or a .so file. It's worth noting that these 
-   are not mutually exclusive. RAJA will look for plugins based on the 
-   environment variable on program startup and new plugins may be loaded after 
-   that by calling the ``init_plugins()`` method.
+#. The ``RAJA_PLUGINS`` environment variable must be set, or the project code 
+   must call ``RAJA::util::init_plugins("path");``. Either of these approaches
+   is required to supply the path to either a directory containing the plugin
+   or its ``.so`` file. It's worth noting that these are not mutually 
+   exclusive. RAJA will look for plugins based on the environment variable on 
+   program startup and new plugins may be loaded after that by calling the 
+   ``init_plugins()`` method.
 
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -195,16 +192,16 @@ CHAI Plugin
 ^^^^^^^^^^^^^^^^^^^^^
 
 RAJA provides abstractions for parallel execution, but does not support
-a memory model for managing data in heterogeneous memory spaces.
-The `CHAI library <https://github.com/LLNL/CHAI>`_ provides an array abstraction
-that integrates with RAJA to enable automatic copying of data at runtime to the 
-proper execution memory space for a RAJA-based kernel based on the 
-RAJA exection policy used to execute the kernel. Then, the data can be accessed
-inside the kernel as needed.
+a memory model for managing data in heterogeneous memory spaces. One
+option for managing such data is to use `CHAI <https://github.com/LLNL/CHAI>`_,
+which provides an array abstraction that integrates with RAJA to enable 
+automatic copying of data at runtime to the proper execution memory space for 
+a RAJA-based kernel determined by the RAJA execution policy used to execute the 
+kernel. Then, the data can be accessed inside the kernel as needed.
 
 To build CHAI with RAJA integration, you need to download and install CHAI with
-the ``ENABLE_RAJA_PLUGIN`` option turned on.  Please see the `CHAI project
-<https://github.com/LLNL/CHAI>`_ for details.
+the ``ENABLE_RAJA_PLUGIN`` option turned on.  Please see 
+`CHAI <https://github.com/LLNL/CHAI>`_ for details.
 
 After CHAI has been built with RAJA support enabled, applications can use CHAI
 ``ManangedArray`` objects to access data inside a RAJA kernel. For example::
@@ -215,7 +212,7 @@ After CHAI has been built with RAJA support enabled, applications can use CHAI
       array[i] = i * 2.0f;
   });
 
-  RAJA::forall<RAJA::seq_exec>(0, 1000, [=] (int i) {
+  RAJA::forall<RAJA::loop_exec>(0, 1000, [=] (int i) {
     std::cout << "array[" << i << "]  is " << array[i] << std::endl;
   });
 
@@ -223,8 +220,8 @@ Here, the data held by ``array`` is allocated on the host CPU. Then, it is
 initialized on a CUDA GPU device. CHAI sees that the data lives on the CPU
 and is needed in a GPU device data environment since it is used in a kernel that
 will run with a RAJA CUDA execution policy. So it copies the data from
-CPU to GPU, making it available for access in the RAJA kernel. Next,
-it is printed in the second kernel which runs on the CPU (indicated by the
+CPU memory to GPU memory, making it available for access in the RAJA kernel. 
+The data is printed in the second kernel which runs on the CPU (indicated by the
 RAJA sequential execution policy). So CHAI copies the data back to the host CPU.
 All necessary data copies are done transparently on demand for each kernel.
 

@@ -93,16 +93,15 @@ The directories ``RAJA/scripts/*-builds`` contain scripts that run CMake for
 various build configurations. These contain cmake invocations that use CMake 
 cache files (we call them *host-config* files) and may be used as a guide for 
 users trying to set their own options. 
-See :ref:`configopt-raja-hostconfig-label`.
 
-Next, we summarize RAJA options and their defaults.
+Next, we summarize RAJA CMake options and their defaults.
 
 
 .. _configopt-raja-features-label:
 
-====================================
-Available RAJA Options and Defaults
-====================================
+==========================================
+Available RAJA CMake Options and Defaults
+==========================================
 
 RAJA uses a variety of custom variables to control how it is compiled. Many 
 of these are used internally to control RAJA compilation and do 

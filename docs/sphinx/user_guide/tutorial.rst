@@ -423,6 +423,8 @@ as nested loops.
    tutorial/launch_exec_pols.rst
    tutorial/launch_naming_kernels.rst
 
+.. _tutorialmatrixtranspose-label:
+
 ===============================================================================
 Comparing ``RAJA::kernel`` and ``RAJA::expt::launch``: Matrix-Transpose
 ===============================================================================
@@ -440,12 +442,13 @@ example with more complex features.
    tutorial/matrix_transpose_local_array.rst
 
 ==========================================
-Other RAJA Features Usage Examples
+Other RAJA Features and Usage Examples
 ==========================================
 
 .. toctree::
    :maxdepth: 1
 
    tutorial/halo-exchange.rst
+   tutorial/matrix_multiply.rst
 
 
