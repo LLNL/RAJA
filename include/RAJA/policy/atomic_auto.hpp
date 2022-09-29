@@ -22,6 +22,14 @@
 
 #include "RAJA/util/macros.hpp"
 
+#if defined(RAJA_ENABLE_HIP)
+#include "RAJA/policy/hip/atomic.hpp"
+#endif
+
+#if defined(RAJA_ENABLE_CUDA)
+#include "RAJA/policy/cuda/atomic.hpp"
+#endif
+
 #if defined(RAJA_ENABLE_OPENMP)
 #include "RAJA/policy/openmp/atomic.hpp"
 #endif
