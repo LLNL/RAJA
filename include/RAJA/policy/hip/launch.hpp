@@ -15,10 +15,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_teams_hip_HPP
-#define RAJA_pattern_teams_hip_HPP
+#ifndef RAJA_pattern_launch_hip_HPP
+#define RAJA_pattern_launch_hip_HPP
 
-#include "RAJA/pattern/teams/teams_core.hpp"
+#include "RAJA/pattern/launch/launch_core.hpp"
 #include "RAJA/pattern/detail/privatizer.hpp"
 #include "RAJA/policy/hip/policy.hpp"
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
