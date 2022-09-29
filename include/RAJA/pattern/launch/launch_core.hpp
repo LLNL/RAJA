@@ -191,7 +191,7 @@ public:
     return mem_ptr;
   }
 
-  template<typename T, size_t DIM, typename IDX_T, ptrdiff_t z_stride, typename arg, typename... args>
+  template<typename T, size_t DIM, typename IDX_T=RAJA::Index_type, ptrdiff_t z_stride=-1, typename arg, typename... args>
   RAJA_HOST_DEVICE auto getSharedMemoryView(size_t bytes, arg idx, args... idxs)
   {
     T * mem_ptr = &((T*) shared_mem_ptr)[shared_mem_offset];
