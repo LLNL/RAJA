@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 {
 
   if(argc != 2) {
-    RAJA_ABORT_OR_THROW("Usage ./cuda-dynamic-forall N");
+    RAJA_ABORT_OR_THROW("Usage ./cuda-dynamic-forall N", where N is the index of  the policy to run);
   }
 
   //
