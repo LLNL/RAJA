@@ -675,7 +675,9 @@ struct Dispatcher<platform, ::RAJA::direct_dispatch<T0, T1, TNs...>,
   static constexpr id_type get_id(camp::int_seq<int, id_types...>, camp::list<Ts...>)
   {
     id_type id{-1};
-    camp::sink((std::is_same<T, Ts>::value ? ((id = id_types), 0) : 0)...);
+    using int_array = int[];
+    // quiet UB warning by sequencing assignment to id with list initialization
+    int_array {0, (std::is_same<T, Ts>::value ? ((id = id_types), 0) : 0)...};
     return id;
   }
 
