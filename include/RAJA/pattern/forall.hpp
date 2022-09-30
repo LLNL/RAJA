@@ -689,7 +689,7 @@ namespace expt
     static_assert(N > 0, "RAJA policy list must not be empty");
 
     if(pol > N-1)  {
-      RAJA_ABORT_OR_THROW("Policy enum not supported");
+      RAJA_ABORT_OR_THROW("Policy value out of range");
     }
 
     return dynamic_helper<N-1, POLICY_LIST>::invoke_forall(r, pol, seg, body);
