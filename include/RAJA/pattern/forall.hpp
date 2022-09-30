@@ -655,7 +655,7 @@ namespace expt
     static resources::EventProxy<resources::Resource>
     invoke_forall(RAJA::resources::Resource r, const int pol, SEGMENT const &seg, BODY const &body)
     {
-      if(pol != 0) RAJA_ABORT_OR_THROW("Policy enum not supported ");
+      if(pol != 0) RAJA_ABORT_OR_THROW("Policy value out of range ");
 
       using t_pol = typename camp::at<POLICY_LIST,camp::num<0>>::type;
       using resource_type = typename resources::get_resource<t_pol>::type;
