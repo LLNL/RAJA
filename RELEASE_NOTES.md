@@ -20,6 +20,55 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
+Version 2022.10.0 -- Release date 2022-10-dd
+============================================
+
+This release contains new features, bug fixes, and build improvements. Please
+see the RAJA user guide for more information about items in this release.
+
+Notable changes include:
+
+  * New features / API changes:
+     * Added RAJA_UNROLL_COUNT macro which enables users to unroll loops for
+       a fix unroll count.
+     * Add support for all RAJA segment types in the RAJA::launch framework.
+     * Add additional policies to WorkGroup construct that allow for different
+       methods of dispatching work.
+     * Add special case implementations to CUDA atomicInc and atomicDec 
+       functions to use special hardware support when available. This can
+       result in a significant performance boost.
+     * Rework HIP atomic implementations to support more native data types.
+     * Major User Guide rework:
+         * New RAJA tutorial sections, including new exercise source files
+           to work through. Material used in recent RADIUSS/AWS RAJA Tutorial.
+         * Cleaned up and expanded RAJA feature sections to be more like a
+           reference guide with links to associated tutorial sections for
+           implementation examples.
+         * Improved presentation of build configuration sections.
+
+  * Build changes / improvements:
+     * OpenMP back-end support is now off by default to match behavior of
+       all other RAJA parallel back-end support. To enable OpenMP, users
+       must now run CMake with the -DENABLE_OPENMP=On option.
+     * Improvements to build target export mechanics coordinated with camp,
+       BLT, and Spack projects.
+     * Improve HIP builds to better support evolving ROCm software stack.
+     * Add CMake variable RAJA_ALLOW_INCONSISTENT_OPTIONS and CMake messages
+       to allow users more control when using CMake dependent options. When
+       CMake is run, the code now checks for cases when RAJA_ENABLE_X=On and
+       but ENABLE_X=Off. Previously, this was confusing because X would not
+       be enabled despite the value of the RAJA-specific option.
+     * Build system refactoring to make CMake configurations more robust; added
+       test to check for installed CMake config. 
+     * Added basic support to compile with C++20 standard.
+     * Add missing compilation macro guards for HIP and CUDA policies in
+       vectorization support when not running on a GPU device.
+     * Added missing header file inclusions.
+
+  * Bug fixes / improvements:
+     * Expanded test coverage.
+
+
 Version 2022.03.1 -- Release date 2022-08-10
 ============================================
 
