@@ -57,12 +57,15 @@ command, you can also type the following commands after cloning::
 Either way, the end result is the same and you should be good to configure the
 code and build it.
 
-.. note:: * If you switch branches in a RAJA repo, you may need to run the
-            command ``git submodule update`` to set the Git submodule versions 
-            to what is used by the new branch.
-          * If the set of submodules in the new branch is different than the
+.. note:: * If you switch branches in a RAJA repo (e.g., you are on a branch,
+            with everything up-to-date, and you run the command 
+            ``git checkout <different branch name>``, you may need to run 
+            the command ``git submodule update`` to set the Git submodule 
+            versions to what is used by the new branch.
+          * If the set of submodules in a new branch is different than the
             previous branch you were on, you may need to run the command
-            ``git submodule update --init --recursive``.
+            ``git submodule update --init --recursive`` to pull in the 
+            correct set of submodule and versions.
 
 .. _getting_started_depend-label:
 
@@ -70,27 +73,25 @@ code and build it.
 Dependencies
 ==================
 
-RAJA has several dependencies that are required depending on how you want to
-build and use it. The RAJA Git repository contains submodules that
-contain these dependencies.
+RAJA has several dependencies that are required based on how you want to
+build and use it. The RAJA Git repository has submodules that contain 
+most of these dependencies.
+
+RAJA includes other submodule dependencies, which are used to support our 
+Gitlab CI testing. These are described in the RAJA Developer Guide. 
 
 Dependencies that are required to build the RAJA code are:
 
+- A C++ 14 standard compliant compiler
 - `BLT build system <https://github.com/LLNL/blt>`_
 - `Camp compiler agnostic metaprogramming library  <https://github.com/LLNL/camp>`_
 
-Other dependencies that users should be aware of to exercise certain features
-are:
+Other dependencies that users should be aware of that support certain 
+features are:
 
-- `CUB CUDA utilities library <https://github.com/NVlabs/cub>`_ is required for using the RAJA CUDA back-end.
-- `rocPRIM HIP parallel primitives library <https://github.com/ROCmSoftwarePlatform/rocPRIM.git>`_ is required for using the RAJA HIP back-end.
-- `Desul <https://github.com/desul/desul>`_ is required if you want to use Desul atomics in RAJA instead of our current default atomics. Note that we plan to switch over to Desul atomics exclusively at some point.
-
-Additional discussion of these dependencies, with respect to building RAJA, is 
-provided in :ref:`getting_started_build-label`. Other than that, you probably 
-don't need to know much about them. If you are curious and want to know more, 
-please click on the link to the library you want to know about in the above 
-list.
+- `CUB CUDA utilities library <https://github.com/NVlabs/cub>`_, which is required for using the RAJA CUDA back-end.
+- `rocPRIM HIP parallel primitives library <https://github.com/ROCmSoftwarePlatform/rocPRIM.git>`_, which is required for using the RAJA HIP back-end.
+- `Desul <https://github.com/desul/desul>`_, which is required if you want to use Desul atomics in RAJA instead of our current default atomics. Note that we plan to switch over to Desul atomics exclusively at some point.
 
 .. note:: You may want or need to use external versions of camp, CUB, or 
           rocPRIM instead of the RAJA submodules. This is usually the case
@@ -124,8 +125,11 @@ list.
 More information about configuring GPU builds with CUDA or HIP is provided
 in :ref:`getting_started_build_gpu-label`
 
-RAJA includes other submodule dependencies, which are used to support our 
-Gitlab CI testing. These are described in the RAJA Developer Guide. 
+Additional discussion of these dependencies, with respect to building RAJA, is 
+provided in :ref:`getting_started_build-label`. Other than that, you probably 
+don't need to know much about them. If you are curious and want to know more, 
+please click on the link to the library you want to know about in the above 
+list.
 
 .. _getting_started_build-label:
 
@@ -154,7 +158,7 @@ to an ``include`` directory and installs the RAJA library in a ``lib``
 directory, both in the directory location specified with the
 ``-DCMAKE_INSTALL_PREFIX`` CMake option.
 
-Changes to the build configuration are made by passing options to CMake.
+Other build configurations are accomplished by passing other options to CMake.
 For example, if you want to use a C++ compiler other than the default on 
 your system, you would pass a path to the compiler using the standard
 CMake option ``-DCMAKE_CXX_COMPILER=path/to/compiler``.
@@ -165,7 +169,7 @@ options, please see :ref:`configopt-label`.
 
 .. note:: RAJA is configured to build its tests, examples, and tutorial
           exercises by default. If you do not disable them with the 
-          appropriate CMake option (please see :ref:`configopt-label`), 
+          appropriate CMake option (see :ref:`configopt-label`), 
           you can run them after the build completes to check if everything 
           is built properly.
 
@@ -218,15 +222,17 @@ When using the NVIDIA nvcc compiler for RAJA CUDA functionality, the variables:
 correspond to the standard CMake build types and are used to pass additional
 compiler options to nvcc.
 
-.. note:: When nvcc must pass options to the host compiler, the arguments
-          can be included using these CMake variables. Host compiler
-          options must be prepended with the ``-Xcompiler`` directive.
+.. note:: Often, nvcc must pass options to the host compiler, the arguments
+          can be included using the ``CMAKE_CUDA_FLAGS...`` CMake variables
+          listed above. Host compiler options must be prepended with the 
+          ``-Xcompiler`` directive to properly propagate.
 
 To set the CUDA compute architecture, which should be chosen based on the 
 NVIDIA GPU hardware you are using, you can use the ``CUDA_ARCH`` CMake 
-variable. For example, the CMake option ``-DCUDA_ARCH=sm_70`` will tell the compiler to use the 'sm_70' SASS architecture in its second stage of compilation. 
-It will pick the PTX architecture to use in the first stage of compilation 
-that is suitable for the SASS architecture you specify.
+variable. For example, the CMake option ``-DCUDA_ARCH=sm_70`` will tell the 
+compiler to use the `sm_70` SASS architecture in its second stage of 
+compilation. The compiler will pick the PTX architecture to use in the first 
+stage of compilation that is suitable for the SASS architecture you specify.
 
 Alternatively, you may specify the PTX and SASS architectures, using
 appropriate nvcc options in the ``CMAKE_CUDA_FLAGS_*`` variables.
@@ -257,14 +263,14 @@ following options to CMake::
   -DCUB_DIR=<path/to/cub> \
   ...
 
-.. note:: It is important to note that the CUDA toolkit version of cub is
+.. note:: The CUDA toolkit version of CUB is
           required for compatibility with the CUDA toolkit version of thrust
           starting with CUDA version 11.0.0. So, if you build
           RAJA with CUDA version 11 or higher, you should use the version of
           CUB contained in the CUDA toolkit version you are using to use 
           Thrust and to be compatible with libraries that use Thrust.
 
-.. note:: It is important to note that the version of Googletest that
+.. note:: The version of Googletest that
           is used in RAJA version v0.11.0 or newer requires CUDA version
           9.2.x or newer when compiling with nvcc. Thus, if you build
           RAJA with CUDA enabled and want to also enable RAJA tests, you
@@ -273,9 +279,9 @@ following options to CMake::
 HIP
 ^^^^
 
-To run RAJA code on AMD GPUs, one typically uses the ROCm compiler and tool 
+To run RAJA code on AMD GPUs, one typically uses a ROCm compiler and tool 
 chain (which can also be used to compile code for NVIDIA GPUs, which is not
-covered in the RAJA user documentation).
+covered in detail in RAJA user documentation).
 
 .. note:: RAJA requires version 3.5 or newer of the ROCm software stack to 
           use the RAJA HIP back-end.
