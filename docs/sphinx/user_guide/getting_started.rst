@@ -20,8 +20,8 @@ Requirements
 ============
 
 The primary requirement for using RAJA is a C++14 standard compliant compiler.
-Using features, such as various programming model back-ends like CUDA or HIP, 
-requires that they be supported by the compiler you chose. Available RAJA
+Certain features, such as various programming model back-ends like CUDA or HIP, 
+msut be supported by the compiler you chose to use them. Available RAJA
 configuration options and how to enable or disable features are described 
 in :ref:`configopt-label`. 
 
@@ -253,8 +253,8 @@ appropriate nvcc options in the ``CMAKE_CUDA_FLAGS_*`` variables.
 Also, RAJA relies on the CUB CUDA utilities library, mentioned earlier, for 
 some CUDA back-end functionality. The CUB version included in the CUDA toolkit 
 installation is used by default when available. This is the case for CUDA 
-version 11 and later. RAJA includes a CUB submodule that can be used with 
-older versions of CUDA. To use an external CUB installation, provide the 
+version 11 and later. RAJA includes a CUB submodule that is used by default
+with older versions of CUDA. To use an external CUB installation, provide the 
 following options to CMake:: 
 
   cmake \
