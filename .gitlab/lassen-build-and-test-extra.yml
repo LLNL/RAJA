@@ -89,7 +89,7 @@ xl_16_1_1_12_gcc_8_3_1_cuda_11_1_0:
 
 clang_14_0_5:
   variables:
-    SPEC: " +openmp +tests %clang@14.0.5"
+    SPEC: " ~shared +openmp +tests %clang@14.0.5"
   extends: .build_and_test_on_lassen
 
 ##########
@@ -98,18 +98,18 @@ clang_14_0_5:
 
 clang_12_0_1_cuda_11_5_0:
   variables:
-    SPEC: " +openmp +tests +cuda cuda_arch=70 %clang@12.0.1 ^cuda@11.5.0"
+    SPEC: " ~shared +openmp +tests +cuda cuda_arch=70 %clang@12.0.1 ^cuda@11.5.0"
   extends: .build_and_test_on_lassen
 
 gcc_8_3_1_cuda_11_1_0:
   variables:
-    SPEC: " +openmp +tests +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.1.0"
+    SPEC: " ~shared +openmp +tests +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.1.0"
   extends: .build_and_test_on_lassen
 
 gcc_8_3_1_cuda_11_5_0_ats_disabled:
   extends: .build_and_test_on_lassen
   variables:
-    SPEC: " +openmp +tests +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0"
+    SPEC: " ~shared +openmp +tests +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0"
     LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 --atsdisable -W 60"
 
 ##########
@@ -118,16 +118,16 @@ gcc_8_3_1_cuda_11_5_0_ats_disabled:
 
 clang_13_0_1_libcpp:
   variables:
-    SPEC: " +openmp +tests %clang@13.0.1+libcpp"
+    SPEC: " ~shared +openmp +tests %clang@13.0.1+libcpp"
   extends: .build_and_test_on_lassen
 
 clang_14_0_5_asan:
   variables:
-    SPEC: " +openmp +tests %clang@14.0.5 cxxflags=-fsanitize=address"
+    SPEC: " ~shared +openmp +tests %clang@14.0.5 cxxflags=-fsanitize=address"
     ASAN_OPTIONS: "detect_leaks=1"
   extends: .build_and_test_on_lassen
 
 gcc_8_3_1_cuda_10_1_168_desul_atomics:
   variables:
-    SPEC: " +openmp +tests +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.168"
+    SPEC: " ~shared +openmp +tests +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.168"
   extends: .build_and_test_on_lassen
