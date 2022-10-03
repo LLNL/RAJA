@@ -374,7 +374,8 @@ forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
  */
 template <typename ExecutionPolicy, typename Container, typename LoopBody,
           typename Res = typename resources::get_resource<ExecutionPolicy>::type >
-RAJA_INLINE concepts::enable_if<
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<Res>,
     type_traits::is_multi_policy<ExecutionPolicy>,
     type_traits::is_range<Container>>
 forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
@@ -385,7 +386,7 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
   auto r = Res::get_default();
 
   // plugins handled in multipolicy policy_invoker
-  forall_impl(r,
+  return forall_impl(r,
               std::forward<ExecutionPolicy>(p),
               std::forward<Container>(c),
               std::forward<LoopBody>(loop_body));
@@ -588,6 +589,114 @@ RAJA_INLINE camp::resources::EventProxy<Res> CallForallIcount::operator()(T cons
 }
 
 }  // namespace detail
+
+//
+// Experimental support for dynamic policy selection
+//
+// Future directions:
+// - Tuple of resources one for each platform
+// - Returns a generic event proxy only if a resource is provided
+//   avoids overhead of constructing a typed erased resource
+//
+namespace expt
+{
+
+  template<camp::idx_t IDX, typename POLICY_LIST>
+  struct dynamic_helper
+  {
+    template<typename SEGMENT, typename BODY>
+    static void invoke_forall(const int pol, SEGMENT const &seg, BODY const &body)
+    {
+      if(IDX==pol){
+        using t_pol = typename camp::at<POLICY_LIST,camp::num<IDX>>::type;
+        RAJA::forall<t_pol>(seg, body);
+        return;
+      }
+      dynamic_helper<IDX-1, POLICY_LIST>::invoke_forall(pol, seg, body);
+    }
+
+    template<typename SEGMENT, typename BODY>
+    static resources::EventProxy<resources::Resource>
+    invoke_forall(RAJA::resources::Resource r, const int pol, SEGMENT const &seg, BODY const &body)
+    {
+
+      using t_pol = typename camp::at<POLICY_LIST,camp::num<IDX>>::type;
+      using resource_type = typename resources::get_resource<t_pol>::type;
+
+      if(IDX==pol){
+        RAJA::forall<t_pol>(r.get<resource_type>(), seg, body);
+
+        //Return a generic event proxy from r,
+        //because forall returns a typed event proxy
+        return {r};
+      }
+
+      return dynamic_helper<IDX-1, POLICY_LIST>::invoke_forall(r, pol, seg, body);
+    }
+
+  };
+
+  template<typename POLICY_LIST>
+  struct dynamic_helper<0, POLICY_LIST>
+  {
+    template<typename SEGMENT, typename BODY>
+    static void
+    invoke_forall(const int pol, SEGMENT const &seg, BODY const &body)
+    {
+      if(0==pol){
+        using t_pol = typename camp::at<POLICY_LIST,camp::num<0>>::type;
+        RAJA::forall<t_pol>(seg, body);
+        return;
+      }
+      RAJA_ABORT_OR_THROW("Policy enum not supported ");
+    }
+
+    template<typename SEGMENT, typename BODY>
+    static resources::EventProxy<resources::Resource>
+    invoke_forall(RAJA::resources::Resource r, const int pol, SEGMENT const &seg, BODY const &body)
+    {
+      if(pol != 0) RAJA_ABORT_OR_THROW("Policy value out of range ");
+
+      using t_pol = typename camp::at<POLICY_LIST,camp::num<0>>::type;
+      using resource_type = typename resources::get_resource<t_pol>::type;
+
+      RAJA::forall<t_pol>(r.get<resource_type>(), seg, body);
+
+      //Return a generic event proxy from r,
+      //because forall returns a typed event proxy
+      return {r};
+    }
+
+  };
+
+  template<typename POLICY_LIST, typename SEGMENT, typename BODY>
+  void dynamic_forall(const int pol, SEGMENT const &seg, BODY const &body)
+  {
+    constexpr int N = camp::size<POLICY_LIST>::value;
+    static_assert(N > 0, "RAJA policy list must not be empty");
+
+    if(pol > N-1)  {
+      RAJA_ABORT_OR_THROW("Policy enum not supported");
+    }
+    dynamic_helper<N-1, POLICY_LIST>::invoke_forall(pol, seg, body);
+  }
+
+  template<typename POLICY_LIST, typename SEGMENT, typename BODY>
+  resources::EventProxy<resources::Resource>
+  dynamic_forall(RAJA::resources::Resource r, const int pol, SEGMENT const &seg, BODY const &body)
+  {
+    constexpr int N = camp::size<POLICY_LIST>::value;
+    static_assert(N > 0, "RAJA policy list must not be empty");
+
+    if(pol > N-1)  {
+      RAJA_ABORT_OR_THROW("Policy value out of range");
+    }
+
+    return dynamic_helper<N-1, POLICY_LIST>::invoke_forall(r, pol, seg, body);
+  }
+
+}  // namespace expt
+
 
 }  // namespace RAJA
 
