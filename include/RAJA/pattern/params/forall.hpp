@@ -43,36 +43,36 @@ namespace expt
 
     // Init
     template<typename EXEC_POL, camp::idx_t... Seq, typename ...Args>
-    static void constexpr detail_init(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& f_params, Args&& ...args) {
+    static constexpr void detail_init(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& f_params, Args&& ...args) {
       CAMP_EXPAND(expt::detail::init<EXEC_POL>( camp::get<Seq>(f_params.param_tup), std::forward<Args>(args)... ));
     }
 
     // Combine
     template<typename EXEC_POL, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
-    static void constexpr detail_combine(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& out, const ForallParamPack& in ) {
+    static constexpr void detail_combine(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& out, const ForallParamPack& in ) {
       CAMP_EXPAND(detail::combine<EXEC_POL>( camp::get<Seq>(out.param_tup), camp::get<Seq>(in.param_tup)));
     }
 
     template<typename EXEC_POL, camp::idx_t... Seq>
     RAJA_HOST_DEVICE
-    static void constexpr detail_combine(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& f_params ) {
+    static constexpr void detail_combine(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& f_params ) {
       CAMP_EXPAND(detail::combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
     
     // Resolve
     template<typename EXEC_POL, camp::idx_t... Seq>
-    static void constexpr detail_resolve(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& f_params ) {
+    static constexpr void detail_resolve(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& f_params ) {
       CAMP_EXPAND(detail::resolve<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
 
     // Used to construct the argument TYPES that will be invoked with the lambda.
     template<typename null_t = camp::nil>
-    static auto constexpr LAMBDA_ARG_TUP_T() { return camp::tuple<>{}; };
+    static constexpr auto LAMBDA_ARG_TUP_T() { return camp::tuple<>{}; };
     template<typename null_t = camp::nil, typename First>
-    static auto constexpr LAMBDA_ARG_TUP_T() { return typename First::ARG_TUP_T(); };
+    static constexpr auto LAMBDA_ARG_TUP_T() { return typename First::ARG_TUP_T(); };
     template<typename null_t = camp::nil, typename First, typename Second, typename... Rest>
-    static auto constexpr LAMBDA_ARG_TUP_T() { return camp::tuple_cat_pair(typename First::ARG_TUP_T(), LAMBDA_ARG_TUP_T<camp::nil, Second, Rest...>()); };
+    static constexpr auto LAMBDA_ARG_TUP_T() { return camp::tuple_cat_pair(typename First::ARG_TUP_T(), LAMBDA_ARG_TUP_T<camp::nil, Second, Rest...>()); };
 
     using lambda_arg_tuple_t = decltype(LAMBDA_ARG_TUP_T<camp::nil, Params...>());
     
