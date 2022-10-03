@@ -85,7 +85,7 @@ TYPED_TEST_P(DynamicForallResourceRangeSegmentTest, RangeSegmentForallResource)
       for(int pol=0; pol<host_range; ++pol) 
         {
           DynamicForallResourceRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, POLICY_LIST>
-            (INDEX_TYPE(3), INDEX_TYPE(3), pol);
+            (INDEX_TYPE(0), INDEX_TYPE(27), pol);
         }
   }
 #if defined(RAJA_DEVICE_ACTIVE)
@@ -98,7 +98,7 @@ TYPED_TEST_P(DynamicForallResourceRangeSegmentTest, RangeSegmentForallResource)
     for(int pol=device_start; pol<N; ++pol) 
     {
     DynamicForallResourceRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, POLICY_LIST>
-      (INDEX_TYPE(3), INDEX_TYPE(3), pol);
+      (INDEX_TYPE(0), INDEX_TYPE(27), pol);
     }
   }
 #endif
