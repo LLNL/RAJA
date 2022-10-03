@@ -58,7 +58,6 @@ using gpu_thread_x_policy = RAJA::cuda_thread_x_loop;
 using gpu_thread_y_policy = RAJA::cuda_thread_y_loop;
 using gpu_global_thread_x_policy = RAJA::cuda_global_thread_x;
 using gpu_global_thread_y_policy = RAJA::cuda_global_thread_y;
-using gpu_global_thread_xy_policy = RAJA::cuda_global_thread_xy;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
@@ -68,7 +67,6 @@ using gpu_thread_x_policy = RAJA::hip_thread_x_loop;
 using gpu_thread_y_policy = RAJA::hip_thread_y_loop;
 using gpu_global_thread_x_policy = RAJA::hip_global_thread_x;
 using gpu_global_thread_y_policy = RAJA::hip_global_thread_y;
-using gpu_global_thread_xy_policy = RAJA::hip_global_thread_xy;
 #endif
 
 /*
@@ -403,7 +401,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                          RAJA::Grid(),
    [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-     RAJA::loop<global_thread_xy>(ctx, col_range, row_range, [&] (int col, int row) {
+      RAJA::expt::loop<global_thread_xy>(ctx, col_range, row_range, [&] (int col, int row) {
 
            double dot = 0.0;
            for (int k = 0; k < N; ++k) {

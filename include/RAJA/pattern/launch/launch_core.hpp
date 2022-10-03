@@ -332,6 +332,9 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const &ctx,
                                                           body);
 }
 
+namespace expt
+{
+
 RAJA_SUPPRESS_HD_WARN
 template <typename POLICY_LIST,
           typename CONTEXT,
@@ -365,8 +368,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const &ctx,
                            segment0, segment1, segment2, body);
 }
 
-
-
+} //namespace expt
 
 template <typename POLICY, typename SEGMENT>
 struct TileExecute;
@@ -406,6 +408,9 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile_icount(CONTEXT const &ctx,
                                                           segment,
                                                           body);
 }
+
+namespace expt
+{
 
 template <typename POLICY_LIST,
           typename CONTEXT,
@@ -448,6 +453,8 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile_icount(CONTEXT const &ctx,
                                                           segment1,
                                                           body);
 }
+
+} //namespace expt
 
 }  // namespace RAJA
 #endif
