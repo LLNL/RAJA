@@ -298,14 +298,14 @@ template <typename ExecutionPolicy, typename Res, typename IdxSet, typename... P
 RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
                                                      Res r,
                                                      IdxSet&& c,
-                                                     Params... params)
+                                                     Params&&... params)
 {
   static_assert(type_traits::is_index_set<IdxSet>::value,
                 "Expected a TypedIndexSet but did not get one. Are you using "
                 "a TypedIndexSet policy by mistake?");
 
-  auto f_params = expt::make_forall_param_pack(params...);
-  auto loop_body = expt::get_lambda(params...);
+  auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
+  auto loop_body = expt::get_lambda(std::forward<Params>(params)...);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
   util::callPreCapturePlugins(context);
@@ -352,14 +352,14 @@ template <typename ExecutionPolicy, typename Res, typename IdxSet, typename... P
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<Res>,
     type_traits::is_indexset_policy<ExecutionPolicy>>
-forall(ExecutionPolicy&& p, Res r, IdxSet&& c, Params... params)
+forall(ExecutionPolicy&& p, Res r, IdxSet&& c, Params&&... params)
 {
   static_assert(type_traits::is_index_set<IdxSet>::value,
                 "Expected a TypedIndexSet but did not get one. Are you using "
                 "a TypedIndexSet policy by mistake?");
 
-  auto f_params = expt::make_forall_param_pack(params...);
-  auto loop_body = expt::get_lambda(params...);
+  auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
+  auto loop_body = expt::get_lambda(std::forward<Params>(params)...);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
   util::callPreCapturePlugins(context);
@@ -443,14 +443,14 @@ forall_Icount(ExecutionPolicy&& p,
               Res r,
               Container&& c,
               IndexType icount,
-              FirstParam first,
-              Params... params)
+              FirstParam&& first,
+              Params&&... params)
 {
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
 
-  auto f_params = expt::make_forall_param_pack(first, params...);
-  auto loop_body = expt::get_lambda(first, params...);
+  auto f_params = expt::make_forall_param_pack(std::forward<FirstParam>(first), std::forward<Params>(params)...);
+  auto loop_body = expt::get_lambda(std::forward<FirstParam>(first), std::forward<Params>(params)...);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
   util::callPreCapturePlugins(context);
@@ -511,13 +511,13 @@ RAJA_INLINE concepts::enable_if_t<
     concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
     concepts::negate<type_traits::is_multi_policy<ExecutionPolicy>>,
     type_traits::is_range<Container>>
-forall(ExecutionPolicy&& p, Res r, Container&& c, Params... params)
+forall(ExecutionPolicy&& p, Res r, Container&& c, Params&&... params)
 {
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
 
-  auto f_params = expt::make_forall_param_pack(params...);
-  auto loop_body = expt::get_lambda(params...);
+  auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
+  auto loop_body = expt::get_lambda(std::forward<Params>(params)...);
   expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
