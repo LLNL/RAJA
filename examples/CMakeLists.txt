@@ -12,6 +12,14 @@ raja_add_executable(
   SOURCES resource-forall.cpp)
 
 raja_add_executable(
+  NAME dynamic-forall
+  SOURCES dynamic-forall.cpp)
+
+raja_add_executable(
+  NAME resource-dynamic-forall
+  SOURCES resource-dynamic-forall.cpp)
+
+raja_add_executable(
   NAME tut_daxpy
   SOURCES tut_daxpy.cpp)
 

@@ -5,20 +5,22 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-add_subdirectory(forall)
+list(APPEND DYNAMIC_BACKENDS Sequential)
 
-add_subdirectory(dynamic_forall)
+if(RAJA_ENABLE_OPENMP)
+  list(APPEND DYNAMIC_BACKENDS OpenMP)
+endif()
 
-add_subdirectory(indexset-build)
+if(RAJA_ENABLE_CUDA)
+  list(APPEND DYNAMIC_BACKENDS Cuda)
+endif()
 
-add_subdirectory(kernel)
+if(RAJA_ENABLE_HIP)
+  list(APPEND DYNAMIC_BACKENDS Hip)
+endif()
 
-add_subdirectory(scan)
+add_subdirectory(segment)
 
-add_subdirectory(workgroup)
+add_subdirectory(resource-segment)
 
-add_subdirectory(launch)
-
-add_subdirectory(tensor)
-
-add_subdirectory(util)
+unset( DYNAMIC_BACKENDS )
