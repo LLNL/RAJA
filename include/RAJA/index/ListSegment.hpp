@@ -121,6 +121,7 @@ public:
                    Index_type length,
                    camp::resources::Resource resource,
                    IndexOwnership owned = Owned)
+    : m_resource(nullptr), m_owned(Unowned), m_data(nullptr), m_size(0)
   {
     initIndexData(values, length, resource, owned);
   }
