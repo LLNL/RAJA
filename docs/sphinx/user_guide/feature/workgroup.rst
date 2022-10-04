@@ -21,17 +21,15 @@ represents an executable form of those loops and when run makes a ``RAJA::WorkSi
 that the RAJA workgroup constructs API is still being developed and may change in later RAJA
 releases.
 
-.. note:: * All **workgroup** constructs are in the namespace ``RAJA``.
-          * The ``RAJA::WorkPool``, ``RAJA::WorkGroup``, and ``RAJA::WorkSite`` class templates
-            are templated on:
+.. note:: * All workgroup constructs are in the namespace ``RAJA``.
+          * The ``RAJA::WorkPool``, ``RAJA::WorkGroup``, and ``RAJA::WorkSite`` class templates are templated on:
               * a WorkGroup policy which is composed of:
-                  * a work execution policy.
-                  * a work ordering policy.
-                  * a work storage policy.
-                  * a work dispatch policy.
+                  * a work execution policy
+                  * a work ordering policy
+                  * a work storage policy
+                  * a work dispatch policy
               * an index type that is the first argument to the loop bodies.
-              * a list of extra argument types that are the rest of the arguments to
-                the loop bodies.
+              * a list of extra argument types that are the rest of the arguments to the loop bodies.
               * an allocator type to be used for the memory used to store and
                 manage the loop bodies.
           * The ``RAJA::WorkPool::enqueue`` method takes two arguments:
@@ -44,7 +42,7 @@ Examples showing how to use RAJA workgroup methods may be found in
 the :ref:`tutorial-label`.
 
 For more information on RAJA work policies and iteration space constructs,
-see :ref:`policies-label` and :ref:`index-label`, respectively.
+see :ref:`feat-policies-label` and :ref:`feat-index-label`, respectively.
 
 .. _workgroup-Policies-label:
 
@@ -99,25 +97,24 @@ The work ordering policy acts like the segment iteration execution policies when
 ``RAJA::forall`` is used with a ``RAJA::IndexSet`` and determines the backend
 used when iterating over the loops and the parallelism between each loop.
 
- ====================================== ========================================
- Work Ordering Policies                 Brief description
- ====================================== ========================================
- ordered                                Execute loops sequentially in the order
-                                        they were enqueued using forall.
- reverse_ordered                        Execute loops sequentially in the
-                                        reverse of the order order they were
-                                        enqueued using forall.
- unordered_cuda_loop_y_block_iter_x_threadblock_average
-                                        Execute loops in parallel by mapping
-                                        each loop to a set of cuda blocks with
-                                        the same index in the y direction in
-                                        a cuda kernel. Each loop is given a
-                                        number of threads over one of more
-                                        blocks in the x direction equal to the
-                                        average number of iterations of all the
-                                        loops rounded up to a multiple of the
-                                        block size.
- ====================================== ========================================
+ ======================================================= ========================================
+ Work Ordering Policies                                  Brief description
+ ======================================================= ========================================
+ ordered                                                 Execute loops sequentially in the order
+                                                         they were enqueued using forall.
+ reverse_ordered                                         Execute loops sequentially in the
+                                                         reverse of the order order they were
+                                                         enqueued using forall.
+ unordered_cuda_loop_y_block_iter_x_threadblock_average  Execute loops in parallel by mapping
+                                                         each loop to a set of cuda blocks with
+                                                         the same index in the y direction in
+                                                         a cuda kernel. Each loop is given a
+                                                         number of threads over one of more
+                                                         blocks in the x direction equal to the
+                                                         average number of iterations of all the
+                                                         loops rounded up to a multiple of the
+                                                         block size.
+ ======================================================= ========================================
 
 The work storage policy determines the strategy used to allocate and layout the
 storage used to store the ranges, loop bodies, and other data necessary to
@@ -206,16 +203,17 @@ policies::
 
   using Allocator = std::allocator<char>;
 
-.. note:: * The allocator type must use template argument char.
+.. note:: * The allocator type must use template argument ``char``.
           * Allocators must provide memory that is accessible where it is used.
               * Ordered work order policies only require memory that is accessible
                 where loop bodies are enqueued.
               * Unordered work order policies require memory that is accessible
                 from both where the loop bodies are enqueued and from where the
                 loop is executed based on the work execution policy.
-                  * For example when using cuda work exeution policies with cuda
-                    unordered work order policies pinned memory is a good choice
-                    because it is always accessible on the host and device.
+
+                  For example, when using cuda work exeution policies with CUDA
+                  unordered work order policies, pinned memory is a good choice
+                  because it is always accessible on the host and device.
 
 
 .. _workgroup-WorkPool-label:

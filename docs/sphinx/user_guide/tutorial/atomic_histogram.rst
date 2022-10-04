@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _atomichist-label:
+.. _tut-atomichist-label:
 
 --------------------------------------------------
 Atomic Operations: Computing a Histogram
@@ -44,10 +44,10 @@ similarly for different programming model back-ends.
 .. note:: Each RAJA atomic operation requires an atomic policy type
           parameter that must be compatible with the execution policy for 
           the kernel in which it is used. This is similar to the reduction
-          policies we described in :ref:`dotproduct-label`.
+          policies we described in :ref:`tut-dotproduct-label`.
 
 For a complete description of supported RAJA atomic operations and 
-atomic policies, please see :ref:`atomics-label`.
+atomic policies, please see :ref:`feat-atomics-label`.
 
 All code snippets described below use the stride-1 iteration space range:
 

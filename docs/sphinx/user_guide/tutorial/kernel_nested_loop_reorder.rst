@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _kernelnestedreorder-label:
+.. _tut-kernelnestedreorder-label:
 
 -----------------------------------------------------------
 Basic ``RAJA::kernel`` Mechanics and Nested Loop Ordering

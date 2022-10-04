@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _addvectors-label:
+.. _tut-addvectors-label:
 
 --------------------------------------
 Basic Loop Execution: Vector Addition
@@ -46,9 +46,10 @@ a C++ lambda expression. We pass the object::
 
 for the iteration space, which is contiguous sequence of integral 
 values [0, N) (for more information about RAJA loop indexing concepts, 
-see :ref:`index-label`). The loop execution template method requires an 
+see :ref:`feat-index-label`). The loop execution template method requires an 
 execution policy template type that specifies how the loop is to run
-(for more information about RAJA execution policies, see :ref:`policies-label`).
+(for more information about RAJA execution policies,
+see :ref:`feat-policies-label`).
 
 For a RAJA sequential variant, we use the ``RAJA::seq_exec`` execution
 policy type:
