@@ -29,8 +29,8 @@ to use RAJA in an application can be found in :ref:`app-considerations-label`.
    :maxdepth: 3
 
    getting_started
+   using_raja
+   config_options
    features
    app_considerations
    tutorial
-   using_raja
-   config_options

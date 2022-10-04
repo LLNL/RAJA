@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _teamsbasic-label:
+.. _tut-teamsbasic-label:
 
 ------------------------------------
 Naming kernels for NVTX/ROCTX tools
