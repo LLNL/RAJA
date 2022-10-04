@@ -91,7 +91,8 @@ namespace expt
 
     using lambda_arg_seq = camp::make_idx_seq_t<camp::tuple_size<lambda_arg_tuple_t>::value>;
 
-    ForallParamPack(camp::tuple<Params...> t) : param_tup(t) {};
+    template<typename... Ts>
+    ForallParamPack(camp::tuple<Ts...>&& t) : param_tup(std::move(t)) {};
   }; // struct ForallParamPack 
   
 
@@ -144,10 +145,10 @@ namespace expt
 
 
   template<typename... Ts>
-  constexpr auto make_forall_param_pack_from_tuple(const camp::tuple<Ts...>& tuple) {
-    static_assert(detail::check_types_derive_base<detail::ForallParamBase, Ts...>::value,
+  constexpr auto make_forall_param_pack_from_tuple(camp::tuple<Ts...>&& tuple) {
+    static_assert(detail::check_types_derive_base<detail::ForallParamBase, camp::decay<Ts>...>::value,
         "Forall optional arguments do not derive ForallParamBase. Please see Reducer, ReducerLoc and KernelName for examples.") ;
-    return ForallParamPack<Ts...>(tuple);
+    return ForallParamPack<camp::decay<Ts>...>(std::move(tuple));
   }
 
   
@@ -155,13 +156,13 @@ namespace expt
   namespace detail {
     // Maybe we should do a lot of these with structs...
     template<camp::idx_t... Seq, typename TupleType>
-    constexpr auto tuple_from_seq (const camp::idx_seq<Seq...>&, const TupleType& tuple){
-      return camp::make_tuple( camp::get< Seq >(tuple)... );
+    constexpr auto tuple_from_seq (const camp::idx_seq<Seq...>&, TupleType&& tuple){
+      return camp::forward_as_tuple( camp::get< Seq >(std::forward<TupleType>(tuple))... );
     };
 
     template<typename... Ts>
     constexpr auto strip_last_elem(camp::tuple<Ts...>&& tuple){
-      return tuple_from_seq(camp::make_idx_seq_t<sizeof...(Ts)-1>{},tuple);
+      return tuple_from_seq(camp::make_idx_seq_t<sizeof...(Ts)-1>{},std::move(tuple));
     };
   } // namespace detail
 
@@ -170,8 +171,8 @@ namespace expt
   template<typename... Args>
   constexpr auto make_forall_param_pack(Args&&... args){
     // We assume the last element of the pack is the lambda so we need to strip it from the list.
-    auto stripped_arg_tuple = detail::strip_last_elem(camp::make_tuple(args...)); 
-    return make_forall_param_pack_from_tuple(stripped_arg_tuple);
+    auto stripped_arg_tuple = detail::strip_last_elem( camp::forward_as_tuple(std::forward<Args>(args)...) ); 
+    return make_forall_param_pack_from_tuple(std::move(stripped_arg_tuple));
   }
   //===========================================================================
 
@@ -184,9 +185,8 @@ namespace expt
   //
   //
   template<typename... Args>
-  constexpr auto get_lambda(Args&&... args){
-    auto lambda = camp::get<sizeof...(Args)-1>( camp::make_tuple(args...) );
-    return lambda; 
+  constexpr auto&& get_lambda(Args&&... args){
+    return camp::get<sizeof...(Args)-1>( camp::forward_as_tuple(std::forward<Args>(args)...) );
   } 
   //===========================================================================
 

@@ -157,14 +157,14 @@ RAJA_INLINE concepts::enable_if_t<
     RAJA::resources::EventProxy<Res>,
     concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
     type_traits::is_range<Container>>
-forall(Res r, ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body, ForallParams f_params)
+forall(Res r, ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body, ForallParams&& f_params)
 {
   RAJA_FORCEINLINE_RECURSIVE
   return forall_impl(r,
                      std::forward<ExecutionPolicy>(p),
                      std::forward<Container>(c),
                      std::forward<LoopBody>(loop_body),
-                     f_params);
+                     std::forward<ForallParams>(f_params));
 }
 
 template <typename Res, typename ExecutionPolicy, typename Container, typename LoopBody>
@@ -201,7 +201,7 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(Res r,
                                                       Container&& c,
                                                       IndexType&& icount,
                                                       LoopBody&& loop_body,
-                                                      ForallParams f_params)
+                                                      ForallParams&& f_params)
 {
   using std::begin;
   using std::distance;
@@ -212,7 +212,7 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(Res r,
                                                                  icount);
   using policy::sequential::forall_impl;
   RAJA_FORCEINLINE_RECURSIVE
-  return forall_impl(r, std::forward<ExecutionPolicy>(p), range, adapted, f_params);
+  return forall_impl(r, std::forward<ExecutionPolicy>(p), range, adapted, std::forward<ForallParams>(f_params));
 }
 
 /*!
@@ -264,7 +264,7 @@ RAJA_INLINE resources::EventProxy<Res> forall(Res r,
                                          ForallParams f_params)
 {
   auto segIterRes = resources::get_resource<SegmentIterPolicy>::type::get_default();
-  wrap::forall(segIterRes, SegmentIterPolicy(), iset, [=, &r, &f_params](int segID) {
+  wrap::forall(segIterRes, SegmentIterPolicy(), iset, [=, &r](int segID) {
     iset.segmentCall(segID, detail::CallForall{}, SegmentExecPolicy(), loop_body, r, f_params);
   });
   return RAJA::resources::EventProxy<Res>(r);
@@ -305,7 +305,7 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
                 "a TypedIndexSet policy by mistake?");
 
   auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
-  auto loop_body = expt::get_lambda(std::forward<Params>(params)...);
+  auto&& loop_body = expt::get_lambda(std::forward<Params>(params)...);
   //expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
@@ -360,7 +360,7 @@ forall(ExecutionPolicy&& p, Res r, IdxSet&& c, Params&&... params)
                 "a TypedIndexSet policy by mistake?");
 
   auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
-  auto loop_body = expt::get_lambda(std::forward<Params>(params)...);
+  auto&& loop_body = expt::get_lambda(std::forward<Params>(params)...);
   expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
@@ -453,7 +453,7 @@ forall_Icount(ExecutionPolicy&& p,
                 "Container does not model RandomAccessIterator");
 
   auto f_params = expt::make_forall_param_pack(std::forward<FirstParam>(first), std::forward<Params>(params)...);
-  auto loop_body = expt::get_lambda(std::forward<FirstParam>(first), std::forward<Params>(params)...);
+  auto&& loop_body = expt::get_lambda(std::forward<FirstParam>(first), std::forward<Params>(params)...);
   //expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
@@ -521,7 +521,7 @@ forall(ExecutionPolicy&& p, Res r, Container&& c, Params&&... params)
                 "Container does not model RandomAccessIterator");
 
   auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
-  auto loop_body = expt::get_lambda(std::forward<Params>(params)...);
+  auto&& loop_body = expt::get_lambda(std::forward<Params>(params)...);
   expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
