@@ -306,6 +306,7 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
 
   auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
   auto loop_body = expt::get_lambda(std::forward<Params>(params)...);
+  expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
   util::callPreCapturePlugins(context);
@@ -360,6 +361,7 @@ forall(ExecutionPolicy&& p, Res r, IdxSet&& c, Params&&... params)
 
   auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
   auto loop_body = expt::get_lambda(std::forward<Params>(params)...);
+  expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
   util::callPreCapturePlugins(context);
@@ -451,6 +453,7 @@ forall_Icount(ExecutionPolicy&& p,
 
   auto f_params = expt::make_forall_param_pack(std::forward<FirstParam>(first), std::forward<Params>(params)...);
   auto loop_body = expt::get_lambda(std::forward<FirstParam>(first), std::forward<Params>(params)...);
+  expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
   util::callPreCapturePlugins(context);
