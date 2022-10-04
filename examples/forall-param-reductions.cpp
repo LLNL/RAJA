@@ -103,7 +103,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _reductions_raja_seq_start
   using EXEC_POL1   = RAJA::seq_exec;
-  using REDUCE_POL1 = RAJA::seq_reduce;
  
   int seq_sum = 0;
   int seq_min = std::numeric_limits<int>::max();
@@ -147,7 +146,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _reductions_raja_omppolicy_start
   using EXEC_POL2   = RAJA::omp_parallel_for_exec;
-  using REDUCE_POL2 = RAJA::omp_reduce;
   // _reductions_raja_omppolicy_end
 
   int omp_sum = 0;
@@ -193,7 +191,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _reductions_raja_cudapolicy_start
   using EXEC_POL3   = RAJA::cuda_exec<CUDA_BLOCK_SIZE>;
-  using REDUCE_POL3 = RAJA::cuda_reduce;
   // _reductions_raja_cudapolicy_end
 
   int cuda_sum = 0;
@@ -241,7 +238,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _reductions_raja_hippolicy_start
   using EXEC_POL3   = RAJA::hip_exec<HIP_BLOCK_SIZE>;
-  using REDUCE_POL3 = RAJA::hip_reduce;
   // _reductions_raja_hippolicy_end
 
   int hip_sum = 0;
