@@ -23,7 +23,10 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/pattern/atomic.hpp"
+
+#if defined(RAJA_ENABLE_EXPTVECTOR)
 #include "RAJA/pattern/tensor.hpp"
+#endif
 
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
@@ -71,6 +74,7 @@ namespace internal
 
 
 
+#if defined(RAJA_ENABLE_EXPTVECTOR)
   namespace detail
   {
     /*
@@ -92,6 +96,7 @@ namespace internal
 
 
   } // namespace detail
+#endif
 
 
 
@@ -101,10 +106,15 @@ namespace internal
   template<typename ... ARGS>
   struct count_num_tensor_args{
     static constexpr camp::idx_t value =
+#if defined(RAJA_ENABLE_EXPTVECTOR)
         RAJA::sum<camp::idx_t>(
             (internal::expt::isTensorIndex<ARGS>() ? 1 : 0) ...);
+#else
+        0;  // There should be 0 Tensor indices if not vectorizing.
+#endif
   };
 
+#if defined(RAJA_ENABLE_EXPTVECTOR)
   /*
    * Returns which argument has a vector index
    */
@@ -140,6 +150,7 @@ namespace internal
         ? internal::expt::getTensorSize<ARGS>(args, layout.template get_dim_size<GetTensorArgIdx<DIM, ARGS...>::value>())
         : 0 ...);
   }
+#endif
 
 
   namespace detail {
@@ -175,6 +186,7 @@ namespace internal
   };
 
 
+#if defined(RAJA_ENABLE_EXPTVECTOR)
   /*
    * Specialization for Tensor return types
    */
@@ -222,6 +234,7 @@ namespace internal
         });
       }
   };
+#endif
 
 
   } // namespace detail
@@ -298,6 +311,7 @@ namespace internal
   };
 
 
+#if defined(RAJA_ENABLE_EXPTVECTOR)
   /**
    * Specialization where expected type is wrapped in a VectorIndex type
    *
@@ -319,6 +333,7 @@ namespace internal
       return type(stripIndexType(*vec_arg), vec_arg.size());
     }
   };
+#endif
 
   } //namespace detail
 
