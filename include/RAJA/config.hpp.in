@@ -277,11 +277,11 @@ namespace RAJA {
 #if defined(SYCL_LANGUAGE_VERSION)
 #define RAJA_SYCL_ACTIVE
 #endif
+#endif
 
 #if defined(RAJA_CUDA_ACTIVE) || \
-  defined(RAJA_HIP_ACTIVE) 
+  defined(RAJA_HIP_ACTIVE) || defined(RAJA_SYCL_ACTIVE)
 #define RAJA_DEVICE_ACTIVE
-#endif
 #endif
 
 /*!
