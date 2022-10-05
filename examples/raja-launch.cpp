@@ -102,7 +102,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA-Launch examples...\n";
   int num_of_backends = 1;
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
   num_of_backends++;
 #endif
 
@@ -124,7 +124,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Ddat = host_res.allocate<int>(N_tri * N_tri);
     }
 
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
     if (select_cpu_or_gpu == RAJA::expt::DEVICE) {
       Ddat = device_res.allocate<int>(N_tri * N_tri);
     }
@@ -180,7 +180,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       host_res.deallocate(Ddat);
     }
 
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
     if (select_cpu_or_gpu == RAJA::expt::DEVICE) {
       device_res.deallocate(Ddat);
     }

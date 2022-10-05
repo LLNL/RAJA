@@ -41,13 +41,13 @@ using device_loop = RAJA::expt::hip_global_thread_x;
 #endif
 
 using launch_policy = RAJA::expt::LaunchPolicy<host_launch
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
                                                ,device_launch
 #endif
                                                >;
 
 using loop_pol = RAJA::expt::LoopPolicy<host_loop
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
                                         ,device_loop
 #endif
                                         >;
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 #endif
 
   //Get typed erased resource - it will internally store if we are running on the host or device
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
   RAJA::resources::Resource res = RAJA::expt::Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
 #else
   RAJA::resources::Resource res = RAJA::expt::Get_Host_Resource(host_res, select_cpu_or_gpu);

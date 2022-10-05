@@ -47,7 +47,7 @@ using device_launch = RAJA::expt::hip_launch_t<false>;
 
 using launch_policy = RAJA::expt::LaunchPolicy<
   host_launch
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
   ,device_launch
 #endif
   >;
@@ -110,7 +110,7 @@ using threads_y = RAJA::expt::LoopPolicy<RAJA::loop_exec
 #endif
                                          >;
 
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 __global__ void gpuKernel()
 {
   //Equivalent CUDA/HIP style thread/block mapping
@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
 // The following launches equivalent
 // device kernels
 //
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
   // Define thread block dimensions
   dim3 blockdim(Nthreads, Nthreads);
   // Define grid dimensions to match the RAJA version above
