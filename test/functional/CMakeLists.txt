@@ -7,6 +7,8 @@
 
 add_subdirectory(forall)
 
+add_subdirectory(dynamic_forall)
+
 add_subdirectory(indexset-build)
 
 add_subdirectory(kernel)

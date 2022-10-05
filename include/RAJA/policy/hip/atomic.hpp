@@ -33,6 +33,8 @@
 #include "RAJA/policy/openmp/atomic.hpp"
 #endif
 
+#include "RAJA/util/camp_aliases.hpp"
+#include "RAJA/util/concepts.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/TypeConvert.hpp"
 #include "RAJA/util/macros.hpp"
@@ -166,15 +168,101 @@ RAJA_INLINE __device__ T hip_atomic_CAS_oper(T volatile *acc, OPER &&oper)
 }
 
 
+template < typename T, typename TypeList >
+struct is_any_of;
+
+template < typename T, typename... Types >
+struct is_any_of<T, list<Types...>>
+  : concepts::any_of<camp::is_same<T, Types>...>
+{};
+
+template < typename T, typename TypeList >
+using enable_if_is_any_of = std::enable_if_t<is_any_of<T, TypeList>::value, T>;
+
+template < typename T, typename TypeList >
+using enable_if_is_none_of = std::enable_if_t<concepts::negate<is_any_of<T, TypeList>>::value, T>;
+
+
+using hip_atomicCommon_builtin_types = list<
+      int
+     ,unsigned int
+     ,unsigned long long
+    >;
+
+
+using hip_atomicAdd_builtin_types = list<
+      int
+     ,unsigned int
+     ,unsigned long long
+     ,float
+#ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
+     ,double
+#endif
+    >;
+
 /*!
- * Catch-all policy passes off to HIP's builtin atomics.
- *
- * This catch-all will only work for types supported by the compiler.
- * Specialization below can adapt for some unsupported types.
- *
- * These are atomic in hip device code and non-atomic otherwise
+ * List of types where HIP builtin atomics are used to implement atomicSub.
  */
-template <typename T>
+using hip_atomicSub_types = list<
+      int
+     ,unsigned int
+     ,float
+#ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
+     ,double
+#endif
+    >;
+
+using hip_atomicSub_builtin_types = list<
+      int
+     ,unsigned int
+    >;
+
+/*!
+ * List of types where HIP builtin atomicAdd is used to implement atomicSub.
+ *
+ * Avoid multiple definition errors by including the previous list type here
+ * to ensure these lists have different types.
+ */
+using hip_atomicSub_via_Add_builtin_types = list<
+      float
+#ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
+     ,double
+#endif
+    >;
+
+using hip_atomicMin_builtin_types = hip_atomicCommon_builtin_types;
+
+using hip_atomicMax_builtin_types = hip_atomicCommon_builtin_types;
+
+using hip_atomicIncReset_builtin_types = list<
+      unsigned int
+    >;
+
+using hip_atomicInc_builtin_types = list< >;
+
+using hip_atomicDecReset_builtin_types = list<
+      unsigned int
+    >;
+
+using hip_atomicDec_builtin_types = list< >;
+
+using hip_atomicAnd_builtin_types = hip_atomicCommon_builtin_types;
+
+using hip_atomicOr_builtin_types = hip_atomicCommon_builtin_types;
+
+using hip_atomicXor_builtin_types = hip_atomicCommon_builtin_types;
+
+using hip_atomicExch_builtin_types = list<
+      int
+     ,unsigned int
+     ,unsigned long long
+     ,float
+    >;
+
+using hip_atomicCAS_builtin_types = hip_atomicCommon_builtin_types;
+
+
+template <typename T, enable_if_is_none_of<T, hip_atomicAdd_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicAdd(T volatile *acc, T value)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T a) {
@@ -182,48 +270,14 @@ RAJA_INLINE __device__ T hip_atomicAdd(T volatile *acc, T value)
   });
 }
 
-#if __HIP_ARCH_HAS_GLOBAL_INT32_ATOMICS__
-// 32-bit signed atomicAdd support by HIP
-template <>
-RAJA_INLINE __device__ int hip_atomicAdd<int>(int volatile *acc,
-                                          int value)
+template <typename T, enable_if_is_any_of<T, hip_atomicAdd_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicAdd(T volatile *acc, T value)
 {
-  return ::atomicAdd((int *)acc, value);
+  return ::atomicAdd((T *)acc, value);
 }
 
 
-// 32-bit unsigned atomicAdd support by HIP
-template <>
-RAJA_INLINE __device__ unsigned hip_atomicAdd<unsigned>(unsigned volatile *acc,
-                                                    unsigned value)
-{
-  return ::atomicAdd((unsigned *)acc, value);
-}
-#endif
-
-// 64-bit unsigned atomicAdd support by HIP
-#if __HIP_ARCH_HAS_GLOBAL_INT64_ATOMICS__
-template <>
-RAJA_INLINE __device__ unsigned long long hip_atomicAdd<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long value)
-{
-  return ::atomicAdd((unsigned long long *)acc, value);
-}
-#endif
-
-
-// 32-bit float atomicAdd support by HIP
-#if __HIP_ARCH_HAS_FLOAT_ATOMIC_ADD__
-template <>
-RAJA_INLINE __device__ float hip_atomicAdd<float>(float volatile *acc,
-                                              float value)
-{
-  return ::atomicAdd((float *)acc, value);
-}
-#endif
-
-template <typename T>
+template <typename T, enable_if_is_none_of<T, hip_atomicSub_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicSub(T volatile *acc, T value)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T a) {
@@ -231,25 +285,26 @@ RAJA_INLINE __device__ T hip_atomicSub(T volatile *acc, T value)
   });
 }
 
-#if __HIP_ARCH_HAS_GLOBAL_INT32_ATOMICS__
-// 32-bit signed atomicSub support by HIP
-template <>
-RAJA_INLINE __device__ int hip_atomicSub<int>(int volatile *acc,
-                                          int value)
+/*!
+ * HIP atomicSub builtin implementation.
+ */
+template <typename T, enable_if_is_any_of<T, hip_atomicSub_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicSub(T volatile *acc, T value)
 {
-  return ::atomicSub((int *)acc, value);
+  return ::atomicSub((T *)acc, value);
 }
 
-// 32-bit unsigned atomicSub support by HIP
-template <>
-RAJA_INLINE __device__ unsigned hip_atomicSub<unsigned>(unsigned volatile *acc,
-                                                    unsigned value)
+/*!
+ * HIP atomicSub via atomicAdd builtin implementation.
+ */
+template <typename T, enable_if_is_any_of<T, hip_atomicSub_via_Add_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicSub(T volatile *acc, T value)
 {
-  return ::atomicSub((unsigned *)acc, value);
+  return ::atomicAdd((T *)acc, -value);
 }
-#endif
 
-template <typename T>
+
+template <typename T, enable_if_is_none_of<T, hip_atomicMin_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicMin(T volatile *acc, T value)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T a) {
@@ -257,36 +312,14 @@ RAJA_INLINE __device__ T hip_atomicMin(T volatile *acc, T value)
   });
 }
 
-#if __HIP_ARCH_HAS_GLOBAL_INT32_ATOMICS__
-// 32-bit signed atomicMin support by HIP
-template <>
-RAJA_INLINE __device__ int hip_atomicMin<int>(int volatile *acc,
-                                          int value)
+template <typename T, enable_if_is_any_of<T, hip_atomicMin_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicMin(T volatile *acc, T value)
 {
-  return ::atomicMin((int *)acc, value);
+  return ::atomicMin((T *)acc, value);
 }
 
 
-// 32-bit unsigned atomicMin support by HIP
-template <>
-RAJA_INLINE __device__ unsigned hip_atomicMin<unsigned>(unsigned volatile *acc,
-                                                    unsigned value)
-{
-  return ::atomicMin((unsigned *)acc, value);
-}
-#endif
-
-#if __HIP_ARCH_HAS_GLOBAL_INT64_ATOMICS__
-template <>
-RAJA_INLINE __device__ unsigned long long hip_atomicMin<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long value)
-{
-  return ::atomicMin((unsigned long long *)acc, value);
-}
-#endif
-
-template <typename T>
+template <typename T, enable_if_is_none_of<T, hip_atomicMax_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicMax(T volatile *acc, T value)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T a) {
@@ -294,273 +327,141 @@ RAJA_INLINE __device__ T hip_atomicMax(T volatile *acc, T value)
   });
 }
 
-#if __HIP_ARCH_HAS_GLOBAL_INT32_ATOMICS__
-// 32-bit signed atomicMax support by HIP
-template <>
-RAJA_INLINE __device__ int hip_atomicMax<int>(int volatile *acc,
-                                          int value)
+template <typename T, enable_if_is_any_of<T, hip_atomicMax_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicMax(T volatile *acc, T value)
 {
-  return ::atomicMax((int *)acc, value);
+  return ::atomicMax((T *)acc, value);
 }
 
 
-// 32-bit unsigned atomicMax support by HIP
-template <>
-RAJA_INLINE __device__ unsigned hip_atomicMax<unsigned>(unsigned volatile *acc,
-                                                    unsigned value)
-{
-  return ::atomicMax((unsigned *)acc, value);
-}
-#endif
-
-#if __HIP_ARCH_HAS_GLOBAL_INT64_ATOMICS__
-template <>
-RAJA_INLINE __device__ unsigned long long hip_atomicMax<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long value)
-{
-  return ::atomicMax((unsigned long long *)acc, value);
-}
-#endif
-
-template <typename T>
+template <typename T, enable_if_is_none_of<T, hip_atomicIncReset_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicInc(T volatile *acc, T val)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T old) {
-    return ((old >= val) ? 0 : (old + 1));
+    return ((old >= val) ? (T)0 : (old + (T)1));
   });
 }
 
-#if __HIP_ARCH_HAS_GLOBAL_INT32_ATOMICS__
-// 32-bit unsigned atomicInc support by HIP
-template <>
-RAJA_INLINE __device__ unsigned hip_atomicInc<unsigned>(unsigned volatile *acc,
-                                                    unsigned value)
+template <typename T, enable_if_is_any_of<T, hip_atomicIncReset_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicInc(T volatile *acc, T val)
 {
-  return ::atomicInc((unsigned *)acc, value);
+  return ::atomicInc((T *)acc, val);
 }
-#endif
 
-template <typename T>
+
+template <typename T, enable_if_is_none_of<T, hip_atomicInc_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicInc(T volatile *acc)
 {
-  return hip_atomic_CAS_oper(acc,
-                                      [=] __device__(T a) { return a + 1; });
+  return hip_atomicAdd(acc, (T)1);
+}
+
+template <typename T, enable_if_is_any_of<T, hip_atomicInc_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicInc(T volatile *acc)
+{
+  return ::atomicInc((T *)acc);
 }
 
 
-template <typename T>
+template <typename T, enable_if_is_none_of<T, hip_atomicDecReset_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicDec(T volatile *acc, T val)
 {
   // See:
   // http://docs.nvidia.com/hip/hip-c-programming-guide/index.html#atomicdec
   return hip_atomic_CAS_oper(acc, [=] __device__(T old) {
-    return (((old == 0) | (old > val)) ? val : (old - 1));
+    return (((old == (T)0) | (old > val)) ? val : (old - (T)1));
   });
 }
 
-#if __HIP_ARCH_HAS_GLOBAL_INT32_ATOMICS__
-// 32-bit unsigned atomicDec support by HIP
-template <>
-RAJA_INLINE __device__ unsigned hip_atomicDec<unsigned>(unsigned volatile *acc,
-                                                    unsigned value)
+template <typename T, enable_if_is_any_of<T, hip_atomicDecReset_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicDec(T volatile *acc, T val)
 {
-  return ::atomicDec((unsigned *)acc, value);
+  return ::atomicDec((T *)acc, val);
 }
-#endif
 
-template <typename T>
+
+template <typename T, enable_if_is_none_of<T, hip_atomicDec_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicDec(T volatile *acc)
 {
-  return hip_atomic_CAS_oper(acc,
-                                      [=] __device__(T a) { return a - 1; });
+  return hip_atomicSub(acc, (T)1);
+}
+
+template <typename T, enable_if_is_any_of<T, hip_atomicDec_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicDec(T volatile *acc)
+{
+  return ::atomicDec((T *)acc);
 }
 
 
-template <typename T>
-RAJA_INLINE __device__ T hip_atomicAnd(T volatile *acc, T value)
+template <typename T, enable_if_is_none_of<T, hip_atomicAnd_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicAnd(T volatile *acc, T val)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T a) {
-    return a & value;
+    return a & val;
   });
 }
 
-#if __HIP_ARCH_HAS_GLOBAL_INT32_ATOMICS__
-// 32-bit signed atomicAnd support by HIP
-template <>
-RAJA_INLINE __device__ int hip_atomicAnd<int>(int volatile *acc,
-                                          int value)
+template <typename T, enable_if_is_any_of<T, hip_atomicAnd_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicAnd(T volatile *acc, T val)
 {
-  return ::atomicAnd((int *)acc, value);
+  return ::atomicAnd((T *)acc, val);
 }
 
 
-// 32-bit unsigned atomicAnd support by HIP
-template <>
-RAJA_INLINE __device__ unsigned hip_atomicAnd<unsigned>(unsigned volatile *acc,
-                                                    unsigned value)
-{
-  return ::atomicAnd((unsigned *)acc, value);
-}
-#endif
-
-// 64-bit unsigned atomicAnd support by HIP sm_35 and later
-#if __HIP_ARCH_HAS_GLOBAL_INT64_ATOMICS__
-template <>
-RAJA_INLINE __device__ unsigned long long hip_atomicAnd<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long value)
-{
-  return ::atomicAnd((unsigned long long *)acc, value);
-}
-#endif
-
-template <typename T>
-RAJA_INLINE __device__ T hip_atomicOr(T volatile *acc, T value)
+template <typename T, enable_if_is_none_of<T, hip_atomicOr_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicOr(T volatile *acc, T val)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T a) {
-    return a | value;
+    return a | val;
   });
 }
 
-#if __HIP_ARCH_HAS_GLOBAL_INT32_ATOMICS__
-// 32-bit signed atomicOr support by HIP
-template <>
-RAJA_INLINE __device__ int hip_atomicOr<int>(int volatile *acc,
-                                         int value)
+template <typename T, enable_if_is_any_of<T, hip_atomicOr_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicOr(T volatile *acc, T val)
 {
-  return ::atomicOr((int *)acc, value);
+  return ::atomicOr((T *)acc, val);
 }
 
 
-// 32-bit unsigned atomicOr support by HIP
-template <>
-RAJA_INLINE __device__ unsigned hip_atomicOr<unsigned>(unsigned volatile *acc,
-                                                   unsigned value)
-{
-  return ::atomicOr((unsigned *)acc, value);
-}
-#endif
-
-// 64-bit unsigned atomicOr support by HIP sm_35 and later
-#if __HIP_ARCH_HAS_GLOBAL_INT64_ATOMICS__
-template <>
-RAJA_INLINE __device__ unsigned long long hip_atomicOr<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long value)
-{
-  return ::atomicOr((unsigned long long *)acc, value);
-}
-#endif
-
-template <typename T>
-RAJA_INLINE __device__ T hip_atomicXor(T volatile *acc, T value)
+template <typename T, enable_if_is_none_of<T, hip_atomicXor_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicXor(T volatile *acc, T val)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T a) {
-    return a ^ value;
+    return a ^ val;
   });
 }
 
-#if __HIP_ARCH_HAS_GLOBAL_INT32_ATOMICS__
-// 32-bit signed atomicXor support by HIP
-template <>
-RAJA_INLINE __device__ int hip_atomicXor<int>(int volatile *acc,
-                                          int value)
+template <typename T, enable_if_is_any_of<T, hip_atomicXor_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicXor(T volatile *acc, T val)
 {
-  return ::atomicXor((int *)acc, value);
+  return ::atomicXor((T *)acc, val);
 }
 
 
-// 32-bit unsigned atomicXor support by HIP
-template <>
-RAJA_INLINE __device__ unsigned hip_atomicXor<unsigned>(unsigned volatile *acc,
-                                                    unsigned value)
-{
-  return ::atomicXor((unsigned *)acc, value);
-}
-#endif
-
-#if __HIP_ARCH_HAS_GLOBAL_INT64_ATOMICS__
-// 64-bit unsigned atomicXor support by HIP sm_35 and later
-template <>
-RAJA_INLINE __device__ unsigned long long hip_atomicXor<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long value)
-{
-  return ::atomicXor((unsigned long long *)acc, value);
-}
-#endif
-
-template <typename T>
-RAJA_INLINE __device__ T hip_atomicExchange(T volatile *acc, T value)
+template <typename T, enable_if_is_none_of<T, hip_atomicExch_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicExchange(T volatile *acc, T val)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T) {
-    return value;
+    return val;
   });
 }
 
-#if __HIP_ARCH_HAS_GLOBAL_INT32_ATOMICS__
-template <>
-RAJA_INLINE __device__ int hip_atomicExchange<int>(
-    int volatile *acc, int value)
+template <typename T, enable_if_is_any_of<T, hip_atomicExch_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicExchange(T volatile *acc, T val)
 {
-  return ::atomicExch((int *)acc, value);
+  return ::atomicExch((T *)acc, val);
 }
 
-template <>
-RAJA_INLINE __device__ unsigned hip_atomicExchange<unsigned>(
-    unsigned volatile *acc, unsigned value)
-{
-  return ::atomicExch((unsigned *)acc, value);
-}
-#endif
 
-#if __HIP_ARCH_HAS_GLOBAL_INT64_ATOMICS__
-template <>
-RAJA_INLINE __device__ unsigned long long hip_atomicExchange<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long value)
+template <typename T, enable_if_is_none_of<T, hip_atomicCAS_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicCAS(T volatile *acc, T compare, T val)
 {
-  return ::atomicExch((unsigned long long *)acc, value);
-}
-#endif
-
-#if __HIP_ARCH_HAS_GLOBAL_FLOAT_ATOMIC_EXCH__
-template <>
-RAJA_INLINE __device__ float hip_atomicExchange<float>(
-    float volatile *acc, float value)
-{
-  return ::atomicExch((float *)acc, value);
-}
-#endif
-
-template <typename T>
-RAJA_INLINE __device__ T hip_atomicCAS(T volatile *acc, T compare, T value)
-{
-  return hip_atomic_CAS(acc, compare, value);
+  return hip_atomic_CAS(acc, compare, val);
 }
 
-template <>
-RAJA_INLINE __device__ int hip_atomicCAS<int>(
-    int volatile *acc, int compare, int value)
+template <typename T, enable_if_is_any_of<T, hip_atomicCAS_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicCAS( T volatile *acc, T compare, T val)
 {
-  return ::atomicCAS((int *)acc, compare, value);
-}
-
-template <>
-RAJA_INLINE __device__ unsigned hip_atomicCAS<unsigned>(
-    unsigned volatile *acc, unsigned compare, unsigned value)
-{
-  return ::atomicCAS((unsigned *)acc, compare, value);
-}
-
-template <>
-RAJA_INLINE __device__ unsigned long long hip_atomicCAS<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long compare,
-    unsigned long long value)
-{
-  return ::atomicCAS((unsigned long long *)acc, compare, value);
+  return ::atomicCAS((T *)acc, compare, val);
 }
 
 }  // namespace detail
