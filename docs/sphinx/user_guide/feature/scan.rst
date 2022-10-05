@@ -35,8 +35,7 @@ Also:
           be automatically set to the location of the CUB or rocPRIM library 
           for the CUDA or rocPRIM installation specified when either back-end
           is enabled. More details for configuring the CUB or rocPRIM library 
-          for a RAJA build can be found here: 
-          :ref:`build-external-tpl <build-external-tpl-label>`.
+          for a RAJA build can be found in :ref:`getting_started_depend-label`.
 
 Please see the following tutorial sections for detailed examples that use
 RAJA scan operations:
