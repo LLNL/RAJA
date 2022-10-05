@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _permuted-layout-label:
+.. _tut-permutedlayout-label:
 
 -----------------------------------------------
 Permuted Layout: Batched Matrix-Multiplication
@@ -81,7 +81,7 @@ Permuted Layouts
 
 Next, we show how to construct the two data layouts described above using 
 ``RAJA::View`` and ``RAJA::Layout`` objects. For more information on these 
-RAJA concepts, please see :ref:`view-label`.
+RAJA concepts, please see :ref:`feat-view-label`.
 
 The views to access data for layout 1 are constructed as follows:
 
@@ -95,7 +95,7 @@ whose entries correspond to the extent of each layout dimension. Here, we have
 :math:`N` :math:`N_r \times N_c` matrices. The second argument, the layout
 permutation, describes the striding order of the array indices. Note that 
 since this case follows the default RAJA ordering convention 
-(see :ref:`view-label`), we use the identity permutation '(0,1,2)'. For each 
+(see :ref:`feat-view-label`), we use the identity permutation '(0,1,2)'. For each 
 matrix, the column index (index 2) has unit stride and the row index (index 1) 
 has stride :math:`N_c`, the number of columns in each matrix. The matrix index 
 (index 0) has stride :math:`N_r \times N_c`, the number of entries in each 

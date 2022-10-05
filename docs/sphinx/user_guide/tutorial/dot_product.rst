@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _dotproduct-label:
+.. _tut-dotproduct-label:
 
 -----------------------------------
 Sum Reduction: Vector Dot Product
@@ -53,7 +53,7 @@ in kernels. The RAJA variants of the dot product computation show how
 to use the ``RAJA::ReduceSum`` sum reduction template type. RAJA provides
 other reduction types and allows multiple reduction operations to be
 performed in a single kernel alongside other computations. Please see 
-:ref:`reductions-label` for more information.
+:ref:`feat-reductions-label` for more information.
 
 Each RAJA reduction type takes a `reduce policy` template argument, which
 **must be compatible with the execution policy** applied to the kernel

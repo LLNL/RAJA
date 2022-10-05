@@ -150,9 +150,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // row, column, and dot-product loops for RAJA variants
 //
   // _matmult_ranges_start
-  RAJA::RangeSegment row_range(0, N);
-  RAJA::RangeSegment col_range(0, N);
-  RAJA::RangeSegment dot_range(0, N);
+  RAJA::TypedRangeSegment<int> row_range(0, N);
+  RAJA::TypedRangeSegment<int> col_range(0, N);
+  RAJA::TypedRangeSegment<int> dot_range(0, N);
   // _matmult_ranges_end
 
 //----------------------------------------------------------------------------//
@@ -1012,10 +1012,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     Shmem aShared, bShared, cShared;
 
-    RAJA::kernel_param<EXEC_POL10>(RAJA::make_tuple(RAJA::RangeSegment(0, N),
-                                                    RAJA::RangeSegment(0, N),
-                                                    RAJA::RangeSegment(0, N)),
-                                   RAJA::make_tuple(aShared, bShared, cShared),
+    RAJA::kernel_param<EXEC_POL10>(
+      RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N),
+                       RAJA::TypedRangeSegment<int>(0, N),
+                       RAJA::TypedRangeSegment<int>(0, N)),
+      RAJA::make_tuple(aShared, bShared, cShared),
 
     // Zero out thread local memory for storing dot products
     [=] RAJA_HOST_DEVICE (int tn, int tp, Shmem &cShared) {
