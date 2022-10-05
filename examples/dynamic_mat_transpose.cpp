@@ -74,6 +74,10 @@ using launch_policy = RAJA::LaunchPolicy<
     ,
     RAJA::hip_launch_t<false>
 #endif
+#if defined(RAJA_ENABLE_SYCL)
+    ,
+    RAJA::sycl_launch_t<false>
+#endif    
     >;
 
 /*
