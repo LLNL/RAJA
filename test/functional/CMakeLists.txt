@@ -19,7 +19,7 @@ add_subdirectory(workgroup)
 
 add_subdirectory(teams)
 
-if (RAJA_ENABLE_EXPTVECTOR)
+if (RAJA_ENABLE_VECTORIZATION)
   add_subdirectory(tensor)
 endif()
 

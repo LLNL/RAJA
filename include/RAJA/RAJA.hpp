@@ -48,7 +48,7 @@
 //
 // Generic templates to describe SIMD/SIMT registers and vectors
 //
-#if defined(RAJA_ENABLE_EXPTVECTOR)
+#if defined(RAJA_ENABLE_VECTORIZATION)
 #include "RAJA/pattern/tensor.hpp"
 #endif
 
@@ -66,7 +66,7 @@
 // All platforms should support simd and vector execution.
 //
 #include "RAJA/policy/simd.hpp"
-#if defined(RAJA_ENABLE_EXPTVECTOR)
+#if defined(RAJA_ENABLE_VECTORIZATION)
 #include "RAJA/policy/tensor.hpp"
 #endif
 
