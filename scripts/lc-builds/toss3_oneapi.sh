@@ -12,7 +12,7 @@ if [ "$1" == "" ]; then
   echo "You must pass a compiler version number to script. For example,"
   echo "    toss3_oneapi.sh 2022.2"
   echo
-  echo "NOTE: This script only works with 2022.2, and 2021.1."
+  echo "NOTE: This script only works with 2022.2."
   echo "      Change the -DCMAKE_CXX_COMPILER and -DCMAKE_C_COMPILER paths for other versions."
   exit
 fi
