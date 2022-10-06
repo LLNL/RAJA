@@ -12,7 +12,7 @@
 Elements of Loop Execution
 ==============================================
 
-The ``RAJA::forall``, ``RAJA::dynamic_forall``, ``RAJA::kernel``, and ``RAJA::expt::launch``
+The ``RAJA::forall``, ``RAJA::expt::dynamic_forall``, ``RAJA::kernel``, and ``RAJA::expt::launch``
 template methods comprise the RAJA interface for kernel
 execution. ``RAJA::forall`` methods execute simple, non-nested loops,
 ``RAJA::kernel`` methods support nested loops and other complex loop
@@ -21,7 +21,7 @@ space in which kernels are written in terms of nested loops using
 the ``RAJA::expt::loop`` method.
 
 .. note:: The ``forall`` , and ``kernel`` methods are in the ``RAJA``
-          namespace, while ``dyanmic_forall`` and ``launch`` are in the RAJA namespace for
+          namespace, while ``dynamic_forall`` and ``launch`` are in the RAJA namespace for
           experimental features ``RAJA::expt``.  ``RAJA::expt::launch``
           will be moved to the ``RAJA`` namespace in a future RAJA release.
 
