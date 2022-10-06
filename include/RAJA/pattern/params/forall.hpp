@@ -200,6 +200,34 @@ namespace expt
   //
   namespace detail {
 
+    // 
+    //
+    // Lambda traits Utilities
+    // 
+    //
+    template<class F>
+    struct lambda_traits;
+
+    template<class R, class C, class First, class... Rest>
+    struct lambda_traits<R (C::*)(First, Rest...)>
+    {  // non-const specialization
+      using arg_type = First; 
+    };
+    template<class R, class C, class First, class... Rest>
+    struct lambda_traits<R (C::*)(First, Rest...) const>
+    {  // const specialization
+      using arg_type = First; 
+    };
+
+    template<class T>
+    typename lambda_traits<T>::arg_type* lambda_arg_helper(T);
+
+
+    // 
+    //
+    // List manipulation Utilities
+    // 
+    //
     template<typename... Ts>
     constexpr auto list_remove_pointer(const camp::list<Ts...>&){
       return camp::list<camp::decay<typename std::remove_pointer<Ts>::type>...>{};
@@ -223,22 +251,42 @@ namespace expt
         std::reference_wrapper<typename std::remove_reference<F>::type>
       >{};
 
-    // TODO : figure out index args instead of just passing int. This seems to work for now...
-    using INDEX_ARGS = RAJA::Index_type;
+    template<class...>
+    using void_t = void;
+
+    template<class F, class=void>
+    struct has_empty_op : std::false_type{};
+
+    template<class F>
+    struct has_empty_op<F, void_t<decltype(std::declval<F::operator()>)>> : std::true_type{};
+
+    template<class F>
+    struct get_lambda_index_type {
+      typedef typename std::remove_pointer<
+                decltype(lambda_arg_helper(
+                      &camp::decay<F>::operator())
+                )
+              >::type type;
+    };
+
+    // If LAMBDA::operator() is not available this probably isn't a generic lambda and we can't extract and check args.
+    template<typename LAMBDA, typename... EXPECTED_ARGS>
+    constexpr concepts::enable_if<concepts::negate<has_empty_op<LAMBDA>>> check_invocable(LAMBDA&&, const camp::list<EXPECTED_ARGS...>&) {}
 
     template<typename LAMBDA, typename... EXPECTED_ARGS>
-    constexpr void check_invocable(const LAMBDA&, const camp::list<EXPECTED_ARGS...>&) {
-#if !defined(RAJA_ENABLE_HIP)      
-      static_assert(is_invocable<LAMBDA, INDEX_ARGS, EXPECTED_ARGS...>::value, "LAMBDA Not invocable w/ EXPECTED_ARGS."); 
+    constexpr concepts::enable_if<has_empty_op<LAMBDA>> check_invocable(LAMBDA&&, const camp::list<EXPECTED_ARGS...>&) {
+#if !defined(RAJA_ENABLE_HIP)
+      static_assert(is_invocable<LAMBDA, typename get_lambda_index_type<LAMBDA>::type, EXPECTED_ARGS...>::value, "LAMBDA Not invocable w/ EXPECTED_ARGS."); 
 #endif
     }
+
   } // namespace detail
 
 
   template<typename Lambda, typename ForallParams>
   constexpr 
   void
-  check_forall_optional_args(const Lambda& l, ForallParams& fpp) {
+  check_forall_optional_args(Lambda&& l, ForallParams& fpp) {
 
     using expected_arg_type_list = decltype( detail::list_add_lvalue_ref(
                                                detail::list_remove_pointer(
@@ -248,7 +296,7 @@ namespace expt
                                                )
                                             ));
 
-    detail::check_invocable(l, expected_arg_type_list{});
+    detail::check_invocable(std::forward<Lambda>(l), expected_arg_type_list{});
   }
   //===========================================================================
   

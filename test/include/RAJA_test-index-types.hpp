@@ -56,7 +56,7 @@ using SignedIdxTypeList = camp::list<RAJA::Index_type,
 //
 using StrongIdxTypeList = camp::list<RAJA::Index_type,
                                      int,
-                                     //StrongIndexType,
+                                     StrongIndexType,
 #if defined(RAJA_TEST_EXHAUSTIVE)
                                      //StrongInt,
                                      unsigned int,
