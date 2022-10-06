@@ -76,7 +76,7 @@ struct HoldBodyArgs_host : HoldBodyArgs_base<LoopBody, Args...>
   template < camp::idx_t ... Is >
   RAJA_INLINE void invoke(index_type i, camp::idx_seq<Is...>) const
   {
-    this->m_body(i, get<Is>(this->m_arg_tuple)...);
+    this->m_body(i, camp::get<Is>(this->m_arg_tuple)...);
   }
 };
 
@@ -98,7 +98,7 @@ struct HoldBodyArgs_device : HoldBodyArgs_base<LoopBody, Args...>
   template < camp::idx_t ... Is >
   RAJA_DEVICE RAJA_INLINE void invoke(index_type i, camp::idx_seq<Is...>) const
   {
-    this->m_body(i, get<Is>(this->m_arg_tuple)...);
+    this->m_body(i, camp::get<Is>(this->m_arg_tuple)...);
   }
 };
 

@@ -55,7 +55,7 @@ struct StatementExecutor<
     // Set the argument type for this loop
     using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
 
-    auto iter = get<ArgumentId>(data.segment_tuple);
+    auto iter = camp::get<ArgumentId>(data.segment_tuple);
     auto begin = std::begin(iter);
     auto end = std::end(iter);
     auto distance = std::distance(begin, end);
