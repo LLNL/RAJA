@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _scan-label:
+.. _tut-scan-label:
 
 --------------------------------------------------
 Parallel Scan Operations
@@ -33,7 +33,7 @@ multiple RAJA execution back-ends. Different scan operations can be
 performed by passing different RAJA operators to the RAJA scan template 
 methods. Each operator is a template type, where the template argument is 
 the type of the values it operates on. For a summary of RAJA scan 
-functionality, please see :ref:`scan-label`. 
+functionality, please see :ref:`feat-scan-label`. 
 
 .. note:: RAJA scan operations use the same execution policy types that 
           ``RAJA::forall`` kernel execution templates do.
