@@ -39,7 +39,8 @@ namespace RAJA
 {
 
 // GPU or CPU threads available
-enum ExecPlace { HOST, DEVICE, NUM_PLACES };
+//strongly type the ExecPlace (guards agaist errors)
+enum struct ExecPlace : int { HOST, DEVICE, NUM_PLACES };
 
 struct null_launch_t {
 };
@@ -130,7 +131,7 @@ struct Grid {
 public:
   Teams teams;
   Threads threads;
-  const char *kernel_name{nullptr};
+  const char *kernel_name{nullptr}; //TODO Move out of Grid (make optional argument that we pass into launch)
 
   RAJA_INLINE
   Grid() = default;
@@ -148,6 +149,9 @@ private:
   Threads apply(Threads const &a) { return (threads = a); }
 };
 
+  //TODO 
+  //Pass through and do not build LaunchContext from Grid
+  //See if we can build launch context on the device to avoid mutable
 class LaunchContext : public Grid
 {
 public:
@@ -166,6 +170,7 @@ public:
   {
   }
 
+  //TODO handle alignment
   template<typename T>
   RAJA_HOST_DEVICE T* getSharedMemory(size_t bytes)
   {
@@ -186,10 +191,10 @@ public:
 
   RAJA_HOST_DEVICE void releaseSharedMemory()
   {
-    //on the cpu we want to restart the count
-#if !defined(RAJA_DEVICE_CODE)
-  shared_mem_offset = 0;
-#endif
+    //on the cpu/gpu we want to restart the count
+    //#if !defined(RAJA_DEVICE_CODE)
+    shared_mem_offset = 0;
+  //#endif
   }
 
   RAJA_HOST_DEVICE

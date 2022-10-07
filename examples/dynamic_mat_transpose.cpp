@@ -77,7 +77,7 @@ using launch_policy = RAJA::LaunchPolicy<
 #if defined(RAJA_ENABLE_SYCL)
     ,
     RAJA::sycl_launch_t<false>
-#endif    
+#endif
     >;
 
 /*
@@ -321,9 +321,15 @@ int main(int argc, char *argv[])
 
   constexpr size_t dynamic_shared_mem = TILE_DIM * TILE_DIM * sizeof(int);
 
-  RAJA::launch<launch_policy>(select_cpu_or_gpu, dynamic_shared_mem,
-    RAJA::Grid(RAJA::Teams(outer_Dimr, outer_Dimc),
-                     RAJA::Threads(TILE_DIM, TILE_DIM)),
+
+
+  RAJA::launch<launch_policy>
+    (select_cpu_or_gpu,
+     RAJA::LaunchParams(RAJA::Teams(outer_Dimr, outer_Dimc), //either teams or blocks works
+                        RAJA::Threads(TILE_DIM, TILE_DIM),
+                        shared_mem)
+     , kernel_name,
+     //Extend to pealing argument capabilities like forall for new reducers
        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
   {
 
@@ -335,7 +341,7 @@ int main(int argc, char *argv[])
             const size_t shmem_size = TILE_DIM*TILE_DIM;
 
             //Returns a RAJA view for simplified indexing
-	    auto Tile_1 = ctx.getSharedMemoryView<shmem_type, tile_dim>(shmem_size, TILE_DIM, TILE_DIM);
+            auto Tile_1 = ctx.getSharedMemoryView<shmem_type, tile_dim>(shmem_size, TILE_DIM, TILE_DIM);
 
             RAJA::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
               RAJA::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
