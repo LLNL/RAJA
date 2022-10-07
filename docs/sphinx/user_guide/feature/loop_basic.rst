@@ -80,9 +80,9 @@ For example, a user may want to have N policies available and at run-time choose
   });
 
 
-While loop execution using ``RAJA::forall`` methods is a subset of
-``RAJA::kernel`` functionality, described next, we maintain the
-``RAJA::forall`` interface for simple loop execution because the syntax is
+While static loop execution using ``forall`` methods is a subset of
+``RAJA::kernel`` functionality, described next,
+we maintain the ``forall`` interfaces for simple loop execution because the syntax is
 simpler and less verbose for that use case.
 
 .. note:: Data arrays in lambda expressions used with RAJA are typically
