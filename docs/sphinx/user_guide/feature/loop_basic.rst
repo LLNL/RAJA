@@ -14,7 +14,7 @@ Elements of Loop Execution
 
 The ``RAJA::forall``, ``RAJA::expt::dynamic_forall``, ``RAJA::kernel``, and ``RAJA::expt::launch``
 template methods comprise the RAJA interface for kernel
-execution. ``RAJA::forall`` methods execute simple, non-nested loops,
+execution. ``forall`` methods execute simple, non-nested loops,
 ``RAJA::kernel`` methods support nested loops and other complex loop
 kernels and transformations, and ``RAJA::expt::launch`` creates an execution
 space in which kernels are written in terms of nested loops using
