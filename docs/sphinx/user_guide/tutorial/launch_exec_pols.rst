@@ -6,18 +6,19 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _launchexecpols-label:
+.. _tut-launchexecpols-label:
 
 -----------------------------------------------------------
 ``RAJA::expt::Launch`` Execution Policies
 -----------------------------------------------------------
 
-This section contains an exercise file ``RAJA/exercises/launchintro-execpols.cpp``
-for you to work through if you wish to get some practice with RAJA. The
-file ``RAJA/exercises/launchintro-execpols_solution.cpp`` contains
-complete working code for the examples discussed in this section. You can use
-the solution file to check your work and for guidance if you get stuck. To build
-the exercises execute ``make launchintro-execpols`` and ``make launchintro-execpols_solution``
+This section contains an exercise file 
+``RAJA/exercises/launchintro-execpols.cpp`` for you to work through if you 
+wish to get some practice with RAJA. The file 
+``RAJA/exercises/launchintro-execpols_solution.cpp`` contains complete working 
+code for the examples discussed in this section. You can use the solution file 
+to check your work and for guidance if you get stuck. To build the exercises 
+execute ``make launchintro-execpols`` and ``make launchintro-execpols_solution``
 from the build directory.
 
 Key RAJA features shown in this section are:
@@ -31,7 +32,7 @@ the goal is for you to gain an understanding of how to use execution policies
 with nested ``RAJA::expt::loop`` method calls to perform various nested
 loop execution patterns. All examples use the same simple kernel, which
 is a three-level loop nest to initialize the entries in an array. The kernels 
-perform the same operations as the examples in :ref:`kernelexecpols-label`.
+perform the same operations as the examples in :ref:`tut-kernelexecpols-label`.
 By comparing the two sets of examples, you will gain an understanding of the
 differences between the ``RAJA::kernel`` and the ``RAJA::expt::launch`` 
 interfaces.
@@ -71,7 +72,7 @@ indexing:
 Here 'aView' is a three-dimensional View with extent 'N' in each
 coordinate based on a three-dimensional ``RAJA::Layout`` object where the
 array entries will be accessed using indices of type 'int'.
-indices of type ``int``. Please see :ref:`view-label` for more information 
+indices of type ``int``. Please see :ref:`feat-view-label` for more information 
 about the View and Layout types that RAJA provides for various indexing
 patterns and data layouts.
 
@@ -93,10 +94,10 @@ The corresponding RAJA sequential version using ``RAJA::expt::launch`` is:
    :language: C++
 
 This should be familiar to the reader who has read through the preceding
-:ref:`launchintro-label` section of this tutorial. As the ``RAJA::expt::launch``
-method is templated on a host execution policy the ``RAJA::expt::Grid`` object 
-can be defined without arguments as loop methods will get dispatched as 
-standard C-Style for-loops.
+:ref:`tut-launchintro-label` section of this tutorial. As the 
+``RAJA::expt::launch`` method is templated on a host execution policy, the 
+``RAJA::expt::Grid`` object can be defined without arguments as loop methods 
+will get dispatched as standard C-Style for-loops.
      
 Suppose we wanted to parallelize the outer 'k' loop using OpenMP multithreading.
 A C-style version of this is:
@@ -146,7 +147,7 @@ execution policy types ``RAJA::cuda_block_z_direct``,
 ``RAJA::expt::cuda_global_thread_y``, and ``RAJA::expt::cuda_global_thread_x``,
 respectively. Thus, we use a two-dimensional CUDA thread-block and 
 three-dimensional compute grid to map the loop iterations to CUDA threads. In 
-comparison to the RAJA-CUDA example in :ref:`kernelexecpols-label` , 
+comparison to the RAJA CUDA example in :ref:`tut-kernelexecpols-label` , 
 ``RAJA::expt::loop`` methods support execution policies which enable mapping 
 directly to the global thread ID of a compute grid.
 

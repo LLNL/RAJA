@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _offset-label:
+.. _tut-offsetlayout-label:
 
 ------------------------------------------------
 OffsetLayout: Five-point Stencil
@@ -135,7 +135,7 @@ data arrays using non-zero based indexing and without having to manually
 compute offsets into the arrays.
 
 For more information about RAJA View and Layout types, please see 
-:ref:`view_layout-label`.
+:ref:`feat-view-label`.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 RAJA Kernel Variants

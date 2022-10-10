@@ -140,7 +140,7 @@ with all RAJA submodules synchronized with that.
 
 -----------------------------------
 Feature and Bugfix Contributions
-------------------------------------
+-----------------------------------
 
 Assuming you are on an up-to-date develop branch in your local copy of RAJA,
 the first step toward developing a RAJA contribution is to create a new branch 

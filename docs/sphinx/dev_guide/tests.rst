@@ -71,7 +71,7 @@ RAJA tests are partitioned into three main categories:
     libraries, such as Kokkos performance tools as plug-ins. RAJA integration 
     tests reside in sub-directories of the `RAJA/test/integration <https://github.com/LLNL/RAJA/tree/develop/test/integration>`_ directory.
 
-The `RAJA/test/include <<https://github.com/LLNL/RAJA/tree/develop/test/include>`_ directory contains header files that define types and other items that are 
+The `RAJA/test/include <https://github.com/LLNL/RAJA/tree/develop/test/include>`_ directory contains header files that define types and other items that are 
 commonly used in various tests.
 
 .. important:: Please follow the existing sub-directory structure and code 

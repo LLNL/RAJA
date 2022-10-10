@@ -23,7 +23,10 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/pattern/atomic.hpp"
+
+#if defined(RAJA_ENABLE_VECTORIZATION)
 #include "RAJA/pattern/tensor.hpp"
+#endif
 
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/StaticLayout.hpp"
@@ -72,6 +75,7 @@ namespace internal
 
 
 
+#if defined(RAJA_ENABLE_VECTORIZATION)
   namespace detail
   {
     /*
@@ -109,6 +113,7 @@ namespace internal
 
 
   } // namespace detail
+#endif
 
 
 
@@ -118,8 +123,12 @@ namespace internal
   template<typename ... ARGS>
   struct count_num_tensor_args{
     static constexpr camp::idx_t value =
+#if defined(RAJA_ENABLE_VECTORIZATION)
         RAJA::sum<camp::idx_t>(
             (internal::expt::isTensorIndex<ARGS>() ? 1 : 0) ...);
+#else
+        0;  // There should be 0 Tensor indices if not vectorizing.
+#endif
   };
   
   template<>
@@ -127,6 +136,7 @@ namespace internal
     static constexpr camp::idx_t value = 0;
   };
 
+#if defined(RAJA_ENABLE_VECTORIZATION)
   /*
    * Returns which argument has a vector index
    */
@@ -167,6 +177,7 @@ namespace internal
         ? internal::expt::getTensorSize<ARGS>(args, layout.template get_dim_size<GetTensorArgIdx<DIM, ARGS...>::value>())
         : 0 ...);
   }
+#endif
 
 
   namespace detail {
@@ -224,6 +235,7 @@ namespace internal
   };
 
 
+#if defined(RAJA_ENABLE_VECTORIZATION)
   /*
    * Specialization for Tensor return types
    */
@@ -374,6 +386,7 @@ namespace internal
         });
       }
   };
+#endif
 
 
   } // namespace detail
@@ -448,6 +461,7 @@ namespace internal
   };
 
 
+#if defined(RAJA_ENABLE_VECTORIZATION)
   /**
    * Specialization where expected type is wrapped in a VectorIndex type
    *
@@ -469,6 +483,7 @@ namespace internal
       return type(stripIndexType(*vec_arg), vec_arg.size());
     }
   };
+#endif
 
   } //namespace detail
 
