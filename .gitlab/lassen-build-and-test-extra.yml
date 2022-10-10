@@ -67,16 +67,16 @@ xl_16_1_1_12_cuda_11_1_1:
   allow_failure: true
   extends: .build_and_test_on_lassen
 
-# Overriding shared spec: Do not run test on that config. This spec will be removed soon.
+# Overriding shared spec: Do not run test on that config + specify cuda arch. This spec will be removed soon.
 xl_16_1_1_12_gcc_8_3_1_cuda_11_0_2:
   variables:
-    SPEC: "~shared +openmp +cuda ~tests %xl@16.1.1.12 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ^cuda@11.0.2 ${PROJECT_LASSEN_DEPS}"
+    SPEC: "~shared +openmp +cuda ~tests %xl@16.1.1.12 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cuda_arch=70 ^cuda@11.0.2 ${PROJECT_LASSEN_DEPS}"
   extends: .build_and_test_on_lassen
 
 # Overriding shared spec: Longer allocation + Extra flags + Allow failure + Updated cuda
 xl_16_1_1_12_gcc_8_3_1_cuda_11_1_0:
   variables:
-    SPEC: " ${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cuda_arch=70 ^cuda@11.1.0 ^cmake@3.14.5 ${PROJECT_LASSEN_DEPS}"
+    SPEC: " ${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" cflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cuda_arch=70 ^cuda@11.1.0 ^cmake@3.14.5 ${PROJECT_LASSEN_DEPS}"
     LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 120"
   allow_failure: true
   extends: .build_and_test_on_lassen
