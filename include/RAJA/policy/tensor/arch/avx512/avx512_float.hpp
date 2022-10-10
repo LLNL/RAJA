@@ -210,7 +210,7 @@ namespace expt
       RAJA_INLINE
       self_type const &store_strided(element_type *ptr, camp::idx_t stride) const{
 				// AVX512F
-				_mm512_i64scatter_ps(ptr,
+				_mm512_i32scatter_ps(ptr,
 				                     createStridedOffsets(stride),
 														 m_value,
 														 sizeof(element_type));
@@ -225,7 +225,7 @@ namespace expt
       RAJA_INLINE
       self_type const &store_strided_n(element_type *ptr, camp::idx_t stride, camp::idx_t N) const{
 				// AVX512F
-				_mm512_mask_i64scatter_ps(ptr,
+				_mm512_mask_i32scatter_ps(ptr,
                            				createMask(N),
 				                          createStridedOffsets(stride),
 																	m_value,
