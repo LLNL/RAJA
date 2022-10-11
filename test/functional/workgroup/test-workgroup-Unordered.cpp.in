@@ -15,6 +15,7 @@ using @BACKEND@BasicWorkGroupUnordered@SUBTESTNAME@Types =
   Test< camp::cartesian_product< @BACKEND@ExecPolicyList,
                                  @BACKEND@OrderPolicyList,
                                  @BACKEND@StoragePolicyList,
+                                 @DISPATCHER@DispatchTyperList,
                                  IndexTypeTypeList,
                                  @BACKEND@AllocatorList,
                                  @BACKEND@ResourceList > >::Types;

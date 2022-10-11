@@ -1,89 +1,43 @@
-###############################################################################
-# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
 raja_add_executable(
-  NAME tut_teams_basic
-  SOURCES tut_teams_basic.cpp)
+  NAME tut_launch_basic
+  SOURCES tut_launch_basic.cpp)
 
 raja_add_executable(
   NAME resource-forall
   SOURCES resource-forall.cpp)
 
 raja_add_executable(
+  NAME dynamic-forall
+  SOURCES dynamic-forall.cpp)
+
+raja_add_executable(
+  NAME resource-dynamic-forall
+  SOURCES resource-dynamic-forall.cpp)
+
+raja_add_executable(
   NAME tut_daxpy
   SOURCES tut_daxpy.cpp)
-
-raja_add_executable(
-  NAME tut_add-vectors
-  SOURCES tut_add-vectors.cpp)
-
-raja_add_executable(
-  NAME tut_dot-product
-  SOURCES tut_dot-product.cpp)
-
-raja_add_executable(
-  NAME tut_indexset-segments
-  SOURCES tut_indexset-segments.cpp)
 
 raja_add_executable(
   NAME tut_matrix-multiply
   SOURCES tut_matrix-multiply.cpp)
 
 raja_add_executable(
-  NAME tut_nested-loop-reorder
-  SOURCES tut_nested-loop-reorder.cpp)
+  NAME launch_flatten
+  SOURCES launch_flatten.cpp)
 
 raja_add_executable(
-  NAME tut_vertexsum-coloring
-  SOURCES tut_vertexsum-coloring.cpp)
+  NAME launch_reductions
+  SOURCES launch_reductions.cpp)
 
 raja_add_executable(
-  NAME tut_reductions
-  SOURCES tut_reductions.cpp)
-
-raja_add_executable(
-  NAME teams_flatten
-  SOURCES teams_flatten.cpp)
-
-raja_add_executable(
-  NAME teams_reductions
-  SOURCES teams_reductions.cpp)
-
-raja_add_executable(
-  NAME resource-runtime-teams
-  SOURCES resource-runtime-teams.cpp)
-
-raja_add_executable(
-  NAME tut_scan
-  SOURCES tut_scan.cpp)
-
-raja_add_executable(
-  NAME tut_sort
-  SOURCES tut_sort.cpp)
-
-raja_add_executable(
-  NAME tut_atomic-histogram
-  SOURCES tut_atomic-histogram.cpp)
-
-raja_add_executable(
-  NAME tut_offset-layout
-  SOURCES tut_offset-layout.cpp)
-
-raja_add_executable(
-  NAME tut_batched-matrix-multiply
-  SOURCES tut_batched-matrix-multiply.cpp)
-
-raja_add_executable(
-  NAME tut_matrix-transpose-local-array
-  SOURCES tut_matrix-transpose-local-array.cpp)
-
-raja_add_executable(
-  NAME tut_tiled-matrix-transpose
-  SOURCES tut_tiled-matrix-transpose.cpp)
+  NAME resource-runtime-launch
+  SOURCES resource-runtime-launch.cpp)
 
 raja_add_executable(
   NAME tut_halo-exchange
@@ -94,12 +48,12 @@ raja_add_executable(
   SOURCES pi-reduce_vs_atomic.cpp)
 
 raja_add_executable(
-  NAME raja-teams
-  SOURCES raja-teams.cpp)
+  NAME raja-launch
+  SOURCES raja-launch.cpp)
 
 raja_add_executable(
-  NAME teams_matrix-multiply
-  SOURCES teams_matrix-multiply.cpp)
+  NAME launch_matrix-multiply
+  SOURCES launch_matrix-multiply.cpp)
 
 raja_add_executable(
   NAME jacobi
@@ -136,7 +90,7 @@ raja_add_executable(
   SOURCES resource-kernel.cpp)
 
 raja_add_executable(
-  NAME resource-teams
-  SOURCES resource-teams.cpp)
+  NAME resource-launch
+  SOURCES resource-launch.cpp)
 
 add_subdirectory(plugin)

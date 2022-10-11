@@ -84,7 +84,7 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARPMASK&,
   call_kernel<EXEC_POLICY, USE_RESOURCE>(
                             RAJA::make_tuple(RAJA::TypedRangeSegment<RAJA::Index_type>(0, directlen), RAJA::TypedRangeSegment<RAJA::Index_type>(0, looplen)),
                             work_res,
-                            [=] RAJA_DEVICE (RAJA::Index_type i, RAJA::Index_type j) {
+                            [=] RAJA_DEVICE (RAJA::Index_type i, RAJA::Index_type RAJA_UNUSED_ARG(j)) {
                               trip_count += 1;
                               worksum += i; // i should only be 0..directlen-1
                               max_thread.max(threadIdx.x);
@@ -126,7 +126,7 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARPMASK_FORI&,
                             RAJA::make_tuple(RAJA::TypedRangeSegment<RAJA::Index_type>(0, directlen), RAJA::TypedRangeSegment<RAJA::Index_type>(0, looplen)),
                             RAJA::make_tuple((RAJA::Index_type)0, (RAJA::Index_type)0),
                             work_res,
-                            [=] RAJA_DEVICE (RAJA::Index_type i, RAJA::Index_type j, RAJA::Index_type x, RAJA::Index_type y) {
+                            [=] RAJA_DEVICE (RAJA::Index_type RAJA_UNUSED_ARG(i), RAJA::Index_type RAJA_UNUSED_ARG(j), RAJA::Index_type RAJA_UNUSED_ARG(x), RAJA::Index_type y) {
                               trip_count += 1;
                               worksum += y; // y should only be 0..3
                               max_thread.max(threadIdx.x);
