@@ -29,8 +29,11 @@ see the RAJA user guide for more information about items in this release.
 Notable changes include:
 
   * New features / API changes:
-     * Added RAJA_UNROLL_COUNT macro which enables users to unroll loops for
-       a fix unroll count.
+     * Added support for run time execution policy selection for RAJA::forall
+       kernels. Users can specify any number of execution policies in their
+       code and then select which to use at run time. There is no discussion 
+       of this in the RAJA USer Guide yet. However, there are a couple of 
+       example codes in files RAJA/examples/*dynamic-forall*.cpp.
      * Add support for all RAJA segment types in the RAJA::launch framework.
      * Add additional policies to WorkGroup construct that allow for different
        methods of dispatching work.
@@ -38,6 +41,8 @@ Notable changes include:
        functions to use special hardware support when available. This can
        result in a significant performance boost.
      * Rework HIP atomic implementations to support more native data types.
+     * Added RAJA_UNROLL_COUNT macro which enables users to unroll loops for
+       a fix unroll count.
      * Major User Guide rework:
          * New RAJA tutorial sections, including new exercise source files
            to work through. Material used in recent RADIUSS/AWS RAJA Tutorial.
@@ -47,9 +52,18 @@ Notable changes include:
          * Improved presentation of build configuration sections.
 
   * Build changes / improvements:
+     * Submodule updates:
+         * BLT updated to ...
+         * Camp updated to ....
+     * The minimum CMake version required has changed. For a HIP build,
+       CMake 3.23 or newer is required. For all other builds CMake 3.20
+       or newer is required.
      * OpenMP back-end support is now off by default to match behavior of
        all other RAJA parallel back-end support. To enable OpenMP, users
        must now run CMake with the -DENABLE_OPENMP=On option.
+     * RAJA_ENABLE_VECTORIZATION CMake option added to enable/disable
+       new SIMD/SIMT vectorization support. The default is 'On'. The option
+       allows users to disable if they wish.
      * Improvements to build target export mechanics coordinated with camp,
        BLT, and Spack projects.
      * Improve HIP builds to better support evolving ROCm software stack.
@@ -63,10 +77,12 @@ Notable changes include:
      * Added basic support to compile with C++20 standard.
      * Add missing compilation macro guards for HIP and CUDA policies in
        vectorization support when not running on a GPU device.
-     * Added missing header file inclusions.
+     * Various compiler warnings squashed. 
 
   * Bug fixes / improvements:
-     * Expanded test coverage.
+     * Expanded test coverage to catch more cases that users have run into.
+     * Various fixes in SIMD/SIMT support for different compilers and versions
+       users have hit recently.
 
 
 Version 2022.03.1 -- Release date 2022-08-10
