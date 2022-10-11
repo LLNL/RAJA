@@ -73,9 +73,10 @@ xl_16_1_1_12_gcc_8_3_1_cuda_11_0_2:
     SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ^cuda@11.0.2 ^cmake@3.14.5 ${PROJECT_LASSEN_DEPS}"
   extends: .build_and_test_on_lassen
   script:
-    - echo -e "\e[31mDeactivated spec !\e[0m"
-    - echo -e "\e[31m${SPEC}\e[0m"
-    - echo -e "\e[31mRAJA won’t build with Cuda 11.0.2 due to a known issue.\e[0m"
+    - |
+      echo -e "\e[31mDeactivated spec !\e[0m"
+      echo -e "\e[31m${SPEC}\e[0m"
+      echo -e "\e[31mRAJA won’t build with Cuda 11.0.2 due to a known issue.\e[0m"
     - exit 1
   allow_failure: true
 
