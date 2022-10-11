@@ -175,6 +175,7 @@ static_assert(RAJA_HAS_SOME_CXX14,
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
 #cmakedefine RAJA_ENABLE_HIP
 #cmakedefine RAJA_ENABLE_SYCL
+#cmakedefine RAJA_ENABLE_VECTORIZATION
 
 #cmakedefine RAJA_ENABLE_NV_TOOLS_EXT
 #cmakedefine RAJA_ENABLE_ROCTX
