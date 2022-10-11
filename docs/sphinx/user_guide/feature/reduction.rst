@@ -6,7 +6,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _reductions-label:
+.. _feat-reductions-label:
 
 ====================
 Reduction Operations
@@ -15,12 +15,10 @@ Reduction Operations
 RAJA does not provide separate loop execution methods for loops containing
 reduction operations like some other C++ loop programming abstraction models.
 Instead, RAJA provides reduction types that allow users to perform reduction 
-operations in ``RAJA::forall`` and ``RAJA::kernel`` kernels in a portable, 
-thread-safe manner. Users may use as many reduction objects in a loop kernel
-as they need. Available RAJA reduction types are described in this section.
-
-A detailed example of RAJA reduction usage can be found in 
-:ref:`reductions-label`.
+operations in kernels launched using ``RAJA::forall``, ``RAJA::kernel``,
+and ``RAJA::launch`` methods in a portable, thread-safe manner. Users may 
+use as many reduction objects in a loop kernel as they need. Available RAJA 
+reduction types are described in this section.
 
 .. note:: All RAJA reduction types are located in the namespace ``RAJA``.
 
@@ -28,13 +26,18 @@ Also
 
 .. note:: * Each RAJA reduction type is templated on a **reduction policy** 
             and a **reduction value type** for the reduction variable. The
-            **reduction policy type must be compatibe with the execution
-            policy used by the kernel.** For example, in a CUDA kernel,
-            a CUDA reduction policy must be used. 
+            **reduction policy type must be compatible with the execution
+            policy used by the kernel in which it is used.** For example, in 
+            a CUDA kernel, a CUDA reduction policy must be used. 
           * Each RAJA reduction type accepts an **initial reduction value or 
             values** at construction (see below).
           * Each RAJA reduction type has a 'get' method to access reduced
             values after kernel execution completes.
+
+Please see the following tutorial sections for detailed examples that use
+RAJA reductions:
+
+ * :ref:`tut-reduction-label`.
 
 
 ----------------

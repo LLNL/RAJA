@@ -13,73 +13,76 @@
 # hipcc_cmake_linker_helper because it expects the path to hipcc as the first
 # argument
 #
-macro( buildunitworkgrouptest TESTNAME SUBTESTNAMES BACKENDS )
+macro( buildunitworkgrouptest TESTNAME SUBTESTNAMES DISPATCHERS BACKENDS )
   foreach( BACKEND ${BACKENDS} )
-    foreach( SUBTESTNAME ${SUBTESTNAMES} )
-      configure_file( test-workgroup-${TESTNAME}.cpp.in
-                      test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
-      raja_add_test( NAME test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}
-                     SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.cpp )
+    foreach( DISPATCHER ${DISPATCHERS} )
+      foreach( SUBTESTNAME ${SUBTESTNAMES} )
 
-      target_include_directories(test-workgroup-${TESTNAME}-${SUBTESTNAME}-${BACKEND}.exe
-                     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+        configure_file( test-workgroup-${TESTNAME}.cpp.in
+                        test-workgroup-${TESTNAME}-${SUBTESTNAME}-${DISPATCHER}-${BACKEND}.cpp )
+
+        raja_add_test( NAME test-workgroup-${TESTNAME}-${SUBTESTNAME}-${DISPATCHER}-${BACKEND}
+                       SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-workgroup-${TESTNAME}-${SUBTESTNAME}-${DISPATCHER}-${BACKEND}.cpp )
+
+        target_include_directories( test-workgroup-${TESTNAME}-${SUBTESTNAME}-${DISPATCHER}-${BACKEND}.exe
+                                    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests )
+
+      endforeach()
     endforeach()
   endforeach()
 endmacro()
 
 
 set(BACKENDS Sequential)
-set(Vtable_BACKENDS Sequential)
+
+# only need to test WorkStorage once
 set(WorkStorage_BACKENDS Sequential)
 
 if(RAJA_ENABLE_TBB)
   list(APPEND BACKENDS TBB)
-  list(APPEND Vtable_BACKENDS TBB)
 endif()
 
 if(RAJA_ENABLE_OPENMP)
   list(APPEND BACKENDS OpenMP)
-  list(APPEND Vtable_BACKENDS OpenMP)
 endif()
 
 if(RAJA_ENABLE_TARGET_OPENMP)
   list(APPEND BACKENDS OpenMPTarget)
-  list(APPEND Vtable_BACKENDS OpenMPTarget)
 endif()
 
 if(RAJA_ENABLE_CUDA)
   list(APPEND BACKENDS Cuda)
-  list(APPEND Vtable_BACKENDS Cuda)
 endif()
 
 if(RAJA_ENABLE_HIP)
   list(APPEND BACKENDS Hip)
-  if(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
-    list(APPEND Vtable_BACKENDS Hip)
-  endif()
 endif()
+
+set(DISPATCHERS Direct IndirectFunction IndirectVirtual)
+
 
 # reduce travis build times with intel compiler
 if(RAJA_TEST_EXHAUSTIVE OR NOT RAJA_COMPILER MATCHES "RAJA_COMPILER_Intel")
   set(Constructor_SUBTESTS Single)
-  buildunitworkgrouptest(Constructor "${Constructor_SUBTESTS}" "${BACKENDS}")
+  buildunitworkgrouptest(Constructor "${Constructor_SUBTESTS}" "${DISPATCHERS}" "${BACKENDS}")
 
   set(Enqueue_SUBTESTS Single Multiple)
-  buildunitworkgrouptest(Enqueue     "${Enqueue_SUBTESTS}"     "${BACKENDS}")
+  buildunitworkgrouptest(Enqueue     "${Enqueue_SUBTESTS}"     "${DISPATCHERS}" "${BACKENDS}")
 
   unset(Constructor_SUBTESTS)
   unset(Enqueue_SUBTESTS)
 endif()
 
-set(Vtable_SUBTESTS Single)
-buildunitworkgrouptest(Vtable      "${Vtable_SUBTESTS}"      "${Vtable_BACKENDS}")
+set(Dispatcher_SUBTESTS Single)
+buildunitworkgrouptest(Dispatcher    "${Dispatcher_SUBTESTS}"  "${DISPATCHERS}" "${BACKENDS}")
 
 set(WorkStorage_SUBTESTS Constructor Iterator InsertCall Multiple)
-buildunitworkgrouptest(WorkStorage "${WorkStorage_SUBTESTS}" "${WorkStorage_BACKENDS}")
+buildunitworkgrouptest(WorkStorage "${WorkStorage_SUBTESTS}"   "${DISPATCHERS}" "${WorkStorage_BACKENDS}")
 
-unset(Vtable_SUBTESTS)
+unset(Dispatcher_SUBTESTS)
 unset(WorkStorage_SUBTESTS)
 
+unset(DISPATCHERS)
+
 unset(BACKENDS)
-unset(Vtable_BACKENDS)
 unset(WorkStorage_BACKENDS)

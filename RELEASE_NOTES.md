@@ -20,6 +20,16 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
+Version 2022.03.1 -- Release date 2022-08-10
+============================================
+
+This release contains a bug fix.
+
+Notable changes include:
+
+  * Fix for guarding GPU vectorization when not running on the device.
+
+
 Version 2022.03.0 -- Release date 2022-03-15
 ============================================
 

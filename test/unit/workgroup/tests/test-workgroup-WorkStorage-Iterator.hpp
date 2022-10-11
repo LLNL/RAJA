@@ -21,23 +21,28 @@
 
 
 template <typename StoragePolicy,
+          typename DispatchTyper,
           typename Allocator
           >
 void testWorkGroupWorkStorageIterator()
 {
   bool success = true;
 
-  using Vtable_type = RAJA::detail::Vtable<void, void*, bool*, bool*>;
+  using callable = TestCallable<int>;
+
+  static constexpr auto platform = RAJA::Platform::host;
+  using DispatchPolicy = typename DispatchTyper::template type<callable>;
+  using Dispatcher_type = RAJA::detail::Dispatcher<
+      platform, DispatchPolicy, void, void*, bool*, bool*>;
   using WorkStorage_type = RAJA::detail::WorkStorage<
                                                       StoragePolicy,
                                                       Allocator,
-                                                      Vtable_type
+                                                      Dispatcher_type
                                                     >;
 
-  using callable = TestCallable<int>;
 
-  const Vtable_type* vtable = RAJA::detail::get_Vtable<
-      callable, Vtable_type>(RAJA::seq_work{});
+  const Dispatcher_type* dispatcher = RAJA::detail::get_Dispatcher<
+      callable, Dispatcher_type>(RAJA::seq_work{});
 
   {
     WorkStorage_type container(Allocator{});
@@ -50,7 +55,7 @@ void testWorkGroupWorkStorageIterator()
     ASSERT_TRUE(container.begin() <= container.end());
     ASSERT_TRUE(container.begin() >= container.end());
 
-    container.template emplace<callable>(vtable, callable{-1});
+    container.template emplace<callable>(dispatcher, callable{-1});
 
     ASSERT_EQ(container.end()-container.begin(), (std::ptrdiff_t)1);
     ASSERT_TRUE(container.begin() < container.end());
@@ -94,9 +99,10 @@ TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageIteratorUnitTest);
 TYPED_TEST_P(WorkGroupBasicWorkStorageIteratorUnitTest, BasicWorkGroupWorkStorageIterator)
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<1>>::type;
+  using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
+  using Allocator = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  testWorkGroupWorkStorageIterator< StoragePolicy, Allocator >();
+  testWorkGroupWorkStorageIterator< StoragePolicy, DispatchTyper, Allocator >();
 }
 
 #endif  //__TEST_WORKGROUP_WORKSTORAGEITERATOR__

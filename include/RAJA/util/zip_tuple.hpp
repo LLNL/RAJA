@@ -34,25 +34,36 @@ namespace RAJA
 template < bool is_val, typename ... Ts >
 struct zip_tuple;
 
+template < camp::idx_t I, typename ZT >
+struct zip_tuple_element;
+
 template < camp::idx_t I, bool is_val, typename ... Ts >
-struct tuple_element<I, zip_tuple<is_val, Ts...>>
+struct zip_tuple_element<I, zip_tuple<is_val, Ts...>>
   : camp::tuple_element<I, typename zip_tuple<is_val, Ts...>::value_type>
 { };
+
+template < camp::idx_t I, typename ZT >
+using zip_tuple_element_t = typename zip_tuple_element<I, ZT>::type;
+
 
 // get function declarations for zip_tuple
 // the reference type returned by get depends on the reference type
 // of the zip_tuple that get is called on
 template < camp::idx_t I, bool is_val, typename ... Ts >
-RAJA_HOST_DEVICE RAJA_INLINE                                RAJA::tuple_element_t<I, zip_tuple<is_val, Ts...>>         &
-get(zip_tuple<is_val, Ts...>      & z)
+RAJA_HOST_DEVICE constexpr                         RAJA::zip_tuple_element_t<I, zip_tuple<is_val, Ts...>> &
+get(zip_tuple<is_val, Ts...>      &  z) noexcept
 { return           z .template get<I>(); }
 template < camp::idx_t I, bool is_val, typename ... Ts >
-RAJA_HOST_DEVICE RAJA_INLINE                                RAJA::tuple_element_t<I, zip_tuple<is_val, Ts...>>    const&
-get(zip_tuple<is_val, Ts...> const& z)
+RAJA_HOST_DEVICE constexpr                         RAJA::zip_tuple_element_t<I, zip_tuple<is_val, Ts...>> const&
+get(zip_tuple<is_val, Ts...> const&  z) noexcept
 { return           z .template get<I>(); }
 template < camp::idx_t I, bool is_val, typename ... Ts >
-RAJA_HOST_DEVICE RAJA_INLINE typename std::remove_reference<RAJA::tuple_element_t<I, zip_tuple<is_val, Ts...>>>::type &&
-get(zip_tuple<is_val, Ts...>     && z)
+RAJA_HOST_DEVICE constexpr std::remove_reference_t<RAJA::zip_tuple_element_t<I, zip_tuple<is_val, Ts...>>> &&
+get(zip_tuple<is_val, Ts...>      && z) noexcept
+{ return std::move(z).template get<I>(); }
+template < camp::idx_t I, bool is_val, typename ... Ts >
+RAJA_HOST_DEVICE constexpr std::remove_reference_t<RAJA::zip_tuple_element_t<I, zip_tuple<is_val, Ts...>>> const&&
+get(zip_tuple<is_val, Ts...> const&& z) noexcept
 { return std::move(z).template get<I>(); }
 
 namespace detail
@@ -268,13 +279,16 @@ struct zip_tuple
   // the reference type returned by get depends on the reference type
   // of the zip_tuple that get is called on
   template < camp::idx_t I >
-  RAJA_HOST_DEVICE RAJA_INLINE RAJA::tuple_element_t<I, value_type> & get() &
+  RAJA_HOST_DEVICE constexpr                         RAJA::tuple_element_t<I, value_type> & get() & noexcept
   { return RAJA::get<I>(m_tuple); }
   template < camp::idx_t I >
-  RAJA_HOST_DEVICE RAJA_INLINE RAJA::tuple_element_t<I, value_type> const& get() const&
+  RAJA_HOST_DEVICE constexpr                         RAJA::tuple_element_t<I, value_type> const& get() const& noexcept
   { return RAJA::get<I>(m_tuple); }
   template < camp::idx_t I >
-  RAJA_HOST_DEVICE RAJA_INLINE typename std::remove_reference<RAJA::tuple_element_t<I, value_type>>::type && get() &&
+  RAJA_HOST_DEVICE constexpr std::remove_reference_t<RAJA::tuple_element_t<I, value_type>> && get() && noexcept
+  { return std::move(RAJA::get<I>(m_tuple)); }
+  template < camp::idx_t I >
+  RAJA_HOST_DEVICE constexpr std::remove_reference_t<RAJA::tuple_element_t<I, value_type>> const&& get() const&& noexcept
   { return std::move(RAJA::get<I>(m_tuple)); }
 
   // safe_swap that calls swap on each pair in the tuple

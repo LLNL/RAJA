@@ -6,10 +6,10 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 .. ##
 
-.. _scan-label:
+.. _feat-scan-label:
 
 ================
-Scans
+Scan Operations
 ================
 
 RAJA provides portable parallel scan operations, which are basic
@@ -20,7 +20,8 @@ A few important notes:
 .. note:: * All RAJA scan operations are in the namespace ``RAJA``.
           * Each RAJA scan operation is a template on an *execution policy*
             parameter. The same policy types used for ``RAJA::forall`` methods
-            may be used for RAJA scans.
+            may be used for RAJA scans. Please see :ref:`feat-policies-label` 
+            for more information.
           * RAJA scan operations accept an optional *operator* argument so
             users can perform different types of scan operations. If
             no operator is given, the default is a 'plus' operation and
@@ -28,20 +29,18 @@ A few important notes:
 
 Also:
 
-.. note:: For scans using the CUDA back-end, RAJA uses the NVIDIA CUB library
-          internally. The CMake variable ``CUB_DIR`` will be automatically
-          set to the location of the CUB library when CUDA is enabled. Details
-          for using a different version of the CUB library are available in
-          the :ref:`getting_started-label` section.
+.. note:: For scans using the CUDA or HIP back-end, RAJA implementation uses 
+          the NVIDIA CUB library or AMD rocPRIM library, respectively. 
+          Typically, the CMake variable ``CUB_DIR`` or ``ROCPRIM_DIR`` will 
+          be automatically set to the location of the CUB or rocPRIM library 
+          for the CUDA or rocPRIM installation specified when either back-end
+          is enabled. More details for configuring the CUB or rocPRIM library 
+          for a RAJA build can be found in :ref:`getting_started_depend-label`.
 
-.. note:: For scans using the HIP back-end, RAJA uses the AMD rocPRIM library
-          internally. The CMake variable ``ROCPRIM_DIR`` will be automatically
-          set to the location of the rocPRIM library when HIP is enabled.
-          Details for using a different version of the rocPRIM library are
-          available in the :ref:`getting_started-label` section.
+Please see the following tutorial sections for detailed examples that use
+RAJA scan operations:
 
-Please see the :ref:`scan-label` tutorial section for usage examples of RAJA
-scan operations.
+ * :ref:`tut-scan-label`.
 
 -----------------
 Scan Operations
@@ -97,11 +96,12 @@ scan operation above will be a *prefix-sum* since there is no operator argument
 given; i.e., the output array will contain partial sums of the input array. The
 second scan will apply the operator that is passed. Note that container
 arguments can be generated from iterators using ``RAJA::make_span(begin, len)``.
+This is shown in the examples in :ref:`tut-scan-label`.
 
 RAJA also provides *in-place* scans:
 
  * ``RAJA::inclusive_scan_inplace< exec_policy >(in_container)``
- * ``RAJA::inclusive_scan_inplace< exec_policy >(in_container, <operator>)``
+ * ``RAJA::inclusive_scan_inplace< exec_policy >(in_container, operator)``
 
 An in-place scan generates the same output sequence as a non-inplace scan.
 However, an in-place scan does not take separate input and output arrays and
@@ -121,7 +121,7 @@ and
  * ``RAJA::exclusive_scan_inplace< exec_policy >(in_container)``
  * ``RAJA::exclusive_scan_inplace< exec_policy >(in_container, <operator>)``
 
-.. _scanops-label:
+.. _feat-scanops-label:
 
 --------------------
 RAJA Scan Operators
@@ -138,12 +138,4 @@ types of scans, such as:
   * ``RAJA::operators::maximum<T>``
 
 .. note:: * All RAJA scan operators are in the namespace ``RAJA::operators``.
-
--------------------
-Scan Policies
--------------------
-
-For information about RAJA execution policies to use with scan operations,
-please see :ref:`policies-label`.
-
 

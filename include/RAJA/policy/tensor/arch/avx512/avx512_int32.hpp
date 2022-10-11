@@ -134,7 +134,11 @@ namespace expt
       RAJA_INLINE
       self_type &load_packed(element_type const *ptr){
 			  // AVX512F
-        m_value = _mm512_loadu_epi32(ptr);
+        #if defined(__GNUC__) && ((__GNUC__ >= 7) && (__GNUC__ <= 9))
+        m_value = _mm512_loadu_si512(ptr);
+        #else
+        m_value = _mm512_loadu_epi32(ptr);  // GNU 7-9 are missing this instruction.
+        #endif
         return *this;
       }
 
@@ -188,7 +192,11 @@ namespace expt
       RAJA_INLINE
       self_type const &store_packed(element_type *ptr) const{
 				// AVX512F
-        _mm512_storeu_epi32(ptr, m_value);
+        #if defined(__GNUC__) && ((__GNUC__ >= 7) && (__GNUC__ <= 9))
+        _mm512_storeu_si512(ptr, m_value);
+        #else
+        _mm512_storeu_epi32(ptr, m_value);  // GNU 7-9 are missing this instruction.
+        #endif
         return *this;
       }
 
@@ -210,7 +218,7 @@ namespace expt
       RAJA_INLINE
       self_type const &store_strided(element_type *ptr, camp::idx_t stride) const{
 				// AVX512F
-				_mm512_i64scatter_epi32(ptr,
+				_mm512_i32scatter_epi32(ptr,
 				                     createStridedOffsets(stride),
 														 m_value,
 														 sizeof(element_type));
@@ -225,7 +233,7 @@ namespace expt
       RAJA_INLINE
       self_type const &store_strided_n(element_type *ptr, camp::idx_t stride, camp::idx_t N) const{
 				// AVX512F
-				_mm512_mask_i64scatter_epi32(ptr,
+				_mm512_mask_i32scatter_epi32(ptr,
                            				createMask(N),
 				                          createStridedOffsets(stride),
 																	m_value,
@@ -241,6 +249,11 @@ namespace expt
       RAJA_INLINE
       element_type get(camp::idx_t i) const
       {
+        // GNU 7-10 are missing this instruction.
+        #if defined(__GNUC__) && ((__GNUC__ >= 7) && (__GNUC__ <= 10))
+        #define _mm512_cvtsi512_si32(x) _mm_cvtsi128_si32(_mm512_castsi512_si128(x))
+        #endif
+
 				switch(i){	
 					case 0: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 0));
 					case 1: return _mm512_cvtsi512_si32(_mm512_alignr_epi32(m_value, m_value, 1));

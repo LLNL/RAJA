@@ -23,7 +23,10 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/pattern/atomic.hpp"
+
+#if defined(RAJA_ENABLE_VECTORIZATION)
 #include "RAJA/pattern/tensor.hpp"
+#endif
 
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
@@ -71,6 +74,7 @@ namespace internal
 
 
 
+#if defined(RAJA_ENABLE_VECTORIZATION)
   namespace detail
   {
     /*
@@ -92,6 +96,7 @@ namespace internal
 
 
   } // namespace detail
+#endif
 
 
 
@@ -101,15 +106,20 @@ namespace internal
   template<typename ... ARGS>
   struct count_num_tensor_args{
     static constexpr camp::idx_t value =
+#if defined(RAJA_ENABLE_VECTORIZATION)
         RAJA::sum<camp::idx_t>(
             (internal::expt::isTensorIndex<ARGS>() ? 1 : 0) ...);
+#else
+        0;  // There should be 0 Tensor indices if not vectorizing.
+#endif
   };
 
+#if defined(RAJA_ENABLE_VECTORIZATION)
   /*
    * Returns which argument has a vector index
    */
   template<camp::idx_t DIM, typename ... ARGS>
-  struct GetTesorArgIdx{
+  struct GetTensorArgIdx{
       static constexpr camp::idx_t value =
           detail::GetTensorArgIdxExpanded<DIM, camp::list<ARGS...>, camp::make_idx_seq_t<sizeof...(ARGS)> >:: value;
   };
@@ -124,7 +134,7 @@ namespace internal
   static constexpr camp::idx_t get_tensor_args_begin(LAYOUT const &layout, ARGS ... args){
     return RAJA::max<camp::idx_t>(
         internal::expt::getTensorDim<ARGS>()==DIM
-        ? internal::expt::getTensorBegin<ARGS>(args, layout.template get_dim_begin<GetTesorArgIdx<DIM, ARGS...>::value>())
+        ? internal::expt::getTensorBegin<ARGS>(args, layout.template get_dim_begin<GetTensorArgIdx<DIM, ARGS...>::value>())
         : 0 ...);
   }
 
@@ -137,9 +147,10 @@ namespace internal
   static constexpr camp::idx_t get_tensor_args_size(LAYOUT const &layout, ARGS ... args){
     return RAJA::max<camp::idx_t>(
         internal::expt::getTensorDim<ARGS>()==DIM
-        ? internal::expt::getTensorSize<ARGS>(args, layout.template get_dim_size<GetTesorArgIdx<DIM, ARGS...>::value>())
+        ? internal::expt::getTensorSize<ARGS>(args, layout.template get_dim_size<GetTensorArgIdx<DIM, ARGS...>::value>())
         : 0 ...);
   }
+#endif
 
 
   namespace detail {
@@ -175,6 +186,7 @@ namespace internal
   };
 
 
+#if defined(RAJA_ENABLE_VECTORIZATION)
   /*
    * Specialization for Tensor return types
    */
@@ -191,11 +203,11 @@ namespace internal
       //                 0 rows are stride-one
       //                 1 columns are stride-one
       static constexpr camp::idx_t s_stride_one_dim =
-          RAJA::max<camp::idx_t>((GetTesorArgIdx<VecSeq, Args...>::value == StrideOneDim ?
+          RAJA::max<camp::idx_t>((GetTensorArgIdx<VecSeq, Args...>::value == StrideOneDim ?
                     VecSeq : -1)...);
 
 
-      using tensor_reg_type = typename camp::at_v<camp::list<Args...>, GetTesorArgIdx<0, Args...>::value>::tensor_type;
+      using tensor_reg_type = typename camp::at_v<camp::list<Args...>, GetTensorArgIdx<0, Args...>::value>::tensor_type;
       using ref_type = internal::expt::TensorRef<ElementType*, LinIdx, internal::expt::TENSOR_MULTIPLE, s_num_dims, s_stride_one_dim>;
       using return_type = internal::expt::ET::TensorLoadStore<tensor_reg_type, ref_type>;
 
@@ -210,7 +222,7 @@ namespace internal
           // data pointer
           &data[0] + layout(internal::expt::isTensorIndex<Args>() ? LinIdx{0} : (LinIdx)stripIndexType(internal::expt::stripTensorIndex(args))...),
           // strides
-          {(LinIdx)layout.template get_dim_stride<GetTesorArgIdx<VecSeq, Args...>::value>()...},
+          {(LinIdx)layout.template get_dim_stride<GetTensorArgIdx<VecSeq, Args...>::value>()...},
           // tile
           {
               // begin
@@ -222,6 +234,7 @@ namespace internal
         });
       }
   };
+#endif
 
 
   } // namespace detail
@@ -298,6 +311,7 @@ namespace internal
   };
 
 
+#if defined(RAJA_ENABLE_VECTORIZATION)
   /**
    * Specialization where expected type is wrapped in a VectorIndex type
    *
@@ -319,6 +333,7 @@ namespace internal
       return type(stripIndexType(*vec_arg), vec_arg.size());
     }
   };
+#endif
 
   } //namespace detail
 

@@ -204,7 +204,7 @@ struct LoopExecute<omp_for_exec, SEGMENT> {
 // Return local index
 //
 template <typename SEGMENT>
-struct LoopICountExecute<omp_parallel_for_exec, SEGMENT> {
+struct LoopICountExecute<omp_for_exec, SEGMENT> {
 
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(
@@ -214,15 +214,11 @@ struct LoopICountExecute<omp_parallel_for_exec, SEGMENT> {
   {
 
     int len = segment.end() - segment.begin();
-    RAJA::region<RAJA::omp_parallel_region>([&]() {
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
 
 #pragma omp for
       for (int i = 0; i < len; i++) {
-        loop_body.get_priv()(*(segment.begin() + i), i);
+        body(*(segment.begin() + i), i);
       }
-    });
   }
 
   template <typename BODY>
@@ -236,21 +232,16 @@ struct LoopICountExecute<omp_parallel_for_exec, SEGMENT> {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
-    RAJA::region<RAJA::omp_parallel_region>([&]() {
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
-
-#pragma omp parallel for
+#pragma omp for
       for (int j = 0; j < len1; j++) {
         for (int i = 0; i < len0; i++) {
 
-          loop_body.get_priv()(*(segment0.begin() + i),
-                               *(segment1.begin() + j),
-                               i,
-                               j);
+          body(*(segment0.begin() + i),
+               *(segment1.begin() + j),
+               i,
+               j);
         }
       }
-    });
   }
 
   template <typename BODY>
@@ -266,24 +257,19 @@ struct LoopICountExecute<omp_parallel_for_exec, SEGMENT> {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
-    RAJA::region<RAJA::omp_parallel_region>([&]() {
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
-
 #pragma omp for
       for (int k = 0; k < len2; k++) {
         for (int j = 0; j < len1; j++) {
           for (int i = 0; i < len0; i++) {
-            loop_body.get_priv()(*(segment0.begin() + i),
-                                 *(segment1.begin() + j),
-                                 *(segment2.begin() + k),
-                                 i,
-                                 j,
-                                 k);
+            body(*(segment0.begin() + i),
+                 *(segment1.begin() + j),
+                 *(segment2.begin() + k),
+                 i,
+                 j,
+                 k);
           }
         }
       }
-    });
   }
 };
 
