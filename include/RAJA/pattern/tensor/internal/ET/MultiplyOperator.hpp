@@ -329,7 +329,6 @@ namespace expt
       static
       void multiply_into_result(STORAGE &result, TILE_TYPE const &tile, LEFT_OPERAND_TYPE const &et_left, RIGHT_OPERAND_TYPE const &et_right)
       {
-        #if 1
         //using LHS_STORAGE = typename LEFT_OPERAND_TYPE::result_type;
 
         // get tile size from matrix type
@@ -380,9 +379,6 @@ namespace expt
           result = left.right_multiply_vector_accumulate(right, result);
         }
 
-          #else
-          MultiplyBridge<STORAGE,TILE_TYPE>::multiply_into_result(result,tile,et_left,et_right)
-          #endif 
       }
 
 
