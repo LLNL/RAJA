@@ -527,7 +527,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // and col = threadIdx.x in the kernel.
   //
   //
-   RAJA::launch<launch_policy>(RAJA::DEVICE,
+  RAJA::launch<launch_policy>(RAJA::ExecPlace::DEVICE,
     RAJA::LaunchParams(RAJA::Teams(N),
                           RAJA::Threads(N)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
@@ -567,7 +567,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // The tiling capabilities in RAJA will also mask out of bounds iterations.
   //
-  RAJA::launch<launch_policy>(RAJA::DEVICE,
+  RAJA::launch<launch_policy>(RAJA::ExecPlace::DEVICE,
     RAJA::LaunchParams(RAJA::Teams(NTeams,NTeams),
                           RAJA::Threads(THREAD_SZ,THREAD_SZ)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {

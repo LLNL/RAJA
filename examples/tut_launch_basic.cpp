@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-  if(select_cpu_or_gpu == RAJA::DEVICE)
+  if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE)
     hipLaunchKernelGGL((gpuKernel), dim3(griddim), dim3(blockdim), 0, 0);
   hipDeviceSynchronize();
 #endif

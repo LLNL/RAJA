@@ -104,7 +104,6 @@ using outer1 = RAJA::LoopPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
                                        RAJA::omp_for_exec
 #else
-                                       ,
                                        RAJA::loop_exec
 #endif
 #if defined(RAJA_ENABLE_CUDA)
@@ -311,7 +310,7 @@ int main(int argc, char *argv[])
   //Hip requires device side pointers
   int *d_A = nullptr, *d_At = nullptr;
 
-  if(select_cpu_or_gpu == RAJA::DEVICE) {
+  if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
     d_A =  memoryManager::allocate_gpu<int>(N_r * N_c);
     d_At = memoryManager::allocate_gpu<int>(N_r * N_c);
 
