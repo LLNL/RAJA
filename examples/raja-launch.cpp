@@ -111,21 +111,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   for (int exec_place = 0; exec_place < num_of_backends; ++exec_place) {
 
-    RAJA::ExecPlace select_cpu_or_gpu = (RAJA::ExecPlace)exec_place;
-
-    // auto select_cpu_or_gpu = RAJA::HOST;
-    // auto select_cpu_or_gpu = RAJA::DEVICE;
+    auto select_cpu_or_gpu = (RAJA::ExecPlace)exec_place;
 
     // Allocate memory for either host or device
     int N_tri = 5;
 
     int* Ddat = nullptr;
-    if (select_cpu_or_gpu == RAJA::HOST) {
+    if (select_cpu_or_gpu == RAJA::ExecPlace::HOST) {
       Ddat = host_res.allocate<int>(N_tri * N_tri);
     }
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-    if (select_cpu_or_gpu == RAJA::DEVICE) {
+    if (select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
       Ddat = device_res.allocate<int>(N_tri * N_tri);
     }
 #endif
@@ -144,7 +141,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      * and is used to perform thread synchronizations within a team.
      */
 
-    if (select_cpu_or_gpu == RAJA::HOST){
+    if (select_cpu_or_gpu == RAJA::ExecPlace::HOST){
       std::cout << "\n Running upper triangular pattern example on the host...\n";
     }else {
       std::cout << "\n Running upper triangular pattern example on the device...\n";
@@ -152,10 +149,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
     RAJA::View<int, RAJA::Layout<2>> D(Ddat, N_tri, N_tri);
-    constexpr size_t dynamic_shared_mem = 0;
 
-    RAJA::launch<launch_policy>(select_cpu_or_gpu, dynamic_shared_mem,
-       RAJA::Grid(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
+    RAJA::launch<launch_policy>
+      (select_cpu_or_gpu,
+       RAJA::LaunchParams(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
          RAJA::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {
@@ -175,14 +172,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
            });  // loop c
 
          });  // loop r
+
        });  // outer lambda
 
-    if (select_cpu_or_gpu == RAJA::HOST) {
+    if (select_cpu_or_gpu == RAJA::ExecPlace::HOST) {
       host_res.deallocate(Ddat);
     }
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-    if (select_cpu_or_gpu == RAJA::DEVICE) {
+    if (select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
       device_res.deallocate(Ddat);
     }
 #endif

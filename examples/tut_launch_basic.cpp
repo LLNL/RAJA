@@ -155,9 +155,9 @@ int main(int argc, char *argv[])
 
   RAJA::ExecPlace select_cpu_or_gpu;
   if(exec_space.compare("host") == 0)
-    { select_cpu_or_gpu = RAJA::HOST; printf("Running RAJA-Teams on the host \n"); }
+    { select_cpu_or_gpu = RAJA::ExecPlace::HOST; printf("Running RAJA-Teams on the host \n"); }
   if(exec_space.compare("device") == 0)
-    { select_cpu_or_gpu = RAJA::DEVICE; printf("Running RAJA-Teams on the device \n"); }
+    { select_cpu_or_gpu = RAJA::ExecPlace::DEVICE; printf("Running RAJA-Teams on the device \n"); }
 
 //
 // The following three kernels illustrate loop based parallelism
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
   // __compute_grid_end
 
   RAJA::launch<launch_policy>(select_cpu_or_gpu,
-    RAJA::Grid(RAJA::Teams(Nteams,Nteams),
+    RAJA::ForallParams(RAJA::Teams(Nteams,Nteams),
                      RAJA::Threads(Nthreads,Nthreads)),
 
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {

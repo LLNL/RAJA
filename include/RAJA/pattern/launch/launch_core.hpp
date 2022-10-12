@@ -137,7 +137,7 @@ public:
   RAJA_INLINE
   LaunchParams() = default;
 
-  LaunchParams(Teams in_teams, Threads in_threads, int in_shared_mem_size = 0)
+  LaunchParams(Teams in_teams, Threads in_threads, size_t in_shared_mem_size = 0)
     : teams(in_teams), threads(in_threads), shared_mem_size(in_shared_mem_size) {}; //, kernel_name(in_kernel_name){};
 
 private:
@@ -245,7 +245,7 @@ void launch(ExecPlace place, LaunchParams const &params, BODY const &body)
 }
 
 template <typename POLICY_LIST, typename BODY>
-void launch(ExecPlace place, LaunchParams const &params, const char *kernel_name, BODY const &body)
+void launch(ExecPlace place, const LaunchParams &params, const char *kernel_name, BODY const &body)
 {
   switch (place) {
     case ExecPlace::HOST: {

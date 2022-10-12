@@ -86,9 +86,9 @@ int main(int argc, char *argv[])
 
   RAJA::ExecPlace select_cpu_or_gpu;
   if(exec_space.compare("host") == 0)
-    { select_cpu_or_gpu = RAJA::HOST; printf("Running RAJA-Launch reductions example on the host \n"); }
+    { select_cpu_or_gpu = RAJA::ExecPlace::HOST; printf("Running RAJA-Launch reductions example on the host \n"); }
   if(exec_space.compare("device") == 0)
-    { select_cpu_or_gpu = RAJA::DEVICE; printf("Running RAJA-Launch reductions example on the device \n"); }
+    { select_cpu_or_gpu = RAJA::ExecPlace::DEVICE; printf("Running RAJA-Launch reductions example on the device \n"); }
 
   // _reductions_array_init_start
 //

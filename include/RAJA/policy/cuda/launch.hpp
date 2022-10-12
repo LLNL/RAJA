@@ -50,8 +50,9 @@ struct LaunchExecute<RAJA::cuda_launch_t<async, 1>> {
 // cuda_launch_t num_threads set to 1, but not used in launch of kernel
 
   template <typename BODY_IN>
-  static void exec(LaunchParams const &params, const char *kernel_name, BODY_IN const &&body_in)
+  static void exec(const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)
   {
+
     using BODY = camp::decay<BODY_IN>;
 
     auto func = launch_global_fcn<BODY>;
@@ -94,7 +95,7 @@ struct LaunchExecute<RAJA::cuda_launch_t<async, 1>> {
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *kernel_name, BODY_IN const &&body_in)
+  exec(RAJA::resources::Resource res, const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)
   {
 
     using BODY = camp::decay<BODY_IN>;
@@ -160,8 +161,8 @@ __launch_bounds__(num_threads, BLOCKS_PER_SM) __global__
   auto& body = privatizer.get_priv();
 
   //Set pointer to shared memory
-  extern __shared__ char raja_params.shared_mem_size_ptr[];
-  ctx.shared_mem_ptr = raja_params.shared_mem_size_ptr;
+  extern __shared__ char raja_shmem_ptr[];
+  ctx.shared_mem_ptr = raja_shmem_ptr;
 
   body(ctx);
 }
@@ -170,7 +171,7 @@ template <bool async, int nthreads, size_t BLOCKS_PER_SM>
 struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads, BLOCKS_PER_SM>> {
 
   template <typename BODY_IN>
-  static void exec(LaunchParams const &params, const char *kernel_name, BODY_IN const &body_in)
+  static void exec(const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)
   {
 
     using BODY = camp::decay<BODY_IN>;
@@ -208,7 +209,7 @@ struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads,
         //
         // Launch the kernel
         //
-        void *args[] = {(void*)&ctx, (void*)&body};
+        void *args[] = {(void*)&body};
         RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, params.shared_mem_size, cuda_res, async, kernel_name);
       }
 
@@ -218,7 +219,7 @@ struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads,
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *kernel_name, BODY_IN const &body_in)
+  exec(RAJA::resources::Resource res, const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)
   {
 
     using BODY = camp::decay<BODY_IN>;
@@ -257,7 +258,7 @@ struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads,
         //
         // Launch the kernel
         //
-        void *args[] = {(void*)&ctx, (void*)&body};
+        void *args[] = {(void*)&body};
         {
           RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, params.shared_mem_size, cuda_res, async, kernel_name);
         }

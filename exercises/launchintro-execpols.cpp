@@ -70,7 +70,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   constexpr int N = 100;
   constexpr int N_tot = N * N * N;
   constexpr double c = 0.0001;
-  const size_t dynamic_shared_mem = 0;
   double* a = memoryManager::allocate<double>(N_tot);
   double* a_ref = memoryManager::allocate<double>(N_tot);
 // _init_define_end
@@ -135,7 +134,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_1 = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
   RAJA::launch<launch_policy_1>
-    (dynamic_shared_mem, RAJA::Grid(), //Grid may be empty when running on the host
+    (RAJA::LaunchParams(), //LaunchParams may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext /*ctx*/) {
       /*
       RAJA::loop<loop_policy_1>(ctx, RAJA::TypedRangeSegment<int>(0, N), [&] (int k) {
@@ -195,7 +194,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_2 = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
   RAJA::launch<launch_policy_2>
-    (dynamic_shared_mem, RAJA::Grid(), //Grid may be empty when running on the host
+    (RAJA::LaunchParams(), //LaunchParams may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext /*ctx*/) {
 
          //TODO: Use the omp_policy_2 to distribute loop iterations
@@ -250,7 +249,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_3 = RAJA::LaunchPolicy<RAJA::cuda_launch_t<async_3>>;
 
   RAJA::launch<launch_policy_3>
-    (dynamic_shared_mem, RAJA::Grid(RAJA::Teams(n_blocks_i ,n_blocks_j, n_blocks_k),
+    (RAJA::LaunchParams(RAJA::Teams(n_blocks_i ,n_blocks_j, n_blocks_k),
                       RAJA::Threads(i_block_sz, j_block_sz, k_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
@@ -288,7 +287,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_4 = RAJA::LaunchPolicy<RAJA::cuda_launch_t<async_4>>;
 
   RAJA::launch<launch_policy_4>
-    (dynamic_shared_mem, RAJA::Grid(RAJA::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
+    (RAJA::LaunchParams(RAJA::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
                       RAJA::Threads(i_block_sz, j_block_sz, k_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
@@ -383,8 +382,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_5 = RAJA::LaunchPolicy<RAJA::hip_launch_t<async_5>>;
 
   RAJA::launch<launch_policy_5>
-    (dynamic_shared_mem,
-     RAJA::Grid(RAJA::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
+    (RAJA::LaunchParams(RAJA::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
                       RAJA::Threads(i_block_sz, j_block_sz, k_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
@@ -424,8 +422,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_6 = RAJA::LaunchPolicy<RAJA::hip_launch_t<async_6>>;
 
   RAJA::launch<launch_policy_6>
-    (dynamic_shared_mem,
-     RAJA::Grid(RAJA::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
+    (RAJA::LaunchParams(RAJA::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
                       RAJA::Threads(i_block_sz, j_block_sz, k_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 

@@ -66,16 +66,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   constexpr int NN = N*N;
 
   //
-  // dynamic shared memory used in kernel
-  //
-  constexpr size_t dynamic_shared_mem = 0;
-
-  //
   // Configure grid size
   //
-  RAJA::Grid grid(RAJA::Teams(1),
-                        RAJA::Threads(N, N),
-                        "Launch Flatten Kernel");
+  RAJA::LaunchParams launch_params(RAJA::Teams(1),
+                                   RAJA::Threads(N, N));
+
 
   //
   // Resource object for host, used to allocate memory
@@ -103,7 +98,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<int, RAJA::Layout<1>> d_A_1DView(d_A_ptr, NN);
 
   RAJA::launch<device_launch>
-    (dynamic_shared_mem, grid, [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
+    (launch_params, [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
      {
 
        RAJA::loop<device_inner_pol1>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
@@ -131,7 +126,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<int, RAJA::Layout<1>> h_A_1DView(h_A_ptr, NN);
 
   RAJA::launch<host_launch>
-    (dynamic_shared_mem, grid, [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
+    (launch_params, [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
     {
 
        RAJA::loop<host_loop>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
