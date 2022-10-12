@@ -186,9 +186,9 @@ int main(int argc, char *argv[])
 
   RAJA::ExecPlace select_cpu_or_gpu;
   if(exec_space.compare("host") == 0)
-    { select_cpu_or_gpu = RAJA::HOST; printf("Running RAJA-Launch reductions example on the host \n"); }
+    { select_cpu_or_gpu = RAJA::ExecPlace::HOST; printf("Running RAJA-Launch reductions example on the host \n"); }
   if(exec_space.compare("device") == 0)
-    { select_cpu_or_gpu = RAJA::DEVICE; printf("Running RAJA-Launch reductions example on the device \n"); }
+    { select_cpu_or_gpu = RAJA::ExecPlace::DEVICE; printf("Running RAJA-Launch reductions example on the device \n"); }
 
 
 
@@ -319,18 +319,14 @@ int main(int argc, char *argv[])
 #endif
 
 
-  constexpr size_t dynamic_shared_mem = TILE_DIM * TILE_DIM * sizeof(int);
-
-
+  constexpr size_t dynamic_shared_mem_size = TILE_DIM * TILE_DIM * sizeof(int);
 
   RAJA::launch<launch_policy>
-    (select_cpu_or_gpu,
-     RAJA::LaunchParams(RAJA::Teams(outer_Dimr, outer_Dimc), //either teams or blocks works
+     (RAJA::LaunchParams(RAJA::Teams(outer_Dimr, outer_Dimc), //either teams or blocks works
                         RAJA::Threads(TILE_DIM, TILE_DIM),
-                        shared_mem)
-     , kernel_name,
+                        dynamic_shared_mem_size), "Dynamic mat-mat multiplication",
      //Extend to pealing argument capabilities like forall for new reducers
-       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
   {
 
     RAJA::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
@@ -380,8 +376,9 @@ int main(int argc, char *argv[])
 
   });
 
+
 #if defined(RAJA_ENABLE_HIP)
-  if(select_cpu_or_gpu == RAJA::DEVICE) {
+  if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
     switch_ptrs(d_At, At);
     switch_ptrs(d_A, A);
 

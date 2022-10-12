@@ -41,9 +41,12 @@ template <>
 struct LaunchExecute<RAJA::seq_launch_t> {
 
   template <typename BODY>
-  static void exec(const size_t shared_mem, LaunchContext const &ctx, BODY const &body)
+  static void exec(LaunchParams const &params, const char *kernel_name, BODY const &body)
   {
-    char *kernel_local_mem = new char[shared_mem];
+    LaunchContext ctx;
+
+    char *kernel_local_mem = new char[params.shared_mem_size];
+
     ctx.shared_mem_ptr = kernel_local_mem;
 
     body(ctx);
@@ -54,9 +57,12 @@ struct LaunchExecute<RAJA::seq_launch_t> {
 
   template <typename BODY>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, const size_t shared_mem, LaunchContext const &ctx, BODY const &body)
+  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *kernel_name, BODY const &body)
   {
-    char *kernel_local_mem = new char[shared_mem];
+
+    LaunchContext ctx;
+
+    char *kernel_local_mem = new char[params.shared_mem_size];
     ctx.shared_mem_ptr = kernel_local_mem;
 
     body(ctx);

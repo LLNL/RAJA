@@ -127,17 +127,18 @@ struct Lanes {
   constexpr Lanes(int i) : value(i) {}
 };
 
-struct Grid {
+struct LaunchParams {
 public:
   Teams teams;
   Threads threads;
-  const char *kernel_name{nullptr}; //TODO Move out of Grid (make optional argument that we pass into launch)
+  size_t shared_mem_size;
+  //const char *kernel_name{nullptr}; //TODO Move out of Grid (make optional argument that we pass into launch)
 
   RAJA_INLINE
-  Grid() = default;
+  LaunchParams() = default;
 
-  Grid(Teams in_teams, Threads in_threads, const char *in_kernel_name = nullptr)
-    : teams(in_teams), threads(in_threads), kernel_name(in_kernel_name){};
+  LaunchParams(Teams in_teams, Threads in_threads, int in_shared_mem_size = 0)
+    : teams(in_teams), threads(in_threads){}; //, kernel_name(in_kernel_name){};
 
 private:
   RAJA_HOST_DEVICE
@@ -149,10 +150,10 @@ private:
   Threads apply(Threads const &a) { return (threads = a); }
 };
 
-  //TODO 
+  //TODO
   //Pass through and do not build LaunchContext from Grid
   //See if we can build launch context on the device to avoid mutable
-class LaunchContext : public Grid
+class LaunchContext //: public Grid
 {
 public:
 
@@ -165,8 +166,13 @@ public:
   mutable cl::sycl::nd_item<3> *itm;
 #endif
 
-  LaunchContext(Grid const &base)
-    : Grid(base), shared_mem_offset(0)
+  //LaunchContext(Grid const &base)
+  //: Grid(base), shared_mem_offset(0)
+  //{
+  //}
+
+  LaunchContext()
+    : shared_mem_offset(0)
   {
   }
 
@@ -215,29 +221,29 @@ struct LaunchExecute;
 
 //Policy based launch
 template <typename LAUNCH_POLICY, typename BODY>
-void launch(size_t shared_mem, Grid const &grid, BODY const &body)
+void launch(LaunchParams const &params, const char *kernel_name, BODY const &body)
 {
   //Take the first policy as we assume the second policy is not user defined.
   //We rely on the user to pair launch and loop policies correctly.
   using launch_t = LaunchExecute<typename LAUNCH_POLICY::host_policy_t>;
-  launch_t::exec(shared_mem, LaunchContext(grid), body);
+  launch_t::exec(params, kernel_name, body);
 }
 
 
 //Run time based policy launch
 template <typename POLICY_LIST, typename BODY>
-void launch(ExecPlace place, size_t shared_mem, Grid const &grid, BODY const &body)
+void launch(ExecPlace place, LaunchParams const &params, const char *kernel_name, BODY const &body)
 {
   switch (place) {
     case ExecPlace::HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      launch_t::exec(shared_mem, LaunchContext(grid), body);
+      launch_t::exec(params, kernel_name, body);
       break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
   case ExecPlace::DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      launch_t::exec(shared_mem, LaunchContext(grid), body);
+      launch_t::exec(params, kernel_name, body);
       break;
     }
 #endif
@@ -266,7 +272,7 @@ RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::ExecPlace device){
 //Launch API which takes team resource struct
 template <typename POLICY_LIST, typename BODY>
 resources::EventProxy<resources::Resource>
-launch(RAJA::resources::Resource res, size_t shared_mem, Grid const &grid, BODY const &body)
+launch(RAJA::resources::Resource res, LaunchParams const &params, const char *kernel_name, BODY const &body)
 {
 
   ExecPlace place;
@@ -279,12 +285,12 @@ launch(RAJA::resources::Resource res, size_t shared_mem, Grid const &grid, BODY 
   switch (place) {
     case ExecPlace::HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      return launch_t::exec(res, shared_mem, LaunchContext(grid), body); break;
+      return launch_t::exec(res, params, kernel_name, body); break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
     case ExecPlace::DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      return launch_t::exec(res, shared_mem, LaunchContext(grid), body); break;
+      return launch_t::exec(res, params, kernel_name, body); break;
     }
 #endif
     default: {
