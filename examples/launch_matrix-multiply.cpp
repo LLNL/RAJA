@@ -37,15 +37,15 @@
 /*
  * Define host/device launch policies
  */
-using launch_policy = RAJA::LaunchPolicy<
-    RAJA::seq_launch_t
+using launch_policy = RAJA::expt::LaunchPolicy<
+    RAJA::expt::seq_launch_t
 #if defined(RAJA_ENABLE_CUDA)
     ,
-    RAJA::cuda_launch_t<false>
+    RAJA::expt::cuda_launch_t<false>
 #endif
 #if defined(RAJA_ENABLE_HIP)
     ,
-    RAJA::hip_launch_t<false>
+    RAJA::expt::hip_launch_t<false>
 #endif
     >;
 
@@ -56,8 +56,9 @@ using gpu_block_x_policy = RAJA::cuda_block_x_direct;
 using gpu_block_y_policy = RAJA::cuda_block_y_direct;
 using gpu_thread_x_policy = RAJA::cuda_thread_x_loop;
 using gpu_thread_y_policy = RAJA::cuda_thread_y_loop;
-using gpu_global_thread_x_policy = RAJA::cuda_global_thread_x;
-using gpu_global_thread_y_policy = RAJA::cuda_global_thread_y;
+using gpu_global_thread_x_policy = RAJA::expt::cuda_global_thread_x;
+using gpu_global_thread_y_policy = RAJA::expt::cuda_global_thread_y;
+using gpu_global_thread_xy_policy = RAJA::expt::cuda_global_thread_xy;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
@@ -65,51 +66,52 @@ using gpu_block_x_policy = RAJA::hip_block_x_direct;
 using gpu_block_y_policy = RAJA::hip_block_y_direct;
 using gpu_thread_x_policy = RAJA::hip_thread_x_loop;
 using gpu_thread_y_policy = RAJA::hip_thread_y_loop;
-using gpu_global_thread_x_policy = RAJA::hip_global_thread_x;
-using gpu_global_thread_y_policy = RAJA::hip_global_thread_y;
+using gpu_global_thread_x_policy = RAJA::expt::hip_global_thread_x;
+using gpu_global_thread_y_policy = RAJA::expt::hip_global_thread_y;
+using gpu_global_thread_xy_policy = RAJA::expt::hip_global_thread_xy;
 #endif
 
 /*
   Define RAJA Team/Thread policies, if a device is available add
   a device policy.
 */
-using teams_x = RAJA::LoopPolicy<loop_policy
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+using teams_x = RAJA::expt::LoopPolicy<loop_policy
+#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
                                        gpu_block_x_policy
 #endif
                                        >;
 
-using teams_y = RAJA::LoopPolicy<loop_policy
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+using teams_y = RAJA::expt::LoopPolicy<loop_policy
+#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
                                        gpu_block_y_policy
 #endif
                                        >;
 
-using threads_x = RAJA::LoopPolicy<loop_policy
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+using threads_x = RAJA::expt::LoopPolicy<loop_policy
+#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
                                        gpu_thread_x_policy
 #endif
                                        >;
 
-using threads_y = RAJA::LoopPolicy<loop_policy
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+using threads_y = RAJA::expt::LoopPolicy<loop_policy
+#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
                                        gpu_thread_y_policy
 #endif
                                        >;
 
-using global_thread_x = RAJA::LoopPolicy<loop_policy
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+using global_thread_x = RAJA::expt::LoopPolicy<loop_policy
+#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
                                        gpu_global_thread_x_policy
 #endif
                                        >;
 
-using global_thread_y = RAJA::LoopPolicy<loop_policy
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+using global_thread_y = RAJA::expt::LoopPolicy<loop_policy
+#if defined(RAJA_DEVICE_ACTIVE)
                                        ,
                                        gpu_global_thread_y_policy
 #endif
@@ -218,11 +220,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int NTeams = (N - 1)/THREAD_SZ + 1;
 
 //
-// Dynamic shared memory size for kernel
-//
-  const size_t dynamic_shared_mem = 0;
-
-//
 // Allocate and initialize matrix data.
 //
   double *A = memoryManager::allocate<double>(N * N);
@@ -323,13 +320,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //two for loops.
 
   // _matmult_basickernel_start
-  RAJA::launch<launch_policy>(RAJA::HOST, dynamic_shared_mem,
-   RAJA::Grid(RAJA::Teams(NTeams,NTeams),
-                         RAJA::Threads(THREAD_SZ,THREAD_SZ)),
-       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+  RAJA::expt::launch<launch_policy>(RAJA::expt::HOST,
+   RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
+                         RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
+       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-   RAJA::loop<global_thread_y>(ctx, col_range, [&] (int col) {
-       RAJA::loop<global_thread_x>(ctx, row_range, [&] (int row) {
+   RAJA::expt::loop<global_thread_y>(ctx, col_range, [&] (int col) {
+       RAJA::expt::loop<global_thread_x>(ctx, row_range, [&] (int row) {
 
           double dot = 0.0;
           for (int k = 0; k < N; ++k) {
@@ -358,17 +355,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //recompiling execution policies. When running exclusively on the host
   //the compute grid may be left uninitialized as loop methods get expanded to
   //standard C style loops.
-  using omp_launch_policy = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
+  using omp_launch_policy = RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t>;
 
-  using omp_col_policy0 = RAJA::LoopPolicy<RAJA::omp_for_exec>;
+  using omp_col_policy0 = RAJA::expt::LoopPolicy<RAJA::omp_for_exec>;
 
-  using omp_row_policy0 = RAJA::LoopPolicy<loop_policy>;
+  using omp_row_policy0 = RAJA::expt::LoopPolicy<loop_policy>;
 
-  RAJA::launch<omp_launch_policy>(dynamic_shared_mem, RAJA::Grid(),
-       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+  RAJA::expt::launch<omp_launch_policy>(RAJA::expt::Grid(),
+       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-   RAJA::loop<omp_col_policy0>(ctx, col_range, [&] (int col) {
-       RAJA::loop<omp_row_policy0>(ctx, row_range, [&] (int row) {
+   RAJA::expt::loop<omp_col_policy0>(ctx, col_range, [&] (int col) {
+       RAJA::expt::loop<omp_row_policy0>(ctx, row_range, [&] (int row) {
 
           double dot = 0.0;
           for (int k = 0; k < N; ++k) {
@@ -394,14 +391,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This is the same as using an OpenMP 'parallel for' directive on the
   // outer loop with a 'collapse(2) clause.
   //
-  using global_thread_xy = RAJA::LoopPolicy<RAJA::omp_for_exec>;
+  using global_thread_xy = RAJA::expt::LoopPolicy<RAJA::omp_for_exec>;
 
-   RAJA::launch<omp_launch_policy>(RAJA::HOST,
-                                         dynamic_shared_mem,
-                                         RAJA::Grid(),
-   [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+   RAJA::expt::launch<omp_launch_policy>(RAJA::expt::HOST,
+                                         RAJA::expt::Grid(),
+   [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-      RAJA::expt::loop<global_thread_xy>(ctx, col_range, row_range, [&] (int col, int row) {
+     RAJA::expt::loop<global_thread_xy>(ctx, col_range, row_range, [&] (int col, int row) {
 
            double dot = 0.0;
            for (int k = 0; k < N; ++k) {
@@ -435,14 +431,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // and col = threadIdx.x in the kernel.
   //
   //
-   RAJA::launch<launch_policy>
-     (RAJA::DEVICE, dynamic_shared_mem,
-      RAJA::Grid(RAJA::Teams(N),
-                       RAJA::Threads(N)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
+    RAJA::expt::Grid(RAJA::expt::Teams(N),
+                          RAJA::expt::Threads(N)),
+        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-    RAJA::loop<teams_x>(ctx, col_range, [&] (int col) {
-        RAJA::loop<threads_x>(ctx, row_range, [&] (int row) {
+    RAJA::expt::loop<teams_x>(ctx, col_range, [&] (int col) {
+        RAJA::expt::loop<threads_x>(ctx, row_range, [&] (int row) {
 
            double dot = 0.0;
            for (int k = 0; k < N; ++k) {
@@ -472,19 +467,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // The tiling capabilities in RAJA will also mask out of bounds iterations.
   //
-  RAJA::launch<launch_policy>(RAJA::DEVICE,
-                                    dynamic_shared_mem,                                    
-    RAJA::Grid(RAJA::Teams(NTeams,NTeams),
-                          RAJA::Threads(THREAD_SZ,THREAD_SZ)),
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+  RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
+    RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
+                          RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
+      [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-      RAJA::tile<teams_y>
+      RAJA::expt::tile<teams_y>
         (ctx, THREAD_SZ, row_range, [&] (RAJA::RangeSegment const &row_tile) {
-          RAJA::tile<teams_x>
+          RAJA::expt::tile<teams_x>
             (ctx, THREAD_SZ, col_range, [&] (RAJA::RangeSegment const &col_tile) {
 
-              RAJA::loop<threads_y>(ctx, row_tile, [&] (int col) {
-                RAJA::loop<threads_x>(ctx, col_tile, [&] (int row) {
+              RAJA::expt::loop<threads_y>(ctx, row_tile, [&] (int col) {
+                RAJA::expt::loop<threads_x>(ctx, col_tile, [&] (int row) {
 
                     double dot = 0.0;
                     for (int k = 0; k < N; ++k) {
@@ -533,14 +527,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // and col = threadIdx.x in the kernel.
   //
   //
-   RAJA::launch<launch_policy>(RAJA::DEVICE,
-                                     dynamic_shared_mem,
-        RAJA::Grid(RAJA::Teams(N),
-                         RAJA::Threads(N)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+   RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
+    RAJA::expt::Grid(RAJA::expt::Teams(N),
+                          RAJA::expt::Threads(N)),
+        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-     RAJA::loop<teams_x>(ctx, col_range, [&] (int col) {
-       RAJA::loop<threads_x>(ctx, row_range, [&] (int row) {
+     RAJA::expt::loop<teams_x>(ctx, col_range, [&] (int col) {
+       RAJA::expt::loop<threads_x>(ctx, row_range, [&] (int row) {
 
             double dot = 0.0;
             for (int k = 0; k < N; ++k) {
@@ -574,19 +567,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // The tiling capabilities in RAJA will also mask out of bounds iterations.
   //
-  RAJA::launch<launch_policy>(RAJA::DEVICE,
-                                    dynamic_shared_mem,
-    RAJA::Grid(RAJA::Teams(NTeams,NTeams),
-                          RAJA::Threads(THREAD_SZ,THREAD_SZ)),
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+  RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
+    RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
+                          RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
+      [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
 
-      RAJA::tile<teams_y>
+      RAJA::expt::tile<teams_y>
         (ctx, THREAD_SZ, row_range, [&] (RAJA::RangeSegment const &row_tile) {
-          RAJA::tile<teams_x>
+          RAJA::expt::tile<teams_x>
             (ctx, THREAD_SZ, col_range, [&] (RAJA::RangeSegment const &col_tile) {
 
-              RAJA::loop<threads_y>(ctx, row_tile, [&] (int col) {
-                RAJA::loop<threads_x>(ctx, col_tile, [&] (int row) {
+              RAJA::expt::loop<threads_y>(ctx, row_tile, [&] (int col) {
+                RAJA::expt::loop<threads_x>(ctx, col_tile, [&] (int row) {
 
                     double dot = 0.0;
                     for (int k = 0; k < N; ++k) {
@@ -612,7 +604,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
-  using seq_loop =  RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
+  using seq_loop =  RAJA::expt::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
 
   //
   // This example builds on the RAJA tiling capabilies presented earlier
@@ -624,50 +616,49 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This example also uses the teamSync() method in the launch context
   // to add a barrier ensuring all threads have loaded/read from shared memory
   //
-  RAJA::launch<launch_policy>(RAJA::DEVICE,
-                                    dynamic_shared_mem,
-    RAJA::Grid(RAJA::Teams(NTeams,NTeams),
-                          RAJA::Threads(THREAD_SZ,THREAD_SZ)),
-     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+  RAJA::expt::launch<launch_policy>(RAJA::expt::DEVICE,
+    RAJA::expt::Grid(RAJA::expt::Teams(NTeams,NTeams),
+                          RAJA::expt::Threads(THREAD_SZ,THREAD_SZ)),
+     [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
    //
    // Loop over teams
    //
-   RAJA::tile<teams_y>
+   RAJA::expt::tile<teams_y>
      (ctx, THREAD_SZ, row_range, [&] (RAJA::RangeSegment const &y_tile) {
-     RAJA::tile<teams_x>
+     RAJA::expt::tile<teams_x>
        (ctx, THREAD_SZ, col_range, [&] (RAJA::RangeSegment const &x_tile) {
 
          RAJA_TEAM_SHARED double As[THREAD_SZ][THREAD_SZ];
          RAJA_TEAM_SHARED double Bs[THREAD_SZ][THREAD_SZ];
          RAJA_TEAM_SHARED double Cs[THREAD_SZ][THREAD_SZ];
 
-         RAJA::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
-             RAJA::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
+         RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
+             RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
                Cs[ty][tx] = 0.0;
              });
          });
 
-         RAJA::tile<seq_loop>
+         RAJA::expt::tile<seq_loop>
            (ctx, THREAD_SZ, dot_range, [&] (RAJA::RangeSegment const &k_tile) {
 
-           RAJA::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
-               RAJA::loop_icount<threads_x>(ctx, k_tile, [&](int k_id, int tx) {
+           RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
+               RAJA::expt::loop_icount<threads_x>(ctx, k_tile, [&](int k_id, int tx) {
                    As[ty][tx] = Aview(row,k_id);
                  });
              });
 
-           RAJA::loop_icount<threads_y>(ctx, k_tile, [&](int k_id, int ty) {
-               RAJA::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
+           RAJA::expt::loop_icount<threads_y>(ctx, k_tile, [&](int k_id, int ty) {
+               RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
                    Bs[ty][tx] = Bview(k_id,col);
                });
              });
 
            ctx.teamSync();
 
-           RAJA::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
-               RAJA::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
+           RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
+               RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
 
-                   RAJA::loop_icount<seq_loop>(ctx, k_tile, [&] (int gid, int e) {
+                   RAJA::expt::loop_icount<seq_loop>(ctx, k_tile, [&] (int gid, int e) {
                        Cs[ty][tx] += As[ty][e] * Bs[e][tx];
                      });
 
@@ -678,8 +669,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
          });  // slide across matrix
 
-          RAJA::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
-               RAJA::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
+          RAJA::expt::loop_icount<threads_y>(ctx, y_tile, [&](int row, int ty) {
+               RAJA::expt::loop_icount<threads_x>(ctx, x_tile, [&](int col, int tx) {
                    Cview(col,row) = Cs[ty][tx];
                });
            });
