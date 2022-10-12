@@ -183,6 +183,50 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 #endif
 
+//----------------------------------------------------------------------------//
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+  std::cout << "\n Running RAJA OpenMP Target reductions...\n";
+
+  // _reductions_raja_omppolicy_start
+  using EXEC_POL3   = RAJA::omp_target_parallel_for_exec_nt;
+  // _reductions_raja_omppolicy_end
+
+  int omp_t_sum = 0;
+  int omp_t_min = std::numeric_limits<int>::max();
+  int omp_t_max = std::numeric_limits<int>::min();
+  VALLOC_INT omp_t_minloc(std::numeric_limits<int>::max(), -1);
+  VALLOC_INT omp_t_maxloc(std::numeric_limits<int>::min(), -1);
+
+  RAJA::forall<EXEC_POL3>(arange, 
+    RAJA::expt::Reduce<RAJA::operators::plus>(&omp_t_sum),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_t_min),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_t_max),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_t_minloc),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_t_maxloc),
+    [=](int i, int &_omp_t_sum, int &_omp_t_min, int &_omp_t_max, VALLOC_INT &_omp_t_minloc, VALLOC_INT &_omp_t_maxloc) {
+      _omp_t_sum += a[i];
+
+      _omp_t_min = RAJA_MIN(a[i], _omp_t_min);
+      _omp_t_max = RAJA_MAX(a[i], _omp_t_max);
+
+      _omp_t_minloc = RAJA_MIN(VALLOC_INT(a[i], i), _omp_t_minloc);
+      _omp_t_maxloc = RAJA_MAX(VALLOC_INT(a[i], i), _omp_t_maxloc);
+      //_omp_t_minloc.min(a[i], i);
+      //_omp_t_maxloc.max(a[i], i);
+    }
+  );
+
+  std::cout << "\tsum = " << omp_t_sum << std::endl;
+  std::cout << "\tmin = " << omp_t_min << std::endl;
+  std::cout << "\tmax = " << omp_t_max << std::endl;
+  std::cout << "\tmin, loc = " << omp_t_minloc.getVal() << " , " 
+                               << omp_t_minloc.getLoc() << std::endl;
+  std::cout << "\tmax, loc = " << omp_t_maxloc.getVal() << " , " 
+                               << omp_t_maxloc.getLoc() << std::endl;
+
+#endif
+
 
 //----------------------------------------------------------------------------//
 
