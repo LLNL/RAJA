@@ -171,7 +171,7 @@ public:
   //{
   //}
 
-  LaunchContext()
+  RAJA_HOST_DEVICE LaunchContext()
     : shared_mem_offset(0)
   {
   }

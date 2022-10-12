@@ -29,8 +29,11 @@ namespace RAJA
 {
 
 template <typename BODY>
-__global__ void launch_global_fcn(LaunchContext ctx, BODY body_in)
+__global__ void launch_global_fcn(BODY body_in)
 {
+
+  LaunchContext ctx;
+
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(body_in);
   auto& body = privatizer.get_priv();
@@ -47,25 +50,23 @@ struct LaunchExecute<RAJA::cuda_launch_t<async, 1>> {
 // cuda_launch_t num_threads set to 1, but not used in launch of kernel
 
   template <typename BODY_IN>
-  static void exec(const size_t shmem, LaunchContext const &ctx, BODY_IN &&body_in)
+  static void exec(LaunchParams const &params, const char *kernel_name, BODY_IN const &&body_in)
   {
     using BODY = camp::decay<BODY_IN>;
 
     auto func = launch_global_fcn<BODY>;
 
     resources::Cuda cuda_res = resources::Cuda::get_default();
-
     //
     // Compute the number of blocks and threads
     //
+    cuda_dim_t gridSize{ static_cast<cuda_dim_member_t>(params.teams.value[0]),
+                         static_cast<cuda_dim_member_t>(params.teams.value[1]),
+                         static_cast<cuda_dim_member_t>(params.teams.value[2]) };
 
-    cuda_dim_t gridSize{ static_cast<cuda_dim_member_t>(ctx.teams.value[0]),
-                         static_cast<cuda_dim_member_t>(ctx.teams.value[1]),
-                         static_cast<cuda_dim_member_t>(ctx.teams.value[2]) };
-
-    cuda_dim_t blockSize{ static_cast<cuda_dim_member_t>(ctx.threads.value[0]),
-                          static_cast<cuda_dim_member_t>(ctx.threads.value[1]),
-                          static_cast<cuda_dim_member_t>(ctx.threads.value[2]) };
+    cuda_dim_t blockSize{ static_cast<cuda_dim_member_t>(params.threads.value[0]),
+                          static_cast<cuda_dim_member_t>(params.threads.value[1]),
+                          static_cast<cuda_dim_member_t>(params.threads.value[2]) };
 
     // Only launch kernel if we have something to iterate over
     constexpr cuda_dim_member_t zero = 0;
@@ -73,35 +74,34 @@ struct LaunchExecute<RAJA::cuda_launch_t<async, 1>> {
          blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
 
       RAJA_FT_BEGIN;
-
       {
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
-        BODY body = RAJA::cuda::make_launch_body(
-            gridSize, blockSize, shmem, cuda_res, std::forward<BODY_IN>(body_in));
+        BODY body = RAJA::cuda::make_launch_body(gridSize, blockSize, 0, cuda_res, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
-        void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, cuda_res, async, ctx.kernel_name);
+        void *args[] = {(void*)&body};
+        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, params.shared_mem_size, cuda_res, async, kernel_name);
       }
 
       RAJA_FT_END;
     }
 
-  }
+  };
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, const size_t shmem, LaunchContext const &ctx, BODY_IN &&body_in)
+  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *kernel_name, BODY_IN const &body_in)
   {
+    /*
     using BODY = camp::decay<BODY_IN>;
 
     auto func = launch_global_fcn<BODY>;
 
-    /*Get the concrete resource */
+    // Get the concrete resource
     resources::Cuda cuda_res = res.get<RAJA::resources::Cuda>();
 
     //
@@ -128,25 +128,26 @@ struct LaunchExecute<RAJA::cuda_launch_t<async, 1>> {
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
         BODY body = RAJA::cuda::make_launch_body(
-            gridSize, blockSize, shmem, cuda_res, std::forward<BODY_IN>(body_in));
+            gridSize, blockSize, params.shared_mem_size, cuda_res, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
         {
-          RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, cuda_res, async, ctx.kernel_name);
+          RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, params.shared_mem_size, cuda_res, async, ctx.kernel_name);
         }
       }
 
       RAJA_FT_END;
     }
-
+   */
     return resources::EventProxy<resources::Resource>(res);
   }
 
 };
 
+/*
 template <typename BODY, int num_threads, size_t BLOCKS_PER_SM>
 __launch_bounds__(num_threads, BLOCKS_PER_SM) __global__
     void launch_global_fcn_fixed(LaunchContext ctx, BODY body_in)
@@ -156,18 +157,20 @@ __launch_bounds__(num_threads, BLOCKS_PER_SM) __global__
   auto& body = privatizer.get_priv();
 
   //Set pointer to shared memory
-  extern __shared__ char raja_shmem_ptr[];
-  ctx.shared_mem_ptr = raja_shmem_ptr;
+  extern __shared__ char raja_params.shared_mem_size_ptr[];
+  ctx.shared_mem_ptr = raja_params.shared_mem_size_ptr;
 
   body(ctx);
 }
+*/
 
 template <bool async, int nthreads, size_t BLOCKS_PER_SM>
 struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads, BLOCKS_PER_SM>> {
 
   template <typename BODY_IN>
-  static void exec(const size_t shmem, LaunchContext const &ctx, BODY_IN &&body_in)
+  static void exec(LaunchParams const &params, const char *kernel_name, BODY_IN const &body_in)
   {
+    /*
     using BODY = camp::decay<BODY_IN>;
 
     auto func = launch_global_fcn_fixed<BODY, nthreads, BLOCKS_PER_SM>;
@@ -198,29 +201,30 @@ struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads,
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
         BODY body = RAJA::cuda::make_launch_body(
-            gridSize, blockSize, shmem, cuda_res, std::forward<BODY_IN>(body_in));
+            gridSize, blockSize, params.shared_mem_size, cuda_res, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
-        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, cuda_res, async, ctx.kernel_name);
+        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, params.shared_mem_size, cuda_res, async, ctx.kernel_name);
       }
 
       RAJA_FT_END;
-    }
-
+      }
+    */
   }
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, const size_t shmem, LaunchContext const &ctx, BODY_IN &&body_in)
+  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *kernel_name, BODY_IN const &body_in)
   {
+    /*
     using BODY = camp::decay<BODY_IN>;
 
     auto func = launch_global_fcn_fixed<BODY, nthreads, BLOCKS_PER_SM>;
 
-    /*Get the concrete resource */
+    //Get the concrete resource
     resources::Cuda cuda_res = res.get<RAJA::resources::Cuda>();
 
     //
@@ -247,20 +251,20 @@ struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads,
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
         BODY body = RAJA::cuda::make_launch_body(
-            gridSize, blockSize, shmem, cuda_res, std::forward<BODY_IN>(body_in));
+            gridSize, blockSize, params.shared_mem_size, cuda_res, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void *args[] = {(void*)&ctx, (void*)&body};
         {
-          RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, cuda_res, async, ctx.kernel_name);
+          RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, params.shared_mem_size, cuda_res, async, ctx.kernel_name);
         }
       }
 
       RAJA_FT_END;
     }
-
+    */
     return resources::EventProxy<resources::Resource>(res);
   }
 
@@ -420,7 +424,7 @@ struct LoopExecute<cuda_flatten_block_threads_direct<DIM0, DIM1>, SEGMENT>
       const int ty = internal::get_cuda_dim<DIM1>(threadIdx);
       const int bx = internal::get_cuda_dim<DIM0>(blockDim);
       const int tid = tx + bx*ty;
-      
+
       if (tid < len) body(*(segment.begin() + tid));
     }
   }
