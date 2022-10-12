@@ -41,7 +41,7 @@ template <>
 struct LaunchExecute<RAJA::seq_launch_t> {
 
   template <typename BODY>
-  static void exec(LaunchParams const &params, const char *kernel_name, BODY const &body)
+  static void exec(LaunchParams const &params, const char *RAJA_UNUSED_ARG(kernel_name), BODY const &body)
   {
     LaunchContext ctx;
 
@@ -57,7 +57,7 @@ struct LaunchExecute<RAJA::seq_launch_t> {
 
   template <typename BODY>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *kernel_name, BODY const &body)
+  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *RAJA_UNUSED_ARG(kernel_name), BODY const &body)
   {
 
     LaunchContext ctx;

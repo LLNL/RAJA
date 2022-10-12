@@ -138,7 +138,7 @@ public:
   LaunchParams() = default;
 
   LaunchParams(Teams in_teams, Threads in_threads, int in_shared_mem_size = 0)
-    : teams(in_teams), threads(in_threads){}; //, kernel_name(in_kernel_name){};
+    : teams(in_teams), threads(in_threads), shared_mem_size(in_shared_mem_size) {}; //, kernel_name(in_kernel_name){};
 
 private:
   RAJA_HOST_DEVICE
@@ -219,6 +219,13 @@ public:
 template <typename LAUNCH_POLICY>
 struct LaunchExecute;
 
+//Policy based launch without name argument
+template <typename LAUNCH_POLICY, typename BODY>
+void launch(LaunchParams const &params, BODY const &body)
+{
+  launch<LAUNCH_POLICY>(params, nullptr, body);
+}
+
 //Policy based launch
 template <typename LAUNCH_POLICY, typename BODY>
 void launch(LaunchParams const &params, const char *kernel_name, BODY const &body)
@@ -231,6 +238,12 @@ void launch(LaunchParams const &params, const char *kernel_name, BODY const &bod
 
 
 //Run time based policy launch
+template <typename POLICY_LIST, typename BODY>
+void launch(ExecPlace place, LaunchParams const &params, BODY const &body)
+{
+  launch<POLICY_LIST>(place, params, nullptr, body);
+}
+
 template <typename POLICY_LIST, typename BODY>
 void launch(ExecPlace place, LaunchParams const &params, const char *kernel_name, BODY const &body)
 {
@@ -270,6 +283,13 @@ RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::ExecPlace device){
 
 
 //Launch API which takes team resource struct
+template <typename POLICY_LIST, typename BODY>
+resources::EventProxy<resources::Resource>
+launch(RAJA::resources::Resource res, LaunchParams const &params, BODY const &body)
+{
+  return launch<POLICY_LIST>(res, params, nullptr, body);
+}
+
 template <typename POLICY_LIST, typename BODY>
 resources::EventProxy<resources::Resource>
 launch(RAJA::resources::Resource res, LaunchParams const &params, const char *kernel_name, BODY const &body)

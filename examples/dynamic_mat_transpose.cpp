@@ -324,7 +324,7 @@ int main(int argc, char *argv[])
   RAJA::launch<launch_policy>
      (RAJA::LaunchParams(RAJA::Teams(outer_Dimr, outer_Dimc), //either teams or blocks works
                         RAJA::Threads(TILE_DIM, TILE_DIM),
-                        dynamic_shared_mem_size), "Dynamic mat-mat multiplication",
+                        dynamic_shared_mem_size),
      //Extend to pealing argument capabilities like forall for new reducers
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
   {
