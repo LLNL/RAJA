@@ -55,7 +55,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _mattranspose_dims_start
   constexpr int N_r = 56;
   constexpr int N_c = 75;
-  constexpr size_t dynamic_shared_mem = 0;
   // _mattranspose_dims_end
 
   //
@@ -126,7 +125,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_seq = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
   RAJA::launch<launch_policy_seq>(
-    dynamic_shared_mem, RAJA::Grid(), //Grid may be empty when running on the host
+    RAJA::LaunchParams(), //Grid may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
       RAJA::loop<loop_policy_seq>(ctx, row_Range, [&] (int row) {
@@ -156,7 +155,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_omp = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
   RAJA::launch<launch_policy_omp>(
-    dynamic_shared_mem, RAJA::Grid(), //Grid may be empty when running on the host
+    RAJA::LaunchParams(), //Grid may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
       RAJA::loop<loop_policy_omp>(ctx, row_Range, [&] (int row) {
@@ -186,8 +185,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const bool async = false; //execute asynchronously
   using launch_policy_cuda = RAJA::LaunchPolicy<RAJA::cuda_launch_t<async>>;
 
-  RAJA::launch<launch_policy_cuda>(dynamic_shared_mem,
-    RAJA::Grid(RAJA::Teams(1), RAJA::Threads(16,16)),
+  RAJA::launch<launch_policy_cuda>
+    (RAJA::LaunchParams(RAJA::Teams(1), RAJA::Threads(16,16)),
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
       RAJA::loop<cuda_thread_y>(ctx, row_Range, [&] (int row) {

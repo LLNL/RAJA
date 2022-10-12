@@ -42,7 +42,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::resources::Event e =
         RAJA::launch<launch_policy>(res_cuda,
         RAJA::LaunchParams(RAJA::Teams(64),
-                         RAJA::Threads(1), "RAJA Launch kernel"),
+                         RAJA::Threads(1)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)  {
 
        RAJA::loop<teams_x>(ctx, m_range, [&] (int j) {

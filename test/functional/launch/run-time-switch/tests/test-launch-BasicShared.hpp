@@ -39,7 +39,7 @@ void LaunchBasicSharedTestImpl()
 
 
   RAJA::launch<LAUNCH_POLICY>(select_cpu_or_gpu,
-    RAJA::Grid(RAJA::Teams(N), RAJA::Threads(N)),
+    RAJA::LaunchParams(RAJA::Teams(N), RAJA::Threads(N)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
           RAJA::loop<TEAM_POLICY>(ctx, RAJA::RangeSegment(0, N), [&](int r) {

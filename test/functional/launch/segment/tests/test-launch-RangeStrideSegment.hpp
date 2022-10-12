@@ -42,8 +42,6 @@ void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
   constexpr int threads = 256;
   int blocks = (data_len - 1)/threads + 1;
 
-  const size_t dynamic_shared_mem = 0;
-
   if ( RAJA::stripIndexType(N) > 0 ) {
 
     INDEX_TYPE idx = first;
@@ -53,7 +51,7 @@ void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
     }
     
     RAJA::launch<LAUNCH_POLICY>
-      (dynamic_shared_mem, RAJA::Grid(RAJA::Teams(blocks), RAJA::Threads(threads)),
+      (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
   
         RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
@@ -65,7 +63,7 @@ void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
   } else { // zero-length segment
 
     RAJA::launch<LAUNCH_POLICY>
-      (dynamic_shared_mem, RAJA::Grid(RAJA::Teams(blocks), RAJA::Threads(threads)),
+      (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
   
         RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {

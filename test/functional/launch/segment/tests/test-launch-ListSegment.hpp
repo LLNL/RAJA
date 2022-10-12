@@ -60,7 +60,6 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
 
   constexpr int threads = 256;
   int blocks = (data_len - 1)/threads + 1;
-  constexpr size_t dynamic_shared_mem = 0;
 
   if ( RAJA::stripIndexType(N) > 0 ) {
 
@@ -71,7 +70,7 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
     working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
     RAJA::launch<LAUNCH_POLICY>
-      (dynamic_shared_mem, RAJA::Grid(RAJA::Teams(blocks), RAJA::Threads(threads)),
+      (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
         RAJA::loop<GLOBAL_THREAD_POICY>(ctx, lseg, [&](INDEX_TYPE idx) {
@@ -86,7 +85,7 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
     working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
     RAJA::launch<LAUNCH_POLICY>
-      (dynamic_shared_mem, RAJA::Grid(RAJA::Teams(blocks), RAJA::Threads(threads)),
+      (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
         RAJA::loop<GLOBAL_THREAD_POICY>(ctx, lseg, [&](INDEX_TYPE idx) {

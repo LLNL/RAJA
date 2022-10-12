@@ -29,24 +29,24 @@
  *
  */
 
-using host_launch = RAJA::expt::seq_launch_t;
+using host_launch = RAJA::seq_launch_t;
 using host_loop = RAJA::loop_exec;
 
 #if defined(RAJA_ENABLE_CUDA)
-using device_launch = RAJA::expt::cuda_launch_t<true>;
-using device_loop = RAJA::expt::cuda_global_thread_x;
+using device_launch = RAJA::cuda_launch_t<true>;
+using device_loop = RAJA::cuda_global_thread_x;
 #elif defined(RAJA_ENABLE_HIP)
-using device_launch = RAJA::expt::hip_launch_t<true>;
-using device_loop = RAJA::expt::hip_global_thread_x;
+using device_launch = RAJA::hip_launch_t<true>;
+using device_loop = RAJA::hip_global_thread_x;
 #endif
 
-using launch_policy = RAJA::expt::LaunchPolicy<host_launch
+using launch_policy = RAJA::LaunchPolicy<host_launch
 #if defined(RAJA_DEVICE_ACTIVE)
                                                ,device_launch
 #endif
                                                >;
 
-using loop_pol = RAJA::expt::LoopPolicy<host_loop
+using loop_pol = RAJA::LoopPolicy<host_loop
 #if defined(RAJA_DEVICE_ACTIVE)
                                         ,device_loop
 #endif
@@ -78,11 +78,11 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  RAJA::expt::ExecPlace select_cpu_or_gpu;
+  RAJA::ExecPlace select_cpu_or_gpu;
   if(exec_space.compare("host") == 0)
-    { select_cpu_or_gpu = RAJA::expt::HOST; printf("Running RAJA-Teams reductions example on the host \n"); }
+    { select_cpu_or_gpu = RAJA::ExecPlace::HOST; printf("Running RAJA-Teams reductions example on the host \n"); }
   if(exec_space.compare("device") == 0)
-    { select_cpu_or_gpu = RAJA::expt::DEVICE; printf("Running RAJA-Teams reductions example on the device \n"); }
+    { select_cpu_or_gpu = RAJA::ExecPlace::DEVICE; printf("Running RAJA-Teams reductions example on the device \n"); }
 
   // _reductions_array_init_start
 //
@@ -154,18 +154,17 @@ int main(int argc, char *argv[])
 
   //Get typed erased resource - it will internally store if we are running on the host or device
 #if defined(RAJA_DEVICE_ACTIVE)
-  RAJA::resources::Resource res = RAJA::expt::Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
+  RAJA::resources::Resource res = RAJA::Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
 #else
-  RAJA::resources::Resource res = RAJA::expt::Get_Host_Resource(host_res, select_cpu_or_gpu);
+  RAJA::resources::Resource res = RAJA::Get_Host_Resource(host_res, select_cpu_or_gpu);
 #endif
 
   //How the kernel executes now depends on how the resource is constructed (host or device)
-  RAJA::expt::launch<launch_policy>
-    (res, RAJA::expt::Grid(RAJA::expt::Teams(GRID_SZ),
-                           RAJA::expt::Threads(TEAM_SZ),
-                           "Reduction Kernel"),
-     [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx)  {
-       RAJA::expt::loop<loop_pol>(ctx, arange, [&] (int i) {
+  RAJA::launch<launch_policy>
+    (res, RAJA::LaunchParams(RAJA::Teams(GRID_SZ),
+                                   RAJA::Threads(TEAM_SZ)),
+     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)  {
+       RAJA::loop<loop_pol>(ctx, arange, [&] (int i) {
 
            kernel_sum += a[i];
 

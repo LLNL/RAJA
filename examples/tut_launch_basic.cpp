@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
   // __compute_grid_end
 
   RAJA::launch<launch_policy>(select_cpu_or_gpu,
-    RAJA::ForallParams(RAJA::Teams(Nteams,Nteams),
+    RAJA::LaunchParams(RAJA::Teams(Nteams,Nteams),
                      RAJA::Threads(Nthreads,Nthreads)),
 
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
    });
 
   //Equivalent C style loops
-  if(select_cpu_or_gpu == RAJA::HOST) {
+  if(select_cpu_or_gpu == RAJA::ExecPlace::HOST) {
     // _c_style_loops_start
     for (int by=0; by<Nteams; ++by) {
       for (int bx=0; bx<Nteams; ++bx) {
@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-  if(select_cpu_or_gpu == RAJA::DEVICE)
+  if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE)
     gpuKernel<<<griddim, blockdim>>>();
   cudaDeviceSynchronize();
 #endif

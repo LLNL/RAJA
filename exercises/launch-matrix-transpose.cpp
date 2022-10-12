@@ -124,8 +124,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using loop_policy_seq = RAJA::LoopPolicy<RAJA::loop_exec>;
   using launch_policy_seq = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
-  RAJA::launch<launch_policy_seq>(
-    RAJA::LaunchParams, //Grid may be empty when running on the host
+  RAJA::launch<launch_policy_seq>
+   (RAJA::LaunchParams(), //Grid may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
       RAJA::loop<loop_policy_seq>(ctx, row_Range, [&] (int /*row*/) {
@@ -191,7 +191,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_cuda = RAJA::LaunchPolicy<RAJA::cuda_launch_t<async>>;
 
   RAJA::launch<launch_policy_cuda>(
-    RAJA::LaunchParams((RAJA::Teams(1), RAJA::Threads(16,16)),
+    RAJA::LaunchParams(RAJA::Teams(1), RAJA::Threads(16,16)),
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
       RAJA::loop<cuda_thread_y>(ctx, row_Range, [&] (int row) {

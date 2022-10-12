@@ -72,8 +72,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   constexpr int outer_Dimc = (N_c - 1) / TILE_DIM + 1;
   constexpr int outer_Dimr = (N_r - 1) / TILE_DIM + 1;
-
-  constexpr size_t dynamic_shared_mem = 0;
   // _tiled_mattranspose_dims_end
 
   //
@@ -171,7 +169,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_1 = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
   RAJA::launch<launch_policy_1>(
-    dynamic_shared_mem, RAJA::Grid(), //Grid may be empty when running on the cpu
+    RAJA::LaunchParams(), //Grid may be empty when running on the cpu
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext /*ctx*/) {
 
       /*
@@ -228,7 +226,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   /*
   RAJA::launch<launch_policy_2>(
-    dynamic_shared_mem, RAJA::Grid(), //Grid may be empty when running on the cpu
+     RAJA::LaunchParams(), //Grid may be empty when running on the cpu
      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
       RAJA::tile<omp_for_pol_2>(ctx, TILE_DIM, row_Range, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
@@ -285,7 +283,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 /*
   RAJA::launch<cuda_launch_policy>(
-    RAJA::Grid(RAJA::Teams(n_blocks_c, n_blocks_r),
+    RAJA::LaunchParams(RAJA::Teams(n_blocks_c, n_blocks_r),
                      RAJA::Threads(c_block_sz, r_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
@@ -344,9 +342,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using hip_launch_policy = RAJA::LaunchPolicy<RAJA::hip_launch_t<hip_async>>;
 
   RAJA::launch<hip_launch_policy>
-    (dynamic_shared_mem,
-    RAJA::Grid(RAJA::Teams(n_blocks_c, n_blocks_r),
-                     RAJA::Threads(c_block_sz, r_block_sz)),
+    (RAJA::LaunchParams(RAJA::Teams(n_blocks_c, n_blocks_r),
+                        RAJA::Threads(c_block_sz, r_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
       RAJA::tile<hip_teams_y>(ctx, TILE_DIM, row_Range2, [&] (RAJA::TypedRangeSegment<int> const &row_tile) {

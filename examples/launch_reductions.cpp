@@ -28,28 +28,28 @@
  */
 
 #if defined(RAJA_ENABLE_OPENMP)
-using host_launch = RAJA::expt::omp_launch_t;
+using host_launch = RAJA::omp_launch_t;
 using host_loop = RAJA::omp_for_exec;
 #else
-using host_launch = RAJA::expt::seq_launch_t;
+using host_launch = RAJA::seq_launch_t;
 using host_loop = RAJA::loop_exec;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using device_launch = RAJA::expt::cuda_launch_t<false>;
-using device_loop = RAJA::expt::cuda_global_thread_x;
+using device_launch = RAJA::cuda_launch_t<false>;
+using device_loop = RAJA::cuda_global_thread_x;
 #elif defined(RAJA_ENABLE_HIP)
-using device_launch = RAJA::expt::hip_launch_t<false>;
-using device_loop = RAJA::expt::hip_global_thread_x;
+using device_launch = RAJA::hip_launch_t<false>;
+using device_loop = RAJA::hip_global_thread_x;
 #endif
 
-using launch_policy = RAJA::expt::LaunchPolicy<host_launch
+using launch_policy = RAJA::LaunchPolicy<host_launch
 #if defined(RAJA_DEVICE_ACTIVE)
                                                ,device_launch
 #endif
                                                >;
 
-using loop_pol = RAJA::expt::LoopPolicy<host_loop
+using loop_pol = RAJA::LoopPolicy<host_loop
 #if defined(RAJA_DEVICE_ACTIVE)
                                         ,device_loop
 #endif
@@ -84,11 +84,11 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  RAJA::expt::ExecPlace select_cpu_or_gpu;
+  RAJA::ExecPlace select_cpu_or_gpu;
   if(exec_space.compare("host") == 0)
-    { select_cpu_or_gpu = RAJA::expt::HOST; printf("Running RAJA-Launch reductions example on the host \n"); }
+    { select_cpu_or_gpu = RAJA::ExecPlace::HOST; printf("Running RAJA-Launch reductions example on the host \n"); }
   if(exec_space.compare("device") == 0)
-    { select_cpu_or_gpu = RAJA::expt::DEVICE; printf("Running RAJA-Launch reductions example on the device \n"); }
+    { select_cpu_or_gpu = RAJA::ExecPlace::DEVICE; printf("Running RAJA-Launch reductions example on the device \n"); }
 
   // _reductions_array_init_start
 //
@@ -149,15 +149,15 @@ int main(int argc, char *argv[])
   const int TEAM_SZ = 256;
   const int GRID_SZ = RAJA_DIVIDE_CEILING_INT(N,TEAM_SZ);
 
-  RAJA::expt::launch<launch_policy>
+  RAJA::launch<launch_policy>
     (select_cpu_or_gpu,
-     RAJA::expt::Grid(RAJA::expt::Teams(GRID_SZ),
-                           RAJA::expt::Threads(TEAM_SZ),
-                           "Reduction Kernel"),
-     [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) 
+     RAJA::LaunchParams(RAJA::Teams(GRID_SZ),
+                        RAJA::Threads(TEAM_SZ)),
+     "Launch Reductions",
+     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) 
      {
 
-       RAJA::expt::loop<loop_pol>(ctx, arange, [&] (int i) {
+       RAJA::loop<loop_pol>(ctx, arange, [&] (int i) {
            
            kernel_sum += a[i];
            
