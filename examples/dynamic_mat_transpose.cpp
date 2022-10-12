@@ -101,7 +101,12 @@ using outer0 = RAJA::LoopPolicy<
                                        >;
 
 using outer1 = RAJA::LoopPolicy<
+#if defined(RAJA_ENABLE_OPENMP)
+                                       RAJA::omp_for_exec
+#else
+                                       ,
                                        RAJA::loop_exec
+#endif
 #if defined(RAJA_ENABLE_CUDA)
                                        ,
                                        RAJA::cuda_block_y_direct
@@ -322,7 +327,8 @@ int main(int argc, char *argv[])
   constexpr size_t dynamic_shared_mem_size = TILE_DIM * TILE_DIM * sizeof(int);
 
   RAJA::launch<launch_policy>
-     (RAJA::LaunchParams(RAJA::Teams(outer_Dimr, outer_Dimc), //either teams or blocks works
+    (select_cpu_or_gpu,
+     RAJA::LaunchParams(RAJA::Teams(outer_Dimr, outer_Dimc), //either teams or blocks works
                         RAJA::Threads(TILE_DIM, TILE_DIM),
                         dynamic_shared_mem_size),
      //Extend to pealing argument capabilities like forall for new reducers

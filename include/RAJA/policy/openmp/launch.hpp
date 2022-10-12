@@ -30,40 +30,41 @@ struct LaunchExecute<RAJA::omp_launch_t> {
 
 
   template <typename BODY>
-  static void exec(const size_t shared_mem, LaunchContext const &ctx, BODY const &body)
+  static void exec(LaunchParams const &params, const char *RAJA_UNUSED_ARG(kernel_name), BODY const &body)
   {
     RAJA::region<RAJA::omp_parallel_region>([&]() {
 
+        LaunchContext ctx;
+
         using RAJA::internal::thread_privatize;
         auto loop_body = thread_privatize(body);
-        auto my_ctx = thread_privatize(ctx);
-        char *kernel_local_mem = new char[shared_mem];
 
-        my_ctx.get_priv().shared_mem_ptr = kernel_local_mem;
+        char *kernel_local_mem = (char*) malloc(params.shared_mem_size);
 
-        loop_body.get_priv()(my_ctx.get_priv());
+        loop_body.get_priv()(ctx);
 
-        delete[] kernel_local_mem;
-        my_ctx.get_priv().shared_mem_ptr = nullptr;
+        free(kernel_local_mem);
+        ctx.shared_mem_ptr = nullptr;
     });
   }
 
   template <typename BODY>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, const size_t shared_mem, LaunchContext const &ctx, BODY const &body)
+  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *RAJA_UNUSED_ARG(kernel_name), BODY const &body)
   {
     RAJA::region<RAJA::omp_parallel_region>([&]() {
+
+        LaunchContext ctx;
+
         using RAJA::internal::thread_privatize;
         auto loop_body = thread_privatize(body);
-        auto my_ctx = thread_privatize(ctx);
-        char *kernel_local_mem = new char[shared_mem];
 
-        my_ctx.get_priv().shared_mem_ptr = kernel_local_mem;
+        char *kernel_local_mem = (char*) malloc(params.shared_mem_size);
 
-        loop_body.get_priv()(my_ctx.get_priv());
+        loop_body.get_priv()(ctx);
 
-        delete[] kernel_local_mem;
-        my_ctx.get_priv().shared_mem_ptr = nullptr;
+        free(kernel_local_mem);
+        ctx.shared_mem_ptr = nullptr;
     });
 
     return resources::EventProxy<resources::Resource>(res);
