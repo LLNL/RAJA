@@ -229,13 +229,13 @@ template <typename POLICY_LIST, typename BODY>
 void launch(ExecPlace place, size_t shared_mem, Grid const &grid, BODY const &body)
 {
   switch (place) {
-    case HOST: {
+    case ExecPlace::HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
       launch_t::exec(shared_mem, LaunchContext(grid), body);
       break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
-    case DEVICE: {
+  case ExecPlace::DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
       launch_t::exec(shared_mem, LaunchContext(grid), body);
       break;
@@ -250,13 +250,13 @@ void launch(ExecPlace place, size_t shared_mem, Grid const &grid, BODY const &bo
 #if defined(RAJA_DEVICE_ACTIVE)
 template<typename T, typename U>
 RAJA::resources::Resource Get_Runtime_Resource(T host_res, U device_res, RAJA::ExecPlace device){
-  if(device == RAJA::DEVICE) {return RAJA::resources::Resource(device_res);}
+  if(device == RAJA::ExecPlace::DEVICE) {return RAJA::resources::Resource(device_res);}
   else { return RAJA::resources::Resource(host_res); }
 }
 #else
 template<typename T>
 RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::ExecPlace device){
-  if(device == RAJA::DEVICE) {RAJA_ABORT_OR_THROW("Device is not enabled");}
+  if(device == RAJA::ExecPlace::DEVICE) {RAJA_ABORT_OR_THROW("Device is not enabled");}
 
   return RAJA::resources::Resource(host_res);
 }
@@ -271,18 +271,18 @@ launch(RAJA::resources::Resource res, size_t shared_mem, Grid const &grid, BODY 
 
   ExecPlace place;
   if(res.get_platform() == camp::resources::v1::Platform::host) {
-    place = RAJA::HOST;
+    place = RAJA::ExecPlace::HOST;
   }else{
-    place = RAJA::DEVICE;
+    place = RAJA::ExecPlace::DEVICE;
   }
 
   switch (place) {
-    case HOST: {
+    case ExecPlace::HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
       return launch_t::exec(res, shared_mem, LaunchContext(grid), body); break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
-    case DEVICE: {
+    case ExecPlace::DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
       return launch_t::exec(res, shared_mem, LaunchContext(grid), body); break;
     }
