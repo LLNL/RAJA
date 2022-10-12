@@ -241,7 +241,7 @@ static_assert(RAJA_HAS_SOME_CXX14,
 
 namespace RAJA {
 
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP) && !defined(__HIP_DEVICE_COMPILE__)
 #if defined(_OPENMP)
 #if _OPENMP >= 200805
 #define RAJA_ENABLE_OPENMP_TASK
