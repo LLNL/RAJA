@@ -115,7 +115,7 @@ due to the ``RAJA::cuda_thread_{x, y}_direct`` policies.
 ``RAJA::launch`` Variants
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For ``RAJA::exp::launch`` variants, we use ``RAJA::tile`` methods
+For ``RAJA::launch`` variants, we use ``RAJA::tile`` methods
 for the outer loop tiling and ``RAJA::loop`` methods
 to iterate within the tiles. The complete sequential tiled 
 ``RAJA::launch`` variant is:
