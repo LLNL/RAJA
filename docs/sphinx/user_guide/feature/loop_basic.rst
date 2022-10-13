@@ -22,8 +22,8 @@ the ``RAJA::loop`` method.
 
 .. note:: The ``forall`` ,  ``kernel``, and ``launch`` methods are in the ``RAJA``
           namespace, while ``dynamic_forall`` is in the RAJA namespace for
-          experimental features ``RAJA``.  ``RAJA::launch``
-          and ``RAJA::expt::dynamic_forall`` will be moved to the ``RAJA`` namespace in a future RAJA release.
+          experimental features ``RAJA``.  ``RAJA::expt::dynamic_forall``
+          will be moved to the ``RAJA`` namespace in a future RAJA release.
 
 For more information on RAJA execution policies and iteration space constructs,
 see :ref:`feat-policies-label` and :ref:`feat-index-label`, respectively.
