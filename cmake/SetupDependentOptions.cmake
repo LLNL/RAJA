@@ -9,7 +9,7 @@
 ## Here are the CMake dependent options in RAJA.
 ##
 
-set(RAJA_DEPENDENT_OPTIONS ENABLE_OPENMP ENABLE_CUDA ENABLE_HIP ENABLE_CLANG_CUDA ENABLE_COVERAGE ENABLE_TESTS ENABLE_EXAMPLES ENABLE_BENCHMARKS ENABLE_VECTORIZATION)
+set(RAJA_DEPENDENT_OPTIONS ENABLE_OPENMP ENABLE_CUDA ENABLE_HIP ENABLE_CLANG_CUDA ENABLE_COVERAGE ENABLE_TESTS ENABLE_EXAMPLES ENABLE_BENCHMARKS)
 foreach (option ${RAJA_DEPENDENT_OPTIONS})
    if (${RAJA_${option}})
       if (NOT ${option})
@@ -47,4 +47,3 @@ cmake_dependent_option(RAJA_ENABLE_COVERAGE "Enable coverage (only supported wit
 cmake_dependent_option(RAJA_ENABLE_TESTS "Build tests" On "ENABLE_TESTS" Off)
 cmake_dependent_option(RAJA_ENABLE_EXAMPLES "Build simple examples" On "ENABLE_EXAMPLES" off)
 cmake_dependent_option(RAJA_ENABLE_BENCHMARKS "Build benchmarks" On "ENABLE_BENCHMARKS" Off)
-cmake_dependent_option(RAJA_ENABLE_VECTORIZATION "Build with vectorization API" On "ENABLE_VECTORIZATION" Off)
