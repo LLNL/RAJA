@@ -45,13 +45,11 @@ struct LaunchExecute<RAJA::seq_launch_t> {
   {
     LaunchContext ctx;
 
-    char *kernel_local_mem = new char[params.shared_mem_size];
-
-    ctx.shared_mem_ptr = kernel_local_mem;
+    ctx.shared_mem_ptr = (char*) malloc(params.shared_mem_size);
 
     body(ctx);
 
-    delete[] kernel_local_mem;
+    free(ctx.shared_mem_ptr);
     ctx.shared_mem_ptr = nullptr;
   }
 

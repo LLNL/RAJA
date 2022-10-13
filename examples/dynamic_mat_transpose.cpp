@@ -102,7 +102,7 @@ using outer0 = RAJA::LoopPolicy<
 
 using outer1 = RAJA::LoopPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
-                                       RAJA::omp_for_exec
+                                      RAJA::omp_for_exec
 #else
                                        RAJA::loop_exec
 #endif
@@ -124,12 +124,7 @@ using outer1 = RAJA::LoopPolicy<
  * Up to 3 dimension are supported: x,y,z
  */
 using inner0 = RAJA::LoopPolicy<
-#if defined(RAJA_ENABLE_OPENMP)
-                                         RAJA::omp_for_exec
-#else
                                          RAJA::loop_exec
-#endif
-
 #if defined(RAJA_ENABLE_CUDA)
                                          ,
                                          RAJA::cuda_thread_x_direct

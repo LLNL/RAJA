@@ -150,29 +150,22 @@ private:
   Threads apply(Threads const &a) { return (threads = a); }
 };
 
-  //TODO
-  //Pass through and do not build LaunchContext from Grid
-  //See if we can build launch context on the device to avoid mutable
-class LaunchContext //: public Grid
+class LaunchContext
 {
 public:
 
-  mutable size_t shared_mem_offset;
+  //Bump style allocator used to
+  //get memory from the pool
+  size_t shared_mem_offset;
 
-  //pointer to dynamically allocated shared memory
-  mutable void *shared_mem_ptr;
+  void *shared_mem_ptr;
 
 #if defined(RAJA_ENABLE_SYCL)
   mutable cl::sycl::nd_item<3> *itm;
 #endif
 
-  //LaunchContext(Grid const &base)
-  //: Grid(base), shared_mem_offset(0)
-  //{
-  //}
-
   RAJA_HOST_DEVICE LaunchContext()
-    : shared_mem_offset(0)
+    : shared_mem_offset(0), shared_mem_ptr(nullptr)
   {
   }
 
@@ -197,10 +190,8 @@ public:
 
   RAJA_HOST_DEVICE void releaseSharedMemory()
   {
-    //on the cpu/gpu we want to restart the count
-    //#if !defined(RAJA_DEVICE_CODE)
+    //On the cpu/gpu we want to restart the count
     shared_mem_offset = 0;
-  //#endif
   }
 
   RAJA_HOST_DEVICE
