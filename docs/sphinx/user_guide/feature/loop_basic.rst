@@ -20,8 +20,8 @@ kernels and transformations, and ``RAJA::launch`` creates an execution
 space in which kernels are written in terms of nested loops using
 the ``RAJA::loop`` method.
 
-.. note:: The ``forall`` , and ``kernel`` methods are in the ``RAJA``
-          namespace, while ``dynamic_forall`` and ``launch`` are in the RAJA namespace for
+.. note:: The ``forall`` ,  ``kernel``, and ``launch`` methods are in the ``RAJA``
+          namespace, while ``dynamic_forall`` is in the RAJA namespace for
           experimental features ``RAJA``.  ``RAJA::launch``
           and ``RAJA::expt::dynamic_forall`` will be moved to the ``RAJA`` namespace in a future RAJA release.
 
