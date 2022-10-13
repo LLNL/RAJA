@@ -293,10 +293,6 @@ The ``RAJA::launch`` template is an alternative interface to
 ``RAJA::kernel`` that may be preferred for certain types of complex kernels
 or based on coding style preferences.
 
-.. note:: ``RAJA::launch`` will be moved out of the ``expt`` namespace
-          in a future RAJA release, after which it will appear as
-          ``RAJA::launch``.
-
 ``RAJA::launch`` optionally allows either host or device execution
 to be chosen at run time. The method takes an execution policy type that
 will define the execution environment inside a lambda expression for a kernel
