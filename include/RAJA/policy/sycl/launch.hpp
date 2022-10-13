@@ -34,7 +34,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
   //If the launch lambda is trivially copyable
   template <typename BODY_IN,
 	    typename std::enable_if<std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
-  static void exec(size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
+  static void exec(const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)	      
   {
 
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
@@ -47,30 +47,31 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
       q = sycl_res.get_queue();
     }
 
-    const ::sycl::range<3> blockSize(ctx.threads.value[0],
-				     ctx.threads.value[1],
-				     ctx.threads.value[2]);
+    const ::sycl::range<3> blockSize(params.threads.value[0],
+				     params.threads.value[1],
+				     params.threads.value[2]);
 
-    const ::sycl::range<3> gridSize(ctx.threads.value[0] * ctx.teams.value[0],
-				    ctx.threads.value[1] * ctx.teams.value[1],
-				    ctx.threads.value[2] * ctx.teams.value[2]);
+    const ::sycl::range<3> gridSize(params.threads.value[0] * params.teams.value[0],
+				    params.threads.value[1] * params.teams.value[1],
+				    params.threads.value[2] * params.teams.value[2]);
 
         // Only launch kernel if we have something to iterate over
     constexpr size_t zero = 0;
-    if ( ctx.threads.value[0]  > zero && ctx.threads.value[1]  > zero && ctx.threads.value[2] > zero &&
-         ctx.teams.value[0] > zero && ctx.teams.value[1] > zero && ctx.teams.value[2]> zero ) {
+    if ( params.threads.value[0]  > zero && params.threads.value[1]  > zero && params.threads.value[2] > zero &&
+         params.teams.value[0] > zero && params.teams.value[1] > zero && params.teams.value[2]> zero ) {
 
       RAJA_FT_BEGIN
 
       q->submit([&](cl::sycl::handler& h) {
 
         auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
-                                        cl::sycl::access::target::local> (shared_mem_size, h);
+                                        cl::sycl::access::target::local> (params.shared_mem_size, h);
 
         h.parallel_for
           (cl::sycl::nd_range<3>(gridSize, blockSize),
            [=] (cl::sycl::nd_item<3> itm) {
 
+	     LaunchContext ctx;	     
              ctx.itm = &itm;
 
              //Point to shared memory
@@ -91,7 +92,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
   //If the launch lambda is not trivially copyable
   template <typename BODY_IN,
 	    typename std::enable_if<!std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
-  static void exec(size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
+  static void exec(const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)
   {
 
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
@@ -104,20 +105,18 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
       q = sycl_res.get_queue();
     }
 
-    const ::sycl::range<3> blockSize(ctx.threads.value[0],
-				     ctx.threads.value[1],
-				     ctx.threads.value[2]);
+    const ::sycl::range<3> blockSize(params.threads.value[0],
+				     params.threads.value[1],
+				     params.threads.value[2]);
 
-    const ::sycl::range<3> gridSize(ctx.threads.value[0] * ctx.teams.value[0],
-				    ctx.threads.value[1] * ctx.teams.value[1],
-				    ctx.threads.value[2] * ctx.teams.value[2]);
-
-    std::cout<<"Lambda is not trivially copyable"<<std::endl;
+    const ::sycl::range<3> gridSize(params.threads.value[0] * params.teams.value[0],
+				    params.threads.value[1] * params.teams.value[1],
+				    params.threads.value[2] * params.teams.value[2]);
 
     // Only launch kernel if we have something to iterate over
     constexpr size_t zero = 0;
-    if ( ctx.threads.value[0]  > zero && ctx.threads.value[1]  > zero && ctx.threads.value[2] > zero &&
-         ctx.teams.value[0] > zero && ctx.teams.value[1] > zero && ctx.teams.value[2]> zero ) {
+    if ( params.threads.value[0]  > zero && params.threads.value[1]  > zero && params.threads.value[2] > zero &&
+         params.teams.value[0] > zero && params.teams.value[1] > zero && params.teams.value[2]> zero ) {
 
       RAJA_FT_BEGIN
 
@@ -133,12 +132,13 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
       q->submit([&](cl::sycl::handler& h) {
 
 	  auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
-					  cl::sycl::access::target::local> (shared_mem_size, h);
+					  cl::sycl::access::target::local> (params.shared_mem_size, h);
 
         h.parallel_for
           (cl::sycl::nd_range<3>(gridSize, blockSize),
            [=] (cl::sycl::nd_item<3> itm) {
 
+   	    LaunchContext ctx;
 	    ctx.itm = &itm;
 
 	    //Point to shared memory
@@ -162,7 +162,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
   template <typename BODY_IN,
 	    typename std::enable_if<std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
+  exec(RAJA::resources::Resource res, const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)
   {
 
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
@@ -180,30 +180,31 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
     // Compute the number of blocks and threads
     //
 
-    const ::sycl::range<3> blockSize(ctx.threads.value[0],
-				     ctx.threads.value[1],
-				     ctx.threads.value[2]);
+    const ::sycl::range<3> blockSize(params.threads.value[0],
+				     params.threads.value[1],
+				     params.threads.value[2]);
 
-    const ::sycl::range<3> gridSize(ctx.threads.value[0] * ctx.teams.value[0],
-				    ctx.threads.value[1] * ctx.teams.value[1],
-				    ctx.threads.value[2] * ctx.teams.value[2]);
+    const ::sycl::range<3> gridSize(params.threads.value[0] * params.teams.value[0],
+				    params.threads.value[1] * params.teams.value[1],
+				    params.threads.value[2] * params.teams.value[2]);
 
     // Only launch kernel if we have something to iterate over
     constexpr size_t zero = 0;
-    if ( ctx.threads.value[0]  > zero && ctx.threads.value[1]  > zero && ctx.threads.value[2] > zero &&
-         ctx.teams.value[0] > zero && ctx.teams.value[1] > zero && ctx.teams.value[2]> zero ) {
+    if ( params.threads.value[0]  > zero && params.threads.value[1]  > zero && params.threads.value[2] > zero &&
+         params.teams.value[0] > zero && params.teams.value[1] > zero && params.teams.value[2]> zero ) {
 
       RAJA_FT_BEGIN;
 
       q->submit([&](cl::sycl::handler& h) {
 
         auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
-                                        cl::sycl::access::target::local> (shared_mem_size, h);
+                                        cl::sycl::access::target::local> (params.shared_mem_size, h);
 
         h.parallel_for
           (cl::sycl::nd_range<3>(gridSize, blockSize),
            [=] (cl::sycl::nd_item<3> itm) {
 
+ 	     LaunchContext ctx;
              ctx.itm = &itm;
 
              //Point to shared memory
@@ -226,7 +227,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
   template <typename BODY_IN,
 	    typename std::enable_if<!std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, size_t shared_mem_size, LaunchContext const &ctx, BODY_IN &&body_in)
+  exec(RAJA::resources::Resource res, const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)
   {
 
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
@@ -244,18 +245,18 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
     // Compute the number of blocks and threads
     //
 
-    const ::sycl::range<3> blockSize(ctx.threads.value[0],
-				     ctx.threads.value[1],
-				     ctx.threads.value[2]);
+    const ::sycl::range<3> blockSize(params.threads.value[0],
+				     params.threads.value[1],
+				     params.threads.value[2]);
 
-    const ::sycl::range<3> gridSize(ctx.threads.value[0] * ctx.teams.value[0],
-				    ctx.threads.value[1] * ctx.teams.value[1],
-				    ctx.threads.value[2] * ctx.teams.value[2]);
+    const ::sycl::range<3> gridSize(params.threads.value[0] * params.teams.value[0],
+				    params.threads.value[1] * params.teams.value[1],
+				    params.threads.value[2] * params.teams.value[2]);
 
     // Only launch kernel if we have something to iterate over
     constexpr size_t zero = 0;
-    if ( ctx.threads.value[0]  > zero && ctx.threads.value[1]  > zero && ctx.threads.value[2] > zero &&
-         ctx.teams.value[0] > zero && ctx.teams.value[1] > zero && ctx.teams.value[2]> zero ) {
+    if ( params.threads.value[0]  > zero && params.threads.value[1]  > zero && params.threads.value[2] > zero &&
+         params.teams.value[0] > zero && params.teams.value[1] > zero && params.teams.value[2]> zero ) {
 
       RAJA_FT_BEGIN;
 
@@ -273,12 +274,13 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
       q->submit([&](cl::sycl::handler& h) {
 
         auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
-                                        cl::sycl::access::target::local> (shared_mem_size, h);
+                                        cl::sycl::access::target::local> (params.shared_mem_size, h);
 
         h.parallel_for
           (cl::sycl::nd_range<3>(gridSize, blockSize),
            [=] (cl::sycl::nd_item<3> itm) {
 
+	     LaunchContext ctx;
              ctx.itm = &itm;
 
              //Point to shared memory
