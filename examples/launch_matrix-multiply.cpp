@@ -76,42 +76,42 @@ using gpu_global_thread_xy_policy = RAJA::hip_global_thread_xy;
   a device policy.
 */
 using teams_x = RAJA::LoopPolicy<loop_policy
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
                                        ,
                                        gpu_block_x_policy
 #endif
                                        >;
 
 using teams_y = RAJA::LoopPolicy<loop_policy
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
                                        ,
                                        gpu_block_y_policy
 #endif
                                        >;
 
 using threads_x = RAJA::LoopPolicy<loop_policy
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
                                        ,
                                        gpu_thread_x_policy
 #endif
                                        >;
 
 using threads_y = RAJA::LoopPolicy<loop_policy
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
                                        ,
                                        gpu_thread_y_policy
 #endif
                                        >;
 
 using global_thread_x = RAJA::LoopPolicy<loop_policy
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
                                        ,
                                        gpu_global_thread_x_policy
 #endif
                                        >;
 
 using global_thread_y = RAJA::LoopPolicy<loop_policy
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
                                        ,
                                        gpu_global_thread_y_policy
 #endif

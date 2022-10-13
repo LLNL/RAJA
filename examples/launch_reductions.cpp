@@ -44,13 +44,13 @@ using device_loop = RAJA::hip_global_thread_x;
 #endif
 
 using launch_policy = RAJA::LaunchPolicy<host_launch
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
                                                ,device_launch
 #endif
                                                >;
 
 using loop_pol = RAJA::LoopPolicy<host_loop
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
                                         ,device_loop
 #endif
                                         >;

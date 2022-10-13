@@ -266,7 +266,7 @@ void launch(ExecPlace place, const LaunchParams &params, const char *kernel_name
 }
 
 // Helper function to retrieve a resource based on the run-time policy - if a device is active
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 template<typename T, typename U>
 RAJA::resources::Resource Get_Runtime_Resource(T host_res, U device_res, RAJA::ExecPlace device){
   if(device == RAJA::ExecPlace::DEVICE) {return RAJA::resources::Resource(device_res);}
