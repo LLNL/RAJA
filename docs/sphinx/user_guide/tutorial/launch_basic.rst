@@ -24,10 +24,8 @@ Key RAJA features shown in the following examples are:
     in terms of nested for loops.
 
 In this example, we introduce the RAJA Launch framework and discuss
-hierarchical loop-based parallelism. The RAJA Launch API currently lives
-under the RAJA experimental namespace, ``RAJA::expt``, and will be
-promoted to the standard RAJA namespace in the next release.
-Kernel execution details with RAJA Launch occur inside the lambda expression
+hierarchical loop-based parallelism. Kernel execution details 
+with RAJA Launch occur inside the lambda expression
 passed to the ``RAJA::launch`` method, which defines an execution
 space::
 
