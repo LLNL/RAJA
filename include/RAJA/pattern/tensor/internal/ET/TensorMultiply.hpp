@@ -49,6 +49,9 @@ namespace expt
         using right_operand_type = RIGHT_OPERAND_TYPE;
         using multiply_op = MultiplyOperator<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE>;
 
+        using element_type = typename LEFT_OPERAND_TYPE::element_type;
+        using index_type = typename LEFT_OPERAND_TYPE::index_type;
+
         using result_type = typename multiply_op::result_type;
         static constexpr camp::idx_t s_num_dims = multiply_op::s_num_dims;
 
