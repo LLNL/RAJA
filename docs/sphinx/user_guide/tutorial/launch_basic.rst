@@ -9,7 +9,7 @@
 .. _tut-launchintro-label:
 
 ------------------------------
-``RAJA::expt::Launch`` Basics
+``RAJA::Launch`` Basics
 ------------------------------
 
 There are no exercise files to work through for this section. Instead, there
@@ -18,9 +18,9 @@ contains complete code examples of the concepts described here.
 
 Key RAJA features shown in the following examples are:
 
-  * ``RAJA::expt::launch`` method to create a run-time
+  * ``RAJA::launch`` method to create a run-time
     selectable host/device execution space.
-  * ``RAJA::expt::loop`` methods to express algorithms
+  * ``RAJA::loop`` methods to express algorithms
     in terms of nested for loops.
 
 In this example, we introduce the RAJA Launch framework and discuss
@@ -28,42 +28,42 @@ hierarchical loop-based parallelism. The RAJA Launch API currently lives
 under the RAJA experimental namespace, ``RAJA::expt``, and will be
 promoted to the standard RAJA namespace in the next release.
 Kernel execution details with RAJA Launch occur inside the lambda expression
-passed to the ``RAJA::expt::launch`` method, which defines an execution
+passed to the ``RAJA::launch`` method, which defines an execution
 space::
 
-  RAJA::expt::launch<launch_policy>(RAJA::expt::ExecPlace ,
-  RAJA::expt::Grid(RAJA::expt::Teams(Nteams,Nteams),
-                        RAJA::expt::Threads(Nthreads,Nthreads)),
-  [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+  RAJA::launch<launch_policy>(RAJA::ExecPlace ,
+  RAJA::LaunchParams(RAJA::Teams(Nteams,Nteams),
+                        RAJA::Threads(Nthreads,Nthreads)),
+  [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
     /* Kernel code goes here */
 
   });
 
-The ``RAJA::expt::launch`` method accepts a ``RAJA::expt::LaunchPolicy``
+The ``RAJA::launch`` method accepts a ``RAJA::LaunchPolicy``
 template parameter that can be defined using up to two policies 
 (host and device). For example, the following creates an execution space 
 for a sequential and CUDA kernel dispatch::
 
-  using launch_policy = RAJA::expt::LaunchPolicy
-    <RAJA::expt::seq_launch_t, RAJA::expt::cuda_launch_t<false>>;
+  using launch_policy = RAJA::LaunchPolicy
+    <RAJA::seq_launch_t, RAJA::cuda_launch_t<false>>;
 
 Whether a kernel executes on the host or device is determined by the first 
-argument passed to the ``RAJA::expt::launch`` method, which is a 
-``RAJA::expt::ExecPlace`` enum value, either ``HOST`` or ``DEVICE``.
+argument passed to the ``RAJA::launch`` method, which is a 
+``RAJA::ExecPlace`` enum value, either ``HOST`` or ``DEVICE``.
 Similar to GPU thread and block programming models, RAJA Launch carries out
 computation in a predefined compute grid made up of threads which are
 then grouped into teams when executing on the device. The execution space is 
 then enclosed by a host/device lambda which takes a 
-``RAJA::expt::LaunchContext`` object, which may be used to control the flow 
+``RAJA::LaunchContext`` object, which may be used to control the flow 
 within the kernel, for example by creating thread-team synchronization points.
 
 Inside the execution space, developers write a kernel using nested
-``RAJA::expt::loop`` methods. The manner in which each loop is executed 
+``RAJA::loop`` methods. The manner in which each loop is executed 
 is determined by a template parameter type, which
 indicates how the corresponding iterates are mapped to the Teams/Threads
-configuration defined by the ``RAJA::expt::Grid`` type passed as the second
-argument to the ``RAJA::expt::launch`` method. Following the CUDA and HIP 
+configuration defined by the ``RAJA::LaunchParams`` type passed as the second
+argument to the ``RAJA::launch`` method. Following the CUDA and HIP 
 programming models this defines an hierarchical structure in which outer loops 
 are executed by thread-teams and inner loops are executed by threads in a team.
 
@@ -73,15 +73,15 @@ are executed by thread-teams and inner loops are executed by threads in a team.
    :language: C++
 
 The mapping between teams and threads to the underlying programming 
-model depends on how the ``RAJA::expt::loop`` template parameter types are
+model depends on how the ``RAJA::loop`` template parameter types are
 defined. For example, we may define host and device mapping strategies as::
 
-  using teams_x = RAJA::expt::LoopPolicy<RAJA::loop_exec,
+  using teams_x = RAJA::LoopPolicy<RAJA::loop_exec,
                                          RAJA::cuda_block_x_direct>;
-  using thread_x = RAJA::expt::LoopPolicy<RAJA::loop_exec,
+  using thread_x = RAJA::LoopPolicy<RAJA::loop_exec,
                                           RAJA::cuda_block_x_direct>;
 
-Here, the ``RAJA::expt::LoopPolicy`` type holds both the host (CPU) and 
+Here, the ``RAJA::LoopPolicy`` type holds both the host (CPU) and 
 device (CUDA GPU) loop mapping strategies. On the host, both the team/thread 
 strategies expand out to standard C-style loops for execution:
 

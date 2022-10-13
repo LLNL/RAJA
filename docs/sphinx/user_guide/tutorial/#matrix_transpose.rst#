@@ -14,9 +14,9 @@ Matrix Transpose
 
 In :ref:`tut-kernelexecpols-label` and :ref:`tut-launchexecpols-label`,
 we presented a simple array initialization kernel using ``RAJA::kernel`` and 
-``RAJA::launch`` interfaces, respectively, and compared the two. This 
+``RAJA ::launch`` interfaces, respectively, and compared the two. This 
 section describes the implementation of a matrix transpose kernel using both 
-``RAJA::kernel`` and ``RAJA::launch`` interfaces. The intent is to 
+``RAJA::kernel`` and ``RAJA ::launch`` interfaces. The intent is to 
 compare and contrast the two, as well as introduce additional features of the 
 interfaces.
 
@@ -34,7 +34,7 @@ from the build directory.
 Key RAJA features shown in this example are:
 
   * ``RAJA::kernel`` method and kernel execution policies
-  * ``RAJA::launch`` method and kernel execution interface
+  * ``RAJA ::launch`` method and kernel execution interface
 
 In the example, we compute the transpose of an input matrix
 :math:`A` of size :math:`N_r \times N_c` and store the result in a second
@@ -93,31 +93,31 @@ and number of blocks to launch is determined by the implementation of the
 ``RAJA::TypedRangeSegment`` objects in the iteration space tuple.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-``RAJA::launch`` Implementation
+``RAJA ::launch`` Implementation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For ``RAJA::launch`` variants, we use ``RAJA::loop`` methods 
+For ``RAJA ::launch`` variants, we use ``RAJA ::loop`` methods 
 to write a loop hierarchy within the kernel execution space. For a sequential 
-implementation, we pass the ``RAJA::seq_launch_t`` template parameter
+implementation, we pass the ``RAJA ::seq_launch_t`` template parameter
 to the launch method and pass the ``RAJA::loop_exec`` parameter to the loop 
-methods. The complete sequential ``RAJA::launch`` variant is:
+methods. The complete sequential ``RAJA ::launch`` variant is:
 
 .. literalinclude:: ../../../../exercises/launch-matrix-transpose_solution.cpp
    :start-after: // _raja_mattranspose_start
    :end-before: // _raja_mattranspose_end
    :language: C++
 
-A CUDA ``RAJA::launch`` variant for the GPU is similar with different 
-policies in the ``RAJA::loop`` methods. The complete 
-``RAJA::launch`` variant is:
+A CUDA ``RAJA ::launch`` variant for the GPU is similar with different 
+policies in the ``RAJA ::loop`` methods. The complete 
+``RAJA ::launch`` variant is:
 
 .. literalinclude:: ../../../../exercises/launch-matrix-transpose_solution.cpp
    :start-after: // _raja_mattranspose_cuda_start
    :end-before: // _raja_mattranspose_cuda_end
    :language: C++
 
-A notable difference between the CPU and GPU ``RAJA::launch`` 
+A notable difference between the CPU and GPU ``RAJA ::launch`` 
 implementations is the definition of the compute grid. For the CPU
-version, the argument list is empty for the ``RAJA::LaunchParams`` constructor.
+version, the argument list is empty for the ``RAJA ::Grid`` constructor.
 For the CUDA GPU implementation, we define a 'Team' of one two-dimensional 
 thread-block with 16 x 16 = 256 threads.
