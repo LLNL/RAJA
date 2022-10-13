@@ -84,22 +84,6 @@ namespace internal
      * returns -1 if none of the arguments are VectorIndexs
      */
 
-    template<typename TYPE>
-    struct TensorIdxNonstatic {
-        using type = TYPE;
-    };
-
-    template<typename INNER_TYPE>
-    struct TensorIdxNonstatic<RAJA::expt::StaticTensorIndex<INNER_TYPE>> {
-        using type = typename RAJA::expt::StaticTensorIndex<INNER_TYPE>::base_type;
-    };
-
-    template<typename TYPE>
-    typename TensorIdxNonstatic<TYPE>::type
-    idx_nonstatic(TYPE arg){
-        return (typename TensorIdxNonstatic<TYPE>::type) arg;
-    }
-
     template<camp::idx_t DIM, typename ARGS, typename IDX_SEQ>
     struct GetTensorArgIdxExpanded;
 
@@ -131,11 +115,6 @@ namespace internal
 #endif
   };
   
-  template<>
-  struct count_num_tensor_args<> {
-    static constexpr camp::idx_t value = 0;
-  };
-
 #if defined(RAJA_ENABLE_VECTORIZATION)
   /*
    * Returns which argument has a vector index
@@ -181,29 +160,6 @@ namespace internal
 
 
   namespace detail {
-
-
-  template<typename LEFT, typename RIGHT>
-  struct seq_cat;
-
-  template<typename LinIdx, LinIdx... LEFT, LinIdx... RIGHT>
-  struct seq_cat<camp::int_seq<LinIdx,LEFT...>,camp::int_seq<LinIdx,RIGHT...>> {
-      using Type = camp::int_seq<LinIdx,LEFT...,RIGHT...>;
-  };
-
-
-  template<typename LinIdx, LinIdx VALUE, size_t SIZE>
-  struct seq_fill {
-      using Tail = typename seq_fill<LinIdx, VALUE, SIZE-1>::Type;
-      using Type = typename seq_cat<camp::int_seq<LinIdx,VALUE>,Tail>::Type;
-  };
-
-
-  template<typename LinIdx, LinIdx VALUE>
-  struct seq_fill<LinIdx,VALUE,0> {
-      using Type = camp::int_seq<LinIdx>;
-  };
-
 
   /*!
    * Provides conversion of view data to a return type.
