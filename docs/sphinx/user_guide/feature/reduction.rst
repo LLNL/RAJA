@@ -159,3 +159,108 @@ Reduction Policies
 For more information about available RAJA reduction policies and guidance
 on which to use with RAJA execution policies, please see 
 :ref:`reducepolicy-label`.
+
+--------------------------------
+Experimental Reduction Interface
+--------------------------------
+
+An experimental reduction interface is now available that hopes to improve
+upon the current reduction model in RAJA. This interface allows ``RAJA::forall``
+to take optional "plugin-like" objects to extend the execution behaviour 
+of a ``RAJA::forall`` execution context.
+
+
+RAJA::expt::Reduce
+..................
+::
+
+  double rs;
+  double rm;
+      
+  RAJA::forall<EXEC_POL> ( Res, Seg, 
+  RAJA::expt::Reduce<RAJA::operators::plus>(&rs),
+  RAJA::expt::Reduce<RAJA::operators::minimum>(&rm),
+  [=] (int i, double& _rs, double& _rm) {
+    _rs += ...
+    _rm = RAJA_MIN(..., _rm); 
+  }
+  );
+  
+  std::cout << rs ...
+  std::cout << rm ...
+
+* ``RAJA::expt::Reduce`` takes a target variable to write the final result to 
+  (``rs``, ``rm``).
+* It passes a corresponding argument to the RAJA lambda to be used as the 
+  local instance of the target(``_rs``, ``_rm``).
+* The local variable is initialized with the "identity" of the reduction 
+  operation to be performed.
+* A reduction is performed implicitly by the ``RAJA::forall`` across thread 
+  copies of the local variable.
+* Finally, the reduction operation is performed against the original value of 
+  the target and the result of the reduction.
+* The final value can be returned simply be referencing the target variable.
+
+RAJA::expt::ValLoc
+..................
+
+RAJA supports ``Loc`` reductions. With this new interface ``Loc`` reductions 
+can be performed using ``ValLoc<T>`` types. Since they are strongly typed they
+provide min() and max() operations. Users must also use getVal() and getLoc to
+return results.
+::
+
+  using VL_INT = RAJA::expt::ValLoc<int>;
+  VL_INT rm_loc;
+      
+  RAJA::forall<EXEC_POL> ( Res, Seg, 
+  RAJA::expt::Reduce<RAJA::operators::minimum>(&rm_loc),
+  [=] (int i, VL_INT& _rm_loc) {
+    _rm_loc = RAJA_MIN(..., _rm_loc);  
+  }
+  );
+
+  std::cout << rm_loc.getVal() ...
+  std::cout << rm_loc.getLoc() ...
+
+Lambda Arguments
+................
+
+This interface takes advantage of C++ parameter packs to allow users to define
+any number of ``expt::Reduce`` objects in their RAJA::forall calls.
+::
+
+  using VL_INT = RAJA::expt::ValLoc<int>;
+  VL_INT rm_loc;
+  double rs;
+  double rm;
+        
+  RAJA::forall<EXEC_POL> ( Res, Seg, 
+    RAJA::expt::Reduce<RAJA::operators::plus>(&rs),        // --> 1 double added
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&rm),     // --> 1 double added
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&rm_loc), // --> 1 VL_INT added
+    RAJA::expt::KernelName("MyFirstRAJAKernel"),           // --> NO args added
+    [=] (int i, double& _rs, double& _rm, VL_INT& _rm_loc) {
+      _rs += ...
+      _rm = RAJA_MIN(..., _rm); 
+      _rm_loc.min(...);
+    }
+  );
+
+  std::cout << rs ...
+  std::cout << rm ...
+  std::cout << rm_loc.getVal() ...
+  std::cout << rm_loc.getLoc() ...
+
+The lambda arguments are passed in the same respective order to that of the
+ForallParams. Both the types and number of arguments are required to be correct
+in order to compile successfully otherwise a static assertion will be triggered:
+::
+
+  LAMBDA Not invocable w/ EXPECTED_ARGS.
+
+.. note:: This static assert is only enabled when passing a generic lambda, 
+          this check will not happed when passing extended-lambdas (i.e. DEVICE
+          tagged lambdas) or other functor like objects.
+
+
