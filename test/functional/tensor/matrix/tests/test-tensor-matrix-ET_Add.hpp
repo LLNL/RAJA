@@ -90,11 +90,11 @@ void ET_AddImpl()
     auto rows = RAJA::expt::RowIndex<int, matrix_t>::all();
     auto cols = RAJA::expt::ColIndex<int, matrix_t>::all();
 
-    auto SArows = RAJA::RowIndex<int, matrix_t>::static_all();
-    auto SAcols = RAJA::ColIndex<int, matrix_t>::static_all();
+    auto SArows = RAJA::expt::RowIndex<int, matrix_t>::static_all();
+    auto SAcols = RAJA::expt::ColIndex<int, matrix_t>::static_all();
 
-    auto SRrows = RAJA::RowIndex<int, matrix_t>::template static_range<0,N>();
-    auto SRcols = RAJA::ColIndex<int, matrix_t>::template static_range<0,N>();
+    auto SRrows = RAJA::expt::RowIndex<int, matrix_t>::template static_range<0,N>();
+    auto SRcols = RAJA::expt::ColIndex<int, matrix_t>::template static_range<0,N>();
 
     // Access types:
     // data1_d - Layout with all() and all().

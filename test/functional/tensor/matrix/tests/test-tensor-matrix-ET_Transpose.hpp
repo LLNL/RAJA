@@ -118,11 +118,11 @@ void ET_TransposeImpl()
     auto rows_tr = RAJA::expt::RowIndex<int, transpose_t>::all();
     auto cols_tr = RAJA::expt::ColIndex<int, transpose_t>::all();
 
-    auto SArows = RAJA::RowIndex<int, matrix_t>::static_all();
-    auto SAcols = RAJA::ColIndex<int, matrix_t>::static_all();
+    auto SArows = RAJA::expt::RowIndex<int, matrix_t>::static_all();
+    auto SAcols = RAJA::expt::ColIndex<int, matrix_t>::static_all();
 
-    auto SRrows = RAJA::RowIndex<int, matrix_t>::template static_range<0,N>();
-    auto SRcols = RAJA::ColIndex<int, matrix_t>::template static_range<0,M>();
+    auto SRrows = RAJA::expt::RowIndex<int, matrix_t>::template static_range<0,N>();
+    auto SRcols = RAJA::expt::ColIndex<int, matrix_t>::template static_range<0,M>();
 
     output0_d(rows_tr, cols_tr) = input0_d(rows, cols).transpose();
 

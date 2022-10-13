@@ -100,11 +100,11 @@ void ET_LoadStoreImpl()
     auto rows = RAJA::expt::RowIndex<int, matrix_t>::all();
     auto cols = RAJA::expt::ColIndex<int, matrix_t>::all();
 
-    auto SArows = RAJA::RowIndex<int, matrix_t>::static_all();
-    auto SAcols = RAJA::ColIndex<int, matrix_t>::static_all();
+    auto SArows = RAJA::expt::RowIndex<int, matrix_t>::static_all();
+    auto SAcols = RAJA::expt::ColIndex<int, matrix_t>::static_all();
 
-    auto SRrows = RAJA::RowIndex<int, matrix_t>::template static_range<0,matrix_t::s_num_rows>();
-    auto SRcols = RAJA::ColIndex<int, matrix_t>::template static_range<0,matrix_t::s_num_columns>();
+    auto SRrows = RAJA::expt::RowIndex<int, matrix_t>::template static_range<0,matrix_t::s_num_rows>();
+    auto SRcols = RAJA::expt::ColIndex<int, matrix_t>::template static_range<0,matrix_t::s_num_columns>();
 
     data2_d(cols, rows) = data1_d(rows, cols);
 
