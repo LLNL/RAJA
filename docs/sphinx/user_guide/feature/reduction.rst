@@ -181,7 +181,7 @@ RAJA::expt::Reduce
 ::
 
   double rs = 0.0;
-  double rm = 0.0;
+  double rm = 1e100;
       
   RAJA::forall<EXEC_POL> ( Res, Seg, 
   RAJA::expt::Reduce<RAJA::operators::plus>(&rs),
