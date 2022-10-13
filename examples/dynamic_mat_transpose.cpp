@@ -328,21 +328,24 @@ int main(int argc, char *argv[])
   RAJA::launch<launch_policy>
     (select_cpu_or_gpu,
      RAJA::LaunchParams(RAJA::Teams(outer_Dimr, outer_Dimc), //either teams or blocks works
-                        RAJA::Threads(TILE_DIM, TILE_DIM),
-                        dynamic_shared_mem_size),
-     //Extend to pealing argument capabilities like forall for new reducers
+                        RAJA::Threads(TILE_DIM, TILE_DIM), dynamic_shared_mem_size),
+     "matrix tranpose with dynamic shared memory kernel",
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
   {
 
     RAJA::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
         RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
 
-            //specify view properties
+            //Specify view properties
             using shmem_type = int; constexpr int tile_dim = 2;
             const size_t shmem_size = TILE_DIM*TILE_DIM;
 
-            //Returns a RAJA view for simplified indexing
-            auto Tile_1 = ctx.getSharedMemoryView<shmem_type, tile_dim>(shmem_size, TILE_DIM, TILE_DIM);
+            //Dynamic shared memory is requesed through the getSharedMemory method
+            //The method may be called multiple times to request different allocations of memory
+            //Maximum allowed bytes is dynamic_shared_mem_size as specified in the LaunchParams
+
+            //getSharedMemoryView will return a RAJA view for simplified indexing
+            auto Tile = ctx.getSharedMemoryView<shmem_type, tile_dim>(shmem_size, TILE_DIM, TILE_DIM);
 
             RAJA::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
               RAJA::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
@@ -352,13 +355,13 @@ int main(int argc, char *argv[])
 
                   // Bounds check
                   if (row < N_r && col < N_c) {
-                    Tile_1(ty,tx) = Aview(row, col);
+                    Tile(ty,tx) = Aview(row, col);
                   }
 
                 });
               });
 
-            //need a barrier
+            //Barrier is needed to ensure all threads have written to Tile
             ctx.teamSync();
 
             RAJA::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
@@ -369,12 +372,15 @@ int main(int argc, char *argv[])
 
                   // Bounds check
                   if (row < N_r && col < N_c) {
-                    Atview(col, row) = Tile_1(ty, tx);
+                    Atview(col, row) = Tile(ty, tx);
                   }
 
                 });
               });
 
+            //The launch context uses bump style allocator to return different segments of shared memory
+            //to avoid requesting beyond the pre-allocated memory quantity we reset the allocator offset counter
+            //effectively releasing shared memory.
             ctx.releaseSharedMemory();
           });
       });
