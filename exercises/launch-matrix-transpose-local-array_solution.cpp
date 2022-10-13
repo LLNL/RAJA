@@ -179,7 +179,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_1 = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
   RAJA::launch<launch_policy_1>(
-    RAJA::LaunchParams(), //Grid may be empty when only running on the cpu
+    RAJA::LaunchParams(), //LaunchParams may be empty when only running on the cpu
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
       RAJA::tile<loop_pol_1>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r), [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
@@ -229,7 +229,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_2 = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
   RAJA::launch<launch_policy_2>(
-    RAJA::LaunchParams(), //Grid may be empty when only running on the cpu
+    RAJA::LaunchParams(), //LaunchParams may be empty when only running on the cpu
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
       RAJA::tile<omp_pol_2>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r), [&] (RAJA::TypedRangeSegment<int> const &row_tile) {

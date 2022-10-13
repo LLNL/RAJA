@@ -125,7 +125,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_seq = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
   RAJA::launch<launch_policy_seq>
-   (RAJA::LaunchParams(), //Grid may be empty when running on the host
+   (RAJA::LaunchParams(), //LaunchParams may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
       RAJA::loop<loop_policy_seq>(ctx, row_Range, [&] (int /*row*/) {
@@ -158,7 +158,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //using loop_policy_omp = RAJA::LoopPolicy<RAJA::omp_for_exec>;
   using launch_policy_omp = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
-  RAJA::launch<launch_policy_omp>(RAJA::LaunchParams(), //Grid may be empty when running on the host
+  RAJA::launch<launch_policy_omp>(RAJA::LaunchParams(), //LaunchParams may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext /*ctx*/) {
 
 
