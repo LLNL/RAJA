@@ -55,7 +55,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 				    params.threads.value[1] * params.teams.value[1],
 				    params.threads.value[2] * params.teams.value[2]);
 
-        // Only launch kernel if we have something to iterate over
+    // Only launch kernel if we have something to iterate over
     constexpr size_t zero = 0;
     if ( params.threads.value[0]  > zero && params.threads.value[1]  > zero && params.threads.value[2] > zero &&
          params.teams.value[0] > zero && params.teams.value[1] > zero && params.teams.value[2]> zero ) {
@@ -259,8 +259,6 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
          params.teams.value[0] > zero && params.teams.value[1] > zero && params.teams.value[2]> zero ) {
 
       RAJA_FT_BEGIN;
-
-      std::cout<<" 1. Lambda is not trivially copyable"<<std::endl;
 
       //
       // Kernel body is nontrivially copyable, create space on device and copy to

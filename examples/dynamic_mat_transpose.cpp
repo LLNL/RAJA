@@ -169,25 +169,25 @@ int main(int argc, char *argv[])
   std::cout << "\n\nRAJA matrix transpose example...\n";
 
   if(argc != 2) {
-    RAJA_ABORT_OR_THROW("Usage ./launch_reductions host or ./launch_reductions device");
+    RAJA_ABORT_OR_THROW("Usage ./dynamic_mat_transpose host or ./dynamic_mat_transpose device");
   }
 
   //
   // Run time policy section is demonstrated in this example by specifying
   // kernel exection space as a command line argument (host or device).
-  // Example usage ./launch_reductions host or ./launch_reductions device
+  // Example usage ./dynamic_mat_transpose host or ./dynamic_mat_transpose device
   //
   std::string exec_space = argv[1];
   if(!(exec_space.compare("host") == 0 || exec_space.compare("device") == 0 )){
-    RAJA_ABORT_OR_THROW("Usage ./launch_reductions host or ./launch_reductions device");
+    RAJA_ABORT_OR_THROW("Usage ./dynamic_mat_transpose host or ./dynamic_mat_transpose device");
     return 0;
   }
 
   RAJA::ExecPlace select_cpu_or_gpu;
   if(exec_space.compare("host") == 0)
-    { select_cpu_or_gpu = RAJA::ExecPlace::HOST; printf("Running RAJA-Launch reductions example on the host \n"); }
+    { select_cpu_or_gpu = RAJA::ExecPlace::HOST; printf("Running RAJA::launch reductions example on the host \n"); }
   if(exec_space.compare("device") == 0)
-    { select_cpu_or_gpu = RAJA::ExecPlace::DEVICE; printf("Running RAJA-Launch reductions example on the device \n"); }
+    { select_cpu_or_gpu = RAJA::ExecPlace::DEVICE; printf("Running RAJA::launch reductions example on the device \n"); }
 
 
 
@@ -322,7 +322,7 @@ int main(int argc, char *argv[])
 
   RAJA::launch<launch_policy>
     (select_cpu_or_gpu,
-     RAJA::LaunchParams(RAJA::Teams(outer_Dimr, outer_Dimc), //either teams or blocks works
+     RAJA::LaunchParams(RAJA::Teams(outer_Dimr, outer_Dimc),
                         RAJA::Threads(TILE_DIM, TILE_DIM), dynamic_shared_mem_size),
      "matrix tranpose with dynamic shared memory kernel",
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
