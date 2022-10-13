@@ -42,11 +42,15 @@ concepts::enable_if_t<
   concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
   >
 forall_impl(resources::Omp omp_res,
-            const omp_target_parallel_for_exec<ThreadsPerTeam>&,
+            const omp_target_parallel_for_exec<ThreadsPerTeam>& p,
             Iterable&& iter,
             Func&& loop_body,
             ForallParam f_params)
 {
+  using EXEC_POL = typename std::decay<decltype(p)>::type;
+  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  RAJA_OMP_DECLARE_REDUCTION_COMBINE;
+
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
   Body body = loop_body;
 
@@ -73,11 +77,13 @@ forall_impl(resources::Omp omp_res,
   auto i = distance_it;
 
 #pragma omp target teams distribute parallel for num_teams(numteams) \
-    schedule(static, 1) map(to : body,begin_it)
+    schedule(static, 1) map(to : body,begin_it) redcution(combine: f_params)
   for (i = 0; i < distance_it; ++i) {
     Body ib = body;
-    ib(begin_it[i]);
+    RAJA::expt::invoke_body(f_params, ib, begin_it[i]);
   }
+
+  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
   return resources::EventProxy<resources::Omp>(omp_res);
 }
 
