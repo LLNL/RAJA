@@ -52,7 +52,7 @@ cmake \
   -DAMDGPU_TARGETS=${HIP_ARCH} \
   -C "../host-configs/lc-builds/toss4/${HOSTCONFIG}.cmake" \
   -DENABLE_HIP=ON \
-  -DENABLE_OPENMP=OFF \
+  -DENABLE_OPENMP=ON \
   -DENABLE_CUDA=OFF \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
