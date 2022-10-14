@@ -33,7 +33,7 @@ namespace expt
   struct StaticTensorIndexInner;
 
   template<typename INNER_TYPE>
-  class StaticTensorIndex;
+  struct StaticTensorIndex;
 
 
   template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM>
@@ -107,7 +107,7 @@ namespace expt
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
-      TensorIndex(StaticTensorIndex<StaticTensorIndexInner<IDX, TENSOR_TYPE, DIM, IDX_VAL, LEN_VAL>> const &c)
+      TensorIndex(StaticTensorIndex<StaticTensorIndexInner<IDX, TENSOR_TYPE, DIM, IDX_VAL, LEN_VAL>> const RAJA_UNUSED_ARG(&c))
           : m_index(IDX_VAL)
           , m_length(LEN_VAL)
       {}

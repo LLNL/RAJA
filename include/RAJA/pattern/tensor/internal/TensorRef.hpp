@@ -296,7 +296,7 @@ namespace expt
         }
         
         template<TensorTileSize S>
-        constexpr void copy(StaticTensorTile<INDEX_TYPE, S, begin_seq, size_seq> const &c) const
+        constexpr void copy(StaticTensorTile<INDEX_TYPE, S, begin_seq, size_seq> const RAJA_UNUSED_ARG(&c)) const
         {}
 
 
