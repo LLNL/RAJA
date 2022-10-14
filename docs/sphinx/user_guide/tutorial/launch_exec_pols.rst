@@ -148,7 +148,7 @@ execution policy types ``RAJA::cuda_block_z_direct``,
 respectively. Thus, we use a two-dimensional CUDA thread-block and 
 three-dimensional compute grid to map the loop iterations to CUDA threads. In 
 comparison to the RAJA CUDA example in :ref:`tut-kernelexecpols-label` , 
-``RAJA::loop`` methods support execution policies which enable mapping 
+``RAJA::loop`` methods support execution policies, which enable mapping 
 directly to the global thread ID of a compute grid.
 
 Using a combination of ``RAJA::tile`` and ``RAJA::loop`` methods, 
