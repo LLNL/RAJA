@@ -164,21 +164,23 @@ on which to use with RAJA execution policies, please see
 Experimental Reduction Interface
 --------------------------------
 
-An experimental reduction interface is now available that hopes to improve
-upon the current reduction model in RAJA. This interface allows ``RAJA::forall``
+An experimental reduction interface is now available that offers serveral usability and performance advantages over
+upon the current reduction model in RAJA. The new interface allows ``RAJA::forall``
 to take optional "plugin-like" objects to extend the execution behaviour 
 of a ``RAJA::forall`` execution context.
 
-The new interface passes ``RAJA::expt::Reduce<OP_TYPE>`` objects as direct
-parameters to ``RAJA::forall`` and provides users with thread-local variables
-of the operating data type to be manipulated indside the lambda. This differs 
+The new interface passes ``RAJA::expt::Reduce<OP_TYPE>`` objects as function arguments
+to ``RAJA::forall`` and provides users with thread-local variables
+of the reduction data type to be updated inside the lambda. This differs 
 from the current reduction model in which ``RAJA::ReduceOP<REDUCE_POL, T>``
-objects are captured by the RAJA lambda and manipulated directly.
+objects are captured by the user-supplied kernel body lambda expression.
 
 
 RAJA::expt::Reduce
 ..................
 ::
+
+  double* a = ...;
 
   double rs = 0.0;
   double rm = 1e100;
@@ -187,8 +189,8 @@ RAJA::expt::Reduce
   RAJA::expt::Reduce<RAJA::operators::plus>(&rs),
   RAJA::expt::Reduce<RAJA::operators::minimum>(&rm),
   [=] (int i, double& _rs, double& _rm) {
-    _rs += ...
-    _rm = RAJA_MIN(..., _rm); 
+    _rs += a[i];
+    _rm = RAJA_MIN(a[i], _rm); 
   }
   );
   
@@ -207,24 +209,31 @@ RAJA::expt::Reduce
   copies of the local variables.
 * Finally, the reduction operation is performed against the original value of 
   the target and the result of the ``RAJA::forall`` reduction.
-* The final value can be returned simply be referencing the target variable.
+* The final reduction value is accessed by referencing the target variable passed to ``RAJA::expt::Reduce`` in the ``RAJA::forall`` method.
+
+.. note:: In the above example ``Res`` is a resource object that must be 
+          compatible with the ``EXEC_POL``. ``Seg`` is the iteration space
+          object for ``RAJA::forall``.
 
 RAJA::expt::ValLoc
 ..................
 
-RAJA supports ``Loc`` reductions. With this new interface ``Loc`` reductions 
+RAJA supports ``Loc`` reductions, which provide the ability to get a kernel/loop index at which the final reduction value was found. With this new interface, ``Loc`` reductions 
 can be performed using ``ValLoc<T>`` types. Since they are strongly typed they
-provide min() and max() operations. Users must also use getVal() and getLoc to
-return results.
+provide ``min()`` and ``max()`` operations, that are equivalent to using ``RAJA_MIN()`` or ``RAJA_MAX`` as demonstrated in the example below. Users must use ``getVal()`` and ``getLoc()`` methods to
+access the reduction results.
 ::
 
-  using VL_INT = RAJA::expt::ValLoc<int>;
-  VL_INT rm_loc;
+  double* a = ...;
+
+  using VL_DOUBLE = RAJA::expt::ValLoc<double>;
+  VL_DOUBLE rm_loc;
       
   RAJA::forall<EXEC_POL> ( Res, Seg, 
   RAJA::expt::Reduce<RAJA::operators::minimum>(&rm_loc),
-  [=] (int i, VL_INT& _rm_loc) {
-    _rm_loc = RAJA_MIN(..., _rm_loc);  
+  [=] (int i, VL_DOUBLE& _rm_loc) {
+    _rm_loc = RAJA_MIN(VL_DOUBLE(a[i], i), _rm_loc);  
+    //_rm_loc.min(VL_DOUBLE(a[i], i)); // Aternative to RAJA_MIN
   }
   );
 
@@ -234,24 +243,26 @@ return results.
 Lambda Arguments
 ................
 
-This interface takes advantage of C++ parameter packs to allow users to define
-any number of ``expt::Reduce`` objects in their RAJA::forall calls.
+This interface takes advantage of C++ parameter packs to allow users to pass
+any number of ``RAJA::expt::Reduce`` objects to their RAJA::forall calls.
 ::
 
-  using VL_INT = RAJA::expt::ValLoc<int>;
-  VL_INT rm_loc;
+  double* a = ...;
+
+  using VL_DOUBLE = RAJA::expt::ValLoc<double>;
+  VL_DOUBLE rm_loc;
   double rs;
   double rm;
         
   RAJA::forall<EXEC_POL> ( Res, Seg, 
     RAJA::expt::Reduce<RAJA::operators::plus>(&rs),        // --> 1 double added
     RAJA::expt::Reduce<RAJA::operators::minimum>(&rm),     // --> 1 double added
-    RAJA::expt::Reduce<RAJA::operators::minimum>(&rm_loc), // --> 1 VL_INT added
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&rm_loc), // --> 1 VL_DOUBLE added
     RAJA::expt::KernelName("MyFirstRAJAKernel"),           // --> NO args added
-    [=] (int i, double& _rs, double& _rm, VL_INT& _rm_loc) {
-      _rs += ...
-      _rm = RAJA_MIN(..., _rm); 
-      _rm_loc.min(...);
+    [=] (int i, double& _rs, double& _rm, VL_DOUBLE& _rm_loc) {
+      _rs += a[i];
+      _rm = RAJA_MIN(a[i], _rm); 
+      _rm_loc.min(VL_DOUBLE(a[i], i));
     }
   );
 

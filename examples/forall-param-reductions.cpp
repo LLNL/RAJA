@@ -126,6 +126,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       _seq_maxloc = RAJA_MAX(VALLOC_INT(a[i], i), _seq_maxloc);
       //_seq_minloc.min(a[i], i);
       //_seq_maxloc.max(a[i], i);
+      // Note : RAJA::expt::ValLoc<T> objects provide min() and max() methods 
+      //        that are equivalent to the assignments with RAJA_MIN and RAJA_MAX 
+      //        above.
     }
   );
 
