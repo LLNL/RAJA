@@ -59,6 +59,20 @@ raja_add_executable(
   NAME jacobi
   SOURCES jacobi.cpp)
 
+if(RAJA_ENABLE_CUDA)
+raja_add_executable(
+  NAME fractal 
+  SOURCES fractal.cpp
+  DEPENDS_ON cuda)
+endif()
+
+if(RAJA_ENABLE_OPENMP)
+raja_add_executable(
+  NAME fractal_CPU 
+  SOURCES fractal_CPU.cpp
+  DEPENDS_ON openmp)
+endif()
+
 raja_add_executable(
   NAME red-black-gauss-seidel
   SOURCES red-black-gauss-seidel.cpp)
