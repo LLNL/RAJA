@@ -117,7 +117,7 @@ The corresponding RAJA versions of the C-style OpenMP variant is:
    :end-before: _raja_tensorinit_omp_outer_end
    :language: C++
 
-With the OpenMP version above, ``RAJA::launch`` method is templated with
+With the OpenMP version above, ``RAJA::launch`` method is templated on
 a ``RAJA::omp_launch_t`` execution policy. The policy is used
 to create an OpenMP parallel region, loop iterations may then be distributed
 using ``RAJA::loop`` methods templated on ``RAJA::omp_for_exec`` 
