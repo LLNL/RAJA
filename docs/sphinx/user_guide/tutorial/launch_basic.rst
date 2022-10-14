@@ -62,7 +62,7 @@ is determined by a template parameter type, which
 indicates how the corresponding iterates are mapped to the Teams/Threads
 configuration defined by the ``RAJA::LaunchParams`` type passed as the second
 argument to the ``RAJA::launch`` method. Following the CUDA and HIP 
-programming models this defines an hierarchical structure in which outer loops 
+programming models, this defines an hierarchical structure in which outer loops 
 are executed by thread-teams and inner loops are executed by threads in a team.
 
 .. literalinclude:: ../../../../examples/tut_launch_basic.cpp
