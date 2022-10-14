@@ -31,7 +31,7 @@ space::
 
   RAJA::launch<launch_policy>(RAJA::ExecPlace ,
   RAJA::LaunchParams(RAJA::Teams(Nteams,Nteams),
-                        RAJA::Threads(Nthreads,Nthreads)),
+                     RAJA::Threads(Nthreads,Nthreads)),
   [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
     /* Kernel code goes here */
