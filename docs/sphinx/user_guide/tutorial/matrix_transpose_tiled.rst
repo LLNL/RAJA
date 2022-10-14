@@ -133,7 +133,7 @@ iteration space for each tile, which is used to generate loops for the inner
 C-style variant is not needed.
 
 A CUDA ``RAJA::launch`` tiled variant for the GPU is similar with 
-different policies in the ``RAJA::loop`` methods. The complete
+CUDA policies in the ``RAJA::loop`` methods. The complete
 ``RAJA::launch`` variant is:
 
 .. literalinclude:: ../../../../exercises/launch-matrix-transpose-tiled_solution.cpp

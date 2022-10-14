@@ -117,7 +117,7 @@ The corresponding RAJA versions of the C-style OpenMP variant is:
    :end-before: _raja_tensorinit_omp_outer_end
    :language: C++
 
-With the OpenMP version above, ``RAJA::launch`` method is templated with
+With the OpenMP version above, ``RAJA::launch`` method is templated on
 a ``RAJA::omp_launch_t`` execution policy. The policy is used
 to create an OpenMP parallel region, loop iterations may then be distributed
 using ``RAJA::loop`` methods templated on ``RAJA::omp_for_exec`` 
@@ -148,7 +148,7 @@ execution policy types ``RAJA::cuda_block_z_direct``,
 respectively. Thus, we use a two-dimensional CUDA thread-block and 
 three-dimensional compute grid to map the loop iterations to CUDA threads. In 
 comparison to the RAJA CUDA example in :ref:`tut-kernelexecpols-label` , 
-``RAJA::loop`` methods support execution policies which enable mapping 
+``RAJA::loop`` methods support execution policies, which enable mapping 
 directly to the global thread ID of a compute grid.
 
 Using a combination of ``RAJA::tile`` and ``RAJA::loop`` methods, 

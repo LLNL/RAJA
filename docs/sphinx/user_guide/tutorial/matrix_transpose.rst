@@ -107,7 +107,7 @@ methods. The complete sequential ``RAJA::launch`` variant is:
    :end-before: // _raja_mattranspose_end
    :language: C++
 
-A CUDA ``RAJA::launch`` variant for the GPU is similar with different 
+A CUDA ``RAJA::launch`` variant for the GPU is similar with CUDA
 policies in the ``RAJA::loop`` methods. The complete 
 ``RAJA::launch`` variant is:
 
