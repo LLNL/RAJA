@@ -241,15 +241,15 @@ static_assert(RAJA_HAS_SOME_CXX14,
 
 namespace RAJA {
 
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP) && !defined(__HIP_DEVICE_COMPILE__)
 #if defined(_OPENMP)
-#if _OPENMP >= 200805
+#if (_OPENMP >= 200805)
 #define RAJA_ENABLE_OPENMP_TASK
 #endif
 #else
-#error RAJA configured with RAJA_ENABLE_OPENMP, but OpenMP not supported by current compiler
+#error RAJA configured with RAJA_ENABLE_OPENMP, but _OPENMP is not defined in this code section
 #endif // _OPENMP
-#endif // RAJA_ENABLE_OPENMP
+#endif // RAJA_ENABLE_OPENMP && __HIP_DEVICE_COMPILE__
 
 #if defined(RAJA_ENABLE_CUDA) && defined(__CUDACC__)
 #define RAJA_CUDA_ACTIVE
