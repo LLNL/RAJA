@@ -23,23 +23,8 @@
 #include "RAJA/util/macros.hpp"
 
 #if !defined(RAJA_ENABLE_DESUL_ATOMICS)
-  #include "RAJA/policy/sequential/atomic.hpp"
+    #include "RAJA/policy/sequential/atomic.hpp"
 #endif
-
-#include "RAJA/policy/loop/atomic.hpp"
-
-#if defined(RAJA_ENABLE_HIP)
-  #include "RAJA/policy/hip/atomic.hpp"
-#endif
-
-#if defined(RAJA_ENABLE_CUDA)
-  #include "RAJA/policy/cuda/atomic.hpp"
-#endif
-
-#if defined(RAJA_ENABLE_OPENMP)
-  #include "RAJA/policy/openmp/atomic.hpp"
-
-#endif //RAJA_ENABLE_DESUL_ATOMICS
 
 /*!
  * Provides priority between atomic policies that should do the "right thing"

@@ -324,23 +324,18 @@ int main(int argc, char *argv[])
     (select_cpu_or_gpu,
      RAJA::LaunchParams(RAJA::Teams(outer_Dimr, outer_Dimc),
                         RAJA::Threads(TILE_DIM, TILE_DIM), dynamic_shared_mem_size),
-     "matrix tranpose with dynamic shared memory kernel",
+     "Matrix tranpose with dynamic shared memory kernel",
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
   {
 
     RAJA::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
         RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
 
-            //Specify view properties
-            using shmem_type = int; constexpr int tile_dim = 2;
-            const size_t shmem_size = TILE_DIM*TILE_DIM;
+            //Request memory from shared memory pool
+            int * tile_ptr = ctx.getSharedMemory<int>(TILE_DIM * TILE_DIM);
 
-            //Dynamic shared memory is requesed through the getSharedMemory method
-            //The method may be called multiple times to request different allocations of memory
-            //Maximum allowed bytes is dynamic_shared_mem_size as specified in the LaunchParams
-
-            //getSharedMemoryView will return a RAJA view for simplified indexing
-            auto Tile = ctx.getSharedMemoryView<shmem_type, tile_dim>(shmem_size, TILE_DIM, TILE_DIM);
+            //Use RAJA View for simplified indexing
+            RAJA::View<int, RAJA::Layout<2>> Tile(tile_ptr, TILE_DIM, TILE_DIM);
 
             RAJA::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
               RAJA::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
@@ -377,6 +372,7 @@ int main(int argc, char *argv[])
             //to avoid requesting beyond the pre-allocated memory quantity we reset the allocator offset counter
             //effectively releasing shared memory.
             ctx.releaseSharedMemory();
+
           });
       });
 

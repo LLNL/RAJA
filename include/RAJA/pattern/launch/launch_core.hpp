@@ -24,10 +24,12 @@
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/plugins.hpp"
 #include "RAJA/util/types.hpp"
-#include "RAJA/util/View.hpp"
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
+
+//Odd dependecy with atomics is breaking CI builds
+//#include "RAJA/util/View.hpp"
 
 #if defined(RAJA_DEVICE_CODE) && !defined(RAJA_ENABLE_SYCL)
 #define RAJA_TEAM_SHARED __shared__
@@ -132,13 +134,12 @@ public:
   Teams teams;
   Threads threads;
   size_t shared_mem_size;
-  //const char *kernel_name{nullptr}; //TODO Move out of Grid (make optional argument that we pass into launch)
 
   RAJA_INLINE
   LaunchParams() = default;
 
   LaunchParams(Teams in_teams, Threads in_threads, size_t in_shared_mem_size = 0)
-    : teams(in_teams), threads(in_threads), shared_mem_size(in_shared_mem_size) {}; //, kernel_name(in_kernel_name){};
+    : teams(in_teams), threads(in_threads), shared_mem_size(in_shared_mem_size) {};
 
 private:
   RAJA_HOST_DEVICE
@@ -179,6 +180,8 @@ public:
     return mem_ptr;
   }
 
+  /*
+  //Odd dependecy with atomics is breaking CI builds
   template<typename T, size_t DIM, typename IDX_T=RAJA::Index_type, ptrdiff_t z_stride=DIM-1, typename arg, typename... args>
   RAJA_HOST_DEVICE auto getSharedMemoryView(size_t bytes, arg idx, args... idxs)
   {
@@ -187,6 +190,7 @@ public:
     shared_mem_offset += bytes*sizeof(T);
     return RAJA::View<T, RAJA::Layout<DIM, IDX_T, z_stride>>(mem_ptr, idx, idxs...);
   }
+  */
 
   RAJA_HOST_DEVICE void releaseSharedMemory()
   {
