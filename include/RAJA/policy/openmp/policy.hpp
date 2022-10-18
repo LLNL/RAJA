@@ -380,11 +380,7 @@ using policy::omp::omp_for_runtime_exec;
 /// Type aliases for omp parallel region
 ///
 using policy::omp::omp_parallel_region;
-
-namespace expt
-{
-  using policy::omp::omp_launch_t;
-}
+using policy::omp::omp_launch_t;
 
 ///
 /// Type aliases for omp reductions

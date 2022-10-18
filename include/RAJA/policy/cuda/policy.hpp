@@ -85,8 +85,6 @@ struct cuda_exec_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::cuda> {
 };
 
-namespace expt
-{
 template <bool Async, int num_threads, size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM>
 struct cuda_launch_explicit_t : public RAJA::make_policy_pattern_launch_platform_t<
                                 RAJA::Policy::cuda,
@@ -94,7 +92,6 @@ struct cuda_launch_explicit_t : public RAJA::make_policy_pattern_launch_platform
                                 detail::get_launch<Async>::value,
                                 RAJA::Platform::cuda> {
 };
-}
 
 
 
@@ -271,12 +268,9 @@ using policy::cuda::cuda_thread_masked_loop;
 
 using policy::cuda::cuda_synchronize;
 
-namespace expt
-{
   // num_threads defaults to 1, but not expected to be used in kernel launch
   template <bool Async, int num_threads = 1>
-  using cuda_launch_t = policy::cuda::expt::cuda_launch_explicit_t<Async, num_threads, policy::cuda::MIN_BLOCKS_PER_SM>;
-}
+  using cuda_launch_t = policy::cuda::cuda_launch_explicit_t<Async, num_threads, policy::cuda::MIN_BLOCKS_PER_SM>;
 
 
 /*!

@@ -257,10 +257,7 @@ using policy::hip::hip_thread_masked_loop;
 
 using policy::hip::hip_synchronize;
 
-namespace expt
-{
-  using policy::hip::hip_launch_t;
-}
+using policy::hip::hip_launch_t;
 
 /*!
  * Maps segment indices to HIP threads.

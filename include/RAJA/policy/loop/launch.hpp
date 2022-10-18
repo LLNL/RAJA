@@ -15,10 +15,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_teams_loop_HPP
-#define RAJA_pattern_teams_loop_HPP
+#ifndef RAJA_pattern_launch_loop_HPP
+#define RAJA_pattern_launch_loop_HPP
 
-#include "RAJA/pattern/teams/teams_core.hpp"
+#include "RAJA/pattern/launch/launch_core.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/policy/loop/policy.hpp"
 
@@ -26,11 +26,8 @@
 namespace RAJA
 {
 
-namespace expt
-{
-
 template <>
-struct LaunchExecute<RAJA::expt::null_launch_t> {
+struct LaunchExecute<RAJA::null_launch_t> {
   template <typename BODY>
   static void exec(LaunchContext const& RAJA_UNUSED_ARG(ctx),
                    BODY const& RAJA_UNUSED_ARG(body))
@@ -41,19 +38,35 @@ struct LaunchExecute<RAJA::expt::null_launch_t> {
 
 
 template <>
-struct LaunchExecute<RAJA::expt::seq_launch_t> {
+struct LaunchExecute<RAJA::seq_launch_t> {
 
   template <typename BODY>
-  static void exec(LaunchContext const &ctx, BODY const &body)
+  static void exec(LaunchParams const &params, const char *RAJA_UNUSED_ARG(kernel_name), BODY const &body)
   {
+    LaunchContext ctx;
+
+    ctx.shared_mem_ptr = (char*) malloc(params.shared_mem_size);
+
     body(ctx);
+
+    free(ctx.shared_mem_ptr);
+    ctx.shared_mem_ptr = nullptr;
   }
 
   template <typename BODY>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY const &body)
+  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *RAJA_UNUSED_ARG(kernel_name), BODY const &body)
   {
+
+    LaunchContext ctx;
+
+    char *kernel_local_mem = new char[params.shared_mem_size];
+    ctx.shared_mem_ptr = kernel_local_mem;
+
     body(ctx);
+
+    delete[] kernel_local_mem;
+    ctx.shared_mem_ptr = nullptr;
 
     return resources::EventProxy<resources::Resource>(res);
   }
@@ -244,8 +257,6 @@ struct TileICountExecute<loop_exec, SEGMENT> {
   }
 
 };
-
-}  // namespace expt
 
 }  // namespace RAJA
 #endif
