@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing headers for RAJA::Teams backends
+ * \brief   RAJA header file containing headers for RAJA::Launch backends
  *
  ******************************************************************************
  */
@@ -15,28 +15,32 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_teams_HPP
-#define RAJA_pattern_teams_HPP
+#ifndef RAJA_pattern_launch_HPP
+#define RAJA_pattern_launch_HPP
 
-#include "RAJA/pattern/teams/teams_core.hpp"
+#include "RAJA/pattern/launch/launch_core.hpp"
 
 //
 // All platforms must support host execution.
 //
-#include "RAJA/policy/sequential/teams.hpp"
-#include "RAJA/policy/loop/teams.hpp"
-#include "RAJA/policy/simd/teams.hpp"
+#include "RAJA/policy/sequential/launch.hpp"
+#include "RAJA/policy/loop/launch.hpp"
+#include "RAJA/policy/simd/launch.hpp"
 
 #if defined(RAJA_CUDA_ACTIVE)
-#include "RAJA/policy/cuda/teams.hpp"
+#include "RAJA/policy/cuda/launch.hpp"
 #endif
 
 #if defined(RAJA_HIP_ACTIVE)
-#include "RAJA/policy/hip/teams.hpp"
+#include "RAJA/policy/hip/launch.hpp"
 #endif
 
 #if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/policy/openmp/teams.hpp"
+#include "RAJA/policy/openmp/launch.hpp"
 #endif
 
-#endif /* RAJA_pattern_teams_HPP */
+#if defined(RAJA_ENABLE_SYCL)
+#include "RAJA/policy/sycl/launch.hpp"
+#endif
+
+#endif /* RAJA_pattern_launch_HPP */

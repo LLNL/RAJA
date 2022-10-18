@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_TEAMS_RANGE_SEGMENT_HPP__
-#define __TEST_TEAMS_RANGE_SEGMENT_HPP__
+#ifndef __TEST_LAUNCH_RANGE_SEGMENT_HPP__
+#define __TEST_LAUNCH_RANGE_SEGMENT_HPP__
 
 #include <numeric>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename LAUNCH_POLICY, typename GLOBAL_THREAD_POICY>
-void TeamsRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
+void LaunchRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 {
 
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(RAJA::stripIndexType(first), RAJA::stripIndexType(last));
@@ -42,11 +42,11 @@ void TeamsRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
     std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
 
-    RAJA::expt::launch<LAUNCH_POLICY>
-      (RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+    RAJA::launch<LAUNCH_POLICY>
+      (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
   
-        RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
+        RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
             working_array[RAJA::stripIndexType(idx - rbegin)] = idx;
           });         
     });
@@ -57,11 +57,11 @@ void TeamsRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
     working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
-    RAJA::expt::launch<LAUNCH_POLICY>
-      (RAJA::expt::Grid(RAJA::expt::Teams(blocks), RAJA::expt::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+    RAJA::launch<LAUNCH_POLICY>
+      (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
   
-        RAJA::expt::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
+        RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
             (void) idx;
             working_array[0]++;
         }); 
@@ -82,9 +82,9 @@ void TeamsRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 }
 
 
-TYPED_TEST_SUITE_P(TeamsRangeSegmentTest);
+TYPED_TEST_SUITE_P(LaunchRangeSegmentTest);
 template <typename T>
-class TeamsRangeSegmentTest : public ::testing::Test
+class LaunchRangeSegmentTest : public ::testing::Test
 {
 };
 
@@ -99,13 +99,13 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename LAUNCH_POLICY, typ
 void runNegativeTests()
 {
   // test zero-length range segment
-  TeamsRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(-5));
+  LaunchRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(-5));
 
-  TeamsRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(0));
-  TeamsRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(5));
+  LaunchRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(0));
+  LaunchRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(5));
 }
 
-TYPED_TEST_P(TeamsRangeSegmentTest, RangeSegmentTeams)             
+TYPED_TEST_P(LaunchRangeSegmentTest, RangeSegmentTeams)             
 {
 
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
@@ -114,16 +114,16 @@ TYPED_TEST_P(TeamsRangeSegmentTest, RangeSegmentTeams)
   using GLOBAL_THREAD_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<1>>::type;
 
   // test zero-length range segment
-  TeamsRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(3), INDEX_TYPE(3));
+  LaunchRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(3), INDEX_TYPE(3));
 
-  TeamsRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(0), INDEX_TYPE(27));
-  TeamsRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(1), INDEX_TYPE(2047));
-  TeamsRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(1), INDEX_TYPE(32000));
+  LaunchRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(0), INDEX_TYPE(27));
+  LaunchRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(1), INDEX_TYPE(2047));
+  LaunchRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(1), INDEX_TYPE(32000));
 
   runNegativeTests<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(TeamsRangeSegmentTest,
+REGISTER_TYPED_TEST_SUITE_P(LaunchRangeSegmentTest,
                             RangeSegmentTeams);
 
 #endif  // __TEST_RANGE_SEGMENT_HPP__

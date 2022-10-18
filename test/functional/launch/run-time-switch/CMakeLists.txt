@@ -10,14 +10,14 @@
 #
 set(TEST_TYPES BasicShared)
 
-foreach( BACKEND ${TEAMS_BACKENDS} )
+foreach( BACKEND ${LAUNCH_BACKENDS} )
   foreach( TESTTYPE ${TEST_TYPES} )
-    configure_file( test-teams.cpp.in
-                    test-teams-${TESTTYPE}-${BACKEND}.cpp )
-    raja_add_test( NAME test-teams-${TESTTYPE}-${BACKEND}
-                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-teams-${TESTTYPE}-${BACKEND}.cpp )
+    configure_file( test-launch.cpp.in
+                    test-launch-${TESTTYPE}-${BACKEND}.cpp )
+    raja_add_test( NAME test-launch-${TESTTYPE}-${BACKEND}
+                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-launch-${TESTTYPE}-${BACKEND}.cpp )
 
-    target_include_directories(test-teams-${TESTTYPE}-${BACKEND}.exe
+    target_include_directories(test-launch-${TESTTYPE}-${BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
   endforeach()
 endforeach()
