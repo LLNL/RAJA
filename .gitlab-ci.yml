@@ -78,6 +78,9 @@ should-we-test-check:
              --data "{ \"state\": \"failure\", \"target_url\": \"${CI_PIPELINE_URL}\", \"description\": \"GitLab: Skipped Draft PR\", \"context\": \"ci/gitlab/skipped-draft-pr\" }"
         exit 1
       fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: never
 
 # Template for jobs triggering a build-and-test sub-pipelines:
 .build-and-test:
