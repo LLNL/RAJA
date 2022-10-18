@@ -359,15 +359,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( d_a, a, N_tot * sizeof(double), hipMemcpyHostToDevice ));
 
 // _raja_tensorinit_hip_start
-<<<<<<< HEAD
-  using hip_teams_z_5 = RAJA::expt::LoopPolicy<RAJA::hip_block_z_direct>;
-  using hip_global_thread_y_5 = RAJA::expt::LoopPolicy<RAJA::expt::hip_global_thread_y>;
-  using hip_global_thread_x_5 = RAJA::expt::LoopPolicy<RAJA::expt::hip_global_thread_x>;
-=======
   using hip_teams_z_5 = RAJA::LoopPolicy<RAJA::hip_block_z_direct>;
   using hip_global_thread_y_5 = RAJA::LoopPolicy<RAJA::hip_global_thread_y>;
   using hip_global_thread_x_5 = RAJA::LoopPolicy<RAJA::hip_global_thread_x>;
->>>>>>> develop
 
   const bool async_5 = false;
   using launch_policy_5 = RAJA::LaunchPolicy<RAJA::hip_launch_t<async_5>>;
