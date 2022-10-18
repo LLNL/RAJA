@@ -201,7 +201,7 @@ public:
   RAJA_HOST_DEVICE
   void teamSync()
   {
-#if defined(RAJA_ENABLE_SYCL) && defined(__SYCL_DEVICE_ONLY__)
+#if defined(RAJA_DEVICE_CODE) && defined(RAJA_ENABLE_SYCL)
     itm->barrier(sycl::access::fence_space::local_space);
 #endif
 
