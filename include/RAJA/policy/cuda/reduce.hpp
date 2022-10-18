@@ -25,9 +25,6 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 
-#include <type_traits>
-#include <iostream>
-
 #include <cuda.h>
 
 #include "RAJA/util/macros.hpp"
