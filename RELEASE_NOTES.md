@@ -35,6 +35,8 @@ Notable changes include:
        of this in the RAJA USer Guide yet. However, there are a couple of 
        example codes in files RAJA/examples/*dynamic-forall*.cpp.
      * Add support for all RAJA segment types in the RAJA::launch framework.
+     * Add SYCL back-end support for RAJA::launch and dynamic shared memory
+       for all beck-ends in RAJA::launch. These changes introduce API changes.
      * Add additional policies to WorkGroup construct that allow for different
        methods of dispatching work.
      * Add special case implementations to CUDA atomicInc and atomicDec 
@@ -54,13 +56,14 @@ Notable changes include:
   * Build changes / improvements:
      * Submodule updates:
          * BLT updated to ...
-         * Camp updated to ....
+         * Camp updated to v2022.10.0 release.
      * The minimum CMake version required has changed. For a HIP build,
        CMake 3.23 or newer is required. For all other builds CMake 3.20
        or newer is required.
      * OpenMP back-end support is now off by default to match behavior of
        all other RAJA parallel back-end support. To enable OpenMP, users
        must now run CMake with the -DENABLE_OPENMP=On option.
+     * Support OpenMP back-end enablement in a HIP build configuration.
      * RAJA_ENABLE_VECTORIZATION CMake option added to enable/disable
        new SIMD/SIMT vectorization support. The default is 'On'. The option
        allows users to disable if they wish.
@@ -82,7 +85,8 @@ Notable changes include:
   * Bug fixes / improvements:
      * Expanded test coverage to catch more cases that users have run into.
      * Various fixes in SIMD/SIMT support for different compilers and versions
-       users have hit recently.
+       users have hit recently. Also, changes to internal implementations to
+       improve run time performance for those features.
 
 
 Version 2022.03.1 -- Release date 2022-08-10
