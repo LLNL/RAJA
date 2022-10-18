@@ -201,7 +201,7 @@ RAJA::expt::Reduce
 * Each ``RAJA::expt::Reduce`` argument to ``RAJA::forall`` is templated on
   a reduction operator, and takes a reference to a target variable to write 
   the final reduction result to, ``&rs`` and ``&rm`` in the example code
-  above. The reduction operation will include the initial value of
+  above. The reduction operation will include the existing value of
   the given target variable.
 * The kernel body lambda expression passed to ``RAJA::forall`` requires an 
   argument corresponding to each ``RAJA::expt::Reduce`` argument, ``_rs`` and 
