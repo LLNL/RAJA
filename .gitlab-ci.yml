@@ -75,7 +75,7 @@ should-we-test-check:
         curl --url "https://api.github.com/repos/${GITHUB_PROJECT_ORG}/${GITHUB_PROJECT_NAME}/statuses/${CI_COMMIT_SHA}" \
              --header 'Content-Type: application/json' \
              --header "authorization: Bearer ${GITHUB_TOKEN}" \
-             --data "{ \"state\": \"failed\", \"target_url\": \"${CI_PIPELINE_URL}\", \"description\": \"GitLab: Skipped Draft PR\", \"context\": \"ci/gitlab/skipped-draft-pr\" }"
+             --data "{ \"state\": \"failure\", \"target_url\": \"${CI_PIPELINE_URL}\", \"description\": \"GitLab: Skipped Draft PR\", \"context\": \"ci/gitlab/skipped-draft-pr\" }"
         exit 1
       fi
 
