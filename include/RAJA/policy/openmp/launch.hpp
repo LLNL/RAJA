@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing user interface for RAJA::Teams::openmp
+ * \brief   RAJA header file containing user interface for RAJA::launch::openmp
  *
  ******************************************************************************
  */
@@ -15,41 +15,56 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_teams_openmp_HPP
-#define RAJA_pattern_teams_openmp_HPP
+#ifndef RAJA_pattern_launch_openmp_HPP
+#define RAJA_pattern_launch_openmp_HPP
 
-#include "RAJA/pattern/teams/teams_core.hpp"
+#include "RAJA/pattern/launch/launch_core.hpp"
 #include "RAJA/policy/openmp/policy.hpp"
 
 
 namespace RAJA
 {
 
-namespace expt
-{
-
 template <>
-struct LaunchExecute<RAJA::expt::omp_launch_t> {
+struct LaunchExecute<RAJA::omp_launch_t> {
 
 
   template <typename BODY>
-  static void exec(LaunchContext const &ctx, BODY const &body)
+  static void exec(LaunchParams const &params, const char *, BODY const &body)
   {
     RAJA::region<RAJA::omp_parallel_region>([&]() {
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
-      loop_body.get_priv()(ctx);
+
+        LaunchContext ctx;
+
+        using RAJA::internal::thread_privatize;
+        auto loop_body = thread_privatize(body);
+
+        ctx.shared_mem_ptr = (char*) malloc(params.shared_mem_size);
+
+        loop_body.get_priv()(ctx);
+
+        free(ctx.shared_mem_ptr);
+        ctx.shared_mem_ptr = nullptr;
     });
   }
 
   template <typename BODY>
   static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, LaunchContext const &ctx, BODY const &body)
+  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *, BODY const &body)
   {
     RAJA::region<RAJA::omp_parallel_region>([&]() {
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
-      loop_body.get_priv()(ctx);
+
+        LaunchContext ctx;
+
+        using RAJA::internal::thread_privatize;
+        auto loop_body = thread_privatize(body);
+
+        ctx.shared_mem_ptr = (char*) malloc(params.shared_mem_size);
+
+        loop_body.get_priv()(ctx);
+
+        free(ctx.shared_mem_ptr);
+        ctx.shared_mem_ptr = nullptr;
     });
 
     return resources::EventProxy<resources::Resource>(res);
@@ -495,8 +510,6 @@ struct TileICountExecute<omp_for_exec, SEGMENT> {
     }
   }
 };
-
-}  // namespace expt
 
 }  // namespace RAJA
 #endif

@@ -43,7 +43,7 @@
 //
 #include "RAJA/pattern/forall.hpp"
 #include "RAJA/pattern/kernel.hpp"
-#include "RAJA/pattern/teams.hpp"
+#include "RAJA/pattern/launch.hpp"
 
 //
 // Generic templates to describe SIMD/SIMT registers and vectors

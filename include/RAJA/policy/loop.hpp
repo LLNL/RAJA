@@ -29,7 +29,7 @@
 #include "RAJA/policy/loop/policy.hpp"
 #include "RAJA/policy/loop/scan.hpp"
 #include "RAJA/policy/loop/sort.hpp"
-#include "RAJA/policy/loop/teams.hpp"
+#include "RAJA/policy/loop/launch.hpp"
 #include "RAJA/policy/loop/WorkGroup.hpp"
 
 #endif  // closing endif for header file include guard

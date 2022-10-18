@@ -12,18 +12,18 @@
 Elements of Loop Execution
 ==============================================
 
-The ``RAJA::forall``, ``RAJA::expt::dynamic_forall``, ``RAJA::kernel``, and ``RAJA::expt::launch``
+The ``RAJA::forall``, ``RAJA::expt::dynamic_forall``, ``RAJA::kernel``, and ``RAJA::launch``
 template methods comprise the RAJA interface for kernel
 execution. ``forall`` methods execute simple, non-nested loops,
 ``RAJA::kernel`` methods support nested loops and other complex loop
-kernels and transformations, and ``RAJA::expt::launch`` creates an execution
+kernels and transformations, and ``RAJA::launch`` creates an execution
 space in which kernels are written in terms of nested loops using
-the ``RAJA::expt::loop`` method.
+the ``RAJA::loop`` method.
 
-.. note:: The ``forall`` , and ``kernel`` methods are in the ``RAJA``
-          namespace, while ``dynamic_forall`` and ``launch`` are in the RAJA namespace for
-          experimental features ``RAJA::expt``.  ``RAJA::expt::launch``
-          and ``RAJA::expt::dynamic_forall`` will be moved to the ``RAJA`` namespace in a future RAJA release.
+.. note:: The ``forall`` ,  ``kernel``, and ``launch`` methods are in the ``RAJA``
+          namespace, while ``dynamic_forall`` is in the RAJA namespace for
+          experimental features ``RAJA::expt``.  ``RAJA::expt::dynamic_forall``
+          will be moved to the ``RAJA`` namespace in a future RAJA release.
 
 For more information on RAJA execution policies and iteration space constructs,
 see :ref:`feat-policies-label` and :ref:`feat-index-label`, respectively.
@@ -286,24 +286,20 @@ Please see the following tutorial sections for detailed examples that use
  * :ref:`tut-matrixmultiply-label`
 
 ------------------------------------------
-Hierarchical loops (RAJA::expt::launch)
+Hierarchical loops (RAJA::launch)
 ------------------------------------------
 
-The ``RAJA::expt::launch`` template is an alternative interface to
+The ``RAJA::launch`` template is an alternative interface to
 ``RAJA::kernel`` that may be preferred for certain types of complex kernels
 or based on coding style preferences.
 
-.. note:: ``RAJA::expt::launch`` will be moved out of the ``expt`` namespace
-          in a future RAJA release, after which it will appear as
-          ``RAJA::launch``.
-
-``RAJA::expt::launch`` optionally allows either host or device execution
+``RAJA::launch`` optionally allows either host or device execution
 to be chosen at run time. The method takes an execution policy type that
 will define the execution environment inside a lambda expression for a kernel
 to be run on a host, device, or either. Kernel algorithms are written inside
-main lambda expression using ``RAJA::expt::loop`` methods.
+main lambda expression using ``RAJA::loop`` methods.
 
-The ``RAJA::expt::launch`` framework aims to unify thread/block based
+The ``RAJA::launch`` framework aims to unify thread/block based
 programming models such as CUDA/HIP/SYCL while maintaining portability on
 host back-ends (OpenMP, sequential). As we showed earlier, when using the
 ``RAJA::kernel`` interface, developers express all aspects of nested loop
@@ -312,18 +308,18 @@ is templated.
 In contrast, the ``RAJA::launch`` interface allows users to express
 nested loop execution in a manner that more closely reflects how one would
 write conventional nested C-style for-loop code. For example, here is an
-example of a ``RAJA::expt::launch`` kernel that copies values from an array in
+example of a ``RAJA::launch`` kernel that copies values from an array in
 into a *shared memory* array::
 
-  RAJA::expt::launch<launch_policy>(select_CPU_or_GPU)
-  RAJA::expt::Grid(RAJA::expt::Teams(NE), RAJA::expt::Threads(Q1D)),
-  [=] RAJA_HOST_DEVICE (RAJA::expt::Launch ctx) {
+  RAJA::launch<launch_policy>(select_CPU_or_GPU)
+  RAJA::LaunchParams(RAJA::Teams(NE), RAJA::Threads(Q1D)),
+  [=] RAJA_HOST_DEVICE (RAJA::Launch ctx) {
 
-    RAJA::expt::loop<team_x> (ctx, RAJA::RAJA::TypedRangeSegment<int>(0, teamRange), [&] (int bx) {
+    RAJA::loop<team_x> (ctx, RAJA::RAJA::TypedRangeSegment<int>(0, teamRange), [&] (int bx) {
 
       RAJA_TEAM_SHARED double s_A[SHARE_MEM_SIZE];
 
-      RAJA::expt::loop<thread_x> (ctx, RAJA::RAJA::TypedRangeSegment<int>(0, threadRange), [&] (int tx) {
+      RAJA::loop<thread_x> (ctx, RAJA::RAJA::TypedRangeSegment<int>(0, threadRange), [&] (int tx) {
         s_A[tx] = tx;
       });
 
@@ -333,25 +329,25 @@ into a *shared memory* array::
 
   });
 
-The idea underlying ``RAJA::expt::launch`` is to enable developers to express
+The idea underlying ``RAJA::launch`` is to enable developers to express
 hierarchical parallelism in terms of teams and threads. Similar to the CUDA
 programming model, development is done using a collection of threads, and
-threads are grouped into teams. Using the ``RAJA::expt::loop`` methods
+threads are grouped into teams. Using the ``RAJA::loop`` methods
 iterations of the loop may be executed by threads or teams depending on the
 execution policy type. The launch context serves to synchronize threads within
-the same team. The ``RAJA::expt::launch`` interface has three main concepts:
+the same team. The ``RAJA::launch`` interface has three main concepts:
 
-  * ``RAJA::expt::launch`` template. This creates an execution environment in
-    which a kernel implementation is written using nested ``RAJA::expt::loop``
+  * ``RAJA::launch`` template. This creates an execution environment in
+    which a kernel implementation is written using nested ``RAJA::loop``
     statements. The launch policy template parameter used with the
-    ``RAJA::expt::launch`` method enables specification of both a host and
+    ``RAJA::launch`` method enables specification of both a host and
     device execution environment, which enables run time selection of
     kernel execution.
 
-  * ``RAJA::expt::Grid`` type. This type takes a number of teams and and a
+  * ``RAJA::LaunchParams`` type. This type takes a number of teams and and a
     number of threads as arguments.
 
-  * ``RAJA::expt::loop`` template. These are used to define hierarchical
+  * ``RAJA::loop`` template. These are used to define hierarchical
     parallel execution of a kernel. Operations within a loop are mapped to
     either teams or threads based on the execution policy template parameter
     provided.
@@ -362,11 +358,11 @@ team policies are typically aliases for RAJA GPU block policies in the
 x,y,z dimensions, while thread policies are aliases for RAJA GPU thread
 policies in the x,y,z dimensions. In a host execution environment, teams and
 threads may be mapped to sequential loop execution or OpenMP threaded regions.
-Often, the ``RAJA::expt::Grid`` method can take an empty argument list for
+Often, the ``RAJA::LaunchParams`` method can take an empty argument list for
 host execution.
 
 Please see the following tutorial sections for detailed examples that use
-``RAJA::expt::launch``:
+``RAJA::launch``:
 
  * :ref:`tut-launchintro-label`
  * :ref:`tut-launchexecpols-label`

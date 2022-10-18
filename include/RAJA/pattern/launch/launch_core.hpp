@@ -15,8 +15,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_pattern_teams_core_HPP
-#define RAJA_pattern_teams_core_HPP
+#ifndef RAJA_pattern_launch_core_HPP
+#define RAJA_pattern_launch_core_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/internal/get_platform.hpp"
@@ -28,7 +28,10 @@
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
-#if defined(RAJA_DEVICE_CODE)
+//Odd dependecy with atomics is breaking CI builds
+//#include "RAJA/util/View.hpp"
+
+#if defined(RAJA_DEVICE_CODE) && !defined(RAJA_ENABLE_SYCL)
 #define RAJA_TEAM_SHARED __shared__
 #else
 #define RAJA_TEAM_SHARED
@@ -37,11 +40,9 @@
 namespace RAJA
 {
 
-namespace expt
-{
-
 // GPU or CPU threads available
-enum ExecPlace { HOST, DEVICE, NUM_PLACES };
+//strongly type the ExecPlace (guards agaist errors)
+enum struct ExecPlace : int { HOST, DEVICE, NUM_PLACES };
 
 struct null_launch_t {
 };
@@ -128,18 +129,17 @@ struct Lanes {
   constexpr Lanes(int i) : value(i) {}
 };
 
-struct Grid {
+struct LaunchParams {
 public:
   Teams teams;
   Threads threads;
-  Lanes lanes;
-  const char *kernel_name{nullptr};
+  size_t shared_mem_size;
 
   RAJA_INLINE
-  Grid() = default;
+  LaunchParams() = default;
 
-  Grid(Teams in_teams, Threads in_threads, const char *in_kernel_name = nullptr)
-    : teams(in_teams), threads(in_threads), kernel_name(in_kernel_name){};
+  LaunchParams(Teams in_teams, Threads in_threads, size_t in_shared_mem_size = 0)
+    : teams(in_teams), threads(in_threads), shared_mem_size(in_shared_mem_size) {};
 
 private:
   RAJA_HOST_DEVICE
@@ -149,26 +149,63 @@ private:
   RAJA_HOST_DEVICE
   RAJA_INLINE
   Threads apply(Threads const &a) { return (threads = a); }
-
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  Lanes apply(Lanes const &a) { return (lanes = a); }
 };
 
-
-class LaunchContext : public Grid
+class LaunchContext
 {
 public:
 
-  LaunchContext(Grid const &base)
-      : Grid(base)
+  //Bump style allocator used to
+  //get memory from the pool
+  size_t shared_mem_offset;
+
+  void *shared_mem_ptr;
+
+#if defined(RAJA_ENABLE_SYCL)
+  mutable cl::sycl::nd_item<3> *itm;
+#endif
+
+  RAJA_HOST_DEVICE LaunchContext()
+    : shared_mem_offset(0), shared_mem_ptr(nullptr)
   {
+  }
+
+  //TODO handle alignment
+  template<typename T>
+  RAJA_HOST_DEVICE T* getSharedMemory(size_t bytes)
+  {
+    T * mem_ptr = &((T*) shared_mem_ptr)[shared_mem_offset];
+
+    shared_mem_offset += bytes*sizeof(T);
+    return mem_ptr;
+  }
+
+  /*
+  //Odd dependecy with atomics is breaking CI builds
+  template<typename T, size_t DIM, typename IDX_T=RAJA::Index_type, ptrdiff_t z_stride=DIM-1, typename arg, typename... args>
+  RAJA_HOST_DEVICE auto getSharedMemoryView(size_t bytes, arg idx, args... idxs)
+  {
+    T * mem_ptr = &((T*) shared_mem_ptr)[shared_mem_offset];
+
+    shared_mem_offset += bytes*sizeof(T);
+    return RAJA::View<T, RAJA::Layout<DIM, IDX_T, z_stride>>(mem_ptr, idx, idxs...);
+  }
+  */
+
+  RAJA_HOST_DEVICE void releaseSharedMemory()
+  {
+    //On the cpu/gpu we want to restart the count
+    shared_mem_offset = 0;
   }
 
   RAJA_HOST_DEVICE
   void teamSync()
   {
-#if defined(RAJA_DEVICE_CODE)
+#if defined(RAJA_DEVICE_CODE) && defined(RAJA_ENABLE_SYCL)
+    itm->barrier(sycl::access::fence_space::local_space);
+#endif
+
+#if defined(RAJA_DEVICE_CODE) && !defined(RAJA_ENABLE_SYCL)
     __syncthreads();
 #endif
   }
@@ -177,31 +214,44 @@ public:
 template <typename LAUNCH_POLICY>
 struct LaunchExecute;
 
+//Policy based launch without name argument
+template <typename LAUNCH_POLICY, typename BODY>
+void launch(LaunchParams const &params, BODY const &body)
+{
+  launch<LAUNCH_POLICY>(params, nullptr, body);
+}
+
 //Policy based launch
 template <typename LAUNCH_POLICY, typename BODY>
-void launch(Grid const &grid, BODY const &body)
+void launch(LaunchParams const &params, const char *kernel_name, BODY const &body)
 {
   //Take the first policy as we assume the second policy is not user defined.
   //We rely on the user to pair launch and loop policies correctly.
   using launch_t = LaunchExecute<typename LAUNCH_POLICY::host_policy_t>;
-  launch_t::exec(LaunchContext(grid), body);
+  launch_t::exec(params, kernel_name, body);
 }
 
 
 //Run time based policy launch
 template <typename POLICY_LIST, typename BODY>
-void launch(ExecPlace place, Grid const &grid, BODY const &body)
+void launch(ExecPlace place, LaunchParams const &params, BODY const &body)
+{
+  launch<POLICY_LIST>(place, params, nullptr, body);
+}
+
+template <typename POLICY_LIST, typename BODY>
+void launch(ExecPlace place, const LaunchParams &params, const char *kernel_name, BODY const &body)
 {
   switch (place) {
-    case HOST: {
+    case ExecPlace::HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      launch_t::exec(LaunchContext(grid), body);
+      launch_t::exec(params, kernel_name, body);
       break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
-    case DEVICE: {
+  case ExecPlace::DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      launch_t::exec(LaunchContext(grid), body);
+      launch_t::exec(params, kernel_name, body);
       break;
     }
 #endif
@@ -211,16 +261,16 @@ void launch(ExecPlace place, Grid const &grid, BODY const &body)
 }
 
 // Helper function to retrieve a resource based on the run-time policy - if a device is active
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 template<typename T, typename U>
-RAJA::resources::Resource Get_Runtime_Resource(T host_res, U device_res, RAJA::expt::ExecPlace device){
-  if(device == RAJA::expt::DEVICE) {return RAJA::resources::Resource(device_res);}
+RAJA::resources::Resource Get_Runtime_Resource(T host_res, U device_res, RAJA::ExecPlace device){
+  if(device == RAJA::ExecPlace::DEVICE) {return RAJA::resources::Resource(device_res);}
   else { return RAJA::resources::Resource(host_res); }
 }
 #else
 template<typename T>
-RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::expt::ExecPlace device){
-  if(device == RAJA::expt::DEVICE) {RAJA_ABORT_OR_THROW("Device is not enabled");}
+RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::ExecPlace device){
+  if(device == RAJA::ExecPlace::DEVICE) {RAJA_ABORT_OR_THROW("Device is not enabled");}
 
   return RAJA::resources::Resource(host_res);
 }
@@ -230,25 +280,32 @@ RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::expt::ExecPlace de
 //Launch API which takes team resource struct
 template <typename POLICY_LIST, typename BODY>
 resources::EventProxy<resources::Resource>
-launch(RAJA::resources::Resource res, Grid const &grid, BODY const &body)
+launch(RAJA::resources::Resource res, LaunchParams const &params, BODY const &body)
+{
+  return launch<POLICY_LIST>(res, params, nullptr, body);
+}
+
+template <typename POLICY_LIST, typename BODY>
+resources::EventProxy<resources::Resource>
+launch(RAJA::resources::Resource res, LaunchParams const &params, const char *kernel_name, BODY const &body)
 {
 
   ExecPlace place;
   if(res.get_platform() == camp::resources::v1::Platform::host) {
-    place = RAJA::expt::HOST;
+    place = RAJA::ExecPlace::HOST;
   }else{
-    place = RAJA::expt::DEVICE;
+    place = RAJA::ExecPlace::DEVICE;
   }
 
   switch (place) {
-    case HOST: {
+    case ExecPlace::HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      return launch_t::exec(res, LaunchContext(grid), body); break;
+      return launch_t::exec(res, params, kernel_name, body); break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
-    case DEVICE: {
+    case ExecPlace::DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      return launch_t::exec(res, LaunchContext(grid), body); break;
+      return launch_t::exec(res, params, kernel_name, body); break;
     }
 #endif
     default: {
@@ -301,6 +358,9 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const &ctx,
                                                           body);
 }
 
+namespace expt
+{
+
 RAJA_SUPPRESS_HD_WARN
 template <typename POLICY_LIST,
           typename CONTEXT,
@@ -334,8 +394,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const &ctx,
                            segment0, segment1, segment2, body);
 }
 
-
-
+} //namespace expt
 
 template <typename POLICY, typename SEGMENT>
 struct TileExecute;
@@ -375,6 +434,9 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile_icount(CONTEXT const &ctx,
                                                           segment,
                                                           body);
 }
+
+namespace expt
+{
 
 template <typename POLICY_LIST,
           typename CONTEXT,
@@ -418,7 +480,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile_icount(CONTEXT const &ctx,
                                                           body);
 }
 
-}  // namespace expt
+} //namespace expt
 
 }  // namespace RAJA
 #endif

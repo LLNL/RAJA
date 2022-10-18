@@ -9,7 +9,7 @@
 .. _tut-launchexecpols-label:
 
 -----------------------------------------------------------
-``RAJA::expt::Launch`` Execution Policies
+``RAJA::Launch`` Execution Policies
 -----------------------------------------------------------
 
 This section contains an exercise file 
@@ -23,18 +23,18 @@ from the build directory.
 
 Key RAJA features shown in this section are:
 
-  * ``RAJA::expt::launch`` kernel execution environment template
-  * ``RAJA::expt::loop`` loop execution template and execution policies
+  * ``RAJA::launch`` kernel execution environment template
+  * ``RAJA::loop`` loop execution template and execution policies
 
 The examples in this section illustrate how to construct nested loop kernels
-inside an ``RAJA::expt::launch`` execution environment. In particular,
+inside an ``RAJA::launch`` execution environment. In particular,
 the goal is for you to gain an understanding of how to use execution policies
-with nested ``RAJA::expt::loop`` method calls to perform various nested
+with nested ``RAJA::loop`` method calls to perform various nested
 loop execution patterns. All examples use the same simple kernel, which
 is a three-level loop nest to initialize the entries in an array. The kernels 
 perform the same operations as the examples in :ref:`tut-kernelexecpols-label`.
 By comparing the two sets of examples, you will gain an understanding of the
-differences between the ``RAJA::kernel`` and the ``RAJA::expt::launch`` 
+differences between the ``RAJA::kernel`` and the ``RAJA::launch`` 
 interfaces.
 
 We begin by defining some constants used throughout the examples and allocating
@@ -86,7 +86,7 @@ Using the View, the C-style kernel looks like:
 Notice how accessing each (i,j,k) entry in the array is more natural,
 and less error prone, using the View.
 
-The corresponding RAJA sequential version using ``RAJA::expt::launch`` is:
+The corresponding RAJA sequential version using ``RAJA::launch`` is:
 
 .. literalinclude:: ../../../../exercises/launchintro-execpols_solution.cpp
    :start-after: _raja_tensorinit_seq_start
@@ -95,8 +95,8 @@ The corresponding RAJA sequential version using ``RAJA::expt::launch`` is:
 
 This should be familiar to the reader who has read through the preceding
 :ref:`tut-launchintro-label` section of this tutorial. As the 
-``RAJA::expt::launch`` method is templated on a host execution policy, the 
-``RAJA::expt::Grid`` object can be defined without arguments as loop methods 
+``RAJA::launch`` method is templated on a host execution policy, the 
+``RAJA::LaunchParams`` object can be defined without arguments as loop methods 
 will get dispatched as standard C-Style for-loops.
      
 Suppose we wanted to parallelize the outer 'k' loop using OpenMP multithreading.
@@ -117,11 +117,11 @@ The corresponding RAJA versions of the C-style OpenMP variant is:
    :end-before: _raja_tensorinit_omp_outer_end
    :language: C++
 
-With the OpenMP version above, ``RAJA::expt::launch`` method is templated with
-a ``RAJA::expt::omp_launch_t`` execution policy. The policy is used
+With the OpenMP version above, ``RAJA::launch`` method is templated on
+a ``RAJA::omp_launch_t`` execution policy. The policy is used
 to create an OpenMP parallel region, loop iterations may then be distributed
-using ``RAJA::expt::loop`` methods templated on ``RAJA::omp_for_exec`` 
-execution policies. As before, the ``RAJA::expt::Grid`` object may be 
+using ``RAJA::loop`` methods templated on ``RAJA::omp_for_exec`` 
+execution policies. As before, the ``RAJA::LaunchParams`` object may be 
 initialized without grid dimensions as the CPU does not require specifying a 
 compute grid.
 
@@ -140,18 +140,18 @@ where we have defined the CUDA thread-block dimensions as:
    :end-before: _cuda_blockdim_end
    :language: C++      
 
-Here, we use the ``RAJA::expt::cuda_launch_t`` policy type to
+Here, we use the ``RAJA::cuda_launch_t`` policy type to
 indicate that we want a CUDA kernel to be launched. The 'k', 'j', 'i'
 iteration variables are mapped to CUDA threads and blocks using the CUDA 
 execution policy types ``RAJA::cuda_block_z_direct``, 
-``RAJA::expt::cuda_global_thread_y``, and ``RAJA::expt::cuda_global_thread_x``,
+``RAJA::cuda_global_thread_y``, and ``RAJA::cuda_global_thread_x``,
 respectively. Thus, we use a two-dimensional CUDA thread-block and 
 three-dimensional compute grid to map the loop iterations to CUDA threads. In 
 comparison to the RAJA CUDA example in :ref:`tut-kernelexecpols-label` , 
-``RAJA::expt::loop`` methods support execution policies which enable mapping 
+``RAJA::loop`` methods support execution policies, which enable mapping 
 directly to the global thread ID of a compute grid.
 
-Using a combination of ``RAJA::expt::tile`` and ``RAJA::expt::loop`` methods, 
+Using a combination of ``RAJA::tile`` and ``RAJA::loop`` methods, 
 we can create a loop tiling platform portable implementation. Here, is a 
 CUDA variant: 
 
@@ -164,9 +164,9 @@ We consider the kernel to be portable, because all of the execution policy types
 and execution parameters can be replaced by other types and values without
 changing the kernel code directly. 
 
-The ``RAJA::expt::tile`` methods are used to partition an iteration space into
-tiles to be used within a ``RAJA::expt::loop`` method. The '{i,j,k}_block_sz'
-arguments passed to the ``RAJA::expt::tile`` function specify the tile size
+The ``RAJA::tile`` methods are used to partition an iteration space into
+tiles to be used within a ``RAJA::loop`` method. The '{i,j,k}_block_sz'
+arguments passed to the ``RAJA::tile`` function specify the tile size
 for each loop. In the case of GPU programming models, we define the tile size 
 to correspond to the number of threads in a given dimension. Execution tile 
 and loop execution policies are chosen to have CUDA blocks and threads map 
@@ -191,8 +191,8 @@ A few differences between the CUDA and RAJA-CUDA versions are worth noting.
 First, the CUDA version uses the CUDA ``dim3`` construct to express the 
 threads-per-block and number of thread-blocks to use: i.e., the 
 ``nthreads_per_block`` and ``nblocks`` variable definitions. The
-``RAJA::expt::launch`` interface takes compute dimensions through a
-``RAJA::expt::Grid`` object. RAJA provides a macro ``RAJA_DIVIDE_CEILING_INT``
+``RAJA::launch`` interface takes compute dimensions through a
+``RAJA::LaunchParams`` object. RAJA provides a macro ``RAJA_DIVIDE_CEILING_INT``
 to perform the proper integer arithmetic to calculate the number of blocks 
 based on the size of the array and the block size in each dimension. Second, the
 mapping of thread identifiers to the (i,j,k) indices is explicit in the device 
