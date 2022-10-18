@@ -649,12 +649,13 @@ omp_atomic                    any OpenMP    Atomic operation performed in an Ope
 cuda/hip/sycl_atomic          any           Atomic operation performed in a
                               CUDA/HIP/SYCL CUDA/HIP/SYCL kernel.
                               policy        
-cuda/hip/sycl_atomic_explicit any           Atomic operation performed in a
-                              CUDA/HIP/SYCL CUDA/HIP/SYCL kernel that may also be
-                              policy        used in a host execution context. The
-                                            atomic policy takes a host atomic 
-                                            policy template argument. See additional
-                                            explanation and example below.
+
+cuda/hip_atomic_explicit      any CUDA/HIP  Atomic operation performed in a CUDA/HIP
+                              policy        kernel that may also be used in a host
+                                            execution context. The atomic policy
+                                            takes a host atomic policy template
+                                            argument. See additional explanation 
+                                            and example below.
 builtin_atomic                seq_exec,     Compiler *builtin* atomic operation.
                               loop_exec,
                               any OpenMP
