@@ -51,6 +51,7 @@ stages:
 # Here, we make sure the pipeline fails if the PR is a draft.
 should-we-test-check:
   stage: should-we-test
+  tags: [shell, oslic]
   script:
     - |
       curl --header "authorization: Bearer ${GITHUB_TOKEN}" -X POST -d " \
