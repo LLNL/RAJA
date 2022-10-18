@@ -81,6 +81,7 @@ should-we-test-check:
   rules:
     - if: $CI_PIPELINE_SOURCE == "web"
       when: never
+    - when: on_success
 
 # Template for jobs triggering a build-and-test sub-pipelines:
 .build-and-test:
