@@ -13,20 +13,20 @@
 #include "RAJA_test-index-types.hpp"
 
 #include "RAJA_test-forall-data.hpp"
-#include "RAJA_test-teams-execpol.hpp"
+#include "RAJA_test-launch-execpol.hpp"
 
 //
 // Header for tests in ./tests directory
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-teams-@SEGTYPES@.hpp"
+#include "test-launch-@SEGTYPES@.hpp"
 
 
 //
 // Cartesian product of types used in parameterized tests
 //
-using @BACKEND@TeamsSegmentTypes =
+using @BACKEND@LaunchSegmentTypes =
   Test< camp::cartesian_product<StrongIdxTypeList,
                                 @BACKEND@ResourceList,
                                 @BACKEND@_launch_policies>>::Types;
@@ -35,5 +35,5 @@ using @BACKEND@TeamsSegmentTypes =
 // Instantiate parameterized test
 //
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               Teams@SEGTYPES@Test,
-                               @BACKEND@TeamsSegmentTypes);
+                               Launch@SEGTYPES@Test,
+                               @BACKEND@LaunchSegmentTypes);

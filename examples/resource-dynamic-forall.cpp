@@ -57,11 +57,11 @@ int main(int argc, char *argv[])
 
   const int pol = std::stoi(argv[1]);
 
-  RAJA::expt::ExecPlace select_cpu_or_gpu;
+  RAJA::ExecPlace select_cpu_or_gpu;
   if(pol < 2) {
-    select_cpu_or_gpu = RAJA::expt::HOST;
+    select_cpu_or_gpu = RAJA::ExecPlace::HOST;
   }else {
-    select_cpu_or_gpu = RAJA::expt::DEVICE;
+    select_cpu_or_gpu = RAJA::ExecPlace::DEVICE;
   }
 
   std::cout << "\n\nRAJA vector addition example...\n";
@@ -112,10 +112,10 @@ int main(int argc, char *argv[])
 #endif
 
   //Get typed erased resource - it will internally store if we are running on the host or device
-#if defined(RAJA_DEVICE_ACTIVE)
-  RAJA::resources::Resource res = RAJA::expt::Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+  RAJA::resources::Resource res = RAJA::Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
 #else
-  RAJA::resources::Resource res = RAJA::expt::Get_Host_Resource(host_res, select_cpu_or_gpu);
+  RAJA::resources::Resource res = RAJA::Get_Host_Resource(host_res, select_cpu_or_gpu);
 #endif
 
   RAJA::expt::dynamic_forall<policy_list>

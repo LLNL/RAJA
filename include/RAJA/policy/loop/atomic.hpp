@@ -22,6 +22,7 @@
 
 #include "RAJA/util/macros.hpp"
 
+#include "RAJA/policy/loop/policy.hpp"
 #include "RAJA/policy/sequential/atomic.hpp"
 
 namespace RAJA
