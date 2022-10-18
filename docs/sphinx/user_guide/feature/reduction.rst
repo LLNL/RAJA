@@ -213,10 +213,9 @@ RAJA::expt::Reduce
   ``RAJA::expt::Reduce`` arguments.
 * The local variables referred to by ``_rs`` and ``_rm`` are initialized with the
   *identity* of the reduction operation to be performed.
-* The local variables are updated in the user supplied lambda as it is called.
+* The local variables are updated in the user supplied lambda.
 * The local variables are reduced to a single value, combining their values across all
   threads participating in the ``RAJA::forall`` execution.
-  .
 * Finally, the target variable is updated with the result of the ``RAJA::forall`` reduction
   by performing the reduction operation to combine the existing value of the target 
   variable and the result of the ``RAJA::forall`` reduction.
@@ -241,7 +240,7 @@ final reduction value was found. With this new interface, *loc* reductions
 are performed using ``ValLoc<T>`` types. Since they are strongly typed, they
 provide ``min()`` and ``max()`` operations that are equivalent to using 
 ``RAJA_MIN()`` or ``RAJA_MAX`` macros as demonstrated in the code example below.
-Users must use ``getVal()`` and ``getLoc()`` methods to access the reduction 
+Users must use the ``getVal()`` and ``getLoc()`` methods to access the reduction 
 results::
 
   double* a = ...;
@@ -290,9 +289,9 @@ any number of ``RAJA::expt::Reduce`` objects to the ``RAJA::forall`` method::
   std::cout << rm_loc.getVal() ...
   std::cout << rm_loc.getLoc() ...
 
-Again, the lambda expression arguments are passed in the same order as
+Again, the lambda expression parameters are in the same order as
 the ``RAJA::expt::Reduce`` arguments to ``RAJA::forall``. Both the types and 
-order of arguments must match to get correct results and to compile 
+order of the parameters must match to get correct results and to compile 
 successfully. Otherwise, a static assertion will be triggered::
 
   LAMBDA Not invocable w/ EXPECTED_ARGS.
@@ -306,6 +305,6 @@ successfully. Otherwise, a static assertion will be triggered::
           ``RAJA::expt::Reduce`` can be passed to a ``RAJA::forall`` to extend
           its behavior. In the above example we demonstrate using 
           ``RAJA::expt::KernelName``, which wraps a ``RAJA::forall`` executing 
-          under a ``HIP`` or ``CUDA`` policy in a named region. Use of the 
-          ``RAJA::expt::KernelName`` parameter does not require any aditional
-          arguments to the lambda expression.
+          under a ``HIP`` or ``CUDA`` policy in a named region. Use of 
+          ``RAJA::expt::KernelName`` does not require an additional
+          parameter in the lambda expression.
