@@ -199,25 +199,27 @@ RAJA::expt::Reduce
   std::cout << rm ...
 
 * Each ``RAJA::expt::Reduce`` argument to ``RAJA::forall`` is templated on
-  a reduction operator, and takes a reference to a target variable to write 
+  a reduction operator, and takes a pointer to a target variable to write 
   the final reduction result to, ``&rs`` and ``&rm`` in the example code
   above. The reduction operation will include the existing value of
   the given target variable.
-* The kernel body lambda expression passed to ``RAJA::forall`` requires an 
-  argument corresponding to each ``RAJA::expt::Reduce`` argument, ``_rs`` and 
-  ``_rm`` in the example code. These arguments are used as a local instance of 
-  of each target of a reduction operation. It is important to note that the 
-  the lambda expression reduction arguments must follow the kernel iteration
-  variable, ``i`` in this case, and appear in the same order as the 
-  corresponding ``RAJA::expt::Reduce`` arguments to ``RAJA::forall``. They
-  also must have the same types as the values passed to the 
-  ``RAJA::expt::Reduce`` arguments. 
-* The local variables ``_rs`` and ``_rm`` are initialized with the *identity* of
-  the reduction operation to be performed.
-* A reduction is performed implicitly by the ``RAJA::forall`` execution
-  across thread copies of the local variables.
-* Finally, the reduction operation is performed against the original value of 
-  the target and the result of the ``RAJA::forall`` reduction.
+* The kernel body lambda expression passed to ``RAJA::forall`` must have a 
+  parameter corresponding to each ``RAJA::expt::Reduce`` argument, ``_rs`` and 
+  ``_rm`` in the example code. These parameters refer to a local target for each
+  reduction operation. It is important to note that the parameters follow the
+  kernel iteration variable, ``i`` in this case, and appear in the same order as the 
+  corresponding ``RAJA::expt::Reduce`` arguments to ``RAJA::forall``. The
+  parameters' types must be references to the types used in the
+  ``RAJA::expt::Reduce`` arguments.
+* The local variables referred to by ``_rs`` and ``_rm`` are initialized with the
+  *identity* of the reduction operation to be performed.
+* The local variables are updated in the user supplied lambda as it is called.
+* The local variables are reduced to a single value, combining their values across all
+  threads participating in the ``RAJA::forall`` execution.
+  .
+* Finally, the target variable is updated with the result of the ``RAJA::forall`` reduction
+  by performing the reduction operation to combine the existing value of the target 
+  variable and the result of the ``RAJA::forall`` reduction.
 * The final reduction value is accessed by referencing the target variable 
   passed to ``RAJA::expt::Reduce`` in the ``RAJA::forall`` method.
 
