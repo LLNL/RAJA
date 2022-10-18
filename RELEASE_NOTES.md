@@ -55,7 +55,7 @@ Notable changes include:
 
   * Build changes / improvements:
      * Submodule updates:
-         * BLT updated to ...
+         * BLT updated to v0.5.2 release.
          * Camp updated to v2022.10.0 release.
      * The minimum CMake version required has changed. For a HIP build,
        CMake 3.23 or newer is required. For all other builds CMake 3.20
