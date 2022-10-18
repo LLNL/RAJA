@@ -52,6 +52,8 @@ stages:
 should-we-test-check:
   stage: should-we-test
   tags: [shell, oslic]
+  variables:
+    GIT_STRATEGY: none
   script:
     - |
       curl --header "authorization: Bearer ${GITHUB_TOKEN}" -X POST -d " \
