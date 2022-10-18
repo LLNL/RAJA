@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iteration Space Coloring: Mesh Vertex Sum &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Sum Reduction: Vector Dot Product" href="dot_product.html" />
+    <link rel="prev" title="Iteration Spaces: Segments and IndexSets" href="indexset_segments.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> RAJA
+            <img src="../../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">RAJA User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html">Getting Started With RAJA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../using_raja.html">Using RAJA in Your Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../config_options.html">Build Configuration Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../features.html">RAJA Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../app_considerations.html">Application Considerations</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html">RAJA Tutorial and Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#raja-tutorial">RAJA Tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#a-little-c-background">A Little C++ Background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#raja-examples-and-exercises">RAJA Examples and Exercises</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../tutorial.html#simple-loops-and-basic-raja-features">Simple Loops and Basic RAJA Features</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="add_vectors.html">Basic Loop Execution: Vector Addition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="indexset_segments.html">Iteration Spaces: Segments and IndexSets</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Iteration Space Coloring: Mesh Vertex Sum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dot_product.html">Sum Reduction: Vector Dot Product</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reductions.html">Reduction Types and Kernels with Multiple Reductions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomic_histogram.html">Atomic Operations: Computing a Histogram</a></li>
+<li class="toctree-l4"><a class="reference internal" href="scan.html">Parallel Scan Operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sort.html">Parallel Sort Operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="view_layout.html">Data Views and Layouts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="permuted-layout-batch-matrix-multiply.html">Permuted Layout: Batched Matrix-Multiplication</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#complex-loops-and-advanced-raja-features">Complex Loops and Advanced RAJA Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#nested-loops-with-raja-kernel">Nested Loops with <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#nested-loops-with-raja-expt-launch">Nested Loops with <code class="docutils literal notranslate"><span class="pre">RAJA::expt::launch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#comparing-raja-kernel-and-raja-expt-launch-matrix-transpose">Comparing <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA::expt::launch</span></code>: Matrix-Transpose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#other-raja-features-and-usage-examples">Other RAJA Features and Usage Examples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guide/index.html">RAJA Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">RAJA User Guide</a> &raquo;</li>
+          <li><a href="../tutorial.html">RAJA Tutorial and Examples</a> &raquo;</li>
+      <li>Iteration Space Coloring: Mesh Vertex Sum</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sphinx/user_guide/tutorial/vertexsum_coloring.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="iteration-space-coloring-mesh-vertex-sum">
+<span id="tut-vertexsum-label"></span><h1>Iteration Space Coloring: Mesh Vertex Sum<a class="headerlink" href="#iteration-space-coloring-mesh-vertex-sum" title="Permalink to this headline">¶</a></h1>
+<p>This section contains an exercise file <code class="docutils literal notranslate"><span class="pre">RAJA/exercises/vertexsum-indexset.cpp</span></code>
+for you to work through if you wish to get some practice with RAJA. The
+file <code class="docutils literal notranslate"><span class="pre">RAJA/exercises/vertexsum-indexset_solution.cpp</span></code> contains complete
+working code for the examples discussed in this section. You can use the
+solution file to check your work and for guidance if you get stuck. To build
+the exercises execute <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">vertexsum-indexset</span></code> and <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">vertexsum-indexset_solution</span></code>
+from the build directory.</p>
+<p>Key RAJA features shown in this example are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code> loop execution template method</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::TypedListSegment</span></code> iteration space construct</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::TypedIndexSet</span></code> iteration space segment container and
+associated execution policies</p></li>
+</ul>
+</div></blockquote>
+<p>The example computes a sum at each vertex on a logically-Cartesian 2D mesh
+as shown in the figure.</p>
+<figure class="align-default" id="id1">
+<img alt="../../../_images/vertexsum.jpg" src="../../../_images/vertexsum.jpg" />
+<figcaption>
+<p><span class="caption-text">The “area” of each vertex is the sum of an area contribution from each element sharing the vertex (left). In particular, one quarter of the area of each mesh element is summed to the vertices surrounding the element (right).</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Each sum is an average of the area of the four mesh elements that share the
+vertex. In many “staggered mesh” applications, an operation like this is common
+and is often written in a way that presents the algorithm clearly but prevents
+parallelization due to potential data races. That is, multiple loop iterates
+over mesh elements may attempt to write to the same shared vertex memory
+location at the same time. The example shows how RAJA constructs can be
+used to enable one to express such an algorithm in parallel and have it
+run correctly without fundamentally changing how it looks in source code.</p>
+<p>We start by setting the size of the mesh, specifically, the total number of
+elements and vertices and the number of elements and vertices in each direction:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="c1">//</span>
+<span class="c1">// 2D mesh has N^2 elements (N+1)^2 vertices.</span>
+<span class="c1">//</span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1000</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Nelem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Nelem_tot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Nelem</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Nelem</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Nvert</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Nvert_tot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Nvert</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Nvert</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>We also set up an array to map each element to its four surrounding vertices
+and set the area of each element:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="c1">//</span>
+<span class="c1">// Define mesh spacing factor &#39;h&#39; and set up elem to vertex mapping array.</span>
+<span class="c1">//</span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.1</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Nelem_tot</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">ie</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">Nelem</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">imap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">e2v_map</span><span class="p">[</span><span class="n">imap</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">e2v_map</span><span class="p">[</span><span class="n">imap</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">e2v_map</span><span class="p">[</span><span class="n">imap</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Nvert</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">e2v_map</span><span class="p">[</span><span class="n">imap</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Nvert</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+
+<span class="c1">//</span>
+<span class="c1">// Initialize element areas so each element area </span>
+<span class="c1">// depends on the i,j coordinates of the element.</span>
+<span class="c1">//</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">memset</span><span class="p">(</span><span class="n">areae</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">Nelem_tot</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span><span class="w"></span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Nelem_tot</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">ie</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">Nelem</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">Nelem</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">h</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">h</span><span class="o">*</span><span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Then, a sequential C-style version of the vertex area calculation looks like
+this:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">memset</span><span class="p">(</span><span class="n">areav_ref</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">Nvert_tot</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span><span class="w"></span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Nelem_tot</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">ie</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">iv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="p">(</span><span class="n">e2v_map</span><span class="p">[</span><span class="mi">4</span><span class="o">*</span><span class="n">ie</span><span class="p">]);</span><span class="w"></span>
+<span class="w">    </span><span class="n">areav_ref</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">areav_ref</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">areav_ref</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">areav_ref</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>We can’t parallelize the entire computation at once due to potential race
+conditions where multiple threads may attempt to sum to a shared element
+vertex simultaneously. However, we can parallelize the computation in
+parts. Here is a C-style OpenMP parallel implementation:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">memset</span><span class="p">(</span><span class="n">areav</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">Nvert_tot</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span><span class="w"></span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">icol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">icol</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">icol</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">     </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">ievec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">idx</span><span class="p">[</span><span class="n">icol</span><span class="p">];</span><span class="w"></span>
+<span class="w">     </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">ievec</span><span class="p">.</span><span class="n">size</span><span class="p">());</span><span class="w"></span>
+
+<span class="w">     </span><span class="cp">#pragma omp parallel for  </span>
+<span class="w">     </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ievec</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"> </span>
+<span class="w">        </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">iv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="p">(</span><span class="n">e2v_map</span><span class="p">[</span><span class="mi">4</span><span class="o">*</span><span class="n">ie</span><span class="p">]);</span><span class="w"></span>
+<span class="w">        </span><span class="n">areav</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">areav</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">areav</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">areav</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">     </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>What we’ve done is broken up the computation into four parts, each of which
+can safely run in parallel because there are no overlapping writes to the
+same entry in the vertex area array in each parallel section. Note that there
+is an outer loop on length four, one iteration for each of the elements that
+share a vertex. Inside the loop, we iterate over a subset of elements in
+parallel using an indexing area that guarantees that we will have no
+data races. In other words, we have “colored” the elements as shown in the
+figure below.</p>
+<figure class="align-center" id="id2">
+<a class="reference internal image-reference" href="../../../_images/vertexsum_color.png"><img alt="../../../_images/vertexsum_color.png" src="../../../_images/vertexsum_color.png" style="width: 300.9px; height: 270.59999999999997px;" /></a>
+<figcaption>
+<p><span class="caption-text">We partition the mesh elements into four disjoint subsets shown by the colors and numbers so that within each subset no two elements share a vertex.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>For completeness, the computation of the four element indexing arrays is:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="c1">//</span>
+<span class="c1">// Gather the element indices for each color in a vector.</span>
+<span class="c1">//</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">idx</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Nelem_tot</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">ie</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">Nelem</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ie</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">Nelem</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">push_back</span><span class="p">(</span><span class="n">ie</span><span class="p">);</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">idx</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">push_back</span><span class="p">(</span><span class="n">ie</span><span class="p">);</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">push_back</span><span class="p">(</span><span class="n">ie</span><span class="p">);</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">idx</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">push_back</span><span class="p">(</span><span class="n">ie</span><span class="p">);</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<section id="raja-parallel-variants">
+<h2>RAJA Parallel Variants<a class="headerlink" href="#raja-parallel-variants" title="Permalink to this headline">¶</a></h2>
+<p>To implement the vertex sum calculation using RAJA, we employ
+<code class="docutils literal notranslate"><span class="pre">RAJA::TypedListSegment</span></code> iteration space objects to enumerate the mesh
+elements for each color and put them in a <code class="docutils literal notranslate"><span class="pre">RAJA::TypedIndexSet</span></code> object.
+This allows us to execute the entire calculation using one <code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code>
+call.</p>
+<p>We declare a type alias for the list segments to make the code more compact:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">SegmentType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">TypedListSegment</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Then, we build the index set:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">TypedIndexSet</span><span class="o">&lt;</span><span class="n">SegmentType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">colorset</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">colorset</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="w"> </span><span class="n">SegmentType</span><span class="p">(</span><span class="o">&amp;</span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">size</span><span class="p">(),</span><span class="w"> </span><span class="n">host_res</span><span class="p">)</span><span class="w"> </span><span class="p">);</span><span class="w"> </span>
+<span class="w">  </span><span class="n">colorset</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="w"> </span><span class="n">SegmentType</span><span class="p">(</span><span class="o">&amp;</span><span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">size</span><span class="p">(),</span><span class="w"> </span><span class="n">host_res</span><span class="p">)</span><span class="w"> </span><span class="p">);</span><span class="w"> </span>
+<span class="w">  </span><span class="n">colorset</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="w"> </span><span class="n">SegmentType</span><span class="p">(</span><span class="o">&amp;</span><span class="n">idx</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">idx</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">size</span><span class="p">(),</span><span class="w"> </span><span class="n">host_res</span><span class="p">)</span><span class="w"> </span><span class="p">);</span><span class="w"> </span>
+<span class="w">  </span><span class="n">colorset</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="w"> </span><span class="n">SegmentType</span><span class="p">(</span><span class="o">&amp;</span><span class="n">idx</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">idx</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">size</span><span class="p">(),</span><span class="w"> </span><span class="n">host_res</span><span class="p">)</span><span class="w"> </span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Note that we construct the list segments using the arrays we made earlier
+to partition the elements. Then, we push them onto the index set.</p>
+<p>Now, we can use a two-level index set execution policy that iterates over the
+segments sequentially and executes each segment in parallel using OpenMP
+multithreading to run the kernel:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">EXEC_POL1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">ExecPolicy</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">seq_segit</span><span class="p">,</span><span class="w"> </span>
+<span class="w">                                     </span><span class="n">RAJA</span><span class="o">::</span><span class="n">omp_parallel_for_exec</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">forall</span><span class="o">&lt;</span><span class="n">EXEC_POL1</span><span class="o">&gt;</span><span class="p">(</span><span class="n">colorset</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">](</span><span class="kt">int</span><span class="w"> </span><span class="n">ie</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">iv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="p">(</span><span class="n">e2v_map</span><span class="p">[</span><span class="mi">4</span><span class="o">*</span><span class="n">ie</span><span class="p">]);</span><span class="w"></span>
+<span class="w">    </span><span class="n">areav</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">areav</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">areav</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">areav</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">});</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The execution of the RAJA version is similar to the C-style OpenMP variant
+shown earlier, where we executed four OpenMP parallel loops in sequence,
+but the code is more concise. In particular, we execute four parallel OpenMP
+loops, one for each list segment in the index set. Also, note that we do
+not have to manually extract the element index from the segments like we
+did earlier since RAJA passes the segment entries directly to the lambda
+expression.</p>
+<p>Here is the RAJA variant where we iterate over the
+segments sequentially, and execute each segment in parallel via a CUDA
+kernel launched on a GPU:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">EXEC_POL2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">ExecPolicy</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">seq_segit</span><span class="p">,</span><span class="w"> </span>
+<span class="w">                                     </span><span class="n">RAJA</span><span class="o">::</span><span class="n">cuda_exec</span><span class="o">&lt;</span><span class="n">CUDA_BLOCK_SIZE</span><span class="o">&gt;&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">forall</span><span class="o">&lt;</span><span class="n">EXEC_POL2</span><span class="o">&gt;</span><span class="p">(</span><span class="n">cuda_colorset</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">RAJA_DEVICE</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">ie</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">iv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="p">(</span><span class="n">e2v_map</span><span class="p">[</span><span class="mi">4</span><span class="o">*</span><span class="n">ie</span><span class="p">]);</span><span class="w"></span>
+<span class="w">    </span><span class="n">areav</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">areav</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">areav</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">areav</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">});</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The only differences here are that we have marked the lambda loop body with the
+<code class="docutils literal notranslate"><span class="pre">RAJA_DEVICE</span></code> macro, used a CUDA segment execution policy, and built a new
+index set with list segments created using a CUDA resource so that the indices
+live in device memory.</p>
+<p>The RAJA HIP variant, which we show for completeness, is similar:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">EXEC_POL3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">ExecPolicy</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">seq_segit</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="n">RAJA</span><span class="o">::</span><span class="n">hip_exec</span><span class="o">&lt;</span><span class="n">HIP_BLOCK_SIZE</span><span class="o">&gt;&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">forall</span><span class="o">&lt;</span><span class="n">EXEC_POL3</span><span class="o">&gt;</span><span class="p">(</span><span class="n">hip_colorset</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">RAJA_DEVICE</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">ie</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">iv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="p">(</span><span class="n">d_e2v_map</span><span class="p">[</span><span class="mi">4</span><span class="o">*</span><span class="n">ie</span><span class="p">]);</span><span class="w"></span>
+<span class="w">    </span><span class="n">d_areav</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">d_areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">d_areav</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">d_areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">d_areav</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">d_areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">d_areav</span><span class="p">[</span><span class="w"> </span><span class="n">iv</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">d_areae</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">});</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The main difference for the HIP variant is that we use explicit device
+memory allocation/deallocation and host-device memory copy operations.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="indexset_segments.html" class="btn btn-neutral float-left" title="Iteration Spaces: Segments and IndexSets" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="dot_product.html" class="btn btn-neutral float-right" title="Sum Reduction: Vector Dot Product" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

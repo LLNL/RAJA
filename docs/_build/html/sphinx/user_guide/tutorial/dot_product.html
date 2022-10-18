@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sum Reduction: Vector Dot Product &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Reduction Types and Kernels with Multiple Reductions" href="reductions.html" />
+    <link rel="prev" title="Iteration Space Coloring: Mesh Vertex Sum" href="vertexsum_coloring.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> RAJA
+            <img src="../../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">RAJA User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html">Getting Started With RAJA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../using_raja.html">Using RAJA in Your Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../config_options.html">Build Configuration Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../features.html">RAJA Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../app_considerations.html">Application Considerations</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html">RAJA Tutorial and Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#raja-tutorial">RAJA Tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#a-little-c-background">A Little C++ Background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#raja-examples-and-exercises">RAJA Examples and Exercises</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../tutorial.html#simple-loops-and-basic-raja-features">Simple Loops and Basic RAJA Features</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="add_vectors.html">Basic Loop Execution: Vector Addition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="indexset_segments.html">Iteration Spaces: Segments and IndexSets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="vertexsum_coloring.html">Iteration Space Coloring: Mesh Vertex Sum</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Sum Reduction: Vector Dot Product</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reductions.html">Reduction Types and Kernels with Multiple Reductions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomic_histogram.html">Atomic Operations: Computing a Histogram</a></li>
+<li class="toctree-l4"><a class="reference internal" href="scan.html">Parallel Scan Operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sort.html">Parallel Sort Operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="view_layout.html">Data Views and Layouts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="permuted-layout-batch-matrix-multiply.html">Permuted Layout: Batched Matrix-Multiplication</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#complex-loops-and-advanced-raja-features">Complex Loops and Advanced RAJA Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#nested-loops-with-raja-kernel">Nested Loops with <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#nested-loops-with-raja-expt-launch">Nested Loops with <code class="docutils literal notranslate"><span class="pre">RAJA::expt::launch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#comparing-raja-kernel-and-raja-expt-launch-matrix-transpose">Comparing <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA::expt::launch</span></code>: Matrix-Transpose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#other-raja-features-and-usage-examples">Other RAJA Features and Usage Examples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guide/index.html">RAJA Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">RAJA User Guide</a> &raquo;</li>
+          <li><a href="../tutorial.html">RAJA Tutorial and Examples</a> &raquo;</li>
+      <li>Sum Reduction: Vector Dot Product</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sphinx/user_guide/tutorial/dot_product.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="sum-reduction-vector-dot-product">
+<span id="tut-dotproduct-label"></span><h1>Sum Reduction: Vector Dot Product<a class="headerlink" href="#sum-reduction-vector-dot-product" title="Permalink to this headline">¶</a></h1>
+<p>This section contains an exercise file <code class="docutils literal notranslate"><span class="pre">RAJA/exercises/dot-product.cpp</span></code>
+for you to work through if you wish to get some practice with RAJA. The
+file <code class="docutils literal notranslate"><span class="pre">RAJA/exercises/dot-product_solution.cpp</span></code> contains complete
+working code for the examples discussed in this section. You can use the
+solution file to check your work and for guidance if you get stuck. To build
+the exercises execute <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">dot-product</span></code> and <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">dot-product_solution</span></code>
+from the build directory.</p>
+<p>Key RAJA features shown in this example are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code> loop execution template and execution policies</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::TypedRangeSegment</span></code> iteration space construct</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::ReduceSum</span></code> sum reduction template and reduction policies</p></li>
+</ul>
+</div></blockquote>
+<p>In the example, we compute a vector dot product, ‘dot = (a,b)’, where
+‘a’ and ‘b’ are two vectors of length N and ‘dot’ is a scalar. Typical
+C-style code to compute the dot product and print its value afterward is:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="n">dot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">dot</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\t</span><span class="s"> (a, b) = &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">dot</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Although this kernel is serial, it is representative of a <em>reduction</em>
+operation which is a common algorithm pattern that
+produces a single result from a set of values. Reductions present a variety
+of issues that must be addressed to operate properly in parallel.</p>
+<section id="raja-variants">
+<h2>RAJA Variants<a class="headerlink" href="#raja-variants" title="Permalink to this headline">¶</a></h2>
+<p>Different programming models support parallel reduction operations differently.
+Some models, such as CUDA, do not provide direct support for reductions and
+so such operations must be explicitly coded by users. It can be challenging
+to generate a correct and high performance implementation. RAJA provides
+portable reduction types that make it easy to perform reduction operations
+in kernels. The RAJA variants of the dot product computation show how
+to use the <code class="docutils literal notranslate"><span class="pre">RAJA::ReduceSum</span></code> sum reduction template type. RAJA provides
+other reduction types and allows multiple reduction operations to be
+performed in a single kernel alongside other computations. Please see
+<a class="reference internal" href="../feature/reduction.html#feat-reductions-label"><span class="std std-ref">Reduction Operations</span></a> for more information.</p>
+<p>Each RAJA reduction type takes a <cite>reduce policy</cite> template argument, which
+<strong>must be compatible with the execution policy</strong> applied to the kernel
+in which the reduction is used. Here is the RAJA sequential variant of the dot
+product computation:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">ReduceSum</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">seq_reduce</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">seqdot</span><span class="p">(</span><span class="mf">0.0</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">forall</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">seq_exec</span><span class="o">&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="o">::</span><span class="n">TypedRangeSegment</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">),</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">    </span><span class="n">seqdot</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"> </span>
+<span class="w">  </span><span class="p">});</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">dot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">seqdot</span><span class="p">.</span><span class="n">get</span><span class="p">();</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The sum reduction object is defined by specifying the reduction
+policy <code class="docutils literal notranslate"><span class="pre">RAJA::seq_reduce</span></code> matching the kernel execution policy
+<code class="docutils literal notranslate"><span class="pre">RAJA::seq_exec</span></code>, and a reduction value type (i.e., ‘double’). An initial
+value of zero for the sum is passed to the reduction object constructor. After
+the kernel executes, we use the ‘get’ method to retrieve the reduced value.</p>
+<p>The OpenMP multithreaded variant of the kernel is implemented similarly:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">ReduceSum</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">omp_reduce</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ompdot</span><span class="p">(</span><span class="mf">0.0</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">forall</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">omp_parallel_for_exec</span><span class="o">&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="o">::</span><span class="n">RangeSegment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">),</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">    </span><span class="n">ompdot</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"> </span>
+<span class="w">  </span><span class="p">});</span><span class="w">    </span>
+
+<span class="w">  </span><span class="n">dot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ompdot</span><span class="p">.</span><span class="n">get</span><span class="p">();</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Here, we use the <code class="docutils literal notranslate"><span class="pre">RAJA::omp_reduce</span></code> reduce policy to match the OpenMP
+kernel execution policy.</p>
+<p>The RAJA CUDA variant is achieved by using appropriate kernel execution and
+reduction policies:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">ReduceSum</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">cuda_reduce</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">cudot</span><span class="p">(</span><span class="mf">0.0</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">forall</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">cuda_exec</span><span class="o">&lt;</span><span class="n">CUDA_BLOCK_SIZE</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="o">::</span><span class="n">RangeSegment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">),</span><span class="w"> </span>
+<span class="w">    </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">RAJA_DEVICE</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">    </span><span class="n">cudot</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"> </span>
+<span class="w">  </span><span class="p">});</span><span class="w">    </span>
+
+<span class="w">  </span><span class="n">dot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cudot</span><span class="p">.</span><span class="n">get</span><span class="p">();</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Here, the CUDA reduce policy <code class="docutils literal notranslate"><span class="pre">RAJA::cuda_reduce</span></code> matches the CUDA
+kernel execution policy. Note that the CUDA thread block size is not
+specified in the reduce policy as it will use the same value as the
+loop execution policy.</p>
+<p>Similarly, for the RAJA HIP variant:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">ReduceSum</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">hip_reduce</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">hpdot</span><span class="p">(</span><span class="mf">0.0</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">forall</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">hip_exec</span><span class="o">&lt;</span><span class="n">HIP_BLOCK_SIZE</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="o">::</span><span class="n">RangeSegment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">RAJA_DEVICE</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">hpdot</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">d_a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">d_b</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"></span>
+<span class="w">  </span><span class="p">});</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">dot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hpdot</span><span class="p">.</span><span class="n">get</span><span class="p">();</span><span class="w"></span>
+</pre></div>
+</div>
+<p>It is worth repeating how similar the code looks for each of these variants.
+The loop body is identical for each and only the loop execution policy
+and reduce policy types change.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently available reduction capabilities in RAJA require a
+<em>reduction policy</em> type that is compatible with the execution
+policy for the kernel in which the reduction is used. We
+are developing a new reduction interface for RAJA that will
+provide an alternative for which the reduction policy is not
+required.</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="vertexsum_coloring.html" class="btn btn-neutral float-left" title="Iteration Space Coloring: Mesh Vertex Sum" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="reductions.html" class="btn btn-neutral float-right" title="Reduction Types and Kernels with Multiple Reductions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

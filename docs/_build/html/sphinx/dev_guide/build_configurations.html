@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAJA Build Configurations &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Continuous Integration (CI) Testing" href="ci.html" />
+    <link rel="prev" title="RAJA Branch Development" href="branch_development.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> RAJA
+            <img src="../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">RAJA User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">RAJA Developer Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="contributing.html">Contributing to RAJA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="branch_development.html">RAJA Branch Development</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">RAJA Build Configurations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#raja-build-scripts">RAJA Build Scripts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#spack-generated-host-config-files">Spack-Generated Host-Config Files</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#generating-a-raja-host-config-file">Generating a RAJA host-config file</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#reproducing-docker-builds-locally">Reproducing Docker Builds Locally</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ci.html">Continuous Integration (CI) Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ci_tasks.html">Continuous Integration (CI) Testing Maintenance Tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tests.html">RAJA Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_process.html">RAJA Release Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="versioning.html">RAJA Release Version Naming</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">RAJA Developer Guide</a> &raquo;</li>
+      <li>RAJA Build Configurations</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/sphinx/dev_guide/build_configurations.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="raja-build-configurations">
+<span id="build-config-label"></span><h1>RAJA Build Configurations<a class="headerlink" href="#raja-build-configurations" title="Permalink to this headline">¶</a></h1>
+<p>To meet user needs, RAJA is built and tested with a wide range of compilers for
+all of its supported back-ends. Automated continuous integration (CI) testing
+employed by the project is described in <a class="reference internal" href="ci.html#ci-label"><span class="std std-ref">Continuous Integration (CI) Testing</span></a>. During day-to-day
+development, the project currently maintains two ways to build and test
+configurations in a reproducible manner:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>Build scripts.</strong> The RAJA source repository contains a collection of
+simple build scripts that are used to generate build configurations
+for a variety of platforms, such as Livermore Computing (LC) systems,
+MacOS, and Linux environments.</p></li>
+<li><p><strong>Generated host-config files.</strong> The RAJA repository includes a
+mechanism to generate <em>host-config</em> files (i.e., CMake cache files)
+using <a class="reference external" href="https://github.com/spack/spack">Spack</a>.</p></li>
+</ul>
+</div></blockquote>
+<p>The configurations specify compiler versions and options, build targets
+(Release, Debug, etc.), RAJA features to enable (OpenMP, CUDA, HIP, etc.),
+and paths to required tool chains, such as CUDA, ROCm, etc.
+They are described briefly in the following sections.</p>
+<section id="raja-build-scripts">
+<span id="build-scripts-label"></span><h2>RAJA Build Scripts<a class="headerlink" href="#raja-build-scripts" title="Permalink to this headline">¶</a></h2>
+<p>Build scripts mentioned above live in the
+<a class="reference external" href="https://github.com/LLNL/RAJA/tree/develop/scripts">RAJA/scripts</a> directory.
+Each script is executed from the top-level RAJA directory. The scripts for
+CPU-only platforms require an argument that indicates the compiler version.
+For example,</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ./scripts/lc-builds/toss3_clang.sh <span class="m">10</span>.0.1
+</pre></div>
+</div>
+<p>Scripts for GPU-enabled platforms require three arguments: the device
+compiler version, the target compute architecture, and the host
+compiler version. For example,</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ./scripts/lc-builds/blueos_nvcc_gcc.sh <span class="m">10</span>.2.89 sm_70 <span class="m">8</span>.3.1
+</pre></div>
+</div>
+<p>When a script is run, it creates a build directory named for the configuration
+in the top-level RAJA directory and runs CMake with arguments contained in the
+script to create a build environment in the new directory. One then goes into
+that directory and runs ‘make’ to build RAJA, and depending on options
+passed to CMake RAJA tests, example codes, etc.  For example,</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ./scripts/lc-builds/blueos_nvcc_gcc.sh <span class="m">10</span>.2.89 sm_70 <span class="m">8</span>.3.1
+$ <span class="nb">cd</span> build_lc_blueos-nvcc10.2.89-sm_70-gcc8.3.1
+$ make -j
+$ make <span class="nb">test</span>
+</pre></div>
+</div>
+</section>
+<section id="spack-generated-host-config-files">
+<span id="spack-host-config-label"></span><h2>Spack-Generated Host-Config Files<a class="headerlink" href="#spack-generated-host-config-files" title="Permalink to this headline">¶</a></h2>
+<p>The RAJA repository contains two submodules
+<a class="reference external" href="https://github.com/LLNL/uberenv">uberenv</a> and
+<a class="reference external" href="https://github.com/LLNL/radiuss-spack-configs">radiuss-spack-configs</a> that
+work together to generate host-config files. These are projects in the
+GitHub LLNL organization and contain utilities shared and maintained by
+various projects. The main uberenv script is used to drive Spack to generate
+a <em>host-config</em> file (i.e., a CMake <em>cache</em> file) that contains all the
+information required to define a RAJA build environment. The generated file
+can then be passed to CMake using the ‘-C’ option to create a build
+configuration. <em>Spack specs</em> defining compiler configurations are maintained
+in files in the radiuss-spack-configs repository.</p>
+<p>Additional documentation for this process is available in the
+<a class="reference external" href="https://radiuss-ci.readthedocs.io/en/latest/uberenv.html#uberenv-guide">RADIUSS Uberenv Guide</a>.</p>
+<section id="generating-a-raja-host-config-file">
+<h3>Generating a RAJA host-config file<a class="headerlink" href="#generating-a-raja-host-config-file" title="Permalink to this headline">¶</a></h3>
+<p>This section describes the host-config file generation process for RAJA.</p>
+<section id="platform-configurations">
+<h4>Platform configurations<a class="headerlink" href="#platform-configurations" title="Permalink to this headline">¶</a></h4>
+<p>Compiler configurations for Livermore computer platforms are contained
+in sub-directories of the <code class="docutils literal notranslate"><span class="pre">RAJA/scripts/radiuss-spack-configs</span></code> submodule
+directory:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ls -c1 ./scripts/radiuss-spack-configs
+toss_4_x86_64_ib_cray
+toss_4_x86_64_ib
+toss_3_x86_64_ib
+blueos_3_ppc64le_ib
+darwin
+config.yaml
+blueos_3_ppc64le_ib_p9
+...
+</pre></div>
+</div>
+<p>To see available configurations, please see the contents of the
+<code class="docutils literal notranslate"><span class="pre">compilers.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">packages.yaml</span></code> files in each sub-directory.</p>
+</section>
+<section id="generating-a-host-config-file">
+<h4>Generating a host-config file<a class="headerlink" href="#generating-a-host-config-file" title="Permalink to this headline">¶</a></h4>
+<p>The <code class="docutils literal notranslate"><span class="pre">uberenv.py</span></code> python script can be run from the top-level RAJA directory
+to generate a host-config file for a desired configuration. For example,</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python3 ./scripts/uberenv/uberenv.py --spec<span class="o">=</span><span class="s2">&quot;%gcc@8.1.0&quot;</span>
+$ python3 ./scripts/uberenv/uberenv.py --spec<span class="o">=</span><span class="s2">&quot;%gcc@8.1.0~shared+openmp tests=benchmarks&quot;</span>
+</pre></div>
+</div>
+<p>Each command generates a corresponding host-config file in the top-level RAJA
+directory. The file name contains the platform and OS to which it applies, and
+the compiler and version. For example,</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>hc-quartz-toss_3_x86_64_ib-gcc@8.1.0-fjcjwd6ec3uen5rh6msdqujydsj74ubf.cmake
+</pre></div>
+</div>
+<p>This process is also used by our Gitlab CI testing effort.
+See <a class="reference internal" href="ci.html#ci-label"><span class="std std-ref">Continuous Integration (CI) Testing</span></a> for more information.</p>
+</section>
+<section id="building-raja-with-a-generated-host-config-file">
+<h4>Building RAJA with a generated host-config file<a class="headerlink" href="#building-raja-with-a-generated-host-config-file" title="Permalink to this headline">¶</a></h4>
+<p>To build RAJA with one of these host-config files, create a build directory and
+run CMake in it by passing a host-config file to CMake using the ‘-C’ option.
+Then, run ‘make’ to build RAJA. To ensure the build was successful, you may
+want to run the RAJA tests. For example,</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mkdir &lt;build dirname&gt; <span class="o">&amp;&amp;</span> <span class="nb">cd</span> &lt;build dirname&gt;
+$ cmake -C &lt;path_to&gt;/&lt;host-config&gt;.cmake ..
+$ cmake --build -j .
+$ ctest --output-on-failure -T <span class="nb">test</span>
+</pre></div>
+</div>
+<p>You may also run the RAJA tests with the command</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ make <span class="nb">test</span>
+</pre></div>
+</div>
+<p>as an alternative to the ‘ctest’ command used above.</p>
+<p>It is also possible to use the configuration with the RAJA Gitlab CI script
+outside of the Gitlab environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nv">HOST_CONFIG</span><span class="o">=</span>&lt;path_to&gt;/&lt;host-config&gt;.cmake ./scripts/gitlab/build_and_test.sh
+</pre></div>
+</div>
+</section>
+<section id="macos">
+<h4>MacOS<a class="headerlink" href="#macos" title="Permalink to this headline">¶</a></h4>
+<p>In RAJA, the Spack configuration for MacOS contains the default compiler
+corresponding to the OS version in the <code class="docutils literal notranslate"><span class="pre">compilers.yaml</span></code> file in the
+<code class="docutils literal notranslate"><span class="pre">RAJA/scripts/radiuss-spack-configs/darwin/</span></code> directory, and a commented
+section to illustrate how to add <cite>CMake</cite> as an external package in the
+<code class="docutils literal notranslate"><span class="pre">packages.yaml</span></code> in the same directory. You may also install CMake
+with <a class="reference external" href="https://brew.sh">Homebrew</a>, for example, and follow the process
+outlined above after it is installed.</p>
+</section>
+</section>
+</section>
+<section id="reproducing-docker-builds-locally">
+<span id="docker-local-label"></span><h2>Reproducing Docker Builds Locally<a class="headerlink" href="#reproducing-docker-builds-locally" title="Permalink to this headline">¶</a></h2>
+<p>RAJA uses Docker container images that it shares with other LLNL GitHub projects
+for Azure CI testing (see <a class="reference internal" href="ci.html#azure-ci-label"><span class="std std-ref">Azure Pipelines CI</span></a> for more information).
+We use Azure Pipelines for Linux, Windows, and MacOS builds.</p>
+<p>You can reproduce these builds locally for testing with the following steps if
+you have Docker installed.</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p>Run the command to build a local Docker image:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nv">DOCKER_BUILDKIT</span><span class="o">=</span><span class="m">1</span> docker build --target <span class="si">${</span><span class="nv">TARGET</span><span class="si">}</span> --no-cache
+</pre></div>
+</div>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">${TARGET}</span></code> is replaced with one of the names following <code class="docutils literal notranslate"><span class="pre">AS</span></code> in
+the <a class="reference external" href="https://github.com/LLNL/RAJA/blob/develop/Dockerfile">RAJA Dockerfile</a>.</p>
+</li>
+<li><p>To get dropped into a terminal in the Docker image, run the following:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ docker run -it axom/compilers:<span class="si">${</span><span class="nv">COMPILER</span><span class="si">}</span> /bin/bash
+</pre></div>
+</div>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">${COMPILER}</span></code> is replaced with the compiler you want (see the
+aforementioned Dockerfile).</p>
+</li>
+</ol>
+</div></blockquote>
+<p>Then, you can build, run tests, edit files, etc. in the Docker image. Note that
+the docker command has a <code class="docutils literal notranslate"><span class="pre">-v</span></code> argument that you can use to mount a local
+directory in the image. For example</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="p">&amp;</span> docker -v pwd:/opt/RAJA
+</pre></div>
+</div>
+</div></blockquote>
+<p>will mount your current local directory as <code class="docutils literal notranslate"><span class="pre">/opt/RAJA</span></code> in the image.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="branch_development.html" class="btn btn-neutral float-left" title="RAJA Branch Development" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ci.html" class="btn btn-neutral float-right" title="Continuous Integration (CI) Testing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

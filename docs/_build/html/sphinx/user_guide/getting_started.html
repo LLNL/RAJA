@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting Started With RAJA &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Using RAJA in Your Application" href="using_raja.html" />
+    <link rel="prev" title="RAJA User Guide" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> RAJA
+            <img src="../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">RAJA User Guide</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Getting Started With RAJA</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-the-code">Get the Code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-and-install">Build and Install</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#additional-raja-back-end-build-information">Additional RAJA Back-end Build Information</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#raja-example-build-configuration-files">RAJA Example Build Configuration Files</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#learning-to-use-raja">Learning to Use RAJA</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="using_raja.html">Using RAJA in Your Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_options.html">Build Configuration Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="features.html">RAJA Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app_considerations.html">Application Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html">RAJA Tutorial and Examples</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guide/index.html">RAJA Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">RAJA User Guide</a> &raquo;</li>
+      <li>Getting Started With RAJA</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/sphinx/user_guide/getting_started.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="getting-started-with-raja">
+<span id="getting-started-label"></span><h1>Getting Started With RAJA<a class="headerlink" href="#getting-started-with-raja" title="Permalink to this headline">¶</a></h1>
+<p>This section should help get you up and running with RAJA quickly.</p>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>The primary requirement for using RAJA is a C++14 standard compliant compiler.
+Certain features, such as various programming model back-ends like CUDA or HIP,
+msut be supported by the compiler you chose to use them. Available RAJA
+configuration options and how to enable or disable features are described
+in <a class="reference internal" href="config_options.html#configopt-label"><span class="std std-ref">Build Configuration Options</span></a>.</p>
+<p>To build RAJA and use its most basic features, you will need:</p>
+<ul class="simple">
+<li><p>C++ compiler with C++14 support</p></li>
+<li><p><a class="reference external" href="https://cmake.org/">CMake</a> version 3.14.5 or greater.</p></li>
+</ul>
+</section>
+<section id="get-the-code">
+<h2>Get the Code<a class="headerlink" href="#get-the-code" title="Permalink to this headline">¶</a></h2>
+<p>The RAJA project is hosted on GitHub:
+<a class="reference external" href="https://github.com/LLNL/RAJA">GitHub RAJA project</a>. To get the code, clone
+the repository into a local working space using the command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone --recursive https://github.com/LLNL/RAJA.git
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">--recursive</span></code> option above is used to pull RAJA Git <em>submodules</em>, on
+which RAJA depends, into your local copy of the RAJA repository.</p>
+<p>After running the clone command, a copy of the RAJA repository will reside in
+the <code class="docutils literal notranslate"><span class="pre">RAJA</span></code> subdirectory where you ran the clone command. You will be on the
+<code class="docutils literal notranslate"><span class="pre">develop</span></code> branch, which is the default RAJA branch.</p>
+<p>If you do not pass the <code class="docutils literal notranslate"><span class="pre">--recursive</span></code> argument to the <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span></code>
+command, you can also type the following commands after cloning:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd RAJA
+$ git submodule update --init --recursive
+</pre></div>
+</div>
+<p>Either way, the end result is the same and you should be good to configure the
+code and build it.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>If you switch branches in a RAJA repo (e.g., you are on a branch,
+with everything up-to-date, and you run the command
+<code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">checkout</span> <span class="pre">&lt;different</span> <span class="pre">branch</span> <span class="pre">name&gt;</span></code>, you may need to run
+the command <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">submodule</span> <span class="pre">update</span></code> to set the Git submodule
+versions to what is used by the new branch.</p></li>
+<li><p>If the set of submodules in a new branch is different than the
+previous branch you were on, you may need to run the command
+<code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">submodule</span> <span class="pre">update</span> <span class="pre">--init</span> <span class="pre">--recursive</span></code> to pull in the
+correct set of submodule and versions.</p></li>
+</ul>
+</div>
+</section>
+<section id="dependencies">
+<span id="getting-started-depend-label"></span><h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>RAJA has several dependencies that are required based on how you want to
+build and use it. The RAJA Git repository has submodules that contain
+most of these dependencies.</p>
+<p>RAJA includes other submodule dependencies, which are used to support our
+Gitlab CI testing. These are described in the RAJA Developer Guide.</p>
+<p>Dependencies that are required to build the RAJA code are:</p>
+<ul class="simple">
+<li><p>A C++ 14 standard compliant compiler</p></li>
+<li><p><a class="reference external" href="https://github.com/LLNL/blt">BLT build system</a></p></li>
+<li><p><a class="reference external" href="https://github.com/LLNL/camp">Camp compiler agnostic metaprogramming library</a></p></li>
+</ul>
+<p>Other dependencies that users should be aware of that support certain
+features are:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/NVlabs/cub">CUB CUDA utilities library</a>, which is required for using the RAJA CUDA back-end.</p></li>
+<li><p><a class="reference external" href="https://github.com/ROCmSoftwarePlatform/rocPRIM.git">rocPRIM HIP parallel primitives library</a>, which is required for using the RAJA HIP back-end.</p></li>
+<li><p><a class="reference external" href="https://github.com/desul/desul">Desul</a>, which is required if you want to use Desul atomics in RAJA instead of our current default atomics. Note that we plan to switch over to Desul atomics exclusively at some point.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You may want or need to use external versions of camp, CUB, or
+rocPRIM instead of the RAJA submodules. This is usually the case
+when you are using RAJA along with some other library that also
+needs one of these. To do so, you need to use CMake variables to
+pass a path to a valid installation of each library. Specifically:</p>
+<blockquote>
+<div><ul>
+<li><p>External camp:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmake</span> \
+<span class="o">...</span> \
+<span class="o">-</span><span class="n">Dcamp_DIR</span><span class="o">=</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">camp</span><span class="o">/</span><span class="n">install</span> \
+<span class="o">...</span>
+</pre></div>
+</div>
+</li>
+<li><p>External CUB:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmake</span> \
+<span class="o">...</span> \
+<span class="o">-</span><span class="n">DRAJA_ENABLE_EXTERNAL_CUB</span><span class="o">=</span><span class="n">On</span> \
+<span class="o">-</span><span class="n">DCUB_DIR</span><span class="o">=</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">cub</span> \
+<span class="o">...</span>
+</pre></div>
+</div>
+</li>
+<li><p>External rocPRIM:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmake</span> \
+<span class="o">...</span> \
+<span class="o">-</span><span class="n">DRAJA_ENABLE_EXTERNAL_ROCPRIM</span><span class="o">=</span><span class="n">On</span> \
+<span class="o">-</span><span class="n">DROCPRIM_DIR</span><span class="o">=</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">rocPRIM</span> \
+<span class="o">...</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</div>
+<p>More information about configuring GPU builds with CUDA or HIP is provided
+in <a class="reference internal" href="#getting-started-build-gpu-label"><span class="std std-ref">Additional RAJA Back-end Build Information</span></a></p>
+<p>Additional discussion of these dependencies, with respect to building RAJA, is
+provided in <a class="reference internal" href="#getting-started-build-label"><span class="std std-ref">Build and Install</span></a>. Other than that, you probably
+don’t need to know much about them. If you are curious and want to know more,
+please click on the link to the library you want to know about in the above
+list.</p>
+</section>
+<section id="build-and-install">
+<span id="getting-started-build-label"></span><h2>Build and Install<a class="headerlink" href="#build-and-install" title="Permalink to this headline">¶</a></h2>
+<p>The complexity of building and installing RAJA depends on which features you
+want to use and how easy it is to do this on your system.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>RAJA builds must be <em>out-of-source</em>. In particular, RAJA does not
+allow building in its source directory. You must create a build
+directory and run CMake in it.</p>
+</div>
+<p>RAJA uses CMake to configure a build. To create a “bare bones” configuration,
+build, and install it, you can do the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mkdir build-dir &amp;&amp; cd build-dir
+$ cmake -DCMAKE_INSTALL_PREFIX=/path/to/install ../
+$ make  (or make -j &lt;N&gt; for a parallel build)
+$ make install
+</pre></div>
+</div>
+<p>Running <code class="docutils literal notranslate"><span class="pre">cmake</span></code> generates the RAJA build configuration. Running <code class="docutils literal notranslate"><span class="pre">make</span></code>
+compiles the code. Running <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">install</span></code> copies RAJA header files
+to an <code class="docutils literal notranslate"><span class="pre">include</span></code> directory and installs the RAJA library in a <code class="docutils literal notranslate"><span class="pre">lib</span></code>
+directory, both in the directory location specified with the
+<code class="docutils literal notranslate"><span class="pre">-DCMAKE_INSTALL_PREFIX</span></code> CMake option.</p>
+<p>Other build configurations are accomplished by passing other options to CMake.
+For example, if you want to use a C++ compiler other than the default on
+your system, you would pass a path to the compiler using the standard
+CMake option <code class="docutils literal notranslate"><span class="pre">-DCMAKE_CXX_COMPILER=path/to/compiler</span></code>.
+When you run CMake, it will generate output about the build configuration
+(compiler and version, options, etc.), which is helpful to make sure CMake
+is doing what you want. For a summary of RAJA configuration
+options, please see <a class="reference internal" href="config_options.html#configopt-label"><span class="std std-ref">Build Configuration Options</span></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>RAJA is configured to build its tests, examples, and tutorial
+exercises by default. If you do not disable them with the
+appropriate CMake option (see <a class="reference internal" href="config_options.html#configopt-label"><span class="std std-ref">Build Configuration Options</span></a>),
+you can run them after the build completes to check if everything
+is built properly.</p>
+<p>The easiest way to run the full set of RAJA tests is to type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ make test
+</pre></div>
+</div>
+<p>in the build directory after the build completes.</p>
+<p>You can also run individual tests by invoking the corresponding
+test executables directly. They will be located in the <code class="docutils literal notranslate"><span class="pre">test</span></code>
+subdirectory in your build space. RAJA tests use the
+<a class="reference external" href="https://github.com/google/googletest">Google Test framework</a>,
+so you can also run and filter tests via Google Test commands.</p>
+<p>The source files for RAJA examples and exercises are located in
+the <code class="docutils literal notranslate"><span class="pre">RAJA/examples</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA/exercises</span></code> directories,
+respectively. When built, the executables for the examples and
+exercises will be located in the <code class="docutils literal notranslate"><span class="pre">bin</span></code> subdirectory in your build
+space.</p>
+</div>
+<section id="additional-raja-back-end-build-information">
+<span id="getting-started-build-gpu-label"></span><h3>Additional RAJA Back-end Build Information<a class="headerlink" href="#additional-raja-back-end-build-information" title="Permalink to this headline">¶</a></h3>
+<p>Configuring a RAJA build to support a GPU back-end, such as CUDA, HIP, or
+OpenMP target offload, typically requires additional CMake options, which
+we describe next.</p>
+<section id="cuda">
+<h4>CUDA<a class="headerlink" href="#cuda" title="Permalink to this headline">¶</a></h4>
+<p>To run RAJA code on NVIDIA GPUs, one typically must have a CUDA compiler
+installed on the system, in addition to a host code compiler. You may need
+to specify both when you run CMake. The host compiler is specified using the
+<code class="docutils literal notranslate"><span class="pre">CMAKE_CXX_COMPILER</span></code> CMake variable as described earlier. The CUDA software
+stack and compiler are specified using the following CMake options:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>-DCUDA_TOOLKIT_ROOT_DIR=path/to/cuda/toolkit</p></li>
+<li><p>-DCMAKE_CUDA_COMPILER=path/to/nvcc</p></li>
+</ul>
+</div></blockquote>
+<p>When using the NVIDIA nvcc compiler for RAJA CUDA functionality, the variables:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>CMAKE_CUDA_FLAGS_RELEASE</p></li>
+<li><p>CMAKE_CUDA_FLAGS_DEBUG</p></li>
+<li><p>CMAKE_CUDA_FLAGS_RELWITHDEBINFO</p></li>
+</ul>
+</div></blockquote>
+<p>correspond to the standard CMake build types and are used to pass additional
+compiler options to nvcc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Often, nvcc must pass options to the host compiler, the arguments
+can be included using the <code class="docutils literal notranslate"><span class="pre">CMAKE_CUDA_FLAGS...</span></code> CMake variables
+listed above. Host compiler options must be prepended with the
+<code class="docutils literal notranslate"><span class="pre">-Xcompiler</span></code> directive to properly propagate.</p>
+</div>
+<p>To set the CUDA compute architecture, which should be chosen based on the
+NVIDIA GPU hardware you are using, you can use the <code class="docutils literal notranslate"><span class="pre">CUDA_ARCH</span></code> CMake
+variable. For example, the CMake option <code class="docutils literal notranslate"><span class="pre">-DCUDA_ARCH=sm_70</span></code> will tell the
+compiler to use the <cite>sm_70</cite> SASS architecture in its second stage of
+compilation. The compiler will pick the PTX architecture to use in the first
+stage of compilation that is suitable for the SASS architecture you specify.</p>
+<p>Alternatively, you may specify the PTX and SASS architectures, using
+appropriate nvcc options in the <code class="docutils literal notranslate"><span class="pre">CMAKE_CUDA_FLAGS_*</span></code> variables.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>RAJA requires a minimum CUDA architecture level of `sm_35` to use
+all supported CUDA features.</strong> Mostly, the architecture level affects
+which RAJA CUDA atomic operations are available and how they are
+implemented inside RAJA. This is described in
+<a class="reference internal" href="feature/atomic.html#feat-atomics-label"><span class="std std-ref">Atomic Operations</span></a>.</p>
+<ul class="simple">
+<li><p>If you do not specify a value for <code class="docutils literal notranslate"><span class="pre">CUDA_ARCH</span></code>, it will be set to
+<cite>sm_35</cite> by default and CMake will emit a status message
+indicating this choice was made.</p></li>
+<li><p>If you give a <code class="docutils literal notranslate"><span class="pre">CUDA_ARCH</span></code> value less than <cite>sm_35</cite> (e.g., <cite>sm_30</cite>),
+CMake will report this as an error and stop processing.</p></li>
+</ul>
+</div>
+<p>Also, RAJA relies on the CUB CUDA utilities library, mentioned earlier, for
+some CUDA back-end functionality. The CUB version included in the CUDA toolkit
+installation is used by default when available. This is the case for CUDA
+version 11 and later. RAJA includes a CUB submodule that is used by default
+with older versions of CUDA. To use an external CUB installation, provide the
+following options to CMake:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmake</span> \
+<span class="o">...</span> \
+<span class="o">-</span><span class="n">DRAJA_ENABLE_EXTERNAL_CUB</span><span class="o">=</span><span class="n">On</span> \
+<span class="o">-</span><span class="n">DCUB_DIR</span><span class="o">=&lt;</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">cub</span><span class="o">&gt;</span> \
+<span class="o">...</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The CUDA toolkit version of CUB is
+required for compatibility with the CUDA toolkit version of thrust
+starting with CUDA version 11.0.0. So, if you build
+RAJA with CUDA version 11 or higher, you should use the version of
+CUB contained in the CUDA toolkit version you are using to use
+Thrust and to be compatible with libraries that use Thrust.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The version of Googletest that
+is used in RAJA version v0.11.0 or newer requires CUDA version
+9.2.x or newer when compiling with nvcc. Thus, if you build
+RAJA with CUDA enabled and want to also enable RAJA tests, you
+must use CUDA version 9.2.x or newer.</p>
+</div>
+</section>
+<section id="hip">
+<h4>HIP<a class="headerlink" href="#hip" title="Permalink to this headline">¶</a></h4>
+<p>To run RAJA code on AMD GPUs, one typically uses a ROCm compiler and tool
+chain (which can also be used to compile code for NVIDIA GPUs, which is not
+covered in detail in RAJA user documentation).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>RAJA requires version 3.5 or newer of the ROCm software stack to
+use the RAJA HIP back-end.</p>
+</div>
+<p>Unlike CUDA, you do not specify a host compiler and a device compiler when
+using the AMD ROCm software stack. Typical CMake options to use when building
+with a ROCm stack are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>-DROCM_ROOT_DIR=path/to/rocm</p></li>
+<li><p>-DHIP_ROOT_DIR=path/to/hip</p></li>
+<li><p>-DHIP_PATH=path/to/hip/binaries</p></li>
+<li><p>-DCMAKE_CXX_COMPILER=path/to/rocm/compiler</p></li>
+</ul>
+</div></blockquote>
+<p>Additionally, you use the CMake variable <code class="docutils literal notranslate"><span class="pre">CMAKE_HIP_ARCHITECTURES</span></code> to set
+the target compute architecture. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">DCMAKE_HIP_ARCHITECTURES</span><span class="o">=</span><span class="n">gfx908</span>
+</pre></div>
+</div>
+<p>RAJA relies on the rocPRIM HIP utilities library for some HIP
+functionality. The rocPRIM included in the ROCm install is used by default if
+available. RAJA includes a rocPRIM submodule that is used if it is not
+available. To use an external rocPRIM install provide the following options
+to CMake:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmake</span> \
+<span class="o">...</span> \
+<span class="o">-</span><span class="n">DRAJA_ENABLE_EXTERNAL_ROCPRIM</span><span class="o">=</span><span class="n">On</span> \
+<span class="o">-</span><span class="n">DROCPRIM_DIR</span><span class="o">=&lt;</span><span class="n">pat</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">rocPRIM</span><span class="o">&gt;</span> \
+<span class="o">...</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When using HIP and targeting NVIDIA GPUs, RAJA uses CUB instead of
+rocPRIM. In this case, you must configure with an external CUB
+install using the CMake variables described in the CUDA section above.</p>
+</div>
+</section>
+<section id="openmp">
+<h4>OpenMP<a class="headerlink" href="#openmp" title="Permalink to this headline">¶</a></h4>
+<p>To use OpenMP target offload GPU execution, additional options may need to be
+passed to the compiler. The variable <code class="docutils literal notranslate"><span class="pre">OpenMP_CXX_FLAGS</span></code> is used for this.
+Option syntax follows the CMake <em>list</em> pattern. For example, to specify OpenMP
+target options for NVIDIA GPUs using a clang-based compiler, one may do
+something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmake</span> \
+  <span class="o">...</span> \
+  <span class="o">-</span><span class="n">DOpenMP_CXX_FLAGS</span><span class="o">=</span><span class="s2">&quot;-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda&quot;</span> \
+  <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="raja-example-build-configuration-files">
+<h3>RAJA Example Build Configuration Files<a class="headerlink" href="#raja-example-build-configuration-files" title="Permalink to this headline">¶</a></h3>
+<p>The RAJA repository has subdirectories <code class="docutils literal notranslate"><span class="pre">RAJA/scripts/*-builds</span></code> that contain
+a variety of build scripts we use to build and test RAJA on various platforms
+with various compilers. These scripts pass files (<em>CMake cache files</em>)
+located in the <code class="docutils literal notranslate"><span class="pre">RAJA/host-configs</span></code> directory to CMake using the ‘-C’ option.
+These files serve as useful examples of how to configure RAJA prior to
+compilation.</p>
+</section>
+</section>
+<section id="learning-to-use-raja">
+<h2>Learning to Use RAJA<a class="headerlink" href="#learning-to-use-raja" title="Permalink to this headline">¶</a></h2>
+<p>The RAJA repository contains a variety of example source codes that you are
+encouraged to view and run to learn about how to use RAJA:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">RAJA/examples</span></code> directory contains various examples that illustrate
+algorithm patterns.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">RAJA/exercises</span></code> directory contains exercises for users to work
+through along with complete solutions. These are described in detail
+in the <a class="reference internal" href="tutorial.html#tutorial-label"><span class="std std-ref">RAJA Tutorial and Examples</span></a> section.</p></li>
+<li><p>Other examples can also be found in the <code class="docutils literal notranslate"><span class="pre">RAJA/test</span></code> directories.</p></li>
+</ul>
+</div></blockquote>
+<p>We mentioned earlier that RAJA examples, exercises, and tests are built by
+default when RAJA is compiled. So, unless you explicitly disable them when
+you run CMake to configure a RAJA build, you can run them after compiling RAJA.
+Executables for the examples and exercises will be located in the
+<code class="docutils literal notranslate"><span class="pre">&lt;build-dir&gt;/bin</span></code> directory in your build space. Test executables will
+be located in the <code class="docutils literal notranslate"><span class="pre">&lt;build-dir&gt;/test</span></code> directory.</p>
+<p>For an overview of all the main RAJA features, see <a class="reference internal" href="features.html#features-label"><span class="std std-ref">RAJA Features</span></a>.
+A full tutorial with a variety of examples showing how to use RAJA features
+can be found in <a class="reference internal" href="tutorial.html#tutorial-label"><span class="std std-ref">RAJA Tutorial and Examples</span></a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="RAJA User Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="using_raja.html" class="btn btn-neutral float-right" title="Using RAJA in Your Application" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

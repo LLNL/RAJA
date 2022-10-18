@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Views and Layouts &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Permuted Layout: Batched Matrix-Multiplication" href="permuted-layout-batch-matrix-multiply.html" />
+    <link rel="prev" title="Parallel Sort Operations" href="sort.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> RAJA
+            <img src="../../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">RAJA User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html">Getting Started With RAJA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../using_raja.html">Using RAJA in Your Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../config_options.html">Build Configuration Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../features.html">RAJA Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../app_considerations.html">Application Considerations</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html">RAJA Tutorial and Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#raja-tutorial">RAJA Tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#a-little-c-background">A Little C++ Background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#raja-examples-and-exercises">RAJA Examples and Exercises</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../tutorial.html#simple-loops-and-basic-raja-features">Simple Loops and Basic RAJA Features</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="add_vectors.html">Basic Loop Execution: Vector Addition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="indexset_segments.html">Iteration Spaces: Segments and IndexSets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="vertexsum_coloring.html">Iteration Space Coloring: Mesh Vertex Sum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dot_product.html">Sum Reduction: Vector Dot Product</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reductions.html">Reduction Types and Kernels with Multiple Reductions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomic_histogram.html">Atomic Operations: Computing a Histogram</a></li>
+<li class="toctree-l4"><a class="reference internal" href="scan.html">Parallel Scan Operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sort.html">Parallel Sort Operations</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Data Views and Layouts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="permuted-layout-batch-matrix-multiply.html">Permuted Layout: Batched Matrix-Multiplication</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#complex-loops-and-advanced-raja-features">Complex Loops and Advanced RAJA Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#nested-loops-with-raja-kernel">Nested Loops with <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#nested-loops-with-raja-expt-launch">Nested Loops with <code class="docutils literal notranslate"><span class="pre">RAJA::expt::launch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#comparing-raja-kernel-and-raja-expt-launch-matrix-transpose">Comparing <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA::expt::launch</span></code>: Matrix-Transpose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#other-raja-features-and-usage-examples">Other RAJA Features and Usage Examples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guide/index.html">RAJA Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">RAJA User Guide</a> &raquo;</li>
+          <li><a href="../tutorial.html">RAJA Tutorial and Examples</a> &raquo;</li>
+      <li>Data Views and Layouts</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sphinx/user_guide/tutorial/view_layout.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="data-views-and-layouts">
+<span id="tut-view-layout-label"></span><h1>Data Views and Layouts<a class="headerlink" href="#data-views-and-layouts" title="Permalink to this headline">¶</a></h1>
+<p>This section contains an exercise file <code class="docutils literal notranslate"><span class="pre">RAJA/exercises/view-layout.cpp</span></code>
+for you to work through if you wish to get some practice with RAJA. The
+file <code class="docutils literal notranslate"><span class="pre">RAJA/exercises/view-layout_solution.cpp</span></code> contains complete
+working code for the examples discussed in this section. You can use the
+solution file to check your work and for guidance if you get stuck. To build
+the exercises execute <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">view-layout</span></code> and <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">view-layout_solution</span></code>
+from the build directory.</p>
+<p>Key RAJA features shown in this section are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA::OffsetLayout</span></code> constructs</p></li>
+<li><p>Layout permutations</p></li>
+</ul>
+</div></blockquote>
+<p>The examples in this section illustrate RAJA View and Layout concepts
+and usage patterns. The goal is for you to gain an understanding of how
+to use RAJA Views and Layouts to simplify and transform array data access
+patterns. None of the examples use RAJA kernel execution methods, such
+as <code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code>. The intent is to focus on RAJA View and Layout mechanics.</p>
+<p>Consider a basic C-style implementation of a matrix-matrix multiplication
+operation, using <span class="math notranslate nohighlight">\(N \times N\)</span> matrices:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">row</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">col</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">Cref</span><span class="p">[</span><span class="n">col</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">N</span><span class="o">*</span><span class="n">row</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">A</span><span class="p">[</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">N</span><span class="o">*</span><span class="n">row</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">B</span><span class="p">[</span><span class="n">col</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">N</span><span class="o">*</span><span class="n">k</span><span class="p">];</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>As is commonly done for efficiency in C and C++, we have allocated the data
+for the matrices as one-dimensional arrays. Thus, we need to manually compute
+the data pointer offsets for the row and column indices in the kernel.
+Here, we use the array <code class="docutils literal notranslate"><span class="pre">Cref</span></code> to hold a reference solution matrix that
+we use to compare with results generated by the examples below.</p>
+<p>To simplify the multi-dimensional indexing, we can use <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> objects,
+which we define as:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">Aview</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">Bview</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">Cview</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Here we define three <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> objects, ‘Aview’, ‘Bview’, and ‘Cview’,
+that <em>wrap</em> the array data pointers, ‘A’, ‘B’, and ‘C’, respectively. We
+pass a data pointer as the first argument to each view constructor and then
+the extent of each matrix dimension as the second and third arguments. There
+are two extent arguments since we indicate in the <code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code> template
+parameter list. The matrices are square and each extent is ‘N’. Here, the
+template parameters to <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> are the array data type ‘double’ and
+a <code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code> type. Specifically:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RAJA</span><span class="p">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span> <span class="nb">int</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>means that each View represents a two-dimensional default data layout, and
+that we will use values of type ‘int’ to index into the arrays.</p>
+<p>Using the <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> objects, we can access the data entries for the rows
+and columns using a more natural, less error-prone syntax:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">row</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">col</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">Cview</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">Aview</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Bview</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">);</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<section id="default-layouts-use-row-major-ordering">
+<h2>Default Layouts Use Row-major Ordering<a class="headerlink" href="#default-layouts-use-row-major-ordering" title="Permalink to this headline">¶</a></h2>
+<p>The default data layout ordering in RAJA is <em>row-major</em>, which is the
+convention for multi-dimensional array indexing in C and C++. This means that
+the rightmost index will be stride-1, the index to the left of the rightmost
+index will have stride equal to the extent of the rightmost dimension, and
+so on.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>RAJA Layouts and Views support any number of dimensions and
+the default data access ordering is <em>row-major</em>. Please
+see <a class="reference internal" href="../feature/view.html#feat-view-label"><span class="std std-ref">View and Layout</span></a> for more details.</p>
+</div>
+<p>To illustrate the default data layout striding, we next show simple
+one-, two-, and three-dimensional examples where the for-loop ordering
+for the different dimensions is such that all data access is stride-1. We
+begin by defining some dimensions, allocate and initialize arrays:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Nx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Ny</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Nz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Ntot</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">Nx</span><span class="o">*</span><span class="n">Ny</span><span class="o">*</span><span class="n">Nz</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">int</span><span class="p">[</span><span class="w"> </span><span class="n">Ntot</span><span class="w"> </span><span class="p">];</span><span class="w"></span>
+<span class="w">  </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">aref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">int</span><span class="p">[</span><span class="w"> </span><span class="n">Ntot</span><span class="w"> </span><span class="p">];</span><span class="w"></span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Ntot</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">aref</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The version of the array initialization kernel using a one-dimensional
+<code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> is:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">view_1D</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">Ntot</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Ntot</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">view_1D</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The version of the array initialization using a two-dimensional
+<code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> is:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">view_2D</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">Nx</span><span class="p">,</span><span class="w"> </span><span class="n">Ny</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">iter</span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Nx</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Ny</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="n">view_2D</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="o">++</span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The three-dimensional version is:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">view_3D</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">Nx</span><span class="p">,</span><span class="w"> </span><span class="n">Ny</span><span class="p">,</span><span class="w"> </span><span class="n">Nz</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Nx</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Ny</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Nz</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">view_3D</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="o">++</span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>It’s worth repeating that the data array access in all three variants shown
+here using <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> objects is stride-1 since we order the for-loops
+in the loop nests to match the row-major ordering.</p>
+<p>RAJA Layout types support other data access patterns with different striding
+orders, offsets, and permutations. To this point, we have used the default
+Layout constructor. RAJA provides methods to generate Layouts for different
+indexing patterns. We describe these in the next several sections. Next, we
+show how to permute the data striding order using permuted Layouts.</p>
+</section>
+<section id="permuted-layouts-change-data-striding-order">
+<h2>Permuted Layouts Change Data Striding Order<a class="headerlink" href="#permuted-layouts-change-data-striding-order" title="Permalink to this headline">¶</a></h2>
+<p>Every <code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code> object has a permutation. When a permutation is not
+specified at creation, a Layout will use the identity permutation. Here are
+examples where the identity permutation is explicitly provided. First, in
+two dimensions:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">idx_t</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="o">&gt;</span><span class="w"> </span><span class="n">defperm2</span><span class="w"> </span><span class="p">{{</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">}};</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">defperm2_layout</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_permuted_layout</span><span class="p">(</span><span class="w"> </span><span class="p">{{</span><span class="n">Nx</span><span class="p">,</span><span class="w"> </span><span class="n">Ny</span><span class="p">}},</span><span class="w"> </span><span class="n">defperm2</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">defperm_view_2D</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">defperm2_layout</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Nx</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Ny</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="n">defperm_view_2D</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="o">++</span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Then, in three dimensions:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">idx_t</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">defperm3</span><span class="w"> </span><span class="p">{{</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">}};</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">defperm3_layout</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_permuted_layout</span><span class="p">(</span><span class="w"> </span><span class="p">{{</span><span class="n">Nx</span><span class="p">,</span><span class="w"> </span><span class="n">Ny</span><span class="p">,</span><span class="w"> </span><span class="n">Nz</span><span class="p">}},</span><span class="w"> </span><span class="n">defperm3</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">defperm_view_3D</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">defperm3_layout</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Nx</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Ny</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Nz</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">defperm_view_3D</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="o">++</span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>These two examples access the data with stride-1 ordering, the same as in
+the earlier examples, which is shown by the nested loop ordering.
+The identity permutation in two dimensions is ‘{0, 1}’ and is ‘{0, 1, 2}’
+for three dimensions. The method <code class="docutils literal notranslate"><span class="pre">RAJA::make_permuted_layout</span></code> is used to
+create a <code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code> object with a permutation. The method takes two
+arguments, the extents of each dimension and the permutation.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If a permuted Layout is created with the <em>identity permutation</em>
+(e.g., {0,1,2}), the Layout is the same as if it were created by</p>
+</div>
+<p>Next, we permute the striding order for the two-dimensional example:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">idx_t</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="o">&gt;</span><span class="w"> </span><span class="n">perm2</span><span class="w"> </span><span class="p">{{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">}};</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">perm2_layout</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_permuted_layout</span><span class="p">(</span><span class="w"> </span><span class="p">{{</span><span class="n">Nx</span><span class="p">,</span><span class="w"> </span><span class="n">Ny</span><span class="p">}},</span><span class="w"> </span><span class="n">perm2</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">perm_view_2D</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">perm2_layout</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Ny</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Nx</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="n">perm_view_2D</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="o">++</span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Read from right to left, the permutation ‘{1, 0}’ specifies that the first
+(zero) index ‘i’ is stride-1 and the second index (one) ‘j’ has stride equal
+to the extent of the first Layout dimension ‘Nx’. This is evident in the
+for-loop ordering.</p>
+<p>Here is the three-dimensional case, where we have reversed the striding order
+using the permutation ‘{2, 1, 0}’:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">idx_t</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">perm3a</span><span class="w"> </span><span class="p">{{</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">}};</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">perm3a_layout</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_permuted_layout</span><span class="p">(</span><span class="w"> </span><span class="p">{{</span><span class="n">Nx</span><span class="p">,</span><span class="w"> </span><span class="n">Ny</span><span class="p">,</span><span class="w"> </span><span class="n">Nz</span><span class="p">}},</span><span class="w"> </span><span class="n">perm3a</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">perm3a_view_3D</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">perm3a_layout</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Nz</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Ny</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Nx</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">perm3a_view_3D</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="o">++</span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The data access remains stride-1 due to the for-loop reordering. For fun,
+here is another three-dimensional permutation:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">idx_t</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">perm3b</span><span class="w"> </span><span class="p">{{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">}};</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">perm3b_layout</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_permuted_layout</span><span class="p">(</span><span class="w"> </span><span class="p">{{</span><span class="n">Nx</span><span class="p">,</span><span class="w"> </span><span class="n">Ny</span><span class="p">,</span><span class="w"> </span><span class="n">Nz</span><span class="p">}},</span><span class="w"> </span><span class="n">perm3b</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">perm3b_view_3D</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">perm3b_layout</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Ny</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Nz</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Nx</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">perm3b_view_3D</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="o">++</span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The permutation is ‘{1, 2, 0}’ so to make the data access stride-1, we
+swap the ‘j’ and ‘k’ loops and leave the ‘i’ loop as the inner loop.</p>
+</section>
+<section id="multi-dimensional-indices-and-linear-indices">
+<h2>Multi-dimensional Indices and Linear Indices<a class="headerlink" href="#multi-dimensional-indices-and-linear-indices" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code> types provide methods to convert between linear indices and
+multi-dimensional indices and vice versa. Recall the Layout ‘perm3a_layout’
+from above that was created with the permutation ‘{2, 1, 0}’. To get the
+linear index corresponding to the index triple ‘(1, 2, 0)’, you can do
+this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">int</span> <span class="n">lin</span> <span class="o">=</span> <span class="n">perm3a_layout</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The value of ‘lin’ is 7 = 1 + 2 * Nx + 0 * Nx * Ny. To get the index triple
+for linear index 7, you can do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">int</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">;</span>
+<span class="n">perm3a_layout</span><span class="o">.</span><span class="n">toIndices</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>This sets ‘i’ to 1, ‘j’ to 2, and ‘k’ to 0.</p>
+<p>Similarly for the Layout ‘permb_layout’, which was created with the
+permutation ‘{1, 2, 0}’:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lin</span> <span class="o">=</span> <span class="n">perm3b_layout</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>sets ‘lin’ to 13 = 1 + 0 * Nx + 2 * Nx * Nz and:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perm3b_layout</span><span class="o">.</span><span class="n">toIndices</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>sets ‘i’ to 1, ‘j’ to 2, and ‘k’ to 0.</p>
+<p>There are more examples in the exercise file associated with this section.
+Feel free to experiment with them.</p>
+<p>One important item to note is that, by default, there is no bounds checking
+on indices passed to a <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> data access method or <code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code>
+index computation methods. Therefore, it is the responsibility of a user
+to ensure that indices passed to <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA::Layoout</span></code>
+methods are in bounds to avoid accessing data outside
+of the View or computing invalid indices.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>RAJA provides a CMake variable <code class="docutils literal notranslate"><span class="pre">RAJA_ENABLE_BOUNDS_CHECK</span></code> to
+turn run time bounds checking on or off when the code is compiled.
+Enabling bounds checking is useful for debugging and to ensure
+your code is correct. However, when enabled, bounds checking adds
+noticeable run time overhead. So it should not be enabled for
+a production build of your code.</p>
+</div>
+</section>
+<section id="offset-layouts-apply-offsets-to-indices">
+<h2>Offset Layouts Apply Offsets to Indices<a class="headerlink" href="#offset-layouts-apply-offsets-to-indices" title="Permalink to this headline">¶</a></h2>
+<p>The last topic we cover in this exercise is the <code class="docutils literal notranslate"><span class="pre">RAJA::OffsetLayout</span></code> type.
+We first illustrate the concept of an offset with a C-style for-loop:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">imin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-5</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">imax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">imin</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">imax</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">ao_ref</span><span class="p">[</span><span class="w"> </span><span class="n">i</span><span class="o">-</span><span class="n">imin</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Here, the for-loop runs from ‘imin’ to ‘imax-1’ (i.e., -5 to 5). To avoid
+out-of-bounds negative indexing, we subtract ‘imin’ (i.e., -5) from the loop
+index ‘i’.</p>
+<p>To do the same thing with RAJA, we create a <code class="docutils literal notranslate"><span class="pre">RAJA::OffsetLayout</span></code> object
+and use it to index into the array:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">OffsetLayout</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">offlayout_1D</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_offset_layout</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="w"> </span><span class="p">{{</span><span class="n">imin</span><span class="p">}},</span><span class="w"> </span><span class="p">{{</span><span class="n">imax</span><span class="p">}}</span><span class="w"> </span><span class="p">);</span><span class="w"> </span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">OffsetLayout</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">aoview_1Doff</span><span class="p">(</span><span class="n">ao</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                                             </span><span class="n">offlayout_1D</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">imin</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">imax</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">aoview_1Doff</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">RAJA::OffsetLayout</span></code> is a different type than <code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code> because
+it contains offset information. The arguments to the
+<code class="docutils literal notranslate"><span class="pre">RAJA::make_offset_layout</span></code> method are the index bounds.</p>
+<p>As expected, the two dimensional case is similar. First, a C-style loop:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">imin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="n">imax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">jmin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-5</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">jmax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">imin</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">imax</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jmin</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">jmax</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="n">ao_ref</span><span class="p">[</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="o">-</span><span class="n">jmin</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">imin</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">jmax</span><span class="o">-</span><span class="n">jmin</span><span class="p">)</span><span class="w">  </span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="n">iter</span><span class="o">++</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>and then the same operation using a <code class="docutils literal notranslate"><span class="pre">RAJA::OffsetLayout</span></code> object:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">OffsetLayout</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">offlayout_2D</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_offset_layout</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="w"> </span><span class="p">{{</span><span class="n">imin</span><span class="p">,</span><span class="w"> </span><span class="n">jmin</span><span class="p">}},</span><span class="w"> </span><span class="p">{{</span><span class="n">imax</span><span class="p">,</span><span class="w"> </span><span class="n">jmax</span><span class="p">}}</span><span class="w"> </span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">OffsetLayout</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">aoview_2Doff</span><span class="p">(</span><span class="n">ao</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                                             </span><span class="n">offlayout_2D</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">imin</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">imax</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jmin</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">jmax</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="n">aoview_2Doff</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="n">iter</span><span class="o">++</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Note that the first argument passed to <code class="docutils literal notranslate"><span class="pre">RAJA::make_offset_layout</span></code> contains
+the lower bounds for ‘i’ and ‘j’ and the second argument contains the upper
+bounds. Also, the ‘j’ index is stride-1 by default since we did not pass
+a permutation to the <code class="docutils literal notranslate"><span class="pre">RAJA::make_offset_layout</span></code> method, which is the same
+as the non-offset Layout usage.</p>
+<p>Just like <code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code> has a permutation, so does <code class="docutils literal notranslate"><span class="pre">RAJA::OffsetLayout</span></code>.
+Here is an example where we permute the (i, j) index stride ordering:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">idx_t</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="o">&gt;</span><span class="w"> </span><span class="n">perm1D</span><span class="w"> </span><span class="p">{{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">}};</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">OffsetLayout</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span><span class="w"> </span><span class="n">permofflayout_2D</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_permuted_offset_layout</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span><span class="p">(</span><span class="w"> </span><span class="p">{{</span><span class="n">imin</span><span class="p">,</span><span class="w"> </span><span class="n">jmin</span><span class="p">}},</span><span class="w"> </span>
+<span class="w">                                          </span><span class="p">{{</span><span class="n">imax</span><span class="p">,</span><span class="w"> </span><span class="n">jmax</span><span class="p">}},</span><span class="w"></span>
+<span class="w">                                          </span><span class="n">perm1D</span><span class="w"> </span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">OffsetLayout</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">aoview_2Dpermoff</span><span class="p">(</span><span class="n">ao</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                                            </span><span class="n">permofflayout_2D</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jmin</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">jmax</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">imin</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">imax</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="n">aoview_2Dpermoff</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iter</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="n">iter</span><span class="o">++</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The permutation ‘{1, 0}’ is passed as the third argument to
+<code class="docutils literal notranslate"><span class="pre">RAJA::make_offset_layout</span></code>. From the ordering of the for-loops, we can see
+that the ‘i’ index is stride-1 and the ‘j’ index has stride equal to the
+extent of the ‘i’ dimension so the for-loop nest strides through
+the data with unit stride.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sort.html" class="btn btn-neutral float-left" title="Parallel Sort Operations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="permuted-layout-batch-matrix-multiply.html" class="btn btn-neutral float-right" title="Permuted Layout: Batched Matrix-Multiplication" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

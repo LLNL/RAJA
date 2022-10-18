@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scan Operations &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Sort Operations" href="sort.html" />
+    <link rel="prev" title="Atomic Operations" href="atomic.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> RAJA
+            <img src="../../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">RAJA User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html">Getting Started With RAJA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../using_raja.html">Using RAJA in Your Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../config_options.html">Build Configuration Options</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../features.html">RAJA Features</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="loop_basic.html">Elements of Loop Execution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="policies.html">Policies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iteration_spaces.html">Indices, Segments, and IndexSets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="view.html">View and Layout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reduction.html">Reduction Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomic.html">Atomic Operations</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Scan Operations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Scan Operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#raja-inclusive-scans">RAJA Inclusive Scans</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#raja-exclusive-scans">RAJA Exclusive Scans</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#raja-scan-operators">RAJA Scan Operators</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="sort.html">Sort Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="resource.html">Resources</a></li>
+<li class="toctree-l3"><a class="reference internal" href="local_array.html">Local Array</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tiling.html">Loop Tiling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workgroup.html">WorkGroup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vectorization.html">Vectorization (SIMD/SIMT)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="plugins.html">Plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../app_considerations.html">Application Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html">RAJA Tutorial and Examples</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guide/index.html">RAJA Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">RAJA User Guide</a> &raquo;</li>
+          <li><a href="../features.html">RAJA Features</a> &raquo;</li>
+      <li>Scan Operations</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sphinx/user_guide/feature/scan.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="scan-operations">
+<span id="feat-scan-label"></span><h1>Scan Operations<a class="headerlink" href="#scan-operations" title="Permalink to this headline">¶</a></h1>
+<p>RAJA provides portable parallel scan operations, which are basic
+parallel algorithm building blocks. They are described in this section.</p>
+<p>A few important notes:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>All RAJA scan operations are in the namespace <code class="docutils literal notranslate"><span class="pre">RAJA</span></code>.</p></li>
+<li><p>Each RAJA scan operation is a template on an <em>execution policy</em>
+parameter. The same policy types used for <code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code> methods
+may be used for RAJA scans. Please see <a class="reference internal" href="policies.html#feat-policies-label"><span class="std std-ref">Policies</span></a>
+for more information.</p></li>
+<li><p>RAJA scan operations accept an optional <em>operator</em> argument so
+users can perform different types of scan operations. If
+no operator is given, the default is a ‘plus’ operation and
+the result is a <strong>prefix-sum</strong>.</p></li>
+</ul>
+</div>
+<p>Also:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For scans using the CUDA or HIP back-end, RAJA implementation uses
+the NVIDIA CUB library or AMD rocPRIM library, respectively.
+Typically, the CMake variable <code class="docutils literal notranslate"><span class="pre">CUB_DIR</span></code> or <code class="docutils literal notranslate"><span class="pre">ROCPRIM_DIR</span></code> will
+be automatically set to the location of the CUB or rocPRIM library
+for the CUDA or rocPRIM installation specified when either back-end
+is enabled. More details for configuring the CUB or rocPRIM library
+for a RAJA build can be found in <a class="reference internal" href="../getting_started.html#getting-started-depend-label"><span class="std std-ref">Dependencies</span></a>.</p>
+</div>
+<p>Please see the following tutorial sections for detailed examples that use
+RAJA scan operations:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="../tutorial/scan.html#tut-scan-label"><span class="std std-ref">Parallel Scan Operations</span></a>.</p></li>
+</ul>
+</div></blockquote>
+<section id="id1">
+<h2>Scan Operations<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>In general, a scan operation takes a sequence of numbers ‘x’ and a binary
+associative operator ‘op’ as input and produces another sequence of
+numbers ‘y’ as output. Each element of the output sequence is formed by
+applying the operator to a subset of the input. Scans come in
+two flavors: <em>inclusive</em> and <em>exclusive</em>.</p>
+<p>An <strong>inclusive scan</strong> takes the input sequence</p>
+<blockquote>
+<div><p>x = { x<sub>0</sub>, x<sub>1</sub>, x<sub>2</sub>, … }</p>
+</div></blockquote>
+<p>and calculates the output sequence:</p>
+<blockquote>
+<div><p>y = { y<sub>0</sub>, y<sub>1</sub>, y<sub>2</sub>, … }</p>
+</div></blockquote>
+<p>using the recursive definition</p>
+<blockquote>
+<div><p>y<sub>0</sub>= x<sub>0</sub></p>
+<p>y<sub>i</sub>= y<sub>i-1</sub>op x<sub>i</sub>, for each i &gt; 0</p>
+</div></blockquote>
+<p>An <strong>exclusive scan</strong> is similar, but the output of an exclusive scan is
+different from the output of an inclusive scan in two ways. First, the first
+element of the output is the identity of the operator used. Second, the
+rest of the output sequence is the same as inclusive scan, but shifted one
+position to the right; i.e.,</p>
+<blockquote>
+<div><p>y<sub>0</sub>= op<sub>identity</sub></p>
+<p>y<sub>i</sub>= y<sub>i-1</sub> op x<sub>i-1</sub>, for each i &gt; 0</p>
+</div></blockquote>
+<p>If you would like more information about scan operations, a good overview of
+what they are and why they are useful can be found in
+<a class="reference external" href="https://www.cs.cmu.edu/~blelloch/papers/Ble93.pdf">Blelloch Scan Lecture Notes</a>. A nice presentation that describes how parallel scans are implemented is <a class="reference external" href="http://people.cs.vt.edu/yongcao/teaching/cs5234/spring2013/slides/Lecture10.pdf">Va Tech Scan Lecture</a></p>
+</section>
+<section id="raja-inclusive-scans">
+<h2>RAJA Inclusive Scans<a class="headerlink" href="#raja-inclusive-scans" title="Permalink to this headline">¶</a></h2>
+<p>RAJA inclusive scan operations look like the following:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::inclusive_scan&lt;</span> <span class="pre">exec_policy</span> <span class="pre">&gt;(in_container,</span> <span class="pre">out_container)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::inclusive_scan&lt;</span> <span class="pre">exec_policy</span> <span class="pre">&gt;(in_container,</span> <span class="pre">out_container,</span> <span class="pre">operator)</span></code></p></li>
+</ul>
+</div></blockquote>
+<p>Here, ‘in_container’ and ‘out_container’ are random access ranges of some
+numeric scalar type whose elements are the input and output sequences of the
+scan, respectively. The scalar type must be the same for both arrays. The first
+scan operation above will be a <em>prefix-sum</em> since there is no operator argument
+given; i.e., the output array will contain partial sums of the input array. The
+second scan will apply the operator that is passed. Note that container
+arguments can be generated from iterators using <code class="docutils literal notranslate"><span class="pre">RAJA::make_span(begin,</span> <span class="pre">len)</span></code>.
+This is shown in the examples in <a class="reference internal" href="../tutorial/scan.html#tut-scan-label"><span class="std std-ref">Parallel Scan Operations</span></a>.</p>
+<p>RAJA also provides <em>in-place</em> scans:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::inclusive_scan_inplace&lt;</span> <span class="pre">exec_policy</span> <span class="pre">&gt;(in_container)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::inclusive_scan_inplace&lt;</span> <span class="pre">exec_policy</span> <span class="pre">&gt;(in_container,</span> <span class="pre">operator)</span></code></p></li>
+</ul>
+</div></blockquote>
+<p>An in-place scan generates the same output sequence as a non-inplace scan.
+However, an in-place scan does not take separate input and output arrays and
+the result of the scan operation will appear <em>in-place</em> in the input array.</p>
+</section>
+<section id="raja-exclusive-scans">
+<h2>RAJA Exclusive Scans<a class="headerlink" href="#raja-exclusive-scans" title="Permalink to this headline">¶</a></h2>
+<p>Using RAJA exclusive scans is essentially the same as for inclusive scans:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::exclusive_scan&lt;</span> <span class="pre">exec_policy</span> <span class="pre">&gt;(in_container,</span> <span class="pre">out_container)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::exclusive_scan&lt;</span> <span class="pre">exec_policy</span> <span class="pre">&gt;(in_container,</span> <span class="pre">out_container,</span> <span class="pre">operator)</span></code></p></li>
+</ul>
+</div></blockquote>
+<p>and</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::exclusive_scan_inplace&lt;</span> <span class="pre">exec_policy</span> <span class="pre">&gt;(in_container)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::exclusive_scan_inplace&lt;</span> <span class="pre">exec_policy</span> <span class="pre">&gt;(in_container,</span> <span class="pre">&lt;operator&gt;)</span></code></p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="raja-scan-operators">
+<span id="feat-scanops-label"></span><h2>RAJA Scan Operators<a class="headerlink" href="#raja-scan-operators" title="Permalink to this headline">¶</a></h2>
+<p>RAJA provides a variety of operators that can be used to perform different
+types of scans, such as:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::operators::plus&lt;T&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::operators::minus&lt;T&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::operators::multiplies&lt;T&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::operators::divides&lt;T&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::operators::minimum&lt;T&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::operators::maximum&lt;T&gt;</span></code></p></li>
+</ul>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>All RAJA scan operators are in the namespace <code class="docutils literal notranslate"><span class="pre">RAJA::operators</span></code>.</p></li>
+</ul>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="atomic.html" class="btn btn-neutral float-left" title="Atomic Operations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sort.html" class="btn btn-neutral float-right" title="Sort Operations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

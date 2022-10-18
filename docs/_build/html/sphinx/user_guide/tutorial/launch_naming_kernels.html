@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Naming kernels for NVTX/ROCTX tools &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Matrix Transpose" href="matrix_transpose.html" />
+    <link rel="prev" title="RAJA::expt::Launch Execution Policies" href="launch_exec_pols.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> RAJA
+            <img src="../../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">RAJA User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html">Getting Started With RAJA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../using_raja.html">Using RAJA in Your Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../config_options.html">Build Configuration Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../features.html">RAJA Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../app_considerations.html">Application Considerations</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html">RAJA Tutorial and Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#raja-tutorial">RAJA Tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#a-little-c-background">A Little C++ Background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#raja-examples-and-exercises">RAJA Examples and Exercises</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#simple-loops-and-basic-raja-features">Simple Loops and Basic RAJA Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#complex-loops-and-advanced-raja-features">Complex Loops and Advanced RAJA Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#nested-loops-with-raja-kernel">Nested Loops with <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code></a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../tutorial.html#nested-loops-with-raja-expt-launch">Nested Loops with <code class="docutils literal notranslate"><span class="pre">RAJA::expt::launch</span></code></a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="launch_basic.html"><code class="docutils literal notranslate"><span class="pre">RAJA::expt::Launch</span></code> Basics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="launch_exec_pols.html"><code class="docutils literal notranslate"><span class="pre">RAJA::expt::Launch</span></code> Execution Policies</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Naming kernels for NVTX/ROCTX tools</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#comparing-raja-kernel-and-raja-expt-launch-matrix-transpose">Comparing <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA::expt::launch</span></code>: Matrix-Transpose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#other-raja-features-and-usage-examples">Other RAJA Features and Usage Examples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guide/index.html">RAJA Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">RAJA User Guide</a> &raquo;</li>
+          <li><a href="../tutorial.html">RAJA Tutorial and Examples</a> &raquo;</li>
+      <li>Naming kernels for NVTX/ROCTX tools</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sphinx/user_guide/tutorial/launch_naming_kernels.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="naming-kernels-for-nvtx-roctx-tools">
+<span id="tut-teamsbasic-label"></span><h1>Naming kernels for NVTX/ROCTX tools<a class="headerlink" href="#naming-kernels-for-nvtx-roctx-tools" title="Permalink to this headline">¶</a></h1>
+<p>There are no exercise files to work through for this section. Instead, there
+is an example source file <code class="docutils literal notranslate"><span class="pre">RAJA/examples/teams_reductions.cpp</span></code> which
+contains complete code examples of the concepts described here.</p>
+<p>Key RAJA feature shown in the following example:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Naming kernels using the <code class="docutils literal notranslate"><span class="pre">Grid</span></code> object in <code class="docutils literal notranslate"><span class="pre">RAJA::ext::Launch</span></code> methods.</p></li>
+</ul>
+</div></blockquote>
+<p>In this example, we illustrate kernel naming capabilities within the RAJA Launch
+framework for use with NVTX or ROCTX region naming capabilities.</p>
+<p>To name a <code class="docutils literal notranslate"><span class="pre">RAJA::expt::launch</span></code> kernel, a string name is passed as the
+third argument to the <code class="docutils literal notranslate"><span class="pre">RAJA::expt::Grid</span></code> constructor:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RAJA</span><span class="p">::</span><span class="n">expt</span><span class="p">::</span><span class="n">launch</span><span class="o">&lt;</span><span class="n">launch_policy</span><span class="o">&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="p">::</span><span class="n">expt</span><span class="p">::</span><span class="n">ExecPlace</span> <span class="p">,</span>
+  <span class="n">RAJA</span><span class="p">::</span><span class="n">expt</span><span class="p">::</span><span class="n">Grid</span><span class="p">(</span><span class="n">RAJA</span><span class="p">::</span><span class="n">expt</span><span class="p">::</span><span class="n">Teams</span><span class="p">(</span><span class="n">Nteams</span><span class="p">,</span><span class="n">Nteams</span><span class="p">),</span>
+                   <span class="n">RAJA</span><span class="p">::</span><span class="n">expt</span><span class="p">::</span><span class="n">Threads</span><span class="p">(</span><span class="n">Nthreads</span><span class="p">,</span><span class="n">Nthreads</span><span class="p">)</span>
+                   <span class="s2">&quot;myKernel&quot;</span><span class="p">),</span>
+  <span class="p">[</span><span class="o">=</span><span class="p">]</span> <span class="n">RAJA_HOST_DEVICE</span> <span class="p">(</span><span class="n">RAJA</span><span class="p">::</span><span class="n">expt</span><span class="p">::</span><span class="n">LaunchContext</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="o">/*</span> <span class="n">Kernel</span> <span class="n">body</span> <span class="n">code</span> <span class="n">goes</span> <span class="n">here</span> <span class="o">*/</span>
+
+  <span class="p">}</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+<p>The kernel name is used to create NVTX (NVIDIA) or ROCTX (AMD) ranges enabling
+developers to identify kernels using NVIDIA <a class="reference external" href="https://developer.nvidia.com/nsight-visual-studio-edition">Nsight</a>
+and NVIDIA <a class="reference external" href="https://docs.nvidia.com/cuda/profiler-users-guide/index.html">nvprof</a> profiling
+tools or <a class="reference external" href="https://rocmdocs.amd.com/en/latest/ROCm_Tools/ROCm-Tools.html">ROCm</a>
+profiling tools when using ROCTX.  As an illustration, nvprof
+kernels are identified as ranges of GPU activity using the provided kernel
+name:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">==</span><span class="mi">73220</span><span class="o">==</span> <span class="n">NVTX</span> <span class="n">result</span><span class="p">:</span>
+<span class="o">==</span><span class="mi">73220</span><span class="o">==</span>   <span class="n">Thread</span> <span class="s2">&quot;&lt;unnamed&gt;&quot;</span> <span class="p">(</span><span class="nb">id</span> <span class="o">=</span> <span class="mi">290832</span><span class="p">)</span>
+<span class="o">==</span><span class="mi">73220</span><span class="o">==</span>     <span class="n">Domain</span> <span class="s2">&quot;&lt;unnamed&gt;&quot;</span>
+<span class="o">==</span><span class="mi">73220</span><span class="o">==</span>       <span class="n">Range</span> <span class="s2">&quot;myKernel&quot;</span>
+            <span class="n">Type</span>  <span class="n">Time</span><span class="p">(</span><span class="o">%</span><span class="p">)</span>      <span class="n">Time</span>     <span class="n">Calls</span>       <span class="n">Avg</span>       <span class="n">Min</span>       <span class="n">Max</span>  <span class="n">Name</span>
+            <span class="n">Range</span><span class="p">:</span>  <span class="mf">100.00</span><span class="o">%</span>  <span class="mf">32.868</span><span class="n">us</span>         <span class="mi">1</span>  <span class="mf">32.868</span><span class="n">us</span>  <span class="mf">32.868</span><span class="n">us</span>  <span class="mf">32.868</span><span class="n">us</span>  <span class="n">myKernel</span>
+   <span class="n">GPU</span> <span class="n">activities</span><span class="p">:</span>  <span class="mf">100.00</span><span class="o">%</span>  <span class="mf">2.0307</span><span class="n">ms</span>         <span class="mi">1</span>  <span class="mf">2.0307</span><span class="n">ms</span>  <span class="mf">2.0307</span><span class="n">ms</span>  <span class="mf">2.0307</span><span class="n">ms</span>  <span class="n">_ZN4RAJA4expt17launch_global_fcnIZ4mainEUlNS0_13LaunchContextEE_EEvS2_T_</span>
+        <span class="n">API</span> <span class="n">calls</span><span class="p">:</span>  <span class="mf">100.00</span><span class="o">%</span>  <span class="mf">27.030</span><span class="n">us</span>         <span class="mi">1</span>  <span class="mf">27.030</span><span class="n">us</span>  <span class="mf">27.030</span><span class="n">us</span>  <span class="mf">27.030</span><span class="n">us</span>  <span class="n">cudaLaunchKernel</span>
+</pre></div>
+</div>
+<p>Similarly, ROCm tools can be used to generate traces of a profile and
+the resulting json file can be viewed using tools such as <a class="reference external" href="https://ui.perfetto.dev/#!/">Perfetto</a>.</p>
+<p>In future work, we plan to add support to other profiling tools. Thus, API
+changes may occur based on user feedback and integration with other tools.
+Enabling NVTX profiling with RAJA Launch requires RAJA to be configured with
+RAJA_ENABLE_NV_TOOLS_EXT=ON.
+or RAJA_ENABLE_ROCTX=ON for ROCTX profiling on AMD platforms platforms.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="launch_exec_pols.html" class="btn btn-neutral float-left" title="RAJA::expt::Launch Execution Policies" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="matrix_transpose.html" class="btn btn-neutral float-right" title="Matrix Transpose" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

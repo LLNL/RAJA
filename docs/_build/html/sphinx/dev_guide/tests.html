@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAJA Tests &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="RAJA Release Process" href="release_process.html" />
+    <link rel="prev" title="Continuous Integration (CI) Testing Maintenance Tasks" href="ci_tasks.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> RAJA
+            <img src="../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">RAJA User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">RAJA Developer Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="contributing.html">Contributing to RAJA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="branch_development.html">RAJA Branch Development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build_configurations.html">RAJA Build Configurations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ci.html">Continuous Integration (CI) Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ci_tasks.html">Continuous Integration (CI) Testing Maintenance Tasks</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">RAJA Tests</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#test-organization">Test Organization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#anatomy-of-a-test-case">Anatomy Of A Test Case</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#test-source-file">Test Source File</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cmakelists-txt-file">CMakeLists.txt File</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#test-header-files">Test Header files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="release_process.html">RAJA Release Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="versioning.html">RAJA Release Version Naming</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">RAJA Developer Guide</a> &raquo;</li>
+      <li>RAJA Tests</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/sphinx/dev_guide/tests.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="raja-tests">
+<span id="tests-label"></span><h1>RAJA Tests<a class="headerlink" href="#raja-tests" title="Permalink to this headline">¶</a></h1>
+<p>As noted in <a class="reference internal" href="ci.html#ci-label"><span class="std std-ref">Continuous Integration (CI) Testing</span></a>, all RAJA test checks must pass before any PR
+contribution will be merged. Additionally, we recommend that contributors
+include new tests in their code contributions when adding new features
+and bug fixes.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If RAJA team members think adequate testing is not included in a
+PR branch, they will ask for additional testing to be added during
+the review process.</p>
+</div>
+<section id="test-organization">
+<span id="tests-organization-label"></span><h2>Test Organization<a class="headerlink" href="#test-organization" title="Permalink to this headline">¶</a></h2>
+<p>The goals of the RAJA test organization are to:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Make it easy to see what is tested and where tests live. We want
+developers and users to be able to find tests easily and know where
+to put new tests when they add them.</p></li>
+<li><p>Parameterize tests as much as reasonable to ensure that features work with
+all supported RAJA back-ends and we are testing them consistently. We want
+the source files for each test case to allow testing of each RAJA back-end.
+Specifically, tests for each back-end are generated by instantiating the
+same source routines with different type information.</p></li>
+<li><p>Have test source code generated for compilation by CMake when the code is
+configured. This significantly reduces code redundancy and enables our
+test parameterization goals.</p></li>
+</ul>
+</div></blockquote>
+<p>All RAJA tests reside in the
+<a class="reference external" href="https://github.com/LLNL/RAJA/tree/develop/test">RAJA/test</a> directory.
+The test directory structure looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RAJA</span><span class="o">/</span><span class="n">test</span><span class="o">/</span><span class="n">functional</span><span class="o">/</span><span class="n">forall</span>
+                     <span class="n">kernel</span>
+                     <span class="n">scan</span>
+                     <span class="o">...</span>
+          <span class="n">include</span><span class="o">/...</span>
+          <span class="n">integration</span><span class="o">/...</span>
+          <span class="n">unit</span><span class="o">/</span><span class="n">algorithm</span>
+               <span class="n">atomic</span>
+               <span class="n">index</span>
+               <span class="o">...</span>
+</pre></div>
+</div>
+<p>RAJA tests are partitioned into three main categories:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>Unit tests</strong> exercise basic interfaces and features of individual RAJA
+classes and methods in standalone fashion; i.e., integrated with other
+parts of RAJA as minimally as is reasonable. RAJA unit tests reside
+in sub-directories of the <a class="reference external" href="https://github.com/LLNL/RAJA/tree/develop/test/unit">RAJA/test/unit</a> directory.</p></li>
+<li><p><strong>Functional tests</strong> integrate multiple RAJA features in common ways to
+test how RAJA is used in practice. RAJA functional tests reside
+in sub-directories of the <a class="reference external" href="https://github.com/LLNL/RAJA/tree/develop/test/functional">RAJA/test/functional</a> directory.</p></li>
+<li><p><strong>Integration tests</strong> exercise features that integrate RAJA with other
+libraries, such as Kokkos performance tools as plug-ins. RAJA integration
+tests reside in sub-directories of the <a class="reference external" href="https://github.com/LLNL/RAJA/tree/develop/test/integration">RAJA/test/integration</a> directory.</p></li>
+</ul>
+</div></blockquote>
+<p>The <a class="reference external" href="https://github.com/LLNL/RAJA/tree/develop/test/include">RAJA/test/include</a> directory contains header files that define types and other items that are
+commonly used in various tests.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Please follow the existing sub-directory structure and code
+implementation patterns for RAJA tests when adding or modifying
+tests.</p>
+</div>
+</section>
+<section id="anatomy-of-a-test-case">
+<span id="tests-anatomy-label"></span><h2>Anatomy Of A Test Case<a class="headerlink" href="#anatomy-of-a-test-case" title="Permalink to this headline">¶</a></h2>
+<p>This section discusses in some detail the structure of files for a single
+RAJA test case and how the work together. In particular, we describe the set
+of basic tests that exercise <code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code> execution with various RAJA
+segment types.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The implementation pattern described in the following sections is
+similarly used by all other RAJA tests.</p>
+</div>
+<p>Since these tests integrate multiple RAJA features, it is considered a
+<em>functional</em> test. The files for this test are located in the
+<a class="reference external" href="https://github.com/LLNL/RAJA/tree/develop/test/functional/forall/segment">RAJA/test/functional/forall/segment</a> directory. The contents of the directory are:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ls -c1 -R ./test/functional/forall/segment
+./test/functional/forall/segment:
+tests
+test-forall-segment.cpp.in
+CMakeLists.txt
+
+./test/functional/forall/segment/tests:
+test-forall-RangeStrideSegment.hpp
+test-forall-RangeSegment.hpp
+test-forall-ListSegment.hpp
+</pre></div>
+</div>
+<p>Next, we describe these and their relationships.</p>
+<section id="test-source-file">
+<span id="tests-source-label"></span><h3>Test Source File<a class="headerlink" href="#test-source-file" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference external" href="https://github.com/LLNL/RAJA/blob/develop/test/functional/forall/segment/test-forall-segment.cpp.in">test-forall-segment.cpp.in</a> file is the
+parameterized test source file. It contains header file include statements:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span>
+<span class="o">//</span> <span class="n">test</span><span class="o">/</span><span class="n">include</span> <span class="n">headers</span>
+<span class="o">//</span>
+<span class="c1">#include &quot;RAJA_test-base.hpp&quot;</span>
+<span class="c1">#include &quot;RAJA_test-camp.hpp&quot;</span>
+<span class="c1">#include &quot;RAJA_test-index-types.hpp&quot;</span>
+
+<span class="c1">#include &quot;RAJA_test-forall-data.hpp&quot;</span>
+<span class="c1">#include &quot;RAJA_test-forall-execpol.hpp&quot;</span>
+
+<span class="o">//</span>
+<span class="o">//</span> <span class="n">Header</span> <span class="k">for</span> <span class="n">tests</span> <span class="ow">in</span> <span class="o">./</span><span class="n">tests</span> <span class="n">directory</span>
+<span class="o">//</span>
+<span class="o">//</span> <span class="n">Note</span><span class="p">:</span> <span class="n">CMake</span> <span class="n">adds</span> <span class="o">./</span><span class="n">tests</span> <span class="k">as</span> <span class="n">an</span> <span class="n">include</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">these</span> <span class="n">tests</span><span class="o">.</span>
+<span class="o">//</span>
+<span class="c1">#include &quot;test-forall-@SEGTYPE@.hpp&quot;</span>
+</pre></div>
+</div>
+<p>The first set of header files live in the <code class="docutils literal notranslate"><span class="pre">RAJA/test/include</span></code> directory
+mentioned earlier. The headers are centrally located since their contents
+are shared with other test files. The last include statement pulls in the
+header file containing the parameterized tests for the corresponding RAJA
+segment type.</p>
+<p>Next, a <code class="docutils literal notranslate"><span class="pre">camp::cartesian_product</span></code> type is defined to assemble sets of types
+used in the parameterized tests:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span>
+<span class="o">//</span> <span class="n">Cartesian</span> <span class="n">product</span> <span class="n">of</span> <span class="n">types</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">parameterized</span> <span class="n">tests</span>
+<span class="o">//</span>
+<span class="n">using</span> <span class="nd">@BACKEND@ForallSegmentTypes</span> <span class="o">=</span>
+  <span class="n">Test</span><span class="o">&lt;</span> <span class="n">camp</span><span class="p">::</span><span class="n">cartesian_product</span><span class="o">&lt;</span><span class="n">StrongIdxTypeList</span><span class="p">,</span>
+                                <span class="nd">@BACKEND@ResourceList</span><span class="p">,</span>
+                                <span class="nd">@BACKEND@ForallExecPols</span><span class="o">&gt;&gt;</span><span class="p">::</span><span class="n">Types</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>The first template argument defining the <code class="docutils literal notranslate"><span class="pre">camp::cartesian_product</span> <span class="pre">object</span></code>
+type refers to a list of segment index types defined in the
+<a class="reference external" href="https://github.com/LLNL/RAJA/blob/develop/test/include/RAJA_test-index-types.hpp">RAJA_test-index-types.hpp</a> header file.
+The second argument refers to  a list
+of RAJA/camp resource types appropriate for the RAJA execution back-end defined
+in the <a class="reference external" href="https://github.com/LLNL/RAJA/blob/develop/test/include/RAJA_test-camp.hpp">RAJA_test-camp.hpp</a> header file (see <a class="reference internal" href="#tests-header-label"><span class="std std-ref">Test Header files</span></a> for
+where this is used). The third argument refers to a list of RAJA
+execution policy types defined in the
+<a class="reference external" href="https://github.com/LLNL/RAJA/blob/develop/test/include/RAJA_test-forall-execpol.hpp">RAJA_test-forall-execpol.hpp</a>
+header file. This results in the generation of a combinatorial collection of
+typed tests being run. Each test is defined by a unique tuple of types,
+described in <a class="reference internal" href="#tests-header-label"><span class="std std-ref">Test Header files</span></a>.</p>
+<p>Lastly, the parameterized set of tests is instantiated:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span>
+<span class="o">//</span> <span class="n">Instantiate</span> <span class="n">parameterized</span> <span class="n">test</span>
+<span class="o">//</span>
+<span class="n">INSTANTIATE_TYPED_TEST_SUITE_P</span><span class="p">(</span><span class="nd">@BACKEND</span><span class="o">@</span><span class="p">,</span>
+                               <span class="n">Forall</span><span class="nd">@SEGTYPE@Test</span><span class="p">,</span>
+                               <span class="nd">@BACKEND@ForallSegmentTypes</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">INSTANTIATE_TYPED_TEST_SUITE_P</span></code> is a GoogleTest macro. The first
+argument is a label noting the RAJA back-end used for the generated tests.
+This can be used to filter the tests when they are manually run.
+The second argument is a label identifying the test set, and the
+third argument matches the CMake generated name for the
+<code class="docutils literal notranslate"><span class="pre">camp::cartesian_product</span></code> type described above.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The second argument passed to the
+<code class="docutils literal notranslate"><span class="pre">INSTANTIATE_TYPED_TEST_SUITE_P</span></code> macro must match the name of
+the test suite class discussed in <a class="reference internal" href="#tests-header-label"><span class="std std-ref">Test Header files</span></a>.</p>
+</div>
+</section>
+<section id="cmakelists-txt-file">
+<span id="tests-cmakelists-label"></span><h3>CMakeLists.txt File<a class="headerlink" href="#cmakelists-txt-file" title="Permalink to this headline">¶</a></h3>
+<p>The concrete version of each of the items described above is generated by
+CMake when a RAJA build is configured. CMake fills in the segment type and
+back-end identifiers, <code class="docutils literal notranslate"><span class="pre">&#64;SEGTYPE&#64;</span></code> and <code class="docutils literal notranslate"><span class="pre">&#64;BACKEND&#64;</span></code>, respectively. These
+identifiers and the test file and executable generation process is defined in
+the
+<a class="reference external" href="https://github.com/LLNL/RAJA/blob/develop/test/functional/forall/segment/CMakeLists.txt">CMakeLists.txt</a> file in the test directory. If you look in the file,
+you will see nested loops over RAJA back-ends and segment types which
+process the test source file <code class="docutils literal notranslate"><span class="pre">test-forall-segment.cpp.in</span></code> multiple times
+to create a uniquely named source file for each back-end/segment type
+combination in the RAJA build space. Each source file will be compiled into
+a similarly named, unique test executable when the code is compiled.</p>
+</section>
+<section id="test-header-files">
+<span id="tests-header-label"></span><h3>Test Header files<a class="headerlink" href="#test-header-files" title="Permalink to this headline">¶</a></h3>
+<p>Recall the line in the test source file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#include &quot;test-forall-@SEGTYPE@.hpp&quot;</span>
+</pre></div>
+</div>
+<p>This identifies the header file containing the actual test code used to
+generate the tests. The test header files are located in the
+<a class="reference external" href="https://github.com/LLNL/RAJA/tree/develop/test/functional/forall/segment/tests">RAJA/test/functional/forall/segment/tests</a> directory. The main elements of
+each test header file are described next. We use the
+<a class="reference external" href="https://github.com/LLNL/RAJA/tree/develop/test/functional/forall/segment/tests/test-forall-RangeSegment.hpp">test-forall-RangeSegment.hpp</a> file to
+illustrate the essential test implementation elements.</p>
+<p>The file contains the following important items:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>test implementation method</p></li>
+<li><p>typed test suite class</p></li>
+<li><p>typed test invocation</p></li>
+<li><p>type test suite registration</p></li>
+</ul>
+</div></blockquote>
+<p>The test implementation is contained in a parameterized template method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">template</span> <span class="o">&lt;</span><span class="n">typename</span> <span class="n">INDEX_TYPE</span><span class="p">,</span> <span class="n">typename</span> <span class="n">WORKING_RES</span><span class="p">,</span> <span class="n">typename</span> <span class="n">EXEC_POLICY</span><span class="o">&gt;</span>
+<span class="n">void</span> <span class="n">ForallRangeSegmentTestImpl</span><span class="p">(</span><span class="n">INDEX_TYPE</span> <span class="n">first</span><span class="p">,</span> <span class="n">INDEX_TYPE</span> <span class="n">last</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Here, the template parameters identify the index type of the RAJA
+segment <code class="docutils literal notranslate"><span class="pre">INDEX_TYPE</span></code>, the resource type for allocating test memory in the
+proper execution environment <code class="docutils literal notranslate"><span class="pre">WORKING_RES</span></code>, and the execution policy
+<code class="docutils literal notranslate"><span class="pre">EXEC_POLICY</span></code> for the <code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code> method used to run the tests.</p>
+<p>The test suite class plugs into the GoogleTest framework:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TYPED_TEST_SUITE_P</span><span class="p">(</span><span class="n">ForallRangeSegmentTest</span><span class="p">);</span>
+<span class="n">template</span> <span class="o">&lt;</span><span class="n">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">class</span> <span class="nc">ForallRangeSegmentTest</span> <span class="p">:</span> <span class="n">public</span> <span class="p">::</span><span class="n">testing</span><span class="p">::</span><span class="n">Test</span>
+<span class="p">{</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>using the <code class="docutils literal notranslate"><span class="pre">TYPED_TEST_SUITE_P</span></code> GoogleTest macro.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The name of the test class must be identical to the label passed
+to the GoogleTest <code class="docutils literal notranslate"><span class="pre">TYPED_TEST_SUITE_P</span></code> macro.</p>
+</div>
+<p>The specific tests that are run are defined by calls to the test implementation
+template method <code class="docutils literal notranslate"><span class="pre">ForallRangeSegmentTestImpl</span></code> described above:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TYPED_TEST_P</span><span class="p">(</span><span class="n">ForallRangeSegmentTest</span><span class="p">,</span> <span class="n">RangeSegmentForall</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">using</span> <span class="n">INDEX_TYPE</span>  <span class="o">=</span> <span class="n">typename</span> <span class="n">camp</span><span class="p">::</span><span class="n">at</span><span class="o">&lt;</span><span class="n">TypeParam</span><span class="p">,</span> <span class="n">camp</span><span class="p">::</span><span class="n">num</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="p">::</span><span class="nb">type</span><span class="p">;</span>
+  <span class="n">using</span> <span class="n">WORKING_RES</span> <span class="o">=</span> <span class="n">typename</span> <span class="n">camp</span><span class="p">::</span><span class="n">at</span><span class="o">&lt;</span><span class="n">TypeParam</span><span class="p">,</span> <span class="n">camp</span><span class="p">::</span><span class="n">num</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;&gt;</span><span class="p">::</span><span class="nb">type</span><span class="p">;</span>
+  <span class="n">using</span> <span class="n">EXEC_POLICY</span> <span class="o">=</span> <span class="n">typename</span> <span class="n">camp</span><span class="p">::</span><span class="n">at</span><span class="o">&lt;</span><span class="n">TypeParam</span><span class="p">,</span> <span class="n">camp</span><span class="p">::</span><span class="n">num</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;&gt;</span><span class="p">::</span><span class="nb">type</span><span class="p">;</span>
+
+  <span class="o">//</span> <span class="n">test</span> <span class="n">zero</span><span class="o">-</span><span class="n">length</span> <span class="nb">range</span> <span class="n">segment</span>
+  <span class="n">ForallRangeSegmentTestImpl</span><span class="o">&lt;</span><span class="n">INDEX_TYPE</span><span class="p">,</span> <span class="n">WORKING_RES</span><span class="p">,</span> <span class="n">EXEC_POLICY</span><span class="o">&gt;</span><span class="p">(</span><span class="n">INDEX_TYPE</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">INDEX_TYPE</span><span class="p">(</span><span class="mi">3</span><span class="p">));</span>
+
+  <span class="n">ForallRangeSegmentTestImpl</span><span class="o">&lt;</span><span class="n">INDEX_TYPE</span><span class="p">,</span> <span class="n">WORKING_RES</span><span class="p">,</span> <span class="n">EXEC_POLICY</span><span class="o">&gt;</span><span class="p">(</span><span class="n">INDEX_TYPE</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">INDEX_TYPE</span><span class="p">(</span><span class="mi">27</span><span class="p">));</span>
+  <span class="n">ForallRangeSegmentTestImpl</span><span class="o">&lt;</span><span class="n">INDEX_TYPE</span><span class="p">,</span> <span class="n">WORKING_RES</span><span class="p">,</span> <span class="n">EXEC_POLICY</span><span class="o">&gt;</span><span class="p">(</span><span class="n">INDEX_TYPE</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">INDEX_TYPE</span><span class="p">(</span><span class="mi">2047</span><span class="p">));</span>
+  <span class="n">ForallRangeSegmentTestImpl</span><span class="o">&lt;</span><span class="n">INDEX_TYPE</span><span class="p">,</span> <span class="n">WORKING_RES</span><span class="p">,</span> <span class="n">EXEC_POLICY</span><span class="o">&gt;</span><span class="p">(</span><span class="n">INDEX_TYPE</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">INDEX_TYPE</span><span class="p">(</span><span class="mi">32000</span><span class="p">));</span>
+
+  <span class="n">runNegativeTests</span><span class="o">&lt;</span><span class="n">INDEX_TYPE</span><span class="p">,</span> <span class="n">WORKING_RES</span><span class="p">,</span> <span class="n">EXEC_POLICY</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">TYPED_TEST_P</span></code> is a GoogleTest macro defining the method for
+executing the tests. Note that the first three lines
+in the method extract the template parameter types from the <code class="docutils literal notranslate"><span class="pre">camp::tuple</span></code>
+produced by the <code class="docutils literal notranslate"><span class="pre">camp::cartesian_product</span></code> described earlier in
+<a class="reference internal" href="#tests-source-label"><span class="std std-ref">Test Source File</span></a>. If you look in the file, you will see an example of
+how we use C++ SFINAE to exclude running tests with negative index values
+for index types that are unsigned.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<ul class="simple">
+<li><p>The label passed as the first argument to the GoogleTest
+<code class="docutils literal notranslate"><span class="pre">TYPED_TEST_P</span></code> macro must match the name of the test suite
+class. The second argument is discussed below.</p></li>
+<li><p>It is critical to use the same type ordering when extracting
+the types that was used when the <code class="docutils literal notranslate"><span class="pre">camp::cartesian_product</span></code>
+type was defined in the test source file, described in
+<a class="reference internal" href="#tests-source-label"><span class="std std-ref">Test Source File</span></a>.</p></li>
+</ul>
+</div>
+<p>Lastly, the test suite is registered with GoogleTest using the
+<code class="docutils literal notranslate"><span class="pre">REGISTER_TYPED_TEST_SUITE_P</span></code> macro:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">REGISTER_TYPED_TEST_SUITE_P</span><span class="p">(</span><span class="n">ForallRangeSegmentTest</span><span class="p">,</span>
+                            <span class="n">RangeSegmentForall</span><span class="p">);</span>
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<ul class="simple">
+<li><p>The label passed as the first argument to the GoogleTest
+<code class="docutils literal notranslate"><span class="pre">REGISTER_TYPED_TEST_SUITE_P</span></code> macro must match the name of
+the test suite class.</p></li>
+<li><p>The label passed as the second argument to the GoogleTest
+<code class="docutils literal notranslate"><span class="pre">REGISTER_TYPED_TEST_SUITE_P</span></code> macro must match the label
+passed as the second argument to the <code class="docutils literal notranslate"><span class="pre">TYPED_TEST_P</span></code> macro.</p></li>
+</ul>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ci_tasks.html" class="btn btn-neutral float-left" title="Continuous Integration (CI) Testing Maintenance Tasks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="release_process.html" class="btn btn-neutral float-right" title="RAJA Release Process" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

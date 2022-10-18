@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAJA Release Process &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="RAJA Release Version Naming" href="versioning.html" />
+    <link rel="prev" title="RAJA Tests" href="tests.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> RAJA
+            <img src="../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">RAJA User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">RAJA Developer Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="contributing.html">Contributing to RAJA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="branch_development.html">RAJA Branch Development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build_configurations.html">RAJA Build Configurations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ci.html">Continuous Integration (CI) Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ci_tasks.html">Continuous Integration (CI) Testing Maintenance Tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tests.html">RAJA Tests</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">RAJA Release Process</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#release-candidate-branch">Release Candidate Branch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hotfix-branch">Hotfix Branch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#post-release-activities">Post-release Activities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#spack-package-update">Spack Package Update</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="versioning.html">RAJA Release Version Naming</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">RAJA Developer Guide</a> &raquo;</li>
+      <li>RAJA Release Process</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/sphinx/dev_guide/release_process.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="raja-release-process">
+<span id="release-label"></span><h1>RAJA Release Process<a class="headerlink" href="#raja-release-process" title="Permalink to this headline">¶</a></h1>
+<p>RAJA is considered part of the <strong>RAJA Portability Suite</strong> set of projects.
+Currently, the Suite includes <a class="reference external" href="https://github.com/LLNL/Umpire">Umpire</a>, <a class="reference external" href="https://github.com/LLNL/CHAI">CHAI</a>, and <a class="reference external" href="https://github.com/LLNL/camp">camp</a>, in addition to RAJA.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Releases for the Suite are coordinated, meaning that when a
+non-patch release is done for one, a new version release is
+done for all Suite projects.</p>
+</div>
+<p>The RAJA release process includes the following sequence of steps:</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p>Identify all work (features in development, outstanding PRs, etc.) to be
+to be included in the release.</p></li>
+<li><p>Merge all PRs containing work to be included in the release into the
+develop branch.</p></li>
+<li><p>Make a <a class="reference internal" href="#rcbranch-label"><span class="std std-ref">Release Candidate Branch</span></a> from the develop branch. Finalize the
+release by completing remaining release tasks on that branch.</p></li>
+<li><p>When the release candidate branch is ready, make a PR for it to be merged
+into the <strong>main branch.</strong> When it is approved and all CI checks pass,
+merge the release candidate branch into the RAJA main branch.</p></li>
+<li><p>On GitHub, make a new release with a tag for the release. Following our
+convention, the tag label should have the format <code class="docutils literal notranslate"><span class="pre">YYYY.mm.pp</span></code>. See
+<a class="reference internal" href="versioning.html#version-label"><span class="std std-ref">RAJA Release Version Naming</span></a> for a description of the version numbering scheme we
+use.  In the GitHub release description, please note key features,
+bugfixes, etc. in the release. These should be a high-level summary of the
+contents of the <code class="docutils literal notranslate"><span class="pre">RELEASE_NOTES.md</span></code> file in the RAJA repo, which may
+contain more detailed information. Also, add a note to the
+release description to remind users to download the gzipped tarfile for
+the release instead of the assets GitHub creates for the release.
+The GitHub-created assets do not contain the RAJA submodules and may
+cause issues for users as a result.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>For consistency, please follow a similar release
+description pattern for all RAJA releases.</p>
+</div>
+</li>
+<li><p>Check out the main branch locally and make sure it is up-to-date.
+Then, generate the release tarfile by running the script
+<code class="docutils literal notranslate"><span class="pre">./scripts/make_release_tarball.sh</span></code> from the top-level RAJA directory.
+If this is successful, a gzipped tarfile whose name includes the release
+tag <strong>with no extraneous SHA-1 hash information</strong> will be in the top-level
+RAJA directory.</p></li>
+<li><p>Edit the release in GitHub and upload the tarfile to the release.</p></li>
+<li><p>Make a PR to merge the main branch into the develop branch. After it
+passes all CI checks and is approved, merge the PR. This will ensure that
+all changes done to finalize the release will be included in the develop
+branch and future work on that branch.</p></li>
+</ol>
+</div></blockquote>
+<p>After a RAJA release is done, there a other tasks that typically need to be
+performed to update content in other projects. These task are described in
+<a class="reference internal" href="#post-release-label"><span class="std std-ref">Post-release Activities</span></a>.</p>
+<section id="release-candidate-branch">
+<span id="rcbranch-label"></span><h2>Release Candidate Branch<a class="headerlink" href="#release-candidate-branch" title="Permalink to this headline">¶</a></h2>
+<p>A <em>release candidate</em> branch is a temporary branch used to finalize a release.
+When the features, documentation, bug fixes, etc.  to include in a release are
+complete and merged into the develop branch, a release candidate branch is made
+off of the develop branch. Typically, a release candidate branch is named
+<strong>rc-&lt;release #&gt;.</strong> Please see <a class="reference internal" href="#release-label"><span class="std std-ref">RAJA Release Process</span></a> for a description of how
+a release candidate branch is used in the release process.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Creating a release candidate branch starts the next release
+cycle whereby new work being performed on feature branches can
+be merged into the develop branch.</p>
+</div>
+<p>Finalizing a release on a release candidate branch involves the following steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>If not already done, create a section for the release in the RAJA
+<code class="docutils literal notranslate"><span class="pre">RELEASE_NOTES.md</span></code> file. Describe all API changes, notable new features,
+bug fixes, improvements, build changes, etc. included in the release in
+appropriately labeled sections of the file. Please follow the pattern
+established in the file for previous releases. All changes that users
+should be aware of should be documented in the release notes. Hopefully,
+the release notes file has been updated along with the corresponding
+changes in PRs that are merged into the develop branch. At any rate, it is
+good practice to look over the commit history since the last release
+to ensure all important changes are captured in the release notes.</p></li>
+<li><p>Update the version number entries for the new release in the
+<code class="docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code> file in the top-level RAJA directory. These include
+entries for: <code class="docutils literal notranslate"><span class="pre">RAJA_VERSION_MAJOR</span></code>, <code class="docutils literal notranslate"><span class="pre">RAJA_VERSION_MINOR</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">RAJA_VERSION_PATCHLEVEL</span></code>. These items are used to define corresponding
+macro values in the <code class="docutils literal notranslate"><span class="pre">include/RAJA/config.hpp</span></code> file when the code is
+built so that users can access and check the RAJA version in their code.</p></li>
+<li><p>Update the <code class="docutils literal notranslate"><span class="pre">version</span></code> and <code class="docutils literal notranslate"><span class="pre">release</span></code> fields in the <code class="docutils literal notranslate"><span class="pre">docs/conf.py</span></code>
+file to the new release number. This information is used in the online
+RAJA documentation.</p></li>
+</ol>
+</div></blockquote>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p><strong>No feature development is done on a release branch. Only bug
+fixes, release documentation, and other release-oriented changes
+are made on a release candidate branch.</strong></p>
+</div>
+</section>
+<section id="hotfix-branch">
+<span id="hotfixbranch-label"></span><h2>Hotfix Branch<a class="headerlink" href="#hotfix-branch" title="Permalink to this headline">¶</a></h2>
+<p><em>Hotfix</em> branches are used in the (hopefully!) rare event that a bug is found
+shortly after a release that may negatively impact RAJA users. A hotfix branch
+will address the issue be merged into both develop and main branches.</p>
+<p>A hotfix branch is <em>made from main</em> with the name <strong>hotfix/&lt;issue&gt;</strong>. The
+issue is fixed (hopefully quickly!) and the release notes file is updated on
+the hotfix branch for the pending bugfix release. The branch is tested, against
+user code if necessary, to make sure the issue is resolved. Then, a PR is made
+to merge the hotfix branch into main. When it is approved and passes CI checks,
+it is merged into the main branch. Lastly, a new release is made in a fashion
+similar to the process described in <a class="reference internal" href="#release-label"><span class="std std-ref">RAJA Release Process</span></a>. For completeness,
+the key steps for performing a hotfix release are:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Make a <strong>hotfix</strong> branch from main for a release (hotfix/&lt;issue&gt;), fix the
+issue on the branch and verify, testing against user code if necessary.
+Update the release notes and RAJA patch version number as described
+in <a class="reference internal" href="#rcbranch-label"><span class="std std-ref">Release Candidate Branch</span></a>.</p></li>
+<li><p>When the hotfix branch is ready, make a PR for it to be merged
+into the <strong>main branch.</strong> When that is approved and all CI checks pass,
+merge it into the RAJA main branch.</p></li>
+<li><p>On GitHub, make a new release with a tag for the release. Following our
+convention, the tag label should have the format <code class="docutils literal notranslate"><span class="pre">YYYY.mm.pp</span></code>, where
+only the <strong>patch</strong> portion of the release tag should differ from the
+last release. In the GitHub release description, note that the release
+is a bugfix release and describe the issue that is resolved. Also, add
+a note to the release description to download the gzipped tarfile for the
+release rather than the assets GitHub creates as part of the release.</p></li>
+<li><p>Check out the main branch locally and make sure it is up-to-date.
+Then, generate the tarfile for the release by running the script
+<code class="docutils literal notranslate"><span class="pre">./scripts/make_release_tarball.sh</span></code> from the top-level RAJA directory.
+If this is successful, a gzipped tarfile whose name includes the release
+tag <strong>with no extraneous SHA-1 hash information</strong> will be in the top-level
+RAJA directory.</p></li>
+<li><p>Make a PR to merge the main branch into the develop branch. After it
+passes all CI checks and is approved, merge the PR. This will ensure that
+changes for the bugfix will be included in future development.</p></li>
+</ol>
+</div></blockquote>
+</section>
+<section id="post-release-activities">
+<span id="post-release-label"></span><h2>Post-release Activities<a class="headerlink" href="#post-release-activities" title="Permalink to this headline">¶</a></h2>
+<p>After a RAJA release is complete, other tasks are performed to update content
+in other repositories, typically. These tasks include:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Update the <a class="reference external" href="https://github.com/LLNL/RAJAProxies">RAJAProxies</a> project
+to the newly RAJA Portability Suite projects. This typically consists of
+updating the submodules to the new RAJA Portability Suite project
+versions, making sure the proxy-apps build and run correctly. When this
+is done, tag a release for proxy-app project.</p></li>
+<li><p>Update the RAJA Spack package in the
+<a class="reference external" href="https://github.com/spack/spack">Spack repository</a>. This requires some
+knowledge of Spack and attention to details and Spack conventions. Please
+see <a class="reference internal" href="#spack-package-label"><span class="std std-ref">Spack Package Update</span></a> for details.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="spack-package-update">
+<span id="spack-package-label"></span><h2>Spack Package Update<a class="headerlink" href="#spack-package-update" title="Permalink to this headline">¶</a></h2>
+<p>Describe how to update the RAJA Spack package….</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tests.html" class="btn btn-neutral float-left" title="RAJA Tests" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="versioning.html" class="btn btn-neutral float-right" title="RAJA Release Version Naming" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

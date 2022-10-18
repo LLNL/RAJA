@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAJA Release Version Naming &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="RAJA Copyright and License Information" href="../raja_license.html" />
+    <link rel="prev" title="RAJA Release Process" href="release_process.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> RAJA
+            <img src="../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">RAJA User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">RAJA Developer Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="contributing.html">Contributing to RAJA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="branch_development.html">RAJA Branch Development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build_configurations.html">RAJA Build Configurations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ci.html">Continuous Integration (CI) Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ci_tasks.html">Continuous Integration (CI) Testing Maintenance Tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tests.html">RAJA Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_process.html">RAJA Release Process</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">RAJA Release Version Naming</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#semantic-versioning">Semantic Versioning</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#semantic-version-numbers-and-meaning">Semantic Version Numbers and Meaning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#what-does-a-change-in-semantic-version-number-mean">What Does a Change in Semantic Version Number Mean?</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">RAJA Developer Guide</a> &raquo;</li>
+      <li>RAJA Release Version Naming</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/sphinx/dev_guide/versioning.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="raja-release-version-naming">
+<span id="version-label"></span><h1>RAJA Release Version Naming<a class="headerlink" href="#raja-release-version-naming" title="Permalink to this headline">¶</a></h1>
+<p>Prior to the RAJA release in March 2022, the RAJA project used the <em>Semantic
+Versioning</em> scheme for assigning release tag names. At the March 2022 release,
+we changed the release naming scheme to use <code class="docutils literal notranslate"><span class="pre">YYYY.mm.pp</span></code>, for year, month,
+and patch number. So, for example, the March 2022 release is labeled v2022.03.0.The main motivation for the release naming scheme is to do coordinated releases
+with the <a class="reference external" href="https://github.com/LLNL/Umpire">Umpire</a>,
+<a class="reference external" href="https://github.com/LLNL/CHAI">CHAI</a>, and
+<a class="reference external" href="https://github.com/LLNL/camp">camp</a> projects, which are considered parts
+of the <strong>RAJA Portability Suite</strong>. In a coordinated release, all the projects
+will have the same release name. If a project requires a patch release between
+coordinated releases, it will indicate that by incrementing the patch number;
+for example, v2022.03.1.</p>
+<p>The following sections describe the Semantic Versioning scheme for reference
+and posterity.</p>
+<section id="semantic-versioning">
+<h2>Semantic Versioning<a class="headerlink" href="#semantic-versioning" title="Permalink to this headline">¶</a></h2>
+<p>Semantic versioning is a
+methodology for assigning a version number to a software release in a way that
+conveys specific meaning about code modifications from version to version.
+See <a class="reference external" href="http://semver.org">Semantic Versioning</a> for a more detailed description.</p>
+<section id="semantic-version-numbers-and-meaning">
+<h3>Semantic Version Numbers and Meaning<a class="headerlink" href="#semantic-version-numbers-and-meaning" title="Permalink to this headline">¶</a></h3>
+<p>Semantic versioning is based on a three part version number <cite>MM.mm.pp</cite>:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><cite>MM</cite> is the <em>major version number</em>. It is incremented when an incompatible
+API change is made. That is, the API changes in a way that may break code
+using an earlier release of the software with a smaller major version
+number.</p></li>
+<li><p><cite>mm</cite> is the <em>minor version number</em>. It changes when functionality is
+added that is backward compatible, such as when the API grows to support
+new functionality yet the software will function the same as any
+earlier release of the software with a smaller minor version number
+when used through the intersection of two different APIs. The minor version
+number is always changed when the main branch changes, except possibly when
+the major version is changed; for example going from v1.0.0 to v2.0.0.</p></li>
+<li><p><cite>pp</cite> is the <em>patch version number</em>. It changes when a bug fix is made that
+is backward compatible. That is, such a bug fix is an internal
+implementation change that fixes incorrect behavior. The patch version
+number is always changed when a hotfix branch is merged into main, or when
+changes are made to main that only contain bug fixes.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="what-does-a-change-in-semantic-version-number-mean">
+<h3>What Does a Change in Semantic Version Number Mean?<a class="headerlink" href="#what-does-a-change-in-semantic-version-number-mean" title="Permalink to this headline">¶</a></h3>
+<p>A key consideration in meaning for these three version numbers is that
+the software has a public API. Changes to the API or code functionality
+are communicated by the way the version number is incremented from release to
+release. Some important conventions followed when using semantic versioning are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Once a version of the software is released, the contents of the release
+<strong>must not change</strong>. If the software is modified, it <strong>must</strong> be released
+with a new version.</p></li>
+<li><p>A major version number of zero (i.e., <cite>0.mm.pp</cite>) is considered initial
+development where anything may change. The API is not considered stable.</p></li>
+<li><p>Version <cite>1.0.0</cite> defines the first stable public API. Version number
+increments beyond this point depend on how the public API changes.</p></li>
+<li><p>When the software is changed so that any API functionality becomes
+deprecated, the minor version number <strong>must</strong> be incremented, unless the
+major version number changes.</p></li>
+<li><p>A pre-release version may be indicated by appending a hyphen and a series
+of dot-separated identifiers after the patch version. For example,
+<cite>1.0.1-alpha</cite>, <cite>1.0.1-alpha.1</cite>, <cite>1.0.2-0.2.5</cite>.</p></li>
+<li><p>Versions are compared using precedence that is calculated by separating
+major, minor, patch, and pre-release identifiers in that order. Major,
+minor, and patch numbers are compared numerically from left to right. For
+example, 1.0.0 &lt; 2.0.0 &lt; 2.1.0 &lt; 2.1.1. When major, minor, and patch
+numbers are equal, a pre-release version number has lower precedence than
+none. For example, 1.0.0-alpha &lt; 1.0.0.</p></li>
+</ul>
+</div></blockquote>
+<p>By following these conventions, it is fairly easy to communicate intent of
+version changes to users and it should be straightforward for users
+to manage dependencies on RAJA.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="release_process.html" class="btn btn-neutral float-left" title="RAJA Release Process" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../raja_license.html" class="btn btn-neutral float-right" title="RAJA Copyright and License Information" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

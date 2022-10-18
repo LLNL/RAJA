@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OffsetLayout: Five-point Stencil &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="RAJA::expt::Launch Basics" href="launch_basic.html" />
+    <link rel="prev" title="RAJA::kernel Execution Policies" href="kernel_exec_pols.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> RAJA
+            <img src="../../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">RAJA User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html">Getting Started With RAJA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../using_raja.html">Using RAJA in Your Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../config_options.html">Build Configuration Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../features.html">RAJA Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../app_considerations.html">Application Considerations</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html">RAJA Tutorial and Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#raja-tutorial">RAJA Tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#a-little-c-background">A Little C++ Background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#raja-examples-and-exercises">RAJA Examples and Exercises</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#simple-loops-and-basic-raja-features">Simple Loops and Basic RAJA Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#complex-loops-and-advanced-raja-features">Complex Loops and Advanced RAJA Features</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../tutorial.html#nested-loops-with-raja-kernel">Nested Loops with <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code></a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="kernel_nested_loop_reorder.html">Basic <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> Mechanics and Nested Loop Ordering</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_exec_pols.html"><code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> Execution Policies</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">OffsetLayout: Five-point Stencil</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#nested-loops-with-raja-expt-launch">Nested Loops with <code class="docutils literal notranslate"><span class="pre">RAJA::expt::launch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#comparing-raja-kernel-and-raja-expt-launch-matrix-transpose">Comparing <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA::expt::launch</span></code>: Matrix-Transpose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#other-raja-features-and-usage-examples">Other RAJA Features and Usage Examples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guide/index.html">RAJA Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">RAJA User Guide</a> &raquo;</li>
+          <li><a href="../tutorial.html">RAJA Tutorial and Examples</a> &raquo;</li>
+      <li>OffsetLayout: Five-point Stencil</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sphinx/user_guide/tutorial/offset-layout-5pt-stencil.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="offsetlayout-five-point-stencil">
+<span id="tut-offsetlayout-label"></span><h1>OffsetLayout: Five-point Stencil<a class="headerlink" href="#offsetlayout-five-point-stencil" title="Permalink to this headline">¶</a></h1>
+<p>This section contains an exercise file <code class="docutils literal notranslate"><span class="pre">RAJA/exercises/offset-layout-stencil.cpp</span></code>
+for you to work through if you wish to get some practice with RAJA. The
+file <code class="docutils literal notranslate"><span class="pre">RAJA/exercises/offset-layout-stencil.cpp</span></code> contains
+complete working code for the examples discussed in this section. You can use
+the solution file to check your work and for guidance if you get stuck. To build
+the exercises execute <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">offset-layout-stencil</span></code> and <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">offset-layout-stencil_solution</span></code>
+from the build directory.</p>
+<p>Key RAJA features shown in the following example:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> loop execution template and execution policies</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> multi-dimensional data access</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA:make_offset_layout</span></code> method to create an offset Layout</p></li>
+</ul>
+</div></blockquote>
+<p>The examples in this section apply a five-point stencil to the interior cells
+of a two-dimensional lattice and store a resulting sum in a second
+lattice of equal size. The five-point stencil associated with a lattice cell
+accumulates the value in the cell and each of its four neighbors. We use
+<code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA::OffsetLayout</span></code> constructs to simplify
+the multi-dimensional indexing so that we can write the stencil operation
+naturally, as such:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">output</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">+</span>
+                   <span class="nb">input</span><span class="p">(</span><span class="n">row</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">+</span> <span class="nb">input</span><span class="p">(</span><span class="n">row</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">+</span>
+                   <span class="nb">input</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">input</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A lattice is assumed to have <span class="math notranslate nohighlight">\(N_r \times N_c\)</span> interior cells with unit
+values surrounded by a halo of cells containing zero values for a total
+dimension of <span class="math notranslate nohighlight">\((N_r + 2) \times (N_c + 2)\)</span>. For example, when
+<span class="math notranslate nohighlight">\(N_r = N_c = 3\)</span>, the input lattice and values are:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>After applying the stencil, the output lattice and values are:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>3</p></td>
+<td><p>4</p></td>
+<td><p>3</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>4</p></td>
+<td><p>5</p></td>
+<td><p>4</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>3</p></td>
+<td><p>4</p></td>
+<td><p>3</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>For this <span class="math notranslate nohighlight">\((N_r + 2) \times (N_c + 2)\)</span> lattice case, here is our
+(row, col) indexing scheme.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>(-1, 3)</p></td>
+<td><p>(0, 3)</p></td>
+<td><p>(1, 3)</p></td>
+<td><p>(2, 3)</p></td>
+<td><p>(3, 3)</p></td>
+</tr>
+<tr class="row-even"><td><p>(-1, 2)</p></td>
+<td><p>(0, 2)</p></td>
+<td><p>(1, 2)</p></td>
+<td><p>(2, 2)</p></td>
+<td><p>(3, 2)</p></td>
+</tr>
+<tr class="row-odd"><td><p>(-1, 1)</p></td>
+<td><p>(0, 1)</p></td>
+<td><p>(1, 1)</p></td>
+<td><p>(2, 1)</p></td>
+<td><p>(3, 1)</p></td>
+</tr>
+<tr class="row-even"><td><p>(-1, 0)</p></td>
+<td><p>(0, 0)</p></td>
+<td><p>(1, 0)</p></td>
+<td><p>(2, 0)</p></td>
+<td><p>(3, 0)</p></td>
+</tr>
+<tr class="row-odd"><td><p>(-1, -1)</p></td>
+<td><p>(0, -1)</p></td>
+<td><p>(1, -1)</p></td>
+<td><p>(2, -1)</p></td>
+<td><p>(3, -1)</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Notably, <span class="math notranslate nohighlight">\([0, N_r) \times [0, N_c)\)</span> corresponds to the interior index
+range over which we apply the stencil, and <span class="math notranslate nohighlight">\([-1,N_r+1) \times [-1, N_c+1)\)</span>
+is the full lattice index range.</p>
+<p>For reference and comparison to the <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> implementations
+described below, we begin by walking through a C-style version of the stencil
+computation. First, we define the size of our lattice:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="c1">//</span>
+<span class="c1">// Define num of interior cells in row/cols in a lattice</span>
+<span class="c1">//</span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">N_r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">N_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"></span>
+
+<span class="c1">//</span>
+<span class="c1">// Define total num of cells in rows/cols in a lattice</span>
+<span class="c1">//</span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">totCellsInRow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">N_r</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">totCellsInCol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">N_c</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"></span>
+
+<span class="c1">//</span>
+<span class="c1">// Define total num of cells in a lattice</span>
+<span class="c1">//</span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">totCells</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">totCellsInRow</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">totCellsInCol</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Then, after allocating input and output arrays, we initialize the input:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">N_r</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">row</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">N_c</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">col</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="kt">int</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">totCellsInCol</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">row</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="n">input</span><span class="p">[</span><span class="n">id</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>and compute the reference output solution:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">N_r</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">row</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">N_c</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">col</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">      </span><span class="kt">int</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">totCellsInCol</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">row</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="n">output_ref</span><span class="p">[</span><span class="n">id</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">[</span><span class="n">id</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">input</span><span class="p">[</span><span class="n">id</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"></span>
+<span class="w">                        </span><span class="o">+</span><span class="w"> </span><span class="n">input</span><span class="p">[</span><span class="n">id</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"></span>
+<span class="w">                        </span><span class="o">+</span><span class="w"> </span><span class="n">input</span><span class="p">[</span><span class="n">id</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">totCellsInCol</span><span class="p">]</span><span class="w"></span>
+<span class="w">                        </span><span class="o">+</span><span class="w"> </span><span class="n">input</span><span class="p">[</span><span class="n">id</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">totCellsInCol</span><span class="p">];</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<section id="raja-offset-layouts">
+<h2>RAJA Offset Layouts<a class="headerlink" href="#raja-offset-layouts" title="Permalink to this headline">¶</a></h2>
+<p>We use the <code class="docutils literal notranslate"><span class="pre">RAJA::make_offset_layout</span></code> method to construct a
+<code class="docutils literal notranslate"><span class="pre">RAJA::OffsetLayout</span></code> object that we use to create <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> objects
+for our input and output data arrays:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">DIM</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">OffsetLayout</span><span class="o">&lt;</span><span class="n">DIM</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">layout</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">      </span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_offset_layout</span><span class="o">&lt;</span><span class="n">DIM</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="p">({{</span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="mi">-1</span><span class="p">}},</span><span class="w"> </span><span class="p">{{</span><span class="n">N_r</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">N_c</span><span class="o">+</span><span class="mi">1</span><span class="p">}});</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">OffsetLayout</span><span class="o">&lt;</span><span class="n">DIM</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">inputView</span><span class="p">(</span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="n">layout</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">OffsetLayout</span><span class="o">&lt;</span><span class="n">DIM</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">outputView</span><span class="p">(</span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="n">layout</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Here, the row index range is <span class="math notranslate nohighlight">\([-1, N_r+1)\)</span>, and the column index
+range is <span class="math notranslate nohighlight">\([-1, N_c+1)\)</span>. The first argument to each call to the
+<code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> constructor is the pointer to the array that holds the View
+data. The second argument is the <code class="docutils literal notranslate"><span class="pre">RAJA::OffsetLayout</span></code> object.</p>
+<p><code class="docutils literal notranslate"><span class="pre">RAJA::OffsetLayout</span></code> objects allow us to write loops over
+data arrays using non-zero based indexing and without having to manually
+compute offsets into the arrays.</p>
+<p>For more information about RAJA View and Layout types, please see
+<a class="reference internal" href="../feature/view.html#feat-view-label"><span class="std std-ref">View and Layout</span></a>.</p>
+</section>
+<section id="raja-kernel-variants">
+<h2>RAJA Kernel Variants<a class="headerlink" href="#raja-kernel-variants" title="Permalink to this headline">¶</a></h2>
+<p>For the RAJA implementations of the stencil computation, we use two
+<code class="docutils literal notranslate"><span class="pre">RAJA::TypedRangeSegment</span></code> objects to define the row and column iteration
+spaces for the interior cells:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">TypedRangeSegment</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">col_range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">N_c</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">TypedRangeSegment</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">row_range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">N_r</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Now, we have all the ingredients to implement the stencil computation using
+<code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code>. Here is a sequential CPU variant:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">NESTED_EXEC_POL1</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">KernelPolicy</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">      </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">loop_exec</span><span class="p">,</span><span class="w">    </span><span class="c1">// row</span>
+<span class="w">        </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">loop_exec</span><span class="p">,</span><span class="w">  </span><span class="c1">// col</span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">      </span><span class="o">&gt;</span><span class="w">  </span>
+<span class="w">    </span><span class="o">&gt;</span><span class="p">;</span><span class="w">  </span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">kernel</span><span class="o">&lt;</span><span class="n">NESTED_EXEC_POL1</span><span class="o">&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_tuple</span><span class="p">(</span><span class="n">col_range</span><span class="p">,</span><span class="w"> </span><span class="n">row_range</span><span class="p">),</span><span class="w"></span>
+<span class="w">                                 </span><span class="p">[</span><span class="o">=</span><span class="p">](</span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">                                   </span><span class="n">outputView</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">                                       </span><span class="n">inputView</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                       </span><span class="o">+</span><span class="w"> </span><span class="n">inputView</span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                       </span><span class="o">+</span><span class="w"> </span><span class="n">inputView</span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                       </span><span class="o">+</span><span class="w"> </span><span class="n">inputView</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                       </span><span class="o">+</span><span class="w"> </span><span class="n">inputView</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">                                 </span><span class="p">});</span><span class="w"></span>
+</pre></div>
+</div>
+<p>This RAJA variant does the computation as the C-style variant
+introduced above.</p>
+<p>Since the input and output arrays are distinct, the stencil computation is
+data parallel. Thus, we can use <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> and an appropriate
+execution policy to run the computation in parallel. Here is an OpenMP
+collapse variant that maps the row-column product index space to OpenMP
+threads:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">NESTED_EXEC_POL2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">KernelPolicy</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">      </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Collapse</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">omp_parallel_collapse_exec</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                </span><span class="n">RAJA</span><span class="o">::</span><span class="n">ArgList</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="o">&gt;</span><span class="p">,</span><span class="w">   </span><span class="c1">// row, col</span>
+<span class="w">        </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">      </span><span class="o">&gt;</span><span class="w"> </span>
+<span class="w">    </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">kernel</span><span class="o">&lt;</span><span class="n">NESTED_EXEC_POL2</span><span class="o">&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_tuple</span><span class="p">(</span><span class="n">col_range</span><span class="p">,</span><span class="w"> </span><span class="n">row_range</span><span class="p">),</span><span class="w"></span>
+<span class="w">                                 </span><span class="p">[</span><span class="o">=</span><span class="p">](</span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">                                   </span><span class="n">outputView</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">                                       </span><span class="n">inputView</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                       </span><span class="o">+</span><span class="w"> </span><span class="n">inputView</span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                       </span><span class="o">+</span><span class="w"> </span><span class="n">inputView</span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                       </span><span class="o">+</span><span class="w"> </span><span class="n">inputView</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                       </span><span class="o">+</span><span class="w"> </span><span class="n">inputView</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">                                 </span><span class="p">});</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Note that the lambda expression representing the kernel body is identical to
+the <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> sequential version.</p>
+<p>Here are variants for CUDA</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">NESTED_EXEC_POL3</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">KernelPolicy</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">      </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">CudaKernel</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">        </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">cuda_block_x_loop</span><span class="p">,</span><span class="w"> </span><span class="c1">//row</span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">cuda_thread_x_loop</span><span class="p">,</span><span class="w"> </span><span class="c1">//col</span>
+<span class="w">            </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">          </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">      </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">    </span><span class="o">&gt;</span><span class="p">;</span><span class="w">                                                     </span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">kernel</span><span class="o">&lt;</span><span class="n">NESTED_EXEC_POL3</span><span class="o">&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_tuple</span><span class="p">(</span><span class="n">col_range</span><span class="p">,</span><span class="w"> </span><span class="n">row_range</span><span class="p">),</span><span class="w"></span>
+<span class="w">                                 </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">RAJA_DEVICE</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">                                   </span><span class="n">outputView</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">                                       </span><span class="n">inputView</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                       </span><span class="o">+</span><span class="w"> </span><span class="n">inputView</span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                       </span><span class="o">+</span><span class="w"> </span><span class="n">inputView</span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                       </span><span class="o">+</span><span class="w"> </span><span class="n">inputView</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                       </span><span class="o">+</span><span class="w"> </span><span class="n">inputView</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">                                 </span><span class="p">});</span><span class="w"></span>
+</pre></div>
+</div>
+<p>and HIP</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">NESTED_EXEC_POL4</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">KernelPolicy</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">      </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">HipKernel</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">        </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">hip_block_x_loop</span><span class="p">,</span><span class="w"> </span><span class="c1">//row</span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">hip_thread_x_loop</span><span class="p">,</span><span class="w"> </span><span class="c1">//col</span>
+<span class="w">            </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">          </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">      </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">    </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">kernel</span><span class="o">&lt;</span><span class="n">NESTED_EXEC_POL4</span><span class="o">&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_tuple</span><span class="p">(</span><span class="n">col_range</span><span class="p">,</span><span class="w"> </span><span class="n">row_range</span><span class="p">),</span><span class="w"></span>
+<span class="w">                                 </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">RAJA_DEVICE</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">                                   </span><span class="n">d_outputView</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">                                         </span><span class="n">d_inputView</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                       </span><span class="o">+</span><span class="w"> </span><span class="n">d_inputView</span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                       </span><span class="o">+</span><span class="w"> </span><span class="n">d_inputView</span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                       </span><span class="o">+</span><span class="w"> </span><span class="n">d_inputView</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                       </span><span class="o">+</span><span class="w"> </span><span class="n">d_inputView</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+<span class="w">                                 </span><span class="p">});</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The only difference between the CPU and GPU variants is that the RAJA macro
+<code class="docutils literal notranslate"><span class="pre">RAJA_DEVICE</span></code> is used to decorate the lambda expression with the
+<code class="docutils literal notranslate"><span class="pre">__device__</span></code> annotation, which is required when capturing a lambda for use
+in a GPU device environment as we have discussed in other examples in this
+tutorial.</p>
+<p>One other point to note is that the CUDA variant in the exercise files
+uses Unified Memory and the HIP variant uses distinct host and device memory
+arrays, with explicit host-device data copy operations. Thus, new
+<code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> objects were created for the HIP variant to wrap the
+device data pointers used in the HIP kernel. Please see the exercise files
+for this example for details.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="kernel_exec_pols.html" class="btn btn-neutral float-left" title="RAJA::kernel Execution Policies" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="launch_basic.html" class="btn btn-neutral float-right" title="RAJA::expt::Launch Basics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

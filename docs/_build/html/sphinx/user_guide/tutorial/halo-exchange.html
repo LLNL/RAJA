@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workgroup Constructs: Halo Exchange &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Matrix Multiplication: RAJA::kernel" href="matrix_multiply.html" />
+    <link rel="prev" title="Tiled Matrix Transpose with Local Array" href="matrix_transpose_local_array.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> RAJA
+            <img src="../../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">RAJA User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html">Getting Started With RAJA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../using_raja.html">Using RAJA in Your Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../config_options.html">Build Configuration Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../features.html">RAJA Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../app_considerations.html">Application Considerations</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html">RAJA Tutorial and Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#raja-tutorial">RAJA Tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#a-little-c-background">A Little C++ Background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#raja-examples-and-exercises">RAJA Examples and Exercises</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#simple-loops-and-basic-raja-features">Simple Loops and Basic RAJA Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#complex-loops-and-advanced-raja-features">Complex Loops and Advanced RAJA Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#nested-loops-with-raja-kernel">Nested Loops with <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#nested-loops-with-raja-expt-launch">Nested Loops with <code class="docutils literal notranslate"><span class="pre">RAJA::expt::launch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#comparing-raja-kernel-and-raja-expt-launch-matrix-transpose">Comparing <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA::expt::launch</span></code>: Matrix-Transpose</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../tutorial.html#other-raja-features-and-usage-examples">Other RAJA Features and Usage Examples</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Workgroup Constructs: Halo Exchange</a></li>
+<li class="toctree-l4"><a class="reference internal" href="matrix_multiply.html">Matrix Multiplication: RAJA::kernel</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guide/index.html">RAJA Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">RAJA User Guide</a> &raquo;</li>
+          <li><a href="../tutorial.html">RAJA Tutorial and Examples</a> &raquo;</li>
+      <li>Workgroup Constructs: Halo Exchange</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sphinx/user_guide/tutorial/halo-exchange.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="workgroup-constructs-halo-exchange">
+<span id="tut-halo-exchange-label"></span><h1>Workgroup Constructs: Halo Exchange<a class="headerlink" href="#workgroup-constructs-halo-exchange" title="Permalink to this headline">¶</a></h1>
+<p>The example code discussed in this section can be found in the file
+<code class="docutils literal notranslate"><span class="pre">RAJA/examples/tut_halo-exchange.cpp</span></code>. The file contains complete working
+code for multiple OpenMP, CUDA, and HIP RAJA variants. Here, we describe
+a subset of these variants.</p>
+<p>Key RAJA features shown in this example:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::WorkPool</span></code> workgroup construct</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::WorkGroup</span></code> workgroup construct</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::WorkSite</span></code> workgroup construct</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::TypedRangeSegment</span></code> iteration space construct</p></li>
+<li><p>RAJA workgroup policies</p></li>
+</ul>
+</div></blockquote>
+<p>In this example, we show how to use the RAJA workgroup constructs to implement
+buffer packing and unpacking for data halo exchange on a computational grid,
+a common MPI communication operation for distributed memory applications.
+This technique may not provide a performance gain on a CPU system, but it can
+significantly speedup halo exchange on a GPU system compared to running
+many individual packing/unpacking kernels, for example.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Using an abstraction layer over RAJA can make it easy to switch
+between using individual <code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code> loops or the RAJA workgroup
+constructs to implement halo exchange packing and unpacking at
+compile time or run time.</p>
+</div>
+<p>We start by setting the parameters for the halo exchange by using default
+values or values provided via command line input to the example code. These
+parameters determine the size of the grid, the width of the halo, the number
+of grid variables to pack/unpack, and the number of cycles; (iterations
+to run).</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="c1">//</span>
+<span class="w">  </span><span class="c1">// Define grid dimensions</span>
+<span class="w">  </span><span class="c1">// Define halo width</span>
+<span class="w">  </span><span class="c1">// Define number of grid variables</span>
+<span class="w">  </span><span class="c1">// Define number of cycles</span>
+<span class="w">  </span><span class="c1">//</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">grid_dims</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">7</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">atoi</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="w"></span>
+<span class="w">                             </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">7</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">atoi</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span><span class="w"></span>
+<span class="w">                             </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">7</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">atoi</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">halo_width</span><span class="w"> </span><span class="o">=</span><span class="w">     </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">7</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w">   </span><span class="mi">1</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">atoi</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">4</span><span class="p">]);</span><span class="w"></span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">num_vars</span><span class="w">   </span><span class="o">=</span><span class="w">     </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">7</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w">   </span><span class="mi">3</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">atoi</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">5</span><span class="p">]);</span><span class="w"></span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">num_cycles</span><span class="w"> </span><span class="o">=</span><span class="w">     </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">7</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w">   </span><span class="mi">3</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">atoi</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">6</span><span class="p">]);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Next, we allocate the variable data arrays (the memory manager in
+the example uses CUDA Unified Memory if CUDA is enabled). These grid variables
+are reset each cycle to allow checking the results of the packing and
+unpacking.</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="c1">//</span>
+<span class="w">  </span><span class="c1">// Allocate grid variables and reference grid variables used to check</span>
+<span class="w">  </span><span class="c1">// correctness.</span>
+<span class="w">  </span><span class="c1">//</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">*&gt;</span><span class="w"> </span><span class="n">vars</span><span class="w">    </span><span class="p">(</span><span class="n">num_vars</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">*&gt;</span><span class="w"> </span><span class="n">vars_ref</span><span class="p">(</span><span class="n">num_vars</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_vars</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">vars</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="n">memoryManager</span><span class="o">::</span><span class="n">allocate</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">(</span><span class="n">var_size</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">vars_ref</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">memoryManager</span><span class="o">::</span><span class="n">allocate</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">(</span><span class="n">var_size</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>We also allocate and initialize index lists of the grid elements to pack and
+unpack:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="c1">//</span>
+<span class="w">  </span><span class="c1">// Generate index lists for packing and unpacking</span>
+<span class="w">  </span><span class="c1">//</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">*&gt;</span><span class="w"> </span><span class="n">pack_index_lists</span><span class="p">(</span><span class="n">num_neighbors</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">pack_index_list_lengths</span><span class="p">(</span><span class="n">num_neighbors</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">create_pack_lists</span><span class="p">(</span><span class="n">pack_index_lists</span><span class="p">,</span><span class="w"> </span><span class="n">pack_index_list_lengths</span><span class="p">,</span><span class="w"> </span><span class="n">halo_width</span><span class="p">,</span><span class="w"> </span><span class="n">grid_dims</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">*&gt;</span><span class="w"> </span><span class="n">unpack_index_lists</span><span class="p">(</span><span class="n">num_neighbors</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">unpack_index_list_lengths</span><span class="p">(</span><span class="n">num_neighbors</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">create_unpack_lists</span><span class="p">(</span><span class="n">unpack_index_lists</span><span class="p">,</span><span class="w"> </span><span class="n">unpack_index_list_lengths</span><span class="p">,</span><span class="w"> </span><span class="n">halo_width</span><span class="p">,</span><span class="w"> </span><span class="n">grid_dims</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>All the code examples presented below copy the data packed from the grid
+interior:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>3</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>4</p></td>
+<td><p>5</p></td>
+<td><p>6</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>7</p></td>
+<td><p>8</p></td>
+<td><p>9</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>into the adjacent halo cells:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>3</p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>3</p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>4</p></td>
+<td><p>5</p></td>
+<td><p>6</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>7</p></td>
+<td><p>8</p></td>
+<td><p>9</p></td>
+<td><p>9</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>7</p></td>
+<td><p>8</p></td>
+<td><p>9</p></td>
+<td><p>9</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Although the example code does not use MPI and multiple domains (one per
+MPI rank, for example), as would be the case in a real distributed memory
+parallel application, the data copy operations represent the spirit of how
+data communication would be done.</p>
+<section id="packing-and-unpacking-basic-loop-execution">
+<h2>Packing and Unpacking (Basic Loop Execution)<a class="headerlink" href="#packing-and-unpacking-basic-loop-execution" title="Permalink to this headline">¶</a></h2>
+<p>A sequential non-RAJA example of data packing and unpacking would look like:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_neighbors</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">l</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">        </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffers</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pack_index_lists</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="w">  </span><span class="n">len</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">pack_index_list_lengths</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// pack</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_vars</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">          </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vars</span><span class="p">[</span><span class="n">v</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">          </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">buffer</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">var</span><span class="p">[</span><span class="n">list</span><span class="p">[</span><span class="n">i</span><span class="p">]];</span><span class="w"></span>
+<span class="w">          </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">          </span><span class="n">buffer</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// send single message</span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>and:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_neighbors</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">l</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// recv single message</span>
+
+<span class="w">        </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffers</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">unpack_index_lists</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="w">  </span><span class="n">len</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">unpack_index_list_lengths</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// unpack</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_vars</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">          </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vars</span><span class="p">[</span><span class="n">v</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">          </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">var</span><span class="p">[</span><span class="n">list</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"></span>
+<span class="w">          </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">          </span><span class="n">buffer</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="raja-variants-using-forall">
+<h2>RAJA Variants using forall<a class="headerlink" href="#raja-variants-using-forall" title="Permalink to this headline">¶</a></h2>
+<p>A sequential RAJA example uses this execution policy type:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">forall_policy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">loop_exec</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>to pack the grid variable data into a buffer:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_neighbors</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">l</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">        </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffers</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pack_index_lists</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="w">  </span><span class="n">len</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">pack_index_list_lengths</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// pack</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_vars</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">          </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vars</span><span class="p">[</span><span class="n">v</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">forall</span><span class="o">&lt;</span><span class="n">forall_policy</span><span class="o">&gt;</span><span class="p">(</span><span class="n">range_segment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">len</span><span class="p">),</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">buffer</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">var</span><span class="p">[</span><span class="n">list</span><span class="p">[</span><span class="n">i</span><span class="p">]];</span><span class="w"></span>
+<span class="w">          </span><span class="p">});</span><span class="w"></span>
+
+<span class="w">          </span><span class="n">buffer</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// send single message</span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>and unpack the buffer data into the grid variable array:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_neighbors</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">l</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// recv single message</span>
+
+<span class="w">        </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffers</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">unpack_index_lists</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="w">  </span><span class="n">len</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">unpack_index_list_lengths</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// unpack</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_vars</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">          </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vars</span><span class="p">[</span><span class="n">v</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">forall</span><span class="o">&lt;</span><span class="n">forall_policy</span><span class="o">&gt;</span><span class="p">(</span><span class="n">range_segment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">len</span><span class="p">),</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">var</span><span class="p">[</span><span class="n">list</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"></span>
+<span class="w">          </span><span class="p">});</span><span class="w"></span>
+
+<span class="w">          </span><span class="n">buffer</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>For parallel multithreading execution via OpenMP, the example can be run
+by replacing the execution policy with:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">forall_policy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">omp_parallel_for_exec</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Similarly, to run the loops in parallel on a CUDA GPU, we would use this
+policy:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">forall_policy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">cuda_exec_async</span><span class="o">&lt;</span><span class="n">CUDA_BLOCK_SIZE</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Note that we can use an asynchronous execution policy because there are
+no data races due to the intermediate buffer usage.</p>
+</section>
+<section id="raja-variants-using-workgroup-constructs">
+<h2>RAJA Variants using workgroup constructs<a class="headerlink" href="#raja-variants-using-workgroup-constructs" title="Permalink to this headline">¶</a></h2>
+<p>Using the workgroup constructs in the example requires defining a few more
+policies and types:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">forall_policy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">loop_exec</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">workgroup_policy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">WorkGroupPolicy</span><span class="w"> </span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">                                 </span><span class="n">RAJA</span><span class="o">::</span><span class="n">loop_work</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                 </span><span class="n">RAJA</span><span class="o">::</span><span class="n">ordered</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                 </span><span class="n">RAJA</span><span class="o">::</span><span class="n">ragged_array_of_objects</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                 </span><span class="n">RAJA</span><span class="o">::</span><span class="n">indirect_function_call_dispatch</span><span class="w"> </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">workpool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">WorkPool</span><span class="o">&lt;</span><span class="w"> </span><span class="n">workgroup_policy</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="kt">int</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="n">RAJA</span><span class="o">::</span><span class="n">xargs</span><span class="o">&lt;&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="n">memory_manager_allocator</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">workgroup</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">WorkGroup</span><span class="o">&lt;</span><span class="w"> </span><span class="n">workgroup_policy</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                       </span><span class="kt">int</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                       </span><span class="n">RAJA</span><span class="o">::</span><span class="n">xargs</span><span class="o">&lt;&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                       </span><span class="n">memory_manager_allocator</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">worksite</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">WorkSite</span><span class="o">&lt;</span><span class="w"> </span><span class="n">workgroup_policy</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="kt">int</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="n">RAJA</span><span class="o">::</span><span class="n">xargs</span><span class="o">&lt;&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="n">memory_manager_allocator</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>which are used in a slightly rearranged version of packing. See how the comment
+indicating where messages are sent has been moved down after the call to
+run the operations enqueued on the workgroup:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_neighbors</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">l</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">        </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffers</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pack_index_lists</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="w">  </span><span class="n">len</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">pack_index_list_lengths</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// pack</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_vars</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">          </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vars</span><span class="p">[</span><span class="n">v</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">          </span><span class="n">pool_pack</span><span class="p">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">range_segment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">len</span><span class="p">),</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">buffer</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">var</span><span class="p">[</span><span class="n">list</span><span class="p">[</span><span class="n">i</span><span class="p">]];</span><span class="w"></span>
+<span class="w">          </span><span class="p">});</span><span class="w"></span>
+
+<span class="w">          </span><span class="n">buffer</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">      </span><span class="n">workgroup</span><span class="w"> </span><span class="n">group_pack</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pool_pack</span><span class="p">.</span><span class="n">instantiate</span><span class="p">();</span><span class="w"></span>
+
+<span class="w">      </span><span class="n">worksite</span><span class="w"> </span><span class="n">site_pack</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">group_pack</span><span class="p">.</span><span class="n">run</span><span class="p">();</span><span class="w"></span>
+
+<span class="w">      </span><span class="c1">// send all messages</span>
+</pre></div>
+</div>
+<p>Similarly, in the unpacking we wait to receive all of the messages before
+unpacking the data:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">      </span><span class="c1">// recv all messages</span>
+
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_neighbors</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">l</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">        </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffers</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">unpack_index_lists</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="w">  </span><span class="n">len</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">unpack_index_list_lengths</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// unpack</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_vars</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">          </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vars</span><span class="p">[</span><span class="n">v</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">          </span><span class="n">pool_unpack</span><span class="p">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">range_segment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">len</span><span class="p">),</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">var</span><span class="p">[</span><span class="n">list</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"></span>
+<span class="w">          </span><span class="p">});</span><span class="w"></span>
+
+<span class="w">          </span><span class="n">buffer</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">      </span><span class="n">workgroup</span><span class="w"> </span><span class="n">group_unpack</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pool_unpack</span><span class="p">.</span><span class="n">instantiate</span><span class="p">();</span><span class="w"></span>
+
+<span class="w">      </span><span class="n">worksite</span><span class="w"> </span><span class="n">site_unpack</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">group_unpack</span><span class="p">.</span><span class="n">run</span><span class="p">();</span><span class="w"></span>
+</pre></div>
+</div>
+<p>This reorganization has the downside of not overlapping the message sends with
+packing and the message receives with unpacking.</p>
+<p>For parallel multithreading execution via OpenMP, the example using workgroup
+can be run by replacing the policies and types with:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">forall_policy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">omp_parallel_for_exec</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">workgroup_policy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">WorkGroupPolicy</span><span class="w"> </span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">                                 </span><span class="n">RAJA</span><span class="o">::</span><span class="n">omp_work</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                 </span><span class="n">RAJA</span><span class="o">::</span><span class="n">ordered</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                 </span><span class="n">RAJA</span><span class="o">::</span><span class="n">ragged_array_of_objects</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                 </span><span class="n">RAJA</span><span class="o">::</span><span class="n">indirect_function_call_dispatch</span><span class="w"> </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">workpool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">WorkPool</span><span class="o">&lt;</span><span class="w"> </span><span class="n">workgroup_policy</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="kt">int</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="n">RAJA</span><span class="o">::</span><span class="n">xargs</span><span class="o">&lt;&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="n">memory_manager_allocator</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">workgroup</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">WorkGroup</span><span class="o">&lt;</span><span class="w"> </span><span class="n">workgroup_policy</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                       </span><span class="kt">int</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                       </span><span class="n">RAJA</span><span class="o">::</span><span class="n">xargs</span><span class="o">&lt;&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                       </span><span class="n">memory_manager_allocator</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">worksite</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">WorkSite</span><span class="o">&lt;</span><span class="w"> </span><span class="n">workgroup_policy</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="kt">int</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="n">RAJA</span><span class="o">::</span><span class="n">xargs</span><span class="o">&lt;&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="n">memory_manager_allocator</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The main differences between these types and the ones defined for the sequential
+case above are the <code class="docutils literal notranslate"><span class="pre">forall_policy</span></code> and the <code class="docutils literal notranslate"><span class="pre">workgroup_policy</span></code>, which use
+OpenMP execution policy types.</p>
+<p>Similarly, to run the loops in parallel on a CUDA GPU use these policies and
+types, taking note of the unordered work ordering policy that allows the
+enqueued loops to all be run using a single CUDA kernel:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">forall_policy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">cuda_exec_async</span><span class="o">&lt;</span><span class="n">CUDA_BLOCK_SIZE</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">workgroup_policy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">WorkGroupPolicy</span><span class="w"> </span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">                                 </span><span class="n">RAJA</span><span class="o">::</span><span class="n">cuda_work_async</span><span class="o">&lt;</span><span class="n">CUDA_WORKGROUP_BLOCK_SIZE</span><span class="o">&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                 </span><span class="n">RAJA</span><span class="o">::</span><span class="n">unordered_cuda_loop_y_block_iter_x_threadblock_average</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                 </span><span class="n">RAJA</span><span class="o">::</span><span class="n">constant_stride_array_of_objects</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                 </span><span class="n">RAJA</span><span class="o">::</span><span class="n">indirect_function_call_dispatch</span><span class="w"> </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">workpool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">WorkPool</span><span class="o">&lt;</span><span class="w"> </span><span class="n">workgroup_policy</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="kt">int</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="n">RAJA</span><span class="o">::</span><span class="n">xargs</span><span class="o">&lt;&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="n">pinned_allocator</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">workgroup</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">WorkGroup</span><span class="o">&lt;</span><span class="w"> </span><span class="n">workgroup_policy</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                       </span><span class="kt">int</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                       </span><span class="n">RAJA</span><span class="o">::</span><span class="n">xargs</span><span class="o">&lt;&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                       </span><span class="n">pinned_allocator</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">worksite</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">WorkSite</span><span class="o">&lt;</span><span class="w"> </span><span class="n">workgroup_policy</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="kt">int</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="n">RAJA</span><span class="o">::</span><span class="n">xargs</span><span class="o">&lt;&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                     </span><span class="n">pinned_allocator</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The main differences between these types and the ones defined for the
+sequential and OpenMP cases above are the <code class="docutils literal notranslate"><span class="pre">forall_policy</span></code> and the
+<code class="docutils literal notranslate"><span class="pre">workgroup_policy</span></code>, which use different template parameters, and the
+<code class="docutils literal notranslate"><span class="pre">workpool</span></code>, <code class="docutils literal notranslate"><span class="pre">workgroup</span></code>, and <code class="docutils literal notranslate"><span class="pre">worksite</span></code> types which use ‘pinned’
+memory allocation.</p>
+<p>The packing is the same as the previous workgroup packing examples with the
+exception of added synchronization after calling the workgroup run method
+and before sending the messages. In the example code, there is a CUDA version
+that uses forall to launch <code class="docutils literal notranslate"><span class="pre">num_neighbors</span> <span class="pre">*</span> <span class="pre">num_vars</span></code> CUDA kernels and
+performs <code class="docutils literal notranslate"><span class="pre">num_neighbors</span></code> synchronizations to send each message in turn.
+Here, the reorganization to pack all messages before sending lets us use an
+unordered CUDA work ordering policy in the <code class="docutils literal notranslate"><span class="pre">workgroup_policy</span></code> that reduces
+the number of CUDA kernel launches to one. It also allows us to need to
+synchronize only once before sending all of the messages:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_neighbors</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">l</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">        </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffers</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pack_index_lists</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="w">  </span><span class="n">len</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">pack_index_list_lengths</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// pack</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_vars</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">          </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vars</span><span class="p">[</span><span class="n">v</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">          </span><span class="n">pool_pack</span><span class="p">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">range_segment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">len</span><span class="p">),</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">RAJA_DEVICE</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">buffer</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">var</span><span class="p">[</span><span class="n">list</span><span class="p">[</span><span class="n">i</span><span class="p">]];</span><span class="w"></span>
+<span class="w">          </span><span class="p">});</span><span class="w"></span>
+
+<span class="w">          </span><span class="n">buffer</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">      </span><span class="n">workgroup</span><span class="w"> </span><span class="n">group_pack</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pool_pack</span><span class="p">.</span><span class="n">instantiate</span><span class="p">();</span><span class="w"></span>
+
+<span class="w">      </span><span class="n">worksite</span><span class="w"> </span><span class="n">site_pack</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">group_pack</span><span class="p">.</span><span class="n">run</span><span class="p">();</span><span class="w"></span>
+
+<span class="w">      </span><span class="n">cudaErrchk</span><span class="p">(</span><span class="n">cudaDeviceSynchronize</span><span class="p">());</span><span class="w"></span>
+
+<span class="w">      </span><span class="c1">// send all messages</span>
+</pre></div>
+</div>
+<p>After waiting to receive all of the messages we use workgroup constructs with
+a CUDA unordered work ordering policy to unpack all of the messages using a
+single kernel launch:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">      </span><span class="c1">// recv all messages</span>
+
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_neighbors</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">l</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">        </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffers</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">unpack_index_lists</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="w">  </span><span class="n">len</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">unpack_index_list_lengths</span><span class="p">[</span><span class="n">l</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// unpack</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">num_vars</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">          </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vars</span><span class="p">[</span><span class="n">v</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">          </span><span class="n">pool_unpack</span><span class="p">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">range_segment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">len</span><span class="p">),</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="n">RAJA_DEVICE</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">var</span><span class="p">[</span><span class="n">list</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"></span>
+<span class="w">          </span><span class="p">});</span><span class="w"></span>
+
+<span class="w">          </span><span class="n">buffer</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">      </span><span class="n">workgroup</span><span class="w"> </span><span class="n">group_unpack</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pool_unpack</span><span class="p">.</span><span class="n">instantiate</span><span class="p">();</span><span class="w"></span>
+
+<span class="w">      </span><span class="n">worksite</span><span class="w"> </span><span class="n">site_unpack</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">group_unpack</span><span class="p">.</span><span class="n">run</span><span class="p">();</span><span class="w"></span>
+
+<span class="w">      </span><span class="n">cudaErrchk</span><span class="p">(</span><span class="n">cudaDeviceSynchronize</span><span class="p">());</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Note that the synchronization after unpacking is done to ensure that
+<code class="docutils literal notranslate"><span class="pre">group_unpack</span></code> and <code class="docutils literal notranslate"><span class="pre">site_unpack</span></code> survive until the unpacking loop has
+finished executing.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="matrix_transpose_local_array.html" class="btn btn-neutral float-left" title="Tiled Matrix Transpose with Local Array" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="matrix_multiply.html" class="btn btn-neutral float-right" title="Matrix Multiplication: RAJA::kernel" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

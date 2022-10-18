@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>View and Layout &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Reduction Operations" href="reduction.html" />
+    <link rel="prev" title="Indices, Segments, and IndexSets" href="iteration_spaces.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> RAJA
+            <img src="../../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">RAJA User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html">Getting Started With RAJA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../using_raja.html">Using RAJA in Your Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../config_options.html">Build Configuration Options</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../features.html">RAJA Features</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="loop_basic.html">Elements of Loop Execution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="policies.html">Policies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iteration_spaces.html">Indices, Segments, and IndexSets</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">View and Layout</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#raja-views">RAJA Views</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#raja-layouts">RAJA Layouts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#raja-index-mapping">RAJA Index Mapping</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#raja-atomic-views">RAJA Atomic Views</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#raja-view-layouts-bounds-checking">RAJA View/Layouts Bounds Checking</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="reduction.html">Reduction Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomic.html">Atomic Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scan.html">Scan Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sort.html">Sort Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="resource.html">Resources</a></li>
+<li class="toctree-l3"><a class="reference internal" href="local_array.html">Local Array</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tiling.html">Loop Tiling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workgroup.html">WorkGroup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vectorization.html">Vectorization (SIMD/SIMT)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="plugins.html">Plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../app_considerations.html">Application Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html">RAJA Tutorial and Examples</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guide/index.html">RAJA Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">RAJA User Guide</a> &raquo;</li>
+          <li><a href="../features.html">RAJA Features</a> &raquo;</li>
+      <li>View and Layout</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sphinx/user_guide/feature/view.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="view-and-layout">
+<span id="feat-view-label"></span><h1>View and Layout<a class="headerlink" href="#view-and-layout" title="Permalink to this headline">¶</a></h1>
+<p>Matrices and tensors, which are common in scientific computing applications,
+are naturally expressed as multi-dimensional arrays. However, for efficiency
+in C and C++, they are usually allocated as one-dimensional arrays.
+For example, a matrix <span class="math notranslate nohighlight">\(A\)</span> of dimension <span class="math notranslate nohighlight">\(N_r \times N_c\)</span> is
+typically allocated as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">double</span><span class="o">*</span> <span class="n">A</span> <span class="o">=</span> <span class="n">new</span> <span class="n">double</span> <span class="p">[</span><span class="n">N_r</span> <span class="o">*</span> <span class="n">N_c</span><span class="p">];</span>
+</pre></div>
+</div>
+<p>Using a one-dimensional array makes it necessary to convert
+two-dimensional indices (rows and columns of a matrix) to a one-dimensional
+pointer offset to access the corresponding array memory location. One
+could use a macro such as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#define A(r, c) A[c + N_c * r]</span>
+</pre></div>
+</div>
+<p>to access a matrix entry in row <cite>r</cite> and column <cite>c</cite>. However, this solution has
+limitations; e.g., additional macro definitions may be needed when adopting a
+different matrix data layout or when using other matrices. To facilitate
+multi-dimensional indexing and different indexing layouts, RAJA provides
+<code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code>, <code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code>, and <code class="docutils literal notranslate"><span class="pre">RAJA::OffsetLayout</span></code> classes.</p>
+<p>Please see the following tutorial sections for detailed examples that use
+RAJA Views and Layouts:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="../tutorial/view_layout.html#tut-view-layout-label"><span class="std std-ref">Data Views and Layouts</span></a></p></li>
+<li><p><a class="reference internal" href="../tutorial/offset-layout-5pt-stencil.html#tut-offsetlayout-label"><span class="std std-ref">OffsetLayout: Five-point Stencil</span></a></p></li>
+<li><p><a class="reference internal" href="../tutorial/permuted-layout-batch-matrix-multiply.html#tut-permutedlayout-label"><span class="std std-ref">Permuted Layout: Batched Matrix-Multiplication</span></a></p></li>
+<li><p><a class="reference internal" href="../tutorial/kernel_exec_pols.html#tut-kernelexecpols-label"><span class="std std-ref">RAJA::kernel Execution Policies</span></a></p></li>
+<li><p><a class="reference internal" href="../tutorial/launch_exec_pols.html#tut-launchexecpols-label"><span class="std std-ref">RAJA::expt::Launch Execution Policies</span></a></p></li>
+</ul>
+</div></blockquote>
+<section id="raja-views">
+<h2>RAJA Views<a class="headerlink" href="#raja-views" title="Permalink to this headline">¶</a></h2>
+<p>A <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> object wraps a pointer and enables indexing into the data
+referenced via the pointer based on a <code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code> object. We can
+create a <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> for a matrix with dimensions <span class="math notranslate nohighlight">\(N_r \times N_c\)</span>
+using a RAJA View and a default RAJA two-dimensional Layout as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">double</span><span class="o">*</span> <span class="n">A</span> <span class="o">=</span> <span class="n">new</span> <span class="n">double</span> <span class="p">[</span><span class="n">N_r</span> <span class="o">*</span> <span class="n">N_c</span><span class="p">];</span>
+
+<span class="n">const</span> <span class="nb">int</span> <span class="n">DIM</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+<span class="n">RAJA</span><span class="p">::</span><span class="n">View</span><span class="o">&lt;</span><span class="n">double</span><span class="p">,</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="n">DIM</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="n">Aview</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">N_r</span><span class="p">,</span> <span class="n">N_c</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> constructor takes a pointer to the matrix data and the
+extent of each matrix dimension as arguments. The template parameters to
+the <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> type define the pointer type and the Layout type; here,
+the Layout just defines the number of index dimensions. Using the resulting
+view object, one may access matrix entries in a row-major fashion (the
+default RAJA layout follows the C and C++ standards for multi-dimensional
+arrays) through the view <em>parenthesis operator</em>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">r</span> <span class="o">-</span> <span class="n">row</span> <span class="n">index</span> <span class="n">of</span> <span class="n">matrix</span>
+<span class="o">//</span> <span class="n">c</span> <span class="o">-</span> <span class="n">column</span> <span class="n">index</span> <span class="n">of</span> <span class="n">matrix</span>
+<span class="o">//</span> <span class="n">equivalent</span> <span class="n">to</span> <span class="n">indexing</span> <span class="k">as</span> <span class="n">A</span><span class="p">[</span><span class="n">c</span> <span class="o">+</span> <span class="n">r</span> <span class="o">*</span> <span class="n">N_c</span><span class="p">]</span>
+<span class="n">Aview</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="o">=</span> <span class="o">...</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>A <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> can support any number of index dimensions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">const</span> <span class="nb">int</span> <span class="n">DIM</span> <span class="o">=</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span>
+<span class="n">RAJA</span><span class="p">::</span><span class="n">View</span><span class="o">&lt;</span> <span class="n">double</span><span class="p">,</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="n">DIM</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="n">Aview</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">N0</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">Nn</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>By default, entries corresponding to the right-most index are contiguous
+in memory; i.e., unit-stride access. Each other index is offset by the
+product of the extents of the dimensions to its right. For example, the loop:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">iterate</span> <span class="n">over</span> <span class="n">index</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">hold</span> <span class="nb">all</span> <span class="n">other</span> <span class="n">indices</span> <span class="n">constant</span>
+<span class="k">for</span> <span class="p">(</span><span class="nb">int</span> <span class="ow">in</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="ow">in</span> <span class="o">&lt;</span> <span class="n">Nn</span><span class="p">;</span> <span class="o">++</span><span class="ow">in</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">Aview</span><span class="p">(</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="ow">in</span><span class="p">)</span> <span class="o">=</span> <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>accesses array entries with unit stride. The loop:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">iterate</span> <span class="n">over</span> <span class="n">index</span> <span class="n">j</span> <span class="ow">and</span> <span class="n">hold</span> <span class="nb">all</span> <span class="n">other</span> <span class="n">indices</span> <span class="n">constant</span>
+<span class="k">for</span> <span class="p">(</span><span class="nb">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">Nj</span><span class="p">;</span> <span class="o">++</span><span class="n">j</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">Aview</span><span class="p">(</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">iN</span><span class="p">)</span> <span class="o">=</span> <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>access array entries with stride N <sub>n</sub> * N <sub>(n-1)</sub> * … * N <sub>(j+1)</sub>.</p>
+<section id="multiview">
+<h3>MultiView<a class="headerlink" href="#multiview" title="Permalink to this headline">¶</a></h3>
+<p>Using numerous arrays with the same size and Layout, where each needs
+a View, can be cumbersome. Developers need to create a View object for
+each array, and when using the Views in a kernel, they require redundant
+pointer offset calculations. <code class="docutils literal notranslate"><span class="pre">RAJA::MultiView</span></code> solves these problems by
+providing a way to create many Views with the same Layout in one instantiation,
+and operate on an array-of-pointers that can be used to succinctly access
+data.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">RAJA::MultiView</span></code> object wraps an array-of-pointers,
+or a pointer-to-pointers, whereas a <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> wraps a single
+pointer or array. This allows a single <code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code> to be applied to
+multiple arrays associated with the MultiView, allowing the arrays to share
+indexing arithmetic when their access patterns are the same.</p>
+<p>The instantiation of a MultiView works exactly like a standard View,
+except that it takes an array-of-pointers. In the following example, a MultiView
+applies a 1-D layout of length 4 to 2 arrays in <code class="docutils literal notranslate"><span class="pre">myarr</span></code>.</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="c1">// Arrays of the same size, which will become internal to the MultiView.</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">a1</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">};</span><span class="w"></span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">a2</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">};</span><span class="w"></span>
+
+<span class="w">  </span><span class="c1">// Array-of-pointers which will be passed into MultiView.</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">myarr</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span><span class="w"></span>
+<span class="w">  </span><span class="n">myarr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a1</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="n">myarr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a2</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="c1">// This MultiView applies a 1-D layout of length 4 to each internal array in myarr.</span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">MultiView</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">MView</span><span class="p">(</span><span class="n">myarr</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The default MultiView accesses individual arrays via the 0-th position of the
+MultiView.</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">t1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MView</span><span class="p">(</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="c1">// accesses the 4th index of the 0th internal array a1, returns value of 8</span>
+<span class="w">  </span><span class="n">t2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MView</span><span class="p">(</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="c1">// accesses 3rd index of the 1st internal array a2, returns value of 11</span>
+</pre></div>
+</div>
+<p>The index into the array-of-pointers can be moved to different argument
+positions of the MultiView <code class="docutils literal notranslate"><span class="pre">()</span></code> access operator, rather than the default
+0-th position. For example, by passing a third template argument to the
+MultiView constructor in the previous example, the internal array index and
+the integer indicating which array to access can be reversed.</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="c1">// MultiView with array-of-pointers index in 1st position.</span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">MultiView</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">MView1</span><span class="p">(</span><span class="n">myarr</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">t3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MView1</span><span class="p">(</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="c1">// accesses the 4th index of the 0th internal array a1, returns value of 8</span>
+<span class="w">  </span><span class="n">t4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MView1</span><span class="p">(</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="c1">// accesses 3rd index of the 1st internal array a2, returns value of 11</span>
+</pre></div>
+</div>
+<p>With higher dimensional Layouts, the index into the array-of-pointers can be
+moved to other positions in the MultiView <code class="docutils literal notranslate"><span class="pre">()</span></code> access operator. Here is an
+example that compares the accesses of a 2-D layout on a normal <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code>
+with a <code class="docutils literal notranslate"><span class="pre">RAJA::MultiView</span></code> with the array-of-pointers index set to the 2nd
+position.</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">normalView</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">t1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">normalView</span><span class="p">(</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="c1">// accesses 4th index of the a1 array, value = 8</span>
+
+<span class="w">  </span><span class="c1">// MultiView with array-of-pointers index in 2nd position</span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">MultiView</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">MView2</span><span class="p">(</span><span class="n">myarr</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">t2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MView2</span><span class="p">(</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="c1">// accesses the 4th index of the 0th internal array a1, returns value of 8 (same as normalView(1,1))</span>
+<span class="w">  </span><span class="n">t3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MView2</span><span class="p">(</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="c1">// accesses the 1st index of the 1st internal array a2, returns value of 9</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="raja-layouts">
+<h2>RAJA Layouts<a class="headerlink" href="#raja-layouts" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code> objects support other indexing patterns with different
+striding orders, offsets, and permutations. In addition to layouts created
+using the default Layout constructor, as shown above, RAJA provides other
+methods to generate layouts for different indexing patterns. We describe
+them here.</p>
+<section id="permuted-layout">
+<h3>Permuted Layout<a class="headerlink" href="#permuted-layout" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">RAJA::make_permuted_layout</span></code> method creates a <code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code> object
+with permuted index strides. That is, the indices with shortest to
+longest stride are permuted. For example,:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="p">::</span><span class="n">array</span><span class="o">&lt;</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">idx_t</span><span class="p">,</span> <span class="mi">3</span><span class="o">&gt;</span> <span class="n">perm</span> <span class="p">{{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">}};</span>
+<span class="n">RAJA</span><span class="p">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span> <span class="n">layout</span> <span class="o">=</span>
+  <span class="n">RAJA</span><span class="p">::</span><span class="n">make_permuted_layout</span><span class="p">(</span> <span class="p">{{</span><span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">11</span><span class="p">}},</span> <span class="n">perm</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>creates a three-dimensional layout with index extents 5, 7, 11 with
+indices permuted so that the first index (index 0 - extent 5) has unit
+stride, the third index (index 2 - extent 11) has stride 5, and the
+second index (index 1 - extent 7) has stride 55 (= 5*11).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If a permuted layout is created with the <em>identity permutation</em>
+(e.g., {0,1,2}), the layout is the same as if it were created by
+calling the Layout constructor directly with no permutation.</p>
+</div>
+<p>The first argument to <code class="docutils literal notranslate"><span class="pre">RAJA::make_permuted_layout</span></code> is a C++ array whose
+entries define the extent of each index dimension. <strong>The double braces are
+required to properly initialize the internal sub-object which holds the
+extents.</strong> The second argument is the striding permutation and similarly
+requires double braces.</p>
+<p>In the next example, we create the same permuted layout as above, then create
+a <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> with it in a way that tells the view which index has
+unit stride:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">const</span> <span class="nb">int</span> <span class="n">s0</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>  <span class="o">//</span> <span class="n">extent</span> <span class="n">of</span> <span class="n">dimension</span> <span class="mi">0</span>
+<span class="n">const</span> <span class="nb">int</span> <span class="n">s1</span> <span class="o">=</span> <span class="mi">7</span><span class="p">;</span>  <span class="o">//</span> <span class="n">extent</span> <span class="n">of</span> <span class="n">dimension</span> <span class="mi">1</span>
+<span class="n">const</span> <span class="nb">int</span> <span class="n">s2</span> <span class="o">=</span> <span class="mi">11</span><span class="p">;</span> <span class="o">//</span> <span class="n">extent</span> <span class="n">of</span> <span class="n">dimension</span> <span class="mi">2</span>
+
+<span class="n">double</span><span class="o">*</span> <span class="n">B</span> <span class="o">=</span> <span class="n">new</span> <span class="n">double</span><span class="p">[</span><span class="n">s0</span> <span class="o">*</span> <span class="n">s1</span> <span class="o">*</span> <span class="n">s2</span><span class="p">];</span>
+
+<span class="n">std</span><span class="p">::</span><span class="n">array</span><span class="o">&lt;</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">idx_t</span><span class="p">,</span> <span class="mi">3</span><span class="o">&gt;</span> <span class="n">perm</span> <span class="p">{{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">}};</span>
+<span class="n">RAJA</span><span class="p">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span> <span class="n">layout</span> <span class="o">=</span>
+  <span class="n">RAJA</span><span class="p">::</span><span class="n">make_permuted_layout</span><span class="p">(</span> <span class="p">{{</span><span class="n">s0</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">}},</span> <span class="n">perm</span> <span class="p">);</span>
+
+<span class="o">//</span> <span class="n">The</span> <span class="n">Layout</span> <span class="n">template</span> <span class="n">parameters</span> <span class="n">are</span> <span class="n">dimension</span><span class="p">,</span> <span class="s1">&#39;linear index&#39;</span> <span class="nb">type</span> <span class="n">used</span>
+<span class="o">//</span> <span class="n">when</span> <span class="n">converting</span> <span class="n">an</span> <span class="n">index</span> <span class="n">triple</span> <span class="n">into</span> <span class="n">the</span> <span class="n">corresponding</span> <span class="n">pointer</span> <span class="n">offset</span>
+<span class="o">//</span> <span class="n">index</span><span class="p">,</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">index</span> <span class="k">with</span> <span class="n">unit</span> <span class="n">stride</span>
+<span class="n">RAJA</span><span class="p">::</span><span class="n">View</span><span class="o">&lt;</span><span class="n">double</span><span class="p">,</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">0</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="n">Bview</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">layout</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Equivalent</span> <span class="n">to</span> <span class="n">indexing</span> <span class="k">as</span><span class="p">:</span> <span class="n">B</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">j</span> <span class="o">*</span> <span class="n">s0</span> <span class="o">*</span> <span class="n">s2</span> <span class="o">+</span> <span class="n">k</span> <span class="o">*</span> <span class="n">s0</span><span class="p">]</span>
+<span class="n">Bview</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">=</span> <span class="o">...</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Telling a view which index has unit stride makes the
+multi-dimensional index calculation more efficient by avoiding
+multiplication by ‘1’ when it is unnecessary. <strong>The layout
+permutation and unit-stride index specification
+must be consistent to prevent incorrect indexing.</strong></p>
+</div>
+</section>
+<section id="offset-layout">
+<h3>Offset Layout<a class="headerlink" href="#offset-layout" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">RAJA::make_offset_layout</span></code> method creates a <code class="docutils literal notranslate"><span class="pre">RAJA::OffsetLayout</span></code> object
+with offsets applied to the indices. For example,:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">double</span><span class="o">*</span> <span class="n">C</span> <span class="o">=</span> <span class="n">new</span> <span class="n">double</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+
+<span class="n">RAJA</span><span class="p">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span> <span class="n">layout</span> <span class="o">=</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">make_offset_layout</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="p">(</span> <span class="p">{{</span><span class="o">-</span><span class="mi">5</span><span class="p">}},</span> <span class="p">{{</span><span class="mi">5</span><span class="p">}}</span> <span class="p">);</span>
+
+<span class="n">RAJA</span><span class="p">::</span><span class="n">View</span><span class="o">&lt;</span><span class="n">double</span><span class="p">,</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">OffsetLayout</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="n">Cview</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">layout</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>creates a one-dimensional view with a layout that allows one to index into
+it using indices in <span class="math notranslate nohighlight">\([-5, 5)\)</span>. In other words, one can use the loop:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="p">(</span><span class="nb">int</span> <span class="n">i</span> <span class="o">=</span> <span class="o">-</span><span class="mi">5</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">CView</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">=</span> <span class="o">...</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>to initialize the values of the array. Each ‘i’ loop index value is converted
+to an array offset index by subtracting the lower offset from it; i.e., in
+the loop, each ‘i’ value has ‘-5’ subtracted from it to properly access the
+array entry. That is, the sequence of indices generated by the for-loop:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="mi">5</span> <span class="o">-</span><span class="mi">4</span> <span class="o">-</span><span class="mi">3</span> <span class="o">...</span> <span class="mi">4</span>
+</pre></div>
+</div>
+<p>will index into the data array as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">0</span> <span class="mi">1</span> <span class="mi">2</span> <span class="o">...</span> <span class="mi">9</span>
+</pre></div>
+</div>
+<p>The arguments to the <code class="docutils literal notranslate"><span class="pre">RAJA::make_offset_layout</span></code> method are C++ arrays that
+hold the begin-end values of indices in the half-open interval
+:math:[begin, end)`. RAJA offset layouts support any number of dimensions;
+for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RAJA</span><span class="p">::</span><span class="n">OffsetLayout</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span> <span class="n">layout</span> <span class="o">=</span>
+   <span class="n">RAJA</span><span class="p">::</span><span class="n">make_offset_layout</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span><span class="p">({{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">}},</span> <span class="p">{{</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">}});</span>
+</pre></div>
+</div>
+<p>defines a two-dimensional layout that enables one to index into a view using
+indices <span class="math notranslate nohighlight">\([-1, 2)\)</span> in the first dimension and indices <span class="math notranslate nohighlight">\([-5, 5)\)</span> in
+the second dimension. As noted earlier, double braces are needed to
+properly initialize the internal data in the layout object.</p>
+</section>
+<section id="permuted-offset-layout">
+<h3>Permuted Offset Layout<a class="headerlink" href="#permuted-offset-layout" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">RAJA::make_permuted_offset_layout</span></code> method creates a
+<code class="docutils literal notranslate"><span class="pre">RAJA::OffsetLayout</span></code> object with permutations and offsets applied to the
+indices. For example,:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="p">::</span><span class="n">array</span><span class="o">&lt;</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">idx_t</span><span class="p">,</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="n">perm</span> <span class="p">{{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">}};</span>
+<span class="n">RAJA</span><span class="p">::</span><span class="n">OffsetLayout</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span> <span class="n">layout</span> <span class="o">=</span>
+  <span class="n">RAJA</span><span class="p">::</span><span class="n">make_permuted_offset_layout</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span><span class="p">(</span> <span class="p">{{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">}},</span> <span class="p">{{</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">}},</span> <span class="n">perm</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>Here, the two-dimensional index space is <span class="math notranslate nohighlight">\([-1, 2) \times [-5, 5)\)</span>, the
+same as above. However, the index strides are permuted so that the first
+index (index 0) has unit stride and the second index (index 1) has stride 3,
+which is the extent of the first index (<span class="math notranslate nohighlight">\([-1, 2)\)</span>).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is important to note some facts about RAJA layout types.
+All layouts have a permutation. So a permuted layout and
+a “non-permuted” layout (i.e., default permutation) has the
+type <code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code>. Any layout with an offset has the
+type <code class="docutils literal notranslate"><span class="pre">RAJA::OffsetLayout</span></code>. The <code class="docutils literal notranslate"><span class="pre">RAJA::OffsetLayout</span></code> type has
+a <code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code> and offset data. This was an intentional design
+choice to avoid the overhead of offset computations in the
+<code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> data access operator when they are not needed.</p>
+</div>
+<p>Complete examples illustrating <code class="docutils literal notranslate"><span class="pre">RAJA::Layouts</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA::Views</span></code>  may
+be found in the <a class="reference internal" href="../tutorial/offset-layout-5pt-stencil.html#tut-offsetlayout-label"><span class="std std-ref">OffsetLayout: Five-point Stencil</span></a> and <a class="reference internal" href="../tutorial/permuted-layout-batch-matrix-multiply.html#tut-permutedlayout-label"><span class="std std-ref">Permuted Layout: Batched Matrix-Multiplication</span></a>
+tutorial sections.</p>
+</section>
+<section id="typed-layouts">
+<h3>Typed Layouts<a class="headerlink" href="#typed-layouts" title="Permalink to this headline">¶</a></h3>
+<p>RAJA provides typed variants of <code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA::OffsetLayout</span></code>
+that enable users to specify integral index types. Usage requires
+specifying types for the linear index and the multi-dimensional indicies.
+The following example creates two two-dimensional typed layouts where the
+linear index is of type TIL and the ‘(x, y)’ indices for accessing the data
+have types TIX and TIY:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RAJA_INDEX_VALUE</span><span class="p">(</span><span class="n">TIX</span><span class="p">,</span> <span class="s2">&quot;TIX&quot;</span><span class="p">);</span>
+<span class="n">RAJA_INDEX_VALUE</span><span class="p">(</span><span class="n">TIY</span><span class="p">,</span> <span class="s2">&quot;TIY&quot;</span><span class="p">);</span>
+<span class="n">RAJA_INDEX_VALUE</span><span class="p">(</span><span class="n">TIL</span><span class="p">,</span> <span class="s2">&quot;TIL&quot;</span><span class="p">);</span>
+
+<span class="n">RAJA</span><span class="p">::</span><span class="n">TypedLayout</span><span class="o">&lt;</span><span class="n">TIL</span><span class="p">,</span> <span class="n">RAJA</span><span class="p">::</span><span class="nb">tuple</span><span class="o">&lt;</span><span class="n">TIX</span><span class="p">,</span><span class="n">TIY</span><span class="o">&gt;&gt;</span> <span class="n">layout</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">);</span>
+<span class="n">RAJA</span><span class="p">::</span><span class="n">TypedOffsetLayout</span><span class="o">&lt;</span><span class="n">TIL</span><span class="p">,</span> <span class="n">RAJA</span><span class="p">::</span><span class="nb">tuple</span><span class="o">&lt;</span><span class="n">TIX</span><span class="p">,</span><span class="n">TIY</span><span class="o">&gt;&gt;</span> <span class="n">offLayout</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">);;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Using the <code class="docutils literal notranslate"><span class="pre">RAJA_INDEX_VALUE</span></code> macro to create typed indices
+is helpful to prevent incorrect usage by detecting at compile
+when, for example, indices are passes to a view parenthesis
+operator in the wrong order.</p>
+</div>
+</section>
+<section id="shifting-views">
+<h3>Shifting Views<a class="headerlink" href="#shifting-views" title="Permalink to this headline">¶</a></h3>
+<p>RAJA views include a shift method enabling users to generate a new view with
+offsets to the base view layout. The base view may be templated with either a
+standard layout or offset layout and their typed variants. The new view will
+use an offset layout or typed offset layout depending on whether the base
+view employed a typed layout. The example below illustrates shifting view
+indices by <span class="math notranslate nohighlight">\(N\)</span>,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">int</span> <span class="n">N_r</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+<span class="nb">int</span> <span class="n">N_c</span> <span class="o">=</span> <span class="mi">15</span><span class="p">;</span>
+<span class="nb">int</span> <span class="o">*</span><span class="n">a_ptr</span> <span class="o">=</span> <span class="n">new</span> <span class="nb">int</span><span class="p">[</span><span class="n">N_r</span> <span class="o">*</span> <span class="n">N_c</span><span class="p">];</span>
+
+<span class="n">RAJA</span><span class="p">::</span><span class="n">View</span><span class="o">&lt;</span><span class="nb">int</span><span class="p">,</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="n">DIM</span><span class="o">&gt;&gt;</span> <span class="n">A</span><span class="p">(</span><span class="n">a_ptr</span><span class="p">,</span> <span class="n">N_r</span><span class="p">,</span> <span class="n">N_c</span><span class="p">);</span>
+<span class="n">RAJA</span><span class="p">::</span><span class="n">View</span><span class="o">&lt;</span><span class="nb">int</span><span class="p">,</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">OffsetLayout</span><span class="o">&lt;</span><span class="n">DIM</span><span class="o">&gt;&gt;</span> <span class="n">Ashift</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span> <span class="p">{{</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">}}</span> <span class="p">);</span>
+
+<span class="k">for</span><span class="p">(</span><span class="nb">int</span> <span class="n">y</span> <span class="o">=</span> <span class="n">N</span><span class="p">;</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="n">N_c</span> <span class="o">+</span> <span class="n">N</span><span class="p">;</span> <span class="o">++</span><span class="n">y</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">for</span><span class="p">(</span><span class="nb">int</span> <span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="p">;</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">N_r</span> <span class="o">+</span> <span class="n">N</span><span class="p">;</span> <span class="o">++</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Ashift</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="o">=</span> <span class="o">...</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="raja-index-mapping">
+<h2>RAJA Index Mapping<a class="headerlink" href="#raja-index-mapping" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">RAJA::Layout</span></code> objects can also be used to map multi-dimensional indices
+to <em>linear indices</em> (i.e., pointer offsets) and vice versa. This
+section describes basic Layout methods that are useful for converting between
+such indices. Here, we create a three-dimensional layout
+with dimension extents 5, 7, and 11 and illustrate mapping between a
+three-dimensional index space to a one-dimensional linear space:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Create</span> <span class="n">a</span> <span class="mi">5</span> <span class="n">x</span> <span class="mi">7</span> <span class="n">x</span> <span class="mi">11</span> <span class="n">three</span><span class="o">-</span><span class="n">dimensional</span> <span class="n">layout</span> <span class="nb">object</span>
+<span class="n">RAJA</span><span class="p">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span> <span class="n">layout</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">11</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Map</span> <span class="kn">from</span> <span class="mi">3</span><span class="o">-</span><span class="n">D</span> <span class="n">index</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="n">to</span> <span class="n">the</span> <span class="n">linear</span> <span class="n">index</span>
+<span class="o">//</span> <span class="n">Note</span> <span class="n">that</span> <span class="n">there</span> <span class="ow">is</span> <span class="n">no</span> <span class="n">striding</span> <span class="n">permutation</span><span class="p">,</span> <span class="n">so</span> <span class="n">the</span> <span class="n">rightmost</span> <span class="n">index</span> <span class="ow">is</span>
+<span class="o">//</span> <span class="n">stride</span><span class="o">-</span><span class="mi">1</span>
+<span class="nb">int</span> <span class="n">lin</span> <span class="o">=</span> <span class="n">layout</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span> <span class="o">//</span> <span class="n">lin</span> <span class="o">=</span> <span class="mi">188</span> <span class="p">(</span><span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="mi">11</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">11</span> <span class="o">*</span> <span class="mi">7</span><span class="p">)</span>
+
+<span class="o">//</span> <span class="n">Map</span> <span class="kn">from</span> <span class="nn">linear</span> <span class="n">index</span> <span class="n">to</span> <span class="mi">3</span><span class="o">-</span><span class="n">D</span> <span class="n">index</span>
+<span class="nb">int</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">;</span>
+<span class="n">layout</span><span class="o">.</span><span class="n">toIndices</span><span class="p">(</span><span class="n">lin</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">);</span> <span class="o">//</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span> <span class="o">=</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>RAJA layouts also support <em>projections</em>, where one or more dimension
+extent is zero. In this case, the linear index space is invariant for
+those index entries; thus, the ‘toIndicies(…)’ method will always return
+zero for each dimension with zero extent. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Create</span> <span class="n">a</span> <span class="n">layout</span> <span class="k">with</span> <span class="n">second</span> <span class="n">dimension</span> <span class="n">extent</span> <span class="n">zero</span>
+<span class="n">RAJA</span><span class="p">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span> <span class="n">layout</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">The</span> <span class="n">second</span> <span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="n">index</span> <span class="ow">is</span> <span class="n">projected</span> <span class="n">out</span>
+<span class="nb">int</span> <span class="n">lin1</span> <span class="o">=</span> <span class="n">layout</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>   <span class="o">//</span> <span class="n">lin1</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="nb">int</span> <span class="n">lin2</span> <span class="o">=</span> <span class="n">layout</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>    <span class="o">//</span> <span class="n">lin2</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="o">//</span> <span class="n">The</span> <span class="n">inverse</span> <span class="n">mapping</span> <span class="n">always</span> <span class="n">produces</span> <span class="n">zero</span> <span class="k">for</span> <span class="n">j</span>
+<span class="nb">int</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">;</span>
+<span class="n">layout</span><span class="o">.</span><span class="n">toIndices</span><span class="p">(</span><span class="n">lin2</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">);</span> <span class="o">//</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="raja-atomic-views">
+<h2>RAJA Atomic Views<a class="headerlink" href="#raja-atomic-views" title="Permalink to this headline">¶</a></h2>
+<p>Any <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> object can be made <em>atomic</em> so that any update to a
+data entry accessed via the view can only be performed one thread (CPU or GPU)
+at a time. For example, suppose you have an integer array of length N, whose
+element values are in the set {0, 1, 2, …, M-1}, where M &lt; N. You want to
+build a histogram array of length M such that the i-th entry in the array is
+the number of occurrences of the value i in the original array. Here is one
+way to do this in parallel using OpenMP and a RAJA atomic view:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">using</span> <span class="n">EXEC_POL</span> <span class="o">=</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">omp_parallel_for_exec</span><span class="p">;</span>
+<span class="n">using</span> <span class="n">ATOMIC_POL</span> <span class="o">=</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">omp_atomic</span>
+
+<span class="nb">int</span><span class="o">*</span> <span class="n">array</span> <span class="o">=</span> <span class="n">new</span> <span class="n">double</span><span class="p">[</span><span class="n">N</span><span class="p">];</span>
+<span class="nb">int</span><span class="o">*</span> <span class="n">hist_dat</span> <span class="o">=</span> <span class="n">new</span> <span class="n">double</span><span class="p">[</span><span class="n">M</span><span class="p">];</span>
+
+<span class="o">//</span> <span class="n">initialize</span> <span class="n">array</span> <span class="n">entries</span> <span class="n">to</span> <span class="n">values</span> <span class="ow">in</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">M</span><span class="o">-</span><span class="mi">1</span><span class="p">}</span><span class="o">...</span>
+<span class="o">//</span> <span class="n">initialize</span> <span class="n">hist_dat</span> <span class="n">to</span> <span class="nb">all</span> <span class="n">zeros</span><span class="o">...</span>
+
+<span class="o">//</span> <span class="n">Create</span> <span class="n">a</span> <span class="mi">1</span><span class="o">-</span><span class="n">dimensional</span> <span class="n">view</span> <span class="k">for</span> <span class="n">histogram</span> <span class="n">array</span>
+<span class="n">RAJA</span><span class="p">::</span><span class="n">View</span><span class="o">&lt;</span><span class="nb">int</span><span class="p">,</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="n">hist_view</span><span class="p">(</span><span class="n">hist_dat</span><span class="p">,</span> <span class="n">M</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Create</span> <span class="n">an</span> <span class="n">atomic</span> <span class="n">view</span> <span class="n">into</span> <span class="n">the</span> <span class="n">histogram</span> <span class="n">array</span> <span class="n">using</span> <span class="n">the</span> <span class="n">view</span> <span class="n">above</span>
+<span class="n">auto</span> <span class="n">hist_atomic_view</span> <span class="o">=</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">make_atomic_view</span><span class="o">&lt;</span><span class="n">ATOMIC_POL</span><span class="o">&gt;</span><span class="p">(</span><span class="n">hist_view</span><span class="p">);</span>
+
+<span class="n">RAJA</span><span class="p">::</span><span class="n">forall</span><span class="o">&lt;</span> <span class="n">EXEC_POL</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="p">::</span><span class="n">RangeSegment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="p">[</span><span class="o">=</span><span class="p">]</span> <span class="p">(</span><span class="nb">int</span> <span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">hist_atomic_view</span><span class="p">(</span> <span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">)</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>Here, we create a one-dimensional view for the histogram data array. Then,
+we create an atomic view from that, which we use in the RAJA loop to
+compute the histogram entries. Since the view is atomic, only one OpenMP
+thread can write to each array entry at a time.</p>
+</section>
+<section id="raja-view-layouts-bounds-checking">
+<h2>RAJA View/Layouts Bounds Checking<a class="headerlink" href="#raja-view-layouts-bounds-checking" title="Permalink to this headline">¶</a></h2>
+<p>The RAJA CMake variable <code class="docutils literal notranslate"><span class="pre">RAJA_ENABLE_BOUNDS_CHECK</span></code> may be used to turn on/off
+runtime bounds checking for RAJA views. This may be a useful debugging aid for
+users. When attempting to use an index value that is out of bounds,
+RAJA will abort the program and print the index that is out of bounds and
+the value of the index and bounds for it. Since the bounds checking is a runtime
+operation, it incurs non-negligible overhead. When bounds checking is turned
+off (default case), there is no additional run time overhead incurred.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="iteration_spaces.html" class="btn btn-neutral float-left" title="Indices, Segments, and IndexSets" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="reduction.html" class="btn btn-neutral float-right" title="Reduction Operations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

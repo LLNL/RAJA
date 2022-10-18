@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atomic Operations &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Scan Operations" href="scan.html" />
+    <link rel="prev" title="Reduction Operations" href="reduction.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> RAJA
+            <img src="../../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">RAJA User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html">Getting Started With RAJA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../using_raja.html">Using RAJA in Your Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../config_options.html">Build Configuration Options</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../features.html">RAJA Features</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="loop_basic.html">Elements of Loop Execution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="policies.html">Policies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iteration_spaces.html">Indices, Segments, and IndexSets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="view.html">View and Layout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reduction.html">Reduction Operations</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Atomic Operations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#atomic-ops">Atomic Operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cuda-atomics-architecture-dependencies">CUDA Atomics Architecture Dependencies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#desul-atomics-support">DESUL Atomics Support</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="scan.html">Scan Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sort.html">Sort Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="resource.html">Resources</a></li>
+<li class="toctree-l3"><a class="reference internal" href="local_array.html">Local Array</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tiling.html">Loop Tiling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workgroup.html">WorkGroup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vectorization.html">Vectorization (SIMD/SIMT)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="plugins.html">Plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../app_considerations.html">Application Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html">RAJA Tutorial and Examples</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guide/index.html">RAJA Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">RAJA User Guide</a> &raquo;</li>
+          <li><a href="../features.html">RAJA Features</a> &raquo;</li>
+      <li>Atomic Operations</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sphinx/user_guide/feature/atomic.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="atomic-operations">
+<span id="feat-atomics-label"></span><h1>Atomic Operations<a class="headerlink" href="#atomic-operations" title="Permalink to this headline">¶</a></h1>
+<p>RAJA provides portable atomic operations that can be used to update values
+at arbitrary memory locations while avoiding data races. They are described
+in this section.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All RAJA atomic operations are in the namespace <code class="docutils literal notranslate"><span class="pre">RAJA</span></code>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Each RAJA atomic operation is templated on an <em>atomic policy</em>
+type, which <strong>must be compatible with the execution policy used by
+the kernel in which it is used.</strong> For example, in
+a CUDA kernel, a CUDA atomic policy type must be used.</p>
+</div>
+<p>For more information about available RAJA atomic policies, please see
+<a class="reference internal" href="policies.html#atomicpolicy-label"><span class="std std-ref">Atomic Policies</span></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>RAJA support for CUDA atomic operations may be specific to
+the compute architecture for which the code is compiled. Please
+see <a class="reference internal" href="#cudaatomics-label"><span class="std std-ref">CUDA Atomics Architecture Dependencies</span></a> for more information.</p>
+</div>
+<p>RAJA currently supports two different implementations of atomic operations
+via the same basic interface. The default implementation is the original one
+developed in RAJA and which has been available for several years. Alternatively,
+one can choose an implementation based on
+<a class="reference external" href="https://github.com/desul/desul">DESUL</a> at compile time. Please see
+<a class="reference internal" href="#desul-atomics-label"><span class="std std-ref">DESUL Atomics Support</span></a> for more information. Eventually, we plan to
+deprecate the original RAJA implementation and provide only the DESUL
+implementation. The RAJA atomic interface is expected to change when we switch
+over to DESUL atomic support. Specifically, the atomic policy noted above will
+no longer be used.</p>
+<p>Please see the following tutorial sections for detailed examples that use
+RAJA atomic operations:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="../tutorial/atomic_histogram.html#tut-atomichist-label"><span class="std std-ref">Atomic Operations: Computing a Histogram</span></a>.</p></li>
+</ul>
+</div></blockquote>
+<section id="atomic-ops">
+<span id="id1"></span><h2>Atomic Operations<a class="headerlink" href="#atomic-ops" title="Permalink to this headline">¶</a></h2>
+<p>RAJA atomic support the most common atomic operations.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Each atomic method described below returns the value of
+the potentially modified argument (i.e., *acc) immediately before
+the atomic operation is applied, in case a user requires it.</p>
+</div>
+<section id="arithmetic">
+<h3>Arithmetic<a class="headerlink" href="#arithmetic" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">atomicAdd&lt;</span> <span class="pre">atomic_policy</span> <span class="pre">&gt;(T*</span> <span class="pre">acc,</span> <span class="pre">T</span> <span class="pre">value)</span></code> - Add <code class="docutils literal notranslate"><span class="pre">value</span></code> to <code class="docutils literal notranslate"><span class="pre">\*acc</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">atomicSub&lt;</span> <span class="pre">atomic_policy</span> <span class="pre">&gt;(T*</span> <span class="pre">acc,</span> <span class="pre">T</span> <span class="pre">value)</span></code> - Subtract <code class="docutils literal notranslate"><span class="pre">value</span></code> from <code class="docutils literal notranslate"><span class="pre">\*acc</span></code>.</p></li>
+</ul>
+</section>
+<section id="min-max">
+<h3>Min/max<a class="headerlink" href="#min-max" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">atomicMin&lt;</span> <span class="pre">atomic_policy</span> <span class="pre">&gt;(T*</span> <span class="pre">acc,</span> <span class="pre">T</span> <span class="pre">value)</span></code> - Set <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> to min of <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> and <code class="docutils literal notranslate"><span class="pre">value</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">atomicMax&lt;</span> <span class="pre">atomic_policy</span> <span class="pre">&gt;(T*</span> <span class="pre">acc,</span> <span class="pre">T</span> <span class="pre">value)</span></code> - Set <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> to max of <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> and <code class="docutils literal notranslate"><span class="pre">value</span></code>.</p></li>
+</ul>
+</section>
+<section id="increment-decrement">
+<h3>Increment/decrement<a class="headerlink" href="#increment-decrement" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">atomicInc&lt;</span> <span class="pre">atomic_policy</span> <span class="pre">&gt;(T*</span> <span class="pre">acc)</span></code> - Add 1 to <code class="docutils literal notranslate"><span class="pre">\*acc</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">atomicDec&lt;</span> <span class="pre">atomic_policy</span> <span class="pre">&gt;(T*</span> <span class="pre">acc)</span></code> - Subtract 1 from <code class="docutils literal notranslate"><span class="pre">\*acc</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">atomicInc&lt;</span> <span class="pre">atomic_policy</span> <span class="pre">&gt;(T*</span> <span class="pre">acc,</span> <span class="pre">T</span> <span class="pre">compare)</span></code> - Add 1 to <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> if <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> &lt; <code class="docutils literal notranslate"><span class="pre">compare</span></code>, else set <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> to zero.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">atomicDec&lt;</span> <span class="pre">atomic_policy</span> <span class="pre">&gt;(T*</span> <span class="pre">acc,</span> <span class="pre">T</span> <span class="pre">compare)</span></code> - Subtract 1 from <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> if <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> != 0 and <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> &lt;= <code class="docutils literal notranslate"><span class="pre">compare</span></code>, else set <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> to <code class="docutils literal notranslate"><span class="pre">compare</span></code>.</p></li>
+</ul>
+</section>
+<section id="bitwise-operations">
+<h3>Bitwise operations<a class="headerlink" href="#bitwise-operations" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">atomicAnd&lt;</span> <span class="pre">atomic_policy</span> <span class="pre">&gt;(T*</span> <span class="pre">acc,</span> <span class="pre">T</span> <span class="pre">value)</span></code> - Bitwise ‘and’ equivalent: Set <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> to <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> &amp; <code class="docutils literal notranslate"><span class="pre">value</span></code>. Only works with integral data types.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">atomicOr&lt;</span> <span class="pre">atomic_policy</span> <span class="pre">&gt;(T*</span> <span class="pre">acc,</span> <span class="pre">T</span> <span class="pre">value)</span></code> - Bitwise ‘or’ equivalent: Set <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> to <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> | <code class="docutils literal notranslate"><span class="pre">value</span></code>. Only works with integral data types.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">atomicXor&lt;</span> <span class="pre">atomic_policy</span> <span class="pre">&gt;(T*</span> <span class="pre">acc,</span> <span class="pre">T</span> <span class="pre">value)</span></code> - Bitwise ‘xor’ equivalent: Set <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> to <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> ^ <code class="docutils literal notranslate"><span class="pre">value</span></code>. Only works with integral data types.</p></li>
+</ul>
+</section>
+<section id="replace">
+<h3>Replace<a class="headerlink" href="#replace" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">atomicExchange&lt;</span> <span class="pre">atomic_policy</span> <span class="pre">&gt;(T*</span> <span class="pre">acc,</span> <span class="pre">T</span> <span class="pre">value)</span></code> - Replace <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> with <code class="docutils literal notranslate"><span class="pre">value</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">atomicCAS&lt;</span> <span class="pre">atomic_policy</span> <span class="pre">&gt;(T*</span> <span class="pre">acc,</span> <span class="pre">Tcompare,</span> <span class="pre">T</span> <span class="pre">value)</span></code> - Compare and swap: Replace <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> with <code class="docutils literal notranslate"><span class="pre">value</span></code> if and only if <code class="docutils literal notranslate"><span class="pre">\*acc</span></code> is equal to <code class="docutils literal notranslate"><span class="pre">compare</span></code>.</p></li>
+</ul>
+<p>Here is a simple example that shows how to use an atomic operation to compute
+an integral sum on a CUDA GPU device:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span>
+<span class="o">//</span> <span class="n">Use</span> <span class="n">CUDA</span> <span class="n">UM</span> <span class="n">to</span> <span class="n">share</span> <span class="n">data</span> <span class="n">pointer</span> <span class="k">with</span> <span class="n">host</span> <span class="ow">and</span> <span class="n">device</span> <span class="n">code</span><span class="o">.</span>
+<span class="o">//</span> <span class="n">RAJA</span> <span class="n">mechanics</span> <span class="n">work</span> <span class="n">the</span> <span class="n">same</span> <span class="n">way</span> <span class="k">if</span> <span class="n">device</span> <span class="n">data</span> <span class="n">allocation</span>
+<span class="o">//</span> <span class="ow">and</span> <span class="n">host</span><span class="o">-</span><span class="n">device</span> <span class="n">copies</span> <span class="n">are</span> <span class="n">done</span> <span class="k">with</span> <span class="n">traditional</span> <span class="n">cudaMalloc</span>
+<span class="o">//</span> <span class="ow">and</span> <span class="n">cudaMemcpy</span><span class="o">.</span>
+<span class="o">//</span>
+<span class="nb">int</span><span class="o">*</span> <span class="nb">sum</span> <span class="o">=</span> <span class="n">nullptr</span><span class="p">;</span>
+<span class="n">cudaMallocManaged</span><span class="p">((</span><span class="n">void</span> <span class="o">**</span><span class="p">)</span><span class="o">&amp;</span><span class="nb">sum</span><span class="p">,</span> <span class="n">sizeof</span><span class="p">(</span><span class="nb">int</span><span class="p">));</span>
+<span class="n">cudaDeviceSynchronize</span><span class="p">();</span>
+<span class="o">*</span><span class="nb">sum</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="n">RAJA</span><span class="p">::</span><span class="n">forall</span><span class="o">&lt;</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">cuda_exec</span><span class="o">&lt;</span><span class="n">BLOCK_SIZE</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="p">::</span><span class="n">TypedRangeSegment</span><span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span>
+  <span class="p">[</span><span class="o">=</span><span class="p">]</span> <span class="n">RAJA_DEVICE</span> <span class="p">(</span><span class="nb">int</span> <span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+
+  <span class="n">RAJA</span><span class="p">::</span><span class="n">atomicAdd</span><span class="o">&lt;</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">cuda_atomic</span> <span class="o">&gt;</span><span class="p">(</span><span class="nb">sum</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+
+<span class="p">});</span>
+</pre></div>
+</div>
+<p>After this kernel executes, the value reference by ‘sum’ will be ‘N’.</p>
+</section>
+<section id="atomicref">
+<h3>AtomicRef<a class="headerlink" href="#atomicref" title="Permalink to this headline">¶</a></h3>
+<p>RAJA also provides an interface similar to the C++20 <code class="docutils literal notranslate"><span class="pre">std::atomic_ref</span></code>,
+but which works for arbitrary memory locations. The class
+<code class="docutils literal notranslate"><span class="pre">RAJA::AtomicRef</span></code> provides an object-oriented interface to the
+atomic methods described above. For example, after the following operations:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">double</span> <span class="n">val</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">;</span>
+<span class="n">RAJA</span><span class="p">::</span><span class="n">AtomicRef</span><span class="o">&lt;</span><span class="n">double</span><span class="p">,</span>  <span class="n">RAJA</span><span class="p">::</span><span class="n">omp_atomic</span> <span class="o">&gt;</span> <span class="nb">sum</span><span class="p">(</span><span class="o">&amp;</span><span class="n">val</span><span class="p">);</span>
+
+<span class="nb">sum</span><span class="o">++</span><span class="p">;</span>
+<span class="o">++</span><span class="nb">sum</span><span class="p">;</span>
+<span class="nb">sum</span> <span class="o">+=</span> <span class="mf">1.0</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>the value of ‘val’ will be 5.</p>
+</section>
+</section>
+<section id="cuda-atomics-architecture-dependencies">
+<span id="cudaatomics-label"></span><h2>CUDA Atomics Architecture Dependencies<a class="headerlink" href="#cuda-atomics-architecture-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>The implementations for RAJA atomic operations may vary depending
+on which CUDA architecture is available and/or specified when RAJA
+is configured for compilation. The following rules apply when the following
+CUDA architecture level is chosen:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>CUDA architecture is lower than `sm_35`</strong></p>
+<ul>
+<li><p>Certain atomics will be implemented using CUDA <cite>atomicCAS</cite>
+(Compare and Swap).</p></li>
+</ul>
+</li>
+<li><p><strong>CUDA architecture is `sm_35` or higher</strong></p>
+<ul>
+<li><p>CUDA native 64-bit unsigned atomicMin, atomicMax, atomicAnd, atomicOr,
+atomicXor are used.</p></li>
+</ul>
+</li>
+<li><p><strong>CUDA architecture is `sm_60` or higher</strong></p>
+<ul>
+<li><p>CUDA native 64-bit double <cite>atomicAdd</cite> is used.</p></li>
+</ul>
+</li>
+</ul>
+</div></blockquote>
+</section>
+<section id="desul-atomics-support">
+<span id="desul-atomics-label"></span><h2>DESUL Atomics Support<a class="headerlink" href="#desul-atomics-support" title="Permalink to this headline">¶</a></h2>
+<p>RAJA provides the ability to use
+<a class="reference external" href="https://github.com/desul/desul">DESUL Atomics</a> as
+an alternative to the default implementation of RAJA atomics. DESUL atomics
+are considered an <strong>experimental</strong> feature in RAJA at this point and may
+impact the performance of some atomic functions. While DESUL atomics typically
+yields better or similar performance to RAJA default atomics, some atomic
+operations may perform worse when using DESUL.</p>
+<p>To enable DESUL atomics, pass the option to CMake when configuring a RAJA
+build: <code class="docutils literal notranslate"><span class="pre">-DRAJA_ENABLE_DESUL_ATOMICS=On</span></code>.</p>
+<p>Enabling DESUL atomics alters RAJA atomic functions to be wrapper-functions
+for their DESUL counterparts. This removes the need for user code changes to
+switch between DESUL and RAJA implementations for the most part. The exception
+to this is when RAJA atomic helper functions are used instead of the
+backward-compatible API functions specified by <a class="reference internal" href="#atomic-ops"><span class="std std-ref">Atomic Operations</span></a>. By
+<em>helper functions</em>, we mean the RAJA atomic methods which take an atomic
+policy object as the first argument, instead of specifying the atomic policy
+type as a template parameter.</p>
+<p>DESUL atomic functions are compiled with the proper back-end implementation
+based on the scope in which they are called, which removes the need to specify
+atomic policies for target back-ends. As a result, atomic policies such as
+<code class="docutils literal notranslate"><span class="pre">RAJA::cuda_atomic</span></code> or <code class="docutils literal notranslate"><span class="pre">RAJA::omp_atomic</span></code> are ignored when DESUL is
+enabled, but are still necessary to pass in as parameters to the RAJA API.
+This will likely change in the future when we switch to use DESUL atomics
+exclusively and remove the default RAJA atomic operations.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="reduction.html" class="btn btn-neutral float-left" title="Reduction Operations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="scan.html" class="btn btn-neutral float-right" title="Scan Operations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

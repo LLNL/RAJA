@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sort Operations &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Resources" href="resource.html" />
+    <link rel="prev" title="Scan Operations" href="scan.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> RAJA
+            <img src="../../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">RAJA User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html">Getting Started With RAJA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../using_raja.html">Using RAJA in Your Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../config_options.html">Build Configuration Options</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../features.html">RAJA Features</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="loop_basic.html">Elements of Loop Execution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="policies.html">Policies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iteration_spaces.html">Indices, Segments, and IndexSets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="view.html">View and Layout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reduction.html">Reduction Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomic.html">Atomic Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scan.html">Scan Operations</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Sort Operations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Sort Operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#raja-unstable-sorts">RAJA Unstable Sorts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#raja-stable-sorts">RAJA Stable Sorts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#raja-comparison-operators">RAJA Comparison Operators</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="resource.html">Resources</a></li>
+<li class="toctree-l3"><a class="reference internal" href="local_array.html">Local Array</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tiling.html">Loop Tiling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workgroup.html">WorkGroup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vectorization.html">Vectorization (SIMD/SIMT)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="plugins.html">Plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../app_considerations.html">Application Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html">RAJA Tutorial and Examples</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guide/index.html">RAJA Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">RAJA User Guide</a> &raquo;</li>
+          <li><a href="../features.html">RAJA Features</a> &raquo;</li>
+      <li>Sort Operations</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sphinx/user_guide/feature/sort.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="sort-operations">
+<span id="feat-sort-label"></span><h1>Sort Operations<a class="headerlink" href="#sort-operations" title="Permalink to this headline">¶</a></h1>
+<p>RAJA provides portable parallel sort operations, which are described in this
+section.</p>
+<p>A few important notes:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>All RAJA sort operations are in the namespace <code class="docutils literal notranslate"><span class="pre">RAJA</span></code>.</p></li>
+<li><p>Each RAJA sort operation is a template on an <em>execution policy</em>
+parameter. The same policy types used for <code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code> methods
+may be used for RAJA sorts. Please see <a class="reference internal" href="policies.html#feat-policies-label"><span class="std std-ref">Policies</span></a>
+for more information.</p></li>
+<li><p>RAJA sort operations accept an optional <em>comparator</em> argument so
+users can perform different types of sort operations. If
+no operator is given, the default is a <em>less than</em> operation and
+the result is a sequence sorted in <strong>non-decreasing</strong> order.</p></li>
+</ul>
+</div>
+<p>Also:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For sorts using the CUDA or HIP back-end, RAJA implementation uses
+the NVIDIA CUB library or AMD rocPRIM library, respectively.
+Typically, the CMake variable <code class="docutils literal notranslate"><span class="pre">CUB_DIR</span></code> or <code class="docutils literal notranslate"><span class="pre">ROCPRIM_DIR</span></code> will
+be automatically set to the location of the CUB or rocPRIM library
+for the CUDA or rocPRIM installation specified when either back-end
+is enabled. More details for configuring the CUB or rocPRIM library
+for a RAJA build can be found <a class="reference internal" href="../getting_started.html#getting-started-depend-label"><span class="std std-ref">Dependencies</span></a>.</p>
+</div>
+<p>Please see the following tutorial sections for detailed examples that use
+RAJA scan operations:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="../tutorial/sort.html#tut-sort-label"><span class="std std-ref">Parallel Sort Operations</span></a></p></li>
+</ul>
+</div></blockquote>
+<section id="id1">
+<h2>Sort Operations<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>In general, a sort operation takes a sequence of numbers ‘x’ and a binary
+comparison operator ‘op’ to form a strict weak ordering of elements in
+input sequence ‘x’ and produce a sequence of numbers ‘y’ as output. The
+output sequence is a permutation of the input sequence where each pair of
+elements ‘a’ and ‘b’, where ‘a’ is before ‘b’ in the output sequence,
+satisfies ‘!(b op a)’. Sorts are stable if they always preserve the order of
+equivalent elements, where equivalent means ‘!(a op b) &amp;&amp; !(b op a)’ is true.</p>
+<p>A <strong>stable sort</strong> takes an input sequence ‘x’ where a<sub>i</sub> appears
+before a<sub>j</sub> if i &lt; j when a<sub>i</sub> and a<sub>j</sub> are equivalent
+for any i != j.</p>
+<blockquote>
+<div><p>x = { a<sub>0</sub>, b<sub>0</sub>, a<sub>1</sub>, … }</p>
+</div></blockquote>
+<p>and calculates the stably sorted output sequence ‘y’ that preserves the
+order of equivalent elements. That is, the sorted sequence where element
+a<sub>i</sub> appears before the equivalent element a<sub>j</sub> if i &lt; j:</p>
+<blockquote>
+<div><p>y = { a<sub>0</sub>, a<sub>1</sub>, b<sub>0</sub>, … }</p>
+</div></blockquote>
+<p>An <strong>unstable sort</strong> may not preserve the order of equivalent elements and
+may produce either of the following output sequences:</p>
+<blockquote>
+<div><p>y = { a<sub>0</sub>, a<sub>1</sub>, b<sub>0</sub>, … }</p>
+<p>or</p>
+<p>y = { a<sub>1</sub>, a<sub>0</sub>, b<sub>0</sub>, … }</p>
+</div></blockquote>
+</section>
+<section id="raja-unstable-sorts">
+<h2>RAJA Unstable Sorts<a class="headerlink" href="#raja-unstable-sorts" title="Permalink to this headline">¶</a></h2>
+<p>RAJA unstable sort operations look like the following:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::sort&lt;</span> <span class="pre">exec_policy</span> <span class="pre">&gt;(container)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::sort&lt;</span> <span class="pre">exec_policy</span> <span class="pre">&gt;(container,</span> <span class="pre">comparator)</span></code></p></li>
+</ul>
+</div></blockquote>
+<p>For example, sorting an integer array with this sequence of values:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">6</span> <span class="mi">7</span> <span class="mi">2</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">9</span> <span class="mi">4</span> <span class="mi">8</span> <span class="mi">5</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">9</span> <span class="mi">6</span> <span class="mi">3</span> <span class="mi">7</span> <span class="mi">0</span> <span class="mi">1</span> <span class="mi">8</span> <span class="mi">2</span> <span class="mi">5</span>
+</pre></div>
+</div>
+<p>with a sequential unstable sort operation:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">copy_n</span><span class="p">(</span><span class="n">in</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">out</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">sort</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">seq_exec</span><span class="o">&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_span</span><span class="p">(</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">));</span><span class="w"></span>
+</pre></div>
+</div>
+<p>produces the <code class="docutils literal notranslate"><span class="pre">out</span></code> array with this sequence of values:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">0</span> <span class="mi">0</span> <span class="mi">1</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">5</span> <span class="mi">6</span> <span class="mi">6</span> <span class="mi">7</span> <span class="mi">7</span> <span class="mi">8</span> <span class="mi">8</span> <span class="mi">9</span> <span class="mi">9</span>
+</pre></div>
+</div>
+<p>Note that the syntax is essentially the same as <a class="reference internal" href="scan.html#feat-scan-label"><span class="std std-ref">Scan Operations</span></a>.
+Here, <code class="docutils literal notranslate"><span class="pre">container</span></code> is a random access range of elements. <code class="docutils literal notranslate"><span class="pre">container</span></code> provides
+access to the input sequence and contains the output sequence at the end of
+sort. The sort operation listed above will be a <em>non-decreasing</em> sort
+since there is no comparator argument given; i.e., the sequences will be
+reordered <em>in-place</em> using the default RAJA less-than comparator.</p>
+<p>Equivalently, the <code class="docutils literal notranslate"><span class="pre">RAJA::operators::less</span></code> comparator operator could be
+passed as the second argument to the sort routine to produce the same result:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">sort</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">seq_exec</span><span class="o">&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_span</span><span class="p">(</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">),</span><span class="w"></span>
+<span class="w">                             </span><span class="n">RAJA</span><span class="o">::</span><span class="n">operators</span><span class="o">::</span><span class="n">less</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">{});</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Note that container arguments can be generated from iterators using
+<code class="docutils literal notranslate"><span class="pre">RAJA::make_span(out,</span> <span class="pre">N)</span></code>, where we pass the base pointer for the array
+and its length.</p>
+<p>RAJA also provides sort operations that operate on key-value pairs stored
+separately:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::sort_pairs&lt;</span> <span class="pre">exec_policy</span> <span class="pre">&gt;(keys_container,</span> <span class="pre">vals_container)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::sort_pairs&lt;</span> <span class="pre">exec_policy</span> <span class="pre">&gt;(keys_container,</span> <span class="pre">vals_container,</span> <span class="pre">comparator)</span></code></p></li>
+</ul>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">RAJA::sort_pairs</span></code> methods generate the same output sequence of keys in
+<code class="docutils literal notranslate"><span class="pre">keys_container</span></code> as <code class="docutils literal notranslate"><span class="pre">RAJA::sort</span></code> does in <code class="docutils literal notranslate"><span class="pre">container</span></code> and reorders the
+sequence of values in <code class="docutils literal notranslate"><span class="pre">vals_container</span></code> by permuting the sequence of values in
+the same manner as the sequence of keys; i.e. the sequence of pairs is sorted
+based on comparing their keys. Detailed examples are provided in
+<a class="reference internal" href="../tutorial/sort.html#tut-sort-label"><span class="std std-ref">Parallel Sort Operations</span></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The comparator used in <code class="docutils literal notranslate"><span class="pre">RAJA::sort_pairs</span></code> only compares keys.</p>
+</div>
+</section>
+<section id="raja-stable-sorts">
+<h2>RAJA Stable Sorts<a class="headerlink" href="#raja-stable-sorts" title="Permalink to this headline">¶</a></h2>
+<p>RAJA stable sort operations are used essentially the same as unstable sorts:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::stable_sort&lt;</span> <span class="pre">exec_policy</span> <span class="pre">&gt;(container)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::stable_sort&lt;</span> <span class="pre">exec_policy</span> <span class="pre">&gt;(container,</span> <span class="pre">comparator)</span></code></p></li>
+</ul>
+</div></blockquote>
+<p>RAJA also provides stable sort pairs that operate on key-value pairs stored
+separately:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::stable_sort_pairs&lt;</span> <span class="pre">exec_policy</span> <span class="pre">&gt;(keys_container,</span> <span class="pre">vals_container)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::stable_sort_pairs&lt;</span> <span class="pre">exec_policy</span> <span class="pre">&gt;(keys_container,</span> <span class="pre">vals_container,</span> <span class="pre">comparator)</span></code></p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="raja-comparison-operators">
+<span id="feat-sortops-label"></span><h2>RAJA Comparison Operators<a class="headerlink" href="#raja-comparison-operators" title="Permalink to this headline">¶</a></h2>
+<p>RAJA provides two operators that can be used to produce different ordered sorts:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::operators::less&lt;T&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::operators::greater&lt;T&gt;</span></code></p></li>
+</ul>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All RAJA comparison operators are in the namespace <code class="docutils literal notranslate"><span class="pre">RAJA::operators</span></code>.</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="scan.html" class="btn btn-neutral float-left" title="Scan Operations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="resource.html" class="btn btn-neutral float-right" title="Resources" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

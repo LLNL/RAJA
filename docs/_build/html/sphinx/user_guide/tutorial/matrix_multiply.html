@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matrix Multiplication: RAJA::kernel &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="RAJA Developer Guide" href="../../dev_guide/index.html" />
+    <link rel="prev" title="Workgroup Constructs: Halo Exchange" href="halo-exchange.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> RAJA
+            <img src="../../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">RAJA User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html">Getting Started With RAJA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../using_raja.html">Using RAJA in Your Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../config_options.html">Build Configuration Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../features.html">RAJA Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../app_considerations.html">Application Considerations</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html">RAJA Tutorial and Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#raja-tutorial">RAJA Tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#a-little-c-background">A Little C++ Background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#raja-examples-and-exercises">RAJA Examples and Exercises</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#simple-loops-and-basic-raja-features">Simple Loops and Basic RAJA Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#complex-loops-and-advanced-raja-features">Complex Loops and Advanced RAJA Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#nested-loops-with-raja-kernel">Nested Loops with <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#nested-loops-with-raja-expt-launch">Nested Loops with <code class="docutils literal notranslate"><span class="pre">RAJA::expt::launch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial.html#comparing-raja-kernel-and-raja-expt-launch-matrix-transpose">Comparing <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA::expt::launch</span></code>: Matrix-Transpose</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../tutorial.html#other-raja-features-and-usage-examples">Other RAJA Features and Usage Examples</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="halo-exchange.html">Workgroup Constructs: Halo Exchange</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Matrix Multiplication: RAJA::kernel</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guide/index.html">RAJA Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">RAJA User Guide</a> &raquo;</li>
+          <li><a href="../tutorial.html">RAJA Tutorial and Examples</a> &raquo;</li>
+      <li>Matrix Multiplication: RAJA::kernel</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sphinx/user_guide/tutorial/matrix_multiply.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="matrix-multiplication-raja-kernel">
+<span id="tut-matrixmultiply-label"></span><h1>Matrix Multiplication: RAJA::kernel<a class="headerlink" href="#matrix-multiplication-raja-kernel" title="Permalink to this headline">¶</a></h1>
+<p>The file <code class="docutils literal notranslate"><span class="pre">RAJA/examples/tut_matrix-multiply.cpp</span></code> contains the complete
+working code for all examples described in this section, plus others that
+show a variety of <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> execution policy types. It also contains
+raw CUDA and HIP versions of the kernel for comparison.</p>
+<p>Key RAJA features shown in the following examples:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> template for nested-loop execution</p></li>
+<li><p>RAJA kernel execution policies</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> multi-dimensional data access</p></li>
+<li><p>RAJA nested-loop interchange</p></li>
+<li><p>Specifying lambda arguments through statements</p></li>
+</ul>
+</div></blockquote>
+<p>In this example, we present different ways to perform multiplication of two
+square matrices ‘A’ and ‘B’ of dimension N x N and store the result in matrix
+‘C’. To motivate the use of the <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> abstraction that we use,
+we define the following macros to access the matrix entries in the
+C-version:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#define A(r, c) A[c + N * r]</span>
+<span class="cp">#define B(r, c) B[c + N * r]</span>
+<span class="cp">#define C(r, c) C[c + N * r]</span>
+</pre></div>
+</div>
+<p>Then, a typical C-style sequential matrix multiplication operation might
+look like this:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">row</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">col</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">      </span><span class="kt">double</span><span class="w"> </span><span class="n">dot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">dot</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">A</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">B</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">);</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">      </span><span class="n">C</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dot</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>For the RAJA variants of the matrix multiple operation presented below,
+we use <code class="docutils literal notranslate"><span class="pre">RAJA::View</span></code> objects, which allow us to access matrix
+entries in a multi-dimensional manner similar to the C-style version that
+uses macros. We create a two-dimensional N x N ‘view’
+for each matrix:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="n">DIM</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">Aview</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="n">DIM</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">Bview</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Layout</span><span class="o">&lt;</span><span class="n">DIM</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">Cview</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>We show the most basic RAJA view usage here – to simplify multi-dimensional
+array indexing. RAJA views can be used to abstract a variety of different
+data layouts and access patterns, including stride permutations, offsets, etc.
+For more information about RAJA views, see <a class="reference internal" href="../feature/view.html#feat-view-label"><span class="std std-ref">View and Layout</span></a>.</p>
+<p>We also use the following <code class="docutils literal notranslate"><span class="pre">RAJA::TypedRangeSegment</span></code> objects to define the
+matrix row and column and dot product iteration spaces:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">TypedRangeSegment</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">row_range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">TypedRangeSegment</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">col_range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">TypedRangeSegment</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">dot_range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<section id="basic-raja-kernel-variants">
+<span id="matmultkernel-label"></span><h2>Basic RAJA::kernel Variants<a class="headerlink" href="#basic-raja-kernel-variants" title="Permalink to this headline">¶</a></h2>
+<p>Next, we show how to cast the matrix-multiplication operation
+using the <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> interface, which was introduced in
+<a class="reference internal" href="../feature/loop_basic.html#loop-elements-kernel-label"><span class="std std-ref">Complex Loops (RAJA::kernel)</span></a>. We first present a complete example, and
+then describe its key elements, noting important differences between
+<code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code> loop execution interfaces.</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">EXEC_POL</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">KernelPolicy</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">      </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">loop_exec</span><span class="p">,</span><span class="w">    </span><span class="c1">// row</span>
+<span class="w">        </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">loop_exec</span><span class="p">,</span><span class="w">  </span><span class="c1">// col</span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">      </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">    </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">kernel</span><span class="o">&lt;</span><span class="n">EXEC_POL</span><span class="o">&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_tuple</span><span class="p">(</span><span class="n">col_range</span><span class="p">,</span><span class="w"> </span><span class="n">row_range</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="p">[</span><span class="o">=</span><span class="p">](</span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="n">dot</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">Aview</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Bview</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="n">Cview</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dot</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="p">});</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> expresses the outer ‘row’ and ‘col’ loops;
+the inner ‘k’ loop is included in the lambda expression for the loop body.
+Note that the <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> template takes two arguments. Similar to
+<code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code>, the first argument describes the iteration space and the
+second argument is the lambda loop body. Unlike <code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code>, the
+iteration space for <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> is defined as a <em>tuple</em> of ranges
+(created via the <code class="docutils literal notranslate"><span class="pre">RAJA::make_tuple</span></code> method), one for the ‘col’ loop and
+one for the ‘row’ loop. Also, the lambda expression takes an iteration index
+argument for each entry in the iteration space tuple.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The number and order of lambda arguments must match the number and
+order of the elements in the tuple for this type of <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code>
+usage to be correct.</p>
+</div>
+<p>Another important difference between <code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code>
+involves the execution policy template parameter. The execution policy defined
+by the <code class="docutils literal notranslate"><span class="pre">RAJA::KernelPolicy</span></code> type shown here specifies a policy for each level
+in the loop nest via nested <code class="docutils literal notranslate"><span class="pre">RAJA::statement::For</span></code> types. Here, the row and
+column loops will both execute sequentially. The integer that appears as the
+first template parameter to each ‘For’ statement corresponds to the position of
+a range in the iteration space tuple and also to the associated iteration
+index argument to the lambda. Here, ‘0’ is the ‘col’ range and ‘1’ is the
+‘row’ range because that is the order those ranges appear in the tuple. The
+innermost type <code class="docutils literal notranslate"><span class="pre">RAJA::statement::Lambda&lt;0&gt;</span></code> indicates that the first lambda
+expression (the only one in this case) argument passed to the
+<code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> method will be invoked inside the inner loop.</p>
+<p>The integer arguments to the <code class="docutils literal notranslate"><span class="pre">RAJA::statement::For</span></code> types are needed to
+enable the desired kernel execution pattern and potential transformations,
+without changing the kernel code. Since the kernel policy is a single unified
+construct, it can be used to parallelize the nested loop iterations together,
+which we show next.</p>
+<p>If we want to execute the row loop using OpenMP multithreaded parallelism
+and keep the column loop sequential, the policy we would use is:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">EXEC_POL1</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">KernelPolicy</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">      </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">omp_parallel_for_exec</span><span class="p">,</span><span class="w">  </span><span class="c1">// row</span>
+<span class="w">        </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">loop_exec</span><span class="p">,</span><span class="w">            </span><span class="c1">// col</span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">      </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">    </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>To swap the loop nest ordering and keep the same execution policy on each loop,
+we would use the following policy, which swaps the <code class="docutils literal notranslate"><span class="pre">RAJA::statement::For</span></code>
+types. The inner loop is now the ‘row’ loop and is run in parallel;
+the outer loop is now the ‘col’ loop and is run sequentially:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">EXEC_POL2</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">KernelPolicy</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">      </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">loop_exec</span><span class="p">,</span><span class="w">                  </span><span class="c1">// col</span>
+<span class="w">        </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">omp_parallel_for_exec</span><span class="p">,</span><span class="w">    </span><span class="c1">// row</span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">      </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">    </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is important to emphasize that these kernel transformations,
+and others, can be done by switching the <code class="docutils literal notranslate"><span class="pre">RAJA::KernelPolicy</span></code>
+type with no changes to the loop kernel code.</p>
+</div>
+<p>In <a class="reference internal" href="kernel_nested_loop_reorder.html#tut-kernelnestedreorder-label"><span class="std std-ref">Basic RAJA::kernel Mechanics and Nested Loop Ordering</span></a>, we provide a more detailed discussion
+of the mechanics of loop nest ordering. Next, we show other variations of the
+matrix multiplication kernel that illustrate other <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> features.</p>
+</section>
+<section id="more-complex-raja-kernel-variants">
+<h2>More Complex RAJA::kernel Variants<a class="headerlink" href="#more-complex-raja-kernel-variants" title="Permalink to this headline">¶</a></h2>
+<p>The matrix multiplication kernel variations described in this section use
+execution policies to express the outer row and col loops as well as the
+inner dot product loop using the RAJA kernel interface. They illustrate more
+complex policy examples and show additional RAJA kernel features.</p>
+<p>The first example uses sequential execution for all loops:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">EXEC_POL6a</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">KernelPolicy</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">      </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">loop_exec</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">loop_exec</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Params</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">  </span><span class="c1">// dot = 0.0</span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">loop_exec</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="w"> </span><span class="c1">// inner loop: dot += ...</span>
+<span class="w">          </span><span class="o">&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Segs</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Params</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="w">   </span><span class="c1">// set C(row, col) = dot</span>
+<span class="w">        </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">      </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">    </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">kernel_param</span><span class="o">&lt;</span><span class="n">EXEC_POL6a</span><span class="o">&gt;</span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_tuple</span><span class="p">(</span><span class="n">col_range</span><span class="p">,</span><span class="w"> </span><span class="n">row_range</span><span class="p">,</span><span class="w"> </span><span class="n">dot_range</span><span class="p">),</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">tuple</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">{</span><span class="mf">0.0</span><span class="p">},</span><span class="w">    </span><span class="c1">// thread local variable for &#39;dot&#39;</span>
+
+<span class="w">    </span><span class="c1">// lambda 0</span>
+<span class="w">    </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">dot</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">       </span><span class="n">dot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">// lambda 1</span>
+<span class="w">    </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">dot</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">       </span><span class="n">dot</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">Aview</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Bview</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">// lambda 2</span>
+<span class="w">    </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">dot</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">       </span><span class="n">Cview</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dot</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">  </span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Note that we use a <code class="docutils literal notranslate"><span class="pre">RAJA::kernel_param</span></code> method to execute the kernel. It is
+similar to <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> except that it accepts a tuple as the second
+argument (between the iteration space tuple and the lambda expressions). In
+general, the tuple is a set of <em>parameters</em> that can be used in the lambda
+expressions comprising the kernel. Here, the parameter tuple holds a single
+scalar variable for the dot product of each row-column pair.</p>
+<p>The remaining arguments include a sequence of lambda expressions representing
+different parts of the kernel body. We use three lambda expressions that:
+initialize the dot product variable (lambda 0), define the ‘k’ inner loop
+row-col dot product operation (lambda 1), and store the computed row-col dot
+product in the proper location in the result matrix (lambda 2). Note that
+all lambdas take the same arguments in the same order, which is required for
+the kernel to be well-formed. In addition to the loop index variables, we
+pass the scalar dot product variable into each lambda. This enables the same
+variables to be used in all three lambda expressions. However, observe that
+not all lambda expressions use all three index variables. This is the
+result of using the <code class="docutils literal notranslate"><span class="pre">RAJA::Params</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA::Segs</span></code> template parameter
+types in the <code class="docutils literal notranslate"><span class="pre">RAJA::statement::Lambda</span></code> types for lambdas ‘0’ and ‘2’.
+Specifically, <code class="docutils literal notranslate"><span class="pre">RAJA::statement::Lambda&lt;0,</span> <span class="pre">RAJA::Params&lt;0&gt;&gt;</span></code> indicates that
+lambda ‘0’ will take only the scalar parameter as an argument, and
+<code class="docutils literal notranslate"><span class="pre">RAJA::statement::Lambda&lt;2,</span> <span class="pre">RAJA::Segs&lt;0,</span> <span class="pre">1&gt;,</span> <span class="pre">RAJA::Params&lt;0&gt;&gt;</span></code> indicates
+that lambda ‘2’ will take index values for the column and row ranges and
+the scalar parameter as arguments, in that order. Since lambda ‘1’ takes all
+arguments, we do not specify them.</p>
+<p>Alternatively, the statement to invoke lambda ‘1’ could be augmented to
+specify the arguments it takes:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="c1">// Alias for convenience</span>
+<span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Segs</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Params</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">EXEC_POL6b</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">KernelPolicy</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">      </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">loop_exec</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">loop_exec</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">Params</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">  </span><span class="c1">// dot = 0.0</span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">loop_exec</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">Segs</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">Params</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="c1">// dot += ...</span>
+<span class="w">          </span><span class="o">&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">Segs</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">Params</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="w">  </span><span class="c1">// C(row, col) = dot</span>
+<span class="w">        </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">      </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">    </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">kernel_param</span><span class="o">&lt;</span><span class="n">EXEC_POL6b</span><span class="o">&gt;</span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">make_tuple</span><span class="p">(</span><span class="n">col_range</span><span class="p">,</span><span class="w"> </span><span class="n">row_range</span><span class="p">,</span><span class="w"> </span><span class="n">dot_range</span><span class="p">),</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">tuple</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">{</span><span class="mf">0.0</span><span class="p">},</span><span class="w">    </span><span class="c1">// thread local variable for &#39;dot&#39;</span>
+
+<span class="w">    </span><span class="c1">// lambda 0</span>
+<span class="w">    </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">dot</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">       </span><span class="n">dot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">// lambda 1</span>
+<span class="w">    </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">dot</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">       </span><span class="n">dot</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">Aview</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Bview</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">// lambda 2</span>
+<span class="w">    </span><span class="p">[</span><span class="o">=</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">dot</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">       </span><span class="n">Cview</span><span class="p">(</span><span class="n">row</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dot</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">  </span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The result is the same.</p>
+<p>By using <code class="docutils literal notranslate"><span class="pre">RAJA::statement::Lambda</span></code> parameters in this way, the code
+potentially indicates more clearly which arguments are used. Of course, this
+makes the execution policy more verbose, but that is typically hidden away
+in a header file, so it need not make the code harder to read.</p>
+<p>As we noted earlier, the execution policy type passed to the
+<code class="docutils literal notranslate"><span class="pre">RAJA::kernel_param</span></code> method as a template parameter describes how the
+statements and lambda expressions are assembled to form the complete kernel.
+To illustrate this, we describe various policies that enable the kernel to
+run in different ways. In each case, the <code class="docutils literal notranslate"><span class="pre">RAJA::kernel_param</span></code> method call,
+including its arguments is the same. The curious reader may inspect the
+example code in the file noted above to see that this is indeed the case.</p>
+<p>Next, we show how to collapse nested loops in an OpenMP parallel region
+using a <code class="docutils literal notranslate"><span class="pre">RAJA::statement::Collapse</span></code> type in the execution policy. This
+allows one to parallelize multiple levels in a loop nest using OpenMP
+directives. The following policy will collapse the two outer
+loops into one OpenMP parallel region:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">EXEC_POL7</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">KernelPolicy</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">      </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Collapse</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="o">::</span><span class="n">omp_parallel_collapse_exec</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                </span><span class="n">RAJA</span><span class="o">::</span><span class="n">ArgList</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="o">&gt;</span><span class="p">,</span><span class="w">   </span><span class="c1">// row, col</span>
+<span class="w">        </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Params</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">  </span><span class="c1">// dot = 0.0</span>
+<span class="w">        </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">loop_exec</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="w"> </span><span class="c1">// inner loop: dot += ...</span>
+<span class="w">        </span><span class="o">&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Segs</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Params</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="w">   </span><span class="c1">// set C(row, col) = dot</span>
+<span class="w">      </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">    </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">RAJA::ArgList</span></code> type indicates which loops in the nest are to be
+collapsed and their nesting order within the collapse region. The integers
+passed to <code class="docutils literal notranslate"><span class="pre">ArgList</span></code> are indices of entries in the tuple of iteration spaces
+and indicate inner to outer loop levels when read from right to left. Here,
+‘1, 0’ indicates that the column loop is the inner loop and the row loop is
+the outer loop. For this transformation there are no <code class="docutils literal notranslate"><span class="pre">statement::For</span></code> types
+and policies for the individual loop levels inside the OpenMP collapse region.</p>
+<p>Lastly, we show how to use <code class="docutils literal notranslate"><span class="pre">RAJA::statement::CudaKernel</span></code> and
+<code class="docutils literal notranslate"><span class="pre">RAJA::statement::HipKernel</span></code> types to generate GPU kernels launched with
+a particular thread-block decomposition.  We reiterate that although the
+policies are different, the kernels themselves are identical to the sequential
+and OpenMP variants above.</p>
+<p>Here is a policy that will distribute the row indices across CUDA thread
+blocks and column indices across threads in the x dimension of each block:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">EXEC_POL8</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">KernelPolicy</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">      </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">CudaKernel</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">        </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">cuda_block_x_loop</span><span class="p">,</span><span class="w">    </span><span class="c1">// row</span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">cuda_thread_x_loop</span><span class="p">,</span><span class="w"> </span><span class="c1">// col</span>
+<span class="w">            </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Params</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">    </span><span class="c1">// dot = 0.0</span>
+<span class="w">            </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">seq_exec</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="w">                  </span><span class="c1">// dot += ...</span>
+<span class="w">            </span><span class="o">&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Segs</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Params</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="w">   </span><span class="c1">// set C = ...</span>
+<span class="w">          </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">      </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">    </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>This is equivalent to defining a CUDA kernel with the lambda body inside
+it and defining row and column indices as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">int</span> <span class="n">row</span> <span class="o">=</span> <span class="n">blockIdx</span><span class="o">.</span><span class="n">x</span><span class="p">;</span>
+<span class="nb">int</span> <span class="n">col</span> <span class="o">=</span> <span class="n">threadIdx</span><span class="o">.</span><span class="n">x</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>and launching the kernel with appropriate CUDA grid and thread-block dimensions.</p>
+<p>The HIP execution policy is similar:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">EXEC_POL8</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">KernelPolicy</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">      </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">HipKernel</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">        </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">hip_block_x_loop</span><span class="p">,</span><span class="w">    </span><span class="c1">// row</span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">hip_thread_x_loop</span><span class="p">,</span><span class="w"> </span><span class="c1">// col</span>
+<span class="w">            </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Params</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">   </span><span class="c1">// dot = 0.0</span>
+<span class="w">            </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">seq_exec</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="w">                 </span><span class="c1">// dot += ...</span>
+<span class="w">            </span><span class="o">&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"></span>
+<span class="w">              </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Segs</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Params</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="w">            </span><span class="c1">// set C = ...</span>
+<span class="w">          </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">      </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">    </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The following policy will tile row and col indices across two-dimensional
+CUDA thread blocks with ‘x’ and ‘y’ dimensions defined by a ‘CUDA_BLOCK_SIZE’
+parameter that can be set at compile time. Within each tile, the kernel
+iterates are executed by CUDA threads.</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">EXEC_POL9a</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">KernelPolicy</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">      </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">CudaKernel</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">        </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Tile</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">tile_fixed</span><span class="o">&lt;</span><span class="n">CUDA_BLOCK_SIZE</span><span class="o">&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                 </span><span class="n">RAJA</span><span class="o">::</span><span class="n">cuda_block_y_loop</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Tile</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">tile_fixed</span><span class="o">&lt;</span><span class="n">CUDA_BLOCK_SIZE</span><span class="o">&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                   </span><span class="n">RAJA</span><span class="o">::</span><span class="n">cuda_block_x_loop</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">cuda_thread_y_loop</span><span class="p">,</span><span class="w">   </span><span class="c1">// row</span>
+<span class="w">              </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">cuda_thread_x_loop</span><span class="p">,</span><span class="w"> </span><span class="c1">// col</span>
+<span class="w">                </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Params</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">    </span><span class="c1">// dot = 0.0</span>
+<span class="w">                </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">seq_exec</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="w">                 </span><span class="c1">// dot += ...</span>
+<span class="w">                </span><span class="o">&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Segs</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">Params</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="w">   </span><span class="c1">// set C = ...</span>
+<span class="w">              </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">            </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">          </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">      </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">    </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Note that the tiling mechanism requires a <code class="docutils literal notranslate"><span class="pre">RAJA::statement::Tile</span></code> type,
+with a tile size and a tiling execution policy, plus a <code class="docutils literal notranslate"><span class="pre">RAJA::statement::For</span></code>
+type with an execution execution policy for each tile dimension.</p>
+<p>The analogous HIP execution policy is:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">EXEC_POL9b</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">    </span><span class="n">RAJA</span><span class="o">::</span><span class="n">KernelPolicy</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">      </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">HipKernel</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">        </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Tile</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">tile_fixed</span><span class="o">&lt;</span><span class="n">HIP_BLOCK_SIZE</span><span class="o">&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                 </span><span class="n">RAJA</span><span class="o">::</span><span class="n">hip_block_y_loop</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Tile</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">tile_fixed</span><span class="o">&lt;</span><span class="n">HIP_BLOCK_SIZE</span><span class="o">&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                   </span><span class="n">RAJA</span><span class="o">::</span><span class="n">hip_block_x_loop</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">hip_thread_y_loop</span><span class="p">,</span><span class="w">    </span><span class="c1">// row</span>
+<span class="w">              </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">hip_thread_x_loop</span><span class="p">,</span><span class="w">  </span><span class="c1">// col</span>
+<span class="w">                </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">Params</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">          </span><span class="c1">// dot = 0.0</span>
+<span class="w">                </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">RAJA</span><span class="o">::</span><span class="n">seq_exec</span><span class="p">,</span><span class="w"></span>
+<span class="w">                  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">Segs</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">Params</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="c1">// dot += ...</span>
+<span class="w">                </span><span class="o">&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                  </span><span class="n">RAJA</span><span class="o">::</span><span class="n">statement</span><span class="o">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">Segs</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">Params</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;&gt;</span><span class="w">   </span><span class="c1">// set C = ...</span>
+<span class="w">              </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">            </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">          </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">      </span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">    </span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>In <a class="reference internal" href="matrix_transpose_tiled.html#tut-tiledmatrixtranspose-label"><span class="std std-ref">Tiled Matrix Transpose</span></a> and
+<a class="reference internal" href="matrix_transpose_local_array.html#tut-matrixtransposelocalarray-label"><span class="std std-ref">Tiled Matrix Transpose with Local Array</span></a>,
+we discuss loop tiling in more detail.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="halo-exchange.html" class="btn btn-neutral float-left" title="Workgroup Constructs: Halo Exchange" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../dev_guide/index.html" class="btn btn-neutral float-right" title="RAJA Developer Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

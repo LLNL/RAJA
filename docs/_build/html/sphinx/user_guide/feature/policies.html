@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Policies &mdash; RAJA 2022.03.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Indices, Segments, and IndexSets" href="iteration_spaces.html" />
+    <link rel="prev" title="Elements of Loop Execution" href="loop_basic.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> RAJA
+            <img src="../../../_static/RAJA_LOGO_CMYK_White_Background_large.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2022.03
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">RAJA User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html">Getting Started With RAJA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../using_raja.html">Using RAJA in Your Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../config_options.html">Build Configuration Options</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../features.html">RAJA Features</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="loop_basic.html">Elements of Loop Execution</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Policies</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#raja-loop-kernel-execution-policies">RAJA Loop/Kernel Execution Policies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#raja-indexset-execution-policies">RAJA IndexSet Execution Policies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parallel-region-policies">Parallel Region Policies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#reduction-policies">Reduction Policies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomic-policies">Atomic Policies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#local-array-memory-policies">Local Array Memory Policies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#raja-kernel-execution-policies">RAJA Kernel Execution Policies</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="iteration_spaces.html">Indices, Segments, and IndexSets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="view.html">View and Layout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reduction.html">Reduction Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomic.html">Atomic Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scan.html">Scan Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sort.html">Sort Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="resource.html">Resources</a></li>
+<li class="toctree-l3"><a class="reference internal" href="local_array.html">Local Array</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tiling.html">Loop Tiling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workgroup.html">WorkGroup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vectorization.html">Vectorization (SIMD/SIMT)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="plugins.html">Plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../app_considerations.html">Application Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html">RAJA Tutorial and Examples</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guide/index.html">RAJA Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../raja_license.html">RAJA Copyright and License Information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">RAJA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">RAJA User Guide</a> &raquo;</li>
+          <li><a href="../features.html">RAJA Features</a> &raquo;</li>
+      <li>Policies</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sphinx/user_guide/feature/policies.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="policies">
+<span id="feat-policies-label"></span><h1>Policies<a class="headerlink" href="#policies" title="Permalink to this headline">¶</a></h1>
+<p>RAJA kernel execution methods take an execution policy type template parameter
+to specialize execution behavior. Typically, the policy indicates which
+programming model back-end to use and other information about the execution
+pattern, such as number of CUDA threads per thread block, whether execution is
+synchronous or asynchronous, etc. This section describes RAJA policies for
+loop kernel execution, scans, sorts, reductions, atomics, etc. Please
+detailed examples in <a class="reference internal" href="../tutorial.html#tutorial-label"><span class="std std-ref">RAJA Tutorial and Examples</span></a> for a variety of use cases.</p>
+<p>As RAJA functionality evolves, new policies are added and some may
+be redefined and to work in new ways.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>All RAJA policies are in the namespace <code class="docutils literal notranslate"><span class="pre">RAJA</span></code>.</p></li>
+<li><p>All RAJA policies have a prefix indicating the back-end
+implementation that they use; e.g., <code class="docutils literal notranslate"><span class="pre">omp_</span></code> for OpenMP, <code class="docutils literal notranslate"><span class="pre">cuda_</span></code>
+for CUDA, etc.</p></li>
+</ul>
+</div>
+<section id="raja-loop-kernel-execution-policies">
+<h2>RAJA Loop/Kernel Execution Policies<a class="headerlink" href="#raja-loop-kernel-execution-policies" title="Permalink to this headline">¶</a></h2>
+<p>The following tables summarize RAJA policies for executing kernels.
+Please see notes below policy descriptions for additional usage details and
+caveats.</p>
+<section id="sequential-cpu-policies">
+<h3>Sequential CPU Policies<a class="headerlink" href="#sequential-cpu-policies" title="Permalink to this headline">¶</a></h3>
+<p>For the sequential CPU back-end, RAJA provides policies that allow developers
+to have some control over the optimizations that compilers are allow to
+apply during code compilation.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 49%" />
+<col style="width: 17%" />
+<col style="width: 34%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Sequential/SIMD Execution Policies</p></th>
+<th class="head"><p>Works with</p></th>
+<th class="head"><p>Brief description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>seq_exec</p></td>
+<td><p>forall,
+kernel (For),
+scan,
+sort</p></td>
+<td><p>Strictly sequential
+execution.</p></td>
+</tr>
+<tr class="row-odd"><td><p>simd_exec</p></td>
+<td><p>forall,
+kernel (For),
+scan</p></td>
+<td><p>Try to force generation of
+SIMD instructions via
+compiler hints in RAJA’s
+internal implementation.</p></td>
+</tr>
+<tr class="row-even"><td><p>loop_exec</p></td>
+<td><p>forall,
+kernel (For),
+scan,
+sort</p></td>
+<td><p>Allow the compiler to
+generate any optimizations
+that its heuristics deem
+beneficial according;
+i.e., no loop decorations
+(pragmas or intrinsics) in
+RAJA implementation.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="openmp-parallel-cpu-policies">
+<h3>OpenMP Parallel CPU Policies<a class="headerlink" href="#openmp-parallel-cpu-policies" title="Permalink to this headline">¶</a></h3>
+<p>For the OpenMP CPU multithreading back-end, RAJA has policies that can be used
+by themselves to execute kernels. In particular, they create an OpenMP parallel
+region and execute a kernel within it. To distinguish these in this discussion,
+we refer to these as <strong>full policies</strong>. These policies are provided
+to users for convenience in common use cases.</p>
+<p>RAJA also provides other OpenMP policies, which we refer to as
+<strong>partial policies</strong>, since they need to be used in combination with other
+policies. Typically, they work by providing an <em>outer policy</em> and an
+<em>inner policy</em> as a template parameter to the outer policy. These give users
+flexibility to create more complex execution patterns.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To control the number of threads used by OpenMP policies,
+set the value of the environment variable ‘OMP_NUM_THREADS’ (which is
+fixed for duration of run), or call the OpenMP routine
+‘omp_set_num_threads(nthreads)’ in your application, which allows
+one to change the number of threads at run time.</p>
+</div>
+<p>The full policies are described in the following table. Partial policies
+are described in other tables below.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 17%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>OpenMP CPU Full Policies</p></th>
+<th class="head"><p>Works with</p></th>
+<th class="head"><p>Brief description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>omp_parallel_for_exec</p></td>
+<td><p>forall,
+kernel (For),
+scan,
+sort</p></td>
+<td><p>Same as applying
+‘omp parallel for’
+pragma</p></td>
+</tr>
+<tr class="row-odd"><td><p>omp_parallel_for_static_exec&lt;ChunkSize&gt;</p></td>
+<td><p>forall,
+kernel (For)</p></td>
+<td><p>Same as applying
+‘omp parallel for
+schedule(static,
+ChunkSize)’</p></td>
+</tr>
+<tr class="row-even"><td><p>omp_parallel_for_dynamic_exec&lt;ChunkSize&gt;</p></td>
+<td><p>forall,
+kernel (For)</p></td>
+<td><p>Same as applying
+‘omp parallel for
+schedule(dynamic,
+ChunkSize)’</p></td>
+</tr>
+<tr class="row-odd"><td><p>omp_parallel_for_guided_exec&lt;ChunkSize&gt;</p></td>
+<td><p>forall,
+kernel (For)</p></td>
+<td><p>Same as applying
+‘omp parallel for
+schedule(guided,
+ChunkSize)’</p></td>
+</tr>
+<tr class="row-even"><td><p>omp_parallel_for_runtime_exec</p></td>
+<td><p>forall,
+kernel (For)</p></td>
+<td><p>Same as applying
+‘omp parallel for
+schedule(runtime)’</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For the OpenMP scheduling policies above that take a <code class="docutils literal notranslate"><span class="pre">ChunkSize</span></code>
+parameter, the chunk size is optional. If not provided, the
+default chunk size that OpenMP applies will be used, which may
+be specific to the OpenMP implementation in use. For this case,
+the RAJA policy syntax is
+<code class="docutils literal notranslate"><span class="pre">omp_parallel_for_{static|dynamic|guided}_exec&lt;</span> <span class="pre">&gt;</span></code>, which will
+result in the OpenMP pragma
+<code class="docutils literal notranslate"><span class="pre">omp</span> <span class="pre">parallel</span> <span class="pre">for</span> <span class="pre">schedule({static|dynamic|guided})</span></code> being applied.</p>
+</div>
+<p>RAJA provides an (outer) OpenMP CPU policy to create a parallel region in
+which to execute a kernel. It requires an inner policy that defines how a
+kernel will execute in parallel inside the region.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 49%" />
+<col style="width: 17%" />
+<col style="width: 34%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>OpenMP CPU Outer Policies</p></th>
+<th class="head"><p>Works with</p></th>
+<th class="head"><p>Brief description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>omp_parallel_exec&lt;InnerPolicy&gt;</p></td>
+<td><p>forall,
+kernel (For),
+scan</p></td>
+<td><p>Creates OpenMP parallel
+region and requires an
+<strong>InnerPolicy</strong>. Same as
+applying ‘omp parallel’
+pragma.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Finally, we summarize the inner policies that RAJA provides for OpenMP.
+These policies are passed to the RAJA <code class="docutils literal notranslate"><span class="pre">omp_parallel_exec</span></code> outer policy as
+a template argument as described above.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 49%" />
+<col style="width: 17%" />
+<col style="width: 34%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>OpenMP CPU Inner Policies</p></th>
+<th class="head"><p>Works with</p></th>
+<th class="head"><p>Brief description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>omp_for_exec</p></td>
+<td><p>forall,
+kernel (For),
+scan</p></td>
+<td><p>Parallel execution within
+<em>existing parallel
+region</em>; i.e.,
+apply ‘omp for’ pragma.</p></td>
+</tr>
+<tr class="row-odd"><td><p>omp_for_static_exec&lt;ChunkSize&gt;</p></td>
+<td><p>forall,
+kernel (For)</p></td>
+<td><p>Same as applying
+‘omp for
+schedule(static,
+ChunkSize)’</p></td>
+</tr>
+<tr class="row-even"><td><p>omp_for_nowait_static_exec&lt;ChunkSize&gt;</p></td>
+<td><p>forall,
+kernel (For)</p></td>
+<td><p>Same as applying
+‘omp for
+schedule(static,
+ChunkSize) nowait’</p></td>
+</tr>
+<tr class="row-odd"><td><p>omp_for_dynamic_exec&lt;ChunkSize&gt;</p></td>
+<td><p>forall,
+kernel (For)</p></td>
+<td><p>Same as applying
+‘omp for
+schedule(dynamic,
+ChunkSize)’</p></td>
+</tr>
+<tr class="row-even"><td><p>omp_for_guided_exec&lt;ChunkSize&gt;</p></td>
+<td><p>forall,
+kernel (For)</p></td>
+<td><p>Same as applying
+‘omp for
+schedule(guided,
+ChunkSize)’</p></td>
+</tr>
+<tr class="row-odd"><td><p>omp_for_runtime_exec</p></td>
+<td><p>forall,
+kernel (For)</p></td>
+<td><p>Same as applying
+‘omp for
+schedule(runtime)’</p></td>
+</tr>
+<tr class="row-even"><td><p>omp_parallel_collapse_exec</p></td>
+<td><p>kernel
+(Collapse +
+ArgList)</p></td>
+<td><p>Use in Collapse statement
+to parallelize multiple
+loop levels in loop nest
+indicated using ArgList</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p><strong>RAJA only provides a nowait policy option for static
+scheduling</strong> since that is the only schedule case that can be
+used with nowait and be correct in general when executing
+multiple loops in a single parallel region. Paraphrasing the
+OpenMP standard:
+<em>programs that depend on which thread executes a particular
+loop iteration under any circumstance other than static schedule
+are non-conforming.</em></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As in the RAJA full policies for OpenMP scheduling, the <code class="docutils literal notranslate"><span class="pre">ChunkSize</span></code>
+is optional. If not provided, the default chunk size that the OpenMP
+implementation applies will be used.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As noted above, RAJA inner OpenMP policies must only be used within an
+<strong>existing</strong> parallel region to work properly. Embedding an inner
+policy inside the RAJA outer <code class="docutils literal notranslate"><span class="pre">omp_parallel_exec</span></code> will allow you to
+apply the OpenMP execution prescription specified by the policies to
+a single kernel. To support use cases with multiple kernels inside an
+OpenMP parallel region, RAJA provides a <strong>region</strong> construct that
+takes a template argument to specify the execution back-end. For
+example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RAJA</span><span class="p">::</span><span class="n">region</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="p">::</span><span class="n">omp_parallel_region</span><span class="o">&gt;</span><span class="p">([</span><span class="o">=</span><span class="p">]()</span> <span class="p">{</span>
+
+  <span class="n">RAJA</span><span class="p">::</span><span class="n">forall</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="p">::</span><span class="n">omp_for_nowait_static_exec</span><span class="o">&lt;</span> <span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">segment</span><span class="p">,</span>
+    <span class="p">[</span><span class="o">=</span><span class="p">]</span> <span class="p">(</span><span class="nb">int</span> <span class="n">idx</span><span class="p">)</span> <span class="p">{</span>
+      <span class="o">//</span> <span class="n">do</span> <span class="n">something</span> <span class="n">at</span> <span class="n">iterate</span> <span class="s1">&#39;idx&#39;</span>
+    <span class="p">}</span>
+  <span class="p">);</span>
+
+  <span class="n">RAJA</span><span class="p">::</span><span class="n">forall</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="p">::</span><span class="n">omp_for_static_exec</span><span class="o">&lt;</span> <span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">segment</span><span class="p">,</span>
+    <span class="p">[</span><span class="o">=</span><span class="p">]</span> <span class="p">(</span><span class="nb">int</span> <span class="n">idx</span><span class="p">)</span> <span class="p">{</span>
+      <span class="o">//</span> <span class="n">do</span> <span class="n">something</span> <span class="k">else</span> <span class="n">at</span> <span class="n">iterate</span> <span class="s1">&#39;idx&#39;</span>
+    <span class="p">}</span>
+  <span class="p">);</span>
+
+<span class="p">});</span>
+</pre></div>
+</div>
+<p>Here, the <code class="docutils literal notranslate"><span class="pre">RAJA::region&lt;RAJA::omp_parallel_region&gt;</span></code> method call
+creates an OpenMP parallel region, which contains two <code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code>
+kernels. The first uses the <code class="docutils literal notranslate"><span class="pre">RAJA::omp_for_nowait_static_exec&lt;</span> <span class="pre">&gt;</span></code>
+policy, meaning that no thread synchronization is needed after the
+kernel. Thus, threads can start working on the second kernel while
+others are still working on the first kernel. I general, this will
+be correct when the segments used in the two kernels are the same,
+each loop is data parallel, and static scheduling is applied to both
+loops. The second kernel uses the <code class="docutils literal notranslate"><span class="pre">RAJA::omp_for_static_exec</span></code>
+policy, which means that all threads will complete before the kernel
+exits. In this example, this is not really needed since there is no
+more code to execute in the parallel region and there is an implicit
+barrier at the end of it.</p>
+</div>
+</section>
+<section id="threading-building-block-tbb-parallel-cpu-policies">
+<h3>Threading Building Block (TBB) Parallel CPU Policies<a class="headerlink" href="#threading-building-block-tbb-parallel-cpu-policies" title="Permalink to this headline">¶</a></h3>
+<p>RAJA provides a basic set of TBB execution policies for use with the
+RAJA TBB back-end, which supports a subset of RAJA features.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 49%" />
+<col style="width: 17%" />
+<col style="width: 34%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Threading Building Blocks Policies</p></th>
+<th class="head"><p>Works with</p></th>
+<th class="head"><p>Brief description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>tbb_for_exec</p></td>
+<td><p>forall,
+kernel (For),
+scan</p></td>
+<td><p>Execute loop iterations.
+as tasks in parallel using
+TBB <code class="docutils literal notranslate"><span class="pre">parallel_for</span></code>
+method.</p></td>
+</tr>
+<tr class="row-odd"><td><p>tbb_for_static&lt;CHUNK_SIZE&gt;</p></td>
+<td><p>forall,
+kernel (For),
+scan</p></td>
+<td><p>Same as above, but use.
+a static scheduler with
+given chunk size.</p></td>
+</tr>
+<tr class="row-even"><td><p>tbb_for_dynamic</p></td>
+<td><p>forall,
+kernel (For),
+scan</p></td>
+<td><p>Same as above, but use
+a dynamic scheduler.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To control the number of TBB worker threads used by these policies:
+set the value of the environment variable ‘TBB_NUM_WORKERS’ (which is
+fixed for duration of run), or create a ‘task_scheduler_init’ object:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tbb</span><span class="p">::</span><span class="n">task_scheduler_init</span> <span class="n">TBBinit</span><span class="p">(</span> <span class="n">nworkers</span> <span class="p">);</span>
+
+<span class="o">//</span> <span class="n">do</span> <span class="n">some</span> <span class="n">parallel</span> <span class="n">work</span>
+
+<span class="n">TBBinit</span><span class="o">.</span><span class="n">terminate</span><span class="p">();</span>
+<span class="n">TBBinit</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span> <span class="n">new_nworkers</span> <span class="p">);</span>
+
+<span class="o">//</span> <span class="n">do</span> <span class="n">some</span> <span class="n">more</span> <span class="n">parallel</span> <span class="n">work</span>
+</pre></div>
+</div>
+<p>This allows changing number of workers at run time.</p>
+</div>
+</section>
+<section id="gpu-policies-for-cuda-and-hip">
+<h3>GPU Policies for CUDA and HIP<a class="headerlink" href="#gpu-policies-for-cuda-and-hip" title="Permalink to this headline">¶</a></h3>
+<p>RAJA policies for GPU execution using CUDA or HIP are essentially identical.
+The only difference is that CUDA policies have the prefix <code class="docutils literal notranslate"><span class="pre">cuda_</span></code> and HIP
+policies have the prefix <code class="docutils literal notranslate"><span class="pre">hip_</span></code>.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 26%" />
+<col style="width: 8%" />
+<col style="width: 66%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>CUDA/HIP Execution Policies</p></th>
+<th class="head"><p>Works with</p></th>
+<th class="head"><p>Brief description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>cuda/hip_exec&lt;BLOCK_SIZE&gt;</p></td>
+<td><p>forall,
+scan,
+sort</p></td>
+<td><p>Execute loop iterations
+in a GPU kernel launched
+with given thread-block
+size. Note that the
+thread-block size must
+be provided, there is
+no default provided.</p></td>
+</tr>
+<tr class="row-odd"><td><p>cuda/hip_thread_x_direct</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Map loop iterates
+directly to GPU threads
+in x-dimension, one
+iterate per thread
+(see note below about
+limitations)</p></td>
+</tr>
+<tr class="row-even"><td><p>cuda/hip_thread_y_direct</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but map
+to threads in y-dim</p></td>
+</tr>
+<tr class="row-odd"><td><p>cuda/hip_thread_z_direct</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but map
+to threads in z-dim</p></td>
+</tr>
+<tr class="row-even"><td><p>cuda/hip_thread_x_loop</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Similar to
+thread-x-direct
+policy, but use a
+block-stride loop which
+doesn’t limit number of
+loop iterates</p></td>
+</tr>
+<tr class="row-odd"><td><p>cuda/hip_thread_y_loop</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but for
+threads in y-dimension</p></td>
+</tr>
+<tr class="row-even"><td><p>cuda/hip_thread_z_loop</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but for
+threads in z-dimension</p></td>
+</tr>
+<tr class="row-odd"><td><p>cuda/hip_flatten_block_threads_{xyz}</p></td>
+<td><p>Launch (Loop)</p></td>
+<td><p>Reshapes threads in a
+multi-dimensional thread
+team into one-dimension,
+accepts any permutation
+of dimensions
+(expt namespace)</p></td>
+</tr>
+<tr class="row-even"><td><p>cuda/hip_block_x_direct</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Map loop iterates
+directly to GPU thread
+blocks in x-dimension,
+one iterate per block</p></td>
+</tr>
+<tr class="row-odd"><td><p>cuda/hip_block_y_direct</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but map
+to blocks in y-dimension</p></td>
+</tr>
+<tr class="row-even"><td><p>cuda/hip_block_z_direct</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but map
+to blocks in z-dimension</p></td>
+</tr>
+<tr class="row-odd"><td><p>cuda/hip_block_x_loop</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Similar to
+block-x-direct policy,
+but use a grid-stride
+loop.</p></td>
+</tr>
+<tr class="row-even"><td><p>cuda/hip_block_y_loop</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but use
+blocks in y-dimension</p></td>
+</tr>
+<tr class="row-odd"><td><p>cuda/hip_block_z_loop</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but use
+blocks in z-dimension</p></td>
+</tr>
+<tr class="row-even"><td><p>cuda/hip_global_thread_x</p></td>
+<td><p>Launch (Loop)</p></td>
+<td><p>Creates a unique thread
+id for each thread on
+x-dimension of the grid
+(expt namespace)</p></td>
+</tr>
+<tr class="row-odd"><td><p>cuda/hip_global_thread_y</p></td>
+<td><p>Launch (Loop)</p></td>
+<td><p>Same as above, but uses
+threads in y-dimension
+(expt namespace)</p></td>
+</tr>
+<tr class="row-even"><td><p>cuda/hip_global_thread_z</p></td>
+<td><p>Launch (Loop)</p></td>
+<td><p>Same as above, but uses
+threads in z-dimension
+(expt namespace)</p></td>
+</tr>
+<tr class="row-odd"><td><p>cuda/hip_warp_direct</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Map work to threads
+in a warp directly.
+Cannot be used in
+conjunction with
+cuda/hip_thread_x_*
+policies.
+Multiple warps can be
+created by using
+cuda/hip_thread_y/z_*
+policies.</p></td>
+</tr>
+<tr class="row-even"><td><p>cuda/hip_warp_loop</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Policy to map work to
+threads in a warp using
+a warp-stride loop.
+Cannot be used in
+conjunction with
+cuda/hip_thread_x_*
+policies.
+Multiple warps can be
+created by using
+cuda/hip_thread_y/z_*
+policies.</p></td>
+</tr>
+<tr class="row-odd"><td><p>cuda/hip_warp_masked_direct&lt;BitMask&lt;..&gt;&gt;</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Policy to map work
+directly to threads in a
+warp using a bit mask.
+Cannot be used in
+conjunction with
+cuda/hip_thread_x_*
+policies.
+Multiple warps can
+be created by using
+cuda/hip_thread_y/z_*
+policies.</p></td>
+</tr>
+<tr class="row-even"><td><p>cuda/hip_warp_masked_loop&lt;BitMask&lt;..&gt;&gt;</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Policy to map work to
+threads in a warp using
+a bit mask and a
+warp-stride loop. Cannot
+be used in conjunction
+with cuda/hip_thread_x_*
+policies. Multiple warps                                                        can be created by using
+cuda/hip_thread_y/z_*
+policies.</p></td>
+</tr>
+<tr class="row-odd"><td><p>cuda/hip_block_reduce</p></td>
+<td><p>kernel
+(Reduce)</p></td>
+<td><p>Perform a reduction
+across a single GPU
+thread block.</p></td>
+</tr>
+<tr class="row-even"><td><p>cuda/_warp_reduce</p></td>
+<td><p>kernel
+(Reduce)</p></td>
+<td><p>Perform a reduction
+across a single GPU
+thread warp.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Several notable constraints apply to RAJA CUDA/HIP <em>thread-direct</em> policies.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>Repeating thread direct policies with the same thread dimension
+in perfectly nested loops is not recommended. Your code may do
+something, but likely will not do what you expect and/or be correct.</p></li>
+<li><p>If multiple thread direct policies are used in a kernel (using
+different thread dimensions), the product of sizes of the
+corresponding iteration spaces cannot be greater than the
+maximum allowable threads per block. Typically, this is
+1024 threads per block. Attempting to execute a kernel with more
+than the maximum allowed the CUDA runtime
+to complain about <em>illegal launch parameters.</em></p></li>
+<li><p><strong>Thread-direct policies are recommended only for certain loop
+patterns, such as tiling.</strong></p></li>
+</ul>
+</div>
+<p>Several notes regarding CUDA/HIP thread and block <em>loop</em> policies are also
+good to know.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>There is no constraint on the product of sizes of the associated
+loop iteration space.</p></li>
+<li><p>These polices allow having a larger number of iterates than
+threads in the x, y, or z thread dimension.</p></li>
+<li><p><strong>CUDA/HIP thread and block loop policies are recommended for most
+loop patterns.</strong></p></li>
+</ul>
+</div>
+<p>Finally</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>CUDA/HIP block-direct policies may be preferable to block-loop
+policies in situations where block load balancing may be an issue
+as the block-direct policies may yield better performance.</p>
+</div>
+</section>
+<section id="gpu-policies-for-sycl">
+<h3>GPU Policies for SYCL<a class="headerlink" href="#gpu-policies-for-sycl" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 17%" />
+<col style="width: 31%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>SYCL Execution Policies</p></th>
+<th class="head"><p>Works with</p></th>
+<th class="head"><p>Brief description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>sycl_exec&lt;WORK_GROUP_SIZE&gt;</p></td>
+<td><p>forall,</p></td>
+<td><p>Execute loop iterations
+in a GPU kernel launched
+with given work group
+size.</p></td>
+</tr>
+<tr class="row-odd"><td><p>sycl_global_0&lt;WORK_GROUP_SIZE&gt;</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Map loop iterates
+directly to GPU global
+ids in first
+dimension, one iterate
+per work item. Group
+execution into work
+groups of given size.</p></td>
+</tr>
+<tr class="row-even"><td><p>sycl_global_1&lt;WORK_GROUP_SIZE&gt;</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but map
+to global ids in second
+dim</p></td>
+</tr>
+<tr class="row-odd"><td><p>sycl_global_2&lt;WORK_GROUP_SIZE&gt;</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but map
+to global ids in third
+dim</p></td>
+</tr>
+<tr class="row-even"><td><p>sycl_local_0_direct</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Map loop iterates
+directly to GPU work
+items in first
+dimension, one iterate
+per work item (see note
+below about limitations)</p></td>
+</tr>
+<tr class="row-odd"><td><p>sycl_local_1_direct</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but map
+to work items in second
+dim</p></td>
+</tr>
+<tr class="row-even"><td><p>sycl_local_2_direct</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but map
+to work items in third
+dim</p></td>
+</tr>
+<tr class="row-odd"><td><p>sycl_local_0_loop</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Similar to
+local-1-direct policy,
+but use a work
+group-stride loop which
+doesn’t limit number of
+loop iterates</p></td>
+</tr>
+<tr class="row-even"><td><p>sycl_local_1_loop</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but for
+work items in second
+dimension</p></td>
+</tr>
+<tr class="row-odd"><td><p>sycl_local_2_loop</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but for
+work items in third
+dimension</p></td>
+</tr>
+<tr class="row-even"><td><p>sycl_group_0_direct</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Map loop iterates
+directly to GPU group
+ids in first dimension,
+one iterate per group</p></td>
+</tr>
+<tr class="row-odd"><td><p>sycl_group_1_direct</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but map
+to groups in second
+dimension</p></td>
+</tr>
+<tr class="row-even"><td><p>sycl_group_2_direct</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but map
+to groups in third
+dimension</p></td>
+</tr>
+<tr class="row-odd"><td><p>sycl_group_0_loop</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Similar to
+group-1-direct policy,
+but use a group-stride
+loop.</p></td>
+</tr>
+<tr class="row-even"><td><p>sycl_group_1_loop</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but use
+groups in second
+dimension</p></td>
+</tr>
+<tr class="row-odd"><td><p>sycl_group_2_loop</p></td>
+<td><p>kernel (For)</p></td>
+<td><p>Same as above, but use
+groups in third
+dimension</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="openmp-target-offload-policies">
+<h3>OpenMP Target Offload Policies<a class="headerlink" href="#openmp-target-offload-policies" title="Permalink to this headline">¶</a></h3>
+<p>RAJA provides policies to use OpenMP to offload kernel execution to a GPU
+device, for example. They are summarized in the following table.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 49%" />
+<col style="width: 17%" />
+<col style="width: 34%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>OpenMP Target Execution Policies</p></th>
+<th class="head"><p>Works with</p></th>
+<th class="head"><p>Brief description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>omp_target_parallel_for_exec&lt;#&gt;</p></td>
+<td><p>forall,
+kernel(For)</p></td>
+<td><p>Create parallel target
+region and execute with
+given number of threads
+per team inside it. Number
+of teams is calculated
+internally; i.e.,
+apply <code class="docutils literal notranslate"><span class="pre">omp</span> <span class="pre">teams</span>
+<span class="pre">distribute</span> <span class="pre">parallel</span> <span class="pre">for</span>
+<span class="pre">num_teams(iteration</span> <span class="pre">space</span>
+<span class="pre">size/#)</span>
+<span class="pre">thread_limit(#)</span></code> pragma</p></td>
+</tr>
+<tr class="row-odd"><td><p>omp_target_parallel_collapse_exec</p></td>
+<td><p>kernel
+(Collapse)</p></td>
+<td><p>Similar to above, but
+collapse
+<em>perfectly-nested</em>
+loops, indicated in
+arguments to RAJA
+Collapse statement. Note:
+compiler determines number
+of thread teams and
+threads per team</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+</section>
+<section id="raja-indexset-execution-policies">
+<span id="indexsetpolicy-label"></span><h2>RAJA IndexSet Execution Policies<a class="headerlink" href="#raja-indexset-execution-policies" title="Permalink to this headline">¶</a></h2>
+<p>When an IndexSet iteration space is used in RAJA by passing an IndexSet
+to a <code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code> method, for example, an index set execution policy is
+required. An index set execution policy is a <strong>two-level policy</strong>: an ‘outer’
+policy for iterating over segments in the index set, and an ‘inner’ policy
+used to execute the iterations defined by each segment. An index set execution
+policy type has the form:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RAJA</span><span class="p">::</span><span class="n">ExecPolicy</span><span class="o">&lt;</span> <span class="n">segment_iteration_policy</span><span class="p">,</span> <span class="n">segment_execution_policy</span> <span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>In general, any policy that can be used with a <code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code> method
+can be used as the segment execution policy. The following policies are
+available to use for the outer segment iteration policy:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 75%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Execution Policy</p></th>
+<th class="head"><p>Brief description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Serial</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>seq_segit</p></td>
+<td><p>Iterate over index set segments
+sequentially.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>OpenMP CPU multithreading</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>omp_parallel_segit</p></td>
+<td><p>Create OpenMP parallel region and
+iterate over segments in parallel inside                                        it; i.e., apply <code class="docutils literal notranslate"><span class="pre">omp</span> <span class="pre">parallel</span> <span class="pre">for</span></code>
+pragma on loop over segments.</p></td>
+</tr>
+<tr class="row-even"><td><p>omp_parallel_for_segit</p></td>
+<td><p>Same as above.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Intel Threading Building Blocks</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>tbb_segit</p></td>
+<td><p>Iterate over index set segments in
+parallel using a TBB ‘parallel_for’
+method.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="parallel-region-policies">
+<h2>Parallel Region Policies<a class="headerlink" href="#parallel-region-policies" title="Permalink to this headline">¶</a></h2>
+<p>Earlier, we discussed using the <code class="docutils literal notranslate"><span class="pre">RAJA::region</span></code> construct to
+execute multiple kernels in an OpenMP parallel region. To support source code
+portability, RAJA provides a sequential region concept that can be used to
+surround code that uses execution back-ends other than OpenMP. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RAJA</span><span class="p">::</span><span class="n">region</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="p">::</span><span class="n">seq_region</span><span class="o">&gt;</span><span class="p">([</span><span class="o">=</span><span class="p">]()</span> <span class="p">{</span>
+
+   <span class="n">RAJA</span><span class="p">::</span><span class="n">forall</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="p">::</span><span class="n">loop_exec</span><span class="o">&gt;</span><span class="p">(</span><span class="n">segment</span><span class="p">,</span> <span class="p">[</span><span class="o">=</span><span class="p">]</span> <span class="p">(</span><span class="nb">int</span> <span class="n">idx</span><span class="p">)</span> <span class="p">{</span>
+       <span class="o">//</span> <span class="n">do</span> <span class="n">something</span> <span class="n">at</span> <span class="n">iterate</span> <span class="s1">&#39;idx&#39;</span>
+   <span class="p">}</span> <span class="p">);</span>
+
+   <span class="n">RAJA</span><span class="p">::</span><span class="n">forall</span><span class="o">&lt;</span><span class="n">RAJA</span><span class="p">::</span><span class="n">loop_exec</span><span class="o">&gt;</span><span class="p">(</span><span class="n">segment</span><span class="p">,</span> <span class="p">[</span><span class="o">=</span><span class="p">]</span> <span class="p">(</span><span class="nb">int</span> <span class="n">idx</span><span class="p">)</span> <span class="p">{</span>
+       <span class="o">//</span> <span class="n">do</span> <span class="n">something</span> <span class="k">else</span> <span class="n">at</span> <span class="n">iterate</span> <span class="s1">&#39;idx&#39;</span>
+   <span class="p">}</span> <span class="p">);</span>
+
+ <span class="p">});</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The sequential region specialization is essentially a <em>pass through</em>
+operation. It is provided so that if you want to turn off OpenMP in
+your code, for example, you can simply replace the region policy
+type and you do not have to change your algorithm source code.</p>
+</div>
+</section>
+<section id="reduction-policies">
+<span id="reducepolicy-label"></span><h2>Reduction Policies<a class="headerlink" href="#reduction-policies" title="Permalink to this headline">¶</a></h2>
+<p>Each RAJA reduction object must be defined with a ‘reduction policy’
+type. Reduction policy types are distinct from loop execution policy types.
+It is important to note the following constraints about RAJA reduction usage:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To guarantee correctness, a <strong>reduction policy must be consistent
+with the loop execution policy</strong> used. For example, a CUDA
+reduction policy must be used when the execution policy is a
+CUDA policy, an OpenMP reduction policy must be used when the
+execution policy is an OpenMP policy, and so on.</p>
+</div>
+<p>The following table summarizes RAJA reduction policy types:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 17%" />
+<col style="width: 54%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Reduction Policy</p></th>
+<th class="head"><p>Loop Policies
+to Use With</p></th>
+<th class="head"><p>Brief description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>seq_reduce</p></td>
+<td><p>seq_exec,
+loop_exec</p></td>
+<td><p>Non-parallel (sequential) reduction.</p></td>
+</tr>
+<tr class="row-odd"><td><p>omp_reduce</p></td>
+<td><p>any OpenMP
+policy</p></td>
+<td><p>OpenMP parallel reduction.</p></td>
+</tr>
+<tr class="row-even"><td><p>omp_reduce_ordered</p></td>
+<td><p>any OpenMP
+policy</p></td>
+<td><p>OpenMP parallel reduction with result
+guaranteed to be reproducible.</p></td>
+</tr>
+<tr class="row-odd"><td><p>omp_target_reduce</p></td>
+<td><p>any OpenMP
+target policy</p></td>
+<td><p>OpenMP parallel target offload reduction.</p></td>
+</tr>
+<tr class="row-even"><td><p>tbb_reduce</p></td>
+<td><p>any TBB
+policy</p></td>
+<td><p>TBB parallel reduction.</p></td>
+</tr>
+<tr class="row-odd"><td><p>cuda/hip_reduce</p></td>
+<td><p>any CUDA/HIP
+policy</p></td>
+<td><p>Parallel reduction in a CUDA/HIP kernel
+(device synchronization will occur when
+reduction value is finalized).</p></td>
+</tr>
+<tr class="row-even"><td><p>cuda/hip_reduce_atomic</p></td>
+<td><p>any CUDA/HIP
+policy</p></td>
+<td><p>Same as above, but reduction may use CUDA
+atomic operations.</p></td>
+</tr>
+<tr class="row-odd"><td><p>sycl_reduce</p></td>
+<td><p>any SYCL
+policy</p></td>
+<td><p>Reduction in a SYCL kernel (device
+synchronization will occur when the
+reduction value is finalized).</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>RAJA reductions used with SIMD execution policies are not
+guaranteed to generate correct results. So they should not be used
+for kernels containing reductions.</p>
+</div>
+</section>
+<section id="atomic-policies">
+<span id="atomicpolicy-label"></span><h2>Atomic Policies<a class="headerlink" href="#atomic-policies" title="Permalink to this headline">¶</a></h2>
+<p>Each RAJA atomic operation must be defined with an ‘atomic policy’
+type. Atomic policy types are distinct from loop execution policy types.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>An atomic policy type must be consistent with the loop execution
+policy for the kernel in which the atomic operation is used. The
+following table summarizes RAJA atomic policies and usage.</p>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 17%" />
+<col style="width: 51%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Atomic Policy</p></th>
+<th class="head"><p>Loop Policies
+to Use With</p></th>
+<th class="head"><p>Brief description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>seq_atomic</p></td>
+<td><p>seq_exec,
+loop_exec</p></td>
+<td><p>Atomic operation performed in a
+non-parallel (sequential) kernel.</p></td>
+</tr>
+<tr class="row-odd"><td><p>omp_atomic</p></td>
+<td><p>any OpenMP
+policy</p></td>
+<td><p>Atomic operation performed in an OpenMP.
+multithreading or target kernel; i.e.,
+apply <code class="docutils literal notranslate"><span class="pre">omp</span> <span class="pre">atomic</span></code> pragma.</p></td>
+</tr>
+<tr class="row-even"><td><p>cuda/hip_atomic</p></td>
+<td><p>any CUDA/HIP
+policy</p></td>
+<td><p>Atomic operation performed in a CUDA/HIP
+kernel.</p></td>
+</tr>
+<tr class="row-odd"><td><p>cuda/hip_atomic_explicit</p></td>
+<td><p>any CUDA/HIP
+policy</p></td>
+<td><p>Atomic operation performed in a CUDA/HIP
+kernel that may also be used in a host
+execution context. The atomic policy
+takes a host atomic policy template
+argument. See additional explanation
+and example below.</p></td>
+</tr>
+<tr class="row-even"><td><p>builtin_atomic</p></td>
+<td><p>seq_exec,
+loop_exec,
+any OpenMP
+policy</p></td>
+<td><p>Compiler <em>builtin</em> atomic operation.</p></td>
+</tr>
+<tr class="row-odd"><td><p>auto_atomic</p></td>
+<td><p>seq_exec,
+loop_exec,
+any OpenMP
+policy,
+any CUDA/HIP
+policy</p></td>
+<td><p>Atomic operation <em>compatible</em> with loop
+execution policy. See example below.
+Can not be used inside cuda/hip
+explicit atomic policies.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">cuda_atomic_explicit</span></code> and <code class="docutils literal notranslate"><span class="pre">hip_atomic_explicit</span></code> policies
+take a host atomic policy template parameter. They are intended to
+be used with kernels that are host-device decorated to be used in
+either a host or device execution context.</p>
+</div>
+<p>Here is an example illustrating use of the <code class="docutils literal notranslate"><span class="pre">cuda_atomic_explicit</span></code> policy:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">auto</span> <span class="n">kernel</span> <span class="o">=</span> <span class="p">[</span><span class="o">=</span><span class="p">]</span> <span class="n">RAJA_HOST_DEVICE</span> <span class="p">(</span><span class="n">RAJA</span><span class="p">::</span><span class="n">Index_type</span> <span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">RAJA</span><span class="p">::</span><span class="n">atomicAdd</span><span class="o">&lt;</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">cuda_atomic_explicit</span><span class="o">&lt;</span><span class="n">omp_atomic</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="nb">sum</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="n">RAJA</span><span class="p">::</span><span class="n">forall</span><span class="o">&lt;</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">cuda_exec</span><span class="o">&lt;</span><span class="n">BLOCK_SIZE</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="p">::</span><span class="n">TypedRangeSegment</span><span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span> <span class="n">seg</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">kernel</span><span class="p">);</span>
+
+<span class="n">RAJA</span><span class="p">::</span><span class="n">forall</span><span class="o">&lt;</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">omp_parallel_for_exec</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="p">::</span><span class="n">TypedRangeSegment</span><span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span> <span class="n">seg</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">kernel</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>In this case, the atomic operation knows when it is compiled for the device
+in a CUDA kernel context and the CUDA atomic operation is applied. Similarly
+when it is compiled for the host in an OpenMP kernel the omp_atomic policy is
+used and the OpenMP version of the atomic operation is applied.</p>
+<p>Here is an example illustrating use of the <code class="docutils literal notranslate"><span class="pre">auto_atomic</span></code> policy:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RAJA</span><span class="p">::</span><span class="n">forall</span><span class="o">&lt;</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">cuda_exec</span><span class="o">&lt;</span><span class="n">BLOCK_SIZE</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">RAJA</span><span class="p">::</span><span class="n">TypedRangeSegment</span><span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span> <span class="n">seg</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span>
+  <span class="p">[</span><span class="o">=</span><span class="p">]</span> <span class="n">RAJA_DEVICE</span> <span class="p">(</span><span class="n">RAJA</span><span class="p">::</span><span class="n">Index_type</span> <span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+
+  <span class="n">RAJA</span><span class="p">::</span><span class="n">atomicAdd</span><span class="o">&lt;</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">auto_atomic</span> <span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="nb">sum</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+
+<span class="p">});</span>
+</pre></div>
+</div>
+<p>In this case, the atomic operation knows that it is used in a CUDA kernel
+context and the CUDA atomic operation is applied. Similarly, if an OpenMP
+execution policy was used, the OpenMP version of the atomic operation would
+be used.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>There are no RAJA atomic policies for TBB (Intel Threading Building
+Blocks) execution contexts since reductions are not supported
+for the RAJA TBB back-end.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">builtin_atomic</span></code> policy may be preferable to the
+<code class="docutils literal notranslate"><span class="pre">omp_atomic</span></code> policy in terms of performance.</p></li>
+</ul>
+</div>
+</section>
+<section id="local-array-memory-policies">
+<span id="localarraypolicy-label"></span><h2>Local Array Memory Policies<a class="headerlink" href="#local-array-memory-policies" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">RAJA::LocalArray</span></code> types must use a memory policy indicating
+where the memory for the local array will live. These policies are described
+in <a class="reference internal" href="local_array.html#feat-local-array-label"><span class="std std-ref">Local Array</span></a>.</p>
+<p>The following memory policies are available to specify memory allocation
+for <code class="docutils literal notranslate"><span class="pre">RAJA::LocalArray</span></code> objects:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::cpu_tile_mem</span></code> - Allocate CPU memory on the stack</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::cuda/hip_shared_mem</span></code> - Allocate CUDA or HIP shared memory</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RAJA::cuda/hip_thread_mem</span></code> - Allocate CUDA or HIP thread private memory</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="raja-kernel-execution-policies">
+<span id="loop-elements-kernelpol-label"></span><h2>RAJA Kernel Execution Policies<a class="headerlink" href="#raja-kernel-execution-policies" title="Permalink to this headline">¶</a></h2>
+<p>RAJA kernel execution policy constructs form a simple domain specific language
+for composing and transforming complex loops that relies
+<strong>solely on standard C++14 template support</strong>.
+RAJA kernel policies are constructed using a combination of <em>Statements</em> and
+<em>Statement Lists</em>. A RAJA Statement is an action, such as execute a loop,
+invoke a lambda, set a thread barrier, etc. A StatementList is an ordered list
+of Statements that are composed in the order that they appear in the kernel
+policy to construct a kernel. A Statement may contain an enclosed StatmentList. Thus, a <code class="docutils literal notranslate"><span class="pre">RAJA::KernelPolicy</span></code> type is really just a StatementList.</p>
+<p>The main Statement types provided by RAJA are <code class="docutils literal notranslate"><span class="pre">RAJA::statement::For</span></code> and
+<code class="docutils literal notranslate"><span class="pre">RAJA::statement::Lambda</span></code>, that we discussed in
+<a class="reference internal" href="loop_basic.html#loop-elements-kernel-label"><span class="std std-ref">Complex Loops (RAJA::kernel)</span></a>.
+A <code class="docutils literal notranslate"><span class="pre">RAJA::statement::For&lt;ArgID,</span> <span class="pre">ExecPolicy,</span> <span class="pre">Enclosed</span> <span class="pre">Satements&gt;</span></code> type
+indicates a for-loop structure. The <code class="docutils literal notranslate"><span class="pre">ArgID</span></code> parameter is an integral constant
+that identifies the position of the iteration space in the iteration space
+tuple passed to the <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> method to be used for the loop. The
+<code class="docutils literal notranslate"><span class="pre">ExecPolicy</span></code> is the RAJA execution policy to use on the loop, which is
+similar to <code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code> usage. The <code class="docutils literal notranslate"><span class="pre">EnclosedStatements</span></code> type is a
+nested template parameter that contains whatever is needed to execute the
+kernel and which forms a valid StatementList. The
+<code class="docutils literal notranslate"><span class="pre">RAJA::statement::Lambda&lt;LambdaID&gt;</span></code>
+type invokes the lambda expression corresponding to its position ‘LambdaID’
+in the sequence of lambda expressions in the <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> argument list.
+For example, a simple sequential for-loop:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="p">(</span><span class="nb">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+  <span class="o">//</span> <span class="n">loop</span> <span class="n">body</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>can be represented using the RAJA kernel interface as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">using</span> <span class="n">KERNEL_POLICY</span> <span class="o">=</span>
+  <span class="n">RAJA</span><span class="p">::</span><span class="n">KernelPolicy</span><span class="o">&lt;</span>
+    <span class="n">RAJA</span><span class="p">::</span><span class="n">statement</span><span class="p">::</span><span class="n">For</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span> <span class="n">RAJA</span><span class="p">::</span><span class="n">seq_exec</span><span class="p">,</span>
+      <span class="n">RAJA</span><span class="p">::</span><span class="n">statement</span><span class="p">::</span><span class="n">Lambda</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span>
+    <span class="o">&gt;</span>
+  <span class="o">&gt;</span><span class="p">;</span>
+
+<span class="n">RAJA</span><span class="p">::</span><span class="n">kernel</span><span class="o">&lt;</span><span class="n">KERNEL_POLICY</span><span class="o">&gt;</span><span class="p">(</span>
+  <span class="n">RAJA</span><span class="p">::</span><span class="n">make_tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">),</span>
+  <span class="p">[</span><span class="o">=</span><span class="p">](</span><span class="nb">int</span> <span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">loop</span> <span class="n">body</span>
+  <span class="p">}</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All <code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code> functionality can be done using the
+<code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> interface. We maintain the <code class="docutils literal notranslate"><span class="pre">RAJA::forall</span></code>
+interface since it is less verbose and thus more convenient
+for users.</p>
+</div>
+<section id="raja-kernel-statement-types">
+<h3>RAJA::kernel Statement Types<a class="headerlink" href="#raja-kernel-statement-types" title="Permalink to this headline">¶</a></h3>
+<p>The list below summarizes the current collection of statement types that
+can be used with <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> and <code class="docutils literal notranslate"><span class="pre">RAJA::kernel_param</span></code>. More detailed
+explanation along with examples of how they are used can be found in
+the <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code> examples in <a class="reference internal" href="../tutorial.html#tutorial-label"><span class="std std-ref">RAJA Tutorial and Examples</span></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All of the statement types described below are in the namespace
+<code class="docutils literal notranslate"><span class="pre">RAJA::statement</span></code>. For brevity, we omit the namespaces in
+the discussion in this section.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">RAJA::kernel_param</span></code> functions similarly to <code class="docutils literal notranslate"><span class="pre">RAJA::kernel</span></code>
+except that the second argument is a <em>tuple of parameters</em> used
+in a kernel for local arrays, thread local variables, tiling
+information, etc.</p>
+</div>
+<p>Several RAJA statements can be specialized with auxilliary types, which are
+described in <a class="reference internal" href="#auxilliarypolicy-label"><span class="std std-ref">Auxilliary Types</span></a>.</p>
+<p>The following list contains the most commonly used statement types.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">For&lt;</span> <span class="pre">ArgId,</span> <span class="pre">ExecPolicy,</span> <span class="pre">EnclosedStatements</span> <span class="pre">&gt;</span></code> abstracts a for-loop associated with kernel iteration space at tuple index <code class="docutils literal notranslate"><span class="pre">ArgId</span></code>, to be run with <code class="docutils literal notranslate"><span class="pre">ExecPolicy</span></code> execution policy, and containing the <code class="docutils literal notranslate"><span class="pre">EnclosedStatements</span></code> which are executed for each loop iteration.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Lambda&lt;</span> <span class="pre">LambdaId</span> <span class="pre">&gt;</span></code> invokes the lambda expression that appears at position ‘LambdaId’ in the sequence of lambda arguments. With this statement, the lambda expression must accept all arguments associated with the tuple of iteration space segments and tuple of parameters (if kernel_param is used).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Lambda&lt;</span> <span class="pre">LambdaId,</span> <span class="pre">Args...&gt;</span></code> extends the Lambda statement. The second template parameter indicates which arguments (e.g., which segment iteration variables) are passed to the lambda expression.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Collapse&lt;</span> <span class="pre">ExecPolicy,</span> <span class="pre">ArgList&lt;...&gt;,</span> <span class="pre">EnclosedStatements</span> <span class="pre">&gt;</span></code> collapses multiple perfectly nested loops specified by tuple iteration space indices in <code class="docutils literal notranslate"><span class="pre">ArgList</span></code>, using the <code class="docutils literal notranslate"><span class="pre">ExecPolicy</span></code> execution policy, and places <code class="docutils literal notranslate"><span class="pre">EnclosedStatements</span></code> inside the collapsed loops which are executed for each iteration. <strong>Note that this only works for CPU execution policies (e.g., sequential, OpenMP).</strong> It may be available for CUDA in the future if such use cases arise.</p></li>
+</ul>
+<p>There is one statement specific to OpenMP kernels.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">OmpSyncThreads</span></code> applies the OpenMP <code class="docutils literal notranslate"><span class="pre">#pragma</span> <span class="pre">omp</span> <span class="pre">barrier</span></code> directive.</p></li>
+</ul>
+<p>Statement types that launch CUDA or HIP GPU kernels are listed next. They work
+similarly for each back-end and their names are distinguished by the prefix
+<code class="docutils literal notranslate"><span class="pre">Cuda</span></code> or <code class="docutils literal notranslate"><span class="pre">Hip</span></code>. For example, <code class="docutils literal notranslate"><span class="pre">CudaKernel</span></code> or <code class="docutils literal notranslate"><span class="pre">HipKernel</span></code>.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Cuda/HipKernel&lt;</span> <span class="pre">EnclosedStatements&gt;</span></code> launches <code class="docutils literal notranslate"><span class="pre">EnclosedStatements</span></code> as a GPU kernel; e.g., a loop nest where the iteration spaces of each loop level are associated with threads and/or thread blocks as described by the execution policies applied to them. This kernel launch is synchronous.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Cuda/HipKernelAsync&lt;</span> <span class="pre">EnclosedStatements&gt;</span></code> asynchronous version of Cuda/HipKernel.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Cuda/HipKernelFixed&lt;num_threads,</span> <span class="pre">EnclosedStatements&gt;</span></code> similar to Cuda/HipKernel but enables a fixed number of threads (specified by num_threads). This kernel launch is synchronous.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Cuda/HipKernelFixedAsync&lt;num_threads,</span> <span class="pre">EnclosedStatements&gt;</span></code> asynchronous version of Cuda/HipKernelFixed.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CudaKernelFixedSM&lt;num_threads,</span> <span class="pre">min_blocks_per_sm,</span> <span class="pre">EnclosedStatements&gt;</span></code> similar to CudaKernelFixed but enables a minimum number of blocks per sm (specified by min_blocks_per_sm), this can help increase occupancy. This kernel launch is synchronous.  <strong>Note: there is no HIP variant of this statement.</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CudaKernelFixedSMAsync&lt;num_threads,</span> <span class="pre">min_blocks_per_sm,</span> <span class="pre">EnclosedStatements&gt;</span></code> asynchronous version of CudaKernelFixedSM. <strong>Note: there is no HIP variant of this statement.</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Cuda/HipKernelOcc&lt;EnclosedStatements&gt;</span></code> similar to CudaKernel but uses the CUDA occupancy calculator to determine the optimal number of threads/blocks. Statement is intended for use with RAJA::cuda/hip_block_{xyz}_loop policies. This kernel launch is synchronous.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Cuda/HipKernelOccAsync&lt;EnclosedStatements&gt;</span></code> asynchronous version of Cuda/HipKernelOcc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Cuda/HipKernelExp&lt;num_blocks,</span> <span class="pre">num_threads,</span> <span class="pre">EnclosedStatements&gt;</span></code> similar to CudaKernelOcc but with the flexibility to fix the number of threads and/or blocks and let the CUDA occupancy calculator determine the unspecified values. This kernel launch is synchronous.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Cuda/HipKernelExpAsync&lt;num_blocks,</span> <span class="pre">num_threads,</span> <span class="pre">EnclosedStatements&gt;</span></code> asynchronous version of Cuda/HipKernelExp.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Cuda/HipSyncThreads</span></code> invokes CUDA or HIP <code class="docutils literal notranslate"><span class="pre">__syncthreads()</span></code> barrier.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Cuda/HipSyncWarp</span></code> invokes CUDA <code class="docutils literal notranslate"><span class="pre">__syncwarp()</span></code> barrier. Warp sync is not supported in HIP, so the HIP variant is a no-op.</p></li>
+</ul>
+<p>Statement types that launch SYCL kernels are listed next.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SyclKernel&lt;EnclosedStatements&gt;</span></code> launches <code class="docutils literal notranslate"><span class="pre">EnclosedStatements</span></code> as a SYCL kernel.  This kernel launch is synchronous.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SyclKernelAsync&lt;EnclosedStatements&gt;</span></code> asynchronous version of SyclKernel.</p></li>
+</ul>
+<p>RAJA provides statements to define loop tiling which can improve performance;
+e.g., by allowing CPU cache blocking or use of GPU shared memory.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Tile&lt;</span> <span class="pre">ArgId,</span> <span class="pre">TilePolicy,</span> <span class="pre">ExecPolicy,</span> <span class="pre">EnclosedStatements</span> <span class="pre">&gt;</span></code> abstracts an outer tiling loop containing an inner for-loop over each tile. The <code class="docutils literal notranslate"><span class="pre">ArgId</span></code> indicates which entry in the iteration space tuple to which the tiling loop applies and the <code class="docutils literal notranslate"><span class="pre">TilePolicy</span></code> specifies the tiling pattern to use, including its dimension. The <code class="docutils literal notranslate"><span class="pre">ExecPolicy</span></code> and <code class="docutils literal notranslate"><span class="pre">EnclosedStatements</span></code> are similar to what they represent in a <code class="docutils literal notranslate"><span class="pre">statement::For</span></code> type.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TileTCount&lt;</span> <span class="pre">ArgId,</span> <span class="pre">ParamId,</span> <span class="pre">TilePolicy,</span> <span class="pre">ExecPolicy,</span> <span class="pre">EnclosedStatements</span> <span class="pre">&gt;</span></code> abstracts an outer tiling loop containing an inner for-loop over each tile, <strong>where it is necessary to obtain the tile number in each tile</strong>. The <code class="docutils literal notranslate"><span class="pre">ArgId</span></code> indicates which entry in the iteration space tuple to which the loop applies and the <code class="docutils literal notranslate"><span class="pre">ParamId</span></code> indicates the position of the tile number in the parameter tuple. The <code class="docutils literal notranslate"><span class="pre">TilePolicy</span></code> specifies the tiling pattern to use, including its dimension. The <code class="docutils literal notranslate"><span class="pre">ExecPolicy</span></code> and <code class="docutils literal notranslate"><span class="pre">EnclosedStatements</span></code> are similar to what they represent in a <code class="docutils literal notranslate"><span class="pre">statement::For</span></code> type.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ForICount&lt;</span> <span class="pre">ArgId,</span> <span class="pre">ParamId,</span> <span class="pre">ExecPolicy,</span> <span class="pre">EnclosedStatements</span> <span class="pre">&gt;</span></code> abstracts an inner for-loop within an outer tiling loop <strong>where it is necessary to obtain the local iteration index in each tile</strong>. The <code class="docutils literal notranslate"><span class="pre">ArgId</span></code> indicates which entry in the iteration space tuple to which the loop applies and the <code class="docutils literal notranslate"><span class="pre">ParamId</span></code> indicates the position of the tile index parameter in the parameter tuple. The <code class="docutils literal notranslate"><span class="pre">ExecPolicy</span></code> and <code class="docutils literal notranslate"><span class="pre">EnclosedStatements</span></code> are similar to what they represent in a <code class="docutils literal notranslate"><span class="pre">statement::For</span></code> type.</p></li>
+</ul>
+<p>It is often advantageous to use local arrays for data accessed in tiled loops.
+RAJA provides a statement for allocating data in a <a class="reference internal" href="local_array.html#feat-local-array-label"><span class="std std-ref">Local Array</span></a>
+object according to a memory policy. See <a class="reference internal" href="#localarraypolicy-label"><span class="std std-ref">Local Array Memory Policies</span></a> for more information about such policies.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">InitLocalMem&lt;</span> <span class="pre">MemPolicy,</span> <span class="pre">ParamList&lt;...&gt;,</span> <span class="pre">EnclosedStatements</span> <span class="pre">&gt;</span></code> allocates memory for a <code class="docutils literal notranslate"><span class="pre">RAJA::LocalArray</span></code> object used in kernel. The <code class="docutils literal notranslate"><span class="pre">ParamList</span></code> entries indicate which local array objects in a tuple will be initialized. The <code class="docutils literal notranslate"><span class="pre">EnclosedStatements</span></code> contain the code in which the local array will be accessed; e.g., initialization operations.</p></li>
+</ul>
+<p>RAJA provides some statement types that apply in specific kernel scenarios.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Reduce&lt;</span> <span class="pre">ReducePolicy,</span> <span class="pre">Operator,</span> <span class="pre">ParamId,</span> <span class="pre">EnclosedStatements</span> <span class="pre">&gt;</span></code> reduces a value across threads in a multithreaded code region to a single thread. The <code class="docutils literal notranslate"><span class="pre">ReducePolicy</span></code> is similar to what it represents for RAJA reduction types. <code class="docutils literal notranslate"><span class="pre">ParamId</span></code> specifies the position of the reduction value in the parameter tuple passed to the <code class="docutils literal notranslate"><span class="pre">RAJA::kernel_param</span></code> method. <code class="docutils literal notranslate"><span class="pre">Operator</span></code> is the binary operator used in the reduction; typically, this will be one of the operators that can be used with RAJA scans (see <a class="reference internal" href="scan.html#feat-scanops-label"><span class="std std-ref">RAJA Scan Operators</span></a>). After the reduction is complete, the <code class="docutils literal notranslate"><span class="pre">EnclosedStatements</span></code> execute on the thread that received the final reduced value.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">If&lt;</span> <span class="pre">Conditional</span> <span class="pre">&gt;</span></code> chooses which portions of a policy to run based on run-time evaluation of conditional statement; e.g., true or false, equal to some value, etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Hyperplane&lt;</span> <span class="pre">ArgId,</span> <span class="pre">HpExecPolicy,</span> <span class="pre">ArgList&lt;...&gt;,</span> <span class="pre">ExecPolicy,</span> <span class="pre">EnclosedStatements</span> <span class="pre">&gt;</span></code> provides a hyperplane (or wavefront) iteration pattern over multiple indices. A hyperplane is a set of multi-dimensional index values: i0, i1, … such that h = i0 + i1 + … for a given h. Here, <code class="docutils literal notranslate"><span class="pre">ArgId</span></code> is the position of the loop argument we will iterate on (defines the order of hyperplanes), <code class="docutils literal notranslate"><span class="pre">HpExecPolicy</span></code> is the execution policy used to iterate over the iteration space specified by ArgId (often sequential), <code class="docutils literal notranslate"><span class="pre">ArgList</span></code> is a list of other indices that along with ArgId define a hyperplane, and <code class="docutils literal notranslate"><span class="pre">ExecPolicy</span></code> is the execution policy that applies to the loops in <code class="docutils literal notranslate"><span class="pre">ArgList</span></code>. Then, for each iteration, everything in the <code class="docutils literal notranslate"><span class="pre">EnclosedStatements</span></code> is executed.</p></li>
+</ul>
+</section>
+<section id="auxilliary-types">
+<span id="auxilliarypolicy-label"></span><h3>Auxilliary Types<a class="headerlink" href="#auxilliary-types" title="Permalink to this headline">¶</a></h3>
+<p>The following list summarizes auxilliary types used in the above statements. These
+types live in the <code class="docutils literal notranslate"><span class="pre">RAJA</span></code> namespace.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tile_fixed&lt;TileSize&gt;</span></code> tile policy argument to a <code class="docutils literal notranslate"><span class="pre">Tile</span></code> or <code class="docutils literal notranslate"><span class="pre">TileTCount</span></code> statement; partitions loop iterations into tiles of a fixed size specified by <code class="docutils literal notranslate"><span class="pre">TileSize</span></code>. This statement type can be used as the <code class="docutils literal notranslate"><span class="pre">TilePolicy</span></code> template parameter in the <code class="docutils literal notranslate"><span class="pre">Tile</span></code> statements above.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tile_dynamic&lt;ParamIdx&gt;</span></code> TilePolicy argument to a Tile or TileTCount statement; partitions loop iterations into tiles of a size specified by a <code class="docutils literal notranslate"><span class="pre">TileSize{}</span></code> positional parameter argument. This statement type can be used as the <code class="docutils literal notranslate"><span class="pre">TilePolicy</span></code> template paramter in the <code class="docutils literal notranslate"><span class="pre">Tile</span></code> statements above.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Segs&lt;...&gt;</span></code> argument to a Lambda statement; used to specify which segments in a tuple will be used as lambda arguments.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Offsets&lt;...&gt;</span></code> argument to a Lambda statement; used to specify which segment offsets in a tuple will be used as lambda arguments.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Params&lt;...&gt;</span></code> argument to a Lambda statement; used to specify which params in a tuple will be used as lambda arguments.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ValuesT&lt;T,</span> <span class="pre">...&gt;</span></code> argument to a Lambda statement; used to specify compile time constants, of type T, that will be used as lambda arguments.</p></li>
+</ul>
+</div></blockquote>
+<p>Examples that show how to use a variety of these statement types can be found
+in <a class="reference internal" href="loop_basic.html#loop-elements-kernel-label"><span class="std std-ref">Complex Loops (RAJA::kernel)</span></a>.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="loop_basic.html" class="btn btn-neutral float-left" title="Elements of Loop Execution" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="iteration_spaces.html" class="btn btn-neutral float-right" title="Indices, Segments, and IndexSets" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2016-2022, Lawrence Livermore National Security, LLNS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
