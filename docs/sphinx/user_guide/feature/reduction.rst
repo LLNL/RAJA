@@ -251,7 +251,7 @@ results::
   RAJA::expt::Reduce<RAJA::operators::minimum>(&rm_loc),
   [=] (int i, VL_DOUBLE& _rm_loc) {
     _rm_loc = RAJA_MIN(VL_DOUBLE(a[i], i), _rm_loc);  
-    //_rm_loc.min(VL_DOUBLE(a[i], i)); // Aternative to RAJA_MIN
+    //_rm_loc.min(VL_DOUBLE(a[i], i)); // Alternative to RAJA_MIN
   }
   );
 
@@ -299,4 +299,11 @@ successfully. Otherwise, a static assertion will be triggered::
           This check will not happen when passing extended-lambdas (i.e. DEVICE
           tagged lambdas) or other functor like objects.
 
-
+.. note:: The experimental ``RAJA::forall`` interface is more flexible than the
+          current implementation, other optional arguments besides
+          ``RAJA::expt::Reduce`` can be passed to a ``RAJA::forall`` to extend
+          its behavior. In the above example we demonstrate using 
+          ``RAJA::expt::KernelName``, which wraps a ``RAJA::forall`` executing 
+          under a ``HIP`` or ``CUDA`` policy in a named region. Use of the 
+          ``RAJA::expt::KernelName`` parameter does not require any aditional
+          arguments to the lambda expression.
