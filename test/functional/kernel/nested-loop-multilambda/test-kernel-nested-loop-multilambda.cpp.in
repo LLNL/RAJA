@@ -1,0 +1,142 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+
+#include "RAJA_test-forall-data.hpp"
+#include "RAJA_test-kernel-nested-loop-types.hpp"
+
+#include "test-kernel@RESOURCE@nested-loop-@NESTED_LOOP_TYPE@.hpp"
+
+using SequentialKernelNestedLoopMultiLambdaExecPols = camp::list<
+
+    // Depth 2 Exec Pols
+    NestedLoopData<DEPTH_2, RAJA::seq_exec,  RAJA::seq_exec  >,
+    NestedLoopData<DEPTH_2, RAJA::seq_exec,  RAJA::loop_exec >,
+    NestedLoopData<DEPTH_2, RAJA::loop_exec, RAJA::seq_exec  >,
+    NestedLoopData<DEPTH_2, RAJA::loop_exec, RAJA::loop_exec >,
+
+    // Collapse Exec Pols
+    NestedLoopData<DEPTH_2_COLLAPSE, RAJA::seq_exec >,
+
+    // Depth 3 Exec Pols
+    NestedLoopData<DEPTH_3, RAJA::seq_exec,  RAJA::seq_exec, RAJA::seq_exec >
+  >;
+
+#if defined(RAJA_ENABLE_OPENMP)
+
+using OpenMPKernelNestedLoopMultiLambdaExecPols = camp::list<
+
+    // Depth 2 Exec Pols
+    NestedLoopData<DEPTH_2, RAJA::seq_exec,  RAJA::omp_parallel_for_exec >,
+    NestedLoopData<DEPTH_2, RAJA::omp_parallel_for_exec, RAJA::seq_exec >,
+    NestedLoopData<DEPTH_2, RAJA::omp_parallel_for_exec, RAJA::simd_exec >,
+    NestedLoopData<DEPTH_2, RAJA::omp_parallel_for_static_exec<8>, RAJA::seq_exec >,
+    NestedLoopData<DEPTH_2, RAJA::omp_parallel_for_static_exec<8>, RAJA::simd_exec >,
+
+    // Collapse Exec Pols
+    NestedLoopData<DEPTH_2_COLLAPSE, RAJA::omp_parallel_collapse_exec >,
+    NestedLoopData<DEPTH_3_COLLAPSE, RAJA::omp_parallel_collapse_exec >,
+    NestedLoopData<DEPTH_3_COLLAPSE_SEQ_INNER, RAJA::omp_parallel_collapse_exec >,
+    NestedLoopData<DEPTH_3_COLLAPSE_SEQ_OUTER, RAJA::omp_parallel_collapse_exec >,
+
+    // Depth 3 Exec Pols
+    NestedLoopData<DEPTH_3, RAJA::omp_parallel_for_exec, RAJA::loop_exec, RAJA::loop_exec >,
+    NestedLoopData<DEPTH_3, RAJA::loop_exec, RAJA::omp_parallel_for_exec, RAJA::simd_exec >
+  >;
+
+#endif  // RAJA_ENABLE_OPENMP
+
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+
+using OpenMPTargetKernelNestedLoopMultiLambdaExecPols = camp::list<
+
+    // Depth 2 Exec Pols
+    NestedLoopData<DEPTH_2, RAJA::seq_exec,  RAJA::omp_target_parallel_for_exec<16> >,
+    NestedLoopData<DEPTH_2, RAJA::loop_exec, RAJA::omp_target_parallel_for_exec<16> >,
+
+    // Collapse Exec Pols
+    NestedLoopData<DEPTH_2_COLLAPSE, RAJA::omp_target_parallel_collapse_exec >,
+
+    // Depth 3 Exec Pols
+    NestedLoopData<DEPTH_3, RAJA::seq_exec,  RAJA::omp_target_parallel_for_exec<16>, RAJA::seq_exec >
+  >;
+
+#endif  // RAJA_ENABLE_TARGET_OPENMP
+
+
+#if defined(RAJA_ENABLE_TBB)
+
+using TBBKernelNestedLoopMultiLambdaExecPols = camp::list<
+
+    // Depth 2 Exec Pols
+    NestedLoopData<DEPTH_2, RAJA::seq_exec,  RAJA::tbb_for_exec >,
+    NestedLoopData<DEPTH_2, RAJA::loop_exec, RAJA::tbb_for_exec >,
+    NestedLoopData<DEPTH_2, RAJA::tbb_for_exec, RAJA::tbb_for_exec >,
+
+    // Depth 3 Exec Pols
+    NestedLoopData<DEPTH_3, RAJA::loop_exec,  RAJA::tbb_for_exec, RAJA::tbb_for_exec >,
+    NestedLoopData<DEPTH_3, RAJA::tbb_for_exec, RAJA::tbb_for_exec, RAJA::tbb_for_exec >
+  >;
+
+#endif  // RAJA_ENABLE_TBB
+
+#if defined(RAJA_ENABLE_CUDA)
+using CudaKernelNestedLoopMultiLambdaExecPols = camp::list<
+
+    // Depth 2 Exec Pols
+    NestedLoopData<DEVICE_DEPTH_2, RAJA::cuda_thread_x_loop, RAJA::cuda_thread_y_loop >,
+    NestedLoopData<DEVICE_DEPTH_2, RAJA::seq_exec, RAJA::cuda_thread_x_loop >,
+    NestedLoopData<DEVICE_DEPTH_2, RAJA::cuda_thread_x_loop, RAJA::seq_exec >,
+
+    // Depth 3 Exec Pols
+    NestedLoopData<DEVICE_DEPTH_3, RAJA::cuda_thread_x_loop, RAJA::cuda_thread_y_loop, RAJA::seq_exec >,
+    NestedLoopData<DEVICE_DEPTH_3, RAJA::cuda_block_x_loop, RAJA::cuda_thread_x_loop, RAJA::seq_exec >
+  >;
+
+#endif  // RAJA_ENABLE_CUDA
+
+#if defined(RAJA_ENABLE_HIP)
+  
+using HipKernelNestedLoopMultiLambdaExecPols = camp::list<
+
+    // Depth 2 Exec Pols
+    NestedLoopData<DEVICE_DEPTH_2, RAJA::hip_thread_x_loop, RAJA::hip_thread_y_loop >,
+    NestedLoopData<DEVICE_DEPTH_2, RAJA::seq_exec, RAJA::hip_thread_x_loop >,
+    NestedLoopData<DEVICE_DEPTH_2, RAJA::hip_thread_x_loop, RAJA::seq_exec >,
+
+    // Depth 3 Exec Pols
+    NestedLoopData<DEVICE_DEPTH_3, RAJA::hip_thread_x_loop, RAJA::hip_thread_y_loop, RAJA::seq_exec >,
+    NestedLoopData<DEVICE_DEPTH_3, RAJA::hip_block_x_loop, RAJA::hip_thread_x_loop, RAJA::seq_exec >
+  >;
+
+#endif  // RAJA_ENABLE_HIP
+
+//
+// Build out list of supported Nested Loop data for tests' suported types.
+//
+using @NESTED_LOOP_TYPE@KernelNestedLoopExecPols = 
+  KernelExecListBuilder<
+    @NESTED_LOOP_TYPE@SupportedLoopTypeList,
+    @NESTED_LOOP_BACKEND@KernelNestedLoopMultiLambdaExecPols
+  >::type;
+
+//
+// Cartesian product of types used in parameterized tests.
+//
+using @NESTED_LOOP_BACKEND@KernelNestedLoopMultiLambdaTypes =
+  Test< camp::cartesian_product<@NESTED_LOOP_BACKEND@ResourceList,
+                                @NESTED_LOOP_TYPE@KernelNestedLoopExecPols>>::Types;
+
+//
+// Instantiate parameterized test.
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@NESTED_LOOP_BACKEND@,
+                               KernelNestedLoop@NESTED_LOOP_TYPE@Test,
+                               @NESTED_LOOP_BACKEND@KernelNestedLoopMultiLambdaTypes);

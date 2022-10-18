@@ -37,6 +37,8 @@ add_subdirectory(conditional-fission-fusion-loop)
 
 add_subdirectory(nested-loop)
 
+add_subdirectory(nested-loop-multilambda)
+
 add_subdirectory(nested-loop-reducesum)
 
 add_subdirectory(nested-loop-segment-types)
