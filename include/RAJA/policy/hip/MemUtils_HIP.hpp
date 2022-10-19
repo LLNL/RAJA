@@ -121,7 +121,7 @@ namespace detail
 struct hipInfo {
   hip_dim_t gridDim = 0;
   hip_dim_t blockDim = 0;
-  ::RAJA::resources::Hip* res = nullptr;
+  ::RAJA::resources::Hip res;
   bool setup_reducers = false;
 #if defined(RAJA_ENABLE_OPENMP)
   hipInfo* thread_states = nullptr;
@@ -254,7 +254,7 @@ hip_dim_t currentBlockDim() { return detail::tl_status.blockDim; }
 
 //! get resource for current launch
 RAJA_INLINE
-::RAJA::resources::Hip* currentResource() { return detail::tl_status.res; }
+::RAJA::resources::Hip currentResource() { return detail::tl_status.res; }
 
 //! create copy of loop_body that is setup for device execution
 template <typename LOOP_BODY>
@@ -267,8 +267,8 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
 {
   detail::SetterResetter<bool> setup_reducers_srer(
       detail::tl_status.setup_reducers, true);
-  detail::SetterResetter<::RAJA::resources::Hip*> res_srer(
-      detail::tl_status.res, &res);
+  detail::SetterResetter<::RAJA::resources::Hip> res_srer(
+      detail::tl_status.res, res);
 
   detail::tl_status.gridDim = gridDim;
   detail::tl_status.blockDim = blockDim;

@@ -32,12 +32,15 @@
 
 #include "RAJA/internal/fault_tolerance.hpp"
 
+#include "RAJA/pattern/params/forall.hpp"
+
 using RAJA::concepts::enable_if;
 
 namespace RAJA
 {
 namespace policy
 {
+
 namespace loop
 {
 
@@ -52,11 +55,42 @@ namespace loop
 //
 
 
-template <typename Iterable, typename Func, typename Resource>
-RAJA_INLINE resources::EventProxy<Resource> forall_impl(Resource res,
-                                                    const loop_exec &,
-                                                    Iterable &&iter,
-                                                    Func &&body)
+template <typename Iterable, typename Func, typename Resource, typename ForallParam>
+RAJA_EXPT_FORALL_WARN("Using EXPERIMENTAL forall_impl for loop_exec.")
+RAJA_INLINE
+concepts::enable_if_t<
+  resources::EventProxy<Resource>,
+  expt::type_traits::is_ForallParamPack<ForallParam>,
+  concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>
+  >
+forall_impl(Resource res,
+            const loop_exec &,
+            Iterable &&iter,
+            Func &&body,
+            ForallParam f_params)
+{
+  expt::ParamMultiplexer::init<seq_exec>(f_params);
+  RAJA_EXTRACT_BED_IT(iter);
+
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    expt::invoke_body(f_params, body, *(begin_it + i));
+  }
+  expt::ParamMultiplexer::resolve<seq_exec>(f_params);
+  return RAJA::resources::EventProxy<Resource>(res);
+}
+
+template <typename Iterable, typename Func, typename Resource, typename ForallParam>
+RAJA_INLINE
+concepts::enable_if_t<
+  resources::EventProxy<Resource>,
+  expt::type_traits::is_ForallParamPack<ForallParam>,
+  expt::type_traits::is_ForallParamPack_empty<ForallParam>
+  >
+forall_impl(Resource res,
+            const loop_exec &,
+            Iterable &&iter,
+            Func &&body,
+            ForallParam)
 {
   RAJA_EXTRACT_BED_IT(iter);
 

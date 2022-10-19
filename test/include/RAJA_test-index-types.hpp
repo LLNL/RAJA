@@ -58,7 +58,7 @@ using StrongIdxTypeList = camp::list<RAJA::Index_type,
                                      int,
                                      StrongIndexType,
 #if defined(RAJA_TEST_EXHAUSTIVE)
-                                     StrongInt,
+                                     //StrongInt,
                                      unsigned int,
 // short int types will break a bunch of tests due to assumpitons made in 
 // the test implementations.
@@ -68,7 +68,7 @@ using StrongIdxTypeList = camp::list<RAJA::Index_type,
                                      unsigned long,
                                      long long,
 #endif
-                                     StrongULL,
+                                     //StrongULL,
                                      unsigned long long>;
 
 #endif // __RAJA_test_index_types_HPP__

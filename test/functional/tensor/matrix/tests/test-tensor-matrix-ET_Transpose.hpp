@@ -112,17 +112,17 @@ void ET_TransposeImpl()
   //
   tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
-    auto rows = RAJA::RowIndex<int, matrix_t>::all();
-    auto cols = RAJA::ColIndex<int, matrix_t>::all();
+    auto rows = RAJA::expt::RowIndex<int, matrix_t>::all();
+    auto cols = RAJA::expt::ColIndex<int, matrix_t>::all();
 
-    auto rows_tr = RAJA::RowIndex<int, transpose_t>::all();
-    auto cols_tr = RAJA::ColIndex<int, transpose_t>::all();
+    auto rows_tr = RAJA::expt::RowIndex<int, transpose_t>::all();
+    auto cols_tr = RAJA::expt::ColIndex<int, transpose_t>::all();
 
-    auto SArows = RAJA::RowIndex<int, matrix_t>::static_all();
-    auto SAcols = RAJA::ColIndex<int, matrix_t>::static_all();
+    auto SArows = RAJA::expt::RowIndex<int, matrix_t>::static_all();
+    auto SAcols = RAJA::expt::ColIndex<int, matrix_t>::static_all();
 
-    auto SRrows = RAJA::RowIndex<int, matrix_t>::template static_range<0,N>();
-    auto SRcols = RAJA::ColIndex<int, matrix_t>::template static_range<0,M>();
+    auto SRrows = RAJA::expt::RowIndex<int, matrix_t>::template static_range<0,N>();
+    auto SRcols = RAJA::expt::ColIndex<int, matrix_t>::template static_range<0,M>();
 
     output0_d(rows_tr, cols_tr) = input0_d(rows, cols).transpose();
 

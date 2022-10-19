@@ -148,7 +148,8 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
     auto r = resources::get_resource<HpExecPolicy>::type::get_default();
     forall_impl(r, HpExecPolicy{},
                 TypedRangeSegment<idx_t>(0, hp_len),
-                outer_wrapper);
+                outer_wrapper,
+                RAJA::expt::get_empty_forall_param_pack());
   }
 };
 
