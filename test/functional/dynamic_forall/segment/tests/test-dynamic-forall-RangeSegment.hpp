@@ -83,8 +83,7 @@ TYPED_TEST_P(DynamicForallRangeSegmentTest, RangeSegmentForall)
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using POLICY_LIST = typename camp::at<TypeParam, camp::num<2>>::type;
 
-
-  //constexpr int N = camp::size<POLICY_LIST>::value;
+  constexpr int N = camp::size<POLICY_LIST>::value;
 
   //If N == 2 host, no openmp is available
   //If N == 3 host, openmp is available
