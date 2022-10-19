@@ -11,12 +11,6 @@
 
 #include "RAJA/util/CombiningAdapter.hpp"
 
-#if defined(RAJA_EXPT_FORALL)
-#define RAJA_EXPT_FORALL_WARN(Msg)
-#else
-#define RAJA_EXPT_FORALL_WARN(Msg) RAJA_DEPRECATE(Msg)
-#endif
-
 namespace RAJA
 {
 namespace expt
