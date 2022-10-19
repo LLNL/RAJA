@@ -29,6 +29,20 @@ see the RAJA user guide for more information about items in this release.
 Notable changes include:
 
   * New features / API changes:
+     * Introduced a new RAJA::forall and reduction interface that extend
+       the execution behavior of reduction operations with RAJA::forall.
+       The main difference with the pre-existing reduction interface in RAJA
+       is that reduction variables and operations are passed into the 
+       RAJA::forall method and lambda expression instead of using the lambda
+       capture mechanism for reduction objects. This offers flexibility and
+       potential performance advantages when using RAJA reductions as the
+       new interface enables the ability to integrate with programming model 
+       back-end reduction machinery directly, for OpenMP and SYCL for example.
+       The interface also enables user-chosen kernel names to be passed to
+       RAJA::forall for performance analysis annotations that are easier to
+       understand. Example codes are included as well as a description of
+       the new interface and comparison with the pre-existing interface in
+       the RAJA User Guide.
      * Added support for run time execution policy selection for RAJA::forall
        kernels. Users can specify any number of execution policies in their
        code and then select which to use at run time. There is no discussion 
