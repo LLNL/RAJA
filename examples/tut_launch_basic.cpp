@@ -133,7 +133,11 @@ __global__ void gpuKernel()
 }
 #endif
 
-int main(int argc, char *argv[])
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+int main(int argc, char* argv[])
+#else
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
+#endif
 {
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
