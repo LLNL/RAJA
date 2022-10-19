@@ -45,7 +45,7 @@ void test_launcher(BODY body_in)
 }
 
 template<>
-struct TensorTestHelper<RAJA::cuda_warp_register>
+struct TensorTestHelper<RAJA::expt::cuda_warp_register>
 {
 
     RAJA_SUPPRESS_HD_WARN
@@ -79,7 +79,7 @@ void test_launcher(BODY body_in)
 }
 
 template<>
-struct TensorTestHelper<RAJA::hip_wave_register>
+struct TensorTestHelper<RAJA::expt::hip_wave_register>
 {
 
     template<typename BODY>

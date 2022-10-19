@@ -55,6 +55,7 @@ namespace internal
     struct Schedule : public ScheduleTag {
         constexpr static omp_sched_t schedule = Sched;
         constexpr static int chunk_size = Chunk;
+        constexpr static Policy policy = Policy::openmp;
     };
 }  // namespace internal
 
@@ -77,7 +78,7 @@ struct NoWait {
 
 static constexpr int default_chunk_size = -1;
 
-struct Auto : private internal::Schedule<omp_sched_auto, default_chunk_size>{
+struct Auto : public internal::Schedule<omp_sched_auto, default_chunk_size>{
 };
 
 template <int ChunkSize = default_chunk_size>

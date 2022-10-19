@@ -16,42 +16,42 @@
 using TensorVectorTypes = ::testing::Types<
 	
 #ifdef RAJA_ENABLE_CUDA
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::cuda_warp_register>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::cuda_warp_register>,
 #endif
 
 #ifdef __AVX__
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx_register>,
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx_register, 2>,
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx_register, 4>,
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx_register, 8>,
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx_register, 16>,
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx_register, 32>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx_register>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx_register, 2>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx_register, 4>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx_register, 8>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx_register, 16>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx_register, 32>,
 #endif
 
 #ifdef __AVX2__
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx2_register>,
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx2_register, 2>,
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx2_register, 4>,
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx2_register, 8>,
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx2_register, 16>,
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx2_register, 32>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx2_register>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx2_register, 2>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx2_register, 4>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx2_register, 8>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx2_register, 16>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx2_register, 32>,
 #endif
 
 #ifdef __AVX512__
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx512_register>,
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx512_register, 2>,
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx512_register, 4>,
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx512_register, 8>,
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx512_register, 16>,
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx512_register, 32>,
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::avx512_register, 64>,    
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx512_register>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx512_register, 2>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx512_register, 4>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx512_register, 8>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx512_register, 16>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx512_register, 32>,
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx512_register, 64>,    
 #endif
 
 	// Test defaulted register type
-	RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@>,
+	RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@>,
 
     // Test scalar_register type (supported on all platforms)
-    RAJA::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::scalar_register>
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::scalar_register>
   >;
 
 

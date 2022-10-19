@@ -16,7 +16,7 @@
 
 // set the layout alias here, then include the matrix header for the
 // given element type
-using TensorMatrixLayoutType = RAJA::@TENSOR_MATRIX_LAYOUT@Layout;
+using TensorMatrixLayoutType = RAJA::expt::@TENSOR_MATRIX_LAYOUT@Layout;
 
 #include "test-tensor-matrix-@TENSOR_ELEMENT_TYPE@.hpp"
 
