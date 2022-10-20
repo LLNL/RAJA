@@ -281,7 +281,8 @@ namespace RAJA {
 #endif
 
 #if defined(RAJA_CUDA_ACTIVE) || \
-  defined(RAJA_HIP_ACTIVE) || defined(RAJA_SYCL_ACTIVE)
+    defined(RAJA_HIP_ACTIVE) || \
+    defined(RAJA_SYCL_ACTIVE)
 #define RAJA_DEVICE_ACTIVE
 #endif
 

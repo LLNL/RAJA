@@ -34,19 +34,19 @@
 /*
  * Define host/device launch policies
  */
-using launch_policy = RAJA::expt::LaunchPolicy<
+using launch_policy = RAJA::LaunchPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
-    RAJA::expt::omp_launch_t
+    RAJA::omp_launch_t
 #else
-    RAJA::expt::seq_launch_t
+    RAJA::seq_launch_t
 #endif
 #if defined(RAJA_ENABLE_CUDA)
     ,
-    RAJA::expt::cuda_launch_t<false>
+    RAJA::cuda_launch_t<false>
 #endif
 #if defined(RAJA_ENABLE_HIP)
     ,
-    RAJA::expt::hip_launch_t<false>
+    RAJA::hip_launch_t<false>
 #endif
     >;
 
@@ -54,7 +54,7 @@ using launch_policy = RAJA::expt::LaunchPolicy<
  * Define team policies.
  * Up to 3 dimension are supported: x,y,z
  */
-using teams_x = RAJA::expt::LoopPolicy<
+using teams_x = RAJA::LoopPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
                                        RAJA::omp_parallel_for_exec
 #else
@@ -73,7 +73,7 @@ using teams_x = RAJA::expt::LoopPolicy<
  * Define thread policies.
  * Up to 3 dimension are supported: x,y,z
  */
-using threads_x = RAJA::expt::LoopPolicy<RAJA::loop_exec
+using threads_x = RAJA::LoopPolicy<RAJA::loop_exec
 #if defined(RAJA_ENABLE_CUDA)
                                          ,
                                          RAJA::cuda_thread_x_loop
@@ -111,27 +111,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   for (int exec_place = 0; exec_place < num_of_backends; ++exec_place) {
 
-    RAJA::expt::ExecPlace select_cpu_or_gpu = (RAJA::expt::ExecPlace)exec_place;
-
-    // auto select_cpu_or_gpu = RAJA::expt::HOST;
-    // auto select_cpu_or_gpu = RAJA::expt::DEVICE;
+    auto select_cpu_or_gpu = (RAJA::ExecPlace)exec_place;
 
     // Allocate memory for either host or device
     int N_tri = 5;
 
     int* Ddat = nullptr;
-    if (select_cpu_or_gpu == RAJA::expt::HOST) {
+    if (select_cpu_or_gpu == RAJA::ExecPlace::HOST) {
       Ddat = host_res.allocate<int>(N_tri * N_tri);
     }
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-    if (select_cpu_or_gpu == RAJA::expt::DEVICE) {
+    if (select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
       Ddat = device_res.allocate<int>(N_tri * N_tri);
     }
 #endif
 
     /*
-     * RAJA::expt::launch just starts a "kernel" and doesn't provide any looping.
+     * RAJA::launch just starts a "kernel" and doesn't provide any looping.
      *
      * The first argument determines which policy should be executed,
      *
@@ -144,7 +141,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      * and is used to perform thread synchronizations within a team.
      */
 
-    if (select_cpu_or_gpu == RAJA::expt::HOST){
+    if (select_cpu_or_gpu == RAJA::ExecPlace::HOST){
       std::cout << "\n Running upper triangular pattern example on the host...\n";
     }else {
       std::cout << "\n Running upper triangular pattern example on the device...\n";
@@ -153,35 +150,37 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     RAJA::View<int, RAJA::Layout<2>> D(Ddat, N_tri, N_tri);
 
-    RAJA::expt::launch<launch_policy>(select_cpu_or_gpu,
-       RAJA::expt::Grid(RAJA::expt::Teams(N_tri), RAJA::expt::Threads(N_tri)),
-       [=] RAJA_HOST_DEVICE(RAJA::expt::LaunchContext ctx) {
+    RAJA::launch<launch_policy>
+      (select_cpu_or_gpu,
+       RAJA::LaunchParams(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
+       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-         RAJA::expt::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {
+         RAJA::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {
 
            // Array shared within threads of the same team
            RAJA_TEAM_SHARED int s_A[1];
 
-           RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
+           RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
               s_A[c] = r;
            });  // loop c
 
            ctx.teamSync();
 
-           RAJA::expt::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
+           RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
                D(r, c) = r * N_tri + c;
                printf("r=%d, c=%d : D=%d : s_A = %d \n", r, c, D(r, c), s_A[0]);
            });  // loop c
 
          });  // loop r
+
        });  // outer lambda
 
-    if (select_cpu_or_gpu == RAJA::expt::HOST) {
+    if (select_cpu_or_gpu == RAJA::ExecPlace::HOST) {
       host_res.deallocate(Ddat);
     }
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-    if (select_cpu_or_gpu == RAJA::expt::DEVICE) {
+    if (select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
       device_res.deallocate(Ddat);
     }
 #endif

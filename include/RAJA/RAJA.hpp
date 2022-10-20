@@ -43,7 +43,7 @@
 //
 #include "RAJA/pattern/forall.hpp"
 #include "RAJA/pattern/kernel.hpp"
-#include "RAJA/pattern/teams.hpp"
+#include "RAJA/pattern/launch.hpp"
 
 //
 // Generic templates to describe SIMD/SIMT registers and vectors
@@ -199,9 +199,9 @@
 
 namespace RAJA {
 namespace expt{}
-  // provide a RAJA::expt namespace for experimental work, but bring alias
-  // it into RAJA so it doesn't affect user code
-  using namespace expt;
+//  // provide a RAJA::expt namespace for experimental work, but bring alias
+//  // it into RAJA so it doesn't affect user code
+//  using namespace expt;
 }
 
 #endif  // closing endif for header file include guard

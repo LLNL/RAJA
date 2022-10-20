@@ -34,13 +34,15 @@
 // this stuff in an application.
 //
 #if (defined(RAJA_ENABLE_CUDA) && defined(__CUDA_ARCH__)) \
- || (defined(RAJA_ENABLE_HIP) && defined(__HIP_DEVICE_COMPILE__))
+  || (defined(RAJA_ENABLE_HIP) && defined(__HIP_DEVICE_COMPILE__)) \
+  || (defined(RAJA_ENABLE_SYCL) && defined(__SYCL_DEVICE_ONLY__))
 #define RAJA_DEVICE_CODE
 #endif
 
 #if defined(RAJA_ENABLE_CUDA) && defined(__CUDACC__)
 #define RAJA_HOST_DEVICE __host__ __device__
 #define RAJA_DEVICE __device__
+#define RAJA_HOST __host__
 
 #if defined(RAJA_ENABLE_CLANG_CUDA)
 #define RAJA_SUPPRESS_HD_WARN
@@ -51,12 +53,14 @@
 #elif defined(RAJA_ENABLE_HIP) && defined(__HIPCC__)
 #define RAJA_HOST_DEVICE __host__ __device__
 #define RAJA_DEVICE __device__
+#define RAJA_HOST __host__
 #define RAJA_SUPPRESS_HD_WARN
 
 #else
 
 #define RAJA_HOST_DEVICE
 #define RAJA_DEVICE
+#define RAJA_HOST
 #define RAJA_SUPPRESS_HD_WARN
 #endif
 
