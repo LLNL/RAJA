@@ -28,7 +28,7 @@ in :ref:`configopt-label`.
 To build RAJA and use its most basic features, you will need:
 
 - C++ compiler with C++14 support
-- `CMake <https://cmake.org/>`_ version 3.14.5 or greater.
+- `CMake <https://cmake.org/>`_ version 3.23 or greater when building the HIP back-end, and version 3.20 or greater otherwise.
 
 
 ==================
