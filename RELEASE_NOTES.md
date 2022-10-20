@@ -46,7 +46,7 @@ Notable changes include:
      * Added support for run time execution policy selection for RAJA::forall
        kernels. Users can specify any number of execution policies in their
        code and then select which to use at run time. There is no discussion 
-       of this in the RAJA USer Guide yet. However, there are a couple of 
+       of this in the RAJA User Guide yet. However, there are a couple of 
        example codes in files RAJA/examples/*dynamic-forall*.cpp.
      * Add support for all RAJA segment types in the RAJA::launch framework.
      * Add SYCL back-end support for RAJA::launch and dynamic shared memory
