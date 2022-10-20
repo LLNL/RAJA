@@ -52,7 +52,7 @@ set(NESTED_LOOPTYPES MultiLambda MultiLambdaParam)
 # multiple lambda tests.
 #
 if(RAJA_ENABLE_SYCL)
-  list(REMOVE_ITEM FORALL_BACKENDS Sycl)
+  list(REMOVE_ITEM KERNEL_BACKENDS Sycl)
 endif()
 
 foreach( NESTED_LOOP_BACKEND ${KERNEL_BACKENDS} )
