@@ -10,7 +10,6 @@
 #
 set(SEGVIEWTYPES ListSegmentView RangeSegmentView RangeSegment2DView RangeStrideSegmentView)
 
-
 #
 # Generate tests for each enabled RAJA back-end.
 #

@@ -18,6 +18,13 @@ if(RAJA_ENABLE_TARGET_OPENMP)
 endif()
 
 #
+# Remove SYCL until kernel reduction support is added
+#
+if(RAJA_ENABLE_SYCL)
+  list(REMOVE_ITEM KERNEL_BACKENDS Sycl)
+endif()
+
+#
 # Generate kernel region basic tests for each enabled RAJA back-end.
 #
 foreach( LOC_BACKEND ${KERNEL_BACKENDS} )

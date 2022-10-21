@@ -97,7 +97,7 @@ RUN . /opt/spack/share/spack/setup-env.sh && spack load hip llvm-amdgpu && \
     cmake -DCMAKE_CXX_COMPILER=clang++ -DHIP_PATH=/opt -DENABLE_HIP=On -DENABLE_CUDA=Off -DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off .. && \
     make -j 6
 
-FROM ghcr.io/rse-ops/intel-ubuntu-22.04:intel-2022.0.1 AS sycl
+FROM ghcr.io/rse-ops/intel-ubuntu-22.04:intel-2022.1.0 AS sycl
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build

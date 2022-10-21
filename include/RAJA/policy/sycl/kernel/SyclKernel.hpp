@@ -219,6 +219,13 @@ struct StatementExecutor<
     int shmem = 0;
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
 
+    // Global resource was not set, use the resource that was passed to forall
+    // Determine if the default SYCL res is being used
+    if (!q) {
+      camp::resources::Resource res = camp::resources::Sycl();
+      q = res.get<camp::resources::Sycl>().get_queue();
+    }
+
     //
     // Launch the kernels
     //

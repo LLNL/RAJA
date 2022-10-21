@@ -223,6 +223,7 @@ if (RAJA_ENABLE_EXTERNAL_ROCPRIM)
 endif ()
 
 if (RAJA_ENABLE_SYCL)
+  set (RAJA_ENABLE_DESUL_ATOMICS "On")
   set (raja_depends
     ${raja_depends}
     sycl)
