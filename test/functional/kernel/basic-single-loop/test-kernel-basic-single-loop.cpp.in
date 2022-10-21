@@ -192,6 +192,37 @@ camp::list<
 >;
 #endif  // if defined(RAJA_ENABLE_HIP)
 
+#if defined(RAJA_ENABLE_SYCL)
+using SyclKernelExecPols =
+camp::list<
+
+  RAJA::KernelPolicy<
+    RAJA::statement::SyclKernel<
+      RAJA::statement::For<0, RAJA::sycl_local_0_loop,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>
+      >
+    >
+  >,
+
+  RAJA::KernelPolicy<
+    RAJA::statement::SyclKernel<
+      RAJA::statement::For<0, RAJA::sycl_local_1_loop,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>
+      >
+    >
+  >,
+
+  RAJA::KernelPolicy<
+    RAJA::statement::SyclKernel<
+      RAJA::statement::For<0, RAJA::sycl_local_2_loop,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>
+      >
+    >
+  >
+
+>;
+#endif  // if defined(RAJA_ENABLE_SYCL)
+
 //
 // Cartesian product of types used in parameterized tests
 //

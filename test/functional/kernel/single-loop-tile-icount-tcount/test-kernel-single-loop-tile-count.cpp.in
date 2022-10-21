@@ -225,6 +225,41 @@ using HipKernelTileTCountExecPols = camp::list<
 >;
 #endif  // if defined(RAJA_ENABLE_HIP)
 
+#if defined(RAJA_ENABLE_SYCL)
+//
+// Num reduction policies must match num exec policies.
+//
+using SyclReducePols = camp::list< RAJA::sycl_reduce >;
+
+using SyclKernelForICountExecPols = camp::list<
+
+  RAJA::KernelPolicy<
+    RAJA::statement::SyclKernel<
+      RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::sycl_group_0_loop,
+        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::sycl_local_0_direct,
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >
+  >
+
+>;
+
+using SyclKernelTileTCountExecPols = camp::list<
+
+  RAJA::KernelPolicy<
+    RAJA::statement::SyclKernel<
+      RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::sycl_group_0_loop,
+        RAJA::statement::For<0, RAJA::sycl_local_0_direct,
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >
+  >
+
+>;
+#endif  // if defined(RAJA_ENABLE_SYCL)
+
 //
 // Cartesian product of types used in parameterized tests
 //

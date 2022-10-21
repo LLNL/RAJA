@@ -110,7 +110,7 @@ using threads_y = RAJA::LoopPolicy<RAJA::loop_exec
 #endif
                                          >;
 
-#if defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 __global__ void gpuKernel()
 {
   //Equivalent CUDA/HIP style thread/block mapping

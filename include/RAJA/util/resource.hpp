@@ -27,7 +27,9 @@
 #if defined(RAJA_HIP_ACTIVE)
 #include "RAJA/policy/hip/policy.hpp"
 #endif
+#if defined(RAJA_SYCL_ACTIVE)
 #include "RAJA/policy/sycl/policy.hpp"
+#endif
 #include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/policy/openmp_target/policy.hpp"
 #include "RAJA/internal/get_platform.hpp"
@@ -101,7 +103,12 @@ namespace RAJA
   };
 #endif
 
-#if defined(RAJA_ENABLE_SYCL)
+#if defined(RAJA_SYCL_ACTIVE)
+  template<>
+  struct get_resource_from_platform<Platform::sycl>{
+    using type = camp::resources::Sycl;
+  };
+
   template<size_t BlockSize, bool Async>
   struct get_resource<sycl_exec<BlockSize, Async>>{
     using type = camp::resources::Sycl;
@@ -152,7 +159,7 @@ namespace RAJA
 #if defined(RAJA_HIP_ACTIVE)
     template <> struct is_resource<resources::Hip> : std::true_type {};
 #endif
-#if defined(RAJA_ENABLE_SYCL)
+#if defined(RAJA_SYCL_ACTIVE)
     template <> struct is_resource<resources::Sycl> : std::true_type {};
 #endif
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
