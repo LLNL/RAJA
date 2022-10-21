@@ -34,7 +34,6 @@ namespace omp
 ///
 
 template <size_t ThreadsPerTeam, typename Iterable, typename Func, typename ForallParam>
-RAJA_EXPT_FORALL_WARN("Using EXPERIMENTAL forall_impl for simd_exec.")
 RAJA_INLINE 
 concepts::enable_if_t<
   resources::EventProxy<resources::Omp>,
@@ -140,7 +139,6 @@ forall_impl(resources::Omp omp_res,
 
 
 template <typename Iterable, typename Func, typename ForallParam>
-RAJA_EXPT_FORALL_WARN("Using EXPERIMENTAL forall_impl for simd_exec.")
 RAJA_INLINE
 concepts::enable_if_t<
   resources::EventProxy<resources::Omp>,

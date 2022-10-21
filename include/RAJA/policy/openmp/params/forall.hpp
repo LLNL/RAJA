@@ -309,7 +309,6 @@ namespace expt
 /// OpenMP parallel policy implementation
 ///
 template <typename Iterable, typename Func, typename InnerPolicy, typename ForallParam>
-RAJA_EXPT_FORALL_WARN("Using EXPERIMENTAL forall_impl for omp exec policy.")
 RAJA_INLINE
 concepts::enable_if_t<
   resources::EventProxy<resources::Host>,
