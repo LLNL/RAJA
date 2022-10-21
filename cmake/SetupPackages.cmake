@@ -82,7 +82,7 @@ if (RAJA_ENABLE_HIP)
   endif()
 
   if (RAJA_ENABLE_EXTERNAL_ROCPRIM)
-    find_package(RocPRIM)
+    include(cmake/thirdparty/FindRocPRIM.cmake)
     if (ROCPRIM_FOUND)
       blt_import_library(
         NAME rocPRIM

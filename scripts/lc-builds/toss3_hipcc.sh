@@ -70,7 +70,7 @@ cmake \
   -DHIP_CLANG_FLAGS="${HIP_CLANG_FLAGS}" \
   -C "../host-configs/lc-builds/toss3/${HOSTCONFIG}.cmake" \
   -DENABLE_HIP=ON \
-  -DENABLE_OPENMP=OFF \
+  -DENABLE_OPENMP=ON \
   -DENABLE_CUDA=OFF \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \

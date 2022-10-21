@@ -18,19 +18,19 @@ contains complete code examples of the concepts described here.
 
 Key RAJA feature shown in the following example:
 
-  *  Naming kernels using the ``Grid`` object in ``RAJA::ext::Launch`` methods.
+  *  Naming kernels using an optional argument in ``RAJA::launch`` methods.
 
 In this example, we illustrate kernel naming capabilities within the RAJA Launch
 framework for use with NVTX or ROCTX region naming capabilities.
 
-To name a ``RAJA::expt::launch`` kernel, a string name is passed as the 
-third argument to the ``RAJA::expt::Grid`` constructor::
+To name a ``RAJA::launch`` kernel, a string name is passed as an argument
+before the lambda ::
 
-  RAJA::expt::launch<launch_policy>(RAJA::expt::ExecPlace ,
-    RAJA::expt::Grid(RAJA::expt::Teams(Nteams,Nteams),
-                     RAJA::expt::Threads(Nthreads,Nthreads)
-                     "myKernel"),
-    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+  RAJA::launch<launch_policy>(RAJA::ExecPlace ,
+    RAJA::LaunchParams(RAJA::Teams(Nteams,Nteams),
+                       RAJA::Threads(Nthreads,Nthreads)),
+                       "myKernel",
+    [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
       /* Kernel body code goes here */
 

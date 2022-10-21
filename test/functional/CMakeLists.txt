@@ -17,8 +17,10 @@ add_subdirectory(scan)
 
 add_subdirectory(workgroup)
 
-add_subdirectory(teams)
+add_subdirectory(launch)
 
-add_subdirectory(tensor)
+if (RAJA_ENABLE_VECTORIZATION)
+  add_subdirectory(tensor)
+endif()
 
 add_subdirectory(util)
