@@ -56,7 +56,6 @@ namespace sequential
 //
 
 template <typename Iterable, typename Func, typename Resource, typename ForallParam>
-RAJA_EXPT_FORALL_WARN("Using EXPERIMENTAL forall_impl for seq_exec.")
 RAJA_INLINE
 concepts::enable_if_t<
   resources::EventProxy<Resource>,
