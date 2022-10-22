@@ -50,7 +50,7 @@ Notable changes include:
        example codes in files RAJA/examples/*dynamic-forall*.cpp.
      * Add support for all RAJA segment types in the RAJA::launch framework.
      * Add SYCL back-end support for RAJA::launch and dynamic shared memory
-       for all beck-ends in RAJA::launch. These changes introduce API changes.
+       for all back-ends in RAJA::launch. These changes introduce API changes.
      * Add additional policies to WorkGroup construct that allow for different
        methods of dispatching work.
      * Add special case implementations to CUDA atomicInc and atomicDec 
