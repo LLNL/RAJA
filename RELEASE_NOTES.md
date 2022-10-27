@@ -20,7 +20,7 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
-Version 2022.10.0 -- Release date 2022-10-dd
+Version 2022.10.0 -- Release date 2022-10-28
 ============================================
 
 This release contains new features, bug fixes, and build improvements. Please
