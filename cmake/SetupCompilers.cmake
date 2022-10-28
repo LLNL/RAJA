@@ -43,7 +43,7 @@ endif()
 
 if (RAJA_ENABLE_CUDA)
   set(CMAKE_CUDA_STANDARD 14)
-  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -restrict -arch ${CUDA_ARCH} --expt-extended-lambda --expt-relaxed-constexpr -Xcudafe \"--display_error_number\"")
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -restrict --expt-extended-lambda --expt-relaxed-constexpr -Xcudafe \"--display_error_number\"")
 
   if (NOT RAJA_HOST_CONFIG_LOADED)
     set(CMAKE_CUDA_FLAGS_RELEASE "-O2")
