@@ -10,6 +10,7 @@
 #
 # Note: KERNEL_BACKENDS is defined in ../CMakeLists.txt
 #
+
 foreach( BACKEND ${KERNEL_BACKENDS} )
       configure_file( test-kernel-basic-fission-fusion-loop.cpp.in
                       test-kernel-basic-fission-fusion-loop-${BACKEND}.cpp )

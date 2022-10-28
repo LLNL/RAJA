@@ -6,8 +6,9 @@
 
 from spack import *
 
-import socket
+import glob
 import os
+import socket
 
 from os import environ as env
 from os.path import join as pjoin
@@ -94,8 +95,9 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
     depends_on('blt@0.4.1:', type='build')
 
     depends_on('camp')
-    depends_on('camp@0.2.2')
+    depends_on('camp@main') # TODO: remove this ASAP
     depends_on('camp+rocm', when='+rocm')
+    depends_on('camp+openmp', when='+openmp')
     for val in ROCmPackage.amdgpu_targets:
         depends_on('camp amdgpu_target=%s' % val, when='amdgpu_target=%s' % val)
 
@@ -105,6 +107,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
                    when='cuda_arch={0}'.format(sm_))
 
     conflicts('+openmp', when='+rocm')
+    depends_on('rocprim', when='+rocm')
 
     phases = ['hostconfig', 'cmake', 'build', 'install']
 
@@ -291,6 +294,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
 
             if not spec.satisfies('cuda_arch=none'):
                 cuda_arch = spec.variants['cuda_arch'].value
+                cfg.write(cmake_cache_string("CMAKE_CUDA_ARCHITECTURES", '{0}'.format(cuda_arch[0])))
                 cfg.write(cmake_cache_string("CUDA_ARCH", 'sm_{0}'.format(cuda_arch[0])))
 
         else:
@@ -305,23 +309,24 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
 
             hip_root = spec['hip'].prefix
             rocm_root = hip_root + "/.."
+            hip_arch = spec.variants['amdgpu_target'].value
             cfg.write(cmake_cache_entry("HIP_ROOT_DIR",
                                         hip_root))
+            # there is only one dir like this, but the version component is unknown
+            cfg.write(
+                cmake_cache_path(
+                    "HIP_CLANG_INCLUDE_PATH",
+                    glob.glob(
+                        "{}/lib/clang/*/include".format(spec['llvm-amdgpu'].prefix)
+                    )[0]
+                )
+            )
             cfg.write(cmake_cache_entry("ROCM_ROOT_DIR",
                                         rocm_root))
             cfg.write(cmake_cache_entry("HIP_PATH",
                                         rocm_root + '/llvm/bin'))
-            cfg.write(cmake_cache_entry("CMAKE_HIP_ARCHITECTURES", 'fx906'))
+            cfg.write(cmake_cache_entry("CMAKE_HIP_ARCHITECTURES", hip_arch[0]))
 
-            hipcc_flags = ['--amdgpu-target=gfx906']
-            if "+desul" in spec:
-                hipcc_flags.append('-std=c++14')
-            
-            cfg.write(cmake_cache_entry("HIP_HIPCC_FLAGS", ';'.join(hipcc_flags)))
-
-            #cfg.write(cmake_cache_entry("HIP_RUNTIME_INCLUDE_DIRS",
-            #                            "{0}/include;{0}/../hsa/include".format(hip_root)))
-            #hip_link_flags = "-Wl,--disable-new-dtags -L{0}/lib -L{0}/../lib64 -L{0}/../lib -Wl,-rpath,{0}/lib:{0}/../lib:{0}/../lib64 -lamdhip64 -lhsakmt -lhsa-runtime64".format(hip_root)
             if ('%gcc' in spec) or (using_toolchain):
                 if ('%gcc' in spec):
                     gcc_bin = os.path.dirname(self.compiler.cxx)
@@ -332,8 +337,6 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
                 "--gcc-toolchain={0}".format(gcc_prefix))) 
                 cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS",
                 " -Wl,-rpath {}/lib64".format(gcc_prefix)))
-            #else:
-            #    cfg.write(cmake_cache_entry("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
 
         else:
             cfg.write(cmake_cache_option("ENABLE_HIP", False))
@@ -350,7 +353,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
 
         # shared vs static libs
         cfg.write(cmake_cache_option("BUILD_SHARED_LIBS","+shared" in spec))
-        cfg.write(cmake_cache_option("RAJA_ENABLE_OPENMP","+openmp" in spec))
+        cfg.write(cmake_cache_option("ENABLE_OPENMP","+openmp" in spec))
         cfg.write(cmake_cache_option("RAJA_ENABLE_DESUL_ATOMICS","+desul" in spec))
 
         if "+desul" in spec:
@@ -360,6 +363,7 @@ class Raja(CMakePackage, CudaPackage, ROCmPackage):
 
         cfg.write(cmake_cache_option("ENABLE_BENCHMARKS", 'tests=benchmarks' in spec))
         cfg.write(cmake_cache_option("ENABLE_TESTS", not 'tests=none' in spec or self.run_tests))
+        cfg.write(cmake_cache_string("camp_DIR", spec['camp'].prefix))
 
         #######################
         # Close and save

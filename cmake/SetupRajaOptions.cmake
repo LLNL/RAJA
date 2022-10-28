@@ -5,9 +5,6 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ################################################################################
 
-# Enable OpenMP by by default
-set(RAJA_ENABLE_OPENMP On CACHE BOOL "Build OpenMP support")
-
 set(RAJA_ENABLE_WARNINGS_AS_ERRORS Off CACHE BOOL "")
 set(ENABLE_GTEST_DEATH_TESTS On CACHE BOOL "Enable tests asserting failure.")
 
@@ -17,6 +14,8 @@ option(RAJA_ENABLE_ROCTX "Build with ENABLE_ROCTX support" Off)
 option(RAJA_ENABLE_TBB "Build TBB support" Off)
 option(RAJA_ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(RAJA_ENABLE_SYCL "Build SYCL support" Off)
+
+option(RAJA_ENABLE_VECTORIZATION "Build experimental vectorization support" On)
 
 option(RAJA_ENABLE_REPRODUCERS "Build issue reproducers" Off)
 
@@ -30,7 +29,7 @@ option(RAJA_ENABLE_BOUNDS_CHECK "Enable bounds checking in RAJA::Views/Layouts" 
 option(RAJA_TEST_EXHAUSTIVE "Build RAJA exhaustive tests" Off)
 option(RAJA_TEST_OPENMP_TARGET_SUBSET "Build subset of RAJA OpenMP target tests when it is enabled" On)
 option(RAJA_ENABLE_RUNTIME_PLUGINS "Enable support for loading plugins at runtime" Off)
-option(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL "Enable use of device function pointers in hip backend" OFF)
+option(RAJA_ALLOW_INCONSISTENT_OPTIONS "Enable inconsistent values for ENABLE_X and RAJA_ENABLE_X options" Off)
 
 option(RAJA_ENABLE_DESUL_ATOMICS "Enable support of desul atomics" Off)
 set(DESUL_ENABLE_TESTS Off CACHE BOOL "")

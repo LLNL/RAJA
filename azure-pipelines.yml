@@ -1,11 +1,5 @@
-variables:
-  DO_BUILD: 'yes'
-  DO_TEST: 'yes'
-  DO_INSTALL: 'yes'
-  COMPILER: 'g++'
-
 jobs:
-- job: Windows #temporarily commenting out until cmake/azure version issue resolved
+- job: Windows 
   strategy:
     matrix:
       shared:
@@ -28,15 +22,14 @@ jobs:
     inputs:
       workingDir: 'build'
       cmakeArgs: '--build . --config Release --verbose -j 4'
-#   - task: CmdLine@2
-#     inputs:
-#       script: 'ctest.exe -T test -C Release'
-#       workingDirectory: 'build'
-#     condition: eq( variables['Agent.OS'], 'Windows_NT')
-#   - task: PublishTestResults@2
-#     inputs:
-#       testResultsFormat: 'cTest'
-#       testResultsFiles: '**/Test.xml'
+  - task: CmdLine@2
+    inputs:
+      script: 'ctest.exe -T test -C Release'
+      workingDirectory: 'build'
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'cTest'
+      testResultsFiles: '**/Test.xml'
 - job: Docker
   timeoutInMinutes: 360
   strategy:
@@ -79,17 +72,6 @@ jobs:
       command: build
       dockerFile: 'Dockerfile'
       arguments: '--target $(docker_target)'
-  - script: |
-      CID=$(docker create llnl/raja:$(Build.BuildId))
-      echo ${CID}
-      docker cp ${CID}:/home/axom/workspace/build local-build
-      docker rm ${CID}
-    displayName: 'Copy test artifacts'
-    condition: ne( variables['docker_target'], 'nvcc')
-  - script: |
-      bash <(curl -s https://raw.githubusercontent.com/codecov/codecov-bash/0b376529f626b50b7d4a9fb734e0e50d28b9b91e/codecov) >& /dev/null
-    displayName: 'Upload code coverage'
-    condition: eq( variables['docker_target'], 'gcc')
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'cTest'
@@ -112,12 +94,11 @@ jobs:
       make -j 4
     displayName: 'OSX Build'
     condition: eq( variables['Agent.OS'], 'Darwin')
-#  - script: |
-#      cd build
-#      ctest -T test --output-on-failure
-#    displayName: 'OSX Test'
-#    condition: eq( variables['Agent.OS'], 'Darwin')
-#  - task: PublishTestResults@2
-#    inputs:
-#      testResultsFormat: 'cTest'
-#      testResultsFiles: '**/Test.xml'
+  - script: |
+      cd build
+      ctest -T test --output-on-failure
+    displayName: 'OSX Test'
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'cTest'
+      testResultsFiles: '**/Test.xml'

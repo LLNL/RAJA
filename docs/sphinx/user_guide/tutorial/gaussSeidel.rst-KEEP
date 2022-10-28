@@ -50,7 +50,7 @@ index range, has been used in all the other examples. A ``RAJA::ListSegment``
 represents an arbitrary collection of indices, similar to an indirection
 array that is common in unstructured mesh applications. In the example, we
 use two ``RAJA::ListSegment`` objects to hold these two sets of indices. See
-:ref:`index-label` for more information about RAJA segments and index sets.
+:ref:`feat-index-label` for more information about RAJA segments and index sets.
 
 The code in the example that constructs the segments and index set is:
 

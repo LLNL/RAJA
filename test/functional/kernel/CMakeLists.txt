@@ -23,6 +23,10 @@ if(RAJA_ENABLE_HIP)
   list(APPEND KERNEL_BACKENDS Hip)
 endif()
 
+if(RAJA_ENABLE_SYCL)
+  list(APPEND KERNEL_BACKENDS Sycl)
+endif()
+
 if(RAJA_ENABLE_TARGET_OPENMP)
   list(APPEND KERNEL_BACKENDS OpenMPTarget)
 endif()
@@ -48,6 +52,8 @@ add_subdirectory(reduce-loc)
 add_subdirectory(single-loop-tile-icount-tcount)
 
 add_subdirectory(tile-variants)
+
+add_subdirectory(warp-thread)
 
 unset( KERNEL_BACKENDS )
 

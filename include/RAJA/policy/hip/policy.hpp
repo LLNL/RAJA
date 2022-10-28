@@ -102,14 +102,16 @@ struct hip_work : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::hip> {
 };
 
-#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
+/// execute the enqueued loops in an unordered fashion by mapping loops to
+/// blocks in the y direction and loop iterations to threads in the x direction
+/// with the size of the x direction being the average of the iteration counts
+/// of all the loops
 struct unordered_hip_loop_y_block_iter_x_threadblock_average
     : public RAJA::make_policy_pattern_platform_t<
                        RAJA::Policy::hip,
                        RAJA::Pattern::workgroup_order,
                        RAJA::Platform::hip> {
 };
-#endif
 
 
 ///
@@ -235,9 +237,7 @@ using hip_work_async = policy::hip::hip_work<BLOCK_SIZE, true>;
 using policy::hip::hip_atomic;
 using policy::hip::hip_atomic_explicit;
 
-#if defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
 using policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average;
-#endif
 
 using policy::hip::hip_reduce_base;
 using policy::hip::hip_reduce;
@@ -257,10 +257,7 @@ using policy::hip::hip_thread_masked_loop;
 
 using policy::hip::hip_synchronize;
 
-namespace expt
-{
-  using policy::hip::hip_launch_t;
-}
+using policy::hip::hip_launch_t;
 
 /*!
  * Maps segment indices to HIP threads.

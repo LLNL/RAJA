@@ -3,10 +3,11 @@
 "package_version" : "develop",
 "package_final_phase" : "hostconfig",
 "package_source_dir" : "../..",
-"spack_url": "https://github.com/spack/spack",
-"spack_branch": "develop",
-"spack_commit": "be1c4bc563722d0774436cc905fd938c88c61a72",
+"spack_url": "https://github.com/spack/spack.git",
+"spack_branch": "v0.18.1",
 "spack_activate" : {},
 "spack_configs_path": "scripts/radiuss-spack-configs",
-"spack_packages_path": "scripts/spack_packages"
+"spack_packages_path": "scripts/spack_packages",
+"spack_concretizer": "clingo",
+"spack_setup_clingo": false
 }

@@ -103,7 +103,7 @@ struct StatementExecutor<
 
     auto r = data.res;
 
-    forall_impl(r, ExecPolicy{}, TypedRangeSegment<len_t>(0, len), for_wrapper);
+    forall_impl(r, ExecPolicy{}, TypedRangeSegment<len_t>(0, len), for_wrapper, RAJA::expt::get_empty_forall_param_pack());
   }
 };
 

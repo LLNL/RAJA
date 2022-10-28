@@ -1,0 +1,27 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+///
+/// Source file containing tests for RAJA workgroup dispatcher.
+///
+
+#include "test-workgroup-Dispatcher.hpp"
+
+using @BACKEND@BasicWorkGroupDispatcher@SUBTESTNAME@Types =
+  Test< camp::cartesian_product< @BACKEND@ExecPolicyList,
+                                 @DISPATCHER@DispatchTyperList,
+                                 IndexTypeTypeList,
+                                 XargsTypeList,
+                                 @BACKEND@ResourceList,
+                                 @BACKEND@ForoneList > >::Types;
+
+REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicDispatcher@SUBTESTNAME@UnitTest,
+                            BasicWorkGroupDispatcher@SUBTESTNAME@);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@BasicTest,
+                               WorkGroupBasicDispatcher@SUBTESTNAME@UnitTest,
+                               @BACKEND@BasicWorkGroupDispatcher@SUBTESTNAME@Types);

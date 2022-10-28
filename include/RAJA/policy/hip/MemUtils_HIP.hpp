@@ -121,9 +121,9 @@ namespace detail
 struct hipInfo {
   hip_dim_t gridDim = 0;
   hip_dim_t blockDim = 0;
-  ::RAJA::resources::Hip* res = nullptr;
+  ::RAJA::resources::Hip res;
   bool setup_reducers = false;
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
   hipInfo* thread_states = nullptr;
   omp::mutex lock;
 #endif
@@ -149,7 +149,7 @@ private:
 extern hipInfo g_status;
 
 extern hipInfo tl_status;
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
 #pragma omp threadprivate(tl_status)
 #endif
 
@@ -168,7 +168,7 @@ void synchronize_impl(::RAJA::resources::Hip res)
 RAJA_INLINE
 void synchronize()
 {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
   lock_guard<omp::mutex> lock(detail::g_status.lock);
 #endif
   bool synchronize = false;
@@ -187,7 +187,7 @@ void synchronize()
 RAJA_INLINE
 void synchronize(::RAJA::resources::Hip res)
 {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
   lock_guard<omp::mutex> lock(detail::g_status.lock);
 #endif
   auto iter = detail::g_stream_info_map.find(res.get_stream());
@@ -205,7 +205,7 @@ void synchronize(::RAJA::resources::Hip res)
 RAJA_INLINE
 void launch(::RAJA::resources::Hip res, bool async = true)
 {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
   lock_guard<omp::mutex> lock(detail::g_status.lock);
 #endif
   auto iter = detail::g_stream_info_map.find(res.get_stream());
@@ -254,7 +254,7 @@ hip_dim_t currentBlockDim() { return detail::tl_status.blockDim; }
 
 //! get resource for current launch
 RAJA_INLINE
-::RAJA::resources::Hip* currentResource() { return detail::tl_status.res; }
+::RAJA::resources::Hip currentResource() { return detail::tl_status.res; }
 
 //! create copy of loop_body that is setup for device execution
 template <typename LOOP_BODY>
@@ -267,8 +267,8 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
 {
   detail::SetterResetter<bool> setup_reducers_srer(
       detail::tl_status.setup_reducers, true);
-  detail::SetterResetter<::RAJA::resources::Hip*> res_srer(
-      detail::tl_status.res, &res);
+  detail::SetterResetter<::RAJA::resources::Hip> res_srer(
+      detail::tl_status.res, res);
 
   detail::tl_status.gridDim = gridDim;
   detail::tl_status.blockDim = blockDim;

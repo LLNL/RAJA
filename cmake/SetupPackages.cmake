@@ -82,7 +82,7 @@ if (RAJA_ENABLE_HIP)
   endif()
 
   if (RAJA_ENABLE_EXTERNAL_ROCPRIM)
-    find_package(RocPRIM)
+    include(cmake/thirdparty/FindRocPRIM.cmake)
     if (ROCPRIM_FOUND)
       blt_import_library(
         NAME rocPRIM
@@ -105,21 +105,35 @@ if (RAJA_ENABLE_HIP AND RAJA_ENABLE_ROCTX)
 endif ()
 
 set(TPL_DEPS)
-blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF RAJA_ENABLE_CUDA)
 blt_list_append(TO TPL_DEPS ELEMENTS nvtoolsext IF RAJA_ENABLE_NV_TOOLS_EXT)
 blt_list_append(TO TPL_DEPS ELEMENTS cub IF RAJA_ENABLE_EXTERNAL_CUB)
-blt_list_append(TO TPL_DEPS ELEMENTS blt_hip blt_hip_runtime IF RAJA_ENABLE_HIP)
 blt_list_append(TO TPL_DEPS ELEMENTS rocPRIM IF RAJA_ENABLE_EXTERNAL_ROCPRIM)
-blt_list_append(TO TPL_DEPS ELEMENTS openmp IF RAJA_ENABLE_OPENMP)
-blt_list_append(TO TPL_DEPS ELEMENTS mpi IF RAJA_ENABLE_MPI)
+
+set(RAJA_NEEDS_BLT_TPLS False)
+if (RAJA_ENABLE_CUDA OR RAJA_ENABLE_HIP OR RAJA_ENABLE_OPENMP OR RAJA_ENABLE_MPI)
+  set(RAJA_NEEDS_BLT_TPLS True)
+endif ()
+
+if (RAJA_NEEDS_BLT_TPLS)
+  if (NOT BLT_EXPORTED)
+    set(BLT_EXPORTED On CACHE BOOL "" FORCE)
+  blt_import_library(NAME          blt_stub EXPORTABLE On)
+  set_target_properties(blt_stub PROPERTIES EXPORT_NAME blt::blt_stub)
+            install(TARGETS blt_stub
+                    EXPORT               bltTargets)
+    blt_export_tpl_targets(EXPORT bltTargets NAMESPACE blt)
+    install(EXPORT bltTargets
+      DESTINATION  lib/cmake/raja)
+  endif()
+endif ()
 
 foreach(dep ${TPL_DEPS})
     # If the target is EXPORTABLE, add it to the export set
     get_target_property(_is_imported ${dep} IMPORTED)
     if(NOT ${_is_imported})
         install(TARGETS              ${dep}
-                EXPORT               RAJA
-                DESTINATION          lib)
+                EXPORT               RAJATargets
+                DESTINATION          lib/cmake/raja)
         # Namespace target to avoid conflicts
         set_target_properties(${dep} PROPERTIES EXPORT_NAME RAJA::${dep})
     endif()

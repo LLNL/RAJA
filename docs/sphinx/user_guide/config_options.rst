@@ -22,9 +22,7 @@ their defaults.
 RAJA Option Types
 =============================
 
-Nearly all Cmake options used in RAJA contain the prefix ``RAJA_`` to give 
-users flexibility to enable/disable individual compilation features for RAJA, 
-specifically. RAJA contains two types of options, those that exist in 
+RAJA contains two types of options, those that exist in 
 RAJA only and those that are similar to standard CMake options or options 
 provided by BLT; i.e., *dependent options* in CMake terminology. RAJA 
 dependent option names are the same as the associated CMake and BLT option 
@@ -34,16 +32,18 @@ names, but with the ``RAJA_`` prefix added.
           options that can be controlled with CMake or BLT variants. 
 
             * Dependent options are typically used for *disabling* features.
-              For example, providing the option ``-DRAJA_ENABLE_TESTS=Off``
-              to CMake will disable compilation of RAJA tests, even if the 
-              option ``-DENABLE_TESTS=On`` is also provided.
+              For example, when the CMake option ``-DENABLE_TESTS=On`` is
+              used to enable tests in the build of an application that includes
+              multiple CMake-based package builds, providing the CMake option 
+              ``-DRAJA_ENABLE_TESTS=Off`` will disable compilation of RAJA 
+              tests, while compiling them for other packages.
 
             * We recommend using the option names without the ``RAJA_`` prefix,
               when available, to enable features at compile time to avoid 
               potential undesired behavior. For example, passing the option
               ``-DRAJA_ENABLE_CUDA=On`` to CMake will not enable CUDA because
               ``ENABLE_CUDA`` is off by default. So to enable CUDA, you need
-              to pass the ``-DENABLE_CUDA=On`` option to Cmake.
+              to pass the ``-DENABLE_CUDA=On`` option to CMake.
 
 =======================
 Setting Options
@@ -74,26 +74,34 @@ need to do that using appropriate CMake variables.
 All RAJA options are set like regular CMake variables. RAJA settings for 
 default options, compilers, flags for optimization, etc. can be found in files 
 in the ``RAJA/cmake`` directory and top-level ``CMakeLists.txt`` file. 
-Configuration variables can be set by passing
-arguments to CMake on the command line when CMake is called, or by setting
-options in a CMake *cache file* and passing that file to CMake using the 
-CMake ``-C`` options. For example, to enable RAJA OpenMP functionality, 
-pass the following argument to CMake::
+Configuration variables can be set by passing arguments to CMake on the 
+command line when calling CMake. For example, to enable RAJA OpenMP 
+functionality, pass the following argument to CMake::
 
-    -DENABLE_OPENMP=On
+    cmake ... \
+    -DENABLE_OPENMP=On \
+    ...
 
-The RAJA repository contains a collection of CMake cache files 
-(we call them *host-config* files) that may be used as a guide for users trying
-to set their own options. See :ref:`configopt-raja-hostconfig-label`.
+Alternatively, CMake options may be set in a CMake *cache file* and passing 
+that file to CMake using the CMake ``-C`` option; for example::
 
-Next, we summarize RAJA options and their defaults.
+    cmake ... \
+    -C my_cache_file.cmake \
+    ...
+
+The directories ``RAJA/scripts/*-builds`` contain scripts that run CMake for
+various build configurations. These contain cmake invocations that use CMake 
+cache files (we call them *host-config* files) and may be used as a guide for 
+users trying to set their own options. 
+
+Next, we summarize RAJA CMake options and their defaults.
 
 
 .. _configopt-raja-features-label:
 
-====================================
-Available RAJA Options and Defaults
-====================================
+==========================================
+Available RAJA CMake Options and Defaults
+==========================================
 
 RAJA uses a variety of custom variables to control how it is compiled. Many 
 of these are used internally to control RAJA compilation and do 
@@ -113,7 +121,8 @@ build process for all of the code.
 The following tables describe which variables set RAJA options and 
 and their default settings:
 
-* **Examples, tests, warnings, etc.**
+Examples, tests, warnings, etc.
+--------------------------------
 
 CMake variables can be used to control whether RAJA tests, examples, 
 tutorial exercises, etc. are built when RAJA is compiled.
@@ -123,23 +132,24 @@ tutorial exercises, etc. are built when RAJA is compiled.
       =========================  =========================================
       (RAJA_)ENABLE_TESTS        On 
       (RAJA_)ENABLE_EXAMPLES     On 
-      (RAJA_)ENABLE_BENCHMARKS   Off
-      (RAJA_)ENABLE_COVERAGE     Off (supported for GNU compilers only)
       RAJA_ENABLE_EXERCISES      On 
+      (RAJA_)ENABLE_BENCHMARKS   Off
       RAJA_ENABLE_REPRODUCERS    Off 
+      (RAJA_)ENABLE_COVERAGE     Off (supported for GNU compilers only)
       =========================  =========================================
 
-RAJA can also be configured to build with compiler warnings reported as
-errors, which may be useful to make sure your application builds cleanly:
+Other configuration options are available to specialize how RAJA is compiled:
 
-      ================================   ======================
-      Variable                           Default
-      ================================   ======================
-      (RAJA_)ENABLE_WARNINGS_AS_ERRORS   Off
-      ================================   ======================
+      ==================================   =========================
+      Variable                             Default
+      ==================================   =========================
+      (RAJA_)ENABLE_WARNINGS_AS_ERRORS     Off
+      RAJA_ENABLE_FORCEINLINE_RECURSIVE    On (Intel compilers only)
+      RAJA_ALLOW_INCONSISTENT_OPTIONS      Off 
+      ==================================   =========================
 
 RAJA Views/Layouts may be configured to check for out of bounds 
-indexing at runtime:
+indexing at run time:
 
       =========================   ======================
       Variable                    Default
@@ -147,11 +157,30 @@ indexing at runtime:
       RAJA_ENABLE_BOUNDS_CHECK    Off
       =========================   ======================
 
-Note that RAJA bounds checking is a runtime check and will add 
-considerable execution time overhead. Thus, this feature should only be 
-used for correctness checking and should be disabled for production builds.
-     
-* **Programming model back-end support**
+.. note:: RAJA bounds checking is a run time check and will add considerable 
+          execution time overhead. Thus, this feature should only be used for 
+          debugging and correctness checking and should be disabled for 
+          production builds.
+    
+RAJA Features
+-------------------
+
+Some RAJA features are enabled by RAJA-specific CMake variables.
+
+      ===========================   =======================================
+      Variable                      Meaning
+      ===========================   =======================================
+      RAJA_ENABLE_RUNTIME_PLUGINS   Enable support for dynamically loaded
+                                    RAJA plugins. Default is off.
+      RAJA_ENABLE_DESUL_ATOMICS     Replace RAJA atomic implementations
+                                    with Desul variants at compile-time.
+                                    Default is off.
+      RAJA_ENABLE_VECTORIZATION     Enable SIMD/SIMT intrinsics support.
+                                    Default is on.
+      ===========================   =======================================
+ 
+Programming model back-end support
+-------------------------------------
 
 Variables that control which RAJA programming model back-ends are enabled
 are as follows (names are descriptive of what they enable):
@@ -159,11 +188,11 @@ are as follows (names are descriptive of what they enable):
       ==========================   ============================================
       Variable                     Default
       ==========================   ============================================
-      (RAJA_)ENABLE_OPENMP         On
+      (RAJA_)ENABLE_OPENMP         Off
       (RAJA_)ENABLE_CUDA           Off
+      RAJA_ENABLE_CLANG_CUDA       Off
       (RAJA_)ENABLE_HIP            Off
-      RAJA_ENABLE_TARGET_OPENMP    Off (when on, (RAJA_)ENABLE_OPENMP must 
-                                   also be on!)
+      RAJA_ENABLE_TARGET_OPENMP    Off (when on, ENABLE_OPENMP must also be on)
       RAJA_ENABLE_TBB              Off
       RAJA_ENABLE_SYCL             Off
       ==========================   ============================================
@@ -180,37 +209,50 @@ Other programming model specific compilation options are also available:
       CUDA_ARCH                                sm_35 (based on hardware support)
       RAJA_ENABLE_EXTERNAL_ROCPRIM             Off
       RAJA_ENABLE_ROCTX                        Off
-      RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL   Off (enables device function 
-                                               pointers in HIP back-end)
       ======================================   =================================
 
 Turning the ``(RAJA_)ENABLE_CLANG_CUDA`` variable on will build CUDA 
 code with the native support in the Clang compiler.
 
-The ``RAJA_ENABLE_EXTERNAL_CUB`` variable is used to enable use of an
-external install of the NVIDIA CUB support library. When Off, the CUB
-library included in the CUDA toolkit will still be used, if available.
-Starting with CUDA 11, CUB is installed as part of the CUDA toolkit and
-the NVIDIA Thrust library requires that install of CUB. We recommended
-projects use the CUB included with the CUDA toolkit for compatibility with
-Thrust and applications using Thrust. Users should take note of the CUB
-install used by RAJA to ensure they use the same include directories when
-configuring their applications.
-
-The ``RAJA_ENABLE_EXTERNAL_ROCPRIM`` variable is used to enable use of an 
-external install of the AMD rocPRIM support library. When Off, the 
-rocPRIM library included in the ROCm install will be used, when available.
-We recommend projects use the rocPRIM included with the ROCm install when
-available. Users should take note of the rocPRIM install used by RAJA to
-ensure they use the same include directories when configuring their
-applications.
-
 .. note:: See :ref:`getting_started-label` for more information about
-          setting other options for RAJA back-ends.
+          using the ``RAJA_ENABLE_EXTERNAL_CUB`` and 
+          ``RAJA_ENABLE_EXTERNAL_ROCPRIM`` variables, as well other 
+          RAJA back-ends.
 
-* **Data types, sizes, alignment, etc.**
+Timer Options
+--------------
 
-RAJA provides type aliases that can be used to parameterize floating 
+RAJA provides a simple portable timer class that is used in RAJA
+example codes to determine execution timing and can be used in other apps
+as well. This timer can use any of three internal timers depending on
+your preferences, and one should be selected by setting the 'RAJA_TIMER'
+variable. 
+
+      ======================   ======================
+      Variable                 Values
+      ======================   ======================
+      RAJA_TIMER               chrono (default),
+                               gettime,
+                               clock
+      ======================   ======================
+
+What these variables mean:
+
+      =============================   ========================================
+      Value                           Meaning
+      =============================   ========================================
+      chrono                          Use the std::chrono library from the 
+                                      C++ standard library
+      gettime                         Use `timespec` from the C standard 
+                                      library time.h file
+      clock                           Use `clock_t` from time.h
+      =============================   ========================================
+
+Data types, sizes, alignment, etc.
+-------------------------------------
+
+The options discussed in this section are typically not needed by users.
+They are provided for special cases when users want to parameterize floating 
 point types in applications, which makes it easier to switch between types.
 
 .. note:: RAJA data types in this section are provided as a convenience to 
@@ -297,35 +339,8 @@ in units of **bytes**.
 For details on the options in this section are used, please see the 
 header file ``RAJA/include/RAJA/util/types.hpp``.
 
-* **Timer Options**
-
-RAJA provides a simple portable timer class that is used in RAJA
-example codes to determine execution timing and can be used in other apps
-as well. This timer can use any of three internal timers depending on
-your preferences, and one should be selected by setting the 'RAJA_TIMER'
-variable. 
-
-      ======================   ======================
-      Variable                 Values
-      ======================   ======================
-      RAJA_TIMER               chrono (default)
-                               gettime
-                               clock
-      ======================   ======================
-
-What these variables mean:
-
-      =============================   ========================================
-      Value                           Meaning
-      =============================   ========================================
-      chrono                          Use the std::chrono library from the 
-                                      C++ standard library
-      gettime                         Use `timespec` from the C standard 
-                                      library time.h file
-      clock                           Use `clock_t` from time.h
-      =============================   ========================================
-
-* **Other RAJA Features**
+Other RAJA Features
+-------------------
    
 RAJA contains some features that are used mainly for development or may
 not be of general interest to RAJA users. These are turned off be default.
@@ -340,10 +355,6 @@ They are described here for reference and completeness.
                                     tolerance enabled run (e.g., number of 
                                     faults detected, recovered from, 
                                     recovery overhead, etc.)
-      RAJA_ENABLE_RUNTIME_PLUGINS   Enable support for dynamically loaded
-                                    RAJA plugins.
-      RAJA_ENABLE_DESUL_ATOMICS     Replace RAJA atomic implementations
-                                    with desul variants at compile-time.     
       ===========================   =======================================
 
 

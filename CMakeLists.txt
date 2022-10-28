@@ -44,14 +44,21 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PA
 
 include(cmake/SetupRajaOptions.cmake)
 
-cmake_minimum_required(VERSION 3.14.5)
+if (ENABLE_HIP)
+  cmake_minimum_required(VERSION 3.23)
+else()
+  cmake_minimum_required(VERSION 3.20)
+endif()
 
 # Detect C++ standard and add appropriate flag _before_ loading BLT
 set(COMPILERS_KNOWN_TO_CMAKE33 AppleClang Clang GNU MSVC)
 
 include(CheckCXXCompilerFlag)
 if(NOT DEFINED BLT_CXX_STD)
-  if("cxx_std_17" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
+  if("cxx_std_20" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
+    set(BLT_CXX_STD c++20 CACHE STRING "Version of C++ standard")
+    message("Using C++ standard: ${BLT_CXX_STD}")
+  elseif("cxx_std_17" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
     set(BLT_CXX_STD c++17 CACHE STRING "Version of C++ standard")
     message("Using C++ standard: ${BLT_CXX_STD}")
   elseif("cxx_std_14" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
@@ -216,6 +223,7 @@ if (RAJA_ENABLE_EXTERNAL_ROCPRIM)
 endif ()
 
 if (RAJA_ENABLE_SYCL)
+  set (RAJA_ENABLE_DESUL_ATOMICS "On")
   set (raja_depends
     ${raja_depends}
     sycl)
@@ -283,13 +291,13 @@ blt_add_library(
 
 
 install(TARGETS RAJA
-  EXPORT RAJA
+  EXPORT RAJATargets
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib
   )
 
-install(EXPORT RAJA DESTINATION lib/cmake/raja)
+install(EXPORT RAJATargets DESTINATION lib/cmake/raja)
 
 target_include_directories(RAJA
   PUBLIC

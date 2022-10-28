@@ -368,7 +368,47 @@ RAJA_INLINE __device__ T cuda_atomicInc(T volatile *acc)
                                       [=] __device__(T a) { return a + 1; });
 }
 
+// 32-bit signed atomicAdd support by CUDA, used as backend for atomicInc
+template <>
+RAJA_INLINE __device__ int cuda_atomicInc<int>(int volatile *acc)
+{
+  return ::atomicAdd((int *)acc, (int)1);
+}
 
+// 32-bit unsigned atomicAdd support by CUDA, used as backend for atomicInc
+template <>
+RAJA_INLINE __device__ unsigned cuda_atomicInc<unsigned>(unsigned volatile *acc)
+{
+  return ::atomicAdd((unsigned *)acc, (unsigned)1);
+}
+
+// 64-bit unsigned atomicAdd support by CUDA, used as backend for atomicInc
+template <>
+RAJA_INLINE __device__ unsigned long long cuda_atomicInc<unsigned long long>(
+    unsigned long long volatile *acc)
+{
+  return ::atomicAdd((unsigned long long *)acc, (unsigned long long)1);
+}
+
+// 32-bit float atomicAdd support by CUDA, used as backend for atomicInc
+template <>
+RAJA_INLINE __device__ float cuda_atomicInc<float>(float volatile *acc)
+{
+  return ::atomicAdd((float *)acc, (float)1);
+}
+#endif
+
+// 64-bit double atomicAdd support added for sm_60, used as backend for atomicInc
+#if __CUDA_ARCH__ >= 600
+template <>
+RAJA_INLINE __device__ double cuda_atomicInc<double>(double volatile *acc)
+{
+  return ::atomicAdd((double *)acc, (double)1);
+}
+#endif
+
+
+#if __CUDA_ARCH__ >= 200
 template <typename T>
 RAJA_INLINE __device__ T cuda_atomicDec(T volatile *acc, T val)
 {
@@ -392,6 +432,20 @@ RAJA_INLINE __device__ T cuda_atomicDec(T volatile *acc)
 {
   return cuda_atomic_CAS_oper(acc,
                                       [=] __device__(T a) { return a - 1; });
+}
+
+// 32-bit signed atomicSub support by CUDA, used as backend for atomicDec
+template <>
+RAJA_INLINE __device__ int cuda_atomicDec<int>(int volatile *acc)
+{
+  return ::atomicSub((int *)acc, (int)1);
+}
+
+// 32-bit unsigned atomicSub support by CUDA, used as backend for atomicDec
+template <>
+RAJA_INLINE __device__ unsigned cuda_atomicDec<unsigned>(unsigned volatile *acc)
+{
+  return ::atomicSub((unsigned *)acc, (unsigned)1);
 }
 #endif
 

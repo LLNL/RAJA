@@ -38,12 +38,15 @@
  * Finally, we fallback on the seq_atomic, which performs non-atomic operations
  * because we assume there is no thread safety issues (no parallel model)
  */
-#if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__) && defined(RAJA_CUDA_ACTIVE)
 #define RAJA_AUTO_ATOMIC \
   RAJA::cuda_atomic {}
-#elif defined(__HIP_DEVICE_COMPILE__)
+#elif defined(__HIP_DEVICE_COMPILE__) && defined(RAJA_HIP_ACTIVE)
 #define RAJA_AUTO_ATOMIC \
   RAJA::hip_atomic {}
+#elif defined(__SYCL_DEVICE_ONLY__)
+#define RAJA_AUTO_ATOMIC \
+  RAJA::sycl_atomic {}
 #elif defined(RAJA_ENABLE_OPENMP)
 #define RAJA_AUTO_ATOMIC \
   RAJA::omp_atomic {}
