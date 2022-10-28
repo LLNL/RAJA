@@ -40,6 +40,7 @@ mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 
 module load cmake/3.24.2
+
 module load cce/${COMP_VER}
 
 cmake \

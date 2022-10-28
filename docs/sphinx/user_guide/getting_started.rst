@@ -28,7 +28,7 @@ in :ref:`configopt-label`.
 To build RAJA and use its most basic features, you will need:
 
 - C++ compiler with C++14 support
-- `CMake <https://cmake.org/>`_ version 3.14.5 or greater.
+- `CMake <https://cmake.org/>`_ version 3.23 or greater when building the HIP back-end, and version 3.20 or greater otherwise.
 
 
 ==================
@@ -84,6 +84,7 @@ Dependencies that are required to build the RAJA code are:
 
 - A C++ 14 standard compliant compiler
 - `BLT build system <https://github.com/LLNL/blt>`_
+- `CMake <https://cmake.org/>`_ version 3.23 or greater when building the HIP back-end, and version 3.20 or greater otherwise.
 - `Camp compiler agnostic metaprogramming library  <https://github.com/LLNL/camp>`_
 
 Other dependencies that users should be aware of that support certain 
