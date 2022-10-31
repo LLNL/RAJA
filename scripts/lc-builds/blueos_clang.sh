@@ -22,7 +22,7 @@ shift 1
 BUILD_SUFFIX=lc_blueos-clang-${COMP_VER}
 
 echo
-echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo "Creating build directory build_${BUILD_SUFFIX} and generating configuration in it"
 echo "Configuration extra arguments:"
 echo "   $@"
 echo
@@ -35,6 +35,7 @@ module load cmake/3.20.2
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/clang/clang-${COMP_VER}/bin/clang++ \
+  -DBLT_CXX_STD=c++14 \
   -C ../host-configs/lc-builds/blueos/clang_X.cmake \
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \

@@ -39,7 +39,7 @@ fi
 BUILD_SUFFIX=lc_toss4-amdclang-${COMP_VER}-${COMP_ARCH}
 
 echo
-echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo "Creating build directory build_${BUILD_SUFFIX} and generating configuration in it"
 echo "Configuration extra arguments:"
 echo "   $@"
 echo
@@ -65,6 +65,7 @@ cmake \
   -DCMAKE_HIP_ARCHITECTURES="${COMP_ARCH}" \
   -DGPU_TARGETS="${COMP_ARCH}" \
   -DAMDGPU_TARGETS="${COMP_ARCH}" \
+  -DBLT_CXX_STD=c++14 \
   -C "../host-configs/lc-builds/toss4/${HOSTCONFIG}.cmake" \
   -DENABLE_HIP=ON \
   -DENABLE_OPENMP=ON \
