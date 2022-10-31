@@ -11,11 +11,11 @@ if [[ $# -lt 3 ]]; then
   echo
   echo "You must pass 3 arguments to the script (in this order): "
   echo "   1) compiler version number for nvcc"
-  echo "   2) CUDA compute architecture"
-  echo "   3) compiler version number for clang. "
+  echo "   2) CUDA compute architecture (number only, not 'sm_70' for example)"
+  echo "   3) compiler version number for clang"
   echo
   echo "For example: "
-  echo "    blueos_nvcc_clang.sh 10.2.89 sm_70 10.0.1"
+  echo "    blueos_nvcc_clang.sh 10.2.89 70 10.0.1"
   exit
 fi
 
@@ -35,7 +35,7 @@ echo
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-module load cmake/3.23.1
+module load cmake/3.20.2
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
