@@ -11,11 +11,11 @@ if [[ $# -lt 3 ]]; then
   echo
   echo "You must pass 3 arguments to the script (in this order): "
   echo "   1) compiler version number for nvcc"
-  echo "   2) CUDA compute architecture"
-  echo "   3) compiler version number for clang. "
+  echo "   2) CUDA compute architecture (number only, not 'sm_70' for example)"
+  echo "   3) compiler version number for clang"
   echo
   echo "For example: "
-  echo "    blueos_nvcc_clang.sh 10.2.89 sm_70 10.0.1"
+  echo "    blueos_nvcc_clang.sh 10.2.89 70 10.0.1"
   exit
 fi
 
@@ -45,7 +45,7 @@ cmake \
   -DENABLE_CUDA=On \
   -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-${COMP_NVCC_VER} \
   -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-${COMP_NVCC_VER}/bin/nvcc \
-  -DCUDA_ARCH=${COMP_ARCH} \
+  -DCMAKE_CUDA_ARCHITECTURES=${COMP_ARCH} \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
