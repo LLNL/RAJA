@@ -21,9 +21,9 @@
 # ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is no reason not to fully
 # describe the spec here.
 
-rocm_5.3.0_clang_13_0_0:
+rocm_5.1.1_clang_13_0_0:
   variables:
-    SPEC: "+rocm~openmp amdgpu_target=gfx90a %clang@13.0.0 ^blt@develop ^hip@5.3.0"
+    SPEC: "+rocm~openmp amdgpu_target=gfx90a %clang@13.0.0 ^blt@develop ^hip@5.1.1"
   extends: .build_and_test_on_tioga
 
 hip_5.1.1_clang_13_0_0_desul_atomics:
