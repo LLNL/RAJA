@@ -20,6 +20,13 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
+Version 2022.10.1 -- Release date 2022-10-31
+============================================
+
+This release updates the RAJA release number in CMake, which was inadvertently
+missed in the v2022.10.0 release.
+
+
 Version 2022.10.0 -- Release date 2022-10-28
 ============================================
 
