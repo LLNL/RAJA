@@ -18,7 +18,7 @@ namespace detail
 
 } // namespace detail
 
-auto KernelName(const char * n)
+inline auto KernelName(const char * n)
 {
   return detail::KernelName(n);
 }
