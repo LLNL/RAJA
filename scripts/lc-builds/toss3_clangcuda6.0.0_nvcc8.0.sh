@@ -21,7 +21,7 @@ cmake \
   -DENABLE_CLANG_CUDA=On \
   -DBLT_CLANG_CUDA_ARCH=sm_35 \
   -DENABLE_CUDA=On \
-  -DCUDA_ARCH=sm_35 \
+  -DCMAKE_CUDA_ARCHITECTURES=35 \
   -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-8.0 \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \

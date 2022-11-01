@@ -206,7 +206,6 @@ Other programming model specific compilation options are also available:
                                                must be on too!)
       RAJA_ENABLE_EXTERNAL_CUB                 Off
       RAJA_ENABLE_NV_TOOLS_EXT                 Off
-      CUDA_ARCH                                sm_35 (based on hardware support)
       RAJA_ENABLE_EXTERNAL_ROCPRIM             Off
       RAJA_ENABLE_ROCTX                        Off
       ======================================   =================================
