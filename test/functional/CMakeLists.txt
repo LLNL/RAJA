@@ -7,6 +7,8 @@
 
 add_subdirectory(forall)
 
+add_subdirectory(dynamic_forall)
+
 add_subdirectory(indexset-build)
 
 add_subdirectory(kernel)
@@ -15,8 +17,10 @@ add_subdirectory(scan)
 
 add_subdirectory(workgroup)
 
-add_subdirectory(teams)
+add_subdirectory(launch)
 
-add_subdirectory(tensor)
+if (RAJA_ENABLE_VECTORIZATION)
+  add_subdirectory(tensor)
+endif()
 
 add_subdirectory(util)

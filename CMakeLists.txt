@@ -15,8 +15,8 @@ include(CMakeDependentOption)
 
 # Set version number
 set(RAJA_VERSION_MAJOR 2022)
-set(RAJA_VERSION_MINOR 03)
-set(RAJA_VERSION_PATCHLEVEL 0)
+set(RAJA_VERSION_MINOR 10)
+set(RAJA_VERSION_PATCHLEVEL 1)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
   message(FATAL_ERROR "You are mixing RAJA versions. Loaded is ${RAJA_LOADED}, expected ${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
@@ -44,7 +44,11 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PA
 
 include(cmake/SetupRajaOptions.cmake)
 
-cmake_minimum_required(VERSION 3.14.5)
+if (ENABLE_HIP)
+  cmake_minimum_required(VERSION 3.23)
+else()
+  cmake_minimum_required(VERSION 3.20)
+endif()
 
 # Detect C++ standard and add appropriate flag _before_ loading BLT
 set(COMPILERS_KNOWN_TO_CMAKE33 AppleClang Clang GNU MSVC)
@@ -219,6 +223,7 @@ if (RAJA_ENABLE_EXTERNAL_ROCPRIM)
 endif ()
 
 if (RAJA_ENABLE_SYCL)
+  set (RAJA_ENABLE_DESUL_ATOMICS "On")
   set (raja_depends
     ${raja_depends}
     sycl)
@@ -286,13 +291,13 @@ blt_add_library(
 
 
 install(TARGETS RAJA
-  EXPORT RAJA
+  EXPORT RAJATargets
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib
   )
 
-install(EXPORT RAJA DESTINATION lib/cmake/raja)
+install(EXPORT RAJATargets DESTINATION lib/cmake/raja)
 
 target_include_directories(RAJA
   PUBLIC

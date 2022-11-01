@@ -29,6 +29,7 @@ using @BACKEND@PluginWorkGroupTypes =
   Test< camp::cartesian_product<@BACKEND@ExecPolicyList,
                                 @BACKEND@OrderPolicyList,
                                 @BACKEND@StoragePolicyList,
+                                @DISPATCHER@DispatchTyperList,
                                 IndexTypeTypeList,
                                 @BACKEND@AllocatorList,
                                 @BACKEND@ResourceList,

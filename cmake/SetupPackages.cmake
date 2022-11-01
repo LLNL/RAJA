@@ -82,7 +82,7 @@ if (RAJA_ENABLE_HIP)
   endif()
 
   if (RAJA_ENABLE_EXTERNAL_ROCPRIM)
-    find_package(RocPRIM)
+    include(cmake/thirdparty/FindRocPRIM.cmake)
     if (ROCPRIM_FOUND)
       blt_import_library(
         NAME rocPRIM
@@ -115,8 +115,16 @@ if (RAJA_ENABLE_CUDA OR RAJA_ENABLE_HIP OR RAJA_ENABLE_OPENMP OR RAJA_ENABLE_MPI
 endif ()
 
 if (RAJA_NEEDS_BLT_TPLS)
-  blt_export_tpl_targets(EXPORT raja-blt-targets NAMESPACE RAJA)
-  install(EXPORT raja-blt-targets DESTINATION lib/cmake/raja)
+  if (NOT BLT_EXPORTED)
+    set(BLT_EXPORTED On CACHE BOOL "" FORCE)
+  blt_import_library(NAME          blt_stub EXPORTABLE On)
+  set_target_properties(blt_stub PROPERTIES EXPORT_NAME blt::blt_stub)
+            install(TARGETS blt_stub
+                    EXPORT               bltTargets)
+    blt_export_tpl_targets(EXPORT bltTargets NAMESPACE blt)
+    install(EXPORT bltTargets
+      DESTINATION  lib/cmake/raja)
+  endif()
 endif ()
 
 foreach(dep ${TPL_DEPS})
@@ -124,7 +132,7 @@ foreach(dep ${TPL_DEPS})
     get_target_property(_is_imported ${dep} IMPORTED)
     if(NOT ${_is_imported})
         install(TARGETS              ${dep}
-                EXPORT               RAJA
+                EXPORT               RAJATargets
                 DESTINATION          lib/cmake/raja)
         # Namespace target to avoid conflicts
         set_target_properties(${dep} PROPERTIES EXPORT_NAME RAJA::${dep})

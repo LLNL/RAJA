@@ -103,11 +103,7 @@ using policy::sequential::seq_reduce;
 using policy::sequential::seq_region;
 using policy::sequential::seq_segit;
 using policy::sequential::seq_work;
-
-namespace expt
-{
-  using policy::sequential::seq_launch_t;
-}
+using policy::sequential::seq_launch_t;
 
 
 }  // namespace RAJA

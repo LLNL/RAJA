@@ -32,19 +32,19 @@ void ET_MatrixMatrixMultiplyAddImpl()
   // alloc data1 - The left matrix
 
   std::vector<element_t> data1_vec(N*N);
-  RAJA::View<element_t, RAJA::Layout<2>> data1_h(data1_vec.data(), N, N);
+  RAJA::View<element_t, RAJA::StaticLayout<RAJA::PERM_IJ,N,N>> data1_h(data1_vec.data());
 
   element_t *data1_ptr = tensor_malloc<policy_t>(data1_vec);
-  RAJA::View<element_t, RAJA::Layout<2>> data1_d(data1_ptr,  N, N);
+  RAJA::View<element_t, RAJA::StaticLayout<RAJA::PERM_IJ,N,N>> data1_d(data1_ptr);
 
 
   // alloc data2 - The right matrix
 
   std::vector<element_t> data2_vec(N*N);
-  RAJA::View<element_t, RAJA::Layout<2>> data2_h(data2_vec.data(),  N, N);
+  RAJA::View<element_t, RAJA::StaticLayout<RAJA::PERM_IJ,N,N>> data2_h(data2_vec.data());
 
   element_t *data2_ptr = tensor_malloc<policy_t>(data2_vec);
-  RAJA::View<element_t, RAJA::Layout<2>> data2_d(data2_ptr,  N, N);
+  RAJA::View<element_t, RAJA::StaticLayout<RAJA::PERM_IJ,N,N>> data2_d(data2_ptr);
 
 
   // alloc data3 - The result matrix
@@ -96,14 +96,14 @@ void ET_MatrixMatrixMultiplyAddImpl()
   //
   tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
-    auto A_rows = RAJA::RowIndex<int, A_matrix_t>::all();
-    auto A_cols = RAJA::ColIndex<int, A_matrix_t>::all();
+    auto A_rows = RAJA::expt::RowIndex<int, A_matrix_t>::all();
+    auto A_cols = RAJA::expt::ColIndex<int, A_matrix_t>::template static_range<0,N>();
 
-    auto B_rows = RAJA::RowIndex<int, B_matrix_t>::all();
-    auto B_cols = RAJA::ColIndex<int, B_matrix_t>::all();
+    auto B_rows = RAJA::expt::RowIndex<int, B_matrix_t>::template static_range<0,N>();
+    auto B_cols = RAJA::expt::ColIndex<int, B_matrix_t>::static_all();
 
-    auto C_rows = RAJA::RowIndex<int, C_matrix_t>::all();
-    auto C_cols = RAJA::ColIndex<int, C_matrix_t>::all();
+    auto C_rows = RAJA::expt::RowIndex<int, C_matrix_t>::all();
+    auto C_cols = RAJA::expt::ColIndex<int, C_matrix_t>::all();
 
     data3_d(C_rows, C_cols) += data1_d(A_rows, A_cols) * data2_d(B_rows, B_cols);
 
@@ -170,14 +170,14 @@ void ET_MatrixMatrixMultiplyAddImpl()
       //
       tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
-        auto A_rows = RAJA::RowIndex<int, A_matrix_t>::range(0, n_size);
-        auto A_cols = RAJA::ColIndex<int, A_matrix_t>::range(0, m_size);
+        auto A_rows = RAJA::expt::RowIndex<int, A_matrix_t>::range(0, n_size);
+        auto A_cols = RAJA::expt::ColIndex<int, A_matrix_t>::range(0, m_size);
 
-        auto B_rows = RAJA::RowIndex<int, B_matrix_t>::range(0, m_size);
-        auto B_cols = RAJA::ColIndex<int, B_matrix_t>::range(0, n_size);
+        auto B_rows = RAJA::expt::RowIndex<int, B_matrix_t>::range(0, m_size);
+        auto B_cols = RAJA::expt::ColIndex<int, B_matrix_t>::range(0, n_size);
 
-        auto C_rows = RAJA::RowIndex<int, C_matrix_t>::range(0, n_size);
-        auto C_cols = RAJA::ColIndex<int, C_matrix_t>::range(0, n_size);
+        auto C_rows = RAJA::expt::RowIndex<int, C_matrix_t>::range(0, n_size);
+        auto C_cols = RAJA::expt::ColIndex<int, C_matrix_t>::range(0, n_size);
 
 
         data3_d(C_rows, C_cols) += data1_d(A_rows, A_cols) * data2_d(B_rows, B_cols);

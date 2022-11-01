@@ -175,6 +175,7 @@ static_assert(RAJA_HAS_SOME_CXX14,
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
 #cmakedefine RAJA_ENABLE_HIP
 #cmakedefine RAJA_ENABLE_SYCL
+#cmakedefine RAJA_ENABLE_VECTORIZATION
 
 #cmakedefine RAJA_ENABLE_NV_TOOLS_EXT
 #cmakedefine RAJA_ENABLE_ROCTX
@@ -240,15 +241,15 @@ static_assert(RAJA_HAS_SOME_CXX14,
 
 namespace RAJA {
 
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP) && !defined(__HIP_DEVICE_COMPILE__)
 #if defined(_OPENMP)
-#if _OPENMP >= 200805
+#if (_OPENMP >= 200805)
 #define RAJA_ENABLE_OPENMP_TASK
 #endif
 #else
-#error RAJA configured with RAJA_ENABLE_OPENMP, but OpenMP not supported by current compiler
+#error RAJA configured with RAJA_ENABLE_OPENMP, but _OPENMP is not defined in this code section
 #endif // _OPENMP
-#endif // RAJA_ENABLE_OPENMP
+#endif // RAJA_ENABLE_OPENMP && __HIP_DEVICE_COMPILE__
 
 #if defined(RAJA_ENABLE_CUDA) && defined(__CUDACC__)
 #define RAJA_CUDA_ACTIVE
@@ -258,10 +259,12 @@ namespace RAJA {
 #define RAJA_HIP_ACTIVE
 
 #include <hip/hip_version.h>
-#if (HIP_VERSION_MAJOR > 4) || \
-    (HIP_VERSION_MAJOR == 4 && HIP_VERSION_MINOR >= 3)
-// enable device function pointers with rocm version >= 4.3
+#if (HIP_VERSION_MAJOR > 5) || \
+    (HIP_VERSION_MAJOR == 5 && HIP_VERSION_MINOR >= 1)
+// enable device function pointers with rocm version >= 5.1
+// this used to be set to 4.3, but tests start passing with 5.1
 #define RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL
+#define RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
 #endif
 #if (HIP_VERSION_MAJOR > 4) || \
     (HIP_VERSION_MAJOR == 4 && HIP_VERSION_MINOR >= 2)
@@ -271,8 +274,15 @@ namespace RAJA {
 #endif
 #endif // RAJA_ENABLE_HIP && __HIPCC__
 
+#if defined(RAJA_ENABLE_SYCL)
+#if defined(SYCL_LANGUAGE_VERSION)
+#define RAJA_SYCL_ACTIVE
+#endif
+#endif
+
 #if defined(RAJA_CUDA_ACTIVE) || \
-  defined(RAJA_HIP_ACTIVE)
+    defined(RAJA_HIP_ACTIVE) || \
+    defined(RAJA_SYCL_ACTIVE)
 #define RAJA_DEVICE_ACTIVE
 #endif
 
