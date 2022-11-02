@@ -165,16 +165,18 @@ indexing at run time:
 RAJA Features
 -------------------
 
-Some RAJA features are enabled by RAJA-specific CMake variables. The following
-variables are off by default. 
+Some RAJA features are enabled by RAJA-specific CMake variables.
 
       ===========================   =======================================
       Variable                      Meaning
       ===========================   =======================================
       RAJA_ENABLE_RUNTIME_PLUGINS   Enable support for dynamically loaded
-                                    RAJA plugins.
+                                    RAJA plugins. Default is off.
       RAJA_ENABLE_DESUL_ATOMICS     Replace RAJA atomic implementations
                                     with Desul variants at compile-time.
+                                    Default is off.
+      RAJA_ENABLE_VECTORIZATION     Enable SIMD/SIMT intrinsics support.
+                                    Default is on.
       ===========================   =======================================
  
 Programming model back-end support
@@ -204,7 +206,6 @@ Other programming model specific compilation options are also available:
                                                must be on too!)
       RAJA_ENABLE_EXTERNAL_CUB                 Off
       RAJA_ENABLE_NV_TOOLS_EXT                 Off
-      CUDA_ARCH                                sm_35 (based on hardware support)
       RAJA_ENABLE_EXTERNAL_ROCPRIM             Off
       RAJA_ENABLE_ROCTX                        Off
       ======================================   =================================

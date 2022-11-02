@@ -45,15 +45,15 @@ using device_loop = RAJA::hip_global_thread_x;
 
 using launch_policy = RAJA::LaunchPolicy<host_launch
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-                                               ,device_launch
+                                         , device_launch
 #endif
-                                               >;
+                                        >;
 
 using loop_pol = RAJA::LoopPolicy<host_loop
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-                                        ,device_loop
+                                  , device_loop
 #endif
-                                        >;
+                                 >;
 
 #if defined(RAJA_ENABLE_CUDA)
 using reduce_policy = RAJA::cuda_reduce;

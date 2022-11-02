@@ -28,7 +28,7 @@ in :ref:`configopt-label`.
 To build RAJA and use its most basic features, you will need:
 
 - C++ compiler with C++14 support
-- `CMake <https://cmake.org/>`_ version 3.14.5 or greater.
+- `CMake <https://cmake.org/>`_ version 3.23 or greater when building the HIP back-end, and version 3.20 or greater otherwise.
 
 
 ==================
@@ -84,6 +84,7 @@ Dependencies that are required to build the RAJA code are:
 
 - A C++ 14 standard compliant compiler
 - `BLT build system <https://github.com/LLNL/blt>`_
+- `CMake <https://cmake.org/>`_ version 3.23 or greater when building the HIP back-end, and version 3.20 or greater otherwise.
 - `Camp compiler agnostic metaprogramming library  <https://github.com/LLNL/camp>`_
 
 Other dependencies that users should be aware of that support certain 
@@ -228,8 +229,9 @@ compiler options to nvcc.
           ``-Xcompiler`` directive to properly propagate.
 
 To set the CUDA compute architecture, which should be chosen based on the 
-NVIDIA GPU hardware you are using, you can use the ``CUDA_ARCH`` CMake 
-variable. For example, the CMake option ``-DCUDA_ARCH=sm_70`` will tell the 
+NVIDIA GPU hardware you are using, you can use the ``CMAKE_CUDA_ARCHITECTURES`` 
+CMake variable. For example, the CMake option 
+``-DCMAKE_CUDA_ARCHITECTURES=70`` will tell the 
 compiler to use the `sm_70` SASS architecture in its second stage of 
 compilation. The compiler will pick the PTX architecture to use in the first 
 stage of compilation that is suitable for the SASS architecture you specify.
@@ -243,12 +245,13 @@ appropriate nvcc options in the ``CMAKE_CUDA_FLAGS_*`` variables.
           implemented inside RAJA. This is described in 
           :ref:`feat-atomics-label`.
 
-          * If you do not specify a value for ``CUDA_ARCH``, it will be set to
-            `sm_35` by default and CMake will emit a status message 
-            indicating this choice was made.
+          * If you do not specify a value for ``CMAKE_CUDA_ARCHITECTURES``, 
+            it will be set to `35` by default and CMake will emit a status 
+            message indicating this choice was made.
 
-          * If you give a ``CUDA_ARCH`` value less than `sm_35` (e.g., `sm_30`),
-            CMake will report this as an error and stop processing.
+          * If you give a ``CMAKE_CUDA_ARCHITECTURES`` value less than `35` 
+            (e.g., `30`), CMake will report this as an error and stop 
+            processing.
 
 Also, RAJA relies on the CUB CUDA utilities library, mentioned earlier, for 
 some CUDA back-end functionality. The CUB version included in the CUDA toolkit 

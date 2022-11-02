@@ -25,7 +25,7 @@ USE_TBB=Off
 BUILD_SUFFIX=lc_toss3-oneapi-${COMP_VER}
 
 echo
-echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo "Creating build directory build_${BUILD_SUFFIX} and generating configuration in it"
 echo "Configuration extra arguments:"
 echo "   $@"
 echo
@@ -33,7 +33,7 @@ echo
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-module load cmake/3.14.5
+module load cmake/3.20.2
 
 ##
 # CMake option -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off used to speed up compile
@@ -46,6 +46,7 @@ cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/oneapi/oneapi-${COMP_VER}/compiler/2022.1.0/linux/bin/icpx \
   -DCMAKE_C_COMPILER=/usr/tce/packages/oneapi/oneapi-${COMP_VER}/compiler/2022.1.0/linux/bin/icx \
+  -DBLT_CXX_STD=c++14 \
   -C ../host-configs/lc-builds/toss3/oneapi_X.cmake \
   -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off \
   -DENABLE_OPENMP=On \

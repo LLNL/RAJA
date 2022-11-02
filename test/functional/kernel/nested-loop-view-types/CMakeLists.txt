@@ -16,6 +16,7 @@ set(DIMTYPES 2D 3D)
 #
 # Note: KERNEL_BACKENDS is defined in ../CMakeLists.txt
 #
+
 foreach( BACKEND ${KERNEL_BACKENDS} )
   foreach( TESTTYPE ${TESTTYPES} )
     foreach( DIM ${DIMTYPES} )

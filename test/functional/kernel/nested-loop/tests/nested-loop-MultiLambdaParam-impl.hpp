@@ -167,7 +167,7 @@ struct MultiLambdaParamNestedLoopExec<DEPTH_3, POLICY_DATA> {
     >;
 };
 
-#if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP) or defined(RAJA_ENABLE_SYCL)
 
 template<typename POLICY_DATA>
 struct MultiLambdaParamNestedLoopExec<DEVICE_DEPTH_3, POLICY_DATA> {

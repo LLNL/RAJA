@@ -20,6 +20,97 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
+Version 2022.10.1 -- Release date 2022-10-31
+============================================
+
+This release updates the RAJA release number in CMake, which was inadvertently
+missed in the v2022.10.0 release.
+
+
+Version 2022.10.0 -- Release date 2022-10-28
+============================================
+
+This release contains new features, bug fixes, and build improvements. Please
+see the RAJA user guide for more information about items in this release.
+
+Notable changes include:
+
+  * New features / API changes:
+     * Introduced a new RAJA::forall and reduction interface that extend
+       the execution behavior of reduction operations with RAJA::forall.
+       The main difference with the pre-existing reduction interface in RAJA
+       is that reduction variables and operations are passed into the 
+       RAJA::forall method and lambda expression instead of using the lambda
+       capture mechanism for reduction objects. This offers flexibility and
+       potential performance advantages when using RAJA reductions as the
+       new interface enables the ability to integrate with programming model 
+       back-end reduction machinery directly, for OpenMP and SYCL for example.
+       The interface also enables user-chosen kernel names to be passed to
+       RAJA::forall for performance analysis annotations that are easier to
+       understand. Example codes are included as well as a description of
+       the new interface and comparison with the pre-existing interface in
+       the RAJA User Guide.
+     * Added support for run time execution policy selection for RAJA::forall
+       kernels. Users can specify any number of execution policies in their
+       code and then select which to use at run time. There is no discussion 
+       of this in the RAJA User Guide yet. However, there are a couple of 
+       example codes in files RAJA/examples/*dynamic-forall*.cpp.
+          * The RAJA::launch framework has been moved out of the experimental namespace, into the RAJA:: namespace, which introduces an API change.
+          * Add support for all RAJA segment types in the RAJA::launch framework.
+     * Add SYCL back-end support for RAJA::launch and dynamic shared memory
+       for all back-ends in RAJA::launch. These changes introduce API changes.
+     * Add additional policies to WorkGroup construct that allow for different
+       methods of dispatching work.
+     * Add special case implementations to CUDA atomicInc and atomicDec 
+       functions to use special hardware support when available. This can
+       result in a significant performance boost.
+     * Rework HIP atomic implementations to support more native data types.
+     * Added RAJA_UNROLL_COUNT macro which enables users to unroll loops for
+       a fix unroll count.
+     * Major User Guide rework:
+         * New RAJA tutorial sections, including new exercise source files
+           to work through. Material used in recent RADIUSS/AWS RAJA Tutorial.
+         * Cleaned up and expanded RAJA feature sections to be more like a
+           reference guide with links to associated tutorial sections for
+           implementation examples.
+         * Improved presentation of build configuration sections.
+
+  * Build changes / improvements:
+     * Submodule updates:
+         * BLT updated to v0.5.2 release.
+         * Camp updated to v2022.10.0 release.
+     * The minimum CMake version required has changed. For a HIP build,
+       CMake 3.23 or newer is required. For all other builds CMake 3.20
+       or newer is required.
+     * OpenMP back-end support is now off by default to match behavior of
+       all other RAJA parallel back-end support. To enable OpenMP, users
+       must now run CMake with the -DENABLE_OPENMP=On option.
+     * Support OpenMP back-end enablement in a HIP build configuration.
+     * RAJA_ENABLE_VECTORIZATION CMake option added to enable/disable
+       new SIMD/SIMT vectorization support. The default is 'On'. The option
+       allows users to disable if they wish.
+     * Improvements to build target export mechanics coordinated with camp,
+       BLT, and Spack projects.
+     * Improve HIP builds to better support evolving ROCm software stack.
+     * Add CMake variable RAJA_ALLOW_INCONSISTENT_OPTIONS and CMake messages
+       to allow users more control when using CMake dependent options. When
+       CMake is run, the code now checks for cases when RAJA_ENABLE_X=On and
+       but ENABLE_X=Off. Previously, this was confusing because X would not
+       be enabled despite the value of the RAJA-specific option.
+     * Build system refactoring to make CMake configurations more robust; added
+       test to check for installed CMake config. 
+     * Added basic support to compile with C++20 standard.
+     * Add missing compilation macro guards for HIP and CUDA policies in
+       vectorization support when not running on a GPU device.
+     * Various compiler warnings squashed. 
+
+  * Bug fixes / improvements:
+     * Expanded test coverage to catch more cases that users have run into.
+     * Various fixes in SIMD/SIMT support for different compilers and versions
+       users have hit recently. Also, changes to internal implementations to
+       improve run time performance for those features.
+
+
 Version 2022.03.1 -- Release date 2022-08-10
 ============================================
 
