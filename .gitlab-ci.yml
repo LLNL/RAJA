@@ -76,9 +76,10 @@ trigger-rajaperf:
     branch: develop
     strategy: depend
 
-# pipelines subscribed by the project
 include:
-  - local: '.gitlab/subscribed-pipelines.yml'
+  # checks preliminary to running the actual CI tests
   - project: 'radiuss/radiuss-shared-ci'
     ref: woptim/allow-ignore-draft
     file: 'preliminary-should-we-test.yml'
+  # pipelines subscribed by the project
+  - local: '.gitlab/subscribed-pipelines.yml'
