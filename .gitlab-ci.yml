@@ -80,6 +80,6 @@ include:
   # checks preliminary to running the actual CI tests
   - project: 'radiuss/radiuss-shared-ci'
     ref: woptim/allow-ignore-draft
-    file: 'preliminary-should-we-test.yml'
+    file: 'preliminary-ignore-draft-pr.yml'
   # pipelines subscribed by the project
   - local: '.gitlab/subscribed-pipelines.yml'
