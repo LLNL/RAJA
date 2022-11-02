@@ -30,7 +30,7 @@ HOSTCONFIG="hip_3_X"
 BUILD_SUFFIX=lc_toss4-cce-${COMP_VER}-hip-${HIP_VER}-${HIP_ARCH}
 
 echo
-echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo "Creating build directory build_${BUILD_SUFFIX} and generating configuration in it"
 echo "Configuration extra arguments:"
 echo "   $@"
 echo
@@ -51,6 +51,7 @@ cmake \
   -DCMAKE_HIP_ARCHITECTURES=${HIP_ARCH} \
   -DGPU_TARGETS=${HIP_ARCH} \
   -DAMDGPU_TARGETS=${HIP_ARCH} \
+  -DBLT_CXX_STD=c++14 \
   -C "../host-configs/lc-builds/toss4/${HOSTCONFIG}.cmake" \
   -DENABLE_HIP=ON \
   -DENABLE_OPENMP=ON \
