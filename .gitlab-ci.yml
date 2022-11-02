@@ -43,45 +43,8 @@ variables:
 
 # High level stages
 stages:
-  - should-we-test
   - build-and-test
   - multi_project
-
-# This job should fail if we don’t want the pipeline to run.
-# Here, we make sure the pipeline fails if the PR is a draft.
-should-we-test-check:
-  stage: should-we-test
-  tags: [shell, oslic]
-  variables:
-    GIT_STRATEGY: none
-  script:
-    - |
-      curl --header "authorization: Bearer ${GITHUB_TOKEN}" -X POST -d " \
-      { \
-        \"query\": \"query { \
-                             repository(name: \\\"${GITHUB_PROJECT_NAME}\\\", owner: \\\"${GITHUB_PROJECT_ORG}\\\") { \
-                               pullRequests(last: 1, headRefName: \\\"${CI_COMMIT_REF_NAME}\\\") { \
-                                 nodes { \
-                                   number, \
-                                   isDraft \
-                                 } \
-                               } \
-                             } \
-                          }\" \
-      } \
-      " https://api.github.com/graphql > data.json 2> /dev/null
-      if $(jq '.data.repository.pullRequests.nodes[].isDraft' data.json)
-      then
-        curl --url "https://api.github.com/repos/${GITHUB_PROJECT_ORG}/${GITHUB_PROJECT_NAME}/statuses/${CI_COMMIT_SHA}" \
-             --header 'Content-Type: application/json' \
-             --header "authorization: Bearer ${GITHUB_TOKEN}" \
-             --data "{ \"state\": \"failure\", \"target_url\": \"${CI_PIPELINE_URL}\", \"description\": \"GitLab: Skipped Draft PR\", \"context\": \"ci/gitlab/skipped-draft-pr\" }"
-        exit 1
-      fi
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "web"
-      when: never
-    - when: on_success
 
 # Template for jobs triggering a build-and-test sub-pipelines:
 .build-and-test:
@@ -90,7 +53,7 @@ should-we-test-check:
     include:
       - local: '.gitlab/custom-jobs-and-variables.yml'
       - project: 'radiuss/radiuss-shared-ci'
-        ref: v2022.09.0
+        ref: woptim/allow-ignore-draft
         file: '${CI_MACHINE}-build-and-test.yml'
       - local: '.gitlab/${CI_MACHINE}-build-and-test-extra.yml'
     strategy: depend
@@ -115,4 +78,7 @@ trigger-rajaperf:
 
 # pipelines subscribed by the project
 include:
-  - local: .gitlab/subscribed-pipelines.yml
+  - local: '.gitlab/subscribed-pipelines.yml'
+  - project: 'radiuss/radiuss-shared-ci'
+    ref: woptim/allow-ignore-draft
+    file: 'preliminary-should-we-test.yml'
