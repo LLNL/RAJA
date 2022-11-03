@@ -11,7 +11,7 @@
 #define RAJA_OMP_DECLARE_REDUCTION_COMBINE \
       _Pragma(" omp declare reduction( combine \
         : typename std::remove_reference<decltype(f_params)>::type \
-        : RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(omp_out, omp_in) ) \
+        : RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(omp_out, omp_in) ) ")\
         //initializer(omp_priv = omp_in) ")
 
 namespace RAJA
@@ -38,7 +38,7 @@ namespace expt
                 ForallParam&& f_params)
     {
       using EXEC_POL = typename std::decay<decltype(p)>::type;
-      RAJA::expt::ParamMultiplexer::init<ExecPol>(f_params);
+      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
       RAJA_EXTRACT_BED_IT(iter);
@@ -47,7 +47,7 @@ namespace expt
         RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
       }
 
-      RAJA::expt::ParamMultiplexer::resolve<ExecPol>(f_params);
+      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
 
     //
