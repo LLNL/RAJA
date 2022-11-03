@@ -76,7 +76,7 @@ forall_impl(resources::Omp omp_res,
   auto i = distance_it;
 
 #pragma omp target teams distribute parallel for num_teams(numteams) \
-    schedule(static, 1) map(to : body,begin_it) redcution(combine: f_params)
+    schedule(static, 1) map(to : body,begin_it) reduction(combine: f_params)
   for (i = 0; i < distance_it; ++i) {
     Body ib = body;
     RAJA::expt::invoke_body(f_params, ib, begin_it[i]);
