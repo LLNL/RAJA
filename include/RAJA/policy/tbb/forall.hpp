@@ -99,9 +99,9 @@ forall_impl(resources::Host host_res,
       [=](const brange& r, ForallParam fp) {
         using RAJA::internal::thread_privatize;
         auto privatizer = thread_privatize(loop_body);
-        auto body = privatizer.get_priv();
+        auto& body = privatizer.get_priv();
         for (auto i = r.begin(); i != r.end(); ++i)
-          expt::invoke_body(fp, loop_body, b[i]);
+          expt::invoke_body(fp, body, b[i]);
         return fp;
       },
 
@@ -138,7 +138,7 @@ forall_impl(resources::Host host_res,
   ::tbb::parallel_for(brange(0, dist, p.grain_size), [=](const brange& r) {
     using RAJA::internal::thread_privatize;
     auto privatizer = thread_privatize(loop_body);
-    auto body = privatizer.get_priv();
+    auto& body = privatizer.get_priv();
     for (auto i = r.begin(); i != r.end(); ++i)
       body(b[i]);
   });
@@ -196,9 +196,9 @@ forall_impl(resources::Host host_res,
       [=](const brange& r, ForallParam fp) {
         using RAJA::internal::thread_privatize;
         auto privatizer = thread_privatize(loop_body);
-        auto body = privatizer.get_priv();
+        auto& body = privatizer.get_priv();
         for (auto i = r.begin(); i != r.end(); ++i)
-          expt::invoke_body(fp, loop_body, b[i]);
+          expt::invoke_body(fp, body, b[i]);
         return fp;
       },
 
@@ -240,7 +240,7 @@ forall_impl(resources::Host host_res,
       [=](const brange& r) {
         using RAJA::internal::thread_privatize;
         auto privatizer = thread_privatize(loop_body);
-        auto body = privatizer.get_priv();
+        auto& body = privatizer.get_priv();
         for (auto i = r.begin(); i != r.end(); ++i)
           body(b[i]);
       },
