@@ -20,7 +20,7 @@ shift 1
 BUILD_SUFFIX=lc_toss4-gcc-${COMP_VER}
 
 echo
-echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo "Creating build directory build_${BUILD_SUFFIX} and generating configuration in it"
 echo "Configuration extra arguments:"
 echo "   $@"
 echo

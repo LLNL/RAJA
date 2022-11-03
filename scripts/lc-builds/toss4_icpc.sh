@@ -10,7 +10,7 @@
 if [ "$1" == "" ]; then
   echo
   echo "You must pass a compiler version number to script. For example,"
-  echo "    toss4_icpx.sh 2022.1.0"
+  echo "    toss4_icpc.sh 2021.6.0"
   exit
 fi
 
@@ -19,7 +19,7 @@ shift 1
 
 USE_TBB=On
 
-BUILD_SUFFIX=lc_toss4-icpx-${COMP_VER}
+BUILD_SUFFIX=lc_toss4-icpc-${COMP_VER}
 
 echo
 echo "Creating build directory build_${BUILD_SUFFIX} and generating configuration in it"
@@ -32,18 +32,19 @@ mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 module load cmake/3.21.1
 
-#
-# Note: we are using the intel-tce install path as the vanilla intel install
-# path is not in /usr/tce/packages
-#
+##
+# CMake option -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off used to speed up compile
+# times at a potential cost of slower 'forall' execution.
+##
 
 cmake \
   -DBLT_CXX_STD=c++14 \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/intel-tce/intel-${COMP_VER}/bin/icpx \
-  -DCMAKE_C_COMPILER=/usr/tce/packages/intel-tce/intel-${COMP_VER}/bin/icx \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/intel-classic/intel-classic-${COMP_VER}/bin/icpc \
+  -DCMAKE_C_COMPILER=/usr/tce/packages/intel-classic/intel-classic-${COMP_VER}/bin/icc \
   -DBLT_CXX_STD=c++14 \
-  -C ../host-configs/lc-builds/toss4/icpx_X.cmake \
+  -C ../host-configs/lc-builds/toss4/icpc_X.cmake \
+  -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off \
   -DENABLE_OPENMP=On \
   -DRAJA_ENABLE_TBB=${USE_TBB} \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
