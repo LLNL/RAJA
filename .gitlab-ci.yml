@@ -77,7 +77,7 @@ trigger-rajaperf:
     strategy: depend
 
 include:
-  # checks preliminary to running the actual CI tests
+  # checks preliminary to running the actual CI test (optional)
   - project: 'radiuss/radiuss-shared-ci'
     ref: woptim/allow-ignore-draft
     file: 'preliminary-ignore-draft-pr.yml'
