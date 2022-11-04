@@ -39,8 +39,8 @@ module load cmake/3.21.1
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/intel-classic/intel-classic-${COMP_VER}/bin/icpc \
-  -DCMAKE_C_COMPILER=/usr/tce/packages/intel-classic/intel-classic-${COMP_VER}/bin/icc \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/intel-classic-tce/intel-classic-${COMP_VER}/bin/icpc \
+  -DCMAKE_C_COMPILER=/usr/tce/packages/intel-classic-tce/intel-classic-${COMP_VER}/bin/icc \
   -DBLT_CXX_STD=c++14 \
   -C ../host-configs/lc-builds/toss4/icpc_X.cmake \
   -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off \
