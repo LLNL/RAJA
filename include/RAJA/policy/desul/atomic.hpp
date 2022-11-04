@@ -87,7 +87,7 @@ RAJA_INLINE T atomicInc(AtomicPolicy, T volatile *acc, T val)
 {
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicinc
-  return desul::atomic_wrapping_fetch_inc(const_cast<T*>(acc),
+  return desul::atomic_fetch_inc_mod(const_cast<T*>(acc),
                                           val,
                                           raja_default_desul_order{},
                                           raja_default_desul_scope{});
@@ -110,7 +110,7 @@ RAJA_INLINE T atomicDec(AtomicPolicy, T volatile *acc, T val)
 {
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicdec
-  return desul::atomic_wrapping_fetch_dec(const_cast<T*>(acc),
+  return desul::atomic_fetch_dec_mod(const_cast<T*>(acc),
                                           val,
                                           raja_default_desul_order{},
                                           raja_default_desul_scope{});
