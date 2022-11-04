@@ -49,3 +49,15 @@ cmake \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
+
+echo
+echo "***********************************************************************"
+echo
+echo "cd into directory build_${BUILD_SUFFIX} and run make to build RAJA"
+echo
+echo "  Please note that you may need to add some intel openmp libraries to your"
+echo "  LD_LIBRARY_PATH to run with openmp."
+echo
+echo "    LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/tce/packages/intel-classic-tce/intel-classic-2021.6.0/compiler/lib/intel64_lin"
+echo
+echo "***********************************************************************"
