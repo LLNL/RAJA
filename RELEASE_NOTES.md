@@ -20,6 +20,30 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
+Version 2022.10.2 -- Release date 2022-11-xx
+============================================
+
+This release fixes a few issues that were found after the v2022.10.1 patch
+release and updates a few things. Sorry for the churn, folks.
+
+Notable changes include:
+
+  * Update desul submodule to commit e4b65e00.
+
+  * CUDA compute architecture must now be set using the 
+    'CMAKE_CUDA_ARCHITECTURES' CMake variable. For example, by passing
+    '-DCMAKE_CUDA_ARCHITECTURES=70' to CMake for 'sm_70' architecture. 
+    Using '-DCUDA_ARCH=sm_*' will not no longer do the right thing. Please
+    see the RAJA User Guide for more information.
+  * A linking bug was fixed related to the usage of the new RAJA::KernelName
+    capability.
+  * A compilation bug was fixed in the new reduction interface support for 
+    OpenMP target offload.  
+  * An issue was fixed in AVX compiler checking logic for RAJA vectorization
+    intrinsics capabilities.
+  * A couple of compiler warnings were squashed.
+
+
 Version 2022.10.1 -- Release date 2022-10-31
 ============================================
 
