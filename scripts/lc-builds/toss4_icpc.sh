@@ -38,7 +38,6 @@ module load cmake/3.21.1
 ##
 
 cmake \
-  -DBLT_CXX_STD=c++14 \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/intel-classic/intel-classic-${COMP_VER}/bin/icpc \
   -DCMAKE_C_COMPILER=/usr/tce/packages/intel-classic/intel-classic-${COMP_VER}/bin/icc \
