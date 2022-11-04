@@ -39,7 +39,7 @@ class Camp(CMakePackage, CudaPackage, ROCmPackage):
 
     # TODO: figure out gtest dependency and then set this default True.
     variant("tests", default=False, description="Build tests")
-    variant("openmp", default=False, description="Build OpenMP support")
+    variant("openmp", default=False, description="Build with OpenMP support")
 
     depends_on("cub", when="+cuda")
 
@@ -52,11 +52,11 @@ class Camp(CMakePackage, CudaPackage, ROCmPackage):
 
         options.append("-DBLT_SOURCE_DIR={0}".format(spec["blt"].prefix))
 
-        options.append("-DENABLE_OPENMP=" + ("On" if "+openmp" in spec else "Off"))
         if "+cuda" in spec:
-            options.extend(
-                ["-DENABLE_CUDA=ON", "-DCUDA_TOOLKIT_ROOT_DIR=%s" % (spec["cuda"].prefix)]
-            )
+            options.extend([
+                "-DENABLE_CUDA=ON",
+                "-DCUDA_TOOLKIT_ROOT_DIR=%s" % (spec["cuda"].prefix)
+            ])
 
             if not spec.satisfies("cuda_arch=none"):
                 cuda_arch = spec.variants["cuda_arch"].value
@@ -68,7 +68,10 @@ class Camp(CMakePackage, CudaPackage, ROCmPackage):
             options.append("-DENABLE_CUDA=OFF")
 
         if "+rocm" in spec:
-            options.extend(["-DENABLE_HIP=ON", "-DHIP_ROOT_DIR={0}".format(spec["hip"].prefix)])
+            options.extend([
+                "-DENABLE_HIP=ON",
+                "-DHIP_ROOT_DIR={0}".format(spec["hip"].prefix)
+            ])
 
             hip_repair_options(options, spec)
 
@@ -79,6 +82,7 @@ class Camp(CMakePackage, CudaPackage, ROCmPackage):
         else:
             options.append("-DENABLE_HIP=OFF")
 
+        options.append(self.define_from_variant("ENABLE_OPENMP", "openmp"))
         options.append(self.define_from_variant("ENABLE_TESTS", "tests"))
 
         return options
