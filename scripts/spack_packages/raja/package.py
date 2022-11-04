@@ -64,6 +64,7 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
     variant("desul", default=False, description="Build Desul Atomics backend")
 
     depends_on("blt")
+    depends_on("blt@0.5.2:", type="build", when="@2022.10.0:")
     depends_on("blt@0.5.0:", type="build", when="@0.14.1:")
     depends_on("blt@0.4.1", type="build", when="@0.14.0")
     depends_on("blt@0.4.0:", type="build", when="@0.13.0")
