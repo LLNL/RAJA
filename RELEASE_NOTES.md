@@ -20,7 +20,7 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
-Version 2022.10.2 -- Release date 2022-11-xx
+Version 2022.10.2 -- Release date 2022-11-08
 ============================================
 
 This release fixes a few issues that were found after the v2022.10.1 patch
@@ -41,7 +41,6 @@ Notable changes include:
     OpenMP target offload.  
   * An issue was fixed in AVX compiler checking logic for RAJA vectorization
     intrinsics capabilities.
-  * A couple of compiler warnings were squashed.
 
 
 Version 2022.10.1 -- Release date 2022-10-31
@@ -79,8 +78,9 @@ Notable changes include:
        code and then select which to use at run time. There is no discussion 
        of this in the RAJA User Guide yet. However, there are a couple of 
        example codes in files RAJA/examples/*dynamic-forall*.cpp.
-          * The RAJA::launch framework has been moved out of the experimental namespace, into the RAJA:: namespace, which introduces an API change.
-          * Add support for all RAJA segment types in the RAJA::launch framework.
+     * The RAJA::launch framework has been moved out of the experimental 
+       namespace, into the RAJA:: namespace, which introduces an API change.
+     * Add support for all RAJA segment types in the RAJA::launch framework.
      * Add SYCL back-end support for RAJA::launch and dynamic shared memory
        for all back-ends in RAJA::launch. These changes introduce API changes.
      * Add additional policies to WorkGroup construct that allow for different
