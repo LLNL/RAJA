@@ -25,7 +25,7 @@ BUILD_SUFFIX=corona-sycl
 RAJA_HOSTCONFIG=../host-configs/lc-builds/toss4/corona_sycl.cmake
 
 echo
-echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo "Creating build directory build_${BUILD_SUFFIX} and generating configuration in it"
 echo "Configuration extra arguments:"
 echo "   $@"
 echo
