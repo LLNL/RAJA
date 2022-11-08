@@ -230,7 +230,7 @@ See :ref:`ci-label` for more information about RAJA PR testing.
 
           You can push the new branch to the RAJA repo on GitHub::
 
-            $ git push origin <branch-name>
+            $ git push git@github.com:LLNL/RAJA.git <branch-name>
 
           and make a PR for the new branch. It is good practice to reference 
           the original PR in the description of the new PR to track the 
