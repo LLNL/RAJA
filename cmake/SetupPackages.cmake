@@ -101,13 +101,16 @@ if (RAJA_ENABLE_HIP AND RAJA_ENABLE_ROCTX)
   include(FindRoctracer)
   blt_import_library(NAME roctx
                      INCLUDES ${ROCTX_INCLUDE_DIRS}
-                     LIBRARIES ${ROCTX_LIBRARIES})
+                     LIBRARIES ${ROCTX_LIBRARIES}
+                     EXPORTABLE ON
+                     TREAT_INCLUDES_AS_SYSTEM ON)
 endif ()
 
 set(TPL_DEPS)
 blt_list_append(TO TPL_DEPS ELEMENTS nvtoolsext IF RAJA_ENABLE_NV_TOOLS_EXT)
 blt_list_append(TO TPL_DEPS ELEMENTS cub IF RAJA_ENABLE_EXTERNAL_CUB)
 blt_list_append(TO TPL_DEPS ELEMENTS rocPRIM IF RAJA_ENABLE_EXTERNAL_ROCPRIM)
+blt_list_append(TO TPL_DEPS ELEMENTS roctx IF RAJA_ENABLE_ROCTX)
 
 set(RAJA_NEEDS_BLT_TPLS False)
 if (RAJA_ENABLE_CUDA OR RAJA_ENABLE_HIP OR RAJA_ENABLE_OPENMP OR RAJA_ENABLE_MPI)
