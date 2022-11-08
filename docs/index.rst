@@ -69,7 +69,7 @@ RAJA support for various execution back-ends is the result of collaborative
 development between the RAJA team and academic and industrial partners.
 Currently available back-ends support the following execution modes: 
 
- * sequential CPU
+ * sequential CPU (one can argue that you don't need RAJA for this, but it's useful for development, testing, and portability since developers typically use RAJA to insert parallelism into existing serial code. 
  * `SIMD <https://en.wikipedia.org/wiki/SIMD>`_ CPU vectorization
  * `OpenMP <https://www.openmp.org>`_ parallel CPU multithreading
  * `Threading Building Blocks (TBB) <https://github.com/oneapi-src/oneTBB>`_ parallel CPU multithreading
