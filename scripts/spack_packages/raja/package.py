@@ -108,12 +108,49 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
         hostname = socket.gethostname()
         if "SYS_TYPE" in env:
             hostname = hostname.rstrip("1234567890")
-        return "{0}-{1}-{2}@{3}.cmake".format(
+        return "{0}-{1}-{2}@{3}#{4}.cmake".format(
             hostname,
             self._get_sys_type(self.spec),
             self.spec.compiler.name,
             self.spec.compiler.version,
+            self.spec.dag_hash
         )
+
+    def initconfig_compiler_entries(self):
+        spec = self.spec
+        # Default entries are already defined in CachedCMakePackage, inherit them:
+        entries = super(Raja, self).initconfig_compiler_entries()
+
+        # Switch to hip as a CPP compiler.
+        # adrienbernede-22-11:
+        #   This was only done in upstream Spack raja package.
+        #   I could not find the equivalent logic in Spack source, so keeping it.
+        if "+rocm" in spec:
+            entries.insert(0, cmake_cache_path("CMAKE_CXX_COMPILER", spec["hip"].hipcc))
+
+        # Override CachedCMakePackage CMAKE_C_FLAGS and CMAKE_CXX_FLAGS add
+        # +libcpp specific flags
+        flags = spec.compiler_flags
+
+        # use global spack compiler flags
+        cppflags = " ".join(flags["cppflags"])
+        if cppflags:
+            # avoid always ending up with " " with no flags defined
+            cppflags += " "
+
+        cflags = cppflags + " ".join(flags["cflags"])
+        if "+libcpp" in spec:
+            cflags += " ".join([cflags,"-DGTEST_HAS_CXXABI_H_=0"])
+        if cflags:
+            entries.append(cmake_cache_string("CMAKE_C_FLAGS", cflags))
+
+        cxxflags = cppflags + " ".join(flags["cxxflags"])
+        if "+libcpp" in spec:
+            cxxflags += " ".join([cxxflags,"-stdlib=libc++ -DGTEST_HAS_CXXABI_H_=0"])
+        if cxxflags:
+            entries.append(cmake_cache_string("CMAKE_CXX_FLAGS", cxxflags))
+
+        return entries
 
     def initconfig_hardware_entries(self):
         spec = self.spec
@@ -158,19 +195,6 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
         option_prefix = "RAJA_" if spec.satisfies("@0.14.0:") else ""
 
         entries.append(cmake_cache_option("RAJA_ENABLE_DESUL_ATOMICS", "+desul" in spec))
-
-        # use global spack compiler flags
-        cflags = " ".join(spec.compiler_flags["cflags"])
-        if "+libcpp" in spec:
-            cflags += " ".join([cflags,"-DGTEST_HAS_CXXABI_H_=0"])
-        if cflags:
-            entries.append(cmake_cache_string("CMAKE_C_FLAGS", cflags))
-
-        cxxflags = " ".join(spec.compiler_flags["cxxflags"])
-        if "+libcpp" in spec:
-            cxxflags += " ".join([cxxflags,"-stdlib=libc++ -DGTEST_HAS_CXXABI_H_=0"])
-        if cxxflags:
-            entries.append(cmake_cache_string("CMAKE_CXX_FLAGS", cxxflags))
 
         if "+desul" in spec:
             entries.append(cmake_cache_string("BLT_CXX_STD","c++14"))
