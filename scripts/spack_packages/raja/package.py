@@ -194,6 +194,24 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
 
         option_prefix = "RAJA_" if spec.satisfies("@0.14.0:") else ""
 
+        # TPL locations
+        entries.append("#------------------{0}".format("-" * 60))
+        entries.append("# TPLs")
+        entries.append("#------------------{0}\n".format("-" * 60))
+
+        entries.append(cmake_cache_path("BLT_SOURCE_DIR", spec["blt"].prefix))
+        if "camp" in self.spec:
+            entries.append(cmake_cache_path("camp_DIR", spec["camp"].prefix))
+
+        # Build options
+        entries.append("#------------------{0}".format("-" * 60))
+        entries.append("# Build Options")
+        entries.append("#------------------{0}\n".format("-" * 60))
+
+        entries.append(cmake_cache_string(
+            "CMAKE_BUILD_TYPE", spec.variants["build_type"].value))
+        entries.append(cmake_cache_option("BUILD_SHARED_LIBS", "+shared" in spec))
+
         entries.append(cmake_cache_option("RAJA_ENABLE_DESUL_ATOMICS", "+desul" in spec))
 
         if "+desul" in spec:
@@ -201,10 +219,6 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
             if "+cuda" in spec:
                 entries.append(cmake_cache_string("CMAKE_CUDA_STANDARD", "14"))
 
-        entries.append(cmake_cache_path("BLT_SOURCE_DIR", spec["blt"].prefix))
-        if "camp" in self.spec:
-            entries.append(cmake_cache_path("camp_DIR", spec["camp"].prefix))
-        entries.append(cmake_cache_option("BUILD_SHARED_LIBS", "+shared" in spec))
         entries.append(
             cmake_cache_option("{}ENABLE_EXAMPLES".format(option_prefix), "+examples" in spec)
         )
