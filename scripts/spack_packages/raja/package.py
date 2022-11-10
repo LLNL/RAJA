@@ -113,7 +113,7 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
             self._get_sys_type(self.spec),
             self.spec.compiler.name,
             self.spec.compiler.version,
-            self.spec.dag_hash
+            self.spec.dag_hash(8)
         )
 
     def initconfig_compiler_entries(self):
