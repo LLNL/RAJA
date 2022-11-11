@@ -142,4 +142,14 @@ using HipForallAtomicExecPols = HipForallExecPols;
 
 #endif
 
+#if defined(RAJA_ENABLE_SYCL)
+using SyclForallExecPols = camp::list< RAJA::sycl_exec<128, false>,
+                                       RAJA::sycl_exec<256, false> >;
+
+using SyclForallReduceExecPols = SyclForallExecPols;
+
+using SyclForallAtomicExecPols = SyclForallExecPols;
+
+#endif
+
 #endif  // __RAJA_test_forall_execpol_HPP__

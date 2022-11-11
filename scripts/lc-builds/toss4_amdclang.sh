@@ -23,12 +23,11 @@ COMP_VER=$1
 COMP_ARCH=$2
 shift 2
 
-MY_HIP_ARCH_FLAGS="--offload-arch=${COMP_ARCH}"
 HOSTCONFIG="hip_3_X"
 
 if [[ ${COMP_VER} == 4.* ]]
 then
-##HIP_CLANG_FLAGS="${MY_HIP_ARCH_FLAGS} -mllvm -amdgpu-fixed-function-abi=1"
+##HIP_CLANG_FLAGS="-mllvm -amdgpu-fixed-function-abi=1"
   HOSTCONFIG="hip_4_link_X"
 elif [[ ${COMP_VER} == 3.* ]]
 then
@@ -40,7 +39,7 @@ fi
 BUILD_SUFFIX=lc_toss4-amdclang-${COMP_VER}-${COMP_ARCH}
 
 echo
-echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo "Creating build directory build_${BUILD_SUFFIX} and generating configuration in it"
 echo "Configuration extra arguments:"
 echo "   $@"
 echo
@@ -49,7 +48,7 @@ rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 
-module load cmake/3.14.5
+module load cmake/3.23.1
 
 # unload rocm to avoid configuration problems where the loaded rocm and COMP_VER
 # are inconsistent causing the rocprim from the module to be used unexpectedly
@@ -63,10 +62,13 @@ cmake \
   -DHIP_PATH=/opt/rocm-${COMP_VER}/llvm/bin \
   -DCMAKE_C_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/amdclang \
   -DCMAKE_CXX_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/amdclang++ \
-  -DCMAKE_HIP_ARCHITECTURES="${MY_HIP_ARCH_FLAGS}" \
+  -DCMAKE_HIP_ARCHITECTURES="${COMP_ARCH}" \
+  -DGPU_TARGETS="${COMP_ARCH}" \
+  -DAMDGPU_TARGETS="${COMP_ARCH}" \
+  -DBLT_CXX_STD=c++14 \
   -C "../host-configs/lc-builds/toss4/${HOSTCONFIG}.cmake" \
   -DENABLE_HIP=ON \
-  -DENABLE_OPENMP=OFF \
+  -DENABLE_OPENMP=ON \
   -DENABLE_CUDA=OFF \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \

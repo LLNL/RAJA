@@ -27,7 +27,7 @@ shift 3
 BUILD_SUFFIX=lc_blueos-clangcuda${COMP_CLANG_VER}_cuda${TOOLKIT_CUDA_VER}-${CUDA_ARCH}
 
 echo
-echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo "Creating build directory build_${BUILD_SUFFIX} and generating configuration in it"
 echo "Configuration extra arguments:"
 echo "   $@"
 echo
@@ -35,7 +35,7 @@ echo
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-module load cmake/3.14.5
+module load cmake/3.20.2
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
@@ -43,6 +43,7 @@ cmake \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/clang/clang-${COMP_CLANG_VER}/bin/clang++ \
   -DCMAKE_C_COMPILER=/usr/tce/packages/clang/clang-${COMP_CLANG_VER}/bin/clang \
   -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-${TOOLKIT_CUDA_VER} \
+  -DBLT_CXX_STD=c++14 \
   -C ../host-configs/lc-builds/blueos/clangcuda_X.cmake \
   -DENABLE_OPENMP=Off \
   -DENABLE_CLANG_CUDA=On \

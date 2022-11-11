@@ -10,93 +10,55 @@
 # at Lawrence Livermore National Laboratory (LLNL).
 #
 # This entire pipeline is LLNL-specific
-# #############################################################################
+#
+# Important note: This file is a template provided by
+# llnl/radiuss-shared-ci. It should not require any change from the project to
+# get started but could feature project-specific stages.
+#
+# However, each project should provide:
+# - .gitlab/custom-jobs-and-variables.yml
+# - .gitlab/subscribed-pipelines.yml
+# - .gitlab/${MACHINE}-build-and-test-extra.yml
+###############################################################################
 
 # We define the following GitLab pipeline variables:
-#
-# GIT_SUBMODULE_STRATEGY:
-# Tells Gitlab to recursively update the submodules when cloning RAJA
-#
-# ALLOC_NAME:
-# On LLNL's ruby, this pipeline creates only one allocation shared among jobs
-# in order to save time and resources. This allocation has to be uniquely named
-# so that we are sure to retrieve it.
-#
-# BUILD_ROOT:
-# The path to the shared resources between all jobs. The BUILD_ROOT is unique to
-# the pipeline, preventing any form of concurrency with other pipelines. This
-# also means that the BUILD_ROOT directory will never be cleaned.
-#
-# DEFAULT_TIME:
-# Default time to let the Lassen jobs run will be 30 minutes. However, if it is
-# a job that requires more time, it will be overwritten in the lassen template 
-# file.
-# TODO: add a clean-up mechanism
-
 variables:
-  GIT_SUBMODULE_STRATEGY: recursive
-  ALLOC_NAME: ${CI_PROJECT_NAME}_ci_${CI_PIPELINE_ID}
-  BUILD_ROOT: ${CI_PROJECT_DIR}
-  DEFAULT_TIME: 30
   MP_BRANCH: "develop"
+# Use a service user to run CI. This prevents from running pipelines as an
+# actual user.
+  LLNL_SERVICE_USER: ""
+# Use a service user workspace. Solves permission issues, stores everything
+# at the same location whoever triggers a pipeline.
+#  CUSTOM_CI_BUILDS_DIR: ""
+# Tells Gitlab to recursively update the submodules when cloning the project.
+  GIT_SUBMODULE_STRATEGY: recursive
+# We build the projects in the CI clone directory.
+# TODO: add a clean-up mechanism
+  BUILD_ROOT: ${CI_PROJECT_DIR}
 
-# Normally, stages are blocking in Gitlab. However, using the keyword "needs" we
-# can express dependencies between job that break the ordering of stages, in
-# favor of a DAG.
-# In practice r_*, l_* and b_* stages are independently run and start immediately.
+# We organize the build-and-test stage in sub-pipelines. Each sub-pipeline
+# corresponds to a test batch on a given machine.
 
+# High level stages
 stages:
-  - r_allocate_resources
-  - r_build_and_test
-  - r_release_resources
-  - l_build_and_test
-  - b_build_and_test
-  - c_build_and_test
+  - build-and-test
   - multi_project
 
-# This is the rules that drives the activation of "advanced" jobs. All advanced
-# jobs will share this through a template mechanism.
-.advanced_pipeline:
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop" || $ALL_TARGETS == "ON"' #run only if ...
+# Template for jobs triggering a build-and-test sub-pipelines:
+.build-and-test:
+  stage: build-and-test
+  trigger:
+    include:
+      - local: '.gitlab/custom-jobs-and-variables.yml'
+      - project: 'radiuss/radiuss-shared-ci'
+        ref: v2022.09.0
+        file: '${CI_MACHINE}-build-and-test.yml'
+      - local: '.gitlab/${CI_MACHINE}-build-and-test-extra.yml'
+    strategy: depend
+    forward:
+      pipeline_variables: true
 
-# These are also templates (.name) that define project specific build commands.
-# If an allocation exist with the name defined in this pipeline, the job will
-# use it (slurm specific).
-.build_toss_3_x86_64_ib_script:
-  script:
-    - echo ${ALLOC_NAME}
-    - export JOBID=$(squeue -h --name=${ALLOC_NAME} --format=%A)
-    - echo ${JOBID}
-    - srun $( [[ -n "${JOBID}" ]] && echo "--jobid=${JOBID}" ) -t ${DEFAULT_TIME} -N 1 scripts/gitlab/build_and_test.sh
-  artifacts:
-    reports:
-      junit: junit.xml
-
-.build_toss_4_x86_64_ib_corona_script:
-  script:
-    - flux mini run --time-limit=30m --nodes=1 scripts/gitlab/build_and_test.sh
-
-# Lassen uses a different job scheduler (spectrum lsf) that does not
-# allow pre-allocation the same way slurm does.
-.build_blueos_3_ppc64le_ib_script:
-  script:
-    - lalloc 1 -W ${DEFAULT_TIME} scripts/gitlab/build_and_test.sh
-  artifacts:
-    reports:
-      junit: junit.xml
-
-.build_blueos_3_ppc64le_ib_ats_disabled_script:
-  script:
-    - lalloc 1 --atsdisable -W ${DEFAULT_TIME} scripts/gitlab/build_and_test.sh
-  artifacts:
-    reports:
-      junit: junit.xml
-
-.build_blueos_3_ppc64le_ib_p9_script:
-  extends: .build_blueos_3_ppc64le_ib_script
-
-# If testing develop branch, trigger RAJAPerf pipeline with this version of 
+# If testing develop branch, trigger RAJAPerf pipeline with this version of
 # RAJA.
 # TODO: Once spack allows to clone a specific commit on demand, then point to the exact commit.
 #       This will prevent from sticking to a branch (here develop).
@@ -112,11 +74,6 @@ trigger-rajaperf:
     branch: develop
     strategy: depend
 
-# This is where jobs are included.
+# pipelines subscribed by the project
 include:
-  - local: .gitlab/ruby-templates.yml
-  - local: .gitlab/ruby-jobs.yml
-  - local: .gitlab/lassen-templates.yml
-  - local: .gitlab/lassen-jobs.yml
-  - local: .gitlab/corona-templates.yml
-  - local: .gitlab/corona-jobs.yml
+  - local: .gitlab/subscribed-pipelines.yml

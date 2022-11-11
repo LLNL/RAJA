@@ -126,7 +126,12 @@ namespace expt
       RAJA_INLINE
       self_type &load_packed(element_type const *ptr){
 			  // AVX512F
-        m_value = _mm512_loadu_epi64(ptr);
+        #if (defined(__GNUC__) && ((__GNUC__ >= 7) && (__GNUC__ <= 10))) || \
+            (!defined(SYCL_LANGUAGE_VERSION) && defined(__INTEL_LLVM_COMPILER))  // Check for oneapi's icpx.
+        m_value = _mm512_maskz_loadu_epi64(~0, ptr);  // May cause slowdown due to looping over 8 bytes, one at a time.
+        #else
+        m_value = _mm512_loadu_epi64(ptr);  // GNU 7-10 are missing this instruction, as is icpx as of version 2022.2.
+        #endif
         return *this;
       }
 
@@ -180,7 +185,12 @@ namespace expt
       RAJA_INLINE
       self_type const &store_packed(element_type *ptr) const{
 				// AVX512F
-        _mm512_storeu_epi64(ptr, m_value);
+        #if (defined(__GNUC__) && ((__GNUC__ >= 7) && (__GNUC__ <= 10))) || \
+            (!defined(SYCL_LANGUAGE_VERSION) && defined(__INTEL_LLVM_COMPILER))  // Check for oneapi's icpx.
+        _mm512_mask_storeu_epi64(ptr, ~0, m_value);  // May cause slowdown due to looping over 8 bytes, one at a time.
+        #else
+        _mm512_storeu_epi64(ptr, m_value);  // GNU 7-10 are missing this instruction, as is icpx as of version 2022.2.
+        #endif
         return *this;
       }
 
