@@ -69,7 +69,6 @@ struct LaunchExecute<RAJA::cuda_launch_t<async, 1>> {
                           static_cast<cuda_dim_member_t>(params.threads.value[1]),
                           static_cast<cuda_dim_member_t>(params.threads.value[2]) };
 
-    std::cout<<"launching <RAJA::cuda_launch_t<async, 1>"<<std::endl;
     // Only launch kernel if we have something to iterate over
     constexpr cuda_dim_member_t zero = 0;
     if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
@@ -83,11 +82,14 @@ struct LaunchExecute<RAJA::cuda_launch_t<async, 1>> {
         //
         BODY body = RAJA::cuda::make_launch_body(gridSize, blockSize, params.shared_mem_size, cuda_res, std::forward<BODY_IN>(body_in));
 
+        //
+        // Configure plugins
+        //
         util::PluginContext context{util::make_context<RAJA::cuda_launch_t<async,1>>()};
         util::callPreCapturePlugins(context);
 
         using RAJA::util::trigger_updates_before;
-        trigger_updates_before(body);
+        auto p_body = trigger_updates_before(body);
 
         util::callPostCapturePlugins(context);
 
@@ -96,7 +98,7 @@ struct LaunchExecute<RAJA::cuda_launch_t<async, 1>> {
         //
         // Launch the kernel
         //
-        void *args[] = {(void*)&body};
+        void *args[] = {(void*)&p_body};
         RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, params.shared_mem_size, cuda_res, async, kernel_name);
 
         util::callPostLaunchPlugins(context);
