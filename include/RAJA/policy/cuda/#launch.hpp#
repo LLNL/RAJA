@@ -259,9 +259,10 @@ struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads,
       }
 
       RAJA_FT_END;
-
     }
+
   }
+}
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
