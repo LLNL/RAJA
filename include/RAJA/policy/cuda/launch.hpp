@@ -76,16 +76,6 @@ struct LaunchExecute<RAJA::cuda_launch_t<async, 1>> {
          blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
 
 
-      util::PluginContext context{util::make_context<RAJA::cuda_launch_t<async,1>>()};
-      util::callPreCapturePlugins(context);
-
-      using RAJA::util::trigger_updates_before;
-      trigger_updates_before(body_in);
-
-      util::callPostCapturePlugins(context);
-
-      util::callPreLaunchPlugins(context);
-
       RAJA_FT_BEGIN;
       {
         //
@@ -93,16 +83,26 @@ struct LaunchExecute<RAJA::cuda_launch_t<async, 1>> {
         //
         BODY body = RAJA::cuda::make_launch_body(gridSize, blockSize, params.shared_mem_size, cuda_res, std::forward<BODY_IN>(body_in));
 
+        util::PluginContext context{util::make_context<RAJA::cuda_launch_t<async,1>>()};
+        util::callPreCapturePlugins(context);
+
+        using RAJA::util::trigger_updates_before;
+        trigger_updates_before(body);
+
+        util::callPostCapturePlugins(context);
+
+        util::callPreLaunchPlugins(context);
+
         //
         // Launch the kernel
         //
         void *args[] = {(void*)&body};
         RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, params.shared_mem_size, cuda_res, async, kernel_name);
+
+        util::callPostLaunchPlugins(context);
       }
 
       RAJA_FT_END;
-
-      util::callPostLaunchPlugins(context);
 
     }
 
