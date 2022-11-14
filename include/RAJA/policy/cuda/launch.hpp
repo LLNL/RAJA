@@ -74,7 +74,6 @@ struct LaunchExecute<RAJA::cuda_launch_t<async, 1>> {
     if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
          blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
 
-
       RAJA_FT_BEGIN;
       {
         //
@@ -105,7 +104,6 @@ struct LaunchExecute<RAJA::cuda_launch_t<async, 1>> {
       }
 
       RAJA_FT_END;
-
     }
 
   };
