@@ -227,8 +227,20 @@ void launch(LaunchParams const &params, const char *kernel_name, BODY const &bod
 {
   //Take the first policy as we assume the second policy is not user defined.
   //We rely on the user to pair launch and loop policies correctly.
+  util::PluginContext context{util::make_context<typename LAUNCH_POLICY::host_policy_t>()};
+  util::callPreCapturePlugins(context);
+
+  using RAJA::util::trigger_updates_before;
+  auto p_body = trigger_updates_before(body);
+
+  util::callPostCapturePlugins(context);
+
+  util::callPreLaunchPlugins(context);
+
   using launch_t = LaunchExecute<typename LAUNCH_POLICY::host_policy_t>;
-  launch_t::exec(params, kernel_name, body);
+  launch_t::exec(params, kernel_name, p_body);
+
+  util::callPostLaunchPlugins(context);
 }
 
 
@@ -242,22 +254,41 @@ void launch(ExecPlace place, LaunchParams const &params, BODY const &body)
 template <typename POLICY_LIST, typename BODY>
 void launch(ExecPlace place, const LaunchParams &params, const char *kernel_name, BODY const &body)
 {
+
+  //
+  //Configure plugins
+  //
+  util::PluginContext context{place == ExecPlace::HOST ?
+      util::make_context<typename POLICY_LIST::host_policy_t>()
+      : util::make_context<typename POLICY_LIST::device_policy_t>()};
+
+  util::callPreCapturePlugins(context);
+
+  using RAJA::util::trigger_updates_before;
+  auto p_body = trigger_updates_before(body);
+
+  util::callPostCapturePlugins(context);
+
+  util::callPreLaunchPlugins(context);
+
   switch (place) {
     case ExecPlace::HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      launch_t::exec(params, kernel_name, body);
+      launch_t::exec(params, kernel_name, p_body);
       break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
   case ExecPlace::DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      launch_t::exec(params, kernel_name, body);
+      launch_t::exec(params, kernel_name, p_body);
       break;
     }
 #endif
     default:
       RAJA_ABORT_OR_THROW("Unknown launch place or device is not enabled");
   }
+
+  util::callPostLaunchPlugins(context);
 }
 
 // Helper function to retrieve a resource based on the run-time policy - if a device is active
@@ -297,21 +328,40 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
     place = RAJA::ExecPlace::DEVICE;
   }
 
+  //
+  //Configure plugins
+  //
+  util::PluginContext context{place == ExecPlace::HOST ?
+      util::make_context<typename POLICY_LIST::host_policy_t>()
+      : util::make_context<typename POLICY_LIST::device_policy_t>()};
+
+  util::callPreCapturePlugins(context);
+
+  using RAJA::util::trigger_updates_before;
+  auto p_body = trigger_updates_before(body);
+
+  util::callPostCapturePlugins(context);
+
+  util::callPreLaunchPlugins(context);
+
   switch (place) {
     case ExecPlace::HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      return launch_t::exec(res, params, kernel_name, body); break;
+      return launch_t::exec(res, params, kernel_name, p_body); break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
     case ExecPlace::DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      return launch_t::exec(res, params, kernel_name, body); break;
+      return launch_t::exec(res, params, kernel_name, p_body); break;
     }
 #endif
     default: {
       RAJA_ABORT_OR_THROW("Unknown launch place or device is not enabled");
     }
   }
+
+  util::callPostLaunchPlugins(context);
+
   //Should not get here;
   return resources::EventProxy<resources::Resource>(res);
 }

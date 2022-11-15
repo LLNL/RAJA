@@ -47,24 +47,10 @@ struct LaunchExecute<RAJA::seq_launch_t> {
 
     ctx.shared_mem_ptr = (char*) malloc(params.shared_mem_size);
 
-    //
-    // Configure plugins
-    //
-    util::PluginContext context{util::make_context<RAJA::seq_launch_t>()};
-    util::callPreCapturePlugins(context);
-
-    using RAJA::util::trigger_updates_before;
-    auto p_body = trigger_updates_before(body);
-
-    util::callPostCapturePlugins(context);
-
-    util::callPreLaunchPlugins(context);
-
-    p_body(ctx);
+    body(ctx);
 
     free(ctx.shared_mem_ptr);
     ctx.shared_mem_ptr = nullptr;
-    util::callPostLaunchPlugins(context);
   }
 
   template <typename BODY>
@@ -73,26 +59,15 @@ struct LaunchExecute<RAJA::seq_launch_t> {
   {
 
     LaunchContext ctx;
-    ctx.shared_mem_ptr = (char*) malloc(params.shared_mem_size);
 
-    //
-    // Configure plugins
-    //
-    util::PluginContext context{util::make_context<RAJA::seq_launch_t>()};
-    util::callPreCapturePlugins(context);
+    char *kernel_local_mem = new char[params.shared_mem_size];
+    ctx.shared_mem_ptr = kernel_local_mem;
 
-    using RAJA::util::trigger_updates_before;
-    auto p_body = trigger_updates_before(body);
+    body(ctx);
 
-    util::callPostCapturePlugins(context);
-
-    util::callPreLaunchPlugins(context);
-
-    p_body(ctx);
-
-    free(ctx.shared_mem_ptr);
+    delete[] kernel_local_mem;
     ctx.shared_mem_ptr = nullptr;
-    util::callPostLaunchPlugins(context);
+
     return resources::EventProxy<resources::Resource>(res);
   }
 
