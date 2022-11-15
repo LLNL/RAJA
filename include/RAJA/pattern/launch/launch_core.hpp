@@ -258,9 +258,13 @@ void launch(ExecPlace place, const LaunchParams &params, const char *kernel_name
   //
   //Configure plugins
   //
+#ifdef RAJA_DEVICE_ACTIVE
   util::PluginContext context{place == ExecPlace::HOST ?
       util::make_context<typename POLICY_LIST::host_policy_t>()
       : util::make_context<typename POLICY_LIST::device_policy_t>()};
+#else
+  util::PluginContext context{util::make_context<typename POLICY_LIST::host_policy_t>()};
+#endif
 
   util::callPreCapturePlugins(context);
 
@@ -331,9 +335,13 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
   //
   //Configure plugins
   //
+#ifdef RAJA_DEVICE_ACTIVE
   util::PluginContext context{place == ExecPlace::HOST ?
       util::make_context<typename POLICY_LIST::host_policy_t>()
       : util::make_context<typename POLICY_LIST::device_policy_t>()};
+#else
+  util::PluginContext context{util::make_context<typename POLICY_LIST::host_policy_t>()};
+#endif
 
   util::callPreCapturePlugins(context);
 
