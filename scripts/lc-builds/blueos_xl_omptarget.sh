@@ -37,7 +37,8 @@ cmake \
   -C ../host-configs/lc-builds/blueos/xl_X.cmake \
   -DENABLE_OPENMP=On \
   -DRAJA_ENABLE_TARGET_OPENMP=On \
-  -DOpenMP_CXX_FLAGS="-qoffload;-qsmp=omp;-qalias=noansi" \
+  -DBLT_OPENMP_COMPILE_FLAGS="-qoffload;-qsmp=omp;-qalias=noansi" \
+  -DBLT_OPENMP_LINK_FLAGS="-qoffload;-qsmp=omp;-qalias=noansi" \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
