@@ -32,26 +32,12 @@ struct LaunchExecute<RAJA::omp_launch_t> {
   template <typename BODY>
   static void exec(LaunchParams const &params, const char *, BODY const &body)
   {
-
-    //
-    // Configure plugins
-    //
-    util::PluginContext context{util::make_context<RAJA::omp_launch_t>()};
-    util::callPreCapturePlugins(context);
-
-    using RAJA::util::trigger_updates_before;
-    auto p_body = trigger_updates_before(body);
-
-    util::callPostCapturePlugins(context);
-
-    util::callPreLaunchPlugins(context);
-
     RAJA::region<RAJA::omp_parallel_region>([&]() {
 
         LaunchContext ctx;
 
         using RAJA::internal::thread_privatize;
-        auto loop_body = thread_privatize(p_body);
+        auto loop_body = thread_privatize(body);
 
         ctx.shared_mem_ptr = (char*) malloc(params.shared_mem_size);
 
@@ -60,34 +46,18 @@ struct LaunchExecute<RAJA::omp_launch_t> {
         free(ctx.shared_mem_ptr);
         ctx.shared_mem_ptr = nullptr;
     });
-
-    util::callPostLaunchPlugins(context);
   }
 
   template <typename BODY>
   static resources::EventProxy<resources::Resource>
   exec(RAJA::resources::Resource res, LaunchParams const &params, const char *, BODY const &body)
   {
-
-    //
-    // Configure plugins
-    //
-    util::PluginContext context{util::make_context<RAJA::omp_launch_t>()};
-    util::callPreCapturePlugins(context);
-
-    using RAJA::util::trigger_updates_before;
-    auto p_body = trigger_updates_before(body);
-
-    util::callPostCapturePlugins(context);
-
-    util::callPreLaunchPlugins(context);
-
     RAJA::region<RAJA::omp_parallel_region>([&]() {
 
         LaunchContext ctx;
 
         using RAJA::internal::thread_privatize;
-        auto loop_body = thread_privatize(p_body);
+        auto loop_body = thread_privatize(body);
 
         ctx.shared_mem_ptr = (char*) malloc(params.shared_mem_size);
 
@@ -96,8 +66,6 @@ struct LaunchExecute<RAJA::omp_launch_t> {
         free(ctx.shared_mem_ptr);
         ctx.shared_mem_ptr = nullptr;
     });
-
-    util::callPostLaunchPlugins(context);
 
     return resources::EventProxy<resources::Resource>(res);
   }
