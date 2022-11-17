@@ -5,10 +5,10 @@
 #include "RAJA/util/SoAPtr.hpp"
 
 #if defined(RAJA_CUDA_ACTIVE)
-#define DEVICE cuda
+#define RAJA_DEVICE_BACKEND cuda
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #elif defined(RAJA_HIP_ACTIVE)
-#define DEVICE hip
+#define RAJA_DEVICE_BACKEND hip
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
 #endif
 
@@ -91,7 +91,7 @@ namespace detail
 #if defined(RAJA_CUDA_ACTIVE) || defined(RAJA_HIP_ACTIVE)
     // Device related attributes.
     value_type * devicetarget = nullptr;
-    RAJA::detail::SoAPtr<value_type, RAJA::DEVICE::device_mempool_type> device_mem;
+    RAJA::detail::SoAPtr<value_type, RAJA::RAJA_DEVICE_BACKEND::device_mempool_type> device_mem;
     unsigned int * device_count = nullptr;
 #endif
 
