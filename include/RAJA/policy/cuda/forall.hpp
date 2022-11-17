@@ -81,15 +81,17 @@ cuda_dim_t getGridDim(cuda_dim_member_t len, cuda_dim_t blockDim)
  *
  ******************************************************************************
  */
+template <size_t BlockSize>
 __device__ __forceinline__ unsigned int getGlobalIdx_1D_1D()
 {
   unsigned int blockId = blockIdx.x;
-  unsigned int threadId = blockId * blockDim.x + threadIdx.x;
+  unsigned int threadId = blockId * BlockSize + threadIdx.x;
   return threadId;
 }
+template <size_t BlockSize>
 __device__ __forceinline__ unsigned int getGlobalNumThreads_1D_1D()
 {
-  unsigned int numThreads = blockDim.x * gridDim.x;
+  unsigned int numThreads = BlockSize * gridDim.x;
   return numThreads;
 }
 
@@ -144,7 +146,7 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
   auto& body = privatizer.get_priv();
-  auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D());
+  auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D<BlockSize>());
   if (ii < length) {
     body(idx[ii]);
   }
@@ -167,7 +169,7 @@ __launch_bounds__(BlockSize, 1) __global__
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
   auto& body = privatizer.get_priv();
-  auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D());
+  auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D<BlockSize>());
   if ( ii < length )
   {
     RAJA::expt::invoke_body( f_params, body, idx[ii] );
