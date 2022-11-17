@@ -32,14 +32,18 @@ void PluginLaunchTestImpl()
 
   for (int i = 0; i < 10; i++) {
 
-    PluginTestCallable p_callable{data};
+    //Keep PluginTestCallable within a scope to ensure
+    //destruction, consistent with other test
+    {
+      PluginTestCallable p_callable{data};
 
-    RAJA::launch<LaunchPolicy>
-      (RAJA::LaunchParams(RAJA::Teams(1), RAJA::Threads(1)),
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
-      {
-        p_callable(i);
-      });
+      RAJA::launch<LaunchPolicy>
+        (RAJA::LaunchParams(RAJA::Teams(1), RAJA::Threads(1)),
+         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+         {
+           p_callable(i);
+         });
+    }
 
     CounterData loop_data;
     plugin_test_resource->memcpy(&loop_data, &data[i], sizeof(CounterData));

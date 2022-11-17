@@ -326,7 +326,7 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
 {
 
   ExecPlace place;
-  if(res.get_platform() == camp::resources::v1::Platform::host) {
+  if(res.get_platform() == RAJA::Platform::host) {
     place = RAJA::ExecPlace::HOST;
   }else{
     place = RAJA::ExecPlace::DEVICE;
@@ -370,7 +370,9 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
 
   util::callPostLaunchPlugins(context);
 
-  //Should not get here;
+  RAJA_ABORT_OR_THROW("Unknown launch place");
+
+  //^^ RAJA will abort before getting here
   return resources::EventProxy<resources::Resource>(res);
 }
 
