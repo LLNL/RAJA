@@ -53,18 +53,20 @@ if (NOT TARGET camp)
     @PACKAGE_CMAKE_INSTALL_PREFIX@/lib/cmake/camp)
 endif ()
 
-if (NOT TARGET desul_atomics)
-  set(RAJA_DESUL_DIR "@desul_DIR@")
-  if(NOT desul_DIR) 
-    set(desul_DIR ${RAJA_DESUL_DIR}) 
-  endif()
+if (@RAJA_ENABLE_DESUL_ATOMICS@)
+  if (NOT TARGET desul_atomics)
+    set(RAJA_DESUL_DIR "@desul_DIR@")
+    if(NOT desul_DIR) 
+      set(desul_DIR ${RAJA_DESUL_DIR}) 
+    endif()
 
-  find_dependency(desul_atomics CONFIG NO_DEFAULT_PATH PATHS 
-    ${desul_DIR}
-    ${desul_DIR}/lib/cmake/desul
-    @PACKAGE_CMAKE_INSTALL_PREFIX@
-    @PACKAGE_CMAKE_INSTALL_PREFIX@/lib/cmake/desul)
-endif ()
+    find_dependency(desul_atomics CONFIG NO_DEFAULT_PATH PATHS 
+      ${desul_DIR}
+      ${desul_DIR}/lib/cmake/desul
+      @PACKAGE_CMAKE_INSTALL_PREFIX@
+      @PACKAGE_CMAKE_INSTALL_PREFIX@/lib/cmake/desul)
+  endif ()
+endif()
 
 set(BLT_TGTS "${CMAKE_CURRENT_LIST_DIR}/bltTargets.cmake")
 if(EXISTS "${BLT_TGTS}")
