@@ -323,15 +323,18 @@ OpenMP
 ^^^^^^^
 
 To use OpenMP target offload GPU execution, additional options may need to be
-passed to the compiler. The variable ``OpenMP_CXX_FLAGS`` is used for this.
-Option syntax follows the CMake *list* pattern. For example, to specify OpenMP 
-target options for NVIDIA GPUs using a clang-based compiler, one may do
-something like::
+passed to the compiler. BLT variables are used for this. Option syntax follows 
+the CMake *list* pattern. For example, to specify OpenMP target options for 
+NVIDIA GPUs using a clang-based compiler, one may do something like::
 
    cmake \
      ... \
-     -DOpenMP_CXX_FLAGS="-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda" \
+     -DBLT_OPENMP_COMPILE_FLAGS="-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda" \
+     -DBLT_OPENMP_LINK_FLAGS="-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda" \
      ...
+
+Compiler flags are passed to other compilers similarly, using flags specific to
+the compiler. Typically, the compile and link flags are the same as shown here.
 
 ----------------------------------------
 RAJA Example Build Configuration Files
