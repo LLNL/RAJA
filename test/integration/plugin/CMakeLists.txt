@@ -32,6 +32,17 @@ foreach( BACKEND ${PLUGIN_BACKENDS} )
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 endforeach()
 
+foreach( BACKEND ${PLUGIN_BACKENDS} )
+  configure_file( test-plugin-launch.cpp.in
+                  test-plugin-launch-${BACKEND}.cpp )
+  raja_add_test( NAME test-plugin-launch-${BACKEND}
+                 SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-plugin-launch-${BACKEND}.cpp
+                         plugin_to_test.cpp )
+
+  target_include_directories(test-plugin-launch-${BACKEND}.exe
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+endforeach()
+
 set(DISPATCHERS Direct IndirectFunction IndirectVirtual)
 
 foreach( BACKEND ${PLUGIN_BACKENDS} )
