@@ -127,8 +127,7 @@ fi
 build_dir="${build_root}/build_${hostconfig//.cmake/}"
 install_dir="${build_root}/install_${hostconfig//.cmake/}"
 
-# TODO: This is from Umpire, could it work with RAJA ?
-#cmake_exe=`grep 'CMake executable' ${hostconfig_path} | cut -d ':' -f 2 | xargs`
+cmake_exe=`grep 'CMake executable' ${hostconfig_path} | cut -d ':' -f 2 | xargs`
 
 # Build
 if [[ "${option}" != "--deps-only" && "${option}" != "--test-only" ]]
@@ -161,17 +160,14 @@ then
     then
         module unload rocm
     fi
-
-    module load cmake/3.23.1 || module load cmake/3.20.2
-
-    cmake \
+    $cmake_exe \
       -C ${hostconfig_path} \
       -DCMAKE_INSTALL_PREFIX=${install_dir} \
       ${project_dir}
-    if ! cmake --build . -j ${core_counts[$truehostname]}
+    if ! $cmake_exe --build . -j ${core_counts[$truehostname]}
     then
         echo "ERROR: compilation failed, building with verbose output..."
-        cmake --build . --verbose -j 1
+        $cmake_exe --build . --verbose -j 1
     else
         make install
     fi
@@ -236,8 +232,8 @@ then
 
         cd ${install_dir}/examples/RAJA/using-with-cmake
         mkdir build && cd build
-        if ! cmake -C ../host-config.cmake ..; then
-        echo "ERROR: running cmake for using-with-cmake test" && exit 1
+        if ! $cmake_exe -C ../host-config.cmake ..; then
+        echo "ERROR: running $cmake_exe for using-with-cmake test" && exit 1
         fi
 
         if ! make; then
