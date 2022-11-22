@@ -5,7 +5,7 @@
 "package_source_dir" : "../..",
 "spack_url": "https://github.com/spack/spack.git",
 "spack_branch": "develop",
-"spack_commit": "4c535a2037826e66e4b112a069b3723b6baf893f",
+"spack_commit": "d0136899a292640c90f7c9438e3587c6fbe99c33",
 "spack_activate" : {},
 "spack_configs_path": "scripts/radiuss-spack-configs",
 "spack_packages_path": "scripts/spack_packages",
