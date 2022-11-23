@@ -60,7 +60,7 @@ if (@RAJA_ENABLE_DESUL_ATOMICS@)
       set(desul_DIR ${RAJA_DESUL_DIR}) 
     endif()
 
-    find_dependency(desul_atomics CONFIG NO_DEFAULT_PATH PATHS 
+    find_dependency(desul CONFIG NO_DEFAULT_PATH PATHS 
       ${desul_DIR}
       ${desul_DIR}/lib/cmake/desul
       @PACKAGE_CMAKE_INSTALL_PREFIX@
