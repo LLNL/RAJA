@@ -19,6 +19,33 @@ Notable changes include:
 
   * Bug fixes/improvements:
 
+Version 2022.10.3 -- Release date 2022-12-xx
+============================================
+
+This release fixes a few issues that were found after the v2022.10.2 release.
+
+Notable changes include:
+
+  * Update camp submodule to ....
+  * Update BLT submodule to ....
+
+  * Properly export 'roctx' target when CMake variable RAJA_ENABLE_ROCTX is on. 
+  * Add missing template parameter pack argument in RAJA::statement::For
+    execution policy construct used in RAJA::kernel implementation for OpenMP 
+    target back-end.
+  * Change to use compile-time GPU thread block size in RAJA::forall 
+    implementation. This improves performance of GPU kernels, especially 
+    those using the RAJA HIP back-end.
+  * Added RAJA plugin support, including CHAI support, for RAJA::launch.
+  * Renamed 'DEVICE' macro to 'RAJA_DEVICE_BACKEND' to prevent name conflicts
+    with other libraries.
+  * Updated User Guide documentation about CMake variable used to pass 
+    compiler flags for OpenMP target back-end. This changed with CMake
+    minimum required version bump in v2022.10.0.
+  * Adjust ordering of BLT and camp target inclusion in RAJA CMake usage to 
+    fix an issue with projects using external camp vs. RAJA submodule.
+    
+
 
 Version 2022.10.2 -- Release date 2022-11-08
 ============================================
