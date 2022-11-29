@@ -32,7 +32,7 @@
 #
 @PACKAGE_INIT@
 
-# caceh the prefix dir (could be overriden by find_dependency)
+# cache the prefix dir (could be overriden by find_dependency)
 set(RAJA_PACKAGE_PREFIX_DIR ${PACKAGE_PREFIX_DIR})
 
 include(CMakeFindDependencyMacro)
