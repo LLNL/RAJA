@@ -32,6 +32,9 @@
 #
 @PACKAGE_INIT@
 
+# caceh the prefix dir (could be overriden by find_dependency)
+set(RAJA_PACKAGE_PREFIX_DIR ${PACKAGE_PREFIX_DIR})
+
 include(CMakeFindDependencyMacro)
 
 if (@RAJA_NEEDS_BLT_TPLS@)
@@ -57,8 +60,8 @@ if (NOT TARGET camp)
   find_dependency(camp CONFIG NO_DEFAULT_PATH PATHS 
     ${camp_DIR}
     ${camp_DIR}/lib/cmake/camp
-    @PACKAGE_CMAKE_INSTALL_PREFIX@
-    @PACKAGE_CMAKE_INSTALL_PREFIX@/lib/cmake/camp)
+    ${RAJA_PACKAGE_PREFIX_DIR}
+    ${RAJA_PACKAGE_PREFIX_DIR}/lib/cmake/camp)
 endif ()
 
 if (@RAJA_ENABLE_DESUL_ATOMICS@)
@@ -71,8 +74,8 @@ if (@RAJA_ENABLE_DESUL_ATOMICS@)
     find_dependency(desul CONFIG NO_DEFAULT_PATH PATHS 
       ${desul_DIR}
       ${desul_DIR}/lib/cmake/desul
-      @PACKAGE_CMAKE_INSTALL_PREFIX@
-      @PACKAGE_CMAKE_INSTALL_PREFIX@/lib/cmake/desul)
+      ${RAJA_PACKAGE_PREFIX_DIR}
+      ${RAJA_PACKAGE_PREFIX_DIR}/lib/cmake/desul)
   endif ()
 endif()
 
