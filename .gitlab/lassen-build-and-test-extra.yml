@@ -136,7 +136,7 @@ clang_13_0_1_libcpp:
 
 clang_14_0_5_asan:
   variables:
-    SPEC: " ~shared +openmp +tests %clang@14.0.5 cxxflags==\-fsanitize=address\"
+    SPEC: " ~shared +openmp +tests %clang@14.0.5 cxxflags==\"-fsanitize=address\" "
     ASAN_OPTIONS: "detect_leaks=1"
   extends: .build_and_test_on_lassen
 
