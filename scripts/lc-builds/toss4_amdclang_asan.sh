@@ -43,6 +43,9 @@ echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in i
 echo "Configuration extra arguments:"
 echo "   $@"
 echo
+echo "To use fp64 HW atomics you must configure with these options when using gfx90a and hip >= 5.2"
+echo "   -DCMAKE_CXX_FLAGS=\"-munsafe-fp-atomics\""
+echo
 
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
