@@ -221,9 +221,9 @@ then
         echo "ERROR: failure(s) while running CTest" && exit 1
     fi
 
-    if grep -q -i "ENABLE_HIP.*ON" ${hostconfig_path} || grep -q -i "RAJA_ENABLE_DESUL_ATOMICS.*ON" ${hostconfig_path}
+    if grep -q -i "ENABLE_HIP.*ON" ${hostconfig_path}
     then
-        echo "WARNING: not testing install with HIP or desul"
+        echo "WARNING: not testing install with HIP"
     else
         if [[ ! -d ${install_dir} ]]
         then
