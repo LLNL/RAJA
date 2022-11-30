@@ -232,7 +232,7 @@ then
 
         cd ${install_dir}/examples/RAJA/using-with-cmake
         mkdir build && cd build
-        if ! $cmake_exe -C ../host-config.cmake ..; then
+        if ! $cmake_exe --debug-find -C ../host-config.cmake ..; then
         echo "ERROR: running $cmake_exe for using-with-cmake test" && exit 1
         fi
 
