@@ -26,8 +26,8 @@ This release fixes a few issues that were found after the v2022.10.2 release.
 
 Notable changes include:
 
-  * Update camp submodule to ....
-  * Update BLT submodule to ....
+  * Update camp submodule to v2022.10.1
+  * Update BLT submodule to commit 8c229991 (includes fixes for crayftn + hip)
 
   * Properly export 'roctx' target when CMake variable RAJA_ENABLE_ROCTX is on. 
   * Add missing template parameter pack argument in RAJA::statement::For
