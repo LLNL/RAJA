@@ -30,6 +30,7 @@ Notable changes include:
   * Update BLT submodule to commit 8c229991 (includes fixes for crayftn + hip)
 
   * Properly export 'roctx' target when CMake variable RAJA_ENABLE_ROCTX is on. 
+  * Fix CMake logic for exporting desul targets when desul atomics are enabled.
   * Add missing template parameter pack argument in RAJA::statement::For
     execution policy construct used in RAJA::kernel implementation for OpenMP 
     target back-end.
