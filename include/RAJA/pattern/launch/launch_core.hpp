@@ -355,12 +355,12 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
   switch (place) {
     case ExecPlace::HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      return launch_t::exec(res, params, kernel_name, p_body); break;
+      launch_t::exec(res, params, kernel_name, p_body); break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
     case ExecPlace::DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      return launch_t::exec(res, params, kernel_name, p_body); break;
+      launch_t::exec(res, params, kernel_name, p_body); break;
     }
 #endif
     default: {
