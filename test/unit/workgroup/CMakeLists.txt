@@ -74,6 +74,10 @@ if(RAJA_TEST_EXHAUSTIVE OR NOT RAJA_COMPILER MATCHES "RAJA_COMPILER_Intel")
 endif()
 
 set(Dispatcher_SUBTESTS Single)
+if(RAJA_ENABLE_TARGET_OPENMP)
+  # WorkGroup dispatcher for OpenMPTarget not implemented yet
+  list(REMOVE_ITEM BACKENDS OpenMPTarget)
+endif()
 buildunitworkgrouptest(Dispatcher    "${Dispatcher_SUBTESTS}"  "${DISPATCHERS}" "${BACKENDS}")
 
 set(WorkStorage_SUBTESTS Constructor Iterator InsertCall Multiple)
