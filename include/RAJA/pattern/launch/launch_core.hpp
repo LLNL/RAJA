@@ -355,20 +355,22 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
   switch (place) {
     case ExecPlace::HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      launch_t::exec(res, params, kernel_name, p_body); break;
+      resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, params, kernel_name, p_body); break;
+      util::callPostLaunchPlugins(context);
+      return e_proxy;
     }
 #ifdef RAJA_DEVICE_ACTIVE
     case ExecPlace::DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      launch_t::exec(res, params, kernel_name, p_body); break;
+      resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, params, kernel_name, p_body); break;
+      util::callPostLaunchPlugins(context);
+      return e_proxy;
     }
 #endif
     default: {
       RAJA_ABORT_OR_THROW("Unknown launch place or device is not enabled");
     }
   }
-
-  util::callPostLaunchPlugins(context);
 
   RAJA_ABORT_OR_THROW("Unknown launch place");
 
