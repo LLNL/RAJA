@@ -355,7 +355,7 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
   switch (place) {
     case ExecPlace::HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, params, kernel_name, p_body); break;
+      resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, params, kernel_name, p_body);
       util::callPostLaunchPlugins(context);
       return e_proxy;
     }
