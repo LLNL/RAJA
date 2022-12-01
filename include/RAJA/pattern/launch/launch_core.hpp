@@ -362,7 +362,7 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
 #ifdef RAJA_DEVICE_ACTIVE
     case ExecPlace::DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, params, kernel_name, p_body); break;
+      resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, params, kernel_name, p_body);
       util::callPostLaunchPlugins(context);
       return e_proxy;
     }
