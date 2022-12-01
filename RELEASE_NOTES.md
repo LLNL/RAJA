@@ -38,8 +38,8 @@ Notable changes include:
     implementation. This improves performance of GPU kernels, especially 
     those using the RAJA HIP back-end.
   * Added RAJA plugin support, including CHAI support, for RAJA::launch.
-  * Renamed 'DEVICE' macro to 'RAJA_DEVICE_BACKEND' to prevent name conflicts
-    with other libraries.
+  * Replaced 'DEVICE' macro with alias to 'device_mem_pool_t' to prevent name 
+    conflicts with other libraries.
   * Updated User Guide documentation about CMake variable used to pass 
     compiler flags for OpenMP target back-end. This changed with CMake
     minimum required version bump in v2022.10.0.
