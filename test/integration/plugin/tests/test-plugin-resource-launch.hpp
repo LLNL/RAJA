@@ -26,7 +26,9 @@ template <typename LaunchPolicy,
           RAJA::Platform PLATFORM>
 void PluginResourceLaunchTestImpl()
 {
-  SetupPluginVars spv(WORKING_RES::get_default());
+  WORKING_RES res;
+
+  SetupPluginVars spv(res);
 
   CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 
@@ -38,7 +40,7 @@ void PluginResourceLaunchTestImpl()
       PluginTestCallable p_callable{data};
 
       RAJA::launch<LaunchPolicy>
-        (WORKING_RES::get_default(), RAJA::LaunchParams(RAJA::Teams(1), RAJA::Threads(1)),
+        (res, RAJA::LaunchParams(RAJA::Teams(1), RAJA::Threads(1)),
          [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
          {
            p_callable(i);
