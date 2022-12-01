@@ -6,10 +6,8 @@
 
 #if defined(RAJA_CUDA_ACTIVE)
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
-using device_mem_pool_t = RAJA::cuda::device_mempool_type;
 #elif defined(RAJA_HIP_ACTIVE)
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
-using device_mem_pool_t = RAJA::hip::device_mempool_type;
 #endif
 
 namespace RAJA
@@ -66,6 +64,14 @@ struct limits<RAJA::expt::ValLoc<T>> {
 
 namespace RAJA
 {
+namespace detail
+{
+#if defined(RAJA_CUDA_ACTIVE)
+using device_mem_pool_t = RAJA::cuda::device_mempool_type;
+#elif defined(RAJA_HIP_ACTIVE)
+using device_mem_pool_t = RAJA::hip::device_mempool_type;
+#endif
+} //namespace detail
 
 namespace expt
 {
@@ -91,7 +97,7 @@ namespace detail
 #if defined(RAJA_CUDA_ACTIVE) || defined(RAJA_HIP_ACTIVE)
     // Device related attributes.
     value_type * devicetarget = nullptr;
-    RAJA::detail::SoAPtr<value_type, device_mem_pool_t> device_mem;
+    RAJA::detail::SoAPtr<value_type, RAJA::detail::device_mem_pool_t> device_mem;
     unsigned int * device_count = nullptr;
 #endif
 
