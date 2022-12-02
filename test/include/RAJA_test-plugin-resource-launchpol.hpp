@@ -9,26 +9,26 @@
 // Kernel execution policy lists used throughout plugin tests
 //
 
-#ifndef __RAJA_test_plugin_launchpol_HPP__
-#define __RAJA_test_plugin_launchpol_HPP__
+#ifndef __RAJA_test_plugin_resource_launchpol_HPP__
+#define __RAJA_test_plugin_resource_launchpol_HPP__
 
 #include "RAJA/RAJA.hpp"
 
 #include "camp/list.hpp"
 
 // Sequential execution policy types
-using SequentialPluginLaunchExecPols = camp::list<RAJA::LaunchPolicy<RAJA::seq_launch_t>>;
+using SequentialPluginResourceLaunchExecPols = camp::list<RAJA::LaunchPolicy<RAJA::seq_launch_t>>;
 
 #if defined(RAJA_ENABLE_OPENMP)
-using OpenMPPluginLaunchExecPols = camp::list<RAJA::LaunchPolicy<RAJA::omp_launch_t>>;
+using OpenMPPluginResourceLaunchExecPols = camp::list<RAJA::LaunchPolicy<RAJA::omp_launch_t>>;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaPluginLaunchExecPols = camp::list<RAJA::LaunchPolicy<RAJA::cuda_launch_t<false>>>;
+using CudaPluginResourceLaunchExecPols = camp::list<RAJA::LaunchPolicy<RAJA::seq_launch_t, RAJA::cuda_launch_t<false>>>;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipPluginLaunchExecPols = camp::list<RAJA::LaunchPolicy<RAJA::hip_launch_t<false>>>;
+using HipPluginResourceLaunchExecPols = camp::list<RAJA::LaunchPolicy<RAJA::seq_launch_t, RAJA::hip_launch_t<false>>>;
 
 #endif
 
