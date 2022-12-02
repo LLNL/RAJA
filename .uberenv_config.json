@@ -3,7 +3,7 @@
 "package_version" : "develop",
 "package_final_phase" : "initconfig",
 "package_source_dir" : "../..",
-"spack_url": "https://github.com/renjithravindrankannath.git",
+"spack_url": "https://github.com/renjithravindrankannath/spack.git",
 "spack_branch": "testing-for-5.3.0",
 "spack_activate" : {},
 "spack_configs_path": "scripts/radiuss-spack-configs",
