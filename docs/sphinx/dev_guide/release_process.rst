@@ -12,12 +12,16 @@
 RAJA Release Process
 *******************************************
 
-RAJA is considered part of the **RAJA Portability Suite** set of projects. 
-Currently, the Suite includes `Umpire <https://github.com/LLNL/Umpire>`_, `CHAI <https://github.com/LLNL/CHAI>`_, and `camp <https://github.com/LLNL/camp>`_, in addition to RAJA. 
+RAJA is considered part of the **RAJA Portability Suite** set of projects.
+Currently, the Suite includes `Umpire <https://github.com/LLNL/Umpire>`_, 
+`CHAI <https://github.com/LLNL/CHAI>`_, and 
+`camp <https://github.com/LLNL/camp>`_, in addition to RAJA. 
 
-.. important:: Releases for the RAJA Portability Suite are coordinated, meaning
+.. important:: The RAJA Portability Suite does coordinated releases, meaning
                that when a non-patch release is done for one, a new version 
-               release is done for all Suite projects.
+               release is done for all Suite projects at the same time. When
+               a coordinated release is done, common dependencies, such as
+               BLT and camp, are set to the same versions in all Suite projects.
 
                Individual projects in the RAJA Portability Suite may do
                patch releases (to fix bugs, etc.) independently of other
@@ -25,53 +29,80 @@ Currently, the Suite includes `Umpire <https://github.com/LLNL/Umpire>`_, `CHAI 
 
 The RAJA release process includes the following sequence of steps:
 
-  #. Identify all work (features in development, outstanding PRs, etc.) to be 
-     to be included in the release.
-  #. Merge all PRs containing work to be included in the release into the 
-     develop branch.
-  #. Make a release candidate branch from the develop branch. Finalize the 
-     release by completing remaining release tasks on the release candidate
-     branch. See :ref:`rcbranch-label` for typical tasks to complete.
+  #. **Identify all work to be to be included in the release**, such as 
+     features to development and issues to be resolved.
+  #. **Merge each PR** containing work to be included in the release into the 
+     develop branch when it is ready.
+  #. **Make a release candidate branch** from the develop branch. 
 
      .. note:: Creation of the release candidate branch begins the next 
                release cycle. While the release candidate branch is being
                finalized, work can continue on the develop branch.
  
-  #. When the release candidate branch is ready, make a PR for it to be merged
-     into the **main branch.** When it is approved and all CI checks pass,
-     merge the release candidate branch into the RAJA main branch.
-  #. Then, create the release on GitHub by choosing the RAJA main branch and
-     the option to create the release tag when the release is published. 
+  #. **Finalize the release on the release candidate branch**  by completing 
+     remaining release tasks on it. See :ref:`rcbranch-label` for typical 
+     tasks to complete.
+  #. **Make a PR to merge the release candidate branch into the main branch** 
+     when the release candidate branch is ready for the release.
 
-     Set the release name and associated git tag name following the conventions 
-     established for prior releases. Specifically, the tag label should have 
-     the format ``vYYYY.mm.pp``. See :ref:`version-label` for details about 
-     the version labeling scheme we use. 
+     .. note:: Since the main branch only changes when a release is made, the
+               release candidate PR will likely contain many modifications.
+               Fortunately, the vast majority of those changes will have been
+               reviewed, approved, and merged into the develop branch. 
+   
+               To make it easier for team members to review the release 
+               candidate PR, it usually helps to make a companion draft PR 
+               to merge the release candidate branch into develop. This PR
+               will only show the changes to merge into main for the release.
+               Cross-reference the two PRs in their descriptions, tell 
+               reviewers to review the draft PR into develop, but approve 
+               the real PR to merge into main.
 
-     In the GitHub release description, please note key features, bugfixes, etc.
-     in the release. The description should summarize the relevant section of 
-     the ``RELEASE_NOTES.md`` file in the RAJA repo, which may contain more 
-     detailed information. Also, add a note to the release description to 
-     remind users to download the gzipped tarfile for the release instead of 
-     the assets GitHub creates for the release. The GitHub-created assets do 
-     not contain the RAJA submodules and may cause issues for users as a result.
+  #. **Merge the release candidate branch into the RAJA main branch** when it 
+     is approved and all CI checks pass.
+  #. **Create the release on GitHub**.
 
-     .. important:: For consistency, please follow a similar release 
-                    description pattern for all RAJA releases.
+     #. Choose the RAJA main branch and the option to create the release tag 
+        when the release is published. The release tag is the the name of the
+        release.
 
-     When, the release is ready to be published, click the button to do so.
+        .. important:: Set the release name (and associated git tag name) 
+                       following the convention established for prior releases.
+                       Specifically, the tag label should have the format 
+                       ``vYYYY.mm.pp``. See :ref:`version-label` for details 
+                       about the version labeling scheme we use. 
 
-  #. Check out the main branch locally and make sure it is up-to-date.     
-     Then, generate a release tarfile by running the script 
-     ``./scripts/make_release_tarball.sh`` from the top-level RAJA directory. 
-     If this is successful, a gzipped tarfile whose name includes the release 
-     tag **with no extraneous SHA-1 hash information** will be in the top-level
-     RAJA directory.
-  #. Edit the release in GitHub and upload the tarfile to the release.
-  #. Lastly, make a PR to merge the main branch into the develop branch. After 
-     it passes all CI checks and is approved, merge the PR. This will ensure 
-     that all changes done to finalize the release will be included in the 
-     develop branch and future work on that branch.
+     #. Fill in the release description. Note key features, bugfixes, etc.
+        included in the release. The description should summarize the relevant 
+        section of the ``RELEASE_NOTES.md`` file in the release candidate 
+        branch that was merged. Also, add a note to the release description to 
+        remind users to download the gzipped tarfile named for the release 
+        (see below) instead of the assets GitHub creates for a release. The 
+        assets created by GitHub do not contain the RAJA submodules and may 
+        cause issues for users as a result.
+
+        .. important:: For consistency, please follow a similar release 
+                       description pattern for all RAJA releases.
+
+     #. Publish the release when it is ready by clicking the button.
+
+     #. Generate a release tarfile. Check out the main branch locally and 
+        make sure it is up-to-date. Then, run the script::
+ 
+          ./scripts/make_release_tarball.sh 
+
+        from the top-level RAJA directory. The script strips out the Git files
+        from the code and generates a tarfile whose name contains the release
+        tag name. If this is successful, a gzipped tarfile whose name **does 
+        not contain extraneous SHA-1 hash information** will be in the 
+        top-level RAJA directory of your local repository.
+
+     #. Edit the release in GitHub and upload the tarfile to the release.
+
+  #. Lastly, **make a PR to merge the main branch into the develop branch**. 
+     After it passes all CI checks and is approved, merge the PR. This will 
+     ensure that all changes done to finalize the release are included 
+     in the develop branch and future work on that branch.
 
 After a RAJA release is done, there a other tasks that typically need to be 
 performed to update content in other projects. These task are described in
@@ -87,33 +118,34 @@ A *release candidate* branch is a temporary branch used to finalize a release.
 When the features, documentation, bug fixes, etc. to include in a release are 
 complete and merged into the develop branch, a release candidate branch is made
 from the develop branch. Typically, a release candidate branch is named 
-**rc-<release #>.** Please see :ref:`release-label` for a description of how 
-a release candidate branch is used in the release process. 
-
-.. important:: Creating a release candidate branch starts the next release 
-               cycle whereby new work being performed on feature branches can 
-               be merged into the develop branch.
+**rc-<release #>**, or similar. Please see :ref:`release-label` for a 
+description of how a release candidate branch is used in the release process. 
 
 Finalizing a release on a release candidate branch involves the following steps:
 
-  #. If not already done, create a section for the release in the RAJA
+  #. **Complete the release notes describing the release** in the 
      ``RELEASE_NOTES.md`` file. Describe all API changes, notable new features,
      bug fixes, improvements, build changes, etc. included in the release in 
-     appropriately labeled sections of the file. Please follow the pattern
-     established in the file for previous releases. All changes that users 
-     should be aware of should be documented in the release notes. Hopefully,
-     the release notes file has been updated along with the corresponding
-     changes in PRs that are merged into the develop branch. At any rate, it is
-     good practice to look over the commit history since the last release 
-     to ensure all important changes are captured in the release notes.
-  #. Update the version number entries for the new release in the 
-     ``CMakeLists.txt`` file in the top-level RAJA directory. These include
-     entries for: ``RAJA_VERSION_MAJOR``, ``RAJA_VERSION_MINOR``, and 
-     ``RAJA_VERSION_PATCHLEVEL``. These items are used to define corresponding
-     macro values in the ``include/RAJA/config.hpp`` file when the code is
-     built so that users can access and check the RAJA version in their code.
-  #. Update the ``version`` and ``release`` fields in the ``docs/conf.py`` 
-     file to the new release number. This information is used in the online
+     appropriately labeled sections of the file. 
+
+     .. important:: Please follow the pattern established in the release notes
+                    file used for previous releases. 
+
+     All changes that users need to be aware of should be documented in the
+     release notes. Hopefully, the release notes file has been updated along
+     with the corresponding changes in PRs that are merged into the develop
+     branch. Regardless, it is good practice to look over the commit history
+     since the last release to ensure all important changes are documented
+     in the release notes.
+  #. **Update the version number entries in the code**. The top-level 
+     ``CMakeLists.txt`` file must be changed, where the entries: 
+     ``RAJA_VERSION_MAJOR``, ``RAJA_VERSION_MINOR``, and 
+     ``RAJA_VERSION_PATCHLEVEL`` are defined. These items are used to define 
+     corresponding macro values in the ``include/RAJA/config.hpp`` file when 
+     the code is configured so that users can access and check the RAJA 
+     version in their code by including that header file. The ``version`` and 
+     ``release`` fields in the ``RAJA/docs/conf.py`` file must also be changed
+     to the new release number. This information is used in the online
      RAJA documentation.
 
 .. important:: **No feature development is done on a release branch. Only bug 
@@ -130,14 +162,11 @@ Hotfix Branch
 shortly after a release that may negatively impact RAJA users. A hotfix branch 
 will address the issue in both the develop and main branches.
 
-A hotfix branch is *made from main* with the name **hotfix/<issue>**. The 
-issue is fixed (hopefully quickly!) and the release notes file is updated on 
-the hotfix branch for the pending bugfix release. The branch is tested, against 
-user code if necessary, to make sure the issue is resolved. Then, a PR is made 
-to merge the hotfix branch into main. When it is approved and passes CI checks,
-it is merged into the main branch. Lastly, a new release is made in a fashion 
-similar to the process described in :ref:`release-label`. For completeness, 
-the key steps for performing a hotfix release are:
+A hotfix branch treated like a release candidate branch and it is used to 
+generate a *patch release* following the same basic process that is described 
+in :ref:`_release-label`.
+
+For completeness, the key steps for performing a hotfix (patch) release are:
 
   #. Make a **hotfix** branch from main for a release (hotfix/<issue>), fix the
      issue on the branch and verify, testing against user code if necessary.
