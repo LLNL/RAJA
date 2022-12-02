@@ -34,6 +34,9 @@ echo "Creating build directory build_${BUILD_SUFFIX} and generating configuratio
 echo "Configuration extra arguments:"
 echo "   $@"
 echo
+echo "To use fp64 HW atomics you must configure with these options when using gfx90a and hip >= 5.2"
+echo "   -DCMAKE_CXX_FLAGS=\"-munsafe-fp-atomics\""
+echo
 
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
@@ -41,12 +44,10 @@ mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 module load cmake/3.24.2
 
-module load cce/${COMP_VER}
-
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_C_COMPILER=$(which cc) \
-  -DCMAKE_CXX_COMPILER=$(which CC) \
+  -DCMAKE_C_COMPILER="/usr/tce/packages/cce-tce/cce-${COMP_VER}/bin/craycc" \
+  -DCMAKE_CXX_COMPILER="/usr/tce/packages/cce-tce/cce-${COMP_VER}/bin/crayCC" \
   -DHIP_PATH=/opt/rocm-${HIP_VER}/hip \
   -DCMAKE_HIP_ARCHITECTURES=${HIP_ARCH} \
   -DGPU_TARGETS=${HIP_ARCH} \
@@ -69,7 +70,7 @@ echo "  Please note that you have to have a consistent build environment"
 echo "  when you make RAJA as cmake may reconfigure; load the appropriate"
 echo "  cce module (${COMP_VER}) when building."
 echo
-echo "    module load cce/${COMP_VER}"
+echo "    module load cce-tce/${COMP_VER}"
 echo "    srun -n1 make"
 echo
 echo "***********************************************************************"

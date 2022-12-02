@@ -5,10 +5,8 @@
 #include "RAJA/util/SoAPtr.hpp"
 
 #if defined(RAJA_CUDA_ACTIVE)
-#define DEVICE cuda
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #elif defined(RAJA_HIP_ACTIVE)
-#define DEVICE hip
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
 #endif
 
@@ -72,6 +70,12 @@ namespace expt
 namespace detail
 {
 
+#if defined(RAJA_CUDA_ACTIVE)
+  using device_mem_pool_t = RAJA::cuda::device_mempool_type;
+#elif defined(RAJA_HIP_ACTIVE)
+  using device_mem_pool_t = RAJA::hip::device_mempool_type;
+#endif
+
   //
   //
   // Basic Reducer
@@ -91,11 +95,11 @@ namespace detail
 #if defined(RAJA_CUDA_ACTIVE) || defined(RAJA_HIP_ACTIVE)
     // Device related attributes.
     value_type * devicetarget = nullptr;
-    RAJA::detail::SoAPtr<value_type, RAJA::DEVICE::device_mempool_type> device_mem;
+    RAJA::detail::SoAPtr<value_type, device_mem_pool_t> device_mem;
     unsigned int * device_count = nullptr;
 #endif
 
-    using ARG_TUP_T = camp::tuple<value_type*>; 
+    using ARG_TUP_T = camp::tuple<value_type*>;
     RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup() { return camp::make_tuple(&val); }
 
     using ARG_LIST_T = typename ARG_TUP_T::TList;
