@@ -82,11 +82,11 @@ if (RAJA_ENABLE_HIP)
   endif()
 
   if (RAJA_ENABLE_EXTERNAL_ROCPRIM)
-    include(cmake/thirdparty/FindRocPRIM.cmake)
-    if (ROCPRIM_FOUND)
+    find_package(rocPRIM)
+    if (rocPRIM_FOUND)
       blt_import_library(
         NAME rocPRIM
-        INCLUDES ${ROCPRIM_INCLUDE_DIRS}
+        INCLUDES ${rocPRIM_INCLUDE_DIRS}
         TREAT_INCLUDES_AS_SYSTEM ON
         EXPORTABLE ON)
     else()
