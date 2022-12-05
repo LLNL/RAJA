@@ -93,9 +93,11 @@ The RAJA release process includes the following sequence of steps:
 
         from the top-level RAJA directory. The script strips out the Git files
         from the code and generates a tarfile whose name contains the release
-        tag name. If this is successful, a gzipped tarfile whose name **does 
-        not contain extraneous SHA-1 hash information** will be in the 
-        top-level RAJA directory of your local repository.
+        tag name in the top-level RAJA directory of your local repository. If 
+        this is successful, the name of the generated gzipped tarfile **will 
+        not contain extraneous SHA-1 hash information**. If it does, you need
+        to make sure that your local repo checkout is at the same commit as
+        the release tag.
 
      #. Edit the release in GitHub and upload the tarfile to the release.
 
@@ -214,12 +216,102 @@ in other repositories, typically. These tasks include:
     knowledge of Spack and attention to details and Spack conventions. Please
     see :ref:`spack_package-label` for details.
 
+Typically, we also do a new release of the 
+`RAJA Performance Suite project <https://github.com/LLNL/RAJAPerf>`_ after
+completing a RAJA release. This involves updating the RAJA and BLT submodules
+to match the RAJA release and follows the same process as :ref:`release-label`.
+
 .. _spack_package-label:
 
 =========================
 Spack Package Update
 =========================
 
-Describe how to update the RAJA Spack package....
+After each RAJA release, we update the **RAJA Spack Package** and make a PR to
+push it upstream to the `Spack project <https://github.com/spack/spack>`_. The
+Spack package is used in RAJA Gitlab CI testing and also RAJA users who use
+Spack to manage their third party library installations. We try maintain the
+RAJA Spack package in the Spack project to be as close as possible to the
+one in the RAJA repository, which has a few modifications for our CI testing.
 
+The RAJA Spack package is in the file 
+``RAJA/scripts/spack_packages/raja/package.py``. The package is a Python 
+class. The following list contains a description of items to update.
+
+  * **Add a new RAJA version when a release is made.** Near the beginning of
+    the ``Raja class`` definition, you will find a list of versions that 
+    identify RAJA releases as well as items for the ``develop`` and ``main``
+    branches. Adding a new RAJA version is done by adding a line, such as::
+
+     version("2022.10.3", tag="v2022.10.3", submodules=False)
+
+    The last entry indicates whether Spack will use RAJA's submodules when it
+    builds RAJA. Currently, we do not use the submodules by default and allow
+    Spack to manage the installation of RAJA dependencies.
+
+  * **Add new (build) variants as needed.** The ``variant`` items identify
+    how to specify RAJA build variations in a ``Spack spec``. For example,
+    the RAJA build variant to enable desul atomics is defined by the line::
+
+     variant("desul", default=False, description="Build Desul Atomics backend") 
+
+    For each variant, there is usually an entry in the file to enable the
+    corresponding CMake option in the CMake cache, such as::
+
+     entries.append(cmake_cache_option("RAJA_ENABLE_DESUL_ATOMICS", "+desul" in spec))
+
+    There may also be additional options needed. For example, desul also 
+    requires that C++ 14 (at least) is enabled for the build. Such information
+    may appear as::
+
+     if "+desul" in spec:
+         entries.append(cmake_cache_string("BLT_CXX_STD","c++14"))
+         if "+cuda" in spec:
+             entries.append(cmake_cache_string("CMAKE_CUDA_STANDARD", "14")) 
+
+    When a variant is defined properly, it can be enabled in a Spack spec
+    using the shorthand indicated in the ``variant`` line. For example, to
+    enable desul atomics in a Spack build of RAJA, one can include::
+
+     +desul
+
+    in the Spack spec. 
+
+  * **Add new TPL version constraints and package entries as needed.** For 
+    example, RAJA depends on BLT to configure a build and the 0.5.2 version 
+    of BLT is used for all RAJA versions greater than 2022.10.0. This 
+    dependency and version constraint is expressed in the package file as::
+
+     depends_on("blt@0.5.2:", type="build", when="@2022.10.0:")
+
+    In the Spack package file, you will see similar version constraint 
+    specifications for RAJA camp and CMake dependencies as well as others.
+
+  * **Add or update configuration package entries as needed.** In addition the 
+    TPL version constraints, there are additional lines in the package files 
+    that specify which CMake variables are used to pass options to a CMake
+    configuration. For example, the CMake variables that indicate the location
+    of BLT and camp to use for a RAJA build are specified on the lines::
+
+      entries.append(cmake_cache_path("BLT_SOURCE_DIR", spec["blt"].prefix))
+
+    and::
+
+      if "camp" in self.spec:
+         entries.append(cmake_cache_path("camp_DIR", spec["camp"].prefix)) 
+
+    respectively.
+
+    .. important:: Information that applies to specific build variants, CMake
+                   variables, etc. should be specified in the appropriate
+                   Python class function implementation in the package file.
+                   Specifically,
+
+                     * the ``initconfig_compiler_entries`` function contains
+                       compiler options
+                     * the ``initconfig_hardware_entries`` function contains
+                       options hardware-based RAJA back-end support
+                     * the ``initconfig_package_entries`` function contains
+                       options for TPLs and build variants that are not
+                       specific to a compiler or hardware
 
