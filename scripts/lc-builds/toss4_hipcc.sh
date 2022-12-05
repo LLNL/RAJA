@@ -15,7 +15,7 @@ if [[ $# -lt 2 ]]; then
   echo "   3...) optional arguments to cmake"
   echo
   echo "For example: "
-  echo "    toss4_amdclang.sh 4.1.0 gfx906"
+  echo "    toss4_hipcc.sh 4.1.0 gfx906"
   exit
 fi
 
@@ -62,9 +62,9 @@ cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DROCM_ROOT_DIR="/opt/rocm-${COMP_VER}" \
   -DHIP_ROOT_DIR="/opt/rocm-${COMP_VER}/hip" \
-  -DHIP_PATH=/opt/rocm-${COMP_VER}/llvm/bin \
-  -DCMAKE_C_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/amdclang \
-  -DCMAKE_CXX_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/amdclang++ \
+  -DHIP_PATH=/opt/rocm-${COMP_VER}/bin \
+  -DCMAKE_C_COMPILER=/opt/rocm-${COMP_VER}/bin/hipcc \
+  -DCMAKE_CXX_COMPILER=/opt/rocm-${COMP_VER}/bin/hipcc \
   -DCMAKE_HIP_ARCHITECTURES="${COMP_ARCH}" \
   -DGPU_TARGETS="${COMP_ARCH}" \
   -DAMDGPU_TARGETS="${COMP_ARCH}" \
