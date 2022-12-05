@@ -19,6 +19,7 @@ Notable changes include:
 
   * Bug fixes/improvements:
 
+
 Version 2022.10.3 -- Release date 2022-12-01
 ============================================
 
@@ -31,6 +32,8 @@ Notable changes include:
 
   * Properly export 'roctx' target when CMake variable RAJA_ENABLE_ROCTX is on. 
   * Fix CMake logic for exporting desul targets when desul atomics are enabled.
+  * Fix the way we use CMake to find the rocPRIM module to follow CMake
+    best practices.
   * Add missing template parameter pack argument in RAJA::statement::For
     execution policy construct used in RAJA::kernel implementation for OpenMP 
     target back-end.
