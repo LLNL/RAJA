@@ -324,6 +324,36 @@ using cuda_block_y_loop = cuda_block_xyz_loop<1>;
 using cuda_block_z_loop = cuda_block_xyz_loop<2>;
 
 
+/*!
+ * Maps segment indices to CUDA global threads.
+ * This is the lowest overhead mapping, but requires that there are enough
+ * physical threads to fit all of the direct map requests.
+ */
+template<int dim, size_t BLOCK_SIZE>
+struct cuda_global_xyz_direct{};
+
+template<size_t BLOCK_SIZE>
+using cuda_global_x_direct = cuda_global_xyz_direct<0, BLOCK_SIZE>;
+template<size_t BLOCK_SIZE>
+using cuda_global_y_direct = cuda_global_xyz_direct<1, BLOCK_SIZE>;
+template<size_t BLOCK_SIZE>
+using cuda_global_z_direct = cuda_global_xyz_direct<2, BLOCK_SIZE>;
+
+
+/*!
+ * Maps segment indices to CUDA global threads.
+ * Uses grid-stride looping to exceed the maximum number of global threads
+ */
+template<int dim, size_t BLOCK_SIZE>
+struct cuda_global_xyz_loop{};
+
+template<size_t BLOCK_SIZE>
+using cuda_global_x_loop = cuda_global_xyz_loop<0, BLOCK_SIZE>;
+template<size_t BLOCK_SIZE>
+using cuda_global_y_loop = cuda_global_xyz_loop<1, BLOCK_SIZE>;
+template<size_t BLOCK_SIZE>
+using cuda_global_z_loop = cuda_global_xyz_loop<2, BLOCK_SIZE>;
+
 
 
 namespace internal{
