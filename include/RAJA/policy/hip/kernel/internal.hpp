@@ -400,6 +400,78 @@ struct HipIndexDimensioner<HipIndexBlock<dim, 0>> {
   }
 };
 
+/// Type representing thread indexing within a grid
+/// block size and grid size are fixed
+template<int dim, HipDimIdxT t_block_size, HipDimIdxT t_grid_size>
+struct HipIndexDimensioner<HipIndexGlobal<dim, t_block_size, t_grid_size>> {
+
+  template < typename IdxT >
+  static inline
+  LaunchDims get_dimensions(IdxT)
+  {
+    LaunchDims dims;
+
+    set_hip_dim<dim>(dims.threads, t_block_size);
+    set_hip_dim<dim>(dims.blocks, t_grid_size);
+
+    return dims;
+  }
+};
+/// block size is fixed and grid size is dynamic
+template<int dim, HipDimIdxT t_block_size>
+struct HipIndexDimensioner<HipIndexGlobal<dim, t_block_size, 0>> {
+
+  template < typename IdxT >
+  static inline
+  LaunchDims get_dimensions(IdxT len)
+  {
+    LaunchDims dims;
+
+    IdxT block_size = t_block_size;
+    IdxT grid_size = RAJA_DIVIDE_CEILING_INT(len, block_size);
+    set_hip_dim<dim>(dims.threads, block_size);
+    set_hip_dim<dim>(dims.blocks, grid_size);
+
+    return dims;
+  }
+};
+/// block size is dynamic and grid size is fixed
+template<int dim, HipDimIdxT t_grid_size>
+struct HipIndexDimensioner<HipIndexGlobal<dim, 0, t_grid_size>> {
+
+  template < typename IdxT >
+  static inline
+  LaunchDims get_dimensions(IdxT len)
+  {
+    LaunchDims dims;
+
+    IdxT grid_size = t_grid_size;
+    IdxT block_size = RAJA_DIVIDE_CEILING_INT(len, grid_size);
+    set_hip_dim<dim>(dims.threads, block_size);
+    set_hip_dim<dim>(dims.blocks, grid_size);
+
+    return dims;
+  }
+};
+/// block size and grid size are dynamic
+template<int dim>
+struct HipIndexDimensioner<HipIndexGlobal<dim, 0, 0>> {
+
+  template < typename IdxT >
+  static inline
+  LaunchDims get_dimensions(IdxT)
+  {
+    LaunchDims dims;
+
+    // unclear what to do in this case
+    // Maybe this should just static_assert out if you try to use it in kernel
+    set_hip_dim<dim>(dims.threads, 1);
+    set_hip_dim<dim>(dims.blocks, 1);
+
+    return dims;
+  }
+};
+
 
 template <camp::idx_t cur_stmt, camp::idx_t num_stmts, typename StmtList>
 struct HipStatementListExecutorHelper {
