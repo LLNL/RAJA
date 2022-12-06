@@ -403,6 +403,27 @@ struct HipIndexBlock<dim, 0> {
   auto size() { return static_cast<IdxT>(HipDimHelper<dim>::get(gridDim)); }
 };
 
+/// Type representing thread indexing within a grid
+template<int dim, HipDimIdxT t_block_size, HipDimIdxT t_grid_size>
+struct HipIndexGlobal {
+
+  using IndexThread = HipIndexThread<dim, t_block_size>;
+  using IndexBlock = HipIndexBlock<dim, t_block_size>;
+
+  template < typename IdxT = HipDimIdxT >
+  RAJA_HOST_DEVICE
+  inline static constexpr
+  auto index() { return static_cast<IdxT>(IndexThread::template index<IdxT>()) +
+                        static_cast<IdxT>(IndexThread::template size<IdxT>()) *
+                        static_cast<IdxT>(IndexBlock::template index<IdxT>()) ; }
+
+  template < typename IdxT = HipDimIdxT >
+  RAJA_HOST_DEVICE
+  inline static constexpr
+  auto size() { return static_cast<IdxT>(IndexThread::template size<IdxT>()) *
+                       static_cast<IdxT>(IndexBlock::template size<IdxT>()) ; }
+};
+
 
 template<typename Indexer>
 struct HipIndexDirect {
@@ -467,6 +488,31 @@ struct hip_block_xyz_loop{};
 using hip_block_x_loop = internal::HipIndexLoop<internal::HipIndexBlock<0, 0>>; // hip_block_xyz_loop<0>;
 using hip_block_y_loop = internal::HipIndexLoop<internal::HipIndexBlock<1, 0>>; // hip_block_xyz_loop<1>;
 using hip_block_z_loop = internal::HipIndexLoop<internal::HipIndexBlock<2, 0>>; // hip_block_xyz_loop<2>;
+
+
+/*!
+ * Maps segment indices to HIP global threads.
+ * This is the lowest overhead mapping, but requires that there are enough
+ * physical threads to fit all of the direct map requests.
+ */
+template<size_t BLOCK_SIZE, size_t GRID_SIZE=0>
+using hip_global_x_direct = internal::HipIndexDirect<internal::HipIndexGlobal<0, BLOCK_SIZE, GRID_SIZE>>;
+template<size_t BLOCK_SIZE, size_t GRID_SIZE=0>
+using hip_global_y_direct = internal::HipIndexDirect<internal::HipIndexGlobal<1, BLOCK_SIZE, GRID_SIZE>>;
+template<size_t BLOCK_SIZE, size_t GRID_SIZE=0>
+using hip_global_z_direct = internal::HipIndexDirect<internal::HipIndexGlobal<2, BLOCK_SIZE, GRID_SIZE>>;
+
+
+/*!
+ * Maps segment indices to HIP global threads.
+ * Uses grid-stride looping to exceed the maximum number of global threads
+ */
+template<size_t BLOCK_SIZE, size_t GRID_SIZE=0>
+using hip_global_x_loop = internal::HipIndexLoop<internal::HipIndexGlobal<0, BLOCK_SIZE, GRID_SIZE>>;
+template<size_t BLOCK_SIZE, size_t GRID_SIZE=0>
+using hip_global_y_loop = internal::HipIndexLoop<internal::HipIndexGlobal<1, BLOCK_SIZE, GRID_SIZE>>;
+template<size_t BLOCK_SIZE, size_t GRID_SIZE=0>
+using hip_global_z_loop = internal::HipIndexLoop<internal::HipIndexGlobal<2, BLOCK_SIZE, GRID_SIZE>>;
 
 }  // namespace RAJA
 
