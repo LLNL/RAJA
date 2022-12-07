@@ -21,6 +21,8 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     version("develop", branch="develop", submodules=False)
     version("main", branch="main", submodules=False)
+    version("2022.10.3", tag="v2022.10.1", submodules=False)
+    version("2022.10.2", tag="v2022.10.1", submodules=False)
     version("2022.10.1", tag="v2022.10.1", submodules=False)
     version("2022.10.0", tag="v2022.10.0", submodules=False)
     version("2022.03.1", tag="v2022.03.1", submodules=False)
@@ -51,22 +53,27 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
     )
 
     variant("openmp", default=True, description="Build OpenMP backend")
-    variant("shared", default=True, description="Build Shared Libs")
+    variant("shared", default=True, description="Build shared libs")
     variant("examples", default=True, description="Build examples.")
     variant("exercises", default=True, description="Build exercises.")
     # TODO: figure out gtest dependency and then set this default True
     # and remove the +tests conflict below.
     variant("tests", default=False, description="Build tests")
     variant("libcpp", default=False, description="Uses libc++ instead of libstdc++")
-    variant("desul", default=False, description="Build Desul Atomics backend")
+    variant("desul", default=False, description="Build desul atomics backend")
+    variant("vectorization", default=True, description="Build SIMD/SIMT intrinsics support")
 
     depends_on("blt")
+    depends_on("blt@develop:", type="build", when="@2022.10.3")
     depends_on("blt@0.5.2:", type="build", when="@2022.10.0:")
     depends_on("blt@0.5.0:", type="build", when="@0.14.1:")
     depends_on("blt@0.4.1", type="build", when="@0.14.0")
     depends_on("blt@0.4.0:", type="build", when="@0.13.0")
     depends_on("blt@0.3.6:", type="build", when="@:0.12.0")
 
+    depends_on("camp@2022.10.1:", type="build", when="@2022.10.3:")
+    depends_on("camp@2022.10.0:", type="build", when="@2022.10.0:")
+    depends_on("camp@2022.03.0:", type="build", when="@2022.03.0:")
     depends_on("camp@0.2.2:0.2.3", when="@0.14.0")
     depends_on("camp@0.1.0", when="@0.10.0:0.13.0")
     depends_on("camp@2022.10.0:", when="@2022.10.0:")
@@ -89,7 +96,7 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
             depends_on(
                 "camp+rocm amdgpu_target={0}".format(arch), when="amdgpu_target={0}".format(arch)
             )
-        conflicts("+openmp")
+        conflicts("+openmp", when="@:2022.03")
 
     with when("+cuda @0.12.0:"):
         depends_on("camp+cuda")
@@ -213,6 +220,8 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
         entries.append(cmake_cache_option("BUILD_SHARED_LIBS", "+shared" in spec))
 
         entries.append(cmake_cache_option("RAJA_ENABLE_DESUL_ATOMICS", "+desul" in spec))
+
+        entries.append(cmake_cache_option("RAJA_ENABLE_VECTORIZATION", "+vectorization" in spec))
 
         if "+desul" in spec:
             entries.append(cmake_cache_string("BLT_CXX_STD","c++14"))
