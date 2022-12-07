@@ -64,7 +64,7 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
     variant("vectorization", default=True, description="Build SIMD/SIMT intrinsics support")
 
     depends_on("blt")
-    depends_on("blt@develop:", type="build", when="@2022.10.3")
+    depends_on("blt@develop", type="build", when="@2022.10.3")
     depends_on("blt@0.5.2:", type="build", when="@2022.10.0:")
     depends_on("blt@0.5.0:", type="build", when="@0.14.1:")
     depends_on("blt@0.4.1", type="build", when="@0.14.0")
