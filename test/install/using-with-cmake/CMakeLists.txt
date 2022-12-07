@@ -5,7 +5,11 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-cmake_minimum_required(VERSION 3.14)
+if (ENABLE_HIP)
+  cmake_minimum_required(VERSION 3.23)
+else()
+  cmake_minimum_required(VERSION 3.20)
+endif()
 
  project(using_with_cmake)
 

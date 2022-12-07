@@ -15,7 +15,7 @@ if [[ $# -lt 2 ]]; then
   echo "   3...) optional arguments to cmake"
   echo
   echo "For example: "
-  echo "    toss4_amdclang.sh 4.1.0 gfx906"
+  echo "    toss4_hipcc.sh 4.1.0 gfx906"
   exit
 fi
 
@@ -36,10 +36,10 @@ else
   echo "Unknown hip version, using ${HOSTCONFIG} host-config"
 fi
 
-BUILD_SUFFIX=lc_toss4-amdclang-${COMP_VER}-${COMP_ARCH}
+BUILD_SUFFIX=lc_toss4-hipcc-${COMP_VER}-${COMP_ARCH}
 
 echo
-echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo "Creating build directory build_${BUILD_SUFFIX} and generating configuration in it"
 echo "Configuration extra arguments:"
 echo "   $@"
 echo
@@ -62,13 +62,12 @@ cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DROCM_ROOT_DIR="/opt/rocm-${COMP_VER}" \
   -DHIP_ROOT_DIR="/opt/rocm-${COMP_VER}/hip" \
-  -DHIP_PATH=/opt/rocm-${COMP_VER}/llvm/bin \
-  -DCMAKE_C_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/amdclang \
-  -DCMAKE_CXX_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/amdclang++ \
-  -DCMAKE_HIP_ARCHITECTURES="${COMP_ARCH}:xnack+" \
-  -DGPU_TARGETS="${COMP_ARCH}:xnack+" \
-  -DAMDGPU_TARGETS="${COMP_ARCH}:xnack+" \
-  -DCMAKE_CXX_FLAGS="-fsanitize=address -shared-libsan" \
+  -DHIP_PATH=/opt/rocm-${COMP_VER}/bin \
+  -DCMAKE_C_COMPILER=/opt/rocm-${COMP_VER}/bin/hipcc \
+  -DCMAKE_CXX_COMPILER=/opt/rocm-${COMP_VER}/bin/hipcc \
+  -DCMAKE_HIP_ARCHITECTURES="${COMP_ARCH}" \
+  -DGPU_TARGETS="${COMP_ARCH}" \
+  -DAMDGPU_TARGETS="${COMP_ARCH}" \
   -DBLT_CXX_STD=c++14 \
   -C "../host-configs/lc-builds/toss4/${HOSTCONFIG}.cmake" \
   -DENABLE_HIP=ON \
@@ -89,10 +88,5 @@ echo "  or load the appropriate rocm module (${COMP_VER}) when building."
 echo
 echo "    module unload rocm"
 echo "    srun -n1 make"
-echo
-echo "  Run with these environment options"
-echo "    ASAN_OPTIONS=detect_leaks=0"
-echo "    HSA_XNACK=1"
-echo "    LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/opt/rocm-${COMP_VER}/llvm/lib/clang/15.0.0/lib/linux"
 echo
 echo "***********************************************************************"
