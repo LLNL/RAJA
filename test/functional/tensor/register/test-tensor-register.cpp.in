@@ -20,27 +20,27 @@
 using TensorRegisterTypes = ::testing::Types<
 	
 #ifdef RAJA_ENABLE_CUDA
-    RAJA::Register<@TENSOR_ELEMENT_TYPE@, RAJA::cuda_warp_register>,
+    RAJA::expt::Register<@TENSOR_ELEMENT_TYPE@, RAJA::expt::cuda_warp_register>,
 #endif
 
 #ifdef RAJA_ENABLE_HIP
-    RAJA::Register<@TENSOR_ELEMENT_TYPE@, RAJA::hip_wave_register>,
+    RAJA::expt::Register<@TENSOR_ELEMENT_TYPE@, RAJA::expt::hip_wave_register>,
 #endif
 
 #ifdef __AVX__
-    RAJA::Register<@TENSOR_ELEMENT_TYPE@, RAJA::avx_register>,
+    RAJA::expt::Register<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx_register>,
 #endif
 
 #ifdef __AVX2__
-    RAJA::Register<@TENSOR_ELEMENT_TYPE@, RAJA::avx2_register>,
+    RAJA::expt::Register<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx2_register>,
 #endif
 
 #ifdef __AVX512__
-    RAJA::Register<@TENSOR_ELEMENT_TYPE@, RAJA::avx512_register>,
+    RAJA::expt::Register<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx512_register>,
 #endif
 
     // scalar_register is supported on all platforms
-    RAJA::Register<@TENSOR_ELEMENT_TYPE@, RAJA::scalar_register>
+    RAJA::expt::Register<@TENSOR_ELEMENT_TYPE@, RAJA::expt::scalar_register>
   >;
 
 

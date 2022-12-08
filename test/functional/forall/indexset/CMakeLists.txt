@@ -10,7 +10,6 @@
 #
 set(INDEXSETTESTTYPES IndexSet IcountIndexSet)
 
-
 #
 # Generate tests for each enabled RAJA back-end.
 #

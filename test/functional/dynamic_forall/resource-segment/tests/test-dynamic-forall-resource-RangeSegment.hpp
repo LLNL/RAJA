@@ -66,7 +66,9 @@ TYPED_TEST_P(DynamicForallResourceRangeSegmentTest, RangeSegmentForallResource)
   using POLICY_LIST = typename camp::at<TypeParam, camp::num<2>>::type;
 
 
+#if defined(RAJA_DEVICE_ACTIVE)
   constexpr int N = camp::size<POLICY_LIST>::value;
+#endif
 
   //If N == 2 host, no openmp is available
   //If N == 3 host, openmp is available

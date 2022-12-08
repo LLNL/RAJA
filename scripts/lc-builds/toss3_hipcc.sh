@@ -16,7 +16,6 @@ if [[ $# -lt 2 ]]; then
   echo
   echo "For example: "
   echo "    toss3_hipcc.sh 4.1.0 gfx906"
-  echo "    toss3_hipcc.sh 4.1.0 gfx906 -DBLT_CXX_STD=c++11"
   exit
 fi
 
@@ -44,7 +43,7 @@ fi
 BUILD_SUFFIX=lc_toss3-hipcc-${COMP_VER}-${COMP_ARCH}
 
 echo
-echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo "Creating build directory build_${BUILD_SUFFIX} and generating configuration in it"
 echo "Configuration extra arguments:"
 echo "   $@"
 echo
@@ -53,7 +52,7 @@ rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 
-module load cmake/3.14.5
+module load cmake/3.23.1
 
 # unload rocm to avoid configuration problems where the loaded rocm and COMP_VER
 # are inconsistent causing the rocprim from the module to be used unexpectedly
@@ -68,9 +67,10 @@ cmake \
   -DCMAKE_C_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/clang \
   -DCMAKE_CXX_COMPILER=/opt/rocm-${COMP_VER}/llvm/bin/clang++ \
   -DHIP_CLANG_FLAGS="${HIP_CLANG_FLAGS}" \
+  -DBLT_CXX_STD=c++14 \
   -C "../host-configs/lc-builds/toss3/${HOSTCONFIG}.cmake" \
   -DENABLE_HIP=ON \
-  -DENABLE_OPENMP=OFF \
+  -DENABLE_OPENMP=ON \
   -DENABLE_CUDA=OFF \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \

@@ -8,7 +8,9 @@
 #ifndef __TEST_KERNEL_NESTED_LOOP_TYPES_HPP__
 #define __TEST_KERNEL_NESTED_LOOP_TYPES_HPP__
 
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_SYCL)
+#define DEVICE_KERNEL SyclKernel
+#elif defined(RAJA_ENABLE_HIP)
 #define DEVICE_KERNEL HipKernel
 #else
 #define DEVICE_KERNEL CudaKernel

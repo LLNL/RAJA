@@ -67,10 +67,23 @@ xl_16_1_1_12_cuda_11_1_1:
   allow_failure: true
   extends: .build_and_test_on_lassen
 
+# Overriding shared spec: Deactivated spec. This spec will be removed soon.
+xl_16_1_1_12_gcc_8_3_1_cuda_11_0_2:
+  variables:
+    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ^cuda@11.0.2 ^cmake@3.14.5 ${PROJECT_LASSEN_DEPS}"
+  extends: .build_and_test_on_lassen
+  script:
+    - |
+      echo -e "\e[31mDeactivated spec !\e[0m"
+      echo -e "\e[31m${SPEC}\e[0m"
+      echo -e "\e[31mRAJA won’t build with Cuda 11.0.2 due to a known issue.\e[0m"
+    - exit 1
+  allow_failure: true
+
 # Overriding shared spec: Longer allocation + Extra flags + Allow failure + Updated cuda
 xl_16_1_1_12_gcc_8_3_1_cuda_11_1_0:
   variables:
-    SPEC: " ${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cuda_arch=70 ^cuda@11.1.0 ^cmake@3.14.5 ${PROJECT_LASSEN_DEPS}"
+    SPEC: " ${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" cflags=\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cuda_arch=70 ^cuda@11.1.0 ^cmake@3.14.5 ${PROJECT_LASSEN_DEPS}"
     LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 120"
   allow_failure: true
   extends: .build_and_test_on_lassen
@@ -89,7 +102,7 @@ xl_16_1_1_12_gcc_8_3_1_cuda_11_1_0:
 
 clang_14_0_5:
   variables:
-    SPEC: " +openmp %clang@14.0.5"
+    SPEC: " ~shared +openmp +tests %clang@14.0.5"
   extends: .build_and_test_on_lassen
 
 ##########
@@ -98,18 +111,18 @@ clang_14_0_5:
 
 clang_12_0_1_cuda_11_5_0:
   variables:
-    SPEC: " +openmp +cuda cuda_arch=70 %clang@12.0.1 ^cuda@11.5.0"
+    SPEC: " ~shared +openmp +tests +cuda cuda_arch=70 %clang@12.0.1 ^cuda@11.5.0"
   extends: .build_and_test_on_lassen
 
 gcc_8_3_1_cuda_11_1_0:
   variables:
-    SPEC: " +openmp +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.1.0"
+    SPEC: " ~shared +openmp +tests +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.1.0"
   extends: .build_and_test_on_lassen
 
 gcc_8_3_1_cuda_11_5_0_ats_disabled:
   extends: .build_and_test_on_lassen
   variables:
-    SPEC: " +openmp +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0"
+    SPEC: " ~shared +openmp +tests +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0"
     LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 --atsdisable -W 60"
 
 ##########
@@ -118,16 +131,16 @@ gcc_8_3_1_cuda_11_5_0_ats_disabled:
 
 clang_13_0_1_libcpp:
   variables:
-    SPEC: " +openmp %clang@13.0.1+libcpp"
+    SPEC: " ~shared +openmp +tests %clang@13.0.1+libcpp"
   extends: .build_and_test_on_lassen
 
 clang_14_0_5_asan:
   variables:
-    SPEC: " +openmp %clang@14.0.5 cxxflags=-fsanitize=address"
+    SPEC: " ~shared +openmp +tests %clang@14.0.5 cxxflags=-fsanitize=address"
     ASAN_OPTIONS: "detect_leaks=1"
   extends: .build_and_test_on_lassen
 
 gcc_8_3_1_cuda_10_1_168_desul_atomics:
   variables:
-    SPEC: " +openmp +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.168"
+    SPEC: " ~shared +openmp +tests +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.168"
   extends: .build_and_test_on_lassen

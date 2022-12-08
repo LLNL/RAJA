@@ -30,7 +30,7 @@
 #include "RAJA/policy/sequential/reduce.hpp"
 #include "RAJA/policy/sequential/scan.hpp"
 #include "RAJA/policy/sequential/sort.hpp"
-#include "RAJA/policy/sequential/teams.hpp"
+#include "RAJA/policy/sequential/launch.hpp"
 #include "RAJA/policy/sequential/WorkGroup.hpp"
 
 #endif  // closing endif for header file include guard

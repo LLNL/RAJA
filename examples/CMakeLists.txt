@@ -16,12 +16,20 @@ raja_add_executable(
   SOURCES dynamic-forall.cpp)
 
 raja_add_executable(
+  NAME forall-param-reductions
+  SOURCES forall-param-reductions.cpp)
+
+raja_add_executable(
   NAME resource-dynamic-forall
   SOURCES resource-dynamic-forall.cpp)
 
 raja_add_executable(
   NAME tut_daxpy
   SOURCES tut_daxpy.cpp)
+
+raja_add_executable(
+  NAME dynamic_mat_transpose
+  SOURCES dynamic_mat_transpose.cpp)
 
 raja_add_executable(
   NAME tut_matrix-multiply

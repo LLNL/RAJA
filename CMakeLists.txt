@@ -15,8 +15,8 @@ include(CMakeDependentOption)
 
 # Set version number
 set(RAJA_VERSION_MAJOR 2022)
-set(RAJA_VERSION_MINOR 03)
-set(RAJA_VERSION_PATCHLEVEL 1)
+set(RAJA_VERSION_MINOR 10)
+set(RAJA_VERSION_PATCHLEVEL 3)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
   message(FATAL_ERROR "You are mixing RAJA versions. Loaded is ${RAJA_LOADED}, expected ${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
@@ -44,7 +44,11 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PA
 
 include(cmake/SetupRajaOptions.cmake)
 
-cmake_minimum_required(VERSION 3.14.5)
+if (ENABLE_HIP)
+  cmake_minimum_required(VERSION 3.23)
+else()
+  cmake_minimum_required(VERSION 3.20)
+endif()
 
 # Detect C++ standard and add appropriate flag _before_ loading BLT
 set(COMPILERS_KNOWN_TO_CMAKE33 AppleClang Clang GNU MSVC)
@@ -114,27 +118,22 @@ include(cmake/SetupBasics.cmake)
 include(cmake/SetupPackages.cmake)
 
 if (RAJA_ENABLE_CUDA)
-  if (DEFINED CUDA_ARCH)
-    if (CUDA_ARCH MATCHES "^sm_*")
-      if ("${CUDA_ARCH}" STRLESS "sm_35")
-        message( FATAL_ERROR "RAJA requires minimum CUDA compute architecture of sm_35")
-      endif()
-    endif()
-    if (CUDA_ARCH MATCHES "^compute_*")
-      if ("${CUDA_ARCH}" STRLESS "compute_35")
-        message( FATAL_ERROR "RAJA requires minimum CUDA compute architecture of compute_35")
-      endif()
+  if (DEFINED CMAKE_CUDA_ARCHITECTURES)
+    if ("${CMAKE_CUDA_ARCHITECTURES}" STRLESS "35")
+      message( FATAL_ERROR "RAJA requires minimum CUDA compute architecture of 35")
     endif()
   else()
-    message(STATUS "CUDA compute architecture set to RAJA default sm_35 since it was not specified")
-    set(CUDA_ARCH "sm_35" CACHE STRING "Set CUDA_ARCH to RAJA minimum supported" FORCE)
+    message(STATUS "CUDA compute architecture set to RAJA default 35 since it was not specified")
+    set(CMAKE_CUDA_ARCHITECTURES "35" CACHE STRING "Set CMAKE_CUDA_ARCHITECTURES to RAJA minimum supported" FORCE)
   endif()
+  message(STATUS "CMAKE_CUDA_ARCHITECTURES set to ${CMAKE_CUDA_ARCHITECTURES}") 
   if ( (CMAKE_CXX_COMPILER_ID MATCHES GNU) AND (CMAKE_SYSTEM_PROCESSOR MATCHES ppc64le) )
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
       set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -mno-float128")
     endif ()
   endif ()
 endif()
+
 
 # Setup vendor-specific compiler flags
 include(cmake/SetupCompilers.cmake)
@@ -219,6 +218,7 @@ if (RAJA_ENABLE_EXTERNAL_ROCPRIM)
 endif ()
 
 if (RAJA_ENABLE_SYCL)
+  set (RAJA_ENABLE_DESUL_ATOMICS "On")
   set (raja_depends
     ${raja_depends}
     sycl)

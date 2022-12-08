@@ -44,7 +44,7 @@ syclInfo g_status;
 
 //! State of the host code in this thread
 syclInfo tl_status;
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
 #pragma omp threadprivate(tl_status)
 #endif
 

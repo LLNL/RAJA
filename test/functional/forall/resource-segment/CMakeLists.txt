@@ -10,7 +10,6 @@
 #
 set(SEGTYPES ListSegment RangeSegment RangeStrideSegment)
 
-
 #
 # Generate tests for each enabled RAJA back-end. 
 # 
