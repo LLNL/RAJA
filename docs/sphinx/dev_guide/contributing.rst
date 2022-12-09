@@ -12,7 +12,7 @@
 Contributing to RAJA
 *********************
 
-RAJA is a collaborative open source software project and we encourage 
+RAJA is a collaborative open-source software project and we encourage 
 contributions from anyone who wants to add features or improve its
 capabilities. This section describes the following:
 
