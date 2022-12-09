@@ -480,7 +480,8 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #define RAJA_UNROLL RAJA_PRAGMA(clang loop unroll(enable))
 #define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(clang loop unroll_count(N))
-
+#define RAJA_HOST_MAX_ALIGN std::max_align_t
+#define RAJA_DEVICE_MAX_ALIGN 8
 
 // note that neither nvcc nor Apple Clang compiler currently doesn't support
 // the __builtin_assume_aligned attribute
