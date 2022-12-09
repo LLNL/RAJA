@@ -45,7 +45,7 @@ struct WorkStruct;
  *   sizeof(GenericWorkStruct) <= sizeof(WorkStruct<size>)
  */
 template < typename Dispatcher_T >
-using GenericWorkStruct = WorkStruct<alignof(RAJA_HOST_MAX_ALIGN), Dispatcher_T>;
+using GenericWorkStruct = WorkStruct<RAJA_HOST_MAX_ALIGN, Dispatcher_T>;
 
 template < size_t size, Platform platform, typename dispatch_policy, typename DispatcherID, typename ... CallArgs >
 struct WorkStruct<size, Dispatcher<platform, dispatch_policy, DispatcherID, CallArgs...>>
@@ -112,7 +112,7 @@ struct WorkStruct<size, Dispatcher<platform, dispatch_policy, DispatcherID, Call
 
   const dispatcher_type* dispatcher;
   typename dispatcher_type::invoker_type invoke;
-  typename std::aligned_storage<size, alignof(RAJA_HOST_MAX_ALIGN)>::type obj;
+  typename std::aligned_storage<size, RAJA_HOST_MAX_ALIGN>::type obj;
 };
 
 }  // namespace detail
