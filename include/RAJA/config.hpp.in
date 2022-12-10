@@ -536,7 +536,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_NO_SIMD
 #define RAJA_UNROLL
 #define RAJA_UNROLL_COUNT(N)
-#define RAJA_HOST_MAX_ALIGN 16
+#define RAJA_HOST_MAX_ALIGN alignof(std::max_align_t)
 #define RAJA_DEVICE_MAX_ALIGN 16
 #else
 
