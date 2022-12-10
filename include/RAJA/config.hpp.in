@@ -388,6 +388,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #endif
 
 #define RAJA_HOST_MAX_ALIGN 16
+#define RAJA_DEVICE_MAX_ALIGN 16
 
 #define RAJA_UNROLL RAJA_PRAGMA(unroll)
 #define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(unroll(N))
@@ -417,7 +418,11 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #define RAJA_HOST_MAX_ALIGN 16
-
+#if defined(RAJA_ENABLE_HIP)
+#define RAJA_DEVICE_MAX_ALIGN 8
+#else
+#define RAJA_HOST_MAX_ALIGN 16
+#endif
 #if !defined(__NVCC__)
 #define RAJA_UNROLL RAJA_PRAGMA(GCC unroll 10000)
 #define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(GCC unroll N)
@@ -454,13 +459,12 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_UNROLL
 #define RAJA_UNROLL_COUNT(N)
 #define RAJA_HOST_MAX_ALIGN 16
+#define RAJA_DEVICE_MAX_ALIGN 16
 
 // FIXME: alignx is breaking CUDA+xlc
 #if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d) d
-#define RAJA_DEVICE_MAX_ALIGN 16
 #else
-#define RAJA_DEVICE_MAX_ALIGN 16
 #define RAJA_ALIGN_DATA(d) __alignx(RAJA::DATA_ALIGN, d)
 #endif
 
@@ -487,14 +491,16 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_UNROLL RAJA_PRAGMA(clang loop unroll(enable))
 #define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(clang loop unroll_count(N))
 #define RAJA_HOST_MAX_ALIGN 16
-
+#if defined(RAJA_ENABLE_HIP)
+#define RAJA_DEVICE_MAX_ALIGN 8
+#else
+#define RAJA_HOST_MAX_ALIGN 16
+#endif
 // note that neither nvcc nor Apple Clang compiler currently doesn't support
 // the __builtin_assume_aligned attribute
 #if defined(RAJA_ENABLE_CUDA) || defined(__APPLE__)
 #define RAJA_ALIGN_DATA(d) d
-#define RAJA_DEVICE_MAX_ALIGN 16
 #else
-#define RAJA_DEVICE_MAX_ALIGN 8
 #define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, RAJA::DATA_ALIGN)
 #endif
 
@@ -530,13 +536,13 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_NO_SIMD
 #define RAJA_UNROLL
 #define RAJA_UNROLL_COUNT(N)
-
 #define RAJA_HOST_MAX_ALIGN 16
+#define RAJA_DEVICE_MAX_ALIGN 16
 #else
 
 #pragma message("RAJA_COMPILER unknown, using default empty macros.")
 #define RAJA_HOST_MAX_ALIGN 16
-#define RAJA_DEVICE_MAX_ALIGN 8
+#define RAJA_DEVICE_MAX_ALIGN 16
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline
 #define RAJA_ALIGN_DATA(d) d
