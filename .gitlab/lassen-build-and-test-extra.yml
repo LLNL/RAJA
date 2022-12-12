@@ -67,31 +67,31 @@ xl_16_1_1_12_cuda_11_1_1:
   allow_failure: true
   extends: .build_and_test_on_lassen
 
-#CONFIRM FAILURE# # Overriding shared spec: Deactivated spec. This spec will be removed soon.
-#CONFIRM FAILURE# xl_16_1_1_12_gcc_7_3_1_cuda_10_1_168:
-#CONFIRM FAILURE#   variables:
-#CONFIRM FAILURE#     SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-7.3.1\" cflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-7.3.1\" ^cuda@10.1.168 ${PROJECT_LASSEN_DEPS}"
-#CONFIRM FAILURE#   extends: .build_and_test_on_lassen
-#CONFIRM FAILURE#   script:
-#CONFIRM FAILURE#     - |
-#CONFIRM FAILURE#       echo -e "\e[31mDeactivated spec !\e[0m"
-#CONFIRM FAILURE#       echo -e "\e[31m${SPEC}\e[0m"
-#CONFIRM FAILURE#       echo -e "\e[31mRAJA won’t build with Cuda 11.0.2 due to a known issue.\e[0m"
-#CONFIRM FAILURE#     - exit 1
-#CONFIRM FAILURE#   allow_failure: true
-#CONFIRM FAILURE# 
-#CONFIRM FAILURE# # Overriding shared spec: Deactivated spec. This spec will be removed soon.
-#CONFIRM FAILURE# xl_16_1_1_12_gcc_8_3_1_cuda_11_0_2:
-#CONFIRM FAILURE#   variables:
-#CONFIRM FAILURE#     SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ^cuda@11.0.2 ${PROJECT_LASSEN_DEPS}"
-#CONFIRM FAILURE#   extends: .build_and_test_on_lassen
-#CONFIRM FAILURE#   script:
-#CONFIRM FAILURE#     - |
-#CONFIRM FAILURE#       echo -e "\e[31mDeactivated spec !\e[0m"
-#CONFIRM FAILURE#       echo -e "\e[31m${SPEC}\e[0m"
-#CONFIRM FAILURE#       echo -e "\e[31mRAJA won’t build with Cuda 11.0.2 due to a known issue.\e[0m"
-#CONFIRM FAILURE#     - exit 1
-#CONFIRM FAILURE#   allow_failure: true
+# Overriding shared spec: Deactivated spec. This spec will be removed soon.
+xl_16_1_1_12_gcc_7_3_1_cuda_10_1_168:
+  variables:
+    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-7.3.1\" cflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-7.3.1\" ^cuda@10.1.168 ${PROJECT_LASSEN_DEPS}"
+  extends: .build_and_test_on_lassen
+  script:
+    - |
+      echo -e "\e[31mDeactivated spec !\e[0m"
+      echo -e "\e[31m${SPEC}\e[0m"
+      echo -e "\e[31mRAJA won’t build with Cuda < 11.1.0 due to a known issue.\e[0m"
+    - exit 1
+  allow_failure: true
+
+# Overriding shared spec: Deactivated spec. This spec will be removed soon.
+xl_16_1_1_12_gcc_8_3_1_cuda_11_0_2:
+  variables:
+    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ^cuda@11.0.2 ${PROJECT_LASSEN_DEPS}"
+  extends: .build_and_test_on_lassen
+  script:
+    - |
+      echo -e "\e[31mDeactivated spec !\e[0m"
+      echo -e "\e[31m${SPEC}\e[0m"
+      echo -e "\e[31mRAJA won’t build with Cuda < 11.1.0 due to a known issue.\e[0m"
+    - exit 1
+  allow_failure: true
 
 # Overriding shared spec: Longer allocation + Extra flags + Allow failure + Updated cuda
 xl_16_1_1_12_gcc_8_3_1_cuda_11_1_0:
