@@ -384,7 +384,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 // Configuration options for Intel compilers
 //
-
+#define RAJA_MAX_ALIGN 16
 #if defined (RAJA_ENABLE_FORCEINLINE_RECURSIVE)
 #define RAJA_FORCEINLINE_RECURSIVE  RAJA_PRAGMA(forceinline recursive)
 #else
@@ -397,7 +397,6 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #endif
 
-#define RAJA_MAX_ALIGN 16
 
 #define RAJA_UNROLL RAJA_PRAGMA(unroll)
 #define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(unroll(N))
@@ -424,9 +423,9 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 // Configuration options for GNU compilers
 //
+#define RAJA_MAX_ALIGN 16
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
-#define RAJA_MAX_ALIGN 16
 #if !defined(__NVCC__)
 #define RAJA_UNROLL RAJA_PRAGMA(GCC unroll 10000)
 #define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(GCC unroll N)
@@ -458,11 +457,11 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 // Configuration options for xlc compiler (i.e., bgq/sequoia).
 //
+#define RAJA_MAX_ALIGN 16
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #define RAJA_UNROLL
 #define RAJA_UNROLL_COUNT(N)
-#define RAJA_MAX_ALIGN 16
 // FIXME: alignx is breaking CUDA+xlc
 #if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d) d
@@ -488,11 +487,11 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 // Configuration options for clang compilers
 //
+#define RAJA_MAX_ALIGN 16
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #define RAJA_UNROLL RAJA_PRAGMA(clang loop unroll(enable))
 #define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(clang loop unroll_count(N))
-#define RAJA_MAX_ALIGN 16
 // note that neither nvcc nor Apple Clang compiler currently doesn't support
 // the __builtin_assume_aligned attribute
 #if defined(RAJA_ENABLE_CUDA) || defined(__APPLE__)
@@ -525,7 +524,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 // This is the same as undefined compiler, but squelches the warning message
 #elif defined(RAJA_COMPILER_MSVC)
-
+#define RAJA_MAX_ALIGN alignof(std::max_align_t)
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline
 #define RAJA_ALIGN_DATA(d) d
@@ -533,7 +532,6 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_NO_SIMD
 #define RAJA_UNROLL
 #define RAJA_UNROLL_COUNT(N)
-#define RAJA_MAX_ALIGN alignof(std::max_align_t)
 
 #else
 
@@ -548,8 +546,10 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_UNROLL_COUNT(N)
 
 #endif
+
 static_assert(RAJA_MAX_ALIGN >= alignof(std::max_align_t) && (RAJA_MAX_ALIGN/alignof(std::max_align_t))*alignof(std::max_align_t) == RAJA_MAX_ALIGN, 
         "Inconsistent RAJA_MAX_ALIGN size");
+
 #cmakedefine RAJA_HAVE_POSIX_MEMALIGN
 #cmakedefine RAJA_HAVE_ALIGNED_ALLOC
 #cmakedefine RAJA_HAVE_MM_MALLOC
