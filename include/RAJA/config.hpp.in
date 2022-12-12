@@ -239,6 +239,15 @@ static_assert(RAJA_HAS_SOME_CXX14,
 #define RAJA_PRAGMA(x) _Pragma(RAJA_STRINGIFY(x))
 #endif
 
+
+/* NOTE: Below we define RAJA_MAX_ALIGN for each compiler, currently it is set as 16 bytes
+for all cases. Previously this was set by alignof(std::max_align_t) which, in Clang,
+is based on the sizeof(long double). This causes an in inconsistency as CUDA/HIP long doubles 
+are demoted to doubles causing alignof(std::max_align_t) to return 8 bytes on the device and
+16 bytes on the host. We therefore set a standard size and ensure validity through a 
+static_assert in pattern/WorkGroup/WorkStruct.hpp.
+*/
+
 namespace RAJA {
 
 #if defined(RAJA_ENABLE_OPENMP) && !defined(__HIP_DEVICE_COMPILE__)
@@ -387,8 +396,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #endif
 
-#define RAJA_HOST_MAX_ALIGN 16
-#define RAJA_DEVICE_MAX_ALIGN 16
+#define RAJA_MAX_ALIGN 16
 
 #define RAJA_UNROLL RAJA_PRAGMA(unroll)
 #define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(unroll(N))
@@ -417,12 +425,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
-#define RAJA_HOST_MAX_ALIGN 16
-#if defined(RAJA_ENABLE_HIP)
-#define RAJA_DEVICE_MAX_ALIGN 8
-#else
-#define RAJA_HOST_MAX_ALIGN 16
-#endif
+#define RAJA_HOST_ALIGN 16
 #if !defined(__NVCC__)
 #define RAJA_UNROLL RAJA_PRAGMA(GCC unroll 10000)
 #define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(GCC unroll N)
@@ -458,8 +461,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #define RAJA_UNROLL
 #define RAJA_UNROLL_COUNT(N)
-#define RAJA_HOST_MAX_ALIGN 16
-#define RAJA_DEVICE_MAX_ALIGN 16
+#define RAJA_MAX_ALIGN 16
 
 // FIXME: alignx is breaking CUDA+xlc
 #if defined(RAJA_ENABLE_CUDA)
@@ -490,12 +492,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #define RAJA_UNROLL RAJA_PRAGMA(clang loop unroll(enable))
 #define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(clang loop unroll_count(N))
-#define RAJA_HOST_MAX_ALIGN 16
-#if defined(RAJA_ENABLE_HIP)
-#define RAJA_DEVICE_MAX_ALIGN 8
-#else
-#define RAJA_HOST_MAX_ALIGN 16
-#endif
+#define RAJA_MAX_ALIGN 16
 // note that neither nvcc nor Apple Clang compiler currently doesn't support
 // the __builtin_assume_aligned attribute
 #if defined(RAJA_ENABLE_CUDA) || defined(__APPLE__)
@@ -536,13 +533,11 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_NO_SIMD
 #define RAJA_UNROLL
 #define RAJA_UNROLL_COUNT(N)
-#define RAJA_HOST_MAX_ALIGN alignof(std::max_align_t)
-#define RAJA_DEVICE_MAX_ALIGN 16
+#define RAJA_MAX_ALIGN 16
 #else
 
 #pragma message("RAJA_COMPILER unknown, using default empty macros.")
-#define RAJA_HOST_MAX_ALIGN 16
-#define RAJA_DEVICE_MAX_ALIGN 16
+#define RAJA_MAX_ALIGN 16
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline
 #define RAJA_ALIGN_DATA(d) d

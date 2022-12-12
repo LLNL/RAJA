@@ -45,7 +45,7 @@ struct WorkStruct;
  *   sizeof(GenericWorkStruct) <= sizeof(WorkStruct<size>)
  */
 template < typename Dispatcher_T >
-using GenericWorkStruct = WorkStruct<RAJA_HOST_MAX_ALIGN, Dispatcher_T>;
+using GenericWorkStruct = WorkStruct<RAJA_MAX_ALIGN, Dispatcher_T>;
 
 template < size_t size, Platform platform, typename dispatch_policy, typename DispatcherID, typename ... CallArgs >
 struct WorkStruct<size, Dispatcher<platform, dispatch_policy, DispatcherID, CallArgs...>>
@@ -71,7 +71,8 @@ struct WorkStruct<size, Dispatcher<platform, dispatch_policy, DispatcherID, Call
         "WorkStruct and GenericWorkStruct must have obj at the same offset");
     static_assert(sizeof(value_type) <= sizeof(true_value_type),
         "WorkStruct must not be smaller than GenericWorkStruct");
-
+    static_assert(16 >= alignof(std::max_align_t) && (16/alignof(std::max_align_t))*alignof(std::max_align_t) == 16,
+			  "WorkStruct max align value must be 16 bytes");
     true_value_type* value_ptr = static_cast<true_value_type*>(ptr);
 
     value_ptr->dispatcher = dispatcher;
@@ -112,7 +113,7 @@ struct WorkStruct<size, Dispatcher<platform, dispatch_policy, DispatcherID, Call
 
   const dispatcher_type* dispatcher;
   typename dispatcher_type::invoker_type invoke;
-  typename std::aligned_storage<size, RAJA_HOST_MAX_ALIGN>::type obj;
+  typename std::aligned_storage<size, RAJA_MAX_ALIGN>::type obj;
 };
 
 }  // namespace detail
