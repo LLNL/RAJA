@@ -89,7 +89,7 @@ xl_16_1_1_12_gcc_8_3_1_cuda_11_0_2:
     - |
       echo -e "\e[31mDeactivated spec !\e[0m"
       echo -e "\e[31m${SPEC}\e[0m"
-      echo -e "\e[31mRAJA won’t build with Cuda < 11.1.0 due to a known issue.\e[0m"
+      echo -e "\e[31mRAJA won’t build with Cuda < 11.0.2 due to a known issue.\e[0m"
     - exit 1
   allow_failure: true
 
