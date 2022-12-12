@@ -533,7 +533,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_NO_SIMD
 #define RAJA_UNROLL
 #define RAJA_UNROLL_COUNT(N)
-#define RAJA_MAX_ALIGN 16
+#define RAJA_MAX_ALIGN alignof(std::max_align_t)
 #else
 
 #pragma message("RAJA_COMPILER unknown, using default empty macros.")
