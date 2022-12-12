@@ -32,6 +32,7 @@
 #define RAJA_config_HPP
 
 #include <utility>
+#include <cstddef>
 #include <type_traits>
 
 #if defined(_MSVC_LANG)
@@ -462,7 +463,6 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_UNROLL
 #define RAJA_UNROLL_COUNT(N)
 #define RAJA_MAX_ALIGN 16
-
 // FIXME: alignx is breaking CUDA+xlc
 #if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d) d
@@ -534,6 +534,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_UNROLL
 #define RAJA_UNROLL_COUNT(N)
 #define RAJA_MAX_ALIGN alignof(std::max_align_t)
+
 #else
 
 #pragma message("RAJA_COMPILER unknown, using default empty macros.")
@@ -547,7 +548,8 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_UNROLL_COUNT(N)
 
 #endif
-
+static_assert(RAJA_MAX_ALIGN >= alignof(std::max_align_t) && (RAJA_MAX_ALIGN/alignof(std::max_align_t))*alignof(std::max_align_t) == RAJA_MAX_ALIGN, 
+        "Inconsistent RAJA_MAX_ALIGN size");
 #cmakedefine RAJA_HAVE_POSIX_MEMALIGN
 #cmakedefine RAJA_HAVE_ALIGNED_ALLOC
 #cmakedefine RAJA_HAVE_MM_MALLOC

@@ -71,8 +71,6 @@ struct WorkStruct<size, Dispatcher<platform, dispatch_policy, DispatcherID, Call
         "WorkStruct and GenericWorkStruct must have obj at the same offset");
     static_assert(sizeof(value_type) <= sizeof(true_value_type),
         "WorkStruct must not be smaller than GenericWorkStruct");
-    static_assert(16 >= alignof(std::max_align_t) && (16/alignof(std::max_align_t))*alignof(std::max_align_t) == 16,
-			  "WorkStruct max align value must be 16 bytes");
     true_value_type* value_ptr = static_cast<true_value_type*>(ptr);
 
     value_ptr->dispatcher = dispatcher;
