@@ -242,11 +242,11 @@ static_assert(RAJA_HAS_SOME_CXX14,
 
 
 /* NOTE: Below we define RAJA_MAX_ALIGN for each compiler, currently it is set as 16 bytes
-for all cases. Previously this was set by alignof(std::max_align_t) which, in Clang,
+for all cases, except MSVC. Previously this was set by alignof(std::max_align_t) which, in Clang,
 is based on the sizeof(long double). This causes an in inconsistency as CUDA/HIP long doubles 
 are demoted to doubles causing alignof(std::max_align_t) to return 8 bytes on the device and
 16 bytes on the host. We therefore set a standard size and ensure validity through a 
-static_assert in pattern/WorkGroup/WorkStruct.hpp.
+static_assert.
 */
 
 namespace RAJA {
