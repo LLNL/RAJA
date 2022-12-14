@@ -99,85 +99,74 @@ struct hip_threadblock_exec
 namespace internal
 {
 
-RAJA_INLINE
-int get_size(hip_dim_t dims)
-{
-  if(dims.x == 0 && dims.y == 0 && dims.z == 0){
-    return 0;
-  }
-  return (dims.x ? dims.x : 1) *
-         (dims.y ? dims.y : 1) *
-         (dims.z ? dims.z : 1);
-}
-
 struct LaunchDims {
 
-  hip_dim_t blocks;
-  hip_dim_t min_blocks;
-  hip_dim_t threads;
-  hip_dim_t min_threads;
+  HipDims dims;
+  HipDims min_dims;
+
+  LaunchDims() = default;
+  LaunchDims(LaunchDims const&) = default;
+  LaunchDims& operator=(LaunchDims const&) = default;
 
   RAJA_INLINE
-  RAJA_HOST_DEVICE
-  LaunchDims() : blocks{0,0,0},  min_blocks{0,0,0},
-                 threads{0,0,0}, min_threads{0,0,0} {}
-
+  LaunchDims(HipDims _dims)
+    : dims{_dims}
+    , min_dims{}
+  { }
 
   RAJA_INLINE
-  RAJA_HOST_DEVICE
-  LaunchDims(LaunchDims const &c) :
-  blocks(c.blocks),   min_blocks(c.min_blocks),
-  threads(c.threads), min_threads(c.min_threads)
-  {
-  }
+  LaunchDims(HipDims _dims, HipDims _min_dims)
+    : dims{_dims}
+    , min_dims{_min_dims}
+  { }
 
   RAJA_INLINE
   LaunchDims max(LaunchDims const &c) const
   {
     LaunchDims result;
 
-    result.blocks.x = std::max(c.blocks.x, blocks.x);
-    result.blocks.y = std::max(c.blocks.y, blocks.y);
-    result.blocks.z = std::max(c.blocks.z, blocks.z);
+    result.dims.blocks.x = std::max(c.dims.blocks.x, dims.blocks.x);
+    result.dims.blocks.y = std::max(c.dims.blocks.y, dims.blocks.y);
+    result.dims.blocks.z = std::max(c.dims.blocks.z, dims.blocks.z);
 
-    result.min_blocks.x = std::max(c.min_blocks.x, min_blocks.x);
-    result.min_blocks.y = std::max(c.min_blocks.y, min_blocks.y);
-    result.min_blocks.z = std::max(c.min_blocks.z, min_blocks.z);
+    result.min_dims.blocks.x = std::max(c.min_dims.blocks.x, min_dims.blocks.x);
+    result.min_dims.blocks.y = std::max(c.min_dims.blocks.y, min_dims.blocks.y);
+    result.min_dims.blocks.z = std::max(c.min_dims.blocks.z, min_dims.blocks.z);
 
-    result.threads.x = std::max(c.threads.x, threads.x);
-    result.threads.y = std::max(c.threads.y, threads.y);
-    result.threads.z = std::max(c.threads.z, threads.z);
+    result.dims.threads.x = std::max(c.dims.threads.x, dims.threads.x);
+    result.dims.threads.y = std::max(c.dims.threads.y, dims.threads.y);
+    result.dims.threads.z = std::max(c.dims.threads.z, dims.threads.z);
 
-    result.min_threads.x = std::max(c.min_threads.x, min_threads.x);
-    result.min_threads.y = std::max(c.min_threads.y, min_threads.y);
-    result.min_threads.z = std::max(c.min_threads.z, min_threads.z);
+    result.min_dims.threads.x = std::max(c.min_dims.threads.x, min_dims.threads.x);
+    result.min_dims.threads.y = std::max(c.min_dims.threads.y, min_dims.threads.y);
+    result.min_dims.threads.z = std::max(c.min_dims.threads.z, min_dims.threads.z);
 
     return result;
   }
 
   RAJA_INLINE
   int num_blocks() const {
-    return get_size(blocks);
+    return dims.num_blocks();
   }
 
   RAJA_INLINE
   int num_threads() const {
-    return get_size(threads);
+    return dims.num_threads();
   }
 
 
   RAJA_INLINE
   void clamp_to_min_blocks() {
-    blocks.x = std::max(min_blocks.x, blocks.x);
-    blocks.y = std::max(min_blocks.y, blocks.y);
-    blocks.z = std::max(min_blocks.z, blocks.z);
+    dims.blocks.x = std::max(min_dims.blocks.x, dims.blocks.x);
+    dims.blocks.y = std::max(min_dims.blocks.y, dims.blocks.y);
+    dims.blocks.z = std::max(min_dims.blocks.z, dims.blocks.z);
   };
 
   RAJA_INLINE
   void clamp_to_min_threads() {
-    threads.x = std::max(min_threads.x, threads.x);
-    threads.y = std::max(min_threads.y, threads.y);
-    threads.z = std::max(min_threads.z, threads.z);
+    dims.threads.x = std::max(min_dims.threads.x, dims.threads.x);
+    dims.threads.y = std::max(min_dims.threads.y, dims.threads.y);
+    dims.threads.z = std::max(min_dims.threads.z, dims.threads.z);
   };
 
 };
@@ -324,153 +313,6 @@ void hip_occupancy_max_blocks(Func&& func, int shmem_size,
   max_blocks = data.max_blocks;
 
 }
-
-
-template<typename Indexer>
-struct HipIndexDimensioner;
-
-
-/// Type representing thread indexing within a block
-/// block_size is fixed
-template<int dim, HipDimIdxT t_block_size>
-struct HipIndexDimensioner<HipIndexThread<dim, t_block_size>> {
-
-  template < typename IdxT >
-  static inline
-  LaunchDims get_dimensions(IdxT)
-  {
-    LaunchDims dims;
-    set_hip_dim<dim>(dims.threads, t_block_size);
-
-    return dims;
-  }
-};
-/// unless t_block_size is 0 then block_size is dynamic
-template<int dim>
-struct HipIndexDimensioner<HipIndexThread<dim, 0>> {
-
-  template < typename IdxT >
-  static inline
-  LaunchDims get_dimensions(IdxT len)
-  {
-    LaunchDims dims;
-    set_hip_dim<dim>(dims.threads, len);
-
-    return dims;
-  }
-};
-
-/// Type representing block indexing within a grid
-/// grid_size is fixed
-template<int dim, HipDimIdxT t_grid_size>
-struct HipIndexDimensioner<HipIndexBlock<dim, t_grid_size>> {
-
-  template < typename IdxT >
-  static inline
-  LaunchDims get_dimensions(IdxT)
-  {
-    LaunchDims dims;
-    set_hip_dim<dim>(dims.blocks, t_grid_size);
-
-    return dims;
-  }
-};
-/// unless t_grid_size is 0 then grid_size is dynamic
-template<int dim>
-struct HipIndexDimensioner<HipIndexBlock<dim, 0>> {
-
-  template < typename IdxT = HipDimIdxT >
-  RAJA_DEVICE
-  inline static constexpr
-  auto index() { return static_cast<IdxT>(HipDimHelper<dim>::get(blockIdx)); }
-
-  template < typename IdxT = HipDimIdxT >
-  RAJA_DEVICE
-  inline static constexpr
-  auto size() { return static_cast<IdxT>(HipDimHelper<dim>::get(gridDim)); }
-
-  template < typename IdxT >
-  static inline
-  LaunchDims get_dimensions(IdxT len)
-  {
-    LaunchDims dims;
-    set_hip_dim<dim>(dims.blocks, len);
-
-    return dims;
-  }
-};
-
-/// Type representing thread indexing within a grid
-/// block size and grid size are fixed
-template<int dim, HipDimIdxT t_block_size, HipDimIdxT t_grid_size>
-struct HipIndexDimensioner<HipIndexGlobal<dim, t_block_size, t_grid_size>> {
-
-  template < typename IdxT >
-  static inline
-  LaunchDims get_dimensions(IdxT)
-  {
-    LaunchDims dims;
-
-    set_hip_dim<dim>(dims.threads, t_block_size);
-    set_hip_dim<dim>(dims.blocks, t_grid_size);
-
-    return dims;
-  }
-};
-/// block size is fixed and grid size is dynamic
-template<int dim, HipDimIdxT t_block_size>
-struct HipIndexDimensioner<HipIndexGlobal<dim, t_block_size, 0>> {
-
-  template < typename IdxT >
-  static inline
-  LaunchDims get_dimensions(IdxT len)
-  {
-    LaunchDims dims;
-
-    IdxT block_size = t_block_size;
-    IdxT grid_size = RAJA_DIVIDE_CEILING_INT(len, block_size);
-    set_hip_dim<dim>(dims.threads, block_size);
-    set_hip_dim<dim>(dims.blocks, grid_size);
-
-    return dims;
-  }
-};
-/// block size is dynamic and grid size is fixed
-template<int dim, HipDimIdxT t_grid_size>
-struct HipIndexDimensioner<HipIndexGlobal<dim, 0, t_grid_size>> {
-
-  template < typename IdxT >
-  static inline
-  LaunchDims get_dimensions(IdxT len)
-  {
-    LaunchDims dims;
-
-    IdxT grid_size = t_grid_size;
-    IdxT block_size = RAJA_DIVIDE_CEILING_INT(len, grid_size);
-    set_hip_dim<dim>(dims.threads, block_size);
-    set_hip_dim<dim>(dims.blocks, grid_size);
-
-    return dims;
-  }
-};
-/// block size and grid size are dynamic
-template<int dim>
-struct HipIndexDimensioner<HipIndexGlobal<dim, 0, 0>> {
-
-  template < typename IdxT >
-  static inline
-  LaunchDims get_dimensions(IdxT)
-  {
-    LaunchDims dims;
-
-    // unclear what to do in this case
-    // Maybe this should just static_assert out if you try to use it in kernel
-    set_hip_dim<dim>(dims.threads, 1);
-    set_hip_dim<dim>(dims.blocks, 1);
-
-    return dims;
-  }
-};
 
 
 template <camp::idx_t cur_stmt, camp::idx_t num_stmts, typename StmtList>
