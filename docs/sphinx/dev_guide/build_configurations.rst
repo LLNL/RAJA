@@ -138,7 +138,7 @@ the compiler and version. For example,
 
   hc-quartz-toss_3_x86_64_ib-gcc@8.1.0-fjcjwd6ec3uen5rh6msdqujydsj74ubf.cmake
 
-This process is also used by our Gitlab CI testing effort. 
+This process is also used by our Git CI testing effort. 
 See :ref:`ci-label` for more information.
 
 Building RAJA with a generated host-config file
@@ -164,8 +164,8 @@ You may also run the RAJA tests with the command
 
 as an alternative to the 'ctest' command used above.
 
-It is also possible to use the configuration with the RAJA Gitlab CI script 
-outside of the Gitlab environment:
+It is also possible to use the configuration with the RAJA GitLab CI script 
+outside of the GitLab environment:
 
 .. code-block:: bash
 

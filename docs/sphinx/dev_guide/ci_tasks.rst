@@ -19,7 +19,7 @@ perform them.
 .. _gitlab_ci_tasks-label:
 
 =================
-Gitlab CI Tasks
+GitLab CI Tasks
 =================
 
 The tasks in this section apply to GitLab CI running on Livermore
@@ -28,12 +28,12 @@ Computing (LC) platforms.
 Changing Build Specs
 ---------------------
 
-The builds for each LC platform on which we run Gitlab CI pipelines are
+The builds for each LC platform on which we run GitLab CI pipelines are
 defined in ``<resource>-jobs.yml`` files in the `RAJA/.gitlab <https://github.com/LLNL/RAJA/tree/develop/.gitlab>`_ directory. The key items 
 that change when a new build is added are:
 
   * the unique **label** that identifies the build on a web page for 
-    a Gitlab CI pipeline, and
+    a GitLab CI pipeline, and
   * the build **Spack spec**, which identifies the compiler and version,
     compiler flags, etc.
 
@@ -56,7 +56,7 @@ try updating the submodule to a newer version. If the information
 is still not available, create a branch in the 
 `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_ repo, add the needed spec info, and create a pull request.
 
-.. important:: Build spec information used in RAJA Gitlab CI pipelines
+.. important:: Build spec information used in RAJA GitLab CI pipelines
                must exist in the ``compilers.yaml`` file and/or 
                ``packages.yaml`` file for the appropriate system type in
                the `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_ repo.
@@ -65,7 +65,7 @@ Changing Build/Run Parameters
 ------------------------------
 
 The commands executed to acquire resources on each 
-system/system-type on which we run Gitlab CI are defined in the 
+system/system-type on which we run GitLab CI are defined in the 
 `RAJA/.gitlab-ci.yml <https://github.com/LLNL/RAJA/blob/develop/.gitlab-ci.yml>`_ file. The default execution time for each test pipeline is 
 also defined in the file using the variable ``DEFAULT_TIME``. These 
 commands and settings can remain as is for the most part. 
@@ -98,7 +98,7 @@ Adding Test Pipelines
 Adding a test pipeline involves adding a new entry in the 
 ``RAJA/.gitlab-ci.yml`` file.
 
-.. important:: Build spec information used in RAJA Gitlab CI pipelines
+.. important:: Build spec information used in RAJA GitLab CI pipelines
                must exist in the ``compilers.yaml`` file and/or 
                ``packages.yaml`` file for the appropriate system type in
                the `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_ repo.
@@ -214,7 +214,7 @@ The `RAJA Performance Suite <https://github.com/LLNL/RAJAPerf>`_ project CI
 testing processes, directory/file structure, and dependencies are nearly 
 identical to that for RAJA, which is described in :ref:`ci-label`. Specifically,
 
-  * The RAJA Performance Suite Gitlab CI process is driven by the 
+  * The RAJA Performance Suite GitLab CI process is driven by the 
     `RAJAPerf/.gitlab-ci.yml <https://github.com/LLNL/RAJAPerf/blob/develop/.gitlab-ci.yml>`_ file. 
   * The ``<resource>-jobs.yml`` and ``<resource>-templates.yml`` files reside 
     in the 
@@ -223,7 +223,7 @@ identical to that for RAJA, which is described in :ref:`ci-label`. Specifically,
   * The ``build_and_test.sh`` script resides in the `RAJAPerf/scripts/gitlab <https://github.com/LLNL/RAJAPerf/tree/develop/scripts/gitlab>`_ directory.
   * The `RAJAPerf/Dockerfile <https://github.com/LLNL/RAJAPerf/blob/develop/Dockerfile>`_ drives the Azure testing pipelines.
   
-The main difference is that for Gitlab CI, is that the Performance Suite uses 
+The main difference is that for GitLab CI, is that the Performance Suite uses 
 the RAJA submodules for ``uberenv`` and ``radiuss-spack-configs`` located in 
 the RAJA submodule to avoid redundant submodules. This is reflected in the
 `RAJAPerf/.uberenv_config.json <https://github.com/LLNL/RAJAPerf/blob/develop/.uberenv_config.json>`_ 

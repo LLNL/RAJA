@@ -229,7 +229,7 @@ Spack Package Update
 
 After each RAJA release, we update the **RAJA Spack Package** and make a PR to
 push it upstream to the `Spack project <https://github.com/spack/spack>`_. The
-Spack package is used in RAJA Gitlab CI testing and also RAJA users who use
+Spack package is used in RAJA GitLab CI testing and also RAJA users who use
 Spack to manage their third party library installations. We try maintain the
 RAJA Spack package in the Spack project to be as close as possible to the
 one in the RAJA repository, which has a few modifications for our CI testing.
