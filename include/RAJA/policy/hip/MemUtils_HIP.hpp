@@ -229,7 +229,7 @@ void launch(const void* func, hip_dim_t gridDim, hip_dim_t blockDim, void** args
   #else
     RAJA_UNUSED_VAR(name);
   #endif
-  hipErrchk(hipLaunchKernel(func, dim3(gridDim), dim3(blockDim), args, shmem, res.get_stream()));
+  hipErrchk(hipLaunchKernel(func, gridDim, blockDim, args, shmem, res.get_stream()));
   #if defined(RAJA_ENABLE_ROCTX)
   if(name) roctxRangePop();
   #endif

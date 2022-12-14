@@ -47,12 +47,12 @@ namespace scan
         \brief explicit inclusive inplace scan given range, function, and
    initial value
 */
-template <size_t BLOCK_SIZE, bool Async, typename InputIter, typename Function>
+template <typename Indexer, bool Async, typename InputIter, typename Function>
 RAJA_INLINE
 resources::EventProxy<resources::Hip>
 inclusive_inplace(
     resources::Hip hip_res,
-    hip_exec<BLOCK_SIZE, Async>,
+    ::RAJA::policy::hip::hip_exec<Indexer, Async>,
     InputIter begin,
     InputIter end,
     Function binary_op)
@@ -115,7 +115,7 @@ inclusive_inplace(
         \brief explicit exclusive inplace scan given range, function, and
    initial value
 */
-template <size_t BLOCK_SIZE,
+template <typename Indexer,
           bool Async,
           typename InputIter,
           typename Function,
@@ -124,7 +124,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Hip>
 exclusive_inplace(
     resources::Hip hip_res,
-    hip_exec<BLOCK_SIZE, Async>,
+    ::RAJA::policy::hip::hip_exec<Indexer, Async>,
     InputIter begin,
     InputIter end,
     Function binary_op,
@@ -191,7 +191,7 @@ exclusive_inplace(
         \brief explicit inclusive scan given input range, output, function, and
    initial value
 */
-template <size_t BLOCK_SIZE,
+template <typename Indexer,
           bool Async,
           typename InputIter,
           typename OutputIter,
@@ -200,7 +200,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Hip>
 inclusive(
     resources::Hip hip_res,
-    hip_exec<BLOCK_SIZE, Async>,
+    ::RAJA::policy::hip::hip_exec<Indexer, Async>,
     InputIter begin,
     InputIter end,
     OutputIter out,
@@ -263,7 +263,7 @@ inclusive(
         \brief explicit exclusive scan given input range, output, function, and
    initial value
 */
-template <size_t BLOCK_SIZE,
+template <typename Indexer,
           bool Async,
           typename InputIter,
           typename OutputIter,
@@ -273,7 +273,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Hip>
 exclusive(
     resources::Hip hip_res,
-    hip_exec<BLOCK_SIZE, Async>,
+    ::RAJA::policy::hip::hip_exec<Indexer, Async>,
     InputIter begin,
     InputIter end,
     OutputIter out,

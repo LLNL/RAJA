@@ -138,14 +138,14 @@ struct HipStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
-          typename Indexer,
+          typename IndexMapper,
           typename... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
                     RAJA::tile_fixed<chunk_size>,
-                    RAJA::internal::HipIndexDirect<Indexer>,
+                    RAJA::internal::HipIndexDirect<IndexMapper>,
                     EnclosedStmts...>,
                     Types>
   {
@@ -166,7 +166,7 @@ struct HipStatementExecutor<
 
     // compute trip count
     diff_t len = segment.end() - segment.begin();
-    diff_t i = Indexer::template index<diff_t>() * static_cast<diff_t>(chunk_size);
+    diff_t i = IndexMapper::template index<diff_t>() * static_cast<diff_t>(chunk_size);
 
     // Keep copy of original segment, so we can restore it
     segment_t orig_segment = segment;
@@ -188,11 +188,11 @@ struct HipStatementExecutor<
     diff_t full_len = segment_length<ArgumentId>(data);
     diff_t len = RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
-    LaunchDims dims = HipIndexDimensioner<Indexer>::get_dimensions(len);
+    HipDims my_dims(0);
+    IndexMapper::set_dimensions(my_dims, len);
 
     // since we are direct-mapping, we REQUIRE the given dimensions
-    dims.min_threads = dims.threads;
-    dims.min_blocks = dims.blocks;
+    LaunchDims dims{my_dims, my_dims};
 
     // privatize data, so we can mess with the segments
     using data_t = camp::decay<Data>;
@@ -219,14 +219,14 @@ struct HipStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
-          typename Indexer,
+          typename IndexMapper,
           typename... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
                     RAJA::tile_fixed<chunk_size>,
-                    RAJA::internal::HipIndexLoop<Indexer>,
+                    RAJA::internal::HipIndexLoop<IndexMapper>,
                     EnclosedStmts...>, Types>
   {
 
@@ -248,8 +248,8 @@ struct HipStatementExecutor<
 
     // compute trip count
     diff_t len = segment.end() - segment.begin();
-    diff_t i_init = Indexer::template index<diff_t>() * static_cast<diff_t>(chunk_size);
-    diff_t i_stride = Indexer::template size<diff_t>() * static_cast<diff_t>(chunk_size);
+    diff_t i_init = IndexMapper::template index<diff_t>() * static_cast<diff_t>(chunk_size);
+    diff_t i_stride = IndexMapper::template size<diff_t>() * static_cast<diff_t>(chunk_size);
 
     // Iterate through chunks
     for (diff_t ii = 0; ii < len; ii += i_stride) {
@@ -277,7 +277,10 @@ struct HipStatementExecutor<
     diff_t full_len = segment_length<ArgumentId>(data);
     diff_t len = RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
-    LaunchDims dims = HipIndexDimensioner<Indexer>::get_dimensions(len);
+    HipDims my_dims(0);
+    IndexMapper::set_dimensions(my_dims, len);
+
+    LaunchDims dims{my_dims};
 
     // privatize data, so we can mess with the segments
     using data_t = camp::decay<Data>;

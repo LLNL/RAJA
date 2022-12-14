@@ -87,7 +87,7 @@ namespace statement
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
 struct HipKernelExt
-    : public internal::Statement<hip_exec<0>, EnclosedStmts...> {
+    : public internal::Statement<::RAJA::policy::hip::hip_exec<void>, EnclosedStmts...> {
 };
 
 
@@ -367,7 +367,7 @@ struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data
     auto func = kernelGetter_t::get();
 
     void *args[] = {(void*)&data};
-    RAJA::hip::launch((const void*)func, launch_dims.blocks, launch_dims.threads, args, shmem, res, async);
+    RAJA::hip::launch((const void*)func, launch_dims.dims.blocks, launch_dims.dims.threads, args, shmem, res, async);
   }
 };
 
@@ -489,10 +489,10 @@ struct StatementExecutor<
       //
       hip_dim_t fit_threads{0,0,0};
 
-      if ( recommended_threads >= get_size(launch_dims.min_threads) ) {
+      if ( recommended_threads >= get_size(launch_dims.min_dims.threads) ) {
 
         fit_threads = fitHipDims(
-            recommended_threads, launch_dims.threads, launch_dims.min_threads);
+            recommended_threads, launch_dims.dims.threads, launch_dims.min_dims.threads);
 
       }
 
@@ -503,11 +503,11 @@ struct StatementExecutor<
            get_size(fit_threads) != recommended_threads ) {
 
         fit_threads = fitHipDims(
-            max_threads, launch_dims.threads, launch_dims.min_threads);
+            max_threads, launch_dims.dims.threads, launch_dims.min_dims.threads);
 
       }
 
-      launch_dims.threads = fit_threads;
+      launch_dims.dims.threads = fit_threads;
 
 
       //
@@ -534,8 +534,8 @@ struct StatementExecutor<
 
       }
 
-      launch_dims.blocks = fitHipDims(
-          use_blocks, launch_dims.blocks, launch_dims.min_blocks);
+      launch_dims.dims.blocks = fitHipDims(
+          use_blocks, launch_dims.dims.blocks, launch_dims.min_dims.blocks);
 
       //
       // make sure that we fit
@@ -553,7 +553,7 @@ struct StatementExecutor<
         // Privatize the LoopData, using make_launch_body to setup reductions
         //
         auto hip_data = RAJA::hip::make_launch_body(
-            launch_dims.blocks, launch_dims.threads, shmem, res, data);
+            launch_dims.dims.blocks, launch_dims.dims.threads, shmem, res, data);
 
 
         //
