@@ -32,7 +32,6 @@
 #define RAJA_config_HPP
 
 #include <utility>
-#include <cstddef>
 #include <type_traits>
 
 #if defined(_MSVC_LANG)
@@ -240,15 +239,6 @@ static_assert(RAJA_HAS_SOME_CXX14,
 #define RAJA_PRAGMA(x) _Pragma(RAJA_STRINGIFY(x))
 #endif
 
-
-/* NOTE: Below we define RAJA_MAX_ALIGN for each compiler, currently it is set as 16 bytes
-for all cases, except MSVC. Previously this was set by alignof(std::max_align_t) which, in Clang,
-is based on the sizeof(long double). This causes an in inconsistency as CUDA/HIP long doubles 
-are demoted to doubles causing alignof(std::max_align_t) to return 8 bytes on the device and
-16 bytes on the host. We therefore set a standard size and ensure validity through a 
-static_assert.
-*/
-
 namespace RAJA {
 
 #if defined(RAJA_ENABLE_OPENMP) && !defined(__HIP_DEVICE_COMPILE__)
@@ -384,7 +374,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 // Configuration options for Intel compilers
 //
-#define RAJA_MAX_ALIGN 16
+
 #if defined (RAJA_ENABLE_FORCEINLINE_RECURSIVE)
 #define RAJA_FORCEINLINE_RECURSIVE  RAJA_PRAGMA(forceinline recursive)
 #else
@@ -396,7 +386,6 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #else
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #endif
-
 
 #define RAJA_UNROLL RAJA_PRAGMA(unroll)
 #define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(unroll(N))
@@ -423,9 +412,9 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 // Configuration options for GNU compilers
 //
-#define RAJA_MAX_ALIGN 16
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
+
 #if !defined(__NVCC__)
 #define RAJA_UNROLL RAJA_PRAGMA(GCC unroll 10000)
 #define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(GCC unroll N)
@@ -457,11 +446,11 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 // Configuration options for xlc compiler (i.e., bgq/sequoia).
 //
-#define RAJA_MAX_ALIGN 16
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #define RAJA_UNROLL
 #define RAJA_UNROLL_COUNT(N)
+
 // FIXME: alignx is breaking CUDA+xlc
 #if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d) d
@@ -487,11 +476,12 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 // Configuration options for clang compilers
 //
-#define RAJA_MAX_ALIGN 16
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
 #define RAJA_UNROLL RAJA_PRAGMA(clang loop unroll(enable))
 #define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(clang loop unroll_count(N))
+
+
 // note that neither nvcc nor Apple Clang compiler currently doesn't support
 // the __builtin_assume_aligned attribute
 #if defined(RAJA_ENABLE_CUDA) || defined(__APPLE__)
@@ -524,7 +514,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 // This is the same as undefined compiler, but squelches the warning message
 #elif defined(RAJA_COMPILER_MSVC)
-#define RAJA_MAX_ALIGN alignof(std::max_align_t)
+
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline
 #define RAJA_ALIGN_DATA(d) d
@@ -536,7 +526,6 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #else
 
 #pragma message("RAJA_COMPILER unknown, using default empty macros.")
-#define RAJA_MAX_ALIGN 16
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline
 #define RAJA_ALIGN_DATA(d) d
@@ -546,9 +535,6 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_UNROLL_COUNT(N)
 
 #endif
-
-static_assert(RAJA_MAX_ALIGN >= alignof(std::max_align_t) && (RAJA_MAX_ALIGN/alignof(std::max_align_t))*alignof(std::max_align_t) == RAJA_MAX_ALIGN, 
-        "Inconsistent RAJA_MAX_ALIGN size");
 
 #cmakedefine RAJA_HAVE_POSIX_MEMALIGN
 #cmakedefine RAJA_HAVE_ALIGNED_ALLOC
