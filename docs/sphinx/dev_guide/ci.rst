@@ -129,7 +129,7 @@ GitLab CI Testing Files (specific to LC CZ)
 The following figure shows directories and files in the RAJA project that 
 support LC GitLab CI testing. 
 
-.. figure:: ./figures/RAJA-GitLab-Files.png
+.. figure:: ./figures/RAJA-Gitlab-Files.png
 
    The figure shows directories and files in the RAJA repo that support GitLab 
    CI testing. Files in blue are specific to RAJA and are maintained in the 
@@ -166,23 +166,68 @@ In **step 2** of the diagram above, GitLab launches RAJA test pipelines.
 The `RAJA/.gitlab-ci.yml <https://github.com/LLNL/RAJA/tree/develop/.gitlab-ci.yml>`_ file contains high-level testing information that applies to all RAJA
 GitLab CI testing pipelines. This includes
 
-  * `GitLab pipeline variables <https://github.com/LLNL/RAJA/tree/develop/.gitlab-ci.yml#L24>`_ 
+  * **GitLab pipeline variables**, such as project name, service user account
+    name, etc.
 
-  * `High-level pipeline stages <https://github.com/LLNL/RAJA/tree/develop/.gitlab-ci.yml#L44>`_
+  * **High-level pipeline stages** for build and test, multi-project testing,
+    etc.
 
-  * `Build and test sub-pipelines <https://github.com/LLNL/RAJA/tree/develop/.gitlab-ci.yml#L49>`_. Note that this is where the connection is
-    made to the RADIUSS Shared CI project and version on the LC CZ GitLab 
+  * **Build and test sub-pipelines**. Note that this is where the connection 
+    is made to the RADIUSS Shared CI project and version on the LC CZ GitLab 
     instance and to files in the ``RAJA/.gitlab`` directory that define the 
     Spack specs for build configurations that are run on each machine on 
     which tests are run.
 
-  * `Cross-project RAJA Perf Suite pipeline <https://github.com/LLNL/RAJA/tree/develop/.gitlab-ci.yml#L63>`_
+  * **Cross-project RAJA Perf Suite pipeline**, which is triggered when 
+    testing the RAJA develop branch.
 
-  * `RADIUSS Shared CI subscribed pipelines <https://github.com/LLNL/RAJA/tree/develop/.gitlab-ci.yml#L79>`_ 
+  * **RADIUSS Shared CI subscribed pipelines**
 
 .. important: The variables that define resource allocations and job time 
               limits for LC machines that are used to run RAJA CI are defined
               in the ``RAJA/.gilab/custom-jobs-and-variables.yml`` file.
+
+Jobs that are run on each machine are defined by Spack specs in 
+**two places** for those that are shared across projects and those that are
+specific to RAJA. The shared jobs are defined in files 
+``<MACHINE>-build-and-test.yml`` in the top-level directory of the 
+`RADIUSS Shared CI Project <https://github.com/LLNL/radiuss-shared-ci>`_.
+RAJA-specific jobs are defined in 
+``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` files. 
+
+Each shared job will be run as-is unless it is overridden in the RAJA 
+file for the corresponding machine. A shared job override **must use the
+same job label** as the shared job. For example, a shared job for the ruby
+machine may appear in the RADIUSS Shared CI file ``ruby-build-and-test.yml``
+as::
+
+  gcc_8_1_0:
+    variables:
+      SPEC: "${PROJECT_RUBY_VARIANTS} %gcc@8.1.0 ${PROJECT_RUBY_DEPS}"
+    extends: .build_and_test_on_ruby
+
+and then be overriden in the ``RAJA/.gitlab/ruby-build-and-test-extra.yml``
+file as::
+
+  gcc_8_1_0:
+    variables:
+      SPEC: " ${PROJECT_RUBY_VARIANTS} %gcc@8.1.0 ${PROJECT_RUBY_DEPS}"
+      RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
+    extends: .build_and_test_on_ruby
+
+In this example, the Spack build spec is the same, but the job is configured
+with a RAJA-specific timeout limit and number of nodes.
+
+RAJA-specific jobs whose configurations are not shareable with other projects
+are also defined in the appropriate 
+``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` file. For example::
+
+  clang_10_0_1_gcc_8_3_1_desul_atomics:
+    variables:
+      SPEC: " ~shared +openmp +tests +desul %clang@10.0.1 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
+    extends: .build_and_test_on_ruby
+
+defines a RAJA job with desul atomics enabled.
 
 Running a CI build/test pipeline  (steps 3, 4, 5, 6)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -208,20 +253,7 @@ file containing a RAJA build specification **(step 3)**. To generate
 a *host-config* file, Spack uses the packages and specs maintained in the 
 `RADIUSS Spack Configs project 
 <https://github.com/LLNL/radiuss-spack-configs>`_, plus RAJA-specific specs
-defined in files in the `RAJA/.gitlab <https://github.com/LLNL/RAJA/tree/develop/.gitlab>`_ directory. For example, in the 
-``RAJA/.gitlab/lassen-build-and-test-extra.yml`` file you will see an entry
-such as::
-
-  gcc_8_3_1_cuda_10_1_168_desul_atomics:
-  variables:
-    SPEC: " ~shared +openmp +tests +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.168"
-  extends: .build_and_test_on_lassen
-
-This defines the *Spack spec* for a test in which CUDA device code will 
-be built with the nvcc 10.1.168 compiler and non-device code will be compiled 
-with the GNU 8.3.1 compiler and desul-based atomics will be used, a build 
-option which is specific to RAJA. In the GitLab CI GUI, this pipeline will be 
-labeled ``gcc_8_3_1_cuda_10_1_168_desul_atomics``. 
+defined in files in the `RAJA/.gitlab <https://github.com/LLNL/RAJA/tree/develop/.gitlab>`_ directory as described earlier.
 
 .. note:: Please see :ref:`spack_host_config-label` for more information about
           Spack-generated host-config files and how to use them for local

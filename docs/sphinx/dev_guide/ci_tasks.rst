@@ -22,7 +22,7 @@ perform them.
 GitLab CI Tasks
 =================
 
-The tasks in this section apply to GitLab CI running on Livermore
+The tasks in this section apply to GitLab CI testing on Livermore
 Computing (LC) platforms.
 
 Changing Build Specs
