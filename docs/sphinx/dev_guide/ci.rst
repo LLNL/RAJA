@@ -195,19 +195,18 @@ GitLab CI testing pipelines. This includes
                limits for LC machines that are used to run RAJA CI are defined
                in the ``RAJA/.gilab/custom-jobs-and-variables.yml`` file.
 
-Jobs that are run on each machine are defined by Spack specs in 
-**two places**: those that are *shared* across projects and those that are
-specific to RAJA. The shared jobs are defined in files named
-``<MACHINE>-build-and-test.yml`` in the top-level directory of the 
+Each job that is run is defined by a Spack spec in one of two places, depending
+on whether it is *shared* with other projects or it is specific to RAJA. The 
+shared jobs are defined in files named ``<MACHINE>-build-and-test.yml`` in 
+the top-level directory of the 
 `RADIUSS Shared CI Project <https://github.com/LLNL/radiuss-shared-ci>`_.
 RAJA-specific jobs are defined in 
 ``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` files. 
 
 **Each shared job will be run as-is unless it is overridden** in the RAJA 
-file for the corresponding machine. A shared job override **must use the
-same job label as the shared job** defined in the RADIUSS Shared CI project. 
-For example, a shared job for the LC ruby machine may appear in the RADIUSS 
-Shared CI file ``ruby-build-and-test.yml`` as::
+'extra' file for the corresponding machine. For example, a shared job for the 
+LC ruby machine may appear in the RADIUSS Shared CI file 
+``ruby-build-and-test.yml`` as::
 
   gcc_8_1_0:
     variables:
@@ -226,6 +225,9 @@ file as::
 In this example, the Spack build spec is the same, but the job is configured
 with a timeout limit and number of nodes appropriate for RAJA testing.
 
+.. important:: A shared job override **must use the same job label as the 
+               shared job** defined in the RADIUSS Shared CI project.
+
 RAJA-specific jobs whose configurations are not shared with other projects
 are also defined in the 
 ``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` files. For example::
@@ -237,13 +239,18 @@ are also defined in the
 
 defines a RAJA job with desul atomics enabled to be run on the ruby machine.
 
+.. important:: Each base compiler configuration that is used in Gitlab CI 
+               testing must have a Spack spec defined for it in the appropriate
+               file for the machine that it will be tested on in the 
+               `RADIUSS Spack Configs https://github.com/LLNL/radiuss-spack-configs>`_ project.
+
 .. _gitlab_ci_running-label:
 
-Running a CI build/test pipeline  (steps 3, 4, 5, 6)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Running a CI build and test pipeline  (steps 3, 4, 5, 6)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The `RAJA/scripts/gitlab/build_and_test.sh <https://github.com/LLNL/RAJA/tree/develop/scripts/gitlab/build_and_test.sh>`_ file defines the steps executed
-for each build and test run as well as information that will appear in the
+for each build and test pipeline as well as information that will appear in the
 log output for each step. 
 
 After some basic set up, the script invokes the 
@@ -260,7 +267,7 @@ Project specific settings related to which Spack version to use, where
 Spack packages live, etc. are located in the 
 `RAJA/.uberenv_config.json <https://github.com/LLNL/RAJA/tree/develop/.uberenv_config.json>`_ file.
 
-The uberenv Python script invokes Spack to generate a CMake *host-config* 
+The Uberenv Python script invokes Spack to generate a CMake *host-config* 
 file containing a RAJA build specification **(step 3)**. To generate
 a *host-config* file, Spack uses the packages and specs maintained in the 
 `RADIUSS Spack Configs project 
@@ -395,7 +402,7 @@ A summary of the configurations we build are:
     test builds. We build and test RAJA using Docker container images generated 
     with recent versions of various compilers. The RAJA project shares these 
     images with other open-source LLNL RADIUSS projects and they are maintained
-    in the `RES-ops Docker <https://github.com/rse-ops/docker-images>`_ 
+    in the `RES-Ops Docker <https://github.com/rse-ops/docker-images>`_ 
     project on GitHub. The builds we do at any point in time are located in 
     the ``strategy`` block::
 
@@ -424,7 +431,12 @@ Docker Builds
 For each Linux/Docker pipeline, the base container images, CMake, build, and
 test commands are located in `RAJA/Dockerfile <https://github.com/LLNL/RAJA/blob/develop/Dockerfile>`_.
 
-The base container images are built and maintained through the `RSE-Ops <https://rse-ops.github.io/>`_ RADIUSS project. A table of the most up to date containers can be found `here <https://rse-ops.github.io/docker-images/>`_. These images are rebuilt regularly ensuring that we have the most up to date builds of each container / compiler.
+The base container images are built and maintained through the 
+`RSE-Ops Docker <https://rse-ops.github.io/>`_ project. A table of the most 
+up-to-date containers can be found 
+`here <https://rse-ops.github.io/docker-images/>`_. These images are rebuilt 
+regularly ensuring that we have the most up to date builds of each 
+container and compiler.
 
 .. note:: Please see :ref:`docker_local-label` for more information about
           reproducing Docker builds locally for debugging purposes.

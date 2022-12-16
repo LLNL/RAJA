@@ -27,33 +27,44 @@ Computing (LC) platforms.
 Changing Build Specs
 ---------------------
 
-The builds for each LC platform on which we run GitLab CI pipelines are
-defined in ``<resource>-jobs.yml`` files in the `RAJA/.gitlab <https://github.com/LLNL/RAJA/tree/develop/.gitlab>`_ directory. The key items 
-that change when a new build is added are:
+The build for each test we run is defined by a Spack spec in one of two places,
+depending on whether it is *shared* with other projects or it is specific to 
+RAJA. The details are described in :ref:`gitlab_ci_pipelines-label`.
 
-  * the unique **label** that identifies the build on a web page for 
-    a GitLab CI pipeline, and
+A RAJA-specific test configuration can be removed by simply deleting in the
+``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` file where it is defined.
+
+**A shared test configuration can be disabled.... how?**
+
+When adding a test configuration, it is important to note two items that
+must be properly set:
+
+  * the unique **job label**, which identifies it in the machine configuration
+    file and also on a web page for a GitLab CI pipeline
   * the build **Spack spec**, which identifies the compiler and version,
-    compiler flags, etc.
+    compiler flags, build options, etc.
 
 For example, an entry for a build using a clang compiler with CUDA is:
 
 .. code-block:: bash
 
-  ibm_clang_10_0_1_cuda_10_1_168:
+  clang_12_0_1_cuda_11_5_0:
     variables:
-      SPEC: "+cuda cuda_arch=70 %clang@ibm.10.0.1 ^cuda@10.1.168"
+      SPEC: " ~shared +openmp +tests +cuda cuda_arch=70 %clang@12.0.1 ^cuda@11.5.0"
     extends: .build_and_test_on_lassen
 
-To update, change the corresponding spec item, such as clang compiler
-or version, or cuda version. Then, update the label accordingly.
+To update an existing configuration, change the corresponding spec item, 
+such as clang compiler or version, or cuda version. Then, update the label 
+accordingly.
 
-It is important to note that the build spec information must reside in 
-the ``compilers.yaml`` and/or ``packages.yaml`` file for the system type
-in the `radiuss-spack-configs <https://github.com/LLNL/RAJA/blob/develop/scripts>`_ submodule. If the desired information is not there,
-try updating the submodule to a newer version. If the information
-is still not available, create a branch in the 
-`RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_ repo, add the needed spec info, and create a pull request.
+It is important to note that the build spec information must reside in the 
+``compilers.yaml`` and/or ``packages.yaml`` file for the system type in the 
+`RADIUSS Spack Configs <https://github.com/LLNL/RAJA/blob/develop/scripts>`_ 
+submodule. If the desired entry is not there, but exists in a newer version 
+of the RADIUSS Spack Configs project, update the submodule to the newer version.
+If the information does not exist in any version of the RADIUSS Spack Configs 
+project, create a branch there, add the needed spec info, and create a pull 
+request. 
 
 .. important:: Build spec information used in RAJA GitLab CI pipelines
                must exist in the ``compilers.yaml`` file and/or 
@@ -63,11 +74,11 @@ is still not available, create a branch in the
 Changing Build/Run Parameters
 ------------------------------
 
-The commands executed to acquire resources on each 
-system/system-type on which we run GitLab CI are defined in the 
-`RAJA/.gitlab-ci.yml <https://github.com/LLNL/RAJA/blob/develop/.gitlab-ci.yml>`_ file. The default execution time for each test pipeline is 
-also defined in the file using the variable ``DEFAULT_TIME``. These 
-commands and settings can remain as is for the most part. 
+The parameters for each system/system-type on which we run GitLab CI, such
+as job time limits, resource allocations, etc. are defined in the 
+``RAJA/.gitlab/custom-jobs-and-variables.yml`` file. This information can
+remain as is for the most part, and should not be changed unless absolutely 
+necessary.
 
 However, sometimes a particular pipeline will take longer to build and
 run than the default allotted time. In this case, the default time can
