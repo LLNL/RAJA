@@ -12,9 +12,8 @@
 Continuous Integration (CI) Testing Maintenance Tasks
 ******************************************************
 
-In :ref:`ci-label`, we described RAJA CI workflows. This section 
-describes common CI testing maintenance tasks for RAJA and how to 
-perform them.
+In :ref:`ci-label`, we described RAJA CI workflows. This section describes 
+how to perform common RAJA CI testing maintenance tasks.
 
 .. _gitlab_ci_tasks-label:
 
