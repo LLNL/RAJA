@@ -7,7 +7,7 @@
 
 # Uncomment pipelines to subscribe to a shared pipeline.
 
-# Trigger a build-and-test pipeline for ruby, corona and lassen
+# Trigger a build-and-test pipeline for ruby, corona, tioga, and lassen
 ruby-build-and-test:
   variables:
     CI_MACHINE: "ruby"
@@ -16,6 +16,11 @@ ruby-build-and-test:
 corona-build-and-test:
   variables:
     CI_MACHINE: "corona"
+  extends: [.build-and-test]
+
+tioga-build-and-test:
+  variables:
+    CI_MACHINE: "tioga"
   extends: [.build-and-test]
 
 lassen-build-and-test:
