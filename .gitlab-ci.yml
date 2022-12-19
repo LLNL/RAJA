@@ -24,6 +24,8 @@
 # We define the following GitLab pipeline variables:
 variables:
   MP_BRANCH: "develop"
+  GITHUB_PROJECT_NAME: "RAJA"
+  GITHUB_PROJECT_ORG: "LLNL"
 # Use a service user to run CI. This prevents from running pipelines as an
 # actual user.
   LLNL_SERVICE_USER: ""
@@ -51,7 +53,7 @@ stages:
     include:
       - local: '.gitlab/custom-jobs-and-variables.yml'
       - project: 'radiuss/radiuss-shared-ci'
-        ref: v2022.09.0
+        ref: v2022.12.0
         file: '${CI_MACHINE}-build-and-test.yml'
       - local: '.gitlab/${CI_MACHINE}-build-and-test-extra.yml'
     strategy: depend
@@ -74,6 +76,10 @@ trigger-rajaperf:
     branch: develop
     strategy: depend
 
-# pipelines subscribed by the project
 include:
-  - local: .gitlab/subscribed-pipelines.yml
+  # checks preliminary to running the actual CI test (optional)
+  - project: 'radiuss/radiuss-shared-ci'
+    ref: v2022.12.0
+    file: 'preliminary-ignore-draft-pr.yml'
+  # pipelines subscribed by the project
+  - local: '.gitlab/subscribed-pipelines.yml'
