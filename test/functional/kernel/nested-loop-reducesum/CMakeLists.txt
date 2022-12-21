@@ -10,6 +10,16 @@ set(NESTED_LOOPTYPES ReduceSum BlockReduceSum)
 set( USE_RESOURCE "-resource-" "-" )
 
 #
+# Intel OneAPI emits a clang front-end error for the OpenMP version of these
+# tests. So don't generate them.
+#
+if(CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
+  if(RAJA_ENABLE_OPENMP)
+    list(REMOVE_ITEM KERNEL_BACKENDS OpenMP)
+  endif()
+endif()
+
+#
 # If building a subset of openmp target tests, remove the back-end from
 # from the list of tests to generate here.
 #
