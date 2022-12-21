@@ -17,7 +17,7 @@ fi
 COMP_VER=$1
 shift 1
 
-USE_TBB=On
+USE_TBB=Off
 
 BUILD_SUFFIX=lc_toss4-icpx-${COMP_VER}
 

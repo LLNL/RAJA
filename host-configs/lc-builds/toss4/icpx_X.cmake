@@ -7,7 +7,7 @@
 
 set(RAJA_COMPILER "RAJA_COMPILER_ICC" CACHE STRING "")
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native --gcc-toolchain=/usr/tce/packages/gcc/gcc-10.3.1" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g -march=native" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g" CACHE STRING "")
 
