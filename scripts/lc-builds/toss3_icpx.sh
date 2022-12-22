@@ -11,10 +11,6 @@ if [ "$1" == "" ]; then
   echo
   echo "You must pass a compiler version number to script. For example,"
   echo "    toss3_oneapi.sh 2022.2"
-  echo
-  echo "NOTE: This script only works with 2022.2."
-  echo "      Change the -DCMAKE_CXX_COMPILER and -DCMAKE_C_COMPILER paths for other versions."
-  exit
 fi
 
 COMP_VER=$1
@@ -44,8 +40,8 @@ source /usr/tce/packages/oneapi/oneapi-${COMP_VER}/setvars.sh
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/oneapi/oneapi-${COMP_VER}/compiler/2022.1.0/linux/bin/icpx \
-  -DCMAKE_C_COMPILER=/usr/tce/packages/oneapi/oneapi-${COMP_VER}/compiler/2022.1.0/linux/bin/icx \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/intel/intel-oneapi.${COMP_VER}/bin/icpx \
+  -DCMAKE_C_COMPILER=/usr/tce/packages/intel/intel-oneapi.${COMP_VER}/bin/icx \
   -DBLT_CXX_STD=c++14 \
   -C ../host-configs/lc-builds/toss3/oneapi_X.cmake \
   -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off \
