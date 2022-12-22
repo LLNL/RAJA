@@ -12,8 +12,8 @@
 RAJA Build Configurations
 **************************
 
-RAJA is tested with a wide range of compilers for all of its supported 
-back-ends. Automated continuous integration (CI) testing employed by the 
+RAJA is tested with a wide range of compilers in a variety of build 
+configurations. Automated continuous integration (CI) testing employed by the 
 project is described in :ref:`ci-label`. Building and testing manually is
 also important for day-to-day development. We maintain two ways to build and 
 test configurations in a reproducible manner:
@@ -41,14 +41,14 @@ RAJA Build Scripts
 ===================
 
 The build scripts mentioned above reside in subdirectories of the 
-`RAJA/scripts <https://github.com/LLNL/RAJA/tree/develop/scripts>`_ directory,
-which include:
+`RAJA/scripts <https://github.com/LLNL/RAJA/tree/develop/scripts>`_ directory.
+These include:
 
   * ``RAJA/scripts/lc-builds`` for configurations on LC machines
   * ``RAJA/scripts/macos-builds`` for MacOS configurations
   * ``RAJA/scripts/ubuntu-builds``  for other Linux configurations 
 
-To create a RAJA build space using one of these scripts, execute the script
+To create a RAJA build space using one of the scripts, execute the script
 from the top-level RAJA directory, passing required arguments such as compiler
 version, target compute architecture for GPU builds, etc.
 For example,
@@ -69,12 +69,12 @@ architecture 'sm_70'.
 
 .. note:: Each RAJA build script for an LC machine does the following:
 
-            * creates a build space directory in the top-level RAJA directory
+            * create a build space directory in the top-level RAJA directory
               named for the specified build configuration
-            * loads an appropriate version CMake module for the configuration
-            * invokes CMake with appropriate arguments to create the specified
+            * load an appropriate version CMake module for the configuration
+            * invoke CMake with appropriate arguments to create the specified
               build configuration, which contain full paths to the compiler and
-              any needed toolchains and a *host-config* file that contains 
+              any needed toolchains, and a *host-config* file that contains 
               compiler flags.
 
           Host-config files, also known and *CMake cache files* that are passed
@@ -87,7 +87,7 @@ After running a build script, one then goes into that directory and runs
 .. code-block:: bash
 
   $ ./scripts/lc-builds/blueos_nvcc_gcc.sh 10.2.89 sm_70 8.3.1
-  $ cd build_lc_blueos-nvcc10.2.89-sm_70-gcc8.3.1
+  $ cd build_lc_blueos-nvcc10.2.89-70-gcc8.3.1
   $ make -j
   $ make test
 
@@ -97,16 +97,17 @@ After running a build script, one then goes into that directory and runs
 Spack-Generated Host-Config Files
 ==================================
 
-The RAJA repository contains two submodules 
-`Uberenv <https://github.com/LLNL/uberenv>`_ and
-`radiuss-spack-configs <https://github.com/LLNL/radiuss-spack-configs>`_ that 
-work together to generate host-config files. These are projects in the 
-GitHub LLNL organization and contain utilities shared and maintained by 
-various projects. Uberenv contains a Python script that is used to drive Spack 
-to generate *host-config* files described above. The generated file can then 
-be passed to CMake using the '-C' option to create a build configuration. 
-*Spack specs* defining compiler and toolchain configurations are maintained 
-in the radiuss-spack-configs repository.
+As described in :ref:`gitlab_ci_depend-label`, the RAJA repository contains 
+two submodules `Uberenv <https://github.com/LLNL/uberenv>`_ and
+`RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_ that 
+work together with Spack to generate host-config files. Uberenv and RADIUSS
+Spack Configs are projects in the GitHub LLNL organization and contain 
+utilities shared and maintained by various LLNL open-source projects. Uberenv 
+contains a Python script that is used to drive Spack to generate a 
+*host-config* file. The generated file can be passed to CMake using the '-C' 
+option to create a build configuration. *Spack specs* defining compiler and 
+toolchain configurations, and Spack packages for RAJA and other projects are 
+maintained in the RADIUSS Spack Configs project.
 
 Additional information about this process is available in the
 `RADIUSS Uberenv Guide <https://radiuss-ci.readthedocs.io/en/latest/uberenv.html#uberenv-guide>`_.
@@ -143,14 +144,15 @@ directory:
   blueos_3_ppc64le_ib_p9
   ...
 
-Each subdirectory named for a system type contains a ``compilers.yaml`` and 
-``packages.yaml`` file with system compiler and toolchain information.
+Each subdirectory named for a system type contains a ``compilers.yaml`` file 
+and ``packages.yaml`` file with compiler and toolchain information associated
+with the system.
 
 Generating a host-config file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``uberenv.py`` python script is run from the top-level RAJA directory
-to generate a host-config file for a desired configuration. For example,
+To generate a host-config file for a desired configuration, run the 
+``uberenv.py`` python script from the top-level RAJA directory. For example,
 
 .. code-block:: bash
 
@@ -167,10 +169,11 @@ will generate a configuration for building with the clang 10.0.1 compiler using
 the GNU 8.3.1 toolchain (for C++ standard library headers, etc.) and with
 RAJA OpenMP back-end, tests, and desul atomics enabled.
 
-Each command generates a host-config file in the top-level RAJA directory whose
-name contains the machine and OS to which it applies, as well the compiler and 
-version. For example, running the first example command above will on the LC
-machine quartz will generate a host-config file named similar to 
+Running a command like these will generate a host-config file in the top-level 
+RAJA directory whose name contains the machine and OS to which it applies, as 
+well the compiler and version. For example, running the first example command 
+above will on the LC machine quartz will generate a host-config file named 
+similarly to 
 
 .. code-block:: bash
 
@@ -186,7 +189,9 @@ want to run the RAJA tests. For example,
 
 .. code-block:: bash
 
-  $ mkdir <build dirname> && cd <build dirname>
+  $ pwd
+  path-to-raja/RAJA
+  $ mkdir <build dir name> && cd <build dir name>
   $ cmake -C <path to>/<host-config>.cmake ..
   $ make -j
   $ ctest --output-on-failure -T test

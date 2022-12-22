@@ -24,27 +24,41 @@ GitLab CI Tasks
 The tasks in this section apply to GitLab CI testing on Livermore
 Computing (LC) platforms.
 
-Changing Build Specs
----------------------
+Changing build and test configurations
+----------------------------------------
 
 The build for each test we run is defined by a Spack spec in one of two places,
 depending on whether it is *shared* with other projects or it is specific to 
 RAJA. The details are described in :ref:`gitlab_ci_pipelines-label`.
 
-A RAJA-specific test configuration can be removed by simply deleting in the
-``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` file where it is defined.
+Remove a configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**A shared test configuration can be disabled.... how?**
+To remove a RAJA-specific test configuration, simply delete the entry for it 
+in the ``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` file where it is 
+defined.
 
-When adding a test configuration, it is important to note two items that
-must be properly set:
+To remove a shared configuration, it must be removed from the appropriate
+``<MACHINE>-build-and-test.yml`` file in the 
+`RADIUSS Shared CI <https://github.com/LLNL/radiuss-shared-ci>`_ project.
+Create a branch there, remove the job entry, and create a pull request.
+
+Add a configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To add a RAJA-specific test configuration, add the entry for it to the 
+``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` file, where ``MACHINE``
+is the name of the LC platform where it will be run. When adding a 
+RAJA-specific test configuration, it is important to note two 
+items that must be set properly:
 
   * the unique **job label**, which identifies it in the machine configuration
     file and also on a web page for a GitLab CI pipeline
   * the build **Spack spec**, which identifies the compiler and version,
     compiler flags, build options, etc.
 
-For example, an entry for a build using a clang compiler with CUDA is:
+For example, an entry for a build using the clang 12.0.1 compiler with CUDA 
+11.5.0 on the LC lassen machine would be something like this:
 
 .. code-block:: bash
 
@@ -53,68 +67,79 @@ For example, an entry for a build using a clang compiler with CUDA is:
       SPEC: " ~shared +openmp +tests +cuda cuda_arch=70 %clang@12.0.1 ^cuda@11.5.0"
     extends: .build_and_test_on_lassen
 
-To update an existing configuration, change the corresponding spec item, 
-such as clang compiler or version, or cuda version. Then, update the label 
-accordingly.
+Here, we enable OpenMP and CUDA, both of which must be enabled to use them, 
+and specify the CUDA target architecture 'sm_70'.
 
-It is important to note that the build spec information must reside in the 
-``compilers.yaml`` and/or ``packages.yaml`` file for the system type in the 
-`RADIUSS Spack Configs <https://github.com/LLNL/RAJA/blob/develop/scripts>`_ 
-submodule. If the desired entry is not there, but exists in a newer version 
-of the RADIUSS Spack Configs project, update the submodule to the newer version.
-If the information does not exist in any version of the RADIUSS Spack Configs 
-project, create a branch there, add the needed spec info, and create a pull 
-request. 
+To add a shared configuration, it must be added to the appropriate
+``<MACHINE>-build-and-test.yml`` file in the 
+`RADIUSS Shared CI <https://github.com/LLNL/radiuss-shared-ci>`_ project.
+Create a branch there, add the job entry, and create a pull request.
+
+Modifying a configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To change an existing configuration, change the corresponding spec item, 
+such as the compiler version, or cuda version in the appropriate
+``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` file. Make sure to 
+also modify the job label accordingly.
+
+To modify a shared configuration, it must be changed in the appropriate
+``<MACHINE>-build-and-test.yml`` file in the 
+`RADIUSS Shared CI <https://github.com/LLNL/radiuss-shared-ci>`_ project.
+Create a branch there, modify the job entry, and create a pull request.
 
 .. important:: Build spec information used in RAJA GitLab CI pipelines
                must exist in the ``compilers.yaml`` file and/or 
                ``packages.yaml`` file for the appropriate system type in
                the `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_ repo.
 
-Changing Build/Run Parameters
-------------------------------
+               If the desired entry is not there, but exists in a newer version 
+               of the RADIUSS Spack Configs project, update the RAJA submitted 
+               to the newer version. If the information does not exist in any 
+               version of the RADIUSS Spack Configs project, create a branch 
+               there, add the needed spec info, and create a pull request. 
 
-The parameters for each system/system-type on which we run GitLab CI, such
-as job time limits, resource allocations, etc. are defined in the 
+Changing run parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The parameters for each system/system-type on which we run GitLab CI for
+RAJA, such as job time limits, resource allocations, etc. are defined in the 
 ``RAJA/.gitlab/custom-jobs-and-variables.yml`` file. This information can
-remain as is for the most part, and should not be changed unless absolutely 
+remain as is, for the most part, and should not be changed unless absolutely 
 necessary.
 
-However, sometimes a particular pipeline will take longer to build and
-run than the default allotted time. In this case, the default time can
-be adjusted in the build spec information in the associated 
-``<resource>-jobs.yml`` file discussed in the previous section. 
+Sometimes a particular job will take longer to build and run than the 
+default allotted time for jobs on a machine. In this case, the time for the
+job can be adjusted in the job entry in the associated 
+``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` file.
 For example:
 
 .. code-block:: bash
 
-  xl_16_1_1_7_cuda:
+  gcc_8_1_0:
+  variables:
+    SPEC: " ${PROJECT_RUBY_VARIANTS} %gcc@8.1.0 ${PROJECT_RUBY_DEPS}"
+    RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
+  extends: .build_and_test_on_ruby
+
+This example sets the build and test allocation time to 60 minutes and to 
+run on one node. 
+
+Allowing failures
+^^^^^^^^^^^^^^^^^^
+
+Sometimes a shared job configuration is known to fail for RAJA. To allow
+the job to fail without the CI check associated with it failing, we can
+annotate the job for this. For example:
+
+.. code-block:: bash
+
+  ibm_clang_9_0_0:
     variables:
-      SPEC: "+cuda %xl@16.1.1.7 cuda_arch=70 ^cuda@10.1.168 ^cmake@3.14.5"
-      DEFAULT_TIME: 60
-    allow_failure: true
+      SPEC: " ${PROJECT_LASSEN_VARIANTS} %clang@ibm.9.0.0 ${PROJECT_LASSEN_DEPS}"
     extends: .build_and_test_on_lassen
+    allow_failure: true
 
-This example explicitly sets the build and test allocation time to 60 minutes:
-``DEFAULT_TIME: 60``. Note that it also allows the pipeline to fail: 
-``allow_failure: true``. We do this in some cases where certain tests are known
-to fail regularly. This allows the overall check status to report as passing,
-even though the test pipeline annotated this way may fail.
-
-
-Adding Test Pipelines
----------------------
-
-Adding a test pipeline involves adding a new entry in the 
-``RAJA/.gitlab-ci.yml`` file.
-
-.. important:: Build spec information used in RAJA GitLab CI pipelines
-               must exist in the ``compilers.yaml`` file and/or 
-               ``packages.yaml`` file for the appropriate system type in
-               the `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_ repo.
-
-
-.. _azure_ci_tasks-label:
 
 =================
 Azure CI Tasks
@@ -158,7 +183,7 @@ Each of our docker builds is built up on a base image maintained by RSE-Ops, a t
 
 The base containers are shared across multiple projects and are regularly rebuilt. If bugs are fixed in the base containers the changes will be automatically propagated to all projects using them in their Docker builds.
 
-Check `here <https://rse-ops.github.io/docker-images/>`_ for a list of all currently available RSE-Ops containers. Please see the `RSE-Ops Containers Project <https://github.com/rse-ops/docker-images>`_ on Github to get new containers built that aren't yet available.
+Check `here <https://rse-ops.github.io/docker-images/>`_ for a list of all currently available RSE-Ops containers. Please see the `RSE-Ops Containers Project <https://github.com/rse-ops/docker-images>`_ on GitHub to get new containers built that aren't yet available.
 
 Windows / MacOs
 ...............
