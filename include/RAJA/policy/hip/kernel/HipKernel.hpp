@@ -87,7 +87,7 @@ namespace statement
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
 struct HipKernelExt
-    : public internal::Statement<::RAJA::policy::hip::hip_exec<void>, EnclosedStmts...> {
+    : public internal::Statement<::RAJA::policy::hip::hip_exec<LaunchConfig>, EnclosedStmts...> {
 };
 
 
