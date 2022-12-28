@@ -915,14 +915,6 @@ struct Reduce_Data {
   {
   }
 
-  void reset(T initValue, T identity_ = T())
-  {
-    value = initValue;
-    identity = identity_;
-    device_count = nullptr;
-    own_device_ptr = false;
-  }
-
   RAJA_HOST_DEVICE
   Reduce_Data(const Reduce_Data& other)
       : value{other.identity},
@@ -1001,15 +993,6 @@ struct ReduceAtomic_Data {
         device{nullptr},
         own_device_ptr{false}
   {
-  }
-
-  void reset(T initValue, T identity_ = Combiner::identity())
-  {
-    value = initValue;
-    identity = identity_;
-    device_count = nullptr;
-    device = nullptr;
-    own_device_ptr = false;
   }
 
   RAJA_HOST_DEVICE
