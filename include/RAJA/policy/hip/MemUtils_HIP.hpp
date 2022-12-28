@@ -439,6 +439,57 @@ void hip_occupancy_max_blocks(Func&& func, int shmem_size,
 
 }
 
+struct HipOccupancyDefaults
+{
+  HipOccupancyDefaults(const void* RAJA_UNUSED_ARG(func))
+  { }
+
+  template < typename IdxT >
+  inline auto get_max_grid_size(size_t RAJA_UNUSED_ARG(dynamic_shmem_size),
+                                IdxT RAJA_UNUSED_ARG(block_size)) const
+  {
+    return std::numeric_limits<IdxT>::max();
+  }
+
+  template < typename IdxT = hip_dim_member_t >
+  inline auto get_max_block_size_and_grid_size(size_t RAJA_UNUSED_ARG(dynamic_shmem_size)) const
+  {
+    return std::make_pair(static_cast<IdxT>(::RAJA::policy::hip::MAX_BLOCK_SIZE),
+                          std::numeric_limits<IdxT>::max());
+  }
+};
+
+template < typename UniqueMarker >
+struct HipOccupancyCalculator
+{
+  HipOccupancyCalculator(const void* func)
+    : m_func(func)
+  { }
+
+  template < typename IdxT >
+  inline auto get_max_grid_size(size_t dynamic_shmem_size, IdxT block_size) const
+  {
+    int max_grid_size = -1;
+    ::RAJA::hip::hip_occupancy_max_blocks<UniqueMarker>(
+        m_func, dynamic_shmem_size, max_grid_size, block_size);
+    return static_cast<IdxT>(max_grid_size);
+  }
+
+  template < typename IdxT = hip_dim_member_t >
+  inline auto get_max_block_size_and_grid_size(size_t dynamic_shmem_size) const
+  {
+    int max_block_size = -1;
+    int max_grid_size = -1;
+    ::RAJA::hip::hip_occupancy_max_blocks_threads<UniqueMarker>(
+        m_func, dynamic_shmem_size, max_grid_size, max_block_size);
+    return std::make_pair(static_cast<IdxT>(max_block_size),
+                          static_cast<IdxT>(max_grid_size));
+  }
+
+private:
+  const void* m_func;
+};
+
 }  // namespace hip
 
 }  // namespace RAJA
