@@ -75,8 +75,10 @@ struct hip_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Policy::hip,
                        RAJA::Pattern::forall,
                        detail::get_launch<Async>::value,
-                       RAJA::Platform::hip> {
+                       RAJA::Platform::hip>
+                , _Indexer {
   using Indexer = _Indexer;
+  using Indexer::Indexer;
 };
 
 template <bool Async, int num_threads = 0>
@@ -582,31 +584,25 @@ struct HipIndexGlobal<dim, 0, 0>
 };
 
 
-// Type representing direct indexing
+// Indexer used with Hip forall policies
+// each thread gets 0 or 1 indices
+template<typename IndexMapper>
+struct HipForallDirect;
+/// each thread gets 0 or more indices
 template<typename _IndexMapper>
-struct HipIndexDirect {
-  using IndexMapper = _IndexMapper;
-};
+struct HipForallLoop;
 
-// Type representing looping indexing
 template<typename _IndexMapper>
-struct HipIndexLoop {
-  using IndexMapper = _IndexMapper;
-};
-
 
 } // namespace internal
 
 namespace type_traits {
-  template <typename Indexer>
-  struct is_hip_direct_indexer : std::false_type {};
-  template <typename IndexMapper>
-  struct is_hip_direct_indexer<internal::HipIndexDirect<IndexMapper>> : std::true_type {};
 
-  template <typename Indexer>
-  struct is_hip_loop_indexer : std::false_type {};
-  template <typename IndexMapper>
-  struct is_hip_loop_indexer<internal::HipIndexLoop<IndexMapper>> : std::true_type {};
+template <typename Indexer>
+struct is_hip_direct_indexer : std::false_type {};
+
+template <typename Indexer>
+struct is_hip_loop_indexer : std::false_type {};
 
 template <typename IndexMapper>
 struct is_hip_block_size_known : std::false_type {};
@@ -622,14 +618,15 @@ struct is_hip_block_size_known<::RAJA::internal::HipIndexGlobal<dim, 0, t_grid_s
 
 } // namespace type_traits
 
+
 template <size_t BLOCK_SIZE, bool Async = false>
 using hip_exec = policy::hip::hip_exec<
-    internal::HipIndexDirect<internal::HipIndexGlobal<0, BLOCK_SIZE, 0>>,
+    internal::HipForallDirect<internal::HipIndexGlobal<0, BLOCK_SIZE, 0>>,
     Async>;
 
 template <size_t BLOCK_SIZE>
 using hip_exec_async = policy::hip::hip_exec<
-    internal::HipIndexDirect<internal::HipIndexGlobal<0, BLOCK_SIZE, 0>>,
+    internal::HipForallDirect<internal::HipIndexGlobal<0, BLOCK_SIZE, 0>>,
     true>;
 
 using policy::hip::hip_work;
