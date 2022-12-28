@@ -608,10 +608,18 @@ namespace type_traits {
   template <typename IndexMapper>
   struct is_hip_loop_indexer<internal::HipIndexLoop<IndexMapper>> : std::true_type {};
 
-  template <typename IndexMapper, hip_dim_member_t block_size = IndexMapper::block_size>
-  struct is_hip_block_size_known : std::true_type {};
-  template <typename IndexMapper>
-  struct is_hip_block_size_known<IndexMapper, 0> : std::false_type {};
+template <typename IndexMapper>
+struct is_hip_block_size_known : std::false_type {};
+
+template<int dim, hip_dim_member_t t_block_size>
+struct is_hip_block_size_known<::RAJA::internal::HipIndexThread<dim, t_block_size>> : std::true_type {};
+template<int dim>
+struct is_hip_block_size_known<::RAJA::internal::HipIndexThread<dim, 0>> : std::false_type {};
+template<int dim, hip_dim_member_t t_block_size, hip_dim_member_t t_grid_size>
+struct is_hip_block_size_known<::RAJA::internal::HipIndexGlobal<dim, t_block_size, t_grid_size>> : std::true_type {};
+template<int dim, hip_dim_member_t t_grid_size>
+struct is_hip_block_size_known<::RAJA::internal::HipIndexGlobal<dim, 0, t_grid_size>> : std::false_type {};
+
 } // namespace type_traits
 
 template <size_t BLOCK_SIZE, bool Async = false>
