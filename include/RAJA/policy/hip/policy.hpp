@@ -369,132 +369,128 @@ void set_hip_dim(dim_t &d, hip_dim_member_t value)
 /// Type representing thread indexing within a block
 /// block_size is fixed
 template<int dim, hip_dim_member_t t_block_size>
-struct HipIndexThread {
-
+struct HipIndexThread
+{
   static constexpr hip_dim_member_t block_size = t_block_size;
   static constexpr hip_dim_member_t grid_size = 0;
 
-  template < typename IdxT = hip_dim_member_t >
-  RAJA_DEVICE
-  static inline constexpr
-  auto index() { return static_cast<IdxT>(HipDimHelper<dim>::get(threadIdx)); }
+  RAJA_HOST_DEVICE constexpr
+  HipIndexThread(hip_dim_member_t RAJA_UNUSED_ARG(_block_size) = 0)
+  { }
 
   template < typename IdxT = hip_dim_member_t >
-  RAJA_DEVICE
-  static inline constexpr
-  auto size() { return static_cast<IdxT>(t_block_size); }
-
-  template < typename IdxT >
-  static inline
-  void set_dimensions(HipDims& dims, IdxT)
+  RAJA_DEVICE static inline auto index()
   {
-    set_hip_dim<dim>(dims.threads, t_block_size);
+    return static_cast<IdxT>(HipDimHelper<dim>::get(threadIdx));
+  }
+
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static constexpr auto size()
+  {
+    return static_cast<IdxT>(block_size);
   }
 };
 /// unless t_block_size is 0 then block_size is dynamic
 template<int dim>
-struct HipIndexThread<dim, 0> {
-
-  static constexpr hip_dim_member_t block_size = 0;
+struct HipIndexThread<dim, 0>
+{
   static constexpr hip_dim_member_t grid_size = 0;
 
-  template < typename IdxT = hip_dim_member_t >
-  RAJA_DEVICE
-  inline static constexpr
-  auto index() { return static_cast<IdxT>(HipDimHelper<dim>::get(threadIdx)); }
+  hip_dim_member_t block_size;
+
+  RAJA_HOST_DEVICE constexpr
+  HipIndexThread(hip_dim_member_t _block_size = 0)
+    : block_size(_block_size)
+  { }
 
   template < typename IdxT = hip_dim_member_t >
-  RAJA_DEVICE
-  inline static constexpr
-  auto size() { return static_cast<IdxT>(HipDimHelper<dim>::get(blockDim)); }
-
-  template < typename IdxT >
-  static inline
-  void set_dimensions(HipDims& dims, IdxT len)
+  RAJA_DEVICE static inline auto index()
   {
-    set_hip_dim<dim>(dims.threads, len);
+    return static_cast<IdxT>(HipDimHelper<dim>::get(threadIdx));
+  }
+
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static inline auto size()
+  {
+    return static_cast<IdxT>(HipDimHelper<dim>::get(blockDim));
   }
 };
 
 /// Type representing block indexing within a grid
 /// grid_size is fixed
 template<int dim, hip_dim_member_t t_grid_size>
-struct HipIndexBlock {
-
+struct HipIndexBlock
+{
   static constexpr hip_dim_member_t block_size = 0;
   static constexpr hip_dim_member_t grid_size = t_grid_size;
 
-  template < typename IdxT = hip_dim_member_t >
-  RAJA_DEVICE
-  inline static constexpr
-  auto index() { return static_cast<IdxT>(HipDimHelper<dim>::get(blockIdx)); }
+  RAJA_HOST_DEVICE constexpr
+  HipIndexBlock(hip_dim_member_t RAJA_UNUSED_ARG(_grid_size) = 0)
+  { }
 
   template < typename IdxT = hip_dim_member_t >
-  RAJA_DEVICE
-  inline static constexpr
-  auto size() { return static_cast<IdxT>(t_grid_size); }
-
-  template < typename IdxT >
-  static inline
-  void set_dimensions(HipDims& dims, IdxT)
+  RAJA_DEVICE static inline auto index()
   {
-    set_hip_dim<dim>(dims.blocks, t_grid_size);
+    return static_cast<IdxT>(HipDimHelper<dim>::get(blockIdx));
+  }
+
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static constexpr auto size()
+  {
+    return static_cast<IdxT>(grid_size);
   }
 };
 /// unless t_grid_size is 0 then grid_size is dynamic
 template<int dim>
-struct HipIndexBlock<dim, 0> {
-
+struct HipIndexBlock<dim, 0>
+{
   static constexpr hip_dim_member_t block_size = 0;
-  static constexpr hip_dim_member_t grid_size = 0;
+
+  hip_dim_member_t grid_size;
+
+  RAJA_HOST_DEVICE constexpr
+  HipIndexBlock(hip_dim_member_t _grid_size = 0)
+    : grid_size(_grid_size)
+  { }
 
   template < typename IdxT = hip_dim_member_t >
-  RAJA_DEVICE
-  inline static constexpr
-  auto index() { return static_cast<IdxT>(HipDimHelper<dim>::get(blockIdx)); }
-
-  template < typename IdxT = hip_dim_member_t >
-  RAJA_DEVICE
-  inline static constexpr
-  auto size() { return static_cast<IdxT>(HipDimHelper<dim>::get(gridDim)); }
-
-  template < typename IdxT >
-  static inline
-  void set_dimensions(HipDims& dims, IdxT len)
+  RAJA_DEVICE static inline auto index()
   {
-    set_hip_dim<dim>(dims.blocks, len);
+    return static_cast<IdxT>(HipDimHelper<dim>::get(blockIdx));
+  }
+
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static inline auto size()
+  {
+    return static_cast<IdxT>(HipDimHelper<dim>::get(gridDim));
   }
 };
 
 /// Type representing thread indexing within a grid
 template<int dim, hip_dim_member_t t_block_size, hip_dim_member_t t_grid_size>
-struct HipIndexGlobal {
-
+struct HipIndexGlobal
+{
   static constexpr hip_dim_member_t block_size = t_block_size;
   static constexpr hip_dim_member_t grid_size = t_grid_size;
 
-  using IndexThread = HipIndexThread<dim, t_block_size>;
-  using IndexBlock = HipIndexBlock<dim, t_grid_size>;
+  RAJA_HOST_DEVICE constexpr
+  HipIndexGlobal(hip_dim_member_t RAJA_UNUSED_ARG(_block_size) = 0,
+                 hip_dim_member_t RAJA_UNUSED_ARG(_grid_size) = 0)
+  { }
 
   template < typename IdxT = hip_dim_member_t >
-  RAJA_HOST_DEVICE
-  inline static constexpr
-  auto index() { return static_cast<IdxT>(IndexThread::template index<IdxT>()) +
-                        static_cast<IdxT>(IndexThread::template size<IdxT>()) *
-                        static_cast<IdxT>(IndexBlock::template index<IdxT>()) ; }
-
-  template < typename IdxT = hip_dim_member_t >
-  RAJA_HOST_DEVICE
-  inline static constexpr
-  auto size() { return static_cast<IdxT>(IndexThread::template size<IdxT>()) *
-                       static_cast<IdxT>(IndexBlock::template size<IdxT>()) ; }
-
-  template < typename IdxT >
-  static inline
-  void set_dimensions(HipDims& dims, IdxT)
+  RAJA_DEVICE static inline auto index()
   {
-    set_hip_dim<dim>(dims.threads, t_block_size);
-    set_hip_dim<dim>(dims.blocks, t_grid_size);
+    return static_cast<IdxT>(HipDimHelper<dim>::get(threadIdx)) +
+           static_cast<IdxT>(block_size) *
+           static_cast<IdxT>(HipDimHelper<dim>::get(blockIdx)) ;
+  }
+
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static constexpr auto size()
+  {
+    return static_cast<IdxT>(block_size) *
+           static_cast<IdxT>(grid_size) ;
   }
 };
 /// unless t_grid_size is 0 then grid_size is dynamic
@@ -502,98 +498,86 @@ template<int dim, hip_dim_member_t t_block_size>
 struct HipIndexGlobal<dim, t_block_size, 0> {
 
   static constexpr hip_dim_member_t block_size = t_block_size;
-  static constexpr hip_dim_member_t grid_size = 0;
 
-  using IndexThread = HipIndexThread<dim, t_block_size>;
-  using IndexBlock = HipIndexBlock<dim, 0>;
+  hip_dim_member_t grid_size;
 
-  template < typename IdxT = hip_dim_member_t >
-  RAJA_HOST_DEVICE
-  inline static constexpr
-  auto index() { return static_cast<IdxT>(IndexThread::template index<IdxT>()) +
-                        static_cast<IdxT>(IndexThread::template size<IdxT>()) *
-                        static_cast<IdxT>(IndexBlock::template index<IdxT>()) ; }
+  RAJA_HOST_DEVICE constexpr
+  HipIndexGlobal(hip_dim_member_t RAJA_UNUSED_ARG(_block_size) = 0,
+                 hip_dim_member_t _grid_size = 0)
+    : grid_size(_grid_size)
+  { }
 
   template < typename IdxT = hip_dim_member_t >
-  RAJA_HOST_DEVICE
-  inline static constexpr
-  auto size() { return static_cast<IdxT>(IndexThread::template size<IdxT>()) *
-                       static_cast<IdxT>(IndexBlock::template size<IdxT>()) ; }
-
-  template < typename IdxT >
-  static inline
-  void set_dimensions(HipDims& dims, IdxT len)
+  RAJA_DEVICE static inline auto index()
   {
-    IdxT block_size = t_block_size;
-    IdxT grid_size = RAJA_DIVIDE_CEILING_INT(len, block_size);
-    set_hip_dim<dim>(dims.threads, block_size);
-    set_hip_dim<dim>(dims.blocks, grid_size);
+    return static_cast<IdxT>(HipDimHelper<dim>::get(threadIdx)) +
+           static_cast<IdxT>(block_size) *
+           static_cast<IdxT>(HipDimHelper<dim>::get(blockIdx)) ;
+  }
+
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static inline auto size()
+  {
+    return static_cast<IdxT>(block_size) *
+           static_cast<IdxT>(HipDimHelper<dim>::get(gridDim)) ;
   }
 };
 /// unless t_block_size is 0 then block_size is dynamic
 template<int dim, hip_dim_member_t t_grid_size>
-struct HipIndexGlobal<dim, 0, t_grid_size> {
-
-  static constexpr hip_dim_member_t block_size = 0;
+struct HipIndexGlobal<dim, 0, t_grid_size>
+{
   static constexpr hip_dim_member_t grid_size = t_grid_size;
 
-  using IndexThread = HipIndexThread<dim, 0>;
-  using IndexBlock = HipIndexBlock<dim, t_grid_size>;
+  hip_dim_member_t block_size = 0;
+
+  RAJA_HOST_DEVICE constexpr
+  HipIndexGlobal(hip_dim_member_t _block_size = 0,
+                 hip_dim_member_t RAJA_UNUSED_ARG(_grid_size) = 0)
+    : block_size(_block_size)
+  { }
 
   template < typename IdxT = hip_dim_member_t >
-  RAJA_HOST_DEVICE
-  inline static constexpr
-  auto index() { return static_cast<IdxT>(IndexThread::template index<IdxT>()) +
-                        static_cast<IdxT>(IndexThread::template size<IdxT>()) *
-                        static_cast<IdxT>(IndexBlock::template index<IdxT>()) ; }
-
-  template < typename IdxT = hip_dim_member_t >
-  RAJA_HOST_DEVICE
-  inline static constexpr
-  auto size() { return static_cast<IdxT>(IndexThread::template size<IdxT>()) *
-                       static_cast<IdxT>(IndexBlock::template size<IdxT>()) ; }
-
-  template < typename IdxT >
-  static inline
-  void set_dimensions(HipDims& dims, IdxT len)
+  RAJA_DEVICE static inline auto index()
   {
-    IdxT grid_size = t_grid_size;
-    IdxT block_size = RAJA_DIVIDE_CEILING_INT(len, grid_size);
-    set_hip_dim<dim>(dims.threads, block_size);
-    set_hip_dim<dim>(dims.blocks, grid_size);
+    return static_cast<IdxT>(HipDimHelper<dim>::get(threadIdx)) +
+           static_cast<IdxT>(HipDimHelper<dim>::get(blockDim)) *
+           static_cast<IdxT>(HipDimHelper<dim>::get(blockIdx)) ;
+  }
+
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static inline auto size()
+  {
+    return static_cast<IdxT>(HipDimHelper<dim>::get(blockDim)) *
+           static_cast<IdxT>(grid_size) ;
   }
 };
 /// unless t_block_size and t_gris_size are 0 then block_size and grid_size are dynamic
 template<int dim>
-struct HipIndexGlobal<dim, 0, 0> {
+struct HipIndexGlobal<dim, 0, 0>
+{
+  hip_dim_member_t block_size = 0;
+  hip_dim_member_t grid_size = 0;
 
-  static constexpr hip_dim_member_t block_size = 0;
-  static constexpr hip_dim_member_t grid_size = 0;
-
-  using IndexThread = HipIndexThread<dim, 0>;
-  using IndexBlock = HipIndexBlock<dim, 0>;
-
-  template < typename IdxT = hip_dim_member_t >
-  RAJA_HOST_DEVICE
-  inline static constexpr
-  auto index() { return static_cast<IdxT>(IndexThread::template index<IdxT>()) +
-                        static_cast<IdxT>(IndexThread::template size<IdxT>()) *
-                        static_cast<IdxT>(IndexBlock::template index<IdxT>()) ; }
+  RAJA_HOST_DEVICE constexpr
+  HipIndexGlobal(hip_dim_member_t _block_size = 0,
+                 hip_dim_member_t _grid_size = 0)
+    : block_size(_block_size)
+    , grid_size(_grid_size)
+  { }
 
   template < typename IdxT = hip_dim_member_t >
-  RAJA_HOST_DEVICE
-  inline static constexpr
-  auto size() { return static_cast<IdxT>(IndexThread::template size<IdxT>()) *
-                       static_cast<IdxT>(IndexBlock::template size<IdxT>()) ; }
-
-  template < typename IdxT >
-  static inline
-  void set_dimensions(HipDims& dims, IdxT)
+  RAJA_DEVICE static inline auto index()
   {
-    // unclear what to do in this case
-    // Maybe this should just static_assert out if you try to use it in kernel
-    set_hip_dim<dim>(dims.threads, 1);
-    set_hip_dim<dim>(dims.blocks, 1);
+    return static_cast<IdxT>(HipDimHelper<dim>::get(threadIdx)) +
+           static_cast<IdxT>(HipDimHelper<dim>::get(blockDim)) *
+           static_cast<IdxT>(HipDimHelper<dim>::get(blockIdx)) ;
+  }
+
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static inline auto size()
+  {
+    return static_cast<IdxT>(HipDimHelper<dim>::get(blockDim)) *
+           static_cast<IdxT>(HipDimHelper<dim>::get(gridDim)) ;
   }
 };
 
