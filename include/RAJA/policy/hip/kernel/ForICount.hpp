@@ -403,21 +403,21 @@ struct HipStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
-          typename Indexer,
+          typename IndexMapper,
           typename... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::internal::HipIndexDirect<Indexer>, EnclosedStmts...>,
+    statement::ForICount<ArgumentId, ParamId, RAJA::internal::HipKernelDirect<IndexMapper>, EnclosedStmts...>,
     Types>
     : public HipStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::internal::HipIndexDirect<Indexer>, EnclosedStmts...>,
+        statement::For<ArgumentId, RAJA::internal::HipKernelDirect<IndexMapper>, EnclosedStmts...>,
         Types> {
 
   using Base = HipStatementExecutor<
       Data,
-      statement::For<ArgumentId, RAJA::internal::HipIndexDirect<Indexer>, EnclosedStmts...>,
+      statement::For<ArgumentId, RAJA::internal::HipKernelDirect<IndexMapper>, EnclosedStmts...>,
       Types>;
 
   using typename Base::enclosed_stmts_t;
@@ -428,7 +428,7 @@ struct HipStatementExecutor<
   {
     // grid stride loop
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i = Indexer::template index<diff_t>();
+    diff_t i = IndexMapper::template index<diff_t>();
 
     // Assign the index to the argument and param
     data.template assign_offset<ArgumentId>(i);
@@ -448,21 +448,21 @@ struct HipStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
-          typename Indexer,
+          typename IndexMapper,
           typename... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::internal::HipIndexLoop<Indexer>, EnclosedStmts...>,
+    statement::ForICount<ArgumentId, ParamId, RAJA::internal::HipKernelLoop<IndexMapper>, EnclosedStmts...>,
     Types>
     : public HipStatementExecutor<
         Data,
-        statement::For<ArgumentId, RAJA::internal::HipIndexLoop<Indexer>, EnclosedStmts...>,
+        statement::For<ArgumentId, RAJA::internal::HipKernelLoop<IndexMapper>, EnclosedStmts...>,
         Types> {
 
   using Base = HipStatementExecutor<
       Data,
-      statement::For<ArgumentId, RAJA::internal::HipIndexLoop<Indexer>, EnclosedStmts...>,
+      statement::For<ArgumentId, RAJA::internal::HipKernelLoop<IndexMapper>, EnclosedStmts...>,
       Types>;
 
   using typename Base::enclosed_stmts_t;
@@ -473,8 +473,8 @@ struct HipStatementExecutor<
   {
     // grid stride loop
     diff_t len = segment_length<ArgumentId>(data);
-    diff_t i_init = Indexer::template index<diff_t>();
-    diff_t i_stride = Indexer::template size<diff_t>();
+    diff_t i_init = IndexMapper::template index<diff_t>();
+    diff_t i_stride = IndexMapper::template size<diff_t>();
 
     // Iterate through chunks
     for (diff_t ii = 0; ii < len; ii += i_stride) {

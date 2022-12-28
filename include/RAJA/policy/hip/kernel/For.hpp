@@ -476,7 +476,7 @@ template <typename Data,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::internal::HipIndexDirect<IndexMapper>, EnclosedStmts...>,
+    statement::For<ArgumentId, RAJA::internal::HipKernelDirect<IndexMapper>, EnclosedStmts...>,
     Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -489,6 +489,7 @@ struct HipStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
+  using Indexer = RAJA::internal::HipKernelDirect<IndexMapper>;
 
   static inline RAJA_DEVICE
   void exec(Data &data, bool thread_active)
@@ -508,11 +509,9 @@ struct HipStatementExecutor<
   {
     diff_t len = segment_length<ArgumentId>(data);
 
-    HipDims my_dims(0);
-    IndexMapper::set_dimensions(my_dims, len);
-
-    // since we are direct-mapping, we REQUIRE the given dimensions
-    LaunchDims dims{my_dims, my_dims};
+    HipDims my_dims(0), my_min_dims(0);
+    Indexer{}.set_dimensions(my_dims, my_min_dims, len);
+    LaunchDims dims{my_dims, my_min_dims};
 
     // combine with enclosed statements
     LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
@@ -532,7 +531,7 @@ template <typename Data,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::internal::HipIndexLoop<IndexMapper>, EnclosedStmts...>,
+    statement::For<ArgumentId, RAJA::internal::HipKernelLoop<IndexMapper>, EnclosedStmts...>,
     Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -544,6 +543,8 @@ struct HipStatementExecutor<
       HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
+
+  using Indexer = RAJA::internal::HipKernelLoop<IndexMapper>;
 
 
   static inline RAJA_DEVICE
@@ -575,10 +576,9 @@ struct HipStatementExecutor<
   {
     diff_t len = segment_length<ArgumentId>(data);
 
-    HipDims my_dims(0);
-    IndexMapper::set_dimensions(my_dims, len);
-
-    LaunchDims dims{my_dims};
+    HipDims my_dims(0), my_min_dims(0);
+    Indexer{}.set_dimensions(my_dims, my_min_dims, len);
+    LaunchDims dims{my_dims, my_min_dims};
 
     // combine with enclosed statements
     LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
