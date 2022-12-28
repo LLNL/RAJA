@@ -26,6 +26,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
+#include <limits>
 #include <type_traits>
 #include <unordered_map>
 
@@ -292,6 +293,150 @@ hipDeviceProp_t& device_prop()
 {
   static hipDeviceProp_t prop = get_device_prop();
   return prop;
+}
+
+
+
+struct HipFixedMaxBlocksData
+{
+  int multiProcessorCount;
+  int maxThreadsPerMultiProcessor;
+};
+
+RAJA_INLINE
+int hip_max_blocks(int block_size)
+{
+  static HipFixedMaxBlocksData data = {-1, -1};
+
+  if (data.multiProcessorCount < 0) {
+    hipDeviceProp_t& prop = hip::device_prop();
+    data.multiProcessorCount = prop.multiProcessorCount;
+    data.maxThreadsPerMultiProcessor = prop.maxThreadsPerMultiProcessor;
+  }
+
+  int max_blocks = data.multiProcessorCount *
+                  (data.maxThreadsPerMultiProcessor / block_size);
+
+  // printf("MAX_BLOCKS=%d\n", max_blocks);
+
+  return max_blocks;
+}
+
+struct HipOccMaxBlocksThreadsData
+{
+  int prev_shmem_size;
+  int max_blocks;
+  int max_threads;
+};
+
+template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
+RAJA_INLINE
+void hip_occupancy_max_blocks_threads(Func&& func, int shmem_size,
+                                       int &max_blocks, int &max_threads)
+{
+  static HipOccMaxBlocksThreadsData data = {-1, -1, -1};
+
+  if (data.prev_shmem_size != shmem_size) {
+
+#ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
+    hipErrchk(hipOccupancyMaxPotentialBlockSize(
+        &data.max_blocks, &data.max_threads, func, shmem_size));
+#else
+    RAJA_UNUSED_VAR(func);
+    data.max_blocks = 64;
+    data.max_threads = 1024;
+#endif
+
+    data.prev_shmem_size = shmem_size;
+
+  }
+
+  max_blocks  = data.max_blocks;
+  max_threads = data.max_threads;
+
+}
+
+struct HipOccMaxBlocksFixedThreadsData
+{
+  int prev_shmem_size;
+  int max_blocks;
+  int multiProcessorCount;
+};
+
+template < typename RAJA_UNUSED_ARG(UniqueMarker), int num_threads, typename Func >
+RAJA_INLINE
+void hip_occupancy_max_blocks(Func&& func, int shmem_size,
+                               int &max_blocks)
+{
+  static HipOccMaxBlocksFixedThreadsData data = {-1, -1, -1};
+
+  if (data.prev_shmem_size != shmem_size) {
+
+#ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
+    hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor(
+        &data.max_blocks, func, num_threads, shmem_size));
+#else
+    RAJA_UNUSED_VAR(func);
+    data.max_blocks = 2;
+#endif
+
+    if (data.multiProcessorCount < 0) {
+
+      data.multiProcessorCount = hip::device_prop().multiProcessorCount;
+
+    }
+
+    data.max_blocks *= data.multiProcessorCount;
+
+    data.prev_shmem_size = shmem_size;
+
+  }
+
+  max_blocks = data.max_blocks;
+
+}
+
+struct HipOccMaxBlocksVariableThreadsData
+{
+  int prev_shmem_size;
+  int prev_num_threads;
+  int max_blocks;
+  int multiProcessorCount;
+};
+
+template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
+RAJA_INLINE
+void hip_occupancy_max_blocks(Func&& func, int shmem_size,
+                               int &max_blocks, int num_threads)
+{
+  static HipOccMaxBlocksVariableThreadsData data = {-1, -1, -1, -1};
+
+  if ( data.prev_shmem_size  != shmem_size ||
+       data.prev_num_threads != num_threads ) {
+
+#ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
+    hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor(
+        &data.max_blocks, func, num_threads, shmem_size));
+#else
+    RAJA_UNUSED_VAR(func);
+    data.max_blocks = 2;
+#endif
+
+    if (data.multiProcessorCount < 0) {
+
+      data.multiProcessorCount = hip::device_prop().multiProcessorCount;
+
+    }
+
+    data.max_blocks *= data.multiProcessorCount;
+
+    data.prev_shmem_size  = shmem_size;
+    data.prev_num_threads = num_threads;
+
+  }
+
+  max_blocks = data.max_blocks;
+
 }
 
 }  // namespace hip
