@@ -109,21 +109,21 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           camp::idx_t chunk_size,
-          typename Indexer,
+          typename IndexMapper,
           typename... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<
     Data,
     statement::TileTCount<ArgumentId, ParamId,
                     RAJA::tile_fixed<chunk_size>,
-                    RAJA::internal::HipIndexDirect<Indexer>,
+                    RAJA::internal::HipKernelDirect<IndexMapper>,
                     EnclosedStmts...>,
                     Types>
     : public HipStatementExecutor<
         Data,
         statement::Tile<ArgumentId,
                         RAJA::tile_fixed<chunk_size>,
-                        RAJA::internal::HipIndexDirect<Indexer>,
+                        RAJA::internal::HipKernelDirect<IndexMapper>,
                         EnclosedStmts...>,
                         Types> {
 
@@ -131,7 +131,7 @@ struct HipStatementExecutor<
       Data,
       statement::Tile<ArgumentId,
                       RAJA::tile_fixed<chunk_size>,
-                      RAJA::internal::HipIndexDirect<Indexer>,
+                      RAJA::internal::HipKernelDirect<IndexMapper>,
                       EnclosedStmts...>,
                       Types>;
 
@@ -150,7 +150,7 @@ struct HipStatementExecutor<
 
     // compute trip count
     diff_t len = segment.end() - segment.begin();
-    diff_t t = Indexer::template index<diff_t>();
+    diff_t t = IndexMapper::template index<diff_t>();
     diff_t i = t * static_cast<diff_t>(chunk_size);
 
     // Keep copy of original segment, so we can restore it
@@ -177,21 +177,21 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           camp::idx_t chunk_size,
-          typename Indexer,
+          typename IndexMapper,
           typename... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<
     Data,
     statement::TileTCount<ArgumentId, ParamId,
                     RAJA::tile_fixed<chunk_size>,
-                    RAJA::internal::HipIndexLoop<Indexer>,
+                    RAJA::internal::HipKernelLoop<IndexMapper>,
                     EnclosedStmts...>,
                     Types>
     : public HipStatementExecutor<
         Data,
         statement::Tile<ArgumentId,
                         RAJA::tile_fixed<chunk_size>,
-                        RAJA::internal::HipIndexLoop<Indexer>,
+                        RAJA::internal::HipKernelLoop<IndexMapper>,
                         EnclosedStmts...>,
                         Types> {
 
@@ -199,7 +199,7 @@ struct HipStatementExecutor<
       Data,
       statement::Tile<ArgumentId,
                       RAJA::tile_fixed<chunk_size>,
-                      RAJA::internal::HipIndexLoop<Indexer>,
+                      RAJA::internal::HipKernelLoop<IndexMapper>,
                       EnclosedStmts...>,
                       Types>;
 
@@ -220,9 +220,9 @@ struct HipStatementExecutor<
 
     // compute trip count
     diff_t len = segment.end() - segment.begin();
-    diff_t t_init = Indexer::template index<diff_t>();
+    diff_t t_init = IndexMapper::template index<diff_t>();
     diff_t i_init = t_init * static_cast<diff_t>(chunk_size);
-    diff_t t_stride = Indexer::template size<diff_t>();
+    diff_t t_stride = IndexMapper::template size<diff_t>();
     diff_t i_stride = t_stride * static_cast<diff_t>(chunk_size);
 
     // Iterate through of chunks

@@ -265,8 +265,223 @@ using hip_statement_list_executor_t = HipStatementListExecutor<
     Types>;
 
 
+template<int dim, hip_dim_member_t t_block_size>
+struct HipKernelDirect<HipIndexThread<dim, t_block_size>>
+{
+  using IndexMapper = HipIndexThread<dim, t_block_size>;
+
+  IndexMapper indexer;
+
+  RAJA_HOST_DEVICE constexpr
+  HipKernelDirect(hip_dim_member_t _block_size = 0)
+    : indexer(_block_size)
+  { }
+
+  template < typename IdxT >
+  inline void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len) const
+  {
+    if (indexer.block_size == 0) {
+      // BEWARE: if calculated block_size is too high then the kernel launch will fail
+      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(len));
+      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(len));
+
+    } else {
+      if ( len > static_cast<IdxT>(indexer.block_size) ) {
+        RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
+      }
+      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(indexer.block_size));
+      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(indexer.block_size));
+    }
+  }
+};
+
+template<int dim, hip_dim_member_t t_grid_size>
+struct HipKernelDirect<HipIndexBlock<dim, t_grid_size>>
+{
+  using IndexMapper = HipIndexBlock<dim, t_grid_size>;
+
+  IndexMapper indexer;
+
+  RAJA_HOST_DEVICE constexpr
+  HipKernelDirect(hip_dim_member_t _grid_size = 0)
+    : indexer(_grid_size)
+  { }
+
+  template < typename IdxT >
+  inline void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len) const
+  {
+    if (indexer.grid_size == 0) {
+      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(len));
+      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(len));
+
+    } else {
+      if ( len > static_cast<IdxT>(indexer.grid_size) ) {
+        RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
+      }
+      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(indexer.grid_size));
+      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(indexer.grid_size));
+    }
+  }
+};
+
+template<int dim, hip_dim_member_t t_block_size, hip_dim_member_t t_grid_size>
+struct HipKernelDirect<HipIndexGlobal<dim, t_block_size, t_grid_size>>
+{
+  using IndexMapper = HipIndexGlobal<dim, t_block_size, t_grid_size>;
+
+  IndexMapper indexer;
+
+  RAJA_HOST_DEVICE constexpr
+  HipKernelDirect(hip_dim_member_t _block_size = 0,
+                hip_dim_member_t _grid_size = 0)
+    : indexer(_block_size, _grid_size)
+  { }
+
+  template < typename IdxT >
+  inline void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len) const
+  {
+    if (indexer.block_size == 0 && indexer.grid_size == 0) {
+      if (len > static_cast<IdxT>(0)) {
+        RAJA_ABORT_OR_THROW("must know one of block_size or grid_size");
+      }
+
+    } else if (indexer.block_size == 0) {
+      // BEWARE: if calculated block_size is too high then the kernel launch will fail
+      set_hip_dim<dim>(dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(indexer.grid_size)));
+      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(indexer.grid_size));
+      set_hip_dim<dim>(min_dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(indexer.grid_size)));
+      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(indexer.grid_size));
+
+    } else if (indexer.grid_size == 0) {
+      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(indexer.block_size));
+      set_hip_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(indexer.block_size)));
+      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(indexer.block_size));
+      set_hip_dim<dim>(min_dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(indexer.block_size)));
+
+    } else {
+      if ( len > (static_cast<IdxT>(indexer.block_size) *
+                  static_cast<IdxT>(indexer.grid_size)) ) {
+        RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
+      }
+      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(indexer.block_size));
+      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(indexer.grid_size));
+      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(indexer.block_size));
+      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(indexer.grid_size));
+    }
+  }
+};
+
+
+template<int dim, hip_dim_member_t t_block_size>
+struct HipKernelLoop<HipIndexThread<dim, t_block_size>>
+{
+  using IndexMapper = HipIndexThread<dim, t_block_size>;
+
+  IndexMapper indexer;
+
+  RAJA_HOST_DEVICE constexpr
+  HipKernelLoop(hip_dim_member_t _block_size = 0)
+    : indexer(_block_size)
+  { }
+
+  template < typename IdxT >
+  inline void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len) const
+  {
+    if (indexer.block_size == 0) {
+      // BEWARE: if calculated block_size is too high then the kernel launch will fail
+      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(len));
+      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
+
+    } else {
+      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(indexer.block_size));
+      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(indexer.block_size));
+    }
+  }
+};
+
+template<int dim, hip_dim_member_t t_grid_size>
+struct HipKernelLoop<HipIndexBlock<dim, t_grid_size>>
+{
+  using IndexMapper = HipIndexBlock<dim, t_grid_size>;
+
+  IndexMapper indexer;
+
+  RAJA_HOST_DEVICE constexpr
+  HipKernelLoop(hip_dim_member_t _grid_size = 0)
+    : indexer(_grid_size)
+  { }
+
+  template < typename IdxT >
+  inline void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len) const
+  {
+    if (indexer.grid_size == 0) {
+      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(len));
+      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
+
+    } else {
+      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(indexer.grid_size));
+      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(indexer.grid_size));
+    }
+  }
+};
+
+template<int dim, hip_dim_member_t t_block_size, hip_dim_member_t t_grid_size>
+struct HipKernelLoop<HipIndexGlobal<dim, t_block_size, t_grid_size>>
+{
+  using IndexMapper = HipIndexGlobal<dim, t_block_size, t_grid_size>;
+
+  IndexMapper indexer;
+
+  RAJA_HOST_DEVICE constexpr
+  HipKernelLoop(hip_dim_member_t _block_size = 0,
+                hip_dim_member_t _grid_size = 0)
+    : indexer(_block_size, _grid_size)
+  { }
+
+  template < typename IdxT >
+  inline void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len) const
+  {
+    if (indexer.block_size == 0 && indexer.grid_size == 0) {
+      if (len > static_cast<IdxT>(0)) {
+        set_hip_dim<dim>(dims.threads, static_cast<IdxT>(1));
+        set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(1));
+        set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
+        set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
+      }
+
+    } else if (indexer.block_size == 0) {
+      // BEWARE: if calculated block_size is too high then the kernel launch will fail
+      set_hip_dim<dim>(dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(indexer.grid_size)));
+      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(indexer.grid_size));
+      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
+      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(indexer.grid_size));
+
+    } else if (indexer.grid_size == 0) {
+      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(indexer.block_size));
+      set_hip_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(indexer.block_size)));
+      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(indexer.block_size));
+      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
+
+    } else {
+      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(indexer.block_size));
+      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(indexer.grid_size));
+      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(indexer.block_size));
+      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(indexer.grid_size));
+    }
+  }
+};
 
 }  // namespace internal
+
+namespace type_traits {
+
+template <typename IndexMapper>
+struct is_hip_direct_indexer<::RAJA::internal::HipKernelDirect<IndexMapper>> : std::true_type {};
+template <typename IndexMapper>
+struct is_hip_loop_indexer<::RAJA::internal::HipKernelLoop<IndexMapper>> : std::true_type {};
+
+} // namespace type_traits
+
 }  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_HIP guard

@@ -174,7 +174,7 @@ struct LaunchExecute<RAJA::hip_launch_t<async, nthreads>> {
    HIP generic loop implementation with one indexer
 */
 template <typename SEGMENT, typename Indexer>
-struct LoopExecute<RAJA::internal::HipIndexDirect<Indexer>, SEGMENT> {
+struct LoopExecute<RAJA::internal::HipKernelDirect<Indexer>, SEGMENT> {
 
   using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
 
@@ -194,7 +194,7 @@ struct LoopExecute<RAJA::internal::HipIndexDirect<Indexer>, SEGMENT> {
 };
 
 template <typename SEGMENT, typename Indexer>
-struct LoopExecute<RAJA::internal::HipIndexLoop<Indexer>, SEGMENT> {
+struct LoopExecute<RAJA::internal::HipKernelLoop<Indexer>, SEGMENT> {
 
   using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
 
@@ -215,7 +215,7 @@ struct LoopExecute<RAJA::internal::HipIndexLoop<Indexer>, SEGMENT> {
 };
 
 template <typename SEGMENT, typename Indexer>
-struct LoopICountExecute<RAJA::internal::HipIndexDirect<Indexer>, SEGMENT> {
+struct LoopICountExecute<RAJA::internal::HipKernelDirect<Indexer>, SEGMENT> {
 
   using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
 
@@ -235,7 +235,7 @@ struct LoopICountExecute<RAJA::internal::HipIndexDirect<Indexer>, SEGMENT> {
 };
 
 template <typename SEGMENT, typename Indexer>
-struct LoopICountExecute<RAJA::internal::HipIndexLoop<Indexer>, SEGMENT> {
+struct LoopICountExecute<RAJA::internal::HipKernelLoop<Indexer>, SEGMENT> {
 
   using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
 
@@ -260,7 +260,7 @@ struct LoopICountExecute<RAJA::internal::HipIndexLoop<Indexer>, SEGMENT> {
    HIP generic tile implementation with one indexer
 */
 template <typename SEGMENT, typename Indexer>
-struct TileExecute<RAJA::internal::HipIndexDirect<Indexer>, SEGMENT> {
+struct TileExecute<RAJA::internal::HipKernelDirect<Indexer>, SEGMENT> {
 
   using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
 
@@ -281,7 +281,7 @@ struct TileExecute<RAJA::internal::HipIndexDirect<Indexer>, SEGMENT> {
 };
 
 template <typename SEGMENT, typename Indexer>
-struct TileExecute<RAJA::internal::HipIndexLoop<Indexer>, SEGMENT> {
+struct TileExecute<RAJA::internal::HipKernelLoop<Indexer>, SEGMENT> {
 
   using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
 
@@ -303,7 +303,7 @@ struct TileExecute<RAJA::internal::HipIndexLoop<Indexer>, SEGMENT> {
 };
 
 template <typename SEGMENT, typename Indexer>
-struct TileICountExecute<RAJA::internal::HipIndexDirect<Indexer>, SEGMENT> {
+struct TileICountExecute<RAJA::internal::HipKernelDirect<Indexer>, SEGMENT> {
 
   using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
 
@@ -325,7 +325,7 @@ struct TileICountExecute<RAJA::internal::HipIndexDirect<Indexer>, SEGMENT> {
 };
 
 template <typename SEGMENT, typename Indexer>
-struct TileICountExecute<RAJA::internal::HipIndexLoop<Indexer>, SEGMENT> {
+struct TileICountExecute<RAJA::internal::HipKernelLoop<Indexer>, SEGMENT> {
 
   using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
 

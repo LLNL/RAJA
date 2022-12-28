@@ -145,7 +145,7 @@ struct HipStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
                     RAJA::tile_fixed<chunk_size>,
-                    RAJA::internal::HipIndexDirect<IndexMapper>,
+                    RAJA::internal::HipKernelDirect<IndexMapper>,
                     EnclosedStmts...>,
                     Types>
   {
@@ -155,6 +155,8 @@ struct HipStatementExecutor<
   using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
+
+  using Indexer = RAJA::internal::HipKernelDirect<IndexMapper>;
 
   static inline RAJA_DEVICE
   void exec(Data &data, bool thread_active)
@@ -188,11 +190,9 @@ struct HipStatementExecutor<
     diff_t full_len = segment_length<ArgumentId>(data);
     diff_t len = RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
-    HipDims my_dims(0);
-    IndexMapper::set_dimensions(my_dims, len);
-
-    // since we are direct-mapping, we REQUIRE the given dimensions
-    LaunchDims dims{my_dims, my_dims};
+    HipDims my_dims(0), my_min_dims(0);
+    Indexer{}.set_dimensions(my_dims, my_min_dims, len);
+    LaunchDims dims{my_dims, my_min_dims};
 
     // privatize data, so we can mess with the segments
     using data_t = camp::decay<Data>;
@@ -226,7 +226,7 @@ struct HipStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
                     RAJA::tile_fixed<chunk_size>,
-                    RAJA::internal::HipIndexLoop<IndexMapper>,
+                    RAJA::internal::HipKernelLoop<IndexMapper>,
                     EnclosedStmts...>, Types>
   {
 
@@ -235,6 +235,8 @@ struct HipStatementExecutor<
   using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
+
+  using Indexer = RAJA::internal::HipKernelLoop<IndexMapper>;
 
   static inline RAJA_DEVICE
   void exec(Data &data, bool thread_active)
@@ -277,10 +279,9 @@ struct HipStatementExecutor<
     diff_t full_len = segment_length<ArgumentId>(data);
     diff_t len = RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
-    HipDims my_dims(0);
-    IndexMapper::set_dimensions(my_dims, len);
-
-    LaunchDims dims{my_dims};
+    HipDims my_dims(0), my_min_dims(0);
+    Indexer{}.set_dimensions(my_dims, my_min_dims, len);
+    LaunchDims dims{my_dims, my_min_dims};
 
     // privatize data, so we can mess with the segments
     using data_t = camp::decay<Data>;
