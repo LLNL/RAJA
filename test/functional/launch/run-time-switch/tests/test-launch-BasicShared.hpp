@@ -32,9 +32,9 @@ void LaunchBasicSharedTestImpl()
   //Select platform
   RAJA::ExecPlace select_cpu_or_gpu;
   if (working_res.get_platform()  == camp::resources::Platform::host){
-    select_cpu_or_gpu = RAJA::HOST;
+    select_cpu_or_gpu = RAJA::ExecPlace::HOST;
   }else{  
-    select_cpu_or_gpu = RAJA::DEVICE;
+    select_cpu_or_gpu = RAJA::ExecPlace::DEVICE;
   }
 
 
