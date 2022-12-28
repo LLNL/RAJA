@@ -32,7 +32,7 @@ void ForallReduceSumMultipleStaggeredTestImpl(IDX_TYPE first,
 
   const DATA_TYPE initval = 2;
 
-  for (IDX_TYPE i = 0; i < last; ++i) {
+  for (IDX_TYPE i = first; i < last; ++i) {
     test_array[i] = initval;
   }
 
@@ -104,7 +104,7 @@ void ForallReduceSumMultipleStaggered2TestImpl(IDX_TYPE first,
 
   const DATA_TYPE initval = 2;
 
-  for (IDX_TYPE i = 0; i < last; ++i) {
+  for (IDX_TYPE i = first; i < last; ++i) {
     test_array[i] = initval;
   }
 
