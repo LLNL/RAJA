@@ -292,15 +292,33 @@ struct TargetReduceLoc
 {
   TargetReduceLoc() = delete;
   TargetReduceLoc(const TargetReduceLoc &) = default;
-  explicit TargetReduceLoc(T init_val, IndexType init_loc)
+  explicit TargetReduceLoc(T init_val, IndexType init_loc,
+                           T identity_val_ = Reducer::identity,
+                           IndexType identity_loc_ = RAJA::reduce::detail::DefaultLoc<IndexType>().value())
       : info(),
-        val(Reducer::identity, Reducer::identity, info),
-        loc(init_loc, IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()), info),
+        val(identity_val_, identity_val_, info),
+        loc(identity_loc_, identity_loc_, info),
         initVal(init_val),
-        finalVal(Reducer::identity),
+        finalVal(identity_val_),
         initLoc(init_loc),
-        finalLoc(IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()))
+        finalLoc(identity_loc_)
   {
+  }
+
+  void reset(T init_val_,
+             IndexType init_loc_ = RAJA::reduce::detail::DefaultLoc<IndexType>().value(),
+             T identity_val_ = Reducer::identity,
+             IndexType identity_loc_ = RAJA::reduce::detail::DefaultLoc<IndexType>().value())
+  {
+    val.cleanup(info);
+    val = sycl::Reduce_Data<T>(identity_val_, identity_val_, info);
+    loc.cleanup(info);
+    loc = sycl::Reduce_Data<IndexType>(identity_loc_, identity_loc_, info);
+    info.isMapped = false;
+    initVal = init_val_;
+    finalVal = identity_val_;
+    initLoc = init_loc_;
+    finalLoc = identity_loc_;
   }
 
   //! apply reduction on device upon destruction
@@ -331,22 +349,6 @@ struct TargetReduceLoc
   }
   //! alias for operator T()
   T get() { return operator T(); }
-
-  void reset(T init_val_,
-             IndexType init_local_ =
-             IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()),
-             T identity_ = Reducer::identity)
-  {
-    val.cleanup(info);
-    val = sycl::Reduce_Data<T>(identity_, identity_, info);
-    loc.cleanup(info);
-    loc = sycl::Reduce_Data<IndexType>(reduce::detail::DefaultLoc<IndexType>().value(), reduce::detail::DefaultLoc<IndexType>().value(), info);
-    info.isMapped = false;
-    initVal = init_val_;
-    finalVal = identity_;
-    initLoc = init_local_;//IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value());
-    finalLoc = IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value());
-  }
 
 
   //! map result value back to host if not done already; return aggregate
