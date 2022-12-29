@@ -21,24 +21,24 @@ void LaunchDynamicMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
   INDEX_TYPE* working_array;
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
-  
+
   size_t data_len = RAJA::stripIndexType(block_range)*RAJA::stripIndexType(thread_range);
-  
+
   allocateForallTestData<INDEX_TYPE>(data_len,
                                      working_res,
                                      &working_array,
                                      &check_array,
                                      &test_array);
-  
-  
+
+
   for(int b=0; b<RAJA::stripIndexType(block_range); ++b) {
     for(int c=0; c<RAJA::stripIndexType(thread_range); ++c) {
       int idx = c + RAJA::stripIndexType(thread_range)*b;
-      test_array[idx] = INDEX_TYPE(b);
+      test_array[idx] = INDEX_TYPE(idx);
     }
   }
 
-  size_t shared_mem_size = 1*sizeof(INDEX_TYPE);
+  size_t shared_mem_size = RAJA::stripIndexType(thread_range)*sizeof(INDEX_TYPE);
 
   RAJA::launch<LAUNCH_POLICY>
     (RAJA::LaunchParams(RAJA::Teams(RAJA::stripIndexType(block_range)),
@@ -50,29 +50,28 @@ void LaunchDynamicMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
           INDEX_TYPE * tile_ptr = ctx.getSharedMemory<INDEX_TYPE>(1);
           RAJA::View<INDEX_TYPE, RAJA::Layout<1>> Tile(tile_ptr, 1);
 
-
-          RAJA::loop<THREAD_POLICY>(ctx, RAJA::TypedRangeSegment<INDEX_TYPE>(0,1), [&](INDEX_TYPE ) {
-              Tile(0) = bid;
+          RAJA::loop<THREAD_POLICY>(ctx, inner_range, [&](INDEX_TYPE tid) {
+              Tile(RAJA::stripIndexType(thread_range)-RAJA::stripIndexType(tid)-1) = thread_range-tid-1 + thread_range*bid;
             });
 
           ctx.teamSync();
 
           RAJA::loop<THREAD_POLICY>(ctx, inner_range, [&](INDEX_TYPE tid) {
               INDEX_TYPE idx = tid + thread_range * bid;
-              working_array[RAJA::stripIndexType(idx)] = Tile(0);
+              working_array[RAJA::stripIndexType(idx)] = Tile(RAJA::stripIndexType(tid));
           });
-          
+
           ctx.releaseSharedMemory();
         });
 
     });
-  
+
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
 
   for (INDEX_TYPE i = INDEX_TYPE(0); i < data_len; i++) {
     ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
   }
-  
+
   deallocateForallTestData<INDEX_TYPE>(working_res,
                                        working_array,
                                        check_array,
@@ -88,20 +87,20 @@ class LaunchDynamicMemTest : public ::testing::Test
 
 TYPED_TEST_P(LaunchDynamicMemTest, DynamicMemLaunch)
 {
-  
+
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using LAUNCH_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<0>>::type;
   using TEAM_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<1>>::type;
   using THREAD_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<2>>::type;
-  
+
 
   LaunchDynamicMemTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, TEAM_POLICY, THREAD_POLICY>
     (INDEX_TYPE(4), INDEX_TYPE(2));
 
   LaunchDynamicMemTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, TEAM_POLICY, THREAD_POLICY>
     (INDEX_TYPE(5), INDEX_TYPE(32));
-  
+
 }
 
 REGISTER_TYPED_TEST_SUITE_P(LaunchDynamicMemTest,

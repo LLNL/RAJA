@@ -34,7 +34,7 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
   for(int b=0; b<RAJA::stripIndexType(block_range); ++b) {
     for(int c=0; c<RAJA::stripIndexType(thread_range); ++c) {
       int idx = c + RAJA::stripIndexType(thread_range)*b;
-      test_array[idx] = INDEX_TYPE(b);
+      test_array[idx] = INDEX_TYPE(idx);
     }
   }
 
@@ -45,17 +45,18 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
 
       RAJA::loop<TEAM_POLICY>(ctx, outer_range, [&](INDEX_TYPE bid) {
 
-          RAJA_TEAM_SHARED INDEX_TYPE Tile[1];
+          //1024 is large enough for all gpu devices
+          RAJA_TEAM_SHARED INDEX_TYPE Tile[1024];
 
-          RAJA::loop<THREAD_POLICY>(ctx, RAJA::TypedRangeSegment<INDEX_TYPE>(0,1), [&](INDEX_TYPE ) {
-              Tile[0] = bid;
-          });
+          RAJA::loop<THREAD_POLICY>(ctx, inner_range, [&](INDEX_TYPE tid) {
+              Tile[RAJA::stripIndexType(thread_range)-RAJA::stripIndexType(tid)-1] = thread_range-tid-1 + thread_range*bid;
+            });
 
           ctx.teamSync();
 
           RAJA::loop<THREAD_POLICY>(ctx, inner_range, [&](INDEX_TYPE tid) {
               INDEX_TYPE idx = tid + thread_range * bid;
-              working_array[RAJA::stripIndexType(idx)] = Tile[0];
+              working_array[RAJA::stripIndexType(idx)] = Tile[RAJA::stripIndexType(tid)];
           });
           
           ctx.releaseSharedMemory();
