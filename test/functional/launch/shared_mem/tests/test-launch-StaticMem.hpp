@@ -38,8 +38,6 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
     }
   }
 
-  size_t shared_mem_size = 1*sizeof(INDEX_TYPE);
-
   RAJA::launch<LAUNCH_POLICY>
     (RAJA::LaunchParams(RAJA::Teams(RAJA::stripIndexType(block_range)),
                         RAJA::Threads(RAJA::stripIndexType(thread_range))),
@@ -49,7 +47,7 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
 
           RAJA_TEAM_SHARED INDEX_TYPE Tile[1];
 
-          RAJA::loop<THREAD_POLICY>(ctx, inner_range, [&](INDEX_TYPE tid) {
+          RAJA::loop<THREAD_POLICY>(ctx, RAJA::TypedRangeSegment<INDEX_TYPE>(0,1), [&](INDEX_TYPE ) {
               Tile[0] = bid;
           });
 
@@ -57,7 +55,7 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
 
           RAJA::loop<THREAD_POLICY>(ctx, inner_range, [&](INDEX_TYPE tid) {
               INDEX_TYPE idx = tid + thread_range * bid;
-              working_array[RAJA::stripIndexType(idx)] = bid;
+              working_array[RAJA::stripIndexType(idx)] = Tile[0];
           });
           
           ctx.releaseSharedMemory();

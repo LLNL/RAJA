@@ -51,16 +51,15 @@ void LaunchDynamicMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
           RAJA::View<INDEX_TYPE, RAJA::Layout<1>> Tile(tile_ptr, 1);
 
 
-          RAJA::loop<THREAD_POLICY>(ctx, inner_range, [&](INDEX_TYPE tid) {
+          RAJA::loop<THREAD_POLICY>(ctx, RAJA::TypedRangeSegment<INDEX_TYPE>(0,1), [&](INDEX_TYPE ) {
               Tile(0) = bid;
             });
 
           ctx.teamSync();
 
-
           RAJA::loop<THREAD_POLICY>(ctx, inner_range, [&](INDEX_TYPE tid) {
               INDEX_TYPE idx = tid + thread_range * bid;
-              working_array[RAJA::stripIndexType(idx)] = bid;
+              working_array[RAJA::stripIndexType(idx)] = Tile(0);
           });
           
           ctx.releaseSharedMemory();
