@@ -6,7 +6,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 //
-// Execution policy lists used throughout teams tests
+// Execution policy lists used throughout launch tests
 //
 
 #ifndef __RAJA_test_dynamic_execpol_HPP__

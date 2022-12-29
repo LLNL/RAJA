@@ -52,8 +52,8 @@ void LaunchDynamicMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
 
 
           RAJA::loop<THREAD_POLICY>(ctx, inner_range, [&](INDEX_TYPE tid) {
-              tile_ptr[0] = bid;
-          });
+              Tile(0) = bid;
+            });
 
           ctx.teamSync();
 
