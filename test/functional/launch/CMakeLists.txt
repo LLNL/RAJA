@@ -23,6 +23,6 @@ add_subdirectory(run-time-switch)
 
 add_subdirectory(segment)
 
-#add_subdirectory(shared_mem)
+add_subdirectory(shared_mem)
 
 unset( LAUNCH_BACKENDS )

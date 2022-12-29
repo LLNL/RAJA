@@ -9,7 +9,7 @@
 # List of segment types for generating test files.
 #
 # StaticMem
-set(SHARED_MEM_TYPES Dynamic)
+set(SHARED_MEM_TYPES DynamicMem)
 
 
 #

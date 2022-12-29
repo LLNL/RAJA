@@ -13,7 +13,7 @@
 #include "RAJA_test-index-types.hpp"
 
 #include "RAJA_test-forall-data.hpp"
-#include "RAJA_test-launch-execpol.hpp"
+#include "RAJA_test-launch-teams_threads_1D_execpol.hpp"
 
 //
 // Header for tests in ./tests directory
@@ -26,7 +26,7 @@
 //
 // Cartesian product of types used in parameterized tests
 //
-using @BACKEND@LaunchSegmentTypes =
+using @BACKEND@LaunchSharedMemTypes =
   Test< camp::cartesian_product<StrongIdxTypeList,
                                 @BACKEND@ResourceList,
                                 @BACKEND@_launch_policies>>::Types;
