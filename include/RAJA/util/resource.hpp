@@ -130,7 +130,7 @@ namespace RAJA
   };
 
   template <bool Async, int num_threads>
-  struct get_resource<cuda_launch_t<Async, num_threads>>{
+  struct get_resource<sycl_launch_t<Async, num_threads>>{
     using type = camp::resources::Sycl;
   };
 
