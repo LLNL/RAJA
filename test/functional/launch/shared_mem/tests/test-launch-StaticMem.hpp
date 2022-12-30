@@ -55,7 +55,7 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
           // warning #3019-D: dynamic initialization is not supported for
           //a function-scope static __shared__ variable within a __device__/__global__ function
           RAJA_TEAM_SHARED char char_Tile[THREAD_RANGE*sizeof(INDEX_TYPE)];
-          INDEX_TYPE *Tile = &((INDEX_TYPE *)char_Tile)[0];
+          INDEX_TYPE *Tile = (INDEX_TYPE *)char_Tile;
 
           RAJA::loop<THREAD_POLICY>(ctx, inner_range, [&](INDEX_TYPE tid) {
               Tile[RAJA::stripIndexType(thread_range)-RAJA::stripIndexType(tid)-1] = thread_range-tid-1 + thread_range*bid;
