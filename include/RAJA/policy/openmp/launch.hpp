@@ -28,26 +28,6 @@ namespace RAJA
 template <>
 struct LaunchExecute<RAJA::omp_launch_t> {
 
-
-  template <typename BODY>
-  static void exec(LaunchParams const &params, const char *, BODY const &body)
-  {
-    RAJA::region<RAJA::omp_parallel_region>([&]() {
-
-        LaunchContext ctx;
-
-        using RAJA::internal::thread_privatize;
-        auto loop_body = thread_privatize(body);
-
-        ctx.shared_mem_ptr = (char*) malloc(params.shared_mem_size);
-
-        loop_body.get_priv()(ctx);
-
-        free(ctx.shared_mem_ptr);
-        ctx.shared_mem_ptr = nullptr;
-    });
-  }
-
   template <typename BODY>
   static resources::EventProxy<resources::Resource>
   exec(RAJA::resources::Resource res, LaunchParams const &params, const char *, BODY const &body)
