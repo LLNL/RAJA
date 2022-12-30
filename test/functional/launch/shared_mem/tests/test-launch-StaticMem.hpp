@@ -48,10 +48,10 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
 
       RAJA::loop<TEAM_POLICY>(ctx, outer_range, [&](INDEX_TYPE bid) {
 
-          //Since we are using custom index type we have to first use a 
+          //Since we are using custom index type we have to first use a
           //type that the device compiler can intialize, we can then use a
           //pointer to recast the shared memory to our desired type.
-          //This enables us to work around the following warning: 
+          //This enables us to work around the following warning:
           // warning #3019-D: dynamic initialization is not supported for
           //a function-scope static __shared__ variable within a __device__/__global__ function
           RAJA_TEAM_SHARED char char_Tile[THREAD_RANGE*sizeof(INDEX_TYPE)];
