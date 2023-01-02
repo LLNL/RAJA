@@ -31,7 +31,7 @@ The CI tools used by the RAJA project are:
   * **GitLab** instances in the Collaboration Zone (CZ) of the Livermore 
     Computing (LC) Center run builds and tests in LC platform and compiler 
     environments important to many RAJA user applications. Execution of RAJA CI 
-    pipelines on LC GitLab resources has restrictions, which are  described 
+    pipelines on LC GitLab resources has restrictions, which are described 
     below. If you have access to LC platforms, you can access additional 
     information about
     `LC GitLab CI <https://lc.llnl.gov/confluence/display/GITLAB/GitLab+CI>`_
