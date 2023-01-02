@@ -126,7 +126,7 @@ This section describes the host-config file generation process for RAJA.
 Platform configurations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Compiler configurations for Livermore machines  are contained
+Compiler configurations for Livermore machines are contained
 in sub-directories of the ``RAJA/scripts/radiuss-spack-configs`` submodule
 directory:
 
