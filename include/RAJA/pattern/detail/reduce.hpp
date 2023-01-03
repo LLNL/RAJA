@@ -48,7 +48,8 @@
   RAJA_DECLARE_INDEX_REDUCER(MinLoc, POL, COMBINER)    \
   RAJA_DECLARE_INDEX_REDUCER(MaxLoc, POL, COMBINER)    \
   RAJA_DECLARE_REDUCER(BitOr, POL, COMBINER)           \
-  RAJA_DECLARE_REDUCER(BitAnd, POL, COMBINER)
+  RAJA_DECLARE_REDUCER(BitAnd, POL, COMBINER)          \
+  RAJA_DECLARE_REDUCER(BitXor, POL, COMBINER)
 
 namespace RAJA
 {
@@ -63,9 +64,11 @@ namespace reduce
 namespace detail
 {
 
-template <typename T, template <typename...> class Op>
-struct op_adapter : private Op<T, T, T> {
-  using operator_type = Op<T, T, T>;
+template <typename T, template <typename, typename, typename> class ReduceOperator>
+struct op_adapter : private ReduceOperator<T, T, T> {
+  using operator_type = ReduceOperator<T, T, T>;
+  static_assert (RAJA::operators::is_associative<operator_type>::value,
+                 "Only Associative operators can be used in reductions.");
   RAJA_HOST_DEVICE static constexpr T identity()
   {
     return operator_type::identity();
@@ -98,6 +101,9 @@ template <typename T>
 struct and_bit : detail::op_adapter<T, RAJA::operators::bit_and> {
 };
 
+template <typename T>
+struct xor_bit : detail::op_adapter<T, RAJA::operators::bit_xor> {
+};
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 #pragma omp end declare target
@@ -107,17 +113,12 @@ namespace detail
 {
 
 template <typename T, bool = std::is_integral<T>::value>
-struct DefaultLoc {};
-
-template <typename T>
-struct DefaultLoc<T, false>  // any non-integral type
-{
+struct DefaultLoc { // any non-integral type
   RAJA_HOST_DEVICE constexpr T value() const { return T(); }
 };
 
 template <typename T>
-struct DefaultLoc<T, true>
-{
+struct DefaultLoc<T, true> {
   RAJA_HOST_DEVICE constexpr T value() const { return -1; }
 };
 
@@ -131,8 +132,7 @@ public:
 #if __NVCC__ && defined(CUDART_VERSION) && CUDART_VERSION < 9020 || defined(__HIPCC__)
   RAJA_HOST_DEVICE constexpr ValueLoc() {}
   RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const &other) : val{other.val}, loc{other.loc} {}
-  RAJA_HOST_DEVICE
-  ValueLoc &operator=(ValueLoc const &other) { val = other.val; loc = other.loc; return *this;}
+  RAJA_HOST_DEVICE ValueLoc &operator=(ValueLoc const &other) { val = other.val; loc = other.loc; return *this;}
 #else
   constexpr ValueLoc() = default;
   constexpr ValueLoc(ValueLoc const &) = default;
@@ -140,21 +140,12 @@ public:
 #endif
 
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val_) : val{val_}, loc{DefaultLoc<IndexType>().value()} {}
-  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val_, IndexType const &loc_)
-      : val{val_}, loc{loc_}
-  {
-  }
+  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val_, IndexType const &loc_) : val{val_}, loc{loc_} {}
 
   RAJA_HOST_DEVICE operator T() const { return val; }
   RAJA_HOST_DEVICE IndexType getLoc() { return loc; }
-  RAJA_HOST_DEVICE bool operator<(ValueLoc const &rhs) const
-  {
-    return val < rhs.val;
-  }
-  RAJA_HOST_DEVICE bool operator>(ValueLoc const &rhs) const
-  {
-    return val > rhs.val;
-  }
+  RAJA_HOST_DEVICE bool operator<(ValueLoc const &rhs) const { return val < rhs.val; }
+  RAJA_HOST_DEVICE bool operator>(ValueLoc const &rhs) const { return val > rhs.val; }
 };
 
 }  // namespace detail
@@ -342,7 +333,10 @@ public:
  *
  **************************************************************************
  */
-template <typename T, typename IndexType, template <typename, typename> class Combiner>
+template <typename T,
+          typename IndexType,
+          template <typename, typename>
+          class Combiner>
 class BaseReduceMinLoc
     : public BaseReduce<ValueLoc<T, IndexType>, RAJA::reduce::min, Combiner>
 {
@@ -354,9 +348,10 @@ public:
 
   constexpr BaseReduceMinLoc() : Base(value_type(T(), IndexType())) {}
 
-  constexpr BaseReduceMinLoc(T init_val, IndexType init_idx,
+  constexpr BaseReduceMinLoc(T init_val,
+                             IndexType init_idx,
                              T identity_ = reduce_type::identity())
-    : Base(value_type(init_val, init_idx), identity_)
+      : Base(value_type(init_val, init_idx), identity_)
   {
   }
 
@@ -368,7 +363,8 @@ public:
     return *this;
   }
 
-  void reset(T init_val, IndexType init_idx=DefaultLoc<IndexType>().value(),
+  void reset(T init_val,
+             IndexType init_idx = DefaultLoc<IndexType>().value(),
              T identity_ = reduce_type::identity())
   {
     operator T(); // automatic get() before reset
@@ -477,7 +473,29 @@ public:
   }
 };
 
+/*!
+ **************************************************************************
+ *
+ * \brief  Bitwise XOR reducer class template for use in tbb execution.
+ *
+ **************************************************************************
+ */
+template <typename T, template <typename, typename> class Combiner>
+class BaseReduceBitXor : public BaseReduce<T, RAJA::reduce::xor_bit, Combiner>
+{
+public:
+  using Base = BaseReduce<T, RAJA::reduce::xor_bit, Combiner>;
+  using Base::Base;
 
+  //! reducer function; updates the current instance's state
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
+  const BaseReduceBitXor &operator^=(T rhs) const
+  {
+    this->combine(rhs);
+    return *this;
+  }
+};
 /*!
  **************************************************************************
  *
@@ -485,21 +503,27 @@ public:
  *
  **************************************************************************
  */
-template <typename T, typename IndexType, template <typename, typename> class Combiner>
-class BaseReduceMaxLoc
-    : public BaseReduce<ValueLoc<T, IndexType, false>, RAJA::reduce::max, Combiner>
+template <typename T,
+          typename IndexType,
+          template <typename, typename>
+          class Combiner>
+class BaseReduceMaxLoc : public BaseReduce<ValueLoc<T, IndexType, false>,
+                                           RAJA::reduce::max,
+                                           Combiner>
 {
 public:
-  using Base = BaseReduce<ValueLoc<T, IndexType, false>, RAJA::reduce::max, Combiner>;
+  using Base =
+      BaseReduce<ValueLoc<T, IndexType, false>, RAJA::reduce::max, Combiner>;
   using value_type = typename Base::value_type;
   using reduce_type = typename Base::reduce_type;
   using Base::Base;
 
   constexpr BaseReduceMaxLoc() : Base(value_type(T(), IndexType())) {}
 
-  constexpr BaseReduceMaxLoc(T init_val, IndexType init_idx,
+  constexpr BaseReduceMaxLoc(T init_val,
+                             IndexType init_idx,
                              T identity_ = reduce_type::identity())
-    : Base(value_type(init_val, init_idx), identity_)
+      : Base(value_type(init_val, init_idx), identity_)
   {
   }
 
@@ -511,7 +535,8 @@ public:
     return *this;
   }
 
-  void reset(T init_val, IndexType init_idx=DefaultLoc<IndexType>().value(),
+  void reset(T init_val,
+             IndexType init_idx = DefaultLoc<IndexType>().value(),
              T identity_ = reduce_type::identity())
   {
     operator T(); // automatic get() before reset

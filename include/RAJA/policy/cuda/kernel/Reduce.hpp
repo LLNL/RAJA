@@ -34,7 +34,7 @@ namespace internal
 // Executor that handles reductions across a single CUDA thread block
 //
 template <typename Data,
-          template <typename...> class ReduceOperator,
+          template <typename, typename, typename> class ReduceOperator,
           typename ParamId,
           typename... EnclosedStmts,
           typename Types>
@@ -93,7 +93,7 @@ struct CudaStatementExecutor<Data,
 // Executor that handles reductions across a single CUDA thread warp
 //
 template <typename Data,
-          template <typename...> class ReduceOperator,
+          template <typename, typename, typename> class ReduceOperator,
           typename ParamId,
           typename... EnclosedStmts,
           typename Types>
