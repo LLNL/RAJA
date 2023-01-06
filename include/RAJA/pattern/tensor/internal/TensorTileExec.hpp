@@ -256,7 +256,7 @@ namespace expt
             using PartTile  = typename TailTile::Partial;
 
     
-            static_assert( (tile_begin + STORAGE::s_dim_elem(DIM0) ) <= (orig_begin + orig_size+ STORAGE::s_dim_elem(DIM0) ), "OOB" );
+            static_assert( (tile_begin + STORAGE::s_dim_elem(DIM0) ) <= (orig_begin + orig_size+ STORAGE::s_dim_elem(DIM0) ), "OOB StaticTensorTileExec DOWN" );
      
             if( (tile_begin + STORAGE::s_dim_elem(DIM0) ) <= (orig_begin + orig_size) ){
                DownExec::static_exec(otile, tile, body);
@@ -298,7 +298,7 @@ namespace expt
             using PartTile  = typename TailTile::Partial;
 
     
-            static_assert( (tile_begin + STORAGE::s_dim_elem(DIM0) ) <= (orig_begin + orig_size+ STORAGE::s_dim_elem(DIM0) ), "OOB" );
+            static_assert( (tile_begin + STORAGE::s_dim_elem(DIM0) ) <= (orig_begin + orig_size+ STORAGE::s_dim_elem(DIM0) ), "OOB StaticTensorTileExec ACROSS" );
      
             if( (tile_begin + STORAGE::s_dim_elem(DIM0) ) <= (orig_begin + orig_size) ){
                body(tile);
