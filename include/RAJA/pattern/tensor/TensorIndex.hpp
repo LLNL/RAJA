@@ -120,10 +120,12 @@ namespace expt
         return m_index;
       }
 
+      // used in strip_by_value as a static cast
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
       explicit operator index_type() const {
+        // return does not matter, but suppresses no-return warnings
         return m_index;
       }
 
