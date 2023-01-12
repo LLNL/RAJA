@@ -94,10 +94,12 @@ Create a branch there, modify the job entry, and create a pull request.
                the `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_ repo.
 
                If the desired entry is not there, but exists in a newer version 
-               of the RADIUSS Spack Configs project, update the RAJA submitted 
-               to the newer version. If the information does not exist in any 
-               version of the RADIUSS Spack Configs project, create a branch 
-               there, add the needed spec info, and create a pull request. 
+               of the RADIUSS Spack Configs project, update the RAJA submodule 
+               to use the newer version. If the information does not exist in 
+               any version of the RADIUSS Spack Configs project, create a 
+               branch there, add the needed spec info, and create a pull 
+               request. Then, when that PR is merged, update the RAJA submodule
+               to the new version.
 
 Changing run parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^

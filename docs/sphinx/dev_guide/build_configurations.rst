@@ -69,13 +69,13 @@ architecture 'sm_70'.
 
 .. note:: Each RAJA build script for an LC machine does the following:
 
-            * create a build space directory in the top-level RAJA directory
-              named for the specified build configuration
-            * load an appropriate version CMake module for the configuration
-            * invoke CMake with appropriate arguments to create the specified
-              build configuration, which contain full paths to the compiler and
-              any needed toolchains, and a *host-config* file that contains 
-              compiler flags.
+            * Create a build space directory named for the specified build 
+              configuration in the top-level RAJA directory
+            * Load a CMake module version appropriate for the configuration
+            * Invoke CMake with appropriate arguments to create the specified
+              build configuration. These arguments typically contain full paths
+              to the compiler and any toolchains needed, and a *host-config* 
+              file that contains compiler flags.
 
           Host-config files, also known and *CMake cache files* that are passed
           to CMake are maintained in subdirectories of the 
@@ -169,11 +169,11 @@ will generate a configuration for building with the clang 10.0.1 compiler using
 the GNU 8.3.1 toolchain (for C++ standard library headers, etc.) and with
 RAJA OpenMP back-end, tests, and desul atomics enabled.
 
-Running a command like these will generate a host-config file in the top-level 
-RAJA directory whose name contains the machine and OS to which it applies, as 
-well the compiler and version. For example, running the first example command 
-above will on the LC machine quartz will generate a host-config file named 
-similarly to 
+Running a command like one of these will generate a host-config file in the 
+top-level RAJA directory. The name of the file will contain the name of the
+machine and OS to which it applies, as well as the compiler and version. For 
+example, running the first example command above on the LC machine 
+quartz will generate a host-config file named something like this:
 
 .. code-block:: bash
 
