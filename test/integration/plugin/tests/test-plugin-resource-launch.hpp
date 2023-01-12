@@ -41,7 +41,7 @@ void PluginResourceLaunchTestImpl()
 
       RAJA::launch<LaunchPolicy>
         (res, RAJA::LaunchParams(RAJA::Teams(1), RAJA::Threads(1)),
-         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext)
          {
            p_callable(i);
          });
