@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -70,6 +70,16 @@ namespace RAJA
     using type = camp::resources::Cuda;
   };
 
+  template <bool Async, int num_threads>
+  struct get_resource<cuda_launch_t<Async, num_threads>>{
+    using type = camp::resources::Cuda;
+  };
+
+  template <bool Async, int num_threads, size_t BLOCKS_PER_SM>
+  struct get_resource<RAJA::policy::cuda::cuda_launch_explicit_t<Async, num_threads, BLOCKS_PER_SM>>{
+    using type = camp::resources::Cuda;
+  };
+
   template<typename ISetIter, size_t BlockSize, bool Async>
   struct get_resource<ExecPolicy<ISetIter, cuda_exec<BlockSize, Async>>>{
     using type = camp::resources::Cuda;
@@ -97,6 +107,11 @@ namespace RAJA
     using type = camp::resources::Hip;
   };
 
+  template <bool Async, int num_threads>
+  struct get_resource<hip_launch_t<Async, num_threads>>{
+    using type = camp::resources::Hip;
+  };
+
   template<typename ISetIter, size_t BlockSize, bool Async>
   struct get_resource<ExecPolicy<ISetIter, hip_exec<BlockSize, Async>>>{
     using type = camp::resources::Hip;
@@ -111,6 +126,11 @@ namespace RAJA
 
   template<size_t BlockSize, bool Async>
   struct get_resource<sycl_exec<BlockSize, Async>>{
+    using type = camp::resources::Sycl;
+  };
+
+  template <bool Async, int num_threads>
+  struct get_resource<sycl_launch_t<Async, num_threads>>{
     using type = camp::resources::Sycl;
   };
 
