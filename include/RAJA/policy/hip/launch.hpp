@@ -169,195 +169,35 @@ struct LaunchExecute<RAJA::hip_launch_t<async, nthreads>> {
 
 };
 
-
-/*
-   HIP generic loop implementation with one indexer
-*/
-template <typename SEGMENT, typename Indexer>
-struct LoopExecute<RAJA::internal::HipKernelDirect<Indexer>, SEGMENT> {
-
-  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
-
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE
-  void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-            SEGMENT const &segment,
-            BODY const &body)
-  {
-    const diff_t len = segment.end() - segment.begin();
-    const diff_t i = Indexer::template index<diff_t>();
-
-    if (i < len) {
-      body(*(segment.begin() + i));
-    }
-  }
-};
-
-template <typename SEGMENT, typename Indexer>
-struct LoopExecute<RAJA::internal::HipKernelLoop<Indexer>, SEGMENT> {
-
-  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
-
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE
-  void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-            SEGMENT const &segment,
-            BODY const &body)
-  {
-    const diff_t len = segment.end() - segment.begin();
-    const diff_t i_init = Indexer::template index<diff_t>();
-    const diff_t i_stride = Indexer::template size<diff_t>();
-
-    for (diff_t i = i_init; i < len; i += i_stride) {
-      body(*(segment.begin() + i));
-    }
-  }
-};
-
-template <typename SEGMENT, typename Indexer>
-struct LoopICountExecute<RAJA::internal::HipKernelDirect<Indexer>, SEGMENT> {
-
-  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
-
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const &segment,
-      BODY const &body)
-  {
-    const diff_t len = segment.end() - segment.begin();
-    const diff_t i = Indexer::template index<diff_t>();
-
-    if (i < len) {
-      body(*(segment.begin() + i), i);
-    }
-  }
-};
-
-template <typename SEGMENT, typename Indexer>
-struct LoopICountExecute<RAJA::internal::HipKernelLoop<Indexer>, SEGMENT> {
-
-  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
-
-  template <typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const &segment,
-      BODY const &body)
-  {
-    const diff_t len = segment.end() - segment.begin();
-    const diff_t i_init = Indexer::template index<diff_t>();
-    const diff_t i_stride = Indexer::template size<diff_t>();
-
-    for (diff_t i = i_init; i < len; i += i_stride) {
-      body(*(segment.begin() + i), i);
-    }
-  }
-};
-
-
-/*
-   HIP generic tile implementation with one indexer
-*/
-template <typename SEGMENT, typename Indexer>
-struct TileExecute<RAJA::internal::HipKernelDirect<Indexer>, SEGMENT> {
-
-  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
-
-  template <typename TILE_T, typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      TILE_T tile_size,
-      SEGMENT const &segment,
-      BODY const &body)
-  {
-    const diff_t len = segment.end() - segment.begin();
-    const diff_t i = Indexer::template index<diff_t>() * static_cast<diff_t>(tile_size);
-
-    if (i < len) {
-      body(segment.slice(i, static_cast<diff_t>(tile_size)));
-    }
-  }
-};
-
-template <typename SEGMENT, typename Indexer>
-struct TileExecute<RAJA::internal::HipKernelLoop<Indexer>, SEGMENT> {
-
-  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
-
-  template <typename TILE_T, typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      TILE_T tile_size,
-      SEGMENT const &segment,
-      BODY const &body)
-  {
-    const diff_t len = segment.end() - segment.begin();
-    const diff_t i_init = Indexer::template index<diff_t>() * static_cast<diff_t>(tile_size);
-    const diff_t i_stride = Indexer::template size<diff_t>() * static_cast<diff_t>(tile_size);
-
-    for (diff_t i = i_init; i < len; i += i_stride) {
-      body(segment.slice(i, static_cast<diff_t>(tile_size)));
-    }
-  }
-};
-
-template <typename SEGMENT, typename Indexer>
-struct TileICountExecute<RAJA::internal::HipKernelDirect<Indexer>, SEGMENT> {
-
-  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
-
-  template <typename TILE_T, typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      TILE_T tile_size,
-      SEGMENT const &segment,
-      BODY const &body)
-  {
-    const diff_t len = segment.end() - segment.begin();
-    const diff_t t = Indexer::template index<diff_t>();
-    const diff_t i = t * static_cast<diff_t>(tile_size);
-
-    if (i < len) {
-      body(segment.slice(i, static_cast<diff_t>(tile_size)), t);
-    }
-  }
-};
-
-template <typename SEGMENT, typename Indexer>
-struct TileICountExecute<RAJA::internal::HipKernelLoop<Indexer>, SEGMENT> {
-
-  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
-
-  template <typename TILE_T, typename BODY>
-  static RAJA_INLINE RAJA_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      TILE_T tile_size,
-      SEGMENT const &segment,
-      BODY const &body)
-  {
-    const diff_t len = segment.end() - segment.begin();
-    const diff_t t_init = Indexer::template index<diff_t>();
-    const diff_t i_init = t_init * static_cast<diff_t>(tile_size);
-    const diff_t t_stride = Indexer::template size<diff_t>();
-    const diff_t i_stride = t_stride * static_cast<diff_t>(tile_size);
-
-    for (diff_t i = i_init, t = t_init; i < len; i += i_stride, t += t_stride) {
-      body(segment.slice(i, static_cast<diff_t>(tile_size)), t);
-    }
-  }
-};
-
-
 /*
    HIP global thread mapping
 */
 template<int ... DIM>
 struct hip_global_thread;
 
-using hip_global_thread_x = hip_global_x_direct<0, 0>;// hip_global_thread<0>;
-using hip_global_thread_y = hip_global_y_direct<0, 0>;// hip_global_thread<1>;
-using hip_global_thread_z = hip_global_z_direct<0, 0>;// hip_global_thread<2>;
+using hip_global_thread_x = hip_global_thread<0>;
+using hip_global_thread_y = hip_global_thread<1>;
+using hip_global_thread_z = hip_global_thread<2>;
+
+template <typename SEGMENT, int DIM>
+struct LoopExecute<hip_global_thread<DIM>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+    {
+      const int tx = internal::get_hip_dim<DIM>(threadIdx) +
+        internal::get_hip_dim<DIM>(blockDim)*internal::get_hip_dim<DIM>(blockIdx);
+
+      if (tx < len) body(*(segment.begin() + tx));
+    }
+  }
+};
 
 using hip_global_thread_xy = hip_global_thread<0,1>;
 using hip_global_thread_xz = hip_global_thread<0,2>;
@@ -557,6 +397,186 @@ struct LoopExecute<hip_flatten_block_threads_loop<DIM0, DIM1, DIM2>, SEGMENT>
       body(*(segment.begin() + tid));
     }
 
+  }
+};
+
+
+/*
+  HIP thread loops with block strides
+*/
+template <typename SEGMENT, int DIM>
+struct LoopExecute<hip_thread_xyz_loop<DIM>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    for (int tx = internal::get_hip_dim<DIM>(threadIdx);
+         tx < len;
+         tx += internal::get_hip_dim<DIM>(blockDim) )
+    {
+      body(*(segment.begin() + tx));
+    }
+  }
+};
+
+/*
+  HIP thread direct mappings
+*/
+template <typename SEGMENT, int DIM>
+struct LoopExecute<hip_thread_xyz_direct<DIM>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+    {
+      const int tx = internal::get_hip_dim<DIM>(threadIdx);
+      if (tx < len) body(*(segment.begin() + tx));
+    }
+  }
+};
+
+
+/*
+  HIP block loops with grid strides
+*/
+template <typename SEGMENT, int DIM>
+struct LoopExecute<hip_block_xyz_loop<DIM>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    for (int bx = internal::get_hip_dim<DIM>(blockIdx);
+         bx < len;
+         bx += internal::get_hip_dim<DIM>(gridDim) ) {
+      body(*(segment.begin() + bx));
+    }
+  }
+};
+
+/*
+  HIP block direct mappings
+*/
+template <typename SEGMENT, int DIM>
+struct LoopExecute<hip_block_xyz_direct<DIM>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+    {
+      const int bx = internal::get_hip_dim<DIM>(blockIdx);
+      if (bx < len) body(*(segment.begin() + bx));
+    }
+  }
+};
+
+/*
+  HIP thread loops with block strides + Return Index
+*/
+template <typename SEGMENT, int DIM>
+struct LoopICountExecute<hip_thread_xyz_loop<DIM>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    for (int tx = internal::get_hip_dim<DIM>(threadIdx);
+         tx < len;
+         tx += internal::get_hip_dim<DIM>(blockDim) )
+    {
+      body(*(segment.begin() + tx), tx);
+    }
+  }
+};
+
+/*
+  HIP thread direct mappings
+*/
+template <typename SEGMENT, int DIM>
+struct LoopICountExecute<hip_thread_xyz_direct<DIM>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+    {
+      const int tx = internal::get_hip_dim<DIM>(threadIdx);
+      if (tx < len) body(*(segment.begin() + tx), tx);
+    }
+  }
+};
+
+/*
+  HIP block loops with grid strides
+*/
+template <typename SEGMENT, int DIM>
+struct LoopICountExecute<hip_block_xyz_loop<DIM>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    for (int bx = internal::get_hip_dim<DIM>(blockIdx);
+         bx < len;
+         bx += internal::get_hip_dim<DIM>(gridDim) ) {
+      body(*(segment.begin() + bx), bx);
+    }
+  }
+};
+
+/*
+  HIP block direct mappings
+*/
+template <typename SEGMENT, int DIM>
+struct LoopICountExecute<hip_block_xyz_direct<DIM>, SEGMENT> {
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+    {
+      const int bx = internal::get_hip_dim<DIM>(blockIdx);
+      if (bx < len) body(*(segment.begin() + bx), bx);
+    }
   }
 };
 
@@ -850,6 +870,165 @@ struct TileExecute<hip_thread_xyz_loop<DIM>, SEGMENT> {
          tx += internal::get_hip_dim<DIM>(blockDim) * tile_size)
     {
       body(segment.slice(tx, tile_size));
+    }
+  }
+};
+
+
+template <typename SEGMENT, int DIM>
+struct TileExecute<hip_thread_xyz_direct<DIM>, SEGMENT> {
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    int tx = internal::get_hip_dim<DIM>(threadIdx) * tile_size;
+    if(tx < len)
+    {
+      body(segment.slice(tx, tile_size));
+    }
+  }
+};
+
+
+template <typename SEGMENT, int DIM>
+struct TileExecute<hip_block_xyz_loop<DIM>, SEGMENT> {
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    for (int tx = internal::get_hip_dim<DIM>(blockIdx) * tile_size;
+
+         tx < len;
+
+         tx += internal::get_hip_dim<DIM>(gridDim) * tile_size)
+    {
+      body(segment.slice(tx, tile_size));
+    }
+  }
+};
+
+
+template <typename SEGMENT, int DIM>
+struct TileExecute<hip_block_xyz_direct<DIM>, SEGMENT> {
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    int tx = internal::get_hip_dim<DIM>(blockIdx) * tile_size;
+    if(tx < len){
+      body(segment.slice(tx, tile_size));
+    }
+  }
+};
+
+//Tile execute + return index
+template <typename SEGMENT, int DIM>
+struct TileICountExecute<hip_thread_xyz_loop<DIM>, SEGMENT> {
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    for (int tx = internal::get_hip_dim<DIM>(threadIdx) * tile_size;
+         tx < len;
+         tx += internal::get_hip_dim<DIM>(blockDim) * tile_size)
+    {
+      body(segment.slice(tx, tile_size), tx/tile_size);
+    }
+  }
+};
+
+
+template <typename SEGMENT, int DIM>
+struct TileICountExecute<hip_thread_xyz_direct<DIM>, SEGMENT> {
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    int tx = internal::get_hip_dim<DIM>(threadIdx) * tile_size;
+    if(tx < len)
+    {
+      body(segment.slice(tx, tile_size), tx/tile_size);
+    }
+  }
+};
+
+
+template <typename SEGMENT, int DIM>
+struct TileICountExecute<hip_block_xyz_loop<DIM>, SEGMENT> {
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    for (int bx = internal::get_hip_dim<DIM>(blockIdx) * tile_size;
+
+         bx < len;
+
+         bx += internal::get_hip_dim<DIM>(gridDim) * tile_size)
+    {
+      body(segment.slice(bx, tile_size), bx/tile_size);
+    }
+  }
+};
+
+
+template <typename SEGMENT, int DIM>
+struct TileICountExecute<hip_block_xyz_direct<DIM>, SEGMENT> {
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+
+    const int len = segment.end() - segment.begin();
+
+    int bx = internal::get_hip_dim<DIM>(blockIdx) * tile_size;
+    if(bx < len){
+      body(segment.slice(bx, tile_size), bx/tile_size);
     }
   }
 };

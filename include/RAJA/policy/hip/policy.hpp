@@ -592,15 +592,6 @@ struct HipForallDirect;
 template<typename _IndexMapper>
 struct HipForallLoop;
 
-// Types used with Hip Kernel policies
-// each thread gets 0 or 1 indices
-// Note that in direct mappings we REQUIRE the given dimensions
-template<typename _IndexMapper>
-struct HipKernelDirect;
-/// each thread gets 0 or more indices
-template<typename _IndexMapper>
-struct HipKernelLoop;
-
 } // namespace internal
 
 namespace type_traits {
@@ -676,9 +667,9 @@ using policy::hip::hip_launch_t;
 template<int ... dim>
 struct hip_thread_xyz_direct{};
 
-using hip_thread_x_direct = internal::HipKernelDirect<internal::HipIndexThread<0, 0>>; // hip_thread_xyz_direct<0>;
-using hip_thread_y_direct = internal::HipKernelDirect<internal::HipIndexThread<1, 0>>; // hip_thread_xyz_direct<1>;
-using hip_thread_z_direct = internal::HipKernelDirect<internal::HipIndexThread<2, 0>>; // hip_thread_xyz_direct<2>;
+using hip_thread_x_direct = hip_thread_xyz_direct<0>;
+using hip_thread_y_direct = hip_thread_xyz_direct<1>;
+using hip_thread_z_direct = hip_thread_xyz_direct<2>;
 
 
 /*!
@@ -688,9 +679,9 @@ using hip_thread_z_direct = internal::HipKernelDirect<internal::HipIndexThread<2
 template<int ... dim>
 struct hip_thread_xyz_loop{};
 
-using hip_thread_x_loop = internal::HipKernelLoop<internal::HipIndexThread<0, 0>>; // hip_thread_xyz_loop<0>;
-using hip_thread_y_loop = internal::HipKernelLoop<internal::HipIndexThread<1, 0>>; // hip_thread_xyz_loop<1>;
-using hip_thread_z_loop = internal::HipKernelLoop<internal::HipIndexThread<2, 0>>; // hip_thread_xyz_loop<2>;
+using hip_thread_x_loop = hip_thread_xyz_loop<0>;
+using hip_thread_y_loop = hip_thread_xyz_loop<1>;
+using hip_thread_z_loop = hip_thread_xyz_loop<2>;
 
 
 /*!
@@ -701,9 +692,9 @@ using hip_thread_z_loop = internal::HipKernelLoop<internal::HipIndexThread<2, 0>
 template<int ... dim>
 struct hip_block_xyz_direct{};
 
-using hip_block_x_direct = internal::HipKernelDirect<internal::HipIndexBlock<0, 0>>; // hip_block_xyz_direct<0>;
-using hip_block_y_direct = internal::HipKernelDirect<internal::HipIndexBlock<1, 0>>; // hip_block_xyz_direct<1>;
-using hip_block_z_direct = internal::HipKernelDirect<internal::HipIndexBlock<2, 0>>; // hip_block_xyz_direct<2>;
+using hip_block_x_direct = hip_block_xyz_direct<0>;
+using hip_block_y_direct = hip_block_xyz_direct<1>;
+using hip_block_z_direct = hip_block_xyz_direct<2>;
 
 
 /*!
@@ -713,34 +704,9 @@ using hip_block_z_direct = internal::HipKernelDirect<internal::HipIndexBlock<2, 
 template<int ... dim>
 struct hip_block_xyz_loop{};
 
-using hip_block_x_loop = internal::HipKernelLoop<internal::HipIndexBlock<0, 0>>; // hip_block_xyz_loop<0>;
-using hip_block_y_loop = internal::HipKernelLoop<internal::HipIndexBlock<1, 0>>; // hip_block_xyz_loop<1>;
-using hip_block_z_loop = internal::HipKernelLoop<internal::HipIndexBlock<2, 0>>; // hip_block_xyz_loop<2>;
-
-
-/*!
- * Maps segment indices to HIP global threads.
- * This is the lowest overhead mapping, but requires that there are enough
- * physical threads to fit all of the direct map requests.
- */
-template<size_t BLOCK_SIZE, size_t GRID_SIZE=0>
-using hip_global_x_direct = internal::HipKernelDirect<internal::HipIndexGlobal<0, BLOCK_SIZE, GRID_SIZE>>;
-template<size_t BLOCK_SIZE, size_t GRID_SIZE=0>
-using hip_global_y_direct = internal::HipKernelDirect<internal::HipIndexGlobal<1, BLOCK_SIZE, GRID_SIZE>>;
-template<size_t BLOCK_SIZE, size_t GRID_SIZE=0>
-using hip_global_z_direct = internal::HipKernelDirect<internal::HipIndexGlobal<2, BLOCK_SIZE, GRID_SIZE>>;
-
-
-/*!
- * Maps segment indices to HIP global threads.
- * Uses grid-stride looping to exceed the maximum number of global threads
- */
-template<size_t BLOCK_SIZE, size_t GRID_SIZE=0>
-using hip_global_x_loop = internal::HipKernelLoop<internal::HipIndexGlobal<0, BLOCK_SIZE, GRID_SIZE>>;
-template<size_t BLOCK_SIZE, size_t GRID_SIZE=0>
-using hip_global_y_loop = internal::HipKernelLoop<internal::HipIndexGlobal<1, BLOCK_SIZE, GRID_SIZE>>;
-template<size_t BLOCK_SIZE, size_t GRID_SIZE=0>
-using hip_global_z_loop = internal::HipKernelLoop<internal::HipIndexGlobal<2, BLOCK_SIZE, GRID_SIZE>>;
+using hip_block_x_loop = hip_block_xyz_loop<0>;
+using hip_block_y_loop = hip_block_xyz_loop<1>;
+using hip_block_z_loop = hip_block_xyz_loop<2>;
 
 }  // namespace RAJA
 

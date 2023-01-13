@@ -101,75 +101,220 @@ namespace internal
 
 struct LaunchDims {
 
-  HipDims dims;
-  HipDims min_dims;
-
-  LaunchDims() = default;
-  LaunchDims(LaunchDims const&) = default;
-  LaunchDims& operator=(LaunchDims const&) = default;
+  hip_dim_t blocks;
+  hip_dim_t min_blocks;
+  hip_dim_t threads;
+  hip_dim_t min_threads;
 
   RAJA_INLINE
-  LaunchDims(HipDims _dims)
-    : dims{_dims}
-    , min_dims{}
-  { }
+  RAJA_HOST_DEVICE
+  LaunchDims() : blocks{0,0,0},  min_blocks{0,0,0},
+                 threads{0,0,0}, min_threads{0,0,0} {}
+
 
   RAJA_INLINE
-  LaunchDims(HipDims _dims, HipDims _min_dims)
-    : dims{_dims}
-    , min_dims{_min_dims}
-  { }
+  RAJA_HOST_DEVICE
+  LaunchDims(LaunchDims const &c) :
+  blocks(c.blocks),   min_blocks(c.min_blocks),
+  threads(c.threads), min_threads(c.min_threads)
+  {
+  }
 
   RAJA_INLINE
   LaunchDims max(LaunchDims const &c) const
   {
     LaunchDims result;
 
-    result.dims.blocks.x = std::max(c.dims.blocks.x, dims.blocks.x);
-    result.dims.blocks.y = std::max(c.dims.blocks.y, dims.blocks.y);
-    result.dims.blocks.z = std::max(c.dims.blocks.z, dims.blocks.z);
+    result.blocks.x = std::max(c.blocks.x, blocks.x);
+    result.blocks.y = std::max(c.blocks.y, blocks.y);
+    result.blocks.z = std::max(c.blocks.z, blocks.z);
 
-    result.min_dims.blocks.x = std::max(c.min_dims.blocks.x, min_dims.blocks.x);
-    result.min_dims.blocks.y = std::max(c.min_dims.blocks.y, min_dims.blocks.y);
-    result.min_dims.blocks.z = std::max(c.min_dims.blocks.z, min_dims.blocks.z);
+    result.min_blocks.x = std::max(c.min_blocks.x, min_blocks.x);
+    result.min_blocks.y = std::max(c.min_blocks.y, min_blocks.y);
+    result.min_blocks.z = std::max(c.min_blocks.z, min_blocks.z);
 
-    result.dims.threads.x = std::max(c.dims.threads.x, dims.threads.x);
-    result.dims.threads.y = std::max(c.dims.threads.y, dims.threads.y);
-    result.dims.threads.z = std::max(c.dims.threads.z, dims.threads.z);
+    result.threads.x = std::max(c.threads.x, threads.x);
+    result.threads.y = std::max(c.threads.y, threads.y);
+    result.threads.z = std::max(c.threads.z, threads.z);
 
-    result.min_dims.threads.x = std::max(c.min_dims.threads.x, min_dims.threads.x);
-    result.min_dims.threads.y = std::max(c.min_dims.threads.y, min_dims.threads.y);
-    result.min_dims.threads.z = std::max(c.min_dims.threads.z, min_dims.threads.z);
+    result.min_threads.x = std::max(c.min_threads.x, min_threads.x);
+    result.min_threads.y = std::max(c.min_threads.y, min_threads.y);
+    result.min_threads.z = std::max(c.min_threads.z, min_threads.z);
 
     return result;
   }
 
   RAJA_INLINE
   int num_blocks() const {
-    return dims.num_blocks();
+    return get_size(blocks);
   }
 
   RAJA_INLINE
   int num_threads() const {
-    return dims.num_threads();
+    return get_size(threads);
   }
 
 
   RAJA_INLINE
   void clamp_to_min_blocks() {
-    dims.blocks.x = std::max(min_dims.blocks.x, dims.blocks.x);
-    dims.blocks.y = std::max(min_dims.blocks.y, dims.blocks.y);
-    dims.blocks.z = std::max(min_dims.blocks.z, dims.blocks.z);
+    blocks.x = std::max(min_blocks.x, blocks.x);
+    blocks.y = std::max(min_blocks.y, blocks.y);
+    blocks.z = std::max(min_blocks.z, blocks.z);
   };
 
   RAJA_INLINE
   void clamp_to_min_threads() {
-    dims.threads.x = std::max(min_dims.threads.x, dims.threads.x);
-    dims.threads.y = std::max(min_dims.threads.y, dims.threads.y);
-    dims.threads.z = std::max(min_dims.threads.z, dims.threads.z);
+    threads.x = std::max(min_threads.x, threads.x);
+    threads.y = std::max(min_threads.y, threads.y);
+    threads.z = std::max(min_threads.z, threads.z);
   };
 
 };
+
+
+struct HipFixedMaxBlocksData
+{
+  int multiProcessorCount;
+  int maxThreadsPerMultiProcessor;
+};
+
+RAJA_INLINE
+int hip_max_blocks(int block_size)
+{
+  static HipFixedMaxBlocksData data = {-1, -1};
+
+  if (data.multiProcessorCount < 0) {
+    hipDeviceProp_t& prop = hip::device_prop();
+    data.multiProcessorCount = prop.multiProcessorCount;
+    data.maxThreadsPerMultiProcessor = prop.maxThreadsPerMultiProcessor;
+  }
+
+  int max_blocks = data.multiProcessorCount *
+                  (data.maxThreadsPerMultiProcessor / block_size);
+
+  // printf("MAX_BLOCKS=%d\n", max_blocks);
+
+  return max_blocks;
+}
+
+struct HipOccMaxBlocksThreadsData
+{
+  int prev_shmem_size;
+  int max_blocks;
+  int max_threads;
+};
+
+template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
+RAJA_INLINE
+void hip_occupancy_max_blocks_threads(Func&& func, int shmem_size,
+                                       int &max_blocks, int &max_threads)
+{
+  static HipOccMaxBlocksThreadsData data = {-1, -1, -1};
+
+  if (data.prev_shmem_size != shmem_size) {
+
+#ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
+    hipErrchk(hipOccupancyMaxPotentialBlockSize(
+        &data.max_blocks, &data.max_threads, func, shmem_size));
+#else
+    RAJA_UNUSED_VAR(func);
+    data.max_blocks = 64;
+    data.max_threads = 1024;
+#endif
+
+    data.prev_shmem_size = shmem_size;
+
+  }
+
+  max_blocks  = data.max_blocks;
+  max_threads = data.max_threads;
+
+}
+
+struct HipOccMaxBlocksFixedThreadsData
+{
+  int prev_shmem_size;
+  int max_blocks;
+  int multiProcessorCount;
+};
+
+template < typename RAJA_UNUSED_ARG(UniqueMarker), int num_threads, typename Func >
+RAJA_INLINE
+void hip_occupancy_max_blocks(Func&& func, int shmem_size,
+                               int &max_blocks)
+{
+  static HipOccMaxBlocksFixedThreadsData data = {-1, -1, -1};
+
+  if (data.prev_shmem_size != shmem_size) {
+
+#ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
+    hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor(
+        &data.max_blocks, func, num_threads, shmem_size));
+#else
+    RAJA_UNUSED_VAR(func);
+    data.max_blocks = 2;
+#endif
+
+    if (data.multiProcessorCount < 0) {
+
+      data.multiProcessorCount = hip::device_prop().multiProcessorCount;
+
+    }
+
+    data.max_blocks *= data.multiProcessorCount;
+
+    data.prev_shmem_size = shmem_size;
+
+  }
+
+  max_blocks = data.max_blocks;
+
+}
+
+struct HipOccMaxBlocksVariableThreadsData
+{
+  int prev_shmem_size;
+  int prev_num_threads;
+  int max_blocks;
+  int multiProcessorCount;
+};
+
+template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
+RAJA_INLINE
+void hip_occupancy_max_blocks(Func&& func, int shmem_size,
+                               int &max_blocks, int num_threads)
+{
+  static HipOccMaxBlocksVariableThreadsData data = {-1, -1, -1, -1};
+
+  if ( data.prev_shmem_size  != shmem_size ||
+       data.prev_num_threads != num_threads ) {
+
+#ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
+    hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor(
+        &data.max_blocks, func, num_threads, shmem_size));
+#else
+    RAJA_UNUSED_VAR(func);
+    data.max_blocks = 2;
+#endif
+
+    if (data.multiProcessorCount < 0) {
+
+      data.multiProcessorCount = hip::device_prop().multiProcessorCount;
+
+    }
+
+    data.max_blocks *= data.multiProcessorCount;
+
+    data.prev_shmem_size  = shmem_size;
+    data.prev_num_threads = num_threads;
+
+  }
+
+  max_blocks = data.max_blocks;
+
+}
+
+
 
 template <camp::idx_t cur_stmt, camp::idx_t num_stmts, typename StmtList>
 struct HipStatementListExecutorHelper {
@@ -265,223 +410,8 @@ using hip_statement_list_executor_t = HipStatementListExecutor<
     Types>;
 
 
-template<int dim, hip_dim_member_t t_block_size>
-struct HipKernelDirect<HipIndexThread<dim, t_block_size>>
-{
-  using IndexMapper = HipIndexThread<dim, t_block_size>;
-
-  IndexMapper indexer;
-
-  RAJA_HOST_DEVICE constexpr
-  HipKernelDirect(hip_dim_member_t _block_size = 0)
-    : indexer(_block_size)
-  { }
-
-  template < typename IdxT >
-  inline void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len) const
-  {
-    if (indexer.block_size == 0) {
-      // BEWARE: if calculated block_size is too high then the kernel launch will fail
-      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(len));
-      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(len));
-
-    } else {
-      if ( len > static_cast<IdxT>(indexer.block_size) ) {
-        RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
-      }
-      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(indexer.block_size));
-      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(indexer.block_size));
-    }
-  }
-};
-
-template<int dim, hip_dim_member_t t_grid_size>
-struct HipKernelDirect<HipIndexBlock<dim, t_grid_size>>
-{
-  using IndexMapper = HipIndexBlock<dim, t_grid_size>;
-
-  IndexMapper indexer;
-
-  RAJA_HOST_DEVICE constexpr
-  HipKernelDirect(hip_dim_member_t _grid_size = 0)
-    : indexer(_grid_size)
-  { }
-
-  template < typename IdxT >
-  inline void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len) const
-  {
-    if (indexer.grid_size == 0) {
-      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(len));
-      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(len));
-
-    } else {
-      if ( len > static_cast<IdxT>(indexer.grid_size) ) {
-        RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
-      }
-      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(indexer.grid_size));
-      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(indexer.grid_size));
-    }
-  }
-};
-
-template<int dim, hip_dim_member_t t_block_size, hip_dim_member_t t_grid_size>
-struct HipKernelDirect<HipIndexGlobal<dim, t_block_size, t_grid_size>>
-{
-  using IndexMapper = HipIndexGlobal<dim, t_block_size, t_grid_size>;
-
-  IndexMapper indexer;
-
-  RAJA_HOST_DEVICE constexpr
-  HipKernelDirect(hip_dim_member_t _block_size = 0,
-                hip_dim_member_t _grid_size = 0)
-    : indexer(_block_size, _grid_size)
-  { }
-
-  template < typename IdxT >
-  inline void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len) const
-  {
-    if (indexer.block_size == 0 && indexer.grid_size == 0) {
-      if (len > static_cast<IdxT>(0)) {
-        RAJA_ABORT_OR_THROW("must know one of block_size or grid_size");
-      }
-
-    } else if (indexer.block_size == 0) {
-      // BEWARE: if calculated block_size is too high then the kernel launch will fail
-      set_hip_dim<dim>(dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(indexer.grid_size)));
-      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(indexer.grid_size));
-      set_hip_dim<dim>(min_dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(indexer.grid_size)));
-      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(indexer.grid_size));
-
-    } else if (indexer.grid_size == 0) {
-      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(indexer.block_size));
-      set_hip_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(indexer.block_size)));
-      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(indexer.block_size));
-      set_hip_dim<dim>(min_dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(indexer.block_size)));
-
-    } else {
-      if ( len > (static_cast<IdxT>(indexer.block_size) *
-                  static_cast<IdxT>(indexer.grid_size)) ) {
-        RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
-      }
-      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(indexer.block_size));
-      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(indexer.grid_size));
-      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(indexer.block_size));
-      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(indexer.grid_size));
-    }
-  }
-};
-
-
-template<int dim, hip_dim_member_t t_block_size>
-struct HipKernelLoop<HipIndexThread<dim, t_block_size>>
-{
-  using IndexMapper = HipIndexThread<dim, t_block_size>;
-
-  IndexMapper indexer;
-
-  RAJA_HOST_DEVICE constexpr
-  HipKernelLoop(hip_dim_member_t _block_size = 0)
-    : indexer(_block_size)
-  { }
-
-  template < typename IdxT >
-  inline void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len) const
-  {
-    if (indexer.block_size == 0) {
-      // BEWARE: if calculated block_size is too high then the kernel launch will fail
-      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(len));
-      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
-
-    } else {
-      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(indexer.block_size));
-      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(indexer.block_size));
-    }
-  }
-};
-
-template<int dim, hip_dim_member_t t_grid_size>
-struct HipKernelLoop<HipIndexBlock<dim, t_grid_size>>
-{
-  using IndexMapper = HipIndexBlock<dim, t_grid_size>;
-
-  IndexMapper indexer;
-
-  RAJA_HOST_DEVICE constexpr
-  HipKernelLoop(hip_dim_member_t _grid_size = 0)
-    : indexer(_grid_size)
-  { }
-
-  template < typename IdxT >
-  inline void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len) const
-  {
-    if (indexer.grid_size == 0) {
-      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(len));
-      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
-
-    } else {
-      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(indexer.grid_size));
-      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(indexer.grid_size));
-    }
-  }
-};
-
-template<int dim, hip_dim_member_t t_block_size, hip_dim_member_t t_grid_size>
-struct HipKernelLoop<HipIndexGlobal<dim, t_block_size, t_grid_size>>
-{
-  using IndexMapper = HipIndexGlobal<dim, t_block_size, t_grid_size>;
-
-  IndexMapper indexer;
-
-  RAJA_HOST_DEVICE constexpr
-  HipKernelLoop(hip_dim_member_t _block_size = 0,
-                hip_dim_member_t _grid_size = 0)
-    : indexer(_block_size, _grid_size)
-  { }
-
-  template < typename IdxT >
-  inline void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len) const
-  {
-    if (indexer.block_size == 0 && indexer.grid_size == 0) {
-      if (len > static_cast<IdxT>(0)) {
-        set_hip_dim<dim>(dims.threads, static_cast<IdxT>(1));
-        set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(1));
-        set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
-        set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
-      }
-
-    } else if (indexer.block_size == 0) {
-      // BEWARE: if calculated block_size is too high then the kernel launch will fail
-      set_hip_dim<dim>(dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(indexer.grid_size)));
-      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(indexer.grid_size));
-      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
-      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(indexer.grid_size));
-
-    } else if (indexer.grid_size == 0) {
-      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(indexer.block_size));
-      set_hip_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(indexer.block_size)));
-      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(indexer.block_size));
-      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
-
-    } else {
-      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(indexer.block_size));
-      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(indexer.grid_size));
-      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(indexer.block_size));
-      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(indexer.grid_size));
-    }
-  }
-};
 
 }  // namespace internal
-
-namespace type_traits {
-
-template <typename IndexMapper>
-struct is_hip_direct_indexer<::RAJA::internal::HipKernelDirect<IndexMapper>> : std::true_type {};
-template <typename IndexMapper>
-struct is_hip_loop_indexer<::RAJA::internal::HipKernelLoop<IndexMapper>> : std::true_type {};
-
-} // namespace type_traits
-
 }  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_HIP guard
