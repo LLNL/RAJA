@@ -51,9 +51,6 @@ variables:
 # Project specific deps for lassen
   PROJECT_LASSEN_DEPS: ""
 
-# Override the list of branch that will skip the "draft PR test".
-  ALWAYS_RUN_LIST: "develop woptim/fix-draft-detection-develop"
-
 # Configuration shared by build and test jobs specific to this project.
 # Not all configuration can be shared. Here projects can fine tune the
 # CI behavior.
