@@ -66,7 +66,7 @@ TYPED_TEST_P(DynamicForallResourceRangeSegmentTest, RangeSegmentForallResource)
   using POLICY_LIST = typename camp::at<TypeParam, camp::num<2>>::type;
 
 
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_GPU_ACTIVE)
   constexpr int N = camp::size<POLICY_LIST>::value;
 #endif
 
@@ -90,7 +90,7 @@ TYPED_TEST_P(DynamicForallResourceRangeSegmentTest, RangeSegmentForallResource)
             (INDEX_TYPE(0), INDEX_TYPE(27), pol);
         }
   }
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_GPU_ACTIVE)
   else
   {
     int device_start = 2;

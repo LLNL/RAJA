@@ -49,7 +49,7 @@ struct null_launch_t {
 
 // Support for host, and device
 template <typename HOST_POLICY
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_GPU_ACTIVE)
           ,
           typename DEVICE_POLICY = HOST_POLICY
 #endif
@@ -57,20 +57,20 @@ template <typename HOST_POLICY
 
 struct LoopPolicy {
   using host_policy_t = HOST_POLICY;
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_GPU_ACTIVE)
   using device_policy_t = DEVICE_POLICY;
 #endif
 };
 
 template <typename HOST_POLICY
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_GPU_ACTIVE)
           ,
           typename DEVICE_POLICY = HOST_POLICY
 #endif
           >
 struct LaunchPolicy {
   using host_policy_t = HOST_POLICY;
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_GPU_ACTIVE)
   using device_policy_t = DEVICE_POLICY;
 #endif
 };
@@ -265,7 +265,7 @@ void launch(ExecPlace place, const LaunchParams &params, const char *kernel_name
       launch<LaunchPolicy<typename POLICY_LIST::host_policy_t>>(Res::get_default(), params, kernel_name, body);
       break;
     }
-#ifdef RAJA_DEVICE_ACTIVE
+#if defined(RAJA_GPU_ACTIVE)
   case ExecPlace::DEVICE: {
       using Res = typename resources::get_resource<typename POLICY_LIST::device_policy_t>::type;
       launch<LaunchPolicy<typename POLICY_LIST::device_policy_t>>(Res::get_default(), params, kernel_name, body);
@@ -318,7 +318,7 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
   //
   //Configure plugins
   //
-#ifdef RAJA_DEVICE_ACTIVE
+#if defined(RAJA_GPU_ACTIVE)
   util::PluginContext context{place == ExecPlace::HOST ?
       util::make_context<typename POLICY_LIST::host_policy_t>()
       : util::make_context<typename POLICY_LIST::device_policy_t>()};
@@ -342,7 +342,7 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
       util::callPostLaunchPlugins(context);
       return e_proxy;
     }
-#ifdef RAJA_DEVICE_ACTIVE
+#if defined(RAJA_GPU_ACTIVE)
     case ExecPlace::DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
       resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, params, kernel_name, p_body);
