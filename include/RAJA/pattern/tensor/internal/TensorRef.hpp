@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -410,7 +410,7 @@ namespace expt
 
 	static_assert(
           (sizeof...(BeginInts) == sizeof...(SizeInts)) && (sizeof...(SizeInts) == sizeof...(StrideInts)),
-          "Mismatch between number of elements in Begin and Size series of StaticTensorTile"
+          "Mismatch between number of elements in Begin and Size series of StaticTensorRef"
         );
         
 
@@ -537,16 +537,9 @@ namespace expt
               >;
 
         using ref_stride_type = typename ref_type ::stride_type;
-        using ref_begin_type  = typename tile_type:: begin_type;
-        using ref_size_type   = typename tile_type::  size_type;
-        
-        using ref_begin_seq   = typename ref_begin_type::seq_type;
-        using ref_size_seq    = typename ref_size_type ::seq_type;
 
         using new_stride_seq  = camp::int_seq<INDEX_TYPE2,INDEX_TYPE2(ref_stride_type::value_at(DIM_SEQ))...>; 
         
-        //using shift_begin_seq = camp::int_seq<INDEX_TYPE2,INDEX_TYPE2( ref_begin_type::value_at(DIM_SEQ))...>; 
-        //using shift_size_seq  = camp::int_seq<INDEX_TYPE2,INDEX_TYPE2(  ref_size_type::value_at(DIM_SEQ))...>; 
         using shift_begin_seq = camp::int_seq<INDEX_TYPE2,INDEX_TYPE2(BEGIN1)...>; 
         using shift_size_seq  = camp::int_seq<INDEX_TYPE2,INDEX_TYPE2(SIZE1)...>; 
        

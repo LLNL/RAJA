@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -120,10 +120,12 @@ namespace expt
         return m_index;
       }
 
+      // used in strip_by_value as a static cast
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
       explicit operator index_type() const {
+        // return does not matter, but suppresses no-return warnings
         return m_index;
       }
 

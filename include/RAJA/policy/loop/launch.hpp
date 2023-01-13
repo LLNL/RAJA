@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -39,19 +39,6 @@ struct LaunchExecute<RAJA::null_launch_t> {
 
 template <>
 struct LaunchExecute<RAJA::seq_launch_t> {
-
-  template <typename BODY>
-  static void exec(LaunchParams const &params, const char *RAJA_UNUSED_ARG(kernel_name), BODY const &body)
-  {
-    LaunchContext ctx;
-
-    ctx.shared_mem_ptr = (char*) malloc(params.shared_mem_size);
-
-    body(ctx);
-
-    free(ctx.shared_mem_ptr);
-    ctx.shared_mem_ptr = nullptr;
-  }
 
   template <typename BODY>
   static resources::EventProxy<resources::Resource>

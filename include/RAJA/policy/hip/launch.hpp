@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -46,53 +46,6 @@ __global__ void launch_global_fcn(BODY body_in)
 
 template <bool async>
 struct LaunchExecute<RAJA::hip_launch_t<async, 0>> {
-
-  template <typename BODY_IN>
-  static void exec(const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)
-  {
-    using BODY = camp::decay<BODY_IN>;
-
-    auto func = launch_global_fcn<BODY>;
-
-    resources::Hip hip_res = resources::Hip::get_default();
-
-    //
-    // Compute the number of blocks and threads
-    //
-
-    hip_dim_t gridSize{ static_cast<hip_dim_member_t>(params.teams.value[0]),
-                        static_cast<hip_dim_member_t>(params.teams.value[1]),
-                        static_cast<hip_dim_member_t>(params.teams.value[2]) };
-
-    hip_dim_t blockSize{ static_cast<hip_dim_member_t>(params.threads.value[0]),
-                         static_cast<hip_dim_member_t>(params.threads.value[1]),
-                         static_cast<hip_dim_member_t>(params.threads.value[2]) };
-
-    // Only launch kernel if we have something to iterate over
-    constexpr hip_dim_member_t zero = 0;
-    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
-         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
-
-      RAJA_FT_BEGIN;
-
-      {
-        //
-        // Privatize the loop_body, using make_launch_body to setup reductions
-        //
-        BODY body = RAJA::hip::make_launch_body(
-            gridSize, blockSize, params.shared_mem_size, hip_res, std::forward<BODY_IN>(body_in));
-
-        //
-        // Launch the kernel
-        //
-        void *args[] = {(void*)&body};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, params.shared_mem_size, hip_res, async, kernel_name);
-      }
-
-      RAJA_FT_END;
-    }
-
-  }
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
@@ -164,53 +117,6 @@ static void launch_global_fcn_fixed(BODY body_in)
 
 template <bool async, int nthreads>
 struct LaunchExecute<RAJA::hip_launch_t<async, nthreads>> {
-
-  template <typename BODY_IN>
-  static void exec(const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)
-  {
-    using BODY = camp::decay<BODY_IN>;
-
-    auto func = launch_global_fcn_fixed<BODY, nthreads>;
-
-    resources::Hip hip_res = resources::Hip::get_default();
-
-    //
-    // Compute the number of blocks and threads
-    //
-
-    hip_dim_t gridSize{ static_cast<hip_dim_member_t>(params.teams.value[0]),
-                        static_cast<hip_dim_member_t>(params.teams.value[1]),
-                        static_cast<hip_dim_member_t>(params.teams.value[2]) };
-
-    hip_dim_t blockSize{ static_cast<hip_dim_member_t>(params.threads.value[0]),
-                         static_cast<hip_dim_member_t>(params.threads.value[1]),
-                         static_cast<hip_dim_member_t>(params.threads.value[2]) };
-
-    // Only launch kernel if we have something to iterate over
-    constexpr hip_dim_member_t zero = 0;
-    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
-         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
-
-      RAJA_FT_BEGIN;
-
-      {
-        //
-        // Privatize the loop_body, using make_launch_body to setup reductions
-        //
-        BODY body = RAJA::hip::make_launch_body(
-            gridSize, blockSize, params.shared_mem_size, hip_res, std::forward<BODY_IN>(body_in));
-
-        //
-        // Launch the kernel
-        //
-        void *args[] = {(void*)&body};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, params.shared_mem_size, hip_res, async, kernel_name);
-      }
-
-      RAJA_FT_END;
-    }
-
-  }
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>

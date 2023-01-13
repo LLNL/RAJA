@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -12,7 +12,7 @@
 RAJA Copyright and License Information
 ======================================
 
-Copyright (c) 2016-22, Lawrence Livermore National Security, LLC.
+Copyright (c) 2016-23, Lawrence Livermore National Security, LLC.
 
 Produced at the Lawrence Livermore National Laboratory.
 

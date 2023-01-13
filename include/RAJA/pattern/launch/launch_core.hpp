@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -238,7 +238,10 @@ void launch(LaunchParams const &params, const char *kernel_name, BODY const &bod
   util::callPreLaunchPlugins(context);
 
   using launch_t = LaunchExecute<typename LAUNCH_POLICY::host_policy_t>;
-  launch_t::exec(params, kernel_name, p_body);
+
+  using Res = typename resources::get_resource<typename LAUNCH_POLICY::host_policy_t>::type;
+
+  launch_t::exec(Res::get_default(), params, kernel_name, p_body);
 
   util::callPostLaunchPlugins(context);
 }
@@ -258,12 +261,14 @@ void launch(ExecPlace place, const LaunchParams &params, const char *kernel_name
   //Forward to single policy launch API - simplifies testing of plugins
   switch (place) {
     case ExecPlace::HOST: {
-      launch<LaunchPolicy<typename POLICY_LIST::host_policy_t>>(params, kernel_name, body);
+      using Res = typename resources::get_resource<typename POLICY_LIST::host_policy_t>::type;
+      launch<LaunchPolicy<typename POLICY_LIST::host_policy_t>>(Res::get_default(), params, kernel_name, body);
       break;
     }
 #ifdef RAJA_DEVICE_ACTIVE
   case ExecPlace::DEVICE: {
-      launch<LaunchPolicy<typename POLICY_LIST::device_policy_t>>(params, kernel_name, body);
+      using Res = typename resources::get_resource<typename POLICY_LIST::device_policy_t>::type;
+      launch<LaunchPolicy<typename POLICY_LIST::device_policy_t>>(Res::get_default(), params, kernel_name, body);
       break;
     }
 #endif

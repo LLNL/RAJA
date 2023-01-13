@@ -1,6 +1,6 @@
 
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2016-22, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2016-23, Lawrence Livermore National Security, LLC)
 [comment]: # (and RAJA project contributors. See the RAJA/LICENSE file)
 [comment]: # (for details.)
 [comment]: # 

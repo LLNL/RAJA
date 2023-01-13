@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -30,133 +30,6 @@ namespace RAJA
 
 template <bool async>
 struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
-
-  //If the launch lambda is trivially copyable
-  template <typename BODY_IN,
-	    typename std::enable_if<std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
-  static void exec(const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)	      
-  {
-
-    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
-
-    resources::Sycl sycl_res = resources::Sycl::get_default();
-
-    // Global resource was not set, use the resource that was passed to forall
-    // Determine if the default SYCL res is being used
-    if (!q) {
-      q = sycl_res.get_queue();
-    }
-
-    const ::sycl::range<3> blockSize(params.threads.value[0],
-				     params.threads.value[1],
-				     params.threads.value[2]);
-
-    const ::sycl::range<3> gridSize(params.threads.value[0] * params.teams.value[0],
-				    params.threads.value[1] * params.teams.value[1],
-				    params.threads.value[2] * params.teams.value[2]);
-
-    // Only launch kernel if we have something to iterate over
-    constexpr size_t zero = 0;
-    if ( params.threads.value[0]  > zero && params.threads.value[1]  > zero && params.threads.value[2] > zero &&
-         params.teams.value[0] > zero && params.teams.value[1] > zero && params.teams.value[2]> zero ) {
-
-      RAJA_FT_BEGIN
-
-      q->submit([&](cl::sycl::handler& h) {
-
-        auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
-                                        cl::sycl::access::target::local> (params.shared_mem_size, h);
-
-        h.parallel_for
-          (cl::sycl::nd_range<3>(gridSize, blockSize),
-           [=] (cl::sycl::nd_item<3> itm) {
-
-	     LaunchContext ctx;	     
-             ctx.itm = &itm;
-
-             //Point to shared memory
-             ctx.shared_mem_ptr = s_vec.get_pointer().get();
-
-             body_in(ctx);
-
-           });
-
-      });
-
-      RAJA_FT_END;
-    }
-
-    if (!async) { q->wait(); }
-  }
-
-  //If the launch lambda is not trivially copyable
-  template <typename BODY_IN,
-	    typename std::enable_if<!std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
-  static void exec(const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)
-  {
-
-    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
-
-    resources::Sycl sycl_res = resources::Sycl::get_default();
-
-    // Global resource was not set, use the resource that was passed to forall
-    // Determine if the default SYCL res is being used
-    if (!q) {
-      q = sycl_res.get_queue();
-    }
-
-    const ::sycl::range<3> blockSize(params.threads.value[0],
-				     params.threads.value[1],
-				     params.threads.value[2]);
-
-    const ::sycl::range<3> gridSize(params.threads.value[0] * params.teams.value[0],
-				    params.threads.value[1] * params.teams.value[1],
-				    params.threads.value[2] * params.teams.value[2]);
-
-    // Only launch kernel if we have something to iterate over
-    constexpr size_t zero = 0;
-    if ( params.threads.value[0]  > zero && params.threads.value[1]  > zero && params.threads.value[2] > zero &&
-         params.teams.value[0] > zero && params.teams.value[1] > zero && params.teams.value[2]> zero ) {
-
-      RAJA_FT_BEGIN
-
-      //
-      // Kernel body is nontrivially copyable, create space on device and copy to
-      // Workaround until "is_device_copyable" is supported
-      //
-      using LOOP_BODY = camp::decay<BODY_IN>;
-      LOOP_BODY* lbody;
-      lbody = (LOOP_BODY*) cl::sycl::malloc_device(sizeof(LOOP_BODY), *q);
-      q->memcpy(lbody, &body_in, sizeof(LOOP_BODY)).wait();
-
-      q->submit([&](cl::sycl::handler& h) {
-
-	  auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
-					  cl::sycl::access::target::local> (params.shared_mem_size, h);
-
-        h.parallel_for
-          (cl::sycl::nd_range<3>(gridSize, blockSize),
-           [=] (cl::sycl::nd_item<3> itm) {
-
-   	    LaunchContext ctx;
-	    ctx.itm = &itm;
-
-	    //Point to shared memory
-	    ctx.shared_mem_ptr = s_vec.get_pointer().get();
-
-	    (*lbody)(ctx);
-
-	  });
-
-	}).wait();
-
-       cl::sycl::free(lbody, *q);
-
-      RAJA_FT_END;
-    }
-
-    if (!async) { q->wait(); }
-  }
 
  //If the launch lambda is trivially copyable
   template <typename BODY_IN,
@@ -204,13 +77,13 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
           (cl::sycl::nd_range<3>(gridSize, blockSize),
            [=] (cl::sycl::nd_item<3> itm) {
 
- 	     LaunchContext ctx;
-             ctx.itm = &itm;
+            LaunchContext ctx;
+            ctx.itm = &itm;
 
-             //Point to shared memory
-             ctx.shared_mem_ptr = s_vec.get_pointer().get();
+            //Point to shared memory
+            ctx.shared_mem_ptr = s_vec.get_pointer().get();
 
-             body_in(ctx);
+            body_in(ctx);
 
            });
 
@@ -278,13 +151,13 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
           (cl::sycl::nd_range<3>(gridSize, blockSize),
            [=] (cl::sycl::nd_item<3> itm) {
 
-	     LaunchContext ctx;
-             ctx.itm = &itm;
+            LaunchContext ctx;
+            ctx.itm = &itm;
 
-             //Point to shared memory
-             ctx.shared_mem_ptr = s_vec.get_pointer().get();
+            //Point to shared memory
+            ctx.shared_mem_ptr = s_vec.get_pointer().get();
 
-	     (*lbody)(ctx);
+            (*lbody)(ctx);
 
            });
 

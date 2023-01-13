@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -32,9 +32,9 @@ void LaunchBasicSharedTestImpl()
   //Select platform
   RAJA::ExecPlace select_cpu_or_gpu;
   if (working_res.get_platform()  == camp::resources::Platform::host){
-    select_cpu_or_gpu = RAJA::HOST;
+    select_cpu_or_gpu = RAJA::ExecPlace::HOST;
   }else{  
-    select_cpu_or_gpu = RAJA::DEVICE;
+    select_cpu_or_gpu = RAJA::ExecPlace::DEVICE;
   }
 
 
