@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_TESNOR_VECTOR_CtorGetSet_HPP__
-#define __TEST_TESNOR_VECTOR_CtorGetSet_HPP__
+#ifndef __TEST_TENSOR_VECTOR_CtorGetSet_HPP__
+#define __TEST_TENSOR_VECTOR_CtorGetSet_HPP__
 
 #include<RAJA/RAJA.hpp>
 
