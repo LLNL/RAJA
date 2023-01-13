@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -27,7 +27,9 @@
 #if defined(RAJA_HIP_ACTIVE)
 #include "RAJA/policy/hip/policy.hpp"
 #endif
+#if defined(RAJA_SYCL_ACTIVE)
 #include "RAJA/policy/sycl/policy.hpp"
+#endif
 #include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/policy/openmp_target/policy.hpp"
 #include "RAJA/internal/get_platform.hpp"
@@ -68,6 +70,16 @@ namespace RAJA
     using type = camp::resources::Cuda;
   };
 
+  template <bool Async, int num_threads>
+  struct get_resource<cuda_launch_t<Async, num_threads>>{
+    using type = camp::resources::Cuda;
+  };
+
+  template <bool Async, int num_threads, size_t BLOCKS_PER_SM>
+  struct get_resource<RAJA::policy::cuda::cuda_launch_explicit_t<Async, num_threads, BLOCKS_PER_SM>>{
+    using type = camp::resources::Cuda;
+  };
+
   template<typename ISetIter, size_t BlockSize, bool Async>
   struct get_resource<ExecPolicy<ISetIter, cuda_exec<BlockSize, Async>>>{
     using type = camp::resources::Cuda;
@@ -95,15 +107,30 @@ namespace RAJA
     using type = camp::resources::Hip;
   };
 
+  template <bool Async, int num_threads>
+  struct get_resource<hip_launch_t<Async, num_threads>>{
+    using type = camp::resources::Hip;
+  };
+
   template<typename ISetIter, size_t BlockSize, bool Async>
   struct get_resource<ExecPolicy<ISetIter, hip_exec<BlockSize, Async>>>{
     using type = camp::resources::Hip;
   };
 #endif
 
-#if defined(RAJA_ENABLE_SYCL)
+#if defined(RAJA_SYCL_ACTIVE)
+  template<>
+  struct get_resource_from_platform<Platform::sycl>{
+    using type = camp::resources::Sycl;
+  };
+
   template<size_t BlockSize, bool Async>
   struct get_resource<sycl_exec<BlockSize, Async>>{
+    using type = camp::resources::Sycl;
+  };
+
+  template <bool Async, int num_threads>
+  struct get_resource<sycl_launch_t<Async, num_threads>>{
     using type = camp::resources::Sycl;
   };
 
@@ -152,7 +179,7 @@ namespace RAJA
 #if defined(RAJA_HIP_ACTIVE)
     template <> struct is_resource<resources::Hip> : std::true_type {};
 #endif
-#if defined(RAJA_ENABLE_SYCL)
+#if defined(RAJA_SYCL_ACTIVE)
     template <> struct is_resource<resources::Sycl> : std::true_type {};
 #endif
 #if defined(RAJA_ENABLE_TARGET_OPENMP)

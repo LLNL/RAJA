@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,6 +16,7 @@ cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_C_COMPILER=/usr/bin/gcc-8 \
   -DCMAKE_CXX_COMPILER=/usr/bin/g++-8 \
+  -DBLT_CXX_STD=c++14 \
   -C ../host-configs/ubuntu-builds/nvcc_gcc_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \

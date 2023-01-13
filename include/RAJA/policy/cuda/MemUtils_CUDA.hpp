@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -118,9 +118,9 @@ namespace detail
 struct cudaInfo {
   cuda_dim_t gridDim{0, 0, 0};
   cuda_dim_t blockDim{0, 0, 0};
-  ::RAJA::resources::Cuda* res = nullptr;
+  ::RAJA::resources::Cuda res;
   bool setup_reducers = false;
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
   cudaInfo* thread_states = nullptr;
   omp::mutex lock;
 #endif
@@ -146,7 +146,7 @@ private:
 extern cudaInfo g_status;
 
 extern cudaInfo tl_status;
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
 #pragma omp threadprivate(tl_status)
 #endif
 
@@ -165,7 +165,7 @@ void synchronize_impl(::RAJA::resources::Cuda res)
 RAJA_INLINE
 void synchronize()
 {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
   lock_guard<omp::mutex> lock(detail::g_status.lock);
 #endif
   bool synchronize = false;
@@ -184,7 +184,7 @@ void synchronize()
 RAJA_INLINE
 void synchronize(::RAJA::resources::Cuda res)
 {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
   lock_guard<omp::mutex> lock(detail::g_status.lock);
 #endif
   auto iter = detail::g_stream_info_map.find(res.get_stream());
@@ -202,7 +202,7 @@ void synchronize(::RAJA::resources::Cuda res)
 RAJA_INLINE
 void launch(::RAJA::resources::Cuda res, bool async = true)
 {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
   lock_guard<omp::mutex> lock(detail::g_status.lock);
 #endif
   auto iter = detail::g_stream_info_map.find(res.get_stream());
@@ -251,7 +251,7 @@ cuda_dim_t currentBlockDim() { return detail::tl_status.blockDim; }
 
 //! get resource for current launch
 RAJA_INLINE
-::RAJA::resources::Cuda* currentResource() { return detail::tl_status.res; }
+::RAJA::resources::Cuda currentResource() { return detail::tl_status.res; }
 
 //! create copy of loop_body that is setup for device execution
 template <typename LOOP_BODY>
@@ -264,8 +264,8 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
 {
   detail::SetterResetter<bool> setup_reducers_srer(
       detail::tl_status.setup_reducers, true);
-  detail::SetterResetter<::RAJA::resources::Cuda*> res_srer(
-      detail::tl_status.res, &res);
+  detail::SetterResetter<::RAJA::resources::Cuda> res_srer(
+      detail::tl_status.res, res);
 
   detail::tl_status.gridDim = gridDim;
   detail::tl_status.blockDim = blockDim;

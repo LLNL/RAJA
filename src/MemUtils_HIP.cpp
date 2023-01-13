@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -46,7 +46,7 @@ hipInfo g_status;
 
 //! State of the host code in this thread
 hipInfo tl_status;
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
 #pragma omp threadprivate(tl_status)
 #endif
 

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -292,6 +292,57 @@ using HipKernelTileExecPols =
   >;
 
 #endif  // RAJA_ENABLE_HIP
+
+#if defined(RAJA_ENABLE_SYCL)
+
+using SyclKernelTileExecPols =
+  camp::list<
+
+    RAJA::KernelPolicy<
+      RAJA::statement::SyclKernel<
+        RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::sycl_group_0_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::sycl_group_1_direct,
+            RAJA::statement::For<1, RAJA::sycl_local_0_loop,
+              RAJA::statement::For<0, RAJA::sycl_local_1_direct,
+                RAJA::statement::Lambda<0>
+              >
+            >
+          >
+        >
+      >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::seq_exec,
+        RAJA::statement::For<1, RAJA::seq_exec,
+          RAJA::statement::SyclKernel<
+            RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::sycl_group_0_loop,
+              RAJA::statement::For<0, RAJA::sycl_local_0_loop,
+                RAJA::statement::Lambda<0>
+              >
+            >
+          >
+        >
+      >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::SyclKernel<
+        RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::seq_exec,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::sycl_group_0_loop,
+            RAJA::statement::For<1, RAJA::seq_exec,
+              RAJA::statement::For<0, RAJA::sycl_local_0_loop,
+                RAJA::statement::Lambda<0>
+              >
+            >
+          >
+        >
+      >
+    >
+
+  >;
+
+#endif  // RAJA_ENABLE_SYCL
 
 //
 // Cartesian product of types used in parameterized tests

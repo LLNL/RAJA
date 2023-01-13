@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -215,104 +215,244 @@ namespace expt
       }
 
 
-      /*!
-       * @brief Performs load specified by TensorRef object.
-       */
-      template<typename POINTER_TYPE, typename INDEX_TYPE, RAJA::internal::expt::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
+      template<typename REF_TYPE>
+      struct RefBridge;
+
+
+      template<typename REF_TYPE>
       RAJA_HOST_DEVICE
       RAJA_INLINE
-      self_type &load_ref(RAJA::internal::expt::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM> const &ref){
+      self_type& load_ref (REF_TYPE const &ref){
+          RefBridge<REF_TYPE>::load_ref(*this,ref);
+          return *this;
+      }
 
-        auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0];
-
-        // check for packed data
-        if(STRIDE_ONE_DIM == 0){
-          // full vector?
-          if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
-#ifdef RAJA_ENABLE_VECTOR_STATS
-          RAJA::tensor_stats::num_vector_load_packed ++;
-#endif
-            load_packed(ptr);
-          }
-          // partial
-          else{
-#ifdef RAJA_ENABLE_VECTOR_STATS
-          RAJA::tensor_stats::num_vector_load_packed_n ++;
-#endif
-            load_packed_n(ptr, ref.m_tile.m_size[0]);
-          }
-
-        }
-        // strided data
-        else
-        {
-          // full vector?
-          if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
-#ifdef RAJA_ENABLE_VECTOR_STATS
-          RAJA::tensor_stats::num_vector_load_strided ++;
-#endif
-            load_strided(ptr, ref.m_stride[0]);
-          }
-          // partial
-          else{
-#ifdef RAJA_ENABLE_VECTOR_STATS
-          RAJA::tensor_stats::num_vector_load_strided_n ++;
-#endif
-            load_strided_n(ptr, ref.m_stride[0], ref.m_tile.m_size[0]);
-          }
-        }
-        return *this;
+      template<typename REF_TYPE>
+      RAJA_HOST_DEVICE
+      RAJA_INLINE
+      self_type const &store_ref (REF_TYPE &ref) const {
+          RefBridge<REF_TYPE>::store_ref(*this,ref);
+          return *this;
       }
 
 
-      /*!
-       * @brief Performs load specified by TensorRef object.
-       */
+      
       template<typename POINTER_TYPE, typename INDEX_TYPE, RAJA::internal::expt::TensorTileSize TENSOR_SIZE, camp::idx_t STRIDE_ONE_DIM>
-      RAJA_HOST_DEVICE
-      RAJA_INLINE
-      self_type const &store_ref(RAJA::internal::expt::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM> const &ref) const {
+      struct RefBridge <RAJA::internal::expt::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM>>
+      {
 
-        auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0];
+          using RefType = RAJA::internal::expt::TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM>;
 
-        // check for packed data
-        if(STRIDE_ONE_DIM == 0){
-          // full vector?
-          if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
-#ifdef RAJA_ENABLE_VECTOR_STATS
-          RAJA::tensor_stats::num_vector_store_packed ++;
-#endif
-            store_packed(ptr);
-          }
-          // partial
-          else{
-#ifdef RAJA_ENABLE_VECTOR_STATS
-          RAJA::tensor_stats::num_vector_store_packed_n ++;
-#endif
-            store_packed_n(ptr, ref.m_tile.m_size[0]);
+          /*!
+           * @brief Performs load specified by TensorRef object.
+           */
+          RAJA_HOST_DEVICE
+          RAJA_INLINE
+          static void load_ref (self_type& self, RefType const &ref){
+    
+            auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0];
+    
+            // check for packed data
+            if(STRIDE_ONE_DIM == 0){
+              // full vector?
+              if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
+              #ifdef RAJA_ENABLE_VECTOR_STATS
+              RAJA::tensor_stats::num_vector_load_packed ++;
+              #endif
+                self.load_packed(ptr);
+              }
+              // partial
+              else{
+              #ifdef RAJA_ENABLE_VECTOR_STATS
+              RAJA::tensor_stats::num_vector_load_packed_n ++;
+              #endif
+                self.load_packed_n(ptr, ref.m_tile.m_size[0]);
+              }
+    
+            }
+            // strided data
+            else
+            {
+              // full vector?
+              if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
+              #ifdef RAJA_ENABLE_VECTOR_STATS
+              RAJA::tensor_stats::num_vector_load_strided ++;
+              #endif
+                self.load_strided(ptr, ref.m_stride[0]);
+              }
+              // partial
+              else{
+              #ifdef RAJA_ENABLE_VECTOR_STATS
+              RAJA::tensor_stats::num_vector_load_strided_n ++;
+              #endif
+                self.load_strided_n(ptr, ref.m_stride[0], ref.m_tile.m_size[0]);
+              }
+            }
           }
 
-        }
-        // strided data
-        else
-        {
-          // full vector?
-          if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
-#ifdef RAJA_ENABLE_VECTOR_STATS
-          RAJA::tensor_stats::num_vector_store_strided ++;
-#endif
-            store_strided(ptr, ref.m_stride[0]);
+
+
+          /*!
+           * @brief Performs load specified by TensorRef object.
+           */
+          RAJA_HOST_DEVICE
+          RAJA_INLINE
+          static void store_ref(self_type const &self, RefType &ref) {
+    
+            auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0];
+    
+            // check for packed data
+            if(STRIDE_ONE_DIM == 0){
+              // full vector?
+              if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
+    #ifdef RAJA_ENABLE_VECTOR_STATS
+              RAJA::tensor_stats::num_vector_store_packed ++;
+    #endif
+                self.store_packed(ptr);
+              }
+              // partial
+              else{
+    #ifdef RAJA_ENABLE_VECTOR_STATS
+              RAJA::tensor_stats::num_vector_store_packed_n ++;
+    #endif
+                self.store_packed_n(ptr, ref.m_tile.m_size[0]);
+              }
+    
+            }
+            // strided data
+            else
+            {
+              // full vector?
+              if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
+    #ifdef RAJA_ENABLE_VECTOR_STATS
+              RAJA::tensor_stats::num_vector_store_strided ++;
+    #endif
+                self.store_strided(ptr, ref.m_stride[0]);
+              }
+              // partial
+              else{
+    #ifdef RAJA_ENABLE_VECTOR_STATS
+              RAJA::tensor_stats::num_vector_store_strided_n ++;
+    #endif
+                self.store_strided_n(ptr, ref.m_stride[0], ref.m_tile.m_size[0]);
+              }
+            }
           }
-          // partial
-          else{
-#ifdef RAJA_ENABLE_VECTOR_STATS
-          RAJA::tensor_stats::num_vector_store_strided_n ++;
-#endif
-            store_strided_n(ptr, ref.m_stride[0], ref.m_tile.m_size[0]);
+           
+
+      };
+
+
+
+
+
+      
+      template<typename POINTER_TYPE, typename INDEX_TYPE, RAJA::internal::expt::TensorTileSize TENSOR_SIZE, INDEX_TYPE STRIDE_VALUE, INDEX_TYPE BEGIN_VALUE, INDEX_TYPE SIZE_VALUE, camp::idx_t STRIDE_ONE_DIM>
+      struct RefBridge <RAJA::internal::expt::StaticTensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, camp::int_seq<INDEX_TYPE,STRIDE_VALUE>, camp::int_seq<INDEX_TYPE,BEGIN_VALUE>, camp::int_seq<INDEX_TYPE,SIZE_VALUE>, STRIDE_ONE_DIM>> 
+      {
+
+          using RefType = RAJA::internal::expt::StaticTensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, camp::int_seq<INDEX_TYPE,STRIDE_VALUE>, camp::int_seq<INDEX_TYPE,BEGIN_VALUE>, camp::int_seq<INDEX_TYPE,SIZE_VALUE>, STRIDE_ONE_DIM>;
+
+          /*!
+           * @brief Performs load specified by StaticTensorRef object.
+           */
+          RAJA_HOST_DEVICE
+          RAJA_INLINE
+          static void load_ref (self_type &self, RefType const &ref){
+    
+            auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0];
+    
+            // check for packed data
+            if(STRIDE_ONE_DIM == 0){
+              // full vector?
+              if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
+              #ifdef RAJA_ENABLE_VECTOR_STATS
+              RAJA::tensor_stats::num_vector_load_packed ++;
+              #endif
+                self.load_packed(ptr);
+              }
+              // partial
+              else{
+              #ifdef RAJA_ENABLE_VECTOR_STATS
+              RAJA::tensor_stats::num_vector_load_packed_n ++;
+              #endif
+                self.load_packed_n(ptr, ref.m_tile.m_size[0]);
+              }
+    
+            }
+            // strided data
+            else
+            {
+              // full vector?
+              if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
+              #ifdef RAJA_ENABLE_VECTOR_STATS
+              RAJA::tensor_stats::num_vector_load_strided ++;
+              #endif
+                self.load_strided(ptr, ref.m_stride[0]);
+              }
+              // partial
+              else{
+              #ifdef RAJA_ENABLE_VECTOR_STATS
+              RAJA::tensor_stats::num_vector_load_strided_n ++;
+              #endif
+                self.load_strided_n(ptr, ref.m_stride[0], ref.m_tile.m_size[0]);
+              }
+            }
           }
-        }
-        return *this;
-      }
+
+
+
+          /*!
+           * @brief Performs load specified by StaticTensorRef object.
+           */
+          RAJA_HOST_DEVICE
+          RAJA_INLINE
+          static void store_ref(self_type const &self, RefType &ref) {
+    
+            auto ptr = ref.m_pointer + ref.m_tile.m_begin[0]*ref.m_stride[0];
+    
+            // check for packed data
+            if(STRIDE_ONE_DIM == 0){
+              // full vector?
+              if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
+    #ifdef RAJA_ENABLE_VECTOR_STATS
+              RAJA::tensor_stats::num_vector_store_packed ++;
+    #endif
+                self.store_packed(ptr);
+              }
+              // partial
+              else{
+    #ifdef RAJA_ENABLE_VECTOR_STATS
+              RAJA::tensor_stats::num_vector_store_packed_n ++;
+    #endif
+                self.store_packed_n(ptr, ref.m_tile.m_size[0]);
+              }
+    
+            }
+            // strided data
+            else
+            {
+              // full vector?
+              if(TENSOR_SIZE == RAJA::internal::expt::TENSOR_FULL){
+    #ifdef RAJA_ENABLE_VECTOR_STATS
+              RAJA::tensor_stats::num_vector_store_strided ++;
+    #endif
+                self.store_strided(ptr, ref.m_stride[0]);
+              }
+              // partial
+              else{
+    #ifdef RAJA_ENABLE_VECTOR_STATS
+              RAJA::tensor_stats::num_vector_store_strided_n ++;
+    #endif
+                self.store_strided_n(ptr, ref.m_stride[0], ref.m_tile.m_size[0]);
+              }
+            }
+          }
+           
+
+      };
+     
+
 
 
       /*!

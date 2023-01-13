@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -21,7 +21,7 @@
  *  transposed and returned as a second matrix At.
  *
  *  RAJA features shown:
- *    - Basic usage of 'RAJA::expt::launch' abstractions for nested loops
+ *    - Basic usage of 'RAJA::launch' abstractions for nested loops
  *
  * If CUDA is enabled, CUDA unified memory is used.
  */
@@ -121,15 +121,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // using sequential loops. 
   //
   // _raja_mattranspose_start
-  using loop_policy_seq = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
-  using launch_policy_seq = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
+  using loop_policy_seq = RAJA::LoopPolicy<RAJA::loop_exec>;
+  using launch_policy_seq = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
-  RAJA::expt::launch<launch_policy_seq>(
-    RAJA::expt::Grid(), //Grid may be empty when running on the host
-    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+  RAJA::launch<launch_policy_seq>(
+    RAJA::LaunchParams(), //LaunchParams may be empty when running on the host
+    [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
-      RAJA::expt::loop<loop_policy_seq>(ctx, row_Range, [&] (int row) {
-        RAJA::expt::loop<loop_policy_seq>(ctx, col_Range, [&] (int col) {
+      RAJA::loop<loop_policy_seq>(ctx, row_Range, [&] (int row) {
+        RAJA::loop<loop_policy_seq>(ctx, col_Range, [&] (int col) {
 
             Atview(col, row) = Aview(row, col);
 
@@ -151,15 +151,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This policy loops sequentially while exposing parallelism on
   // one of the inner loops.
   //
-  using loop_policy_omp = RAJA::expt::LoopPolicy<RAJA::omp_for_exec>;
-  using launch_policy_omp = RAJA::expt::LaunchPolicy<RAJA::expt::omp_launch_t>;
+  using loop_policy_omp = RAJA::LoopPolicy<RAJA::omp_for_exec>;
+  using launch_policy_omp = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
-  RAJA::expt::launch<launch_policy_omp>(
-    RAJA::expt::Grid(), //Grid may be empty when running on the host
-    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+  RAJA::launch<launch_policy_omp>(
+    RAJA::LaunchParams(), //LaunchParams may be empty when running on the host
+    [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
-      RAJA::expt::loop<loop_policy_omp>(ctx, row_Range, [&] (int row) {
-        RAJA::expt::loop<loop_policy_seq>(ctx, col_Range, [&] (int col) {
+      RAJA::loop<loop_policy_omp>(ctx, row_Range, [&] (int row) {
+        RAJA::loop<loop_policy_seq>(ctx, col_Range, [&] (int col) {
 
             Atview(col, row) = Aview(row, col);
 
@@ -179,18 +179,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
   
   // _raja_mattranspose_cuda_start
-  using cuda_thread_x = RAJA::expt::LoopPolicy<RAJA::cuda_thread_x_loop>;
-  using cuda_thread_y = RAJA::expt::LoopPolicy<RAJA::cuda_thread_y_loop>;
+  using cuda_thread_x = RAJA::LoopPolicy<RAJA::cuda_thread_x_loop>;
+  using cuda_thread_y = RAJA::LoopPolicy<RAJA::cuda_thread_y_loop>;
 
   const bool async = false; //execute asynchronously
-  using launch_policy_cuda = RAJA::expt::LaunchPolicy<RAJA::expt::cuda_launch_t<async>>;
+  using launch_policy_cuda = RAJA::LaunchPolicy<RAJA::cuda_launch_t<async>>;
 
-  RAJA::expt::launch<launch_policy_cuda>(
-    RAJA::expt::Grid(RAJA::expt::Teams(1), RAJA::expt::Threads(16,16)),
-    [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx) {
+  RAJA::launch<launch_policy_cuda>
+    (RAJA::LaunchParams(RAJA::Teams(1), RAJA::Threads(16,16)),
+    [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
-      RAJA::expt::loop<cuda_thread_y>(ctx, row_Range, [&] (int row) {
-        RAJA::expt::loop<cuda_thread_x>(ctx, col_Range, [&] (int col) {
+      RAJA::loop<cuda_thread_y>(ctx, row_Range, [&] (int row) {
+        RAJA::loop<cuda_thread_x>(ctx, col_Range, [&] (int col) {
 
             Atview(col, row) = Aview(row, col);
 

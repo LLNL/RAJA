@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,7 +8,9 @@
 #ifndef __TEST_KERNEL_NESTED_LOOP_TYPES_HPP__
 #define __TEST_KERNEL_NESTED_LOOP_TYPES_HPP__
 
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_SYCL)
+#define DEVICE_KERNEL SyclKernel
+#elif defined(RAJA_ENABLE_HIP)
 #define DEVICE_KERNEL HipKernel
 #else
 #define DEVICE_KERNEL CudaKernel

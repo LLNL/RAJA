@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -167,7 +167,7 @@ struct MultiLambdaParamNestedLoopExec<DEPTH_3, POLICY_DATA> {
     >;
 };
 
-#if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP) or defined(RAJA_ENABLE_SYCL)
 
 template<typename POLICY_DATA>
 struct MultiLambdaParamNestedLoopExec<DEVICE_DEPTH_3, POLICY_DATA> {

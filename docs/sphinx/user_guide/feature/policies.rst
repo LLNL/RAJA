@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 .. ## and other RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -637,34 +637,37 @@ type. Atomic policy types are distinct from loop execution policy types.
            policy for the kernel in which the atomic operation is used. The
            following table summarizes RAJA atomic policies and usage.
 
-========================= ============= ========================================
-Atomic Policy             Loop Policies Brief description
-                          to Use With
-========================= ============= ========================================
-seq_atomic                seq_exec,     Atomic operation performed in a
-                          loop_exec     non-parallel (sequential) kernel.
-omp_atomic                any OpenMP    Atomic operation performed in an OpenMP.
-                          policy        multithreading or target kernel; i.e.,
-                                        apply ``omp atomic`` pragma.
-cuda/hip_atomic           any CUDA/HIP  Atomic operation performed in a CUDA/HIP
-                          policy        kernel.
-cuda/hip_atomic_explicit  any CUDA/HIP  Atomic operation performed in a CUDA/HIP
-                          policy        kernel that may also be used in a host
-                                        execution context. The atomic policy
-                                        takes a host atomic policy template
-                                        argument. See additional explanation 
-                                        and example below.
-builtin_atomic            seq_exec,     Compiler *builtin* atomic operation.
-                          loop_exec,
-                          any OpenMP
-                          policy
-auto_atomic               seq_exec,     Atomic operation *compatible* with loop
-                          loop_exec,    execution policy. See example below.
-                          any OpenMP    Can not be used inside cuda/hip
-                          policy,       explicit atomic policies.
-                          any CUDA/HIP
-                          policy
-========================= ============= ========================================
+============================= ============= ========================================
+Atomic Policy                 Loop Policies Brief description
+                              to Use With
+============================= ============= ========================================
+seq_atomic                    seq_exec,     Atomic operation performed in a
+                              loop_exec     non-parallel (sequential) kernel.
+omp_atomic                    any OpenMP    Atomic operation performed in an OpenMP.
+                              policy        multithreading or target kernel; i.e.,
+                                              apply ``omp atomic`` pragma.
+cuda/hip/sycl_atomic          any           Atomic operation performed in a
+                              CUDA/HIP/SYCL CUDA/HIP/SYCL kernel.
+                              policy        
+
+cuda/hip_atomic_explicit      any CUDA/HIP  Atomic operation performed in a CUDA/HIP
+                              policy        kernel that may also be used in a host
+                                            execution context. The atomic policy
+                                            takes a host atomic policy template
+                                            argument. See additional explanation 
+                                            and example below.
+builtin_atomic                seq_exec,     Compiler *builtin* atomic operation.
+                              loop_exec,
+                              any OpenMP
+                              policy
+auto_atomic                   seq_exec,     Atomic operation *compatible* with loop
+                              loop_exec,    execution policy. See example below.
+                              any OpenMP    Can not be used inside cuda/hip
+                              policy,       explicit atomic policies.
+                              any 
+                              CUDA/HIP/SYCL
+                              policy
+============================= ============= ========================================
 
 .. note:: The ``cuda_atomic_explicit`` and ``hip_atomic_explicit`` policies
           take a host atomic policy template parameter. They are intended to

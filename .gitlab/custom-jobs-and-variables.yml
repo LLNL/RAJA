@@ -1,6 +1,6 @@
 ###############################################################################
-# Copyright (c) 2022, Lawrence Livermore National Security, LLC and RADIUSS
-# project contributors. See the COPYRIGHT file for details.
+# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC and RADIUSS
+# project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (MIT)
 ###############################################################################
@@ -18,7 +18,7 @@ variables:
 # Arguments for job level allocation
   RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=45 --nodes=1"
 # Project specific variants for ruby
-  PROJECT_RUBY_VARIANTS: "+openmp "
+  PROJECT_RUBY_VARIANTS: "~shared +openmp +tests"
 # Project specific deps for ruby
   PROJECT_RUBY_DEPS: ""
 
@@ -28,16 +28,26 @@ variables:
 # Arguments for job level allocation
   CORONA_BUILD_AND_TEST_JOB_ALLOC: "--time-limit=45m --nodes=1"
 # Project specific variants for corona
-  PROJECT_CORONA_VARIANTS: "~openmp "
+  PROJECT_CORONA_VARIANTS: "~shared ~openmp +tests"
 # Project specific deps for corona
   PROJECT_CORONA_DEPS: "^blt@develop "
+
+# Tioga
+# Arguments for top level allocation
+  TIOGA_BUILD_AND_TEST_SHARED_ALLOC: "--time-limit=60m --nodes=1"
+# Arguments for job level allocation
+  TIOGA_BUILD_AND_TEST_JOB_ALLOC: "--time-limit=45m --nodes=1"
+# Project specific variants for corona
+  PROJECT_TIOGA_VARIANTS: "~shared ~openmp +tests"
+# Project specific deps for corona
+  PROJECT_TIOGA_DEPS: "^blt@develop "
 
 # Lassen and Butte use a different job scheduler (spectrum lsf) that does not
 # allow pre-allocation the same way slurm does.
 # Arguments for job level allocation
   LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 60"
 # Project specific variants for lassen
-  PROJECT_LASSEN_VARIANTS: "+openmp "
+  PROJECT_LASSEN_VARIANTS: "~shared +openmp +tests"
 # Project specific deps for lassen
   PROJECT_LASSEN_DEPS: ""
 

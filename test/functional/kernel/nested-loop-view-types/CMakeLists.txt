@@ -1,6 +1,6 @@
 ###############################################################################
-# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
-# and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -16,6 +16,7 @@ set(DIMTYPES 2D 3D)
 #
 # Note: KERNEL_BACKENDS is defined in ../CMakeLists.txt
 #
+
 foreach( BACKEND ${KERNEL_BACKENDS} )
   foreach( TESTTYPE ${TESTTYPES} )
     foreach( DIM ${DIMTYPES} )

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -102,6 +102,22 @@ using HipAtomicPols =
                RAJA::hip_atomic
             >;
 #endif  // RAJA_ENABLE_HIP
+
+#if defined(RAJA_ENABLE_SYCL)
+using SyclAtomicPols =
+  camp::list<
+#if defined(RAJA_TEST_EXHAUSTIVE)
+               RAJA::auto_atomic,
+               RAJA::sycl_atomic_explicit<RAJA::seq_atomic>,
+               RAJA::sycl_atomic_explicit<RAJA::loop_atomic>,
+               RAJA::sycl_atomic_explicit<RAJA::builtin_atomic>,
+#if defined(RAJA_ENABLE_OPENMP)
+               RAJA::sycl_atomic_explicit<RAJA::omp_atomic>,
+#endif
+#endif
+               RAJA::sycl_atomic
+            >;
+#endif  // RAJA_ENABLE_SYCL
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OpenMPTargetAtomicPols = OpenMPAtomicPols;

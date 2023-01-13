@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,7 +16,7 @@
 
 // set the layout alias here, then include the matrix header for the
 // given element type
-using TensorMatrixLayoutType = RAJA::@TENSOR_MATRIX_LAYOUT@Layout;
+using TensorMatrixLayoutType = RAJA::expt::@TENSOR_MATRIX_LAYOUT@Layout;
 
 #include "test-tensor-matrix-@TENSOR_ELEMENT_TYPE@.hpp"
 

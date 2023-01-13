@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -95,8 +95,53 @@ struct LaunchDims {
     launch_local.y = std::max(launch_local.y, local.y);
     launch_local.z = std::max(launch_local.z, local.z);
 
+    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+    // Global resource was not set, use the resource that was passed to forall
+    // Determine if the default SYCL res is being used
+    if (!q) {
+      camp::resources::Resource sycl_res = camp::resources::Sycl();
+      q = sycl_res.get<camp::resources::Sycl>().get_queue();
+    }
 
-// User gave group policy, use to calculate global space
+    cl::sycl::device dev = q->get_device();
+
+    auto max_work_group_size = dev.get_info< ::cl::sycl::info::device::max_work_group_size>();
+
+    if(launch_local.x > max_work_group_size) {
+      launch_local.x = max_work_group_size;
+    }
+    if(launch_local.y > max_work_group_size) {
+      launch_local.y = max_work_group_size;
+    }
+    if(launch_local.z > max_work_group_size) {
+      launch_local.z = max_work_group_size;
+    }
+
+
+    // Make sure the multiple of locals fits
+    // Prefer larger z -> y -> x
+    if(launch_local.x * launch_local.y * launch_local.z > max_work_group_size) {
+      int remaining = 1;
+      // local z cannot be > max_wrk from above
+      // if equal then remaining is 1, on handle < 
+      if(max_work_group_size > launch_local.z) {
+        // keep local z
+        remaining = max_work_group_size / launch_local.z;
+      }
+      if(remaining >= launch_local.y) {
+        // keep local y
+        remaining = remaining / launch_local.y;
+      } else {
+        launch_local.y = remaining;
+        remaining = remaining / launch_local.y;
+      }
+      if(remaining < launch_local.x) {
+        launch_local.x = remaining;
+      }
+    }
+
+
+    // User gave group policy, use to calculate global space
     if (group.x != 0 || group.y != 0 || group.z != 0) {
       sycl_dim_3_t launch_group {1,1,1};
       launch_group.x = std::max(launch_group.x, group.x);
@@ -113,9 +158,15 @@ struct LaunchDims {
     }
 
 
-    // Note: Work group allowable sizes depend on the device
-    //       Could query the device to set them
-    //       For now, error on bad work group size
+    if(launch_global.x % launch_local.x != 0) {
+      launch_global.x = ((launch_global.x / launch_local.x) + 1) * launch_local.x; 
+    }
+    if(launch_global.y % launch_local.y != 0) {
+      launch_global.y = ((launch_global.y / launch_local.y) + 1) * launch_local.y; 
+    }
+    if(launch_global.z % launch_local.z != 0) {
+      launch_global.z = ((launch_global.z / launch_local.z) + 1) * launch_local.z; 
+    }
 
     cl::sycl::range<3> ret_th = {launch_local.x, launch_local.y, launch_local.z};
     cl::sycl::range<3> ret_gl = {launch_global.x, launch_global.y, launch_global.z};

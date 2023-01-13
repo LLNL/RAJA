@@ -9,7 +9,7 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -164,6 +164,7 @@ void sort(Sorter sorter,
     const diff_type iterates_per_task = std::max(n/(2*max_threads), min_iterates_per_task);
 
     const diff_type requested_num_threads = std::min((n+iterates_per_task-1)/iterates_per_task, max_threads);
+    RAJA_UNUSED_VAR(requested_num_threads); // avoid warning in hip device code
 
 #pragma omp parallel num_threads(static_cast<int>(requested_num_threads))
 #pragma omp master
@@ -174,6 +175,7 @@ void sort(Sorter sorter,
 #else
 
     const diff_type requested_num_threads = std::min((n+min_iterates_per_task-1)/min_iterates_per_task, max_threads);
+    RAJA_UNUSED_VAR(requested_num_threads); // avoid warning in hip device code
 
 #pragma omp parallel num_threads(static_cast<int>(requested_num_threads))
     {

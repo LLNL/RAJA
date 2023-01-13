@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -47,6 +47,9 @@ namespace expt
         using operator_type = OPERATOR;
         using left_operand_type = LEFT_OPERAND;
         using right_operand_type = RIGHT_OPERAND;
+
+        using element_type = typename LEFT_OPERAND::element_type;
+        using index_type = typename LEFT_OPERAND::index_type;
 
         using operator_traits = OperatorTraits<LEFT_OPERAND, RIGHT_OPERAND>;
         using result_type = typename operator_traits::result_type;

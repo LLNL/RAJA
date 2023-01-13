@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -92,6 +92,14 @@ using HipForallIndexSetExecPols =
               RAJA::ExecPolicy<RAJA::seq_segit, RAJA::hip_exec<256>> >;
 
 using HipForallIndexSetReduceExecPols = HipForallIndexSetExecPols;
+#endif
+
+#if defined(RAJA_ENABLE_SYCL)
+using SyclForallIndexSetExecPols =
+  camp::list< RAJA::ExecPolicy<RAJA::seq_segit, RAJA::sycl_exec<128>>,
+              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::sycl_exec<256>> >;
+
+using SyclForallIndexSetReduceExecPols = SyclForallIndexSetExecPols;
 #endif
 
 #endif  // __RAJA_test_forall_indexset_execpol_HPP__

@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -148,7 +148,8 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
     auto r = resources::get_resource<HpExecPolicy>::type::get_default();
     forall_impl(r, HpExecPolicy{},
                 TypedRangeSegment<idx_t>(0, hp_len),
-                outer_wrapper);
+                outer_wrapper,
+                RAJA::expt::get_empty_forall_param_pack());
   }
 };
 

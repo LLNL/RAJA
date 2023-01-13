@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,7 +15,7 @@ option(RAJA_ENABLE_TBB "Build TBB support" Off)
 option(RAJA_ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(RAJA_ENABLE_SYCL "Build SYCL support" Off)
 
-option(RAJA_ENABLE_VECTORIZATION "Build experimental vectorization support" Off)
+option(RAJA_ENABLE_VECTORIZATION "Build experimental vectorization support" On)
 
 option(RAJA_ENABLE_REPRODUCERS "Build issue reproducers" Off)
 

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -34,16 +34,16 @@
  */
 
 #if defined(RAJA_ENABLE_CUDA)
-using device_launch = RAJA::expt::LaunchPolicy<RAJA::expt::cuda_launch_t<false>>;
-using device_inner_pol0 =  RAJA::expt::LoopPolicy<RAJA::cuda_thread_x_direct>;
-using device_inner_pol1 =  RAJA::expt::LoopPolicy<RAJA::cuda_thread_y_direct>;
-using device_flatten_pol =  RAJA::expt::LoopPolicy<RAJA::expt::cuda_flatten_block_threads_xy_direct>;
+using device_launch = RAJA::LaunchPolicy<RAJA::cuda_launch_t<false>>;
+using device_inner_pol0 =  RAJA::LoopPolicy<RAJA::cuda_thread_x_direct>;
+using device_inner_pol1 =  RAJA::LoopPolicy<RAJA::cuda_thread_y_direct>;
+using device_flatten_pol =  RAJA::LoopPolicy<RAJA::cuda_flatten_block_threads_xy_direct>;
 using reduce_policy = RAJA::cuda_reduce;
 #elif defined(RAJA_ENABLE_HIP)
-using device_launch = RAJA::expt::LaunchPolicy<RAJA::expt::hip_launch_t<false>>;
-using device_inner_pol0 =  RAJA::expt::LoopPolicy<RAJA::hip_thread_x_direct>;
-using device_inner_pol1 =  RAJA::expt::LoopPolicy<RAJA::hip_thread_y_direct>;
-using device_flatten_pol =  RAJA::expt::LoopPolicy<RAJA::expt::hip_flatten_block_threads_xy_direct>;
+using device_launch = RAJA::LaunchPolicy<RAJA::hip_launch_t<false>>;
+using device_inner_pol0 =  RAJA::LoopPolicy<RAJA::hip_thread_x_direct>;
+using device_inner_pol1 =  RAJA::LoopPolicy<RAJA::hip_thread_y_direct>;
+using device_flatten_pol =  RAJA::LoopPolicy<RAJA::hip_flatten_block_threads_xy_direct>;
 using reduce_policy = RAJA::hip_reduce;
 #endif
 
@@ -51,8 +51,8 @@ using reduce_policy = RAJA::hip_reduce;
  * Define device launch policies
  */
 
-using host_launch = RAJA::expt::LaunchPolicy<RAJA::expt::seq_launch_t>;
-using host_loop = RAJA::expt::LoopPolicy<RAJA::loop_exec>;
+using host_launch = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
+using host_loop = RAJA::LoopPolicy<RAJA::loop_exec>;
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -68,9 +68,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Configure grid size
   //
-  RAJA::expt::Grid grid(RAJA::expt::Teams(1),
-                        RAJA::expt::Threads(N, N),
-                        "Launch Flatten Kernel");
+  RAJA::LaunchParams launch_params(RAJA::Teams(1),
+                                   RAJA::Threads(N, N));
+
 
   //
   // Resource object for host, used to allocate memory
@@ -97,13 +97,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<int, RAJA::Layout<2>> d_A_2DView(d_A_ptr, N, N);
   RAJA::View<int, RAJA::Layout<1>> d_A_1DView(d_A_ptr, NN);
 
-
-  RAJA::expt::launch<device_launch>
-    (grid, [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
+  RAJA::launch<device_launch>
+    (launch_params, [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
      {
 
-       RAJA::expt::loop<device_inner_pol1>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
-         RAJA::expt::loop<device_inner_pol0>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
+       RAJA::loop<device_inner_pol1>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
+         RAJA::loop<device_inner_pol0>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
              d_A_2DView(j, i) = i + j;
            });
          });
@@ -112,7 +111,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
        // RAJA flatten policy will reshape a 2/3D thread team to 1D simplifying
        // accumulating memory contents
-       RAJA::expt::loop<device_flatten_pol>(ctx, RAJA::RangeSegment(0, NN), [&] (int i) {
+       RAJA::loop<device_flatten_pol>(ctx, RAJA::RangeSegment(0, NN), [&] (int i) {
            device_kernel_sum += d_A_1DView(i);
        });
 
@@ -126,12 +125,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<int, RAJA::Layout<2>> h_A_2DView(h_A_ptr, N, N);
   RAJA::View<int, RAJA::Layout<1>> h_A_1DView(h_A_ptr, NN);
 
-  RAJA::expt::launch<host_launch>
-    (grid, [=] RAJA_HOST_DEVICE (RAJA::expt::LaunchContext ctx)
+  RAJA::launch<host_launch>
+    (launch_params, [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
     {
 
-       RAJA::expt::loop<host_loop>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
-         RAJA::expt::loop<host_loop>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
+       RAJA::loop<host_loop>(ctx, RAJA::RangeSegment(0, N), [&] (int j) {
+         RAJA::loop<host_loop>(ctx, RAJA::RangeSegment(0, N), [&] (int i) {
              h_A_2DView(j, i) = i + j;
            });
          });
@@ -140,7 +139,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
        //As loops are dispatched as standard C loops we can revert to using
        //a regular loop_exec policy
-       RAJA::expt::loop<host_loop>(ctx, RAJA::RangeSegment(0, NN), [&] (int i) {
+       RAJA::loop<host_loop>(ctx, RAJA::RangeSegment(0, NN), [&] (int i) {
            host_kernel_sum += h_A_1DView(i);
        });
 

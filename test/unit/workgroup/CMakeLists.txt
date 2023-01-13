@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -74,6 +74,10 @@ if(RAJA_TEST_EXHAUSTIVE OR NOT RAJA_COMPILER MATCHES "RAJA_COMPILER_Intel")
 endif()
 
 set(Dispatcher_SUBTESTS Single)
+if(RAJA_ENABLE_TARGET_OPENMP)
+  # WorkGroup dispatcher for OpenMPTarget not implemented yet
+  list(REMOVE_ITEM BACKENDS OpenMPTarget)
+endif()
 buildunitworkgrouptest(Dispatcher    "${Dispatcher_SUBTESTS}"  "${DISPATCHERS}" "${BACKENDS}")
 
 set(WorkStorage_SUBTESTS Constructor Iterator InsertCall Multiple)
