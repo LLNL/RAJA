@@ -38,7 +38,7 @@ variables:
 # TODO: add a clean-up mechanism
   BUILD_ROOT: ${CI_PROJECT_DIR}
 # Override the list of branch that will skip the "draft PR test".
-  ALWAYS_RUN_LIST: "develop woptim/fix-draft-detection-develop"
+  ALWAYS_RUN_LIST: "develop main"
 
 # We organize the build-and-test stage in sub-pipelines. Each sub-pipeline
 # corresponds to a test batch on a given machine.
