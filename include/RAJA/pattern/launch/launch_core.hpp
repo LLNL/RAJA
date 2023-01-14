@@ -31,7 +31,7 @@
 //Odd dependecy with atomics is breaking CI builds
 //#include "RAJA/util/View.hpp"
 
-#if defined(RAJA_DEVICE_CODE) && !defined(RAJA_ENABLE_SYCL)
+#if defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE) && !defined(RAJA_ENABLE_SYCL)
 #define RAJA_TEAM_SHARED __shared__
 #else
 #define RAJA_TEAM_SHARED
@@ -201,11 +201,11 @@ public:
   RAJA_HOST_DEVICE
   void teamSync()
   {
-#if defined(RAJA_DEVICE_CODE) && defined(RAJA_ENABLE_SYCL)
+#if defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE) && defined(RAJA_ENABLE_SYCL)
     itm->barrier(sycl::access::fence_space::local_space);
 #endif
 
-#if defined(RAJA_DEVICE_CODE) && !defined(RAJA_ENABLE_SYCL)
+#if defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE) && !defined(RAJA_ENABLE_SYCL)
     __syncthreads();
 #endif
   }
@@ -362,7 +362,7 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
 }
 
 template<typename POLICY_LIST>
-#if defined(RAJA_DEVICE_CODE)
+#if defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE)
 using loop_policy = typename POLICY_LIST::device_policy_t;
 #else
 using loop_policy = typename POLICY_LIST::host_policy_t;
