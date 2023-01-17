@@ -955,7 +955,7 @@ public:
   //  reducer in host device lambda not being used on device.
   RAJA_HOST_DEVICE
   Reduce(const Reduce& other)
-#if !defined(RAJA_DEVICE_CODE)
+#if !defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE)
       : parent{other.parent},
 #else
       : parent{&other},
@@ -963,7 +963,7 @@ public:
         tally_or_val_ptr{other.tally_or_val_ptr},
         val(other.val)
   {
-#if !defined(RAJA_DEVICE_CODE)
+#if !defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE)
     if (parent) {
       if (val.setupForDevice()) {
         tally_or_val_ptr.val_ptr =
@@ -980,7 +980,7 @@ public:
   RAJA_HOST_DEVICE
   ~Reduce()
   {
-#if !defined(RAJA_DEVICE_CODE)
+#if !defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE)
     if (parent == this) {
       delete tally_or_val_ptr.list;
       tally_or_val_ptr.list = nullptr;
