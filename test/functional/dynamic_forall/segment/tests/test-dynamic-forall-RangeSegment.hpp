@@ -105,7 +105,7 @@ TYPED_TEST_P(DynamicForallRangeSegmentTest, RangeSegmentForall)
             (INDEX_TYPE(0), INDEX_TYPE(27), pol);
         }
   }
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_GPU_ACTIVE)
   else
   {
     int device_start = 2;
