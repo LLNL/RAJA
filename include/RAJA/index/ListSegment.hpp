@@ -230,7 +230,7 @@ public:
   RAJA_HOST_DEVICE void clear()
   {
 
-#if !defined(RAJA_DEVICE_CODE)
+#if !defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE)
     if (m_data != nullptr && m_owned == Owned) {
       m_resource->deallocate(m_data);
       delete m_resource;
