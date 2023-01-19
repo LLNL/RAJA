@@ -243,9 +243,11 @@ push it upstream to the `RADIUSS Spack Configs project <https://github.com/LLNL/
 `Spack project <https://github.com/spack/spack>`_. 
 
 The Spack package is used in RAJA GitLab CI testing and also by RAJA users who 
-use Spack to manage their third party library installations. We try to 
-maintain the RAJA Spack package in the Spack project to be as close as 
-possible to the one in the RADIUSS Spack Configs project, which may contain
+use Spack to manage their third party library installations. The RAJA Spack
+package that we use in our GitLab CI resides in the RADIUSS Spack Configs
+submodule. Typically, users will use the Spack package in the Spack repo.
+We try to maintain the RAJA Spack package in the Spack project to be as close 
+as possible to the one in the RADIUSS Spack Configs project, which may contain
 a few modifications specific to our GitLab CI testing.
 
 Like all Spack packages, the RAJA package is a file containing a Python class. 
@@ -315,16 +317,32 @@ The following list contains a description of items to update.
 
     respectively.
 
-    .. important:: Information that applies to specific build variants, CMake
-                   variables, etc. should be specified in the appropriate
-                   Python class function implementation in the package file.
-                   Specifically,
+    .. note:: Information that applies to specific build variants, CMake
+              variables, etc. should be specified in the appropriate
+              Python class function implementation in the package file.
+              Specifically,
 
-                     * the ``initconfig_compiler_entries`` function contains
-                       compiler options
-                     * the ``initconfig_hardware_entries`` function contains
-                       options hardware-based RAJA back-end support
-                     * the ``initconfig_package_entries`` function contains
-                       options for TPLs and build variants that are not
-                       specific to a compiler or hardware
+                * the ``initconfig_compiler_entries`` function contains
+                  compiler options
+                * the ``initconfig_hardware_entries`` function contains
+                  options hardware-based RAJA back-end support
+                * the ``initconfig_package_entries`` function contains
+                  options for TPLs and build variants that are not
+                  specific to a compiler or hardware
+
+One final point is worth noting. We try to add known conflicts to our Spack
+package as early as we can. For example, enabling OpenMP in a ROCm compiler
+build for HIP is only allowed in recent ROCm releases. So we include this
+conflict in our Spack package::
+
+  depends_on("rocprim", when="+rocm")
+    with when("+rocm @0.12.0:"):
+        ....
+        conflicts("+openmp", when="@:2022.03")
+
+This helps users avoid unknown conflicts and potential build or runtime 
+failures.
+
+.. important:: It is good practice to add known conflicts to the Spack 
+               package as soon as we know about them.
 

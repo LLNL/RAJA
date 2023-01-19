@@ -118,10 +118,11 @@ other projects. These include
     dependencies. Uberenv is a submodule in RAJA that lives in
     ``RAJA/scripts/uberenv/``.
   * `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_,
-    a collection of compiler and package Spack configurations that
-    is specific to LLNL LC platforms and used by multiple projects. RADIUSS
-    Spack Configs is a submodule in RAJA that lives in
-    ``RAJA/scripts/radiuss-spack-configs/``.
+    a collection of build configurations used by Spack to generate host-config
+    files for CMake to use in GitLab CI and Spack packages for various projects.
+    The build configurations are specific to LLNL LC platforms and used by 
+    multiple projects. RADIUSS Spack Configs is a submodule in RAJA that 
+    lives in ``RAJA/scripts/radiuss-spack-configs/``.
 
 The relationships among these packages in a project that uses them is 
 illustrated in the `RADIUSS Shared CI User Guide <https://radiuss-shared-ci.readthedocs.io/en/latest/sphinx/user_guide/index.html>`_. The guide also describes 
@@ -150,7 +151,7 @@ Briefly, these files play the following roles in our GitLab CI testing:
   * The ``RAJA/.gitlab-ci.yml`` file defines general information that applies
     to all GitLab testing configurations run by the RAJA project.
   * The ``.uberenv_config.json`` file defines the Spack version we use, where 
-    the RAJA Spack package lives, where the Spack specs live, etc.
+    the RAJA Spack package and others live, where the Spack specs live, etc.
   * Files in the ``RAJA/.gitlab`` directory describe which test pipelines
     are subscribed to that are defined in the 
     `RADIUSS Shared CI <https://github.com/LLNL/radiuss-shared-ci>`_ project, 
