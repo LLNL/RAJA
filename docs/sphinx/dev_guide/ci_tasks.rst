@@ -75,13 +75,19 @@ To add a shared configuration, it must be added to the appropriate
 `RADIUSS Shared CI <https://github.com/LLNL/radiuss-shared-ci>`_ project.
 Create a branch there, add the job entry, and create a pull request.
 
+A spec containing the compiler and version information for the machine must 
+exist in the `RADIUSS Spack Configs project <https://github.com/LLNL/radiuss-spack-configs>`_. If it does not exist there, create a branch, add the spec entry,
+and create a pull request. After the PR is merged, update the RADIUSS Spack
+Configs submodule in RAJA to be able to run it in GitLab CI.
+
 Modifying a configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To change an existing configuration, change the corresponding spec item, 
-such as the compiler version, or cuda version in the appropriate
+To change an existing configuration, change the relevant information in the 
+configuration, such variant(s) or target compute architecture, in the 
+appropriate 
 ``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` file. Make sure to 
-also modify the job label accordingly.
+also modify the job label, so it is descriptive of the configuration.
 
 To modify a shared configuration, it must be changed in the appropriate
 ``<MACHINE>-build-and-test.yml`` file in the 
