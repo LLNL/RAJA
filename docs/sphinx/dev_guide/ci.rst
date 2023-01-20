@@ -29,10 +29,10 @@ The CI tools used by the RAJA project are:
     more about our testing there.
 
   * **GitLab** instances in the Collaboration Zone (CZ) of the Livermore 
-    Computing (LC) Center run builds and tests in LC platform and compiler 
-    environments important to many RAJA user applications. Execution of RAJA CI 
-    pipelines on LC GitLab resources has restrictions, which are described 
-    below. If you have access to LC platforms, you can access additional 
+    Computing (LC) Center run builds and tests on LC HPC platforms using
+    software stacks (compilers, etc.) important to many RAJA user applications.
+    Execution of LC GitLab CI on LC resources has restrictions, which are 
+    described below. If you have access to LC platforms, you can access 
     information about
     `LC GitLab CI <https://lc.llnl.gov/confluence/display/GITLAB/GitLab+CI>`_
 
@@ -49,8 +49,8 @@ GitLab CI
 =========
 
 The GitLab CI instance used by the RAJA project lives in the Livermore 
-Computing (LC) Collaboration Zone (CZ). It runs builds and tests in LC 
-platform and compiler environments important to RAJA user applications at LLNL.
+Computing (LC) Collaboration Zone (CZ). It runs builds and tests using 
+machine and compiler environments important to RAJA user applications at LLNL.
 
 Constraints
 -----------
@@ -62,13 +62,14 @@ enabled on their GitHub accounts. When these requirements are satisfied,
 mirroring of a GitHub repo and triggering GitLab CI functionality from GitHub
 can be done. Otherwise, LC GitLab CI checks will not be run for a project. 
 For a compliant LLNL GitHub project, such as RAJA, auto-mirroring of the 
-GitHub repo on LC GitLab is done when changes are pushed to PR branches in the 
-RAJA GitHub project. If you have access to LC platforms, you can learn more 
-about `LC GitLab mirroring <https://lc.llnl.gov/confluence/pages/viewpage.action?pageId=662832265>`_.
+GitHub repo on LC GitLab is done every 30 minutes or so, triggering builds and
+tests on new changes pushed to the RAJA GitHub project. If you have access to 
+LC platforms, you can learn more about `LC GitLab mirroring <https://lc.llnl.gov/confluence/pages/viewpage.action?pageId=662832265>`_.
 
 **GitLab CI will not run for a PR branch on a fork of the RAJA repo.** We 
 manually manage contributions made on a fork of the RAJA repo using the 
-procedure described in :ref:`contributing-label`. 
+procedure described in :ref:`contributing-label`.
+
 .. _gitlab_ci_workflow-label:
 
 GitLab CI (LC) Testing Workflow
@@ -78,18 +79,22 @@ The figure below shows the high-level steps in the RAJA GitLab CI testing
 process. The main steps, which we will discuss in more detail later, are:
 
   #. A *mirror* of the RAJA GitHub repo in the RAJA LC CZ GitLab project is 
-     updated whenever the RAJA ``develop`` or ``main`` branches are changed 
-     as well as when any PR branch in the RAJA GitHub project is changed. 
+     updated automatically after the RAJA ``develop`` or ``main`` branches 
+     are changed as well as when any PR branch in the RAJA GitHub project is 
+     changed. There may be a delay in the mirroring, since it is not 
+     synhronous with changes to the RAJA GitHub project.
   #. GitLab launches CI test pipelines. While running, the execution and 
      pass/fail status may be viewed and monitored in the GitLab CI GUI
      or in the RAJA GitHub project checks section for a PR.
   #. For each platform and compiler combination,
-     `Spack <https://github.com/spack/spack>`_ is used to generate a build 
-     configuration in the form of a CMake cache file, or *host-config* file.
+     `Spack <https://github.com/spack/spack>`_ builds RAJA dependencies and
+     generates a configuration in the form of a CMake cache file, or 
+     *host-config* file.
   #. A host-config file is passed to CMake, which configures a RAJA build 
      space.  Then, RAJA and its tests are compiled.
   #. Next, the RAJA tests are run.
-  #. When a test pipeline completes, results are reported in GitLab.
+  #. When a test pipeline completes, GitLab sends a request to GitHub to update
+     the status of GitLab CI checks.
 
 .. figure:: ./figures/RAJA-Gitlab-Workflow2.png
 
