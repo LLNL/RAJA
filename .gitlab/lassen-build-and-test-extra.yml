@@ -101,17 +101,17 @@
 ##    allow_failure: true
 ##    extends: .build_and_test_on_lassen
 
-# Overriding shared spec: Longer allocation
+# Overriding shared spec: Longer allocation + extra flags
 xl_2022_08_19_cuda_11_2_0:
   variables:
-    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 ^cuda@11.2.0 ${PROJECT_LASSEN_DEPS}"
+    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags==\"-qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" ^cuda@11.2.0 ${PROJECT_LASSEN_DEPS}"
     LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 120"
   extends: .build_and_test_on_lassen
 
-# Overriding shared spec: Longer allocation
+# Overriding shared spec: Longer allocation + extra flags
 xl_2022_08_19_cuda_11_7_0:
   variables:
-    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 ^cuda@11.7.0 ${PROJECT_LASSEN_DEPS}"
+    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags==\"-qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" ^cuda@11.7.0 ${PROJECT_LASSEN_DEPS}"
     LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 120"
   extends: .build_and_test_on_lassen
 
