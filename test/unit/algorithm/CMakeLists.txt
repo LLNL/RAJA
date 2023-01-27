@@ -64,18 +64,18 @@ macro(RAJA_GENERATE_ALGORITHM_UTIL_SORT_TESTS SORT_BACKEND_in SORT_SIZE_in UTIL_
                     test-algorithm-util-sort-${UTIL_SORT}-${SORT_BACKEND}.cpp )
 
     #Some tests are known to fail for Hip, mark those tests (Will not be run in Gitlab CI)
-    if(${SORT_BACKEND} STREQUAL "Hip" AND (${UTIL_SORT} STREQUAL "Heap" OR 
-	                                   ${UTIL_SORT} STREQUAL "Insertion" OR
-					   ${UTIL_SORT} STREQUAL "Intro"))
+    if(${SORT_BACKEND} STREQUAL "Hip" AND (${UTIL_SORT} STREQUAL "Heap" OR
+                                           ${UTIL_SORT} STREQUAL "Insertion" OR
+                                           ${UTIL_SORT} STREQUAL "Intro"))
         raja_add_test( NAME test-algorithm-util-sort-Known-Hip-Failure-${UTIL_SORT}-${SORT_BACKEND}
                    SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-algorithm-util-sort-${UTIL_SORT}-${SORT_BACKEND}.cpp )
-        
+
         target_include_directories(test-algorithm-util-sort-Known-Hip-Failure-${UTIL_SORT}-${SORT_BACKEND}.exe
                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     else()
         raja_add_test( NAME test-algorithm-util-sort-${UTIL_SORT}-${SORT_BACKEND}
                    SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-algorithm-util-sort-${UTIL_SORT}-${SORT_BACKEND}.cpp )
-        
+
         target_include_directories(test-algorithm-util-sort-${UTIL_SORT}-${SORT_BACKEND}.exe
                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     endif()
