@@ -101,6 +101,20 @@
 ##    allow_failure: true
 ##    extends: .build_and_test_on_lassen
 
+# Overriding shared spec: Longer allocation
+xl_2022_08_19_cuda_11_2_0:
+  variables:
+    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 ^cuda@11.2.0 ${PROJECT_LASSEN_DEPS}"
+    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 120"
+  extends: .build_and_test_on_lassen
+
+# Overriding shared spec: Longer allocation
+xl_2022_08_19_cuda_11_7_0:
+  variables:
+    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 ^cuda@11.7.0 ${PROJECT_LASSEN_DEPS}"
+    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 120"
+  extends: .build_and_test_on_lassen
+
 
 ############
 # Extra jobs
