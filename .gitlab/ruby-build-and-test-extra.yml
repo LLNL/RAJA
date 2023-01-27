@@ -40,13 +40,13 @@ clang_14_0_4_openmp_off:
 
 gcc_10_2_1_openmp_default:
   variables:
-    SPEC: " ~shared +tests %gcc@10.3.1"
+    SPEC: " ~shared +tests %gcc@10.2.1"
     RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
   extends: .build_and_test_on_ruby
 
-icpc_19_1_2:
+icpc_19_1_2_gcc_8_3_1:
   variables:
-    SPEC: " ~shared +openmp +tests %intel@19.1.2"
+    SPEC: " ~shared +openmp +tests %intel@19.1.2.gcc.8.3.1"
     RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=40 --nodes=1"
   extends: .build_and_test_on_ruby
 
