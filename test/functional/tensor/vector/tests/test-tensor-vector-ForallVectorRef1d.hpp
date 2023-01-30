@@ -38,10 +38,6 @@ void ForallVectorRef1dImpl()
     C[i] = 0.0;
   }
 
-  tensor_copy_to_device<policy_t>(A_ptr, A);
-  tensor_copy_to_device<policy_t>(B_ptr, B);
-  tensor_copy_to_device<policy_t>(C_ptr, C);
-
   RAJA::View<element_t, RAJA::Layout<1>> X(A.data(), N);
   RAJA::View<element_t, RAJA::Layout<1>> Y(B.data(), N);
   RAJA::View<element_t, RAJA::Layout<1>> Z(C.data(), N);
@@ -54,12 +50,15 @@ void ForallVectorRef1dImpl()
 
   auto all = idx_t::all();
 
+  // evaluate on all() range
+  tensor_copy_to_device<policy_t>(A_ptr, A);
+  tensor_copy_to_device<policy_t>(B_ptr, B);
+  tensor_copy_to_device<policy_t>(C_ptr, C);
+
   tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
     Z_d[all] = 3 + (X_d[all]*(5/Y_d[all])) + 9;
   });
 
-  tensor_copy_to_host<policy_t>(A, A_ptr);
-  tensor_copy_to_host<policy_t>(B, B_ptr);
   tensor_copy_to_host<policy_t>(C, C_ptr);
 
 //  for(size_t i = 0;i < N; ++ i){
@@ -72,6 +71,24 @@ void ForallVectorRef1dImpl()
   }
 
 
+  // evaluate complex left side division on all() range
+  for(size_t i = 0;i < N; ++ i){
+    C[i] = 0.0;
+  }
+
+  tensor_copy_to_device<policy_t>(C_ptr, C);
+
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+    Z_d[all] = 3 + ((X_d[all]*Y_d[all])/Y_d[all]) + 9;
+  });
+
+  tensor_copy_to_host<policy_t>(C, C_ptr);
+
+  for(size_t i = 0;i < N;i ++){
+    ASSERT_SCALAR_EQ(element_t(3+((A[i]*B[i])/B[i]))+9, C[i]);
+  }
+
+  // evaluate on a subrange [N/2, N)
   for(size_t i = 0;i < N; ++ i){
     C[i] = 0.0;
   }
