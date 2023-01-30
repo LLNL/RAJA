@@ -68,13 +68,13 @@ namespace expt
         return self_type(begin, value_type(stripIndexType(end-begin)));
       }
 
-      template<value_type BEGIN, value_type END>
+      template<value_type TBEGIN, value_type TEND>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
       constexpr
-      StaticTensorIndex<StaticTensorIndexInner<IDX,TENSOR_TYPE,DIM,BEGIN,END-BEGIN>> static_range(){
-        return StaticTensorIndex<StaticTensorIndexInner<IDX,TENSOR_TYPE,DIM,BEGIN,END-BEGIN>>();
+      StaticTensorIndex<StaticTensorIndexInner<IDX,TENSOR_TYPE,DIM,TBEGIN,TEND-TBEGIN>> static_range(){
+        return StaticTensorIndex<StaticTensorIndexInner<IDX,TENSOR_TYPE,DIM,TBEGIN,TEND-TBEGIN>>();
       }
 
 
