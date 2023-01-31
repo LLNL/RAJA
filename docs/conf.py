@@ -105,7 +105,7 @@ language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_readthedocs']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -334,7 +334,7 @@ texinfo_documents = [
 # Only do this on readthedocs
 def gendoxy(app, exception):
     if read_the_docs_build:
-        buildpath=os.path.join(conf_directory,"_build/html/doxygen/html")
+        buildpath=os.path.join(conf_directory,"_readthedocs/html/doxygen/html")
         if (os.path.isdir(buildpath) == 0):
             os.makedirs(buildpath)
 
