@@ -334,7 +334,7 @@ texinfo_documents = [
 # Only do this on readthedocs
 def gendoxy(app, exception):
     if read_the_docs_build:
-        buildpath=os.path.join(conf_directory,"_build/html/doxygen/html")
+        buildpath=os.path.join(conf_directory,"_readthedocs/html/doxygen/html")
         if (os.path.isdir(buildpath) == 0):
             os.makedirs(buildpath)
 
