@@ -75,11 +75,6 @@ To add a shared configuration, it must be added to the appropriate
 `RADIUSS Shared CI <https://github.com/LLNL/radiuss-shared-ci>`_ project.
 Create a branch there, add the job entry, and create a pull request.
 
-A spec containing the compiler and version information for the machine must 
-exist in the `RADIUSS Spack Configs project <https://github.com/LLNL/radiuss-spack-configs>`_. If it does not exist there, create a branch, add the spec entry,
-and create a pull request. After the PR is merged, update the RADIUSS Spack
-Configs submodule in RAJA to be able to run it in GitLab CI.
-
 Modifying a configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -110,7 +105,7 @@ Create a branch there, modify the job entry, and create a pull request.
 Changing run parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The parameters for each system/system-type on which we run GitLab CI for
+The parameters for each system/scheduler on which we run GitLab CI for
 RAJA, such as job time limits, resource allocations, etc. are defined in the 
 ``RAJA/.gitlab/custom-jobs-and-variables.yml`` file. This information can
 remain as is, for the most part, and should not be changed unless absolutely 
@@ -130,8 +125,8 @@ For example:
     RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
   extends: .build_and_test_on_ruby
 
-This example sets the build and test allocation time to 60 minutes and to 
-run on one node. 
+This example sets the build and test allocation time to 60 minutes and the
+the run resource to one node.
 
 Allowing failures
 ^^^^^^^^^^^^^^^^^^
@@ -148,6 +143,12 @@ annotate the job for this. For example:
     extends: .build_and_test_on_lassen
     allow_failure: true
 
+.. important:: When a shared job needs to be modified for RAJA specifically, 
+               we call that "overriding": The job label must be kept the same 
+               as in the ``<MACHINE>-build-and-test.yml`` file in the 
+               `RADIUSS Shared CI <https://github.com/LLNL/radiuss-shared-ci>`_, 
+               and the job implementation can be adapted. If you override a
+               shared job, please add a comment to describe the change.
 
 =================
 Azure CI Tasks

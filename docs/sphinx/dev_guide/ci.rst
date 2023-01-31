@@ -93,8 +93,8 @@ process. The main steps, which we will discuss in more detail later, are:
   #. A host-config file is passed to CMake, which configures a RAJA build 
      space.  Then, RAJA and its tests are compiled.
   #. Next, the RAJA tests are run.
-  #. When a test pipeline completes, GitLab sends a request to GitHub to update
-     the status of GitLab CI checks.
+  #. When test pipelines complete, results are reported in GitLab.
+  #. Lastly, Gitlab reports to GitHub to show the status of checks there.
 
 .. figure:: ./figures/RAJA-Gitlab-Workflow2.png
 
@@ -120,8 +120,8 @@ other projects. These include
   * `Spack <https://github.com/spack/spack>`_, a widely used
     multi-platform package manager that builds and installs software stacks.
   * `Uberenv <https://github.com/LLNL/uberenv>`_, a Python script
-    that helps to automate use of Spack and other tools for building third-party
-    dependencies. Uberenv is a submodule in RAJA that lives in
+    that helps to automate the use of Spack and other tools for building 
+    third-party dependencies. Uberenv is a submodule in RAJA that lives in
     ``RAJA/scripts/uberenv/``.
   * `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_,
     a collection of build configurations used by Spack to generate host-config
@@ -131,12 +131,13 @@ other projects. These include
     maintained in this project. RADIUSS Spack Configs is a submodule in RAJA 
     that lives in ``RAJA/scripts/radiuss-spack-configs/``.
 
-The relationships among these packages in a project that uses them is 
+The relationships among these dependencies in a project that uses them is 
 illustrated in the `RADIUSS Shared CI User Guide <https://radiuss-shared-ci.readthedocs.io/en/latest/sphinx/user_guide/index.html>`_. The guide also describes 
 how the framework works and how to set up a project to use it.
 
-In the next several sections, we describe files in the RAJA repo that are
-specific to the RAJA project.
+In the rest of the this section, we describe files in the RAJA repo that are
+used to configure and customize the shared CI framework specifically for the 
+RAJA project.
 
 .. _gitlab_ci_files-label:
 
@@ -155,8 +156,10 @@ support LC GitLab CI testing.
 
 Briefly, these files play the following roles in our GitLab CI testing:
 
-  * The ``RAJA/.gitlab-ci.yml`` file defines general information that applies
-    to all GitLab CI test jobs run by the RAJA project.
+  * The ``RAJA/.gitlab-ci.yml`` file is the root file for GitLab CI 
+    configuration. We place jobs is small pipelines described by separate 
+    files that are included by this one. Global variables can also be defined 
+    here.
   * The ``.uberenv_config.json`` file defines the Spack version we use, where 
     Spack packages live, etc.
   * Files in the ``RAJA/.gitlab`` directory define test pipelines that RAJA
@@ -169,7 +172,7 @@ Briefly, these files play the following roles in our GitLab CI testing:
     and test process and commands that are run during it.
 
 In the following sections, we discuss how these files are used in the 
-steps in the RAJA GitLab CI testing process summarized above.
+steps of the RAJA GitLab CI testing process summarized above.
 
 .. _gitlab_ci_pipelines-label:
 
