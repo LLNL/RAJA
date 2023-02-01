@@ -3,7 +3,7 @@
 # See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
 
 # Required
-version: 2
+#version: 2
 
 # Print tree
 build:
@@ -22,12 +22,12 @@ build:
 sphinx:
   configuration: docs/conf.py
 
-# Optionally build docs in add'l formats such as PDF and ePub 
+# Optionally build docs in add'l formats such as PDF and ePub
 #formats: all
 
 # Optionally set the version of Python and requirements to build the docs
 
 python:
-  version: 3.7
+#  version: 3.7
   install:
     - requirements: docs/requirements.txt
