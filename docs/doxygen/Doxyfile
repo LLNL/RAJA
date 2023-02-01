@@ -22,7 +22,7 @@ PROJECT_NAME           = RAJA
 PROJECT_NUMBER         = 
 PROJECT_BRIEF          = "RAJA provides a collection of platform portability abstractions for C++ HPC applications."
 PROJECT_LOGO           =
-OUTPUT_DIRECTORY       = ./_build/html/doxygen
+OUTPUT_DIRECTORY       = ./_readthedocs/html/doxygen
 CREATE_SUBDIRS         = NO
 ALLOW_UNICODE_NAMES    = NO
 
