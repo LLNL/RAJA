@@ -32,7 +32,7 @@ if read_the_docs_build:
     with open('./doxygen/Doxyfile.in', 'w') as f:
         f.write(fdata)
     with open('./doxygen/Doxyfile.in', 'a') as f:
-        f.write("\nOUTPUT_DIRECTORY=./_readthedocs/html/doxygen")
+        f.write("\nOUTPUT_DIRECTORY=../_readthedocs/html/doxygen")
 
     # Call doxygen
     from subprocess import call
