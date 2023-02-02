@@ -364,7 +364,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 
 #if (defined(_WIN32) || defined(_WIN64)) && !defined(RAJA_WIN_STATIC_BUILD)
-#ifdef RAJASHAREDDLL_EXPORTS
+#ifdef RAJA_EXPORTS
 #define RAJASHAREDDLL_API __declspec(dllexport)
 #else
 #define RAJASHAREDDLL_API __declspec(dllimport)

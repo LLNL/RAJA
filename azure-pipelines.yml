@@ -3,7 +3,7 @@ jobs:
   strategy:
     matrix:
       shared:
-        SHARED_ARGS: '-DBUILD_SHARED_LIBS=On -DCMAKE_CXX_FLAGS="/DRAJASHAREDDLL_EXPORTS" '
+        SHARED_ARGS: '-DBUILD_SHARED_LIBS=On'
       static:
         SHARED_ARGS: '-DBUILD_SHARED_LIBS=Off'
   pool:
