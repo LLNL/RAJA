@@ -643,9 +643,9 @@ Atomic Policy                 Loop Policies Brief description
 ============================= ============= ========================================
 seq_atomic                    seq_exec,     Atomic operation performed in a
                               loop_exec     non-parallel (sequential) kernel.
-omp_atomic                    any OpenMP    Atomic operation performed in an OpenMP.
-                              policy        multithreading or target kernel; i.e.,
-                                              apply ``omp atomic`` pragma.
+omp_atomic                    any OpenMP    Atomic operation in OpenM kernel.P
+                              policy        multithreading or target kernel; 
+                                            i.e., apply ``omp atomic`` pragma.
 cuda/hip/sycl_atomic          any           Atomic operation performed in a
                               CUDA/HIP/SYCL CUDA/HIP/SYCL kernel.
                               policy        

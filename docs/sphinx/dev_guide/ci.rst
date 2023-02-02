@@ -252,7 +252,7 @@ defines a RAJA job with desul atomics enabled to be run on the ruby machine.
 .. important:: Each base compiler configuration that is used in GitLab CI 
                testing must have a Spack spec defined for it in the appropriate
                file for the machine that it will be tested on in the 
-               `RADIUSS Spack Configs https://github.com/LLNL/radiuss-spack-configs>`_ project.
+               `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_ project.
 
 .. _gitlab_ci_running-label:
 

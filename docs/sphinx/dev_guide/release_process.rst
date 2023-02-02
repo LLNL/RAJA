@@ -176,7 +176,7 @@ will address the issue in both the develop and main branches.
 
 A hotfix branch is treated like a release candidate branch and it is used to 
 generate a *patch release* following the same basic process that is described 
-in :ref:`_release-label`.
+in :ref:`release-label`.
 
 For completeness, the key steps for performing a hotfix (patch) release are:
 
