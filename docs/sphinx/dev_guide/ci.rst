@@ -94,7 +94,7 @@ process. The main steps, which we will discuss in more detail later, are:
      space.  Then, RAJA and its tests are compiled.
   #. Next, the RAJA tests are run.
   #. When test pipelines complete, results are reported in GitLab.
-  #. Lastly, Gitlab reports to GitHub to show the status of checks there.
+  #. Lastly, GitLab reports to GitHub to show the status of checks there.
 
 .. figure:: ./figures/RAJA-Gitlab-Workflow2.png
 
@@ -249,7 +249,7 @@ are also defined in the
 
 defines a RAJA job with desul atomics enabled to be run on the ruby machine.
 
-.. important:: Each base compiler configuration that is used in Gitlab CI 
+.. important:: Each base compiler configuration that is used in GitLab CI 
                testing must have a Spack spec defined for it in the appropriate
                file for the machine that it will be tested on in the 
                `RADIUSS Spack Configs https://github.com/LLNL/radiuss-spack-configs>`_ project.
