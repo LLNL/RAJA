@@ -5,18 +5,20 @@
 # Required
 version: 2
 
+##
+## Code for debugging directory structure in readthedocs 
+## to fix broken links, etc.
+##
 # Print tree
-build:
-  os: ubuntu-20.04
-  apt_packages:
-    - tree
-  tools:
-    python: "3.7"
-  jobs:
-    post_build:
-      #- tree /home/docs/checkouts/readthedocs.org/user_builds/raja/checkouts/cwtask-doxy-patch/
-      #- tree Not found? The directory or the command?
-      - tree -J
+#build:
+#  os: ubuntu-20.04
+#  apt_packages:
+#    - tree
+#  tools:
+#    python: "3.7"
+#  jobs:
+#    post_build:
+#      - tree -J
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
@@ -27,6 +29,6 @@ sphinx:
 
 # Optionally set the version of Python and requirements to build the docs
 python:
-#  version: 3.7
+  version: 3.7
   install:
     - requirements: docs/requirements.txt
