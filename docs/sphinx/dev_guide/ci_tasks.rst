@@ -162,7 +162,7 @@ Changing Builds/Container Images
 The builds we run in Azure are defined in the `RAJA/azure-pipelines.yml <https://github.com/LLNL/RAJA/blob/develop/azure-pipelines.yml>`_ file.
   
 Linux/Docker
-............
+^^^^^^^^^^^^^
 
 To update or add a new compiler / job to Azure CI we need to edit both ``azure-pipelines.yml`` and ``Dockerfile``.
 
@@ -194,8 +194,8 @@ The base containers are shared across multiple projects and are regularly rebuil
 
 Check `here <https://rse-ops.github.io/docker-images/>`_ for a list of all currently available RSE-Ops containers. Please see the `RSE-Ops Containers Project <https://github.com/rse-ops/docker-images>`_ on GitHub to get new containers built that aren't yet available.
 
-Windows / MacOs
-...............
+Windows / MacOS
+^^^^^^^^^^^^^^^^
 
 We run our Windows / MacOS builds directly on the Azure virtual machine instances. In order to update the Windows / MacOS instance we can change the ``pool`` under ``-job: Windows`` or ``-job: Mac``::
   
@@ -213,7 +213,7 @@ Changing Build/Run Parameters
 -----------------------------
 
 Linux/Docker
-............
+^^^^^^^^^^^^^^
 
 We can edit the build and run configurations of each docker build, in the ``RUN`` command. Such as adding CMake options or changing the parallel build value of ``make -j N`` for adjusting throughput.
 
@@ -236,7 +236,7 @@ Each base image is built using `spack <https://github.com/spack/spack>`_. For th
       source /opt/view/setvars.sh 
 
 Windows / MacOS
-...............
+^^^^^^^^^^^^^^^^^
 
 Windows and MacOS build / run parameters can be configured directly in ``azure-pipelines.yml``. CMake options can be configured with ``CMAKE_EXTRA_FLAGS`` for each job. The ``-j`` value can also be edited directly in the Azure ``script`` definitions for each job.
 
