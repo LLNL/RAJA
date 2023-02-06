@@ -246,9 +246,9 @@ The Spack package is used in RAJA GitLab CI testing and also by RAJA users who
 use Spack to manage their third party library installations. The RAJA Spack
 package that we use in our GitLab CI resides in the RADIUSS Spack Configs
 submodule. Typically, users will use the Spack package in the Spack repo.
-We try to maintain the RAJA Spack package in the Spack project to be as close 
+We maintain the RAJA Spack package in the Spack project to be as close 
 as possible to the one in the RADIUSS Spack Configs project, which may contain
-a few modifications specific to our GitLab CI testing.
+minor modifications specific to our GitLab CI testing.
 
 Like all Spack packages, the RAJA package is a file containing a Python class. 
 The following list contains a description of items to update.
