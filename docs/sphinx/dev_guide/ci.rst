@@ -12,168 +12,260 @@
 Continuous Integration (CI) Testing
 ************************************
 
-.. important:: * All CI test checks must pass before a pull request can be
-                 merged.
-               * The status (pass/fail and run) for all checks can be viewed by
-                 clicking the appropriate link in the **checks** section of a
-                 GitHub pull request.
+.. important:: * All CI checks must pass before a pull request can be merged.
+               * The status (running and pass/fail) for all checks can be 
+                 viewed by clicking the appropriate link in the **checks** 
+                 section of a GitHub pull request.
 
-The CI tools used by the RAJA project, and which integrate with GitHub are:
+The CI tools used by the RAJA project are:
 
   * **Azure Pipelines** runs builds and tests for Linux, Windows, and MacOS 
     environments using recent versions of various compilers. While we do GPU 
     builds for CUDA, HIP, and SYCL on Azure, RAJA tests are only run for 
-    CPU-only pipelines. See the 
-    `RAJA Azure DevOps <https://dev.azure.com/llnl/RAJA>`_ project to learn 
+    CPU-only pipelines. Docker container images we use for the Linux testing
+    are maintained in the 
+    `RSE Ops Project <https://github.com/rse-ops/docker-images>`_. Please see 
+    the `RAJA Azure DevOps <https://dev.azure.com/llnl/RAJA>`_ project to learn 
     more about our testing there.
 
-  * **Gitlab** instances in the Livermore Computing (LC) Center
-    runs builds and tests in LC resource and compiler environments
-    important to many RAJA user applications. Execution of RAJA CI 
-    pipelines on LC Gitlab resources has restrictions described below. If 
-    you have access to LC resources, you can access additional information about
+  * **GitLab** instances in the Collaboration Zone (CZ) of the Livermore 
+    Computing (LC) Center run builds and tests on LC HPC platforms using
+    software stacks (compilers, etc.) important to many RAJA user applications.
+    Execution of LC GitLab CI on LC resources has restrictions, which are 
+    described below. If you have access to LC platforms, you can access 
+    information about
     `LC GitLab CI <https://lc.llnl.gov/confluence/display/GITLAB/GitLab+CI>`_
 
-The tools automatically run RAJA builds and tests when a PR is created and 
-when changes are pushed to a PR branch.
+The tools integrate with the RAJA GitHub project and automatically run RAJA 
+builds and tests when a PR is created and when changes are pushed to a PR 
+branch.
 
 The following sections describe basic elements of the operation of the CI tools.
 
 .. _gitlab_ci-label:
 
 =========
-Gitlab CI
+GitLab CI
 =========
 
-The Gitlab CI instance used by the RAJA project lives in the Livermore 
-Computing (LC) Collaboration Zone (CZ). It runs builds and tests in LC 
-resource and compiler environments important to RAJA user applications at LLNL.
+The GitLab CI instance used by the RAJA project lives in the Livermore 
+Computing (LC) Collaboration Zone (CZ). It runs builds and tests using 
+machine and compiler environments important to RAJA user applications at LLNL.
 
 Constraints
 -----------
 
-Running Gitlab CI on Livermore Computing (LC) resources is constrained by LC 
+Running GitLab CI on Livermore Computing (LC) platforms is constrained by LC 
 security policies. The policies require that all members of a GitHub project 
 be members of the LLNL GitHub organization and have two-factor authentication 
-enabled on their GitHub accounts to automatically mirror a GitHub repo and
-trigger Gitlab CI functionality from GitHub. For compliant LLNL GitHub projects,
-auto-mirroring of the GitHub repo on LC Gitlab is done when changes are pushed 
-to PRs for branches in the RAJA repo, but not for PRs for a branch on a fork of
-the repo. An alternative procedure we use to handle this is described in 
-:ref:`contributing-label`. If you have access to LC resources, you can learn
-more about `LC Gitlab mirroring <https://lc.llnl.gov/confluence/pages/viewpage.action?pageId=662832265>`_.
+enabled on their GitHub accounts. When these requirements are satisfied, 
+mirroring of a GitHub repo and triggering GitLab CI functionality from GitHub
+can be done. Otherwise, LC GitLab CI checks will not be run for a project. 
+For a compliant LLNL GitHub project, such as RAJA, auto-mirroring of the 
+GitHub repo on LC GitLab is done every 30 minutes or so, triggering builds and
+tests on new changes pushed to the RAJA GitHub project. If you have access to 
+LC platforms, you can learn more about `LC GitLab mirroring <https://lc.llnl.gov/confluence/pages/viewpage.action?pageId=662832265>`_.
 
-Gitlab CI (LC) Testing Workflow
+**GitLab CI will not run for a PR branch on a fork of the RAJA repo.** We 
+manually manage contributions made on a fork of the RAJA repo using the 
+procedure described in :ref:`contributing-label`.
+
+.. _gitlab_ci_workflow-label:
+
+GitLab CI (LC) Testing Workflow
 --------------------------------------
 
-The figure below shows the high-level steps in the RAJA Gitlab CI testing 
+The figure below shows the high-level steps in the RAJA GitLab CI testing 
 process. The main steps, which we will discuss in more detail later, are:
 
-  #. A *mirror* of the RAJA GitHub repo in the RAJA Gitlab project is updated
-     whenever the RAJA ``develop`` or ``main`` branches are changed as well
-     as when any PR branch in the RAJA GitHub project is changed. 
-  #. Gitlab launches CI test pipelines. While running, the execution and 
-     pass/fail status may be viewed and monitored in the Gitlab CI GUI.
-  #. For each resource and compiler combination,
-     `Spack <https://github.com/spack/spack>`_ is used to generate a build 
-     configuration in the form of a CMake cache file, or *host-config* file.
+  #. A *mirror* of the RAJA GitHub repo in the RAJA LC CZ GitLab project is 
+     updated automatically after the RAJA ``develop`` or ``main`` branches 
+     are changed as well as when any PR branch in the RAJA GitHub project is 
+     changed. There may be a delay in the mirroring, since it is not 
+     synhronous with changes to the RAJA GitHub project.
+  #. GitLab launches CI test pipelines. While running, the execution and 
+     pass/fail status may be viewed and monitored in the GitLab CI GUI
+     or in the RAJA GitHub project checks section for a PR.
+  #. For each platform and compiler combination,
+     `Spack <https://github.com/spack/spack>`_ builds RAJA dependencies and
+     generates a configuration in the form of a CMake cache file, or 
+     *host-config* file.
   #. A host-config file is passed to CMake, which configures a RAJA build 
      space.  Then, RAJA and its tests are compiled.
   #. Next, the RAJA tests are run.
-  #. When a test pipeline completes, final results are reported in Gitlab.
-
-In the next section, we will describe the roles that specific files in the 
-RAJA repo play in defining these steps.
+  #. When test pipelines complete, results are reported in GitLab.
+  #. Lastly, GitLab reports to GitHub to show the status of checks there.
 
 .. figure:: ./figures/RAJA-Gitlab-Workflow2.png
 
-   The main steps in the RAJA Gitlab CI testing workflow are shown in the 
+   The main steps in the RAJA GitLab CI testing workflow are shown in the 
    figure. This process is triggered when a developer makes a PR on the 
    GitHub project or whenever changes are pushed to the source branch of a PR.
 
-Gitlab CI (LC) Testing Files
---------------------------------------
+Next, we describe the roles that external projects and files in the RAJA repo 
+play in the RAJA GitLab CI workflow.
 
-The following figure shows directories and files in the RAJA repo that 
-support LC Gitlab CI testing. Files with names in blue are specific to RAJA 
-and are maintained by the RAJA team. Directories and files with names in red are
-in Git submodules, shared and maintained with other projects.
+.. _gitlab_ci_depend-label:
+
+GitLab CI Testing Dependencies (specific to LC CZ)
+---------------------------------------------------
+
+RAJA GitLab CI testing depends on several other projects that we share with
+other projects. These include
+
+  * `RADIUSS Shared CI <https://github.com/LLNL/radiuss-shared-ci>`_,
+    a centralized framework for software testing with GitLab CI on LC
+    machines. The project is developed on GitHub and is mirrored to the LC 
+    CZ GitLab instance, where it is used by multiple projects.
+  * `Spack <https://github.com/spack/spack>`_, a widely used
+    multi-platform package manager that builds and installs software stacks.
+  * `Uberenv <https://github.com/LLNL/uberenv>`_, a Python script
+    that helps to automate the use of Spack and other tools for building 
+    third-party dependencies. Uberenv is a submodule in RAJA that lives in
+    ``RAJA/scripts/uberenv/``.
+  * `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_,
+    a collection of build configurations used by Spack to generate host-config
+    files for CMake. The build configurations are specific to LLNL LC 
+    platforms and are used by multiple projects. It also contains Spack 
+    packages for various projects, including RAJA. The RAJA Spack package is 
+    maintained in this project. RADIUSS Spack Configs is a submodule in RAJA 
+    that lives in ``RAJA/scripts/radiuss-spack-configs/``.
+
+The relationships among these dependencies in a project that uses them is 
+illustrated in the `RADIUSS Shared CI User Guide <https://radiuss-shared-ci.readthedocs.io/en/latest/sphinx/user_guide/index.html>`_. The guide also describes 
+how the framework works and how to set up a project to use it.
+
+In the rest of the this section, we describe files in the RAJA repo that are
+used to configure and customize the shared CI framework specifically for the 
+RAJA project.
+
+.. _gitlab_ci_files-label:
+
+GitLab CI Testing Files (specific to LC CZ)
+--------------------------------------------
+
+The following figure shows directories and files in the RAJA project that 
+support LC GitLab CI testing. 
 
 .. figure:: ./figures/RAJA-Gitlab-Files.png
 
-   The figure shows directories and files in the RAJA repo that support Gitlab 
-   CI testing. Files in blue are specific to RAJA and owned by the RAJA team. 
-   Red directories and files are part of Git submodules shared with other 
-   projects.
+   The figure shows directories and files in the RAJA repo that support GitLab 
+   CI testing. Files in blue are specific to RAJA and are maintained in the 
+   RAJA repo. Red directories and files are in Git submodules that are 
+   shared and maintained with other projects.
+
+Briefly, these files play the following roles in our GitLab CI testing:
+
+  * The ``RAJA/.gitlab-ci.yml`` file is the root file for GitLab CI 
+    configuration. We place jobs is small pipelines described by separate 
+    files that are included by this one. Global variables can also be defined 
+    here.
+  * The ``.uberenv_config.json`` file defines the Spack version we use, where 
+    Spack packages live, etc.
+  * Files in the ``RAJA/.gitlab`` directory define test pipelines that RAJA
+    subscribes to an which are defined in the 
+    `RADIUSS Shared CI <https://github.com/LLNL/radiuss-shared-ci>`_ project,
+    as well as RAJA-specific jobs, and any job customization that we use,
+    such as job time limits, etc. These files are customizations of templates 
+    provided by `RADIUSS Shared CI <https://github.com/LLNL/radiuss-shared-ci>`_.
+  * The ``RAJA/scripts/gitlab/build_and_test.sh`` file defines the RAJA build 
+    and test process and commands that are run during it.
 
 In the following sections, we discuss how these files are used in the 
-steps in the RAJA Gitlab CI testing process summarized above.
+steps of the RAJA GitLab CI testing process summarized above.
+
+.. _gitlab_ci_pipelines-label:
 
 Launching CI pipelines (step 2) 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In **step 2** of the diagram above, Gitlab launches RAJA test pipelines.
-The `RAJA/.gitlab-ci.yml <https://github.com/LLNL/RAJA/blob/develop/.gitlab-ci.yml>`_ file contains high-level testing information, 
-such as stages (resource allocation, build-and-test, and resource 
-deallocation) and locations of files that define which jobs will run
-in each pipeline. For example, these items appear in the file as::
+In **step 2** of the diagram above, GitLab launches RAJA test pipelines.
+The `RAJA/.gitlab-ci.yml <https://github.com/LLNL/RAJA/tree/develop/.gitlab-ci.yml>`_ file contains high-level testing information that applies to all RAJA
+GitLab CI testing pipelines. This includes
 
-  stages:
-    - r_allocate_resources
-    - r_build_and_test
-    - r_release_resources
-    - l_build_and_test
-    - c_build_and_test
-    - multi_project
+  * **GitLab pipeline variables**, such as project name, service user account
+    name, etc.
 
-and:: 
+  * **High-level pipeline stages** for build and test, multi-project testing,
+    etc.
 
-  include:
-    - local: .gitlab/ruby-templates.yml
-    - local: .gitlab/ruby-jobs.yml
-    - local: .gitlab/lassen-templates.yml
-    - local: .gitlab/lassen-jobs.yml
-    - local: .gitlab/corona-templates.yml
-    - local: .gitlab/corona-jobs.yml
+  * **Build and test sub-pipelines**. Note that this is where the connection 
+    is made to the RADIUSS Shared CI project (and version on the LC CZ GitLab 
+    instance) and to files in the ``RAJA/.gitlab`` directory that define the 
+    Spack specs for build configurations that are run on each machine on
+    which RAJA tests are run.
 
-In the ``stages`` section above, prefixes 'r_', 'l_', and 'c_' refer to 
-resources in the LC on which tests are run. Specifically, the machines 'ruby',
-'lassen', and 'corona', respectively. Jobs that will run in pipeline(s) on each 
-resource are defined in the files listed in the ``include`` section above.
-Note that the stage labels above appear on each Gitlab CI run web page as the
-title of a column containing other information about what is run in that stage,
-such as build and test jobs.
+  * **Cross-project test pipelines**, which are triggered when testing 
+    certain RAJA branches, mainly the develop branch.
 
-The `RAJA/.gitlab <https://github.com/LLNL/RAJA/tree/develop/.gitlab>`_ 
-directory contains a *templates* and *jobs* file for each LC resource on which 
-test pipelines will be run. The ``<resource>-templates.yml`` files contain 
-information that is common across jobs that run on the corresponding resource, 
-such as commands and scripts that are run for stages identified in the 
-``RAJA/.gitlab-ci.yml`` file. For example, the 
-``RAJA/.gitlab/ruby-templates.yml`` file contains a section::
+  * **CI subscribed pipelines**, which are defined in the
+    RADIUSS Shared CI project. 
 
-  allocate_resources (on ruby):
+.. important:: Variables that define how resources are allocated and job time 
+               limits for LC machines that are used to run RAJA CI are defined
+               in the ``RAJA/.gilab/custom-jobs-and-variables.yml`` file.
+
+Each job that is run is defined by a Spack spec in one of two places, depending
+on whether it is *shared* with other projects or it is specific to RAJA. The 
+shared jobs are defined in files named ``<MACHINE>-build-and-test.yml`` in 
+the top-level directory of the 
+`RADIUSS Shared CI Project <https://github.com/LLNL/radiuss-shared-ci>`_.
+RAJA-specific jobs are defined in 
+``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` files. 
+
+**Each shared job will be run as-is unless it is overridden** in the RAJA 
+'extra' file for the corresponding machine. For example, a shared job for the 
+LC ruby machine may appear in the RADIUSS Shared CI file 
+``ruby-build-and-test.yml`` as::
+
+  gcc_8_1_0:
     variables:
-      GIT_STRATEGY: none
-    extends: .on_ruby
-    stage: r_allocate_resources
-    script:
-      - salloc -N 1 -p pdebug -t 45 --no-shell --job-name=${ALLOC_NAME}
+      SPEC: "${PROJECT_RUBY_VARIANTS} %gcc@8.1.0 ${PROJECT_RUBY_DEPS}"
+    extends: .build_and_test_on_ruby
 
-which contains the resource allocation command associated with the 
-``r_allocate_resources`` stage identifier on 'ruby'. Analogous stages are 
-defined similarly in other ``RAJA/.gitlab/<resource>-templates.yml`` files.
+and then may be overridden in the ``RAJA/.gitlab/ruby-build-and-test-extra.yml``
+file as::
 
-The ``<resource>-jobs.yml`` files are described in the following sections.
+  gcc_8_1_0:
+    variables:
+      SPEC: " ${PROJECT_RUBY_VARIANTS} %gcc@8.1.0 ${PROJECT_RUBY_DEPS}"
+      RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
+    extends: .build_and_test_on_ruby
 
-Running a CI build/test pipeline  (steps 3, 4, 5, 6)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+In this example, the Spack build spec is the same, but the job is configured
+with a timeout limit and number of nodes appropriate for RAJA testing.
+
+.. important:: A shared job override **must use the same job label as the 
+               shared job** defined in the RADIUSS Shared CI project.
+
+RAJA-specific jobs whose configurations are not shared with other projects
+are also defined in the 
+``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` files. For example::
+
+  clang_10_0_1_gcc_8_3_1_desul_atomics:
+    variables:
+      SPEC: " ~shared +openmp +tests +desul %clang@10.0.1 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
+    extends: .build_and_test_on_ruby
+
+defines a RAJA job with desul atomics enabled to be run on the ruby machine.
+
+.. important:: Each base compiler configuration that is used in GitLab CI 
+               testing must have a Spack spec defined for it in the appropriate
+               file for the machine that it will be tested on in the 
+               `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_ project.
+
+.. _gitlab_ci_running-label:
+
+Running a CI build and test pipeline  (steps 3, 4, 5, 6)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The `RAJA/scripts/gitlab/build_and_test.sh <https://github.com/LLNL/RAJA/tree/develop/scripts/gitlab/build_and_test.sh>`_ file defines the steps executed
-for each build and test run as well as information that will appear in the
-log output for each step. First, the script invokes the 
-``RAJA/scripts/uberenv/uberenv.py`` Python script located in the 
-`uberenv <https://github.com/LLNL/uberenv>`_ submodule::
+for each build and test pipeline as well as information that will appear in the
+log output for each step. 
+
+After some basic set up, the script invokes the 
+``RAJA/scripts/uberenv/uberenv.py`` Python script that drives Spack to generate
+host-config files::
 
   ...
 
@@ -183,68 +275,61 @@ log output for each step. First, the script invokes the
 
 Project specific settings related to which Spack version to use, where 
 Spack packages live, etc. are located in the 
-`RAJA/.uberenv_config.json <https://github.com/LLNL/RAJA/blob/develop/.uberenv_config.json>`_ file.
+`RAJA/.uberenv_config.json <https://github.com/LLNL/RAJA/tree/develop/.uberenv_config.json>`_ file.
 
-The uberenv python script invokes Spack to generate a CMake *host-config* 
+The Uberenv Python script invokes Spack to generate a CMake *host-config* 
 file containing a RAJA build specification **(step 3)**. To generate
-a *host-config* file, Spack uses the 
-`RAJA Spack package <https://github.com/LLNL/RAJA/blob/develop/scripts/spack_packages/raja/package.py>`_, plus *Spack spec* information. 
-The ``RAJA/.gitlab/<resource>-jobs.yml`` file defines a build specification
-(*Spack spec*) for each job that will be run on the corresponding resource. 
-For example, in the ``lassen-jobs.yml`` file, you will see an entry such as::
-
-  gcc_8_3_1_cuda_10_1_168:
-    variables:
-      SPEC: "+cuda %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.168"
-    extends: .build_and_test_on_lassen
-
-This defines the *Spack spec* for the test job in which CUDA device code will 
-be built with the nvcc 10.1.168 compiler and non-device code will be compiled 
-with the GNU 8.3.1 compiler. In the Gitlab CI GUI, this pipeline will be 
-labeled ``gcc_8_3_1_cuda_10_1_168``. Details for compilers, such as file 
-system paths, target architecture, etc. are located in the 
-``RAJA/scripts/radiuss-spack-configs/<sys-type>/compilers.yaml`` file for the 
-system type associated with the resource. Analogous information for packages 
-like CUDA and ROCm (HIP) are located in the corresponding 
-``RAJA/scripts/radiuss-spack-configs/<sys-type>/packages.yaml`` file.
+a *host-config* file, Spack uses the packages and specs maintained in the 
+`RADIUSS Spack Configs project 
+<https://github.com/LLNL/radiuss-spack-configs>`_, plus RAJA-specific specs
+defined in files in the `RAJA/.gitlab <https://github.com/LLNL/RAJA/tree/develop/.gitlab>`_ directory, as described earlier.
 
 .. note:: Please see :ref:`spack_host_config-label` for more information about
-          Spack-generated host-config files and how to use them for local
+          how to manually generate host-config files and use them for local
           debugging.
 
 After the host-config file is generated, the 
-``scripts/gitlab/build_and_test.sh`` script creates a build space directory 
-and runs CMake in it, passing the host-config (cache) file. Then, it builds
-the RAJA code and tests **(step 4)**::
+``RAJA/scripts/gitlab/build_and_test.sh`` script creates a build space 
+directory and runs CMake in it, passing the host-config (cache) file. Then, 
+it builds the RAJA code and tests **(step 4)**::
 
   ...
 
   build_dir="${build_root}/build_${hostconfig//.cmake/}"
+  install_dir="${build_root}/install_${hostconfig//.cmake/}"
 
   ...
 
   date
   echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-  echo "~ Host-config: ${hostconfig_path}"
-  echo "~ Build Dir:   ${build_dir}"
-  echo "~ Project Dir: ${project_dir}"
+  echo "~~~~~ Host-config: ${hostconfig_path}"
+  echo "~~~~~ Build Dir:   ${build_dir}"
+  echo "~~~~~ Project Dir: ${project_dir}"
+  echo "~~~~~ Install Dir: ${install_dir}"
   echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
   echo ""
-
   echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
   echo "~~~~~ Building RAJA"
   echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+  ..
 
   rm -rf ${build_dir} 2>/dev/null
   mkdir -p ${build_dir} && cd ${build_dir}
 
   ...
 
-  cmake \
-    -C ${hostconfig_path} \
-    ${project_dir}  
- 
-  cmake --build . -j ${core_counts[$truehostname]}
+  $cmake_exe \
+      -C ${hostconfig_path} \
+      -DCMAKE_INSTALL_PREFIX=${install_dir} \
+      ${project_dir}
+
+  ...
+
+  echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+  echo "~~~~~ RAJA Built"
+  echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+  date
 
 Next, it runs the tests **(step 5)**::
 
@@ -260,17 +345,21 @@ Next, it runs the tests **(step 5)**::
 
   ctest --output-on-failure -T test 2>&1 | tee tests_output.txt
 
-Lastly, the script packages the test results into a JUnit XML file that
-Gitlab uses for reporting the results in its GUI **(step 6)**::
+  ...
 
-  echo "Copying Testing xml reports for export"
-  tree Testing
-  xsltproc -o junit.xml ${project_dir}/blt/tests/ctest-to-junit.xsl Testing/*/Test.xml
-  mv junit.xml ${project_dir}/junit.xml
+  echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+  echo "~~~~~ RAJA Tests Complete"
+  echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+  date
+
+Lastly, test results are collected in a JUnit XML file that
+GitLab uses for reporting the results in its GUI **(step 6)**. This is
+done by the 
+`RADIUSS Shared CI Framework <https://github.com/LLNL/radiuss-shared-ci>`_
 
 The commands shown here intermingle with other commands that emit messages,
 timing information for various operations, etc. which appear in a log
-file that can be viewed in the Gitlab GUI.
+file that can be viewed in the GitLab GUI.
 
 .. _azure_ci-label:
 
@@ -285,7 +374,7 @@ in the Azure Linux environment, RAJA tests are only run for CPU-only pipelines.
 Azure Pipelines Testing Workflow
 --------------------------------
 
-The Azure Pipelines testing workflow for RAJA is much simpler than the Gitlab
+The Azure Pipelines testing workflow for RAJA is much simpler than the GitLab
 testing process described above.
 
 The test jobs we run for each OS environment are specified in the 
@@ -323,7 +412,7 @@ A summary of the configurations we build are:
     test builds. We build and test RAJA using Docker container images generated 
     with recent versions of various compilers. The RAJA project shares these 
     images with other open-source LLNL RADIUSS projects and they are maintained
-    in the `RES-ops Docker <https://github.com/rse-ops/docker-images>`_ 
+    in the `RES-Ops Docker <https://github.com/rse-ops/docker-images>`_ 
     project on GitHub. The builds we do at any point in time are located in 
     the ``strategy`` block::
 
@@ -352,7 +441,12 @@ Docker Builds
 For each Linux/Docker pipeline, the base container images, CMake, build, and
 test commands are located in `RAJA/Dockerfile <https://github.com/LLNL/RAJA/blob/develop/Dockerfile>`_.
 
-The base container images are built and maintained through the `RSE-Ops <https://rse-ops.github.io/>`_ RADIUSS project. A table of the most up to date containers can be found `here <https://rse-ops.github.io/docker-images/>`_. These images are rebuilt regularly ensuring that we have the most up to date builds of each container / compiler.
+The base container images are built and maintained through the 
+`RSE-Ops Docker <https://rse-ops.github.io/>`_ project. A table of the most 
+up-to-date containers can be found 
+`here <https://rse-ops.github.io/docker-images/>`_. These images are rebuilt 
+regularly ensuring that we have the most up to date builds of each 
+container and compiler.
 
 .. note:: Please see :ref:`docker_local-label` for more information about
           reproducing Docker builds locally for debugging purposes.
