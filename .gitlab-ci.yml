@@ -84,7 +84,7 @@ trigger-rajaperf:
 include:
   # checks preliminary to running the actual CI test (optional)
   - project: 'radiuss/radiuss-shared-ci'
-    ref: woptim/fix-draft-detection-develop
+    ref: main
     file: 'preliminary-ignore-draft-pr.yml'
   # pipelines subscribed by the project
   - local: '.gitlab/subscribed-pipelines.yml'
