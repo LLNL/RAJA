@@ -37,7 +37,10 @@ variables:
 # We build the projects in the CI clone directory.
 # TODO: add a clean-up mechanism
   BUILD_ROOT: ${CI_PROJECT_DIR}
+# Set the build-and-test command.
+  BUILD_AND_TEST_CMD: "./scripts/gitlab/build_and_test.sh"
 # Override the list of branch that will skip the "draft PR test".
+# Add protected branches here. Defaults to "develop main master".
   ALWAYS_RUN_LIST: "develop main"
 
 # We organize the build-and-test stage in sub-pipelines. Each sub-pipeline
@@ -55,7 +58,7 @@ stages:
     include:
       - local: '.gitlab/custom-jobs-and-variables.yml'
       - project: 'radiuss/radiuss-shared-ci'
-        ref: woptim/fix-draft-detection-develop
+        ref: main
         file: '${CI_MACHINE}-build-and-test.yml'
       - local: '.gitlab/${CI_MACHINE}-build-and-test-extra.yml'
     strategy: depend
