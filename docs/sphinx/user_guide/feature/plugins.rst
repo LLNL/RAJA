@@ -123,7 +123,7 @@ Static Loading
 If a plugin is to be loaded into a project at compile time, it must be
 loaded with either an ``#include`` statement in the project source code or
 by calling the following method in the project source code, which adds the 
-plugin to the RAJA ``PluginRegistry`::`
+plugin to the RAJA PluginRegistry::
 
   static RAJA::util::PluginRegistry::add<PluginName> P("Name", "Description");
 

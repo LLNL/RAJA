@@ -269,29 +269,30 @@ struct TargetReduceLoc
   TargetReduceLoc() = delete;
   TargetReduceLoc(const TargetReduceLoc &) = default;
   explicit TargetReduceLoc(T init_val_, IndexType init_loc,
-                           T identity_ = Reducer::identity)
+                           T identity_val_ = Reducer::identity,
+                           IndexType identity_loc_ = RAJA::reduce::detail::DefaultLoc<IndexType>().value())
       : info(),
-        val(identity_, identity_, info),
-        loc(init_loc, IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()), info),
+        val(identity_val_, identity_val_, info),
+        loc(identity_loc_, identity_loc_, info),
         initVal(init_val_),
-        finalVal(identity_),
+        finalVal(identity_val_),
         initLoc(init_loc),
-        finalLoc(IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()))
+        finalLoc(identity_loc_)
   {
   }
 
   void reset(T init_val_,
-             IndexType init_local_ =
-             IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value()),
-             T identity_ = Reducer::identity)
+             IndexType init_loc_ = RAJA::reduce::detail::DefaultLoc<IndexType>().value(),
+             T identity_val_ = Reducer::identity,
+             IndexType identity_loc_ = RAJA::reduce::detail::DefaultLoc<IndexType>().value())
   {
     operator T();
-    val.reset(identity_);
-    loc.reset(init_local_);
+    val.reset(identity_val_);
+    loc.reset(identity_loc_);
     initVal = init_val_;
-    finalVal = identity_;
-    initLoc = reduce::detail::DefaultLoc<IndexType>().value();
-    finalLoc = IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value());
+    finalVal = identity_val_;
+    initLoc = init_loc_;
+    finalLoc = identity_loc_;
   }
 
   //! apply reduction on device upon destruction

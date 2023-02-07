@@ -915,14 +915,6 @@ struct Reduce_Data {
   {
   }
 
-  void reset(T initValue, T identity_ = T())
-  {
-    value = initValue;
-    identity = identity_;
-    device_count = nullptr;
-    own_device_ptr = false;
-  }
-
   RAJA_HOST_DEVICE
   Reduce_Data(const Reduce_Data& other)
       : value{other.identity},
@@ -1001,15 +993,6 @@ struct ReduceAtomic_Data {
         device{nullptr},
         own_device_ptr{false}
   {
-  }
-
-  void reset(T initValue, T identity_ = Combiner::identity())
-  {
-    value = initValue;
-    identity = identity_;
-    device_count = nullptr;
-    device = nullptr;
-    own_device_ptr = false;
   }
 
   RAJA_HOST_DEVICE
@@ -1097,7 +1080,7 @@ public:
   //  reducer in host device lambda not being used on device.
   RAJA_HOST_DEVICE
   Reduce(const Reduce& other)
-#if !defined(RAJA_DEVICE_CODE)
+#if !defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE)
       : parent{other.parent},
 #else
       : parent{&other},
@@ -1105,7 +1088,7 @@ public:
         tally_or_val_ptr{other.tally_or_val_ptr},
         val(other.val)
   {
-#if !defined(RAJA_DEVICE_CODE)
+#if !defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE)
     if (parent) {
       if (val.setupForDevice()) {
         tally_or_val_ptr.val_ptr =
@@ -1122,7 +1105,7 @@ public:
   RAJA_HOST_DEVICE
   ~Reduce()
   {
-#if !defined(RAJA_DEVICE_CODE)
+#if !defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE)
     if (parent == this) {
       delete tally_or_val_ptr.list;
       tally_or_val_ptr.list = nullptr;
@@ -1301,15 +1284,29 @@ class ReduceMinLoc<cuda_reduce_base<maybe_atomic>, T, IndexType>
 
 public:
   using value_type = RAJA::reduce::detail::ValueLoc<T, IndexType>;
-  using Base = cuda::
-      Reduce<RAJA::reduce::min<value_type>, value_type, maybe_atomic>;
+  using Combiner = RAJA::reduce::min<value_type>;
+  using NonLocCombiner = RAJA::reduce::min<T>;
+  using Base = cuda::Reduce<Combiner, value_type, maybe_atomic>;
   using Base::Base;
 
   //! constructor requires a default value for the reducer
-  ReduceMinLoc(T init_val, IndexType init_idx)
-      : Base(value_type(init_val, init_idx))
+  ReduceMinLoc(T init_val, IndexType init_idx,
+               T identity_val = NonLocCombiner::identity(),
+               IndexType identity_idx = RAJA::reduce::detail::DefaultLoc<IndexType>().value())
+      : Base(value_type(init_val, init_idx), value_type(identity_val, identity_idx))
   {
   }
+
+  //! reset requires a default value for the reducer
+  // this must be here to hide Base::reset
+  void reset(T init_val,
+             IndexType init_idx = RAJA::reduce::detail::DefaultLoc<IndexType>().value(),
+             T identity_val = NonLocCombiner::identity(),
+             IndexType identity_idx = RAJA::reduce::detail::DefaultLoc<IndexType>().value())
+  {
+    Base::reset(value_type(init_val, init_idx), value_type(identity_val, identity_idx));
+  }
+
   //! reducer function; updates the current instance's state
   RAJA_HOST_DEVICE
   const ReduceMinLoc& minloc(T rhs, IndexType loc) const
@@ -1338,15 +1335,29 @@ class ReduceMaxLoc<cuda_reduce_base<maybe_atomic>, T, IndexType>
 {
 public:
   using value_type = RAJA::reduce::detail::ValueLoc<T, IndexType, false>;
-  using Base = cuda::
-      Reduce<RAJA::reduce::max<value_type>, value_type, maybe_atomic>;
+  using Combiner = RAJA::reduce::max<value_type>;
+  using NonLocCombiner = RAJA::reduce::max<T>;
+  using Base = cuda::Reduce<Combiner, value_type, maybe_atomic>;
   using Base::Base;
 
   //! constructor requires a default value for the reducer
-  ReduceMaxLoc(T init_val, IndexType init_idx)
-      : Base(value_type(init_val, init_idx))
+  ReduceMaxLoc(T init_val, IndexType init_idx,
+               T identity_val = NonLocCombiner::identity(),
+               IndexType identity_idx = RAJA::reduce::detail::DefaultLoc<IndexType>().value())
+      : Base(value_type(init_val, init_idx), value_type(identity_val, identity_idx))
   {
   }
+
+  //! reset requires a default value for the reducer
+  // this must be here to hide Base::reset
+  void reset(T init_val,
+             IndexType init_idx = RAJA::reduce::detail::DefaultLoc<IndexType>().value(),
+             T identity_val = NonLocCombiner::identity(),
+             IndexType identity_idx = RAJA::reduce::detail::DefaultLoc<IndexType>().value())
+  {
+    Base::reset(value_type(init_val, init_idx), value_type(identity_val, identity_idx));
+  }
+
   //! reducer function; updates the current instance's state
   RAJA_HOST_DEVICE
   const ReduceMaxLoc& maxloc(T rhs, IndexType loc) const
