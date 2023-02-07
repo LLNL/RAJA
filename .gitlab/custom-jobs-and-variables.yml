@@ -51,7 +51,6 @@ variables:
 # Project specific deps for lassen
   PROJECT_LASSEN_DEPS: ""
 
-
 # Configuration shared by build and test jobs specific to this project.
 # Not all configuration can be shared. Here projects can fine tune the
 # CI behavior.
