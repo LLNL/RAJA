@@ -30,10 +30,12 @@ void LaunchDynamicMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
                                      &check_array,
                                      &test_array);
 
+  //determine the underlying type of block_range
+  using s_type = decltype(RAJA::stripIndexType(block_range));
 
-  for(int b=0; b<RAJA::stripIndexType(block_range); ++b) {
-    for(int c=0; c<RAJA::stripIndexType(thread_range); ++c) {
-      int idx = c + RAJA::stripIndexType(thread_range)*b;
+  for(s_type b=0; b<RAJA::stripIndexType(block_range); ++b) {
+    for(s_type c=0; c<RAJA::stripIndexType(thread_range); ++c) {
+      s_type idx = c + RAJA::stripIndexType(thread_range)*b;
       test_array[idx] = INDEX_TYPE(idx);
     }
   }
@@ -68,7 +70,7 @@ void LaunchDynamicMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
 
-  for (INDEX_TYPE i = INDEX_TYPE(0); i < data_len; i++) {
+  for (size_t i = 0; i < data_len; i++) {
     ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
   }
 
