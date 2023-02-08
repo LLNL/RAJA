@@ -10,7 +10,7 @@
 //
 
 #ifndef __RAJA_test_launch_teams_threads_1D_execpol_HPP__
-#define __RAJA_test_launch_teams_threads_1D_HPP__
+#define __RAJA_test_launch_teams_threads_1D_execpol_HPP__
 
 #include "RAJA/RAJA.hpp"
 #include "camp/list.hpp"
@@ -74,4 +74,4 @@ using Hip_launch_policies = camp::list<
 #endif // RAJA_ENABLE_HIP
 
 
-#endif  // __RAJA_test_launch_execpol_HPP__
+#endif  // __RAJA_test_launch_teams_threads_1D_execpol_HPP__
