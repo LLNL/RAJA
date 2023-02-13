@@ -21,12 +21,12 @@
 # ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is no reason not to fully
 # describe the spec here.
 
-rocm_5_4_2_clang_15_0_0_desul_atomics:
+rocm_5_4_3_clang_15_0_0_desul_atomics:
   variables:
-    SPEC: "~shared +rocm ~openmp +desul +tests amdgpu_target=gfx90a %clang@15.0.0 ^blt@develop ^hip@5.4.2"
+    SPEC: "~shared +rocm ~openmp +desul +tests amdgpu_target=gfx90a %clang@15.0.0.rocm.5.4.3 ^blt@develop ^hip@5.4.3"
   extends: .build_and_test_on_tioga
 
-rocm_5_4_2_clang_15_0_0_openmp:
+rocm_5_4_3_clang_15_0_0_openmp:
   variables:
-    SPEC: "~shared +rocm +openmp +tests amdgpu_target=gfx90a %clang@15.0.0 ^blt@develop ^hip@5.4.2"
+    SPEC: "~shared +rocm +openmp +tests amdgpu_target=gfx90a %clang@15.0.0.rocm.5.4.3 ^blt@develop ^hip@5.4.3"
   extends: .build_and_test_on_tioga
