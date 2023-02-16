@@ -139,10 +139,12 @@ void testReducerReset()
   reduce_sum.reset(resetVal[0]);
   reduce_min.reset(resetVal[0]);
   reduce_max.reset(resetVal[0]);
-  reduce_minloc.reset(resetVal[0]);
-  reduce_maxloc.reset(resetVal[0]);
-  reduce_maxloctup.reset(resetVal[0]);
-  reduce_minloctup.reset(resetVal[0]);
+  reduce_minloc.reset(resetVal[0], -1);
+  reduce_maxloc.reset(resetVal[0], -1);
+
+  RAJA::tuple<RAJA::Index_type, RAJA::Index_type> resetLocTup(0, 0);
+  reduce_maxloctup.reset(resetVal[0], resetLocTup);
+  reduce_minloctup.reset(resetVal[0], resetLocTup);
 
   ASSERT_EQ((NumericType)reduce_sum.get(), (NumericType)(resetVal[0]));
   ASSERT_EQ((NumericType)reduce_min.get(), (NumericType)(resetVal[0]));
