@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
   cudaMemcpyAsync(cnt, d_cnt, width * width * sizeof(unsigned char), cudaMemcpyDeviceToHost);
 
   /* verify result by writing it to a file */
-  if (width <= 1024) {
+  if (width <= 2048) {
     WriteBMP(width, width, cnt, "fractal.bmp");
   }
 
