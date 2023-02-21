@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -150,6 +150,32 @@ using HipKernelExecPols = camp::list<
         RAJA::statement::Lambda<0, RAJA::Segs<0>>
       >,
       RAJA::statement::For<0, RAJA::hip_thread_x_loop,
+        RAJA::statement::Lambda<1, RAJA::Segs<0>>
+      >
+    >
+  >
+
+>;
+#endif
+
+#if defined(RAJA_ENABLE_SYCL)
+using SyclKernelExecPols = camp::list<
+
+  RAJA::KernelPolicy<
+    RAJA::statement::SyclKernel<
+      RAJA::statement::For<0, RAJA::sycl_local_0_loop,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>,
+        RAJA::statement::Lambda<1, RAJA::Segs<0>>
+      >
+    >
+  >,
+
+  RAJA::KernelPolicy<
+    RAJA::statement::SyclKernel<
+      RAJA::statement::For<0, RAJA::sycl_local_0_loop,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>
+      >,
+      RAJA::statement::For<0, RAJA::sycl_local_0_loop,
         RAJA::statement::Lambda<1, RAJA::Segs<0>>
       >
     >

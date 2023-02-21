@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,7 +22,7 @@ PROJECT_NAME           = RAJA
 PROJECT_NUMBER         = 
 PROJECT_BRIEF          = "RAJA provides a collection of platform portability abstractions for C++ HPC applications."
 PROJECT_LOGO           =
-OUTPUT_DIRECTORY       = ./_build/html/doxygen
+OUTPUT_DIRECTORY       = ../_readthedocs/html/doxygen
 CREATE_SUBDIRS         = NO
 ALLOW_UNICODE_NAMES    = NO
 

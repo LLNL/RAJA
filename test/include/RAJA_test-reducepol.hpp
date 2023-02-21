@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -43,6 +43,10 @@ using CudaReducePols = camp::list< RAJA::cuda_reduce >;
 
 #if defined(RAJA_ENABLE_HIP)
 using HipReducePols = camp::list< RAJA::hip_reduce >;
+#endif
+
+#if defined(RAJA_ENABLE_SYCL)
+using SyclReducePols = camp::list< RAJA::sycl_reduce >;
 #endif
 
 #endif  // __RAJA_test_reducepol_HPP__

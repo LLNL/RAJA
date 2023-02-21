@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -117,6 +117,22 @@ using HipKernelNestedLoopExecPols = camp::list<
   >;
 
 #endif  // RAJA_ENABLE_HIP
+
+#if defined(RAJA_ENABLE_SYCL)
+
+using SyclKernelNestedLoopExecPols = camp::list<
+
+    // Depth 2 Exec Pols
+    NestedLoopData<DEVICE_DEPTH_2, RAJA::sycl_local_0_loop, RAJA::sycl_local_1_loop >,
+    NestedLoopData<DEVICE_DEPTH_2, RAJA::seq_exec, RAJA::sycl_local_0_loop >,
+    NestedLoopData<DEVICE_DEPTH_2, RAJA::sycl_local_0_loop, RAJA::seq_exec >,
+
+    // Depth 3 Exec Pols
+    NestedLoopData<DEVICE_DEPTH_3, RAJA::sycl_local_0_loop, RAJA::sycl_local_1_loop, RAJA::seq_exec >,
+    NestedLoopData<DEVICE_DEPTH_3, RAJA::sycl_group_0_loop, RAJA::sycl_local_1_loop, RAJA::seq_exec >
+  >;
+
+#endif  // RAJA_ENABLE_SYCL
 
 //
 // Build out list of supported Nested Loop data for tests' suported types.

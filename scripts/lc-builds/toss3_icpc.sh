@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -34,7 +34,7 @@ fi
 BUILD_SUFFIX=lc_toss3-icpc-${COMP_VER}
 
 echo
-echo "Creating build directory ${BUILD_SUFFIX} and generating configuration in it"
+echo "Creating build directory build_${BUILD_SUFFIX} and generating configuration in it"
 echo "Configuration extra arguments:"
 echo "   $@"
 echo
@@ -42,7 +42,7 @@ echo
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-module load cmake/3.14.5
+module load cmake/3.20.2
 
 ##
 # CMake option -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off used to speed up compile
@@ -50,10 +50,10 @@ module load cmake/3.14.5
 ##
 
 cmake \
-  -DBLT_CXX_STD=c++14 \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/intel/intel-${COMP_VER}/bin/icpc \
   -DCMAKE_C_COMPILER=/usr/tce/packages/intel/intel-${COMP_VER}/bin/icc \
+  -DBLT_CXX_STD=c++14 \
   -C ../host-configs/lc-builds/toss3/icpc_X_gcc${GCC_HEADER_VER}headers.cmake \
   -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off \
   -DENABLE_OPENMP=On \

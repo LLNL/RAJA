@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -56,6 +56,7 @@ struct SyclStatementExecutor<
   using enclosed_stmts_t =
       SyclStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
   inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
@@ -120,6 +121,7 @@ struct SyclStatementExecutor<
   using enclosed_stmts_t =
       SyclStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
   inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
@@ -182,6 +184,7 @@ struct SyclStatementExecutor<
   using enclosed_stmts_t =
       SyclStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
   inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
@@ -247,6 +250,7 @@ struct SyclStatementExecutor<
   using enclosed_stmts_t =
       SyclStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
   inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
@@ -310,6 +314,7 @@ struct SyclStatementExecutor<
   using enclosed_stmts_t =
       SyclStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
   inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
@@ -385,6 +390,7 @@ struct SyclStatementExecutor<
   using enclosed_stmts_t =
       SyclStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
   inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item)
@@ -442,6 +448,8 @@ struct SyclStatementExecutor<
 
   using enclosed_stmts_t =
       SyclStatementListExecutor<Data, stmt_list_t, NewTypes>;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
   inline

@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -55,6 +55,7 @@ namespace internal
     struct Schedule : public ScheduleTag {
         constexpr static omp_sched_t schedule = Sched;
         constexpr static int chunk_size = Chunk;
+        constexpr static Policy policy = Policy::openmp;
     };
 }  // namespace internal
 
@@ -77,7 +78,7 @@ struct NoWait {
 
 static constexpr int default_chunk_size = -1;
 
-struct Auto : private internal::Schedule<omp_sched_auto, default_chunk_size>{
+struct Auto : public internal::Schedule<omp_sched_auto, default_chunk_size>{
 };
 
 template <int ChunkSize = default_chunk_size>
@@ -380,11 +381,7 @@ using policy::omp::omp_for_runtime_exec;
 /// Type aliases for omp parallel region
 ///
 using policy::omp::omp_parallel_region;
-
-namespace expt
-{
-  using policy::omp::omp_launch_t;
-}
+using policy::omp::omp_launch_t;
 
 ///
 /// Type aliases for omp reductions

@@ -12,7 +12,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -43,6 +43,9 @@
 #include "RAJA/pattern/forall.hpp"
 #include "RAJA/pattern/region.hpp"
 
+#include "RAJA/pattern/params/forall.hpp"
+
+#include "RAJA/policy/openmp/params/forall.hpp"
 
 namespace RAJA
 {
@@ -51,19 +54,23 @@ namespace policy
 {
 namespace omp
 {
-///
-/// OpenMP parallel policy implementation
-///
-template <typename Iterable, typename Func, typename InnerPolicy>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
-                                                    const omp_parallel_exec<InnerPolicy>&,
-                                                    Iterable&& iter,
-                                                    Func&& loop_body)
+
+template <typename Iterable, typename Func, typename InnerPolicy, typename ForallParam>
+RAJA_INLINE
+concepts::enable_if_t<
+  resources::EventProxy<resources::Host>,
+  RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
+  RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
+forall_impl(resources::Host host_res,
+            const omp_parallel_exec<InnerPolicy>&,
+            Iterable&& iter,
+            Func&& loop_body,
+            ForallParam f_params)
 {
   RAJA::region<RAJA::omp_parallel_region>([&]() {
     using RAJA::internal::thread_privatize;
     auto body = thread_privatize(loop_body);
-    forall_impl(host_res, InnerPolicy{}, iter, body.get_priv());
+    forall_impl(host_res, InnerPolicy{}, iter, body.get_priv(), f_params);
   });
   return resources::EventProxy<resources::Host>(host_res);
 }
@@ -204,6 +211,7 @@ namespace internal
     }
   }
 
+  // TODO :: not implemented in forall param interface ...
   #if !defined(RAJA_COMPILER_MSVC)
   // dynamic & guided
   template <typename Policy, typename Iterable, typename Func>
@@ -270,6 +278,7 @@ namespace internal
     }
   }
 
+  //TODO :: not implemented in param interface...
   #if !defined(RAJA_COMPILER_MSVC)
   // dynamic & guided
   template <typename Policy, typename Iterable, typename Func>
@@ -288,21 +297,33 @@ namespace internal
 
 } // end namespace internal
 
-template <typename Schedule, typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
-                                                               const omp_for_schedule_exec<Schedule>&,
-                                                               Iterable&& iter,
-                                                               Func&& loop_body)
+template <typename Schedule, typename Iterable, typename Func, typename ForallParam>
+RAJA_INLINE
+concepts::enable_if_t<
+  resources::EventProxy<resources::Host>,
+  RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
+  RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
+forall_impl(resources::Host host_res,
+            const omp_for_schedule_exec<Schedule>&,
+            Iterable&& iter,
+            Func&& loop_body,
+            ForallParam)
 {
   internal::forall_impl(Schedule{}, std::forward<Iterable>(iter), std::forward<Func>(loop_body));
   return resources::EventProxy<resources::Host>(host_res);
 }
 
-template <typename Schedule, typename Iterable, typename Func>
-RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(resources::Host host_res,
-                                                               const omp_for_nowait_schedule_exec<Schedule>&,
-                                                               Iterable&& iter,
-                                                               Func&& loop_body)
+template <typename Schedule, typename Iterable, typename Func, typename ForallParam>
+RAJA_INLINE
+concepts::enable_if_t<
+  resources::EventProxy<resources::Host>,
+  RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
+  RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
+forall_impl(resources::Host host_res,
+            const omp_for_nowait_schedule_exec<Schedule>&,
+            Iterable&& iter,
+            Func&& loop_body,
+            ForallParam)
 {
   internal::forall_impl_nowait(Schedule{}, std::forward<Iterable>(iter), std::forward<Func>(loop_body));
   return resources::EventProxy<resources::Host>(host_res);

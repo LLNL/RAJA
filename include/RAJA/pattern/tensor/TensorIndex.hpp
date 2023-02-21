@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -68,13 +68,13 @@ namespace expt
         return self_type(begin, value_type(stripIndexType(end-begin)));
       }
 
-      template<value_type BEGIN, value_type END>
+      template<value_type TBEGIN, value_type TEND>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       static
       constexpr
-      StaticTensorIndex<StaticTensorIndexInner<IDX,TENSOR_TYPE,DIM,BEGIN,END-BEGIN>> static_range(){
-        return StaticTensorIndex<StaticTensorIndexInner<IDX,TENSOR_TYPE,DIM,BEGIN,END-BEGIN>>();
+      StaticTensorIndex<StaticTensorIndexInner<IDX,TENSOR_TYPE,DIM,TBEGIN,TEND-TBEGIN>> static_range(){
+        return StaticTensorIndex<StaticTensorIndexInner<IDX,TENSOR_TYPE,DIM,TBEGIN,TEND-TBEGIN>>();
       }
 
 
@@ -120,10 +120,12 @@ namespace expt
         return m_index;
       }
 
+      // used in strip_by_value as a static cast
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
       explicit operator index_type() const {
+        // return does not matter, but suppresses no-return warnings
         return m_index;
       }
 

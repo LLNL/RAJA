@@ -1,0 +1,38 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-platform.hpp"
+
+#include "RAJA_test-plugin-resource-launchpol.hpp"
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-plugin-resource-launch.hpp"
+
+
+//
+// Cartesian product of types used in parameterized tests
+//
+using @BACKEND@PluginResourceLaunchTypes =
+  Test< camp::cartesian_product<@BACKEND@PluginResourceLaunchExecPols,
+                                @BACKEND@ResourceList,
+                                @BACKEND@PlatformList > >::Types;
+
+//
+// Instantiate parameterized test
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
+                               PluginResourceLaunchTest,
+                               @BACKEND@PluginResourceLaunchTypes);

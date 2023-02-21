@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -218,6 +218,13 @@ struct StatementExecutor<
     
     int shmem = 0;
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+
+    // Global resource was not set, use the resource that was passed to forall
+    // Determine if the default SYCL res is being used
+    if (!q) {
+      camp::resources::Resource res = camp::resources::Sycl();
+      q = res.get<camp::resources::Sycl>().get_queue();
+    }
 
     //
     // Launch the kernels

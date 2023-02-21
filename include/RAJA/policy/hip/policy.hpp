@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -257,10 +257,7 @@ using policy::hip::hip_thread_masked_loop;
 
 using policy::hip::hip_synchronize;
 
-namespace expt
-{
-  using policy::hip::hip_launch_t;
-}
+using policy::hip::hip_launch_t;
 
 /*!
  * Maps segment indices to HIP threads.

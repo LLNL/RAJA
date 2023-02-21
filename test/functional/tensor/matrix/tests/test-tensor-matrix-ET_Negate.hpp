@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -106,14 +106,14 @@ void ET_NegateImpl()
   //
   tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
-    auto rows = RAJA::RowIndex<int, matrix_t>::static_all();
-    auto cols = RAJA::ColIndex<int, matrix_t>::static_all();
+    auto rows = RAJA::expt::RowIndex<int, matrix_t>::static_all();
+    auto cols = RAJA::expt::ColIndex<int, matrix_t>::static_all();
 
-    auto SArows = RAJA::RowIndex<int, matrix_t>::static_all();
-    auto SAcols = RAJA::ColIndex<int, matrix_t>::static_all();
+    auto SArows = RAJA::expt::RowIndex<int, matrix_t>::static_all();
+    auto SAcols = RAJA::expt::ColIndex<int, matrix_t>::static_all();
 
-    auto SRrows = RAJA::RowIndex<int, matrix_t>::template static_range<0,N>();
-    auto SRcols = RAJA::ColIndex<int, matrix_t>::template static_range<0,N>();
+    auto SRrows = RAJA::expt::RowIndex<int, matrix_t>::template static_range<0,N>();
+    auto SRcols = RAJA::expt::ColIndex<int, matrix_t>::template static_range<0,N>();
 
     output0_d(rows, cols) = -input0_d(rows, cols);
 

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -79,7 +79,7 @@ struct PluginTestCallable
     , m_data_iptr(rhs.m_data_iptr)
     , m_data(rhs.m_data)
   {
-#if !defined(RAJA_DEVICE_CODE)
+#if !defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE)
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
     if (omp_is_initial_device())
 #endif

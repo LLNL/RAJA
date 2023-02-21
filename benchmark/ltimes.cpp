@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -473,7 +473,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   timer.start();
 
   for (int iter = 0;iter < num_iter;++ iter){
-    RAJA::launch<pol_launch>(RAJA::HOST, RAJA::Grid(), [=](RAJA::LaunchContext ctx){
+    RAJA::launch<pol_launch>(RAJA::ExecPlace::HOST, RAJA::LaunchParams(), [=](RAJA::LaunchContext ctx){
 
       RAJA::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
         RAJA::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](IZ z){
@@ -1239,8 +1239,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   for (int iter = 0;iter < num_iter;++ iter){
     RAJA::launch<pol_launch>(
-        RAJA::DEVICE,
-        RAJA::Grid(RAJA::Teams(160, 1, 1),
+        RAJA::ExecPlace::DEVICE,
+        RAJA::LaunchParams(RAJA::Teams(160, 1, 1),
                               RAJA::Threads(8, 64, 1)),
         [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
     {
@@ -1380,8 +1380,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   printf("num_iter=%d\n", (int)num_iter);
   for (int iter = 0;iter < num_iter;++ iter){
     RAJA::launch<pol_launch>(
-        RAJA::DEVICE,
-        RAJA::Grid(RAJA::Teams(num_g, 1, 1),
+        RAJA::ExecPlace::DEVICE,
+        RAJA::LaunchParams(RAJA::Teams(num_g, 1, 1),
                               RAJA::Threads(32, 32, 1)),
         [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
     {

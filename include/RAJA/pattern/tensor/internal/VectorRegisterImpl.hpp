@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -354,7 +354,7 @@ namespace expt
           using RefType = RAJA::internal::expt::StaticTensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, camp::int_seq<INDEX_TYPE,STRIDE_VALUE>, camp::int_seq<INDEX_TYPE,BEGIN_VALUE>, camp::int_seq<INDEX_TYPE,SIZE_VALUE>, STRIDE_ONE_DIM>;
 
           /*!
-           * @brief Performs load specified by TensorRef object.
+           * @brief Performs load specified by StaticTensorRef object.
            */
           RAJA_HOST_DEVICE
           RAJA_INLINE
@@ -403,7 +403,7 @@ namespace expt
 
 
           /*!
-           * @brief Performs load specified by TensorRef object.
+           * @brief Performs load specified by StaticTensorRef object.
            */
           RAJA_HOST_DEVICE
           RAJA_INLINE

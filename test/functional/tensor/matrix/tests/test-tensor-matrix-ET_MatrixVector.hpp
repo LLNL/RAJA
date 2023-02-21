@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -86,11 +86,11 @@ void ET_MatrixVectorImpl()
   //
   tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
-    auto rows = RAJA::RowIndex<int, matrix_t>::static_all();
-    auto cols = RAJA::ColIndex<int, matrix_t>::template static_range<0,N>();
+    auto rows = RAJA::expt::RowIndex<int, matrix_t>::static_all();
+    auto cols = RAJA::expt::ColIndex<int, matrix_t>::template static_range<0,N>();
 
-    auto vrow = RAJA::VectorIndex<int, rvector_t>::static_all();
-    auto vcol = RAJA::VectorIndex<int, cvector_t>::all();
+    auto vrow = RAJA::expt::VectorIndex<int, rvector_t>::static_all();
+    auto vcol = RAJA::expt::VectorIndex<int, cvector_t>::all();
 
     data3_d(vcol) = data1_d(rows, cols) * data2_d(vrow);
 
@@ -137,11 +137,11 @@ void ET_MatrixVectorImpl()
       //
       tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
         // Load data using a View
-        auto rows = RAJA::RowIndex<int, matrix_t>::range(0, n_size);
-        auto cols = RAJA::ColIndex<int, matrix_t>::range(0, m_size);
+        auto rows = RAJA::expt::RowIndex<int, matrix_t>::range(0, n_size);
+        auto cols = RAJA::expt::ColIndex<int, matrix_t>::range(0, m_size);
 
-        auto vrow = RAJA::VectorIndex<int, rvector_t>::range(0, m_size);
-        auto vcol = RAJA::VectorIndex<int, cvector_t>::range(0, n_size);
+        auto vrow = RAJA::expt::VectorIndex<int, rvector_t>::range(0, m_size);
+        auto vcol = RAJA::expt::VectorIndex<int, cvector_t>::range(0, n_size);
 
         data3_d(vcol) = data1_d(rows, cols) * data2_d(vrow);
       });
@@ -180,11 +180,11 @@ void ET_MatrixVectorImpl()
   //
   tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
 
-    auto rows = RAJA::RowIndex<int, matrix_t>::static_all();
-    auto cols = RAJA::ColIndex<int, matrix_t>::static_all();
+    auto rows = RAJA::expt::RowIndex<int, matrix_t>::static_all();
+    auto cols = RAJA::expt::ColIndex<int, matrix_t>::static_all();
 
-    auto vrow = RAJA::VectorIndex<int, rvector_t>::static_all();
-    auto vcol = RAJA::VectorIndex<int, cvector_t>::static_all();
+    auto vrow = RAJA::expt::VectorIndex<int, rvector_t>::static_all();
+    auto vcol = RAJA::expt::VectorIndex<int, cvector_t>::static_all();
 
     data3_d(vrow) =  data2_d(vcol) * data1_d(rows, cols);
 
@@ -232,11 +232,11 @@ void ET_MatrixVectorImpl()
       //
       tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
         // Load data using a View
-        auto rows = RAJA::RowIndex<int, matrix_t>::range(0, n_size);
-        auto cols = RAJA::ColIndex<int, matrix_t>::range(0, m_size);
+        auto rows = RAJA::expt::RowIndex<int, matrix_t>::range(0, n_size);
+        auto cols = RAJA::expt::ColIndex<int, matrix_t>::range(0, m_size);
 
-        auto vrow = RAJA::VectorIndex<int, rvector_t>::range(0, m_size);
-        auto vcol = RAJA::VectorIndex<int, cvector_t>::range(0, n_size);
+        auto vrow = RAJA::expt::VectorIndex<int, rvector_t>::range(0, m_size);
+        auto vcol = RAJA::expt::VectorIndex<int, cvector_t>::range(0, n_size);
 
         data3_d(vrow) =  data2_d(vcol) * data1_d(rows, cols);
       });

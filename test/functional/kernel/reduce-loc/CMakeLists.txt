@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,6 +15,13 @@ if(RAJA_ENABLE_TARGET_OPENMP)
   if(RAJA_TEST_OPENMP_TARGET_SUBSET)
     list(REMOVE_ITEM KERNEL_BACKENDS OpenMPTarget)
   endif()
+endif()
+
+#
+# Remove SYCL until kernel reduction support is added
+#
+if(RAJA_ENABLE_SYCL)
+  list(REMOVE_ITEM KERNEL_BACKENDS Sycl)
 endif()
 
 #

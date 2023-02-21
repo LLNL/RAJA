@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -124,7 +124,7 @@ struct StatementExecutor<
 
     // Loop over tiles, executing enclosed statement list
     auto r = resources::get_resource<EPol>::type::get_default();
-    forall_impl(r, EPol{}, tiled_iterable, tile_wrapper);
+    forall_impl(r, EPol{}, tiled_iterable, tile_wrapper, RAJA::expt::get_empty_forall_param_pack());
 
     // Set range back to original values
     camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;

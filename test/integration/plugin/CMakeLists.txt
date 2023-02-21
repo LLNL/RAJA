@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -29,6 +29,28 @@ foreach( BACKEND ${PLUGIN_BACKENDS} )
                          plugin_to_test.cpp )
 
   target_include_directories(test-plugin-kernel-${BACKEND}.exe
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+endforeach()
+
+foreach( BACKEND ${PLUGIN_BACKENDS} )
+  configure_file( test-plugin-launch.cpp.in
+                  test-plugin-launch-${BACKEND}.cpp )
+  raja_add_test( NAME test-plugin-launch-${BACKEND}
+                 SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-plugin-launch-${BACKEND}.cpp
+                         plugin_to_test.cpp )
+
+  target_include_directories(test-plugin-launch-${BACKEND}.exe
+                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+endforeach()
+
+foreach( BACKEND ${PLUGIN_BACKENDS} )
+  configure_file( test-plugin-resource-launch.cpp.in
+                  test-plugin-resource-launch-${BACKEND}.cpp )
+  raja_add_test( NAME test-plugin-resource-launch-${BACKEND}
+                 SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-plugin-resource-launch-${BACKEND}.cpp
+                         plugin_to_test.cpp )
+
+  target_include_directories(test-plugin-resource-launch-${BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 endforeach()
 

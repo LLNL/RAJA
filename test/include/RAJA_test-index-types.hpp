@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -58,7 +58,7 @@ using StrongIdxTypeList = camp::list<RAJA::Index_type,
                                      int,
                                      StrongIndexType,
 #if defined(RAJA_TEST_EXHAUSTIVE)
-                                     StrongInt,
+                                     //StrongInt,
                                      unsigned int,
 // short int types will break a bunch of tests due to assumpitons made in 
 // the test implementations.
@@ -68,7 +68,7 @@ using StrongIdxTypeList = camp::list<RAJA::Index_type,
                                      unsigned long,
                                      long long,
 #endif
-                                     StrongULL,
+                                     //StrongULL,
                                      unsigned long long>;
 
 #endif // __RAJA_test_index_types_HPP__

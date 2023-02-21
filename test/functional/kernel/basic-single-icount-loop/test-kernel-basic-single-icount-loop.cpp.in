@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -197,6 +197,37 @@ camp::list<
 
 >;
 #endif  // if defined(RAJA_ENABLE_HIP)
+
+#if defined(RAJA_ENABLE_SYCL)
+using SyclKernelExecPols =
+camp::list<
+
+  RAJA::KernelPolicy<
+    RAJA::statement::SyclKernel<
+      RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::sycl_local_0_loop,
+        RAJA::statement::Lambda<0>
+      >
+    >
+  >,
+
+  RAJA::KernelPolicy<
+    RAJA::statement::SyclKernel<
+      RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::sycl_local_1_loop,
+        RAJA::statement::Lambda<0>
+      >
+    >
+  >,
+
+  RAJA::KernelPolicy<
+    RAJA::statement::SyclKernel<
+      RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::sycl_local_2_loop,
+        RAJA::statement::Lambda<0>
+      >
+    >
+  >
+
+>;
+#endif  // if defined(RAJA_ENABLE_SYCL)
 
 //
 // Cartesian product of types used in parameterized tests

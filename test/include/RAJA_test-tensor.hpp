@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -45,7 +45,7 @@ void test_launcher(BODY body_in)
 }
 
 template<>
-struct TensorTestHelper<RAJA::cuda_warp_register>
+struct TensorTestHelper<RAJA::expt::cuda_warp_register>
 {
 
     RAJA_SUPPRESS_HD_WARN
@@ -79,7 +79,7 @@ void test_launcher(BODY body_in)
 }
 
 template<>
-struct TensorTestHelper<RAJA::hip_wave_register>
+struct TensorTestHelper<RAJA::expt::hip_wave_register>
 {
 
     template<typename BODY>

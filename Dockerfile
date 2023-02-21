@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -88,16 +88,16 @@ RUN . /opt/spack/share/spack/setup-env.sh && spack load cuda && \
     cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 -DCMAKE_CUDA_ARCHITECTURES=70 -DENABLE_OPENMP=On .. && \
     make -j 4
 
-FROM ghcr.io/rse-ops/hip-ubuntu-20.04:hip-4.3.1 AS hip
+FROM ghcr.io/rse-ops/hip-ubuntu-20.04:hip-5.1.3 AS hip
 ENV GTEST_COLOR=1
 ENV HCC_AMDGPU_TARGET=gfx900
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN . /opt/spack/share/spack/setup-env.sh && spack load hip llvm-amdgpu && \
-    cmake -DCMAKE_CXX_COMPILER=amdclang++ -DRAJA_ENABLE_EXTERNAL_ROCPRIM=Off -DHIP_PATH=/opt -DENABLE_HIP=On -DENABLE_CUDA=Off -DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off .. && \
+    cmake -DCMAKE_CXX_COMPILER=clang++ -DHIP_PATH=/opt -DENABLE_HIP=On -DENABLE_CUDA=Off -DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off .. && \
     make -j 6
 
-FROM ghcr.io/rse-ops/intel-ubuntu-22.04:intel-2022.0.1 AS sycl
+FROM ghcr.io/rse-ops/intel-ubuntu-22.04:intel-2022.1.0 AS sycl
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build

@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -38,7 +38,7 @@
 #include "RAJA/policy/cuda/sort.hpp"
 #include "RAJA/policy/cuda/kernel.hpp"
 #include "RAJA/policy/cuda/synchronize.hpp"
-#include "RAJA/policy/cuda/teams.hpp"
+#include "RAJA/policy/cuda/launch.hpp"
 #include "RAJA/policy/cuda/WorkGroup.hpp"
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
