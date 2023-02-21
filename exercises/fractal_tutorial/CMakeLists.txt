@@ -5,6 +5,10 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
+raja_add_executable(
+  NAME fractal 
+  SOURCES fractal-serial.cpp)
+
 if(RAJA_ENABLE_CUDA)
 raja_add_executable(
   NAME fractal-CUDA 
