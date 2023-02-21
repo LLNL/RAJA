@@ -146,3 +146,4 @@ raja_add_executable(
   SOURCES view-layout_solution.cpp)
 
 add_subdirectory(tutorial_halfday)
+add_subdirectory(fractal_tutorial)
