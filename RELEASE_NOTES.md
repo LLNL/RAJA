@@ -19,7 +19,17 @@ Notable changes include:
 
   * Bug fixes/improvements:
 
-Version 2022.10.4 -- Release date 2022-14-01
+Version 2022.10.5 -- Release date 2023-02-28
+============================================
+
+This release fixes an issue that was found after the v2022.10.4 release.
+
+  * Fixes CUDA and HIP separable compilation option that was broken before the 
+    v2022.10.0 release. For the curious reader, the issue was that resources
+    were constructed and calling CUDA/HIP API routines before either runtime
+    was initialized.
+
+Version 2022.10.4 -- Release date 2022-12-14
 ============================================
 
 This release fixes an issue that was found after the v2022.10.3 release.
