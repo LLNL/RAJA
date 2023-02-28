@@ -19,7 +19,7 @@ Notable changes include:
 
   * Bug fixes/improvements:
 
-Version 2022.10.5 -- Release date 2023-02-xx
+Version 2022.10.5 -- Release date 2023-02-28
 ============================================
 
 This release fixes an issue that was found after the v2022.10.4 release.
