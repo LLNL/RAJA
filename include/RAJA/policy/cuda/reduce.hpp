@@ -1299,8 +1299,7 @@ public:
 
   //! reset requires a default value for the reducer
   // this must be here to hide Base::reset
-  void reset(T init_val,
-             IndexType init_idx = RAJA::reduce::detail::DefaultLoc<IndexType>().value(),
+  void reset(T init_val, IndexType init_idx,
              T identity_val = NonLocCombiner::identity(),
              IndexType identity_idx = RAJA::reduce::detail::DefaultLoc<IndexType>().value())
   {
@@ -1350,8 +1349,7 @@ public:
 
   //! reset requires a default value for the reducer
   // this must be here to hide Base::reset
-  void reset(T init_val,
-             IndexType init_idx = RAJA::reduce::detail::DefaultLoc<IndexType>().value(),
+  void reset(T init_val, IndexType init_idx,
              T identity_val = NonLocCombiner::identity(),
              IndexType identity_idx = RAJA::reduce::detail::DefaultLoc<IndexType>().value())
   {

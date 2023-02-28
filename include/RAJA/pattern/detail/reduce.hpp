@@ -361,7 +361,7 @@ public:
   {
   }
 
-  void reset(T init_val, IndexType init_idx = DefaultLoc<IndexType>().value(),
+  void reset(T init_val, IndexType init_idx,
              T identity_val_ = reduce_type::identity(),
              IndexType identity_loc_ = DefaultLoc<IndexType>().value())
   {
@@ -506,7 +506,7 @@ public:
   {
   }
 
-  void reset(T init_val, IndexType init_idx = DefaultLoc<IndexType>().value(),
+  void reset(T init_val, IndexType init_idx,
              T identity_val_ = reduce_type::identity(),
              IndexType identity_loc_ = DefaultLoc<IndexType>().value())
   {
