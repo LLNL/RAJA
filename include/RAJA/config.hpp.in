@@ -218,7 +218,9 @@ static_assert(RAJA_HAS_SOME_CXX14,
  *
  ******************************************************************************
  */
-#if defined(__INTEL_COMPILER)
+#if defined(_WIN32)
+#define RAJA_COMPILER_MSVC // This must be defined for all windows builds (even if using compilers other than MSVC)
+#elif defined(__INTEL_COMPILER)
 #define RAJA_COMPILER_INTEL
 #elif defined(__ibmxl__)
 #define RAJA_COMPILER_XLC
@@ -226,8 +228,6 @@ static_assert(RAJA_HAS_SOME_CXX14,
 #define RAJA_COMPILER_CLANG
 #elif defined(__PGI)
 #define RAJA_COMPILER_PGI
-#elif defined(_WIN32)
-#define RAJA_COMPILER_MSVC
 #elif defined(__GNUC__)
 #define RAJA_COMPILER_GNU
 #endif
