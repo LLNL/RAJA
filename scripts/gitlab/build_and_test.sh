@@ -24,7 +24,16 @@ project_dir="$(pwd)"
 build_root=${BUILD_ROOT:-""}
 hostconfig=${HOST_CONFIG:-""}
 spec=${SPEC:-""}
+module_list=${MODULE_LIST:-""}
 job_unique_id=${CI_JOB_ID:-""}
+
+if [[ -n ${module_list} ]]
+then
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo "~~~~~ Modules to load: ${module_list}"
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    module load ${module_list}
+fi
 
 prefix=""
 
