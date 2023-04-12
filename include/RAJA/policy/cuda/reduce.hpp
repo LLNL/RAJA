@@ -48,6 +48,47 @@
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
+#if RAJA_CUDA_COMPILER == RAJA_CUDA_COMPILER_CLANG // use this for clang cuda
+#pragma push_macro("__MAKE_SYNC_SHUFFLES")
+#define __MAKE_SYNC_SHUFFLES(__FnName, __IntIntrinsic, __FloatIntrinsic,       \
+                             __Mask, __Type)                                   \
+  inline __device__ int __FnName(unsigned int __mask, int __val,               \
+                                 __Type __offset, int __width = warpSize) {    \
+    return __IntIntrinsic(__mask, __val, __offset,                             \
+                          ((warpSize - __width) << 8) | (__Mask));             \
+  }                                                                            \
+  inline __device__ long long __FnName(unsigned int __mask, long long __val,   \
+                                       __Type __offset,                        \
+                                       int __width = warpSize) {               \
+    struct __Bits {                                                            \
+      int __a, __b;                                                            \
+    };                                                                         \
+    _Static_assert(sizeof(__val) == sizeof(__Bits));                           \
+    _Static_assert(sizeof(__Bits) == 2 * sizeof(int));                         \
+    __Bits __tmp;                                                              \
+    memcpy(&__tmp, &__val, sizeof(__val));                                     \
+    __tmp.__a = ::__FnName(__mask, __tmp.__a, __offset, __width);              \
+    __tmp.__b = ::__FnName(__mask, __tmp.__b, __offset, __width);              \
+    long long __ret;                                                           \
+    memcpy(&__ret, &__tmp, sizeof(__tmp));                                     \
+    return __ret;                                                              \
+  }                                                                            \
+  inline __device__ unsigned long long __FnName(                               \
+      unsigned int __mask, unsigned long long __val, __Type __offset,          \
+      int __width = warpSize) {                                                \
+    return static_cast<unsigned long long>(::__FnName(                         \
+        __mask, static_cast<long long>(__val), __offset, __width));   \
+  }
+
+__MAKE_SYNC_SHUFFLES(__shfl_sync_fixed, __nvvm_shfl_sync_idx_i32,
+                     __nvvm_shfl_sync_idx_f32, 0x1f, int);
+// We use 0 rather than 31 as our mask, because shfl.up applies to lanes >=
+// maxLane.
+__MAKE_SYNC_SHUFFLES(__shfl_xor_sync_fixed, __nvvm_shfl_sync_bfly_i32,
+                     __nvvm_shfl_sync_bfly_f32, 0x1f, int);
+#pragma pop_macro("__MAKE_SYNC_SHUFFLES")
+#endif
+
 namespace RAJA
 {
 
@@ -241,7 +282,11 @@ RAJA_DEVICE RAJA_INLINE long long shfl_xor_sync<long long>(long long var, int la
 template <>
 RAJA_DEVICE RAJA_INLINE unsigned long long shfl_xor_sync<unsigned long long>(unsigned long long var, int laneMask)
 {
+#if RAJA_CUDA_COMPILER == RAJA_CUDA_COMPILER_CLANG // use this for clang cuda
+  return ::__shfl_xor_sync_fixed(0xffffffffu, var, laneMask);
+#else
   return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+#endif
 }
 
 template <>
@@ -308,7 +353,11 @@ RAJA_DEVICE RAJA_INLINE long long shfl_sync<long long>(long long var, int srcLan
 template <>
 RAJA_DEVICE RAJA_INLINE unsigned long long shfl_sync<unsigned long long>(unsigned long long var, int srcLane)
 {
+#if RAJA_CUDA_COMPILER == RAJA_CUDA_COMPILER_CLANG // use this for clang cuda
+  return ::__shfl_sync_fixed(0xffffffffu, var, srcLane);
+#else
   return ::__shfl_sync(0xffffffffu, var, srcLane);
+#endif
 }
 
 template <>
@@ -387,7 +436,7 @@ RAJA_DEVICE RAJA_INLINE T warp_allreduce(T val)
   T temp = val;
 
   for (int i = 1; i < policy::cuda::WARP_SIZE; i *= 2) {
-    T rhs = __shfl_xor_sync(0xffffffff, temp, i);
+    T rhs = shfl_xor_sync(temp, i);
     Combiner{}(temp, rhs);
   }
 
