@@ -48,6 +48,7 @@ variables:
 
 # High level stages
 stages:
+  - machine-checks
   - build-and-test
   - multi_project
 
