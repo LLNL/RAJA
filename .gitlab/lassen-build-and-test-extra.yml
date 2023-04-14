@@ -145,7 +145,7 @@ clang_14_0_5_asan:
   variables:
     SPEC: " ~shared +openmp +tests %clang@14.0.5 cxxflags==\"-fsanitize=address\" "
     ASAN_OPTIONS: "detect_leaks=1"
-    LSAN_OPTIONS: "suppressions=../suppressions.asan"
+    LSAN_OPTIONS: "suppressions=${CI_PROJECT_DIR}/suppressions.asan"
   extends: .build_and_test_on_lassen
 
 gcc_8_3_1_cuda_10_1_243_desul_atomics:
