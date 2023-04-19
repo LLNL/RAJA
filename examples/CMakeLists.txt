@@ -4,6 +4,10 @@
 ###############################################################################
 
 raja_add_executable(
+  NAME kernel-param-reductions
+  SOURCES kernel-param-reductions.cpp)
+
+raja_add_executable(
   NAME tut_launch_basic
   SOURCES tut_launch_basic.cpp)
 

@@ -246,19 +246,79 @@ struct LambdaArgSwitchboard<Types, LambdaArg<lambda_arg_seg_t, id>>
 
 };
 
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Lambda Parameter interpretation, we need to find a way to treat 
+// Executable Parameter arguments differently. Such as expt::Reduce...
+//
+//////////////////////////////////////////////////////////////////////
+//
+using ExecParamBase = ::RAJA::expt::detail::ForallParamBase;
+
+template<typename T, bool>
+struct ParamReturnHelper{};
+
+template<typename T>
+struct ParamReturnHelper<T, true>
+{
+  using type = typename std::add_lvalue_reference<typename camp::decay<T>::value_type>::type;
+};
+
+template<typename T>
+struct ParamReturnHelper<T, false>
+{
+  using type = typename std::add_lvalue_reference<T>::type;
+
+};
+
+template<typename T>
+using ParamReturnType = typename ParamReturnHelper<T, std::is_convertible<T, ExecParamBase>::value>::type;
+
 template<typename Types, camp::idx_t id>
 struct LambdaArgSwitchboard<Types, LambdaArg<lambda_arg_param_t, id>>
 {
+
+private:
+
+  template<typename T>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  constexpr
+  static
+  ::camp::concepts::enable_if_t<ParamReturnType<T>,
+  ::camp::concepts::negate<std::is_convertible<T, ExecParamBase>>>
+  param_helper(T&& t)
+  {
+    return t;
+  }
+
+  template<typename T>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  constexpr
+  static
+  ::camp::concepts::enable_if_t<ParamReturnType<T>,
+  std::is_convertible<T, ExecParamBase>>
+  param_helper(T&& t)
+  {
+    // This is just for expt::reduce, will need more intelligent logic for technical parameter types.
+    return t.val;
+  }
+  
+public:
   template<typename Data>
   RAJA_HOST_DEVICE
   RAJA_INLINE
   constexpr
-  static auto extract(Data &&data)->
-    typename std::add_lvalue_reference<camp::tuple_element_t<id,typename camp::decay<Data>::param_tuple_t>>::type
+  static auto& extract(Data &&data)//->
+//typename std::add_lvalue_reference<camp::tuple_element_t<id,typename camp::decay<Data>::param_tuple_t>>::type
   {
-    return camp::get<id>(data.param_tuple);
+    //return camp::get<id>(data.param_tuple);
+    return param_helper(camp::get<id>(data.param_tuple));
   }
 };
+
 
 
 template<typename Types, typename T, camp::idx_t value>
@@ -277,11 +337,11 @@ struct LambdaArgSwitchboard<Types, LambdaArg<lambda_arg_value_t<T>, value>>
 
 
 RAJA_SUPPRESS_HD_WARN
-template<camp::idx_t LoopIndex, typename Types, typename Data, typename... targLists>
+template<camp::idx_t LambdaIndex, typename Types, typename Data, typename... targLists>
 RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda_with_args(Data &&data,
                                                        camp::list<targLists...> const &)
 {
-  camp::get<LoopIndex>(data.bodies)(
+  camp::get<LambdaIndex>(data.bodies)(
       LambdaArgSwitchboard<Types, targLists>::extract(data)...);
 }
 
