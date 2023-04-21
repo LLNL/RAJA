@@ -37,3 +37,8 @@ clang_12_0_1_gcc_8_3_1_desul_atomics:
   variables:
     SPEC: " ~shared +openmp +tests +desul %clang@12.0.1.gcc.8.3.1"
   extends: .build_and_test_on_ruby
+
+intel_oneapi_2022_2_gcc_8_3_1:
+  variables:
+    SPEC: "~shared +openmp +tests %oneapi@2022.2.gcc.8.3.1"
+  extends: .build_and_test_on_ruby
