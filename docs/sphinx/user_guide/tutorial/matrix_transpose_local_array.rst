@@ -273,7 +273,7 @@ As an alternative to static shared memory, the matrix transpose kernel may be
 express using dynamic shared memory. Prior to invoking the amount of shared memory
 must be specified
 
-.. literalinclude:: ../../../../exercises/dynamic_mat_transpose.cpp
+.. literalinclude:: ../../../../examples/dynamic_mat_transpose.cpp
    :start-after: // _dyanamic_mattranspose_shared_mem_start
    :end-before: // _dyanamic_mattranspose_shared_mem_end
    :language: C++
@@ -285,7 +285,7 @@ offset to the shared memory buffer. Since the launch context uses a bump style a
 it becomes necessary to reset the allocator offset count at the end of the shared memory
 scope. The full example of matrix transpose with dynamic shared memory is provided below
 
-.. literalinclude:: ../../../../exercises/dynamic_mat_transpose.cpp
+.. literalinclude:: ../../../../examples/dynamic_mat_transpose.cpp
    :start-after: // _dyanamic_mattranspose_shared_mem_start
    :end-before: // _dyanamic_mattranspose_shared_mem_end
    :language: C++
