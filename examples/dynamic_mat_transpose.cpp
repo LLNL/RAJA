@@ -199,7 +199,7 @@ int main(int argc, char *argv[])
   //
   // Define num rows/cols in matrix, tile dimensions, and number of tiles
   //
-  // _mattranspose_localarray_dims_start
+  // _dyanamic_mattranspose_localarray_dims_start
   const int N_r = 267;
   const int N_c = 251;
 
@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
 
   const int outer_Dimc = (N_c - 1) / TILE_DIM + 1;
   const int outer_Dimr = (N_r - 1) / TILE_DIM + 1;
-  // _mattranspose_localarray_dims_end
+  // _dyanamic_mattranspose_localarray_dims_end
 
   //
   // Allocate matrix data
@@ -221,10 +221,10 @@ int main(int argc, char *argv[])
   // holds a pointer to a data array and enables multi-dimensional indexing
   // into the data.
   //
-  // _mattranspose_localarray_views_start
+  // _dyanamic_mattranspose_localarray_views_start
   RAJA::View<int, RAJA::Layout<DIM>> Aview(A, N_r, N_c);
   RAJA::View<int, RAJA::Layout<DIM>> Atview(At, N_c, N_r);
-  // _mattranspose_localarray_views_end
+  // _dyanamic_mattranspose_localarray_views_end
 
   //
   // Initialize matrix data
@@ -241,7 +241,7 @@ int main(int argc, char *argv[])
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
-  // _mattranspose_localarray_cstyle_start
+  // _dyanamic_mattranspose_localarray_cstyle_start
   //
   // (0) Outer loops to iterate over tiles
   //
@@ -291,7 +291,7 @@ int main(int argc, char *argv[])
 
     }
   }
-  // _mattranspose_localarray_cstyle_end
+  // _dyanamic_mattranspose_localarray_cstyle_end
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -317,9 +317,11 @@ int main(int argc, char *argv[])
   }
 #endif
 
-
+  // _dyanamic_mattranspose_shared_mem_start
   constexpr size_t dynamic_shared_mem_size = TILE_DIM * TILE_DIM * sizeof(int);
+  // _dyanamic_mattranspose_shared_mem_end
 
+  // _dyanamic_mattranspose_kernel_start
   RAJA::launch<launch_policy>
     (select_cpu_or_gpu,
      RAJA::LaunchParams(RAJA::Teams(outer_Dimr, outer_Dimc),
@@ -377,6 +379,7 @@ int main(int argc, char *argv[])
       });
 
   });
+  // _dyanamic_mattranspose_kernel_end
 
 
 #if defined(RAJA_ENABLE_HIP)

@@ -429,9 +429,9 @@ Finally
 GPU Policies for SYCL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
- ======================================== ============= ========================
+ ======================================== ============= ==============================
  SYCL Execution Policies                  Works with    Brief description
- ======================================== ============= ========================
+ ======================================== ============= ==============================
  sycl_exec<WORK_GROUP_SIZE>               forall,       Execute loop iterations
                                                         in a GPU kernel launched
                                                         with given work group
@@ -453,23 +453,23 @@ GPU Policies for SYCL
  sycl_global_2<WORK_GROUP_SIZE>           kernel (For)  Same as above, but map
                                                         to global ids in third
                                                         dim
- sycl_global_item_0                                     Creates a unique thread
+ sycl_global_item_0                       launch (loop) Creates a unique thread
                                                         id for each thread for
                                                         dimension 0 of the grid.
 							Same as computing
 							itm.get_group(0) +
 							itm.get_local_range(0) *
 							itm.get_local_id(0).
- sycl_global_item_1                      launch (loop)  Same as above, but uses
-                                                        threads in dimension 1.
+ sycl_global_item_1                       launch (loop) Same as above, but uses
+                                                        threads in dimension 1
 							Same as computing
 						        itm.get_group(1) +
 							itm.get_local_range(1) *
 							itm.get_local_id(1).
- sycl_global_item_2                      launch (loop) Same as above, but uses
-                                                        threads in dimension 2.
+ sycl_global_item_2                       launch (loop) Same as above, but uses
+                                                        threads in dimension 2
 							Same as computing
-							itm.get_group(2) +
+						        itm.get_group(2) +
 							itm.get_local_range(2) *
 							itm.get_local_id(2).
  sycl_local_0_direct                      kernel (For)  Map loop iterates
@@ -517,7 +517,7 @@ GPU Policies for SYCL
                                           launch (loop) groups in third
                                                         dimension
 
- ======================================== ============= ========================
+ ======================================== ============= ==============================
 
 OpenMP Target Offload Policies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
