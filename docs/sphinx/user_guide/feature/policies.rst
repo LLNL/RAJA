@@ -47,6 +47,8 @@ apply during code compilation.
  ====================================== ============= ==========================
  Sequential/SIMD Execution Policies     Works with    Brief description
  ====================================== ============= ==========================
+ seq_launch_t                           launch        Creates a sequential
+                                                      execution space.
  seq_exec                               forall,       Strictly sequential
                                         kernel (For), execution.
                                         scan,
@@ -273,9 +275,9 @@ RAJA policies for GPU execution using CUDA or HIP are essentially identical.
 The only difference is that CUDA policies have the prefix ``cuda_`` and HIP
 policies have the prefix ``hip_``.
 
- ======================================== ============= ========================
+ ======================================== ============= =======================================
  CUDA/HIP Execution Policies              Works with    Brief description
- ======================================== ============= ========================
+ ======================================== ============= =======================================
  cuda/hip_exec<BLOCK_SIZE>                forall,       Execute loop iterations
                                           scan,         in a GPU kernel launched
                                           sort          with given thread-block
@@ -331,14 +333,17 @@ policies have the prefix ``hip_``.
                                           launch (loop) blocks in z-dimension
  cuda/hip_global_thread_x                               Creates a unique thread
                                                         id for each thread on
-                                                        x-dimension of the grid
-                                                        (expt namespace)
+                                                        x-dimension of the grid.
+							Same as computing
+							threadIdx.x + threadDim.x * blockIdx.x.
  cuda/hip_global_thread_y                 launch (loop) Same as above, but uses
-                                                        threads in y-dimension
-                                                        (expt namespace)
+                                                        threads in y-dimension.
+							Same as computing
+							threadIdx.y + threadDim.y * blockIdx.y.
  cuda/hip_global_thread_z                 launch (loop) Same as above, but uses
-                                                        threads in z-dimension
-                                                        (expt namespace)
+                                                        threads in z-dimension.
+							Same as computing
+							threadIdx.z + threadDim.z * blockIdx.z.
  cuda/hip_warp_direct                     kernel (For)  Map work to threads
                                                         in a warp directly.
                                                         Cannot be used in
@@ -387,7 +392,7 @@ policies have the prefix ``hip_``.
  cuda/_warp_reduce                        kernel        Perform a reduction
                                           (Reduce)      across a single GPU
                                                         thread warp.
- ======================================== ============= ========================
+ ======================================== ============= =======================================
 
 Several notable constraints apply to RAJA CUDA/HIP *thread-direct* policies.
 
@@ -448,6 +453,25 @@ GPU Policies for SYCL
  sycl_global_2<WORK_GROUP_SIZE>           kernel (For)  Same as above, but map
                                                         to global ids in third
                                                         dim
+ sycl_global_item_0                                     Creates a unique thread
+                                                        id for each thread for
+                                                        dimension 0 of the grid.
+							Same as computing
+							itm.get_group(0) +
+							itm.get_local_range(0) *
+							itm.get_local_id(0).
+ sycl_global_item_1                      launch (loop)  Same as above, but uses
+                                                        threads in dimension 1.
+							Same as computing
+						        itm.get_group(1) +
+							itm.get_local_range(1) *
+							itm.get_local_id(1).
+ sycl_global_item_2                      launch (loop) Same as above, but uses
+                                                        threads in dimension 2.
+							Same as computing
+							itm.get_group(2) +
+							itm.get_local_range(2) *
+							itm.get_local_id(2).
  sycl_local_0_direct                      kernel (For)  Map loop iterates
                                           launch (loop) directly to GPU work
                                                         items in first
