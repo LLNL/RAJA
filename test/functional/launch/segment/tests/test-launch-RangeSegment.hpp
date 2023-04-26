@@ -45,13 +45,13 @@ void LaunchRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
     RAJA::launch<LAUNCH_POLICY>
       (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-  
+
         RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
             working_array[RAJA::stripIndexType(idx - rbegin)] = idx;
-          });         
+          });
     });
 
-  } else { // zero-length segment 
+  } else { // zero-length segment
 
     memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
 
@@ -60,11 +60,11 @@ void LaunchRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
     RAJA::launch<LAUNCH_POLICY>
       (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-  
+
         RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
             (void) idx;
             working_array[0]++;
-        }); 
+        });
     });
 
   }
@@ -105,7 +105,7 @@ void runNegativeTests()
   LaunchRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(5));
 }
 
-TYPED_TEST_P(LaunchRangeSegmentTest, RangeSegmentTeams)             
+TYPED_TEST_P(LaunchRangeSegmentTest, RangeSegmentTeams)
 {
 
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
