@@ -37,15 +37,17 @@ void LaunchBasicSharedTestImpl()
     select_cpu_or_gpu = RAJA::ExecPlace::DEVICE;
   }
 
+  size_t shared_mem_size = 1 * sizeof(int);
 
-  RAJA::launch<LAUNCH_POLICY>(select_cpu_or_gpu,
-    RAJA::LaunchParams(RAJA::Teams(N), RAJA::Threads(N)),
+  RAJA::launch<LAUNCH_POLICY>
+    (select_cpu_or_gpu,
+     RAJA::LaunchParams(RAJA::Teams(N), RAJA::Threads(N), shared_mem_size),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
           RAJA::loop<TEAM_POLICY>(ctx, RAJA::RangeSegment(0, N), [&](int r) {
 
                 // Array shared within threads of the same team
-                RAJA_TEAM_SHARED int s_A[1];
+              int * s_A = ctx.getSharedMemory<int>(1);
 
                 RAJA::loop<THREAD_POLICY>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
                     s_A[c] = r; 
