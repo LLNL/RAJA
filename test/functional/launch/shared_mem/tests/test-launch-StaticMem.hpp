@@ -35,7 +35,7 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
 
   //determine the underlying type of block_range
   using s_type = decltype(RAJA::stripIndexType(block_range));
-  
+
   for(s_type b=0; b<RAJA::stripIndexType(block_range); ++b) {
     for(s_type c=0; c<RAJA::stripIndexType(thread_range); ++c) {
       s_type idx = c + RAJA::stripIndexType(thread_range)*b;
@@ -103,6 +103,14 @@ TYPED_TEST_P(LaunchStaticMemTest, StaticMemLaunch)
   using TEAM_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<1>>::type;
   using THREAD_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<2>>::type;
 
+
+#if defined(RAJA_ENABLE_SYCL)
+  if(std::is_samae<LAUNCH_POLICY, RAJA::sycl_launch_t<false>> || std::is_samae<LAUNCH_POLICY, RAJA::sycl_launch_t<true>>)
+  {
+    //SYCL does not support static shared memory
+    return;
+  }
+#endif
 
   LaunchStaticMemTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, TEAM_POLICY, THREAD_POLICY, 2>
     (INDEX_TYPE(4));

@@ -64,5 +64,16 @@ using Hip_launch_policies = camp::list<
        >;
 #endif // RAJA_ENABLE_HIP
 
+#if defined(RAJA_ENABLE_SYCL)
+
+using sycl_policies = camp::list<
+  RAJA::LaunchPolicy<RAJA::sycl_launch_t<true>>,
+  RAJA::LoopPolicy<RAJA::sycl_global_item_0>>;
+
+using Sycl_launch_policies = camp::list<
+      sycl_policies
+       >;
+#endif // RAJA_ENABLE_SYCL
+
 
 #endif  // __RAJA_test_launch_execpol_HPP__

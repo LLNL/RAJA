@@ -19,6 +19,10 @@ if(RAJA_ENABLE_HIP)
   list(APPEND LAUNCH_BACKENDS Hip)
 endif()
 
+if(RAJA_ENABLE_SYCL)
+  list(APPEND LAUNCH_BACKENDS Sycl)
+endif()
+
 add_subdirectory(run-time-switch)
 
 add_subdirectory(segment)
