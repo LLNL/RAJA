@@ -12,7 +12,7 @@
 Contributing to RAJA
 *********************
 
-RAJA is a collaborative open source software project and we encourage 
+RAJA is a collaborative open-source software project and we encourage 
 contributions from anyone who wants to add features or improve its
 capabilities. This section describes the following:
 
@@ -72,7 +72,7 @@ of the contributor. The process involves four main steps:
      branch on which she has developed a contribution into another RAJA branch,
      typically, the develop branch.
   #. When a PR is created, GitHub triggers Azure CI testing checks and 
-     possibly Gitlab CI checks if the branch is part of the RAJA GItHub repo. 
+     possibly GitLab CI checks if the branch is part of the RAJA GItHub repo. 
      Running and pass/fail status is reported back to GitHub where it can be 
      viewed and monitored.
   #. Meanwhile, RAJA team members and other contributors review the PR, 
@@ -105,7 +105,7 @@ As noted earlier, if you are not a member of the core RAJA development team,
 or a recognized RAJA contributor, then you do not have permission to create a 
 branch in the RAJA GitHub repository. This choice is due to policies enforced 
 by the LLNL organization on GitHub (in which the RAJA project resides) and the
-Livermore Computing (LC) organization (in which we run our Gitlab CI testing).
+Livermore Computing (LC) organization (in which we run our GitLab CI testing).
 Fortunately, you may still contribute to RAJA by `forking the RAJA repo 
 <https://github.com/LLNL/RAJA/fork>`_. Forking creates a copy of the RAJA 
 repository that you own. You can make changes on your local copy and push them 
@@ -201,9 +201,9 @@ Accepting A Pull Request From A Forked Repository
 
 Due to LLNL security policies, some RAJA pull requests will not be able to
 be run through all RAJA CI tools. The Livermore Computing (LC) Center
-Gitlab systems restrict which GitHub PRs may automatically run through its 
+GitLab systems restrict which GitHub PRs may automatically run through its 
 CI test pipelines. For example, a PR made from branch on a forked repository 
-will not trigger Gitlab CI checks. Gitlab CI on LC platforms will be run only
+will not trigger GitLab CI checks. GitLab CI on LC platforms will be run only
 on PRs that are made from branches in the GitHub RAJA repository. 
 See :ref:`ci-label` for more information about RAJA PR testing.
 
@@ -230,7 +230,7 @@ See :ref:`ci-label` for more information about RAJA PR testing.
 
           You can push the new branch to the RAJA repo on GitHub::
 
-            $ git push origin <branch-name>
+            $ git push git@github.com:LLNL/RAJA.git <branch-name>
 
           and make a PR for the new branch. It is good practice to reference 
           the original PR in the description of the new PR to track the 

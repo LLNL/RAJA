@@ -121,7 +121,7 @@ namespace detail
 struct hipInfo {
   hip_dim_t gridDim = 0;
   hip_dim_t blockDim = 0;
-  ::RAJA::resources::Hip res;
+  ::RAJA::resources::Hip res{::RAJA::resources::Hip::HipFromStream(0,0)};
   bool setup_reducers = false;
 #if defined(RAJA_ENABLE_OPENMP)
   hipInfo* thread_states = nullptr;

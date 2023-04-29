@@ -24,7 +24,7 @@ variables:
 
 # Corona
 # Arguments for top level allocation
-  CORONA_BUILD_AND_TEST_SHARED_ALLOC: "--time-limit=60m --nodes=1"
+  CORONA_BUILD_AND_TEST_SHARED_ALLOC: "--exclusive --time-limit=60m --nodes=1"
 # Arguments for job level allocation
   CORONA_BUILD_AND_TEST_JOB_ALLOC: "--time-limit=45m --nodes=1"
 # Project specific variants for corona
@@ -34,7 +34,7 @@ variables:
 
 # Tioga
 # Arguments for top level allocation
-  TIOGA_BUILD_AND_TEST_SHARED_ALLOC: "--time-limit=60m --nodes=1"
+  TIOGA_BUILD_AND_TEST_SHARED_ALLOC: "--exclusive --time-limit=60m --nodes=1"
 # Arguments for job level allocation
   TIOGA_BUILD_AND_TEST_JOB_ALLOC: "--time-limit=45m --nodes=1"
 # Project specific variants for corona
@@ -50,7 +50,6 @@ variables:
   PROJECT_LASSEN_VARIANTS: "~shared +openmp +tests"
 # Project specific deps for lassen
   PROJECT_LASSEN_DEPS: ""
-
 
 # Configuration shared by build and test jobs specific to this project.
 # Not all configuration can be shared. Here projects can fine tune the
