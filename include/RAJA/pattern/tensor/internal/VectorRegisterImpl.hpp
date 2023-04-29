@@ -560,6 +560,7 @@ namespace expt
        *
        */
       RAJA_INLINE
+      RAJA_HOST_DEVICE
       self_type &gather(element_type const *ptr, int_vector_type offsets){
         for(camp::idx_t reg = 0;reg < s_num_full_registers;++ reg){
           m_registers[reg].gather(ptr, offsets.vec(reg));
@@ -800,6 +801,7 @@ namespace expt
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
+      RAJA_HOST_DEVICE
       element_type min() const
       {
         // special case where there's just one parital register
@@ -821,6 +823,7 @@ namespace expt
        * @brief Returns the smallest element over the first N lanes
        */
       RAJA_INLINE
+      RAJA_HOST_DEVICE
       element_type min_n(int N) const
       {
         // special case where there's just one parital register
@@ -848,6 +851,7 @@ namespace expt
        * @return The largest scalar element in the register
        */
       RAJA_INLINE
+      RAJA_HOST_DEVICE
       element_type max() const
       {
         // special case where there's just one parital register
@@ -869,6 +873,7 @@ namespace expt
        * @brief Returns the largest element over the first N lanes
        */
       RAJA_INLINE
+      RAJA_HOST_DEVICE
       element_type max_n(int N) const
       {
         // special case where there's just one parital register
@@ -895,6 +900,7 @@ namespace expt
        * @brief Returns the sum of all elements
        */
       RAJA_INLINE
+      RAJA_HOST_DEVICE
       element_type sum() const
       {
         // first do a vector sum of all registers
