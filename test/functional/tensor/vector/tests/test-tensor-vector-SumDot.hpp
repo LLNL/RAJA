@@ -37,11 +37,9 @@ void SumDotImpl()
   ex_dot[0] = (element_t)0;
 
   // compute expected values on host
-  for(camp::idx_t N = 1; N <= vector_t::s_num_elem; ++ N){
-    for(camp::idx_t i = 0;i < N;++ i){
-      host_sum += A[i];
-      host_dot += A[i]*A[i];
-    }
+  for(camp::idx_t i = 0; i < vector_t::s_num_elem; ++i){
+    host_sum += A[i];
+    host_dot += A[i]*A[i];
   }
 
   tensor_copy_to_device<policy_t>(A_ptr, A);
@@ -51,15 +49,12 @@ void SumDotImpl()
   // For Fixed vectors, only try with fixed length
   // For Stream vectors, try all lengths
   tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
-    for(camp::idx_t N = 1; N <= vector_t::s_num_elem; ++ N){
+    // load array A as vector
+    vector_t vec;
+    vec.load_packed_n(A_ptr, vector_t::s_num_elem);
 
-      // compute expected values
-      for(camp::idx_t i = 0;i < N;++ i){
-        ex_sum_ptr[0] += A_ptr[i];
-        ex_dot_ptr[0] += A_ptr[i]*A_ptr[i];
-      }
-
-    }
+    ex_sum_ptr[0] = vec.sum();
+    ex_dot_ptr[0] = vec.dot(vec);
   });
 
   tensor_copy_to_host<policy_t>(ex_sum, ex_sum_ptr);
