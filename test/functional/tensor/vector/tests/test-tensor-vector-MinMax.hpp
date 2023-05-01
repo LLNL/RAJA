@@ -59,6 +59,10 @@ void MinMaxImpl()
 
   // check max
   ASSERT_SCALAR_EQ(ex_max[0], (element_t)(vector_t::s_num_elem-1));
+
+  tensor_free<policy_t>(A_ptr);
+  tensor_free<policy_t>(ex_min_ptr);
+  tensor_free<policy_t>(ex_max_ptr);
 }
 
 

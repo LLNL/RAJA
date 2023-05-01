@@ -77,6 +77,9 @@ void CtorGetSetImpl()
 
   }
 
+  tensor_free<policy_t>(A_ptr);
+  tensor_free<policy_t>(get_ptr);
+  tensor_free<policy_t>(set_ptr);
 }
 
 

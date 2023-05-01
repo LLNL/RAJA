@@ -65,6 +65,10 @@ void SumDotImpl()
 
   // check dot
   ASSERT_SCALAR_EQ(ex_dot[0], host_dot);
+
+  tensor_free<policy_t>(A_ptr);
+  tensor_free<policy_t>(ex_sum_ptr);
+  tensor_free<policy_t>(ex_dot_ptr);
 }
 
 

@@ -95,6 +95,11 @@ void FmaFmsImpl()
 
   }
 
+  tensor_free<policy_t>(A_ptr);
+  tensor_free<policy_t>(B_ptr);
+  tensor_free<policy_t>(C_ptr);
+  tensor_free<policy_t>(fma_ptr);
+  tensor_free<policy_t>(fms_ptr);
 }
 
 

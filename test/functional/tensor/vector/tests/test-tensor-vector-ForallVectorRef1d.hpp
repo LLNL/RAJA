@@ -133,6 +133,10 @@ void ForallVectorRef1dImpl()
   for(size_t i = N/2;i < N;i ++){
     ASSERT_SCALAR_EQ(0, C[i]);
   }
+
+  tensor_free<policy_t>(A_ptr);
+  tensor_free<policy_t>(B_ptr);
+  tensor_free<policy_t>(C_ptr);
 }
 
 

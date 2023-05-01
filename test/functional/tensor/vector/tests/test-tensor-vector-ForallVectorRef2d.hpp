@@ -22,7 +22,6 @@ typename std::enable_if<!TensorTestHelper<typename VECTOR_TYPE::register_policy>
 ForallVectorRef2dImpl()
 {
   using vector_t = VECTOR_TYPE;
-  using policy_t = typename vector_t::register_policy;
   using element_t = typename vector_t::element_type;
 
   using index_t = ptrdiff_t;
