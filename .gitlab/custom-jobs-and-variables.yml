@@ -28,7 +28,7 @@ variables:
 # Arguments for job level allocation
   CORONA_BUILD_AND_TEST_JOB_ALLOC: "--time-limit=45m --nodes=1"
 # Project specific variants for corona
-  PROJECT_CORONA_VARIANTS: "~shared ~openmp +tests"
+  PROJECT_CORONA_VARIANTS: "~shared ~openmp +tests --begin-time=+5s"
 # Project specific deps for corona
   PROJECT_CORONA_DEPS: "^blt@develop "
 
@@ -38,7 +38,7 @@ variables:
 # Arguments for job level allocation
   TIOGA_BUILD_AND_TEST_JOB_ALLOC: "--time-limit=45m --nodes=1"
 # Project specific variants for corona
-  PROJECT_TIOGA_VARIANTS: "~shared ~openmp +tests"
+  PROJECT_TIOGA_VARIANTS: "~shared ~openmp +tests --begin-time=+5s"
 # Project specific deps for corona
   PROJECT_TIOGA_DEPS: "^blt@develop "
 
