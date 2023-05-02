@@ -26,14 +26,14 @@ void LaunchBasicSharedTestImpl()
                              &working_array,
                              &check_array,
                              &test_array);
-  
+
 
 
   //Select platform
   RAJA::ExecPlace select_cpu_or_gpu;
   if (working_res.get_platform()  == camp::resources::Platform::host){
     select_cpu_or_gpu = RAJA::ExecPlace::HOST;
-  }else{  
+  }else{
     select_cpu_or_gpu = RAJA::ExecPlace::DEVICE;
   }
 
@@ -50,7 +50,7 @@ void LaunchBasicSharedTestImpl()
               int * s_A = ctx.getSharedMemory<int>(1);
 
                 RAJA::loop<THREAD_POLICY>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
-                    s_A[c] = r; 
+                    s_A[c] = r;
                 });
 
                 ctx.teamSync();
@@ -61,6 +61,7 @@ void LaunchBasicSharedTestImpl()
                     working_array[idx] = s_A[0];
                 });  // loop j
 
+                ctx.releaseSharedMemory();
               });  // loop r
         });  // outer lambda
 
