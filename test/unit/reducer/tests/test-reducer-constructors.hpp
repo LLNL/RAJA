@@ -32,17 +32,15 @@ TYPED_TEST_SUITE_P(ReducerInitConstructorUnitTest);
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 template <typename ReducePolicy,
           typename NumericType>
-#if defined(RAJA_ENABLE_CUDA)
-typename  std::enable_if< // CUDA policy does nothing.
+typename  std::enable_if<
+#if defined(RAJA_ENABLE_CUDA) // CUDA policy does nothing.
             std::is_same<ReducePolicy, RAJA::cuda_reduce>::value
-          >::type
-#elif defined(RAJA_ENABLE_HIP)
-typename  std::enable_if< // HIP policy does nothing.
+#elif defined(RAJA_ENABLE_HIP) // HIP policy does nothing.
             std::is_same<ReducePolicy, RAJA::hip_reduce>::value
-          >::type
 #else
 #error Please enable a supported GPU platform, e.g. CUDA or HIP.
 #endif
+          >::type
 testReducerConstructor()
 {
   // do nothing
