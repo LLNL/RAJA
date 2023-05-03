@@ -29,9 +29,40 @@ class ReducerInitConstructorUnitTest : public ::testing::Test
 TYPED_TEST_SUITE_P(ReducerBasicConstructorUnitTest);
 TYPED_TEST_SUITE_P(ReducerInitConstructorUnitTest);
 
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 template <typename ReducePolicy,
           typename NumericType>
-void testReducerConstructor()
+#if defined(RAJA_ENABLE_CUDA)
+typename  std::enable_if< // CUDA policy does nothing.
+            std::is_same<ReducePolicy, RAJA::cuda_reduce>::value
+          >::type
+#elif defined(RAJA_ENABLE_HIP)
+typename  std::enable_if< // HIP policy does nothing.
+            std::is_same<ReducePolicy, RAJA::hip_reduce>::value
+          >::type
+#else
+#error Please enable a supported GPU platform, e.g. CUDA or HIP.
+#endif
+testReducerConstructor()
+{
+  // do nothing
+}
+#endif
+
+// Basic constructor tests are only expected to be verified on the host.
+// Should not run this on a GPU.
+template <typename ReducePolicy,
+          typename NumericType>
+typename  std::enable_if< // CPU policy.
+#if defined(RAJA_ENABLE_CUDA)
+            !std::is_same<ReducePolicy, RAJA::cuda_reduce>::value
+#elif defined(RAJA_ENABLE_HIP)
+            !std::is_same<ReducePolicy, RAJA::hip_reduce>::value
+#else
+            true  // Always run for non-GPU policies.
+#endif
+          >::type
+testReducerConstructor()
 {
   RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum;
   RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min;
