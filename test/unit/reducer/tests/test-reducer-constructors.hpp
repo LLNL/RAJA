@@ -204,9 +204,6 @@ TYPED_TEST_P(ReducerInitConstructorUnitTest, InitReducerConstructor)
   testInitReducerConstructor< ReduceType, NumericType, ResourceType, ForOneType >();
 }
 
-#if defined(RAJA_ENABLE_HIP)
-GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ReducerBasicConstructorUnitTest);
-#endif
 
 REGISTER_TYPED_TEST_SUITE_P(ReducerBasicConstructorUnitTest,
                             BasicReducerConstructor);
