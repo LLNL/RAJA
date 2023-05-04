@@ -263,6 +263,21 @@ namespace RAJA {
 
 #if defined(RAJA_ENABLE_CUDA) && defined(__CUDACC__)
 #define RAJA_CUDA_ACTIVE
+
+// Compiler numeric identifiers
+#define RAJA_CUDA_COMPILER_NVCC -1
+#define RAJA_CUDA_COMPILER_CLANG 1
+#define RAJA_CUDA_COMPILER_NVCXX 2
+
+#if defined(__NVCOMPILER_CUDA__) // it's NVC++
+#define RAJA_CUDA_COMPILER RAJA_CUDA_COMPILER_NVCXX
+#elif defined(__NVCC__) // it's NVCC
+#define RAJA_CUDA_COMPILER RAJA_CUDA_COMPILER_NVCC
+#elif defined(__clang__) && defined(__CUDA__) // clang cuda
+#define RAJA_CUDA_COMPILER RAJA_CUDA_COMPILER_CLANG
+#else
+#error Unknown compiler is claiming to be a CUDA compiler
+#endif
 #endif // RAJA_ENABLE_CUDA && __CUDACC__
 
 #if defined(RAJA_ENABLE_HIP) && defined(__HIPCC__)
