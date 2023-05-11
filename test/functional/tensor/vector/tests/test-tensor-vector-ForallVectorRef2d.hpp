@@ -5,18 +5,24 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_TESNOR_VECTOR_ForallVectorRef2d_HPP__
-#define __TEST_TESNOR_VECTOR_ForallVectorRef2d_HPP__
+#ifndef __TEST_TENSOR_VECTOR_ForallVectorRef2d_HPP__
+#define __TEST_TENSOR_VECTOR_ForallVectorRef2d_HPP__
 
 #include<RAJA/RAJA.hpp>
 
 template <typename VECTOR_TYPE>
-void ForallVectorRef2dImpl()
+typename std::enable_if<TensorTestHelper<typename VECTOR_TYPE::register_policy>::is_device>::type
+ForallVectorRef2dImpl()
 {
+  // do nothing for CUDA or device tests
+}
 
+template <typename VECTOR_TYPE>
+typename std::enable_if<!TensorTestHelper<typename VECTOR_TYPE::register_policy>::is_device>::type
+ForallVectorRef2dImpl()
+{
   using vector_t = VECTOR_TYPE;
   using element_t = typename vector_t::element_type;
-
 
   using index_t = ptrdiff_t;
 
@@ -27,24 +33,22 @@ void ForallVectorRef2dImpl()
   N += (size_t)(10*NO_OPT_RAND);
   M += (size_t)(10*NO_OPT_RAND);
 
-  element_t *A = new element_t[N*M];
-  element_t *B = new element_t[N*M];
-  element_t *C = new element_t[N*M];
+  std::vector<element_t> A(N*M);
+  std::vector<element_t> B(N*M);
+  std::vector<element_t> C(N*M);
+
   for(index_t i = 0;i < N*M; ++ i){
     A[i] = (element_t)(NO_OPT_RAND*1000.0);
     B[i] = (element_t)(NO_OPT_RAND*1000.0);
     C[i] = 0.0;
   }
 
-  RAJA::View<element_t, RAJA::Layout<2>> X(A, N, M);
-  RAJA::View<element_t, RAJA::Layout<2>> Y(B, N, M);
-  RAJA::View<element_t, RAJA::Layout<2>> Z(C, N, M);
+  RAJA::View<element_t, RAJA::Layout<2>> X(A.data(), N, M);
+  RAJA::View<element_t, RAJA::Layout<2>> Y(B.data(), N, M);
+  RAJA::View<element_t, RAJA::Layout<2>> Z(C.data(), N, M);
 
-  using idx_t = RAJA::VectorIndex<index_t, vector_t>;
+  using idx_t = RAJA::expt::VectorIndex<index_t, vector_t>;
   auto all = idx_t::all();
-
-
-
 
   //
   // Test with kernel, using sequential policies and ::all()
@@ -52,6 +56,7 @@ void ForallVectorRef2dImpl()
   for(index_t i = 0;i < N*M; ++ i){
     C[i] = 0.0;
   }
+
   using policy1_t =
       RAJA::KernelPolicy<
         RAJA::statement::For<0, RAJA::loop_exec,
@@ -59,15 +64,10 @@ void ForallVectorRef2dImpl()
         >
       >;
 
-
-
-
-
   // Test with kernel, using sequential policies and ::all()
   RAJA::kernel<policy1_t>(
       RAJA::make_tuple(RAJA::TypedRangeSegment<index_t>(0, N)),
-
-      [=](index_t i)
+      [=] (index_t i)
   {
     Z(i,all) = 3+(X(i,all)*(5/Y(i,all)))+9;
   });
@@ -77,12 +77,9 @@ void ForallVectorRef2dImpl()
   }
 
 
-#if 1
-
   //
   // Test with kernel, using tensor_exec policy
   //
-
 
   for(index_t i = 0;i < N*M; ++ i){
     C[i] = 0.0;
@@ -91,7 +88,7 @@ void ForallVectorRef2dImpl()
   using policy2_t =
       RAJA::KernelPolicy<
         RAJA::statement::For<0, RAJA::loop_exec,
-          RAJA::statement::For<1, RAJA::vector_exec<vector_t>,
+          RAJA::statement::For<1, RAJA::expt::vector_exec<vector_t>,
             RAJA::statement::Lambda<0>
           >
         >
@@ -101,7 +98,7 @@ void ForallVectorRef2dImpl()
       RAJA::make_tuple(RAJA::TypedRangeSegment<index_t>(0, N),
                        RAJA::TypedRangeSegment<index_t>(0, M)),
 
-      [=](index_t i, idx_t j)
+      [=](index_t i, index_t j)
   {
     Z(i, j) = 3+(X(i, j)*(5/Y(i, j)))+9;
   });
@@ -112,26 +109,23 @@ void ForallVectorRef2dImpl()
 
 
 
-
   //
   // Test with forall with vectors in i
   //
   for(index_t i = 0;i < N*M; ++ i){
     C[i] = 0.0;
   }
+
   RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<index_t>(0, M),
       [=](index_t j){
 
-
     Z(all,j) = 3+(X(all,j)*(5/Y(all,j)))+9;
-
 
   });
 
   for(index_t i = 0;i < N*M;i ++){
     ASSERT_SCALAR_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
   }
-
 
 
   //
@@ -140,26 +134,17 @@ void ForallVectorRef2dImpl()
   for(index_t i = 0;i < N*M; ++ i){
     C[i] = 0.0;
   }
+
   RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<index_t>(0, N),
       [=](index_t i){
 
-
     Z(i,all) = 3+(X(i,all)*(5/Y(i,all)))+9;
-
 
   });
 
   for(index_t i = 0;i < N*M;i ++){
     ASSERT_SCALAR_EQ(3+(A[i]*(5/B[i]))+9, C[i]);
   }
-
-
-#endif
-
-
-  delete[] A;
-  delete[] B;
-  delete[] C;
 }
 
 
