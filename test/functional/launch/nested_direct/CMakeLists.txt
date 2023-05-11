@@ -10,8 +10,7 @@
 #
 #  TODO: Support list segments with RAJA Launch
 #
-#set(NESTEDTYPES Loop Direct)
-set(NESTEDTYPES Loop)
+set(NESTEDTYPES Direct)
 
 #
 # Generate tests for each enabled RAJA back-end.
