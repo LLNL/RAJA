@@ -32,4 +32,6 @@ add_subdirectory(segment)
 
 add_subdirectory(shared_mem)
 
+add_subdirectory(nested_loops)
+
 unset( LAUNCH_BACKENDS )
