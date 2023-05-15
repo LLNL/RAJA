@@ -36,4 +36,8 @@ add_subdirectory(nested_loop)
 
 add_subdirectory(nested_direct)
 
+add_subdirectory(nested_tile_direct)
+
+add_subdirectory(nested_tile_loop)
+
 unset( LAUNCH_BACKENDS )
