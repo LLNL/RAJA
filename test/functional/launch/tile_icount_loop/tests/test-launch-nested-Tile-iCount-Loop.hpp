@@ -12,17 +12,20 @@
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename LAUNCH_POLICY,
           typename THREAD_X_POLICY, typename TEAM_X_POLICY>
-void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
+void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
 {
 
-  constexpr int threads_x   = 4;
-  constexpr int blocks_x    = 4; 
+  constexpr int tile_size   = 4;
+
+  //following grid will require loop policies
+  constexpr int threads_x   = 3;
+  constexpr int blocks_x    = 1;
   
-  RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, M*threads_x+1);
+  RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, M*tile_size+1);
   
   INDEX_TYPE N1 = static_cast<INDEX_TYPE>(r1.end() - r1.begin());
 
-  int no_tiles = (N1-1)/threads_x + 1;
+  INDEX_TYPE no_tiles = (N1-1)/tile_size + 1;
   
   INDEX_TYPE N = static_cast<INDEX_TYPE>(RAJA::stripIndexType(N1));
 
@@ -61,7 +64,7 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
       (RAJA::LaunchParams(RAJA::Teams(blocks_x), RAJA::Threads(threads_x)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-        RAJA::tile_icount<TEAM_X_POLICY>(ctx, threads_x, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile, INDEX_TYPE bx) {
+        RAJA::tile_icount<TEAM_X_POLICY>(ctx, tile_size, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile, INDEX_TYPE bx) {
             RAJA::loop_icount<THREAD_X_POLICY>(ctx, x_tile, [&](INDEX_TYPE tx, INDEX_TYPE ix) {
                 
                 working_itile_array[tx] = bx;
@@ -80,7 +83,7 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
       (RAJA::LaunchParams(RAJA::Teams(blocks_x), RAJA::Threads(blocks_x)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-        RAJA::tile_icount<TEAM_X_POLICY>(ctx, threads_x, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile, INDEX_TYPE bx) {
+        RAJA::tile_icount<TEAM_X_POLICY>(ctx, tile_size, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile, INDEX_TYPE bx) {
             RAJA::loop_icount<THREAD_X_POLICY>(ctx, x_tile, [&](INDEX_TYPE tx, INDEX_TYPE ix) {
 
                 (void) tx;
@@ -98,9 +101,9 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
   working_res.memcpy(check_itile_array, working_itile_array, sizeof(INDEX_TYPE) * data_len);
   working_res.memcpy(check_iloop_array, working_iloop_array, sizeof(INDEX_TYPE) * data_len);
 
-  int idx = 0;
+  INDEX_TYPE idx = 0;
   for (INDEX_TYPE bx = INDEX_TYPE(0); bx < no_tiles; ++bx) {
-    for (INDEX_TYPE tx = INDEX_TYPE(0); tx < threads_x; ++tx) {
+    for (INDEX_TYPE tx = INDEX_TYPE(0); tx < tile_size; ++tx) {
 
       if(idx >= N1) break;
 
@@ -123,14 +126,14 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
 }
 
 
-TYPED_TEST_SUITE_P(LaunchNestedTileDirectTest);
+TYPED_TEST_SUITE_P(LaunchNestedTileLoopTest);
 template <typename T>
-class LaunchNestedTileDirectTest : public ::testing::Test
+class LaunchNestedTileLoopTest : public ::testing::Test
 {
 };
 
 
-TYPED_TEST_P(LaunchNestedTileDirectTest, RangeSegmentTeams)
+TYPED_TEST_P(LaunchNestedTileLoopTest, RangeSegmentTeams)
 {
 
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
@@ -142,23 +145,23 @@ TYPED_TEST_P(LaunchNestedTileDirectTest, RangeSegmentTeams)
 
 
   // test zero-length range segment
-  LaunchNestedTileDirectTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
+  LaunchNestedTileLoopTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
                            THREAD_X_POLICY, TEAM_X_POLICY>
     (INDEX_TYPE(0));
 
   //Keep at one since we are doing a direct thread test
-  LaunchNestedTileDirectTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
+  LaunchNestedTileLoopTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
                                  THREAD_X_POLICY, TEAM_X_POLICY>
     (INDEX_TYPE(1));
 
-    LaunchNestedTileDirectTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
-                                 THREAD_X_POLICY, TEAM_X_POLICY>
+  LaunchNestedTileLoopTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
+                               THREAD_X_POLICY, TEAM_X_POLICY>
     (INDEX_TYPE(2));
 
 
 }
 
-REGISTER_TYPED_TEST_SUITE_P(LaunchNestedTileDirectTest,
+REGISTER_TYPED_TEST_SUITE_P(LaunchNestedTileLoopTest,
                             RangeSegmentTeams);
 
 #endif  // __TEST_LAUNCH_NESTED_TILE_DIRECT_HPP__
