@@ -16,7 +16,6 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename LAUNCH_POLICY,
 void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
 {
 
-  //6 threads total
   constexpr int threads_x = 2;
   constexpr int threads_y = 3;
   constexpr int threads_z = 4;

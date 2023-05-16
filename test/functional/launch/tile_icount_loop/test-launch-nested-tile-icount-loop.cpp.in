@@ -21,7 +21,6 @@
 // Note: CMake adds ./tests as an include dir for these tests.
 //
 #include "test-launch-nested-Tile-iCount-Loop.hpp"
-//test-launch-nested-Tile-iCount-Loop.hpp
 
 
 //

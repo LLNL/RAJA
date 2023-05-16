@@ -16,7 +16,6 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename LAUNCH_POLICY,
 void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
 {
 
-  //6 threads total
   constexpr int tile_size_x = 2;
   constexpr int tile_size_y = 3;
   constexpr int tile_size_z = 4;
