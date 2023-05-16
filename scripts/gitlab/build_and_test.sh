@@ -60,7 +60,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 if [[ "${option}" != "--build-only" && "${option}" != "--test-only" ]]
 then
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    echo "~~~~~ Building Dependencies"
+    echo "~~~~~ Building dependencies"
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
     if [[ -z ${spec} ]]
@@ -88,7 +88,7 @@ then
 
 fi
   echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-  echo "~~~~~ Dependencies Built"
+  echo "~~~~~ Dependencies built"
   echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 date
 
@@ -182,7 +182,7 @@ then
     fi
 
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    echo "~~~~~ RAJA Built"
+    echo "~~~~~ RAJA built"
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     date
 fi
@@ -202,17 +202,9 @@ then
 
     cd ${build_dir}
 
-    # If HIP enabled
-    if [[ "${option}" != "--build-only" ]] && grep -q -i "ENABLE_HIP.*ON" ${hostconfig_path}
-    then # don't run the tests that are known to fail
-        date
-        ctest --output-on-failure -T test 2>&1 -E Known-Hip-Failure | tee tests_output.txt
-        date
-    else #run all tests like normal
-        date
-        ctest --output-on-failure -T test 2>&1 | tee tests_output.txt
-        date
-    fi
+    date
+    ctest --output-on-failure -T test 2>&1 | tee tests_output.txt
+    date
 
     no_test_str="No tests were found!!!"
     if [[ "$(tail -n 1 tests_output.txt)" == "${no_test_str}" ]]
@@ -251,7 +243,7 @@ then
     fi
 
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    echo "~~~~~ RAJA Tests Complete"
+    echo "~~~~~ RAJA tests complete"
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     date
 

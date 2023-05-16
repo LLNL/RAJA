@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_TESNOR_MATRIX_ET_MatrixVector_HPP__
-#define __TEST_TESNOR_MATRIX_ET_MatrixVector_HPP__
+#ifndef __TEST_TENSOR_MATRIX_ET_MatrixVector_HPP__
+#define __TEST_TENSOR_MATRIX_ET_MatrixVector_HPP__
 
 #include<RAJA/RAJA.hpp>
 

@@ -47,8 +47,8 @@ using TensorVectorTypes = ::testing::Types<
     RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::avx512_register, 64>,    
 #endif
 
-	// Test defaulted register type
-	RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@>,
+    // Test defaulted register type
+    RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@>,
 
     // Test scalar_register type (supported on all platforms)
     RAJA::expt::VectorRegister<@TENSOR_ELEMENT_TYPE@, RAJA::expt::scalar_register>

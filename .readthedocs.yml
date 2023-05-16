@@ -5,6 +5,12 @@
 # Required
 version: 2
 
+# Set the version of Python and other tools you might need
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.11"
+
 ##
 ## Code for debugging directory structure in readthedocs 
 ## to fix broken links, etc.
@@ -27,8 +33,7 @@ sphinx:
 # Optionally build docs in add'l formats such as PDF and ePub
 #formats: all
 
-# Optionally set the version of Python and requirements to build the docs
+# Set requirements needed to build the docs
 python:
-  version: 3.7
   install:
     - requirements: docs/requirements.txt
