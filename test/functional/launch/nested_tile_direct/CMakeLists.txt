@@ -20,4 +20,3 @@ foreach( BACKEND ${LAUNCH_BACKENDS} )
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 endforeach()
 
-unset( NESTEDTYPES )

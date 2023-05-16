@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing the core components of RAJA::Teams
+ * \brief   RAJA header file containing the core components of RAJA::launch
  *
  ******************************************************************************
  */
