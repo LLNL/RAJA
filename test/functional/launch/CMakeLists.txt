@@ -38,6 +38,8 @@ add_subdirectory(nested_direct)
 
 add_subdirectory(itile_direct)
 
+add_subdirectory(itile_loop)
+
 add_subdirectory(nested_tile_direct)
 
 add_subdirectory(nested_tile_loop)
