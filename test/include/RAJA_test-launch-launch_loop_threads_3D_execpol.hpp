@@ -56,7 +56,7 @@ using cuda_loop_policies = camp::list<
   RAJA::LoopPolicy<RAJA::cuda_block_z_loop>,
   RAJA::LoopPolicy<RAJA::cuda_thread_x_loop>,
   RAJA::LoopPolicy<RAJA::cuda_thread_y_loop>,
-  RAJA::LoopPolicy<RAJA::cuda_thread_x_loop>
+  RAJA::LoopPolicy<RAJA::cuda_thread_z_loop>
   >;
 
 using cuda_loop_explicit_policies = camp::list<
@@ -66,7 +66,7 @@ using cuda_loop_explicit_policies = camp::list<
   RAJA::LoopPolicy<RAJA::cuda_block_z_loop>,
   RAJA::LoopPolicy<RAJA::cuda_thread_x_loop>,
   RAJA::LoopPolicy<RAJA::cuda_thread_y_loop>,
-  RAJA::LoopPolicy<RAJA::cuda_thread_x_loop>
+  RAJA::LoopPolicy<RAJA::cuda_thread_z_loop>
   >;
 
 using Cuda_launch_policies = camp::list<
@@ -84,7 +84,7 @@ using hip_loop_policies = camp::list<
   RAJA::LoopPolicy<RAJA::hip_block_z_loop>,
   RAJA::LoopPolicy<RAJA::hip_thread_x_loop>,
   RAJA::LoopPolicy<RAJA::hip_thread_y_loop>,
-  RAJA::LoopPolicy<RAJA::hip_thread_x_loop>
+  RAJA::LoopPolicy<RAJA::hip_thread_z_loop>
   >;
 
 using Hip_launch_policies = camp::list<
@@ -95,12 +95,12 @@ using Hip_launch_policies = camp::list<
 #if defined(RAJA_ENABLE_SYCL)
 using sycl_loop_policies = camp::list<
   RAJA::LaunchPolicy<RAJA::sycl_launch_t<true>>,
-  RAJA::LoopPolicy<RAJA::sycl_group_2_loop>,
-  RAJA::LoopPolicy<RAJA::sycl_group_1_loop>,
   RAJA::LoopPolicy<RAJA::sycl_group_0_loop>,
-  RAJA::LoopPolicy<RAJA::sycl_local_2_loop>,
+  RAJA::LoopPolicy<RAJA::sycl_group_1_loop>,
+  RAJA::LoopPolicy<RAJA::sycl_group_2_loop>,
+  RAJA::LoopPolicy<RAJA::sycl_local_0_loop>,
   RAJA::LoopPolicy<RAJA::sycl_local_1_loop>,
-  RAJA::LoopPolicy<RAJA::sycl_local_0_loop>
+  RAJA::LoopPolicy<RAJA::sycl_local_2_loop>
   >;
 
 using Sycl_launch_policies = camp::list<  
