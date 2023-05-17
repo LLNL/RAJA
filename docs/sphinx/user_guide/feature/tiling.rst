@@ -57,8 +57,8 @@ Here is a way to write the tiled loop kernel above using ``RAJA::kernel``::
        // kernel body using index 'i'
      }
    );
-
-In RAJA, the simplest way to tile an iteration space is to use
+   
+In RAJA kernel, the simplest way to tile an iteration space is to use
 ``RAJA::statement::Tile`` and ``RAJA::statement::For`` statement types. A
 ``RAJA::statement::Tile`` type is similar to a ``RAJA::statement::For`` type, 
 but takes a tile size as the second template argument. The 
@@ -73,8 +73,36 @@ lambda expression as (kernel body) in a non-tiled version above.
           same. This indicates that they both apply to the same iteration space
           in the space tuple passed to the ``RAJA::kernel`` method.
 
-RAJA also provides alternative statements that provide the tile number and 
-local tile index, if needed inside the kernel body, as shown below::
+
+The ``RAJA::launch`` API also supports loop tiling through specilized
+methods. The launch version of the code above is ::
+
+  using launch_t = RAJA::LaunchPolicy<RAJA::seq_launch>;
+  using loop_t   = RAJA::LoopPolicy<RAJA::loop_exec>;
+
+  RAJA::launch<launch_t>
+  (RAJA::LaunchParams(), RAJA_HOST_DEVICE(RAJA::launchContext ctx)
+  {
+
+    RAJA::tile<loop_t>
+      (ctx, tile_size, RAJA::TypedRangeSegment<int>(0, 10), [&] (RAJA::TypedRangeSegment<int> const &tile) {
+
+      RAJA::loop<loop_t>
+        (ctx, tile, [&] (int i) {
+      
+	// kernel body using index 'i'
+	
+	});      
+      });  
+  });
+
+In the example above the ``RAJA::tile`` method is used to generate a tile from the larger iteration space.
+This approach requires source code changes if the developer wanted to remove tiling, while RAJA kernel enables
+switching between tiling and non-tiling via execution policies and recompilation. Tile size in ``RAJA::launch``
+can be be selected dynamically and tiles are created on the device.
+	  
+In both kernel and launch RAJA also provides alternative statements that provide the tile number and 
+local tile index. Using RAJA kernel, we illustrate usage below::
 
   using KERNEL_EXEC_POL2 =
     RAJA::KernelPolicy<
@@ -117,3 +145,28 @@ parameter '0') and the local tile loop index is the third lambda argument
           arguments. Then, the parameter tuples identified by the integers 
           in the ``RAJA::Param`` statement types given for the loop statement 
           types follow.
+	
+The launch API uses ``RAJA::tile_tcount`` and ``RAJA::loop_icount`` methods
+which has a second argument on the lambda for the index. We illustrate usage below::
+
+  using launch_t = RAJA::LaunchPolicy<RAJA::seq_launch>;
+  using loop_t   = RAJA::LoopPolicy<RAJA::loop_exec>;
+
+  RAJA::launch<launch_t>
+  (RAJA::LaunchParams(), RAJA_HOST_DEVICE(RAJA::launchContext ctx)
+  {
+
+    RAJA::tile_tcount<loop_t>
+      (ctx, tile_size, RAJA::TypedRangeSegment<int>(0, 10), [&] (RAJA::TypedRangeSegment<int> const &tile, int t) {
+
+      RAJA::loop_icount<loop_t>
+        (ctx, tile, [&] (int i, int j) {
+
+        // i - global index
+        // t - tile number
+        // j - index within tile
+	// Then, i = j + tile_size*t
+	
+	});      
+      });  
+  });
