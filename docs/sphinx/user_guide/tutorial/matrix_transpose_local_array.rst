@@ -241,7 +241,7 @@ Alternatively, one can allocated dynamic shared memory by specifying the amount 
 the ``RAJA::LaunchParams`` struct. Dynamic shared memory is supported with all
 backends.
 
-As a first example we ilustrate the usage of static shared memory
+As a first example, we ilustrate the usage of static shared memory
 and the use of ``RAJA::launch`` tiling methods. RAJA tiling methods
 take a interation space in ``RAJA::tile`` and output tiles which
 the ``RAJA::loop_icount`` method can iterate over and generate
