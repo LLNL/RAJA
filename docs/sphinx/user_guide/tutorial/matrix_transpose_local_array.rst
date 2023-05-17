@@ -274,8 +274,8 @@ express using dynamic shared memory. Prior to invoking the amount of shared memo
 must be specified
 
 .. literalinclude:: ../../../../examples/dynamic_mat_transpose.cpp
-   :start-after: // _dyanamic_mattranspose_shared_mem_start
-   :end-before: // _dyanamic_mattranspose_shared_mem_end
+   :start-after: // _dynamic_mattranspose_shared_mem_start
+   :end-before: // _dynamic_mattranspose_shared_mem_end
    :language: C++
 
 The amount of shared memory is then specifed in the ``RAJA::LaunchParams`` struct
@@ -286,6 +286,6 @@ it becomes necessary to reset the allocator offset count at the end of the share
 scope. The full example of matrix transpose with dynamic shared memory is provided below
 
 .. literalinclude:: ../../../../examples/dynamic_mat_transpose.cpp
-   :start-after: // _dyanamic_mattranspose_shared_mem_start
-   :end-before: // _dyanamic_mattranspose_shared_mem_end
+   :start-after: // _dynamic_mattranspose_kernel_start
+   :end-before: // _dynamic_mattranspose_kernel_end
    :language: C++
