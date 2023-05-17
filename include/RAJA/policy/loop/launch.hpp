@@ -225,7 +225,7 @@ struct TileExecute<loop_exec, SEGMENT> {
 };
 
 template <typename SEGMENT>
-struct TileICountExecute<loop_exec, SEGMENT> {
+struct TileTCountExecute<loop_exec, SEGMENT> {
 
   template <typename TILE_T, typename BODY>
   static RAJA_HOST_DEVICE RAJA_INLINE void exec(

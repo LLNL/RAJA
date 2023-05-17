@@ -424,7 +424,7 @@ struct TileExecute<omp_parallel_for_exec, SEGMENT> {
 };
 
 template <typename SEGMENT>
-struct TileICountExecute<omp_parallel_for_exec, SEGMENT> {
+struct TileTCountExecute<omp_parallel_for_exec, SEGMENT> {
 
   template <typename BODY, typename TILE_T>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(
@@ -470,7 +470,7 @@ struct TileExecute<omp_for_exec, SEGMENT> {
 };
 
 template <typename SEGMENT>
-struct TileICountExecute<omp_for_exec, SEGMENT> {
+struct TileTCountExecute<omp_for_exec, SEGMENT> {
 
   template <typename BODY, typename TILE_T>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(
