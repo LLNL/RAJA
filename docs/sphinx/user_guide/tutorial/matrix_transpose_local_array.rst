@@ -235,7 +235,7 @@ The ``RAJA::launch`` interface provides mechanisms to tile loops and use
 *local arrays* in kernels to support algorithm patterns like the C-style kernel
 above. When, using ``RAJA::launch``, the ``RAJA_TEAM_SHARED`` macro is
 used to create a GPU shared memory array when using the CUDA and HIP backends,
-static shared memory using SYCL is currently not supported. On the CPU allocating
+static shared memory using SYCL is currently not supported. On the CPU, allocating
 ``RAJA_TEAM_SHARED`` corresponds to allocating memory on the stack.
 Alternatively, one can allocated dynamic shared memory by specifying the amount in
 the ``RAJA::LaunchParams`` struct. Dynamic shared memory is supported with all
