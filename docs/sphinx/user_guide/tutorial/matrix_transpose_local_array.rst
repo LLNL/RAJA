@@ -237,7 +237,7 @@ above. When, using ``RAJA::launch``, the ``RAJA_TEAM_SHARED`` macro is
 used to create a GPU shared memory array when using the CUDA and HIP backends,
 static shared memory using SYCL is currently not supported. On the CPU, allocating
 ``RAJA_TEAM_SHARED`` corresponds to allocating memory on the stack.
-Alternatively, one can allocated dynamic shared memory by specifying the amount in
+Alternatively, one can allocated dynamic shared memory by specifying the amount of shared memory in
 the ``RAJA::LaunchParams`` struct. Dynamic shared memory is supported with all
 backends and will be demonstrated as our second example.
 
