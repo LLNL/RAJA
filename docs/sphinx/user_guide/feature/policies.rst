@@ -438,7 +438,7 @@ GPU Policies for SYCL
                                                         size.
  sycl_launch_t                            launch        Launches a sycl kernel,
                                                         any code express within
-							the device lambda is executed
+							the lambda is executed
 							on the device.
  sycl_global_0<WORK_GROUP_SIZE>           kernel (For)  Map loop iterates
                                                         directly to GPU global
