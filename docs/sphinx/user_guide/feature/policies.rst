@@ -286,8 +286,8 @@ policies have the prefix ``hip_``.
                                                         be provided, there is
                                                         no default provided.
  cuda/hip_launch_t                        launch        Launches a device kernel,
-                                                        any code express within
-							the device lambda is executed
+                                                        any code expressed within
+							the lambda is executed
 							on the device.
  cuda/hip_thread_x_direct                 kernel (For)  Map loop iterates
                                           launch (loop) directly to GPU threads
@@ -438,7 +438,7 @@ GPU Policies for SYCL
                                                         size.
  sycl_launch_t                            launch        Launches a sycl kernel,
                                                         any code express within
-							the device lambda is executed
+							the lambda is executed
 							on the device.
  sycl_global_0<WORK_GROUP_SIZE>           kernel (For)  Map loop iterates
                                                         directly to GPU global

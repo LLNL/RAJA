@@ -354,7 +354,7 @@ the same team. The ``RAJA::launch`` interface has three main concepts:
 
 Team shared memory is available by using the ``RAJA_TEAM_SHARED`` macro on
 statically sized arrays or via dynamic allocation in the ``RAJA::LaunchParams``
-method. Team shared memory enables threads in a given team to share data. In
+method. Team shared memory enables threads in a given team shared access to a data buffer. In
 practice, team policies are typically aliases for RAJA GPU block policies in the
 x,y,z dimensions, while thread policies are aliases for RAJA GPU thread
 policies in the x,y,z dimensions. In a host execution environment, teams and
