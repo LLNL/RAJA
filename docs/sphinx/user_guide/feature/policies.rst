@@ -287,7 +287,7 @@ policies have the prefix ``hip_``.
                                                         no default provided.
  cuda/hip_launch_t                        launch        Launches a device kernel,
                                                         any code expressed within
-							the device lambda is executed
+							the lambda is executed
 							on the device.
  cuda/hip_thread_x_direct                 kernel (For)  Map loop iterates
                                           launch (loop) directly to GPU threads
