@@ -239,7 +239,7 @@ static shared memory using SYCL is currently not supported. On the CPU, allocati
 ``RAJA_TEAM_SHARED`` corresponds to allocating memory on the stack.
 Alternatively, one can allocated dynamic shared memory by specifying the amount in
 the ``RAJA::LaunchParams`` struct. Dynamic shared memory is supported with all
-backends.
+backends and will be demonstrated as our second example.
 
 As a first example, we ilustrate the usage of static shared memory
 and the use of ``RAJA::launch`` tiling methods. RAJA tiling methods
