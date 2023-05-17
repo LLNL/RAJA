@@ -486,7 +486,7 @@ struct TileICountExecute<omp_for_exec, SEGMENT> {
 #pragma omp for
     for (int i = 0; i < numTiles; i++) {
       const int i_tile_size = i * tile_size;
-      body.get_priv()(segment.slice(i_tile_size, tile_size), i);
+      body(segment.slice(i_tile_size, tile_size), i);
     }
   }
 };
