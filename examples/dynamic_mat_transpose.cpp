@@ -370,11 +370,12 @@ int main(int argc, char *argv[])
                 });
               });
 
-            //The launch context uses bump style allocator to return different segments of shared memory
-            //to avoid requesting beyond the pre-allocated memory quantity we reset the allocator offset counter
-            //effectively releasing shared memory.
+            //The launch context uses bump style allocator in which calls
+	    //to getSharedMemory moves a memory buffer pointer to return
+	    //different segments of shared memory. To avoid requesting beyond
+	    //the pre-allocated memory quantity we reset the allocator offset counter
+	    //in the launch context effectively releasing shared memory.
             ctx.releaseSharedMemory();
-
           });
       });
 
