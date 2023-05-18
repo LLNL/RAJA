@@ -234,12 +234,13 @@ previous example are not needed.
 The ``RAJA::launch`` interface provides mechanisms to tile loops and use
 *local arrays* in kernels to support algorithm patterns like the C-style kernel
 above. When, using ``RAJA::launch``, the ``RAJA_TEAM_SHARED`` macro is
-used to create a GPU shared memory array when using the CUDA and HIP backends,
+used to create a GPU a static sized shared memory array when using the CUDA and HIP backends,
 static shared memory using SYCL is currently not supported. On the CPU, allocating
 ``RAJA_TEAM_SHARED`` corresponds to allocating memory on the stack.
 Alternatively, one can allocated dynamic shared memory by specifying the amount of shared memory in
 the ``RAJA::LaunchParams`` struct. Dynamic shared memory is supported with all
-backends and will be demonstrated as our second example.
+backends and will be demonstrated as our second example. On the CPU dynamic
+shared memory is mapped to heap memory and allocated via malloc at the kernel launch.
 
 As a first example, we ilustrate the usage of static shared memory
 and the use of ``RAJA::launch`` tiling methods. RAJA tiling methods
@@ -279,11 +280,12 @@ must be specified
    :language: C++
 
 The amount of shared memory is then specifed in the ``RAJA::LaunchParams`` struct
-and then accessed within the kernel using the LaunchContext ``getSharedMemory`` method.
-The ``getSharedMemory`` method may be invoked multiple times, each time returning an
-offset to the shared memory buffer. Since the launch context uses a bump style allocator
-it becomes necessary to reset the allocator offset count at the end of the shared memory
-scope. The full example of matrix transpose with dynamic shared memory is provided below
+and then accessed within the kernel using the LaunchContext's ``getSharedMemory`` method.
+The ``getSharedMemory`` method may be invoked multiple times each time returning an
+offset to the shared memory buffer. Since the offset moves per ``getSharedMemory``
+call (also known as bump style allocation), it becomes necessary to reset the allocator offset
+count at the end of the shared memory scope to avoid going beyond the buffer size.
+The full example of matrix transpose with dynamic shared memory is provided below
 
 .. literalinclude:: ../../../../examples/dynamic_mat_transpose.cpp
    :start-after: // _dynamic_mattranspose_kernel_start
