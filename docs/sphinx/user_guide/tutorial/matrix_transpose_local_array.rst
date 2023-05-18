@@ -240,7 +240,7 @@ static shared memory using SYCL is currently not supported. On the CPU, allocati
 Alternatively, one can allocated dynamic shared memory by specifying the amount of shared memory in
 the ``RAJA::LaunchParams`` struct. Dynamic shared memory is supported with all
 backends and will be demonstrated as our second example. On the CPU dynamic
-shared memory is mapped to heap memory and allocated via malloc at the kernel launch.
+shared memory is mapped to heap memory and allocated via malloc at kernel launch.
 
 As a first example, we ilustrate the usage of static shared memory
 and the use of ``RAJA::launch`` tiling methods. RAJA tiling methods
