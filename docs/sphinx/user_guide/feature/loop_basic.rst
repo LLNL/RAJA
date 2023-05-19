@@ -352,15 +352,17 @@ the same team. The ``RAJA::launch`` interface has three main concepts:
     either teams or threads based on the execution policy template parameter
     provided.
 
-Team shared memory is available by using the ``RAJA_TEAM_SHARED`` macro on
+Team shared memory can be allocated by using the ``RAJA_TEAM_SHARED`` macro on
 statically sized arrays or via dynamic allocation in the ``RAJA::LaunchParams``
-method. Team shared memory enables threads in a given team shared access to a data buffer. In
-practice, team policies are typically aliases for RAJA GPU block policies in the
-x,y,z dimensions, while thread policies are aliases for RAJA GPU thread
-policies in the x,y,z dimensions. In a host execution environment, teams and
-threads may be mapped to sequential loop execution or OpenMP threaded regions.
-Often, the ``RAJA::LaunchParams`` method can take an empty argument list for
-host execution.
+method. Team shared memory enables threads in a given team shared access to a data buffer.
+Loops are then assigned to either teams or threads based on the GPU execution
+policy. Under the CUDA/HIP nomenclature teams correspond to blocks while
+in SYCL nomenclature teams correspond to workgroups.
+
+In a host execution environment teams and thread parameters in the
+``RAJA::LaunchParams`` struct have no effect in execution and may be
+omitted if only running on the host.
+
 
 Please see the following tutorial sections for detailed examples that use
 ``RAJA::launch``:
