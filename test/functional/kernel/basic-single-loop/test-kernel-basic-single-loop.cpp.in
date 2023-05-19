@@ -199,7 +199,7 @@ camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::HipKernel<
-      RAJA::statement::For<0, RAJA::hip_global_z_loop<32>,
+      RAJA::statement::For<0, RAJA::hip_global_explicit_z_loop<32>,
         RAJA::statement::Lambda<0, RAJA::Segs<0>>
       >
     >

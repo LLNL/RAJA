@@ -205,7 +205,7 @@ camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::HipKernel<
-      RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::hip_global_z_loop<32>,
+      RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::hip_global_explicit_z_loop<32>,
         RAJA::statement::Lambda<0>
       >
     >

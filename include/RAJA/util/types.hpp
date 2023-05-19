@@ -34,6 +34,119 @@ namespace RAJA
 {
 
 ///
+/// Enum for named values with special usage.
+///
+enum named_usage : int
+{
+  ignored = -1,
+  unspecified = 0
+};
+
+///
+/// Enum for named dimensions.
+///
+enum struct named_dim : int
+{
+  x = 0,
+  y = 1,
+  z = 2
+};
+
+///
+/// Enum for synchronization requirements in some kernel constructs.
+///
+enum struct kernel_sync_requirement : int
+{
+  none = 0,
+  sync = 1
+};
+
+///
+/// Classes used to indicate how to map iterations in a loop to indices.
+///
+namespace iteration_mapping
+{
+
+///
+/// Direct assumes the loop has enough iterations for all of the indices and
+/// maps directly from an iteration to an index.
+///
+/// For example a loop with 5 iterations mapping indices from a range of size 4.
+///   int iterations = 5;
+///   int range_size = 4;
+///   for (int i = 0; i < iterations; ++i) {
+///     if (i < range_size) {
+///       int index = i;
+///       printf("%i -> {%i}", i, index);
+///     } else {
+///       printf("%i -> {}", i);
+///     }
+///   }
+///   // 0 -> {0}
+///   // 1 -> {1}
+///   // 2 -> {2}
+///   // 3 -> {3}
+///   // 4 -> {}
+///
+struct Direct {};
+
+///
+/// Contiguousloop assumes the loop has fewer iterations than indices and
+/// maps a single iteration to a range of contiguous indices.
+///
+/// For example a loop with 3 iterations mapping indices from a range of size 8.
+///   int iterations = 3;
+///   int range_size = 8;
+///   int indices_per_iteration = (range_size + iterations-1) / iterations;
+///   for (int i = 0; i < iterations; ++i) {
+///     printf("%i -> {", i);
+///     int index = indices_per_iteration*i;
+///     if (index < range_size) {
+///       printf("%i", i);
+///       for (++index;
+///            index < indices_per_iteration*(i+1) && index < range_size;
+///            ++index) {
+///         printf(", %i", i);
+///       }
+///     }
+///     printf("}");
+///   }
+///   // 0 -> {0, 1, 2}
+///   // 1 -> {3, 4, 5}
+///   // 2 -> {6, 7}
+///
+struct Contiguousloop {};
+
+///
+/// StridedLoop assumes the loop has fewer iterations than indices and
+/// maps a single iteration to a range of indices strided by the number of
+/// iterations in the loop.
+///
+/// For example a loop with 3 iterations mapping indices from a range of size 8.
+///   int iterations = 3;
+///   int range_size = 8;
+///   for (int i = 0; i < iterations; ++i) {
+///     printf("%i -> {", i);
+///     int index = i;
+///     if (index < range_size) {
+///       printf("%i", i);
+///       for (index += iterations;
+///            index < range_size;
+///            index += iterations) {
+///         printf(", %i", i);
+///       }
+///     }
+///     printf("}");
+///   }
+///   // 0 -> {0, 3, 6}
+///   // 1 -> {1, 4, 7}
+///   // 2 -> {2, 5}
+///
+struct StridedLoop {};
+
+} // namespace iteration_mapping
+
+///
 /// Enumeration used to indicate whether ListSegment object owns data
 /// representing its indices.
 ///

@@ -102,8 +102,8 @@ namespace RAJA
     using type = camp::resources::Hip;
   };
 
-  template<typename Indexer, bool Async>
-  struct get_resource<::RAJA::policy::hip::hip_exec<Indexer, Async>>{
+  template<typename IterationMapping, typename IterationGetter, bool Async>
+  struct get_resource<::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>>{
     using type = camp::resources::Hip;
   };
 
@@ -112,8 +112,8 @@ namespace RAJA
     using type = camp::resources::Hip;
   };
 
-  template<typename ISetIter, typename Indexer, bool Async>
-  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::hip::hip_exec<Indexer, Async>>>{
+  template<typename ISetIter, typename IterationMapping, typename IterationGetter, bool Async>
+  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>>>{
     using type = camp::resources::Hip;
   };
 #endif

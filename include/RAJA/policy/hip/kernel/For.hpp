@@ -37,140 +37,6 @@ namespace internal
  */
 template <typename Data,
           camp::idx_t ArgumentId,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<
-    Data,
-    statement::For<ArgumentId, RAJA::hip_warp_direct, EnclosedStmts...>,
-    Types> {
-
-  using stmt_list_t = StatementList<EnclosedStmts...>;
-
-  // Set the argument type for this loop
-  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
-
-  using enclosed_stmts_t =
-      HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
-
-  using diff_t = segment_diff_type<ArgumentId, Data>;
-
-
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
-  {
-    diff_t len = segment_length<ArgumentId>(data);
-    diff_t i = threadIdx.x;
-
-    // assign thread id directly to offset
-    data.template assign_offset<ArgumentId>(i);
-
-    // execute enclosed statements if in bounds
-    enclosed_stmts_t::exec(data, thread_active && (i<len));
-  }
-
-
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
-  {
-    // Get enclosed statements
-    LaunchDims dims = enclosed_stmts_t::calculateDimensions(data);
-
-    // we always get EXACTLY one warp by allocating one warp in the X dimension
-    diff_t len = RAJA::policy::hip::WARP_SIZE;
-
-    // request one thread per element in the segment
-    set_hip_dim<0>(dims.dims.threads, len);
-
-    // since we are direct-mapping, we REQUIRE len
-    set_hip_dim<0>(dims.min_dims.threads, len);
-
-    // is the lack of calculating enclosed dims here an error?
-    return dims;
-  }
-};
-
-
-/*
- * Executor for thread work sharing loop inside HipKernel.
- * Provides a warp-stride loop for each thread inside of a warp.
- * Assigns the loop index to offset ArgumentId
- */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<
-    Data,
-    statement::For<ArgumentId, RAJA::hip_warp_loop, EnclosedStmts...>,
-    Types> {
-
-  using stmt_list_t = StatementList<EnclosedStmts...>;
-
-  // Set the argument type for this loop
-  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
-
-  using enclosed_stmts_t =
-      HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
-
-  using diff_t = segment_diff_type<ArgumentId, Data>;
-
-
-  static
-  inline RAJA_DEVICE void exec(Data &data, bool thread_active)
-  {
-    // block stride loop
-    diff_t len = segment_length<ArgumentId>(data);
-    diff_t i_init = threadIdx.x;
-    diff_t i_stride = RAJA::policy::hip::WARP_SIZE;
-
-    // Iterate through grid stride of chunks
-    for (diff_t ii = 0; ii < len; ii += i_stride) {
-      diff_t i = ii + i_init;
-
-      // execute enclosed statements if any thread will
-      // but mask off threads without work
-      bool have_work = i < len;
-
-      // Assign the x thread to the argument
-      data.template assign_offset<ArgumentId>(i);
-
-      // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active && have_work);
-    }
-  }
-
-
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
-  {
-    // Get enclosed statements
-    LaunchDims dims = enclosed_stmts_t::calculateDimensions(data);
-
-    // we always get EXACTLY one warp by allocating one warp in the X dimension
-    diff_t len = RAJA::policy::hip::WARP_SIZE;
-
-    // request one thread per element in the segment
-    set_hip_dim<0>(dims.dims.threads, len);
-
-    // since we are direct-mapping, we REQUIRE len
-    set_hip_dim<0>(dims.min_dims.threads, len);
-
-    return dims;
-  }
-};
-
-
-/*
- * Executor for thread work sharing loop inside HipKernel.
- * Mapping directly from a warp lane
- * Assigns the loop index to offset ArgumentId
- */
-template <typename Data,
-          camp::idx_t ArgumentId,
           typename Mask,
           typename ... EnclosedStmts,
           typename Types>
@@ -200,9 +66,9 @@ struct HipStatementExecutor<
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    diff_t len = segment_length<ArgumentId>(data);
+    const diff_t len = segment_length<ArgumentId>(data);
 
-    diff_t i = mask_t::maskValue((diff_t)threadIdx.x);
+    const diff_t i = mask_t::maskValue((diff_t)threadIdx.x);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -221,13 +87,13 @@ struct HipStatementExecutor<
 
     // we always get EXACTLY one warp by allocating one warp in the X
     // dimension
-    diff_t len = RAJA::policy::hip::WARP_SIZE;
+    const diff_t len = RAJA::policy::hip::WARP_SIZE;
 
     // request one thread per element in the segment
-    set_hip_dim<0>(dims.dims.threads, len);
+    set_hip_dim<named_dim::x>(dims.dims.threads, len);
 
     // since we are direct-mapping, we REQUIRE len
-    set_hip_dim<0>(dims.min_dims.threads, len);
+    set_hip_dim<named_dim::x>(dims.min_dims.threads, len);
 
     return(dims);
   }
@@ -272,13 +138,13 @@ struct HipStatementExecutor<
   void exec(Data &data, bool thread_active)
   {
     // masked size strided loop
-    diff_t len = segment_length<ArgumentId>(data);
-    diff_t i_init = mask_t::maskValue((diff_t)threadIdx.x);
-    diff_t i_stride = (diff_t) mask_t::max_masked_size;
+    const diff_t len = segment_length<ArgumentId>(data);
+    const diff_t i_init = mask_t::maskValue((diff_t)threadIdx.x);
+    const diff_t i_stride = (diff_t) mask_t::max_masked_size;
 
     // Iterate through grid stride of chunks
     for (diff_t ii = 0; ii < len; ii += i_stride) {
-      diff_t i = ii + i_init;
+      const diff_t i = ii + i_init;
 
       // execute enclosed statements if any thread will
       // but mask off threads without work
@@ -302,13 +168,13 @@ struct HipStatementExecutor<
 
     // we always get EXACTLY one warp by allocating one warp in the X
     // dimension
-    diff_t len = RAJA::policy::hip::WARP_SIZE;
+    const diff_t len = RAJA::policy::hip::WARP_SIZE;
 
     // request one thread per element in the segment
-    set_hip_dim<0>(dims.dims.threads, len);
+    set_hip_dim<named_dim::x>(dims.dims.threads, len);
 
     // since we are direct-mapping, we REQUIRE len
-    set_hip_dim<0>(dims.min_dims.threads, len);
+    set_hip_dim<named_dim::x>(dims.min_dims.threads, len);
 
     return(dims);
   }
@@ -348,9 +214,9 @@ struct HipStatementExecutor<
   RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    diff_t len = segment_length<ArgumentId>(data);
+    const diff_t len = segment_length<ArgumentId>(data);
 
-    diff_t i = mask_t::maskValue((diff_t)threadIdx.x);
+    const diff_t i = mask_t::maskValue((diff_t)threadIdx.x);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -369,13 +235,13 @@ struct HipStatementExecutor<
 
     // we need to allocate enough threads for the segment size, and the
     // shifted off bits
-    diff_t len = mask_t::max_input_size;
+    const diff_t len = mask_t::max_input_size;
 
     // request one thread per element in the segment
-    set_hip_dim<0>(dims.dims.threads, len);
+    set_hip_dim<named_dim::x>(dims.dims.threads, len);
 
     // since we are direct-mapping, we REQUIRE len
-    set_hip_dim<0>(dims.min_dims.threads, len);
+    set_hip_dim<named_dim::x>(dims.min_dims.threads, len);
 
     LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
     return(dims.max(enclosed_dims));
@@ -420,13 +286,13 @@ struct HipStatementExecutor<
   void exec(Data &data, bool thread_active)
   {
     // masked size strided loop
-    diff_t len = segment_length<ArgumentId>(data);
-    diff_t i_init = mask_t::maskValue((diff_t)threadIdx.x);
-    diff_t i_stride = (diff_t) mask_t::max_masked_size;
+    const diff_t len = segment_length<ArgumentId>(data);
+    const diff_t i_init = mask_t::maskValue((diff_t)threadIdx.x);
+    const diff_t i_stride = (diff_t) mask_t::max_masked_size;
 
     // Iterate through grid stride of chunks
     for (diff_t ii = 0; ii < len; ii += i_stride) {
-      diff_t i = ii + i_init;
+      const diff_t i = ii + i_init;
 
       // execute enclosed statements if any thread will
       // but mask off threads without work
@@ -450,13 +316,13 @@ struct HipStatementExecutor<
 
     // we need to allocate enough threads for the segment size, and the
     // shifted off bits
-    diff_t len = mask_t::max_input_size;
+    const diff_t len = mask_t::max_input_size;
 
     // request one thread per element in the segment
-    set_hip_dim<0>(dims.dims.threads, len);
+    set_hip_dim<named_dim::x>(dims.dims.threads, len);
 
     // since we are direct-mapping, we REQUIRE len
-    set_hip_dim<0>(dims.min_dims.threads, len);
+    set_hip_dim<named_dim::x>(dims.min_dims.threads, len);
 
     LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
     return(dims.max(enclosed_dims));
@@ -468,15 +334,19 @@ struct HipStatementExecutor<
  * Executor for work sharing inside HipKernel.
  * Mapping directly from IndexMapper to indices
  * Assigns the loop index to offset ArgumentId
+ * Meets all sync requirements
  */
 template <typename Data,
           camp::idx_t ArgumentId,
           typename IndexMapper,
+          kernel_sync_requirement sync,
           typename... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::internal::HipKernelDirect<IndexMapper>, EnclosedStmts...>,
+    statement::For<ArgumentId,
+                   RAJA::policy::hip::hip_indexer<iteration_mapping::Direct, sync, IndexMapper>,
+                   EnclosedStmts...>,
     Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -489,13 +359,14 @@ struct HipStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  using Indexer = RAJA::internal::HipKernelDirect<IndexMapper>;
+  using DimensionCalculator = RAJA::internal::KernelDimensionCalculator<
+      RAJA::policy::hip::hip_indexer<iteration_mapping::Direct, sync, IndexMapper>>;
 
   static inline RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    diff_t len = segment_length<ArgumentId>(data);
-    diff_t i = IndexMapper::template index<diff_t>();
+    const diff_t len = segment_length<ArgumentId>(data);
+    const diff_t i = IndexMapper::template index<diff_t>();
 
     // Assign the index to the argument
     data.template assign_offset<ArgumentId>(i);
@@ -507,10 +378,10 @@ struct HipStatementExecutor<
   static inline
   LaunchDims calculateDimensions(Data const &data)
   {
-    diff_t len = segment_length<ArgumentId>(data);
+    const diff_t len = segment_length<ArgumentId>(data);
 
     HipDims my_dims(0), my_min_dims(0);
-    Indexer{}.set_dimensions(my_dims, my_min_dims, len);
+    DimensionCalculator::set_dimensions(my_dims, my_min_dims, len);
     LaunchDims dims{my_dims, my_min_dims};
 
     // combine with enclosed statements
@@ -522,7 +393,8 @@ struct HipStatementExecutor<
 /*
  * Executor for work sharing inside HipKernel.
  * Provides a strided loop for IndexMapper.
- * Assigns the loop index to offset ArgumentId
+ * Assigns the loop index to offset ArgumentId.
+ * Meets all sync requirements
  */
 template <typename Data,
           camp::idx_t ArgumentId,
@@ -531,7 +403,9 @@ template <typename Data,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::internal::HipKernelLoop<IndexMapper>, EnclosedStmts...>,
+    statement::For<ArgumentId,
+                   RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::sync, IndexMapper>,
+                   EnclosedStmts...>,
     Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -544,20 +418,22 @@ struct HipStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  using Indexer = RAJA::internal::HipKernelLoop<IndexMapper>;
+  using DimensionCalculator = RAJA::internal::KernelDimensionCalculator<
+      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::sync, IndexMapper>>;
 
 
   static inline RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
     // grid stride loop
-    diff_t len = segment_length<ArgumentId>(data);
-    diff_t i_init = IndexMapper::template index<diff_t>();
-    diff_t i_stride = IndexMapper::template size<diff_t>();
+    const diff_t len = segment_length<ArgumentId>(data);
+    const diff_t i_init = IndexMapper::template index<diff_t>();
+    const diff_t i_stride = IndexMapper::template size<diff_t>();
 
-    // Iterate through chunks
+    // Iterate through in chunks
+    // threads will have the same numbers of iterations
     for (diff_t ii = 0; ii < len; ii += i_stride) {
-      diff_t i = ii + i_init;
+      const diff_t i = ii + i_init;
 
       // execute enclosed statements if any thread will
       // but mask off threads without work
@@ -577,7 +453,7 @@ struct HipStatementExecutor<
     diff_t len = segment_length<ArgumentId>(data);
 
     HipDims my_dims(0), my_min_dims(0);
-    Indexer{}.set_dimensions(my_dims, my_min_dims, len);
+    DimensionCalculator{}.set_dimensions(my_dims, my_min_dims, len);
     LaunchDims dims{my_dims, my_min_dims};
 
     // combine with enclosed statements
@@ -586,20 +462,22 @@ struct HipStatementExecutor<
   }
 };
 
-
 /*
- * Executor for sequential loops inside of a HipKernel.
- *
- * This is specialized since it need to execute the loop immediately.
- * Assigns the loop index to offset ArgumentId
+ * Executor for work sharing inside HipKernel.
+ * Provides a strided loop for IndexMapper.
+ * Assigns the loop index to offset ArgumentId.
+ * Meets no sync requirements
  */
 template <typename Data,
           camp::idx_t ArgumentId,
+          typename IndexMapper,
           typename... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
+    statement::For<ArgumentId,
+                   RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::none, IndexMapper>,
+                   EnclosedStmts...>,
     Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -612,15 +490,23 @@ struct HipStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static
-  inline
-  RAJA_DEVICE
+  using DimensionCalculator = RAJA::internal::KernelDimensionCalculator<
+      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::none, IndexMapper>>;
+
+
+  static inline RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
-    diff_t len = segment_length<ArgumentId>(data);
+    // grid stride loop
+    const diff_t len = segment_length<ArgumentId>(data);
+    const diff_t i_init = IndexMapper::template index<diff_t>();
+    const diff_t i_stride = IndexMapper::template size<diff_t>();
 
-    for(diff_t i = 0;i < len;++ i){
-      // Assign i to the argument
+    // Iterate through one at a time
+    // threads will have different numbers of iterations
+    for (diff_t i = i_init; i < len; i += i_stride) {
+
+      // Assign the index to the argument
       data.template assign_offset<ArgumentId>(i);
 
       // execute enclosed statements
@@ -628,15 +514,42 @@ struct HipStatementExecutor<
     }
   }
 
-
-  static
-  inline
+  static inline
   LaunchDims calculateDimensions(Data const &data)
   {
-    return enclosed_stmts_t::calculateDimensions(data);
+    const diff_t len = segment_length<ArgumentId>(data);
+
+    HipDims my_dims(0), my_min_dims(0);
+    DimensionCalculator{}.set_dimensions(my_dims, my_min_dims, len);
+    LaunchDims dims{my_dims, my_min_dims};
+
+    // combine with enclosed statements
+    LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
+    return dims.max(enclosed_dims);
   }
 };
 
+
+/*
+ * Executor for sequential loops inside of a HipKernel.
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename... EnclosedStmts,
+          typename Types>
+struct HipStatementExecutor<
+    Data,
+    statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
+    Types>
+: HipStatementExecutor<Data, statement::For<ArgumentId,
+      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop,
+                                     kernel_sync_requirement::none,
+                                     hip::IndexGlobal<named_dim::x, named_usage::ignored, named_usage::ignored>>,
+      EnclosedStmts...>, Types>
+{
+
+};
+///
 template <typename Data,
           camp::idx_t ArgumentId,
           typename... EnclosedStmts,
@@ -645,7 +558,11 @@ struct HipStatementExecutor<
     Data,
     statement::For<ArgumentId, loop_exec, EnclosedStmts...>,
     Types>
-:  HipStatementExecutor<Data, statement::For<ArgumentId, seq_exec, EnclosedStmts...>, Types>
+: HipStatementExecutor<Data, statement::For<ArgumentId,
+      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop,
+                                     kernel_sync_requirement::none,
+                                     hip::IndexGlobal<named_dim::x, named_usage::ignored, named_usage::ignored>>,
+      EnclosedStmts...>, Types>
 {
 
 };

@@ -42,7 +42,7 @@ namespace RAJA
    * A bit-masking operator
    *
    * Provides an operator that shifts and masks in input value to extract
-   * a value contiguous set of bits.
+   * a contiguous set of bits.
    *
    * result = (input >> Shift) & (Mask)
    *
