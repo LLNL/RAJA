@@ -457,8 +457,8 @@ GPU Policies for SYCL
                                                         id for each thread for
                                                         dimension 0 of the grid.
 							Same as computing
-							itm.get_group(0) +
-							itm.get_local_range(0) *
+							itm.get_group(0) *
+							itm.get_local_range(0) +
 							itm.get_local_id(0).
  sycl_global_item_1                       launch (loop) Same as above, but uses
                                                         threads in dimension 1
