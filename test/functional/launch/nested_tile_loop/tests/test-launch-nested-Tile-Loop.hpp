@@ -23,7 +23,7 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
   constexpr int blocks_x = 4;
   constexpr int blocks_y = 5;
   constexpr int blocks_z = 6;
-  
+
   //Add one to we check the bounds checking capability
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, threads_x*RAJA::stripIndexType(M) + 1);
   RAJA::TypedRangeSegment<INDEX_TYPE> r2(0, threads_y*RAJA::stripIndexType(M) + 1);
@@ -68,7 +68,7 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
         RAJA::tile<TEAM_Z_POLICY>(ctx, threads_z, r3, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &z_tile) {
             RAJA::tile<TEAM_Y_POLICY>(ctx, threads_y, r2, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &y_tile) {
                 RAJA::tile<TEAM_X_POLICY>(ctx, threads_x, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile) {
-                    
+
                     RAJA::loop<THREAD_Z_POLICY>(ctx, z_tile, [&](INDEX_TYPE tz) {
                         RAJA::loop<THREAD_Y_POLICY>(ctx, y_tile, [&](INDEX_TYPE ty) {
                             RAJA::loop<THREAD_X_POLICY>(ctx, x_tile, [&](INDEX_TYPE tx) {
@@ -97,7 +97,7 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
         RAJA::tile<TEAM_Z_POLICY>(ctx, threads_z, r3, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &z_tile) {
             RAJA::tile<TEAM_Y_POLICY>(ctx, threads_y, r2, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &y_tile) {
                 RAJA::tile<TEAM_X_POLICY>(ctx, threads_x, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile) {
-                    
+
                     RAJA::loop<THREAD_Z_POLICY>(ctx, z_tile, [&](INDEX_TYPE tz) {
                         RAJA::loop<THREAD_Y_POLICY>(ctx, y_tile, [&](INDEX_TYPE ty) {
                             RAJA::loop<THREAD_X_POLICY>(ctx, x_tile, [&](INDEX_TYPE tx) {
@@ -119,8 +119,12 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
 
-  for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
-    ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
+  if (RAJA::stripIndexType(N) > 0) {
+    for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
+      ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
+    }
+  }else{
+    ASSERT_EQ(test_array[0], check_array[0]);
   }
 
   deallocateForallTestData<INDEX_TYPE>(working_res,

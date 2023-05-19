@@ -20,13 +20,13 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
   //following grid will require loop policies
   constexpr int threads_x   = 3;
   constexpr int blocks_x    = 1;
-  
+
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, M*tile_size+1);
-  
+
   INDEX_TYPE N1 = static_cast<INDEX_TYPE>(r1.end() - r1.begin());
 
   INDEX_TYPE no_tiles = (N1-1)/tile_size + 1;
-  
+
   INDEX_TYPE N = static_cast<INDEX_TYPE>(RAJA::stripIndexType(N1));
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
@@ -66,7 +66,7 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
 
         RAJA::tile_tcount<TEAM_X_POLICY>(ctx, tile_size, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile, INDEX_TYPE bx) {
             RAJA::loop_icount<THREAD_X_POLICY>(ctx, x_tile, [&](INDEX_TYPE tx, INDEX_TYPE ix) {
-                
+
                 working_ttile_array[tx] = bx;
                 working_iloop_array[tx] = ix;
 
@@ -101,17 +101,22 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
   working_res.memcpy(check_ttile_array, working_ttile_array, sizeof(INDEX_TYPE) * data_len);
   working_res.memcpy(check_iloop_array, working_iloop_array, sizeof(INDEX_TYPE) * data_len);
 
-  INDEX_TYPE idx = 0;
-  for (INDEX_TYPE bx = INDEX_TYPE(0); bx < no_tiles; ++bx) {
-    for (INDEX_TYPE tx = INDEX_TYPE(0); tx < tile_size; ++tx) {
+  if (RAJA::stripIndexType(N) > 0) {
+    INDEX_TYPE idx = 0;
+    for (INDEX_TYPE bx = INDEX_TYPE(0); bx < no_tiles; ++bx) {
+      for (INDEX_TYPE tx = INDEX_TYPE(0); tx < tile_size; ++tx) {
 
-      if(idx >= N1) break;
+        if(idx >= N1) break;
 
-      ASSERT_EQ(check_ttile_array[RAJA::stripIndexType(idx)], bx);
-      ASSERT_EQ(check_iloop_array[RAJA::stripIndexType(idx)], tx);
+        ASSERT_EQ(check_ttile_array[RAJA::stripIndexType(idx)], bx);
+        ASSERT_EQ(check_iloop_array[RAJA::stripIndexType(idx)], tx);
 
-      idx++;
+        idx++;
+      }
     }
+  }else{
+    ASSERT_EQ(check_ttile_array[0], check_ttile_array[0]);
+    ASSERT_EQ(check_iloop_array[0], check_iloop_array[0]);
   }
 
   deallocateForallTestData<INDEX_TYPE>(working_res,
@@ -140,7 +145,7 @@ TYPED_TEST_P(LaunchNestedTileLoopTest, RangeSegmentTeams)
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using LAUNCH_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<0>>::type;
 
-  using TEAM_X_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<1>>::type;  
+  using TEAM_X_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<1>>::type;
   using THREAD_X_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<2>>::type;
 
 
