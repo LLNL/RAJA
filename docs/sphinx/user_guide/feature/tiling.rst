@@ -160,12 +160,13 @@ which has a second argument on the lambda for the index. We illustrate usage bel
       (ctx, tile_size, RAJA::TypedRangeSegment<int>(0, 10), [&] (RAJA::TypedRangeSegment<int> const &tile, int t) {
 
       RAJA::loop_icount<loop_t>
-        (ctx, tile, [&] (int i, int j) {
+        (ctx, tile, [&] (int idx, int i) {
 
-        // i - global index
+        // idx - global index
         // t - tile number
-        // j - index within tile
-	// Then, i = j + tile_size*t
+        // i - index within tile
+	// Then, idx = i + tile_size*t
+
 	
 	});      
       });  
