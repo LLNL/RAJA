@@ -248,7 +248,7 @@ take a interation space in ``RAJA::tile`` and output tiles which
 the ``RAJA::loop_icount`` method can iterate over and generate
 global and local tile index offsets.  Moreover, lambda expressions for these
 methods will not be invoked for iterations outside the bounds of an iteration
-space when tile dimensions do not divide evenly the size of the iteration space;
+space when tile dimensions do not evenly divide the size of the iteration space;
 thus, no conditional checks on loop bounds are needed inside inner loops.
 
 A complete RAJA sequential CPU variant with kernel execution policy and
