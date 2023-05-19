@@ -244,7 +244,7 @@ shared memory is mapped to heap memory and allocated via malloc at kernel launch
 
 As a first example, we ilustrate the usage of static shared memory
 and the use of ``RAJA::launch`` tiling methods. RAJA tiling methods
-take a interation space in ``RAJA::tile`` and output tiles which
+take a iteration space in ``RAJA::tile`` and output tiles which
 the ``RAJA::loop_icount`` method can iterate over and generate
 global and local tile index offsets.  Moreover, lambda expressions for these
 methods will not be invoked for iterations outside the bounds of an iteration
