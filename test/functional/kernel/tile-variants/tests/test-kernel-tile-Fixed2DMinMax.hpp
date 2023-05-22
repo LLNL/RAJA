@@ -10,7 +10,6 @@
 
 #include <numeric>
 #include <vector>
-#include <type_traits>
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POLICY>
 void KernelTileFixed2DMinMaxTestImpl(const int rows, const int cols)
