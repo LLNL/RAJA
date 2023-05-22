@@ -59,7 +59,7 @@ stages:
     include:
       - local: '.gitlab/custom-jobs-and-variables.yml'
       - project: 'radiuss/radiuss-shared-ci'
-        ref: v2023.03.0
+        ref: woptim/rhel-8-update
         file: '${CI_MACHINE}-build-and-test.yml'
       - local: '.gitlab/${CI_MACHINE}-build-and-test-extra.yml'
     strategy: depend
@@ -85,7 +85,7 @@ trigger-rajaperf:
 include:
   # checks preliminary to running the actual CI test (optional)
   - project: 'radiuss/radiuss-shared-ci'
-    ref: v2023.03.0
+    ref: woptim/rhel-8-update
     file: 'preliminary-ignore-draft-pr.yml'
   # pipelines subscribed by the project
   - local: '.gitlab/subscribed-pipelines.yml'
