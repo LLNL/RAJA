@@ -12,20 +12,27 @@
 #include <vector>
 #include <type_traits>
 
-// Remove testing of float.
-// Does not work for matrices of 33x33 or greater, when using tile_size != 2.
+// Remove testing of float for OpenMP and CUDA.
+// OpenMP collapse and CUDA policies produces inaccurate results for float type.
+// Instruction ordering seems to matter for these policies on floats.
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POLICY>
 typename std::enable_if<
-           (std::is_same<DATA_TYPE,float>::value)
+           (std::is_same<DATA_TYPE,float>::value &&
+            (std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value ||
+             std::is_same<REDUCE_POLICY,RAJA::cuda_reduce>::value)
+           )
          >::type
 KernelTileFixed2DSumTestImpl(const int rows, const int cols)
 {
-  // do nothing for float type
+  // do nothing for float type on omp and cuda reductions
 }
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POLICY>
 typename std::enable_if<
-           (!std::is_same<DATA_TYPE,float>::value)
+           !(std::is_same<DATA_TYPE,float>::value &&
+            (std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value ||
+             std::is_same<REDUCE_POLICY,RAJA::cuda_reduce>::value)
+           )
          >::type
 KernelTileFixed2DSumTestImpl(const int rows, const int cols)
 {
@@ -37,12 +44,18 @@ KernelTileFixed2DSumTestImpl(const int rows, const int cols)
 
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> worksum( DATA_TYPE(0) ); 
 
-  // sum on CPU
-  for ( int rr = 0; rr < rows; ++rr )
+  // sum on CPU in a tiled manner
+  for ( int rr = 0; rr < rows; rr += tile_dim_x )
   {
-    for ( int cc = 0; cc < cols; ++cc )
+    for ( int cc = 0; cc < cols; cc += tile_dim_y )
     {
-      hostsum += (DATA_TYPE)(rr * 1.1 + cc);
+      for ( int r = rr; r < std::min(rr+tile_dim_x, rows); ++r )
+      {
+        for ( int c = cc; c < std::min(cc+tile_dim_y, cols); ++c )
+        {
+          hostsum += (DATA_TYPE)(r * 1.1 + c);
+        }
+      }
     }
   }
 
