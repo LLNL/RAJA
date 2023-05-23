@@ -18,11 +18,20 @@
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POLICY>
 typename std::enable_if<
            (std::is_same<DATA_TYPE,float>::value &&
-            (std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value ||
-             std::is_same<REDUCE_POLICY,RAJA::cuda_reduce>::value)
+            (
+              #if defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_CUDA)
+              std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value || std::is_same<REDUCE_POLICY,RAJA::cuda_reduce>::value
+              #elif defined(RAJA_ENABLE_OPENMP)
+              std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value
+              #elif defined(RAJA_ENABLE_CUDA)
+              std::is_same<REDUCE_POLICY,RAJA::cuda_reduce>::value
+              #else
+              false
+              #endif
+            )
            )
          >::type
-KernelTileFixed2DSumTestImpl(const int rows, const int cols)
+KernelTileFixed2DSumTestImpl(const int RAJA_UNUSED_ARG(rows), const int RAJA_UNUSED_ARG(cols))
 {
   // do nothing for float type on omp and cuda reductions
 }
@@ -30,8 +39,17 @@ KernelTileFixed2DSumTestImpl(const int rows, const int cols)
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POLICY>
 typename std::enable_if<
            !(std::is_same<DATA_TYPE,float>::value &&
-            (std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value ||
-             std::is_same<REDUCE_POLICY,RAJA::cuda_reduce>::value)
+            (
+              #if defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_CUDA)
+              std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value || std::is_same<REDUCE_POLICY,RAJA::cuda_reduce>::value
+              #elif defined(RAJA_ENABLE_OPENMP)
+              std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value
+              #elif defined(RAJA_ENABLE_CUDA)
+              std::is_same<REDUCE_POLICY,RAJA::cuda_reduce>::value
+              #else
+              false
+              #endif
+            )
            )
          >::type
 KernelTileFixed2DSumTestImpl(const int rows, const int cols)
@@ -63,7 +81,7 @@ KernelTileFixed2DSumTestImpl(const int rows, const int cols)
   RAJA::TypedRangeSegment<INDEX_TYPE> rowrange( 0, rows );
 
   std::vector<INDEX_TYPE> colidx;
-  for (INDEX_TYPE ii = INDEX_TYPE(0); ii < cols; ++ii)
+  for (INDEX_TYPE ii = INDEX_TYPE(0); ii < static_cast<INDEX_TYPE>(cols); ++ii)
   {
     colidx.push_back(ii);
   }
