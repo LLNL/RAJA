@@ -93,23 +93,23 @@ GPU_TYPED_TEST_P( AtomicRefCUDAMinMaxUnitTest, CUDAMinMaxs )
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test min
-  forone<forone_cuda>( [=] __device__ () {result[0] = test1.fetch_min( (T)87 );} );
+  forone<test_cuda>( [=] __device__ () {result[0] = test1.fetch_min( (T)87 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)91 );
   ASSERT_EQ( test1, (T)87 );
 
-  forone<forone_cuda>( [=] __device__ () {result[0] = test1.min( (T)83 );} );
+  forone<test_cuda>( [=] __device__ () {result[0] = test1.min( (T)83 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)83 );
   ASSERT_EQ( test1, (T)83 );
 
   // test max
-  forone<forone_cuda>( [=] __device__ () {result[0] = test1.fetch_max( (T)87 );} );
+  forone<test_cuda>( [=] __device__ () {result[0] = test1.fetch_max( (T)87 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)83 );
   ASSERT_EQ( test1, (T)87 );
 
-  forone<forone_cuda>( [=] __device__ () {result[0] = test1.max( (T)91 );} );
+  forone<test_cuda>( [=] __device__ () {result[0] = test1.max( (T)91 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)91 );
   ASSERT_EQ( test1, (T)91 );

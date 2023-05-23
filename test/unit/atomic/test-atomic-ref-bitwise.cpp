@@ -125,33 +125,33 @@ GPU_TYPED_TEST_P( AtomicRefCUDABitwiseUnitTest, CUDABitwises )
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test and/or
-  forone<forone_cuda>( [=] __device__ () {result[0] = test1.fetch_and( (T)0 );} );
+  forone<test_cuda>( [=] __device__ () {result[0] = test1.fetch_and( (T)0 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)1 );
   ASSERT_EQ( test1, (T)0 );
 
-  forone<forone_cuda>( [=] __device__ () {result[0] = test1.fetch_or( (T)1 );} );
+  forone<test_cuda>( [=] __device__ () {result[0] = test1.fetch_or( (T)1 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)0 );
   ASSERT_EQ( test1, (T)1 );
 
-  forone<forone_cuda>( [=] __device__ () {result[0] = (test1 &= (T)0);} );
+  forone<test_cuda>( [=] __device__ () {result[0] = (test1 &= (T)0);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)0 );
   ASSERT_EQ( result[0], (T)0 );
 
-  forone<forone_cuda>( [=] __device__ () {result[0] = (test1 |= (T)1);} );
+  forone<test_cuda>( [=] __device__ () {result[0] = (test1 |= (T)1);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)1 );
   ASSERT_EQ( result[0], (T)1 );
 
   // test xor
-  forone<forone_cuda>( [=] __device__ () {result[0] = test1.fetch_xor( (T)1 );} );
+  forone<test_cuda>( [=] __device__ () {result[0] = test1.fetch_xor( (T)1 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)1 );
   ASSERT_EQ( test1, (T)0 );
 
-  forone<forone_cuda>( [=] __device__ () {result[0] = (test1 ^= (T)1);} );
+  forone<test_cuda>( [=] __device__ () {result[0] = (test1 ^= (T)1);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)1 );
   ASSERT_EQ( result[0], (T)1 );
