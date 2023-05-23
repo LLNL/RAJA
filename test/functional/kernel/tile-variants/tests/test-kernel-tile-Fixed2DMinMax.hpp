@@ -49,7 +49,7 @@ void KernelTileFixed2DMinMaxTestImpl(const int rows, const int cols)
   RAJA::TypedRangeSegment<INDEX_TYPE> rowrange( 0, rows );
 
   std::vector<INDEX_TYPE> colidx;
-  for (INDEX_TYPE ii = INDEX_TYPE(0); ii < cols; ++ii)
+  for (INDEX_TYPE ii = INDEX_TYPE(0); ii < static_cast<INDEX_TYPE>(cols); ++ii)
   {
     colidx.push_back(ii);
   }
