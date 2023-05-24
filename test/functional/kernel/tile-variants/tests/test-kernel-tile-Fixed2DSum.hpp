@@ -21,10 +21,16 @@ typename std::enable_if<
             (
               #if defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_CUDA)
               std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value || std::is_same<REDUCE_POLICY,RAJA::cuda_reduce>::value
+              #elif defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_HIP)
+              std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value || std::is_same<REDUCE_POLICY,RAJA::hip_reduce>::value
               #elif defined(RAJA_ENABLE_OPENMP)
               std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value
               #elif defined(RAJA_ENABLE_CUDA)
               std::is_same<REDUCE_POLICY,RAJA::cuda_reduce>::value
+              #elif defined(RAJA_ENABLE_HIP)
+              std::is_same<REDUCE_POLICY,RAJA::hip_reduce>::value
+              #elif defined(RAJA_ENABLE_SYCL)
+              std::is_same<REDUCE_POLICY,RAJA::sycl_reduce>::value
               #else
               false
               #endif
@@ -42,10 +48,16 @@ typename std::enable_if<
             (
               #if defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_CUDA)
               std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value || std::is_same<REDUCE_POLICY,RAJA::cuda_reduce>::value
+              #elif defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_HIP)
+              std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value || std::is_same<REDUCE_POLICY,RAJA::hip_reduce>::value
               #elif defined(RAJA_ENABLE_OPENMP)
               std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value
               #elif defined(RAJA_ENABLE_CUDA)
               std::is_same<REDUCE_POLICY,RAJA::cuda_reduce>::value
+              #elif defined(RAJA_ENABLE_HIP)
+              std::is_same<REDUCE_POLICY,RAJA::hip_reduce>::value
+              #elif defined(RAJA_ENABLE_SYCL)
+              std::is_same<REDUCE_POLICY,RAJA::sycl_reduce>::value
               #else
               false
               #endif
