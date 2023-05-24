@@ -1,0 +1,36 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-indexing-global.hpp"
+
+//
+// Cartesian product of types used in parameterized tests
+//
+using @INDEXING_BACKEND@IndexingTypes =
+  Test< camp::cartesian_product<@INDEXING_BACKEND@For3d3dList,
+                                @INDEXING_BACKEND@IndexingHolderList,
+                                NamedDimensionTypeList,
+                                SizeTypeList,
+                                SizeTypeList>>::Types;
+
+//
+// Instantiate parameterized test
+//
+INSTANTIATE_TYPED_TEST_SUITE_P( @INDEXING_BACKEND@IndexingUnitTest,
+                                IndexingUnitTest,
+                                @INDEXING_BACKEND@IndexingTypes );
