@@ -14,7 +14,6 @@
 //
 #include "RAJA_test-base.hpp"
 #include "RAJA_test-camp.hpp"
-#include "RAJA_unit-test-memory.hpp"
 #include "RAJA_unit-test-for3d3d.hpp"
 
 
@@ -97,16 +96,21 @@ GPU_TYPED_TEST_P( IndexerUnitTest, HIPIndexer )
     }
   }
 
-  int total_global = expected_dim.product();
-  auto actual_index = make_test_ptr<test_seq, int>(total_global);
-  auto actual_size = make_test_ptr<test_seq, int>(total_global);
+  const int total_global = expected_dim.product();
+
+  auto host_res = get_test_resource<test_seq>();
+  auto working_res = get_test_resource<test_policy>();
+
+  int* actual_index = host_res.allocate<int>(total_global);
+  int* actual_size = host_res.allocate<int>(total_global);
+
   for (int i = 0; i < total_global; ++i) {
     actual_index[i] = -1;
     actual_size[i] = -1;
   }
 
-  actual_index = copy_test_ptr<test_policy>(actual_index, total_global);
-  actual_size = copy_test_ptr<test_policy>(actual_size, total_global);
+  actual_index = test_reallocate(working_res, host_res, actual_index, total_global);
+  actual_size = test_reallocate(working_res, host_res, actual_size, total_global);
 
   for3d3d<test_policy>(expected_dim,
       [=] RAJA_HOST_DEVICE (dim3d3d idx, dim3d3d dim) {
@@ -115,13 +119,16 @@ GPU_TYPED_TEST_P( IndexerUnitTest, HIPIndexer )
     actual_size[i] = indexer_type::template size<int>();
   });
 
-  actual_index = copy_test_ptr<test_seq>(actual_index, total_global);
-  actual_size = copy_test_ptr<test_seq>(actual_size, total_global);
+  actual_index = test_reallocate(host_res, working_res, actual_index, total_global);
+  actual_size = test_reallocate(host_res, working_res, actual_size, total_global);
 
   for (int i = 0; i < total_global; ++i) {
     ASSERT_EQ( actual_index[i], i );
     ASSERT_EQ( actual_size[i], total_global );
   }
+
+  host_res.deallocate(actual_index);
+  host_res.deallocate(actual_size);
 }
 
 REGISTER_TYPED_TEST_SUITE_P( IndexerUnitTest,
