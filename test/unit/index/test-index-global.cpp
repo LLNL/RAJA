@@ -14,6 +14,7 @@
 //
 #include "RAJA_test-base.hpp"
 #include "RAJA_test-camp.hpp"
+#include "RAJA_unit-test-memory.hpp"
 #include "RAJA_unit-test-for3d3d.hpp"
 
 
@@ -70,7 +71,7 @@ TYPED_TEST_SUITE_P( IndexerUnitTest );
 
 GPU_TYPED_TEST_P( IndexerUnitTest, HIPIndexer )
 {
-  using for3d3d_policy = typename camp::at<TypeParam, camp::num<0>>::type;
+  using test_policy = typename camp::at<TypeParam, camp::num<0>>::type;
   using indexer_holder_type = typename camp::at<TypeParam, camp::num<1>>::type;
   using dim_type = typename camp::at<TypeParam, camp::num<2>>::type;
   using threads_type = typename camp::at<TypeParam, camp::num<3>>::type;
@@ -97,28 +98,30 @@ GPU_TYPED_TEST_P( IndexerUnitTest, HIPIndexer )
   }
 
   int total_global = expected_dim.product();
-  int* actual_index = nullptr;
-  int* actual_size = nullptr;
-  hipErrchk(hipMallocManaged((void **)&actual_index, total_global*sizeof(int)));
-  hipErrchk(hipMallocManaged((void **)&actual_size, total_global*sizeof(int)));
-  hipErrchk(hipMemset(actual_index, -1, total_global*sizeof(int)));
-  hipErrchk(hipMemset(actual_size, -1, total_global*sizeof(int)));
+  auto actual_index = make_test_ptr<test_seq, int>(total_global);
+  auto actual_size = make_test_ptr<test_seq, int>(total_global);
+  for (int i = 0; i < total_global; ++i) {
+    actual_index[i] = -1;
+    actual_size[i] = -1;
+  }
 
-  for3d3d<for3d3d_policy>(expected_dim,
+  actual_index = copy_test_ptr<test_policy>(actual_index, total_global);
+  actual_size = copy_test_ptr<test_policy>(actual_size, total_global);
+
+  for3d3d<test_policy>(expected_dim,
       [=] RAJA_HOST_DEVICE (dim3d3d idx, dim3d3d dim) {
     int i = index(idx, dim);
     actual_index[i] = indexer_type::template index<int>();
     actual_size[i] = indexer_type::template size<int>();
   });
-  hipErrchk(hipDeviceSynchronize());
+
+  actual_index = copy_test_ptr<test_seq>(actual_index, total_global);
+  actual_size = copy_test_ptr<test_seq>(actual_size, total_global);
 
   for (int i = 0; i < total_global; ++i) {
     ASSERT_EQ( actual_index[i], i );
     ASSERT_EQ( actual_size[i], total_global );
   }
-
-  hipErrchk(hipFree(actual_index));
-  hipErrchk(hipFree(actual_size));
 }
 
 REGISTER_TYPED_TEST_SUITE_P( IndexerUnitTest,

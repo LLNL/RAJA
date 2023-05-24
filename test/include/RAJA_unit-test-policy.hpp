@@ -19,6 +19,22 @@
 #include <type_traits>
 
 
+enum struct test_policy : int
+{
+  undefined
+ ,seq
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+ ,openmp_target
+#endif
+#if defined(RAJA_ENABLE_CUDA)
+ ,cuda
+#endif
+#if defined(RAJA_ENABLE_HIP)
+ ,hip
+#endif
+};
+
+
 // base classes to represent host or device in exec_dispatcher
 struct RunOnHost {};
 struct RunOnDevice {};
@@ -46,6 +62,7 @@ struct test_policy_info<test_seq>
   using type = RAJA::loop_exec;
   using platform = RunOnHost;
   static const char* name() { return "test_seq"; }
+  static constexpr test_policy pol = test_policy::seq;
 };
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
@@ -60,6 +77,7 @@ struct test_policy_info<test_openmp_target>
   using type = RAJA::omp_target_parallel_for_exec<1>;
   using platform = RunOnHost;
   static const char* name() { return "test_openmp_target"; }
+  static constexpr test_policy pol = test_policy::openmp_target;
 };
 
 #endif
@@ -76,6 +94,7 @@ struct test_policy_info<test_cuda>
   using type = RAJA::cuda_exec<1>;
   using platform = RunOnDevice;
   static const char* name() { return "test_cuda"; }
+  static constexpr test_policy pol = test_policy::cuda;
 };
 
 #endif
@@ -92,6 +111,7 @@ struct test_policy_info<test_hip>
   using type = RAJA::hip_exec<1>;
   using platform = RunOnDevice;
   static const char* name() { return "test_hip"; }
+  static constexpr test_policy pol = test_policy::hip;
 };
 
 #endif
