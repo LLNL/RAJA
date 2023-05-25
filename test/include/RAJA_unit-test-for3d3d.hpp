@@ -150,30 +150,4 @@ void for3d3d(dim3d3d dim, L&& run)
   for3d3d(test_policy{}, dim, std::forward<L>(run));
 }
 
-
-//
-// For3d3d unit test policies
-//
-using SequentialFor3d3dList = camp::list<test_seq>;
-
-#if defined(RAJA_ENABLE_TBB)
-using TBBFor3d3dList = SequentialFor3d3dList;
-#endif
-
-#if defined(RAJA_ENABLE_OPENMP)
-using OpenMPFor3d3dList = SequentialFor3d3dList;
-#endif
-
-#if defined(RAJA_ENABLE_CUDA)
-using CudaFor3d3dList = camp::list<test_cuda>;
-#endif
-
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetFor3d3dList = camp::list<test_openmp_target>;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-using HipFor3d3dList = camp::list<test_hip>;
-#endif
-
 #endif // RAJA_test_for3d3d_HPP__

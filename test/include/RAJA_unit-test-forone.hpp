@@ -84,30 +84,4 @@ void forone(L&& run)
   forone(test_policy{}, std::forward<L>(run));
 }
 
-
-//
-// Forone unit test policies
-//
-using SequentialForoneList = camp::list<test_seq>;
-
-#if defined(RAJA_ENABLE_TBB)
-using TBBForoneList = SequentialForoneList;
-#endif
-
-#if defined(RAJA_ENABLE_OPENMP)
-using OpenMPForoneList = SequentialForoneList;
-#endif
-
-#if defined(RAJA_ENABLE_CUDA)
-using CudaForoneList = camp::list<test_cuda>;
-#endif
-
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetForoneList = camp::list<test_openmp_target>;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-using HipForoneList = camp::list<test_hip>;
-#endif
-
 #endif // RAJA_test_forone_HPP__

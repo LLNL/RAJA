@@ -129,4 +129,30 @@ struct test_policy_info<test_hip>
 
 #endif
 
+
+//
+// unit test policies
+//
+using SequentialUnitTestPolicyList = camp::list<test_seq>;
+
+#if defined(RAJA_ENABLE_TBB)
+using TBBUnitTestPolicyList = SequentialUnitTestPolicyList;
+#endif
+
+#if defined(RAJA_ENABLE_OPENMP)
+using OpenMPUnitTestPolicyList = SequentialUnitTestPolicyList;
+#endif
+
+#if defined(RAJA_ENABLE_CUDA)
+using CudaUnitTestPolicyList = camp::list<test_cuda>;
+#endif
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+using OpenMPTargetUnitTestPolicyList = camp::list<test_openmp_target>;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+using HipUnitTestPolicyList = camp::list<test_hip>;
+#endif
+
 #endif // RAJA_test_policy_HPP__

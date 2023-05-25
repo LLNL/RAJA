@@ -17,7 +17,7 @@ using @BACKEND@BasicWorkGroupDispatcher@SUBTESTNAME@Types =
                                  IndexTypeTypeList,
                                  XargsTypeList,
                                  @BACKEND@ResourceList,
-                                 @BACKEND@ForoneList > >::Types;
+                                 @BACKEND@UnitTestPolicyList > >::Types;
 
 REGISTER_TYPED_TEST_SUITE_P(WorkGroupBasicDispatcher@SUBTESTNAME@UnitTest,
                             BasicWorkGroupDispatcher@SUBTESTNAME@);

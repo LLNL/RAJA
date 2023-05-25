@@ -22,7 +22,7 @@
 // Cartesian product of types used in parameterized tests
 //
 using @INDEXING_BACKEND@IndexingTypes =
-  Test< camp::cartesian_product<@INDEXING_BACKEND@For3d3dList,
+  Test< camp::cartesian_product<@INDEXING_BACKEND@UnitTestPolicyList,
                                 @INDEXING_BACKEND@IndexingHolderList,
                                 NamedDimensionTypeList,
                                 SizeTypeList,
