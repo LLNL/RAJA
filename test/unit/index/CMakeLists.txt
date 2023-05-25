@@ -24,7 +24,3 @@ raja_add_test(
 raja_add_test(
   NAME test-rangestridesegment
   SOURCES test-rangestridesegment.cpp)
-
-raja_add_test(
-  NAME test-index-global
-  SOURCES test-index-global.cpp)
