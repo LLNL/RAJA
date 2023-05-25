@@ -12,93 +12,20 @@
 # We keep ${PROJECT_<MACHINE>_VARIANTS} and ${PROJECT_<MACHINE>_DEPS} So that
 # the comparison with the original job is easier.
 
-# Overriding shared spec: Allow failures
-ibm_clang_9_0_0:
+# Overriding shared spec: Longer allocation + extra flags
+xl_2022_08_19_gcc_8_3_1_cuda_11_2_0:
   variables:
-    SPEC: " ${PROJECT_LASSEN_VARIANTS} %clang@ibm.9.0.0 ${PROJECT_LASSEN_DEPS}"
-  extends: .build_and_test_on_lassen
-  allow_failure: true
-
-# Overriding shared spec: Allow failures
-ibm_clang_9_0_0_gcc_8_3_1:
-  variables:
-    SPEC: " ${PROJECT_LASSEN_VARIANTS} %clang@ibm.9.0.0 cxxflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ${PROJECT_LASSEN_DEPS}"
-  extends: .build_and_test_on_lassen
-  allow_failure: true
-
-# Overriding shared spec: Extra flags
-gcc_8_3_1:
-  variables:
-    SPEC: " ${PROJECT_LASSEN_VARIANTS} %gcc@8.3.1 cxxflags==\"-finline-functions -finline-limit=20000\" cflags==\"-finline-functions -finline-limit=20000\" ${PROJECT_LASSEN_DEPS}"
-  extends: .build_and_test_on_lassen
-
-# Overriding shared spec: Longer allocation + Allow failures
-pgi_20_4_gcc_8_3_1:
-  extends: .build_and_test_on_lassen
-  variables:
-    SPEC: " ${PROJECT_LASSEN_VARIANTS} %pgi@20.4 cxxflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ${PROJECT_LASSEN_DEPS}"
-    LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 80"
-  allow_failure: true
-
-# Overriding shared spec: Extra flags
-xl_16_1_1_12:
-  variables:
-    SPEC: " ${PROJECT_LASSEN_VARIANTS} %xl@16.1.1.12 cxxflags==\"-qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" ${PROJECT_LASSEN_DEPS}"
-  extends: .build_and_test_on_lassen
-
-# Overriding shared spec: Extra flags
-xl_16_1_1_12_gcc_8_3_1:
-  variables:
-    SPEC: " ${PROJECT_LASSEN_VARIANTS} %xl@16.1.1.12 cxxflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" cflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ${PROJECT_LASSEN_DEPS}"
-  extends: .build_and_test_on_lassen
-
-# Overriding shared spec: Allow failures
-ibm_clang_9_0_0_gcc_8_3_1_cuda_10_1_168:
-  extends: .build_and_test_on_lassen
-  variables:
-    SPEC: " ${PROJECT_LASSEN_VARIANTS} +cuda %clang@ibm.9.0.0 cxxflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ^cuda@10.1.168 ${PROJECT_LASSEN_DEPS}"
-  allow_failure: true
-
-# Overriding shared spec: Longer allocation + Extra flags + Allow failure + Updated cuda
-xl_16_1_1_12_cuda_11_1_1:
-  variables:
-    SPEC: " ${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags==\"-qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" cuda_arch=70 ^cuda@11.1.0 ${PROJECT_LASSEN_DEPS}"
+    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda cxxflags==\"-qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" %xl@16.1.1.12.gcc.8.3.1 ^cuda@11.2.0+allow-unsupported-compilers ${PROJECT_LASSEN_DEPS}"
+    MODULE_LIST: "cuda/11.2.0"
     LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 120"
-  allow_failure: true
   extends: .build_and_test_on_lassen
 
-# Overriding shared spec: Deactivated spec. This spec will be removed soon.
-xl_16_1_1_12_gcc_7_3_1_cuda_10_1_168:
+# Overriding shared spec: Longer allocation + extra flags
+xl_2022_08_19_gcc_8_3_1_cuda_11_7_0:
   variables:
-    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-7.3.1\" cflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-7.3.1\" ^cuda@10.1.168 ${PROJECT_LASSEN_DEPS}"
-  extends: .build_and_test_on_lassen
-  script:
-    - |
-      echo -e "\e[31mDeactivated spec !\e[0m"
-      echo -e "\e[31m${SPEC}\e[0m"
-      echo -e "\e[31mRAJA won’t build with Cuda < 11.1.0 due to a known issue.\e[0m"
-    - exit 1
-  allow_failure: true
-
-# Overriding shared spec: Deactivated spec. This spec will be removed soon.
-xl_16_1_1_12_gcc_8_3_1_cuda_11_0_2:
-  variables:
-    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" ^cuda@11.0.2 ${PROJECT_LASSEN_DEPS}"
-  extends: .build_and_test_on_lassen
-  script:
-    - |
-      echo -e "\e[31mDeactivated spec !\e[0m"
-      echo -e "\e[31m${SPEC}\e[0m"
-      echo -e "\e[31mRAJA won’t build with Cuda < 11.0.2 due to a known issue.\e[0m"
-    - exit 1
-  allow_failure: true
-
-# Overriding shared spec: Longer allocation + Extra flags + Allow failure + Updated cuda
-xl_16_1_1_12_gcc_8_3_1_cuda_11_1_0:
-  variables:
-    SPEC: " ${PROJECT_LASSEN_VARIANTS} +cuda %xl@16.1.1.12 cxxflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" cflags==\"--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1\" cuda_arch=70 ^cuda@11.1.0 ${PROJECT_LASSEN_DEPS}"
+    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda cxxflags==\"-qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" %xl@16.1.1.12.gcc.8.3.1 ^cuda@11.7.0+allow-unsupported-compilers ${PROJECT_LASSEN_DEPS}"
+    MODULE_LIST: "cuda/11.7.0"
     LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 120"
-  allow_failure: true
   extends: .build_and_test_on_lassen
 
 
@@ -109,33 +36,11 @@ xl_16_1_1_12_gcc_8_3_1_cuda_11_1_0:
 # ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is no reason not to fully
 # describe the spec here.
 
-##########
-# CPU ONLY
-##########
-
-clang_14_0_5:
-  variables:
-    SPEC: " ~shared +openmp +tests %clang@14.0.5"
-  extends: .build_and_test_on_lassen
-
-##########
-# CUDA
-##########
-
-clang_12_0_1_cuda_11_5_0:
-  variables:
-    SPEC: " ~shared +openmp +tests +cuda cuda_arch=70 %clang@12.0.1 ^cuda@11.5.0"
-  extends: .build_and_test_on_lassen
-
-gcc_8_3_1_cuda_11_1_0:
-  variables:
-    SPEC: " ~shared +openmp +tests +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.1.0"
-  extends: .build_and_test_on_lassen
-
 gcc_8_3_1_cuda_11_5_0_ats_disabled:
   extends: .build_and_test_on_lassen
   variables:
-    SPEC: " ~shared +openmp +tests +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0"
+    SPEC: " ~shared +openmp +tests +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0+allow-unsupported-compilers"
+    MODULE_LIST: "cuda/11.5.0"
     LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 --atsdisable -W 60"
 
 ##########
@@ -144,16 +49,17 @@ gcc_8_3_1_cuda_11_5_0_ats_disabled:
 
 clang_13_0_1_libcpp:
   variables:
-    SPEC: " ~shared +openmp +tests %clang@13.0.1+libcpp"
+    SPEC: " ~shared +openmp +tests %clang@13.0.1 cflags==\"-DGTEST_HAS_CXXABI_H_=0\" cxxflags==\"-stdlib=libc++ -DGTEST_HAS_CXXABI_H_=0\""
   extends: .build_and_test_on_lassen
 
-clang_14_0_5_asan:
-  variables:
-    SPEC: " ~shared +openmp +tests %clang@14.0.5 cxxflags==\"-fsanitize=address\" "
-    ASAN_OPTIONS: "detect_leaks=1"
-  extends: .build_and_test_on_lassen
+#clang_14_0_5_asan:
+#  variables:
+#    SPEC: " ~shared +openmp +tests %clang@14.0.5 cxxflags==\"-fsanitize=address\" "
+#    ASAN_OPTIONS: "detect_leaks=1"
+#    LSAN_OPTIONS: "suppressions=${CI_PROJECT_DIR}/suppressions.asan"
+#  extends: .build_and_test_on_lassen
 
-gcc_8_3_1_cuda_10_1_168_desul_atomics:
+gcc_8_3_1_cuda_10_1_243_desul_atomics:
   variables:
-    SPEC: " ~shared +openmp +tests +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.168"
+    SPEC: " ~shared +openmp +tests +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.243+allow-unsupported-compilers"
   extends: .build_and_test_on_lassen

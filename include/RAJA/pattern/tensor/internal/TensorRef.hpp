@@ -248,7 +248,7 @@ namespace expt
 
 
 
-    template< typename INDEX_TYPE, TensorTileSize TENSOR_SIZE, typename BEGIN, typename SIZE>
+    template< typename INDEX_TYPE, TensorTileSize TENSOR_SIZE, typename TBEGIN, typename TSIZE>
     struct StaticTensorTile;
 
     template< typename INDEX_TYPE,
@@ -318,35 +318,35 @@ namespace expt
         template< typename TILE, typename VALUE, size_t IDX>
         struct SetStaticTensorTileBegin;
 
-        template< typename INDEX_TYPE, TensorTileSize TENSOR_SIZE, typename BEGIN, typename SIZE, INDEX_TYPE VALUE, size_t IDX > 
+        template< typename INDEX_TYPE, TensorTileSize TENSOR_SIZE, typename TBEGIN, typename TSIZE, INDEX_TYPE VALUE, size_t IDX > 
         struct SetStaticTensorTileBegin<
-              StaticTensorTile<INDEX_TYPE, TENSOR_SIZE, BEGIN, SIZE >,
+              StaticTensorTile<INDEX_TYPE, TENSOR_SIZE, TBEGIN, TSIZE >,
               camp::integral_constant<INDEX_TYPE,VALUE>,
               IDX
         > {
-            using BeginType = StaticIndexArray<BEGIN>;
+            using BeginType = StaticIndexArray<TBEGIN>;
             using Type = StaticTensorTile<
                 INDEX_TYPE,
                 TENSOR_SIZE,
                 typename SetStaticIndexArray<INDEX_TYPE,IDX,VALUE,BeginType>::Seq,
-                SIZE
+                TSIZE
             >;
         };
 
         template< typename TILE, typename VALUE, size_t IDX>
         struct SetStaticTensorTileSize;
 
-        template< typename INDEX_TYPE, TensorTileSize TENSOR_SIZE, typename BEGIN, typename SIZE, INDEX_TYPE VALUE, size_t IDX > 
+        template< typename INDEX_TYPE, TensorTileSize TENSOR_SIZE, typename TBEGIN, typename TSIZE, INDEX_TYPE VALUE, size_t IDX > 
         struct SetStaticTensorTileSize<
-              StaticTensorTile<INDEX_TYPE, TENSOR_SIZE, BEGIN, SIZE >,
+              StaticTensorTile<INDEX_TYPE, TENSOR_SIZE, TBEGIN, TSIZE >,
               camp::integral_constant<INDEX_TYPE,VALUE>,
               IDX
         > {
-            using SizeType = StaticIndexArray<SIZE>;
+            using SizeType = StaticIndexArray<TSIZE>;
             using Type = StaticTensorTile<
                 INDEX_TYPE,
                 TENSOR_SIZE,
-                BEGIN,
+                TBEGIN,
                 typename SetStaticIndexArray<INDEX_TYPE,IDX,VALUE,SizeType>::Seq
             >;
         };
@@ -655,25 +655,25 @@ namespace expt
     /*!
      * Changes StaticTensorTile size type to FULL
      */
-    template< typename INDEX_TYPE, TensorTileSize RTENSOR_SIZE, typename BEGIN, typename SIZE>
+    template< typename INDEX_TYPE, TensorTileSize RTENSOR_SIZE, typename TBEGIN, typename TSIZE>
     RAJA_INLINE
     RAJA_HOST_DEVICE
     constexpr
-    StaticTensorTile<INDEX_TYPE, TENSOR_FULL, BEGIN, SIZE> &
-    make_tensor_tile_full(StaticTensorTile<INDEX_TYPE, RTENSOR_SIZE, BEGIN, SIZE> &tile){
-      return reinterpret_cast<StaticTensorTile<INDEX_TYPE, TENSOR_FULL, BEGIN, SIZE> &>(tile);
+    StaticTensorTile<INDEX_TYPE, TENSOR_FULL, TBEGIN, TSIZE> &
+    make_tensor_tile_full(StaticTensorTile<INDEX_TYPE, RTENSOR_SIZE, TBEGIN, TSIZE> &tile){
+      return reinterpret_cast<StaticTensorTile<INDEX_TYPE, TENSOR_FULL, TBEGIN, TSIZE> &>(tile);
     }
 
     /*!
      * Changes StaticTensorTile size type to PARTIAL
      */
-    template< typename INDEX_TYPE, TensorTileSize RTENSOR_SIZE, typename BEGIN, typename SIZE>
+    template< typename INDEX_TYPE, TensorTileSize RTENSOR_SIZE, typename TBEGIN, typename TSIZE>
     RAJA_INLINE
     RAJA_HOST_DEVICE
     constexpr
-    StaticTensorTile<INDEX_TYPE, TENSOR_PARTIAL, BEGIN, SIZE> &
-    make_tensor_tile_partial(StaticTensorTile<INDEX_TYPE, RTENSOR_SIZE, BEGIN, SIZE> &tile){
-      return reinterpret_cast<StaticTensorTile<INDEX_TYPE, TENSOR_PARTIAL, BEGIN, SIZE> &>(tile);
+    StaticTensorTile<INDEX_TYPE, TENSOR_PARTIAL, TBEGIN, TSIZE> &
+    make_tensor_tile_partial(StaticTensorTile<INDEX_TYPE, RTENSOR_SIZE, TBEGIN, TSIZE> &tile){
+      return reinterpret_cast<StaticTensorTile<INDEX_TYPE, TENSOR_PARTIAL, TBEGIN, TSIZE> &>(tile);
     }
 
 

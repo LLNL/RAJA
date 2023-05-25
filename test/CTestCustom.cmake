@@ -5,11 +5,12 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-set( TENSOR_ELEMENT_TYPES  int32_t int64_t float double )
+# You may add here the list of tests to be ignored.
+# By default, we populate that list with the content of the corresponding
+# variable. This variable is usually defined in a hostconfig file generated
+# for a specific machine, e.g. by Spack.
 
-add_subdirectory(register)
-add_subdirectory(vector)
-add_subdirectory(matrix)
+set(CTEST_CUSTOM_TESTS_IGNORE
+  ${CTEST_CUSTOM_TESTS_IGNORE}
+  )
 
-
-unset( TENSOR_ELEMENT_TYPES )

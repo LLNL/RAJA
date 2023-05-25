@@ -218,7 +218,9 @@ static_assert(RAJA_HAS_SOME_CXX14,
  *
  ******************************************************************************
  */
-#if defined(__INTEL_COMPILER)
+#if defined(_WIN32)
+#define RAJA_COMPILER_MSVC // This must be defined for all windows builds (even if using compilers other than MSVC)
+#elif defined(__INTEL_COMPILER)
 #define RAJA_COMPILER_INTEL
 #elif defined(__ibmxl__)
 #define RAJA_COMPILER_XLC
@@ -226,8 +228,6 @@ static_assert(RAJA_HAS_SOME_CXX14,
 #define RAJA_COMPILER_CLANG
 #elif defined(__PGI)
 #define RAJA_COMPILER_PGI
-#elif defined(_WIN32)
-#define RAJA_COMPILER_MSVC
 #elif defined(__GNUC__)
 #define RAJA_COMPILER_GNU
 #endif
@@ -293,7 +293,7 @@ namespace RAJA {
 #if defined(RAJA_CUDA_ACTIVE) || \
     defined(RAJA_HIP_ACTIVE) || \
     defined(RAJA_SYCL_ACTIVE)
-#define RAJA_DEVICE_ACTIVE
+#define RAJA_GPU_ACTIVE
 #endif
 
 /*!
@@ -364,7 +364,7 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 //
 
 #if (defined(_WIN32) || defined(_WIN64)) && !defined(RAJA_WIN_STATIC_BUILD)
-#ifdef RAJASHAREDDLL_EXPORTS
+#ifdef RAJA_EXPORTS
 #define RAJASHAREDDLL_API __declspec(dllexport)
 #else
 #define RAJASHAREDDLL_API __declspec(dllimport)
@@ -589,7 +589,7 @@ T * align_hint(T * x)
 #endif
 
 // If we're in CUDA or HIP device code, we can use the unroll pragma
-#if (defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)) && defined(RAJA_DEVICE_ACTIVE)
+#if (defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)) && defined(RAJA_GPU_ACTIVE)
 #undef RAJA_UNROLL
 #undef RAJA_UNROLL_COUNT
 #define RAJA_UNROLL RAJA_PRAGMA(unroll)

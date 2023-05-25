@@ -281,8 +281,7 @@ struct TargetReduceLoc
   {
   }
 
-  void reset(T init_val_,
-             IndexType init_loc_ = RAJA::reduce::detail::DefaultLoc<IndexType>().value(),
+  void reset(T init_val_, IndexType init_loc_,
              T identity_val_ = Reducer::identity,
              IndexType identity_loc_ = RAJA::reduce::detail::DefaultLoc<IndexType>().value())
   {

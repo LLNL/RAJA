@@ -17,3 +17,4 @@ add_subdirectory(old-tests)
 
 add_subdirectory(install)
 
+configure_file(${CMAKE_SOURCE_DIR}/test/CTestCustom.cmake ${CMAKE_BINARY_DIR})

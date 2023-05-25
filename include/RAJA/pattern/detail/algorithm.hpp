@@ -74,7 +74,7 @@ RAJA_HOST_DEVICE RAJA_INLINE
 void
 safe_iter_swap(Iter lhs, Iter rhs)
 {
-#ifdef RAJA_DEVICE_CODE
+#ifdef RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE
   using camp::safe_swap;
   safe_swap(*lhs, *rhs);
 #else

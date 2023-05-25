@@ -36,7 +36,7 @@
 #if (defined(RAJA_ENABLE_CUDA) && defined(__CUDA_ARCH__)) \
   || (defined(RAJA_ENABLE_HIP) && defined(__HIP_DEVICE_COMPILE__)) \
   || (defined(RAJA_ENABLE_SYCL) && defined(__SYCL_DEVICE_ONLY__))
-#define RAJA_DEVICE_CODE
+#define RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE
 #endif
 
 #if defined(RAJA_ENABLE_CUDA) && defined(__CUDACC__)
@@ -137,8 +137,7 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
   printf ( "%s\n", str );
 #if defined(RAJA_ENABLE_TARGET_OPENMP) && (_OPENMP >= 201511)
   // seg faulting here instead of calling std::abort for omp target
-  const char * errtemp = nullptr;
-  errtemp = str;
+  *((volatile char *)0) = 0;  // write to address 0
 #elif defined(__CUDA_ARCH__)
   asm ("trap;");
 
