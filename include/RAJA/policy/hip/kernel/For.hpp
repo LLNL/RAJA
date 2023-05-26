@@ -31,306 +31,6 @@ namespace internal
 {
 
 /*
- * Executor for thread work sharing loop inside HipKernel.
- * Mapping directly from a warp lane
- * Assigns the loop index to offset ArgumentId
- */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename Mask,
-          typename ... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<
-  Data,
-  statement::For<ArgumentId, RAJA::hip_warp_masked_direct<Mask>,
-                 EnclosedStmts ...>,
-  Types> {
-
-  using stmt_list_t = StatementList<EnclosedStmts ...>;
-
-  // Set the argument type for this loop
-  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
-
-  using enclosed_stmts_t =
-          HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
-
-  using mask_t = Mask;
-
-  using diff_t = segment_diff_type<ArgumentId, Data>;
-
-  static_assert(mask_t::max_masked_size <= RAJA::policy::hip::WARP_SIZE,
-                "BitMask is too large for HIP warp size");
-
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
-  {
-    const diff_t len = segment_length<ArgumentId>(data);
-
-    const diff_t i = mask_t::maskValue((diff_t)threadIdx.x);
-
-    // assign thread id directly to offset
-    data.template assign_offset<ArgumentId>(i);
-
-    // execute enclosed statements if in bounds
-    enclosed_stmts_t::exec(data, thread_active && (i<len));
-  }
-
-
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
-  {
-    // Get enclosed statements
-    LaunchDims dims = enclosed_stmts_t::calculateDimensions(data);
-
-    // we always get EXACTLY one warp by allocating one warp in the X
-    // dimension
-    const diff_t len = RAJA::policy::hip::WARP_SIZE;
-
-    // request one thread per element in the segment
-    set_hip_dim<named_dim::x>(dims.dims.threads, len);
-
-    // since we are direct-mapping, we REQUIRE len
-    set_hip_dim<named_dim::x>(dims.min_dims.threads, len);
-
-    return(dims);
-  }
-};
-
-
-
-/*
- * Executor for thread work sharing loop inside HipKernel.
- * Mapping directly from a warp lane
- * Assigns the loop index to offset ArgumentId
- */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename Mask,
-          typename ... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<
-  Data,
-  statement::For<ArgumentId, RAJA::hip_warp_masked_loop<Mask>,
-                 EnclosedStmts ...>,
-  Types> {
-
-  using stmt_list_t = StatementList<EnclosedStmts ...>;
-
-  // Set the argument type for this loop
-  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
-
-  using enclosed_stmts_t =
-          HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
-
-  using mask_t = Mask;
-
-  using diff_t = segment_diff_type<ArgumentId, Data>;
-
-  static_assert(mask_t::max_masked_size <= RAJA::policy::hip::WARP_SIZE,
-                "BitMask is too large for HIP warp size");
-
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
-  {
-    // masked size strided loop
-    const diff_t len = segment_length<ArgumentId>(data);
-    const diff_t i_init = mask_t::maskValue((diff_t)threadIdx.x);
-    const diff_t i_stride = (diff_t) mask_t::max_masked_size;
-
-    // Iterate through grid stride of chunks
-    for (diff_t ii = 0; ii < len; ii += i_stride) {
-      const diff_t i = ii + i_init;
-
-      // execute enclosed statements if any thread will
-      // but mask off threads without work
-      bool have_work = i < len;
-
-      // Assign the x thread to the argument
-      data.template assign_offset<ArgumentId>(i);
-
-      // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active && have_work);
-    }
-  }
-
-
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
-  {
-    // Get enclosed statements
-    LaunchDims dims = enclosed_stmts_t::calculateDimensions(data);
-
-    // we always get EXACTLY one warp by allocating one warp in the X
-    // dimension
-    const diff_t len = RAJA::policy::hip::WARP_SIZE;
-
-    // request one thread per element in the segment
-    set_hip_dim<named_dim::x>(dims.dims.threads, len);
-
-    // since we are direct-mapping, we REQUIRE len
-    set_hip_dim<named_dim::x>(dims.min_dims.threads, len);
-
-    return(dims);
-  }
-};
-
-
-/*
- * Executor for thread work sharing loop inside HipKernel.
- * Mapping directly from raw threadIdx.x
- * Assigns the loop index to offset ArgumentId
- */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename Mask,
-          typename ... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<
-  Data,
-  statement::For<ArgumentId, RAJA::hip_thread_masked_direct<Mask>,
-                 EnclosedStmts ...>,
-  Types> {
-
-  using stmt_list_t = StatementList<EnclosedStmts ...>;
-
-  // Set the argument type for this loop
-  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
-
-  using enclosed_stmts_t =
-          HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
-
-  using mask_t = Mask;
-
-  using diff_t = segment_diff_type<ArgumentId, Data>;
-
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
-  {
-    const diff_t len = segment_length<ArgumentId>(data);
-
-    const diff_t i = mask_t::maskValue((diff_t)threadIdx.x);
-
-    // assign thread id directly to offset
-    data.template assign_offset<ArgumentId>(i);
-
-    // execute enclosed statements if in bounds
-    enclosed_stmts_t::exec(data, thread_active && (i<len));
-  }
-
-
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
-  {
-    // Get enclosed statements
-    LaunchDims dims;
-
-    // we need to allocate enough threads for the segment size, and the
-    // shifted off bits
-    const diff_t len = mask_t::max_input_size;
-
-    // request one thread per element in the segment
-    set_hip_dim<named_dim::x>(dims.dims.threads, len);
-
-    // since we are direct-mapping, we REQUIRE len
-    set_hip_dim<named_dim::x>(dims.min_dims.threads, len);
-
-    LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
-    return(dims.max(enclosed_dims));
-  }
-};
-
-
-
-
-/*
- * Executor for thread work sharing loop inside HipKernel.
- * Mapping directly from a warp lane
- * Assigns the loop index to offset ArgumentId
- */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename Mask,
-          typename ... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<
-  Data,
-  statement::For<ArgumentId, RAJA::hip_thread_masked_loop<Mask>,
-                 EnclosedStmts ...>,
-  Types> {
-
-  using stmt_list_t = StatementList<EnclosedStmts ...>;
-
-  // Set the argument type for this loop
-  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
-
-  using enclosed_stmts_t =
-          HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
-
-  using mask_t = Mask;
-
-  using diff_t = segment_diff_type<ArgumentId, Data>;
-
-
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
-  {
-    // masked size strided loop
-    const diff_t len = segment_length<ArgumentId>(data);
-    const diff_t i_init = mask_t::maskValue((diff_t)threadIdx.x);
-    const diff_t i_stride = (diff_t) mask_t::max_masked_size;
-
-    // Iterate through grid stride of chunks
-    for (diff_t ii = 0; ii < len; ii += i_stride) {
-      const diff_t i = ii + i_init;
-
-      // execute enclosed statements if any thread will
-      // but mask off threads without work
-      bool have_work = i < len;
-
-      // Assign the x thread to the argument
-      data.template assign_offset<ArgumentId>(i);
-
-      // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active && have_work);
-    }
-  }
-
-
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
-  {
-    // Get enclosed statements
-    LaunchDims dims;
-
-    // we need to allocate enough threads for the segment size, and the
-    // shifted off bits
-    const diff_t len = mask_t::max_input_size;
-
-    // request one thread per element in the segment
-    set_hip_dim<named_dim::x>(dims.dims.threads, len);
-
-    // since we are direct-mapping, we REQUIRE len
-    set_hip_dim<named_dim::x>(dims.min_dims.threads, len);
-
-    LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
-    return(dims.max(enclosed_dims));
-  }
-};
-
-
-/*
  * Executor for work sharing inside HipKernel.
  * Mapping directly from IndexMapper to indices
  * Assigns the loop index to offset ArgumentId
@@ -567,6 +267,299 @@ struct HipStatementExecutor<
 
 };
 
+
+/*
+ * Executor for thread work sharing loop inside HipKernel.
+ * Mapping directly from a warp lane
+ * Assigns the loop index to offset ArgumentId
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename Mask,
+          typename ... EnclosedStmts,
+          typename Types>
+struct HipStatementExecutor<
+  Data,
+  statement::For<ArgumentId, RAJA::hip_warp_masked_direct<Mask>,
+                 EnclosedStmts ...>,
+  Types> {
+
+  using stmt_list_t = StatementList<EnclosedStmts ...>;
+
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
+  using enclosed_stmts_t =
+          HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
+
+  using mask_t = Mask;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
+
+  static_assert(mask_t::max_masked_size <= RAJA::policy::hip::WARP_SIZE,
+                "BitMask is too large for HIP warp size");
+
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+    const diff_t len = segment_length<ArgumentId>(data);
+
+    const diff_t i = mask_t::maskValue((diff_t)threadIdx.x);
+
+    // assign thread id directly to offset
+    data.template assign_offset<ArgumentId>(i);
+
+    // execute enclosed statements if in bounds
+    enclosed_stmts_t::exec(data, thread_active && (i<len));
+  }
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
+  {
+    // Get enclosed statements
+    LaunchDims dims = enclosed_stmts_t::calculateDimensions(data);
+
+    // we always get EXACTLY one warp by allocating one warp in the X
+    // dimension
+    const diff_t len = RAJA::policy::hip::WARP_SIZE;
+
+    // request one thread per element in the segment
+    set_hip_dim<named_dim::x>(dims.dims.threads, len);
+
+    // since we are direct-mapping, we REQUIRE len
+    set_hip_dim<named_dim::x>(dims.min_dims.threads, len);
+
+    return(dims);
+  }
+};
+
+/*
+ * Executor for thread work sharing loop inside HipKernel.
+ * Mapping directly from a warp lane
+ * Assigns the loop index to offset ArgumentId
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename Mask,
+          typename ... EnclosedStmts,
+          typename Types>
+struct HipStatementExecutor<
+  Data,
+  statement::For<ArgumentId, RAJA::hip_warp_masked_loop<Mask>,
+                 EnclosedStmts ...>,
+  Types> {
+
+  using stmt_list_t = StatementList<EnclosedStmts ...>;
+
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
+  using enclosed_stmts_t =
+          HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
+
+  using mask_t = Mask;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
+
+  static_assert(mask_t::max_masked_size <= RAJA::policy::hip::WARP_SIZE,
+                "BitMask is too large for HIP warp size");
+
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+    // masked size strided loop
+    const diff_t len = segment_length<ArgumentId>(data);
+    const diff_t i_init = mask_t::maskValue((diff_t)threadIdx.x);
+    const diff_t i_stride = (diff_t) mask_t::max_masked_size;
+
+    // Iterate through grid stride of chunks
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      const diff_t i = ii + i_init;
+
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
+
+      // Assign the x thread to the argument
+      data.template assign_offset<ArgumentId>(i);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active && have_work);
+    }
+  }
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
+  {
+    // Get enclosed statements
+    LaunchDims dims = enclosed_stmts_t::calculateDimensions(data);
+
+    // we always get EXACTLY one warp by allocating one warp in the X
+    // dimension
+    const diff_t len = RAJA::policy::hip::WARP_SIZE;
+
+    // request one thread per element in the segment
+    set_hip_dim<named_dim::x>(dims.dims.threads, len);
+
+    // since we are direct-mapping, we REQUIRE len
+    set_hip_dim<named_dim::x>(dims.min_dims.threads, len);
+
+    return(dims);
+  }
+};
+
+/*
+ * Executor for thread work sharing loop inside HipKernel.
+ * Mapping directly from raw threadIdx.x
+ * Assigns the loop index to offset ArgumentId
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename Mask,
+          typename ... EnclosedStmts,
+          typename Types>
+struct HipStatementExecutor<
+  Data,
+  statement::For<ArgumentId, RAJA::hip_thread_masked_direct<Mask>,
+                 EnclosedStmts ...>,
+  Types> {
+
+  using stmt_list_t = StatementList<EnclosedStmts ...>;
+
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
+  using enclosed_stmts_t =
+          HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
+
+  using mask_t = Mask;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
+
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+    const diff_t len = segment_length<ArgumentId>(data);
+
+    const diff_t i = mask_t::maskValue((diff_t)threadIdx.x);
+
+    // assign thread id directly to offset
+    data.template assign_offset<ArgumentId>(i);
+
+    // execute enclosed statements if in bounds
+    enclosed_stmts_t::exec(data, thread_active && (i<len));
+  }
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
+  {
+    // Get enclosed statements
+    LaunchDims dims;
+
+    // we need to allocate enough threads for the segment size, and the
+    // shifted off bits
+    const diff_t len = mask_t::max_input_size;
+
+    // request one thread per element in the segment
+    set_hip_dim<named_dim::x>(dims.dims.threads, len);
+
+    // since we are direct-mapping, we REQUIRE len
+    set_hip_dim<named_dim::x>(dims.min_dims.threads, len);
+
+    LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
+    return(dims.max(enclosed_dims));
+  }
+};
+
+/*
+ * Executor for thread work sharing loop inside HipKernel.
+ * Mapping directly from a warp lane
+ * Assigns the loop index to offset ArgumentId
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename Mask,
+          typename ... EnclosedStmts,
+          typename Types>
+struct HipStatementExecutor<
+  Data,
+  statement::For<ArgumentId, RAJA::hip_thread_masked_loop<Mask>,
+                 EnclosedStmts ...>,
+  Types> {
+
+  using stmt_list_t = StatementList<EnclosedStmts ...>;
+
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
+  using enclosed_stmts_t =
+          HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
+
+  using mask_t = Mask;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
+
+
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+    // masked size strided loop
+    const diff_t len = segment_length<ArgumentId>(data);
+    const diff_t i_init = mask_t::maskValue((diff_t)threadIdx.x);
+    const diff_t i_stride = (diff_t) mask_t::max_masked_size;
+
+    // Iterate through grid stride of chunks
+    for (diff_t ii = 0; ii < len; ii += i_stride) {
+      const diff_t i = ii + i_init;
+
+      // execute enclosed statements if any thread will
+      // but mask off threads without work
+      bool have_work = i < len;
+
+      // Assign the x thread to the argument
+      data.template assign_offset<ArgumentId>(i);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active && have_work);
+    }
+  }
+
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
+  {
+    // Get enclosed statements
+    LaunchDims dims;
+
+    // we need to allocate enough threads for the segment size, and the
+    // shifted off bits
+    const diff_t len = mask_t::max_input_size;
+
+    // request one thread per element in the segment
+    set_hip_dim<named_dim::x>(dims.dims.threads, len);
+
+    // since we are direct-mapping, we REQUIRE len
+    set_hip_dim<named_dim::x>(dims.min_dims.threads, len);
+
+    LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
+    return(dims.max(enclosed_dims));
+  }
+};
 
 }  // namespace internal
 }  // end namespace RAJA
