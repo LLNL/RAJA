@@ -315,7 +315,7 @@ struct CudaDimHelper<named_dim::x>{
   template<typename dim_t>
   RAJA_HOST_DEVICE
   inline static constexpr
-  auto get(dim_t const &d)
+  cuda_dim_member_t get(dim_t const &d)
   {
     return d.x;
   }
@@ -335,7 +335,7 @@ struct CudaDimHelper<named_dim::y>{
   template<typename dim_t>
   RAJA_HOST_DEVICE
   inline static constexpr
-  auto get(dim_t const &d)
+  cuda_dim_member_t get(dim_t const &d)
   {
     return d.y;
   }
@@ -355,7 +355,7 @@ struct CudaDimHelper<named_dim::z>{
   template<typename dim_t>
   RAJA_HOST_DEVICE
   inline static constexpr
-  auto get(dim_t const &d)
+  cuda_dim_member_t get(dim_t const &d)
   {
     return d.z;
   }
@@ -372,7 +372,7 @@ struct CudaDimHelper<named_dim::z>{
 template<named_dim dim, typename dim_t>
 RAJA_HOST_DEVICE
 constexpr
-auto get_cuda_dim(dim_t const &d)
+cuda_dim_member_t get_cuda_dim(dim_t const &d)
 {
   return CudaDimHelper<dim>::get(d);
 }
@@ -418,7 +418,7 @@ struct IndexGlobal
   static constexpr int grid_size = GRID_SIZE;
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto index()
+  RAJA_DEVICE static inline IdxT index()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(threadIdx)) +
            static_cast<IdxT>(block_size) *
@@ -426,7 +426,7 @@ struct IndexGlobal
   }
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static constexpr auto size()
+  RAJA_DEVICE static constexpr IdxT size()
   {
     return static_cast<IdxT>(block_size) *
            static_cast<IdxT>(grid_size) ;
@@ -442,13 +442,13 @@ struct IndexGlobal<dim, 1, GRID_SIZE>
   static constexpr int grid_size = GRID_SIZE;
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto index()
+  RAJA_DEVICE static inline IdxT index()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(blockIdx)) ;
   }
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static constexpr auto size()
+  RAJA_DEVICE static constexpr IdxT size()
   {
     return static_cast<IdxT>(grid_size) ;
   }
@@ -463,13 +463,13 @@ struct IndexGlobal<dim, BLOCK_SIZE, 1>
   static constexpr int grid_size = 1;
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto index()
+  RAJA_DEVICE static inline IdxT index()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(threadIdx)) ;
   }
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static constexpr auto size()
+  RAJA_DEVICE static constexpr IdxT size()
   {
     return static_cast<IdxT>(block_size) ;
   }
@@ -482,13 +482,13 @@ struct IndexGlobal<dim, 1, 1>
   static constexpr int grid_size = 1;
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto index()
+  RAJA_DEVICE static inline IdxT index()
   {
     return static_cast<IdxT>(0) ;
   }
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto size()
+  RAJA_DEVICE static inline IdxT size()
   {
     return static_cast<IdxT>(1) ;
   }
@@ -504,7 +504,7 @@ struct IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>
   static constexpr int grid_size = GRID_SIZE;
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto index()
+  RAJA_DEVICE static inline IdxT index()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(threadIdx)) +
            static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(blockDim)) *
@@ -512,7 +512,7 @@ struct IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>
   }
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto size()
+  RAJA_DEVICE static inline IdxT size()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(blockDim)) *
            static_cast<IdxT>(grid_size) ;
@@ -526,13 +526,13 @@ struct IndexGlobal<dim, named_usage::unspecified, 1>
   static constexpr int grid_size = 1;
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto index()
+  RAJA_DEVICE static inline IdxT index()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(threadIdx)) ;
   }
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto size()
+  RAJA_DEVICE static inline IdxT size()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(blockDim)) ;
   }
@@ -548,7 +548,7 @@ struct IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>
   static constexpr int grid_size = named_usage::unspecified;
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto index()
+  RAJA_DEVICE static inline IdxT index()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(threadIdx)) +
            static_cast<IdxT>(block_size) *
@@ -556,7 +556,7 @@ struct IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>
   }
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto size()
+  RAJA_DEVICE static inline IdxT size()
   {
     return static_cast<IdxT>(block_size) *
            static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(gridDim)) ;
@@ -570,13 +570,13 @@ struct IndexGlobal<dim, 1, named_usage::unspecified>
   static constexpr int grid_size = named_usage::unspecified;
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto index()
+  RAJA_DEVICE static inline IdxT index()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(blockIdx)) ;
   }
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto size()
+  RAJA_DEVICE static inline IdxT size()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(gridDim)) ;
   }
@@ -590,7 +590,7 @@ struct IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>
   static constexpr int grid_size = named_usage::unspecified;
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto index()
+  RAJA_DEVICE static inline IdxT index()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(threadIdx)) +
            static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(blockDim)) *
@@ -598,7 +598,7 @@ struct IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>
   }
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto size()
+  RAJA_DEVICE static inline IdxT size()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(blockDim)) *
            static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(gridDim)) ;
@@ -616,13 +616,13 @@ struct IndexGlobal<dim, named_usage::ignored, GRID_SIZE>
   static constexpr int grid_size = GRID_SIZE;
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto index()
+  RAJA_DEVICE static inline IdxT index()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(blockIdx)) ;
   }
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static constexpr auto size()
+  RAJA_DEVICE static constexpr IdxT size()
   {
     return static_cast<IdxT>(grid_size) ;
   }
@@ -635,13 +635,13 @@ struct IndexGlobal<dim, named_usage::ignored, 1>
   static constexpr int grid_size = 1;
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto index()
+  RAJA_DEVICE static inline IdxT index()
   {
     return static_cast<IdxT>(0) ;
   }
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto size()
+  RAJA_DEVICE static inline IdxT size()
   {
     return static_cast<IdxT>(1) ;
   }
@@ -654,13 +654,13 @@ struct IndexGlobal<dim, named_usage::ignored, named_usage::unspecified>
   static constexpr int grid_size = named_usage::unspecified;
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto index()
+  RAJA_DEVICE static inline IdxT index()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(blockIdx)) ;
   }
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto size()
+  RAJA_DEVICE static inline IdxT size()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(gridDim)) ;
   }
@@ -677,13 +677,13 @@ struct IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>
   static constexpr int grid_size = named_usage::ignored;
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto index()
+  RAJA_DEVICE static inline IdxT index()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(threadIdx)) ;
   }
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static constexpr auto size()
+  RAJA_DEVICE static constexpr IdxT size()
   {
     return static_cast<IdxT>(block_size) ;
   }
@@ -696,13 +696,13 @@ struct IndexGlobal<dim, 1, named_usage::ignored>
   static constexpr int grid_size = named_usage::ignored;
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto index()
+  RAJA_DEVICE static inline IdxT index()
   {
     return static_cast<IdxT>(0) ;
   }
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto size()
+  RAJA_DEVICE static inline IdxT size()
   {
     return static_cast<IdxT>(1) ;
   }
@@ -715,13 +715,13 @@ struct IndexGlobal<dim, named_usage::unspecified, named_usage::ignored>
   static constexpr int grid_size = named_usage::ignored;
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto index()
+  RAJA_DEVICE static inline IdxT index()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(threadIdx)) ;
   }
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto size()
+  RAJA_DEVICE static inline IdxT size()
   {
     return static_cast<IdxT>(::RAJA::internal::CudaDimHelper<dim>::get(blockDim)) ;
   }
@@ -736,13 +736,13 @@ struct IndexGlobal<dim, named_usage::ignored, named_usage::ignored>
   static constexpr int grid_size = named_usage::ignored;
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto index()
+  RAJA_DEVICE static inline IdxT index()
   {
     return static_cast<IdxT>(0) ;
   }
 
   template < typename IdxT = cuda_dim_member_t >
-  RAJA_DEVICE static inline auto size()
+  RAJA_DEVICE static inline IdxT size()
   {
     return static_cast<IdxT>(1) ;
   }
