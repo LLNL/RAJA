@@ -174,7 +174,7 @@ camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
-      RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::cuda_global_z_loop<32>,
+      RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::cuda_global_size_z_loop<32>,
         RAJA::statement::Lambda<0>
       >
     >
@@ -205,7 +205,7 @@ camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::HipKernel<
-      RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::hip_global_explicit_z_loop<32>,
+      RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::hip_global_size_z_loop<32>,
         RAJA::statement::Lambda<0>
       >
     >

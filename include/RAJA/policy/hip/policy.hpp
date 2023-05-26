@@ -767,9 +767,13 @@ using global_z = IndexGlobal<named_dim::z, BLOCK_SIZE, GRID_SIZE>;
 
 } // namespace hip
 
-template <typename mapping, size_t BLOCK_SIZE, size_t GRID_SIZE, bool Async = false>
-using hip_exec_explicit = policy::hip::hip_exec<
-    mapping, hip::global_x<BLOCK_SIZE, GRID_SIZE>, Async>;
+template <size_t BLOCK_SIZE, size_t GRID_SIZE, bool Async = false>
+using hip_exec_grid = policy::hip::hip_exec<
+    iteration_mapping::Direct, hip::global_x<BLOCK_SIZE, GRID_SIZE>, Async>;
+
+template <size_t BLOCK_SIZE, size_t GRID_SIZE>
+using hip_exec_grid_async = policy::hip::hip_exec<
+    iteration_mapping::Direct, hip::global_x<BLOCK_SIZE, GRID_SIZE>, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 using hip_exec = policy::hip::hip_exec<
@@ -1174,86 +1178,86 @@ using hip_flatten_global_zyx_loop = hip_flatten_global_loop<named_dim::z, named_
  * physical threads to fit all of the direct map requests.
  */
 template < typename ... indexers >
-using hip_explicit_direct = policy::hip::hip_indexer<
+using hip_indexer_direct = policy::hip::hip_indexer<
     iteration_mapping::Direct,
     kernel_sync_requirement::none,
     indexers...>;
 
 template < int X_BLOCK_SIZE >
-using hip_global_explicit_x_direct = hip_explicit_direct<hip::global_x<X_BLOCK_SIZE>>;
+using hip_global_size_x_direct = hip_indexer_direct<hip::global_x<X_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE >
-using hip_global_explicit_y_direct = hip_explicit_direct<hip::global_y<Y_BLOCK_SIZE>>;
+using hip_global_size_y_direct = hip_indexer_direct<hip::global_y<Y_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE >
-using hip_global_explicit_z_direct = hip_explicit_direct<hip::global_z<Z_BLOCK_SIZE>>;
+using hip_global_size_z_direct = hip_indexer_direct<hip::global_z<Z_BLOCK_SIZE>>;
 
 template < int X_BLOCK_SIZE, int Y_BLOCK_SIZE >
-using hip_global_explicit_xy_direct = hip_explicit_direct<hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
+using hip_global_size_xy_direct = hip_indexer_direct<hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
 template < int X_BLOCK_SIZE, int Z_BLOCK_SIZE >
-using hip_global_explicit_xz_direct = hip_explicit_direct<hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
+using hip_global_size_xz_direct = hip_indexer_direct<hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE, int X_BLOCK_SIZE >
-using hip_global_explicit_yx_direct = hip_explicit_direct<hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
+using hip_global_size_yx_direct = hip_indexer_direct<hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE, int Z_BLOCK_SIZE >
-using hip_global_explicit_yz_direct = hip_explicit_direct<hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
+using hip_global_size_yz_direct = hip_indexer_direct<hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE, int X_BLOCK_SIZE >
-using hip_global_explicit_zx_direct = hip_explicit_direct<hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
+using hip_global_size_zx_direct = hip_indexer_direct<hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE, int Y_BLOCK_SIZE >
-using hip_global_explicit_zy_direct = hip_explicit_direct<hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
+using hip_global_size_zy_direct = hip_indexer_direct<hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
 
 template < int X_BLOCK_SIZE, int Y_BLOCK_SIZE, int Z_BLOCK_SIZE >
-using hip_global_explicit_xyz_direct = hip_explicit_direct<hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
+using hip_global_size_xyz_direct = hip_indexer_direct<hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
 template < int X_BLOCK_SIZE, int Z_BLOCK_SIZE, int Y_BLOCK_SIZE >
-using hip_global_explicit_xzy_direct = hip_explicit_direct<hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
+using hip_global_size_xzy_direct = hip_indexer_direct<hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE, int X_BLOCK_SIZE, int Z_BLOCK_SIZE >
-using hip_global_explicit_yxz_direct = hip_explicit_direct<hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
+using hip_global_size_yxz_direct = hip_indexer_direct<hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE, int Z_BLOCK_SIZE, int X_BLOCK_SIZE >
-using hip_global_explicit_yzx_direct = hip_explicit_direct<hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
+using hip_global_size_yzx_direct = hip_indexer_direct<hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE, int X_BLOCK_SIZE, int Y_BLOCK_SIZE >
-using hip_global_explicit_zxy_direct = hip_explicit_direct<hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
+using hip_global_size_zxy_direct = hip_indexer_direct<hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE, int Y_BLOCK_SIZE, int X_BLOCK_SIZE >
-using hip_global_explicit_zyx_direct = hip_explicit_direct<hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
+using hip_global_size_zyx_direct = hip_indexer_direct<hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
 
 /*!
  * Maps segment indices to HIP global threads.
  * Uses grid-stride looping to exceed the maximum number of global threads
  */
 template < typename ... indexers >
-using hip_explicit_loop = policy::hip::hip_indexer<
+using hip_indexer_loop = policy::hip::hip_indexer<
     iteration_mapping::StridedLoop,
     kernel_sync_requirement::none,
     indexers...>;
 
 template < int X_BLOCK_SIZE >
-using hip_global_explicit_x_loop = hip_explicit_loop<hip::global_x<X_BLOCK_SIZE>>;
+using hip_global_size_x_loop = hip_indexer_loop<hip::global_x<X_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE >
-using hip_global_explicit_y_loop = hip_explicit_loop<hip::global_y<Y_BLOCK_SIZE>>;
+using hip_global_size_y_loop = hip_indexer_loop<hip::global_y<Y_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE >
-using hip_global_explicit_z_loop = hip_explicit_loop<hip::global_z<Z_BLOCK_SIZE>>;
+using hip_global_size_z_loop = hip_indexer_loop<hip::global_z<Z_BLOCK_SIZE>>;
 
 template < int X_BLOCK_SIZE, int Y_BLOCK_SIZE >
-using hip_global_explicit_xy_loop = hip_explicit_loop<hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
+using hip_global_size_xy_loop = hip_indexer_loop<hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
 template < int X_BLOCK_SIZE, int Z_BLOCK_SIZE >
-using hip_global_explicit_xz_loop = hip_explicit_loop<hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
+using hip_global_size_xz_loop = hip_indexer_loop<hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE, int X_BLOCK_SIZE >
-using hip_global_explicit_yx_loop = hip_explicit_loop<hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
+using hip_global_size_yx_loop = hip_indexer_loop<hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE, int Z_BLOCK_SIZE >
-using hip_global_explicit_yz_loop = hip_explicit_loop<hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
+using hip_global_size_yz_loop = hip_indexer_loop<hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE, int X_BLOCK_SIZE >
-using hip_global_explicit_zx_loop = hip_explicit_loop<hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
+using hip_global_size_zx_loop = hip_indexer_loop<hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE, int Y_BLOCK_SIZE >
-using hip_global_explicit_zy_loop = hip_explicit_loop<hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
+using hip_global_size_zy_loop = hip_indexer_loop<hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
 
 template < int X_BLOCK_SIZE, int Y_BLOCK_SIZE, int Z_BLOCK_SIZE >
-using hip_global_explicit_xyz_loop = hip_explicit_loop<hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
+using hip_global_size_xyz_loop = hip_indexer_loop<hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
 template < int X_BLOCK_SIZE, int Z_BLOCK_SIZE, int Y_BLOCK_SIZE >
-using hip_global_explicit_xzy_loop = hip_explicit_loop<hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
+using hip_global_size_xzy_loop = hip_indexer_loop<hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE, int X_BLOCK_SIZE, int Z_BLOCK_SIZE >
-using hip_global_explicit_yxz_loop = hip_explicit_loop<hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
+using hip_global_size_yxz_loop = hip_indexer_loop<hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE, int Z_BLOCK_SIZE, int X_BLOCK_SIZE >
-using hip_global_explicit_yzx_loop = hip_explicit_loop<hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
+using hip_global_size_yzx_loop = hip_indexer_loop<hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE, int X_BLOCK_SIZE, int Y_BLOCK_SIZE >
-using hip_global_explicit_zxy_loop = hip_explicit_loop<hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
+using hip_global_size_zxy_loop = hip_indexer_loop<hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE, int Y_BLOCK_SIZE, int X_BLOCK_SIZE >
-using hip_global_explicit_zyx_loop = hip_explicit_loop<hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
+using hip_global_size_zyx_loop = hip_indexer_loop<hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
 
 /*
  * Maps segment indices to flattened HIP global threads.
@@ -1262,43 +1266,43 @@ using hip_global_explicit_zyx_loop = hip_explicit_loop<hip::global_z<Z_BLOCK_SIZ
  * Reshapes multiple physical global threads into a 1D iteration space
  */
 template < typename ... indexers >
-using hip_flatten_explicit_direct = policy::hip::hip_flatten_indexer<
+using hip_flatten_indexer_direct = policy::hip::hip_flatten_indexer<
     iteration_mapping::Direct,
     kernel_sync_requirement::none,
     indexers...>;
 
 template < int X_BLOCK_SIZE >
-using hip_flatten_global_explicit_x_direct = hip_flatten_explicit_direct<hip::global_x<X_BLOCK_SIZE>>;
+using hip_flatten_global_size_x_direct = hip_flatten_indexer_direct<hip::global_x<X_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE >
-using hip_flatten_global_explicit_y_direct = hip_flatten_explicit_direct<hip::global_y<Y_BLOCK_SIZE>>;
+using hip_flatten_global_size_y_direct = hip_flatten_indexer_direct<hip::global_y<Y_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE >
-using hip_flatten_global_explicit_z_direct = hip_flatten_explicit_direct<hip::global_z<Z_BLOCK_SIZE>>;
+using hip_flatten_global_size_z_direct = hip_flatten_indexer_direct<hip::global_z<Z_BLOCK_SIZE>>;
 
 template < int X_BLOCK_SIZE, int Y_BLOCK_SIZE >
-using hip_flatten_global_explicit_xy_direct = hip_flatten_explicit_direct<hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
+using hip_flatten_global_size_xy_direct = hip_flatten_indexer_direct<hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
 template < int X_BLOCK_SIZE, int Z_BLOCK_SIZE >
-using hip_flatten_global_explicit_xz_direct = hip_flatten_explicit_direct<hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
+using hip_flatten_global_size_xz_direct = hip_flatten_indexer_direct<hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE, int X_BLOCK_SIZE >
-using hip_flatten_global_explicit_yx_direct = hip_flatten_explicit_direct<hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
+using hip_flatten_global_size_yx_direct = hip_flatten_indexer_direct<hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE, int Z_BLOCK_SIZE >
-using hip_flatten_global_explicit_yz_direct = hip_flatten_explicit_direct<hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
+using hip_flatten_global_size_yz_direct = hip_flatten_indexer_direct<hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE, int X_BLOCK_SIZE >
-using hip_flatten_global_explicit_zx_direct = hip_flatten_explicit_direct<hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
+using hip_flatten_global_size_zx_direct = hip_flatten_indexer_direct<hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE, int Y_BLOCK_SIZE >
-using hip_flatten_global_explicit_zy_direct = hip_flatten_explicit_direct<hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
+using hip_flatten_global_size_zy_direct = hip_flatten_indexer_direct<hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
 
 template < int X_BLOCK_SIZE, int Y_BLOCK_SIZE, int Z_BLOCK_SIZE >
-using hip_flatten_global_explicit_xyz_direct = hip_flatten_explicit_direct<hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
+using hip_flatten_global_size_xyz_direct = hip_flatten_indexer_direct<hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
 template < int X_BLOCK_SIZE, int Z_BLOCK_SIZE, int Y_BLOCK_SIZE >
-using hip_flatten_global_explicit_xzy_direct = hip_flatten_explicit_direct<hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
+using hip_flatten_global_size_xzy_direct = hip_flatten_indexer_direct<hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE, int X_BLOCK_SIZE, int Z_BLOCK_SIZE >
-using hip_flatten_global_explicit_yxz_direct = hip_flatten_explicit_direct<hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
+using hip_flatten_global_size_yxz_direct = hip_flatten_indexer_direct<hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE, int Z_BLOCK_SIZE, int X_BLOCK_SIZE >
-using hip_flatten_global_explicit_yzx_direct = hip_flatten_explicit_direct<hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
+using hip_flatten_global_size_yzx_direct = hip_flatten_indexer_direct<hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE, int X_BLOCK_SIZE, int Y_BLOCK_SIZE >
-using hip_flatten_global_explicit_zxy_direct = hip_flatten_explicit_direct<hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
+using hip_flatten_global_size_zxy_direct = hip_flatten_indexer_direct<hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE, int Y_BLOCK_SIZE, int X_BLOCK_SIZE >
-using hip_flatten_global_explicit_zyx_direct = hip_flatten_explicit_direct<hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
+using hip_flatten_global_size_zyx_direct = hip_flatten_indexer_direct<hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
 
 /*
  * Maps segment indices to flattened HIP global threads.
@@ -1306,43 +1310,43 @@ using hip_flatten_global_explicit_zyx_direct = hip_flatten_explicit_direct<hip::
  * Uses global thread-stride looping to exceed the maximum number of physical global threads
  */
 template < typename ... indexers >
-using hip_flatten_explicit_loop = policy::hip::hip_flatten_indexer<
+using hip_flatten_indexer_loop = policy::hip::hip_flatten_indexer<
     iteration_mapping::StridedLoop,
     kernel_sync_requirement::none,
     indexers...>;
 
 template < int X_BLOCK_SIZE >
-using hip_flatten_global_explicit_x_loop = hip_flatten_explicit_loop<hip::global_x<X_BLOCK_SIZE>>;
+using hip_flatten_global_size_x_loop = hip_flatten_indexer_loop<hip::global_x<X_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE >
-using hip_flatten_global_explicit_y_loop = hip_flatten_explicit_loop<hip::global_y<Y_BLOCK_SIZE>>;
+using hip_flatten_global_size_y_loop = hip_flatten_indexer_loop<hip::global_y<Y_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE >
-using hip_flatten_global_explicit_z_loop = hip_flatten_explicit_loop<hip::global_z<Z_BLOCK_SIZE>>;
+using hip_flatten_global_size_z_loop = hip_flatten_indexer_loop<hip::global_z<Z_BLOCK_SIZE>>;
 
 template < int X_BLOCK_SIZE, int Y_BLOCK_SIZE >
-using hip_flatten_global_explicit_xy_loop = hip_flatten_explicit_loop<hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
+using hip_flatten_global_size_xy_loop = hip_flatten_indexer_loop<hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
 template < int X_BLOCK_SIZE, int Z_BLOCK_SIZE >
-using hip_flatten_global_explicit_xz_loop = hip_flatten_explicit_loop<hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
+using hip_flatten_global_size_xz_loop = hip_flatten_indexer_loop<hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE, int X_BLOCK_SIZE >
-using hip_flatten_global_explicit_yx_loop = hip_flatten_explicit_loop<hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
+using hip_flatten_global_size_yx_loop = hip_flatten_indexer_loop<hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE, int Z_BLOCK_SIZE >
-using hip_flatten_global_explicit_yz_loop = hip_flatten_explicit_loop<hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
+using hip_flatten_global_size_yz_loop = hip_flatten_indexer_loop<hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE, int X_BLOCK_SIZE >
-using hip_flatten_global_explicit_zx_loop = hip_flatten_explicit_loop<hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
+using hip_flatten_global_size_zx_loop = hip_flatten_indexer_loop<hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE, int Y_BLOCK_SIZE >
-using hip_flatten_global_explicit_zy_loop = hip_flatten_explicit_loop<hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
+using hip_flatten_global_size_zy_loop = hip_flatten_indexer_loop<hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
 
 template < int X_BLOCK_SIZE, int Y_BLOCK_SIZE, int Z_BLOCK_SIZE >
-using hip_flatten_global_explicit_xyz_loop = hip_flatten_explicit_loop<hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
+using hip_flatten_global_size_xyz_loop = hip_flatten_indexer_loop<hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
 template < int X_BLOCK_SIZE, int Z_BLOCK_SIZE, int Y_BLOCK_SIZE >
-using hip_flatten_global_explicit_xzy_loop = hip_flatten_explicit_loop<hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
+using hip_flatten_global_size_xzy_loop = hip_flatten_indexer_loop<hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE, int X_BLOCK_SIZE, int Z_BLOCK_SIZE >
-using hip_flatten_global_explicit_yxz_loop = hip_flatten_explicit_loop<hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
+using hip_flatten_global_size_yxz_loop = hip_flatten_indexer_loop<hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE, int Z_BLOCK_SIZE, int X_BLOCK_SIZE >
-using hip_flatten_global_explicit_yzx_loop = hip_flatten_explicit_loop<hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
+using hip_flatten_global_size_yzx_loop = hip_flatten_indexer_loop<hip::global_y<Y_BLOCK_SIZE>, hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE, int X_BLOCK_SIZE, int Y_BLOCK_SIZE >
-using hip_flatten_global_explicit_zxy_loop = hip_flatten_explicit_loop<hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
+using hip_flatten_global_size_zxy_loop = hip_flatten_indexer_loop<hip::global_z<Z_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>>;
 template < int Z_BLOCK_SIZE, int Y_BLOCK_SIZE, int X_BLOCK_SIZE >
-using hip_flatten_global_explicit_zyx_loop = hip_flatten_explicit_loop<hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
+using hip_flatten_global_size_zyx_loop = hip_flatten_indexer_loop<hip::global_z<Z_BLOCK_SIZE>, hip::global_y<Y_BLOCK_SIZE>, hip::global_x<X_BLOCK_SIZE>>;
 
 
 /*
