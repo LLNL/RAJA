@@ -65,33 +65,18 @@ namespace RAJA
     using type = camp::resources::Cuda;
   };
 
-  template<size_t BlockSize, bool Async>
-  struct get_resource<cuda_exec<BlockSize, Async>>{
-    using type = camp::resources::Cuda;
-  };
-
-  template <bool Async, int num_threads>
-  struct get_resource<cuda_launch_t<Async, num_threads>>{
+  template<typename IterationMapping, typename IterationGetter, size_t BLOCKS_PER_SM, bool Async>
+  struct get_resource<::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BLOCKS_PER_SM, Async>>{
     using type = camp::resources::Cuda;
   };
 
   template <bool Async, int num_threads, size_t BLOCKS_PER_SM>
-  struct get_resource<RAJA::policy::cuda::cuda_launch_explicit_t<Async, num_threads, BLOCKS_PER_SM>>{
+  struct get_resource<::RAJA::policy::cuda::cuda_launch_explicit_t<Async, num_threads, BLOCKS_PER_SM>>{
     using type = camp::resources::Cuda;
   };
 
-  template<typename ISetIter, size_t BlockSize, bool Async>
-  struct get_resource<ExecPolicy<ISetIter, cuda_exec<BlockSize, Async>>>{
-    using type = camp::resources::Cuda;
-  };
-
-  template<size_t BlockSize, size_t BlocksPerSM, bool Async>
-  struct get_resource<cuda_exec_explicit<BlockSize, BlocksPerSM, Async>>{
-    using type = camp::resources::Cuda;
-  };
-
-  template<typename ISetIter, size_t BlockSize, size_t BlocksPerSM, bool Async>
-  struct get_resource<ExecPolicy<ISetIter, cuda_exec_explicit<BlockSize, BlocksPerSM, Async>>>{
+  template<typename ISetIter, typename IterationMapping, typename IterationGetter, size_t BLOCKS_PER_SM, bool Async>
+  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BLOCKS_PER_SM, Async>>>{
     using type = camp::resources::Cuda;
   };
 #endif
@@ -108,7 +93,7 @@ namespace RAJA
   };
 
   template <bool Async, int num_threads>
-  struct get_resource<hip_launch_t<Async, num_threads>>{
+  struct get_resource<::RAJA::policy::hip::hip_launch_t<Async, num_threads>>{
     using type = camp::resources::Hip;
   };
 
@@ -125,17 +110,17 @@ namespace RAJA
   };
 
   template<size_t BlockSize, bool Async>
-  struct get_resource<sycl_exec<BlockSize, Async>>{
+  struct get_resource<::RAJA::policy::sycl::sycl_exec<BlockSize, Async>>{
     using type = camp::resources::Sycl;
   };
 
   template <bool Async, int num_threads>
-  struct get_resource<sycl_launch_t<Async, num_threads>>{
+  struct get_resource<::RAJA::policy::sycl::sycl_launch_t<Async, num_threads>>{
     using type = camp::resources::Sycl;
   };
 
   template<typename ISetIter, size_t BlockSize, bool Async>
-  struct get_resource<ExecPolicy<ISetIter, sycl_exec<BlockSize, Async>>>{
+  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::sycl::sycl_exec<BlockSize, Async>>>{
     using type = camp::resources::Sycl;
   };
 #endif
@@ -147,22 +132,22 @@ namespace RAJA
   };
 
   template<>
-  struct get_resource<omp_target_parallel_for_exec_nt>{
+  struct get_resource<::RAJA::policy::sycl::omp_target_parallel_for_exec_nt>{
     using type = camp::resources::Omp;
   };
 
   template<size_t ThreadsPerTeam>
-  struct get_resource<omp_target_parallel_for_exec<ThreadsPerTeam>>{
+  struct get_resource<::RAJA::policy::sycl::omp_target_parallel_for_exec<ThreadsPerTeam>>{
     using type = camp::resources::Omp;
   };
 
   template<typename ISetIter>
-  struct get_resource<ExecPolicy<ISetIter, omp_target_parallel_for_exec_nt>>{
+  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::sycl::omp_target_parallel_for_exec_nt>>{
     using type = camp::resources::Omp;
   };
 
   template<typename ISetIter, size_t ThreadsPerTeam>
-  struct get_resource<ExecPolicy<ISetIter, omp_target_parallel_for_exec<ThreadsPerTeam>>>{
+  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::sycl::omp_target_parallel_for_exec<ThreadsPerTeam>>>{
     using type = camp::resources::Omp;
   };
 #endif
