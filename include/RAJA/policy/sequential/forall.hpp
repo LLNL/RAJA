@@ -72,7 +72,6 @@ forall_impl(Resource res,
 
   expt::ParamMultiplexer::init<seq_exec>(f_params);
 
-  RAJA_NO_SIMD
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     expt::invoke_body(f_params, body, *(begin_it + i));
   }
@@ -96,7 +95,6 @@ forall_impl(Resource res,
 {
   RAJA_EXTRACT_BED_IT(iter);
 
-  RAJA_NO_SIMD
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     body(*(begin_it + i));
   }

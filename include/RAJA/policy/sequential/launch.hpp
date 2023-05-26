@@ -36,7 +36,6 @@ struct LoopExecute<seq_exec, SEGMENT> {
   {
 
     const int len = segment.end() - segment.begin();
-    RAJA_NO_SIMD
     for (int i = 0; i < len; i++) {
       body(*(segment.begin() + i));
     }
@@ -54,7 +53,6 @@ struct LoopICountExecute<seq_exec, SEGMENT> {
   {
 
     const int len = segment.end() - segment.begin();
-    RAJA_NO_SIMD
     for (int i = 0; i < len; i++) {
       body(*(segment.begin() + i), i);
     }
