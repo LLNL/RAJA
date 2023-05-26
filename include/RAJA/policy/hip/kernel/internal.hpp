@@ -41,61 +41,6 @@
 namespace RAJA
 {
 
-
-/*!
- * Policy for For<>, executes loop iteration by distributing them over threads.
- * This does no (additional) work-sharing between thread blocks.
- */
-
-struct hip_thread_exec : public RAJA::make_policy_pattern_launch_platform_t<
-                              RAJA::Policy::hip,
-                              RAJA::Pattern::forall,
-                              RAJA::Launch::undefined,
-                              RAJA::Platform::hip> {
-};
-
-
-/*!
- * Policy for For<>, executes loop iteration by distributing iterations
- * exclusively over blocks.
- */
-
-struct hip_block_exec : public RAJA::make_policy_pattern_launch_platform_t<
-                             RAJA::Policy::hip,
-                             RAJA::Pattern::forall,
-                             RAJA::Launch::undefined,
-                             RAJA::Platform::hip> {
-};
-
-
-/*!
- * Policy for For<>, executes loop iteration by distributing work over
- * physical blocks and executing sequentially within blocks.
- */
-
-template <size_t num_blocks>
-struct hip_block_seq_exec : public RAJA::make_policy_pattern_launch_platform_t<
-                                 RAJA::Policy::hip,
-                                 RAJA::Pattern::forall,
-                                 RAJA::Launch::undefined,
-                                 RAJA::Platform::hip> {
-};
-
-
-/*!
- * Policy for For<>, executes loop iteration by distributing them over threads
- * and blocks, but limiting the number of threads to num_threads.
- */
-template <size_t num_threads>
-struct hip_threadblock_exec
-    : public RAJA::make_policy_pattern_launch_platform_t<
-          RAJA::Policy::hip,
-          RAJA::Pattern::forall,
-          RAJA::Launch::undefined,
-          RAJA::Platform::hip> {
-};
-
-
 namespace internal
 {
 
