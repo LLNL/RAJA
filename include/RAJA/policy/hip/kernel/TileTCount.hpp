@@ -303,7 +303,6 @@ struct HipStatementExecutor<
 
 };
 
-
 }  // end namespace internal
 }  // end namespace RAJA
 

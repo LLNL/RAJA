@@ -171,6 +171,7 @@ struct LaunchDims {
 
 };
 
+
 template <camp::idx_t cur_stmt, camp::idx_t num_stmts, typename StmtList>
 struct HipStatementListExecutorHelper {
 

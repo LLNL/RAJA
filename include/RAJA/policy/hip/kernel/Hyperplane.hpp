@@ -46,7 +46,7 @@ struct HipStatementExecutor<Data,
                                                    seq_exec,
                                                    ArgList<Args...>,
                                                    EnclosedStmts...>,
-                                                   Types> {
+                            Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 

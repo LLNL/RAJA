@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing user interface for RAJA::Teams::hip
+ * \brief   RAJA header file containing user interface for RAJA::launch::hip
  *
  ******************************************************************************
  */
@@ -45,7 +45,7 @@ __global__ void launch_global_fcn(BODY body_in)
 }
 
 template <bool async>
-struct LaunchExecute<RAJA::hip_launch_t<async, 0>> {
+struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>> {
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>
@@ -98,6 +98,7 @@ struct LaunchExecute<RAJA::hip_launch_t<async, 0>> {
 
 };
 
+
 template <typename BODY, int num_threads>
 __launch_bounds__(num_threads, 1) __global__
 void launch_global_fcn_fixed(BODY body_in)
@@ -116,7 +117,7 @@ void launch_global_fcn_fixed(BODY body_in)
 }
 
 template <bool async, int nthreads>
-struct LaunchExecute<RAJA::hip_launch_t<async, nthreads>> {
+struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>> {
 
   template <typename BODY_IN>
   static resources::EventProxy<resources::Resource>

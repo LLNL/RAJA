@@ -120,8 +120,8 @@ namespace detail
 
 //! struct containing data necessary to coordinate kernel launches with reducers
 struct hipInfo {
-  hip_dim_t gridDim = 0;
-  hip_dim_t blockDim = 0;
+  hip_dim_t gridDim{0, 0, 0};
+  hip_dim_t blockDim{0, 0, 0};
   ::RAJA::resources::Hip res{::RAJA::resources::Hip::HipFromStream(0,0)};
   bool setup_reducers = false;
 #if defined(RAJA_ENABLE_OPENMP)
@@ -294,7 +294,6 @@ hipDeviceProp_t& device_prop()
   static hipDeviceProp_t prop = get_device_prop();
   return prop;
 }
-
 
 
 struct HipFixedMaxBlocksData

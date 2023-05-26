@@ -31,6 +31,8 @@
 
 #include "RAJA/pattern/forall.hpp"
 
+#include "RAJA/pattern/params/forall.hpp"
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
@@ -41,6 +43,8 @@
 #include "RAJA/policy/hip/raja_hiperrchk.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
+
+#include "RAJA/util/resource.hpp"
 
 namespace RAJA
 {
@@ -195,8 +199,8 @@ template <typename EXEC_POL,
           typename IterationGetter = typename EXEC_POL::IterationGetter,
           std::enable_if_t<
                 std::is_same<IterationMapping, iteration_mapping::Direct>::value &&
-                (IterationGetter::block_size > 0), size_t >
-              BlockSize = IterationGetter::block_size>
+                (IterationGetter::block_size > 0),
+              size_t > BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, 1) __global__
 void forall_hip_kernel(LOOP_BODY loop_body,
                        const Iterator idx,
@@ -219,8 +223,8 @@ template <typename EXEC_POL,
           typename IterationGetter = typename EXEC_POL::IterationGetter,
           std::enable_if_t<
                 std::is_same<IterationMapping, iteration_mapping::Direct>::value &&
-                (IterationGetter::block_size <= 0), size_t >
-              = 0>
+                (IterationGetter::block_size <= 0),
+              size_t > RAJA_UNUSED_ARG(BlockSize) = 0>
 __global__
 void forall_hip_kernel(LOOP_BODY loop_body,
                        const Iterator idx,
@@ -244,8 +248,8 @@ template <typename EXEC_POL,
           typename IterationGetter = typename EXEC_POL::IterationGetter,
           std::enable_if_t<
                 std::is_same<IterationMapping, iteration_mapping::Direct>::value &&
-                (IterationGetter::block_size > 0), size_t >
-              BlockSize = IterationGetter::block_size>
+                (IterationGetter::block_size > 0),
+              size_t > BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, 1) __global__
 void forallp_hip_kernel(LOOP_BODY loop_body,
                         const Iterator idx,
@@ -271,8 +275,8 @@ template <typename EXEC_POL,
           typename IterationGetter = typename EXEC_POL::IterationGetter,
           std::enable_if_t<
                 std::is_same<IterationMapping, iteration_mapping::Direct>::value &&
-                (IterationGetter::block_size <= 0), size_t >
-              = 0>
+                (IterationGetter::block_size <= 0),
+              size_t > RAJA_UNUSED_ARG(BlockSize) = 0>
 __global__
 void forallp_hip_kernel(LOOP_BODY loop_body,
                         const Iterator idx,
@@ -297,8 +301,8 @@ template <typename EXEC_POL,
           typename IterationGetter = typename EXEC_POL::IterationGetter,
           std::enable_if_t<
                 std::is_same<IterationMapping, iteration_mapping::StridedLoop>::value &&
-                (IterationGetter::block_size > 0), size_t >
-              BlockSize = IterationGetter::block_size>
+                (IterationGetter::block_size > 0),
+              size_t > BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, 1) __global__
 void forall_hip_kernel(LOOP_BODY loop_body,
                        const Iterator idx,
@@ -322,8 +326,8 @@ template <typename EXEC_POL,
           typename IterationGetter = typename EXEC_POL::IterationGetter,
           std::enable_if_t<
                 std::is_same<IterationMapping, iteration_mapping::StridedLoop>::value &&
-                (IterationGetter::block_size <= 0), size_t >
-              = 0>
+                (IterationGetter::block_size <= 0),
+              size_t > RAJA_UNUSED_ARG(BlockSize) = 0>
 __global__
 void forall_hip_kernel(LOOP_BODY loop_body,
                        const Iterator idx,
@@ -349,8 +353,8 @@ template <typename EXEC_POL,
           typename IterationGetter = typename EXEC_POL::IterationGetter,
           std::enable_if_t<
                 std::is_same<IterationMapping, iteration_mapping::StridedLoop>::value &&
-                (IterationGetter::block_size > 0), size_t >
-              BlockSize = IterationGetter::block_size>
+                (IterationGetter::block_size > 0),
+              size_t > BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, 1) __global__
 void forallp_hip_kernel(LOOP_BODY loop_body,
                         const Iterator idx,
@@ -377,8 +381,8 @@ template <typename EXEC_POL,
           typename IterationGetter = typename EXEC_POL::IterationGetter,
           std::enable_if_t<
                 std::is_same<IterationMapping, iteration_mapping::StridedLoop>::value &&
-                (IterationGetter::block_size <= 0), size_t >
-              = 0>
+                (IterationGetter::block_size <= 0),
+              size_t > RAJA_UNUSED_ARG(BlockSize) = 0>
 __global__
 void forallp_hip_kernel(LOOP_BODY loop_body,
                         const Iterator idx,
@@ -407,7 +411,8 @@ void forallp_hip_kernel(LOOP_BODY loop_body,
 //
 
 template <typename Iterable, typename LoopBody,
-          typename IterationMapping, typename IterationGetter, bool Async,
+          typename IterationMapping, typename IterationGetter,
+          bool Async,
           typename ForallParam>
 RAJA_INLINE 
 concepts::enable_if_t<
@@ -475,7 +480,8 @@ forall_impl(resources::Hip hip_res,
 
 
 template <typename Iterable, typename LoopBody,
-          typename IterationMapping, typename IterationGetter, bool Async,
+          typename IterationMapping, typename IterationGetter,
+          bool Async,
           typename ForallParam>
 RAJA_INLINE 
 concepts::enable_if_t<
@@ -535,7 +541,6 @@ forall_impl(resources::Hip hip_res,
       LOOP_BODY body = RAJA::hip::make_launch_body(
           dims.blocks, dims.threads, shmem, hip_res, std::forward<LoopBody>(loop_body));
 
-
       //
       // Launch the kernels
       //
@@ -550,6 +555,7 @@ forall_impl(resources::Hip hip_res,
 
   return resources::EventProxy<resources::Hip>(hip_res);
 }
+
 
 //
 //////////////////////////////////////////////////////////////////////

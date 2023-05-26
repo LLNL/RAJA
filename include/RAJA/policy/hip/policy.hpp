@@ -147,6 +147,19 @@ struct hip_reduce_base
                                                 RAJA::Platform::hip> {
 };
 
+/*!
+ * Hip atomic policy for using hip atomics on the device and
+ * the provided policy on the host
+ */
+template<typename host_policy>
+struct hip_atomic_explicit{};
+
+/*!
+ * Default hip atomic policy uses hip atomics on the device and non-atomics
+ * on the host
+ */
+using hip_atomic = hip_atomic_explicit<loop_atomic>;
+
 using hip_reduce = hip_reduce_base<false>;
 
 using hip_reduce_atomic = hip_reduce_base<true>;
@@ -200,7 +213,6 @@ struct hip_thread_masked_loop {};
 
 
 
-
 //
 // Operations in the included files are parametrized using the following
 // values for HIP warp size and max block size.
@@ -210,7 +222,6 @@ constexpr const RAJA::Index_type WARP_SIZE = 64;
 #elif defined(__HIP_PLATFORM_NVCC__)
 constexpr const RAJA::Index_type WARP_SIZE = 32;
 #endif
-
 constexpr const RAJA::Index_type MAX_BLOCK_SIZE = 1024;
 constexpr const RAJA::Index_type MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
 static_assert(WARP_SIZE >= MAX_WARPS,
@@ -223,19 +234,6 @@ struct hip_synchronize : make_policy_pattern_launch_t<Policy::hip,
                                                        Pattern::synchronize,
                                                        Launch::sync> {
 };
-
-/*!
- * Hip atomic policy for using hip atomics on the device and
- * the provided host_policy on the host
- */
-template<typename host_policy>
-struct hip_atomic_explicit{};
-
-/*!
- * Default hip atomic policy uses hip atomics on the device and non-atomics
- * on the host
- */
-using hip_atomic = hip_atomic_explicit<loop_atomic>;
 
 }  // end namespace hip
 }  // end namespace policy
@@ -786,10 +784,10 @@ using policy::hip::hip_work;
 template <size_t BLOCK_SIZE>
 using hip_work_async = policy::hip::hip_work<BLOCK_SIZE, true>;
 
+using policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average;
+
 using policy::hip::hip_atomic;
 using policy::hip::hip_atomic_explicit;
-
-using policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average;
 
 using policy::hip::hip_reduce_base;
 using policy::hip::hip_reduce;

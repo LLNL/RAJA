@@ -82,8 +82,8 @@ namespace statement
 
 /*!
  * A RAJA::kernel statement that launches a HIP kernel.
- *
- *
+ * Note - Statement requires a placeholder hip_exec policy for the sake of
+ * object oriented inheritance.
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
 struct HipKernelExt
@@ -150,14 +150,14 @@ using HipKernelFixedAsync =
 
 /*!
  * A RAJA::kernel statement that launches a HIP kernel with 1024 threads
- * Thre kernel launch is synchronous.
+ * The kernel launch is synchronous.
  */
 template <typename... EnclosedStmts>
 using HipKernel = HipKernelFixed<1024, EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a HIP kernel with 1024 threads
- * Thre kernel launch is asynchronous.
+ * The kernel launch is asynchronous.
  */
 template <typename... EnclosedStmts>
 using HipKernelAsync = HipKernelFixedAsync<1024, EnclosedStmts...>;
@@ -472,7 +472,8 @@ struct StatementExecutor<
       //
       // Compute the recommended physical kernel blocks and threads
       //
-      int recommended_blocks, recommended_threads;
+      int recommended_blocks;
+      int recommended_threads;
       launch_t::recommended_blocks_threads(
           shmem, recommended_blocks, recommended_threads);
 

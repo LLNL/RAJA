@@ -41,7 +41,10 @@ namespace internal
 
 //Intialize thread shared array
 template <typename Data, camp::idx_t... Indices, typename... EnclosedStmts, typename Types>
-struct HipStatementExecutor<Data, statement::InitLocalMem<RAJA::hip_shared_mem, camp::idx_seq<Indices...>, EnclosedStmts...>, Types>
+struct HipStatementExecutor<Data,
+                            statement::InitLocalMem<RAJA::hip_shared_mem, camp::idx_seq<Indices...>,
+                            EnclosedStmts...>,
+                            Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
