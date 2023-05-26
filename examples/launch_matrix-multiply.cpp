@@ -49,7 +49,7 @@ using launch_policy = RAJA::LaunchPolicy<
 #endif
     >;
 
-using loop_policy = RAJA::seq_exec;
+using loop_policy = RAJA::loop_exec;
 
 #if defined(RAJA_ENABLE_CUDA)
 using gpu_block_x_policy = RAJA::cuda_block_x_direct;
@@ -598,7 +598,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memset(C, 0, N*N * sizeof(double));
 
-  using seq_loop =  RAJA::LoopPolicy<RAJA::seq_exec, RAJA::seq_exec>;
+  using seq_loop =  RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
 
   //
   // This example builds on the RAJA tiling capabilies presented earlier
