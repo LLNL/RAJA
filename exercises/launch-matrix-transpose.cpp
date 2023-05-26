@@ -121,7 +121,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // using sequential loops. 
   //
   // _raja_mattranspose_start
-  using loop_policy_seq = RAJA::LoopPolicy<RAJA::loop_exec>;
+  using loop_policy_seq = RAJA::LoopPolicy<RAJA::seq_exec>;
   using launch_policy_seq = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
   RAJA::launch<launch_policy_seq>
