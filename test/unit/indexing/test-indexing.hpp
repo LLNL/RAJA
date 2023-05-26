@@ -49,7 +49,7 @@ struct indexing_holder
 // List of indexing holder types
 //
 #if defined(RAJA_ENABLE_CUDA)
-using HipIndexingHolderList = camp::list< indexing_holder<RAJA::cuda::IndexGlobal> >;
+using CudaIndexingHolderList = camp::list< indexing_holder<RAJA::cuda::IndexGlobal> >;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
