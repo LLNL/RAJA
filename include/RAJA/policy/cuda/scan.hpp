@@ -42,12 +42,17 @@ namespace scan
         \brief explicit inclusive inplace scan given range, function, and
    initial value
 */
-template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async, typename InputIter, typename Function>
+template <typename IterationMapping,
+          typename IterationGetter,
+          size_t BLOCKS_PER_SM,
+          bool Async,
+          typename InputIter,
+          typename Function>
 RAJA_INLINE
 resources::EventProxy<resources::Cuda>
 inclusive_inplace(
     resources::Cuda cuda_res,
-    cuda_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
+    ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
     Function binary_op)
@@ -89,7 +94,8 @@ inclusive_inplace(
         \brief explicit exclusive inplace scan given range, function, and
    initial value
 */
-template <size_t BLOCK_SIZE,
+template <typename IterationMapping,
+          typename IterationGetter,
           size_t BLOCKS_PER_SM,
           bool Async,
           typename InputIter,
@@ -99,7 +105,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Cuda>
 exclusive_inplace(
     resources::Cuda cuda_res,
-    cuda_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
+    ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
     Function binary_op,
@@ -144,7 +150,8 @@ exclusive_inplace(
         \brief explicit inclusive scan given input range, output, function, and
    initial value
 */
-template <size_t BLOCK_SIZE,
+template <typename IterationMapping,
+          typename IterationGetter,
           size_t BLOCKS_PER_SM,
           bool Async,
           typename InputIter,
@@ -154,7 +161,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Cuda>
 inclusive(
     resources::Cuda cuda_res,
-    cuda_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
+    ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
     OutputIter out,
@@ -197,7 +204,8 @@ inclusive(
         \brief explicit exclusive scan given input range, output, function, and
    initial value
 */
-template <size_t BLOCK_SIZE,
+template <typename IterationMapping,
+          typename IterationGetter,
           size_t BLOCKS_PER_SM,
           bool Async,
           typename InputIter,
@@ -208,7 +216,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Cuda>
 exclusive(
     resources::Cuda cuda_res,
-    cuda_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
+    ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
     OutputIter out,

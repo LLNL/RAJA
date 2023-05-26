@@ -15,6 +15,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+
 #ifndef RAJA_policy_cuda_kernel_Reduce_HPP
 #define RAJA_policy_cuda_kernel_Reduce_HPP
 
@@ -43,7 +44,7 @@ struct CudaStatementExecutor<Data,
                                                ReduceOperator,
                                                ParamId,
                                                EnclosedStmts...>,
-                                               Types> {
+                             Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -102,7 +103,7 @@ struct CudaStatementExecutor<Data,
                                                ReduceOperator,
                                                ParamId,
                                                EnclosedStmts...>,
-                                               Types> {
+                             Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 

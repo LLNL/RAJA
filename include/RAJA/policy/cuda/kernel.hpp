@@ -16,6 +16,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+
 #ifndef RAJA_policy_cuda_kernel_HPP
 #define RAJA_policy_cuda_kernel_HPP
 
