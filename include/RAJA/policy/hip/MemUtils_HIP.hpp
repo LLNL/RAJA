@@ -342,7 +342,8 @@ void hip_occupancy_max_blocks_threads(Func&& func, int shmem_size,
         &data.max_blocks, &data.max_threads, func, shmem_size));
 #else
     RAJA_UNUSED_VAR(func);
-    data.max_blocks = 64;
+    hipDeviceProp_t& prop = hip::device_prop();
+    data.max_blocks = prop.multiProcessorCount;
     data.max_threads = 1024;
 #endif
 
@@ -376,7 +377,8 @@ void hip_occupancy_max_blocks(Func&& func, int shmem_size,
         &data.max_blocks, func, num_threads, shmem_size));
 #else
     RAJA_UNUSED_VAR(func);
-    data.max_blocks = 2;
+    data.max_blocks = hip::device_prop().maxThreadsPerMultiProcessor/1024;
+    if (data.max_blocks <= 0) { data.max_blocks = 1 }
 #endif
 
     if (data.multiProcessorCount < 0) {
@@ -418,7 +420,8 @@ void hip_occupancy_max_blocks(Func&& func, int shmem_size,
         &data.max_blocks, func, num_threads, shmem_size));
 #else
     RAJA_UNUSED_VAR(func);
-    data.max_blocks = 2;
+    data.max_blocks = hip::device_prop().maxThreadsPerMultiProcessor/1024;
+    if (data.max_blocks <= 0) { data.max_blocks = 1 }
 #endif
 
     if (data.multiProcessorCount < 0) {
