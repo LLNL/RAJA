@@ -346,8 +346,24 @@ struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data
       //
       // determine blocks at runtime
       //
-      ::RAJA::hip::hip_occupancy_max_blocks<Self>(
-          func, shmem_size, max_blocks, actual_threads);
+      if (num_threads <= 0 ||
+          num_threads != actual_threads) {
+
+        //
+        // determine blocks when actual_threads != num_threads
+        //
+        ::RAJA::hip::hip_occupancy_max_blocks<Self>(
+            func, shmem_size, max_blocks, actual_threads);
+
+      } else {
+
+        //
+        // determine blocks when actual_threads == num_threads
+        //
+        ::RAJA::hip::hip_occupancy_max_blocks<Self, num_threads>(
+            func, shmem_size, max_blocks);
+
+      }
 
     } else {
 
