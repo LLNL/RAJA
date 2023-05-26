@@ -224,13 +224,11 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mappin
   using IndexMapper = hip::IndexGlobal<dim, named_usage::ignored, named_usage::ignored>;
 
   template < typename IdxT >
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static void set_dimensions(HipDims& RAJA_UNUSED_ARG(dims), HipDims& RAJA_UNUSED_ARG(min_dims), IdxT len)
   {
     if ( len > static_cast<IdxT>(1) ) {
       RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
     }
-    set_hip_dim<dim>(dims.threads, static_cast<IdxT>(1));
-    set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
   }
 };
 
@@ -338,10 +336,8 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mappin
   using IndexMapper = hip::IndexGlobal<dim, named_usage::ignored, named_usage::ignored>;
 
   template < typename IdxT >
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT RAJA_UNUSED_ARG(len))
+  static void set_dimensions(HipDims& RAJA_UNUSED_ARG(dims), HipDims& RAJA_UNUSED_ARG(min_dims), IdxT RAJA_UNUSED_ARG(len))
   {
-    set_hip_dim<dim>(dims.threads, static_cast<IdxT>(1));
-    set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
   }
 };
 
