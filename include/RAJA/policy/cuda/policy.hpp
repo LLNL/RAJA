@@ -852,6 +852,37 @@ using cuda_launch_explicit_t = policy::cuda::cuda_launch_explicit_t<Async, num_t
 template <bool Async, int num_threads = named_usage::unspecified>
 using cuda_launch_t = policy::cuda::cuda_launch_explicit_t<Async, num_threads, policy::cuda::MIN_BLOCKS_PER_SM>;
 
+
+template < typename ... indexers >
+using cuda_indexer_direct = policy::cuda::cuda_indexer<
+    iteration_mapping::Direct,
+    kernel_sync_requirement::none,
+    indexers...>;
+
+template < typename ... indexers >
+using cuda_indexer_loop = policy::cuda::cuda_indexer<
+    iteration_mapping::StridedLoop,
+    kernel_sync_requirement::none,
+    indexers...>;
+
+template < typename ... indexers >
+using cuda_indexer_syncable_loop = policy::cuda::cuda_indexer<
+    iteration_mapping::StridedLoop,
+    kernel_sync_requirement::sync,
+    indexers...>;
+
+template < typename ... indexers >
+using cuda_flatten_indexer_direct = policy::cuda::cuda_flatten_indexer<
+    iteration_mapping::Direct,
+    kernel_sync_requirement::none,
+    indexers...>;
+
+template < typename ... indexers >
+using cuda_flatten_indexer_loop = policy::cuda::cuda_flatten_indexer<
+    iteration_mapping::StridedLoop,
+    kernel_sync_requirement::none,
+    indexers...>;
+
 /*!
  * Maps segment indices to CUDA threads.
  * This is the lowest overhead mapping, but requires that there are enough
@@ -860,9 +891,7 @@ using cuda_launch_t = policy::cuda::cuda_launch_explicit_t<Async, num_threads, p
  * error.
  */
 template < named_dim ... dims >
-using cuda_thread_direct = policy::cuda::cuda_indexer<
-    iteration_mapping::Direct,
-    kernel_sync_requirement::none,
+using cuda_thread_direct = cuda_indexer_direct<
     cuda::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
 
 using cuda_thread_x_direct = cuda_thread_direct<named_dim::x>;
@@ -888,9 +917,11 @@ using cuda_thread_zyx_direct = cuda_thread_direct<named_dim::z, named_dim::y, na
  * Uses block-stride looping to exceed the maximum number of physical threads
  */
 template < named_dim ... dims >
-using cuda_thread_loop = policy::cuda::cuda_indexer<
-    iteration_mapping::StridedLoop,
-    kernel_sync_requirement::none,
+using cuda_thread_loop = cuda_indexer_loop<
+    cuda::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
+
+template < named_dim ... dims >
+using cuda_thread_syncable_loop = cuda_indexer_syncable_loop<
     cuda::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
 
 using cuda_thread_x_loop = cuda_thread_loop<named_dim::x>;
@@ -918,9 +949,7 @@ using cuda_thread_zyx_loop = cuda_thread_loop<named_dim::z, named_dim::y, named_
  * Reshapes multiple physical threads into a 1D iteration space
  */
 template < named_dim ... dims >
-using cuda_flatten_thread_direct = policy::cuda::cuda_flatten_indexer<
-    iteration_mapping::Direct,
-    kernel_sync_requirement::none,
+using cuda_flatten_thread_direct = cuda_flatten_indexer_direct<
     cuda::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
 
 using cuda_flatten_thread_x_direct = cuda_flatten_thread_direct<named_dim::x>;
@@ -947,9 +976,7 @@ using cuda_flatten_thread_zyx_direct = cuda_flatten_thread_direct<named_dim::z, 
  * Uses block-stride looping to exceed the maximum number of physical threads
  */
 template < named_dim ... dims >
-using cuda_flatten_thread_loop = policy::cuda::cuda_flatten_indexer<
-    iteration_mapping::StridedLoop,
-    kernel_sync_requirement::none,
+using cuda_flatten_thread_loop = cuda_flatten_indexer_loop<
     cuda::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
 
 using cuda_flatten_thread_x_loop = cuda_flatten_thread_loop<named_dim::x>;
@@ -977,9 +1004,7 @@ using cuda_flatten_thread_zyx_loop = cuda_flatten_thread_loop<named_dim::z, name
  * physical blocks to fit all of the direct map requests.
  */
 template < named_dim ... dims >
-using cuda_block_direct = policy::cuda::cuda_indexer<
-    iteration_mapping::Direct,
-    kernel_sync_requirement::none,
+using cuda_block_direct = cuda_indexer_direct<
     cuda::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
 
 using cuda_block_x_direct = cuda_block_direct<named_dim::x>;
@@ -1005,9 +1030,11 @@ using cuda_block_zyx_direct = cuda_block_direct<named_dim::z, named_dim::y, name
  * Uses grid-stride looping to exceed the maximum number of blocks
  */
 template < named_dim ... dims >
-using cuda_block_loop = policy::cuda::cuda_indexer<
-    iteration_mapping::StridedLoop,
-    kernel_sync_requirement::none,
+using cuda_block_loop = cuda_indexer_loop<
+    cuda::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
+
+template < named_dim ... dims >
+using cuda_block_syncable_loop = cuda_indexer_syncable_loop<
     cuda::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
 
 using cuda_block_x_loop = cuda_block_loop<named_dim::x>;
@@ -1035,9 +1062,7 @@ using cuda_block_zyx_loop = cuda_block_loop<named_dim::z, named_dim::y, named_di
  * Reshapes multiple physical blocks into a 1D iteration space
  */
 template < named_dim ... dims >
-using cuda_flatten_block_direct = policy::cuda::cuda_flatten_indexer<
-    iteration_mapping::Direct,
-    kernel_sync_requirement::none,
+using cuda_flatten_block_direct = cuda_flatten_indexer_direct<
     cuda::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
 
 using cuda_flatten_block_x_direct = cuda_flatten_block_direct<named_dim::x>;
@@ -1064,9 +1089,7 @@ using cuda_flatten_block_zyx_direct = cuda_flatten_block_direct<named_dim::z, na
  * Uses block-stride looping to exceed the maximum number of physical blocks
  */
 template < named_dim ... dims >
-using cuda_flatten_block_loop = policy::cuda::cuda_flatten_indexer<
-    iteration_mapping::StridedLoop,
-    kernel_sync_requirement::none,
+using cuda_flatten_block_loop = cuda_flatten_indexer_loop<
     cuda::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
 
 using cuda_flatten_block_x_loop = cuda_flatten_block_loop<named_dim::x>;
@@ -1094,9 +1117,7 @@ using cuda_flatten_block_zyx_loop = cuda_flatten_block_loop<named_dim::z, named_
  * physical threads to fit all of the direct map requests.
  */
 template < named_dim ... dims >
-using cuda_global_direct = policy::cuda::cuda_indexer<
-    iteration_mapping::Direct,
-    kernel_sync_requirement::none,
+using cuda_global_direct = cuda_indexer_direct<
     cuda::IndexGlobal<dims, named_usage::unspecified, named_usage::unspecified>...>;
 
 using cuda_global_x_direct = cuda_global_direct<named_dim::x>;
@@ -1122,9 +1143,11 @@ using cuda_global_zyx_direct = cuda_global_direct<named_dim::z, named_dim::y, na
  * Uses grid-stride looping to exceed the maximum number of global threads
  */
 template < named_dim ... dims >
-using cuda_global_loop = policy::cuda::cuda_indexer<
-    iteration_mapping::StridedLoop,
-    kernel_sync_requirement::none,
+using cuda_global_loop = cuda_indexer_loop<
+    cuda::IndexGlobal<dims, named_usage::unspecified, named_usage::unspecified>...>;
+
+template < named_dim ... dims >
+using cuda_global_syncable_loop = cuda_indexer_syncable_loop<
     cuda::IndexGlobal<dims, named_usage::unspecified, named_usage::unspecified>...>;
 
 using cuda_global_x_loop = cuda_global_loop<named_dim::x>;
@@ -1152,9 +1175,7 @@ using cuda_global_zyx_loop = cuda_global_loop<named_dim::z, named_dim::y, named_
  * Reshapes multiple physical global threads into a 1D iteration space
  */
 template < named_dim ... dims >
-using cuda_flatten_global_direct = policy::cuda::cuda_flatten_indexer<
-    iteration_mapping::Direct,
-    kernel_sync_requirement::none,
+using cuda_flatten_global_direct = cuda_flatten_indexer_direct<
     cuda::IndexGlobal<dims, named_usage::unspecified, named_usage::unspecified>...>;
 
 using cuda_flatten_global_x_direct = cuda_flatten_global_direct<named_dim::x>;
@@ -1181,9 +1202,7 @@ using cuda_flatten_global_zyx_direct = cuda_flatten_global_direct<named_dim::z, 
  * Uses global thread-stride looping to exceed the maximum number of physical global threads
  */
 template < named_dim ... dims >
-using cuda_flatten_global_loop = policy::cuda::cuda_flatten_indexer<
-    iteration_mapping::StridedLoop,
-    kernel_sync_requirement::none,
+using cuda_flatten_global_loop = cuda_flatten_indexer_loop<
     cuda::IndexGlobal<dims, named_usage::unspecified, named_usage::unspecified>...>;
 
 using cuda_flatten_global_x_loop = cuda_flatten_global_loop<named_dim::x>;
@@ -1210,12 +1229,6 @@ using cuda_flatten_global_zyx_loop = cuda_flatten_global_loop<named_dim::z, name
  * This is the lowest overhead mapping, but requires that there are enough
  * physical threads to fit all of the direct map requests.
  */
-template < typename ... indexers >
-using cuda_indexer_direct = policy::cuda::cuda_indexer<
-    iteration_mapping::Direct,
-    kernel_sync_requirement::none,
-    indexers...>;
-
 template < int X_BLOCK_SIZE >
 using cuda_thread_size_x_direct = cuda_indexer_direct<cuda::thread_x<X_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE >
@@ -1351,12 +1364,6 @@ using cuda_global_size_zyx_direct = cuda_indexer_direct<cuda::global_z<Z_BLOCK_S
  * Maps segment indices to CUDA global threads.
  * Uses grid-stride looping to exceed the maximum number of global threads
  */
-template < typename ... indexers >
-using cuda_indexer_loop = policy::cuda::cuda_indexer<
-    iteration_mapping::StridedLoop,
-    kernel_sync_requirement::none,
-    indexers...>;
-
 template < int X_BLOCK_SIZE >
 using cuda_thread_size_x_loop = cuda_indexer_loop<cuda::thread_x<X_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE >
@@ -1494,12 +1501,6 @@ using cuda_global_size_zyx_loop = cuda_indexer_loop<cuda::global_z<Z_BLOCK_SIZE,
  * physical global threads to fit all of the direct map requests.
  * Reshapes multiple physical global threads into a 1D iteration space
  */
-template < typename ... indexers >
-using cuda_flatten_indexer_direct = policy::cuda::cuda_flatten_indexer<
-    iteration_mapping::Direct,
-    kernel_sync_requirement::none,
-    indexers...>;
-
 template < int X_BLOCK_SIZE >
 using cuda_flatten_thread_size_x_direct = cuda_flatten_indexer_direct<cuda::thread_x<X_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE >
@@ -1636,12 +1637,6 @@ using cuda_flatten_global_size_zyx_direct = cuda_flatten_indexer_direct<cuda::gl
  * Reshapes multiple physical global threads into a 1D iteration space
  * Uses global thread-stride looping to exceed the maximum number of physical global threads
  */
-template < typename ... indexers >
-using cuda_flatten_indexer_loop = policy::cuda::cuda_flatten_indexer<
-    iteration_mapping::StridedLoop,
-    kernel_sync_requirement::none,
-    indexers...>;
-
 template < int X_BLOCK_SIZE >
 using cuda_flatten_thread_size_x_loop = cuda_flatten_indexer_loop<cuda::thread_x<X_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE >

@@ -819,6 +819,37 @@ using policy::hip::hip_synchronize;
 
 using policy::hip::hip_launch_t;
 
+
+template < typename ... indexers >
+using hip_indexer_direct = policy::hip::hip_indexer<
+    iteration_mapping::Direct,
+    kernel_sync_requirement::none,
+    indexers...>;
+
+template < typename ... indexers >
+using hip_indexer_loop = policy::hip::hip_indexer<
+    iteration_mapping::StridedLoop,
+    kernel_sync_requirement::none,
+    indexers...>;
+
+template < typename ... indexers >
+using hip_indexer_syncable_loop = policy::hip::hip_indexer<
+    iteration_mapping::StridedLoop,
+    kernel_sync_requirement::sync,
+    indexers...>;
+
+template < typename ... indexers >
+using hip_flatten_indexer_direct = policy::hip::hip_flatten_indexer<
+    iteration_mapping::Direct,
+    kernel_sync_requirement::none,
+    indexers...>;
+
+template < typename ... indexers >
+using hip_flatten_indexer_loop = policy::hip::hip_flatten_indexer<
+    iteration_mapping::StridedLoop,
+    kernel_sync_requirement::none,
+    indexers...>;
+
 /*!
  * Maps segment indices to HIP threads.
  * This is the lowest overhead mapping, but requires that there are enough
@@ -827,9 +858,7 @@ using policy::hip::hip_launch_t;
  * error.
  */
 template < named_dim ... dims >
-using hip_thread_direct = policy::hip::hip_indexer<
-    iteration_mapping::Direct,
-    kernel_sync_requirement::none,
+using hip_thread_direct = hip_indexer_direct<
     hip::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
 
 using hip_thread_x_direct = hip_thread_direct<named_dim::x>;
@@ -855,9 +884,11 @@ using hip_thread_zyx_direct = hip_thread_direct<named_dim::z, named_dim::y, name
  * Uses block-stride looping to exceed the maximum number of physical threads
  */
 template < named_dim ... dims >
-using hip_thread_loop = policy::hip::hip_indexer<
-    iteration_mapping::StridedLoop,
-    kernel_sync_requirement::none,
+using hip_thread_loop = hip_indexer_loop<
+    hip::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
+
+template < named_dim ... dims >
+using hip_thread_syncable_loop = hip_indexer_syncable_loop<
     hip::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
 
 using hip_thread_x_loop = hip_thread_loop<named_dim::x>;
@@ -885,9 +916,7 @@ using hip_thread_zyx_loop = hip_thread_loop<named_dim::z, named_dim::y, named_di
  * Reshapes multiple physical threads into a 1D iteration space
  */
 template < named_dim ... dims >
-using hip_flatten_thread_direct = policy::hip::hip_flatten_indexer<
-    iteration_mapping::Direct,
-    kernel_sync_requirement::none,
+using hip_flatten_thread_direct = hip_flatten_indexer_direct<
     hip::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
 
 using hip_flatten_thread_x_direct = hip_flatten_thread_direct<named_dim::x>;
@@ -914,9 +943,7 @@ using hip_flatten_thread_zyx_direct = hip_flatten_thread_direct<named_dim::z, na
  * Uses block-stride looping to exceed the maximum number of physical threads
  */
 template < named_dim ... dims >
-using hip_flatten_thread_loop = policy::hip::hip_flatten_indexer<
-    iteration_mapping::StridedLoop,
-    kernel_sync_requirement::none,
+using hip_flatten_thread_loop = hip_flatten_indexer_loop<
     hip::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
 
 using hip_flatten_thread_x_loop = hip_flatten_thread_loop<named_dim::x>;
@@ -944,9 +971,7 @@ using hip_flatten_thread_zyx_loop = hip_flatten_thread_loop<named_dim::z, named_
  * physical blocks to fit all of the direct map requests.
  */
 template < named_dim ... dims >
-using hip_block_direct = policy::hip::hip_indexer<
-    iteration_mapping::Direct,
-    kernel_sync_requirement::none,
+using hip_block_direct = hip_indexer_direct<
     hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
 
 using hip_block_x_direct = hip_block_direct<named_dim::x>;
@@ -972,9 +997,11 @@ using hip_block_zyx_direct = hip_block_direct<named_dim::z, named_dim::y, named_
  * Uses grid-stride looping to exceed the maximum number of blocks
  */
 template < named_dim ... dims >
-using hip_block_loop = policy::hip::hip_indexer<
-    iteration_mapping::StridedLoop,
-    kernel_sync_requirement::none,
+using hip_block_loop = hip_indexer_loop<
+    hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
+
+template < named_dim ... dims >
+using hip_block_syncable_loop = hip_indexer_syncable_loop<
     hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
 
 using hip_block_x_loop = hip_block_loop<named_dim::x>;
@@ -1002,9 +1029,7 @@ using hip_block_zyx_loop = hip_block_loop<named_dim::z, named_dim::y, named_dim:
  * Reshapes multiple physical blocks into a 1D iteration space
  */
 template < named_dim ... dims >
-using hip_flatten_block_direct = policy::hip::hip_flatten_indexer<
-    iteration_mapping::Direct,
-    kernel_sync_requirement::none,
+using hip_flatten_block_direct = hip_flatten_indexer_direct<
     hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
 
 using hip_flatten_block_x_direct = hip_flatten_block_direct<named_dim::x>;
@@ -1031,9 +1056,7 @@ using hip_flatten_block_zyx_direct = hip_flatten_block_direct<named_dim::z, name
  * Uses block-stride looping to exceed the maximum number of physical blocks
  */
 template < named_dim ... dims >
-using hip_flatten_block_loop = policy::hip::hip_flatten_indexer<
-    iteration_mapping::StridedLoop,
-    kernel_sync_requirement::none,
+using hip_flatten_block_loop = hip_flatten_indexer_loop<
     hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
 
 using hip_flatten_block_x_loop = hip_flatten_block_loop<named_dim::x>;
@@ -1061,9 +1084,7 @@ using hip_flatten_block_zyx_loop = hip_flatten_block_loop<named_dim::z, named_di
  * physical threads to fit all of the direct map requests.
  */
 template < named_dim ... dims >
-using hip_global_direct = policy::hip::hip_indexer<
-    iteration_mapping::Direct,
-    kernel_sync_requirement::none,
+using hip_global_direct = hip_indexer_direct<
     hip::IndexGlobal<dims, named_usage::unspecified, named_usage::unspecified>...>;
 
 using hip_global_x_direct = hip_global_direct<named_dim::x>;
@@ -1089,9 +1110,11 @@ using hip_global_zyx_direct = hip_global_direct<named_dim::z, named_dim::y, name
  * Uses grid-stride looping to exceed the maximum number of global threads
  */
 template < named_dim ... dims >
-using hip_global_loop = policy::hip::hip_indexer<
-    iteration_mapping::StridedLoop,
-    kernel_sync_requirement::none,
+using hip_global_loop = hip_indexer_loop<
+    hip::IndexGlobal<dims, named_usage::unspecified, named_usage::unspecified>...>;
+
+template < named_dim ... dims >
+using hip_global_syncable_loop = hip_indexer_syncable_loop<
     hip::IndexGlobal<dims, named_usage::unspecified, named_usage::unspecified>...>;
 
 using hip_global_x_loop = hip_global_loop<named_dim::x>;
@@ -1119,9 +1142,7 @@ using hip_global_zyx_loop = hip_global_loop<named_dim::z, named_dim::y, named_di
  * Reshapes multiple physical global threads into a 1D iteration space
  */
 template < named_dim ... dims >
-using hip_flatten_global_direct = policy::hip::hip_flatten_indexer<
-    iteration_mapping::Direct,
-    kernel_sync_requirement::none,
+using hip_flatten_global_direct = hip_flatten_indexer_direct<
     hip::IndexGlobal<dims, named_usage::unspecified, named_usage::unspecified>...>;
 
 using hip_flatten_global_x_direct = hip_flatten_global_direct<named_dim::x>;
@@ -1148,9 +1169,7 @@ using hip_flatten_global_zyx_direct = hip_flatten_global_direct<named_dim::z, na
  * Uses global thread-stride looping to exceed the maximum number of physical global threads
  */
 template < named_dim ... dims >
-using hip_flatten_global_loop = policy::hip::hip_flatten_indexer<
-    iteration_mapping::StridedLoop,
-    kernel_sync_requirement::none,
+using hip_flatten_global_loop = hip_flatten_indexer_loop<
     hip::IndexGlobal<dims, named_usage::unspecified, named_usage::unspecified>...>;
 
 using hip_flatten_global_x_loop = hip_flatten_global_loop<named_dim::x>;
@@ -1177,12 +1196,6 @@ using hip_flatten_global_zyx_loop = hip_flatten_global_loop<named_dim::z, named_
  * This is the lowest overhead mapping, but requires that there are enough
  * physical threads to fit all of the direct map requests.
  */
-template < typename ... indexers >
-using hip_indexer_direct = policy::hip::hip_indexer<
-    iteration_mapping::Direct,
-    kernel_sync_requirement::none,
-    indexers...>;
-
 template < int X_BLOCK_SIZE >
 using hip_thread_size_x_direct = hip_indexer_direct<hip::thread_x<X_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE >
@@ -1318,12 +1331,6 @@ using hip_global_size_zyx_direct = hip_indexer_direct<hip::global_z<Z_BLOCK_SIZE
  * Maps segment indices to HIP global threads.
  * Uses grid-stride looping to exceed the maximum number of global threads
  */
-template < typename ... indexers >
-using hip_indexer_loop = policy::hip::hip_indexer<
-    iteration_mapping::StridedLoop,
-    kernel_sync_requirement::none,
-    indexers...>;
-
 template < int X_BLOCK_SIZE >
 using hip_thread_size_x_loop = hip_indexer_loop<hip::thread_x<X_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE >
@@ -1461,12 +1468,6 @@ using hip_global_size_zyx_loop = hip_indexer_loop<hip::global_z<Z_BLOCK_SIZE, Z_
  * physical global threads to fit all of the direct map requests.
  * Reshapes multiple physical global threads into a 1D iteration space
  */
-template < typename ... indexers >
-using hip_flatten_indexer_direct = policy::hip::hip_flatten_indexer<
-    iteration_mapping::Direct,
-    kernel_sync_requirement::none,
-    indexers...>;
-
 template < int X_BLOCK_SIZE >
 using hip_flatten_thread_size_x_direct = hip_flatten_indexer_direct<hip::thread_x<X_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE >
@@ -1603,12 +1604,6 @@ using hip_flatten_global_size_zyx_direct = hip_flatten_indexer_direct<hip::globa
  * Reshapes multiple physical global threads into a 1D iteration space
  * Uses global thread-stride looping to exceed the maximum number of physical global threads
  */
-template < typename ... indexers >
-using hip_flatten_indexer_loop = policy::hip::hip_flatten_indexer<
-    iteration_mapping::StridedLoop,
-    kernel_sync_requirement::none,
-    indexers...>;
-
 template < int X_BLOCK_SIZE >
 using hip_flatten_thread_size_x_loop = hip_flatten_indexer_loop<hip::thread_x<X_BLOCK_SIZE>>;
 template < int Y_BLOCK_SIZE >
