@@ -74,12 +74,16 @@ struct CudaStatementExecutor<
     const diff_t len = segment_length<ArgumentId>(data);
     const diff_t i = IndexMapper::template index<diff_t>();
 
+    // execute enclosed statements if any thread will
+    // but mask off threads without work
+    const bool have_work = (i < len);
+
     // Assign the index to the argument and param
     data.template assign_offset<ArgumentId>(i);
     data.template assign_param<ParamId>(i);
 
     // execute enclosed statements
-    enclosed_stmts_t::exec(data, thread_active && (i < len));
+    enclosed_stmts_t::exec(data, thread_active && have_work);
   }
 };
 
@@ -134,7 +138,7 @@ struct CudaStatementExecutor<
 
       // execute enclosed statements if any thread will
       // but mask off threads without work
-      bool have_work = i < len;
+      const bool have_work = (i < len);
 
       // Assign the index to the argument and param
       data.template assign_offset<ArgumentId>(i);

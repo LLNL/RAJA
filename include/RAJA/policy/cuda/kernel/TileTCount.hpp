@@ -95,6 +95,10 @@ struct CudaStatementExecutor<
     const diff_t t = IndexMapper::template index<diff_t>();
     const diff_t i = t * static_cast<diff_t>(chunk_size);
 
+    // execute enclosed statements if any thread will
+    // but mask off threads without work
+    const bool have_work = (i < len);
+
     // Keep copy of original segment, so we can restore it
     segment_t orig_segment = segment;
 
@@ -103,7 +107,7 @@ struct CudaStatementExecutor<
     data.template assign_param<ParamId>(t);
 
     // execute enclosed statements
-    enclosed_stmts_t::exec(data, thread_active && (i < len));
+    enclosed_stmts_t::exec(data, thread_active && have_work);
 
     // Set range back to original values
     segment = orig_segment;
@@ -173,7 +177,7 @@ struct CudaStatementExecutor<
 
       // execute enclosed statements if any thread will
       // but mask off threads without work
-      bool have_work = i < len;
+      const bool have_work = (i < len);
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, static_cast<diff_t>(chunk_size));
