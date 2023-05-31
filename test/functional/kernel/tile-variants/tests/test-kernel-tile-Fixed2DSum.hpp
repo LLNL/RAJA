@@ -17,7 +17,7 @@
 // Instruction ordering seems to matter for these policies on floats.
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POLICY>
-constexpr bool precalltest ()
+constexpr bool isinaccuratefloat ()
 {
   return  (std::is_same<DATA_TYPE,float>::value &&
             (
@@ -46,7 +46,7 @@ constexpr bool precalltest ()
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POLICY>
 typename std::enable_if<
-            precalltest<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>()
+            isinaccuratefloat<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>()
          >::type
 KernelTileFixed2DSumTestImpl(const int RAJA_UNUSED_ARG(rows), const int RAJA_UNUSED_ARG(cols))
 {
@@ -55,7 +55,7 @@ KernelTileFixed2DSumTestImpl(const int RAJA_UNUSED_ARG(rows), const int RAJA_UNU
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POLICY>
 typename std::enable_if<
-            !precalltest<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>()
+            !isinaccuratefloat<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>()
          >::type
 KernelTileFixed2DSumTestImpl(const int rows, const int cols)
 {
