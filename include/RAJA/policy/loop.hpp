@@ -21,13 +21,13 @@
 #define RAJA_loop_HPP
 
 #if !defined(RAJA_ENABLE_DESUL_ATOMICS)
-    #include "RAJA/policy/loop/atomic.hpp"
+    #include "RAJA/policy/sequential/atomic.hpp"
 #endif
 
 #include "RAJA/policy/loop/forall.hpp"
 #include "RAJA/policy/loop/kernel.hpp"
 #include "RAJA/policy/loop/policy.hpp"
-#include "RAJA/policy/loop/scan.hpp"
+#include "RAJA/policy/sequential/scan.hpp"
 #include "RAJA/policy/sequential/sort.hpp"
 #include "RAJA/policy/sequential/launch.hpp"
 #include "RAJA/policy/loop/WorkGroup.hpp"

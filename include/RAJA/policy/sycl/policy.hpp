@@ -99,7 +99,7 @@ struct sycl_atomic_explicit{};
 // Default cuda atomic policy uses cuda atomics on the device and non-atomics
 // on the host
 //
-using sycl_atomic = sycl_atomic_explicit<loop_atomic>;
+using sycl_atomic = sycl_atomic_explicit<seq_atomic>;
 
 template<typename Mask>
 struct sycl_local_masked_direct {};
