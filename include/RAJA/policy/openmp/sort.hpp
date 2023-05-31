@@ -31,7 +31,7 @@
 #include "RAJA/util/concepts.hpp"
 
 #include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/loop/sort.hpp"
+#include "RAJA/policy/sequential/sort.hpp"
 #include "RAJA/pattern/detail/algorithm.hpp"
 
 namespace RAJA

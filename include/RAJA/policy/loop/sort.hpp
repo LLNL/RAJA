@@ -44,6 +44,7 @@ namespace sort
 namespace detail
 {
 
+#if 0
 /*!
     \brief Functional that performs an unstable sort with the
            given arguments, uses RAJA::intro_sort
@@ -57,7 +58,9 @@ struct UnstableSorter
     RAJA::detail::intro_sort(std::forward<Args>(args)...);
   }
 };
+#endif
 
+#if 0
 /*!
     \brief Functional that performs a stable sort with the
            given arguments, calls RAJA::merge_sort
@@ -71,9 +74,11 @@ struct StableSorter
     RAJA::detail::merge_sort(std::forward<Args>(args)...);
   }
 };
+#endif
 
 } // namespace detail
 
+#if 0
 /*!
         \brief sort given range using comparison function
 */
@@ -109,7 +114,9 @@ stable(
 
   return resources::EventProxy<resources::Host>(host_res);
 }
+#endif
 
+#if 0
 /*!
         \brief sort given range of pairs using comparison function on keys
 */
@@ -153,6 +160,7 @@ stable_pairs(
 
   return resources::EventProxy<resources::Host>(host_res);
 }
+#endif
 
 }  // namespace sort
 

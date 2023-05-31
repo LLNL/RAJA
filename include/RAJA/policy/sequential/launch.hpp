@@ -25,6 +25,41 @@
 namespace RAJA
 {
 
+template <>
+struct LaunchExecute<RAJA::null_launch_t> {
+  template <typename BODY>
+  static void exec(LaunchContext const& RAJA_UNUSED_ARG(ctx),
+                   BODY const& RAJA_UNUSED_ARG(body))
+  {
+    RAJA_ABORT_OR_THROW("NULL Launch");
+  }
+};
+
+
+template <>
+struct LaunchExecute<RAJA::seq_launch_t> {
+
+  template <typename BODY>
+  static resources::EventProxy<resources::Resource>
+  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *RAJA_UNUSED_ARG(kernel_name), BODY const &body)
+  {
+
+    LaunchContext ctx;
+
+    char *kernel_local_mem = new char[params.shared_mem_size];
+    ctx.shared_mem_ptr = kernel_local_mem;
+
+    body(ctx);
+
+    delete[] kernel_local_mem;
+    ctx.shared_mem_ptr = nullptr;
+
+    return resources::EventProxy<resources::Resource>(res);
+  }
+
+};
+
+
 template <typename SEGMENT>
 struct LoopExecute<seq_exec, SEGMENT> {
 

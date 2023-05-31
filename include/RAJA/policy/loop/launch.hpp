@@ -26,6 +26,7 @@
 namespace RAJA
 {
 
+#if 0
 template <>
 struct LaunchExecute<RAJA::null_launch_t> {
   template <typename BODY>
@@ -59,6 +60,7 @@ struct LaunchExecute<RAJA::seq_launch_t> {
   }
 
 };
+#endif
 
 template <typename SEGMENT>
 struct LoopExecute<loop_exec, SEGMENT> {
