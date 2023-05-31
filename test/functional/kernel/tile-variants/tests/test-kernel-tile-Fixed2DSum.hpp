@@ -12,54 +12,23 @@
 #include <vector>
 #include <type_traits>
 
-// Remove testing of float for certain platforms.
-// OpenMP collapse, CUDA, Intel, and SYCL produce inaccurate results for float type.
-// Instruction ordering seems to matter for these policies on floats.
-
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POLICY>
-constexpr bool isinaccuratefloat ()
-{
-  return  (std::is_same<DATA_TYPE,float>::value &&
-            (
-              #if defined(SYCL_LANGUAGE_VERSION) && defined(__INTEL_LLVM_COMPILER)
-              true  // represents SYCL compiler
-              #elif defined(__INTEL_COMPILER)
-              true  // represents Intel compiler
-              #elif defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_CUDA)
-              std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value || std::is_same<REDUCE_POLICY,RAJA::cuda_reduce>::value
-              #elif defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_HIP)
-              std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value || std::is_same<REDUCE_POLICY,RAJA::hip_reduce>::value
-              #elif defined(RAJA_ENABLE_OPENMP)
-              std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value
-              #elif defined(RAJA_ENABLE_CUDA)
-              std::is_same<REDUCE_POLICY,RAJA::cuda_reduce>::value
-              #elif defined(RAJA_ENABLE_HIP)
-              std::is_same<REDUCE_POLICY,RAJA::hip_reduce>::value
-              #elif defined(RAJA_ENABLE_SYCL)
-              std::is_same<REDUCE_POLICY,RAJA::sycl_reduce>::value
-              #else
-              false
-              #endif
-            )
-          );
-}
-
-template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POLICY>
-typename std::enable_if<
-            isinaccuratefloat<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>()
-         >::type
-KernelTileFixed2DSumTestImpl(const int RAJA_UNUSED_ARG(rows), const int RAJA_UNUSED_ARG(cols))
-{
-  // do nothing for float type on reductions for certain platforms
-}
-
-template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POLICY>
-typename std::enable_if<
-            !isinaccuratefloat<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>()
-         >::type
-KernelTileFixed2DSumTestImpl(const int rows, const int cols)
+void KernelTileFixed2DSumTestImpl(const int rowsin, const int colsin)
 {
   // This test reduces sums with tiling.
+
+  int rows, cols;
+  if ( std::is_same<DATA_TYPE, float>::value )
+  {
+    // Restrict to a small data size for better float precision.
+    rows = 5;
+    cols = 5;
+  }
+  else
+  {
+    rows = rowsin;
+    cols = colsin;
+  }
 
   camp::resources::Resource work_res{WORKING_RES::get_default()};
 
