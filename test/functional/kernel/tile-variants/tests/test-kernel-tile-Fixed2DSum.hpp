@@ -19,7 +19,11 @@ template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typenam
 typename std::enable_if<
            (std::is_same<DATA_TYPE,float>::value &&
             (
-              #if defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_CUDA)
+              #if defined(SYCL_LANGUAGE_VERSION) && defined(__INTEL_LLVM_COMPILER)
+              true  // represents SYCL compiler
+              #elif defined(__INTEL_COMPILER)
+              true  // represents Intel compiler
+              #elif defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_CUDA)
               std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value || std::is_same<REDUCE_POLICY,RAJA::cuda_reduce>::value
               #elif defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_HIP)
               std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value || std::is_same<REDUCE_POLICY,RAJA::hip_reduce>::value
@@ -46,7 +50,11 @@ template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typenam
 typename std::enable_if<
            !(std::is_same<DATA_TYPE,float>::value &&
             (
-              #if defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_CUDA)
+              #if defined(SYCL_LANGUAGE_VERSION) && defined(__INTEL_LLVM_COMPILER)
+              true  // represents SYCL compiler
+              #elif defined(__INTEL_COMPILER)
+              true  // represents Intel compiler
+              #elif defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_CUDA)
               std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value || std::is_same<REDUCE_POLICY,RAJA::cuda_reduce>::value
               #elif defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_HIP)
               std::is_same<REDUCE_POLICY,RAJA::omp_reduce>::value || std::is_same<REDUCE_POLICY,RAJA::hip_reduce>::value
