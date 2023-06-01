@@ -24,7 +24,7 @@
     #include "RAJA/policy/sequential/atomic.hpp"
 #endif
 
-#include "RAJA/policy/loop/forall.hpp"
+#include "RAJA/policy/sequential/forall.hpp"
 #include "RAJA/policy/sequential/kernel.hpp"
 #include "RAJA/policy/loop/policy.hpp"
 #include "RAJA/policy/sequential/scan.hpp"
