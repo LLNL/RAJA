@@ -41,7 +41,7 @@ namespace loop
 /// Segment execution policies
 ///
 
-struct loop_exec : make_policy_pattern_launch_platform_t<Policy::loop,
+struct loop_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                          Pattern::forall,
                                                          Launch::undefined,
                                                          Platform::host> {
@@ -55,7 +55,7 @@ using loop_segit = loop_exec;
 ///
 /// WorkGroup execution policies
 ///
-struct loop_work : make_policy_pattern_launch_platform_t<Policy::loop,
+struct loop_work : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                          Pattern::workgroup_exec,
                                                          Launch::sync,
                                                          Platform::host> {
