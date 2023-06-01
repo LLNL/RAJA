@@ -5,16 +5,12 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-include_directories(include)
+# You may add here the list of tests to be ignored.
+# By default, we populate that list with the content of the corresponding
+# variable. This variable is usually defined in a hostconfig file generated
+# for a specific machine, e.g. by Spack.
 
-add_subdirectory(integration)
+set(CTEST_CUSTOM_TESTS_IGNORE
+  ${CTEST_CUSTOM_TESTS_IGNORE}
+  )
 
-add_subdirectory(functional)
-
-add_subdirectory(unit)
-
-add_subdirectory(old-tests)
-
-add_subdirectory(install)
-
-configure_file(${CMAKE_SOURCE_DIR}/test/CTestCustom.cmake ${CMAKE_BINARY_DIR})

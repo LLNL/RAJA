@@ -26,7 +26,7 @@ variables:
 # Arguments for top level allocation
   CORONA_BUILD_AND_TEST_SHARED_ALLOC: "--exclusive --time-limit=60m --nodes=1"
 # Arguments for job level allocation
-  CORONA_BUILD_AND_TEST_JOB_ALLOC: "--time-limit=45m --nodes=1"
+  CORONA_BUILD_AND_TEST_JOB_ALLOC: "--time-limit=45m --nodes=1 --begin-time=+5s"
 # Project specific variants for corona
   PROJECT_CORONA_VARIANTS: "~shared ~openmp +tests"
 # Project specific deps for corona
@@ -36,7 +36,7 @@ variables:
 # Arguments for top level allocation
   TIOGA_BUILD_AND_TEST_SHARED_ALLOC: "--exclusive --time-limit=60m --nodes=1"
 # Arguments for job level allocation
-  TIOGA_BUILD_AND_TEST_JOB_ALLOC: "--time-limit=45m --nodes=1"
+  TIOGA_BUILD_AND_TEST_JOB_ALLOC: "--time-limit=45m --nodes=1 --begin-time=+5s"
 # Project specific variants for corona
   PROJECT_TIOGA_VARIANTS: "~shared ~openmp +tests"
 # Project specific deps for corona
@@ -47,7 +47,7 @@ variables:
 # Arguments for job level allocation
   LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 60"
 # Project specific variants for lassen
-  PROJECT_LASSEN_VARIANTS: "~shared +openmp +tests"
+  PROJECT_LASSEN_VARIANTS: "~shared +openmp +tests cuda_arch=70"
 # Project specific deps for lassen
   PROJECT_LASSEN_DEPS: ""
 
