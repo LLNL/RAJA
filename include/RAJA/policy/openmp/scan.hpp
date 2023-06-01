@@ -29,7 +29,7 @@
 #include <omp.h>
 
 #include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/loop/scan.hpp"
+#include "RAJA/policy/sequential/scan.hpp"
 #include "RAJA/pattern/detail/algorithm.hpp"
 
 namespace RAJA
