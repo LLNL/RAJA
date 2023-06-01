@@ -68,9 +68,9 @@ forall_impl(Resource res,
             Func &&body,
             ForallParam f_params)
 {
-  RAJA_EXTRACT_BED_IT(iter);
-
   expt::ParamMultiplexer::init<seq_exec>(f_params);
+
+  RAJA_EXTRACT_BED_IT(iter);
 
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     expt::invoke_body(f_params, body, *(begin_it + i));

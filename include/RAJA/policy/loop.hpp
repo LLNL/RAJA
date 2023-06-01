@@ -25,7 +25,7 @@
 #endif
 
 #include "RAJA/policy/loop/forall.hpp"
-#include "RAJA/policy/loop/kernel.hpp"
+#include "RAJA/policy/sequential/kernel.hpp"
 #include "RAJA/policy/loop/policy.hpp"
 #include "RAJA/policy/sequential/scan.hpp"
 #include "RAJA/policy/sequential/sort.hpp"
