@@ -125,9 +125,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // _raja_tensorinit_seq_start
   using EXEC_POL1 =
     RAJA::KernelPolicy<
-      RAJA::statement::For<2, RAJA::loop_exec,    // k
-        RAJA::statement::For<1, RAJA::loop_exec,  // j
-          RAJA::statement::For<0, RAJA::loop_exec,// i
+      RAJA::statement::For<2, RAJA::seq_exec,    // k
+        RAJA::statement::For<1, RAJA::seq_exec,  // j
+          RAJA::statement::For<0, RAJA::seq_exec,// i
             RAJA::statement::Lambda<0>
           >
         >
@@ -182,8 +182,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL2 =
     RAJA::KernelPolicy<
       RAJA::statement::For<2, RAJA::omp_parallel_for_exec,    // k
-        RAJA::statement::For<1, RAJA::loop_exec,              // j
-          RAJA::statement::For<0, RAJA::loop_exec,            // i
+        RAJA::statement::For<1, RAJA::seq_exec,              // j
+          RAJA::statement::For<0, RAJA::seq_exec,            // i
             RAJA::statement::Lambda<0>
           >
         >
@@ -264,7 +264,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::KernelPolicy<
       RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                 RAJA::ArgList<2, 1>,    // k, j
-        RAJA::statement::For<0, RAJA::loop_exec,        // i
+        RAJA::statement::For<0, RAJA::seq_exec,        // i
           RAJA::statement::Lambda<0>
         >
       >

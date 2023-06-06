@@ -288,24 +288,6 @@ struct HipStatementExecutor<
 {
 
 };
-///
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename ParamId,
-          typename TPol,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<
-    Data,
-    statement::TileTCount<ArgumentId, ParamId, TPol, loop_exec, EnclosedStmts...>, Types>
-: HipStatementExecutor<Data, statement::TileTCount<ArgumentId, ParamId, TPol,
-    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop,
-                                   kernel_sync_requirement::none,
-                                   hip::IndexGlobal<named_dim::x, named_usage::ignored, named_usage::ignored>>,
-    EnclosedStmts...>, Types>
-{
-
-};
 
 }  // end namespace internal
 }  // end namespace RAJA

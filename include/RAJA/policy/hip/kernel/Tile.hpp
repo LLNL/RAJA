@@ -325,23 +325,6 @@ struct HipStatementExecutor<
 {
 
 };
-///
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename TPol,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<
-    Data,
-    statement::Tile<ArgumentId, TPol, loop_exec, EnclosedStmts...>, Types>
-: HipStatementExecutor<Data, statement::Tile<ArgumentId, TPol,
-    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop,
-                                   kernel_sync_requirement::none,
-                                   hip::IndexGlobal<named_dim::x, named_usage::ignored, named_usage::ignored>>,
-    EnclosedStmts...>, Types>
-{
-
-};
 
 }  // end namespace internal
 }  // end namespace RAJA

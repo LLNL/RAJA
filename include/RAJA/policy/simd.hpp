@@ -22,7 +22,7 @@
 
 #include "RAJA/policy/simd/forall.hpp"
 #include "RAJA/policy/simd/policy.hpp"
-#include "RAJA/policy/loop/launch.hpp"
+#include "RAJA/policy/sequential/launch.hpp"
 #include "RAJA/policy/simd/kernel/For.hpp"
 #include "RAJA/policy/simd/kernel/ForICount.hpp"
 

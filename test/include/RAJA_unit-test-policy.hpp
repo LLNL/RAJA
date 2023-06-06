@@ -73,7 +73,7 @@ template < >
 struct test_policy_info<test_seq>
 {
   using resource = camp::resources::Host;
-  using type = RAJA::loop_exec;
+  using type = RAJA::seq_exec;
   using platform = RunOnHost;
   static const char* name() { return "test_seq"; }
 };

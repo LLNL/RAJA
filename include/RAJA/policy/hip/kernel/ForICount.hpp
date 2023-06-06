@@ -233,24 +233,6 @@ struct HipStatementExecutor<
 {
 
 };
-///
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename ParamId,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<
-    Data,
-    statement::ForICount<ArgumentId, ParamId, loop_exec, EnclosedStmts...>,
-    Types>
-: HipStatementExecutor<Data, statement::ForICount<ArgumentId,
-      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop,
-                                     kernel_sync_requirement::none,
-                                     hip::IndexGlobal<named_dim::x, named_usage::ignored, named_usage::ignored>>,
-      EnclosedStmts...>, Types>
-{
-
-};
 
 
 /*

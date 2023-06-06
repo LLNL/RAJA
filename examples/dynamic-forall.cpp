@@ -28,7 +28,7 @@
 void checkResult(int* res, int len);
 void printResult(int* res, int len);
 
-using policy_list = camp::list<RAJA::loop_exec
+using policy_list = camp::list<RAJA::seq_exec
                                ,RAJA::simd_exec
 #if defined(RAJA_ENABLE_OPENMP)
                                ,RAJA::omp_parallel_for_exec

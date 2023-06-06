@@ -253,23 +253,6 @@ struct CudaStatementExecutor<
 {
 
 };
-///
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename... EnclosedStmts,
-          typename Types>
-struct CudaStatementExecutor<
-    Data,
-    statement::For<ArgumentId, loop_exec, EnclosedStmts...>,
-    Types>
-: CudaStatementExecutor<Data, statement::For<ArgumentId,
-      RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
-                                     kernel_sync_requirement::none,
-                                     cuda::IndexGlobal<named_dim::x, named_usage::ignored, named_usage::ignored>>,
-      EnclosedStmts...>, Types>
-{
-
-};
 
 
 /*

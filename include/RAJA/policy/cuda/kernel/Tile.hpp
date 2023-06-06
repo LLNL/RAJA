@@ -325,23 +325,6 @@ struct CudaStatementExecutor<
 {
 
 };
-///
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename TPol,
-          typename... EnclosedStmts,
-          typename Types>
-struct CudaStatementExecutor<
-    Data,
-    statement::Tile<ArgumentId, TPol, loop_exec, EnclosedStmts...>, Types>
-: CudaStatementExecutor<Data, statement::Tile<ArgumentId, TPol,
-    RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
-                                   kernel_sync_requirement::none,
-                                   cuda::IndexGlobal<named_dim::x, named_usage::ignored, named_usage::ignored>>,
-    EnclosedStmts...>, Types>
-{
-
-};
 
 }  // end namespace internal
 }  // end namespace RAJA
