@@ -39,8 +39,8 @@ module load cmake/3.21.1
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/intel-classic-tce/intel-classic-${COMP_VER}/bin/icpc \
-  -DCMAKE_C_COMPILER=/usr/tce/packages/intel-classic-tce/intel-classic-${COMP_VER}/bin/icc \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/intel/intel-${COMP_VER}/bin/icpc \
+  -DCMAKE_C_COMPILER=/usr/tce/packages/intel/intel-${COMP_VER}/bin/icc \
   -DBLT_CXX_STD=c++14 \
   -C ../host-configs/lc-builds/toss4/icpc_X.cmake \
   -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off \
@@ -58,6 +58,6 @@ echo
 echo "  Please note that you may need to add some intel openmp libraries to your"
 echo "  LD_LIBRARY_PATH to run with openmp."
 echo
-echo "    LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/tce/packages/intel-classic-tce/intel-classic-2021.6.0/compiler/lib/intel64_lin"
+echo "    LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/tce/packages/intel/intel-2022.3/compiler/lib/intel64_lin"
 echo
 echo "***********************************************************************"
