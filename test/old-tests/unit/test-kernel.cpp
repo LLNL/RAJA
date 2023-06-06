@@ -424,10 +424,10 @@ using TestTypes = ::testing::Types<
     list<KernelPolicy<
              statement::Tile<1,
                              tile_fixed<2>,
-                             RAJA::loop_exec,
+                             RAJA::seq_exec,
                              statement::Tile<0,
                                              tile_fixed<2>,
-                                             RAJA::loop_exec,
+                                             RAJA::seq_exec,
                                              For<0, s, For<1, s, Lambda<0>>>>>>,
          camp::resources::Host,
          list<Index_type, Index_type>,
@@ -451,7 +451,7 @@ using OMPTypes = ::testing::Types<
              statement::Tile<1,
                              tile_fixed<2>,
                              RAJA::omp_parallel_for_exec,
-                             For<1, RAJA::loop_exec, For<0, s, Lambda<0>>>>>,
+                             For<1, RAJA::seq_exec, For<0, s, Lambda<0>>>>>,
          camp::resources::Host,
          list<TypedIndex, Index_type>,
          RAJA::omp_reduce>>;

@@ -214,8 +214,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _offsetlayout_rajaseq_start
   using NESTED_EXEC_POL1 =
     RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::loop_exec,    // row
-        RAJA::statement::For<0, RAJA::loop_exec,  // col
+      RAJA::statement::For<1, RAJA::seq_exec,    // row
+        RAJA::statement::For<0, RAJA::seq_exec,  // col
           RAJA::statement::Lambda<0>
         >
       >  
