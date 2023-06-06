@@ -54,7 +54,6 @@ inclusive_inplace(
   using ValueT = typename std::remove_reference<decltype(*begin)>::type;
   ValueT agg = *begin;
 
-  RAJA_NO_SIMD
   for (Iter i = ++begin; i != end; ++i) {
     agg = f(agg, *i);
     *i = agg;
@@ -86,7 +85,6 @@ exclusive_inplace(
   using ValueT = typename std::remove_reference<decltype(*begin)>::type;
   ValueT agg = v;
 
-  RAJA_NO_SIMD
   for (DistanceT i = 0; i < n; ++i) {
     auto t = begin[i];
     begin[i] = agg;
@@ -116,7 +114,6 @@ inclusive(
   ValueT agg = *begin;
   *out++ = agg;
 
-  RAJA_NO_SIMD
   for (Iter i = begin + 1; i != end; ++i) {
     agg = f(agg, *i);
     *out++ = agg;
@@ -151,7 +148,6 @@ exclusive(
   OutIter o = out;
   *o++ = v;
 
-  RAJA_NO_SIMD
   for (Iter i = begin; i != end - 1; ++i, ++o) {
     agg = f(agg, *i);
     *o = agg;

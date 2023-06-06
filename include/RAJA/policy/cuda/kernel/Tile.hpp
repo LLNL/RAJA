@@ -115,19 +115,6 @@ struct CudaStatementExecutor<
   }
 };
 
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename TPol,
-          typename... EnclosedStmts,
-          typename Types>
-struct CudaStatementExecutor<
-    Data,
-  statement::Tile<ArgumentId, TPol, loop_exec, EnclosedStmts...>, Types>
-: CudaStatementExecutor<Data, statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types>
-{
-
-};
-
 
 /*!
  * A specialized RAJA::kernel cuda_impl executor for statement::Tile

@@ -134,7 +134,6 @@ struct StatementExecutor<
 
     RAJA_EXTRACT_BED_IT(TypedRangeSegment<len_t>(0, len));
 
-    RAJA_NO_SIMD
     for (decltype(distance_it) i = 0; i < distance_it; ++i) {
       for_wrapper(*(begin_it + i));
     }

@@ -34,45 +34,9 @@ using SequentialKernelTileExecPols =
   camp::list<
 
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::loop_exec,
-          RAJA::statement::For<1, RAJA::loop_exec,
-            RAJA::statement::For<0, RAJA::loop_exec,
-              RAJA::statement::Lambda<0>
-            >
-          >
-        >
-      >
-    >,
-
-    RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::seq_exec,
         RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::seq_exec,
           RAJA::statement::For<1, RAJA::seq_exec,
-            RAJA::statement::For<0, RAJA::seq_exec,
-              RAJA::statement::Lambda<0>
-            >
-          >
-        >
-      >
-    >,
-
-    RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::seq_exec,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::loop_exec,
-          RAJA::statement::For<1, RAJA::seq_exec,
-            RAJA::statement::For<0, RAJA::loop_exec,
-              RAJA::statement::Lambda<0>
-            >
-          >
-        >
-      >
-    >,
-
-    RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::seq_exec,
-          RAJA::statement::For<1, RAJA::loop_exec,
             RAJA::statement::For<0, RAJA::seq_exec,
               RAJA::statement::Lambda<0>
             >

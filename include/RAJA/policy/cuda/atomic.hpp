@@ -25,7 +25,6 @@
 #include <stdexcept>
 #include <type_traits>
 
-#include "RAJA/policy/loop/atomic.hpp"
 #include "RAJA/policy/sequential/atomic.hpp"
 #include "RAJA/policy/atomic_builtin.hpp"
 #if defined(RAJA_ENABLE_OPENMP)

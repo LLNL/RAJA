@@ -28,12 +28,6 @@ using SequentialKernelExecPols = camp::list<
     RAJA::statement::For<0, RAJA::seq_exec,
       RAJA::statement::Lambda<0, RAJA::Segs<0>>
     >
-  >,
-
-  RAJA::KernelPolicy<
-    RAJA::statement::For<0, RAJA::loop_exec,
-      RAJA::statement::Lambda<0, RAJA::Segs<0>>
-    >
   >
 
 >;

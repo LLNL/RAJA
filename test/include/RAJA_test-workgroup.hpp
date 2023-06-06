@@ -323,7 +323,6 @@ using XargsTypeList = camp::list<
 
 using SequentialExecPolicyList =
     camp::list<
-                RAJA::loop_work,
                 RAJA::seq_work
               >;
 using SequentialOrderedPolicyList =
