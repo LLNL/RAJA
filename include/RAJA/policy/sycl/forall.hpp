@@ -32,6 +32,8 @@
 
 #include "RAJA/pattern/forall.hpp"
 
+#include "RAJA/pattern/params/forall.hpp"
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
@@ -84,11 +86,16 @@ cl::sycl::range<1> getGridDim(size_t len, size_t block_size)
 
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async, typename ForallParam,
           typename std::enable_if<std::is_trivially_copyable<LoopBody>{},bool>::type = true>
-RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl &sycl_res,
-                                                                sycl_exec<BlockSize, Async>,
-                                                                Iterable&& iter,
-                                                                LoopBody&& loop_body,
-                                                                ForallParam)
+RAJA_INLINE
+concepts::enable_if_t<
+  resources::EventProxy<resources::Sycl>,
+  RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
+  RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
+forall_impl(resources::Sycl &sycl_res,
+            sycl_exec<BlockSize, Async>,
+            Iterable&& iter,
+            LoopBody&& loop_body,
+            ForallParam)
 {
 
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
@@ -141,11 +148,12 @@ RAJA_INLINE resources::EventProxy<resources::Sycl>  forall_impl(resources::Sycl 
 
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async, typename ForallParam,
           typename std::enable_if<!std::is_trivially_copyable<LoopBody>{},bool>::type = true>
-RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &sycl_res,
-                                                    sycl_exec<BlockSize, Async>,
-                                                    Iterable&& iter,
-                                                    LoopBody&& loop_body,
-                                                    ForallParam)
+RAJA_INLINE 
+resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &sycl_res,
+            sycl_exec<BlockSize, Async>,
+            Iterable&& iter,
+            LoopBody&& loop_body,
+            ForallParam)
 {
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
@@ -210,11 +218,85 @@ RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &
     RAJA_FT_END;
   }
 
-  
-
   return resources::EventProxy<resources::Sycl>(sycl_res);
 }
 
+template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async, typename ForallParam,
+          typename std::enable_if<std::is_trivially_copyable<LoopBody>{},bool>::type = true>
+RAJA_INLINE
+concepts::enable_if_t< 
+  resources::EventProxy<resources::Sycl>,
+  RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
+  concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>> >
+forall_impl(resources::Sycl &sycl_res,
+            sycl_exec<BlockSize, Async>,
+            Iterable&& iter,
+            LoopBody&& loop_body,
+            ForallParam f_params)
+
+{
+  using Iterator  = camp::decay<decltype(std::begin(iter))>;
+  using LOOP_BODY = camp::decay<LoopBody>;
+  using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
+  using EXEC_POL = RAJA::sycl_exec<BlockSize, Async>;
+  //
+  // Compute the requested iteration space size
+  //
+  Iterator begin = std::begin(iter);
+  Iterator end = std::end(iter);
+  IndexType len = std::distance(begin, end);
+
+  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+
+  // Only launch kernel if we have something to iterate over
+  if (len > 0 && BlockSize > 0) {
+    //
+    // Compute the number of blocks
+    //
+    sycl_dim_t blockSize{BlockSize};
+    sycl_dim_t gridSize = impl::getGridDim(static_cast<size_t>(len), BlockSize);
+
+    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+    // Global resource was not set, use the resource that was passed to forall
+    // Determine if the default SYCL res is being used
+    if (!q) {
+      q = sycl_res.get_queue();
+    }
+
+    auto combiner = []( ForallParam x, ForallParam y ) {
+      RAJA::expt::ParamMultiplexer::combine<EXEC_POL>( x, y );
+      return x;
+    };
+
+    ForallParam* res = ::sycl::malloc_shared<ForallParam>(1,*q);
+    auto reduction = ::sycl::reduction(res, f_params, combiner);
+    auto prop = ::sycl::property::reduction::initialize_to_identity();
+
+    q->submit([&](cl::sycl::handler& h) {
+      h.parallel_for( cl::sycl::range<1>(len),
+                      reduction,
+                      [=]   (cl::sycl::item<1> it, auto & red)  {
+
+        ForallParam fp;
+	RAJA::expt::ParamMultiplexer::init<EXEC_POL>(fp);
+        IndexType ii = it.get_id(0);
+        if (ii < len) {
+          RAJA::expt::invoke_body(fp, loop_body, begin[ii]);
+        }
+        red.combine(fp);
+      });
+    });
+
+    if (!Async) { q->wait(); }
+      q->wait();
+      RAJA::expt::ParamMultiplexer::combine<EXEC_POL>( f_params, *res );
+      ::sycl::free(res, *q);
+  }
+  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+
+  return resources::EventProxy<resources::Sycl>(sycl_res);
+
+}
 
 //
 //////////////////////////////////////////////////////////////////////

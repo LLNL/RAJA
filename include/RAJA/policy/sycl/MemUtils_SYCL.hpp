@@ -70,6 +70,76 @@ cl::sycl::queue* getQueue();
 
 }  // namespace detail
 
+//! Allocator for pinned memory for use in basic_mempool
+struct PinnedAllocator {
+
+  // returns a valid pointer on success, nullptr on failure
+  void* malloc(size_t nbytes)
+  {
+    void* ptr;
+    ::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+    ptr = ::sycl::malloc_host(nbytes, *q);
+    return ptr;
+  }
+
+  // returns true on success, false on failure
+  bool free(void* ptr)
+  {
+    ::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+    ::sycl::free(ptr, *q);
+    return true;
+  }
+};
+
+//! Allocator for device memory for use in basic_mempool
+struct DeviceAllocator {
+
+  // returns a valid pointer on success, nullptr on failure
+  void* malloc(size_t nbytes)
+  {
+    void* ptr;
+    ::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+    ptr = ::sycl::malloc_device(nbytes, *q);
+    return ptr;
+  }
+
+  // returns true on success, false on failure
+  bool free(void* ptr)
+  {
+    ::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+    ::sycl::free(ptr, *q);
+    return true;
+  }
+};
+
+//! Allocator for pre-zeroed device memory for use in basic_mempool
+//  Note: Memory must be zero when returned to mempool
+struct DeviceZeroedAllocator {
+
+  // returns a valid pointer on success, nullptr on failure
+  void* malloc(size_t nbytes)
+  {
+    void* ptr;
+    ::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+    ptr = ::sycl::malloc_device(nbytes, *q);
+    q->memset(ptr, 0, nbytes);
+    return ptr;
+  }
+
+  // returns true on success, false on failure
+  bool free(void* ptr)
+  {
+    ::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+    ::sycl::free(ptr, *q);
+    return true;
+  }
+};
+
+using device_mempool_type = basic_mempool::MemPool<DeviceAllocator>;
+using device_zeroed_mempool_type =
+    basic_mempool::MemPool<DeviceZeroedAllocator>;
+using pinned_mempool_type = basic_mempool::MemPool<PinnedAllocator>;
+
 }  // namespace sycl
 
 }  // namespace RAJA

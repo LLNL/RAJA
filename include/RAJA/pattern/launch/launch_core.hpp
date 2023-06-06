@@ -202,7 +202,7 @@ public:
   void teamSync()
   {
 #if defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE) && defined(RAJA_ENABLE_SYCL)
-    itm->barrier(sycl::access::fence_space::local_space);
+    itm->barrier(::sycl::access::fence_space::local_space);
 #endif
 
 #if defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE) && !defined(RAJA_ENABLE_SYCL)
