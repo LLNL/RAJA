@@ -22,7 +22,7 @@
 
 #include "RAJA/policy/sequential/policy.hpp"
 
-#include "RAJA/policy/loop/WorkGroup/Dispatcher.hpp"
+#include "RAJA/pattern/WorkGroup/Dispatcher.hpp"
 
 
 namespace RAJA
@@ -37,7 +37,8 @@ namespace detail
 template < typename T, typename Dispatcher_T >
 inline const Dispatcher_T* get_Dispatcher(seq_work const&)
 {
-  return get_Dispatcher<T, Dispatcher_T>(loop_work{});
+  static Dispatcher_T dispatcher{ Dispatcher_T::template makeDispatcher<T>() };
+  return &dispatcher;
 }
 
 }  // namespace detail

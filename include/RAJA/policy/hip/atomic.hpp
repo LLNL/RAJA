@@ -26,7 +26,6 @@
 #include <type_traits>
 #include "hip/hip_runtime.h"
 
-#include "RAJA/policy/loop/atomic.hpp"
 #include "RAJA/policy/sequential/atomic.hpp"
 #include "RAJA/policy/atomic_builtin.hpp"
 #if defined(RAJA_ENABLE_OPENMP)

@@ -462,21 +462,21 @@ using SeqTypes =
   ::testing::Types<
   RAJA::list<
     RAJA::KernelPolicy<
-        RAJA::statement::For<3, RAJA::loop_exec,
-          RAJA::statement::For<2, RAJA::loop_exec,
+        RAJA::statement::For<3, RAJA::seq_exec,
+          RAJA::statement::For<2, RAJA::seq_exec,
 
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1>,
 
               //Load data into shared memory
-              RAJA::statement::For<1, RAJA::loop_exec,
-                RAJA::statement::For<0, RAJA::loop_exec,
+              RAJA::statement::For<1, RAJA::seq_exec,
+                RAJA::statement::For<0, RAJA::seq_exec,
                   RAJA::statement::Lambda<0>
                                    >
                                  >,
 
                 //Read data from shared memory
-                RAJA::statement::For<1, RAJA::loop_exec,
-                  RAJA::statement::For<0, RAJA::loop_exec,
+                RAJA::statement::For<1, RAJA::seq_exec,
+                  RAJA::statement::For<0, RAJA::seq_exec,
                     RAJA::statement::Lambda<1> > >
 
               > //close shared memory scope
@@ -494,8 +494,8 @@ using TestTypes =
   ::testing::Types<
   RAJA::list<
     RAJA::KernelPolicy<
-      RAJA::statement::For<3, RAJA::loop_exec,
-        RAJA::statement::For<2, RAJA::loop_exec,
+      RAJA::statement::For<3, RAJA::seq_exec,
+        RAJA::statement::For<2, RAJA::seq_exec,
 
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1>,
 
@@ -518,20 +518,20 @@ using TestTypes =
 
   ,RAJA::list<
       RAJA::KernelPolicy<
-      RAJA::statement::For<3, RAJA::loop_exec,
-        RAJA::statement::For<2, RAJA::loop_exec,
+      RAJA::statement::For<3, RAJA::seq_exec,
+        RAJA::statement::For<2, RAJA::seq_exec,
 
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1>,
 
            //Load data into shared memory
             RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
-              RAJA::statement::For<0, RAJA::loop_exec,
+              RAJA::statement::For<0, RAJA::seq_exec,
                 RAJA::statement::Lambda<0>
               >
              >,
 
            //Read data from shared memory
-            RAJA::statement::For<1, RAJA::loop_exec,
+            RAJA::statement::For<1, RAJA::seq_exec,
            RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
                                 RAJA::statement::Lambda<1>
            >
@@ -544,20 +544,20 @@ using TestTypes =
   ,RAJA::list<
     RAJA::KernelPolicy<
       RAJA::statement::For<3, RAJA::omp_parallel_for_exec,
-        RAJA::statement::For<2, RAJA::loop_exec,
+        RAJA::statement::For<2, RAJA::seq_exec,
 
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1>,
 
            //Load data into shared memory
-           RAJA::statement::For<1, RAJA::loop_exec,
-              RAJA::statement::For<0, RAJA::loop_exec,
+           RAJA::statement::For<1, RAJA::seq_exec,
+              RAJA::statement::For<0, RAJA::seq_exec,
                 RAJA::statement::Lambda<0>
               >
              >,
 
            //Read data from shared memory
-            RAJA::statement::For<1, RAJA::loop_exec,
-              RAJA::statement::For<0, RAJA::loop_exec,
+            RAJA::statement::For<1, RAJA::seq_exec,
+              RAJA::statement::For<0, RAJA::seq_exec,
                 RAJA::statement::Lambda<1>
            >
           >
@@ -574,15 +574,15 @@ using TestTypes =
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem,RAJA::ParamList<0,1>,
 
            //Load data into shared memory
-           RAJA::statement::For<1, RAJA::loop_exec,
-              RAJA::statement::For<0, RAJA::loop_exec,
+           RAJA::statement::For<1, RAJA::seq_exec,
+              RAJA::statement::For<0, RAJA::seq_exec,
                 RAJA::statement::Lambda<0>
               >
              >,
 
            //Read data from shared memory
-            RAJA::statement::For<1, RAJA::loop_exec,
-              RAJA::statement::For<0, RAJA::loop_exec,
+            RAJA::statement::For<1, RAJA::seq_exec,
+              RAJA::statement::For<0, RAJA::seq_exec,
                 RAJA::statement::Lambda<1>
            >
           >
@@ -919,35 +919,35 @@ struct Policy_MatMultiply_cpu {
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2,1,0>,
 
             // Tile of N and P (the result matrix C)
-            RAJA::statement::Tile<0, RAJA::tile_fixed<tile_size>, RAJA::loop_exec,
-              RAJA::statement::Tile<2, RAJA::tile_fixed<tile_size>, RAJA::loop_exec,
+            RAJA::statement::Tile<0, RAJA::tile_fixed<tile_size>, RAJA::seq_exec,
+              RAJA::statement::Tile<2, RAJA::tile_fixed<tile_size>, RAJA::seq_exec,
 
                // zero out shmem tile of C
-               RAJA::statement::For<2, RAJA::loop_exec,
-                  RAJA::statement::For<0, RAJA::loop_exec,
+               RAJA::statement::For<2, RAJA::seq_exec,
+                  RAJA::statement::For<0, RAJA::seq_exec,
                   shmem_Lambda0 > >,
 
                 // Slide window across matrix: Tile in M
-                RAJA::statement::Tile<1, RAJA::tile_fixed<tile_size>, RAJA::loop_exec,
+                RAJA::statement::Tile<1, RAJA::tile_fixed<tile_size>, RAJA::seq_exec,
 
                    // Load tile of A into shmem
-                   RAJA::statement::For<1, RAJA::loop_exec,
-                     RAJA::statement::For<0, RAJA::loop_exec,
+                   RAJA::statement::For<1, RAJA::seq_exec,
+                     RAJA::statement::For<0, RAJA::seq_exec,
                      shmem_Lambda1
                     >
                    >,
 
                    // Load tile of B into shmem
-                   RAJA::statement::For<2, RAJA::loop_exec,
-                     RAJA::statement::For<1, RAJA::loop_exec,
+                   RAJA::statement::For<2, RAJA::seq_exec,
+                     RAJA::statement::For<1, RAJA::seq_exec,
                      shmem_Lambda2
                     >
                    >,
 
                    //Partial multiplication
-                   RAJA::statement::For<2, RAJA::loop_exec,
-                     RAJA::statement::For<1, RAJA::loop_exec,
-                       RAJA::statement::For<0, RAJA::loop_exec,
+                   RAJA::statement::For<2, RAJA::seq_exec,
+                     RAJA::statement::For<1, RAJA::seq_exec,
+                       RAJA::statement::For<0, RAJA::seq_exec,
                        shmem_Lambda3
                        >
                      >
@@ -955,8 +955,8 @@ struct Policy_MatMultiply_cpu {
                 >, //sliding window
 
                 //Write memory out to global matrix
-                RAJA::statement::For<2, RAJA::loop_exec,
-                  RAJA::statement::For<0, RAJA::loop_exec,
+                RAJA::statement::For<2, RAJA::seq_exec,
+                  RAJA::statement::For<0, RAJA::seq_exec,
                   shmem_Lambda4 > >
              >
             >

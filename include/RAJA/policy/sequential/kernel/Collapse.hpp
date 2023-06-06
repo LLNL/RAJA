@@ -65,7 +65,6 @@ struct StatementExecutor<statement::Collapse<seq_exec,
 
     auto len0 = segment_length<Arg0>(data);
 
-    RAJA_NO_SIMD
     for (auto i0 = 0; i0 < len0; ++i0) {
       data.template assign_offset<Arg0>(i0);
 

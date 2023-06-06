@@ -22,7 +22,7 @@
 
 #include "RAJA/policy/openmp/policy.hpp"
 
-#include "RAJA/policy/loop/WorkGroup/Dispatcher.hpp"
+#include "RAJA/policy/sequential/WorkGroup/Dispatcher.hpp"
 
 
 namespace RAJA
@@ -37,7 +37,7 @@ namespace detail
 template < typename T, typename Dispatcher_T >
 inline const Dispatcher_T* get_Dispatcher(omp_work const&)
 {
-  return get_Dispatcher<T, Dispatcher_T>(loop_work{});
+  return get_Dispatcher<T, Dispatcher_T>(seq_work{});
 }
 
 }  // namespace detail

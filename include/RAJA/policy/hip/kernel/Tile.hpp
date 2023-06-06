@@ -116,18 +116,6 @@ struct HipStatementExecutor<
   }
 };
 
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename TPol,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<
-    Data,
-  statement::Tile<ArgumentId, TPol, loop_exec, EnclosedStmts...>, Types>
-: HipStatementExecutor<Data, statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types>
-{
-
-};
 
 /*!
  * A specialized RAJA::kernel hip_impl executor for statement::Tile

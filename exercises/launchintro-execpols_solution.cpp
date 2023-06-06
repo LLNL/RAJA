@@ -123,7 +123,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(a, 0, N_tot * sizeof(double));
 
 // _raja_tensorinit_seq_start
-  using loop_policy_1 = RAJA::LoopPolicy<RAJA::loop_exec>;
+  using loop_policy_1 = RAJA::LoopPolicy<RAJA::seq_exec>;
   using launch_policy_1 = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
   RAJA::launch<launch_policy_1>
@@ -177,7 +177,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 // _raja_tensorinit_omp_outer_start
   using omp_policy_2 = RAJA::LoopPolicy<RAJA::omp_for_exec>;
-  using loop_policy_2 = RAJA::LoopPolicy<RAJA::loop_exec>;
+  using loop_policy_2 = RAJA::LoopPolicy<RAJA::seq_exec>;
   using launch_policy_2 = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
   RAJA::launch<launch_policy_2>
