@@ -65,7 +65,7 @@ macro(RAJA_GENERATE_ALGORITHM_UTIL_SORT_TESTS SORT_BACKEND_in SORT_SIZE_in UTIL_
 
     raja_add_test( NAME test-algorithm-util-sort-${UTIL_SORT}-${SORT_BACKEND}
                    SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-algorithm-util-sort-${UTIL_SORT}-${SORT_BACKEND}.cpp )
-        
+
     target_include_directories(test-algorithm-util-sort-${UTIL_SORT}-${SORT_BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 

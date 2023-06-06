@@ -204,24 +204,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using SEQ_EXEC_POL =
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
-                               RAJA::loop_exec,
+                               RAJA::seq_exec,
         RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_SZ>,
-                                 RAJA::loop_exec,
+                                 RAJA::seq_exec,
 
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
 
           RAJA::statement::ForICount<1, RAJA::statement::Param<1>, 
-                                        RAJA::loop_exec,
+                                        RAJA::seq_exec,
             RAJA::statement::ForICount<0, RAJA::statement::Param<0>, 
-                                        RAJA::loop_exec,
+                                        RAJA::seq_exec,
               RAJA::statement::Lambda<0>
             >
           >,
 
           RAJA::statement::ForICount<0, RAJA::statement::Param<0>, 
-                                        RAJA::loop_exec,
+                                        RAJA::seq_exec,
             RAJA::statement::ForICount<1, RAJA::statement::Param<1>, 
-                                          RAJA::loop_exec,
+                                          RAJA::seq_exec,
               RAJA::statement::Lambda<1>
             >
           >
@@ -262,22 +262,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
                              RAJA::omp_parallel_for_exec,
       RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_SZ>,
-                               RAJA::loop_exec,
+                               RAJA::seq_exec,
 
         RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
 
           RAJA::statement::ForICount<1, RAJA::statement::Param<1>, 
-                                        RAJA::loop_exec,
+                                        RAJA::seq_exec,
             RAJA::statement::ForICount<0, RAJA::statement::Param<0>, 
-                                          RAJA::loop_exec,
+                                          RAJA::seq_exec,
                RAJA::statement::Lambda<0>
             >
           >,
 
           RAJA::statement::ForICount<0, RAJA::statement::Param<0>, 
-                                        RAJA::loop_exec,
+                                        RAJA::seq_exec,
             RAJA::statement::ForICount<1, RAJA::statement::Param<1>, 
-                                          RAJA::loop_exec,
+                                          RAJA::seq_exec,
               RAJA::statement::Lambda<1>
             >
           >

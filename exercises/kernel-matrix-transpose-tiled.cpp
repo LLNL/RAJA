@@ -170,10 +170,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using TILED_KERNEL_EXEC_POL = 
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-          RAJA::statement::For<1, RAJA::loop_exec, 
-            RAJA::statement::For<0, RAJA::loop_exec,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+          RAJA::statement::For<1, RAJA::seq_exec, 
+            RAJA::statement::For<0, RAJA::seq_exec,
               RAJA::statement::Lambda<0>
             >
           >
@@ -235,8 +235,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   using TILED_KERNEL_EXEC_POL_OMP2 = 
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
           RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                     RAJA::ArgList<0, 1>,
                                     RAJA::statement::Lambda<0>
