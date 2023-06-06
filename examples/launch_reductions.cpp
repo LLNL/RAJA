@@ -32,7 +32,7 @@ using host_launch = RAJA::omp_launch_t;
 using host_loop = RAJA::omp_for_exec;
 #else
 using host_launch = RAJA::seq_launch_t;
-using host_loop = RAJA::loop_exec;
+using host_loop = RAJA::seq_exec;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)

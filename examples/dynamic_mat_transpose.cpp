@@ -85,7 +85,7 @@ using launch_policy = RAJA::LaunchPolicy<
  * Up to 3 dimension are supported: x,y,z
  */
 using outer0 = RAJA::LoopPolicy<
-                                       RAJA::loop_exec
+                                       RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
                                        ,
                                        RAJA::cuda_block_x_direct
@@ -104,7 +104,7 @@ using outer1 = RAJA::LoopPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
                                       RAJA::omp_for_exec
 #else
-                                       RAJA::loop_exec
+                                       RAJA::seq_exec
 #endif
 #if defined(RAJA_ENABLE_CUDA)
                                        ,
@@ -124,7 +124,7 @@ using outer1 = RAJA::LoopPolicy<
  * Up to 3 dimension are supported: x,y,z
  */
 using inner0 = RAJA::LoopPolicy<
-                                         RAJA::loop_exec
+                                         RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
                                          ,
                                          RAJA::cuda_thread_x_direct
@@ -139,7 +139,7 @@ using inner0 = RAJA::LoopPolicy<
 #endif
                                          >;
 
-using inner1 = RAJA::LoopPolicy<RAJA::loop_exec
+using inner1 = RAJA::LoopPolicy<RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
                                          ,
                                          RAJA::cuda_thread_y_direct

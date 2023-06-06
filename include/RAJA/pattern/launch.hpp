@@ -24,7 +24,6 @@
 // All platforms must support host execution.
 //
 #include "RAJA/policy/sequential/launch.hpp"
-#include "RAJA/policy/loop/launch.hpp"
 #include "RAJA/policy/simd/launch.hpp"
 
 #if defined(RAJA_CUDA_ACTIVE)

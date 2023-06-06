@@ -127,22 +127,22 @@ RAJA Variants using forall
 A sequential RAJA example uses this execution policy type:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
-   :start-after: _halo_exchange_loop_forall_policies_start
-   :end-before: _halo_exchange_loop_forall_policies_end
+   :start-after: _halo_exchange_seq_forall_policies_start
+   :end-before: _halo_exchange_seq_forall_policies_end
    :language: C++
 
 to pack the grid variable data into a buffer:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
-   :start-after: _halo_exchange_loop_forall_packing_start
-   :end-before: _halo_exchange_loop_forall_packing_end
+   :start-after: _halo_exchange_seq_forall_packing_start
+   :end-before: _halo_exchange_seq_forall_packing_end
    :language: C++
 
 and unpack the buffer data into the grid variable array:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
-   :start-after: _halo_exchange_loop_forall_unpacking_start
-   :end-before: _halo_exchange_loop_forall_unpacking_end
+   :start-after: _halo_exchange_seq_forall_unpacking_start
+   :end-before: _halo_exchange_seq_forall_unpacking_end
    :language: C++
 
 
@@ -174,8 +174,8 @@ Using the workgroup constructs in the example requires defining a few more
 policies and types:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
-   :start-after: _halo_exchange_loop_workgroup_policies_start
-   :end-before: _halo_exchange_loop_workgroup_policies_end
+   :start-after: _halo_exchange_seq_workgroup_policies_start
+   :end-before: _halo_exchange_seq_workgroup_policies_end
    :language: C++
 
 which are used in a slightly rearranged version of packing. See how the comment
@@ -183,16 +183,16 @@ indicating where messages are sent has been moved down after the call to
 run the operations enqueued on the workgroup:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
-   :start-after: _halo_exchange_loop_workgroup_packing_start
-   :end-before: _halo_exchange_loop_workgroup_packing_end
+   :start-after: _halo_exchange_seq_workgroup_packing_start
+   :end-before: _halo_exchange_seq_workgroup_packing_end
    :language: C++
 
 Similarly, in the unpacking we wait to receive all of the messages before
 unpacking the data:
 
 .. literalinclude:: ../../../../examples/tut_halo-exchange.cpp
-   :start-after: _halo_exchange_loop_workgroup_unpacking_start
-   :end-before: _halo_exchange_loop_workgroup_unpacking_end
+   :start-after: _halo_exchange_seq_workgroup_unpacking_start
+   :end-before: _halo_exchange_seq_workgroup_unpacking_end
    :language: C++
 
 This reorganization has the downside of not overlapping the message sends with
