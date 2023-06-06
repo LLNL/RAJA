@@ -18,7 +18,7 @@
 //Launch policies
 using seq_policies = camp::list<
   RAJA::LaunchPolicy<RAJA::seq_launch_t>,
-  RAJA::LoopPolicy<RAJA::loop_exec>
+  RAJA::LoopPolicy<RAJA::seq_exec>
   >;
 
 using Sequential_launch_policies = camp::list<

@@ -40,20 +40,6 @@ using SequentialKernelRegionExecPols =
           RAJA::statement::Lambda<2>
         >
       >
-    >,
-
-    RAJA::KernelPolicy<
-      RAJA::statement::Region<RAJA::seq_region,
-        RAJA::statement::For<0, RAJA::loop_exec,
-          RAJA::statement::Lambda<0>
-        >,
-        RAJA::statement::For<0, RAJA::loop_exec,
-          RAJA::statement::Lambda<1>
-        >,
-        RAJA::statement::For<0, RAJA::loop_exec,
-          RAJA::statement::Lambda<2>
-        >
-      >
     >
 
   >;

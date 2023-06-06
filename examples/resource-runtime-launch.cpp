@@ -30,7 +30,7 @@
  */
 
 using host_launch = RAJA::seq_launch_t;
-using host_loop = RAJA::loop_exec;
+using host_loop = RAJA::seq_exec;
 
 #if defined(RAJA_ENABLE_CUDA)
 using device_launch = RAJA::cuda_launch_t<true>;

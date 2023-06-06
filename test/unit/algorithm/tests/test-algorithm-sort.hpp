@@ -85,8 +85,6 @@ struct PolicySortPairs
 
 using SequentialSortSorters =
   camp::list<
-              PolicySort<RAJA::loop_exec>,
-              PolicySortPairs<RAJA::loop_exec>,
               PolicySort<RAJA::seq_exec>,
               PolicySortPairs<RAJA::seq_exec>
             >;

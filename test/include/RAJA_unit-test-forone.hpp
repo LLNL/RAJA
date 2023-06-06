@@ -48,7 +48,7 @@ using forone_platform = typename forone_policy_info<forone_policy>::platform;
 template < >
 struct forone_policy_info<forone_seq>
 {
-  using type = RAJA::loop_exec;
+  using type = RAJA::seq_exec;
   using platform = RunOnHost;
   static const char* name() { return "forone_seq"; }
 };
