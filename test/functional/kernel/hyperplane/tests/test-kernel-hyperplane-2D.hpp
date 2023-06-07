@@ -43,7 +43,7 @@ void KernelHyperplane2DTestImpl(const int groups, const int idim, const int jdim
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> trip_count(0);
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> oob_count(0);
 
-  // perform array arithmetic with a 1D J hyperplane
+  // perform array arithmetic with a 1D hyperplane, in either the I or J direction
   RAJA::TypedRangeSegment<INDEX_TYPE>  Grange( 0, groups );
   RAJA::TypedRangeSegment<INDEX_TYPE>  Irange( 0, idim );
   RAJA::TypedRangeSegment<INDEX_TYPE>  Jrange( 0, jdim );
