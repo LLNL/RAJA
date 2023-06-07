@@ -17,7 +17,6 @@
 
 // Sequential execution policy types
 using SequentialForallExecPols = camp::list< RAJA::seq_exec,
-                                             RAJA::loop_exec,
                                              RAJA::simd_exec >;
 
 //
@@ -25,11 +24,9 @@ using SequentialForallExecPols = camp::list< RAJA::seq_exec,
 //
 // Note: RAJA::simd_exec does not work with these.
 //
-using SequentialForallReduceExecPols = camp::list< RAJA::seq_exec,
-                                                   RAJA::loop_exec >;
+using SequentialForallReduceExecPols = camp::list< RAJA::seq_exec >;
 
-using SequentialForallAtomicExecPols = camp::list< RAJA::seq_exec, 
-                                                   RAJA::loop_exec >;
+using SequentialForallAtomicExecPols = camp::list< RAJA::seq_exec >;
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPForallExecPols = 
