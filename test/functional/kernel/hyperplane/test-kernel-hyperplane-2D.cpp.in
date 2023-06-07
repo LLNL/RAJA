@@ -26,7 +26,6 @@
 //
 #include "test-kernel-hyperplane-@TEST_TYPE@.hpp"
 
-
 //
 // Exec pols for kernel tile tests
 //
