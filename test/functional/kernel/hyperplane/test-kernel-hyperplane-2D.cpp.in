@@ -166,10 +166,12 @@ using HipKernelHyperplaneExecPols =
 
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
-        RAJA::statement::For<1, RAJA::hip_thread_x_direct,
-          RAJA::statement::Hyperplane<0, RAJA::seq_exec, RAJA::ArgList<1>,
-            RAJA::statement::Lambda<0>,
-            RAJA::statement::HipSyncThreads
+        RAJA::statement::For<0, RAJA::hip_block_x_loop,
+          RAJA::statement::For<1, RAJA::hip_thread_x_direct,
+            RAJA::statement::Hyperplane<2, RAJA::seq_exec, RAJA::ArgList<1>,
+              RAJA::statement::Lambda<0>,
+              RAJA::statement::HipSyncThreads
+            >
           >
         >
       >
@@ -177,10 +179,12 @@ using HipKernelHyperplaneExecPols =
 
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
-        RAJA::statement::For<1, RAJA::hip_thread_x_loop,
-          RAJA::statement::Hyperplane<0, RAJA::seq_exec, RAJA::ArgList<1>,
-            RAJA::statement::Lambda<0>,
-            RAJA::statement::HipSyncThreads
+        RAJA::statement::For<0, RAJA::hip_block_x_loop,
+          RAJA::statement::For<1, RAJA::hip_thread_x_loop,
+            RAJA::statement::Hyperplane<2, RAJA::seq_exec, RAJA::ArgList<1>,
+              RAJA::statement::Lambda<0>,
+              RAJA::statement::HipSyncThreads
+            >
           >
         >
       >
