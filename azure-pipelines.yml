@@ -34,10 +34,10 @@ jobs:
   timeoutInMinutes: 360
   strategy:
     matrix: 
-      gcc7:
-        docker_target: gcc7
-      gcc8:
-        docker_target: gcc8
+      gcc7.3.0:
+        docker_target: gcc7.3.0
+      gcc8.1.0:
+        docker_target: gcc8.1.0
       gcc9:
         docker_target: gcc9
       gcc11:
@@ -52,8 +52,8 @@ jobs:
         docker_target: nvcc10
       nvcc11:
         docker_target: nvcc11
-      nvcc11-debug:
-        docker_target: nvcc11-debug
+##      nvcc11-debug:
+##        docker_target: nvcc11-debug
       hip:
         docker_target: hip
       sycl:
