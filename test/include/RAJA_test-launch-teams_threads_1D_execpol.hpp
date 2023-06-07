@@ -29,7 +29,7 @@ using Sequential_launch_policies = camp::list<
 #if defined(RAJA_ENABLE_OPENMP)
 using omp_policies = camp::list<
          RAJA::LaunchPolicy<RAJA::omp_launch_t>,
-         RAJA::LoopPolicy<RAJA::omp_for_exec>,  
+         RAJA::LoopPolicy<RAJA::omp_for_exec>,
          RAJA::LoopPolicy<RAJA::seq_exec>
   >;
 
@@ -72,6 +72,18 @@ using Hip_launch_policies = camp::list<
       hip_policies
        >;
 #endif // RAJA_ENABLE_HIP
+
+#if defined(RAJA_ENABLE_SYCL)
+using sycl_direct_policies = camp::list<
+  RAJA::LaunchPolicy<RAJA::sycl_launch_t<true>>,
+  RAJA::LoopPolicy<RAJA::sycl_group_0_direct>,
+  RAJA::LoopPolicy<RAJA::sycl_local_0_direct>
+  >;
+
+using Sycl_launch_policies = camp::list<
+  sycl_direct_policies
+  >;
+#endif
 
 
 #endif  // __RAJA_test_launch_teams_threads_1D_execpol_HPP__
