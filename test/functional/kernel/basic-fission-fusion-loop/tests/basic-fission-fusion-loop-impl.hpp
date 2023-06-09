@@ -81,7 +81,7 @@ void KernelBasicFissionFusionLoopTestImpl(
          0,
          sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
-  RAJA::forall<RAJA::loop_exec>(working_res, seg_idx, [=](IDX_TYPE i) {
+  RAJA::forall<RAJA::seq_exec>(working_res, seg_idx, [=](IDX_TYPE i) {
     check_array_y[RAJA::stripIndexType(i)] += 1;
     check_array_y[RAJA::stripIndexType(i)] += 2;
   });
