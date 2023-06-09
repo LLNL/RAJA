@@ -152,7 +152,7 @@ a template argument as described above.
  ====================================== ============= ==========================
  omp_for_exec                           forall,       Parallel execution within
                                         kernel (For), existing parallel
-					launch (loop) region*; i.e.,
+					launch (loop) region; i.e.,
                                         scan          apply 'omp for' pragma.
  omp_for_static_exec<ChunkSize>         forall,       Same as applying
                                         kernel (For)  'omp for
