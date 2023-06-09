@@ -26,7 +26,7 @@ GPU_TEST(SynchronizeUnitTest, HIP)
 
   hipMemcpy(managed_data, d_managed_data, sizeof(double)*50, hipMemcpyDeviceToHost);
 
-  RAJA::forall<RAJA::loop_exec>( RAJA::RangeSegment(0, 50),
+  RAJA::forall<RAJA::seq_exec>( RAJA::RangeSegment(0, 50),
     [=](RAJA::Index_type i) {
     EXPECT_EQ(managed_data[i], 1.0 * i);
   });

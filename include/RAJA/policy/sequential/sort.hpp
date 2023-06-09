@@ -28,8 +28,11 @@
 
 #include "RAJA/util/concepts.hpp"
 
+#include "RAJA/util/zip.hpp"
+
+#include "RAJA/util/sort.hpp" 
+
 #include "RAJA/policy/sequential/policy.hpp"
-#include "RAJA/policy/loop/sort.hpp"
 
 namespace RAJA
 {
@@ -37,6 +40,39 @@ namespace impl
 {
 namespace sort
 {
+
+namespace detail
+{
+
+/*!
+    \brief Functional that performs an unstable sort with the
+           given arguments, uses RAJA::intro_sort
+*/
+struct UnstableSorter
+{
+  template < typename... Args >
+  RAJA_INLINE
+  void operator()(Args&&... args) const
+  {
+    RAJA::detail::intro_sort(std::forward<Args>(args)...);
+  }
+};
+
+/*!
+    \brief Functional that performs a stable sort with the
+           given arguments, calls RAJA::merge_sort
+*/
+struct StableSorter
+{
+  template < typename... Args >
+  RAJA_INLINE
+  void operator()(Args&&... args) const
+  {
+    RAJA::detail::merge_sort(std::forward<Args>(args)...);
+  }
+};
+
+} // namespace detail
 
 /*!
         \brief sort given range using comparison function
@@ -51,8 +87,9 @@ unstable(
     Iter end,
     Compare comp)
 {
-  return RAJA::impl::sort::unstable(host_res, ::RAJA::loop_exec{},
-      begin, end, comp);
+  detail::UnstableSorter{}(begin, end, comp);
+
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -68,8 +105,9 @@ stable(
     Iter end,
     Compare comp)
 {
-  return RAJA::impl::sort::stable(host_res, ::RAJA::loop_exec{},
-      begin, end, comp);
+  detail::StableSorter{}(begin, end, comp);
+
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -86,8 +124,12 @@ unstable_pairs(
     ValIter vals_begin,
     Compare comp)
 {
-  return RAJA::impl::sort::unstable_pairs(host_res, ::RAJA::loop_exec{},
-      keys_begin, keys_end, vals_begin, comp);
+  auto begin = RAJA::zip(keys_begin, vals_begin);
+  auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
+  using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+  detail::UnstableSorter{}(begin, end, RAJA::compare_first<zip_ref>(comp));
+
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
@@ -104,8 +146,12 @@ stable_pairs(
     ValIter vals_begin,
     Compare comp)
 {
-  return RAJA::impl::sort::stable_pairs(host_res, ::RAJA::loop_exec{},
-      keys_begin, keys_end, vals_begin, comp);
+  auto begin = RAJA::zip(keys_begin, vals_begin);
+  auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
+  using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
+  detail::StableSorter{}(begin, end, RAJA::compare_first<zip_ref>(comp));
+
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 }  // namespace sort

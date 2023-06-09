@@ -28,7 +28,7 @@
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
-#include "RAJA/policy/loop/policy.hpp"
+#include "RAJA/policy/sequential/policy.hpp"
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/types.hpp"
@@ -219,7 +219,7 @@ struct hip_atomic_explicit{};
  * Default hip atomic policy uses hip atomics on the device and non-atomics
  * on the host
  */
-using hip_atomic = hip_atomic_explicit<loop_atomic>;
+using hip_atomic = hip_atomic_explicit<seq_atomic>;
 
 }  // end namespace hip
 }  // end namespace policy

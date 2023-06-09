@@ -143,25 +143,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 //----------------------------------------------------------------------------//
-// RAJA::loop_exec policy allows the compiler to generate optimizations 
-// (e.g., SIMD) if it thinks it is safe to do so.
-//----------------------------------------------------------------------------//
-
-  std::memset(c, 0, N * sizeof(int));
-
-  std::cout << "\n Running RAJA loop-exec vector addition...\n";
-
-  RAJA::forall< RAJA::loop_exec >(
-    RAJA::TypedRangeSegment<int>(0, N), [=] (int i) { 
-      c[i] = a[i] + b[i];
-    }
-  );
-
-  checkResult(c, c_ref, N);
-//printArray(c, N);
-
-
-//----------------------------------------------------------------------------//
 // C-style OpenMP multithreading variant.
 //----------------------------------------------------------------------------//
 

@@ -27,9 +27,9 @@
 using SequentialKernelExecPols = camp::list<
     
   RAJA::KernelPolicy<
-    RAJA::statement::For<0, RAJA::loop_exec,
+    RAJA::statement::For<0, RAJA::seq_exec,
       RAJA::statement::For<1, RAJA::seq_exec,
-        RAJA::statement::For<2, RAJA::loop_exec,
+        RAJA::statement::For<2, RAJA::seq_exec,
           RAJA::statement::Lambda<0, RAJA::Segs<0, 1, 2>>
         >
       >
@@ -44,7 +44,7 @@ using OpenMPKernelExecPols = camp::list<
   RAJA::KernelPolicy<
     RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
       RAJA::statement::For<1, RAJA::seq_exec,
-        RAJA::statement::For<2, RAJA::loop_exec,
+        RAJA::statement::For<2, RAJA::seq_exec,
           RAJA::statement::Lambda<0, RAJA::Segs<0, 1, 2>>
         >
       >
@@ -60,7 +60,7 @@ using TBBKernelExecPols = camp::list<
   RAJA::KernelPolicy<
     RAJA::statement::For<0, RAJA::tbb_for_exec,
       RAJA::statement::For<1, RAJA::seq_exec,
-        RAJA::statement::For<2, RAJA::loop_exec,
+        RAJA::statement::For<2, RAJA::seq_exec,
           RAJA::statement::Lambda<0, RAJA::Segs<0, 1, 2>>
         >
       >
