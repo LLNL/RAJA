@@ -74,7 +74,8 @@ lambda expression as (kernel body) in a non-tiled version above.
           in the space tuple passed to the ``RAJA::kernel`` method.
 
 
-The ``RAJA::launch`` API also supports loop tiling through specilized
+The ``RAJA::launch`` API also supports loop tiling through specialized
+
 methods. The launch version of the code above is ::
 
   using launch_t = RAJA::LaunchPolicy<RAJA::seq_launch>;
