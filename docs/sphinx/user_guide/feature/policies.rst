@@ -60,7 +60,7 @@ apply during code compilation.
  loop_exec                              forall,       Allow the compiler to
                                         kernel (For), generate any optimizations
                                         scan,         that its heuristics deem
-                                        sort          beneficial according;
+                                        sort          beneficial;
                                                       i.e., no loop decorations
                                                       (pragmas or intrinsics) in
                                                       RAJA implementation.
