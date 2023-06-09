@@ -359,7 +359,7 @@ Loops are then assigned to either teams or threads based on the GPU execution
 policy. Under the CUDA/HIP nomenclature, teams correspond to blocks while,
 in SYCL, nomenclature teams correspond to workgroups.
 
-In a host execution environment teams and thread parameters in the
+In a host execution environment, team and thread parameters in the
 ``RAJA::LaunchParams`` struct have no effect in execution and may be
 omitted if only running on the host.
 
