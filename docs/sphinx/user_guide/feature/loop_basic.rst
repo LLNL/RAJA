@@ -345,7 +345,7 @@ the same team. The ``RAJA::launch`` interface has three main concepts:
     kernel execution.
 
   * ``RAJA::LaunchParams`` type. This type takes a number of teams, threads
-    per team, and optionally size of dynamic shared memory in bytes.
+    per team, and optionally the size of dynamic shared memory in bytes.
 
   * ``RAJA::loop`` template. These are used to define hierarchical
     parallel execution of a kernel. Operations within a loop are mapped to
