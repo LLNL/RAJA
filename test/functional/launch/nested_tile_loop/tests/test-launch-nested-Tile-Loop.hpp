@@ -25,17 +25,17 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
   constexpr int blocks_z = 6;
 
   //Add one to we check the bounds checking capability
-  RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, threads_x*RAJA::stripIndexType(M) + 1);
-  RAJA::TypedRangeSegment<INDEX_TYPE> r2(0, threads_y*RAJA::stripIndexType(M) + 1);
-  RAJA::TypedRangeSegment<INDEX_TYPE> r3(0, threads_z*RAJA::stripIndexType(M) + 1);
+  RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, threads_x*M + 1);
+  RAJA::TypedRangeSegment<INDEX_TYPE> r2(0, threads_y*M + 1);
+  RAJA::TypedRangeSegment<INDEX_TYPE> r3(0, threads_z*M + 1);
 
   INDEX_TYPE N1 = static_cast<INDEX_TYPE>(r1.end() - r1.begin());
   INDEX_TYPE N2 = static_cast<INDEX_TYPE>(r2.end() - r2.begin());
   INDEX_TYPE N3 = static_cast<INDEX_TYPE>(r3.end() - r3.begin());
 
-  INDEX_TYPE N = static_cast<INDEX_TYPE>(RAJA::stripIndexType(N1) *
-                                         RAJA::stripIndexType(N2) *
-                                         RAJA::stripIndexType(N3));
+  INDEX_TYPE N = static_cast<INDEX_TYPE>(N1 *
+                                         N2 *
+                                         N3);
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
   INDEX_TYPE* working_array;

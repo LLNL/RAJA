@@ -16,13 +16,13 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename LAUNCH_POLICY,
 void LaunchNestedLoopTestImpl(INDEX_TYPE M)
 {
 
-  RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, 2*RAJA::stripIndexType(M));
-  RAJA::TypedRangeSegment<INDEX_TYPE> r2(0, 3*RAJA::stripIndexType(M));
-  RAJA::TypedRangeSegment<INDEX_TYPE> r3(0, 4*RAJA::stripIndexType(M));
+  RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, 2*M);
+  RAJA::TypedRangeSegment<INDEX_TYPE> r2(0, 3*M);
+  RAJA::TypedRangeSegment<INDEX_TYPE> r3(0, 4*M);
 
-  RAJA::TypedRangeSegment<INDEX_TYPE> r4(0, 8*RAJA::stripIndexType(M));
-  RAJA::TypedRangeSegment<INDEX_TYPE> r5(0, 2*RAJA::stripIndexType(M));
-  RAJA::TypedRangeSegment<INDEX_TYPE> r6(0, 3*RAJA::stripIndexType(M));
+  RAJA::TypedRangeSegment<INDEX_TYPE> r4(0, 8*M);
+  RAJA::TypedRangeSegment<INDEX_TYPE> r5(0, 2*M);
+  RAJA::TypedRangeSegment<INDEX_TYPE> r6(0, 3*M);
 
   INDEX_TYPE N1 = static_cast<INDEX_TYPE>(r1.end() - r1.begin());
   INDEX_TYPE N2 = static_cast<INDEX_TYPE>(r2.end() - r2.begin());
@@ -33,12 +33,12 @@ void LaunchNestedLoopTestImpl(INDEX_TYPE M)
   INDEX_TYPE N6 = static_cast<INDEX_TYPE>(r6.end() - r6.begin());
 
 
-  INDEX_TYPE N = static_cast<INDEX_TYPE>(RAJA::stripIndexType(N1) *
-                                         RAJA::stripIndexType(N2) *
-                                         RAJA::stripIndexType(N3) *
-                                         RAJA::stripIndexType(N4) *
-                                         RAJA::stripIndexType(N5) *
-                                         RAJA::stripIndexType(N6));
+  INDEX_TYPE N = static_cast<INDEX_TYPE>(N1 *
+                                         N2 *
+                                         N3 *
+                                         N4 *
+                                         N5 *
+                                         N6);
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
   INDEX_TYPE* working_array;

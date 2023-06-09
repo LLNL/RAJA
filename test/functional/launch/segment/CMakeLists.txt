@@ -8,8 +8,6 @@
 #
 # List of segment types for generating test files.
 #
-#  TODO: Support list segments with RAJA Launch
-#
 set(SEGTYPES ListSegment RangeSegment RangeStrideSegment)
 
 
