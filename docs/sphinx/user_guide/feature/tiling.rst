@@ -97,7 +97,8 @@ methods. The launch version of the code above is ::
       });  
   });
 
-In the example above the ``RAJA::tile`` method is used to generate a tile from the larger iteration space.
+In the example above the ``RAJA::tile`` method is used to generate a tile in the larger iteration space.
+
 This approach requires source code changes if the developer wanted to remove tiling, while RAJA kernel enables
 switching between tiling and non-tiling via execution policies and recompilation. Tile size in ``RAJA::launch``
 can be be selected dynamically and tiles are created on the device.
