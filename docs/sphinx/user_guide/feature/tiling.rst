@@ -81,14 +81,14 @@ methods. The launch version of the code above is ::
   using launch_t = RAJA::LaunchPolicy<RAJA::seq_launch>;
   using loop_t   = RAJA::LoopPolicy<RAJA::loop_exec>;
 
-  RAJA::launch<launch_t>
-    (RAJA::LaunchParams(), RAJA_HOST_DEVICE(RAJA::launchContext ctx) {
+  RAJA::launch<launch_t>(
+    RAJA::LaunchParams(), RAJA_HOST_DEVICE(RAJA::launchContext ctx) {
 
-     RAJA::tile<loop_t>
-       (ctx, tile_size, RAJA::TypedRangeSegment<int>(0, 10), [&] (RAJA::TypedRangeSegment<int> const &tile) {
+     RAJA::tile<loop_t>(
+       ctx, tile_size, RAJA::TypedRangeSegment<int>(0, 10), [&] (RAJA::TypedRangeSegment<int> const &tile) {
 
-          RAJA::loop<loop_t>
-            (ctx, tile, [&] (int i) {
+          RAJA::loop<loop_t>(
+            ctx, tile, [&] (int i) {
 
               // kernel body using index 'i'
 
@@ -156,14 +156,14 @@ which has a second argument on the lambda for the index. We illustrate usage bel
   using launch_t = RAJA::LaunchPolicy<RAJA::seq_launch>;
   using loop_t   = RAJA::LoopPolicy<RAJA::loop_exec>;
 
-  RAJA::launch<launch_t>
-    (RAJA::LaunchParams(), RAJA_HOST_DEVICE(RAJA::launchContext ctx) {
+  RAJA::launch<launch_t>(
+    RAJA::LaunchParams(), RAJA_HOST_DEVICE(RAJA::launchContext ctx) {
 
-      RAJA::tile_tcount<loop_t>
-        (ctx, tile_size, RAJA::TypedRangeSegment<int>(0, 10), [&] (RAJA::TypedRangeSegment<int> const &tile, int t) {
+      RAJA::tile_tcount<loop_t>(
+        ctx, tile_size, RAJA::TypedRangeSegment<int>(0, 10), [&] (RAJA::TypedRangeSegment<int> const &tile, int t) {
 
-          RAJA::loop_icount<loop_t>
-            (ctx, tile, [&] (int idx, int i) {
+          RAJA::loop_icount<loop_t>(
+            ctx, tile, [&] (int idx, int i) {
 
               // idx - global index
               // t - tile number
