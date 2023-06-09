@@ -354,7 +354,7 @@ the same team. The ``RAJA::launch`` interface has three main concepts:
 
 Team shared memory can be allocated by using the ``RAJA_TEAM_SHARED`` macro on
 statically sized arrays or via dynamic allocation in the ``RAJA::LaunchParams``
-method. Team shared memory enables threads in a given team shared access to a data buffer.
+method. Team shared memory enables threads in a given team to have shared access to a shared memory buffer.
 Loops are then assigned to either teams or threads based on the GPU execution
 policy. Under the CUDA/HIP nomenclature teams correspond to blocks while
 in SYCL nomenclature teams correspond to workgroups.
