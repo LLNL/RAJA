@@ -316,8 +316,6 @@ int hip_max_blocks(int block_size)
   int max_blocks = data.multiProcessorCount *
                   (data.maxThreadsPerMultiProcessor / block_size);
 
-  // printf("MAX_BLOCKS=%d\n", max_blocks);
-
   return max_blocks;
 }
 

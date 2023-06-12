@@ -315,8 +315,6 @@ size_t cuda_max_blocks(size_t block_size)
   size_t max_blocks = data.multiProcessorCount *
                   (data.maxThreadsPerMultiProcessor / block_size);
 
-  // printf("MAX_BLOCKS=%d\n", max_blocks);
-
   return max_blocks;
 }
 
