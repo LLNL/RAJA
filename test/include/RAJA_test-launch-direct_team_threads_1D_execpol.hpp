@@ -19,8 +19,8 @@
 using seq_policies =
   camp::list<
              RAJA::LaunchPolicy<RAJA::seq_launch_t>,
-             RAJA::LoopPolicy<RAJA::loop_exec>,
-             RAJA::LoopPolicy<RAJA::loop_exec>
+             RAJA::LoopPolicy<RAJA::seq_exec>,
+             RAJA::LoopPolicy<RAJA::seq_exec>
             >;
 
 using Sequential_launch_policies =
@@ -33,7 +33,7 @@ using omp_policies =
   camp::list<
              RAJA::LaunchPolicy<RAJA::omp_launch_t>,
              RAJA::LoopPolicy<RAJA::omp_for_exec>,
-             RAJA::LoopPolicy<RAJA::loop_exec>
+             RAJA::LoopPolicy<RAJA::seq_exec>
             >;
 
 using OpenMP_launch_policies = camp::list<omp_policies>;
