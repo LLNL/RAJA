@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_LAUNCH_NESTED_TILE_DIRECT_HPP__
-#define __TEST_LAUNCH_NESTED_TILE_DIRECT_HPP__
+#ifndef __TEST_LAUNCH_NESTED_TILE_ICOUNT_DIRECT_HPP__
+#define __TEST_LAUNCH_NESTED_TILE_ICOUNT_DIRECT_HPP__
 
 #include <numeric>
 
@@ -57,38 +57,47 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
     std::iota(test_ttile_array, test_ttile_array + RAJA::stripIndexType(N), 0);
     std::iota(test_iloop_array, test_iloop_array + RAJA::stripIndexType(N), 0);
 
-    RAJA::launch<LAUNCH_POLICY>
-      (RAJA::LaunchParams(RAJA::Teams(blocks_x), RAJA::Threads(threads_x)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+    RAJA::launch<LAUNCH_POLICY>(
+      RAJA::LaunchParams(RAJA::Teams(blocks_x), RAJA::Threads(threads_x)), [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-        RAJA::tile_tcount<TEAM_X_POLICY>(ctx, threads_x, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile, INDEX_TYPE bx) {
-            RAJA::loop_icount<THREAD_X_POLICY>(ctx, x_tile, [&](INDEX_TYPE tx, INDEX_TYPE ix) {
+        RAJA::tile_tcount<TEAM_X_POLICY>(
+          ctx, threads_x, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile, INDEX_TYPE bx) {
+            RAJA::loop_icount<THREAD_X_POLICY>(
+              ctx, x_tile, [&](INDEX_TYPE tx, INDEX_TYPE ix) {
 
                 working_ttile_array[tx] = bx;
                 working_iloop_array[tx] = ix;
 
-              });
-          });
-    });
+              }
+            );
+          }
+        );
+      }
+    );
+
   } else { // zero-length segment
 
     memset(static_cast<void*>(test_ttile_array), 0, sizeof(INDEX_TYPE) * data_len);
 
     working_res.memcpy(working_ttile_array, test_ttile_array, sizeof(INDEX_TYPE) * data_len);
 
-    RAJA::launch<LAUNCH_POLICY>
-      (RAJA::LaunchParams(RAJA::Teams(blocks_x), RAJA::Threads(blocks_x)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+    RAJA::launch<LAUNCH_POLICY>(
+      RAJA::LaunchParams(RAJA::Teams(blocks_x), RAJA::Threads(blocks_x)), [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-        RAJA::tile_tcount<TEAM_X_POLICY>(ctx, threads_x, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile, INDEX_TYPE RAJA_UNUSED_ARG(bx)) {
-            RAJA::loop_icount<THREAD_X_POLICY>(ctx, x_tile, [&](INDEX_TYPE RAJA_UNUSED_ARG(tx), INDEX_TYPE RAJA_UNUSED_ARG (ix)) {
+        RAJA::tile_tcount<TEAM_X_POLICY>(
+          ctx, threads_x, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile, INDEX_TYPE RAJA_UNUSED_ARG(bx)) {
+            RAJA::loop_icount<THREAD_X_POLICY>(
+              ctx, x_tile, [&](INDEX_TYPE RAJA_UNUSED_ARG(tx), INDEX_TYPE RAJA_UNUSED_ARG (ix)) {
 
                 working_ttile_array[0]++;
                 working_iloop_array[0]++;
 
-              });
-          });
-      });
+              }
+            );
+          }
+        );
+      }
+    );
   }
 
   working_res.memcpy(check_ttile_array, working_ttile_array, sizeof(INDEX_TYPE) * data_len);
