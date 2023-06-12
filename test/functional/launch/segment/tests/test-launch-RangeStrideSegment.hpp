@@ -50,43 +50,45 @@ void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
       idx += stride;
     }
 
-    RAJA::launch<LAUNCH_POLICY>
-      (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+    RAJA::launch<LAUNCH_POLICY>(
+      RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)), [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-        RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
+        RAJA::loop<GLOBAL_THREAD_POICY>(
+          ctx, r1, [&](INDEX_TYPE idx) {
             working_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
-          });
+          }
+        );
 
-      });
+      }
+    );
 
   } else { // zero-length segment
 
-    RAJA::launch<LAUNCH_POLICY>
-      (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+    RAJA::launch<LAUNCH_POLICY>(
+      RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)), [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-        RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
-            working_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
-            (void) idx;
+        RAJA::loop<GLOBAL_THREAD_POICY>(
+          ctx, r1, [&](INDEX_TYPE RAJA_UNUSED_ARG(idx)) {
             working_array[0]++;
-          });
+          }
+        );
 
-      });
+      }
+    );
   }
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
 
   if (RAJA::stripIndexType(N) > 0) {
-    
+
     for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
       ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
     }
-    
+
   } else {
-    
+
     ASSERT_EQ(test_array[0], check_array[0]);
-    
+
   }
 
   deallocateForallTestData<INDEX_TYPE>(working_res,
