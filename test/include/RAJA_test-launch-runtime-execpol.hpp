@@ -9,8 +9,8 @@
 // Execution policy lists used throughout teams tests
 //
 
-#ifndef __RAJA_TEST_TEAMS_RUNTIME_EXECPOL_HPP__
-#define __RAJA_TEST_TEAMS_RUNTIME_EXECPOL_HPP__
+#ifndef __RAJA_test_launch_runtime_execpol_HPP__
+#define __RAJA_test_launch_runtime_execpol_HPP__
 
 #include "RAJA/RAJA.hpp"
 #include "camp/list.hpp"
@@ -52,7 +52,9 @@ using seq_sycl_policies = camp::list<
 using Sequential_launch_policies = camp::list<
          seq_sycl_policies
          >;
+
 #else
+
 using Sequential_launch_policies = camp::list<
         camp::list<
          RAJA::LaunchPolicy<RAJA::seq_launch_t>,
@@ -107,6 +109,7 @@ using OpenMP_launch_policies = camp::list<
          >;
 
 #else
+
 using OpenMP_launch_policies = camp::list<
         camp::list<
          RAJA::LaunchPolicy<RAJA::omp_launch_t>,
@@ -146,4 +149,4 @@ using Sycl_launch_policies = camp::list<
 #endif // RAJA_ENABLE_SYCL
 
 
-#endif  // __RAJA_test_teams_runtime_execpol_HPP__
+#endif  // __RAJA_test_launch_runtime_execpol_HPP__
