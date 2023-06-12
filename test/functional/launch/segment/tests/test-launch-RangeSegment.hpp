@@ -42,14 +42,17 @@ void LaunchRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
     std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
 
-    RAJA::launch<LAUNCH_POLICY>
-      (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
+    RAJA::launch<LAUNCH_POLICY>(
+      RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-        RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
+        RAJA::loop<GLOBAL_THREAD_POICY>(
+          ctx, r1, [&](INDEX_TYPE idx) {
             working_array[RAJA::stripIndexType(idx - rbegin)] = idx;
-          });
-    });
+          }
+        );
+      }
+    );
 
   } else { // zero-length segment
 
@@ -57,15 +60,16 @@ void LaunchRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
     working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
-    RAJA::launch<LAUNCH_POLICY>
-      (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+    RAJA::launch<LAUNCH_POLICY>(
+      RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),  [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-        RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
-            (void) idx;
+        RAJA::loop<GLOBAL_THREAD_POICY>(
+          ctx, r1, [&](INDEX_TYPE RAJA_UNUSED_ARG(idx)) {
             working_array[0]++;
-        });
-    });
+          }
+        );
+      }
+    );
 
   }
 
