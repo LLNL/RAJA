@@ -89,6 +89,7 @@ void LaunchNestedLoopTestImpl(INDEX_TYPE M)
 
 
                                 Aview(bz, by, bx, tz, ty, tx) = static_cast<INDEX_TYPE>(idx);
+                                
                               });
                           });
                       });
@@ -107,23 +108,16 @@ void LaunchNestedLoopTestImpl(INDEX_TYPE M)
       (RAJA::LaunchParams(RAJA::Teams(blocks_x, blocks_y, blocks_z), RAJA::Threads(blocks_x, blocks_y ,blocks_z)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-        RAJA::loop<TEAM_Z_POLICY>(ctx, r3, [&](INDEX_TYPE bz) {
-            RAJA::loop<TEAM_Y_POLICY>(ctx, r2, [&](INDEX_TYPE by) {
-                RAJA::loop<TEAM_X_POLICY>(ctx, r1, [&](INDEX_TYPE bx) {
+        RAJA::loop<TEAM_Z_POLICY>(ctx, r3, [&](INDEX_TYPE RAJA_UNUSED_ARG(bz)) {
+            RAJA::loop<TEAM_Y_POLICY>(ctx, r2, [&](INDEX_TYPE RAJA_UNUSED_ARG(by)) {
+                RAJA::loop<TEAM_X_POLICY>(ctx, r1, [&](INDEX_TYPE RAJA_UNUSED_ARG(bx)) {
 
-                    RAJA::loop<THREAD_Z_POLICY>(ctx, r3, [&](INDEX_TYPE tz) {
-                        RAJA::loop<THREAD_Y_POLICY>(ctx, r2, [&](INDEX_TYPE ty) {
-                            RAJA::loop<THREAD_X_POLICY>(ctx, r1, [&](INDEX_TYPE tx) {
-
-                                (void) tx;
-                                (void) ty;
-                                (void) tz;
-
-                                (void) bx;
-                                (void) by;
-                                (void) bz;
+                    RAJA::loop<THREAD_Z_POLICY>(ctx, r3, [&](INDEX_TYPE RAJA_UNUSED_ARG(tz)) {
+                        RAJA::loop<THREAD_Y_POLICY>(ctx, r2, [&](INDEX_TYPE RAJA_UNUSED_ARG(ty)) {
+                            RAJA::loop<THREAD_X_POLICY>(ctx, r1, [&](INDEX_TYPE RAJA_UNUSED_ARG(tx) ) {
 
                                 working_array[0]++;
+                                
                               });
                           });
                       });
@@ -137,11 +131,15 @@ void LaunchNestedLoopTestImpl(INDEX_TYPE M)
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
 
   if (RAJA::stripIndexType(N) > 0) {
+
     for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
       ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
     }
-  }else{
+
+  } else {
+
     ASSERT_EQ(test_array[0], check_array[0]);
+
   }
 
   deallocateForallTestData<INDEX_TYPE>(working_res,

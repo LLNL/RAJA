@@ -102,7 +102,7 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
     for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
       ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
     }
-  }else {
+  } else {
     ASSERT_EQ(test_array[0], check_array[0]);
   }
 

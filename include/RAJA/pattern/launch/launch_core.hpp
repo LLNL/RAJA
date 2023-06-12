@@ -311,7 +311,7 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
   ExecPlace place;
   if(res.get_platform() == RAJA::Platform::host) {
     place = RAJA::ExecPlace::HOST;
-  }else{
+  } else {
     place = RAJA::ExecPlace::DEVICE;
   }
 

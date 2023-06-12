@@ -80,12 +80,8 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
       (RAJA::LaunchParams(RAJA::Teams(blocks_x), RAJA::Threads(blocks_x)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-        RAJA::tile_tcount<TEAM_X_POLICY>(ctx, threads_x, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile, INDEX_TYPE bx) {
-            RAJA::loop_icount<THREAD_X_POLICY>(ctx, x_tile, [&](INDEX_TYPE tx, INDEX_TYPE ix) {
-
-                (void) tx;
-                (void) ix;
-                (void) bx;
+        RAJA::tile_tcount<TEAM_X_POLICY>(ctx, threads_x, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile, INDEX_TYPE RAJA_UNUSED_ARG(bx)) {
+            RAJA::loop_icount<THREAD_X_POLICY>(ctx, x_tile, [&](INDEX_TYPE RAJA_UNUSED_ARG(tx), INDEX_TYPE RAJA_UNUSED_ARG (ix)) {
 
                 working_ttile_array[0]++;
                 working_iloop_array[0]++;
@@ -99,6 +95,7 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
   working_res.memcpy(check_iloop_array, working_iloop_array, sizeof(INDEX_TYPE) * data_len);
 
   if (RAJA::stripIndexType(N) > 0) {
+
     INDEX_TYPE idx = 0;
     for (INDEX_TYPE bx = INDEX_TYPE(0); bx < no_tiles; ++bx) {
       for (INDEX_TYPE tx = INDEX_TYPE(0); tx < threads_x; ++tx) {
@@ -111,9 +108,12 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
         idx++;
       }
     }
-  }else{
+    
+  } else {
+    
     ASSERT_EQ(check_ttile_array[0], check_ttile_array[0]);
     ASSERT_EQ(check_iloop_array[0], check_iloop_array[0]);
+    
   }
 
   deallocateForallTestData<INDEX_TYPE>(working_res,
