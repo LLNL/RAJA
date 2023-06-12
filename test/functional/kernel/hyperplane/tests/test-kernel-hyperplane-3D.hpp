@@ -20,9 +20,24 @@ KernelHyperplane3DTestImpl(const int RAJA_UNUSED_ARG(groups), const int RAJA_UNU
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POLICY>
 typename std::enable_if<std::is_signed<RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type
-KernelHyperplane3DTestImpl(const int groups, const int idim, const int jdim, const int kdim)
+KernelHyperplane3DTestImpl(const int groups, const int idimin, const int jdimin, const int kdimin)
 {
   // This test traverses "groups" number of 3D arrays, and modifies values in a 2D hyperplane manner.
+
+  int idim, jdim, kdim;
+  if ( std::is_same<DATA_TYPE, float>::value )
+  {
+    // Restrict to a small data size for better float precision.
+    idim = 5;
+    jdim = 5;
+    kdim = 5;
+  }
+  else
+  {
+    idim = idimin;
+    jdim = jdimin;
+    kdim = kdimin;
+  }
 
   camp::resources::Resource work_res{WORKING_RES::get_default()};
 
