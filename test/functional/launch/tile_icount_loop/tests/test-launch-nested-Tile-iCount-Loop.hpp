@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_LAUNCH_NESTED_TILE_DIRECT_HPP__
-#define __TEST_LAUNCH_NESTED_TILE_DIRECT_HPP__
+#ifndef __TEST_LAUNCH_NESTED_TILE_ICOUNT_LOOP_hpp__
+#define __TEST_LAUNCH_NESTED_TILE_ICOUNT_LOOP_hpp__
 
 #include <numeric>
 
@@ -83,12 +83,8 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
       (RAJA::LaunchParams(RAJA::Teams(blocks_x), RAJA::Threads(blocks_x)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-        RAJA::tile_tcount<TEAM_X_POLICY>(ctx, tile_size, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile, INDEX_TYPE bx) {
-            RAJA::loop_icount<THREAD_X_POLICY>(ctx, x_tile, [&](INDEX_TYPE tx, INDEX_TYPE ix) {
-
-                (void) tx;
-                (void) ix;
-                (void) bx;
+        RAJA::tile_tcount<TEAM_X_POLICY>(ctx, tile_size, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile, INDEX_TYPE RAJA_UNUSED_ARG(bx)) {
+            RAJA::loop_icount<THREAD_X_POLICY>(ctx, x_tile, [&](INDEX_TYPE RAJA_UNUSED_ARG(tx), INDEX_TYPE RAJA_UNUSED_ARG(ix)) {
 
                 working_ttile_array[0]++;
                 working_iloop_array[0]++;
