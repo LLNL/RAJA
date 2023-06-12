@@ -9,8 +9,8 @@
 // Execution policy lists used throughout launch tests
 //
 
-#ifndef __RAJA_test_launch_execpol_HPP__
-#define __RAJA_test_launch_execpol_HPP__
+#ifndef __RAJA_TEST_LAUNCH_EXECPOL_HPP__
+#define __RAJA_TEST_LAUNCH_EXECPOL_HPP__
 
 #include "RAJA/RAJA.hpp"
 #include "camp/list.hpp"
@@ -76,4 +76,4 @@ using Sycl_launch_policies = camp::list<
 #endif // RAJA_ENABLE_SYCL
 
 
-#endif  // __RAJA_test_launch_execpol_HPP__
+#endif  // __RAJA_TEST_LAUNCH_EXECPOL_HPP__
