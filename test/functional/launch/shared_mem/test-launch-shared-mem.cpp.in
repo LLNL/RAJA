@@ -13,7 +13,7 @@
 #include "RAJA_test-index-types.hpp"
 
 #include "RAJA_test-forall-data.hpp"
-#include "RAJA_test-launch-direct_teams_threads_1D_execpol.hpp"
+#include "RAJA_test-launch-direct-teams-threads-1D-execpol.hpp"
 
 //
 // Header for tests in ./tests directory
