@@ -10,6 +10,9 @@
 
 #include<RAJA/RAJA.hpp>
 
+RAJA_INDEX_VALUE( TX, "TX" );
+RAJA_INDEX_VALUE( TY, "TY" );
+
 template <typename MATRIX_TYPE>
 void ET_MatrixMatrixMultiplyAddImpl()
 {
@@ -50,10 +53,10 @@ void ET_MatrixMatrixMultiplyAddImpl()
   // alloc data3 - The result matrix
 
   std::vector<element_t> data3_vec(N*N);
-  RAJA::View<element_t, RAJA::Layout<2>> data3_h(data3_vec.data(),  N, N);
+  RAJA::TypedView<element_t, RAJA::Layout<2>, TX, TY> data3_h(data3_vec.data(),  N, N);
 
   element_t *data3_ptr = tensor_malloc<policy_t>(data3_vec);
-  RAJA::View<element_t, RAJA::Layout<2>> data3_d(data3_ptr,  N, N);
+  RAJA::TypedView<element_t, RAJA::Layout<2>, TX, TY> data3_d(data3_ptr,  N, N);
 
 
 
