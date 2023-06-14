@@ -439,6 +439,28 @@ namespace internal
       return type(stripIndexType(*vec_arg), vec_arg.size());
     }
   };
+
+  /**
+   * Specialization where expected type is wrapped in a StaticTensorIndex type
+   *
+   * In this case, there is no StaticTensorIndex to unpack, just strip any strongly
+   * typed indices.
+   */
+  template<typename Expected, typename Arg, typename VectorType, camp::idx_t DIM, Arg BEGIN, strip_index_type_t<Arg> LENGTH>
+  struct MatchTypedViewArgHelper<Expected, RAJA::expt::StaticTensorIndex<RAJA::expt::StaticTensorIndexInner<Arg, VectorType, DIM, BEGIN, LENGTH>> >{
+
+    static_assert(std::is_convertible<strip_index_type_t<Arg>, strip_index_type_t<Expected>>::value,
+        "Argument isn't compatible");
+
+    using arg_type = strip_index_type_t<Arg>;
+
+    using type = RAJA::expt::StaticTensorIndex<RAJA::expt::StaticTensorIndexInner<arg_type, VectorType, DIM, BEGIN, LENGTH>>;
+
+    static constexpr RAJA_HOST_DEVICE RAJA_INLINE
+    type extract(RAJA::expt::StaticTensorIndex<RAJA::expt::StaticTensorIndexInner<Arg, VectorType, DIM, BEGIN, LENGTH>> vec_arg){
+      return type();
+    }
+  };
 #endif
 
   } //namespace detail
