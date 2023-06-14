@@ -43,6 +43,14 @@ void ForallAtomicViewTestImpl( IdxType N )
 
   work_res.memcpy( source, hsource, sizeof(T) * N );
 
+#if defined(RAJA_ENABLE_CUDA)
+  cudaErrchk(cudaDeviceSynchronize());
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+  hipErrchk(hipDeviceSynchronize());
+#endif
+
   // use atomic add to reduce the array
   RAJA::View<T, RAJA::Layout<1>> vec_view(source, N);
 
