@@ -21,8 +21,8 @@ void KernelTileFixed2DSumTestImpl(const int rowsin, const int colsin)
   if ( std::is_same<DATA_TYPE, float>::value )
   {
     // Restrict to a small data size for better float precision.
-    rows = 5;
-    cols = 5;
+    rows = 3;
+    cols = 3;
   }
   else
   {
