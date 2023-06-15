@@ -10,6 +10,9 @@
 
 #include<RAJA/RAJA.hpp>
 
+RAJA_INDEX_VALUE( TX, "TX" );
+RAJA_INDEX_VALUE( TY, "TY" );
+
 template <typename MATRIX_TYPE>
 void ET_MatrixMatrixMultiplyAddImpl()
 {
@@ -32,28 +35,28 @@ void ET_MatrixMatrixMultiplyAddImpl()
   // alloc data1 - The left matrix
 
   std::vector<element_t> data1_vec(N*N);
-  RAJA::View<element_t, RAJA::StaticLayout<RAJA::PERM_IJ,N,N>> data1_h(data1_vec.data());
+  RAJA::TypedView<element_t, RAJA::StaticLayout<RAJA::PERM_IJ,N,N>, TX, TY> data1_h(data1_vec.data());
 
   element_t *data1_ptr = tensor_malloc<policy_t>(data1_vec);
-  RAJA::View<element_t, RAJA::StaticLayout<RAJA::PERM_IJ,N,N>> data1_d(data1_ptr);
+  RAJA::TypedView<element_t, RAJA::StaticLayout<RAJA::PERM_IJ,N,N>, TX, TY> data1_d(data1_ptr);
 
 
   // alloc data2 - The right matrix
 
   std::vector<element_t> data2_vec(N*N);
-  RAJA::View<element_t, RAJA::StaticLayout<RAJA::PERM_IJ,N,N>> data2_h(data2_vec.data());
+  RAJA::TypedView<element_t, RAJA::StaticLayout<RAJA::PERM_IJ,N,N>, TX, TY> data2_h(data2_vec.data());
 
   element_t *data2_ptr = tensor_malloc<policy_t>(data2_vec);
-  RAJA::View<element_t, RAJA::StaticLayout<RAJA::PERM_IJ,N,N>> data2_d(data2_ptr);
+  RAJA::TypedView<element_t, RAJA::StaticLayout<RAJA::PERM_IJ,N,N>, TX, TY> data2_d(data2_ptr);
 
 
   // alloc data3 - The result matrix
 
   std::vector<element_t> data3_vec(N*N);
-  RAJA::View<element_t, RAJA::Layout<2>> data3_h(data3_vec.data(),  N, N);
+  RAJA::TypedView<element_t, RAJA::Layout<2>, TX, TY> data3_h(data3_vec.data(),  N, N);
 
   element_t *data3_ptr = tensor_malloc<policy_t>(data3_vec);
-  RAJA::View<element_t, RAJA::Layout<2>> data3_d(data3_ptr,  N, N);
+  RAJA::TypedView<element_t, RAJA::Layout<2>, TX, TY> data3_d(data3_ptr,  N, N);
 
 
 
