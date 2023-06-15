@@ -10,7 +10,7 @@
 if [ "$1" == "" ]; then
   echo
   echo "You must pass a compiler version number to script. For example,"
-  echo "    toss4_icpc.sh 2021.6.0"
+  echo "    toss4_icpc.sh 2022.3"
   exit
 fi
 
@@ -58,6 +58,6 @@ echo
 echo "  Please note that you may need to add some intel openmp libraries to your"
 echo "  LD_LIBRARY_PATH to run with openmp."
 echo
-echo "    LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/tce/packages/intel/intel-2022.3/compiler/lib/intel64_lin"
+echo "    LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/tce/packages/intel/intel-${COMP_VER}/compiler/lib/intel64_lin"
 echo
 echo "***********************************************************************"
