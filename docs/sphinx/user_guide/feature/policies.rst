@@ -13,10 +13,10 @@ Policies
 ==================
 
 RAJA kernel execution methods take an execution policy type template parameter
-to specialize execution behavior. Typically, the policy indicates which 
-programming model back-end to use and other information about the execution 
-pattern, such as number of CUDA threads per thread block, whether execution is 
-synchronous or asynchronous, etc. This section describes RAJA policies for 
+to specialize execution behavior. Typically, the policy indicates which
+programming model back-end to use and other information about the execution
+pattern, such as number of CUDA threads per thread block, whether execution is
+synchronous or asynchronous, etc. This section describes RAJA policies for
 loop kernel execution, scans, sorts, reductions, atomics, etc. Please
 detailed examples in :ref:`tutorial-label` for a variety of use cases.
 
@@ -24,7 +24,7 @@ As RAJA functionality evolves, new policies are added and some may
 be redefined and to work in new ways.
 
 .. note:: * All RAJA policies are in the namespace ``RAJA``.
-          * All RAJA policies have a prefix indicating the back-end 
+          * All RAJA policies have a prefix indicating the back-end
             implementation that they use; e.g., ``omp_`` for OpenMP, ``cuda_``
             for CUDA, etc.
 
@@ -47,6 +47,8 @@ apply during code compilation.
  ====================================== ============= ==========================
  Sequential/SIMD Execution Policies     Works with    Brief description
  ====================================== ============= ==========================
+ seq_launch_t                           launch        Creates a sequential
+                                                      execution space.
  seq_exec                               forall,       Strictly sequential
                                         kernel (For), execution.
                                         scan,
@@ -55,10 +57,10 @@ apply during code compilation.
                                         kernel (For), SIMD instructions via
                                         scan          compiler hints in RAJA's
                                                       internal implementation.
- loop_exec                              forall,       Allow the compiler to 
+ loop_exec                              forall,       Allow the compiler to
                                         kernel (For), generate any optimizations
                                         scan,         that its heuristics deem
-                                        sort          beneficial according;
+                                        sort          beneficial;
                                                       i.e., no loop decorations
                                                       (pragmas or intrinsics) in
                                                       RAJA implementation.
@@ -71,65 +73,69 @@ OpenMP Parallel CPU Policies
 For the OpenMP CPU multithreading back-end, RAJA has policies that can be used
 by themselves to execute kernels. In particular, they create an OpenMP parallel
 region and execute a kernel within it. To distinguish these in this discussion,
-we refer to these as **full policies**. These policies are provided 
-to users for convenience in common use cases. 
+we refer to these as **full policies**. These policies are provided
+to users for convenience in common use cases.
 
-RAJA also provides other OpenMP policies, which we refer to as 
-**partial policies**, since they need to be used in combination with other 
-policies. Typically, they work by providing an *outer policy* and an 
-*inner policy* as a template parameter to the outer policy. These give users 
+RAJA also provides other OpenMP policies, which we refer to as
+**partial policies**, since they need to be used in combination with other
+policies. Typically, they work by providing an *outer policy* and an
+*inner policy* as a template parameter to the outer policy. These give users
 flexibility to create more complex execution patterns.
 
 
 .. note:: To control the number of threads used by OpenMP policies,
           set the value of the environment variable 'OMP_NUM_THREADS' (which is
           fixed for duration of run), or call the OpenMP routine
-          'omp_set_num_threads(nthreads)' in your application, which allows 
+          'omp_set_num_threads(nthreads)' in your application, which allows
           one to change the number of threads at run time.
 
 The full policies are described in the following table. Partial policies
 are described in other tables below.
 
- ========================================= ============= =======================
- OpenMP CPU Full Policies                  Works with    Brief description
- ========================================= ============= =======================
- omp_parallel_for_exec                     forall,       Same as applying 
-                                           kernel (For), 'omp parallel for' 
-                                           scan,         pragma
+ ========================================= ============== ======================
+ OpenMP CPU Full Policies                  Works with     Brief description
+ ========================================= ============== ======================
+ omp_parallel_for_exec                     forall,        Same as applying
+                                           kernel (For),  'omp parallel for'
+					   launch (loop), pragma
+                                           scan,
                                            sort
- omp_parallel_for_static_exec<ChunkSize>   forall,       Same as applying
-                                           kernel (For)  'omp parallel for
-                                                         schedule(static,
-                                                         ChunkSize)'
- omp_parallel_for_dynamic_exec<ChunkSize>  forall,       Same as applying
-                                           kernel (For)  'omp parallel for
-                                                         schedule(dynamic,
-                                                         ChunkSize)'
- omp_parallel_for_guided_exec<ChunkSize>   forall,       Same as applying
-                                           kernel (For)  'omp parallel for
-                                                         schedule(guided,
-                                                         ChunkSize)'
- omp_parallel_for_runtime_exec             forall,       Same as applying
-                                           kernel (For)  'omp parallel for
-                                                         schedule(runtime)'
- ========================================= ============= =======================
+ omp_parallel_for_static_exec<ChunkSize>   forall,        Same as applying
+                                           kernel (For)   'omp parallel for
+                                                          schedule(static,
+                                                          ChunkSize)'
+ omp_parallel_for_dynamic_exec<ChunkSize>  forall,        Same as applying
+                                           kernel (For)   'omp parallel for
+                                                          schedule(dynamic,
+                                                          ChunkSize)'
+ omp_parallel_for_guided_exec<ChunkSize>   forall,        Same as applying
+                                           kernel (For)   'omp parallel for
+                                                          schedule(guided,
+                                                          ChunkSize)'
+ omp_parallel_for_runtime_exec             forall,        Same as applying
+                                           kernel (For)   'omp parallel for
+                                                          schedule(runtime)'
+ ========================================= ============== ======================
 
 .. note:: For the OpenMP scheduling policies above that take a ``ChunkSize``
-          parameter, the chunk size is optional. If not provided, the 
+          parameter, the chunk size is optional. If not provided, the
           default chunk size that OpenMP applies will be used, which may
           be specific to the OpenMP implementation in use. For this case,
-          the RAJA policy syntax is 
-          ``omp_parallel_for_{static|dynamic|guided}_exec< >``, which will 
-          result in the OpenMP pragma 
-          ``omp parallel for schedule({static|dynamic|guided})`` being applied. 
+          the RAJA policy syntax is
+          ``omp_parallel_for_{static|dynamic|guided}_exec< >``, which will
+          result in the OpenMP pragma
+          ``omp parallel for schedule({static|dynamic|guided})`` being applied.
 
-RAJA provides an (outer) OpenMP CPU policy to create a parallel region in 
-which to execute a kernel. It requires an inner policy that defines how a 
+RAJA provides an (outer) OpenMP CPU policy to create a parallel region in
+which to execute a kernel. It requires an inner policy that defines how a
 kernel will execute in parallel inside the region.
 
  ====================================== ============= ==========================
  OpenMP CPU Outer Policies              Works with    Brief description
  ====================================== ============= ==========================
+ omp_launch_t                           launch        Creates an OpenMP parallel
+                                                      region. Same as applying
+						      'omp parallel pragma'
  omp_parallel_exec<InnerPolicy>         forall,       Creates OpenMP parallel
                                         kernel (For), region and requires an
                                         scan          **InnerPolicy**. Same as
@@ -138,16 +144,16 @@ kernel will execute in parallel inside the region.
  ====================================== ============= ==========================
 
 Finally, we summarize the inner policies that RAJA provides for OpenMP.
-These policies are passed to the RAJA ``omp_parallel_exec`` outer policy as 
+These policies are passed to the RAJA ``omp_parallel_exec`` outer policy as
 a template argument as described above.
 
  ====================================== ============= ==========================
  OpenMP CPU Inner Policies              Works with    Brief description
  ====================================== ============= ==========================
  omp_for_exec                           forall,       Parallel execution within
-                                        kernel (For), *existing parallel 
-                                        scan          region*; i.e., 
-                                                      apply 'omp for' pragma. 
+                                        kernel (For), existing parallel
+					launch (loop) region; i.e.,
+                                        scan          apply 'omp for' pragma.
  omp_for_static_exec<ChunkSize>         forall,       Same as applying
                                         kernel (For)  'omp for
                                                       schedule(static,
@@ -173,37 +179,37 @@ a template argument as described above.
                                                       indicated using ArgList
  ====================================== ============= ==========================
 
-.. important:: **RAJA only provides a nowait policy option for static 
-               scheduling** since that is the only schedule case that can be 
-               used with nowait and be correct in general when executing 
-               multiple loops in a single parallel region. Paraphrasing the 
+.. important:: **RAJA only provides a nowait policy option for static
+               scheduling** since that is the only schedule case that can be
+               used with nowait and be correct in general when executing
+               multiple loops in a single parallel region. Paraphrasing the
                OpenMP standard:
                *programs that depend on which thread executes a particular
                loop iteration under any circumstance other than static schedule
                are non-conforming.*
 
 .. note:: As in the RAJA full policies for OpenMP scheduling, the ``ChunkSize``
-          is optional. If not provided, the default chunk size that the OpenMP 
+          is optional. If not provided, the default chunk size that the OpenMP
           implementation applies will be used.
 
 .. note:: As noted above, RAJA inner OpenMP policies must only be used within an
-          **existing** parallel region to work properly. Embedding an inner 
-          policy inside the RAJA outer ``omp_parallel_exec`` will allow you to 
-          apply the OpenMP execution prescription specified by the policies to 
+          **existing** parallel region to work properly. Embedding an inner
+          policy inside the RAJA outer ``omp_parallel_exec`` will allow you to
+          apply the OpenMP execution prescription specified by the policies to
           a single kernel. To support use cases with multiple kernels inside an
-          OpenMP parallel region, RAJA provides a **region** construct that 
-          takes a template argument to specify the execution back-end. For 
+          OpenMP parallel region, RAJA provides a **region** construct that
+          takes a template argument to specify the execution back-end. For
           example::
 
             RAJA::region<RAJA::omp_parallel_region>([=]() {
 
-              RAJA::forall<RAJA::omp_for_nowait_static_exec< > >(segment, 
+              RAJA::forall<RAJA::omp_for_nowait_static_exec< > >(segment,
                 [=] (int idx) {
                   // do something at iterate 'idx'
                 }
               );
 
-              RAJA::forall<RAJA::omp_for_static_exec< > >(segment, 
+              RAJA::forall<RAJA::omp_for_static_exec< > >(segment,
                 [=] (int idx) {
                   // do something else at iterate 'idx'
                 }
@@ -213,22 +219,22 @@ a template argument as described above.
 
           Here, the ``RAJA::region<RAJA::omp_parallel_region>`` method call
           creates an OpenMP parallel region, which contains two ``RAJA::forall``
-          kernels. The first uses the ``RAJA::omp_for_nowait_static_exec< >`` 
-          policy, meaning that no thread synchronization is needed after the 
-          kernel. Thus, threads can start working on the second kernel while 
+          kernels. The first uses the ``RAJA::omp_for_nowait_static_exec< >``
+          policy, meaning that no thread synchronization is needed after the
+          kernel. Thus, threads can start working on the second kernel while
           others are still working on the first kernel. I general, this will
           be correct when the segments used in the two kernels are the same,
           each loop is data parallel, and static scheduling is applied to both
-          loops. The second kernel uses the ``RAJA::omp_for_static_exec`` 
-          policy, which means that all threads will complete before the kernel 
-          exits. In this example, this is not really needed since there is no 
-          more code to execute in the parallel region and there is an implicit 
+          loops. The second kernel uses the ``RAJA::omp_for_static_exec``
+          policy, which means that all threads will complete before the kernel
+          exits. In this example, this is not really needed since there is no
+          more code to execute in the parallel region and there is an implicit
           barrier at the end of it.
 
 Threading Building Block (TBB) Parallel CPU Policies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-RAJA provides a basic set of TBB execution policies for use with the 
+RAJA provides a basic set of TBB execution policies for use with the
 RAJA TBB back-end, which supports a subset of RAJA features.
 
  ====================================== ============= ==========================
@@ -265,77 +271,84 @@ RAJA TBB back-end, which supports a subset of RAJA features.
 GPU Policies for CUDA and HIP
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-RAJA policies for GPU execution using CUDA or HIP are essentially identical. 
-The only difference is that CUDA policies have the prefix ``cuda_`` and HIP 
+RAJA policies for GPU execution using CUDA or HIP are essentially identical.
+The only difference is that CUDA policies have the prefix ``cuda_`` and HIP
 policies have the prefix ``hip_``.
 
- ======================================== ============= ========================
+ ======================================== ============= =======================================
  CUDA/HIP Execution Policies              Works with    Brief description
- ======================================== ============= ========================
+ ======================================== ============= =======================================
  cuda/hip_exec<BLOCK_SIZE>                forall,       Execute loop iterations
                                           scan,         in a GPU kernel launched
                                           sort          with given thread-block
-                                                        size. Note that the 
+                                                        size. Note that the
                                                         thread-block size must
                                                         be provided, there is
                                                         no default provided.
+ cuda/hip_launch_t                        launch        Launches a device kernel,
+                                                        any code expressed within
+							the lambda is executed
+							on the device.
  cuda/hip_thread_x_direct                 kernel (For)  Map loop iterates
-                                                        directly to GPU threads
+                                          launch (loop) directly to GPU threads
                                                         in x-dimension, one
                                                         iterate per thread
                                                         (see note below about
                                                         limitations)
  cuda/hip_thread_y_direct                 kernel (For)  Same as above, but map
-                                                        to threads in y-dim
+                                          launch (loop) to threads in y-dim
  cuda/hip_thread_z_direct                 kernel (For)  Same as above, but map
-                                                        to threads in z-dim
- cuda/hip_thread_x_loop                   kernel (For)  Similar to 
-                                                        thread-x-direct
+                                          launch (loop) to threads in z-dim
+ cuda/hip_thread_x_loop                   kernel (For)  Similar to
+                                          launch (loop) thread-x-direct
                                                         policy, but use a
                                                         block-stride loop which
                                                         doesn't limit number of
                                                         loop iterates
  cuda/hip_thread_y_loop                   kernel (For)  Same as above, but for
-                                                        threads in y-dimension
+                                          launch (loop) threads in y-dimension
  cuda/hip_thread_z_loop                   kernel (For)  Same as above, but for
-                                                        threads in z-dimension
- cuda/hip_flatten_block_threads_{xyz}     Launch (Loop) Reshapes threads in a
+                                          launch (loop) threads in z-dimension
+ cuda/hip_flatten_block_threads_{xyz}     launch (loop) Reshapes threads in a
                                                         multi-dimensional thread
                                                         team into one-dimension,
                                                         accepts any permutation
                                                         of dimensions
                                                         (expt namespace)
  cuda/hip_block_x_direct                  kernel (For)  Map loop iterates
-                                                        directly to GPU thread
+                                          launch (loop) directly to GPU thread
                                                         blocks in x-dimension,
                                                         one iterate per block
  cuda/hip_block_y_direct                  kernel (For)  Same as above, but map
-                                                        to blocks in y-dimension
+                                          launch (loop) to blocks in y-dimension
  cuda/hip_block_z_direct                  kernel (For)  Same as above, but map
-                                                        to blocks in z-dimension
- cuda/hip_block_x_loop                    kernel (For)  Similar to 
-                                                        block-x-direct policy, 
-                                                        but use a grid-stride 
+                                          launch (loop) to blocks in z-dimension
+ cuda/hip_block_x_loop                    kernel (For)  Similar to
+                                          launch (loop) block-x-direct policy,
+                                                        but use a grid-stride
                                                         loop.
  cuda/hip_block_y_loop                    kernel (For)  Same as above, but use
-                                                        blocks in y-dimension
+                                          launch (loop) blocks in y-dimension
  cuda/hip_block_z_loop                    kernel (For)  Same as above, but use
-                                                        blocks in z-dimension
- cuda/hip_global_thread_x                 Launch (Loop) Creates a unique thread
-                                                        id for each thread on 
-                                                        x-dimension of the grid
-                                                        (expt namespace)
- cuda/hip_global_thread_y                 Launch (Loop) Same as above, but uses
-                                                        threads in y-dimension
-                                                        (expt namespace)
- cuda/hip_global_thread_z                 Launch (Loop) Same as above, but uses
-                                                        threads in z-dimension
-                                                        (expt namespace)
+                                          launch (loop) blocks in z-dimension
+ cuda/hip_global_thread_x                               Creates a unique thread
+                                                        id for each thread on
+                                                        x-dimension of the grid.
+							Same as computing
+							threadIdx.x + threadDim.x * blockIdx.x.
+ cuda/hip_global_thread_y                 launch (loop) Same as above, but uses
+                                                        threads in y-dimension.
+							Same as computing
+							threadIdx.y + threadDim.y * blockIdx.y.
+ cuda/hip_global_thread_z                 launch (loop) Same as above, but uses
+                                                        threads in z-dimension.
+							Same as computing
+							threadIdx.z + threadDim.z * blockIdx.z.
  cuda/hip_warp_direct                     kernel (For)  Map work to threads
                                                         in a warp directly.
                                                         Cannot be used in
                                                         conjunction with
-                                                        cuda/hip_thread_x_* 
+                                                        cuda/hip_thread_x_*
                                                         policies.
                                                         Multiple warps can be
                                                         created by using
@@ -346,7 +359,7 @@ policies have the prefix ``hip_``.
                                                         a warp-stride loop.
                                                         Cannot be used in
                                                         conjunction with
-                                                        cuda/hip_thread_x_* 
+                                                        cuda/hip_thread_x_*
                                                         policies.
                                                         Multiple warps can be
                                                         created by using
@@ -357,7 +370,7 @@ policies have the prefix ``hip_``.
                                                         warp using a bit mask.
                                                         Cannot be used in
                                                         conjunction with
-                                                        cuda/hip_thread_x_* 
+                                                        cuda/hip_thread_x_*
                                                         policies.
                                                         Multiple warps can
                                                         be created by using
@@ -365,11 +378,12 @@ policies have the prefix ``hip_``.
                                                         policies.
  cuda/hip_warp_masked_loop<BitMask<..>>   kernel (For)  Policy to map work to
                                                         threads in a warp using
-                                                        a bit mask and a 
+                                                        a bit mask and a
                                                         warp-stride loop. Cannot
-                                                        be used in conjunction 
+                                                        be used in conjunction
                                                         with cuda/hip_thread_x_*
-                                                        policies. Multiple warps                                                        can be created by using
+                                                        policies. Multiple warps
+							can be created by using
                                                         cuda/hip_thread_y/z_*
                                                         policies.
  cuda/hip_block_reduce                    kernel        Perform a reduction
@@ -378,7 +392,7 @@ policies have the prefix ``hip_``.
  cuda/_warp_reduce                        kernel        Perform a reduction
                                           (Reduce)      across a single GPU
                                                         thread warp.
- ======================================== ============= ========================
+ ======================================== ============= =======================================
 
 Several notable constraints apply to RAJA CUDA/HIP *thread-direct* policies.
 
@@ -415,77 +429,100 @@ Finally
 GPU Policies for SYCL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
- ======================================== ============= ========================
+ ======================================== ============= ==============================
  SYCL Execution Policies                  Works with    Brief description
- ======================================== ============= ========================
+ ======================================== ============= ==============================
  sycl_exec<WORK_GROUP_SIZE>               forall,       Execute loop iterations
                                                         in a GPU kernel launched
                                                         with given work group
                                                         size.
+ sycl_launch_t                            launch        Launches a sycl kernel,
+                                                        any code express within
+							the lambda is executed
+							on the device.
  sycl_global_0<WORK_GROUP_SIZE>           kernel (For)  Map loop iterates
                                                         directly to GPU global
                                                         ids in first
-                                                        dimension, one iterate 
+                                                        dimension, one iterate
                                                         per work item. Group
                                                         execution into work
-                                                        groups of given size. 
+                                                        groups of given size.
  sycl_global_1<WORK_GROUP_SIZE>           kernel (For)  Same as above, but map
                                                         to global ids in second
                                                         dim
  sycl_global_2<WORK_GROUP_SIZE>           kernel (For)  Same as above, but map
-                                                        to global ids in third 
+                                                        to global ids in third
                                                         dim
+ sycl_global_item_0                       launch (loop) Creates a unique thread
+                                                        id for each thread for
+                                                        dimension 0 of the grid.
+							Same as computing
+							itm.get_group(0) *
+							itm.get_local_range(0) +
+							itm.get_local_id(0).
+ sycl_global_item_1                       launch (loop) Same as above, but uses
+                                                        threads in dimension 1
+							Same as computing
+						        itm.get_group(1) +
+							itm.get_local_range(1) *
+							itm.get_local_id(1).
+ sycl_global_item_2                       launch (loop) Same as above, but uses
+                                                        threads in dimension 2
+							Same as computing
+						        itm.get_group(2) +
+							itm.get_local_range(2) *
+							itm.get_local_id(2).
  sycl_local_0_direct                      kernel (For)  Map loop iterates
-                                                        directly to GPU work
+                                          launch (loop) directly to GPU work
                                                         items in first
-                                                        dimension, one iterate 
-                                                        per work item (see note 
+                                                        dimension, one iterate
+                                                        per work item (see note
                                                         below about limitations)
  sycl_local_1_direct                      kernel (For)  Same as above, but map
-                                                        to work items in second
+                                          launch (loop) to work items in second
                                                         dim
  sycl_local_2_direct                      kernel (For)  Same as above, but map
-                                                        to work items in third 
+                                          launch (loop) to work items in third
                                                         dim
- sycl_local_0_loop                        kernel (For)  Similar to 
-                                                        local-1-direct policy, 
-                                                        but use a work 
+ sycl_local_0_loop                        kernel (For)  Similar to
+                                          launch (loop) local-1-direct policy,
+                                                        but use a work
                                                         group-stride loop which
                                                         doesn't limit number of
                                                         loop iterates
  sycl_local_1_loop                        kernel (For)  Same as above, but for
-                                                        work items in second 
+                                          launch (loop) work items in second
                                                         dimension
  sycl_local_2_loop                        kernel (For)  Same as above, but for
-                                                        work items in third 
+                                          launch (loop) work items in third
                                                         dimension
  sycl_group_0_direct                      kernel (For)  Map loop iterates
-                                                        directly to GPU group
-                                                        ids in first dimension, 
+                                          launch (loop) directly to GPU group
+                                                        ids in first dimension,
                                                         one iterate per group
  sycl_group_1_direct                      kernel (For)  Same as above, but map
-                                                        to groups in second 
+                                          launch (loop) to groups in second
                                                         dimension
  sycl_group_2_direct                      kernel (For)  Same as above, but map
-                                                        to groups in third 
+                                          launch (loop) to groups in third
                                                         dimension
- sycl_group_0_loop                        kernel (For)  Similar to 
-                                                        group-1-direct policy, 
-                                                        but use a group-stride 
+ sycl_group_0_loop                        kernel (For)  Similar to
+                                          launch (loop) group-1-direct policy,
+                                                        but use a group-stride
                                                         loop.
  sycl_group_1_loop                        kernel (For)  Same as above, but use
-                                                        groups in second 
+                                          launch (loop) groups in second
                                                         dimension
  sycl_group_2_loop                        kernel (For)  Same as above, but use
-                                                        groups in third 
+                                          launch (loop) groups in third
                                                         dimension
 
- ======================================== ============= ========================
+ ======================================== ============= ==============================
 
-OpenMP Target Offload Policies 
+OpenMP Target Offload Policies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-RAJA provides policies to use OpenMP to offload kernel execution to a GPU 
+RAJA provides policies to use OpenMP to offload kernel execution to a GPU
 device, for example. They are summarized in the following table.
 
  ====================================== ============= ==========================
@@ -520,10 +557,10 @@ RAJA IndexSet Execution Policies
 -----------------------------------------------------
 
 When an IndexSet iteration space is used in RAJA by passing an IndexSet
-to a ``RAJA::forall`` method, for example, an index set execution policy is 
-required. An index set execution policy is a **two-level policy**: an 'outer' 
-policy for iterating over segments in the index set, and an 'inner' policy 
-used to execute the iterations defined by each segment. An index set execution 
+to a ``RAJA::forall`` method, for example, an index set execution policy is
+required. An index set execution policy is a **two-level policy**: an 'outer'
+policy for iterating over segments in the index set, and an 'inner' policy
+used to execute the iterations defined by each segment. An index set execution
 policy type has the form::
 
   RAJA::ExecPolicy< segment_iteration_policy, segment_execution_policy >
@@ -556,8 +593,8 @@ Parallel Region Policies
 -------------------------
 
 Earlier, we discussed using the ``RAJA::region`` construct to
-execute multiple kernels in an OpenMP parallel region. To support source code 
-portability, RAJA provides a sequential region concept that can be used to 
+execute multiple kernels in an OpenMP parallel region. To support source code
+portability, RAJA provides a sequential region concept that can be used to
 surround code that uses execution back-ends other than OpenMP. For example::
 
   RAJA::region<RAJA::seq_region>([=]() {
@@ -574,7 +611,7 @@ surround code that uses execution back-ends other than OpenMP. For example::
 
 .. note:: The sequential region specialization is essentially a *pass through*
           operation. It is provided so that if you want to turn off OpenMP in
-          your code, for example, you can simply replace the region policy 
+          your code, for example, you can simply replace the region policy
           type and you do not have to change your algorithm source code.
 
 
@@ -615,8 +652,8 @@ cuda/hip_reduce         any CUDA/HIP  Parallel reduction in a CUDA/HIP kernel
                                       reduction value is finalized).
 cuda/hip_reduce_atomic  any CUDA/HIP  Same as above, but reduction may use CUDA
                         policy        atomic operations.
-sycl_reduce             any SYCL      Reduction in a SYCL kernel (device 
-                        policy        synchronization will occur when the 
+sycl_reduce             any SYCL      Reduction in a SYCL kernel (device
+                        policy        synchronization will occur when the
                                       reduction value is finalized).
 ======================= ============= ==========================================
 
@@ -644,17 +681,17 @@ Atomic Policy                 Loop Policies Brief description
 seq_atomic                    seq_exec,     Atomic operation performed in a
                               loop_exec     non-parallel (sequential) kernel.
 omp_atomic                    any OpenMP    Atomic operation in OpenM kernel.P
-                              policy        multithreading or target kernel; 
+                              policy        multithreading or target kernel;
                                             i.e., apply ``omp atomic`` pragma.
 cuda/hip/sycl_atomic          any           Atomic operation performed in a
                               CUDA/HIP/SYCL CUDA/HIP/SYCL kernel.
-                              policy        
+                              policy
 
 cuda/hip_atomic_explicit      any CUDA/HIP  Atomic operation performed in a CUDA/HIP
                               policy        kernel that may also be used in a host
                                             execution context. The atomic policy
                                             takes a host atomic policy template
-                                            argument. See additional explanation 
+                                            argument. See additional explanation
                                             and example below.
 builtin_atomic                seq_exec,     Compiler *builtin* atomic operation.
                               loop_exec,
@@ -664,7 +701,7 @@ auto_atomic                   seq_exec,     Atomic operation *compatible* with l
                               loop_exec,    execution policy. See example below.
                               any OpenMP    Can not be used inside cuda/hip
                               policy,       explicit atomic policies.
-                              any 
+                              any
                               CUDA/HIP/SYCL
                               policy
 ============================= ============= ========================================
@@ -743,19 +780,19 @@ of Statements that are composed in the order that they appear in the kernel
 policy to construct a kernel. A Statement may contain an enclosed StatmentList. Thus, a ``RAJA::KernelPolicy`` type is really just a StatementList.
 
 The main Statement types provided by RAJA are ``RAJA::statement::For`` and
-``RAJA::statement::Lambda``, that we discussed in 
-:ref:`loop_elements-kernel-label`. 
-A ``RAJA::statement::For<ArgID, ExecPolicy, Enclosed Satements>`` type 
+``RAJA::statement::Lambda``, that we discussed in
+:ref:`loop_elements-kernel-label`.
+A ``RAJA::statement::For<ArgID, ExecPolicy, Enclosed Satements>`` type
 indicates a for-loop structure. The ``ArgID`` parameter is an integral constant
-that identifies the position of the iteration space in the iteration space 
-tuple passed to the ``RAJA::kernel`` method to be used for the loop. The 
-``ExecPolicy`` is the RAJA execution policy to use on the loop, which is 
-similar to ``RAJA::forall`` usage. The ``EnclosedStatements`` type is a 
-nested template parameter that contains whatever is needed to execute the 
-kernel and which forms a valid StatementList. The 
+that identifies the position of the iteration space in the iteration space
+tuple passed to the ``RAJA::kernel`` method to be used for the loop. The
+``ExecPolicy`` is the RAJA execution policy to use on the loop, which is
+similar to ``RAJA::forall`` usage. The ``EnclosedStatements`` type is a
+nested template parameter that contains whatever is needed to execute the
+kernel and which forms a valid StatementList. The
 ``RAJA::statement::Lambda<LambdaID>``
-type invokes the lambda expression corresponding to its position 'LambdaID' 
-in the sequence of lambda expressions in the ``RAJA::kernel`` argument list. 
+type invokes the lambda expression corresponding to its position 'LambdaID'
+in the sequence of lambda expressions in the ``RAJA::kernel`` argument list.
 For example, a simple sequential for-loop::
 
   for (int i = 0; i < N; ++i) {
@@ -791,13 +828,13 @@ can be used with ``RAJA::kernel`` and ``RAJA::kernel_param``. More detailed
 explanation along with examples of how they are used can be found in
 the ``RAJA::kernel`` examples in :ref:`tutorial-label`.
 
-.. note:: All of the statement types described below are in the namespace 
+.. note:: All of the statement types described below are in the namespace
           ``RAJA::statement``. For brevity, we omit the namespaces in
           the discussion in this section.
 
-.. note::  ``RAJA::kernel_param`` functions similarly to ``RAJA::kernel`` 
-           except that the second argument is a *tuple of parameters* used 
-           in a kernel for local arrays, thread local variables, tiling 
+.. note::  ``RAJA::kernel_param`` functions similarly to ``RAJA::kernel``
+           except that the second argument is a *tuple of parameters* used
+           in a kernel for local arrays, thread local variables, tiling
            information, etc.
 
 Several RAJA statements can be specialized with auxilliary types, which are
@@ -813,12 +850,12 @@ The following list contains the most commonly used statement types.
 
 * ``Collapse< ExecPolicy, ArgList<...>, EnclosedStatements >`` collapses multiple perfectly nested loops specified by tuple iteration space indices in ``ArgList``, using the ``ExecPolicy`` execution policy, and places ``EnclosedStatements`` inside the collapsed loops which are executed for each iteration. **Note that this only works for CPU execution policies (e.g., sequential, OpenMP).** It may be available for CUDA in the future if such use cases arise.
 
-There is one statement specific to OpenMP kernels. 
+There is one statement specific to OpenMP kernels.
 
 * ``OmpSyncThreads`` applies the OpenMP ``#pragma omp barrier`` directive.
 
-Statement types that launch CUDA or HIP GPU kernels are listed next. They work 
-similarly for each back-end and their names are distinguished by the prefix 
+Statement types that launch CUDA or HIP GPU kernels are listed next. They work
+similarly for each back-end and their names are distinguished by the prefix
 ``Cuda`` or ``Hip``. For example, ``CudaKernel`` or ``HipKernel``.
 
 * ``Cuda/HipKernel< EnclosedStatements>`` launches ``EnclosedStatements`` as a GPU kernel; e.g., a loop nest where the iteration spaces of each loop level are associated with threads and/or thread blocks as described by the execution policies applied to them. This kernel launch is synchronous.
@@ -845,14 +882,14 @@ similarly for each back-end and their names are distinguished by the prefix
 
 * ``Cuda/HipSyncWarp`` invokes CUDA ``__syncwarp()`` barrier. Warp sync is not supported in HIP, so the HIP variant is a no-op.
 
-Statement types that launch SYCL kernels are listed next. 
+Statement types that launch SYCL kernels are listed next.
 
 * ``SyclKernel<EnclosedStatements>`` launches ``EnclosedStatements`` as a SYCL kernel.  This kernel launch is synchronous.
 
 * ``SyclKernelAsync<EnclosedStatements>`` asynchronous version of SyclKernel.
 
-RAJA provides statements to define loop tiling which can improve performance; 
-e.g., by allowing CPU cache blocking or use of GPU shared memory. 
+RAJA provides statements to define loop tiling which can improve performance;
+e.g., by allowing CPU cache blocking or use of GPU shared memory.
 
 * ``Tile< ArgId, TilePolicy, ExecPolicy, EnclosedStatements >`` abstracts an outer tiling loop containing an inner for-loop over each tile. The ``ArgId`` indicates which entry in the iteration space tuple to which the tiling loop applies and the ``TilePolicy`` specifies the tiling pattern to use, including its dimension. The ``ExecPolicy`` and ``EnclosedStatements`` are similar to what they represent in a ``statement::For`` type.
 
@@ -884,7 +921,7 @@ The following list summarizes auxilliary types used in the above statements. The
 types live in the ``RAJA`` namespace.
 
   * ``tile_fixed<TileSize>`` tile policy argument to a ``Tile`` or ``TileTCount`` statement; partitions loop iterations into tiles of a fixed size specified by ``TileSize``. This statement type can be used as the ``TilePolicy`` template parameter in the ``Tile`` statements above.
- 
+
   * ``tile_dynamic<ParamIdx>`` TilePolicy argument to a Tile or TileTCount statement; partitions loop iterations into tiles of a size specified by a ``TileSize{}`` positional parameter argument. This statement type can be used as the ``TilePolicy`` template paramter in the ``Tile`` statements above.
 
   * ``Segs<...>`` argument to a Lambda statement; used to specify which segments in a tuple will be used as lambda arguments.
