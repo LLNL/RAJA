@@ -8,7 +8,7 @@
 #
 # Generate kernel fixed tile tests for each enabled RAJA back-end.
 #
-set(TILETYPES Fixed2D)
+set(TILETYPES Fixed2D Fixed2DSum Fixed2DMinMax)
 
 foreach( TILE_BACKEND ${KERNEL_BACKENDS} )
   foreach( TILE_TYPE ${TILETYPES} )
