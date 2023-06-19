@@ -269,8 +269,8 @@ forall_impl(resources::Sycl &sycl_res,
     };
 
     ForallParam* res = ::sycl::malloc_shared<ForallParam>(1,*q);
+    RAJA::expt::ParamMultiplexer::init<EXEC_POL>(*res);
     auto reduction = ::sycl::reduction(res, f_params, combiner);
-    auto prop = ::sycl::property::reduction::initialize_to_identity();
 
     q->submit([&](cl::sycl::handler& h) {
       h.parallel_for( cl::sycl::range<1>(len),
