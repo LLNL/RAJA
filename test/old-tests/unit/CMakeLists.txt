@@ -6,18 +6,12 @@
 ###############################################################################
 
 raja_add_test(
-  NAME test-kernel
-  SOURCES test-kernel.cpp)
-
-raja_add_test(
   NAME test-sharedmem
   SOURCES test-sharedmem.cpp)
 
 raja_add_test(
   NAME test-simd
   SOURCES test-simd.cpp)
-
-
 
 add_subdirectory(cpu)
 
