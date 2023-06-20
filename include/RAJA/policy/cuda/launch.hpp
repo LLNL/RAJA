@@ -957,7 +957,7 @@ struct TileExecute<cuda_block_xyz_direct<DIM>, SEGMENT> {
 
 //Tile execute + return index
 template <typename SEGMENT, int DIM>
-struct TileICountExecute<cuda_thread_xyz_loop<DIM>, SEGMENT> {
+struct TileTCountExecute<cuda_thread_xyz_loop<DIM>, SEGMENT> {
 
   template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -980,7 +980,7 @@ struct TileICountExecute<cuda_thread_xyz_loop<DIM>, SEGMENT> {
 
 
 template <typename SEGMENT, int DIM>
-struct TileICountExecute<cuda_thread_xyz_direct<DIM>, SEGMENT> {
+struct TileTCountExecute<cuda_thread_xyz_direct<DIM>, SEGMENT> {
 
   template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -1002,7 +1002,7 @@ struct TileICountExecute<cuda_thread_xyz_direct<DIM>, SEGMENT> {
 
 
 template <typename SEGMENT, int DIM>
-struct TileICountExecute<cuda_block_xyz_loop<DIM>, SEGMENT> {
+struct TileTCountExecute<cuda_block_xyz_loop<DIM>, SEGMENT> {
 
   template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -1027,7 +1027,7 @@ struct TileICountExecute<cuda_block_xyz_loop<DIM>, SEGMENT> {
 
 
 template <typename SEGMENT, int DIM>
-struct TileICountExecute<cuda_block_xyz_direct<DIM>, SEGMENT> {
+struct TileTCountExecute<cuda_block_xyz_direct<DIM>, SEGMENT> {
 
   template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(

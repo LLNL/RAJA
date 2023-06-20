@@ -8,8 +8,7 @@
 #
 # List of segment types for generating test files.
 #
-set(SEGTYPES ListSegment RangeSegment RangeStrideSegment)
-
+set(NESTEDTYPES Loop)
 
 #
 # Generate tests for each enabled RAJA back-end.
@@ -17,15 +16,15 @@ set(SEGTYPES ListSegment RangeSegment RangeStrideSegment)
 #
 
 foreach( BACKEND ${LAUNCH_BACKENDS} )
-  foreach( SEGTYPES ${SEGTYPES} )
-    configure_file( test-launch-segment.cpp.in
-                    test-launch-segment-${SEGTYPES}-${BACKEND}.cpp )
-    raja_add_test( NAME test-launch-segment-${SEGTYPES}-${BACKEND}
-                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-launch-segment-${SEGTYPES}-${BACKEND}.cpp )
+  foreach( NESTEDTYPES ${NESTEDTYPES} )
+    configure_file( test-launch-nested.cpp.in
+                    test-launch-nested-${NESTEDTYPES}-${BACKEND}.cpp )
+    raja_add_test( NAME test-launch-nested-${NESTEDTYPES}-${BACKEND}
+                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-launch-nested-${NESTEDTYPES}-${BACKEND}.cpp )
 
-    target_include_directories(test-launch-segment-${SEGTYPES}-${BACKEND}.exe
+    target_include_directories(test-launch-nested-${NESTEDTYPES}-${BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
   endforeach()
 endforeach()
 
-unset( SEGTYPES )
+unset( NESTEDTYPES )
