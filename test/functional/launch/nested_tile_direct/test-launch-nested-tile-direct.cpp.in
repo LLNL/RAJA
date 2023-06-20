@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,21 +13,21 @@
 #include "RAJA_test-index-types.hpp"
 
 #include "RAJA_test-forall-data.hpp"
-#include "RAJA_test-launch-direct-teams-threads-1D-execpol.hpp"
+#include "RAJA_test-launch-direct-teams-threads-3D-execpol.hpp"
 
 //
 // Header for tests in ./tests directory
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-launch-@SHARED_MEM_TYPES@.hpp"
+#include "test-launch-nested-Tile-Direct.hpp"
 
 
 //
 // Cartesian product of types used in parameterized tests
 //
-using @BACKEND@LaunchSharedMemTypes =
-  Test< camp::cartesian_product<StrongIdxTypeList,
+using @BACKEND@LaunchNestedTypes =
+  Test< camp::cartesian_product<IdxTypeList,
                                 @BACKEND@ResourceList,
                                 @BACKEND@_launch_policies>>::Types;
 
@@ -35,5 +35,5 @@ using @BACKEND@LaunchSharedMemTypes =
 // Instantiate parameterized test
 //
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               Launch@SHARED_MEM_TYPES@Test,
-                               @BACKEND@LaunchSharedMemTypes);
+                               LaunchNestedTileDirectTest,
+                               @BACKEND@LaunchNestedTypes);

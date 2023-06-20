@@ -42,37 +42,49 @@ void LaunchRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
     std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
 
-    RAJA::launch<LAUNCH_POLICY>
-      (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
+    RAJA::launch<LAUNCH_POLICY>(
+      RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-  
-        RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
-            working_array[RAJA::stripIndexType(idx - rbegin)] = idx;
-          });         
-    });
 
-  } else { // zero-length segment 
+        RAJA::loop<GLOBAL_THREAD_POICY>(
+          ctx, r1, [&](INDEX_TYPE idx) {
+            working_array[RAJA::stripIndexType(idx - rbegin)] = idx;
+          }
+        );
+      }
+    );
+
+  } else { // zero-length segment
 
     memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
 
     working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
-    RAJA::launch<LAUNCH_POLICY>
-      (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-  
-        RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
-            (void) idx;
+    RAJA::launch<LAUNCH_POLICY>(
+      RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),  [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+
+        RAJA::loop<GLOBAL_THREAD_POICY>(
+          ctx, r1, [&](INDEX_TYPE RAJA_UNUSED_ARG(idx)) {
             working_array[0]++;
-        }); 
-    });
+          }
+        );
+      }
+    );
 
   }
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
 
-  for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
-    ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
+  if (RAJA::stripIndexType(N) > 0) {
+    
+    for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
+      ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
+    }
+    
+  } else {
+    
+    ASSERT_EQ(test_array[0], check_array[0]);
+    
   }
 
   deallocateForallTestData<INDEX_TYPE>(working_res,
@@ -105,7 +117,7 @@ void runNegativeTests()
   LaunchRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(INDEX_TYPE(-5), INDEX_TYPE(5));
 }
 
-TYPED_TEST_P(LaunchRangeSegmentTest, RangeSegmentTeams)             
+TYPED_TEST_P(LaunchRangeSegmentTest, RangeSegmentTeams)
 {
 
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;

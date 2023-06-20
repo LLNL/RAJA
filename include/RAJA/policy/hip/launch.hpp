@@ -944,7 +944,7 @@ struct TileExecute<hip_block_xyz_direct<DIM>, SEGMENT> {
 
 //Tile execute + return index
 template <typename SEGMENT, int DIM>
-struct TileICountExecute<hip_thread_xyz_loop<DIM>, SEGMENT> {
+struct TileTCountExecute<hip_thread_xyz_loop<DIM>, SEGMENT> {
 
   template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -967,7 +967,7 @@ struct TileICountExecute<hip_thread_xyz_loop<DIM>, SEGMENT> {
 
 
 template <typename SEGMENT, int DIM>
-struct TileICountExecute<hip_thread_xyz_direct<DIM>, SEGMENT> {
+struct TileTCountExecute<hip_thread_xyz_direct<DIM>, SEGMENT> {
 
   template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -989,7 +989,7 @@ struct TileICountExecute<hip_thread_xyz_direct<DIM>, SEGMENT> {
 
 
 template <typename SEGMENT, int DIM>
-struct TileICountExecute<hip_block_xyz_loop<DIM>, SEGMENT> {
+struct TileTCountExecute<hip_block_xyz_loop<DIM>, SEGMENT> {
 
   template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
@@ -1014,7 +1014,7 @@ struct TileICountExecute<hip_block_xyz_loop<DIM>, SEGMENT> {
 
 
 template <typename SEGMENT, int DIM>
-struct TileICountExecute<hip_block_xyz_direct<DIM>, SEGMENT> {
+struct TileTCountExecute<hip_block_xyz_direct<DIM>, SEGMENT> {
 
   template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(
