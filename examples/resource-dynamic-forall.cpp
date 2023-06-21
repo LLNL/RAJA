@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
   RAJA::ExecPlace select_cpu_or_gpu;
   if(pol < 2) {
     select_cpu_or_gpu = RAJA::ExecPlace::HOST;
-  }else {
+  } else {
     select_cpu_or_gpu = RAJA::ExecPlace::DEVICE;
   }
 
