@@ -766,7 +766,7 @@ struct TileExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Str
 };
 
 template <typename SEGMENT, typename IndexMapper>
-struct TileICountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Direct,
+struct TileTCountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Direct,
                                                         kernel_sync_requirement::none,
                                                         IndexMapper>,
                          SEGMENT> {
@@ -791,7 +791,7 @@ struct TileICountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mappin
 };
 
 template <typename SEGMENT, typename IndexMapper>
-struct TileICountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop,
+struct TileTCountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop,
                                                         kernel_sync_requirement::none,
                                                         IndexMapper>,
                          SEGMENT> {

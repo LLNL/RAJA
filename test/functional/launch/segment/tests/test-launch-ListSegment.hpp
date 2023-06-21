@@ -98,9 +98,14 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
 
-  for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
-    ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
+  if (RAJA::stripIndexType(N) > 0) {
+    for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
+      ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
+    }
+  } else {
+    ASSERT_EQ(test_array[0], check_array[0]);
   }
+
 
   deallocateForallTestData<INDEX_TYPE>(working_res,
                                        working_array,
