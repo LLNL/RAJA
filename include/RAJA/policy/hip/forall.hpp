@@ -79,8 +79,8 @@ struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
                                  ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>,
                                  UniqueMarker>
 {
-  static_assert(BLOCK_SIZE >= 0, "block size may not be ignored with forall");
-  static_assert(GRID_SIZE >= 0, "grid size may not be ignored with forall");
+  static_assert(BLOCK_SIZE > 0 || BLOCK_SIZE == named_usage::unspecified, "block size may not be ignored with forall");
+  static_assert(GRID_SIZE > 0 || GRID_SIZE == named_usage::unspecified, "grid size may not be ignored with forall");
 
   using IndexGetter = ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
@@ -131,8 +131,8 @@ struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop,
                                  ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>,
                                  UniqueMarker>
 {
-  static_assert(BLOCK_SIZE >= 0, "block size may not be ignored with forall");
-  static_assert(GRID_SIZE >= 0, "grid size may not be ignored with forall");
+  static_assert(BLOCK_SIZE > 0 || BLOCK_SIZE == named_usage::unspecified, "block size may not be ignored with forall");
+  static_assert(GRID_SIZE > 0 || GRID_SIZE == named_usage::unspecified, "grid size may not be ignored with forall");
 
   using IndexMapper = ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
