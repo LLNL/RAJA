@@ -56,6 +56,21 @@ namespace hip
 namespace impl
 {
 
+/*!
+ ******************************************************************************
+ *
+ * \brief  Hip kernel block and grid dimension calculator template.
+ *
+ * \tparam IterationMapping Way of mapping from threads in the kernel to
+ *         iterates of the forall loop. For example StridedLoop uses a grid
+ *         stride loop to run multiple iterates in a single thread.
+ * \tparam IterationGetter Way of getting iteration indices from the underlying
+ *         runtime using threadIdx, blockIdx, etc.
+ * \tparam UniqueMarker Used in occupancy calculator methods to store and get
+ *         data for this specific kernel.
+ *
+ ******************************************************************************
+ */
 template<typename IterationMapping, typename IterationGetter, typename UniqueMarker>
 struct ForallDimensionCalculator;
 
