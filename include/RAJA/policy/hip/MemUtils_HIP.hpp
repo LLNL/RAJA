@@ -305,13 +305,11 @@ struct HipFixedMaxBlocksData
 RAJA_INLINE
 int hip_max_blocks(int block_size)
 {
-  static HipFixedMaxBlocksData data = {-1, -1};
-
-  if (data.multiProcessorCount < 0) {
+  static HipFixedMaxBlocksData data = []() {
     hipDeviceProp_t& prop = hip::device_prop();
-    data.multiProcessorCount = prop.multiProcessorCount;
-    data.maxThreadsPerMultiProcessor = prop.maxThreadsPerMultiProcessor;
-  }
+    return HipFixedMaxBlocksData{prop.multiProcessorCount,
+                                 prop.maxThreadsPerMultiProcessor};
+  }();
 
   int max_blocks = data.multiProcessorCount *
                   (data.maxThreadsPerMultiProcessor / block_size);
@@ -331,7 +329,9 @@ RAJA_INLINE
 void hip_occupancy_max_blocks_threads(Func&& func, int shmem_size,
                                        int &max_blocks, int &max_threads)
 {
-  static HipOccMaxBlocksThreadsData data = {-1, -1, -1};
+  static constexpr int uninitialized = -1;
+  static thread_local HipOccMaxBlocksThreadsData data = {
+      uninitialized, uninitialized, uninitialized};
 
   if (data.prev_shmem_size != shmem_size) {
 
@@ -366,7 +366,9 @@ RAJA_INLINE
 void hip_occupancy_max_blocks(Func&& func, int shmem_size,
                                int &max_blocks)
 {
-  static HipOccMaxBlocksFixedThreadsData data = {-1, -1, -1};
+  static constexpr int uninitialized = -1;
+  static thread_local HipOccMaxBlocksFixedThreadsData data = {
+      uninitialized, uninitialized, uninitialized};
 
   if (data.prev_shmem_size != shmem_size) {
 
@@ -379,7 +381,7 @@ void hip_occupancy_max_blocks(Func&& func, int shmem_size,
     if (data.max_blocks <= 0) { data.max_blocks = 1 }
 #endif
 
-    if (data.multiProcessorCount < 0) {
+    if (data.multiProcessorCount == uninitialized) {
 
       data.multiProcessorCount = hip::device_prop().multiProcessorCount;
 
@@ -408,7 +410,9 @@ RAJA_INLINE
 void hip_occupancy_max_blocks(Func&& func, int shmem_size,
                                int &max_blocks, int num_threads)
 {
-  static HipOccMaxBlocksVariableThreadsData data = {-1, -1, -1, -1};
+  static constexpr int uninitialized = 0;
+  static thread_local HipOccMaxBlocksVariableThreadsData data = {
+      uninitialized, uninitialized, uninitialized, uninitialized};
 
   if ( data.prev_shmem_size  != shmem_size ||
        data.prev_num_threads != num_threads ) {
@@ -422,7 +426,7 @@ void hip_occupancy_max_blocks(Func&& func, int shmem_size,
     if (data.max_blocks <= 0) { data.max_blocks = 1 }
 #endif
 
-    if (data.multiProcessorCount < 0) {
+    if (data.multiProcessorCount == uninitialized) {
 
       data.multiProcessorCount = hip::device_prop().multiProcessorCount;
 
