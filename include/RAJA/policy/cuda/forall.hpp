@@ -47,10 +47,8 @@
 
 namespace RAJA
 {
-
 namespace policy
 {
-
 namespace cuda
 {
 
@@ -60,63 +58,137 @@ namespace impl
 /*!
  ******************************************************************************
  *
- * \brief calculate gridDim from length of iteration and blockDim
+ * \brief  Cuda kernel block and grid dimension calculator template.
+ *
+ * \tparam IterationMapping Way of mapping from threads in the kernel to
+ *         iterates of the forall loop. For example StridedLoop uses a grid
+ *         stride loop to run multiple iterates in a single thread.
+ * \tparam IterationGetter Way of getting iteration indices from the underlying
+ *         runtime using threadIdx, blockIdx, etc.
+ * \tparam UniqueMarker Used in occupancy calculator methods to store and get
+ *         data for this specific kernel.
  *
  ******************************************************************************
  */
-RAJA_INLINE
-cuda_dim_t getGridDim(cuda_dim_member_t len, cuda_dim_t blockDim)
-{
-  cuda_dim_member_t block_size = blockDim.x * blockDim.y * blockDim.z;
+template<typename IterationMapping, typename IterationGetter, typename UniqueMarker>
+struct ForallDimensionCalculator;
 
-  cuda_dim_member_t gridSize = (len + block_size - 1) / block_size;
+template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
+                                 ::RAJA::cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>,
+                                 UniqueMarker>
+{
+  static_assert(BLOCK_SIZE > 0 || BLOCK_SIZE == named_usage::unspecified, "block size may not be ignored with forall");
+  static_assert(GRID_SIZE > 0 || GRID_SIZE == named_usage::unspecified, "grid size may not be ignored with forall");
 
-  return {gridSize, 1, 1};
-}
+  using IndexGetter = ::RAJA::cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
-/*!
- ******************************************************************************
- *
- * \brief calculate global thread index from 1D grid of 1D blocks
- *
- ******************************************************************************
- */
-template <size_t BlockSize>
-__device__ __forceinline__ unsigned int getGlobalIdx_1D_1D()
-{
-  unsigned int blockId = blockIdx.x;
-  unsigned int threadId = blockId * BlockSize + threadIdx.x;
-  return threadId;
-}
-template <size_t BlockSize>
-__device__ __forceinline__ unsigned int getGlobalNumThreads_1D_1D()
-{
-  unsigned int numThreads = BlockSize * gridDim.x;
-  return numThreads;
-}
+  using OccupancyCalculator = std::conditional_t<
+        ( BLOCK_SIZE == named_usage::unspecified &&
+          GRID_SIZE == named_usage::unspecified ),
+      ::RAJA::cuda::CudaOccupancyCalculator<UniqueMarker>,
+      ::RAJA::cuda::CudaOccupancyDefaults>;
 
-/*!
- ******************************************************************************
- *
- * \brief calculate global thread index from 3D grid of 3D blocks
- *
- ******************************************************************************
- */
-__device__ __forceinline__ unsigned int getGlobalIdx_3D_3D()
+  template < typename IdxT >
+  static void set_dimensions(internal::CudaDims& dims, IdxT len,
+                             const void* func, size_t dynamic_shmem_size)
+  {
+    if (IndexGetter::block_size == named_usage::unspecified &&
+        IndexGetter::grid_size == named_usage::unspecified) {
+
+      OccupancyCalculator oc(func);
+      auto max_sizes = oc.get_max_block_size_and_grid_size(dynamic_shmem_size);
+
+      internal::set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(max_sizes.first));
+      internal::set_cuda_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(max_sizes.first)));
+
+    } else if (IndexGetter::block_size == named_usage::unspecified) {
+      // BEWARE: if calculated block_size is too high then the kernel launch will fail
+      internal::set_cuda_dim<dim>(dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexGetter::grid_size)));
+      internal::set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexGetter::grid_size));
+
+    } else if (IndexGetter::grid_size == named_usage::unspecified) {
+
+      internal::set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexGetter::block_size));
+      internal::set_cuda_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexGetter::block_size)));
+
+    } else {
+
+      if ( len > (static_cast<IdxT>(IndexGetter::block_size) *
+                  static_cast<IdxT>(IndexGetter::grid_size)) ) {
+        RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
+      }
+
+      internal::set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexGetter::block_size));
+      internal::set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexGetter::grid_size));
+    }
+  }
+};
+
+template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop,
+                                 ::RAJA::cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>,
+                                 UniqueMarker>
 {
-  unsigned int blockId =
-      blockIdx.x + blockIdx.y * gridDim.x + gridDim.x * gridDim.y * blockIdx.z;
-  unsigned int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z) +
-                          (threadIdx.z * (blockDim.x * blockDim.y)) +
-                          (threadIdx.y * blockDim.x) + threadIdx.x;
-  return threadId;
-}
-__device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
-{
-  unsigned int numThreads =
-      blockDim.x * blockDim.y * blockDim.z * gridDim.x * gridDim.y * gridDim.z;
-  return numThreads;
-}
+  static_assert(BLOCK_SIZE > 0 || BLOCK_SIZE == named_usage::unspecified, "block size may not be ignored with forall");
+  static_assert(GRID_SIZE > 0 || GRID_SIZE == named_usage::unspecified, "grid size may not be ignored with forall");
+
+  using IndexMapper = ::RAJA::cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
+
+  using OccupancyCalculator = std::conditional_t<
+        ( BLOCK_SIZE == named_usage::unspecified ||
+          GRID_SIZE == named_usage::unspecified ),
+      ::RAJA::cuda::CudaOccupancyCalculator<UniqueMarker>,
+      ::RAJA::cuda::CudaOccupancyDefaults>;
+
+  template < typename IdxT >
+  static void set_dimensions(internal::CudaDims& dims, IdxT len,
+                             const void* func, size_t dynamic_shmem_size)
+  {
+    if (IndexMapper::block_size == named_usage::unspecified) {
+
+      OccupancyCalculator oc(func);
+      auto max_sizes = oc.get_max_block_size_and_grid_size(dynamic_shmem_size);
+
+      if (IndexMapper::grid_size == named_usage::unspecified) {
+
+        IdxT calculated_grid_size = std::min(
+            RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(max_sizes.first)),
+            static_cast<IdxT>(max_sizes.second));
+
+        internal::set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(max_sizes.first));
+        internal::set_cuda_dim<dim>(dims.blocks, calculated_grid_size);
+
+      } else {
+
+        IdxT calculated_block_size = std::min(
+            RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size)),
+            static_cast<IdxT>(max_sizes.first));
+
+        internal::set_cuda_dim<dim>(dims.threads, calculated_block_size);
+        internal::set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+      }
+
+    } else if (IndexMapper::grid_size == named_usage::unspecified) {
+
+      OccupancyCalculator oc(func);
+      auto max_grid_size = oc.get_max_grid_size(dynamic_shmem_size,
+                                                static_cast<IdxT>(IndexMapper::block_size));
+
+      IdxT calculated_grid_size = std::min(
+          RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size)),
+          static_cast<IdxT>(max_grid_size));
+
+      internal::set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+      internal::set_cuda_dim<dim>(dims.blocks, calculated_grid_size);
+
+    } else {
+
+      internal::set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+      internal::set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    }
+  }
+};
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -129,49 +201,222 @@ __device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
 /*!
  ******************************************************************************
  *
- * \brief  CUDA kernal forall template for indirection array.
+ * \brief  CUDA kernel forall template.
  *
  ******************************************************************************
  */
-template <size_t BlockSize,
+template <typename EXEC_POL,
           size_t BlocksPerSM,
           typename Iterator,
           typename LOOP_BODY,
-          typename IndexType>
+          typename IndexType,
+          typename IterationMapping = typename EXEC_POL::IterationMapping,
+          typename IterationGetter = typename EXEC_POL::IterationGetter,
+          std::enable_if_t<
+                std::is_same<IterationMapping, iteration_mapping::Direct>::value &&
+                (IterationGetter::block_size > 0),
+              size_t > BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, BlocksPerSM) __global__
-    void forall_cuda_kernel(LOOP_BODY loop_body,
-                            const Iterator idx,
-                            IndexType length)
+void forall_cuda_kernel(LOOP_BODY loop_body,
+                       const Iterator idx,
+                       IndexType length)
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
   auto& body = privatizer.get_priv();
-  auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D<BlockSize>());
+  auto ii = IterationGetter::template index<IndexType>();
+  if (ii < length) {
+    body(idx[ii]);
+  }
+}
+///
+template <typename EXEC_POL,
+          size_t BlocksPerSM,
+          typename Iterator,
+          typename LOOP_BODY,
+          typename IndexType,
+          typename IterationMapping = typename EXEC_POL::IterationMapping,
+          typename IterationGetter = typename EXEC_POL::IterationGetter,
+          std::enable_if_t<
+                std::is_same<IterationMapping, iteration_mapping::Direct>::value &&
+                (IterationGetter::block_size <= 0),
+              size_t > RAJA_UNUSED_ARG(BlockSize) = 0>
+__global__
+void forall_cuda_kernel(LOOP_BODY loop_body,
+                       const Iterator idx,
+                       IndexType length)
+{
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(loop_body);
+  auto& body = privatizer.get_priv();
+  auto ii = IterationGetter::template index<IndexType>();
   if (ii < length) {
     body(idx[ii]);
   }
 }
 
 template <typename EXEC_POL,
-          size_t BlockSize,
           size_t BlocksPerSM,
           typename Iterator,
           typename LOOP_BODY,
           typename IndexType,
-          typename ForallParam>
-__launch_bounds__(BlockSize, 1) __global__
-    void forallp_cuda_kernel(
-                            LOOP_BODY loop_body,
-                            const Iterator idx,
-                            IndexType length,
-                            ForallParam f_params)
+          typename ForallParam,
+          typename IterationMapping = typename EXEC_POL::IterationMapping,
+          typename IterationGetter = typename EXEC_POL::IterationGetter,
+          std::enable_if_t<
+                std::is_same<IterationMapping, iteration_mapping::Direct>::value &&
+                (IterationGetter::block_size > 0),
+              size_t > BlockSize = IterationGetter::block_size>
+__launch_bounds__(BlockSize, BlocksPerSM) __global__
+void forallp_cuda_kernel(LOOP_BODY loop_body,
+                        const Iterator idx,
+                        IndexType length,
+                        ForallParam f_params)
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
   auto& body = privatizer.get_priv();
-  auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D<BlockSize>());
-  if ( ii < length )
-  {
+  auto ii = IterationGetter::template index<IndexType>();
+  if ( ii < length ) {
+    RAJA::expt::invoke_body( f_params, body, idx[ii] );
+  }
+  RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(f_params);
+}
+///
+template <typename EXEC_POL,
+          size_t BlocksPerSM,
+          typename Iterator,
+          typename LOOP_BODY,
+          typename IndexType,
+          typename ForallParam,
+          typename IterationMapping = typename EXEC_POL::IterationMapping,
+          typename IterationGetter = typename EXEC_POL::IterationGetter,
+          std::enable_if_t<
+                std::is_same<IterationMapping, iteration_mapping::Direct>::value &&
+                (IterationGetter::block_size <= 0),
+              size_t > RAJA_UNUSED_ARG(BlockSize) = 0>
+__global__
+void forallp_cuda_kernel(LOOP_BODY loop_body,
+                        const Iterator idx,
+                        IndexType length,
+                        ForallParam f_params)
+{
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(loop_body);
+  auto& body = privatizer.get_priv();
+  auto ii = IterationGetter::template index<IndexType>();
+  if ( ii < length ) {
+    RAJA::expt::invoke_body( f_params, body, idx[ii] );
+  }
+  RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(f_params);
+}
+
+template <typename EXEC_POL,
+          size_t BlocksPerSM,
+          typename Iterator,
+          typename LOOP_BODY,
+          typename IndexType,
+          typename IterationMapping = typename EXEC_POL::IterationMapping,
+          typename IterationGetter = typename EXEC_POL::IterationGetter,
+          std::enable_if_t<
+                std::is_same<IterationMapping, iteration_mapping::StridedLoop>::value &&
+                (IterationGetter::block_size > 0),
+              size_t > BlockSize = IterationGetter::block_size>
+__launch_bounds__(BlockSize, BlocksPerSM) __global__
+void forall_cuda_kernel(LOOP_BODY loop_body,
+                       const Iterator idx,
+                       IndexType length)
+{
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(loop_body);
+  auto& body = privatizer.get_priv();
+  for (auto ii = IterationGetter::template index<IndexType>();
+       ii < length;
+       ii += IterationGetter::template size<IndexType>()) {
+    body(idx[ii]);
+  }
+}
+///
+template <typename EXEC_POL,
+          size_t BlocksPerSM,
+          typename Iterator,
+          typename LOOP_BODY,
+          typename IndexType,
+          typename IterationMapping = typename EXEC_POL::IterationMapping,
+          typename IterationGetter = typename EXEC_POL::IterationGetter,
+          std::enable_if_t<
+                std::is_same<IterationMapping, iteration_mapping::StridedLoop>::value &&
+                (IterationGetter::block_size <= 0),
+              size_t > RAJA_UNUSED_ARG(BlockSize) = 0>
+__global__
+void forall_cuda_kernel(LOOP_BODY loop_body,
+                       const Iterator idx,
+                       IndexType length)
+{
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(loop_body);
+  auto& body = privatizer.get_priv();
+  for (auto ii = IterationGetter::template index<IndexType>();
+       ii < length;
+       ii += IterationGetter::template size<IndexType>()) {
+    body(idx[ii]);
+  }
+}
+
+///
+template <typename EXEC_POL,
+          size_t BlocksPerSM,
+          typename Iterator,
+          typename LOOP_BODY,
+          typename IndexType,
+          typename ForallParam,
+          typename IterationMapping = typename EXEC_POL::IterationMapping,
+          typename IterationGetter = typename EXEC_POL::IterationGetter,
+          std::enable_if_t<
+                std::is_same<IterationMapping, iteration_mapping::StridedLoop>::value &&
+                (IterationGetter::block_size > 0),
+              size_t > BlockSize = IterationGetter::block_size>
+__launch_bounds__(BlockSize, BlocksPerSM) __global__
+void forallp_cuda_kernel(LOOP_BODY loop_body,
+                        const Iterator idx,
+                        IndexType length,
+                        ForallParam f_params)
+{
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(loop_body);
+  auto& body = privatizer.get_priv();
+  for (auto ii = IterationGetter::template index<IndexType>();
+       ii < length;
+       ii += IterationGetter::template size<IndexType>()) {
+    RAJA::expt::invoke_body( f_params, body, idx[ii] );
+  }
+  RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(f_params);
+}
+///
+template <typename EXEC_POL,
+          size_t BlocksPerSM,
+          typename Iterator,
+          typename LOOP_BODY,
+          typename IndexType,
+          typename ForallParam,
+          typename IterationMapping = typename EXEC_POL::IterationMapping,
+          typename IterationGetter = typename EXEC_POL::IterationGetter,
+          std::enable_if_t<
+                std::is_same<IterationMapping, iteration_mapping::StridedLoop>::value &&
+                (IterationGetter::block_size <= 0),
+              size_t > RAJA_UNUSED_ARG(BlockSize) = 0>
+__global__
+void forallp_cuda_kernel(LOOP_BODY loop_body,
+                        const Iterator idx,
+                        IndexType length,
+                        ForallParam f_params)
+{
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(loop_body);
+  auto& body = privatizer.get_priv();
+  for (auto ii = IterationGetter::template index<IndexType>();
+       ii < length;
+       ii += IterationGetter::template size<IndexType>()) {
     RAJA::expt::invoke_body( f_params, body, idx[ii] );
   }
   RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(f_params);
@@ -187,14 +432,17 @@ __launch_bounds__(BlockSize, 1) __global__
 ////////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, size_t BlocksPerSM, bool Async, typename ForallParam>
+template <typename Iterable, typename LoopBody,
+          typename IterationMapping, typename IterationGetter,
+          size_t BlocksPerSM, bool Async,
+          typename ForallParam>
 RAJA_INLINE 
 concepts::enable_if_t<
   resources::EventProxy<resources::Cuda>,
   RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
   RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
 forall_impl(resources::Cuda cuda_res,
-            cuda_exec_explicit<BlockSize, BlocksPerSM, Async>,
+            ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BlocksPerSM, Async>const&,
             Iterable&& iter,
             LoopBody&& loop_body,
             ForallParam)
@@ -202,8 +450,9 @@ forall_impl(resources::Cuda cuda_res,
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-
-  auto func = impl::forall_cuda_kernel<BlockSize, BlocksPerSM, Iterator, LOOP_BODY, IndexType>;
+  using EXEC_POL = ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BlocksPerSM, Async>;
+  using UniqueMarker = ::camp::list<IterationMapping, IterationGetter, LOOP_BODY, Iterator, ForallParam>;
+  using DimensionCalculator = impl::ForallDimensionCalculator<IterationMapping, IterationGetter, UniqueMarker>;
 
   //
   // Compute the requested iteration space size
@@ -213,38 +462,36 @@ forall_impl(resources::Cuda cuda_res,
   IndexType len = std::distance(begin, end);
 
   // Only launch kernel if we have something to iterate over
-  if (len > 0 && BlockSize > 0) {
+  if (len > 0) {
 
-    //
-    // Compute the number of blocks
-    //
-    cuda_dim_t blockSize{BlockSize, 1, 1};
-    cuda_dim_t gridSize = impl::getGridDim(static_cast<cuda_dim_member_t>(len), blockSize);
-
-    RAJA_FT_BEGIN;
+    auto func = reinterpret_cast<const void*>(
+        &impl::forall_cuda_kernel<EXEC_POL, BlocksPerSM, Iterator, LOOP_BODY, IndexType>);
 
     //
     // Setup shared memory buffers
     //
     size_t shmem = 0;
 
-    //  printf("gridsize = (%d,%d), blocksize = %d\n",
-    //         (int)gridSize.x,
-    //         (int)gridSize.y,
-    //         (int)blockSize.x);
+    //
+    // Compute the kernel dimensions
+    //
+    internal::CudaDims dims(1);
+    DimensionCalculator::set_dimensions(dims, len, func, shmem);
+
+    RAJA_FT_BEGIN;
 
     {
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
       //
       LOOP_BODY body = RAJA::cuda::make_launch_body(
-          gridSize, blockSize, shmem, cuda_res, std::forward<LoopBody>(loop_body));
+          dims.blocks, dims.threads, shmem, cuda_res, std::forward<LoopBody>(loop_body));
 
       //
       // Launch the kernels
       //
       void *args[] = {(void*)&body, (void*)&begin, (void*)&len};
-      RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, cuda_res, Async);
+      RAJA::cuda::launch(func, dims.blocks, dims.threads, args, shmem, cuda_res, Async);
     }
 
     RAJA_FT_END;
@@ -253,14 +500,18 @@ forall_impl(resources::Cuda cuda_res,
   return resources::EventProxy<resources::Cuda>(cuda_res);
 }
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, size_t BlocksPerSM, bool Async, typename ForallParam>
+
+template <typename Iterable, typename LoopBody,
+          typename IterationMapping, typename IterationGetter,
+          size_t BlocksPerSM, bool Async,
+          typename ForallParam>
 RAJA_INLINE 
 concepts::enable_if_t<
   resources::EventProxy<resources::Cuda>,
   RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
   concepts::negate< RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>> >
 forall_impl(resources::Cuda cuda_res,
-            cuda_exec_explicit<BlockSize, BlocksPerSM, Async>,
+            ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BlocksPerSM, Async> const&,
             Iterable&& iter,
             LoopBody&& loop_body,
             ForallParam f_params)
@@ -268,9 +519,9 @@ forall_impl(resources::Cuda cuda_res,
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = RAJA::cuda_exec_explicit<BlockSize, BlocksPerSM, Async>;
-
-  auto func = impl::forallp_cuda_kernel< EXEC_POL, BlockSize, BlocksPerSM, Iterator, LOOP_BODY, IndexType, camp::decay<ForallParam> >;
+  using EXEC_POL = ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BlocksPerSM, Async>;
+  using UniqueMarker = ::camp::list<IterationMapping, IterationGetter, camp::num<BlocksPerSM>, LOOP_BODY, Iterator, ForallParam>;
+  using DimensionCalculator = impl::ForallDimensionCalculator<IterationMapping, IterationGetter, UniqueMarker>;
 
   //
   // Compute the requested iteration space size
@@ -280,44 +531,43 @@ forall_impl(resources::Cuda cuda_res,
   IndexType len = std::distance(begin, end);
 
   // Only launch kernel if we have something to iterate over
-  if (len > 0 && BlockSize > 0) {
+  if (len > 0) {
 
-    //
-    // Compute the number of blocks
-    //
-    cuda_dim_t blockSize{BlockSize, 1, 1};
-    cuda_dim_t gridSize = impl::getGridDim(static_cast<cuda_dim_member_t>(len), blockSize);
-
-    RAJA_FT_BEGIN;
-
-    RAJA::cuda::detail::cudaInfo launch_info;
-    launch_info.gridDim = gridSize;
-    launch_info.blockDim = blockSize;
-    launch_info.res = cuda_res;
+    auto func = reinterpret_cast<const void*>(
+        impl::forallp_cuda_kernel< EXEC_POL, BlocksPerSM, Iterator, LOOP_BODY, IndexType, camp::decay<ForallParam> >);
 
     //
     // Setup shared memory buffers
     //
     size_t shmem = 0;
 
-    //  printf("gridsize = (%d,%d), blocksize = %d\n",
-    //         (int)gridSize.x,
-    //         (int)gridSize.y,
-    //         (int)blockSize.x);
+    //
+    // Compute the kernel dimensions
+    //
+    internal::CudaDims dims(1);
+    DimensionCalculator::set_dimensions(dims, len, func, shmem);
+
+    RAJA_FT_BEGIN;
+
+    RAJA::cuda::detail::cudaInfo launch_info;
+    launch_info.gridDim = dims.blocks;
+    launch_info.blockDim = dims.threads;
+    launch_info.res = cuda_res;
 
     {
       RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params, launch_info);
+
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
       //
       LOOP_BODY body = RAJA::cuda::make_launch_body(
-          gridSize, blockSize, shmem, cuda_res, std::forward<LoopBody>(loop_body));
+          dims.blocks, dims.threads, shmem, cuda_res, std::forward<LoopBody>(loop_body));
 
       //
       // Launch the kernels
       //
       void *args[] = {(void*)&body, (void*)&begin, (void*)&len, (void*)&f_params};
-      RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, shmem, cuda_res, Async);
+      RAJA::cuda::launch(func, dims.blocks, dims.threads, args, shmem, cuda_res, Async);
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
     }
@@ -327,7 +577,6 @@ forall_impl(resources::Cuda cuda_res,
 
   return resources::EventProxy<resources::Cuda>(cuda_res);
 }
-
 
 
 //
@@ -349,13 +598,12 @@ forall_impl(resources::Cuda cuda_res,
  ******************************************************************************
  */
 template <typename LoopBody,
-          size_t BlockSize,
-          size_t BlocksPerSM,
-          bool Async,
+          typename IterationMapping, typename IterationGetter,
+          size_t BlocksPerSM, bool Async,
           typename... SegmentTypes>
 RAJA_INLINE resources::EventProxy<resources::Cuda>
 forall_impl(resources::Cuda r,
-            ExecPolicy<seq_segit, cuda_exec_explicit<BlockSize, BlocksPerSM, Async>>,
+            ExecPolicy<seq_segit, ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BlocksPerSM, Async>>,
             const TypedIndexSet<SegmentTypes...>& iset,
             LoopBody&& loop_body)
 {
@@ -364,7 +612,7 @@ forall_impl(resources::Cuda r,
     iset.segmentCall(r,
                      isi,
                      detail::CallForall(),
-                     cuda_exec_explicit<BlockSize, BlocksPerSM, true>(),
+                     ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BlocksPerSM, true>(),
                      loop_body);
   }  // iterate over segments of index set
 

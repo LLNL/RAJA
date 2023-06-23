@@ -44,10 +44,19 @@ namespace RAJA
 {
 
 /*!
- * HIP kernel launch policy where the user may specify the number of physical
+ * HIP kernel launch policy where the user specifies the number of physical
  * thread blocks and threads per block.
- * If num_blocks is 0 and num_threads is non-zero then num_blocks is chosen at
- * runtime.
+ * If num_blocks is 0 then num_blocks is chosen at runtime.
+ * Num_blocks is chosen to maximize the number of blocks running concurrently.
+ *
+ */
+template <bool async0, int num_blocks, int num_threads>
+struct hip_explicit_launch {};
+
+/*!
+ * HIP kernel launch policy where the user specifies the number of physical
+ * thread blocks and threads per block.
+ * If num_blocks is 0 then num_blocks is chosen at runtime.
  * Num_blocks is chosen to maximize the number of blocks running concurrently.
  * If num_threads and num_blocks are both 0 then num_threads and num_blocks are
  * chosen at runtime.
@@ -55,19 +64,10 @@ namespace RAJA
  * If num_threads is 0 and num_blocks is non-zero then num_threads is chosen at
  * runtime.
  * Num_threads is 1024, which may not be appropriate for all kernels.
+ *
  */
 template <bool async0, int num_blocks, int num_threads>
-struct hip_launch {};
-
-/*!
- * HIP kernel launch policy where the user specifies the number of physical
- * thread blocks and threads per block.
- * If num_blocks is 0 then num_blocks is chosen at runtime.
- * Num_blocks is chosen to maximize the number of blocks running concurrently.
- */
-template <bool async0, int num_blocks, int num_threads>
-using hip_explicit_launch = hip_launch<async0, num_blocks, num_threads>;
-
+using hip_launch = hip_explicit_launch<async0, num_blocks, num_threads>;
 
 /*!
  * HIP kernel launch policy where the number of physical blocks and threads
@@ -75,19 +75,19 @@ using hip_explicit_launch = hip_launch<async0, num_blocks, num_threads>;
  * If num_threads is 0 then num_threads is chosen at runtime.
  */
 template <int num_threads0, bool async0>
-using hip_occ_calc_launch = hip_launch<async0, 0, num_threads0>;
+using hip_occ_calc_launch = hip_explicit_launch<async0, 0, num_threads0>;
 
 namespace statement
 {
 
 /*!
  * A RAJA::kernel statement that launches a HIP kernel.
- *
- *
+ * Note - Statement requires a placeholder hip_exec policy for the sake of
+ * object oriented inheritance.
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
 struct HipKernelExt
-    : public internal::Statement<hip_exec<0>, EnclosedStmts...> {
+    : public internal::Statement<::RAJA::policy::hip::hip_exec<LaunchConfig, void, true>, EnclosedStmts...> {
 };
 
 
@@ -99,7 +99,7 @@ struct HipKernelExt
  */
 template <int num_blocks, int num_threads, typename... EnclosedStmts>
 using HipKernelExp =
-    HipKernelExt<hip_launch<false, num_blocks, num_threads>, EnclosedStmts...>;
+    HipKernelExt<hip_explicit_launch<false, num_blocks, num_threads>, EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a HIP kernel with the flexibility
@@ -109,7 +109,7 @@ using HipKernelExp =
  */
 template <int num_blocks, int num_threads, typename... EnclosedStmts>
 using HipKernelExpAsync =
-    HipKernelExt<hip_launch<true, num_blocks, num_threads>, EnclosedStmts...>;
+    HipKernelExt<hip_explicit_launch<true, num_blocks, num_threads>, EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a HIP kernel using the
@@ -136,7 +136,7 @@ using HipKernelOccAsync =
  */
 template <int num_threads, typename... EnclosedStmts>
 using HipKernelFixed =
-    HipKernelExt<hip_explicit_launch<false, 0, num_threads>,
+    HipKernelExt<hip_explicit_launch<false, operators::limits<int>::max(), num_threads>,
                   EnclosedStmts...>;
 
 /*!
@@ -146,18 +146,18 @@ using HipKernelFixed =
  */
 template <int num_threads, typename... EnclosedStmts>
 using HipKernelFixedAsync =
-    HipKernelExt<hip_explicit_launch<true, 0, num_threads>, EnclosedStmts...>;
+    HipKernelExt<hip_explicit_launch<true, operators::limits<int>::max(), num_threads>, EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a HIP kernel with 1024 threads
- * Thre kernel launch is synchronous.
+ * The kernel launch is synchronous.
  */
 template <typename... EnclosedStmts>
 using HipKernel = HipKernelFixed<1024, EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a HIP kernel with 1024 threads
- * Thre kernel launch is asynchronous.
+ * The kernel launch is asynchronous.
  */
 template <typename... EnclosedStmts>
 using HipKernelAsync = HipKernelFixedAsync<1024, EnclosedStmts...>;
@@ -250,7 +250,7 @@ struct HipLaunchHelper;
  * determined at runtime using the HIP occupancy calculator.
  */
 template<bool async0, int num_blocks, int num_threads, typename StmtList, typename Data, typename Types>
-struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data,Types>
+struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,StmtList,Data,Types>
 {
   using Self = HipLaunchHelper;
 
@@ -273,7 +273,7 @@ struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data
         // determine blocks at runtime
         // determine threads at runtime
         //
-        internal::hip_occupancy_max_blocks_threads<Self>(
+        ::RAJA::hip::hip_occupancy_max_blocks_threads<Self>(
             func, shmem_size, recommended_blocks, recommended_threads);
 
       } else {
@@ -284,7 +284,7 @@ struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data
         //
         recommended_threads = num_threads;
 
-        internal::hip_occupancy_max_blocks<Self, num_threads>(
+        ::RAJA::hip::hip_occupancy_max_blocks<Self, num_threads>(
             func, shmem_size, recommended_blocks);
 
       }
@@ -346,8 +346,24 @@ struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data
       //
       // determine blocks at runtime
       //
-      internal::hip_occupancy_max_blocks<Self>(
-          func, shmem_size, max_blocks, actual_threads);
+      if (num_threads <= 0 ||
+          num_threads != actual_threads) {
+
+        //
+        // determine blocks when actual_threads != num_threads
+        //
+        ::RAJA::hip::hip_occupancy_max_blocks<Self>(
+            func, shmem_size, max_blocks, actual_threads);
+
+      } else {
+
+        //
+        // determine blocks when actual_threads == num_threads
+        //
+        ::RAJA::hip::hip_occupancy_max_blocks<Self, num_threads>(
+            func, shmem_size, max_blocks);
+
+      }
 
     } else {
 
@@ -367,7 +383,7 @@ struct HipLaunchHelper<hip_launch<async0, num_blocks, num_threads>,StmtList,Data
     auto func = kernelGetter_t::get();
 
     void *args[] = {(void*)&data};
-    RAJA::hip::launch((const void*)func, launch_dims.blocks, launch_dims.threads, args, shmem, res, async);
+    RAJA::hip::launch((const void*)func, launch_dims.dims.blocks, launch_dims.dims.threads, args, shmem, res, async);
   }
 };
 
@@ -472,7 +488,8 @@ struct StatementExecutor<
       //
       // Compute the recommended physical kernel blocks and threads
       //
-      int recommended_blocks, recommended_threads;
+      int recommended_blocks;
+      int recommended_threads;
       launch_t::recommended_blocks_threads(
           shmem, recommended_blocks, recommended_threads);
 
@@ -489,10 +506,10 @@ struct StatementExecutor<
       //
       hip_dim_t fit_threads{0,0,0};
 
-      if ( recommended_threads >= get_size(launch_dims.min_threads) ) {
+      if ( recommended_threads >= get_size(launch_dims.min_dims.threads) ) {
 
         fit_threads = fitHipDims(
-            recommended_threads, launch_dims.threads, launch_dims.min_threads);
+            recommended_threads, launch_dims.dims.threads, launch_dims.min_dims.threads);
 
       }
 
@@ -503,11 +520,11 @@ struct StatementExecutor<
            get_size(fit_threads) != recommended_threads ) {
 
         fit_threads = fitHipDims(
-            max_threads, launch_dims.threads, launch_dims.min_threads);
+            max_threads, launch_dims.dims.threads, launch_dims.min_dims.threads);
 
       }
 
-      launch_dims.threads = fit_threads;
+      launch_dims.dims.threads = fit_threads;
 
 
       //
@@ -534,8 +551,8 @@ struct StatementExecutor<
 
       }
 
-      launch_dims.blocks = fitHipDims(
-          use_blocks, launch_dims.blocks, launch_dims.min_blocks);
+      launch_dims.dims.blocks = fitHipDims(
+          use_blocks, launch_dims.dims.blocks, launch_dims.min_dims.blocks);
 
       //
       // make sure that we fit
@@ -553,7 +570,7 @@ struct StatementExecutor<
         // Privatize the LoopData, using make_launch_body to setup reductions
         //
         auto hip_data = RAJA::hip::make_launch_body(
-            launch_dims.blocks, launch_dims.threads, shmem, res, data);
+            launch_dims.dims.blocks, launch_dims.dims.threads, shmem, res, data);
 
 
         //

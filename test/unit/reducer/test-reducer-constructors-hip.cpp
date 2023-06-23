@@ -21,7 +21,7 @@ using HipInitReducerConstructorTypes =
   Test< camp::cartesian_product< HipReducerPolicyList,
                                  DataTypeList,
                                  HipResourceList,
-                                 HipForoneList > >::Types;
+                                 HipUnitTestPolicyList > >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(HipBasicTest,
                                ReducerBasicConstructorUnitTest,

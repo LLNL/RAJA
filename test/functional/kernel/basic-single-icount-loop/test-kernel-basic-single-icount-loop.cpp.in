@@ -164,6 +164,14 @@ camp::list<
         RAJA::statement::Lambda<0>
       >
     >
+  >,
+
+  RAJA::KernelPolicy<
+    RAJA::statement::CudaKernel<
+      RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::cuda_global_size_z_loop<32>,
+        RAJA::statement::Lambda<0>
+      >
+    >
   >
 
 >;
@@ -186,6 +194,14 @@ camp::list<
       RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::hip_thread_y_loop,
         RAJA::statement::Lambda<0>
       > 
+    >
+  >,
+
+  RAJA::KernelPolicy<
+    RAJA::statement::HipKernel<
+      RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::hip_global_size_z_loop<32>,
+        RAJA::statement::Lambda<0>
+      >
     >
   >
 

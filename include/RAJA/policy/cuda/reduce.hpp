@@ -441,7 +441,8 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 
     // Partial placement new: Should call new(tmpsd) here but recasting memory
     // to avoid calling constructor/destructor in shared memory.
-    RAJA::detail::SoAArray<T, policy::cuda::MAX_WARPS> * sd = reinterpret_cast<RAJA::detail::SoAArray<T, policy::cuda::MAX_WARPS> *>(tmpsd);
+    RAJA::detail::SoAArray<T, policy::cuda::MAX_WARPS>* sd =
+      reinterpret_cast<RAJA::detail::SoAArray<T, policy::cuda::MAX_WARPS> *>(tmpsd);
 
     // write per warp values to shared memory
     if (warpId == 0) {
@@ -470,6 +471,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 
   return temp;
 }
+
 
 //! reduce values in grid into thread 0 of last running block
 //  returns true if put reduced value in val
@@ -651,6 +653,7 @@ RAJA_DEVICE RAJA_INLINE bool grid_reduce(RAJA::expt::detail::Reducer<OP, T>& red
 }
 
 } //  namespace expt
+
 
 //! reduce values in grid into thread 0 of last running block
 //  returns true if put reduced value in val

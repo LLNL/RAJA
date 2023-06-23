@@ -26,10 +26,9 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
+#include <limits>
 #include <type_traits>
 #include <unordered_map>
-
-#include "nvToolsExt.h"
 
 #include "RAJA/util/basic_mempool.hpp"
 #include "RAJA/util/mutex.hpp"
@@ -39,6 +38,10 @@
 
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
+
+#if defined(RAJA_ENABLE_NV_TOOLS_EXT)
+#include "nvToolsExt.h"
+#endif
 
 namespace RAJA
 {
@@ -290,6 +293,188 @@ cudaDeviceProp& device_prop()
   static cudaDeviceProp prop = get_device_prop();
   return prop;
 }
+
+
+struct CudaFixedMaxBlocksData
+{
+  int multiProcessorCount;
+  int maxThreadsPerMultiProcessor;
+};
+
+RAJA_INLINE
+size_t cuda_max_blocks(size_t block_size)
+{
+  static CudaFixedMaxBlocksData data = []() {
+    cudaDeviceProp& prop = cuda::device_prop();
+    return CudaFixedMaxBlocksData{prop.multiProcessorCount,
+                                  prop.maxThreadsPerMultiProcessor};
+  }();
+
+  size_t max_blocks = data.multiProcessorCount *
+                  (data.maxThreadsPerMultiProcessor / block_size);
+
+  return max_blocks;
+}
+
+struct CudaOccMaxBlocksThreadsData
+{
+  int prev_shmem_size;
+  int max_blocks;
+  int max_threads;
+};
+
+template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
+RAJA_INLINE
+void cuda_occupancy_max_blocks_threads(Func&& func, int shmem_size,
+                                       size_t &max_blocks, size_t &max_threads)
+{
+  static constexpr int uninitialized = -1;
+  static thread_local CudaOccMaxBlocksThreadsData data = {
+      uninitialized, uninitialized, uninitialized};
+
+  if (data.prev_shmem_size != shmem_size) {
+
+    cudaErrchk(cudaOccupancyMaxPotentialBlockSize(
+        &data.max_blocks, &data.max_threads, func, shmem_size));
+
+    data.prev_shmem_size = shmem_size;
+
+  }
+
+  max_blocks  = data.max_blocks;
+  max_threads = data.max_threads;
+
+}
+
+struct CudaOccMaxBlocksFixedThreadsData
+{
+  int prev_shmem_size;
+  int max_blocks;
+  int multiProcessorCount;
+};
+
+template < typename RAJA_UNUSED_ARG(UniqueMarker), size_t num_threads, typename Func >
+RAJA_INLINE
+void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
+                               size_t &max_blocks)
+{
+  static constexpr int uninitialized = -1;
+  static thread_local CudaOccMaxBlocksFixedThreadsData data = {
+      uninitialized, uninitialized, uninitialized};
+
+  if (data.prev_shmem_size != shmem_size) {
+
+    cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(
+        &data.max_blocks, func, num_threads, shmem_size));
+
+    if (data.multiProcessorCount == uninitialized) {
+
+      data.multiProcessorCount = cuda::device_prop().multiProcessorCount;
+
+    }
+
+    data.max_blocks *= data.multiProcessorCount;
+
+    data.prev_shmem_size = shmem_size;
+
+  }
+
+  max_blocks = data.max_blocks;
+
+}
+
+struct CudaOccMaxBlocksVariableThreadsData
+{
+  int prev_shmem_size;
+  int prev_num_threads;
+  int max_blocks;
+  int multiProcessorCount;
+};
+
+template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
+RAJA_INLINE
+void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
+                               size_t &max_blocks, size_t num_threads)
+{
+  static constexpr int uninitialized = 0;
+  static thread_local CudaOccMaxBlocksVariableThreadsData data = {
+      uninitialized, uninitialized, uninitialized, uninitialized};
+
+  if ( data.prev_shmem_size  != shmem_size ||
+       data.prev_num_threads != num_threads ) {
+
+    int tmp_max_blocks;
+    cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(
+    &tmp_max_blocks, func, static_cast<int>(num_threads), shmem_size));
+    data.max_blocks = tmp_max_blocks;
+
+    if (data.multiProcessorCount == uninitialized) {
+
+      data.multiProcessorCount = cuda::device_prop().multiProcessorCount;
+
+    }
+
+    data.max_blocks *= data.multiProcessorCount;
+
+    data.prev_shmem_size  = shmem_size;
+    data.prev_num_threads = num_threads;
+
+  }
+
+  max_blocks = data.max_blocks;
+
+}
+
+struct CudaOccupancyDefaults
+{
+  CudaOccupancyDefaults(const void* RAJA_UNUSED_ARG(func))
+  { }
+
+  template < typename IdxT >
+  inline auto get_max_grid_size(size_t RAJA_UNUSED_ARG(dynamic_shmem_size),
+                                IdxT RAJA_UNUSED_ARG(block_size)) const
+  {
+    return std::numeric_limits<IdxT>::max();
+  }
+
+  template < typename IdxT = cuda_dim_member_t >
+  inline auto get_max_block_size_and_grid_size(size_t RAJA_UNUSED_ARG(dynamic_shmem_size)) const
+  {
+    return std::make_pair(static_cast<IdxT>(::RAJA::policy::cuda::MAX_BLOCK_SIZE),
+                          std::numeric_limits<IdxT>::max());
+  }
+};
+
+template < typename UniqueMarker >
+struct CudaOccupancyCalculator
+{
+  CudaOccupancyCalculator(const void* func)
+    : m_func(func)
+  { }
+
+  template < typename IdxT >
+  inline auto get_max_grid_size(size_t dynamic_shmem_size, IdxT block_size) const
+  {
+    int max_grid_size = -1;
+    ::RAJA::cuda::cuda_occupancy_max_blocks<UniqueMarker>(
+        m_func, dynamic_shmem_size, max_grid_size, block_size);
+    return static_cast<IdxT>(max_grid_size);
+  }
+
+  template < typename IdxT = cuda_dim_member_t >
+  inline auto get_max_block_size_and_grid_size(size_t dynamic_shmem_size) const
+  {
+    int max_block_size = -1;
+    int max_grid_size = -1;
+    ::RAJA::cuda::cuda_occupancy_max_blocks_threads<UniqueMarker>(
+        m_func, dynamic_shmem_size, max_grid_size, max_block_size);
+    return std::make_pair(static_cast<IdxT>(max_block_size),
+                          static_cast<IdxT>(max_grid_size));
+  }
+
+private:
+  const void* m_func;
+};
 
 }  // namespace cuda
 
