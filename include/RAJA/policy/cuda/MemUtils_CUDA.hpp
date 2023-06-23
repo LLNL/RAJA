@@ -121,7 +121,7 @@ namespace detail
 struct cudaInfo {
   cuda_dim_t gridDim{0, 0, 0};
   cuda_dim_t blockDim{0, 0, 0};
-  ::RAJA::resources::Cuda res{::RAJA::resources::Cuda::CudaFromStream(0,0)};
+  ::RAJA::resources::Cuda res{::RAJA::resources::Cuda::CudaFromStream(0,0)}; 
   bool setup_reducers = false;
 #if defined(RAJA_ENABLE_OPENMP)
   cudaInfo* thread_states = nullptr;
