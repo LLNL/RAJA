@@ -304,13 +304,11 @@ struct CudaFixedMaxBlocksData
 RAJA_INLINE
 size_t cuda_max_blocks(size_t block_size)
 {
-  static CudaFixedMaxBlocksData data = {-1, -1};
-
-  if (data.multiProcessorCount < 0) {
+  static CudaFixedMaxBlocksData data = []() {
     cudaDeviceProp& prop = cuda::device_prop();
-    data.multiProcessorCount = prop.multiProcessorCount;
-    data.maxThreadsPerMultiProcessor = prop.maxThreadsPerMultiProcessor;
-  }
+    return CudaFixedMaxBlocksData{prop.multiProcessorCount,
+                                  prop.maxThreadsPerMultiProcessor};
+  }();
 
   size_t max_blocks = data.multiProcessorCount *
                   (data.maxThreadsPerMultiProcessor / block_size);
@@ -330,7 +328,9 @@ RAJA_INLINE
 void cuda_occupancy_max_blocks_threads(Func&& func, int shmem_size,
                                        size_t &max_blocks, size_t &max_threads)
 {
-  static CudaOccMaxBlocksThreadsData data = {-1, -1, -1};
+  static constexpr int uninitialized = -1;
+  static thread_local CudaOccMaxBlocksThreadsData data = {
+      uninitialized, uninitialized, uninitialized};
 
   if (data.prev_shmem_size != shmem_size) {
 
@@ -358,14 +358,16 @@ RAJA_INLINE
 void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
                                size_t &max_blocks)
 {
-  static CudaOccMaxBlocksFixedThreadsData data = {-1, -1, -1};
+  static constexpr int uninitialized = -1;
+  static thread_local CudaOccMaxBlocksFixedThreadsData data = {
+      uninitialized, uninitialized, uninitialized};
 
   if (data.prev_shmem_size != shmem_size) {
 
     cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(
         &data.max_blocks, func, num_threads, shmem_size));
 
-    if (data.multiProcessorCount < 0) {
+    if (data.multiProcessorCount == uninitialized) {
 
       data.multiProcessorCount = cuda::device_prop().multiProcessorCount;
 
@@ -394,7 +396,9 @@ RAJA_INLINE
 void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
                                size_t &max_blocks, size_t num_threads)
 {
-  static CudaOccMaxBlocksVariableThreadsData data = {0, 0, 0, 0};
+  static constexpr int uninitialized = 0;
+  static thread_local CudaOccMaxBlocksVariableThreadsData data = {
+      uninitialized, uninitialized, uninitialized, uninitialized};
 
   if ( data.prev_shmem_size  != shmem_size ||
        data.prev_num_threads != num_threads ) {
@@ -404,7 +408,7 @@ void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
     &tmp_max_blocks, func, static_cast<int>(num_threads), shmem_size));
     data.max_blocks = tmp_max_blocks;
 
-    if (data.multiProcessorCount < 0) {
+    if (data.multiProcessorCount == uninitialized) {
 
       data.multiProcessorCount = cuda::device_prop().multiProcessorCount;
 

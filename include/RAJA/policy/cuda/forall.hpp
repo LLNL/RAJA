@@ -55,6 +55,21 @@ namespace cuda
 namespace impl
 {
 
+/*!
+ ******************************************************************************
+ *
+ * \brief  Cuda kernel block and grid dimension calculator template.
+ *
+ * \tparam IterationMapping Way of mapping from threads in the kernel to
+ *         iterates of the forall loop. For example StridedLoop uses a grid
+ *         stride loop to run multiple iterates in a single thread.
+ * \tparam IterationGetter Way of getting iteration indices from the underlying
+ *         runtime using threadIdx, blockIdx, etc.
+ * \tparam UniqueMarker Used in occupancy calculator methods to store and get
+ *         data for this specific kernel.
+ *
+ ******************************************************************************
+ */
 template<typename IterationMapping, typename IterationGetter, typename UniqueMarker>
 struct ForallDimensionCalculator;
 
@@ -63,8 +78,8 @@ struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
                                  ::RAJA::cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>,
                                  UniqueMarker>
 {
-  static_assert(BLOCK_SIZE >= 0, "block size may not be ignored with forall");
-  static_assert(GRID_SIZE >= 0, "grid size may not be ignored with forall");
+  static_assert(BLOCK_SIZE > 0 || BLOCK_SIZE == named_usage::unspecified, "block size may not be ignored with forall");
+  static_assert(GRID_SIZE > 0 || GRID_SIZE == named_usage::unspecified, "grid size may not be ignored with forall");
 
   using IndexGetter = ::RAJA::cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
@@ -115,8 +130,8 @@ struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop,
                                  ::RAJA::cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>,
                                  UniqueMarker>
 {
-  static_assert(BLOCK_SIZE >= 0, "block size may not be ignored with forall");
-  static_assert(GRID_SIZE >= 0, "grid size may not be ignored with forall");
+  static_assert(BLOCK_SIZE > 0 || BLOCK_SIZE == named_usage::unspecified, "block size may not be ignored with forall");
+  static_assert(GRID_SIZE > 0 || GRID_SIZE == named_usage::unspecified, "grid size may not be ignored with forall");
 
   using IndexMapper = ::RAJA::cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
