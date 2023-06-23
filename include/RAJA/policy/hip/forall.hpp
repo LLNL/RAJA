@@ -79,50 +79,78 @@ struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
                                  ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>,
                                  UniqueMarker>
 {
-  static_assert(BLOCK_SIZE > 0 || BLOCK_SIZE == named_usage::unspecified, "block size may not be ignored with forall");
-  static_assert(GRID_SIZE > 0 || GRID_SIZE == named_usage::unspecified, "grid size may not be ignored with forall");
+  static_assert(BLOCK_SIZE > 0, "block size may not be ignored with forall");
+  static_assert(GRID_SIZE > 0, "grid size may not be ignored with forall");
 
   using IndexGetter = ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
-  using OccupancyCalculator = std::conditional_t<
-        ( BLOCK_SIZE == named_usage::unspecified &&
-          GRID_SIZE == named_usage::unspecified ),
-      ::RAJA::hip::HipOccupancyCalculator<UniqueMarker>,
-      ::RAJA::hip::HipOccupancyDefaults>;
+  template < typename IdxT >
+  static void set_dimensions(internal::HipDims& dims, IdxT len,
+                             const void* RAJA_UNUSED_ARG(func), size_t RAJA_UNUSED_ARG(dynamic_shmem_size))
+  {
+    if ( len > (static_cast<IdxT>(IndexGetter::block_size) *
+                static_cast<IdxT>(IndexGetter::grid_size)) ) {
+      RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
+    }
+
+    internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexGetter::block_size));
+    internal::set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexGetter::grid_size));
+  }
+};
+
+template<named_dim dim, int GRID_SIZE, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
+                                 ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>,
+                                 UniqueMarker>
+{
+  static_assert(GRID_SIZE > 0, "grid size may not be ignored with forall");
+
+  using IndexGetter = ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
+
+  template < typename IdxT >
+  static void set_dimensions(internal::HipDims& dims, IdxT len,
+                             const void* RAJA_UNUSED_ARG(func), size_t RAJA_UNUSED_ARG(dynamic_shmem_size))
+  {
+    // BEWARE: if calculated block_size is too high then the kernel launch will fail
+    internal::set_hip_dim<dim>(dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexGetter::grid_size)));
+    internal::set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexGetter::grid_size));
+  }
+};
+
+template<named_dim dim, int BLOCK_SIZE, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
+                                 ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>,
+                                 UniqueMarker>
+{
+  static_assert(BLOCK_SIZE > 0, "block size may not be ignored with forall");
+
+  using IndexGetter = ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
+
+  template < typename IdxT >
+  static void set_dimensions(internal::HipDims& dims, IdxT len,
+                             const void* RAJA_UNUSED_ARG(func), size_t RAJA_UNUSED_ARG(dynamic_shmem_size))
+  {
+    internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexGetter::block_size));
+    internal::set_hip_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexGetter::block_size)));
+  }
+};
+
+template<named_dim dim, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
+                                 ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>,
+                                 UniqueMarker>
+{
+  using IndexGetter = ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
 
   template < typename IdxT >
   static void set_dimensions(internal::HipDims& dims, IdxT len,
                              const void* func, size_t dynamic_shmem_size)
   {
-    if (IndexGetter::block_size == named_usage::unspecified &&
-        IndexGetter::grid_size == named_usage::unspecified) {
+    ::RAJA::hip::HipOccupancyCalculator<UniqueMarker> oc(func);
+    auto max_sizes = oc.get_max_block_size_and_grid_size(dynamic_shmem_size);
 
-      OccupancyCalculator oc(func);
-      auto max_sizes = oc.get_max_block_size_and_grid_size(dynamic_shmem_size);
-
-      internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(max_sizes.first));
-      internal::set_hip_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(max_sizes.first)));
-
-    } else if (IndexGetter::block_size == named_usage::unspecified) {
-      // BEWARE: if calculated block_size is too high then the kernel launch will fail
-      internal::set_hip_dim<dim>(dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexGetter::grid_size)));
-      internal::set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexGetter::grid_size));
-
-    } else if (IndexGetter::grid_size == named_usage::unspecified) {
-
-      internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexGetter::block_size));
-      internal::set_hip_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexGetter::block_size)));
-
-    } else {
-
-      if ( len > (static_cast<IdxT>(IndexGetter::block_size) *
-                  static_cast<IdxT>(IndexGetter::grid_size)) ) {
-        RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
-      }
-
-      internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexGetter::block_size));
-      internal::set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexGetter::grid_size));
-    }
+    internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(max_sizes.first));
+    internal::set_hip_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(max_sizes.first)));
   }
 };
 
@@ -131,63 +159,91 @@ struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop,
                                  ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>,
                                  UniqueMarker>
 {
-  static_assert(BLOCK_SIZE > 0 || BLOCK_SIZE == named_usage::unspecified, "block size may not be ignored with forall");
-  static_assert(GRID_SIZE > 0 || GRID_SIZE == named_usage::unspecified, "grid size may not be ignored with forall");
+  static_assert(BLOCK_SIZE > 0, "block size may not be ignored with forall");
+  static_assert(GRID_SIZE > 0, "grid size may not be ignored with forall");
 
   using IndexMapper = ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
-  using OccupancyCalculator = std::conditional_t<
-        ( BLOCK_SIZE == named_usage::unspecified ||
-          GRID_SIZE == named_usage::unspecified ),
-      ::RAJA::hip::HipOccupancyCalculator<UniqueMarker>,
-      ::RAJA::hip::HipOccupancyDefaults>;
+  template < typename IdxT >
+  static void set_dimensions(internal::HipDims& dims, IdxT RAJA_UNUSED_ARG(len),
+                             const void* RAJA_UNUSED_ARG(func), size_t RAJA_UNUSED_ARG(dynamic_shmem_size))
+  {
+    internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    internal::set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+  }
+};
+
+template<named_dim dim, int GRID_SIZE, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop,
+                                 ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>,
+                                 UniqueMarker>
+{
+  static_assert(GRID_SIZE > 0, "grid size may not be ignored with forall");
+
+  using IndexMapper = ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
 
   template < typename IdxT >
   static void set_dimensions(internal::HipDims& dims, IdxT len,
                              const void* func, size_t dynamic_shmem_size)
   {
-    if (IndexMapper::block_size == named_usage::unspecified) {
+    ::RAJA::hip::HipOccupancyCalculator<UniqueMarker> oc(func);
+    auto max_sizes = oc.get_max_block_size_and_grid_size(dynamic_shmem_size);
 
-      OccupancyCalculator oc(func);
-      auto max_sizes = oc.get_max_block_size_and_grid_size(dynamic_shmem_size);
+    IdxT calculated_block_size = std::min(
+        RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size)),
+        static_cast<IdxT>(max_sizes.first));
 
-      if (IndexMapper::grid_size == named_usage::unspecified) {
+    internal::set_hip_dim<dim>(dims.threads, calculated_block_size);
+    internal::set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+  }
+};
 
-        IdxT calculated_grid_size = std::min(
-            RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(max_sizes.first)),
-            static_cast<IdxT>(max_sizes.second));
+template<named_dim dim, int BLOCK_SIZE, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop,
+                                 ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>,
+                                 UniqueMarker>
+{
+  static_assert(BLOCK_SIZE > 0, "block size may not be ignored with forall");
 
-        internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(max_sizes.first));
-        internal::set_hip_dim<dim>(dims.blocks, calculated_grid_size);
+  using IndexMapper = ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
 
-      } else {
+  template < typename IdxT >
+  static void set_dimensions(internal::HipDims& dims, IdxT len,
+                             const void* func, size_t dynamic_shmem_size)
+  {
+    ::RAJA::hip::HipOccupancyCalculator<UniqueMarker> oc(func);
+    auto max_grid_size = oc.get_max_grid_size(dynamic_shmem_size,
+                                              static_cast<IdxT>(IndexMapper::block_size));
 
-        IdxT calculated_block_size = std::min(
-            RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size)),
-            static_cast<IdxT>(max_sizes.first));
+    IdxT calculated_grid_size = std::min(
+        RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size)),
+        static_cast<IdxT>(max_grid_size));
 
-        internal::set_hip_dim<dim>(dims.threads, calculated_block_size);
-        internal::set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-      }
+    internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    internal::set_hip_dim<dim>(dims.blocks, calculated_grid_size);
+  }
+};
 
-    } else if (IndexMapper::grid_size == named_usage::unspecified) {
+template<named_dim dim, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop,
+                                 ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>,
+                                 UniqueMarker>
+{
+  using IndexMapper = ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
 
-      OccupancyCalculator oc(func);
-      auto max_grid_size = oc.get_max_grid_size(dynamic_shmem_size,
-                                                static_cast<IdxT>(IndexMapper::block_size));
+  template < typename IdxT >
+  static void set_dimensions(internal::HipDims& dims, IdxT len,
+                             const void* func, size_t dynamic_shmem_size)
+  {
+    ::RAJA::hip::HipOccupancyCalculator<UniqueMarker> oc(func);
+    auto max_sizes = oc.get_max_block_size_and_grid_size(dynamic_shmem_size);
 
-      IdxT calculated_grid_size = std::min(
-          RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size)),
-          static_cast<IdxT>(max_grid_size));
+    IdxT calculated_grid_size = std::min(
+        RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(max_sizes.first)),
+        static_cast<IdxT>(max_sizes.second));
 
-      internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-      internal::set_hip_dim<dim>(dims.blocks, calculated_grid_size);
-
-    } else {
-
-      internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-      internal::set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-    }
+    internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(max_sizes.first));
+    internal::set_hip_dim<dim>(dims.blocks, calculated_grid_size);
   }
 };
 
