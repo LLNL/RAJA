@@ -444,8 +444,8 @@ Several notable constraints apply to RAJA CUDA/HIP *direct* policies.
             patterns, but may be inappropriate for kernels using block level
             synchronization.**
           * **Thread-direct policies are recommended only for certain loop
-            patterns, such as tiling where the outer tiling produces small
-            fixed size iteration spaces.**
+            patterns, such as block tilings that produce small
+            fixed size iteration spaces within each block.**
 
 Several notes regarding CUDA/HIP *loop* policies are also good to know.
 
