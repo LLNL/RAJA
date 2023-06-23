@@ -87,6 +87,8 @@ inline auto get_value(Factory&& factory)
   return *ptr;
 }
 
+// get the device function pointer and store it so it can be used
+// multiple times
 template < typename Factory >
 inline auto get_cached_value(Factory&& factory)
 {

@@ -15,7 +15,7 @@ using SequentialReducerResetTypes =
   Test< camp::cartesian_product< SequentialReducerPolicyList,
                                  DataTypeList,
                                  HostResourceList,
-                                 SequentialForoneList > >::Types;
+                                 SequentialUnitTestPolicyList > >::Types;
 
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SequentialResetTest,

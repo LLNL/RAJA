@@ -107,39 +107,39 @@ GPU_TYPED_TEST_P( AtomicRefCUDAAddSubUnitTest, CUDAAddSubs )
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test inc ops
-  forone<forone_cuda>( [=] __device__ () {result1[0] = ++test1;} );
+  forone<test_cuda>( [=] __device__ () {result1[0] = ++test1;} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result1[0], (T)1 );
-  forone<forone_cuda>( [=] __device__ () {result2[0] = test1++;} );
+  forone<test_cuda>( [=] __device__ () {result2[0] = test1++;} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)2 );
   ASSERT_EQ( result2[0], (T)1 );
 
   // test dec ops
-  forone<forone_cuda>( [=] __device__ () {result1[0] = --test1;} );
+  forone<test_cuda>( [=] __device__ () {result1[0] = --test1;} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result1[0], (T)1 );
-  forone<forone_cuda>( [=] __device__ () {result2[0] = test1--;} );
+  forone<test_cuda>( [=] __device__ () {result2[0] = test1--;} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)0 );
   ASSERT_EQ( result2[0], (T)1 );
 
   // test add/sub ops
-  forone<forone_cuda>( [=] __device__ () {result1[0] = (test1 += (T)23);} );
+  forone<test_cuda>( [=] __device__ () {result1[0] = (test1 += (T)23);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)23 );
   ASSERT_EQ( result1[0], (T)23 );
-  forone<forone_cuda>( [=] __device__ () {result2[0] = (test1 -= (T)22);} );
+  forone<test_cuda>( [=] __device__ () {result2[0] = (test1 -= (T)22);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)1 );
   ASSERT_EQ( result2[0], (T)1 );
 
   // test add/sub methods
-  forone<forone_cuda>( [=] __device__ () {result1[0] = test1.fetch_add( (T)23 );} );
+  forone<test_cuda>( [=] __device__ () {result1[0] = test1.fetch_add( (T)23 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)24 );
   ASSERT_EQ( result1[0], (T)1 );
-  forone<forone_cuda>( [=] __device__ () {result2[0] = test1.fetch_sub( (T)23 );} );
+  forone<test_cuda>( [=] __device__ () {result2[0] = test1.fetch_sub( (T)23 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)1 );
   ASSERT_EQ( result2[0], (T)24 );

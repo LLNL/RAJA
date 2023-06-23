@@ -16,7 +16,7 @@ using TBBReducerResetTypes =
   Test< camp::cartesian_product< TBBReducerPolicyList,
                                  DataTypeList,
                                  HostResourceList,
-                                 SequentialForoneList > >::Types;
+                                 SequentialUnitTestPolicyList > >::Types;
 
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TBBResetTest,

@@ -40,8 +40,6 @@ namespace RAJA
 namespace internal
 {
 
-
-
 template <typename Data, camp::idx_t LambdaIndex, typename... Args, typename Types>
 struct CudaStatementExecutor<Data, statement::Lambda<LambdaIndex, Args...>, Types> {
 
@@ -52,7 +50,6 @@ struct CudaStatementExecutor<Data, statement::Lambda<LambdaIndex, Args...>, Type
     if(thread_active){
       StatementExecutor<statement::Lambda<LambdaIndex, Args...>, Types>::exec(data);
     }
-
   }
 
 

@@ -89,10 +89,12 @@ using CudaKernelNestedLoopExecPols = camp::list<
     NestedLoopData<DEVICE_DEPTH_2, RAJA::cuda_thread_x_loop, RAJA::cuda_thread_y_loop >,
     NestedLoopData<DEVICE_DEPTH_2, RAJA::seq_exec, RAJA::cuda_thread_x_loop >,
     NestedLoopData<DEVICE_DEPTH_2, RAJA::cuda_thread_x_loop, RAJA::seq_exec >,
+    NestedLoopData<DEVICE_DEPTH_2, RAJA::cuda_global_size_x_direct<32>, RAJA::cuda_global_size_y_loop<8> >,
 
     // Depth 3 Exec Pols
     NestedLoopData<DEVICE_DEPTH_3, RAJA::cuda_thread_x_loop, RAJA::cuda_thread_y_loop, RAJA::seq_exec >,
-    NestedLoopData<DEVICE_DEPTH_3, RAJA::cuda_block_x_loop, RAJA::cuda_thread_x_loop, RAJA::seq_exec >
+    NestedLoopData<DEVICE_DEPTH_3, RAJA::cuda_block_x_loop, RAJA::cuda_thread_x_loop, RAJA::seq_exec >,
+    NestedLoopData<DEVICE_DEPTH_3, RAJA::cuda_global_size_x_loop<16>, RAJA::cuda_global_size_y_direct<16>, RAJA::seq_exec >
   >;
 
 #endif  // RAJA_ENABLE_CUDA
@@ -105,10 +107,12 @@ using HipKernelNestedLoopExecPols = camp::list<
     NestedLoopData<DEVICE_DEPTH_2, RAJA::hip_thread_x_loop, RAJA::hip_thread_y_loop >,
     NestedLoopData<DEVICE_DEPTH_2, RAJA::seq_exec, RAJA::hip_thread_x_loop >,
     NestedLoopData<DEVICE_DEPTH_2, RAJA::hip_thread_x_loop, RAJA::seq_exec >,
+    NestedLoopData<DEVICE_DEPTH_2, RAJA::hip_global_size_x_direct<64>, RAJA::hip_global_size_y_loop<4> >,
 
     // Depth 3 Exec Pols
     NestedLoopData<DEVICE_DEPTH_3, RAJA::hip_thread_x_loop, RAJA::hip_thread_y_loop, RAJA::seq_exec >,
-    NestedLoopData<DEVICE_DEPTH_3, RAJA::hip_block_x_loop, RAJA::hip_thread_x_loop, RAJA::seq_exec >
+    NestedLoopData<DEVICE_DEPTH_3, RAJA::hip_block_x_loop, RAJA::hip_thread_x_loop, RAJA::seq_exec >,
+    NestedLoopData<DEVICE_DEPTH_3, RAJA::hip_global_size_x_loop<32>, RAJA::hip_global_size_y_direct<8>, RAJA::seq_exec >
   >;
 
 #endif  // RAJA_ENABLE_HIP

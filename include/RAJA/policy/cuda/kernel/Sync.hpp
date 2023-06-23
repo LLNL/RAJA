@@ -16,6 +16,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+
 #ifndef RAJA_policy_cuda_kernel_Sync_HPP
 #define RAJA_policy_cuda_kernel_Sync_HPP
 
@@ -51,7 +52,6 @@ struct CudaSyncThreads : public internal::Statement<camp::nil> {
 struct CudaSyncWarp : public internal::Statement<camp::nil> {
 };
 
-
 }  // namespace statement
 
 namespace internal
@@ -85,7 +85,6 @@ struct CudaStatementExecutor<Data, statement::CudaSyncWarp, Types> {
 #else
   void exec(Data &, bool) {  }
 #endif
-
 
   static
   inline
