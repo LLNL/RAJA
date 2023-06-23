@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing the core components of RAJA::Teams
+ * \brief   RAJA header file containing the core components of RAJA::launch
  *
  ******************************************************************************
  */
@@ -311,7 +311,7 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
   ExecPlace place;
   if(res.get_platform() == RAJA::Platform::host) {
     place = RAJA::ExecPlace::HOST;
-  }else{
+  } else {
     place = RAJA::ExecPlace::DEVICE;
   }
 
@@ -445,7 +445,7 @@ template <typename POLICY, typename SEGMENT>
 struct TileExecute;
 
 template <typename POLICY, typename SEGMENT>
-struct TileICountExecute;
+struct TileTCountExecute;
 
 template <typename POLICY_LIST,
           typename CONTEXT,
@@ -469,12 +469,12 @@ template <typename POLICY_LIST,
           typename TILE_T,
           typename SEGMENT,
           typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void tile_icount(CONTEXT const &ctx,
+RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(CONTEXT const &ctx,
                                        TILE_T tile_size,
                                        SEGMENT const &segment,
                                        BODY const &body)
 {
-  TileICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+  TileTCountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
                                                           tile_size,
                                                           segment,
                                                           body);
@@ -509,7 +509,7 @@ template <typename POLICY_LIST,
           typename TILE_T,
           typename SEGMENT,
           typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void tile_icount(CONTEXT const &ctx,
+RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(CONTEXT const &ctx,
                                        TILE_T tile_size0,
                                        TILE_T tile_size1,
                                        SEGMENT const &segment0,
@@ -517,7 +517,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile_icount(CONTEXT const &ctx,
                                        BODY const &body)
 {
 
-  TileICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+  TileTCountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
                                                           tile_size0,
                                                           tile_size1,
                                                           segment0,

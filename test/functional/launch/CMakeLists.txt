@@ -19,10 +19,29 @@ if(RAJA_ENABLE_HIP)
   list(APPEND LAUNCH_BACKENDS Hip)
 endif()
 
+if(RAJA_ENABLE_SYCL)
+  list(APPEND LAUNCH_BACKENDS Sycl)
+endif()
+
 add_subdirectory(run-time-switch)
+
+#Adapted from forall test
+add_subdirectory(reduce-basic)
 
 add_subdirectory(segment)
 
 add_subdirectory(shared_mem)
+
+add_subdirectory(nested_loop)
+
+add_subdirectory(nested_direct)
+
+add_subdirectory(tile_icount_direct)
+
+add_subdirectory(tile_icount_loop)
+
+add_subdirectory(nested_tile_direct)
+
+add_subdirectory(nested_tile_loop)
 
 unset( LAUNCH_BACKENDS )

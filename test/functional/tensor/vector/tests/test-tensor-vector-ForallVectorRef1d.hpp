@@ -10,6 +10,8 @@
 
 #include<RAJA/RAJA.hpp>
 
+RAJA_INDEX_VALUE( TX, "TX" );
+
 template <typename VECTOR_TYPE>
 void ForallVectorRef1dImpl()
 {
@@ -38,13 +40,13 @@ void ForallVectorRef1dImpl()
     C[i] = 0.0;
   }
 
-  RAJA::View<element_t, RAJA::Layout<1>> X(A.data(), N);
-  RAJA::View<element_t, RAJA::Layout<1>> Y(B.data(), N);
-  RAJA::View<element_t, RAJA::Layout<1>> Z(C.data(), N);
+  RAJA::TypedView<element_t, RAJA::Layout<1>, TX> X(A.data(), N);
+  RAJA::TypedView<element_t, RAJA::Layout<1>, TX> Y(B.data(), N);
+  RAJA::TypedView<element_t, RAJA::Layout<1>, TX> Z(C.data(), N);
 
-  RAJA::View<element_t, RAJA::Layout<1>> X_d(A_ptr, N);
-  RAJA::View<element_t, RAJA::Layout<1>> Y_d(B_ptr, N);
-  RAJA::View<element_t, RAJA::Layout<1>> Z_d(C_ptr, N);
+  RAJA::TypedView<element_t, RAJA::Layout<1>, TX> X_d(A_ptr, N);
+  RAJA::TypedView<element_t, RAJA::Layout<1>, TX> Y_d(B_ptr, N);
+  RAJA::TypedView<element_t, RAJA::Layout<1>, TX> Z_d(C_ptr, N);
 
   using idx_t = RAJA::expt::VectorIndex<int, vector_t>;
 
@@ -121,8 +123,8 @@ void ForallVectorRef1dImpl()
   }
 
   // vector_exec only works on the host due to its use of RAJA::seq_exec
-  RAJA::forall<RAJA::expt::vector_exec<vector_t>>(RAJA::TypedRangeSegment<int>(0,N/2),
-      [=](int i){
+  RAJA::forall<RAJA::expt::vector_exec<vector_t>>(RAJA::TypedRangeSegment<TX>(0,N/2),
+      [=](TX i){
 
      Z[i] = 3 + (X[i]*(5/Y[i])) + 9;
   });

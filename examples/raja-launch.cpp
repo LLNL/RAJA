@@ -143,7 +143,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     if (select_cpu_or_gpu == RAJA::ExecPlace::HOST){
       std::cout << "\n Running upper triangular pattern example on the host...\n";
-    }else {
+    } else {
       std::cout << "\n Running upper triangular pattern example on the device...\n";
     }
 
