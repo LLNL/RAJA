@@ -62,7 +62,8 @@ Notable changes include:
        of the new policy mechanics. 
 
   * Build changes/improvements:
-     * Update BLT submodule to v0.5.3.  
+     * Update BLT submodule to v0.5.3.
+     * Umpdate camp submodule to v2023.06.0
 
   * Bug fixes/improvements:
      * Fixes a Windows build issue due to macro file definition logic in a
