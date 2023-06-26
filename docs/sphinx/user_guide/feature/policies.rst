@@ -312,13 +312,13 @@ policies have the prefix ``hip_``.
  cuda/hip_thread_syncable_loop<dims...>    kernel (For)  Similar to thread-loop
                                            launch (loop) policy, but safe to use
                                                          with Cuda/HipSyncThreads
- cuda/hip_thread_size_x_direct<size>       kernel (For)  Same as thread_x_direct
+ cuda/hip_thread_size_x_direct<nxthreads>  kernel (For)  Same as thread_x_direct
                                            launch (loop) policy above but with
                                                          a compile time number of
                                                          threads
- cuda/hip_thread_size_y_direct<size>       kernel (For)  Same as above, but map
+ cuda/hip_thread_size_y_direct<nythreads>  kernel (For)  Same as above, but map
                                            launch (loop) to threads in y-dim
- cuda/hip_thread_size_z_direct<size>       kernel (For)  Same as above, but map
+ cuda/hip_thread_size_z_direct<nzthreads>  kernel (For)  Same as above, but map
                                            launch (loop) to threads in z-dim
  cuda/hip_flatten_threads_{xyz}_direct     launch (loop) Reshapes threads in a
                                                          multi-dimensional thread
@@ -342,13 +342,13 @@ policies have the prefix ``hip_``.
                                            launch (loop) blocks in y-dimension
  cuda/hip_block_z_loop                     kernel (For)  Same as above, but use
                                            launch (loop) blocks in z-dimension
- cuda/hip_block_size_x_direct<block_size>  kernel (For)  Same as block_x_direct
+ cuda/hip_block_size_x_direct<nxblocks>    kernel (For)  Same as block_x_direct
                                            launch (loop) policy above but with
                                                          a compile time number of
                                                          blocks
- cuda/hip_block_size_y_direct<block_size>  kernel (For)  Same as above, but map
+ cuda/hip_block_size_y_direct<nyblocks>    kernel (For)  Same as above, but map
                                            launch (loop) to blocks in y-dim
- cuda/hip_block_size_z_direct<block_size>  kernel (For)  Same as above, but map
+ cuda/hip_block_size_z_direct<nzblocks>    kernel (For)  Same as above, but map
                                            launch (loop) to blocks in z-dim
  cuda/hip_global_x_direct                  kernel (For)  Creates a unique thread
                                            launch (loop) id for each thread on
@@ -368,13 +368,13 @@ policies have the prefix ``hip_``.
                                            launch (loop) globals in y-dimension
  cuda/hip_global_z_loop                    kernel (For)  Same as above, but use
                                            launch (loop) globals in z-dimension
- cuda/hip_global_size_x_direct<block_size> kernel (For)  Same as global_x_direct
+ cuda/hip_global_size_x_direct<nxthreads>  kernel (For)  Same as global_x_direct
                                            launch (loop) policy above but with
                                                          a compile time block
                                                          size
- cuda/hip_global_size_y_direct<block_size> kernel (For)  Same as above, but map
+ cuda/hip_global_size_y_direct<nythreads>  kernel (For)  Same as above, but map
                                            launch (loop) to globals in y-dim
- cuda/hip_global_size_z_direct<block_size> kernel (For)  Same as above, but map
+ cuda/hip_global_size_z_direct<nzthreads>  kernel (For)  Same as above, but map
                                            launch (loop) to globals in z-dim
  cuda/hip_warp_direct                      kernel (For)  Map work to threads
                                                          in a warp directly.
