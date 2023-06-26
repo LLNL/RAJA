@@ -304,9 +304,7 @@ policies have the prefix ``hip_``.
                                                          policy, but use a
                                                          block-stride loop which
                                                          doesn't limit number of
-                                                         loop iterates, this is
-                                                         not safe to use with
-                                                         Cuda/HipSyncThreads
+                                                         loop iterates
  cuda/hip_thread_y_loop                    kernel (For)  Same as above, but for
                                            launch (loop) threads in y-dimension
  cuda/hip_thread_z_loop                    kernel (For)  Same as above, but for
@@ -453,6 +451,9 @@ Several notes regarding CUDA/HIP *loop* policies are also good to know.
             loop iteration space.
           * These polices allow having a larger number of iterates than
             threads/blocks in the x, y, or z dimension.
+          * The cuda/hip_thread_loop policies are not safe to use with Cuda/HipSyncThreads,
+            use the cuda/hip_thread_syncable_loop<dims...> policies instead. For example
+            cuda_thread_x_loop -> cuda_thread_syncable_loop<named_dim::x>.
           * **CUDA/HIP loop policies are recommended for some loop patterns
             where a large or unknown sized iteration space is mapped to a small
             or fixed number of threads.**
