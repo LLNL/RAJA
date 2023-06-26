@@ -325,7 +325,6 @@ policies have the prefix ``hip_``.
                                                          team into one-dimension,
                                                          accepts any permutation
                                                          of dimensions
-                                                         (expt namespace)
  cuda/hip_block_x_direct                   kernel (For)  Map loop iterates
                                            launch (loop) directly to GPU thread
                                                          blocks in x-dimension,
