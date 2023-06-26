@@ -135,7 +135,7 @@ kernel will execute in parallel inside the region.
  ====================================== ============= ==========================
  omp_launch_t                           launch        Creates an OpenMP parallel
                                                       region. Same as applying
-                                                      'omp parallel pragma'
+                                                      'omp parallel' pragma
  omp_parallel_exec<InnerPolicy>         forall,       Creates OpenMP parallel
                                         kernel (For), region and requires an
                                         scan          **InnerPolicy**. Same as
@@ -284,7 +284,7 @@ policies have the prefix ``hip_``.
                                                          size. Note that the
                                                          thread-block size must
                                                          be provided, there is
-                                                         no default provided.
+                                                         no default.
  cuda/hip_launch_t                         launch        Launches a device kernel,
                                                          any code expressed within
                                                          the lambda is executed
@@ -344,13 +344,13 @@ policies have the prefix ``hip_``.
                                            launch (loop) blocks in y-dimension
  cuda/hip_block_z_loop                     kernel (For)  Same as above, but use
                                            launch (loop) blocks in z-dimension
- cuda/hip_block_size_x_direct<size>        kernel (For)  Same as block_x_direct
+ cuda/hip_block_size_x_direct<block_size>  kernel (For)  Same as block_x_direct
                                            launch (loop) policy above but with
                                                          a compile time number of
                                                          blocks
- cuda/hip_block_size_y_direct<size>        kernel (For)  Same as above, but map
+ cuda/hip_block_size_y_direct<block_size>  kernel (For)  Same as above, but map
                                            launch (loop) to blocks in y-dim
- cuda/hip_block_size_z_direct<size>        kernel (For)  Same as above, but map
+ cuda/hip_block_size_z_direct<block_size>  kernel (For)  Same as above, but map
                                            launch (loop) to blocks in z-dim
  cuda/hip_global_x_direct                  kernel (For)  Creates a unique thread
                                            launch (loop) id for each thread on
