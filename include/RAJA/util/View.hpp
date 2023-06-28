@@ -24,6 +24,7 @@
 
 #include "RAJA/pattern/atomic.hpp"
 
+#include "RAJA/util/IndexLayout.hpp"
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
 #include "RAJA/util/TypedViewBase.hpp"
@@ -67,6 +68,13 @@ RAJA_INLINE View<ValueType, Layout<1, IndexType, 0> > make_view(
     ValueType *ptr)
 {
   return View<ValueType, Layout<1, IndexType, 0> >(ptr, 1);
+}
+
+template <size_t n_dims, typename IndexType, typename ValueType, typename... IndexTypes>
+RAJA_INLINE View<ValueType, IndexLayout<n_dims, IndexType, IndexTypes...> > make_index_view(
+    ValueType *ptr, IndexLayout<n_dims, IndexType, IndexTypes...> index_layout)
+{
+  return View<ValueType, IndexLayout<n_dims, IndexType, IndexTypes...> >(ptr, index_layout);
 }
 
 
