@@ -233,6 +233,22 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
 };
 
 // specialization for direct thread policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::ignored>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::ignored>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    // BEWARE: if calculated block_size is too high then the kernel launch will fail
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(len));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(len));
+  }
+};
+///
 template<named_dim dim, int BLOCK_SIZE, kernel_sync_requirement sync>
 struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
                                                     sync,
@@ -243,22 +259,30 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
   template < typename IdxT >
   static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
   {
-    if (IndexMapper::block_size == named_usage::unspecified) {
-      // BEWARE: if calculated block_size is too high then the kernel launch will fail
-      set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(len));
-      set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(len));
-
-    } else {
-      if ( len > static_cast<IdxT>(IndexMapper::block_size) ) {
-        RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
-      }
-      set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-      set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    if ( len > static_cast<IdxT>(IndexMapper::block_size) ) {
+      RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
     }
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
   }
 };
 
 // specialization for direct block policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::ignored, named_usage::unspecified>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::ignored, named_usage::unspecified>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(len));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(len));
+  }
+};
+///
 template<named_dim dim, int GRID_SIZE, kernel_sync_requirement sync>
 struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
                                                     sync,
@@ -269,21 +293,66 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
   template < typename IdxT >
   static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
   {
-    if (IndexMapper::grid_size == named_usage::unspecified) {
-      set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(len));
-      set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(len));
-
-    } else {
-      if ( len > static_cast<IdxT>(IndexMapper::grid_size) ) {
-        RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
-      }
-      set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-      set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    if ( len > static_cast<IdxT>(IndexMapper::grid_size) ) {
+      RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
     }
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
   }
 };
 
 // specialization for direct global policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    if (len > static_cast<IdxT>(0)) {
+      RAJA_ABORT_OR_THROW("must know one of block_size or grid_size");
+    }
+  }
+};
+///
+template<named_dim dim, int GRID_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    // BEWARE: if calculated block_size is too high then the kernel launch will fail
+    set_cuda_dim<dim>(dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size)));
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(min_dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size)));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+  }
+};
+///
+template<named_dim dim, int BLOCK_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size)));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(min_dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size)));
+  }
+};
+///
 template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, kernel_sync_requirement sync>
 struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
                                                     sync,
@@ -294,35 +363,14 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
   template < typename IdxT >
   static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
   {
-    if (IndexMapper::block_size == named_usage::unspecified &&
-        IndexMapper::grid_size == named_usage::unspecified) {
-      if (len > static_cast<IdxT>(0)) {
-        RAJA_ABORT_OR_THROW("must know one of block_size or grid_size");
-      }
-
-    } else if (IndexMapper::block_size == named_usage::unspecified) {
-      // BEWARE: if calculated block_size is too high then the kernel launch will fail
-      set_cuda_dim<dim>(dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size)));
-      set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-      set_cuda_dim<dim>(min_dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size)));
-      set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-
-    } else if (IndexMapper::grid_size == named_usage::unspecified) {
-      set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-      set_cuda_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size)));
-      set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-      set_cuda_dim<dim>(min_dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size)));
-
-    } else {
-      if ( len > (static_cast<IdxT>(IndexMapper::block_size) *
-                  static_cast<IdxT>(IndexMapper::grid_size)) ) {
-        RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
-      }
-      set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-      set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-      set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-      set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    if ( len > (static_cast<IdxT>(IndexMapper::block_size) *
+                static_cast<IdxT>(IndexMapper::grid_size)) ) {
+      RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
     }
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
   }
 };
 
@@ -342,6 +390,22 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
 };
 
 // specialization for strided loop thread policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::ignored>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::ignored>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    // BEWARE: if calculated block_size is too high then the kernel launch will fail
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(len));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
+  }
+};
+///
 template<named_dim dim, int BLOCK_SIZE, kernel_sync_requirement sync>
 struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
                                                     sync,
@@ -352,19 +416,27 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
   template < typename IdxT >
   static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
   {
-    if (IndexMapper::block_size == named_usage::unspecified) {
-      // BEWARE: if calculated block_size is too high then the kernel launch will fail
-      set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(len));
-      set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
-
-    } else {
-      set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-      set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-    }
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
   }
 };
 
 // specialization for strided loop block policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::ignored, named_usage::unspecified>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::ignored, named_usage::unspecified>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(len));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
+  }
+};
+///
 template<named_dim dim, int GRID_SIZE, kernel_sync_requirement sync>
 struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
                                                     sync,
@@ -375,18 +447,66 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
   template < typename IdxT >
   static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
   {
-    if (IndexMapper::grid_size == named_usage::unspecified) {
-      set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(len));
-      set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
-
-    } else {
-      set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-      set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-    }
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
   }
 };
 
 // specialization for strided loop global policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    if (len > static_cast<IdxT>(0)) {
+      set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(1));
+      set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(1));
+      set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
+      set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
+    }
+  }
+};
+///
+template<named_dim dim, int GRID_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    // BEWARE: if calculated block_size is too high then the kernel launch will fail
+    set_cuda_dim<dim>(dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size)));
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+  }
+};
+///
+template<named_dim dim, int BLOCK_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size)));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
+  }
+};
+///
 template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, kernel_sync_requirement sync>
 struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
                                                     sync,
@@ -397,34 +517,10 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
   template < typename IdxT >
   static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
   {
-    if (IndexMapper::block_size == named_usage::unspecified &&
-        IndexMapper::grid_size == named_usage::unspecified) {
-      if (len > static_cast<IdxT>(0)) {
-        set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(1));
-        set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(1));
-        set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
-        set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
-      }
-
-    } else if (IndexMapper::block_size == named_usage::unspecified) {
-      // BEWARE: if calculated block_size is too high then the kernel launch will fail
-      set_cuda_dim<dim>(dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size)));
-      set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-      set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
-      set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-
-    } else if (IndexMapper::grid_size == named_usage::unspecified) {
-      set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-      set_cuda_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size)));
-      set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-      set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
-
-    } else {
-      set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-      set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-      set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-      set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-    }
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
   }
 };
 
