@@ -254,6 +254,8 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
                                                     sync,
                                                     cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>>>
 {
+  static_assert(BLOCK_SIZE > 0, "block size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
   using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>;
 
   template < typename IdxT >
@@ -288,6 +290,8 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
                                                     sync,
                                                     cuda::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>>>
 {
+  static_assert(GRID_SIZE > 0, "grid size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
   using IndexMapper = cuda::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>;
 
   template < typename IdxT >
@@ -323,6 +327,8 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
                                                     sync,
                                                     cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>>>
 {
+  static_assert(GRID_SIZE > 0, "grid size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
   using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
 
   template < typename IdxT >
@@ -341,6 +347,8 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
                                                     sync,
                                                     cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>>>
 {
+  static_assert(BLOCK_SIZE > 0, "block size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
   using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
 
   template < typename IdxT >
@@ -358,6 +366,9 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
                                                     sync,
                                                     cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>>
 {
+  static_assert(BLOCK_SIZE > 0, "block size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+  static_assert(GRID_SIZE > 0, "grid size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
   using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
   template < typename IdxT >
@@ -411,6 +422,8 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
                                                     sync,
                                                     cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>>>
 {
+  static_assert(BLOCK_SIZE > 0, "block size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
   using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>;
 
   template < typename IdxT >
@@ -442,6 +455,8 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
                                                     sync,
                                                     cuda::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>>>
 {
+  static_assert(GRID_SIZE > 0, "grid size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
   using IndexMapper = cuda::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>;
 
   template < typename IdxT >
@@ -477,6 +492,8 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
                                                     sync,
                                                     cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>>>
 {
+  static_assert(GRID_SIZE > 0, "grid size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
   using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
 
   template < typename IdxT >
@@ -495,6 +512,8 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
                                                     sync,
                                                     cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>>>
 {
+  static_assert(BLOCK_SIZE > 0, "block size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
   using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
 
   template < typename IdxT >
@@ -512,6 +531,9 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
                                                     sync,
                                                     cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>>
 {
+  static_assert(BLOCK_SIZE > 0, "block size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+  static_assert(GRID_SIZE > 0, "grid size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
   using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
   template < typename IdxT >
