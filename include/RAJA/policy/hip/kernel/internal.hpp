@@ -290,7 +290,7 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mappin
                                                     sync,
                                                     hip::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>>>
 {
-  static_assert(BLOCK_SIZE > 0, "block size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+  static_assert(GRID_SIZE > 0, "grid size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
 
   using IndexMapper = hip::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>;
 
