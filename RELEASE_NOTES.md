@@ -58,7 +58,7 @@ Notable changes include:
        Aliases have been added for all of the pre-existing policies and some
        are deprecated in favor of policies named more consistently. One
        **BREAKING CHANGE** is that thread loop policies are no longer safe to
-       block synchronization. That feature still exists but can only be
+       block synchronize. That feature still exists but can only be
        accessed with a custom policy. The RAJA User Guide contains descriptions
        of the new policy mechanics.
 
