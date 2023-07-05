@@ -20,7 +20,7 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
-Version 2023.06.0 -- Release date 2023-06-dd
+Version 2023.06.0 -- Release date 2023-07-06
 ============================================
 
 This release contains new features to improve GPU kernel performance and some
