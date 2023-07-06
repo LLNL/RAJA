@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -41,25 +41,17 @@ namespace loop
 /// Segment execution policies
 ///
 
-struct loop_exec : make_policy_pattern_launch_platform_t<Policy::loop,
-                                                         Pattern::forall,
-                                                         Launch::undefined,
-                                                         Platform::host> {
-};
+using loop_exec = seq_exec;
 
 ///
 /// Index set segment iteration policies
 ///
-using loop_segit = loop_exec;
+using loop_segit = seq_exec;
 
 ///
 /// WorkGroup execution policies
 ///
-struct loop_work : make_policy_pattern_launch_platform_t<Policy::loop,
-                                                         Pattern::workgroup_exec,
-                                                         Launch::sync,
-                                                         Platform::host> {
-};
+using loop_work = seq_work;
 
 ///
 ///////////////////////////////////////////////////////////////////////

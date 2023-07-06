@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -74,7 +74,7 @@ RAJA_HOST_DEVICE RAJA_INLINE
 void
 safe_iter_swap(Iter lhs, Iter rhs)
 {
-#ifdef RAJA_DEVICE_CODE
+#ifdef RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE
   using camp::safe_swap;
   safe_swap(*lhs, *rhs);
 #else

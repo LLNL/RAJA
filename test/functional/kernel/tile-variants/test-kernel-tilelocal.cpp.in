@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -33,17 +33,17 @@ using SequentialKernelTileExecPols =
   camp::list<
 
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::loop_exec,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::seq_exec,
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-              RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
+            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::seq_exec,
+              RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::seq_exec,
                 RAJA::statement::Lambda<0>
               >
             >,
 
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-              RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
+            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::seq_exec,
+              RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::seq_exec,
                 RAJA::statement::Lambda<1>
               >
             >
@@ -61,16 +61,16 @@ using OpenMPKernelTileExecPols =
 
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::omp_parallel_for_exec,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::seq_exec,
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-              RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
+            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::seq_exec,
+              RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::seq_exec,
                 RAJA::statement::Lambda<0>
               >
             >,
 
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-              RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
+            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::seq_exec,
+              RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::seq_exec,
                 RAJA::statement::Lambda<1>
               >
             >

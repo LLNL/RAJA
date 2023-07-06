@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -32,7 +32,7 @@ void ForallReduceSumMultipleStaggeredTestImpl(IDX_TYPE first,
 
   const DATA_TYPE initval = 2;
 
-  for (IDX_TYPE i = 0; i < last; ++i) {
+  for (IDX_TYPE i = first; i < last; ++i) {
     test_array[i] = initval;
   }
 
@@ -104,7 +104,7 @@ void ForallReduceSumMultipleStaggered2TestImpl(IDX_TYPE first,
 
   const DATA_TYPE initval = 2;
 
-  for (IDX_TYPE i = 0; i < last; ++i) {
+  for (IDX_TYPE i = first; i < last; ++i) {
     test_array[i] = initval;
   }
 

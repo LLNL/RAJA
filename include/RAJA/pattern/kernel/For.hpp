@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -134,7 +134,6 @@ struct StatementExecutor<
 
     RAJA_EXTRACT_BED_IT(TypedRangeSegment<len_t>(0, len));
 
-    RAJA_NO_SIMD
     for (decltype(distance_it) i = 0; i < distance_it; ++i) {
       for_wrapper(*(begin_it + i));
     }

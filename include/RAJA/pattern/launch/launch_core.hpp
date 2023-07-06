@@ -3,13 +3,13 @@
  *
  * \file
  *
- * \brief   RAJA header file containing the core components of RAJA::Teams
+ * \brief   RAJA header file containing the core components of RAJA::launch
  *
  ******************************************************************************
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -31,7 +31,7 @@
 //Odd dependecy with atomics is breaking CI builds
 //#include "RAJA/util/View.hpp"
 
-#if defined(RAJA_DEVICE_CODE) && !defined(RAJA_ENABLE_SYCL)
+#if defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE) && !defined(RAJA_ENABLE_SYCL)
 #define RAJA_TEAM_SHARED __shared__
 #else
 #define RAJA_TEAM_SHARED
@@ -49,7 +49,7 @@ struct null_launch_t {
 
 // Support for host, and device
 template <typename HOST_POLICY
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_GPU_ACTIVE)
           ,
           typename DEVICE_POLICY = HOST_POLICY
 #endif
@@ -57,20 +57,20 @@ template <typename HOST_POLICY
 
 struct LoopPolicy {
   using host_policy_t = HOST_POLICY;
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_GPU_ACTIVE)
   using device_policy_t = DEVICE_POLICY;
 #endif
 };
 
 template <typename HOST_POLICY
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_GPU_ACTIVE)
           ,
           typename DEVICE_POLICY = HOST_POLICY
 #endif
           >
 struct LaunchPolicy {
   using host_policy_t = HOST_POLICY;
-#if defined(RAJA_DEVICE_ACTIVE)
+#if defined(RAJA_GPU_ACTIVE)
   using device_policy_t = DEVICE_POLICY;
 #endif
 };
@@ -201,11 +201,11 @@ public:
   RAJA_HOST_DEVICE
   void teamSync()
   {
-#if defined(RAJA_DEVICE_CODE) && defined(RAJA_ENABLE_SYCL)
+#if defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE) && defined(RAJA_ENABLE_SYCL)
     itm->barrier(sycl::access::fence_space::local_space);
 #endif
 
-#if defined(RAJA_DEVICE_CODE) && !defined(RAJA_ENABLE_SYCL)
+#if defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE) && !defined(RAJA_ENABLE_SYCL)
     __syncthreads();
 #endif
   }
@@ -238,7 +238,10 @@ void launch(LaunchParams const &params, const char *kernel_name, BODY const &bod
   util::callPreLaunchPlugins(context);
 
   using launch_t = LaunchExecute<typename LAUNCH_POLICY::host_policy_t>;
-  launch_t::exec(params, kernel_name, p_body);
+
+  using Res = typename resources::get_resource<typename LAUNCH_POLICY::host_policy_t>::type;
+
+  launch_t::exec(Res::get_default(), params, kernel_name, p_body);
 
   util::callPostLaunchPlugins(context);
 }
@@ -258,12 +261,14 @@ void launch(ExecPlace place, const LaunchParams &params, const char *kernel_name
   //Forward to single policy launch API - simplifies testing of plugins
   switch (place) {
     case ExecPlace::HOST: {
-      launch<LaunchPolicy<typename POLICY_LIST::host_policy_t>>(params, kernel_name, body);
+      using Res = typename resources::get_resource<typename POLICY_LIST::host_policy_t>::type;
+      launch<LaunchPolicy<typename POLICY_LIST::host_policy_t>>(Res::get_default(), params, kernel_name, body);
       break;
     }
-#ifdef RAJA_DEVICE_ACTIVE
+#if defined(RAJA_GPU_ACTIVE)
   case ExecPlace::DEVICE: {
-      launch<LaunchPolicy<typename POLICY_LIST::device_policy_t>>(params, kernel_name, body);
+      using Res = typename resources::get_resource<typename POLICY_LIST::device_policy_t>::type;
+      launch<LaunchPolicy<typename POLICY_LIST::device_policy_t>>(Res::get_default(), params, kernel_name, body);
       break;
     }
 #endif
@@ -306,14 +311,14 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
   ExecPlace place;
   if(res.get_platform() == RAJA::Platform::host) {
     place = RAJA::ExecPlace::HOST;
-  }else{
+  } else {
     place = RAJA::ExecPlace::DEVICE;
   }
 
   //
   //Configure plugins
   //
-#ifdef RAJA_DEVICE_ACTIVE
+#if defined(RAJA_GPU_ACTIVE)
   util::PluginContext context{place == ExecPlace::HOST ?
       util::make_context<typename POLICY_LIST::host_policy_t>()
       : util::make_context<typename POLICY_LIST::device_policy_t>()};
@@ -337,7 +342,7 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
       util::callPostLaunchPlugins(context);
       return e_proxy;
     }
-#ifdef RAJA_DEVICE_ACTIVE
+#if defined(RAJA_GPU_ACTIVE)
     case ExecPlace::DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
       resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, params, kernel_name, p_body);
@@ -357,7 +362,7 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
 }
 
 template<typename POLICY_LIST>
-#if defined(RAJA_DEVICE_CODE)
+#if defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE)
 using loop_policy = typename POLICY_LIST::device_policy_t;
 #else
 using loop_policy = typename POLICY_LIST::host_policy_t;
@@ -440,7 +445,7 @@ template <typename POLICY, typename SEGMENT>
 struct TileExecute;
 
 template <typename POLICY, typename SEGMENT>
-struct TileICountExecute;
+struct TileTCountExecute;
 
 template <typename POLICY_LIST,
           typename CONTEXT,
@@ -464,12 +469,12 @@ template <typename POLICY_LIST,
           typename TILE_T,
           typename SEGMENT,
           typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void tile_icount(CONTEXT const &ctx,
+RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(CONTEXT const &ctx,
                                        TILE_T tile_size,
                                        SEGMENT const &segment,
                                        BODY const &body)
 {
-  TileICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+  TileTCountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
                                                           tile_size,
                                                           segment,
                                                           body);
@@ -504,7 +509,7 @@ template <typename POLICY_LIST,
           typename TILE_T,
           typename SEGMENT,
           typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void tile_icount(CONTEXT const &ctx,
+RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(CONTEXT const &ctx,
                                        TILE_T tile_size0,
                                        TILE_T tile_size1,
                                        SEGMENT const &segment0,
@@ -512,7 +517,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile_icount(CONTEXT const &ctx,
                                        BODY const &body)
 {
 
-  TileICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+  TileTCountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
                                                           tile_size0,
                                                           tile_size1,
                                                           segment0,

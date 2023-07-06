@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -212,17 +212,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
 
           RAJA::statement::ForICount<1, RAJA::statement::Param<1>, 
-                                        RAJA::loop_exec,
+                                        RAJA::seq_exec,
             RAJA::statement::ForICount<0, RAJA::statement::Param<0>, 
-                                        RAJA::loop_exec,
+                                        RAJA::seq_exec,
               RAJA::statement::Lambda<0>
             >
           >,
 
           RAJA::statement::ForICount<0, RAJA::statement::Param<0>, 
-                                        RAJA::loop_exec,
+                                        RAJA::seq_exec,
             RAJA::statement::ForICount<1, RAJA::statement::Param<1>, 
-                                          RAJA::loop_exec,
+                                          RAJA::seq_exec,
               RAJA::statement::Lambda<1>
             >
           >
@@ -279,17 +279,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
 
           RAJA::statement::ForICount<1, RAJA::statement::Param<1>, 
-                                        RAJA::loop_exec,
+                                        RAJA::seq_exec,
             RAJA::statement::ForICount<0, RAJA::statement::Param<0>, 
-                                          RAJA::loop_exec,
+                                          RAJA::seq_exec,
                RAJA::statement::Lambda<0>
             >
           >,
 
           RAJA::statement::ForICount<0, RAJA::statement::Param<0>, 
-                                        RAJA::loop_exec,
+                                        RAJA::seq_exec,
             RAJA::statement::ForICount<1, RAJA::statement::Param<1>, 
-                                          RAJA::loop_exec,
+                                          RAJA::seq_exec,
               RAJA::statement::Lambda<1>
             >
           >

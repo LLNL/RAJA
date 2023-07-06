@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -39,7 +39,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-  RAJA::forall<RAJA::loop_exec>(def_host_res, n_range,
+  RAJA::forall<RAJA::seq_exec>(def_host_res, n_range,
     [=, &def_cuda_res](int i){
       RAJA::resources::Cuda res_cuda; 
 
@@ -61,7 +61,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   def_cuda_res.memcpy(h_array, d_array, sizeof(int) * N * M);
 
   int ec_count = 0;
-  RAJA::forall<RAJA::loop_exec>( RAJA::RangeSegment(0, N*M),
+  RAJA::forall<RAJA::seq_exec>( RAJA::RangeSegment(0, N*M),
     [=, &ec_count](int i){
       if (h_array[i] != i) ec_count++;
     }

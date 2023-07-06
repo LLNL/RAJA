@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -193,7 +193,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
 
   // _matmult_outerforall_start
-  RAJA::forall<RAJA::loop_exec>( row_range, [=](int row) {
+  RAJA::forall<RAJA::seq_exec>( row_range, [=](int row) {
 
     for (int col = 0; col < N; ++col) {
 
@@ -230,9 +230,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
 
   // _matmult_nestedforall_start
-  RAJA::forall<RAJA::loop_exec>( row_range, [=](int row) {
+  RAJA::forall<RAJA::seq_exec>( row_range, [=](int row) {
 
-    RAJA::forall<RAJA::loop_exec>( col_range, [=](int col) {
+    RAJA::forall<RAJA::seq_exec>( col_range, [=](int col) {
 
       double dot = 0.0;
       for (int k = 0; k < N; ++k) {
@@ -284,8 +284,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _matmult_basickernel_start
   using EXEC_POL =
     RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::loop_exec,    // row
-        RAJA::statement::For<0, RAJA::loop_exec,  // col
+      RAJA::statement::For<1, RAJA::seq_exec,    // row
+        RAJA::statement::For<0, RAJA::seq_exec,  // col
           RAJA::statement::Lambda<0>
         >
       >
@@ -318,7 +318,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL1 =
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::omp_parallel_for_exec,  // row
-        RAJA::statement::For<0, RAJA::loop_exec,            // col
+        RAJA::statement::For<0, RAJA::seq_exec,            // col
           RAJA::statement::Lambda<0>
         >
       >
@@ -355,7 +355,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _matmult_ompkernel_swap_start
   using EXEC_POL2 =
     RAJA::KernelPolicy<
-      RAJA::statement::For<0, RAJA::loop_exec,                  // col
+      RAJA::statement::For<0, RAJA::seq_exec,                  // col
         RAJA::statement::For<1, RAJA::omp_parallel_for_exec,    // row
           RAJA::statement::Lambda<0>
         >
@@ -634,10 +634,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _matmult_3lambdakernel_seq_start
   using EXEC_POL6a =
     RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::loop_exec,
-        RAJA::statement::For<0, RAJA::loop_exec,
+      RAJA::statement::For<1, RAJA::seq_exec,
+        RAJA::statement::For<0, RAJA::seq_exec,
           RAJA::statement::Lambda<0, RAJA::Params<0>>,  // dot = 0.0
-          RAJA::statement::For<2, RAJA::loop_exec,
+          RAJA::statement::For<2, RAJA::seq_exec,
             RAJA::statement::Lambda<1> // inner loop: dot += ...
           >,
           RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C(row, col) = dot
@@ -690,10 +690,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using EXEC_POL6b =
     RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::loop_exec,
-        RAJA::statement::For<0, RAJA::loop_exec,
+      RAJA::statement::For<1, RAJA::seq_exec,
+        RAJA::statement::For<0, RAJA::seq_exec,
           RAJA::statement::Lambda<0, Params<0>>,  // dot = 0.0
-          RAJA::statement::For<2, RAJA::loop_exec,
+          RAJA::statement::For<2, RAJA::seq_exec,
             RAJA::statement::Lambda<1, Segs<0,1,2>, Params<0>> // dot += ...
           >,
           RAJA::statement::Lambda<2, Segs<0,1>, Params<0>>  // C(row, col) = dot
@@ -741,7 +741,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                 RAJA::ArgList<1, 0>,   // row, col
         RAJA::statement::Lambda<0, RAJA::Params<0>>,  // dot = 0.0
-        RAJA::statement::For<2, RAJA::loop_exec,
+        RAJA::statement::For<2, RAJA::seq_exec,
           RAJA::statement::Lambda<1> // inner loop: dot += ...
         >,
         RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>   // set C(row, col) = dot
@@ -970,7 +970,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
                 // Slide window across matrix: Load tiles of global matrices A, B and compute
                 // local dot products
-                RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::loop_exec,
+                RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::seq_exec,
 
                   // Load tile of A into shmem
                   RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
@@ -990,7 +990,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
                   //Partial multiplication
                   RAJA::statement::For<2, RAJA::cuda_thread_y_loop,
-                    RAJA::statement::For<1, RAJA::loop_exec,
+                    RAJA::statement::For<1, RAJA::seq_exec,
                       RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
                         shmem_Lambda3
                       >

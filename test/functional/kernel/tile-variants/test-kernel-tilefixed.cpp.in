@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,6 +15,7 @@
 
 // for data types
 #include "RAJA_test-reduce-types.hpp"
+#include "RAJA_test-reducepol.hpp"
 #include "RAJA_test-forall-data.hpp"
 
 //
@@ -33,45 +34,9 @@ using SequentialKernelTileExecPols =
   camp::list<
 
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::loop_exec,
-          RAJA::statement::For<1, RAJA::loop_exec,
-            RAJA::statement::For<0, RAJA::loop_exec,
-              RAJA::statement::Lambda<0>
-            >
-          >
-        >
-      >
-    >,
-
-    RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::seq_exec,
         RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::seq_exec,
           RAJA::statement::For<1, RAJA::seq_exec,
-            RAJA::statement::For<0, RAJA::seq_exec,
-              RAJA::statement::Lambda<0>
-            >
-          >
-        >
-      >
-    >,
-
-    RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::seq_exec,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::loop_exec,
-          RAJA::statement::For<1, RAJA::seq_exec,
-            RAJA::statement::For<0, RAJA::loop_exec,
-              RAJA::statement::Lambda<0>
-            >
-          >
-        >
-      >
-    >,
-
-    RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::seq_exec,
-          RAJA::statement::For<1, RAJA::loop_exec,
             RAJA::statement::For<0, RAJA::seq_exec,
               RAJA::statement::Lambda<0>
             >
@@ -351,7 +316,8 @@ using @TILE_BACKEND@KernelTileTypes =
   Test< camp::cartesian_product<IdxTypeList,
                                 ReduceDataTypeList,
                                 @TILE_BACKEND@ResourceList,
-                                @TILE_BACKEND@KernelTileExecPols>>::Types;
+                                @TILE_BACKEND@KernelTileExecPols,
+                                @TILE_BACKEND@ReducePols>>::Types;
 
 //
 // Instantiate parameterized test

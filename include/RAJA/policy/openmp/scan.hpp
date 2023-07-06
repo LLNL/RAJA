@@ -9,7 +9,7 @@
 */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -29,7 +29,7 @@
 #include <omp.h>
 
 #include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/loop/scan.hpp"
+#include "RAJA/policy/sequential/scan.hpp"
 #include "RAJA/pattern/detail/algorithm.hpp"
 
 namespace RAJA
@@ -68,13 +68,13 @@ inclusive_inplace(
     const DistanceT idx_begin = firstIndex(n, p, pid);
     const DistanceT idx_end = firstIndex(n, p, pid + 1);
     if (idx_begin != idx_end) {
-      inclusive_inplace(host_res, ::RAJA::loop_exec{},
+      inclusive_inplace(host_res, ::RAJA::seq_exec{},
                         begin + idx_begin, begin + idx_end, f);
       sums[pid] = begin[idx_end - 1];
     }
 #pragma omp barrier
 #pragma omp single
-    exclusive_inplace(host_res, ::RAJA::loop_exec{},
+    exclusive_inplace(host_res, ::RAJA::seq_exec{},
                       sums.data(), sums.data() + p, f, BinFn::identity());
     for (auto i = idx_begin; i < idx_end; ++i) {
       begin[i] = f(begin[i], sums[pid]);
@@ -116,13 +116,13 @@ exclusive_inplace(
     const Value init = ((pid == 0) ? v : *(begin + idx_begin - 1));
 #pragma omp barrier
     if (idx_begin != idx_end) {
-      exclusive_inplace(host_res, loop_exec{},
+      exclusive_inplace(host_res, seq_exec{},
                         begin + idx_begin, begin + idx_end, f, init);
       sums[pid] = begin[idx_end - 1];
     }
 #pragma omp barrier
 #pragma omp single
-    exclusive_inplace(host_res, loop_exec{},
+    exclusive_inplace(host_res, seq_exec{},
                       sums.data(), sums.data() + p, f, BinFn::identity());
     for (auto i = idx_begin; i < idx_end; ++i) {
       begin[i] = f(begin[i], sums[pid]);

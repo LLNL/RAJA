@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -175,7 +175,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   // _mattranspose_localarray_raja_start
-  using loop_pol_1 = RAJA::LoopPolicy<RAJA::loop_exec>;
+  using loop_pol_1 = RAJA::LoopPolicy<RAJA::seq_exec>;
   using launch_policy_1 = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
   RAJA::launch<launch_policy_1>(
@@ -225,7 +225,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // one of the inner loops.
   //
   using omp_pol_2 = RAJA::LoopPolicy<RAJA::omp_for_exec>;
-  using loop_pol_2 = RAJA::LoopPolicy<RAJA::loop_exec>;
+  using loop_pol_2 = RAJA::LoopPolicy<RAJA::seq_exec>;
   using launch_policy_2 = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
   RAJA::launch<launch_policy_2>(

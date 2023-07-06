@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -103,7 +103,7 @@ macro(raja_add_plugin_library)
 
 endmacro(raja_add_plugin_library)
 
-# Allows strings embedded in test files to used to process ctest results.
+# Allows strings embedded in test files to be used to process ctest results.
 # Only works for new testing framework/structure (no effect on old tests).
 # Borrowed heavily from CAMP.
 function(raja_set_failtest TESTNAME)
@@ -127,6 +127,8 @@ function(raja_set_failtest TESTNAME)
 
     # Search test source code for fail string
     foreach(line ${test_lines})
+      # We know the line will match the regex, but the following populates the
+      # CMAKE_MATCH-<n> variables with groups from the regex.
       if(NOT line MATCHES "${test_regex}")
         continue()
       endif()

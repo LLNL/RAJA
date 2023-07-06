@@ -1,12 +1,12 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 //
-// Execution policy lists used throughout teams tests
+// Execution policy lists used throughout dynamic forall tests
 //
 
 #ifndef __RAJA_test_dynamic_execpol_HPP__
@@ -15,7 +15,7 @@
 #include "RAJA/RAJA.hpp"
 #include "camp/list.hpp"
 
-using policy_list = camp::list<camp::list<RAJA::loop_exec
+using policy_list = camp::list<camp::list<RAJA::seq_exec
                                ,RAJA::simd_exec
 #if defined(RAJA_ENABLE_OPENMP)
                                ,RAJA::omp_parallel_for_exec

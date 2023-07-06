@@ -1,5 +1,5 @@
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2016-22, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2016-23, Lawrence Livermore National Security, LLC)
 [comment]: # (and RAJA project contributors. See the RAJA/LICENSE file)
 [comment]: # (for details.)
 [comment]: # 
@@ -19,6 +19,64 @@ Notable changes include:
 
   * Bug fixes/improvements:
 
+
+Version 2023.06.0 -- Release date 2023-07-06
+============================================
+
+This release contains new features to improve GPU kernel performance and some
+bug fixes. It contains one breaking change described below and an execution
+policy deprecation also described below. The policy deprecation is not a
+breaking change in this release, but will result in a breaking change in the
+next release.
+
+Notable changes include:
+
+  * New features / API changes:
+     * In this release the loop_exec execution policy is deprecated and will
+       be removed in the next release. RAJA has had two sequential execution
+       policies for some time, seq_exec and loop_exec. When using the seq_exec
+       execution policy, RAJA would attach #pragma novector, or similar
+       depending on the compiler, to loop kernel execution. This prevented
+       a compiler from vectorizing a loop, even if it was correct to do so.
+       When the loop_exec policy was specified, the compiler was allowed to
+       apply any optimizations, including SIMD, that its heuristics determined
+       were appropriate. In this release, seq_exec behaves the same as how
+       loop_exec behaved historically. The loop_exec and associated policies
+       such as loop_atomic, loop_reduce, etc. are type aliases to the
+       analogous seq_exec policies. This prevents breaking user code with this
+       release. However, users should prepare to switch loop_exec policies
+       to the seq_exec policy variants in the future.
+     * GPU global (thread and block) indexing has been refactored to abstract
+       indexing in a given dimension. The result is that users can now specify
+       a block size or a grid size at compile time or get those values at run
+       time. You can also ignore blocks and index only with threads and
+       vice versa. Kernel and launch policies are now shared. Such policies are
+       now multi-part and contain global indexing information, a way to map
+       global indices like direct or strided loops, and have a synchronization
+       requirement. The synchronization allows one to request that all threads
+       complete even if some have no work so you can synchronize a block.
+       Aliases have been added for all of the pre-existing policies and some
+       are deprecated in favor of policies named more consistently. One
+       **BREAKING CHANGE** is that thread loop policies are no longer safe to
+       block synchronize. That feature still exists but can only be
+       accessed with a custom policy. The RAJA User Guide contains descriptions
+       of the new policy mechanics.
+
+  * Build changes/improvements:
+     * Update BLT submodule to v0.5.3
+     * Update camp submodule to v2023.06.0
+
+  * Bug fixes/improvements:
+     * Fixes a Windows build issue due to macro file definition logic in a
+       RAJA header file. RAJA_COMPILER_MSVC was not getting defined properly
+       when building on a Windows platform using a compiler other than MSVC.
+     * Kernels using the RAJA OpenMP target back-end were not properly
+       seg faulting when expected to do so. This has been fixed.
+     * Various improvements, compilation and execution, in RAJA SIMD support.
+     * Various improvements and additions to RAJA tests to cover more end-user
+       cases.
+
+
 Version 2022.10.5 -- Release date 2023-02-28
 ============================================
 
@@ -29,6 +87,7 @@ This release fixes an issue that was found after the v2022.10.4 release.
     were constructed and calling CUDA/HIP API routines before either runtime
     was initialized.
 
+
 Version 2022.10.4 -- Release date 2022-12-14
 ============================================
 
@@ -36,6 +95,7 @@ This release fixes an issue that was found after the v2022.10.3 release.
 
   * Fixes device alignment bug in workgroups which led to missing symbol errors
     with the AMD clang compiler.
+
 
 Version 2022.10.3 -- Release date 2022-12-01
 ============================================

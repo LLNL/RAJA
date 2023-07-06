@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -256,7 +256,7 @@ namespace expt
             using PartTile  = typename TailTile::Partial;
 
     
-            static_assert( (tile_begin + STORAGE::s_dim_elem(DIM0) ) <= (orig_begin + orig_size+ STORAGE::s_dim_elem(DIM0) ), "OOB" );
+            static_assert( (tile_begin + STORAGE::s_dim_elem(DIM0) ) <= (orig_begin + orig_size+ STORAGE::s_dim_elem(DIM0) ), "OOB StaticTensorTileExec DOWN" );
      
             if( (tile_begin + STORAGE::s_dim_elem(DIM0) ) <= (orig_begin + orig_size) ){
                DownExec::static_exec(otile, tile, body);
@@ -298,7 +298,7 @@ namespace expt
             using PartTile  = typename TailTile::Partial;
 
     
-            static_assert( (tile_begin + STORAGE::s_dim_elem(DIM0) ) <= (orig_begin + orig_size+ STORAGE::s_dim_elem(DIM0) ), "OOB" );
+            static_assert( (tile_begin + STORAGE::s_dim_elem(DIM0) ) <= (orig_begin + orig_size+ STORAGE::s_dim_elem(DIM0) ), "OOB StaticTensorTileExec ACROSS" );
      
             if( (tile_begin + STORAGE::s_dim_elem(DIM0) ) <= (orig_begin + orig_size) ){
                body(tile);
@@ -324,17 +324,17 @@ namespace expt
 
 
 
-    template<typename STORAGE, typename INDEX_TYPE, TensorTileSize TENSOR_SIZE, typename BEGIN, typename SIZE, typename BODY, camp::idx_t ... IDX_SEQ, camp::idx_t ... DIM_SEQ>
+    template<typename STORAGE, typename INDEX_TYPE, TensorTileSize TENSOR_SIZE, typename TBEGIN, typename TSIZE, typename BODY, camp::idx_t ... IDX_SEQ, camp::idx_t ... DIM_SEQ>
     RAJA_INLINE
     RAJA_HOST_DEVICE
-    void tensorTileExec_expanded( StaticTensorTile<INDEX_TYPE,TENSOR_SIZE, BEGIN, SIZE> const &orig_tile, BODY && body, camp::idx_seq<IDX_SEQ...> const &, camp::idx_seq<DIM_SEQ...> const &)
+    void tensorTileExec_expanded( StaticTensorTile<INDEX_TYPE,TENSOR_SIZE, TBEGIN, TSIZE> const &orig_tile, BODY && body, camp::idx_seq<IDX_SEQ...> const &, camp::idx_seq<DIM_SEQ...> const &)
     {
 
       using InputType = StaticTensorTile<
           INDEX_TYPE,
           TENSOR_SIZE,
-          BEGIN,
-          SIZE
+          TBEGIN,
+          TSIZE
       >;
 
       using InputBegin = typename InputType::begin_type;

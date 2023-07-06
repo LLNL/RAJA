@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -33,31 +33,7 @@ using SequentialKernelLocExecPols =
   camp::list<
 
     RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::loop_exec,  // row
-        RAJA::statement::For<0, RAJA::loop_exec,  // col
-          RAJA::statement::Lambda<0>
-        >
-      >
-    >,
-
-    RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::seq_exec,  // row
-        RAJA::statement::For<0, RAJA::seq_exec,  // col
-          RAJA::statement::Lambda<0>
-        >
-      >
-    >,
-
-    RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::seq_exec,  // row
-        RAJA::statement::For<0, RAJA::loop_exec,  // col
-          RAJA::statement::Lambda<0>
-        >
-      >
-    >,
-
-    RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::loop_exec,  // row
         RAJA::statement::For<0, RAJA::seq_exec,  // col
           RAJA::statement::Lambda<0>
         >

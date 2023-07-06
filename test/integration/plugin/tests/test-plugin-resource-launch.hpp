@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -41,7 +41,7 @@ void PluginResourceLaunchTestImpl()
 
       RAJA::launch<LaunchPolicy>
         (res, RAJA::LaunchParams(RAJA::Teams(1), RAJA::Threads(1)),
-         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext RAJA_UNUSED_ARG(ctx))
          {
            p_callable(i);
          });

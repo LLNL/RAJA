@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -172,7 +172,9 @@ struct MultiLambdaNestedLoopExec<DEVICE_DEPTH_2, POLICY_DATA> {
           RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<1>>::type,
             RAJA::statement::Lambda<0>
           >
-        >,
+        >
+      >,
+      RAJA::statement::DEVICE_KERNEL<
         RAJA::statement::For<0, typename camp::at<POLICY_DATA, camp::num<0>>::type,
           RAJA::statement::For<1, typename camp::at<POLICY_DATA, camp::num<1>>::type,
             RAJA::statement::Lambda<1>

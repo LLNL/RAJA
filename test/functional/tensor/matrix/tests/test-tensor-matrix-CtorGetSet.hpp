@@ -1,12 +1,12 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_TESNOR_REGISTER_CtorGetSet_HPP__
-#define __TEST_TESNOR_REGISTER_CtorGetSet_HPP__
+#ifndef __TEST_TENSOR_REGISTER_CtorGetSet_HPP__
+#define __TEST_TENSOR_REGISTER_CtorGetSet_HPP__
 
 #include<RAJA/RAJA.hpp>
 

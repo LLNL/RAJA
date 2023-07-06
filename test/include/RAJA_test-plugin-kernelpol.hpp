@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,21 +22,14 @@ using SequentialPluginKernelExecPols = camp::list<
         RAJA::statement::For<0, RAJA::seq_exec,
           RAJA::statement::Lambda<0>>>,
       RAJA::KernelPolicy<
-        RAJA::statement::Tile<0, RAJA::tile_fixed<2>, RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<2>, RAJA::seq_exec,
           RAJA::statement::For<0, RAJA::seq_exec,
-            RAJA::statement::Lambda<0>>>>,
-      RAJA::KernelPolicy<
-        RAJA::statement::For<0, RAJA::loop_exec,
-          RAJA::statement::Lambda<0>>>,
-      RAJA::KernelPolicy<
-        RAJA::statement::Tile<0, RAJA::tile_fixed<2>, RAJA::loop_exec,
-          RAJA::statement::For<0, RAJA::loop_exec,
             RAJA::statement::Lambda<0>>>>,
       RAJA::KernelPolicy<
         RAJA::statement::For<0, RAJA::simd_exec,
           RAJA::statement::Lambda<0>>>,
       RAJA::KernelPolicy<
-        RAJA::statement::Tile<0, RAJA::tile_fixed<2>, RAJA::loop_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<2>, RAJA::seq_exec,
           RAJA::statement::For<0, RAJA::simd_exec,
             RAJA::statement::Lambda<0>>>>
     >;
@@ -48,7 +41,7 @@ using OpenMPPluginKernelExecPols = camp::list<
           RAJA::statement::Lambda<0>>>,
       RAJA::KernelPolicy<
         RAJA::statement::Tile<0, RAJA::tile_fixed<2>, RAJA::omp_parallel_for_exec,
-          RAJA::statement::For<0, RAJA::loop_exec,
+          RAJA::statement::For<0, RAJA::seq_exec,
             RAJA::statement::Lambda<0>>>>
     >;
 #endif
@@ -60,7 +53,7 @@ using TBBPluginKernelExecPols = camp::list<
           RAJA::statement::Lambda<0>>>,
       RAJA::KernelPolicy<
         RAJA::statement::Tile<0, RAJA::tile_fixed<2>, RAJA::tbb_for_exec,
-          RAJA::statement::For<0, RAJA::loop_exec,
+          RAJA::statement::For<0, RAJA::seq_exec,
             RAJA::statement::Lambda<0>>>>
     >;
 #endif

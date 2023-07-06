@@ -1,6 +1,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
-// and RAJA project contributors. See the RAJA/COPYRIGHT file for details.
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -25,8 +25,8 @@
 using SequentialKernel2DExecPols = camp::list<
 
   RAJA::KernelPolicy<
-    RAJA::statement::For<0, RAJA::loop_exec,
-      RAJA::statement::For<1, RAJA::loop_exec,
+    RAJA::statement::For<0, RAJA::seq_exec,
+      RAJA::statement::For<1, RAJA::seq_exec,
         RAJA::statement::Lambda<0>
       >
     >
@@ -43,9 +43,9 @@ using SequentialKernel2DExecPols = camp::list<
 using SequentialKernel3DExecPols = camp::list<
 
   RAJA::KernelPolicy<
-    RAJA::statement::For<0, RAJA::loop_exec,
-      RAJA::statement::For<1, RAJA::loop_exec,
-        RAJA::statement::For<2, RAJA::loop_exec,
+    RAJA::statement::For<0, RAJA::seq_exec,
+      RAJA::statement::For<1, RAJA::seq_exec,
+        RAJA::statement::For<2, RAJA::seq_exec,
           RAJA::statement::Lambda<0>
         >
       >
@@ -65,7 +65,7 @@ using OpenMPKernel2DExecPols = camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
-      RAJA::statement::For<1, RAJA::loop_exec,
+      RAJA::statement::For<1, RAJA::seq_exec,
         RAJA::statement::Lambda<0>
       >
     >
@@ -83,8 +83,8 @@ using OpenMPKernel3DExecPols = camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
-      RAJA::statement::For<1, RAJA::loop_exec,
-        RAJA::statement::For<2, RAJA::loop_exec,
+      RAJA::statement::For<1, RAJA::seq_exec,
+        RAJA::statement::For<2, RAJA::seq_exec,
           RAJA::statement::Lambda<0>
         >
       >

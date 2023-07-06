@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -168,8 +168,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL2 =
     RAJA::KernelPolicy<
       RAJA::statement::For<2, RAJA::omp_parallel_for_exec,    // k
-        RAJA::statement::For<1, RAJA::loop_exec,              // j
-          RAJA::statement::For<0, RAJA::loop_exec,            // i
+        RAJA::statement::For<1, RAJA::seq_exec,              // j
+          RAJA::statement::For<0, RAJA::seq_exec,            // i
             RAJA::statement::Lambda<0>
           >
         >

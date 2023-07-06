@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -202,19 +202,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _mattranspose_localarray_raja_start
   using SEQ_EXEC_POL_I =
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
 
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
 
-          RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
+          RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::seq_exec,
+            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::seq_exec,
               RAJA::statement::Lambda<0>
             >
           >,
 
-          RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
+          RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::seq_exec,
+            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::seq_exec,
               RAJA::statement::Lambda<1>
             >
           >
@@ -260,7 +260,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     //      tiles needed to carry out the transpose
     //
     RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::omp_parallel_for_exec,
-      RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+      RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
         // This statement will initalize local array memory inside a
         // kernel. The cpu_tile_mem policy specifies that memory should be
         // allocated on the stack. The entries in the RAJA::ParamList
@@ -271,8 +271,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           // loops. These loops copy data from the global matrices
           // to the local tile.
           //
-          RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
+          RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::seq_exec,
+            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::seq_exec,
                                        RAJA::statement::Lambda<0>
             >
           >,
@@ -284,8 +284,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           //     swapped! This enables us to swap which
           //     index has unit stride.
           //
-          RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::loop_exec,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::loop_exec,
+          RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::seq_exec,
+            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::seq_exec,
                                        RAJA::statement::Lambda<1>
             >
           >
@@ -328,8 +328,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     //      These loops iterate over the number of
     //      tiles needed to carry out the transpose
     //
-    RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-      RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+    RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+      RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
       // This statement will initalize local array memory inside a
       // kernel. The cpu_tile_mem policy specifies that memory should be
       // allocated on the stack. The entries in the RAJA::ParamList
@@ -341,7 +341,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           // to the local tile.
           //
           RAJA::statement::ForICount<1, RAJA::statement::Param<1>, RAJA::omp_parallel_for_exec,
-            RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::loop_exec,
+            RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::seq_exec,
                                        RAJA::statement::Lambda<0>
              >
           >,
@@ -353,8 +353,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           //     swapped! This enables us to swap which
           //     index has unit stride.
           //
-          RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::loop_exec,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<1>, RAJA::loop_exec,
+          RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::seq_exec,
+            RAJA::statement::ForICount<1, RAJA::statement::Param<1>, RAJA::seq_exec,
               RAJA::statement::Lambda<1>
             >
           >
@@ -574,19 +574,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _raja_mattranspose_lambdaargs_start
   using SEQ_EXEC_POL_II =
     RAJA::KernelPolicy<
-      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::loop_exec,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
 
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0>,
 
-          RAJA::statement::For<1, RAJA::loop_exec,
-            RAJA::statement::For<0, RAJA::loop_exec,
+          RAJA::statement::For<1, RAJA::seq_exec,
+            RAJA::statement::For<0, RAJA::seq_exec,
               RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0> >
             >
           >,
 
-          RAJA::statement::For<0, RAJA::loop_exec,
-            RAJA::statement::For<1, RAJA::loop_exec,
+          RAJA::statement::For<0, RAJA::seq_exec,
+            RAJA::statement::For<1, RAJA::seq_exec,
               RAJA::statement::Lambda<1, Segs<0, 1>, Offsets<0, 1>, Params<0> >
             >
           >

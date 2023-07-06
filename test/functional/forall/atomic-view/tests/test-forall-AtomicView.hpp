@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -42,6 +42,14 @@ void ForallAtomicViewTestImpl( IdxType N )
                                [=](IdxType i) { hsource[i] = (T)1; });
 
   work_res.memcpy( source, hsource, sizeof(T) * N );
+
+#if defined(RAJA_ENABLE_CUDA)
+  cudaErrchk(cudaDeviceSynchronize());
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+  hipErrchk(hipDeviceSynchronize());
+#endif
 
   // use atomic add to reduce the array
   RAJA::View<T, RAJA::Layout<1>> vec_view(source, N);

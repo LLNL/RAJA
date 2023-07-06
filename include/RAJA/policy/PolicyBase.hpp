@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -29,7 +29,6 @@ namespace RAJA
 enum class Policy {
   undefined,
   sequential,
-  loop,
   simd,
   openmp,
   target_openmp,
@@ -174,9 +173,6 @@ namespace type_traits
 
 template <typename Pol>
 struct is_sequential_policy : RAJA::policy_is<Pol, RAJA::Policy::sequential> {
-};
-template <typename Pol>
-struct is_loop_policy : RAJA::policy_is<Pol, RAJA::Policy::loop> {
 };
 template <typename Pol>
 struct is_simd_policy : RAJA::policy_is<Pol, RAJA::Policy::simd> {

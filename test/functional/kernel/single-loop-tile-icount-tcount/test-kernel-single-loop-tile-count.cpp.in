@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -42,7 +42,7 @@ using SequentialKernelForICountExecPols = camp::list<
     
   RAJA::KernelPolicy<
     RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::seq_exec,
-      RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::loop_exec,
+      RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::seq_exec,
         RAJA::statement::Lambda<0>
       >
     >
@@ -54,7 +54,7 @@ using SequentialKernelTileTCountExecPols = camp::list<
    
   RAJA::KernelPolicy<
     RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::seq_exec,
-      RAJA::statement::For<0, RAJA::loop_exec,
+      RAJA::statement::For<0, RAJA::seq_exec,
         RAJA::statement::Lambda<0>
       >
     >
@@ -71,7 +71,7 @@ using OpenMPReducePols = camp::list< RAJA::omp_reduce >;
 using OpenMPKernelForICountExecPols = camp::list< 
     
   RAJA::KernelPolicy<
-    RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::loop_exec,
+    RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::seq_exec,
       RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::omp_parallel_for_exec,
         RAJA::statement::Lambda<0>
       >
@@ -83,7 +83,7 @@ using OpenMPKernelForICountExecPols = camp::list<
 using OpenMPKernelTileTCountExecPols = camp::list< 
     
   RAJA::KernelPolicy<
-    RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::loop_exec,
+    RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::seq_exec,
       RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
         RAJA::statement::Lambda<0>
       >
@@ -102,7 +102,7 @@ using TBBReducePols = camp::list< RAJA::tbb_reduce >;
 using TBBKernelForICountExecPols = camp::list< 
 
   RAJA::KernelPolicy<
-    RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::loop_exec,
+    RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::seq_exec,
       RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::tbb_for_exec,
         RAJA::statement::Lambda<0>
       >
@@ -114,7 +114,7 @@ using TBBKernelForICountExecPols = camp::list<
 using TBBKernelTileTCountExecPols = camp::list<
 
   RAJA::KernelPolicy<
-    RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::loop_exec,
+    RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::seq_exec,
       RAJA::statement::For<0, RAJA::tbb_for_exec,
         RAJA::statement::Lambda<0>
       >
@@ -134,7 +134,7 @@ using OpenMPTargetKernelForICountExecPols = camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::omp_target_parallel_for_exec_nt,
-      RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::loop_exec,
+      RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::seq_exec,
         RAJA::statement::Lambda<0>
       >
     >
@@ -146,7 +146,7 @@ using OpenMPTargetKernelTileTCountExecPols = camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::omp_target_parallel_for_exec_nt,
-      RAJA::statement::For<0, RAJA::loop_exec,
+      RAJA::statement::For<0, RAJA::seq_exec,
         RAJA::statement::Lambda<0>
       >
     >

@@ -10,11 +10,12 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 
 #ifndef RAJA_policy_cuda_kernel_internal_HPP
 #define RAJA_policy_cuda_kernel_internal_HPP
@@ -40,223 +41,80 @@
 namespace RAJA
 {
 
-
 namespace internal
 {
 
-RAJA_INLINE
-size_t get_size(cuda_dim_t dims)
-{
-  if(dims.x == 0 && dims.y == 0 && dims.z == 0){
-    return 0;
-  }
-  return size_t(dims.x ? dims.x : 1) *
-         size_t(dims.y ? dims.y : 1) *
-         size_t(dims.z ? dims.z : 1);
-}
-
 struct LaunchDims {
 
-  cuda_dim_t blocks;
-  cuda_dim_t min_blocks;
-  cuda_dim_t threads;
-  cuda_dim_t min_threads;
+  CudaDims dims;
+  CudaDims min_dims;
+
+  LaunchDims() = default;
+  LaunchDims(LaunchDims const&) = default;
+  LaunchDims& operator=(LaunchDims const&) = default;
 
   RAJA_INLINE
-  RAJA_HOST_DEVICE
-  LaunchDims() : blocks{0,0,0},  min_blocks{0,0,0},
-                 threads{0,0,0}, min_threads{0,0,0} {}
-
+  LaunchDims(CudaDims _dims)
+    : dims{_dims}
+    , min_dims{}
+  { }
 
   RAJA_INLINE
-  RAJA_HOST_DEVICE
-  LaunchDims(LaunchDims const &c) :
-  blocks(c.blocks),   min_blocks(c.min_blocks),
-  threads(c.threads), min_threads(c.min_threads)
-  {
-  }
+  LaunchDims(CudaDims _dims, CudaDims _min_dims)
+    : dims{_dims}
+    , min_dims{_min_dims}
+  { }
 
   RAJA_INLINE
   LaunchDims max(LaunchDims const &c) const
   {
     LaunchDims result;
 
-    result.blocks.x = std::max(c.blocks.x, blocks.x);
-    result.blocks.y = std::max(c.blocks.y, blocks.y);
-    result.blocks.z = std::max(c.blocks.z, blocks.z);
+    result.dims.blocks.x = std::max(c.dims.blocks.x, dims.blocks.x);
+    result.dims.blocks.y = std::max(c.dims.blocks.y, dims.blocks.y);
+    result.dims.blocks.z = std::max(c.dims.blocks.z, dims.blocks.z);
 
-    result.min_blocks.x = std::max(c.min_blocks.x, min_blocks.x);
-    result.min_blocks.y = std::max(c.min_blocks.y, min_blocks.y);
-    result.min_blocks.z = std::max(c.min_blocks.z, min_blocks.z);
+    result.min_dims.blocks.x = std::max(c.min_dims.blocks.x, min_dims.blocks.x);
+    result.min_dims.blocks.y = std::max(c.min_dims.blocks.y, min_dims.blocks.y);
+    result.min_dims.blocks.z = std::max(c.min_dims.blocks.z, min_dims.blocks.z);
 
-    result.threads.x = std::max(c.threads.x, threads.x);
-    result.threads.y = std::max(c.threads.y, threads.y);
-    result.threads.z = std::max(c.threads.z, threads.z);
+    result.dims.threads.x = std::max(c.dims.threads.x, dims.threads.x);
+    result.dims.threads.y = std::max(c.dims.threads.y, dims.threads.y);
+    result.dims.threads.z = std::max(c.dims.threads.z, dims.threads.z);
 
-    result.min_threads.x = std::max(c.min_threads.x, min_threads.x);
-    result.min_threads.y = std::max(c.min_threads.y, min_threads.y);
-    result.min_threads.z = std::max(c.min_threads.z, min_threads.z);
+    result.min_dims.threads.x = std::max(c.min_dims.threads.x, min_dims.threads.x);
+    result.min_dims.threads.y = std::max(c.min_dims.threads.y, min_dims.threads.y);
+    result.min_dims.threads.z = std::max(c.min_dims.threads.z, min_dims.threads.z);
 
     return result;
   }
 
   RAJA_INLINE
-  size_t num_blocks() const {
-    return get_size(blocks);
+  int num_blocks() const {
+    return dims.num_blocks();
   }
 
   RAJA_INLINE
-  size_t num_threads() const {
-    return get_size(threads);
+  int num_threads() const {
+    return dims.num_threads();
   }
 
 
   RAJA_INLINE
   void clamp_to_min_blocks() {
-    blocks.x = std::max(min_blocks.x, blocks.x);
-    blocks.y = std::max(min_blocks.y, blocks.y);
-    blocks.z = std::max(min_blocks.z, blocks.z);
+    dims.blocks.x = std::max(min_dims.blocks.x, dims.blocks.x);
+    dims.blocks.y = std::max(min_dims.blocks.y, dims.blocks.y);
+    dims.blocks.z = std::max(min_dims.blocks.z, dims.blocks.z);
   };
 
   RAJA_INLINE
   void clamp_to_min_threads() {
-    threads.x = std::max(min_threads.x, threads.x);
-    threads.y = std::max(min_threads.y, threads.y);
-    threads.z = std::max(min_threads.z, threads.z);
+    dims.threads.x = std::max(min_dims.threads.x, dims.threads.x);
+    dims.threads.y = std::max(min_dims.threads.y, dims.threads.y);
+    dims.threads.z = std::max(min_dims.threads.z, dims.threads.z);
   };
 
 };
-
-
-struct CudaFixedMaxBlocksData
-{
-  int multiProcessorCount;
-  int maxThreadsPerMultiProcessor;
-};
-
-RAJA_INLINE
-size_t cuda_max_blocks(size_t block_size)
-{
-  static CudaFixedMaxBlocksData data = {-1, -1};
-
-  if (data.multiProcessorCount < 0) {
-    cudaDeviceProp& prop = cuda::device_prop();
-    data.multiProcessorCount = prop.multiProcessorCount;
-    data.maxThreadsPerMultiProcessor = prop.maxThreadsPerMultiProcessor;
-  }
-
-  size_t max_blocks = data.multiProcessorCount *
-                  (data.maxThreadsPerMultiProcessor / block_size);
-
-  // printf("MAX_BLOCKS=%d\n", max_blocks);
-
-  return max_blocks;
-}
-
-struct CudaOccMaxBlocksThreadsData
-{
-  int prev_shmem_size;
-  int max_blocks;
-  int max_threads;
-};
-
-template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
-RAJA_INLINE
-void cuda_occupancy_max_blocks_threads(Func&& func, int shmem_size,
-                                       size_t &max_blocks, size_t &max_threads)
-{
-  static CudaOccMaxBlocksThreadsData data = {-1, -1, -1};
-
-  if (data.prev_shmem_size != shmem_size) {
-
-    cudaErrchk(cudaOccupancyMaxPotentialBlockSize(
-        &data.max_blocks, &data.max_threads, func, shmem_size));
-
-    data.prev_shmem_size = shmem_size;
-
-  }
-
-  max_blocks  = data.max_blocks;
-  max_threads = data.max_threads;
-
-}
-
-struct CudaOccMaxBlocksFixedThreadsData
-{
-  int prev_shmem_size;
-  int max_blocks;
-  int multiProcessorCount;
-};
-
-template < typename RAJA_UNUSED_ARG(UniqueMarker), size_t num_threads, typename Func >
-RAJA_INLINE
-void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
-                               size_t &max_blocks)
-{
-  static CudaOccMaxBlocksFixedThreadsData data = {-1, -1, -1};
-
-  if (data.prev_shmem_size != shmem_size) {
-
-    cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(
-        &data.max_blocks, func, num_threads, shmem_size));
-
-    if (data.multiProcessorCount < 0) {
-
-      data.multiProcessorCount = cuda::device_prop().multiProcessorCount;
-
-    }
-
-    data.max_blocks *= data.multiProcessorCount;
-
-    data.prev_shmem_size = shmem_size;
-
-  }
-
-  max_blocks = data.max_blocks;
-
-}
-
-struct CudaOccMaxBlocksVariableThreadsData
-{
-  int prev_shmem_size;
-  size_t prev_num_threads;
-  size_t max_blocks;
-  int multiProcessorCount;
-};
-
-template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
-RAJA_INLINE
-void cuda_occupancy_max_blocks(Func&& func, int shmem_size,
-                               size_t &max_blocks, size_t num_threads)
-{
-  static CudaOccMaxBlocksVariableThreadsData data = {0, 0, 0, 0};
-
-  if ( data.prev_shmem_size  != shmem_size ||
-       data.prev_num_threads != num_threads ) {
-
-    int max_blocks(0);
-    cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(
-    &max_blocks, func, static_cast<int>(num_threads), shmem_size));
-
-    data.max_blocks = max_blocks;
-
-    if (data.multiProcessorCount < 0) {
-
-      data.multiProcessorCount = cuda::device_prop().multiProcessorCount;
-
-    }
-
-    data.max_blocks *= data.multiProcessorCount;
-
-    data.prev_shmem_size  = shmem_size;
-    data.prev_num_threads = num_threads;
-
-  }
-
-  max_blocks = data.max_blocks;
-
-}
-
 
 
 template <camp::idx_t cur_stmt, camp::idx_t num_stmts, typename StmtList>
@@ -353,8 +211,343 @@ using cuda_statement_list_executor_t = CudaStatementListExecutor<
     Types>;
 
 
+// specialization for direct sequential policies
+template<typename kernel_indexer>
+struct KernelDimensionCalculator;
+
+// specialization for direct sequential policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::ignored, named_usage::ignored>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::ignored, named_usage::ignored>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& RAJA_UNUSED_ARG(dims), CudaDims& RAJA_UNUSED_ARG(min_dims), IdxT len)
+  {
+    if ( len > static_cast<IdxT>(1) ) {
+      RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
+    }
+  }
+};
+
+// specialization for direct thread policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::ignored>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::ignored>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    // BEWARE: if calculated block_size is too high then the kernel launch will fail
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(len));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(len));
+  }
+};
+///
+template<named_dim dim, int BLOCK_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>>>
+{
+  static_assert(BLOCK_SIZE > 0, "block size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
+  using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    if ( len > static_cast<IdxT>(IndexMapper::block_size) ) {
+      RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
+    }
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+  }
+};
+
+// specialization for direct block policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::ignored, named_usage::unspecified>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::ignored, named_usage::unspecified>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(len));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(len));
+  }
+};
+///
+template<named_dim dim, int GRID_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>>>
+{
+  static_assert(GRID_SIZE > 0, "grid size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    if ( len > static_cast<IdxT>(IndexMapper::grid_size) ) {
+      RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
+    }
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+  }
+};
+
+// specialization for direct global policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    if (len > static_cast<IdxT>(0)) {
+      RAJA_ABORT_OR_THROW("must know one of block_size or grid_size");
+    }
+  }
+};
+///
+template<named_dim dim, int GRID_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>>>
+{
+  static_assert(GRID_SIZE > 0, "grid size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    // BEWARE: if calculated block_size is too high then the kernel launch will fail
+    set_cuda_dim<dim>(dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size)));
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(min_dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size)));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+  }
+};
+///
+template<named_dim dim, int BLOCK_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>>>
+{
+  static_assert(BLOCK_SIZE > 0, "block size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
+  using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size)));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(min_dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size)));
+  }
+};
+///
+template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>>
+{
+  static_assert(BLOCK_SIZE > 0, "block size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+  static_assert(GRID_SIZE > 0, "grid size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
+  using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    if ( len > (static_cast<IdxT>(IndexMapper::block_size) *
+                static_cast<IdxT>(IndexMapper::grid_size)) ) {
+      RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
+    }
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+  }
+};
+
+
+// specialization for strided loop sequential policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::ignored, named_usage::ignored>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::ignored, named_usage::ignored>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& RAJA_UNUSED_ARG(dims), CudaDims& RAJA_UNUSED_ARG(min_dims), IdxT RAJA_UNUSED_ARG(len))
+  {
+  }
+};
+
+// specialization for strided loop thread policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::ignored>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::ignored>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    // BEWARE: if calculated block_size is too high then the kernel launch will fail
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(len));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
+  }
+};
+///
+template<named_dim dim, int BLOCK_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>>>
+{
+  static_assert(BLOCK_SIZE > 0, "block size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
+  using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+  }
+};
+
+// specialization for strided loop block policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::ignored, named_usage::unspecified>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::ignored, named_usage::unspecified>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(len));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
+  }
+};
+///
+template<named_dim dim, int GRID_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>>>
+{
+  static_assert(GRID_SIZE > 0, "grid size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+  }
+};
+
+// specialization for strided loop global policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    if (len > static_cast<IdxT>(0)) {
+      set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(1));
+      set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(1));
+      set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
+      set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
+    }
+  }
+};
+///
+template<named_dim dim, int GRID_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>>>
+{
+  static_assert(GRID_SIZE > 0, "grid size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    // BEWARE: if calculated block_size is too high then the kernel launch will fail
+    set_cuda_dim<dim>(dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size)));
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+  }
+};
+///
+template<named_dim dim, int BLOCK_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>>>
+{
+  static_assert(BLOCK_SIZE > 0, "block size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
+  using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size)));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
+  }
+};
+///
+template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>>
+{
+  static_assert(BLOCK_SIZE > 0, "block size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+  static_assert(GRID_SIZE > 0, "grid size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
+  using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+  }
+};
 
 }  // namespace internal
+
 }  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_CUDA guard

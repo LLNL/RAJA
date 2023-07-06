@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -85,7 +85,7 @@ void KernelConditionalFissionFusionLoopTestImpl(
            0,
            sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
-    RAJA::forall<RAJA::loop_exec>(working_res, seg_idx, [=](IDX_TYPE i) {
+    RAJA::forall<RAJA::seq_exec>(working_res, seg_idx, [=](IDX_TYPE i) {
       check_array_y[RAJA::stripIndexType(i)] = 3 + 3 * param;
     });
 

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -137,25 +137,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       c[i] = a[i] + b[i]; 
     }
   );    
-
-  checkResult(c, c_ref, N);
-//printArray(c, N);
-
-
-//----------------------------------------------------------------------------//
-// RAJA::loop_exec policy allows the compiler to generate optimizations 
-// (e.g., SIMD) if it thinks it is safe to do so.
-//----------------------------------------------------------------------------//
-
-  std::memset(c, 0, N * sizeof(int));
-
-  std::cout << "\n Running RAJA loop-exec vector addition...\n";
-
-  RAJA::forall< RAJA::loop_exec >(
-    RAJA::TypedRangeSegment<int>(0, N), [=] (int i) { 
-      c[i] = a[i] + b[i];
-    }
-  );
 
   checkResult(c, c_ref, N);
 //printArray(c, N);

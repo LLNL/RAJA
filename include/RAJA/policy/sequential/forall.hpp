@@ -14,7 +14,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -68,11 +68,10 @@ forall_impl(Resource res,
             Func &&body,
             ForallParam f_params)
 {
-  RAJA_EXTRACT_BED_IT(iter);
-
   expt::ParamMultiplexer::init<seq_exec>(f_params);
 
-  RAJA_NO_SIMD
+  RAJA_EXTRACT_BED_IT(iter);
+
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     expt::invoke_body(f_params, body, *(begin_it + i));
   }
@@ -96,7 +95,6 @@ forall_impl(Resource res,
 {
   RAJA_EXTRACT_BED_IT(iter);
 
-  RAJA_NO_SIMD
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     body(*(begin_it + i));
   }

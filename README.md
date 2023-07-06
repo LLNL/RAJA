@@ -1,6 +1,6 @@
 
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2016-22, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2016-23, Lawrence Livermore National Security, LLC)
 [comment]: # (and RAJA project contributors. See the RAJA/LICENSE file)
 [comment]: # (for details.)
 [comment]: # 
@@ -18,9 +18,9 @@ RAJA is a library of C++ software abstractions, primarily developed at
 Lawrence Livermore National Laboratory (LLNL), that enables architecture
 and programming model portability for HPC applications. RAJA has two main goals:
 
-  * To enable application portability with manageable disruption to existing 
+  * To enable application portability with manageable disruption to existing
     algorithms and programming styles
-  * To achieve performance comparable to using common programming models, 
+  * To achieve performance comparable to using common programming models,
     such as OpenMP, CUDA, etc. directly.
 
 RAJA offers portable, parallel loop execution by providing building blocks 

@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,19 +12,7 @@
 # We keep ${PROJECT_<MACHINE>_VARIANTS} and ${PROJECT_<MACHINE>_DEPS} So that
 # the comparison with the original job is easier.
 
-# Overriding shared config for longer run
-gcc_8_1_0:
-  variables:
-    SPEC: " ${PROJECT_RUBY_VARIANTS} %gcc@8.1.0 ${PROJECT_RUBY_DEPS}"
-    RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
-  extends: .build_and_test_on_ruby
-
-# Overriding shared spec: Allow failures
-pgi_20_1_gcc_local_8_3_1:
-  variables:
-    SPEC: " ${PROJECT_RUBY_VARIANTS} %pgi@20.1 cxxflags\"=-rc=/usr/workspace/umpire/pgi/x86_64/local-gcc-8.3.1-rc\" cflags\"=-rc=/usr/workspace/umpire/pgi/x86_64/local-gcc-8.3.1-rc\" fflags=\"-rc=/usr/workspace/umpire/pgi/x86_64/local-gcc-8.3.1-rc\" ${PROJECT_RUBY_DEPS}"
-  extends: .build_and_test_on_ruby
-  allow_failure: true
+# No overridden jobs so far.
 
 ############
 # Extra jobs
@@ -33,26 +21,26 @@ pgi_20_1_gcc_local_8_3_1:
 # ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is no reason not to fully
 # describe the spec here.
 
-clang_9_0_0_openmp_off:
+clang_14_0_6_openmp_off:
   variables:
-    SPEC: " ~shared ~openmp +tests %clang@9.0.0"
+    SPEC: " ~shared ~openmp +tests %clang@14.0.6"
   extends: .build_and_test_on_ruby
 
-gcc_8_1_0_openmp_default:
+gcc_10_3_1_openmp_default:
   variables:
-    SPEC: " ~shared +tests %gcc@8.1.0"
+    SPEC: " ~shared +tests %gcc@10.3.1"
     RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
   extends: .build_and_test_on_ruby
 
-icpc_19_1_0:
-  variables:
-    SPEC: " ~shared +openmp +tests %intel@19.1.0"
-    RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=40 --nodes=1"
-  extends: .build_and_test_on_ruby
-
 # OTHERS
-clang_10_0_1_gcc_8_3_1_desul_atomics:
+clang_14_0_6_gcc_10_3_1_desul_atomics:
   variables:
-    SPEC: " ~shared +openmp +tests +desul %clang@10.0.1 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
+    SPEC: " ~shared +openmp +tests +desul %clang@14.0.6.gcc.10.3.1"
   extends: .build_and_test_on_ruby
 
+# Ideally, we want to use this spec, but the build takes too much time...
+#intel_oneapi_2022_2_gcc_8_3_1:
+#  variables:
+#    SPEC: "~shared +openmp +tests %oneapi@2022.2.gcc.8.3.1"
+#    RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=90 --nodes=1"
+#  extends: .build_and_test_on_ruby

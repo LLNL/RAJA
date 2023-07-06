@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -23,7 +23,7 @@
 #include <utility>
 #include <type_traits>
 
-#include "RAJA/policy/loop/policy.hpp"
+#include "RAJA/policy/sequential/policy.hpp"
 
 #include "RAJA/pattern/forall.hpp"
 
@@ -182,7 +182,7 @@ struct WorkRunnerForallOrdered_base
 
   // The policy indicating where the call function is invoked
   // in this case the values are called on the host in a loop
-  using dispatcher_exec_policy = RAJA::loop_work;
+  using dispatcher_exec_policy = RAJA::seq_work;
 
   // The Dispatcher policy with holder_types used internally to handle the
   // ranges and callables passed in by the user.

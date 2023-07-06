@@ -10,7 +10,7 @@
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -46,84 +46,28 @@ namespace internal
  * A specialized RAJA::kernel hip_impl executor for statement::TileTCount
  * Assigns the tile segment to segment ArgumentId
  * Assigns the tile index to param ParamId
- */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename ParamId,
-          typename TPol,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<
-    Data,
-    statement::TileTCount<ArgumentId, ParamId, TPol, seq_exec, EnclosedStmts...>, Types>
-    : public HipStatementExecutor<
-        Data,
-        statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types> {
-
-  using Base = HipStatementExecutor<
-      Data,
-      statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types>;
-
-  using typename Base::enclosed_stmts_t;
-  using typename Base::diff_t;
-
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, bool thread_active){
-    // Get the segment referenced by this Tile statement
-    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
-
-    // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
-    segment_t orig_segment = segment;
-
-    diff_t chunk_size = TPol::chunk_size;
-
-    // compute trip count
-    diff_t len = segment.end() - segment.begin();
-
-    // Iterate through tiles
-    for (diff_t i = 0, t = 0; i < len; i += chunk_size, ++t) {
-
-      // Assign our new tiled segment
-      segment = orig_segment.slice(i, chunk_size);
-      data.template assign_param<ParamId>(t);
-
-      // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-    }
-
-    // Set range back to original values
-    segment = orig_segment;
-  }
-};
-
-
-/*!
- * A specialized RAJA::kernel hip_impl executor for statement::TileTCount
- * Assigns the tile segment to segment ArgumentId
- * Assigns the tile index to param ParamId
+ * Meets all sync requirements
  */
 template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           camp::idx_t chunk_size,
-          int BlockDim,
+          typename IndexMapper,
+          kernel_sync_requirement sync,
           typename... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<
     Data,
     statement::TileTCount<ArgumentId, ParamId,
                     RAJA::tile_fixed<chunk_size>,
-                    hip_block_xyz_direct<BlockDim>,
+                    RAJA::policy::hip::hip_indexer<iteration_mapping::Direct, sync, IndexMapper>,
                     EnclosedStmts...>,
                     Types>
     : public HipStatementExecutor<
         Data,
         statement::Tile<ArgumentId,
                         RAJA::tile_fixed<chunk_size>,
-                        hip_block_xyz_direct<BlockDim>,
+                        RAJA::policy::hip::hip_indexer<iteration_mapping::Direct, sync, IndexMapper>,
                         EnclosedStmts...>,
                         Types> {
 
@@ -131,16 +75,14 @@ struct HipStatementExecutor<
       Data,
       statement::Tile<ArgumentId,
                       RAJA::tile_fixed<chunk_size>,
-                      hip_block_xyz_direct<BlockDim>,
+                      RAJA::policy::hip::hip_indexer<iteration_mapping::Direct, sync, IndexMapper>,
                       EnclosedStmts...>,
                       Types>;
 
   using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
 
-  static
-  inline
-  RAJA_DEVICE
+  static inline RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
@@ -149,166 +91,19 @@ struct HipStatementExecutor<
     using segment_t = camp::decay<decltype(segment)>;
 
     // compute trip count
-    diff_t len = segment.end() - segment.begin();
-    diff_t t = get_hip_dim<BlockDim>(dim3(blockIdx.x,blockIdx.y,blockIdx.z));
-    diff_t i = t * chunk_size;
-
-    // check have a chunk
-    if (i < len) {
-
-      // Keep copy of original segment, so we can restore it
-      segment_t orig_segment = segment;
-
-      // Assign our new tiled segment
-      segment = orig_segment.slice(i, chunk_size);
-      data.template assign_param<ParamId>(t);
-
-      // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-
-      // Set range back to original values
-      segment = orig_segment;
-    }
-  }
-};
-
-/*!
- * A specialized RAJA::kernel hip_impl executor for statement::TileTCount
- * Assigns the tile segment to segment ArgumentId
- * Assigns the tile index to param ParamId
- */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename ParamId,
-          camp::idx_t chunk_size,
-          int BlockDim,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<
-    Data,
-    statement::TileTCount<ArgumentId, ParamId,
-                    RAJA::tile_fixed<chunk_size>,
-                    hip_block_xyz_loop<BlockDim>,
-                    EnclosedStmts...>,
-                    Types>
-    : public HipStatementExecutor<
-        Data,
-        statement::Tile<ArgumentId,
-                        RAJA::tile_fixed<chunk_size>,
-                        hip_block_xyz_loop<BlockDim>,
-                        EnclosedStmts...>,
-                        Types> {
-
-  using Base = HipStatementExecutor<
-      Data,
-      statement::Tile<ArgumentId,
-                      RAJA::tile_fixed<chunk_size>,
-                      hip_block_xyz_loop<BlockDim>,
-                      EnclosedStmts...>,
-                      Types>;
-
-  using typename Base::enclosed_stmts_t;
-  using typename Base::diff_t;
-
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
-  {
-    // Get the segment referenced by this Tile statement
-    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
-
-    // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
-    segment_t orig_segment = segment;
-
-    // compute trip count
-    diff_t len = segment.end() - segment.begin();
-    diff_t t_init = get_hip_dim<BlockDim>(dim3(blockIdx.x,blockIdx.y,blockIdx.z));
-    diff_t i_init = t_init * chunk_size;
-    diff_t t_stride = get_hip_dim<BlockDim>(dim3(gridDim.x,gridDim.y,gridDim.z));
-    diff_t i_stride = t_stride * chunk_size;
-
-    // Iterate through grid stride of chunks
-    for (diff_t i = i_init, t = t_init; i < len; i += i_stride, t += t_stride) {
-
-      // Assign our new tiled segment
-      segment = orig_segment.slice(i, chunk_size);
-      data.template assign_param<ParamId>(t);
-
-      // execute enclosed statements
-      enclosed_stmts_t::exec(data, thread_active);
-    }
-
-    // Set range back to original values
-    segment = orig_segment;
-  }
-};
-
-
-
-/*!
- * A specialized RAJA::kernel hip_impl executor for statement::TileTCount
- * Assigns the tile segment to segment ArgumentId
- * Assigns the tile index to param ParamId
- */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename ParamId,
-          camp::idx_t chunk_size,
-          int ThreadDim,
-          typename ... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<
-  Data,
-  statement::TileTCount<ArgumentId, ParamId,
-                        RAJA::tile_fixed<chunk_size>,
-                        hip_thread_xyz_direct<ThreadDim>,
-                        EnclosedStmts ...>,
-                        Types>
-  : public HipStatementExecutor<
-    Data,
-    statement::Tile<ArgumentId,
-                    RAJA::tile_fixed<chunk_size>,
-                    hip_thread_xyz_direct<ThreadDim>,
-                    EnclosedStmts ...>,
-                    Types> {
-
-  using Base = HipStatementExecutor<
-          Data,
-          statement::Tile<ArgumentId,
-                          RAJA::tile_fixed<chunk_size>,
-                          hip_thread_xyz_direct<ThreadDim>,
-                          EnclosedStmts ...>,
-                          Types>;
-
-  using typename Base::enclosed_stmts_t;
-  using typename Base::diff_t;
-
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
-  {
-    // Get the segment referenced by this Tile statement
-    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
-
-    // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
-    segment_t orig_segment = segment;
-
-    // compute trip count
-    diff_t len = segment.end() - segment.begin();
-    diff_t t = get_hip_dim<ThreadDim>(dim3(threadIdx.x,threadIdx.y,threadIdx.z));
-    diff_t i = t * chunk_size;
+    const diff_t len = segment.end() - segment.begin();
+    const diff_t t = IndexMapper::template index<diff_t>();
+    const diff_t i = t * static_cast<diff_t>(chunk_size);
 
     // execute enclosed statements if any thread will
     // but mask off threads without work
-    bool have_work = i < len;
+    const bool have_work = (i < len);
+
+    // Keep copy of original segment, so we can restore it
+    segment_t orig_segment = segment;
 
     // Assign our new tiled segment
-    diff_t slice_size = have_work ? chunk_size : 0;
-    segment = orig_segment.slice(i, slice_size);
+    segment = orig_segment.slice(i, static_cast<diff_t>(chunk_size));
     data.template assign_param<ParamId>(t);
 
     // execute enclosed statements
@@ -319,48 +114,46 @@ struct HipStatementExecutor<
   }
 };
 
-
 /*!
  * A specialized RAJA::kernel hip_impl executor for statement::TileTCount
  * Assigns the tile segment to segment ArgumentId
  * Assigns the tile index to param ParamId
+ * Meets all sync requirements
  */
 template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           camp::idx_t chunk_size,
-          int ThreadDim,
-          typename ... EnclosedStmts,
+          typename IndexMapper,
+          typename... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<
-  Data,
-  statement::TileTCount<ArgumentId, ParamId,
-                        RAJA::tile_fixed<chunk_size>,
-                        hip_thread_xyz_loop<ThreadDim>,
-                        EnclosedStmts ...>,
-                        Types>
-  : public HipStatementExecutor<
     Data,
-    statement::Tile<ArgumentId,
+    statement::TileTCount<ArgumentId, ParamId,
                     RAJA::tile_fixed<chunk_size>,
-                    hip_thread_xyz_loop<ThreadDim>,
-                    EnclosedStmts ...>,
-                    Types> {
+                    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::sync, IndexMapper>,
+                    EnclosedStmts...>,
+                    Types>
+    : public HipStatementExecutor<
+        Data,
+        statement::Tile<ArgumentId,
+                        RAJA::tile_fixed<chunk_size>,
+                        RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::sync, IndexMapper>,
+                        EnclosedStmts...>,
+                        Types> {
 
   using Base = HipStatementExecutor<
-          Data,
-          statement::Tile<ArgumentId,
-                          RAJA::tile_fixed<chunk_size>,
-                          hip_thread_xyz_loop<ThreadDim>,
-                          EnclosedStmts ...>,
-                          Types>;
+      Data,
+      statement::Tile<ArgumentId,
+                      RAJA::tile_fixed<chunk_size>,
+                      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::sync, IndexMapper>,
+                      EnclosedStmts...>,
+                      Types>;
 
   using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
 
-  static
-  inline
-  RAJA_DEVICE
+  static inline RAJA_DEVICE
   void exec(Data &data, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
@@ -371,23 +164,23 @@ struct HipStatementExecutor<
     segment_t orig_segment = segment;
 
     // compute trip count
-    diff_t len = segment_length<ArgumentId>(data);
-    diff_t t_init = get_hip_dim<ThreadDim>(dim3(threadIdx.x,threadIdx.y,threadIdx.z));
-    diff_t i_init = t_init * chunk_size;
-    diff_t t_stride = get_hip_dim<ThreadDim>(dim3(blockDim.x,blockDim.y,blockDim.z));
-    diff_t i_stride = t_stride * chunk_size;
+    const diff_t len = segment.end() - segment.begin();
+    const diff_t t_init = IndexMapper::template index<diff_t>();
+    const diff_t i_init = t_init * static_cast<diff_t>(chunk_size);
+    const diff_t t_stride = IndexMapper::template size<diff_t>();
+    const diff_t i_stride = t_stride * static_cast<diff_t>(chunk_size);
 
-    // Iterate through grid stride of chunks
+    // Iterate through in chunks
+    // threads will have the same numbers of iterations
     for(diff_t ii = 0, t = t_init; ii < len; ii += i_stride, t += t_stride) {
-      diff_t i = ii + i_init;
+      const diff_t i = ii + i_init;
 
       // execute enclosed statements if any thread will
       // but mask off threads without work
-      bool have_work = i < len;
+      const bool have_work = (i < len);
 
       // Assign our new tiled segment
-      diff_t slice_size = have_work ? chunk_size : 0;
-      segment = orig_segment.slice(i, slice_size);
+      segment = orig_segment.slice(i, static_cast<diff_t>(chunk_size));
       data.template assign_param<ParamId>(t);
 
       // execute enclosed statements
@@ -397,6 +190,103 @@ struct HipStatementExecutor<
     // Set range back to original values
     segment = orig_segment;
   }
+};
+
+/*!
+ * A specialized RAJA::kernel hip_impl executor for statement::TileTCount
+ * Assigns the tile segment to segment ArgumentId
+ * Assigns the tile index to param ParamId
+ * Meets no sync requirements
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          camp::idx_t chunk_size,
+          typename IndexMapper,
+          typename... EnclosedStmts,
+          typename Types>
+struct HipStatementExecutor<
+    Data,
+    statement::TileTCount<ArgumentId, ParamId,
+                    RAJA::tile_fixed<chunk_size>,
+                    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::none, IndexMapper>,
+                    EnclosedStmts...>,
+                    Types>
+    : public HipStatementExecutor<
+        Data,
+        statement::Tile<ArgumentId,
+                        RAJA::tile_fixed<chunk_size>,
+                        RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::none, IndexMapper>,
+                        EnclosedStmts...>,
+                        Types> {
+
+  using Base = HipStatementExecutor<
+      Data,
+      statement::Tile<ArgumentId,
+                      RAJA::tile_fixed<chunk_size>,
+                      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::none, IndexMapper>,
+                      EnclosedStmts...>,
+                      Types>;
+
+  using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
+
+  static inline RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+    // Get the segment referenced by this Tile statement
+    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+
+    // Keep copy of original segment, so we can restore it
+    using segment_t = camp::decay<decltype(segment)>;
+    segment_t orig_segment = segment;
+
+    // compute trip count
+    const diff_t len = segment.end() - segment.begin();
+    const diff_t t_init = IndexMapper::template index<diff_t>();
+    const diff_t i_init = t_init * static_cast<diff_t>(chunk_size);
+    const diff_t t_stride = IndexMapper::template size<diff_t>();
+    const diff_t i_stride = t_stride * static_cast<diff_t>(chunk_size);
+
+    // Iterate through one at a time
+    // threads will have the different numbers of iterations
+    for(diff_t i = i_init, t = t_init; i < len; i += i_stride, t += t_stride) {
+
+      // Assign our new tiled segment
+      segment = orig_segment.slice(i, static_cast<diff_t>(chunk_size));
+      data.template assign_param<ParamId>(t);
+
+      // execute enclosed statements
+      enclosed_stmts_t::exec(data, thread_active);
+    }
+
+    // Set range back to original values
+    segment = orig_segment;
+  }
+};
+
+
+/*!
+ * A specialized RAJA::kernel hip_impl executor for statement::TileTCount
+ * Assigns the tile segment to segment ArgumentId
+ * Assigns the tile index to param ParamId
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          typename TPol,
+          typename... EnclosedStmts,
+          typename Types>
+struct HipStatementExecutor<
+    Data,
+    statement::TileTCount<ArgumentId, ParamId, TPol, seq_exec, EnclosedStmts...>, Types>
+: HipStatementExecutor<Data, statement::TileTCount<ArgumentId, ParamId, TPol,
+    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop,
+                                   kernel_sync_requirement::none,
+                                   hip::IndexGlobal<named_dim::x, named_usage::ignored, named_usage::ignored>>,
+    EnclosedStmts...>, Types>
+{
+
 };
 
 }  // end namespace internal

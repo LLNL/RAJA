@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,6 +8,16 @@
 set(NESTED_LOOPTYPES ReduceSum BlockReduceSum)
 
 set( USE_RESOURCE "-resource-" "-" )
+
+#
+# Intel OneAPI emits a clang front-end error for the OpenMP version of these
+# tests. So don't generate them.
+#
+if(CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
+  if(RAJA_ENABLE_OPENMP)
+    list(REMOVE_ITEM KERNEL_BACKENDS OpenMP)
+  endif()
+endif()
 
 #
 # If building a subset of openmp target tests, remove the back-end from

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -30,7 +30,7 @@
  */
 
 using host_launch = RAJA::seq_launch_t;
-using host_loop = RAJA::loop_exec;
+using host_loop = RAJA::seq_exec;
 
 #if defined(RAJA_ENABLE_CUDA)
 using device_launch = RAJA::cuda_launch_t<true>;

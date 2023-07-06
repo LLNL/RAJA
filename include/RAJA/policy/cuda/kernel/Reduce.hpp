@@ -9,11 +9,12 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 
 #ifndef RAJA_policy_cuda_kernel_Reduce_HPP
 #define RAJA_policy_cuda_kernel_Reduce_HPP
@@ -43,7 +44,7 @@ struct CudaStatementExecutor<Data,
                                                ReduceOperator,
                                                ParamId,
                                                EnclosedStmts...>,
-                                               Types> {
+                             Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -102,7 +103,7 @@ struct CudaStatementExecutor<Data,
                                                ReduceOperator,
                                                ParamId,
                                                EnclosedStmts...>,
-                                               Types> {
+                             Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 

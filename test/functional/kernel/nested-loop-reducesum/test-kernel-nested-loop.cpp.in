@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -21,9 +21,8 @@ using SequentialKernelNestedLoopExecPols = camp::list<
     NestedLoopData<DEPTH_1_REDUCESUM, RAJA::seq_exec, RAJA::seq_reduce, RAJA::seq_exec >,
 
     // Depth 3 ReduceSum Exec Pols
-    NestedLoopData<DEPTH_3_REDUCESUM, RAJA::seq_exec,  RAJA::seq_exec, RAJA::seq_exec >,
-    NestedLoopData<DEPTH_3_REDUCESUM_SEQ_OUTER, RAJA::seq_exec,  RAJA::loop_exec, RAJA::loop_exec >,
-    NestedLoopData<DEPTH_3_REDUCESUM_SEQ_INNER, RAJA::loop_exec,  RAJA::loop_exec, RAJA::seq_exec >
+    NestedLoopData<DEPTH_3_REDUCESUM, RAJA::seq_exec,  RAJA::seq_exec, RAJA::seq_exec >
+
   >;
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -31,8 +30,8 @@ using SequentialKernelNestedLoopExecPols = camp::list<
 using OpenMPKernelNestedLoopExecPols = camp::list<
 
     // Depth 3 ReduceSum Exec Pols
-    NestedLoopData<DEPTH_3_REDUCESUM, RAJA::omp_parallel_for_exec, RAJA::loop_exec, RAJA::loop_exec >,
-    NestedLoopData<DEPTH_3_REDUCESUM, RAJA::loop_exec, RAJA::omp_parallel_for_exec, RAJA::simd_exec >
+    NestedLoopData<DEPTH_3_REDUCESUM, RAJA::omp_parallel_for_exec, RAJA::seq_exec, RAJA::seq_exec >,
+    NestedLoopData<DEPTH_3_REDUCESUM, RAJA::seq_exec, RAJA::omp_parallel_for_exec, RAJA::simd_exec >
   >;
 
 #endif  // RAJA_ENABLE_OPENMP
@@ -54,7 +53,7 @@ using OpenMPTargetKernelNestedLoopExecPols = camp::list<
 using TBBKernelNestedLoopExecPols = camp::list<
 
     // Depth 3 ReduceSum Exec Pols
-    NestedLoopData<DEPTH_3_REDUCESUM, RAJA::loop_exec,  RAJA::tbb_for_exec, RAJA::tbb_for_exec >,
+    NestedLoopData<DEPTH_3_REDUCESUM, RAJA::seq_exec,  RAJA::tbb_for_exec, RAJA::tbb_for_exec >,
     NestedLoopData<DEPTH_3_REDUCESUM, RAJA::tbb_for_exec, RAJA::tbb_for_exec, RAJA::tbb_for_exec >
   >;
 

@@ -1,7 +1,7 @@
 #ifndef NEW_REDUCE_HIP_REDUCE_HPP
 #define NEW_REDUCE_HIP_REDUCE_HPP
 
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_HIP_ACTIVE)
 
 #include <hip/hip_runtime.h>
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"

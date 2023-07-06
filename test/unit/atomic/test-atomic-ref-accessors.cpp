@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -92,28 +92,28 @@ GPU_TYPED_TEST_P( AtomicRefCUDAAccessorUnitTest, CUDAAccessors )
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test store method with op()
-  forone<forone_cuda>( [=] __device__ () {test1.store( (T)19 );} );
+  forone<test_cuda>( [=] __device__ () {test1.store( (T)19 );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)19 );
 
   // test assignment operator
-  forone<forone_cuda>( [=] __device__ () {test1 = (T)23;} );
+  forone<test_cuda>( [=] __device__ () {test1 = (T)23;} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)23 );
 
   // test load method
-  forone<forone_cuda>( [=] __device__ () {test1 = (T)29; result[0] = test1.load();} );
+  forone<test_cuda>( [=] __device__ () {test1 = (T)29; result[0] = test1.load();} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)29 );
   ASSERT_EQ( test1, (T)29 );
 
   // test T()
-  forone<forone_cuda>( [=] __device__ () {test1 = (T)47; result[0] = test1;} );
+  forone<test_cuda>( [=] __device__ () {test1 = (T)47; result[0] = test1;} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)47 );
   ASSERT_EQ( test1, (T)47 );
 
-  forone<forone_cuda>( [=] __device__ () {result[0] = (test1 = (T)31);} );
+  forone<test_cuda>( [=] __device__ () {result[0] = (test1 = (T)31);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], (T)31 );
   ASSERT_EQ( test1, (T)31 );

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,7 +14,6 @@
 // Sequential execution policy types
 using SequentialForallIndexSetExecPols =
   camp::list< RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::loop_exec>,
               RAJA::ExecPolicy<RAJA::seq_segit, RAJA::simd_exec> >;
 
 //
@@ -23,29 +22,24 @@ using SequentialForallIndexSetExecPols =
 // Note: RAJA::simd_exec does not work with these.
 //
 using SequentialForallIndexSetReduceExecPols =
-  camp::list< RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::loop_exec> >;
+  camp::list< RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec> >;
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPForallIndexSetExecPols =  
   camp::list< RAJA::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::loop_exec>,
               RAJA::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec>,
               RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> >;
 
 using OpenMPForallIndexSetReduceExecPols =
   camp::list< RAJA::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::loop_exec>,
               RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> >;
 #endif
 
 #if defined(RAJA_ENABLE_TBB)
 using TBBForallIndexSetExecPols = 
   camp::list< RAJA::ExecPolicy<RAJA::tbb_for_exec, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::tbb_for_exec, RAJA::loop_exec>,
               RAJA::ExecPolicy<RAJA::tbb_for_exec, RAJA::simd_exec>,
               RAJA::ExecPolicy<RAJA::tbb_for_dynamic, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::tbb_for_dynamic, RAJA::loop_exec>,
               RAJA::ExecPolicy<RAJA::tbb_for_dynamic, RAJA::simd_exec>,
               RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_exec>,
               RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< >>,
@@ -56,9 +50,7 @@ using TBBForallIndexSetExecPols =
 
 using TBBForallIndexSetReduceExecPols =
   camp::list< RAJA::ExecPolicy<RAJA::tbb_for_exec, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::tbb_for_exec, RAJA::loop_exec>,
               RAJA::ExecPolicy<RAJA::tbb_for_dynamic, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::tbb_for_dynamic, RAJA::loop_exec>,
               RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_exec>,
               RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< >>,
               RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< 2 >>,

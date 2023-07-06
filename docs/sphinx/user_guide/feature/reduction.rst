@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 .. ## and other RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -207,18 +207,19 @@ RAJA::expt::Reduce
   parameter corresponding to each ``RAJA::expt::Reduce`` argument, ``_rs`` and 
   ``_rm`` in the example code. These parameters refer to a local target for each
   reduction operation. It is important to note that the parameters follow the
-  kernel iteration variable, ``i`` in this case, and appear in the same order as the 
-  corresponding ``RAJA::expt::Reduce`` arguments to ``RAJA::forall``. The
-  parameters' types must be references to the types used in the
+  kernel iteration variable, ``i`` in this case, and appear in the same order 
+  as the corresponding ``RAJA::expt::Reduce`` arguments to ``RAJA::forall``. The
+  parameter types must be references to the types used in the
   ``RAJA::expt::Reduce`` arguments.
-* The local variables referred to by ``_rs`` and ``_rm`` are initialized with the
-  *identity* of the reduction operation to be performed.
+* The local variables referred to by ``_rs`` and ``_rm`` are initialized with 
+  the *identity* of the reduction operation to be performed.
 * The local variables are updated in the user supplied lambda.
-* The local variables are reduced to a single value, combining their values across all
-  threads participating in the ``RAJA::forall`` execution.
-* Finally, the target variable is updated with the result of the ``RAJA::forall`` reduction
-  by performing the reduction operation to combine the existing value of the target 
-  variable and the result of the ``RAJA::forall`` reduction.
+* The local variables are reduced to a single value, combining their values 
+  across all threads participating in the ``RAJA::forall`` execution.
+* Finally, the target variable is updated with the result of the 
+  ``RAJA::forall`` reduction by performing the reduction operation to combine 
+  the existing value of the target variable and the result of the 
+  ``RAJA::forall`` reduction.
 * The final reduction value is accessed by referencing the target variable 
   passed to ``RAJA::expt::Reduce`` in the ``RAJA::forall`` method.
 

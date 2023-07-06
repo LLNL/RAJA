@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -52,7 +52,7 @@ using reduce_policy = RAJA::hip_reduce;
  */
 
 using host_launch = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
-using host_loop = RAJA::LoopPolicy<RAJA::loop_exec>;
+using host_loop = RAJA::LoopPolicy<RAJA::seq_exec>;
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -138,7 +138,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
        ctx.teamSync();
 
        //As loops are dispatched as standard C loops we can revert to using
-       //a regular loop_exec policy
+       //a regular seq_exec policy
        RAJA::loop<host_loop>(ctx, RAJA::RangeSegment(0, NN), [&] (int i) {
            host_kernel_sum += h_A_1DView(i);
        });

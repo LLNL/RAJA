@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -377,9 +377,9 @@ int main(int argc, char **argv)
 
     double minCycle = std::numeric_limits<double>::max();
 
-    // _halo_exchange_loop_forall_policies_start
-    using forall_policy = RAJA::loop_exec;
-    // _halo_exchange_loop_forall_policies_end
+    // _halo_exchange_seq_forall_policies_start
+    using forall_policy = RAJA::seq_exec;
+    // _halo_exchange_seq_forall_policies_end
 
     std::vector<double*> buffers(num_neighbors, nullptr);
 
@@ -405,7 +405,7 @@ int main(int argc, char **argv)
         });
       }
 
-      // _halo_exchange_loop_forall_packing_start
+      // _halo_exchange_seq_forall_packing_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         double* buffer = buffers[l];
@@ -426,9 +426,9 @@ int main(int argc, char **argv)
 
         // send single message
       }
-      // _halo_exchange_loop_forall_packing_end
+      // _halo_exchange_seq_forall_packing_end
 
-      // _halo_exchange_loop_forall_unpacking_start
+      // _halo_exchange_seq_forall_unpacking_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         // recv single message
@@ -449,7 +449,7 @@ int main(int argc, char **argv)
           buffer += len;
         }
       }
-      // _halo_exchange_loop_forall_unpacking_end
+      // _halo_exchange_seq_forall_unpacking_end
 
       }
       timer.stop();
@@ -483,11 +483,11 @@ int main(int argc, char **argv)
 
     double minCycle = std::numeric_limits<double>::max();
 
-    // _halo_exchange_loop_workgroup_policies_start
-    using forall_policy = RAJA::loop_exec;
+    // _halo_exchange_seq_workgroup_policies_start
+    using forall_policy = RAJA::seq_exec;
 
     using workgroup_policy = RAJA::WorkGroupPolicy <
-                                 RAJA::loop_work,
+                                 RAJA::seq_work,
                                  RAJA::ordered,
                                  RAJA::ragged_array_of_objects,
                                  RAJA::indirect_function_call_dispatch >;
@@ -506,7 +506,7 @@ int main(int argc, char **argv)
                                      int,
                                      RAJA::xargs<>,
                                      memory_manager_allocator<char> >;
-    // _halo_exchange_loop_workgroup_policies_end
+    // _halo_exchange_seq_workgroup_policies_end
 
     std::vector<double*> buffers(num_neighbors, nullptr);
 
@@ -535,7 +535,7 @@ int main(int argc, char **argv)
         });
       }
 
-      // _halo_exchange_loop_workgroup_packing_start
+      // _halo_exchange_seq_workgroup_packing_start
       for (int l = 0; l < num_neighbors; ++l) {
 
         double* buffer = buffers[l];
@@ -560,9 +560,9 @@ int main(int argc, char **argv)
       worksite site_pack = group_pack.run();
 
       // send all messages
-      // _halo_exchange_loop_workgroup_packing_end
+      // _halo_exchange_seq_workgroup_packing_end
 
-      // _halo_exchange_loop_workgroup_unpacking_start
+      // _halo_exchange_seq_workgroup_unpacking_start
       // recv all messages
 
       for (int l = 0; l < num_neighbors; ++l) {
@@ -587,7 +587,7 @@ int main(int argc, char **argv)
       workgroup group_unpack = pool_unpack.instantiate();
 
       worksite site_unpack = group_unpack.run();
-      // _halo_exchange_loop_workgroup_unpacking_end
+      // _halo_exchange_seq_workgroup_unpacking_end
 
       }
       timer.stop();

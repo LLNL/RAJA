@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -27,26 +27,6 @@ namespace RAJA
 
 template <>
 struct LaunchExecute<RAJA::omp_launch_t> {
-
-
-  template <typename BODY>
-  static void exec(LaunchParams const &params, const char *, BODY const &body)
-  {
-    RAJA::region<RAJA::omp_parallel_region>([&]() {
-
-        LaunchContext ctx;
-
-        using RAJA::internal::thread_privatize;
-        auto loop_body = thread_privatize(body);
-
-        ctx.shared_mem_ptr = (char*) malloc(params.shared_mem_size);
-
-        loop_body.get_priv()(ctx);
-
-        free(ctx.shared_mem_ptr);
-        ctx.shared_mem_ptr = nullptr;
-    });
-  }
 
   template <typename BODY>
   static resources::EventProxy<resources::Resource>
@@ -444,7 +424,7 @@ struct TileExecute<omp_parallel_for_exec, SEGMENT> {
 };
 
 template <typename SEGMENT>
-struct TileICountExecute<omp_parallel_for_exec, SEGMENT> {
+struct TileTCountExecute<omp_parallel_for_exec, SEGMENT> {
 
   template <typename BODY, typename TILE_T>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(
@@ -490,7 +470,7 @@ struct TileExecute<omp_for_exec, SEGMENT> {
 };
 
 template <typename SEGMENT>
-struct TileICountExecute<omp_for_exec, SEGMENT> {
+struct TileTCountExecute<omp_for_exec, SEGMENT> {
 
   template <typename BODY, typename TILE_T>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(
@@ -506,7 +486,7 @@ struct TileICountExecute<omp_for_exec, SEGMENT> {
 #pragma omp for
     for (int i = 0; i < numTiles; i++) {
       const int i_tile_size = i * tile_size;
-      body.get_priv()(segment.slice(i_tile_size, tile_size), i);
+      body(segment.slice(i_tile_size, tile_size), i);
     }
   }
 };

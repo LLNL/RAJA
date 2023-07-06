@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -87,6 +87,8 @@ inline auto get_value(Factory&& factory)
   return *ptr;
 }
 
+// get the device function pointer and store it so it can be used
+// multiple times
 template < typename Factory >
 inline auto get_cached_value(Factory&& factory)
 {

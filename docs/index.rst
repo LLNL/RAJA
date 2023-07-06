@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -47,7 +47,7 @@ reductions, scans, atomic operations, sorts, data layouts, views, and loop
 iteration spaces, as well as compile-time loop transformations. Features
 are continually growing as new use cases arise due to expanding user adoption.
 
-RAJA uses standard C++11 -- C++ is the programming language model of choice
+RAJA uses standard C++14 -- C++ is the programming language model of choice
 for many HPC applications. RAJA requirements and design are rooted in a 
 decades of developer experience working on production mesh-based 
 multiphysics applications. An important RAJA requirement is that
@@ -67,25 +67,38 @@ to a given architecture.
 
 RAJA support for various execution back-ends is the result of collaborative
 development between the RAJA team and academic and industrial partners.
-Currently available execution back-ends include: 
-sequential, 
-`SIMD <https://en.wikipedia.org/wiki/SIMD>`_, 
-`Threading Building Blocks (TBB) <https://github.com/oneapi-src/oneTBB>`_,
-`NVIDIA CUDA <https://developer.nvidia.com/about-cuda>`_, 
-`OpenMP <https://www.openmp.org>`_ CPU multithreading and target offload, and
-`AMD HIP <https://github.com/ROCm-Developer-Tools/HIP>`_. Sequential,
-CUDA, OpenMP CPU multithreading, and HIP execution are supported for all
-RAJA features. Sequential, OpenMP CPU multithreading, and CUDA
-are considered the most developed at this point as these have been our primary
-focus up to now. Those back-ends are used in a wide variety of production 
-applications. OpenMP target offload and TBB back-ends do not support
-all RAJA features and should be considered experimental.
+Currently available back-ends support the following execution modes: 
+
+ * sequential CPU (one can argue that you don't need RAJA for this, but it's useful for development, testing, and portability since developers typically use RAJA to insert parallelism into existing serial code. 
+ * `SIMD <https://en.wikipedia.org/wiki/SIMD>`_ CPU vectorization
+ * `OpenMP <https://www.openmp.org>`_ parallel CPU multithreading
+ * `Threading Building Blocks (TBB) <https://github.com/oneapi-src/oneTBB>`_ parallel CPU multithreading
+ * `CUDA <https://developer.nvidia.com/about-cuda>`_ NVIDIA GPU execution
+ * `HIP <https://github.com/ROCm-Developer-Tools/HIP>`_ AMD GPU execution
+ * `OpenMP <https://www.openmp.org>`_ target offload
+ * `SYCL <https://www.khronos.org/sycl/>`_ cross-platform abstraction layer for heterogeneous processors
+
+Sequential, OpenMP CPU multithreading, CUDA, and HIP execution are supported 
+for all RAJA features and are considered the most mature at this point.
+Those back-ends are used in a wide variety of production applications. 
+
+SIMD, TBB, OpenMP target offload back-ends do not support all RAJA features and 
+should be considered experimental. 
+
+We recently released abstractions to support the insertion of SIMD and SIMT 
+pragmas in application code to target special hardware features on CPU and GPU 
+systems. These capabilities are experimental and under development.
+
+SYCL back-end supported is expanding and expected to support all RAJA features
+in the near future.
 
 =================================
 Git Repository and Issue Tracking
 =================================
 
 The main interaction hub for RAJA is on `GitHub <https://github.com/LLNL/RAJA>`_
+There you will find the Git source code repository, issue tracker, release 
+history, and other information about the project.
 
 ================================
 Communicating with the RAJA Team

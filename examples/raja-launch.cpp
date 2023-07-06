@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -58,7 +58,7 @@ using teams_x = RAJA::LoopPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
                                        RAJA::omp_parallel_for_exec
 #else
-                                       RAJA::loop_exec
+                                       RAJA::seq_exec
 #endif
 #if defined(RAJA_ENABLE_CUDA)
                                        ,
@@ -73,7 +73,7 @@ using teams_x = RAJA::LoopPolicy<
  * Define thread policies.
  * Up to 3 dimension are supported: x,y,z
  */
-using threads_x = RAJA::LoopPolicy<RAJA::loop_exec
+using threads_x = RAJA::LoopPolicy<RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
                                          ,
                                          RAJA::cuda_thread_x_loop
@@ -143,7 +143,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     if (select_cpu_or_gpu == RAJA::ExecPlace::HOST){
       std::cout << "\n Running upper triangular pattern example on the host...\n";
-    }else {
+    } else {
       std::cout << "\n Running upper triangular pattern example on the device...\n";
     }
 

@@ -10,11 +10,12 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 
 #ifndef RAJA_policy_cuda_kernel_Sync_HPP
 #define RAJA_policy_cuda_kernel_Sync_HPP
@@ -51,7 +52,6 @@ struct CudaSyncThreads : public internal::Statement<camp::nil> {
 struct CudaSyncWarp : public internal::Statement<camp::nil> {
 };
 
-
 }  // namespace statement
 
 namespace internal
@@ -85,7 +85,6 @@ struct CudaStatementExecutor<Data, statement::CudaSyncWarp, Types> {
 #else
   void exec(Data &, bool) {  }
 #endif
-
 
   static
   inline

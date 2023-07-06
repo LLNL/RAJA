@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -124,7 +124,7 @@ GPU_TYPED_TEST_P( AtomicRefCUDAConstructorUnitTest, CUDAConstructors )
   RAJA::AtomicRef<NumericType, AtomicPolicy> test0( memaddr );
   RAJA::AtomicRef<NumericType, AtomicPolicy> test1( proxy );
 
-  forone<forone_cuda>( [=] __device__ () {test1.getPointer();} );
+  forone<test_cuda>( [=] __device__ () {test1.getPointer();} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test0.getPointer(), nullptr );
   ASSERT_EQ( test1.getPointer(), nullptr );
@@ -132,7 +132,7 @@ GPU_TYPED_TEST_P( AtomicRefCUDAConstructorUnitTest, CUDAConstructors )
   // ref constructor
   RAJA::AtomicRef<NumericType, AtomicPolicy> const & reft1 = test1;
   RAJA::AtomicRef<NumericType, AtomicPolicy> reftest1( reft1 );
-  forone<forone_cuda>( [=] __device__ () {reftest1.getPointer();} );
+  forone<test_cuda>( [=] __device__ () {reftest1.getPointer();} );
   cudaErrchk(cudaDeviceSynchronize());
 
   ASSERT_EQ( reftest1.getPointer(), nullptr );

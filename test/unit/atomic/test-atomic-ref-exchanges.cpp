@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -143,19 +143,19 @@ GPU_TYPED_TEST_P( AtomicRefCUDAExchangeUnitTest, CUDAExchanges )
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test exchange method
-  forone<forone_cuda>( [=] __device__ () {swapper[0] = test1.exchange( swapper[0] );} );
+  forone<test_cuda>( [=] __device__ () {swapper[0] = test1.exchange( swapper[0] );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)91 );
   ASSERT_EQ( swapper[0], (T)0 );
 
   // test CAS method
-  forone<forone_cuda>( [=] __device__ () {swapper[0] = test1.CAS( (T)91, swapper[0] );} );
+  forone<test_cuda>( [=] __device__ () {swapper[0] = test1.CAS( (T)91, swapper[0] );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( test1, (T)0 );
   ASSERT_EQ( swapper[0], (T)91 );
 
   // test strong exchange method
-  forone<forone_cuda>( [=] __device__ () {result[0] = test1.compare_exchange_strong( testval[0], testval[0] );} );
+  forone<test_cuda>( [=] __device__ () {result[0] = test1.compare_exchange_strong( testval[0], testval[0] );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], false );
   ASSERT_EQ( test1, (T)0 );
@@ -163,7 +163,7 @@ GPU_TYPED_TEST_P( AtomicRefCUDAExchangeUnitTest, CUDAExchanges )
   ASSERT_EQ( testval[0], (T)0 );
 
   // test weak exchange method (same as strong exchange)
-  forone<forone_cuda>( [=] __device__ () {result[0] = test1.compare_exchange_weak( testval[0], swapper[0] );} );
+  forone<test_cuda>( [=] __device__ () {result[0] = test1.compare_exchange_weak( testval[0], swapper[0] );} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( result[0], true );
   ASSERT_EQ( test1, (T)91 );
