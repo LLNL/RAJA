@@ -17,7 +17,7 @@ namespace detail {
   camp::concepts::enable_if< type_traits::is_hip_policy<EXEC_POL> >
   init(Reducer<OP, T>& red, RAJA::hip::detail::hipInfo& hi)
   {
-    red.devicetarget = RAJA::hip::device_mempool_type::getInstance().template malloc<T>(1);
+    red.devicetarget = RAJA::hip::pinned_mempool_type::getInstance().template malloc<T>(1);
     red.device_mem.allocate(hi.gridDim.x * hi.gridDim.y * hi.gridDim.z);
     red.device_count = RAJA::hip::device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
   }
@@ -37,15 +37,14 @@ namespace detail {
   resolve(Reducer<OP, T>& red, RAJA::hip::detail::hipInfo& hi)
   {
     // complete reduction
-    hi.res.memcpy(&red.val, red.devicetarget, sizeof(T));
     hi.res.wait();
-    *red.target = OP{}(red.val, *red.target);
+    *red.target = OP{}(*red.devicetarget, *red.target);
 
     // free memory
     RAJA::hip::device_zeroed_mempool_type::getInstance().free(red.device_count);
     red.device_count = nullptr;
     red.device_mem.deallocate();
-    RAJA::hip::device_mempool_type::getInstance().free(red.devicetarget);
+    RAJA::hip::pinned_mempool_type::getInstance().free(red.devicetarget);
     red.devicetarget = nullptr;
   }
 
