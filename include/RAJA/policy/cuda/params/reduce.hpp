@@ -17,7 +17,7 @@ namespace detail {
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
   init(Reducer<OP, T>& red, const RAJA::cuda::detail::cudaInfo & cs)
   {
-    cudaMalloc( (void**)(&(red.devicetarget)), sizeof(T));
+    red.devicetarget = RAJA::cuda::device_mempool_type::getInstance().template malloc<T>(1);
     red.device_mem.allocate(cs.gridDim.x * cs.gridDim.y * cs.gridDim.z);
     red.device_count = RAJA::cuda::device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
   }
@@ -26,17 +26,27 @@ namespace detail {
   template<typename EXEC_POL, typename OP, typename T>
   RAJA_HOST_DEVICE
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
-  combine(Reducer<OP, T>& red) {
+  combine(Reducer<OP, T>& red)
+  {
     RAJA::cuda::impl::expt::grid_reduce(red);
   }
 
   // Resolve
   template<typename EXEC_POL, typename OP, typename T>
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
-  resolve(Reducer<OP, T>& red) {
+  resolve(Reducer<OP, T>& red)
+  {
+    // complete reduction
     cudaDeviceSynchronize();
     cudaMemcpy(&red.val, red.devicetarget, sizeof(T), cudaMemcpyDeviceToHost);
     *red.target = OP{}(red.val, *red.target);
+
+    // free memory
+    RAJA::cuda::device_zeroed_mempool_type::getInstance().free(red.device_count);
+    red.device_count = nullptr;
+    red.device_mem.deallocate();
+    RAJA::cuda::device_mempool_type::getInstance().free(red.devicetarget);
+    red.devicetarget = nullptr;
   }
 
 } //  namespace detail
