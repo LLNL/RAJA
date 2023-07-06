@@ -15,10 +15,10 @@ namespace detail {
   // Init
   template<typename EXEC_POL, typename OP, typename T>
   camp::concepts::enable_if< type_traits::is_hip_policy<EXEC_POL> >
-  init(Reducer<OP, T>& red, const RAJA::hip::detail::hipInfo & cs)
+  init(Reducer<OP, T>& red, RAJA::hip::detail::hipInfo& hi)
   {
     red.devicetarget = RAJA::hip::device_mempool_type::getInstance().template malloc<T>(1);
-    red.device_mem.allocate(cs.gridDim.x * cs.gridDim.y * cs.gridDim.z);
+    red.device_mem.allocate(hi.gridDim.x * hi.gridDim.y * hi.gridDim.z);
     red.device_count = RAJA::hip::device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
   }
 
@@ -34,11 +34,11 @@ namespace detail {
   // Resolve
   template<typename EXEC_POL, typename OP, typename T>
   camp::concepts::enable_if< type_traits::is_hip_policy<EXEC_POL> >
-  resolve(Reducer<OP, T>& red)
+  resolve(Reducer<OP, T>& red, RAJA::hip::detail::hipInfo& hi)
   {
     // complete reduction
-    hipDeviceSynchronize();
-    hipMemcpy(&red.val, red.devicetarget, sizeof(T), hipMemcpyDeviceToHost);
+    hi.res.memcpy(&red.val, red.devicetarget, sizeof(T));
+    hi.res.wait();
     *red.target = OP{}(red.val, *red.target);
 
     // free memory

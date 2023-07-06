@@ -15,10 +15,10 @@ namespace detail {
   // Init
   template<typename EXEC_POL, typename OP, typename T>
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
-  init(Reducer<OP, T>& red, const RAJA::cuda::detail::cudaInfo & cs)
+  init(Reducer<OP, T>& red, RAJA::cuda::detail::cudaInfo& ci)
   {
     red.devicetarget = RAJA::cuda::device_mempool_type::getInstance().template malloc<T>(1);
-    red.device_mem.allocate(cs.gridDim.x * cs.gridDim.y * cs.gridDim.z);
+    red.device_mem.allocate(ci.gridDim.x * ci.gridDim.y * ci.gridDim.z);
     red.device_count = RAJA::cuda::device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
   }
 
@@ -34,11 +34,11 @@ namespace detail {
   // Resolve
   template<typename EXEC_POL, typename OP, typename T>
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
-  resolve(Reducer<OP, T>& red)
+  resolve(Reducer<OP, T>& red, RAJA::cuda::detail::cudaInfo& ci)
   {
     // complete reduction
-    cudaDeviceSynchronize();
-    cudaMemcpy(&red.val, red.devicetarget, sizeof(T), cudaMemcpyDeviceToHost);
+    ci.res.memcpy(&red.val, red.devicetarget, sizeof(T));
+    ci.res.wait();
     *red.target = OP{}(red.val, *red.target);
 
     // free memory
