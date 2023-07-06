@@ -28,7 +28,7 @@ namespace detail {
   camp::concepts::enable_if< type_traits::is_hip_policy<EXEC_POL> >
   combine(Reducer<OP, T>& red)
   {
-    RAJA::hip::impl::expt::grid_reduce(red);
+    RAJA::hip::impl::expt::grid_reduce<typename EXEC_POL::IterationGetter>(red);
   }
 
   // Resolve

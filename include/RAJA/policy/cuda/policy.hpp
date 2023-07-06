@@ -748,6 +748,26 @@ struct IndexGlobal<dim, named_usage::ignored, named_usage::ignored>
   }
 };
 
+// helper to get just the thread indexing part of IndexGlobal
+template < typename index_global >
+struct get_index_thread;
+///
+template < named_dim dim, int BLOCK_SIZE, int GRID_SIZE >
+struct get_index_thread<IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>
+{
+  using type = IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>;
+};
+
+// helper to get just the block indexing part of IndexGlobal
+template < typename index_global >
+struct get_index_block;
+///
+template < named_dim dim, int BLOCK_SIZE, int GRID_SIZE >
+struct get_index_block<IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>
+{
+  using type = IndexGlobal<dim, named_usage::ignored, GRID_SIZE>;
+};
+
 
 template <size_t BLOCK_SIZE=named_usage::unspecified>
 using thread_x = IndexGlobal<named_dim::x, BLOCK_SIZE, named_usage::ignored>;
