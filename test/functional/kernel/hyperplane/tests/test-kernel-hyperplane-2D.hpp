@@ -50,7 +50,7 @@ void KernelHyperplane2DTestImpl(const int groups, const int idim, const int jdim
 
   RAJA::kernel<EXEC_POLICY> ( RAJA::make_tuple( Grange, Irange, Jrange ),
     [=] RAJA_HOST_DEVICE ( INDEX_TYPE g, INDEX_TYPE ii, INDEX_TYPE jj ) {
-      if ((int)g < 0 || g >= groups || (int)ii < 0 || ii >= idim || (int)jj < 0 || jj >= jdim) {
+      if ((int)g < 0 || (int)g >= groups || (int)ii < 0 || (int)ii >= idim || (int)jj < 0 || (int)jj >= jdim) {
         oob_count += 1;
       }
 
