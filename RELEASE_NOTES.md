@@ -16,6 +16,10 @@ Notable changes include:
   * New features / API changes:
 
   * Build changes/improvements:
+     * RAJA_ENABLE_OPENMP_TASK CMake option added to enable/disable algorithm 
+       options based on OpenMP task construct. Currently, this only applies
+       to RAJA's OpenMP sort implementation. The default is 'Off'. The option
+       allows users to choose a task implementation if they wish.
 
   * Bug fixes/improvements:
 
