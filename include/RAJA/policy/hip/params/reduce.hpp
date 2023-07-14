@@ -17,7 +17,7 @@ namespace detail {
   camp::concepts::enable_if< type_traits::is_hip_policy<EXEC_POL> >
   init(Reducer<OP, T>& red, const RAJA::hip::detail::hipInfo & cs)
   {
-    hipMalloc( (void**)(&(red.devicetarget)), sizeof(T));
+    (void)hipMalloc( (void**)(&(red.devicetarget)), sizeof(T));
     red.device_mem.allocate(cs.gridDim.x * cs.gridDim.y * cs.gridDim.z);
     red.device_count = RAJA::hip::device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
   }
@@ -34,8 +34,8 @@ namespace detail {
   template<typename EXEC_POL, typename OP, typename T>
   camp::concepts::enable_if< type_traits::is_hip_policy<EXEC_POL> >
   resolve(Reducer<OP, T>& red) {
-    hipDeviceSynchronize();
-    hipMemcpy(&red.val, red.devicetarget, sizeof(T), hipMemcpyDeviceToHost);
+    (void)hipDeviceSynchronize();
+    (void)hipMemcpy(&red.val, red.devicetarget, sizeof(T), hipMemcpyDeviceToHost);
     *red.target = OP{}(red.val, *red.target);
   }
 
