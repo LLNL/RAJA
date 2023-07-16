@@ -1333,7 +1333,6 @@ namespace expt
 
             // loop over output segments, which is also the number of
             // registers in the matrix (no kidding!)
-            RAJA_UNROLL
             for(camp::idx_t outseg = 0;outseg < s_num_registers;++ outseg){
 
               // compute which result register we are accumulating into
@@ -1355,12 +1354,10 @@ namespace expt
 
             // Loop over rows
             camp::idx_t reg = 0;
-            RAJA_UNROLL
             for(camp::idx_t row = 0;row < s_num_rows;++ row){
 
               // compute partial dot products for all registers in this row
               auto rowsum = register_type(0);
-              RAJA_UNROLL
               for(camp::idx_t colreg = 0;colreg < s_minor_dim_registers;++ colreg){
 
                 rowsum = m_registers[reg].multiply_add(v.get_register(colreg), rowsum);
@@ -1385,7 +1382,6 @@ namespace expt
             auto &mv = result.get_register(0);
 
             // Loop over registers, which are also the segments in v
-            RAJA_UNROLL
             for(camp::idx_t m_reg = 0;m_reg < s_num_registers;++ m_reg){
               camp::idx_t v_reg = m_reg >> s_segbits;
               camp::idx_t v_seg = m_reg & ( (1<<s_segbits) - 1);
@@ -1404,14 +1400,12 @@ namespace expt
 
             // Loop over columns (which is also registers)
             camp::idx_t reg = 0;
-            RAJA_UNROLL
             for(camp::idx_t col = 0;col < s_num_columns;++ col){
 
               // extract column value from v
               auto v_col = register_type(v.get(col));
 
               // apply v_col to entire column (1 or more registers)
-              RAJA_UNROLL
               for(camp::idx_t rowreg = 0;rowreg < s_minor_dim_registers;++ rowreg){
 
                 auto &mv = result.get_register(rowreg);
@@ -1444,7 +1438,6 @@ namespace expt
             auto &vm = result.get_register(0);
 
             // Loop over registers, which are also the segments in v
-            RAJA_UNROLL
             for(camp::idx_t m_reg = 0;m_reg < s_num_registers;++ m_reg){
               camp::idx_t v_reg = m_reg >> s_segbits;
               camp::idx_t v_seg = m_reg & ( (1<<s_segbits) - 1);
@@ -1463,10 +1456,8 @@ namespace expt
 
             // Loop over rows
             camp::idx_t reg = 0;
-            RAJA_UNROLL
             for(camp::idx_t row = 0;row < s_num_rows;++ row){
               auto lhs_bcat = register_type(v.get(row));
-              RAJA_UNROLL
               for(camp::idx_t colreg = 0;colreg < s_minor_dim_registers;++ colreg){
 
                 result.get_register(colreg) =
@@ -1493,7 +1484,6 @@ namespace expt
 
             // loop over output segments, which is also the number of
             // registers in the matrix (no kidding!)
-            RAJA_UNROLL
             for(camp::idx_t outseg = 0;outseg < s_num_registers;++ outseg){
 
               // compute which result register we are accumulating into
@@ -1514,12 +1504,10 @@ namespace expt
           else{
             // Loop over rows
             camp::idx_t reg = 0;
-            RAJA_UNROLL
             for(camp::idx_t col = 0;col < s_num_columns;++ col){
 
               // compute partial dot products for all registers in this row
               auto colsum = register_type(0);
-              RAJA_UNROLL
               for(camp::idx_t rowreg = 0;rowreg < s_minor_dim_registers;++ rowreg){
                 colsum = m_registers[reg].multiply_add(v.get_register(rowreg), colsum);
                 reg ++;

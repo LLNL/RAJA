@@ -99,12 +99,10 @@ namespace expt
 
         constexpr camp::idx_t num_bc_reg_per_row = s_C_minor_dim_registers;
 
-        RAJA_UNROLL
         for(camp::idx_t c_reg = 0;c_reg < result_type::s_num_registers;++ c_reg){
           camp::idx_t bc_col_reg = c_reg % num_bc_reg_per_row;
           camp::idx_t ac_row = c_reg / num_bc_reg_per_row;
 
-          RAJA_UNROLL
           for(camp::idx_t a_col = 0;a_col < M_SIZE;++ a_col){
             camp::idx_t b_reg = a_col * num_bc_reg_per_row + bc_col_reg;
 
@@ -131,13 +129,11 @@ namespace expt
         constexpr camp::idx_t bc_segbits = result_type::s_segbits;
         constexpr camp::idx_t a_segments_per_register = 1<<bc_segbits;
 
-        RAJA_UNROLL
         for(camp::idx_t ac_row = 0;ac_row < N_SIZE;++ ac_row){
           camp::idx_t c_reg     = ac_row / result_type::s_major_dim_per_register;
           camp::idx_t c_segment = ac_row % result_type::s_major_dim_per_register;
           register_type c_tmp;
 
-          RAJA_UNROLL
           for(camp::idx_t b_reg = 0;b_reg < right_type::s_num_registers;++ b_reg){
 
             camp::idx_t a_segment = ac_row*right_type::s_num_registers + b_reg;
@@ -244,12 +240,10 @@ namespace expt
 
           constexpr camp::idx_t num_ac_reg_per_col = s_C_minor_dim_registers;
 
-          RAJA_UNROLL
           for(camp::idx_t c_reg = 0;c_reg < result_type::s_num_registers;++ c_reg){
             camp::idx_t ac_row_reg = c_reg % num_ac_reg_per_col;
             camp::idx_t bc_col = c_reg / num_ac_reg_per_col;
 
-            RAJA_UNROLL
             for(camp::idx_t b_row = 0;b_row < M_SIZE;++ b_row){
               camp::idx_t a_reg = b_row * num_ac_reg_per_col + ac_row_reg;
 
@@ -279,15 +273,12 @@ namespace expt
 
           camp::idx_t bc_col = 0;
 
-          RAJA_UNROLL
           for(camp::idx_t c_reg = 0;c_reg < N_SIZE/result_type::s_major_dim_per_register;++ c_reg){
 
-            RAJA_UNROLL
             for(camp::idx_t c_segment = 0;c_segment < result_type::s_major_dim_per_register;++ c_segment){
 
               register_type c_tmp;
 
-              RAJA_UNROLL
               for(camp::idx_t a_reg = 0;a_reg < right_type::s_num_registers;++ a_reg){
 
 
