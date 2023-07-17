@@ -457,7 +457,7 @@ namespace internal
     using type = RAJA::expt::StaticTensorIndex<RAJA::expt::StaticTensorIndexInner<arg_type, VectorType, DIM, BEGIN, LENGTH>>;
 
     static constexpr RAJA_HOST_DEVICE RAJA_INLINE
-    type extract(RAJA::expt::StaticTensorIndex<RAJA::expt::StaticTensorIndexInner<Arg, VectorType, DIM, BEGIN, LENGTH>> vec_arg){
+    type extract(RAJA::expt::StaticTensorIndex<RAJA::expt::StaticTensorIndexInner<Arg, VectorType, DIM, BEGIN, LENGTH>> RAJA_UNUSED_ARG(vec_arg)){
       return type();
     }
   };
