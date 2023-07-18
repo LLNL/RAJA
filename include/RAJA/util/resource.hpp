@@ -151,19 +151,19 @@ namespace RAJA
 
   namespace type_traits
   {
-    template <typename T> struct is_resource : std::false_type {};
-    template <> struct is_resource<resources::Host> : std::true_type {};
+    template <typename T, typename=void> struct is_resource : std::false_type {};
+    template <typename T> struct is_resource<T, std::enable_if_t<std::is_base_of<resources::Host, T>::value>> : std::true_type {};
 #if defined(RAJA_CUDA_ACTIVE)
-    template <> struct is_resource<resources::Cuda> : std::true_type {};
+    template <typename T> struct is_resource<T, std::enable_if_t<std::is_base_of<resources::Cuda, T>::value>> : std::true_type {};
 #endif
 #if defined(RAJA_HIP_ACTIVE)
-    template <> struct is_resource<resources::Hip> : std::true_type {};
+    template <typename T> struct is_resource<T, std::enable_if_t<std::is_base_of<resources::Hip, T>::value>> : std::true_type {};
 #endif
 #if defined(RAJA_SYCL_ACTIVE)
-    template <> struct is_resource<resources::Sycl> : std::true_type {};
+    template <typename T> struct is_resource<T, std::enable_if_t<std::is_base_of<resources::Sycl, T>::value>> : std::true_type {};
 #endif
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-    template <> struct is_resource<resources::Omp> : std::true_type {};
+    template <typename T> struct is_resource<T, std::enable_if_t<std::is_base_of<resources::Omp, T>::value>> : std::true_type {};
 #endif
   } // end namespace type_traits
 
