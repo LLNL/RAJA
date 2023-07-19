@@ -42,11 +42,13 @@ namespace scan
         \brief explicit inclusive inplace scan given range, function, and
    initial value
 */
-template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async, typename InputIter, typename Function>
+template <typename Res, size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async, typename InputIter, typename Function>
 RAJA_INLINE
-resources::EventProxy<resources::Cuda>
+concepts::enable_if_t<
+  resources::EventProxy<Res>,
+  std::is_base_of<resources::Cuda, Res> >
 inclusive_inplace(
-    resources::Cuda cuda_res,
+    Res cuda_res,
     cuda_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
@@ -66,9 +68,8 @@ inclusive_inplace(
                                               len,
                                               stream));
   // Allocate temporary storage
-  d_temp_storage =
-      cuda::device_mempool_type::getInstance().malloc<unsigned char>(
-          temp_storage_bytes);
+  d_temp_storage = cuda_res.template allocate<unsigned char>(
+      temp_storage_bytes, ::RAJA::resources::MemoryAccess::Device);
   // Run
   cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
                                               temp_storage_bytes,
@@ -78,27 +79,30 @@ inclusive_inplace(
                                               len,
                                               stream));
   // Free temporary storage
-  cuda::device_mempool_type::getInstance().free(d_temp_storage);
+  cuda_res.deallocate(d_temp_storage, ::RAJA::resources::MemoryAccess::Device);
 
   cuda::launch(cuda_res, Async);
 
-  return resources::EventProxy<resources::Cuda>(cuda_res);
+  return resources::EventProxy<Res>(cuda_res);
 }
 
 /*!
         \brief explicit exclusive inplace scan given range, function, and
    initial value
 */
-template <size_t BLOCK_SIZE,
+template <typename Res,
+          size_t BLOCK_SIZE,
           size_t BLOCKS_PER_SM,
           bool Async,
           typename InputIter,
           typename Function,
           typename T>
 RAJA_INLINE
-resources::EventProxy<resources::Cuda>
+concepts::enable_if_t<
+  resources::EventProxy<Res>,
+  std::is_base_of<resources::Cuda, Res> >
 exclusive_inplace(
-    resources::Cuda cuda_res,
+    Res cuda_res,
     cuda_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
@@ -120,9 +124,8 @@ exclusive_inplace(
                                               len,
                                               stream));
   // Allocate temporary storage
-  d_temp_storage =
-      cuda::device_mempool_type::getInstance().malloc<unsigned char>(
-          temp_storage_bytes);
+  d_temp_storage = cuda_res.template allocate<unsigned char>(
+      temp_storage_bytes, ::RAJA::resources::MemoryAccess::Device);
   // Run
   cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
                                               temp_storage_bytes,
@@ -133,27 +136,30 @@ exclusive_inplace(
                                               len,
                                               stream));
   // Free temporary storage
-  cuda::device_mempool_type::getInstance().free(d_temp_storage);
+  cuda_res.deallocate(d_temp_storage, ::RAJA::resources::MemoryAccess::Device);
 
   cuda::launch(cuda_res, Async);
 
-  return resources::EventProxy<resources::Cuda>(cuda_res);
+  return resources::EventProxy<Res>(cuda_res);
 }
 
 /*!
         \brief explicit inclusive scan given input range, output, function, and
    initial value
 */
-template <size_t BLOCK_SIZE,
+template <typename Res,
+          size_t BLOCK_SIZE,
           size_t BLOCKS_PER_SM,
           bool Async,
           typename InputIter,
           typename OutputIter,
           typename Function>
 RAJA_INLINE
-resources::EventProxy<resources::Cuda>
+concepts::enable_if_t<
+  resources::EventProxy<Res>,
+  std::is_base_of<resources::Cuda, Res> >
 inclusive(
-    resources::Cuda cuda_res,
+    Res cuda_res,
     cuda_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
@@ -174,9 +180,8 @@ inclusive(
                                               len,
                                               stream));
   // Allocate temporary storage
-  d_temp_storage =
-      cuda::device_mempool_type::getInstance().malloc<unsigned char>(
-          temp_storage_bytes);
+  d_temp_storage = cuda_res.template allocate<unsigned char>(
+      temp_storage_bytes, ::RAJA::resources::MemoryAccess::Device);
   // Run
   cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
                                               temp_storage_bytes,
@@ -186,18 +191,19 @@ inclusive(
                                               len,
                                               stream));
   // Free temporary storage
-  cuda::device_mempool_type::getInstance().free(d_temp_storage);
+  cuda_res.deallocate(d_temp_storage, ::RAJA::resources::MemoryAccess::Device);
 
   cuda::launch(cuda_res, Async);
 
-  return resources::EventProxy<resources::Cuda>(cuda_res);
+  return resources::EventProxy<Res>(cuda_res);
 }
 
 /*!
         \brief explicit exclusive scan given input range, output, function, and
    initial value
 */
-template <size_t BLOCK_SIZE,
+template <typename Res,
+          size_t BLOCK_SIZE,
           size_t BLOCKS_PER_SM,
           bool Async,
           typename InputIter,
@@ -205,9 +211,11 @@ template <size_t BLOCK_SIZE,
           typename Function,
           typename T>
 RAJA_INLINE
-resources::EventProxy<resources::Cuda>
+concepts::enable_if_t<
+  resources::EventProxy<Res>,
+  std::is_base_of<resources::Cuda, Res> >
 exclusive(
-    resources::Cuda cuda_res,
+    Res cuda_res,
     cuda_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
@@ -230,9 +238,8 @@ exclusive(
                                               len,
                                               stream));
   // Allocate temporary storage
-  d_temp_storage =
-      cuda::device_mempool_type::getInstance().malloc<unsigned char>(
-          temp_storage_bytes);
+  d_temp_storage = cuda_res.template allocate<unsigned char>(
+      temp_storage_bytes, ::RAJA::resources::MemoryAccess::Device);
   // Run
   cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
                                               temp_storage_bytes,
@@ -243,11 +250,11 @@ exclusive(
                                               len,
                                               stream));
   // Free temporary storage
-  cuda::device_mempool_type::getInstance().free(d_temp_storage);
+  cuda_res.deallocate(d_temp_storage, ::RAJA::resources::MemoryAccess::Device);
 
   cuda::launch(cuda_res, Async);
 
-  return resources::EventProxy<resources::Cuda>(cuda_res);
+  return resources::EventProxy<Res>(cuda_res);
 }
 
 }  // namespace scan
