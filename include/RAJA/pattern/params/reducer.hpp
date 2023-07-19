@@ -95,7 +95,7 @@ namespace detail
 #if defined(RAJA_CUDA_ACTIVE) || defined(RAJA_HIP_ACTIVE)
     // Device related attributes.
     value_type * devicetarget = nullptr;
-    RAJA::detail::SoAPtr<value_type, device_mem_pool_t> device_mem;
+    RAJA::detail::SoAPtr<value_type> device_mem;
     unsigned int * device_count = nullptr;
 #endif
 

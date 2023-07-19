@@ -36,29 +36,30 @@ namespace detail
  * This is useful for creating a vectorizable data layout and getting
  * coalesced memory accesses or avoiding shared memory bank conflicts in cuda.
  */
-template <typename T,
-          typename mempool = RAJA::basic_mempool::MemPool<
-              RAJA::basic_mempool::generic_allocator> >
+template <typename T>
 class SoAPtr
 {
   using value_type = T;
 
 public:
   SoAPtr() = default;
-  explicit SoAPtr(size_t size)
-      : mem(mempool::getInstance().template malloc<value_type>(size))
+  template < typename Res >
+  SoAPtr(size_t size, Res& res)
+      : mem(res.template allocate<value_type>(size, ::RAJA::resources::MemoryAccess::Device))
   {
   }
 
-  SoAPtr& allocate(size_t size)
+  template < typename Res >
+  SoAPtr& allocate(size_t size, Res& res)
   {
-    mem = mempool::getInstance().template malloc<value_type>(size);
+    mem = res.template allocate<value_type>(size, ::RAJA::resources::MemoryAccess::Device);
     return *this;
   }
 
-  SoAPtr& deallocate()
+  template < typename Res >
+  SoAPtr& deallocate(Res& res)
   {
-    mempool::getInstance().free(mem);
+    res.deallocate(mem, ::RAJA::resources::MemoryAccess::Device);
     mem = nullptr;
     return *this;
   }
@@ -75,8 +76,8 @@ private:
 /*!
  * @brief Specialization for RAJA::reduce::detail::ValueLoc.
  */
-template <typename T, typename IndexType, bool doing_min, typename mempool>
-class SoAPtr<RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>, mempool>
+template <typename T, typename IndexType, bool doing_min>
+class SoAPtr<RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>>
 {
   using value_type = RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>;
   using first_type = T;
@@ -84,24 +85,27 @@ class SoAPtr<RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>, mempool>
 
 public:
   SoAPtr() = default;
-  explicit SoAPtr(size_t size)
-      : mem(mempool::getInstance().template malloc<first_type>(size)),
-        mem_idx(mempool::getInstance().template malloc<second_type>(size))
+  template < typename Res >
+  explicit SoAPtr(size_t size, Res& res)
+      : mem(res.template allocate<first_type>(size, ::RAJA::resources::MemoryAccess::Device)),
+        mem_idx(res.template allocate<second_type>(size, ::RAJA::resources::MemoryAccess::Device))
   {
   }
 
-  SoAPtr& allocate(size_t size)
+  template < typename Res >
+  SoAPtr& allocate(size_t size, Res& res)
   {
-    mem = mempool::getInstance().template malloc<first_type>(size);
-    mem_idx = mempool::getInstance().template malloc<second_type>(size);
+    mem = res.template allocate<first_type>(size, ::RAJA::resources::MemoryAccess::Device);
+    mem_idx = res.template allocate<second_type>(size, ::RAJA::resources::MemoryAccess::Device);
     return *this;
   }
 
-  SoAPtr& deallocate()
+  template < typename Res >
+  SoAPtr& deallocate(Res& res)
   {
-    mempool::getInstance().free(mem);
+    res.deallocate(mem, ::RAJA::resources::MemoryAccess::Device);
     mem = nullptr;
-    mempool::getInstance().free(mem_idx);
+    res.deallocate(mem_idx, ::RAJA::resources::MemoryAccess::Device);
     mem_idx = nullptr;
     return *this;
   }

@@ -711,12 +711,13 @@ public:
   //! Object put in Pinned memory with value and pointer to next Node
   struct Node {
     Node* next;
+    ::RAJA::resources::Resource res;
     T value;
   };
   //! Object per resource to keep track of pinned memory nodes
   struct ResourceNode {
     ResourceNode* next;
-    ::RAJA::resources::Cuda res;
+    ::RAJA::resources::Cuda cuda_res;
     Node* node_list;
   };
 
@@ -741,7 +742,7 @@ public:
       return ret;
     }
 
-    ::RAJA::resources::Cuda& operator*() { return m_rn->res; }
+    ::RAJA::resources::Cuda& operator*() { return m_rn->cuda_res; }
 
     bool operator==(const ResourceIterator& rhs) const
     {
@@ -823,27 +824,23 @@ public:
   ResourceNodeIterator end() { return {nullptr, nullptr}; }
 
   //! get new value for use in resource
-  T* new_value(::RAJA::resources::Cuda res)
+  Node* new_value(::RAJA::resources::Cuda& cuda_res, ::RAJA::resources::Resource& res)
   {
 #if defined(RAJA_ENABLE_OPENMP)
     lock_guard<omp::mutex> lock(m_mutex);
 #endif
     ResourceNode* rn = resource_list;
     while (rn) {
-      if (rn->res.get_stream() == res.get_stream()) break;
+      if (rn->cuda_res.get_stream() == cuda_res.get_stream()) break;
       rn = rn->next;
     }
     if (!rn) {
-      rn = (ResourceNode*)malloc(sizeof(ResourceNode));
-      rn->next = resource_list;
-      rn->res = res;
-      rn->node_list = nullptr;
+      rn = new ResourceNode{resource_list, cuda_res, nullptr};
       resource_list = rn;
     }
-    Node* n = cuda::pinned_mempool_type::getInstance().template malloc<Node>(1);
-    n->next = rn->node_list;
-    rn->node_list = n;
-    return &n->value;
+    Node* n_mem = res.template allocate<Node>(1, ::RAJA::resources::MemoryAccess::Pinned);
+    rn->node_list = new(n_mem) Node{rn->node_list, res, T{}};
+    return rn->node_list;
   }
 
   //! synchronize all resources used
@@ -863,10 +860,12 @@ public:
       while (rn->node_list) {
         Node* n = rn->node_list;
         rn->node_list = n->next;
-        cuda::pinned_mempool_type::getInstance().free(n);
+        auto res{std::move(n->res)};
+        n->~Node();
+        res.deallocate(n, ::RAJA::resources::MemoryAccess::Pinned);
       }
       resource_list = rn->next;
-      free(rn);
+      delete rn;
     }
   }
 
@@ -896,7 +895,7 @@ struct Reduce_Data {
   mutable T value;
   T identity;
   unsigned int* device_count;
-  RAJA::detail::SoAPtr<T, device_mempool_type> device;
+  RAJA::detail::SoAPtr<T> device;
   bool own_device_ptr;
 
   Reduce_Data() : Reduce_Data(T(), T()){};
@@ -952,15 +951,15 @@ struct Reduce_Data {
 
   //! check and setup for device
   //  allocate device pointers and get a new result buffer from the pinned tally
-  bool setupForDevice()
+  bool setupForDevice(::RAJA::resources::Resource& res)
   {
     bool act = !device.allocated() && setupReducers();
     if (act) {
       cuda_dim_t gridDim = currentGridDim();
       size_t numBlocks = gridDim.x * gridDim.y * gridDim.z;
-      device.allocate(numBlocks);
-      device_count = device_zeroed_mempool_type::getInstance()
-                         .template malloc<unsigned int>(1);
+      device.allocate(numBlocks, res);
+      device_count = static_cast<unsigned int*>(
+          res.calloc(sizeof(unsigned int), ::RAJA::resources::MemoryAccess::Device));
       own_device_ptr = true;
     }
     return act;
@@ -968,12 +967,12 @@ struct Reduce_Data {
 
   //! if own resources teardown device setup
   //  free device pointers
-  bool teardownForDevice()
+  bool teardownForDevice(::RAJA::resources::Resource& res)
   {
     bool act = own_device_ptr;
     if (act) {
-      device.deallocate();
-      device_zeroed_mempool_type::getInstance().free(device_count);
+      device.deallocate(res);
+      res.deallocate(device_count, ::RAJA::resources::MemoryAccess::Device);
       device_count = nullptr;
       own_device_ptr = false;
     }
@@ -1042,13 +1041,13 @@ struct ReduceAtomic_Data {
 
   //! check and setup for device
   //  allocate device pointers and get a new result buffer from the pinned tally
-  bool setupForDevice()
+  bool setupForDevice(::RAJA::resources::Resource& res)
   {
     bool act = !device && setupReducers();
     if (act) {
-      device = device_mempool_type::getInstance().template malloc<T>(1);
-      device_count = device_zeroed_mempool_type::getInstance()
-                         .template malloc<unsigned int>(1);
+      device = res.template allocate<T>(1, ::RAJA::resources::MemoryAccess::Device);
+      device_count = static_cast<unsigned int*>(
+          res.calloc(sizeof(unsigned int), ::RAJA::resources::MemoryAccess::Device));
       own_device_ptr = true;
     }
     return act;
@@ -1056,13 +1055,13 @@ struct ReduceAtomic_Data {
 
   //! if own resources teardown device setup
   //  free device pointers
-  bool teardownForDevice()
+  bool teardownForDevice(::RAJA::resources::Resource& res)
   {
     bool act = own_device_ptr;
     if (act) {
-      device_mempool_type::getInstance().free(device);
+      res.deallocate(device, ::RAJA::resources::MemoryAccess::Device);
       device = nullptr;
-      device_zeroed_mempool_type::getInstance().free(device_count);
+      res.deallocate(device_count, ::RAJA::resources::MemoryAccess::Device);
       device_count = nullptr;
       own_device_ptr = false;
     }
@@ -1081,7 +1080,7 @@ public:
   //  the original object's parent is itself
   explicit Reduce(T init_val, T identity_ = Combiner::identity())
       : parent{this},
-        tally_or_val_ptr{new PinnedTally<T>},
+        tally_or_node_ptr{new PinnedTally<T>},
         val(init_val, identity_)
   {
   }
@@ -1093,7 +1092,7 @@ public:
   }
 
   //! copy and on host attempt to setup for device
-  //  init val_ptr to avoid uninitialized read caused by host copy of
+  //  init node_ptr to avoid uninitialized read caused by host copy of
   //  reducer in host device lambda not being used on device.
   RAJA_HOST_DEVICE
   Reduce(const Reduce& other)
@@ -1102,15 +1101,15 @@ public:
 #else
       : parent{&other},
 #endif
-        tally_or_val_ptr{other.tally_or_val_ptr},
+        tally_or_node_ptr{other.tally_or_node_ptr},
         val(other.val)
   {
 #if !defined(RAJA_DEVICE_CODE)
     if (parent) {
-      if (val.setupForDevice()) {
-        tally_or_val_ptr.val_ptr =
-            tally_or_val_ptr.list->new_value(currentResource());
-        val.init_grid_val(tally_or_val_ptr.val_ptr);
+      if (val.setupForDevice(currentResource())) {
+        tally_or_node_ptr.node_ptr =
+            tally_or_node_ptr.list->new_value(currentCudaResource(), currentResource());
+        val.init_grid_val(&tally_or_node_ptr.node_ptr->value);
         parent = nullptr;
       }
     }
@@ -1124,23 +1123,23 @@ public:
   {
 #if !defined(RAJA_DEVICE_CODE)
     if (parent == this) {
-      delete tally_or_val_ptr.list;
-      tally_or_val_ptr.list = nullptr;
+      delete tally_or_node_ptr.list;
+      tally_or_node_ptr.list = nullptr;
     } else if (parent) {
       if (val.value != val.identity) {
 #if defined(RAJA_ENABLE_OPENMP)
-        lock_guard<omp::mutex> lock(tally_or_val_ptr.list->m_mutex);
+        lock_guard<omp::mutex> lock(tally_or_node_ptr.list->m_mutex);
 #endif
         parent->combine(val.value);
       }
     } else {
-      if (val.teardownForDevice()) {
-        tally_or_val_ptr.val_ptr = nullptr;
+      if (val.teardownForDevice(tally_or_node_ptr.node_ptr->res)) {
+        tally_or_node_ptr.node_ptr = nullptr;
       }
     }
 #else
     if (!parent->parent) {
-      val.grid_reduce(tally_or_val_ptr.val_ptr);
+      val.grid_reduce(&tally_or_node_ptr.node_ptr->value);
     } else {
       parent->combine(val.value);
     }
@@ -1150,14 +1149,14 @@ public:
   //! map result value back to host if not done already; return aggregate value
   operator T()
   {
-    auto n = tally_or_val_ptr.list->begin();
-    auto end = tally_or_val_ptr.list->end();
+    auto n = tally_or_node_ptr.list->begin();
+    auto end = tally_or_node_ptr.list->end();
     if (n != end) {
-      tally_or_val_ptr.list->synchronize_resources();
+      tally_or_node_ptr.list->synchronize_resources();
       for (; n != end; ++n) {
         Combiner{}(val.value, *n);
       }
-      tally_or_val_ptr.list->free_list();
+      tally_or_node_ptr.list->free_list();
     }
     return val.value;
   }
@@ -1179,15 +1178,15 @@ private:
   const Reduce* parent;
 
   //! union to hold either pointer to PinnedTally or poiter to value
-  //  only use list before setup for device and only use val_ptr after
+  //  only use list before setup for device and only use node_ptr after
   union tally_u {
     PinnedTally<T>* list;
-    T* val_ptr;
+    typename PinnedTally<T>::Node* node_ptr;
     constexpr tally_u(PinnedTally<T>* l) : list(l){};
-    constexpr tally_u(T* v_ptr) : val_ptr(v_ptr){};
+    constexpr tally_u(typename PinnedTally<T>::Node* n_ptr) : node_ptr(n_ptr){};
   };
 
-  tally_u tally_or_val_ptr;
+  tally_u tally_or_node_ptr;
 
   //! cuda reduction data storage class and folding algorithm
   using reduce_data_type = typename std::conditional<

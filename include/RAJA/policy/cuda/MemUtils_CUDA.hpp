@@ -118,7 +118,8 @@ namespace detail
 struct cudaInfo {
   cuda_dim_t gridDim{0, 0, 0};
   cuda_dim_t blockDim{0, 0, 0};
-  ::RAJA::resources::Cuda res{::RAJA::resources::Cuda::CudaFromStream(0,0)}; 
+  ::RAJA::resources::Cuda cuda_res{::RAJA::resources::Cuda::CudaFromStream(0,0)};
+  ::RAJA::resources::Resource res{::RAJA::resources::Cuda::CudaFromStream(0,0)};
   bool setup_reducers = false;
 #if defined(RAJA_ENABLE_OPENMP)
   cudaInfo* thread_states = nullptr;
@@ -251,20 +252,26 @@ cuda_dim_t currentBlockDim() { return detail::tl_status.blockDim; }
 
 //! get resource for current launch
 RAJA_INLINE
-::RAJA::resources::Cuda currentResource() { return detail::tl_status.res; }
+::RAJA::resources::Cuda& currentCudaResource() { return detail::tl_status.cuda_res; }
+
+//! get resource for current launch
+RAJA_INLINE
+::RAJA::resources::Resource& currentResource() { return detail::tl_status.res; }
 
 //! create copy of loop_body that is setup for device execution
-template <typename LOOP_BODY>
+template <typename Res, typename LOOP_BODY>
 RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
     cuda_dim_t gridDim,
     cuda_dim_t blockDim,
     size_t RAJA_UNUSED_ARG(dynamic_smem),
-    ::RAJA::resources::Cuda res,
+    Res res,
     LOOP_BODY&& loop_body)
 {
   detail::SetterResetter<bool> setup_reducers_srer(
       detail::tl_status.setup_reducers, true);
-  detail::SetterResetter<::RAJA::resources::Cuda> res_srer(
+  detail::SetterResetter<::RAJA::resources::Cuda> cuda_res_srer(
+      detail::tl_status.cuda_res, res);
+  detail::SetterResetter<::RAJA::resources::Resource> res_srer(
       detail::tl_status.res, res);
 
   detail::tl_status.gridDim = gridDim;
