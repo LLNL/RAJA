@@ -187,13 +187,14 @@ __launch_bounds__(BlockSize, 1) __global__
 ////////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, size_t BlocksPerSM, bool Async, typename ForallParam>
+template <typename Res, typename Iterable, typename LoopBody, size_t BlockSize, size_t BlocksPerSM, bool Async, typename ForallParam>
 RAJA_INLINE 
 concepts::enable_if_t<
-  resources::EventProxy<resources::Cuda>,
+  resources::EventProxy<Res>,
+  std::is_base_of<resources::Cuda, Res>,
   RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
   RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
-forall_impl(resources::Cuda cuda_res,
+forall_impl(Res cuda_res,
             cuda_exec_explicit<BlockSize, BlocksPerSM, Async>,
             Iterable&& iter,
             LoopBody&& loop_body,
@@ -250,16 +251,17 @@ forall_impl(resources::Cuda cuda_res,
     RAJA_FT_END;
   }
 
-  return resources::EventProxy<resources::Cuda>(cuda_res);
+  return resources::EventProxy<Res>(cuda_res);
 }
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, size_t BlocksPerSM, bool Async, typename ForallParam>
+template <typename Res, typename Iterable, typename LoopBody, size_t BlockSize, size_t BlocksPerSM, bool Async, typename ForallParam>
 RAJA_INLINE 
 concepts::enable_if_t<
-  resources::EventProxy<resources::Cuda>,
+  resources::EventProxy<Res>,
+  std::is_base_of<resources::Cuda, Res>,
   RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
   concepts::negate< RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>> >
-forall_impl(resources::Cuda cuda_res,
+forall_impl(Res cuda_res,
             cuda_exec_explicit<BlockSize, BlocksPerSM, Async>,
             Iterable&& iter,
             LoopBody&& loop_body,
@@ -325,7 +327,7 @@ forall_impl(resources::Cuda cuda_res,
     RAJA_FT_END;
   }
 
-  return resources::EventProxy<resources::Cuda>(cuda_res);
+  return resources::EventProxy<Res>(cuda_res);
 }
 
 
@@ -348,13 +350,17 @@ forall_impl(resources::Cuda cuda_res,
  *
  ******************************************************************************
  */
-template <typename LoopBody,
+template <typename Res,
+          typename LoopBody,
           size_t BlockSize,
           size_t BlocksPerSM,
           bool Async,
           typename... SegmentTypes>
-RAJA_INLINE resources::EventProxy<resources::Cuda>
-forall_impl(resources::Cuda r,
+RAJA_INLINE
+concepts::enable_if_t<
+  resources::EventProxy<Res>,
+  std::is_base_of<resources::Cuda, Res> >
+forall_impl(Res r,
             ExecPolicy<seq_segit, cuda_exec_explicit<BlockSize, BlocksPerSM, Async>>,
             const TypedIndexSet<SegmentTypes...>& iset,
             LoopBody&& loop_body)
@@ -369,7 +375,7 @@ forall_impl(resources::Cuda r,
   }  // iterate over segments of index set
 
   if (!Async) RAJA::cuda::synchronize(r);
-  return resources::EventProxy<resources::Cuda>(r);
+  return resources::EventProxy<Res>(r);
 }
 
 }  // namespace cuda
