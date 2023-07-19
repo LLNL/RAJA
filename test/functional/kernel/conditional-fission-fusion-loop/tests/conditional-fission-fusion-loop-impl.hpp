@@ -53,9 +53,9 @@ void KernelConditionalFissionFusionLoopTestImpl(
                                     &test_array_y);
 
 
-  memset(static_cast<void*>(test_array_x),
-         0,
-         sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
+  working_res.memset(working_array_x,
+                     0,
+                     sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
   for (int param = 0; param < 2; ++param) {
 
