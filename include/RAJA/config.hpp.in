@@ -176,6 +176,8 @@ static_assert(RAJA_HAS_SOME_CXX14,
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
 #cmakedefine RAJA_ENABLE_HIP
 #cmakedefine RAJA_ENABLE_SYCL
+
+#cmakedefine RAJA_ENABLE_OMP_TASK
 #cmakedefine RAJA_ENABLE_VECTORIZATION
 
 #cmakedefine RAJA_ENABLE_NV_TOOLS_EXT
@@ -254,12 +256,14 @@ namespace RAJA {
 #if defined(RAJA_ENABLE_OPENMP) && !defined(__HIP_DEVICE_COMPILE__)
 #if defined(_OPENMP)
 #if (_OPENMP >= 200805)
-#define RAJA_ENABLE_OPENMP_TASK
+#if defined(RAJA_ENABLE_OPENMP_TASK)
+#define RAJA_ENABLE_OPENMP_TASK_INTERNAL
 #endif
+#endif // _OPENMP >= 200805
 #else
 #error RAJA configured with RAJA_ENABLE_OPENMP, but _OPENMP is not defined in this code section
-#endif // _OPENMP
-#endif // RAJA_ENABLE_OPENMP && __HIP_DEVICE_COMPILE__
+#endif // else
+#endif // RAJA_ENABLE_OPENMP && !__HIP_DEVICE_COMPILE__
 
 #if defined(RAJA_ENABLE_CUDA) && defined(__CUDACC__)
 #define RAJA_CUDA_ACTIVE
@@ -409,13 +413,10 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #if defined(_OPENMP) && (_OPENMP >= 201307) && (__INTEL_COMPILER >= 1700)
 #define RAJA_SIMD  RAJA_PRAGMA(omp simd)
-#define RAJA_NO_SIMD RAJA_PRAGMA(novector)
 #elif defined(_OPENMP) && (_OPENMP >= 201307) && (__INTEL_COMPILER < 1700)
 #define RAJA_SIMD
-#define RAJA_NO_SIMD RAJA_PRAGMA(novector)
 #else
 #define RAJA_SIMD RAJA_PRAGMA(simd)
-#define RAJA_NO_SIMD RAJA_PRAGMA(novector)
 #endif
 
 
@@ -442,14 +443,11 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
 #define RAJA_SIMD  RAJA_PRAGMA(omp simd)
-#define RAJA_NO_SIMD
 #elif defined(__GNUC__) && defined(__GNUC_MINOR__) && \
       ( ( (__GNUC__ == 4) && (__GNUC_MINOR__ == 9) ) || (__GNUC__ >= 5) )
 #define RAJA_SIMD    RAJA_PRAGMA(GCC ivdep)
-#define RAJA_NO_SIMD
 #else
 #define RAJA_SIMD
-#define RAJA_NO_SIMD
 #endif
 
 
@@ -471,10 +469,8 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
 #define RAJA_SIMD  RAJA_PRAGMA(omp simd)
-#define RAJA_NO_SIMD RAJA_PRAGMA(simd_level(0))
 #else
 #define RAJA_SIMD  RAJA_PRAGMA(simd_level(10))
-#define RAJA_NO_SIMD RAJA_PRAGMA(simd_level(0))
 #endif
 
 // Detect altivec, but disable if NVCC is being used due to some bad interactions
@@ -502,7 +498,6 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 
 #if defined(_OPENMP) && (_OPENMP >= 201307) && (__clang_major__ >= 4 )
 #define RAJA_SIMD  RAJA_PRAGMA(omp simd)
-#define RAJA_NO_SIMD RAJA_PRAGMA(clang loop vectorize(disable))
 #else
 
 // Clang 3.7 and later changed the "pragma clang loop vectorize" options
@@ -513,7 +508,6 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_SIMD    RAJA_PRAGMA(clang loop vectorize(enable))
 #endif
 
-#define RAJA_NO_SIMD  RAJA_PRAGMA(clang loop vectorize(disable))
 #endif
 
 // Detect altivec, but only seems to work since Clang 9
@@ -529,7 +523,6 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_INLINE inline
 #define RAJA_ALIGN_DATA(d) d
 #define RAJA_SIMD
-#define RAJA_NO_SIMD
 #define RAJA_UNROLL
 #define RAJA_UNROLL_COUNT(N)
 
@@ -541,7 +534,6 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_INLINE inline
 #define RAJA_ALIGN_DATA(d) d
 #define RAJA_SIMD
-#define RAJA_NO_SIMD
 #define RAJA_UNROLL
 #define RAJA_UNROLL_COUNT(N)
 

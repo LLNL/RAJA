@@ -31,7 +31,7 @@
 #include "RAJA/util/concepts.hpp"
 
 #include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/loop/sort.hpp"
+#include "RAJA/policy/sequential/sort.hpp"
 #include "RAJA/pattern/detail/algorithm.hpp"
 
 namespace RAJA
@@ -49,7 +49,7 @@ namespace openmp
 // this number is arbitrary
 constexpr int get_min_iterates_per_task() { return 128; }
 
-#ifdef RAJA_ENABLE_OPENMP_TASK
+#if defined(RAJA_ENABLE_OPENMP_TASK_INTERNAL)
 /*!
         \brief sort given range using sorter and comparison function
                by spawning tasks
@@ -159,7 +159,7 @@ void sort(Sorter sorter,
 
     const diff_type max_threads = omp_get_max_threads();
 
-#ifdef RAJA_ENABLE_OPENMP_TASK
+#if defined(RAJA_ENABLE_OPENMP_TASK_INTERNAL)
 
     const diff_type iterates_per_task = std::max(n/(2*max_threads), min_iterates_per_task);
 

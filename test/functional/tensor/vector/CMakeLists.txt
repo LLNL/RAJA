@@ -7,12 +7,13 @@
 
 
 set(TENSOR_VECTOR_TESTS
-				CtorGetSet
-				MinMaxSumDot
-    		    FmaFms
-    			ForallVectorRef1d
-    			ForallVectorRef2d
-				)
+      CtorGetSet
+      MinMax
+      SumDot
+      FmaFms
+      ForallVectorRef1d
+      ForallVectorRef2d
+   )
 				
 
 #

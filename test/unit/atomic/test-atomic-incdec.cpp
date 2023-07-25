@@ -140,18 +140,18 @@ GPU_TYPED_TEST_P( AtomicCUDAIncDecUnitTest, CUDAIncDecs )
 
   inc_result[0] = (T)0;
   // oldval < val, increment oldval
-  forone<forone_cuda>( [=] __device__ () {RAJA::atomicInc<AtomicPolicy>(inc_result, (T)1);} );
+  forone<test_cuda>( [=] __device__ () {RAJA::atomicInc<AtomicPolicy>(inc_result, (T)1);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( inc_result[0], (T)1 );
 
   // oldval == val, wrap to 0
-  forone<forone_cuda>( [=] __device__ () {RAJA::atomicInc<AtomicPolicy>(inc_result, (T)1);} );
+  forone<test_cuda>( [=] __device__ () {RAJA::atomicInc<AtomicPolicy>(inc_result, (T)1);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( inc_result[0], (T)0 );
 
   // oldval > val, wrap to 0
   inc_result[0] = (T)2;
-  forone<forone_cuda>( [=] __device__ () {RAJA::atomicInc<AtomicPolicy>(inc_result, (T)1);} );
+  forone<test_cuda>( [=] __device__ () {RAJA::atomicInc<AtomicPolicy>(inc_result, (T)1);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( inc_result[0], (T)0 );
 
@@ -160,18 +160,18 @@ GPU_TYPED_TEST_P( AtomicCUDAIncDecUnitTest, CUDAIncDecs )
 
   dec_result[0] = (T)1;
   // oldval > 0, decrement oldval
-  forone<forone_cuda>( [=] __device__ () {RAJA::atomicDec<AtomicPolicy>(dec_result, (T)1);} );
+  forone<test_cuda>( [=] __device__ () {RAJA::atomicDec<AtomicPolicy>(dec_result, (T)1);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( dec_result[0], (T)0 );
 
   // oldval == 0, wrap to val
-  forone<forone_cuda>( [=] __device__ () {RAJA::atomicDec<AtomicPolicy>(dec_result, (T)1);} );
+  forone<test_cuda>( [=] __device__ () {RAJA::atomicDec<AtomicPolicy>(dec_result, (T)1);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( dec_result[0], (T)1 );
 
   // oldval > val, wrap to val
   dec_result[0] = (T)3;
-  forone<forone_cuda>( [=] __device__ () {RAJA::atomicDec<AtomicPolicy>(dec_result, (T)1);} );
+  forone<test_cuda>( [=] __device__ () {RAJA::atomicDec<AtomicPolicy>(dec_result, (T)1);} );
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ( dec_result[0], (T)1 );
 

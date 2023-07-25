@@ -130,7 +130,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // OpenMP policy
   //using fdPolicy = RAJA::KernelPolicy<
   //RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
-  //  RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0> > > >;
+  //  RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0> > > >;
 
   // CUDA policy
   //using fdPolicy =
@@ -192,8 +192,8 @@ void computeErr(double *P, double tf, grid_s grid)
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
   using initialPolicy = RAJA::KernelPolicy<
-  RAJA::statement::For<1, RAJA::loop_exec ,
-    RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0> > > >;
+  RAJA::statement::For<1, RAJA::seq_exec ,
+    RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0> > > >;
 
   RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
                        [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
@@ -223,8 +223,8 @@ void setIC(double *P1, double *P2, double t0, double t1, grid_s grid)
   RAJA::RangeSegment fdBounds(0, grid.nx);
 
   using initialPolicy = RAJA::KernelPolicy<
-  RAJA::statement::For<1, RAJA::loop_exec,
-    RAJA::statement::For<0, RAJA::loop_exec, RAJA::statement::Lambda<0>> > >;
+  RAJA::statement::For<1, RAJA::seq_exec,
+    RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>> > >;
   
   RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
                        [=] (RAJA::Index_type tx, RAJA::Index_type ty) {

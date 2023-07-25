@@ -28,12 +28,6 @@ using SequentialKernelExecPols = camp::list<
     RAJA::statement::For<0, RAJA::seq_exec,
       RAJA::statement::Lambda<0, RAJA::Segs<0>>
     >
-  >,
-
-  RAJA::KernelPolicy<
-    RAJA::statement::For<0, RAJA::loop_exec,
-      RAJA::statement::Lambda<0, RAJA::Segs<0>>
-    >
   >
 
 >;
@@ -164,6 +158,14 @@ camp::list<
         RAJA::statement::Lambda<0, RAJA::Segs<0>>
       >
     >
+  >,
+
+  RAJA::KernelPolicy<
+    RAJA::statement::CudaKernel<
+      RAJA::statement::For<0, RAJA::cuda_global_size_z_loop<32>,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>
+      >
+    >
   >
 
 >;
@@ -186,6 +188,14 @@ camp::list<
       RAJA::statement::For<0, RAJA::hip_thread_y_loop,
         RAJA::statement::Lambda<0, RAJA::Segs<0>>
       > 
+    >
+  >,
+
+  RAJA::KernelPolicy<
+    RAJA::statement::HipKernel<
+      RAJA::statement::For<0, RAJA::hip_global_size_z_loop<32>,
+        RAJA::statement::Lambda<0, RAJA::Segs<0>>
+      >
     >
   >
 

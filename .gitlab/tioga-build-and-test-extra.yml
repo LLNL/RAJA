@@ -21,12 +21,12 @@
 # ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is no reason not to fully
 # describe the spec here.
 
-rocmcc_5_2_3_hip_desul_atomics:
+rocmcc_5_4_3_hip_desul_atomics:
   variables:
-    SPEC: "~shared +rocm ~openmp +desul +tests amdgpu_target=gfx90a %rocmcc@5.2.3 ^hip@5.2.3 ^blt@develop"
+    SPEC: "~shared +rocm ~openmp +desul +tests amdgpu_target=gfx90a %rocmcc@5.4.3 ^hip@5.4.3 ^blt@develop"
   extends: .build_and_test_on_tioga
 
-rocmcc_5_2_3_hip_openmp:
+rocmcc_5_4_3_hip_openmp:
   variables:
-    SPEC: "~shared +rocm +openmp +tests amdgpu_target=gfx90a %rocmcc@5.2.3 ^hip@5.2.3 ^blt@develop"
+    SPEC: "~shared +rocm +openmp +omptask +tests amdgpu_target=gfx90a %rocmcc@5.4.3 ^hip@5.4.3 ^blt@develop"
   extends: .build_and_test_on_tioga

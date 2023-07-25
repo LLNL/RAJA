@@ -271,6 +271,7 @@ RAJA_DEVICE RAJA_INLINE T warp_allreduce(T val)
   return temp;
 }
 
+
 //! reduce values in block into thread 0
 template <typename Combiner, typename T>
 RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
@@ -1086,7 +1087,7 @@ class ReduceBitOr<hip_reduce_base<maybe_atomic>, T>
 public:
   using Base = hip::Reduce<RAJA::reduce::or_bit<T>, T, maybe_atomic>;
   using Base::Base;
-  //! enable operator|= for ReduceOr -- alias for combine()
+  //! enable operator|= for ReduceBitOr -- alias for combine()
   RAJA_HOST_DEVICE
   const ReduceBitOr& operator|=(T rhs) const
   {

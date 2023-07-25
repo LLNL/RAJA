@@ -112,19 +112,6 @@ struct SyclStatementExecutor<
   }
 };
 
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename TPol,
-          typename... EnclosedStmts,
-          typename Types>
-struct SyclStatementExecutor<
-    Data,
-  statement::Tile<ArgumentId, TPol, loop_exec, EnclosedStmts...>, Types>
-: SyclStatementExecutor<Data, statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types>
-{
-
-};
-
 
 /*!
  * A specialized RAJA::kernel sycl_impl executor for statement::Tile

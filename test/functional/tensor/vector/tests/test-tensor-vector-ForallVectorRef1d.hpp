@@ -5,16 +5,19 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_TESNOR_VECTOR_ForallVectorRef1d_HPP__
-#define __TEST_TESNOR_VECTOR_ForallVectorRef1d_HPP__
+#ifndef __TEST_TENSOR_VECTOR_ForallVectorRef1d_HPP__
+#define __TEST_TENSOR_VECTOR_ForallVectorRef1d_HPP__
 
 #include<RAJA/RAJA.hpp>
+
+RAJA_INDEX_VALUE( TX, "TX" );
 
 template <typename VECTOR_TYPE>
 void ForallVectorRef1dImpl()
 {
 
   using vector_t = VECTOR_TYPE;
+  using policy_t = typename vector_t::register_policy;
   using element_t = typename vector_t::element_type;
 
 
@@ -23,26 +26,42 @@ void ForallVectorRef1dImpl()
   // to the array to test some postamble code generation.
     //N += (size_t)(100*NO_OPT_RAND);
 
+  std::vector<element_t> A(N);
+  std::vector<element_t> B(N);
+  std::vector<element_t> C(N);
 
-  element_t *A = new element_t[N];
-  element_t *B = new element_t[N];
-  element_t *C = new element_t[N];
+  element_t * A_ptr = tensor_malloc<policy_t>(A);
+  element_t * B_ptr = tensor_malloc<policy_t>(B);
+  element_t * C_ptr = tensor_malloc<policy_t>(C);
+
   for(size_t i = 0;i < N; ++ i){
     A[i] = (element_t)(NO_OPT_RAND*1000.0);
     B[i] = (element_t)(NO_OPT_RAND*1000.0);
     C[i] = 0.0;
   }
 
-  RAJA::View<element_t, RAJA::Layout<1>> X(A, N);
-  RAJA::View<element_t, RAJA::Layout<1>> Y(B, N);
-  RAJA::View<element_t, RAJA::Layout<1>> Z(C, N);
+  RAJA::TypedView<element_t, RAJA::Layout<1>, TX> X(A.data(), N);
+  RAJA::TypedView<element_t, RAJA::Layout<1>, TX> Y(B.data(), N);
+  RAJA::TypedView<element_t, RAJA::Layout<1>, TX> Z(C.data(), N);
 
+  RAJA::TypedView<element_t, RAJA::Layout<1>, TX> X_d(A_ptr, N);
+  RAJA::TypedView<element_t, RAJA::Layout<1>, TX> Y_d(B_ptr, N);
+  RAJA::TypedView<element_t, RAJA::Layout<1>, TX> Z_d(C_ptr, N);
 
-  using idx_t = RAJA::VectorIndex<int, vector_t>;
+  using idx_t = RAJA::expt::VectorIndex<int, vector_t>;
 
   auto all = idx_t::all();
 
-  Z[all] = 3 + (X[all]*(5/Y[all])) + 9;
+  // evaluate on all() range
+  tensor_copy_to_device<policy_t>(A_ptr, A);
+  tensor_copy_to_device<policy_t>(B_ptr, B);
+  tensor_copy_to_device<policy_t>(C_ptr, C);
+
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+    Z_d[all] = 3 + (X_d[all]*(5/Y_d[all])) + 9;
+  });
+
+  tensor_copy_to_host<policy_t>(C, C_ptr);
 
 //  for(size_t i = 0;i < N; ++ i){
 //    printf("%lf ", (double)C[i]);
@@ -54,14 +73,39 @@ void ForallVectorRef1dImpl()
   }
 
 
+  // evaluate complex left side division on all() range
   for(size_t i = 0;i < N; ++ i){
     C[i] = 0.0;
   }
 
+  tensor_copy_to_device<policy_t>(C_ptr, C);
+
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+    Z_d[all] = 3 + ((X_d[all]*Y_d[all])/Y_d[all]) + 9;
+  });
+
+  tensor_copy_to_host<policy_t>(C, C_ptr);
+
+  for(size_t i = 0;i < N;i ++){
+    ASSERT_SCALAR_EQ(element_t(3+((A[i]*B[i])/B[i]))+9, C[i]);
+  }
+
+  // evaluate on a subrange [N/2, N)
+  for(size_t i = 0;i < N; ++ i){
+    C[i] = 0.0;
+  }
+
+  tensor_copy_to_device<policy_t>(C_ptr, C);
+
   // evaluate on a subrange [N/2, N)
   auto some = idx_t::range(N/2, N);
-  Z[some] = 3.+ (X[some]*(5/Y[some])) + 9;
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+    Z_d[some] = 3.+ (X_d[some]*(5/Y_d[some])) + 9;
+  });
 
+  tensor_copy_to_host<policy_t>(A, A_ptr);
+  tensor_copy_to_host<policy_t>(B, B_ptr);
+  tensor_copy_to_host<policy_t>(C, C_ptr);
 
   for(size_t i = 0;i < N/2;i ++){
     ASSERT_SCALAR_EQ(0, C[i]);
@@ -77,12 +121,13 @@ void ForallVectorRef1dImpl()
   for(size_t i = 0;i < N; ++ i){
     C[i] = 0.0;
   }
-  RAJA::forall<RAJA::vector_exec<vector_t>>(RAJA::TypedRangeSegment<int>(0,N/2),
-      [=](idx_t i){
+
+  // vector_exec only works on the host due to its use of RAJA::seq_exec
+  RAJA::forall<RAJA::expt::vector_exec<vector_t>>(RAJA::TypedRangeSegment<TX>(0,N/2),
+      [=](TX i){
 
      Z[i] = 3 + (X[i]*(5/Y[i])) + 9;
   });
-
 
   for(size_t i = 0;i < N/2;i ++){
     ASSERT_SCALAR_EQ(element_t(3+(A[i]*(5/B[i]))+9), C[i]);
@@ -91,13 +136,9 @@ void ForallVectorRef1dImpl()
     ASSERT_SCALAR_EQ(0, C[i]);
   }
 
-
-
-
-
-  delete[] A;
-  delete[] B;
-  delete[] C;
+  tensor_free<policy_t>(A_ptr);
+  tensor_free<policy_t>(B_ptr);
+  tensor_free<policy_t>(C_ptr);
 }
 
 

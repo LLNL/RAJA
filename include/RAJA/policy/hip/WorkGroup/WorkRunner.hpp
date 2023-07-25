@@ -220,7 +220,7 @@ struct WorkRunner<
 {
   using exec_policy = RAJA::hip_work<BLOCK_SIZE, Async>;
   using order_policy = RAJA::policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average;
-  using dispatch_policy =  DISPATCH_POLICY_T;
+  using dispatch_policy = DISPATCH_POLICY_T;
   using Allocator = ALLOCATOR_T;
   using index_type = INDEX_T;
   using resource_type = resources::Hip;

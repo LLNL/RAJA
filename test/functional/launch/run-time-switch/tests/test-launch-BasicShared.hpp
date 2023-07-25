@@ -26,29 +26,31 @@ void LaunchBasicSharedTestImpl()
                              &working_array,
                              &check_array,
                              &test_array);
-  
+
 
 
   //Select platform
   RAJA::ExecPlace select_cpu_or_gpu;
   if (working_res.get_platform()  == camp::resources::Platform::host){
     select_cpu_or_gpu = RAJA::ExecPlace::HOST;
-  }else{  
+  }else{
     select_cpu_or_gpu = RAJA::ExecPlace::DEVICE;
   }
 
+  size_t shared_mem_size = 1 * sizeof(int);
 
-  RAJA::launch<LAUNCH_POLICY>(select_cpu_or_gpu,
-    RAJA::LaunchParams(RAJA::Teams(N), RAJA::Threads(N)),
+  RAJA::launch<LAUNCH_POLICY>
+    (select_cpu_or_gpu,
+     RAJA::LaunchParams(RAJA::Teams(N), RAJA::Threads(N), shared_mem_size),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
           RAJA::loop<TEAM_POLICY>(ctx, RAJA::RangeSegment(0, N), [&](int r) {
 
                 // Array shared within threads of the same team
-                RAJA_TEAM_SHARED int s_A[1];
+              int * s_A = ctx.getSharedMemory<int>(1);
 
                 RAJA::loop<THREAD_POLICY>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
-                    s_A[c] = r; 
+                    s_A[c] = r;
                 });
 
                 ctx.teamSync();
@@ -59,6 +61,7 @@ void LaunchBasicSharedTestImpl()
                     working_array[idx] = s_A[0];
                 });  // loop j
 
+                ctx.releaseSharedMemory();
               });  // loop r
         });  // outer lambda
 
