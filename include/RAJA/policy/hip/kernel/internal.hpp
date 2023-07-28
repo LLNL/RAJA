@@ -314,7 +314,7 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mappin
   using IndexMapper = hip::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
 
   template < typename IdxT >
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static void set_dimensions(HipDims& RAJA_UNUSED_ARG(dims), HipDims& RAJA_UNUSED_ARG(min_dims), IdxT len)
   {
     if (len > static_cast<IdxT>(0)) {
       RAJA_ABORT_OR_THROW("must know one of block_size or grid_size");
@@ -427,7 +427,7 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mappin
   using IndexMapper = hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>;
 
   template < typename IdxT >
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT RAJA_UNUSED_ARG(len))
   {
     set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
     set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
@@ -460,7 +460,7 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mappin
   using IndexMapper = hip::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>;
 
   template < typename IdxT >
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT RAJA_UNUSED_ARG(len))
   {
     set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
     set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
@@ -537,7 +537,7 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mappin
   using IndexMapper = hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
   template < typename IdxT >
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT RAJA_UNUSED_ARG(len))
   {
     set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
     set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
