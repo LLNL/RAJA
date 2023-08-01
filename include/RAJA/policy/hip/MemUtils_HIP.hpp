@@ -319,19 +319,20 @@ int hip_max_blocks(int block_size)
 
 struct HipOccMaxBlocksThreadsData
 {
-  int prev_shmem_size;
+  size_t prev_shmem_size;
   int max_blocks;
   int max_threads;
 };
 
 template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
 RAJA_INLINE
-void hip_occupancy_max_blocks_threads(Func&& func, int shmem_size,
+void hip_occupancy_max_blocks_threads(Func&& func, size_t shmem_size,
                                        int &max_blocks, int &max_threads)
 {
   static constexpr int uninitialized = -1;
+  static constexpr size_t uninitialized_size_t = std::numeric_limits<size_t>::max();
   static thread_local HipOccMaxBlocksThreadsData data = {
-      uninitialized, uninitialized, uninitialized};
+      uninitialized_size_t, uninitialized, uninitialized};
 
   if (data.prev_shmem_size != shmem_size) {
 
@@ -356,19 +357,20 @@ void hip_occupancy_max_blocks_threads(Func&& func, int shmem_size,
 
 struct HipOccMaxBlocksFixedThreadsData
 {
-  int prev_shmem_size;
+  size_t prev_shmem_size;
   int max_blocks;
   int multiProcessorCount;
 };
 
 template < typename RAJA_UNUSED_ARG(UniqueMarker), int num_threads, typename Func >
 RAJA_INLINE
-void hip_occupancy_max_blocks(Func&& func, int shmem_size,
+void hip_occupancy_max_blocks(Func&& func, size_t shmem_size,
                                int &max_blocks)
 {
   static constexpr int uninitialized = -1;
+  static constexpr size_t uninitialized_size_t = std::numeric_limits<size_t>::max();
   static thread_local HipOccMaxBlocksFixedThreadsData data = {
-      uninitialized, uninitialized, uninitialized};
+      uninitialized_size_t, uninitialized, uninitialized};
 
   if (data.prev_shmem_size != shmem_size) {
 
@@ -399,7 +401,7 @@ void hip_occupancy_max_blocks(Func&& func, int shmem_size,
 
 struct HipOccMaxBlocksVariableThreadsData
 {
-  int prev_shmem_size;
+  size_t prev_shmem_size;
   int prev_num_threads;
   int max_blocks;
   int multiProcessorCount;
@@ -407,12 +409,13 @@ struct HipOccMaxBlocksVariableThreadsData
 
 template < typename RAJA_UNUSED_ARG(UniqueMarker), typename Func >
 RAJA_INLINE
-void hip_occupancy_max_blocks(Func&& func, int shmem_size,
+void hip_occupancy_max_blocks(Func&& func, size_t shmem_size,
                                int &max_blocks, int num_threads)
 {
   static constexpr int uninitialized = 0;
+  static constexpr size_t uninitialized_size_t = std::numeric_limits<size_t>::max();
   static thread_local HipOccMaxBlocksVariableThreadsData data = {
-      uninitialized, uninitialized, uninitialized, uninitialized};
+      uninitialized_size_t, uninitialized, uninitialized, uninitialized};
 
   if ( data.prev_shmem_size  != shmem_size ||
        data.prev_num_threads != num_threads ) {
