@@ -785,11 +785,11 @@ using hip_exec_async = policy::hip::hip_exec<
     iteration_mapping::Direct, hip::global_x<BLOCK_SIZE>, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
-using hip_exec_occupancy = policy::hip::hip_exec<
+using hip_exec_occ_calc = policy::hip::hip_exec<
     iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE>, Async>;
 
 template <size_t BLOCK_SIZE>
-using hip_exec_occupancy_async = policy::hip::hip_exec<
+using hip_exec_occ_calc_async = policy::hip::hip_exec<
     iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE>, true>;
 
 // policies usable with WorkGroup
