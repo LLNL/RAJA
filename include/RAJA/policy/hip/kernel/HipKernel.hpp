@@ -397,7 +397,7 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,Stmt
  * maximizing the number of threads (or blocks) in x, y, then z.
  */
 inline
-hip_dim_t fitHipDims(unsigned int limit, hip_dim_t result, hip_dim_t minimum = hip_dim_t()){
+hip_dim_t fitHipDims(hip_dim_member_t limit, hip_dim_t result, hip_dim_t minimum = hip_dim_t()){
 
 
   // clamp things to at least 1
