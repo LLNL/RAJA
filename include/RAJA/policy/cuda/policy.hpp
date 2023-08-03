@@ -805,6 +805,22 @@ template <size_t BLOCK_SIZE>
 using cuda_exec_async = policy::cuda::cuda_exec_explicit<
     iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
+using cuda_exec_occupancy_explicit = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, Async>;
+
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
+using cuda_exec_occupancy_explicit_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, bool Async = false>
+using cuda_exec_occupancy = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+
+template <size_t BLOCK_SIZE>
+using cuda_exec_occupancy_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM, bool Async = false>
 using cuda_work_explicit = policy::cuda::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>;
 
