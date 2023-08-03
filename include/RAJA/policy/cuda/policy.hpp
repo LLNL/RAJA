@@ -772,7 +772,7 @@ using global_z = IndexGlobal<named_dim::z, BLOCK_SIZE, GRID_SIZE>;
 
 } // namespace cuda
 
-
+// policies usable with forall, scan, and sort
 template <size_t BLOCK_SIZE, size_t GRID_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
 using cuda_exec_grid_explicit = policy::cuda::cuda_exec_explicit<
     iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, BLOCKS_PER_SM, Async>;
@@ -821,6 +821,7 @@ template <size_t BLOCK_SIZE>
 using cuda_exec_occupancy_async = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
+// policies usable with WorkGroup
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM, bool Async = false>
 using cuda_work_explicit = policy::cuda::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>;
 
@@ -835,13 +836,16 @@ using cuda_work_async = policy::cuda::cuda_work_explicit<BLOCK_SIZE, policy::cud
 
 using policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average;
 
+// policies usable with atomics
 using policy::cuda::cuda_atomic;
 using policy::cuda::cuda_atomic_explicit;
 
+// policies usable with reducers
 using policy::cuda::cuda_reduce_base;
 using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_atomic;
 
+// policies usable with kernel
 using policy::cuda::cuda_block_reduce;
 using policy::cuda::cuda_warp_reduce;
 
@@ -860,8 +864,10 @@ using policy::cuda::cuda_warp_masked_loop;
 using policy::cuda::cuda_thread_masked_direct;
 using policy::cuda::cuda_thread_masked_loop;
 
+// policies usable with synchronize
 using policy::cuda::cuda_synchronize;
 
+// policies usable with launch
 template <bool Async, int num_threads = named_usage::unspecified, size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM>
 using cuda_launch_explicit_t = policy::cuda::cuda_launch_explicit_t<Async, num_threads, BLOCKS_PER_SM>;
 
@@ -869,6 +875,7 @@ template <bool Async, int num_threads = named_usage::unspecified>
 using cuda_launch_t = policy::cuda::cuda_launch_explicit_t<Async, num_threads, policy::cuda::MIN_BLOCKS_PER_SM>;
 
 
+// policies usable with kernel and launch
 template < typename ... indexers >
 using cuda_indexer_direct = policy::cuda::cuda_indexer<
     iteration_mapping::Direct,
