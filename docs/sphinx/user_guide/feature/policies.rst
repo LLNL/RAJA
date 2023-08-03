@@ -286,6 +286,16 @@ policies have the prefix ``hip_``.
                                                          Note that the thread-block
                                                          size must be provided,
                                                          there is no default.
+ cuda/hip_exec_grid<BLOCK_SIZE, GRID_SIZE> forall,       Execute loop iterations
+                                                         mapped to global threads via
+                                                         grid striding with multiple
+                                                         iterations per global thread
+                                                         in a GPU kernel launched
+                                                         with given thread-block
+                                                         size and grid size.
+                                                         Note that the thread-block
+                                                         size and grid size must be
+                                                         provided, there is no default.
  cuda/hip_exec_occ_calc<BLOCK_SIZE>        forall        Execute loop iterations
                                                          mapped to global threads via
                                                          grid striding with multiple

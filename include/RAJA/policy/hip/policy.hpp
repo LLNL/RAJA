@@ -770,11 +770,11 @@ using global_z = IndexGlobal<named_dim::z, BLOCK_SIZE, GRID_SIZE>;
 // policies usable with forall, scan, and sort
 template <size_t BLOCK_SIZE, size_t GRID_SIZE, bool Async = false>
 using hip_exec_grid = policy::hip::hip_exec<
-    iteration_mapping::Direct, hip::global_x<BLOCK_SIZE, GRID_SIZE>, Async>;
+    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE, GRID_SIZE>, Async>;
 
 template <size_t BLOCK_SIZE, size_t GRID_SIZE>
 using hip_exec_grid_async = policy::hip::hip_exec<
-    iteration_mapping::Direct, hip::global_x<BLOCK_SIZE, GRID_SIZE>, true>;
+    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE, GRID_SIZE>, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 using hip_exec = policy::hip::hip_exec<

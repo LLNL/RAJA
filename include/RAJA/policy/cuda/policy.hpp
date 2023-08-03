@@ -775,19 +775,19 @@ using global_z = IndexGlobal<named_dim::z, BLOCK_SIZE, GRID_SIZE>;
 // policies usable with forall, scan, and sort
 template <size_t BLOCK_SIZE, size_t GRID_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
 using cuda_exec_grid_explicit = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, BLOCKS_PER_SM, Async>;
+    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE, size_t GRID_SIZE, size_t BLOCKS_PER_SM>
 using cuda_exec_grid_explicit_async = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, BLOCKS_PER_SM, true>;
+    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, size_t GRID_SIZE, bool Async = false>
 using cuda_exec_grid = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE, size_t GRID_SIZE>
 using cuda_exec_grid_async = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
 using cuda_exec_explicit = policy::cuda::cuda_exec_explicit<
