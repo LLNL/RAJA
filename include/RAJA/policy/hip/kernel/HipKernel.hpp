@@ -189,7 +189,7 @@ __global__ void HipKernelLauncher(Data data)
  *
  * This launcher is used by the HipKerelFixed policies.
  */
-template <size_t BlockSize, typename Data, typename Exec>
+template <int BlockSize, typename Data, typename Exec>
 __launch_bounds__(BlockSize, 1) __global__
     void HipKernelLauncherFixed(Data data)
 {
@@ -210,7 +210,7 @@ __launch_bounds__(BlockSize, 1) __global__
  * The default case handles BlockSize != 0 and gets the fixed max block size
  * version of the kernel.
  */
-template<size_t BlockSize, typename Data, typename executor_t>
+template<int BlockSize, typename Data, typename executor_t>
 struct HipKernelLauncherGetter
 {
   using type = camp::decay<decltype(&internal::HipKernelLauncherFixed<BlockSize, Data, executor_t>)>;
@@ -260,7 +260,7 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,Stmt
 
   using kernelGetter_t = HipKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads, Data, executor_t>;
 
-  inline static void recommended_blocks_threads(int shmem_size,
+  inline static void recommended_blocks_threads(size_t shmem_size,
       int &recommended_blocks, int &recommended_threads)
   {
     auto func = kernelGetter_t::get();
@@ -316,7 +316,7 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,Stmt
     }
   }
 
-  inline static void max_threads(int RAJA_UNUSED_ARG(shmem_size), int &max_threads)
+  inline static void max_threads(size_t RAJA_UNUSED_ARG(shmem_size), int &max_threads)
   {
     if (num_threads <= 0) {
 
@@ -336,7 +336,7 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,Stmt
     }
   }
 
-  inline static void max_blocks(int shmem_size,
+  inline static void max_blocks(size_t shmem_size,
       int &max_blocks, int actual_threads)
   {
     auto func = kernelGetter_t::get();
@@ -397,7 +397,7 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,Stmt
  * maximizing the number of threads (or blocks) in x, y, then z.
  */
 inline
-hip_dim_t fitHipDims(unsigned int limit, hip_dim_t result, hip_dim_t minimum = hip_dim_t()){
+hip_dim_t fitHipDims(hip_dim_member_t limit, hip_dim_t result, hip_dim_t minimum = hip_dim_t()){
 
 
   // clamp things to at least 1
@@ -482,7 +482,7 @@ struct StatementExecutor<
       //
       // Setup shared memory buffers
       //
-      int shmem = 0;
+      size_t shmem = 0;
 
 
       //

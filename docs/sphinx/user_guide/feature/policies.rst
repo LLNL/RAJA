@@ -279,12 +279,37 @@ policies have the prefix ``hip_``.
  CUDA/HIP Execution Policies               Works with    Brief description
  ========================================= ============= =======================================
  cuda/hip_exec<BLOCK_SIZE>                 forall,       Execute loop iterations
-                                           scan,         in a GPU kernel launched
-                                           sort          with given thread-block
-                                                         size. Note that the
+                                           scan,         directly mapped to global threads
+                                           sort          in a GPU kernel launched
+                                                         with given thread-block
+                                                         size and unbounded grid size.
+                                                         Note that the thread-block
+                                                         size must be provided,
+                                                         there is no default.
+ cuda/hip_exec_grid<BLOCK_SIZE, GRID_SIZE> forall,       Execute loop iterations
+                                                         mapped to global threads via
+                                                         grid striding with multiple
+                                                         iterations per global thread
+                                                         in a GPU kernel launched
+                                                         with given thread-block
+                                                         size and grid size.
+                                                         Note that the thread-block
+                                                         size and grid size must be
+                                                         provided, there is no default.
+ cuda/hip_exec_occ_calc<BLOCK_SIZE>        forall        Execute loop iterations
+                                                         mapped to global threads via
+                                                         grid striding with multiple
+                                                         iterations per global thread
+                                                         in a GPU kernel launched
+                                                         with given thread-block
+                                                         size and grid size bounded
+                                                         by the maximum occupancy of
+                                                         the kernel. Note that the
                                                          thread-block size must
-                                                         be provided, there is
-                                                         no default.
+                                                         be provided, there is no
+                                                         default. Note this can improve
+                                                         reducer performance in kernels
+                                                         with large iteration counts.
  cuda/hip_launch_t                         launch        Launches a device kernel,
                                                          any code expressed within
                                                          the lambda is executed
