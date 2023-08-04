@@ -54,8 +54,8 @@ clang_14_0_6_gcc_10_3_1_desul_atomics:
   extends: .build_and_test_on_ruby
 
 # Ideally, we want to use this spec, but the build takes too much time...
-intel_2022_1_gcc_8_3_1:
+intel_2022_1_gcc_10_3_1:
   variables:
-    SPEC: "~shared +openmp +tests %intel@2022.1.gcc.8.3.1"
+    SPEC: "~shared +openmp +tests %intel@2022.1.gcc.10.3.1"
     RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=90 --nodes=1"
   extends: .build_and_test_on_ruby
