@@ -95,9 +95,11 @@ struct DeviceZeroedAllocator {
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
   {
+    auto res = ::camp::resources::Cuda::get_default();
     void* ptr;
     cudaErrchk(cudaMalloc(&ptr, nbytes));
-    cudaErrchk(cudaMemset(ptr, 0, nbytes));
+    cudaErrchk(cudaMemsetAsync(ptr, 0, nbytes, res.get_stream()));
+    cudaErrchk(cudaStreamSynchronize(res.get_stream()));
     return ptr;
   }
 
