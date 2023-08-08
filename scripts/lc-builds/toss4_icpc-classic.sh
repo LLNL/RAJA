@@ -10,28 +10,16 @@
 if [ "$1" == "" ]; then
   echo
   echo "You must pass a compiler version number to script. For example,"
-  echo "    toss3_icpc.sh 19.1.0"
+  echo "    toss4_icpc-classic.sh 19.1.2"
   exit
 fi
 
 COMP_VER=$1
 shift 1
 
-COMP_MAJOR_VER=${COMP_VER:0:2}
-GCC_HEADER_VER=7
 USE_TBB=Off
 
-if [ ${COMP_MAJOR_VER} -gt 18 ]
-then
-  GCC_HEADER_VER=8
-fi
-
-if [ ${COMP_MAJOR_VER} -lt 18 ]
-then
-  USE_TBB=Off
-fi
-
-BUILD_SUFFIX=lc_toss3-icpc-${COMP_VER}
+BUILD_SUFFIX=lc_toss4-icpc-classic-${COMP_VER}
 
 echo
 echo "Creating build directory build_${BUILD_SUFFIX} and generating configuration in it"
@@ -42,7 +30,7 @@ echo
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-module load cmake/3.20.2
+module load cmake/3.21.1
 
 ##
 # CMake option -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off used to speed up compile
@@ -51,13 +39,25 @@ module load cmake/3.20.2
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/intel/intel-${COMP_VER}/bin/icpc \
-  -DCMAKE_C_COMPILER=/usr/tce/packages/intel/intel-${COMP_VER}/bin/icc \
+  -DCMAKE_CXX_COMPILER=/usr/tce/packages/intel-classic/intel-classic-${COMP_VER}/bin/icpc \
+  -DCMAKE_C_COMPILER=/usr/tce/packages/intel-classic/intel-classic-${COMP_VER}/bin/icc \
   -DBLT_CXX_STD=c++14 \
-  -C ../host-configs/lc-builds/toss3/icpc_X_gcc${GCC_HEADER_VER}headers.cmake \
+  -C ../host-configs/lc-builds/toss4/icpc-classic_X.cmake \
   -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off \
   -DENABLE_OPENMP=On \
   -DRAJA_ENABLE_TBB=${USE_TBB} \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
+
+echo
+echo "***********************************************************************"
+echo
+echo "cd into directory build_${BUILD_SUFFIX} and run make to build RAJA"
+echo
+echo "  Please note that you may need to add some intel openmp libraries to your"
+echo "  LD_LIBRARY_PATH to run with openmp."
+echo
+echo "    LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/tce/packages/intel/intel-${COMP_VER}/compiler/lib/intel64_lin"
+echo
+echo "***********************************************************************"
