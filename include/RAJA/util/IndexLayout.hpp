@@ -27,9 +27,12 @@ template<typename IdxLin = Index_type>
 struct ConditionalIndexList {
 
   RAJA_INLINE constexpr ConditionalIndexList(IdxLin* index_list_in) :
-    index_list(index_list_in){}
+    index_list(index_list_in)
+  {
+  }
 
-  IdxLin RAJA_INLINE RAJA_HOST_DEVICE constexpr get(const IdxLin idx) const {
+  IdxLin RAJA_INLINE RAJA_HOST_DEVICE constexpr get(const IdxLin idx) const
+  {
     if (index_list) return index_list[idx];
     else return idx;
   }
@@ -43,7 +46,10 @@ struct IndexList {
   RAJA_INLINE constexpr IndexList(IdxLin* index_list_in) :
     index_list(index_list_in){}
 
-  IdxLin RAJA_INLINE RAJA_HOST_DEVICE constexpr get(const IdxLin idx) const {return index_list[idx];}
+  IdxLin RAJA_INLINE RAJA_HOST_DEVICE constexpr get(const IdxLin idx) const
+  {
+    return index_list[idx];
+  }
 
   IdxLin* index_list;
 };
@@ -51,9 +57,14 @@ struct IndexList {
 template<typename IdxLin = Index_type>
 struct DirectIndex {
 
-  RAJA_INLINE constexpr DirectIndex() {}
+  RAJA_INLINE constexpr DirectIndex()
+  {
+  }
 
-  IdxLin RAJA_INLINE RAJA_HOST_DEVICE constexpr get(const IdxLin idx) const {return idx;}
+  IdxLin RAJA_INLINE RAJA_HOST_DEVICE constexpr get(const IdxLin idx) const
+  {
+    return idx;
+  }
 
 };
 
@@ -115,14 +126,16 @@ struct IndexLayout
 };
 
 template <typename... IndexTypes>
-auto make_index_tuple(IndexTypes... it) -> camp::tuple<IndexTypes...> {
+auto make_index_tuple(IndexTypes... it) -> camp::tuple<IndexTypes...>
+{
     return camp::tuple<IndexTypes...>(it...);
 }
 
 template <typename IdxLin = Index_type, typename... Types, typename... IndexTypes>
 auto make_index_layout(
   camp::tuple<IndexTypes...> index_tuple_in,
-  Types... ns) -> IndexLayout<sizeof...(Types), IdxLin, IndexTypes...> {
+  Types... ns) -> IndexLayout<sizeof...(Types), IdxLin, IndexTypes...>
+{
     static_assert(sizeof...(Types) == sizeof...(IndexTypes), "");
     return IndexLayout<sizeof...(Types), IdxLin, IndexTypes...>(index_tuple_in, ns...);
 }
