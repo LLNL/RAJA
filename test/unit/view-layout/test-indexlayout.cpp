@@ -170,3 +170,29 @@ TEST(IndexLayout, View3DLayout)
 
 }
 
+TEST(IndexLayout, MultiView1DLayout)
+{
+  Index_type data_squared[4];
+  Index_type data_cubed[4];
+
+  for (int i = 0; i < 4; i ++ ) data_squared[i] = i*i;
+  for (int i = 0; i < 4; i ++ ) data_cubed[i] = i*i*i;
+
+  Index_type* data_array[2];
+  data_array[0] = data_squared;
+  data_array[1] = data_cubed;
+
+  Index_type index_list[2] = {1,2};
+
+  auto index_tuple = make_index_tuple(IndexList<>(&index_list[0]));
+  auto index_layout = make_index_layout(index_tuple, 4);
+
+  auto view = MultiView<Index_type, IndexLayout<1, Index_type, IndexList<> > >(data_array, index_layout);
+
+  for (int i = 0; i < 2; i ++ ) {
+    EXPECT_EQ(view(0,i), data_squared[i+1]);
+    EXPECT_EQ(view(1,i), data_cubed[i+1]);
+  }
+
+}
+
