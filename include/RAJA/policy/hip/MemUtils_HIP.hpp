@@ -96,9 +96,11 @@ struct DeviceZeroedAllocator {
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
   {
+    auto res = ::camp::resources::Hip::get_default();
     void* ptr;
     hipErrchk(hipMalloc(&ptr, nbytes));
-    hipErrchk(hipMemset(ptr, 0, nbytes));
+    hipErrchk(hipMemsetAsync(ptr, 0, nbytes, res.get_stream()));
+    hipErrchk(hipStreamSynchronize(res.get_stream()));
     return ptr;
   }
 
