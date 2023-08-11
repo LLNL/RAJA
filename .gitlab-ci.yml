@@ -12,8 +12,9 @@
 # This entire pipeline is LLNL-specific
 #
 # Important note: This file is a template provided by
-# llnl/radiuss-shared-ci. It should not require any change from the project to
-# get started but could feature project-specific stages.
+# llnl/radiuss-shared-ci. Changes needed consists in setting variable values,
+# change the reference to the radiuss-shared-ci repo, opt-in and out optional
+# features. The project can then extend it with additional stages.
 #
 # However, each project should provide:
 # - .gitlab/custom-jobs-and-variables.yml
