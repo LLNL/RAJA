@@ -17,6 +17,8 @@ option(RAJA_ENABLE_SYCL "Build SYCL support" Off)
 
 option(RAJA_ENABLE_VECTORIZATION "Build experimental vectorization support" On)
 
+option(RAJA_ENABLE_OPENMP_TASK "Build OpenMP task variants of certain algorithms" Off)
+
 option(RAJA_ENABLE_REPRODUCERS "Build issue reproducers" Off)
 
 option(RAJA_ENABLE_EXERCISES "Build exercises " On)

@@ -7,7 +7,7 @@
 
 set(RAJA_COMPILER "RAJA_COMPILER_ICC" CACHE STRING "")
 
-set(COMMON_FLAGS "-gxx-name=/usr/tce/packages/gcc/gcc-8.3.1/bin/g++")
+set(COMMON_FLAGS "-gxx-name=/usr/tce/packages/gcc/gcc-10.3.1/bin/g++")
 
 set(CMAKE_CXX_FLAGS_RELEASE "${COMMON_FLAGS} -O3 -march=native -ansi-alias -diag-disable cpu-dispatch" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${COMMON_FLAGS} -O3 -g -march=native -ansi-alias -diag-disable cpu-dispatch" CACHE STRING "")

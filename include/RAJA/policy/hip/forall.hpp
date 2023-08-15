@@ -622,7 +622,7 @@ forall_impl(resources::Hip hip_res,
       void *args[] = {(void*)&body, (void*)&begin, (void*)&len, (void*)&f_params};
       RAJA::hip::launch(func, dims.blocks, dims.threads, args, shmem, hip_res, Async);
 
-      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params, launch_info);
     }
 
     RAJA_FT_END;

@@ -743,6 +743,26 @@ struct IndexGlobal<dim, named_usage::ignored, named_usage::ignored>
   }
 };
 
+// helper to get just the thread indexing part of IndexGlobal
+template < typename index_global >
+struct get_index_thread;
+///
+template < named_dim dim, int BLOCK_SIZE, int GRID_SIZE >
+struct get_index_thread<IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>
+{
+  using type = IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>;
+};
+
+// helper to get just the block indexing part of IndexGlobal
+template < typename index_global >
+struct get_index_block;
+///
+template < named_dim dim, int BLOCK_SIZE, int GRID_SIZE >
+struct get_index_block<IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>
+{
+  using type = IndexGlobal<dim, named_usage::ignored, GRID_SIZE>;
+};
+
 
 template <size_t BLOCK_SIZE=named_usage::unspecified>
 using thread_x = IndexGlobal<named_dim::x, BLOCK_SIZE, named_usage::ignored>;
@@ -767,13 +787,14 @@ using global_z = IndexGlobal<named_dim::z, BLOCK_SIZE, GRID_SIZE>;
 
 } // namespace hip
 
+// policies usable with forall, scan, and sort
 template <size_t BLOCK_SIZE, size_t GRID_SIZE, bool Async = false>
 using hip_exec_grid = policy::hip::hip_exec<
-    iteration_mapping::Direct, hip::global_x<BLOCK_SIZE, GRID_SIZE>, Async>;
+    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE, GRID_SIZE>, Async>;
 
 template <size_t BLOCK_SIZE, size_t GRID_SIZE>
 using hip_exec_grid_async = policy::hip::hip_exec<
-    iteration_mapping::Direct, hip::global_x<BLOCK_SIZE, GRID_SIZE>, true>;
+    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE, GRID_SIZE>, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 using hip_exec = policy::hip::hip_exec<
@@ -783,6 +804,15 @@ template <size_t BLOCK_SIZE>
 using hip_exec_async = policy::hip::hip_exec<
     iteration_mapping::Direct, hip::global_x<BLOCK_SIZE>, true>;
 
+template <size_t BLOCK_SIZE, bool Async = false>
+using hip_exec_occ_calc = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE>, Async>;
+
+template <size_t BLOCK_SIZE>
+using hip_exec_occ_calc_async = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE>, true>;
+
+// policies usable with WorkGroup
 using policy::hip::hip_work;
 
 template <size_t BLOCK_SIZE>
@@ -790,13 +820,16 @@ using hip_work_async = policy::hip::hip_work<BLOCK_SIZE, true>;
 
 using policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average;
 
+// policies usable with atomics
 using policy::hip::hip_atomic;
 using policy::hip::hip_atomic_explicit;
 
+// policies usable with reducers
 using policy::hip::hip_reduce_base;
 using policy::hip::hip_reduce;
 using policy::hip::hip_reduce_atomic;
 
+// policies usable with kernel
 using policy::hip::hip_block_reduce;
 using policy::hip::hip_warp_reduce;
 
@@ -815,11 +848,14 @@ using policy::hip::hip_warp_masked_loop;
 using policy::hip::hip_thread_masked_direct;
 using policy::hip::hip_thread_masked_loop;
 
+// policies usable with synchronize
 using policy::hip::hip_synchronize;
 
+// policies usable with launch
 using policy::hip::hip_launch_t;
 
 
+// policies usable with kernel and launch
 template < typename ... indexers >
 using hip_indexer_direct = policy::hip::hip_indexer<
     iteration_mapping::Direct,
