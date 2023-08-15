@@ -6,7 +6,7 @@
 [comment]: # (# SPDX-License-Identifier: BSD-3-Clause)
 [comment]: # (#################################################################)
 
-Version vxx.yy.zz -- Release date 20yy-mm-dd
+Version YYYY.MM.PP -- Release date 20yy-mm-dd
 ============================================
 
 This release contains ...
@@ -16,12 +16,37 @@ Notable changes include:
   * New features / API changes:
 
   * Build changes/improvements:
+
+  * Bug fixes/improvements:
+
+
+Version 2023.06.1 -- Release date 2023-08-16
+============================================
+
+This release contains various smaller RAJA improvements. 
+
+Notable changes include:
+
+  * New features / API changes:
+     * Add compile time block size optimization for new reduction interface.
+     * Changed default stream usage for Workgroup constructs to use the 
+       stream associated with the default (camp) resource. Previously, we were 
+       using stream zero. Specifically, this change affects where we memset 
+       memory in the zeroed device memory pool and where we get device function
+       pointers for WorkGroup.  
+
+  * Build changes/improvements:
      * RAJA_ENABLE_OPENMP_TASK CMake option added to enable/disable algorithm 
        options based on OpenMP task construct. Currently, this only applies
        to RAJA's OpenMP sort implementation. The default is 'Off'. The option
        allows users to choose a task implementation if they wish.
+     * Resolve several compiler warnings.
 
   * Bug fixes/improvements:
+     * Fix compilation of GPU occupancy calculator and use common types for 
+       HIP and CUDA backends in the occupancy calculator, kernel policies, 
+       and kernel launch helper routines.
+     * Fix direct cudaMalloc/hipMalloc calls and memory leaks.
 
 
 Version 2023.06.0 -- Release date 2023-07-06
