@@ -29,6 +29,12 @@ intel_19_1_2_gcc_10_3_1:
     RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=90 --nodes=1"
   extends: .build_and_test_on_ruby
 
+intel_2022_1_0:
+  variables:
+    SPEC: "${PROJECT_RUBY_VARIANTS} %intel@2022.1.0 ${PROJECT_RUBY_DEPS}"
+  allow_failure: true
+  extends: .build_and_test_on_ruby
+
 ############
 # Extra jobs
 ############
@@ -51,11 +57,4 @@ gcc_10_3_1_openmp_default:
 clang_14_0_6_gcc_10_3_1_desul_atomics:
   variables:
     SPEC: " ~shared +openmp +tests +desul %clang@14.0.6.gcc.10.3.1"
-  extends: .build_and_test_on_ruby
-
-# Ideally, we want to use this spec, but the build takes too much time...
-intel_2022_1_0_gcc_10_3_1:
-  variables:
-    SPEC: "~shared +openmp +tests %intel@2022.1.0.gcc.10.3.1"
-    RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=90 --nodes=1"
   extends: .build_and_test_on_ruby
