@@ -40,9 +40,10 @@ variables:
   BUILD_ROOT: ${CI_PROJECT_DIR}
 # Set the build-and-test command.
   BUILD_AND_TEST_CMD: "./scripts/gitlab/build_and_test.sh"
-# Override the list of branch that will skip the "draft PR test".
-# Add protected branches here.
-  ALWAYS_RUN_LIST: "^develop$|^main$|^v[0-9.]*-RC$"
+# Override the pattern describing branches that will skip the "draft PR test".
+# Add protected branches here. See default value in
+# preliminary-ignore-draft-pr.yml.
+  ALWAYS_RUN_PATTERN: "^develop$|^main$|^v[0-9.]*-RC$"
 
 # We organize the build-and-test stage in sub-pipelines. Each sub-pipeline
 # corresponds to a test batch on a given machine.
