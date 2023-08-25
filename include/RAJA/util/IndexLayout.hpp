@@ -26,42 +26,30 @@ namespace RAJA
 template<typename IdxLin = Index_type>
 struct ConditionalIndexList {
 
-  RAJA_INLINE constexpr ConditionalIndexList(IdxLin* index_list_in) :
-    index_list(index_list_in)
-  {
-  }
-
-  IdxLin RAJA_INLINE RAJA_HOST_DEVICE constexpr get(const IdxLin idx) const
+  IdxLin RAJA_INLINE RAJA_HOST_DEVICE constexpr operator()(const IdxLin idx) const
   {
     if (index_list) return index_list[idx];
     else return idx;
   }
 
-  IdxLin* index_list;
+  IdxLin* index_list{nullptr};
 };  
 
 template<typename IdxLin = Index_type>
 struct IndexList {
 
-  RAJA_INLINE constexpr IndexList(IdxLin* index_list_in) :
-    index_list(index_list_in){}
-
-  IdxLin RAJA_INLINE RAJA_HOST_DEVICE constexpr get(const IdxLin idx) const
+  IdxLin RAJA_INLINE RAJA_HOST_DEVICE constexpr operator()(const IdxLin idx) const
   {
     return index_list[idx];
   }
 
-  IdxLin* index_list;
+  IdxLin* index_list{nullptr};
 };
 
 template<typename IdxLin = Index_type>
 struct DirectIndex {
 
-  RAJA_INLINE constexpr DirectIndex()
-  {
-  }
-
-  IdxLin RAJA_INLINE RAJA_HOST_DEVICE constexpr get(const IdxLin idx) const
+  IdxLin RAJA_INLINE RAJA_HOST_DEVICE constexpr operator()(const IdxLin idx) const
   {
     return idx;
   }
@@ -97,7 +85,7 @@ struct IndexLayout_impl<camp::idx_seq<RangeInts...>, IdxLin, IndexTypes...> {
       Indices... indices) const
   {
     return sum<IdxLin>(
-      (base_.strides[RangeInts] * camp::get<RangeInts>(tuple).get(indices))...);
+      (base_.strides[RangeInts] * camp::get<RangeInts>(tuple)(indices))...);
   }
 
   camp::tuple<IndexTypes...> tuple;

@@ -18,7 +18,7 @@ TEST(IndexLayout, IndexList1D) {
 
   Index_type arr[3] = {1,2,3};
 
-  auto index_tuple = make_index_tuple(IndexList<>(&arr[0]));
+  auto index_tuple = make_index_tuple(IndexList<>{&arr[0]});
   auto index_layout = make_index_layout(index_tuple, 3);
 
   EXPECT_EQ(index_layout(0), 1);
@@ -35,7 +35,7 @@ TEST(IndexLayout, IndexList1DSubsetOfLayout) {
 
   Index_type arr[3] = {2,3,4};
 
-  auto index_tuple = make_index_tuple(IndexList<>(&arr[0]));
+  auto index_tuple = make_index_tuple(IndexList<>{&arr[0]});
   auto index_layout = make_index_layout(index_tuple, 5);
 
   EXPECT_EQ(index_layout(0), 2);
@@ -59,7 +59,7 @@ TEST(IndexLayout, ExtractTwoIndices2DLayoutAxis0) {
 
   Index_type arr[2] = {1,2};
 
-  auto index_tuple = make_index_tuple(IndexList<>(&arr[0]), DirectIndex<>());
+  auto index_tuple = make_index_tuple(IndexList<>{&arr[0]}, DirectIndex<>());
   auto index_layout = make_index_layout(index_tuple, 3, 10);
 
   for (int i = 0; i < 10; i++ ) {
@@ -82,7 +82,7 @@ TEST(IndexLayout, ExtractTwoIndices2DLayoutAxis1) {
 
   Index_type arr[2] = {9,5};
 
-  auto index_tuple = make_index_tuple(DirectIndex<>(), IndexList<>(&arr[0]));
+  auto index_tuple = make_index_tuple(DirectIndex<>(), IndexList<>{&arr[0]});
   auto index_layout = make_index_layout(index_tuple, 3, 10);
 
   EXPECT_EQ(index_layout(0,0), 9);
@@ -107,7 +107,7 @@ TEST(IndexLayout, ExtractOneIndex2DLayoutAxis0) {
 
   Index_type arr[1] = {2};
 
-  auto index_tuple = make_index_tuple(IndexList<>(&arr[0]), DirectIndex<>());
+  auto index_tuple = make_index_tuple(IndexList<>{&arr[0]}, DirectIndex<>());
   auto index_layout = make_index_layout(index_tuple, 3, 3);
 
   EXPECT_EQ(index_layout(0,0), 6);
@@ -129,7 +129,7 @@ TEST(IndexLayout, IndexList2DLayoutExtractOneIndex) {
 
   Index_type arr[1] = {2};
 
-  auto index_tuple = make_index_tuple(DirectIndex<>(), IndexList<>(&arr[0]));
+  auto index_tuple = make_index_tuple(DirectIndex<>(), IndexList<>{&arr[0]});
   auto index_layout = make_index_layout(index_tuple, 3, 3);
 
   EXPECT_EQ(index_layout(0,0), 2);
@@ -151,12 +151,32 @@ TEST(IndexLayout, ConditionalIndexListNullPtr) {
 
   Index_type* arr_ptr = nullptr;
 
-  auto index_tuple = make_index_tuple(ConditionalIndexList<>(arr_ptr));
+  auto index_tuple = make_index_tuple(ConditionalIndexList<>{arr_ptr});
   auto index_layout = make_index_layout(index_tuple, 3);
 
   EXPECT_EQ(index_layout(0), 0);
   EXPECT_EQ(index_layout(1), 1);
   EXPECT_EQ(index_layout(2), 2);
+}
+
+TEST(IndexLayout, ConditionalIndexListWithIndexList) {
+  /*
+   * Construct a 1D index layout of size 3 with 
+   * the conditional index list that is not a nullptr
+   * (conditional index lists with index list act the same as IndexList)
+   * Examples: 
+   *   (index layout index -> regular layout index -> unit stride index)
+   *   index_layout(0)     -> layout(1)            -> 1
+   *   index_layout(1)     -> layout(2)            -> 2
+   */
+
+  Index_type arr[2] = {1,2};
+
+  auto index_tuple = make_index_tuple(ConditionalIndexList<>{&arr[0]});
+  auto index_layout = make_index_layout(index_tuple, 3);
+
+  EXPECT_EQ(index_layout(0), 1);
+  EXPECT_EQ(index_layout(1), 2);
 }
 
 TEST(IndexLayout, View1DLayout)
@@ -173,7 +193,7 @@ TEST(IndexLayout, View1DLayout)
   Index_type data[5] = {5,10,15,20,25};
   Index_type index_list[3] = {4,2,3};
 
-  auto index_tuple = make_index_tuple(IndexList<>(&index_list[0]));
+  auto index_tuple = make_index_tuple(IndexList<>{&index_list[0]});
   auto index_layout = make_index_layout(index_tuple, 5);
 
   auto view = make_index_view(&data[0], index_layout);
@@ -206,7 +226,7 @@ TEST(IndexLayout, View2DLayout)
 
   Index_type index_list[2] = {1,2};
 
-  auto index_tuple = make_index_tuple(DirectIndex<>(), IndexList<>(&index_list[0]));
+  auto index_tuple = make_index_tuple(DirectIndex<>(), IndexList<>{&index_list[0]});
   auto index_layout = make_index_layout(index_tuple, 2, 3);
 
   auto view = make_index_view(&data[0][0], index_layout);
@@ -243,8 +263,8 @@ TEST(IndexLayout, View3DLayout)
   Index_type index_list_k[2] = {2,3};
 
   auto index_tuple = make_index_tuple(DirectIndex<>(), 
-                                      IndexList<>(&index_list_j[0]),
-                                      IndexList<>(&index_list_k[0]));
+                                      IndexList<>{&index_list_j[0]},
+                                      IndexList<>{&index_list_k[0]});
 
   auto index_layout = make_index_layout(index_tuple, 2, 3, 4);
 
@@ -282,7 +302,7 @@ TEST(IndexLayout, MultiView1DLayout)
 
   Index_type index_list[2] = {1,2};
 
-  auto index_tuple = make_index_tuple(IndexList<>(&index_list[0]));
+  auto index_tuple = make_index_tuple(IndexList<>{&index_list[0]});
   auto index_layout = make_index_layout(index_tuple, 4);
 
   auto view = MultiView<Index_type, IndexLayout<1, Index_type, IndexList<> > >(data_array, index_layout);
