@@ -17,13 +17,14 @@ if(RAJA_ENABLE_TARGET_OPENMP)
 endif()
 
 #
-# While we're adding SYCL tests, enable it for each test set like this.
+# If building SYCL tests, remove the back-end from
+# from the list of tests to generate here for the 
+# reduce tests.
 #
-# Eventually, remove this and enable in the top-level CMakeLists.txt file.
-#
-#if(RAJA_ENABLE_SYCL)
-#  list(APPEND FORALL_BACKENDS Sycl)
-#endif()
+if(RAJA_ENABLE_SYCL)
+        list(REMOVE_ITEM REDUCETYPES ReduceMaxLoc)
+        list(REMOVE_ITEM REDUCETYPES ReduceMinLoc)
+endif()
 
 #
 # Generate tests for each enabled RAJA back-end
