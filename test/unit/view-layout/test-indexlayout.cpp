@@ -30,7 +30,9 @@ TEST(IndexLayout, IndexList1D) {
 TEST(IndexLayout, IndexList1DSubsetOfLayout) {
   /*
    * Construct a 1D index layout of arbitrary size greater than 3 
-   * with the index list {2,3,4}
+   * with the index list {2,3,4}.
+   * The purpose of this test is to demonstrate the use case where
+   * the index list contains a subset of its index layout
    */
 
   Index_type arr[3] = {2,3,4};
