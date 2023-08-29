@@ -9,8 +9,8 @@
 // Execution policy lists used throughout launch tests
 //
 
-#ifndef __RAJA_test_launch_execpol_HPP__
-#define __RAJA_test_launch_execpol_HPP__
+#ifndef __RAJA_TEST_LAUNCH_EXECPOL_HPP__
+#define __RAJA_TEST_LAUNCH_EXECPOL_HPP__
 
 #include "RAJA/RAJA.hpp"
 #include "camp/list.hpp"
@@ -18,7 +18,7 @@
 //Launch policies
 using seq_policies = camp::list<
   RAJA::LaunchPolicy<RAJA::seq_launch_t>,
-  RAJA::LoopPolicy<RAJA::loop_exec>
+  RAJA::LoopPolicy<RAJA::seq_exec>
   >;
 
 using Sequential_launch_policies = camp::list<
@@ -64,5 +64,16 @@ using Hip_launch_policies = camp::list<
        >;
 #endif // RAJA_ENABLE_HIP
 
+#if defined(RAJA_ENABLE_SYCL)
 
-#endif  // __RAJA_test_launch_execpol_HPP__
+using sycl_policies = camp::list<
+  RAJA::LaunchPolicy<RAJA::sycl_launch_t<true>>,
+  RAJA::LoopPolicy<RAJA::sycl_global_item_0>>;
+
+using Sycl_launch_policies = camp::list<
+      sycl_policies
+       >;
+#endif // RAJA_ENABLE_SYCL
+
+
+#endif  // __RAJA_TEST_LAUNCH_EXECPOL_HPP__

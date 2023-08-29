@@ -23,44 +23,44 @@
 #include "test-algorithm-sort-utils.hpp"
 
 
-template < typename forone_policy >
-using ForoneSynchronize = PolicySynchronize<forone_equivalent_exec_policy<forone_policy>>;
+template < typename test_policy >
+using ForoneSynchronize = PolicySynchronize<test_equivalent_exec_policy<test_policy>>;
 
 
-template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+template < typename test_policy, typename platform = test_platform<test_policy> >
 struct InsertionSort;
 
-template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+template < typename test_policy, typename platform = test_platform<test_policy> >
 struct InsertionSortPairs;
 
-template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+template < typename test_policy, typename platform = test_platform<test_policy> >
 struct ShellSort;
 
-template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+template < typename test_policy, typename platform = test_platform<test_policy> >
 struct ShellSortPairs;
 
-template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+template < typename test_policy, typename platform = test_platform<test_policy> >
 struct HeapSort;
 
-template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+template < typename test_policy, typename platform = test_platform<test_policy> >
 struct HeapSortPairs;
 
-template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+template < typename test_policy, typename platform = test_platform<test_policy> >
 struct IntroSort;
 
-template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+template < typename test_policy, typename platform = test_platform<test_policy> >
 struct IntroSortPairs;
 
-template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+template < typename test_policy, typename platform = test_platform<test_policy> >
 struct MergeSort;
 
-template < typename forone_policy, typename platform = forone_platform<forone_policy> >
+template < typename test_policy, typename platform = test_platform<test_policy> >
 struct MergeSortPairs;
 
 
-template < typename forone_policy >
-struct InsertionSort<forone_policy, RunOnHost>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct InsertionSort<test_policy, RunOnHost>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -78,9 +78,9 @@ struct InsertionSort<forone_policy, RunOnHost>
   }
 };
 
-template < typename forone_policy >
-struct InsertionSortPairs<forone_policy, RunOnHost>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct InsertionSortPairs<test_policy, RunOnHost>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -103,9 +103,9 @@ struct InsertionSortPairs<forone_policy, RunOnHost>
   }
 };
 
-template < typename forone_policy >
-struct ShellSort<forone_policy, RunOnHost>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct ShellSort<test_policy, RunOnHost>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -123,9 +123,9 @@ struct ShellSort<forone_policy, RunOnHost>
   }
 };
 
-template < typename forone_policy >
-struct ShellSortPairs<forone_policy, RunOnHost>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct ShellSortPairs<test_policy, RunOnHost>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -148,9 +148,9 @@ struct ShellSortPairs<forone_policy, RunOnHost>
   }
 };
 
-template < typename forone_policy >
-struct HeapSort<forone_policy, RunOnHost>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct HeapSort<test_policy, RunOnHost>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -168,9 +168,9 @@ struct HeapSort<forone_policy, RunOnHost>
   }
 };
 
-template < typename forone_policy >
-struct HeapSortPairs<forone_policy, RunOnHost>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct HeapSortPairs<test_policy, RunOnHost>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -193,9 +193,9 @@ struct HeapSortPairs<forone_policy, RunOnHost>
   }
 };
 
-template < typename forone_policy >
-struct IntroSort<forone_policy, RunOnHost>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct IntroSort<test_policy, RunOnHost>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -213,9 +213,9 @@ struct IntroSort<forone_policy, RunOnHost>
   }
 };
 
-template < typename forone_policy >
-struct IntroSortPairs<forone_policy, RunOnHost>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct IntroSortPairs<test_policy, RunOnHost>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -238,9 +238,9 @@ struct IntroSortPairs<forone_policy, RunOnHost>
   }
 };
 
-template < typename forone_policy >
-struct MergeSort<forone_policy, RunOnHost>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct MergeSort<test_policy, RunOnHost>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -258,9 +258,9 @@ struct MergeSort<forone_policy, RunOnHost>
   }
 };
 
-template < typename forone_policy >
-struct MergeSortPairs<forone_policy, RunOnHost>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct MergeSortPairs<test_policy, RunOnHost>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -285,9 +285,9 @@ struct MergeSortPairs<forone_policy, RunOnHost>
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 
-template < typename forone_policy >
-struct InsertionSort<forone_policy, RunOnDevice>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct InsertionSort<test_policy, RunOnDevice>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -296,7 +296,7 @@ struct InsertionSort<forone_policy, RunOnDevice>
   std::string m_name;
 
   InsertionSort()
-    : m_name(std::string("RAJA::insertion_sort<") + forone_policy_info<forone_policy>::name() + std::string(">"))
+    : m_name(std::string("RAJA::insertion_sort<") + test_policy_info<test_policy>::name() + std::string(">"))
   { }
 
   const char* name()
@@ -307,7 +307,7 @@ struct InsertionSort<forone_policy, RunOnDevice>
   template < typename Container >
   void operator()(Container&& c)
   {
-    forone<forone_policy>( [=] RAJA_DEVICE() {
+    forone<test_policy>( [=] RAJA_DEVICE() {
       RAJA::insertion_sort(c);
     });
   }
@@ -315,15 +315,15 @@ struct InsertionSort<forone_policy, RunOnDevice>
   template < typename Container, typename Compare >
   void operator()(Container&& c, Compare comp)
   {
-    forone<forone_policy>( [=] RAJA_DEVICE() {
+    forone<test_policy>( [=] RAJA_DEVICE() {
       RAJA::insertion_sort(c, comp);
     });
   }
 };
 
-template < typename forone_policy >
-struct InsertionSortPairs<forone_policy, RunOnDevice>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct InsertionSortPairs<test_policy, RunOnDevice>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = stable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -332,7 +332,7 @@ struct InsertionSortPairs<forone_policy, RunOnDevice>
   std::string m_name;
 
   InsertionSortPairs()
-    : m_name(std::string("RAJA::insertion_sort<") + forone_policy_info<forone_policy>::name() + std::string(">[pairs]"))
+    : m_name(std::string("RAJA::insertion_sort<") + test_policy_info<test_policy>::name() + std::string(">[pairs]"))
   { }
 
   const char* name()
@@ -346,7 +346,7 @@ struct InsertionSortPairs<forone_policy, RunOnDevice>
                   ValContainer&& vals,
                   Compare comp = Compare{})
   {
-    forone<forone_policy>( [=] RAJA_DEVICE() {
+    forone<test_policy>( [=] RAJA_DEVICE() {
       auto c = RAJA::zip_span(keys, vals);
       using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
       RAJA::insertion_sort(c, RAJA::compare_first<zip_ref>(comp));
@@ -354,9 +354,9 @@ struct InsertionSortPairs<forone_policy, RunOnDevice>
   }
 };
 
-template < typename forone_policy >
-struct ShellSort<forone_policy, RunOnDevice>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct ShellSort<test_policy, RunOnDevice>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -365,7 +365,7 @@ struct ShellSort<forone_policy, RunOnDevice>
   std::string m_name;
 
   ShellSort()
-    : m_name(std::string("RAJA::shell_sort<") + forone_policy_info<forone_policy>::name() + std::string(">"))
+    : m_name(std::string("RAJA::shell_sort<") + test_policy_info<test_policy>::name() + std::string(">"))
   { }
 
   const char* name()
@@ -376,7 +376,7 @@ struct ShellSort<forone_policy, RunOnDevice>
   template < typename Container >
   void operator()(Container&& c)
   {
-    forone<forone_policy>( [=] RAJA_DEVICE() {
+    forone<test_policy>( [=] RAJA_DEVICE() {
       RAJA::shell_sort(c);
     });
   }
@@ -384,15 +384,15 @@ struct ShellSort<forone_policy, RunOnDevice>
   template < typename Container, typename Compare >
   void operator()(Container&& c, Compare comp)
   {
-    forone<forone_policy>( [=] RAJA_DEVICE() {
+    forone<test_policy>( [=] RAJA_DEVICE() {
       RAJA::shell_sort(c, comp);
     });
   }
 };
 
-template < typename forone_policy >
-struct ShellSortPairs<forone_policy, RunOnDevice>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct ShellSortPairs<test_policy, RunOnDevice>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -401,7 +401,7 @@ struct ShellSortPairs<forone_policy, RunOnDevice>
   std::string m_name;
 
   ShellSortPairs()
-    : m_name(std::string("RAJA::shell_sort<") + forone_policy_info<forone_policy>::name() + std::string(">[pairs]"))
+    : m_name(std::string("RAJA::shell_sort<") + test_policy_info<test_policy>::name() + std::string(">[pairs]"))
   { }
 
   const char* name()
@@ -415,7 +415,7 @@ struct ShellSortPairs<forone_policy, RunOnDevice>
                   ValContainer&& vals,
                   Compare comp = Compare{})
   {
-    forone<forone_policy>( [=] RAJA_DEVICE() {
+    forone<test_policy>( [=] RAJA_DEVICE() {
       auto c = RAJA::zip_span(keys, vals);
       using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
       RAJA::shell_sort(c, RAJA::compare_first<zip_ref>(comp));
@@ -423,9 +423,9 @@ struct ShellSortPairs<forone_policy, RunOnDevice>
   }
 };
 
-template < typename forone_policy >
-struct HeapSort<forone_policy, RunOnDevice>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct HeapSort<test_policy, RunOnDevice>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -434,7 +434,7 @@ struct HeapSort<forone_policy, RunOnDevice>
   std::string m_name;
 
   HeapSort()
-    : m_name(std::string("RAJA::heap_sort<") + forone_policy_info<forone_policy>::name() + std::string(">"))
+    : m_name(std::string("RAJA::heap_sort<") + test_policy_info<test_policy>::name() + std::string(">"))
   { }
 
   const char* name()
@@ -445,7 +445,7 @@ struct HeapSort<forone_policy, RunOnDevice>
   template < typename Container >
   void operator()(Container c)
   {
-    forone<forone_policy>( [=] RAJA_DEVICE() {
+    forone<test_policy>( [=] RAJA_DEVICE() {
       RAJA::heap_sort(c);
     });
   }
@@ -453,15 +453,15 @@ struct HeapSort<forone_policy, RunOnDevice>
   template < typename Container, typename Compare >
   void operator()(Container c, Compare comp)
   {
-    forone<forone_policy>( [=] RAJA_DEVICE() {
+    forone<test_policy>( [=] RAJA_DEVICE() {
       RAJA::heap_sort(c, comp);
     });
   }
 };
 
-template < typename forone_policy >
-struct HeapSortPairs<forone_policy, RunOnDevice>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct HeapSortPairs<test_policy, RunOnDevice>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -470,7 +470,7 @@ struct HeapSortPairs<forone_policy, RunOnDevice>
   std::string m_name;
 
   HeapSortPairs()
-    : m_name(std::string("RAJA::heap_sort<") + forone_policy_info<forone_policy>::name() + std::string(">[pairs]"))
+    : m_name(std::string("RAJA::heap_sort<") + test_policy_info<test_policy>::name() + std::string(">[pairs]"))
   { }
 
   const char* name()
@@ -484,7 +484,7 @@ struct HeapSortPairs<forone_policy, RunOnDevice>
                   ValContainer&& vals,
                   Compare comp = Compare{})
   {
-    forone<forone_policy>( [=] RAJA_DEVICE() {
+    forone<test_policy>( [=] RAJA_DEVICE() {
       auto c = RAJA::zip_span(keys, vals);
       using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
       RAJA::heap_sort(c, RAJA::compare_first<zip_ref>(comp));
@@ -492,9 +492,9 @@ struct HeapSortPairs<forone_policy, RunOnDevice>
   }
 };
 
-template < typename forone_policy >
-struct IntroSort<forone_policy, RunOnDevice>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct IntroSort<test_policy, RunOnDevice>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -503,7 +503,7 @@ struct IntroSort<forone_policy, RunOnDevice>
   std::string m_name;
 
   IntroSort()
-    : m_name(std::string("RAJA::intro_sort<") + forone_policy_info<forone_policy>::name() + std::string(">"))
+    : m_name(std::string("RAJA::intro_sort<") + test_policy_info<test_policy>::name() + std::string(">"))
   { }
 
   const char* name()
@@ -514,7 +514,7 @@ struct IntroSort<forone_policy, RunOnDevice>
   template < typename Container >
   void operator()(Container&& c)
   {
-    forone<forone_policy>( [=] RAJA_DEVICE() {
+    forone<test_policy>( [=] RAJA_DEVICE() {
       RAJA::intro_sort(c);
     });
   }
@@ -522,15 +522,15 @@ struct IntroSort<forone_policy, RunOnDevice>
   template < typename Container, typename Compare >
   void operator()(Container&& c, Compare comp)
   {
-    forone<forone_policy>( [=] RAJA_DEVICE() {
+    forone<test_policy>( [=] RAJA_DEVICE() {
       RAJA::intro_sort(c, comp);
     });
   }
 };
 
-template < typename forone_policy >
-struct IntroSortPairs<forone_policy, RunOnDevice>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct IntroSortPairs<test_policy, RunOnDevice>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -539,7 +539,7 @@ struct IntroSortPairs<forone_policy, RunOnDevice>
   std::string m_name;
 
   IntroSortPairs()
-    : m_name(std::string("RAJA::intro_sort<") + forone_policy_info<forone_policy>::name() + std::string(">[pairs]"))
+    : m_name(std::string("RAJA::intro_sort<") + test_policy_info<test_policy>::name() + std::string(">[pairs]"))
   { }
 
   const char* name()
@@ -553,7 +553,7 @@ struct IntroSortPairs<forone_policy, RunOnDevice>
                   ValContainer&& vals,
                   Compare comp = Compare{})
   {
-    forone<forone_policy>( [=] RAJA_DEVICE() {
+    forone<test_policy>( [=] RAJA_DEVICE() {
       auto c = RAJA::zip_span(keys, vals);
       using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
       RAJA::intro_sort(c, RAJA::compare_first<zip_ref>(comp));
@@ -561,9 +561,9 @@ struct IntroSortPairs<forone_policy, RunOnDevice>
   }
 };
 
-template < typename forone_policy >
-struct MergeSort<forone_policy, RunOnDevice>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct MergeSort<test_policy, RunOnDevice>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_interface_tag;
@@ -572,7 +572,7 @@ struct MergeSort<forone_policy, RunOnDevice>
   std::string m_name;
 
   MergeSort()
-    : m_name(std::string("RAJA::merge_sort<") + forone_policy_info<forone_policy>::name() + std::string(">"))
+    : m_name(std::string("RAJA::merge_sort<") + test_policy_info<test_policy>::name() + std::string(">"))
   { }
 
   const char* name()
@@ -583,7 +583,7 @@ struct MergeSort<forone_policy, RunOnDevice>
   template < typename Container >
   void operator()(Container&& c)
   {
-    forone<forone_policy>( [=] RAJA_DEVICE() {
+    forone<test_policy>( [=] RAJA_DEVICE() {
       RAJA::merge_sort(c);
     });
   }
@@ -591,15 +591,15 @@ struct MergeSort<forone_policy, RunOnDevice>
   template < typename Container, typename Compare >
   void operator()(Container&& c, Compare comp)
   {
-    forone<forone_policy>( [=] RAJA_DEVICE() {
+    forone<test_policy>( [=] RAJA_DEVICE() {
       RAJA::merge_sort(c, comp);
     });
   }
 };
 
-template < typename forone_policy >
-struct MergeSortPairs<forone_policy, RunOnDevice>
-  : ForoneSynchronize<forone_policy>
+template < typename test_policy >
+struct MergeSortPairs<test_policy, RunOnDevice>
+  : ForoneSynchronize<test_policy>
 {
   using sort_category = unstable_sort_tag;
   using sort_interface = sort_pairs_interface_tag;
@@ -608,7 +608,7 @@ struct MergeSortPairs<forone_policy, RunOnDevice>
   std::string m_name;
 
   MergeSortPairs()
-    : m_name(std::string("RAJA::merge_sort<") + forone_policy_info<forone_policy>::name() + std::string(">[pairs]"))
+    : m_name(std::string("RAJA::merge_sort<") + test_policy_info<test_policy>::name() + std::string(">[pairs]"))
   { }
 
   const char* name()
@@ -622,7 +622,7 @@ struct MergeSortPairs<forone_policy, RunOnDevice>
                   ValContainer&& vals,
                   Compare comp = Compare{})
   {
-    forone<forone_policy>( [=] RAJA_DEVICE() {
+    forone<test_policy>( [=] RAJA_DEVICE() {
       auto c = RAJA::zip_span(keys, vals);
       using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
       RAJA::merge_sort(c, RAJA::compare_first<zip_ref>(comp));
@@ -635,64 +635,64 @@ struct MergeSortPairs<forone_policy, RunOnDevice>
 
 using SequentialInsertionSortSorters =
   camp::list<
-              InsertionSort<forone_seq>,
-              InsertionSortPairs<forone_seq>
+              InsertionSort<test_seq>,
+              InsertionSortPairs<test_seq>
             >;
 
 using SequentialShellSortSorters =
   camp::list<
-              ShellSort<forone_seq>,
-              ShellSortPairs<forone_seq>
+              ShellSort<test_seq>,
+              ShellSortPairs<test_seq>
             >;
 
 using SequentialHeapSortSorters =
   camp::list<
-              HeapSort<forone_seq>,
-              HeapSortPairs<forone_seq>
+              HeapSort<test_seq>,
+              HeapSortPairs<test_seq>
             >;
 
 using SequentialIntroSortSorters =
   camp::list<
-              IntroSort<forone_seq>,
-              IntroSortPairs<forone_seq>
+              IntroSort<test_seq>,
+              IntroSortPairs<test_seq>
             >;
 
 using SequentialMergeSortSorters =
   camp::list<
-              MergeSort<forone_seq>,
-              MergeSortPairs<forone_seq>
+              MergeSort<test_seq>,
+              MergeSortPairs<test_seq>
             >;
 
 #if defined(RAJA_ENABLE_CUDA)
 
 using CudaInsertionSortSorters =
   camp::list<
-              InsertionSort<forone_cuda>,
-              InsertionSortPairs<forone_cuda>
+              InsertionSort<test_cuda>,
+              InsertionSortPairs<test_cuda>
             >;
 
 using CudaShellSortSorters =
   camp::list<
-              ShellSort<forone_cuda>,
-              ShellSortPairs<forone_cuda>
+              ShellSort<test_cuda>,
+              ShellSortPairs<test_cuda>
             >;
 
 using CudaHeapSortSorters =
   camp::list<
-              HeapSort<forone_cuda>,
-              HeapSortPairs<forone_cuda>
+              HeapSort<test_cuda>,
+              HeapSortPairs<test_cuda>
             >;
 
 using CudaIntroSortSorters =
   camp::list<
-              IntroSort<forone_cuda>,
-              IntroSortPairs<forone_cuda>
+              IntroSort<test_cuda>,
+              IntroSortPairs<test_cuda>
             >;
 
 using CudaMergeSortSorters =
   camp::list<
-              MergeSort<forone_cuda>,
-              MergeSortPairs<forone_cuda>
+              MergeSort<test_cuda>,
+              MergeSortPairs<test_cuda>
             >;
 
 #endif
@@ -701,32 +701,32 @@ using CudaMergeSortSorters =
 
 using HipInsertionSortSorters =
   camp::list<
-              InsertionSort<forone_hip>,
-              InsertionSortPairs<forone_hip>
+              InsertionSort<test_hip>,
+              InsertionSortPairs<test_hip>
             >;
 
 using HipShellSortSorters =
   camp::list<
-              ShellSort<forone_hip>,
-              ShellSortPairs<forone_hip>
+              ShellSort<test_hip>,
+              ShellSortPairs<test_hip>
             >;
 
 using HipHeapSortSorters =
   camp::list<
-              HeapSort<forone_hip>,
-              HeapSortPairs<forone_hip>
+              HeapSort<test_hip>,
+              HeapSortPairs<test_hip>
             >;
 
 using HipIntroSortSorters =
   camp::list<
-              IntroSort<forone_hip>,
-              IntroSortPairs<forone_hip>
+              IntroSort<test_hip>,
+              IntroSortPairs<test_hip>
             >;
 
 using HipMergeSortSorters =
   camp::list<
-              MergeSort<forone_hip>,
-              MergeSortPairs<forone_hip>
+              MergeSort<test_hip>,
+              MergeSortPairs<test_hip>
             >;
 
 #endif

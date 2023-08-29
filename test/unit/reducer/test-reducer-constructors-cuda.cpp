@@ -21,7 +21,7 @@ using CudaInitReducerConstructorTypes =
   Test< camp::cartesian_product< CudaReducerPolicyList,
                                  DataTypeList,
                                  CudaResourceList,
-                                 CudaForoneList > >::Types;
+                                 CudaUnitTestPolicyList > >::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(CudaBasicTest,
                                ReducerBasicConstructorUnitTest,

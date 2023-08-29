@@ -14,9 +14,9 @@ variables:
 
 # Ruby
 # Arguments for top level allocation
-  RUBY_BUILD_AND_TEST_SHARED_ALLOC: "--exclusive --partition=pdebug --time=60 --nodes=1"
+  RUBY_BUILD_AND_TEST_SHARED_ALLOC: "--exclusive --reservation=ci --qos=ci_ruby --time=60 --nodes=2"
 # Arguments for job level allocation
-  RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=45 --nodes=1"
+  RUBY_BUILD_AND_TEST_JOB_ALLOC: "--reservation=ci --qos=ci_ruby --time=45 --nodes=1"
 # Project specific variants for ruby
   PROJECT_RUBY_VARIANTS: "~shared +openmp +tests"
 # Project specific deps for ruby

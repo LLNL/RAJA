@@ -10,9 +10,9 @@
 
 #include <cstring>
 
-template <typename INDEX_TYPE, typename DIFF_TYPE, 
+template <typename INDEX_TYPE, typename DIFF_TYPE,
           typename WORKING_RES, typename LAUNCH_POLICY, typename GLOBAL_THREAD_POICY>
-void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last, 
+void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
                                       DIFF_TYPE stride)
 {
   RAJA::TypedRangeStrideSegment<INDEX_TYPE> r1(RAJA::stripIndexType(first), RAJA::stripIndexType(last), stride);
@@ -37,7 +37,7 @@ void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
 
   memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
 
-  working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len); 
+  working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
   constexpr int threads = 256;
   int blocks = (data_len - 1)/threads + 1;
@@ -47,38 +47,48 @@ void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
     INDEX_TYPE idx = first;
     for (INDEX_TYPE i = INDEX_TYPE(0); i < N; ++i) {
       test_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
-      idx += stride; 
+      idx += stride;
     }
-    
-    RAJA::launch<LAUNCH_POLICY>
-      (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-  
-        RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
-            working_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
-          });
 
-      });
+    RAJA::launch<LAUNCH_POLICY>(
+      RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)), [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+
+        RAJA::loop<GLOBAL_THREAD_POICY>(
+          ctx, r1, [&](INDEX_TYPE idx) {
+            working_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
+          }
+        );
+
+      }
+    );
 
   } else { // zero-length segment
 
-    RAJA::launch<LAUNCH_POLICY>
-      (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-  
-        RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
-            working_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
-            (void) idx;
-            working_array[0]++;
-          });
+    RAJA::launch<LAUNCH_POLICY>(
+      RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)), [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-      });
+        RAJA::loop<GLOBAL_THREAD_POICY>(
+          ctx, r1, [&](INDEX_TYPE RAJA_UNUSED_ARG(idx)) {
+            working_array[0]++;
+          }
+        );
+
+      }
+    );
   }
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
 
-  for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
-    ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
+  if (RAJA::stripIndexType(N) > 0) {
+
+    for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
+      ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
+    }
+
+  } else {
+
+    ASSERT_EQ(test_array[0], check_array[0]);
+
   }
 
   deallocateForallTestData<INDEX_TYPE>(working_res,

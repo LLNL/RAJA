@@ -57,9 +57,9 @@ namespace expt
     }
     
     // Resolve
-    template<typename EXEC_POL, camp::idx_t... Seq>
-    static constexpr void detail_resolve(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& f_params ) {
-      CAMP_EXPAND(detail::resolve<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
+    template<typename EXEC_POL, camp::idx_t... Seq, typename ...Args>
+    static constexpr void detail_resolve(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& f_params, Args&& ...args) {
+      CAMP_EXPAND(detail::resolve<EXEC_POL>( camp::get<Seq>(f_params.param_tup), std::forward<Args>(args)... ));
     }
 
     // Used to construct the argument TYPES that will be invoked with the lambda.

@@ -17,7 +17,6 @@
 
 // Sequential execution policy types
 using SequentialForallExecPols = camp::list< RAJA::seq_exec,
-                                             RAJA::loop_exec,
                                              RAJA::simd_exec >;
 
 //
@@ -25,11 +24,9 @@ using SequentialForallExecPols = camp::list< RAJA::seq_exec,
 //
 // Note: RAJA::simd_exec does not work with these.
 //
-using SequentialForallReduceExecPols = camp::list< RAJA::seq_exec,
-                                                   RAJA::loop_exec >;
+using SequentialForallReduceExecPols = camp::list< RAJA::seq_exec >;
 
-using SequentialForallAtomicExecPols = camp::list< RAJA::seq_exec, 
-                                                   RAJA::loop_exec >;
+using SequentialForallAtomicExecPols = camp::list< RAJA::seq_exec >;
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPForallExecPols = 
@@ -123,7 +120,8 @@ using OpenMPTargetForallAtomicExecPols = OpenMPTargetForallExecPols;
 
 #if defined(RAJA_ENABLE_CUDA)
 using CudaForallExecPols = camp::list< RAJA::cuda_exec<128>,
-                                       RAJA::cuda_exec<256>,
+                                       RAJA::cuda_exec_occ_calc<256>,
+                                       RAJA::cuda_exec_grid<256, 64>,
                                        RAJA::cuda_exec_explicit<256,2> >;
 
 using CudaForallReduceExecPols = CudaForallExecPols;
@@ -134,7 +132,8 @@ using CudaForallAtomicExecPols = CudaForallExecPols;
 
 #if defined(RAJA_ENABLE_HIP)
 using HipForallExecPols = camp::list< RAJA::hip_exec<128>,
-                                      RAJA::hip_exec<256>  >;
+                                      RAJA::hip_exec_occ_calc<256>,
+                                      RAJA::hip_exec_grid<256, 64>  >;
 
 using HipForallReduceExecPols = HipForallExecPols;
 

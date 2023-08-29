@@ -59,7 +59,7 @@ ForallVectorRef2dImpl()
 
   using policy1_t =
       RAJA::KernelPolicy<
-        RAJA::statement::For<0, RAJA::loop_exec,
+        RAJA::statement::For<0, RAJA::seq_exec,
             RAJA::statement::Lambda<0>
         >
       >;
@@ -87,7 +87,7 @@ ForallVectorRef2dImpl()
 
   using policy2_t =
       RAJA::KernelPolicy<
-        RAJA::statement::For<0, RAJA::loop_exec,
+        RAJA::statement::For<0, RAJA::seq_exec,
           RAJA::statement::For<1, RAJA::expt::vector_exec<vector_t>,
             RAJA::statement::Lambda<0>
           >
@@ -116,7 +116,7 @@ ForallVectorRef2dImpl()
     C[i] = 0.0;
   }
 
-  RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<index_t>(0, M),
+  RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<index_t>(0, M),
       [=](index_t j){
 
     Z(all,j) = 3+(X(all,j)*(5/Y(all,j)))+9;
@@ -135,7 +135,7 @@ ForallVectorRef2dImpl()
     C[i] = 0.0;
   }
 
-  RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<index_t>(0, N),
+  RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<index_t>(0, N),
       [=](index_t i){
 
     Z(i,all) = 3+(X(i,all)*(5/Y(i,all)))+9;

@@ -36,6 +36,11 @@ xl_2022_08_19_gcc_8_3_1_cuda_11_7_0:
 # ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is no reason not to fully
 # describe the spec here.
 
+gcc_8_3_1_omptask:
+  variables:
+    SPEC: " ~shared +openmp +omptask +tests %gcc@8.3.1"
+  extends: .build_and_test_on_lassen
+
 gcc_8_3_1_cuda_11_5_0_ats_disabled:
   extends: .build_and_test_on_lassen
   variables:

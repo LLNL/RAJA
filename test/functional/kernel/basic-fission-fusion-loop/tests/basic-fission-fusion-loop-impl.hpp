@@ -53,10 +53,9 @@ void KernelBasicFissionFusionLoopTestImpl(
                                     &test_array_y);
 
 
-  memset(static_cast<void*>(test_array_x),
-         0,
-         sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
-
+  working_res.memset(working_array_x,
+                     0,
+                     sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
   RAJA::kernel<EXEC_POLICY>(
       RAJA::make_tuple(seg, seg),
@@ -81,7 +80,7 @@ void KernelBasicFissionFusionLoopTestImpl(
          0,
          sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
-  RAJA::forall<RAJA::loop_exec>(working_res, seg_idx, [=](IDX_TYPE i) {
+  RAJA::forall<RAJA::seq_exec>(working_res, seg_idx, [=](IDX_TYPE i) {
     check_array_y[RAJA::stripIndexType(i)] += 1;
     check_array_y[RAJA::stripIndexType(i)] += 2;
   });

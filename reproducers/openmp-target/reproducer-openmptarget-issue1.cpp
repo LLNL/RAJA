@@ -178,7 +178,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL3 =
     RAJA::KernelPolicy<
       RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
-        RAJA::statement::For<1, RAJA::loop_exec,
+        RAJA::statement::For<1, RAJA::seq_exec,
           RAJA::statement::Lambda<0>
         >
       >
@@ -204,7 +204,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL4 =
     RAJA::KernelPolicy<
       RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
-        RAJA::statement::For<1, RAJA::loop_exec,
+        RAJA::statement::For<1, RAJA::seq_exec,
           RAJA::statement::Lambda<0, RAJA::Segs<0, 1>>
         >
       >

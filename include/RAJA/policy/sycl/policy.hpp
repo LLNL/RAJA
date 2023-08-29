@@ -25,7 +25,7 @@
 #include <CL/sycl.hpp>
 
 #include "RAJA/policy/PolicyBase.hpp"
-#include "RAJA/policy/loop/policy.hpp"
+#include "RAJA/policy/sequential/policy.hpp"
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/types.hpp"
@@ -99,7 +99,7 @@ struct sycl_atomic_explicit{};
 // Default cuda atomic policy uses cuda atomics on the device and non-atomics
 // on the host
 //
-using sycl_atomic = sycl_atomic_explicit<loop_atomic>;
+using sycl_atomic = sycl_atomic_explicit<seq_atomic>;
 
 template<typename Mask>
 struct sycl_local_masked_direct {};

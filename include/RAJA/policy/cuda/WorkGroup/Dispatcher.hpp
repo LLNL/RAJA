@@ -20,6 +20,8 @@
 
 #include "RAJA/config.hpp"
 
+#include "camp/resource.hpp"
+
 #include "RAJA/policy/cuda/policy.hpp"
 
 #include "RAJA/pattern/WorkGroup/Dispatcher.hpp"
@@ -77,11 +79,12 @@ inline auto get_value(Factory&& factory)
   using value_type = typename std::decay_t<Factory>::value_type;
   const std::lock_guard<std::mutex> lock(get_value_mutex());
 
+  auto res = ::camp::resources::Cuda::get_default();
   auto ptr = static_cast<value_type*>(get_cached_value_ptr(sizeof(value_type)));
-  get_value_global<std::decay_t<Factory>><<<1,1>>>(
-      ptr, std::forward<Factory>(factory));
-  cudaErrchk(cudaGetLastError());
-  cudaErrchk(cudaDeviceSynchronize());
+  auto func = reinterpret_cast<const void*>(&get_value_global<std::decay_t<Factory>>);
+  void *args[] = {(void*)&ptr, (void*)&factory};
+  cudaErrchk(cudaLaunchKernel(func, 1, 1, args, 0, res.get_stream()));
+  cudaErrchk(cudaStreamSynchronize(res.get_stream()));
 
   return *ptr;
 }

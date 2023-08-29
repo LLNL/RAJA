@@ -19,7 +19,7 @@ shift 1
 
 COMP_MAJOR_VER=${COMP_VER:0:2}
 GCC_HEADER_VER=7
-USE_TBB=On
+USE_TBB=Off
 
 if [ ${COMP_MAJOR_VER} -gt 18 ]
 then

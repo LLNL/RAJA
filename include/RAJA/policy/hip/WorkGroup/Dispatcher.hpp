@@ -20,6 +20,8 @@
 
 #include "RAJA/config.hpp"
 
+#include "camp/resource.hpp"
+
 #include "RAJA/policy/hip/policy.hpp"
 
 #include "RAJA/pattern/WorkGroup/Dispatcher.hpp"
@@ -77,16 +79,18 @@ inline auto get_value(Factory&& factory)
   using value_type = typename std::decay_t<Factory>::value_type;
   const std::lock_guard<std::mutex> lock(get_value_mutex());
 
+  auto res = ::camp::resources::Hip::get_default();
   auto ptr = static_cast<value_type*>(get_cached_value_ptr(sizeof(value_type)));
-  auto func = get_value_global<std::decay_t<Factory>>;
-  hipLaunchKernelGGL(func, dim3(1), dim3(1), 0, 0,
-                     ptr, std::forward<Factory>(factory));
-  hipErrchk(hipGetLastError());
-  hipErrchk(hipDeviceSynchronize());
+  auto func = reinterpret_cast<const void*>(&get_value_global<std::decay_t<Factory>>);
+  void *args[] = {(void*)&ptr, (void*)&factory};
+  hipErrchk(hipLaunchKernel(func, 1, 1, args, 0, res.get_stream()));
+  hipErrchk(hipStreamSynchronize(res.get_stream()));
 
   return *ptr;
 }
 
+// get the device function pointer and store it so it can be used
+// multiple times
 template < typename Factory >
 inline auto get_cached_value(Factory&& factory)
 {

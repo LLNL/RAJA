@@ -176,7 +176,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_OPENMP)
   using INIT_POL = RAJA::omp_parallel_for_exec;
 #else
-  using INIT_POL = RAJA::loop_exec;
+  using INIT_POL = RAJA::seq_exec;
 #endif
 
   RAJA::forall<INIT_POL>(RAJA::TypedRangeSegment<int>(0, N), [=](int e) {
@@ -204,7 +204,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     timer.start();
     // _permutedlayout_batchedmatmult_loop_start
-    RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<int>(0, N),
+    RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<int>(0, N),
       [=](int e) {
 
         Cview(e, 0, 0) = Aview(e, 0, 0) * Bview(e, 0, 0)
@@ -260,7 +260,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int i = 0; i < NITER; ++i) {
 
     // _permutedlayout2_batchedmatmult_loop_start
-    RAJA::forall<RAJA::loop_exec>(RAJA::TypedRangeSegment<int>(0, N), 
+    RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<int>(0, N), 
       [=](int e) {
 
         Cview2(e, 0, 0) = Aview2(e, 0, 0) * Bview2(e, 0, 0)
