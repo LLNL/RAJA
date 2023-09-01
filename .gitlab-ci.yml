@@ -12,8 +12,9 @@
 # This entire pipeline is LLNL-specific
 #
 # Important note: This file is a template provided by
-# llnl/radiuss-shared-ci. It should not require any change from the project to
-# get started but could feature project-specific stages.
+# llnl/radiuss-shared-ci. Changes needed consists in setting variable values,
+# change the reference to the radiuss-shared-ci repo, opt-in and out optional
+# features. The project can then extend it with additional stages.
 #
 # However, each project should provide:
 # - .gitlab/custom-jobs-and-variables.yml
@@ -39,9 +40,10 @@ variables:
   BUILD_ROOT: ${CI_PROJECT_DIR}
 # Set the build-and-test command.
   BUILD_AND_TEST_CMD: "./scripts/gitlab/build_and_test.sh"
-# Override the list of branch that will skip the "draft PR test".
-# Add protected branches here. Defaults to "develop main master".
-  ALWAYS_RUN_LIST: "develop main"
+# Override the pattern describing branches that will skip the "draft PR test".
+# Add protected branches here. See default value in
+# preliminary-ignore-draft-pr.yml.
+  ALWAYS_RUN_PATTERN: "^develop$|^main$|^v[0-9.]*-RC$"
 
 # We organize the build-and-test stage in sub-pipelines. Each sub-pipeline
 # corresponds to a test batch on a given machine.
@@ -59,7 +61,7 @@ stages:
     include:
       - local: '.gitlab/custom-jobs-and-variables.yml'
       - project: 'radiuss/radiuss-shared-ci'
-        ref: v2023.06.0
+        ref: v2023.08.0
         file: '${CI_MACHINE}-build-and-test.yml'
       - local: '.gitlab/${CI_MACHINE}-build-and-test-extra.yml'
     strategy: depend
@@ -85,7 +87,7 @@ trigger-rajaperf:
 include:
   # checks preliminary to running the actual CI test (optional)
   - project: 'radiuss/radiuss-shared-ci'
-    ref: v2023.03.1
+    ref: v2023.08.0
     file: 'preliminary-ignore-draft-pr.yml'
   # pipelines subscribed by the project
   - local: '.gitlab/subscribed-pipelines.yml'
