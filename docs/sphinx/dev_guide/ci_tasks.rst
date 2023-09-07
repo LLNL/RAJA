@@ -21,8 +21,10 @@ how to perform common RAJA CI testing maintenance tasks.
 GitLab CI Tasks
 =================
 
-The tasks in this section apply to GitLab CI testing on Livermore
-Computing (LC) platforms.
+The tasks in this section apply to GitLab CI testing on Livermore 
+Computing (LC) platforms. LC folks and others maintain Confluence pages
+with a lot of useful information for setting up and maintaining GitLab CI
+for a project, mirroring a GitHub to GitLab, etc. Please refer to `LC GitLab CI <https://lc.llnl.gov/confluence/display/GITLAB/GitLab+CI>`_ for such information.
 
 Changing build and test configurations
 ----------------------------------------
@@ -36,25 +38,30 @@ Remove a configuration
 
 To remove a RAJA-specific test configuration, simply delete the entry for it 
 in the ``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` file where it is 
-defined.
+defined. Here, ``MACHINE`` is the name of an LC platform where GitLab CI is
+run.
 
 To remove a shared configuration, it must be removed from the appropriate
 ``<MACHINE>-build-and-test.yml`` file in the 
 `RADIUSS Shared CI <https://github.com/LLNL/radiuss-shared-ci>`_ project.
 Create a branch there, remove the job entry, and create a pull request.
 
+.. important:: The RADIUSS Shared CI project is used by several other projects.
+               When changing a shared configuration file, please make sure the
+               change is OK with those other projects.
+
 Add a configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To add a RAJA-specific test configuration, add the entry for it to the 
+To add a RAJA-specific test configuration, add an entry for it to the 
 ``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` file, where ``MACHINE``
 is the name of the LC platform where it will be run. When adding a 
-RAJA-specific test configuration, it is important to note two 
-items that must be set properly:
+test configuration, it is important to note two items that must be 
+specified properly:
 
-  * the unique **job label**, which identifies it in the machine configuration
+  * A unique **job label**, which identifies it in the machine configuration
     file and also on a web page for a GitLab CI pipeline
-  * the build **Spack spec**, which identifies the compiler and version,
+  * A build **Spack spec**, which identifies the compiler and version,
     compiler flags, build options, etc.
 
 For example, an entry for a build using the clang 12.0.1 compiler with CUDA 
@@ -67,22 +74,26 @@ For example, an entry for a build using the clang 12.0.1 compiler with CUDA
       SPEC: " ~shared +openmp +tests +cuda cuda_arch=70 %clang@12.0.1 ^cuda@11.5.0"
     extends: .build_and_test_on_lassen
 
-Here, we enable OpenMP and CUDA, both of which must be enabled to use them, 
-and specify the CUDA target architecture 'sm_70'.
+Here, we enable OpenMP and CUDA, both of which must be enabled to test those
+RAJA back-ends, and specify the CUDA target architecture 'sm_70'.
 
 To add a shared configuration, it must be added to the appropriate
 ``<MACHINE>-build-and-test.yml`` file in the 
 `RADIUSS Shared CI <https://github.com/LLNL/radiuss-shared-ci>`_ project.
 Create a branch there, add the job entry, and create a pull request.
 
+.. important:: The RADIUSS Shared CI project is used by several other projects.
+               When changing a shared configuration file, please make sure the
+               change is OK with those other projects.
+
 Modifying a configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To change an existing configuration, change the relevant information in the 
-configuration, such variant(s) or target compute architecture, in the 
-appropriate 
+configuration in the appropriate 
 ``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` file. Make sure to 
-also modify the job label, so it is descriptive of the configuration.
+also modify the job label as needed, so it is descriptive of the configuration
+(and remains unique!!).
 
 To modify a shared configuration, it must be changed in the appropriate
 ``<MACHINE>-build-and-test.yml`` file in the 
@@ -100,7 +111,7 @@ Create a branch there, modify the job entry, and create a pull request.
                any version of the RADIUSS Spack Configs project, create a 
                branch there, add the needed spec info, and create a pull 
                request. Then, when that PR is merged, update the RAJA submodule
-               to the new version.
+               for the RADIUSS Spack Configs project to the new version.
 
 Changing run parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -111,9 +122,9 @@ RAJA, such as job time limits, resource allocations, etc. are defined in the
 remain as is, for the most part, and should not be changed unless absolutely 
 necessary.
 
-Sometimes a particular job will take longer to build and run than the 
-default allotted time for jobs on a machine. In this case, the time for the
-job can be adjusted in the job entry in the associated 
+For example, sometimes a particular job will take longer to build and run 
+than the default allotted time for jobs on a machine. In this case, the 
+time for the job can be adjusted in the job entry in the associated 
 ``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` file.
 For example:
 
@@ -147,8 +158,10 @@ annotate the job for this. For example:
                we call that "overriding": The job label must be kept the same 
                as in the ``<MACHINE>-build-and-test.yml`` file in the 
                `RADIUSS Shared CI <https://github.com/LLNL/radiuss-shared-ci>`_, 
-               and the job implementation can be adapted. If you override a
-               shared job, please add a comment to describe the change.
+               and the RAJA-specific job can be adapted. If you override a
+               shared job, please add a comment to describe the change in the
+               ``RAJA/.gitlab/<MACHINE>-build-and-test-extra.yml`` file where
+               the job is overridden.
 
 =================
 Azure CI Tasks
@@ -185,8 +198,9 @@ In the ``Dockerfile`` we will want to add our section that defines the commands 
   COPY . /home/raja/workspace
   WORKDIR /home/raja/workspace/build
   RUN cmake -DCMAKE_CXX_COMPILER=compilerX ... && \
-      make -j 6 &&\
-      ctest -T test --output-on-failure
+      make -j 6 && \
+      ctest -T test --output-on-failure && \
+      cd .. && rm -rf build
 
 Each of our docker builds is built up on a base image maintained by RSE-Ops, a table of available base containers can be found `here <https://rse-ops.github.io/docker-images/>`_. We are also able to add target names to each build with ``AS ...``. This target name correlates to the ``docker_target: ...`` defined in ``azure-pipelines.yml``.
 
@@ -267,11 +281,14 @@ identical to that for RAJA, which is described in :ref:`ci-label`. Specifically,
   * The ``build_and_test.sh`` script resides in the `RAJAPerf/scripts/gitlab <https://github.com/LLNL/RAJAPerf/tree/develop/scripts/gitlab>`_ directory.
   * The `RAJAPerf/Dockerfile <https://github.com/LLNL/RAJAPerf/blob/develop/Dockerfile>`_ drives the Azure testing pipelines.
   
-The main difference is that for GitLab CI, is that the Performance Suite uses 
-the RAJA submodules for ``uberenv`` and ``radiuss-spack-configs`` located in 
-the RAJA submodule to avoid redundant submodules. This is reflected in the
+The Performance Suite GitLab CI uses the ``uberenv`` and 
+``radiuss-spack-configs`` versions located in 
+the RAJA submodule to make the testing consistent across projects and avoid 
+redundancy. This is reflected in the
 `RAJAPerf/.uberenv_config.json <https://github.com/LLNL/RAJAPerf/blob/develop/.uberenv_config.json>`_ 
-file which point at the relevant RAJA submodule locations.
+file which point at the relevant RAJA submodule locations. That is the paths
+contain ``tpl/RAJA/...``. 
 
 Apart from this minor difference, all CI maintenance and development tasks for
-the RAJA Performance Suite follow the guidance in :ref:`ci_tasks-label`.
+the RAJA Performance Suite follow the same pattern that is described in 
+:ref:`ci_tasks-label`.

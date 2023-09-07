@@ -152,7 +152,14 @@ Generating a host-config file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To generate a host-config file for a desired configuration, run the 
-``uberenv.py`` python script from the top-level RAJA directory. For example,
+``uberenv.py`` python script from the top-level RAJA directory. 
+
+.. important:: **Do not** run the ``uberenv.py`` script, which invokes Spack
+               in your LC home directory since Spack uses a lot of disk space.
+               Running Spack in your home directory may cause you to exceed
+               your LC disk space quota.
+
+For example,
 
 .. code-block:: bash
 
