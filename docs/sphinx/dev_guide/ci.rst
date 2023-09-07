@@ -20,7 +20,7 @@ Continuous Integration (CI) Testing
 The RAJA project uses two CI tools to run tests:
 
   * **Azure Pipelines** runs builds and tests for Linux, Windows, and MacOS 
-    environments using compilers in container image maintained in the
+    environments using compilers in container images maintained in the
     `RSE Ops Project <https://github.com/rse-ops/docker-images>`_.
     While we do some GPU builds on Azure, RAJA tests are only run for CPU-only 
     builds. The current set of builds run on Azure can be seen by looking at
