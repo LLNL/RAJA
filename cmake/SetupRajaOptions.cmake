@@ -37,5 +37,3 @@ option(RAJA_ENABLE_DESUL_ATOMICS "Enable support of desul atomics" Off)
 set(DESUL_ENABLE_TESTS Off CACHE BOOL "")
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
-
-set(BLT_EXPORT_THIRDPARTY ON CACHE BOOL "")
