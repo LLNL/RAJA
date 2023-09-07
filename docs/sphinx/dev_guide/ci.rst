@@ -167,7 +167,7 @@ support LC GitLab CI testing.
 Briefly, these files play the following roles in GitLab CI testing:
 
   * The `RAJA/.gitlab-ci.yml <https://github.com/LLNL/RAJA/tree/develop/.gitlab-ci.yml>`_ file is the top-level file for GitLab CI configuration. It defines 
-    variables used in all GItLab pipelines such as
+    variables used in all GitLab pipelines such as
     GitHub project name and organization, service user account name, version
     information for RADIUSS Shared CI project we are using, and 
     top-level information for triggering build-and-test sub-pipelines.
@@ -175,7 +175,7 @@ Briefly, these files play the following roles in GitLab CI testing:
     Spack version we are using, location of Spack packages, etc.
   * The `RAJA/.gitlab <https://github.com/LLNL/RAJA/tree/develop/.gitlab>`_ 
     directory contains several files that connect RAJA GitLab pipelines to 
-     shared pipelines defined in the 
+    shared pipelines defined in the 
     `RADIUSS Shared CI <https://github.com/LLNL/radiuss-shared-ci>`_ project,
     as well as RAJA-specific jobs and shared job customizations that we use,
     such as job time limits, etc. These files are modified from templates 
@@ -280,7 +280,7 @@ Recall that RAJA project specific settings defining the Spack version to use,
 locations of Spack packages, etc. are located in the 
 `RAJA/.uberenv_config.json <https://github.com/LLNL/RAJA/tree/develop/.uberenv_config.json>`_ file.
 
-Also, recall that to generate a hist-config file, Spack uses packages and 
+Also, recall that to generate a host-config file, Spack uses packages and 
 specs in the `RADIUSS Spack Configs project <https://github.com/LLNL/radiuss-spack-configs>`_ (a RAJA submodule), 
 plus RAJA-specific specs defined in files in the `RAJA/.gitlab <https://github.com/LLNL/RAJA/tree/develop/.gitlab>`_ directory, as described earlier.
 
