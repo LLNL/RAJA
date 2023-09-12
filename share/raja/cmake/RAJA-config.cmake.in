@@ -43,14 +43,6 @@ if (@RAJA_NEEDS_BLT_TPLS@)
   endif ()
 endif()
 
-#Needs to come before camp 
-#Camp performs a check on the BLT target
-set(BLT_TGTS "${CMAKE_CURRENT_LIST_DIR}/bltTargets.cmake")
-if(EXISTS "${BLT_TGTS}")
-include("${BLT_TGTS}")
-endif()
-unset(BLT_TGTS)
-
 if (NOT TARGET camp)
   set(RAJA_CAMP_DIR "@camp_DIR@")
   if(NOT camp_DIR) 
@@ -79,6 +71,6 @@ if (@RAJA_ENABLE_DESUL_ATOMICS@)
   endif ()
 endif()
 
-include("${CMAKE_CURRENT_LIST_DIR}/RAJATargets.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/BLTSetupTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/RAJATargets.cmake")
 check_required_components("@PROJECT_NAME@")
