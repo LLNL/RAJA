@@ -23,10 +23,10 @@
 
 rocmcc_5_6_0_hip_desul_atomics:
   variables:
-    SPEC: "~shared +rocm ~openmp +desul +tests amdgpu_target=gfx90a %rocmcc@5.6.0 ^hip@5.6.0 ^blt@develop"
+    SPEC: "~shared +rocm ~openmp +desul +tests amdgpu_target=gfx90a %rocmcc@5.6.0 ^hip@5.6.0 ^blt@git.d57f7995ff8299e4612e74ec94e35eacde93cf40=develop ^camp@git.63c3d2d77e3c9c37acf9fa82b9b18c3848352205=main"
   extends: .build_and_test_on_tioga
 
 rocmcc_5_6_0_hip_openmp:
   variables:
-    SPEC: "~shared +rocm +openmp +omptask +tests amdgpu_target=gfx90a %rocmcc@5.6.0 ^hip@5.6.0 ^blt@develop"
+    SPEC: "~shared +rocm +openmp +omptask +tests amdgpu_target=gfx90a %rocmcc@5.6.0 ^hip@5.6.0 ^blt@git.d57f7995ff8299e4612e74ec94e35eacde93cf40=develop ^camp@git.63c3d2d77e3c9c37acf9fa82b9b18c3848352205=main"
   extends: .build_and_test_on_tioga

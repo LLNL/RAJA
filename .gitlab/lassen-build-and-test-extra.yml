@@ -30,13 +30,13 @@ xl_2022_08_19_gcc_8_3_1_cuda_11_2_0:
 
 gcc_8_3_1_omptask:
   variables:
-    SPEC: " ~shared +openmp +omptask +tests %gcc@8.3.1"
+    SPEC: " ~shared +openmp +omptask +tests %gcc@8.3.1 ^blt@git.d57f7995ff8299e4612e74ec94e35eacde93cf40=develop ^camp@git.63c3d2d77e3c9c37acf9fa82b9b18c3848352205=main"
   extends: .build_and_test_on_lassen
 
 gcc_8_3_1_cuda_11_5_0_ats_disabled:
   extends: .build_and_test_on_lassen
   variables:
-    SPEC: " ~shared +openmp +tests +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0+allow-unsupported-compilers"
+    SPEC: " ~shared +openmp +tests +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0+allow-unsupported-compilers ^blt@git.d57f7995ff8299e4612e74ec94e35eacde93cf40=develop ^camp@git.63c3d2d77e3c9c37acf9fa82b9b18c3848352205=main"
     MODULE_LIST: "cuda/11.5.0"
     LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 --atsdisable -W 60"
 
@@ -46,17 +46,17 @@ gcc_8_3_1_cuda_11_5_0_ats_disabled:
 
 clang_13_0_1_libcpp:
   variables:
-    SPEC: " ~shared +openmp +tests %clang@13.0.1 cflags==\"-DGTEST_HAS_CXXABI_H_=0\" cxxflags==\"-stdlib=libc++ -DGTEST_HAS_CXXABI_H_=0\""
+    SPEC: " ~shared +openmp +tests %clang@13.0.1 cflags==\"-DGTEST_HAS_CXXABI_H_=0\" cxxflags==\"-stdlib=libc++ -DGTEST_HAS_CXXABI_H_=0\" ^blt@git.d57f7995ff8299e4612e74ec94e35eacde93cf40=develop ^camp@git.63c3d2d77e3c9c37acf9fa82b9b18c3848352205=main"
   extends: .build_and_test_on_lassen
 
 #clang_14_0_5_asan:
 #  variables:
-#    SPEC: " ~shared +openmp +tests %clang@14.0.5 cxxflags==\"-fsanitize=address\" "
+#    SPEC: " ~shared +openmp +tests %clang@14.0.5 cxxflags==\"-fsanitize=address\" ^blt@git.d57f7995ff8299e4612e74ec94e35eacde93cf40=develop ^camp@git.63c3d2d77e3c9c37acf9fa82b9b18c3848352205=main"
 #    ASAN_OPTIONS: "detect_leaks=1"
 #    LSAN_OPTIONS: "suppressions=${CI_PROJECT_DIR}/suppressions.asan"
 #  extends: .build_and_test_on_lassen
 
 gcc_8_3_1_cuda_10_1_243_desul_atomics:
   variables:
-    SPEC: " ~shared +openmp +tests +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.243+allow-unsupported-compilers"
+    SPEC: " ~shared +openmp +tests +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.243+allow-unsupported-compilers ^blt@git.d57f7995ff8299e4612e74ec94e35eacde93cf40=develop ^camp@git.63c3d2d77e3c9c37acf9fa82b9b18c3848352205=main"
   extends: .build_and_test_on_lassen
