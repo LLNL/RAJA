@@ -20,7 +20,7 @@ variables:
 # Project specific variants for ruby
   PROJECT_RUBY_VARIANTS: "~shared +openmp +tests"
 # Project specific deps for ruby
-  PROJECT_RUBY_DEPS: "^blt@d57f7995ff8299e4612e74ec94e35eacde93cf40 ^camp@63c3d2d77e3c9c37acf9fa82b9b18c3848352205"
+  PROJECT_RUBY_DEPS: "^blt@=d57f7995ff8299e4612e74ec94e35eacde93cf40=develop ^camp@=63c3d2d77e3c9c37acf9fa82b9b18c3848352205=main"
 
 # Corona
 # Arguments for top level allocation
@@ -30,7 +30,7 @@ variables:
 # Project specific variants for corona
   PROJECT_CORONA_VARIANTS: "~shared ~openmp +tests"
 # Project specific deps for corona
-  PROJECT_CORONA_DEPS: "^blt@d57f7995ff8299e4612e74ec94e35eacde93cf40 ^camp@63c3d2d77e3c9c37acf9fa82b9b18c3848352205"
+  PROJECT_CORONA_DEPS: "^blt@=d57f7995ff8299e4612e74ec94e35eacde93cf40=develop ^camp@=63c3d2d77e3c9c37acf9fa82b9b18c3848352205=main"
 
 # Tioga
 # Arguments for top level allocation
@@ -40,7 +40,7 @@ variables:
 # Project specific variants for corona
   PROJECT_TIOGA_VARIANTS: "~shared ~openmp +tests"
 # Project specific deps for corona
-  PROJECT_TIOGA_DEPS: "^blt@d57f7995ff8299e4612e74ec94e35eacde93cf40 ^camp@63c3d2d77e3c9c37acf9fa82b9b18c3848352205"
+  PROJECT_TIOGA_DEPS: "^blt@=d57f7995ff8299e4612e74ec94e35eacde93cf40=develop ^camp@=63c3d2d77e3c9c37acf9fa82b9b18c3848352205=main"
 
 # Lassen and Butte use a different job scheduler (spectrum lsf) that does not
 # allow pre-allocation the same way slurm does.
@@ -49,7 +49,7 @@ variables:
 # Project specific variants for lassen
   PROJECT_LASSEN_VARIANTS: "~shared +openmp +tests cuda_arch=70"
 # Project specific deps for lassen
-  PROJECT_LASSEN_DEPS: "^blt@d57f7995ff8299e4612e74ec94e35eacde93cf40 ^camp@63c3d2d77e3c9c37acf9fa82b9b18c3848352205"
+  PROJECT_LASSEN_DEPS: "^blt@=d57f7995ff8299e4612e74ec94e35eacde93cf40=develop ^camp@=63c3d2d77e3c9c37acf9fa82b9b18c3848352205=main"
 
 # Configuration shared by build and test jobs specific to this project.
 # Not all configuration can be shared. Here projects can fine tune the
