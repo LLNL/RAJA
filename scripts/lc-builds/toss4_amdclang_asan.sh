@@ -43,6 +43,9 @@ echo "Creating build directory build_${BUILD_SUFFIX} and generating configuratio
 echo "Configuration extra arguments:"
 echo "   $@"
 echo
+echo "To get cmake to work you may have to configure with"
+echo "   -DHIP_PLATFORM=amd"
+echo
 echo "To use fp64 HW atomics you must configure with these options when using gfx90a and hip >= 5.2"
 echo "   -DCMAKE_CXX_FLAGS=\"-munsafe-fp-atomics\""
 echo
@@ -55,9 +58,13 @@ module load cmake/3.23.1
 
 # unload rocm to avoid configuration problems where the loaded rocm and COMP_VER
 # are inconsistent causing the rocprim from the module to be used unexpectedly
-module unload rocm
+# module unload rocm
 
-ROCM_PATH="/usr/tce/packages/rocm/rocm-${COMP_VER}"
+if [[ ${COMP_VER} =~ .*magic.* ]]; then
+  ROCM_PATH="/usr/tce/packages/rocmcc/rocmcc-${COMP_VER}"
+else
+  ROCM_PATH="/usr/tce/packages/rocmcc-tce/rocmcc-${COMP_VER}"
+fi
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
@@ -86,15 +93,14 @@ echo
 echo "cd into directory build_${BUILD_SUFFIX} and run make to build RAJA"
 echo
 echo "  Please note that you have to have a consistent build environment"
-echo "  when you make RAJA as cmake may reconfigure; unload the rocm module"
-echo "  or load the appropriate rocm module (${COMP_VER}) when building."
+echo "  when you make RAJA as cmake may reconfigure; load the appropriate"
+echo "  rocm and rocmcc modules (${COMP_VER}) when building."
 echo
-echo "    module unload rocm"
+echo "    module load rocm/COMP_VER rocmcc/COMP_VER"
 echo "    srun -n1 make"
 echo
-echo "  Run with these environment options"
+echo "  Run with these environment options when using asan"
 echo "    ASAN_OPTIONS=print_suppressions=0:detect_leaks=0"
 echo "    HSA_XNACK=1"
-echo "    LD_LIBRARY_PATH=${ROCM_PATH}/lib:\$LD_LIBRARY_PATH"
 echo
 echo "***********************************************************************"
