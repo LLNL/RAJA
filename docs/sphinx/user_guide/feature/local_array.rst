@@ -57,12 +57,12 @@ its constituent parts::
   // 
 
   using POL = RAJA::KernelPolicy<
-                RAJA::statement::For<1, RAJA::loop_exec,
+                RAJA::statement::For<1, RAJA::seq_exec,
                   RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0, 1>,
-                    RAJA::statement::For<0, RAJA::loop_exec,
+                    RAJA::statement::For<0, RAJA::seq_exec,
                       RAJA::statement::Lambda<0>
                     >,
-                    RAJA::statement::For<0, RAJA::loop_exec,
+                    RAJA::statement::For<0, RAJA::seq_exec,
                       RAJA::statement::Lambda<1>
                     >
                   >

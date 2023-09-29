@@ -74,10 +74,10 @@ The mapping between teams and threads to the underlying programming
 model depends on how the ``RAJA::loop`` template parameter types are
 defined. For example, we may define host and device mapping strategies as::
 
-  using teams_x = RAJA::LoopPolicy<RAJA::loop_exec,
-                                         RAJA::cuda_block_x_direct>;
-  using thread_x = RAJA::LoopPolicy<RAJA::loop_exec,
-                                          RAJA::cuda_block_x_direct>;
+  using teams_x = RAJA::LoopPolicy< RAJA::seq_exec,
+                                    RAJA::cuda_block_x_direct >;
+  using thread_x = RAJA::LoopPolicy< RAJA::seq_exec,
+                                     RAJA::cuda_block_x_direct >;
 
 Here, the ``RAJA::LoopPolicy`` type holds both the host (CPU) and 
 device (CUDA GPU) loop mapping strategies. On the host, both the team/thread 
