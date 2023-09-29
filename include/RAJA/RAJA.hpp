@@ -58,11 +58,6 @@
 #include "RAJA/policy/sequential.hpp"
 
 //
-// All platforms must support loop execution.
-//
-#include "RAJA/policy/loop.hpp"
-
-//
 // All platforms should support simd and vector execution.
 //
 #include "RAJA/policy/simd.hpp"
