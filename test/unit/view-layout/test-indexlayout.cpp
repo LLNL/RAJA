@@ -222,9 +222,11 @@ TEST(IndexLayout, View2DLayout)
 
   Index_type data[2][3];
 
-  for (int i = 0; i < 2; i ++ )
-    for (int j = 0; j < 3; j ++ )
+  for (int i = 0; i < 2; i ++ ) {
+    for (int j = 0; j < 3; j ++ ) {
       data[i][j] = i*j;
+    }
+  }
 
   Index_type index_list[2] = {1,2};
 
@@ -233,9 +235,11 @@ TEST(IndexLayout, View2DLayout)
 
   auto view = make_index_view(&data[0][0], index_layout);
 
-  for (int i = 0; i < 2; i ++ )
-    for (int j = 0; j < 2; j ++ )
+  for (int i = 0; i < 2; i ++ ) {
+    for (int j = 0; j < 2; j ++ ) {
       EXPECT_EQ(view(i,j), i*(j+1));
+    }
+  }
 
 }
 
@@ -256,10 +260,13 @@ TEST(IndexLayout, View3DLayout)
   
   Index_type data[2][3][4];
 
-  for (int i = 0; i < 2; i ++ )
-    for (int j = 0; j < 3; j ++ )
-      for (int k = 0; k < 4; k ++ )
-      data[i][j][k] = i*j*k;
+  for (int i = 0; i < 2; i ++ ) {
+    for (int j = 0; j < 3; j ++ ) {
+      for (int k = 0; k < 4; k ++ ) {
+	data[i][j][k] = i*j*k;
+      }
+    }
+  }
 
   Index_type index_list_j[2] = {1,2};
   Index_type index_list_k[2] = {2,3};
@@ -272,10 +279,13 @@ TEST(IndexLayout, View3DLayout)
 
   auto view = make_index_view(&data[0][0][0], index_layout);
 
-  for (int i = 0; i < 2; i ++ )
-    for (int j = 0; j < 2; j ++ )
-      for (int k = 0; k < 2; k ++ )
+  for (int i = 0; i < 2; i ++ ) {
+    for (int j = 0; j < 2; j ++ ) {
+      for (int k = 0; k < 2; k ++ ) {
         EXPECT_EQ(view(i,j,k), i*(j+1)*(k+2));
+      }
+    }
+  }
 
 }
 
@@ -295,8 +305,13 @@ TEST(IndexLayout, MultiView1DLayout)
   Index_type data_squared[4];
   Index_type data_cubed[4];
 
-  for (int i = 0; i < 4; i ++ ) data_squared[i] = i*i;
-  for (int i = 0; i < 4; i ++ ) data_cubed[i] = i*i*i;
+  for (int i = 0; i < 4; i ++ ) {
+    data_squared[i] = i*i;
+  }
+  
+  for (int i = 0; i < 4; i ++ ) {
+    data_cubed[i] = i*i*i;
+  }
 
   Index_type* data_array[2];
   data_array[0] = data_squared;

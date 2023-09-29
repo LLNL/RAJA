@@ -67,8 +67,11 @@ struct ConditionalIndexList {
 
   IdxLin RAJA_INLINE RAJA_HOST_DEVICE constexpr operator()(const IdxLin idx) const
   {
-    if (index_list) return index_list[idx];
-    else return idx;
+    if (index_list) {
+      return index_list[idx];
+    } else {
+      return idx;
+    }
   }
 
 };
