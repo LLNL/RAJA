@@ -95,7 +95,7 @@ Here, "ExecPol", "IdxType", and "LoopBody" are C++ types that a user specifies
 in her code and which are seen by the compiler when the code is built.
 For example::
 
-  RAJA::forall< RAJA::loop_exec >( RAJA::TypedRangeSegment<int>(0, N), [=](int i) {
+  RAJA::forall< RAJA::seq_exec >( RAJA::TypedRangeSegment<int>(0, N), [=](int i) {
     a[i] = b[i] + c[i];
   });
 
@@ -106,7 +106,7 @@ The C-style analogue of this kernel is::
     a[i] = b[i] + c[i];
   }
 
-The execution policy type ``RAJA::loop_exec`` template argument
+The execution policy type ``RAJA::seq_exec`` template argument
 is used to choose as specific implementation of the
 ``RAJA::forall`` method. The ``IdxType`` and ``LoopBody`` types are deduced by
 the compiler based the arguments passed to the ``RAJA::forall`` method;

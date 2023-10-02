@@ -133,7 +133,7 @@ and
    :language: C++
 
 The first of these, in which we parallelize the outer 'k' loop, replaces
-the ``RAJA::loop_exec`` loop execution policy with the 
+the ``RAJA::seq_exec`` loop execution policy with the 
 ``RAJA::omp_parallel_for_exec`` policy, which applies the same OpenMP
 directive to the outer loop used in the C-style variant.
 

@@ -49,21 +49,19 @@ apply during code compilation.
  ====================================== ============= ==========================
  seq_launch_t                           launch        Creates a sequential
                                                       execution space.
- seq_exec                               forall,       Strictly sequential
-                                        kernel (For), execution.
-                                        scan,
-                                        sort
+ seq_exec                               forall,       Sequential execution,
+                                        kernel (For), where the compiler is
+                                        scan,         allowed to apply any
+                                        sort          any optimizations
+                                                      that its heuristics deem
+                                                      beneficial; i.e., no loop
+                                                      decorations (pragmas or 
+                                                      intrinsics) in the RAJA
+                                                      implementation.
  simd_exec                              forall,       Try to force generation of
                                         kernel (For), SIMD instructions via
                                         scan          compiler hints in RAJA's
                                                       internal implementation.
- loop_exec                              forall,       Allow the compiler to
-                                        kernel (For), generate any optimizations
-                                        scan,         that its heuristics deem
-                                        sort          beneficial;
-                                                      i.e., no loop decorations
-                                                      (pragmas or intrinsics) in
-                                                      RAJA implementation.
  ====================================== ============= ==========================
 
 
@@ -686,11 +684,11 @@ surround code that uses execution back-ends other than OpenMP. For example::
 
   RAJA::region<RAJA::seq_region>([=]() {
 
-     RAJA::forall<RAJA::loop_exec>(segment, [=] (int idx) {
+     RAJA::forall<RAJA::seq_exec>(segment, [=] (int idx) {
          // do something at iterate 'idx'
      } );
 
-     RAJA::forall<RAJA::loop_exec>(segment, [=] (int idx) {
+     RAJA::forall<RAJA::seq_exec>(segment, [=] (int idx) {
          // do something else at iterate 'idx'
      } );
 
@@ -725,7 +723,6 @@ Reduction Policy        Loop Policies Brief description
                         to Use With
 ======================= ============= ==========================================
 seq_reduce              seq_exec,     Non-parallel (sequential) reduction.
-                        loop_exec
 omp_reduce              any OpenMP    OpenMP parallel reduction.
                         policy
 omp_reduce_ordered      any OpenMP    OpenMP parallel reduction with result
@@ -766,7 +763,7 @@ Atomic Policy                 Loop Policies Brief description
                               to Use With
 ============================= ============= ========================================
 seq_atomic                    seq_exec,     Atomic operation performed in a
-                              loop_exec     non-parallel (sequential) kernel.
+                                            non-parallel (sequential) kernel.
 omp_atomic                    any OpenMP    Atomic operation in OpenM kernel.P
                               policy        multithreading or target kernel;
                                             i.e., apply ``omp atomic`` pragma.
@@ -781,14 +778,12 @@ cuda/hip_atomic_explicit      any CUDA/HIP  Atomic operation performed in a CUDA
                                             argument. See additional explanation
                                             and example below.
 builtin_atomic                seq_exec,     Compiler *builtin* atomic operation.
-                              loop_exec,
                               any OpenMP
                               policy
-auto_atomic                   seq_exec,     Atomic operation *compatible* with loop
-                              loop_exec,    execution policy. See example below.
-                              any OpenMP    Can not be used inside cuda/hip
-                              policy,       explicit atomic policies.
-                              any
+auto_atomic                   seq_exec,     Atomic operation *compatible* with 
+                              any OpenMP    loop execution policy. See example 
+                              policy,       below. Cannot be used inside CUDA or
+                              any           HIP explicit atomic policies. 
                               CUDA/HIP/SYCL
                               policy
 ============================= ============= ========================================
