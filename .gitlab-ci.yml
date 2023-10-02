@@ -45,8 +45,6 @@ variables:
   BUILD_ROOT: ${CI_PROJECT_DIR}
 
 ##### SHARED_CI CONFIGURATION
-# Shared CI reference to use
-  SHARED_CI_REF: "v2023.09.0"
 # Required information about GitHub repository
   GITHUB_PROJECT_NAME: "RAJA"
   GITHUB_PROJECT_ORG: "LLNL"
@@ -73,7 +71,7 @@ stages:
     include:
       - local: '.gitlab/custom-jobs-and-variables.yml'
       - project: 'radiuss/radiuss-shared-ci'
-        ref: '${SHARED_CI_REF}'
+        ref: 'v2023.09.0'
         file: 'pipelines/${CI_MACHINE}.yml'
       - artifact: '${CI_MACHINE}-jobs.yml'
         job: 'generate-job-lists'
@@ -100,7 +98,7 @@ trigger-rajaperf:
 include:
   # [Optional] checks preliminary to running the actual CI test
   - project: 'radiuss/radiuss-shared-ci'
-    ref: '${SHARED_CI_REF}'
+    ref: 'v2023.09.0'
     file: 'preliminary-ignore-draft-pr.yml'
   # pipelines subscribed by the project
   - local: '.gitlab/subscribed-pipelines.yml'
