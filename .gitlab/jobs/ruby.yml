@@ -51,10 +51,10 @@ gcc_10_3_1_openmp_default:
   variables:
     SPEC: " ~shared +tests %gcc@10.3.1"
     RUBY_JOB_ALLOC: "--time=60 --nodes=1"
-  extends: .jobs_on_ruby
+  extends: .job_on_ruby
 
 # OTHERS
 clang_14_0_6_gcc_10_3_1_desul_atomics:
   variables:
     SPEC: " ~shared +openmp +tests +desul %clang@14.0.6.gcc.10.3.1"
-  extends: .jobs_on_ruby
+  extends: .job_on_ruby
