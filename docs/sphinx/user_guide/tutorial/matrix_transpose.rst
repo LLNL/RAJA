@@ -99,7 +99,7 @@ and number of blocks to launch is determined by the implementation of the
 For ``RAJA::launch`` variants, we use ``RAJA::loop`` methods 
 to write a loop hierarchy within the kernel execution space. For a sequential 
 implementation, we pass the ``RAJA::seq_launch_t`` template parameter
-to the launch method and pass the ``RAJA::loop_exec`` parameter to the loop 
+to the launch method and pass the ``RAJA::seq_exec`` parameter to the loop 
 methods. The complete sequential ``RAJA::launch`` variant is:
 
 .. literalinclude:: ../../../../exercises/launch-matrix-transpose_solution.cpp
