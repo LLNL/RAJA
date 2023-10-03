@@ -1,69 +1,80 @@
 ###############################################################################
-# Copyright (c) 2016-22, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
+# DESCRIPTION:
 ###############################################################################
 # General GitLab pipelines configurations for supercomputers and Linux clusters
 # at Lawrence Livermore National Laboratory (LLNL).
-#
 # This entire pipeline is LLNL-specific
 #
-# Important note: This file is a template provided by
-# llnl/radiuss-shared-ci. Changes needed consists in setting variable values,
-# change the reference to the radiuss-shared-ci repo, opt-in and out optional
-# features. The project can then extend it with additional stages.
+# Important note: This file is a template provided by llnl/radiuss-shared-ci.
+# Remains to set variable values, change the reference to the radiuss-shared-ci
+# repo, opt-in and out optional features. The project can then extend it with
+# additional stages.
 #
-# However, each project should provide:
+# In addition, each project should copy over and complete:
 # - .gitlab/custom-jobs-and-variables.yml
 # - .gitlab/subscribed-pipelines.yml
-# - .gitlab/${MACHINE}-build-and-test-extra.yml
+#
+# The jobs should be specified in a file local to the project,
+# - .gitlab/jobs/${CI_MACHINE}.yml
+# or generated (see LLNL/Umpire for an example).
 ###############################################################################
 
 # We define the following GitLab pipeline variables:
 variables:
-  MP_BRANCH: "develop"
-  GITHUB_PROJECT_NAME: "RAJA"
-  GITHUB_PROJECT_ORG: "LLNL"
-# Use a service user to run CI. This prevents from running pipelines as an
-# actual user.
+##### LC GITLAB CONFIGURATION
+# Use the umdev LLNL service user to run CI. This prevents from running
+# pipelines as an actual user.
   LLNL_SERVICE_USER: rajasa
-# Use a service user workspace. Solves permission issues, stores everything
+# Use the service user workspace. Solves permission issues, stores everything
 # at the same location whoever triggers a pipeline.
-#  CUSTOM_CI_BUILDS_DIR: ""
+#  CUSTOM_CI_BUILDS_DIR: /usr/workspace/umdev/gitlab-runner
 # Tells Gitlab to recursively update the submodules when cloning the project.
   GIT_SUBMODULE_STRATEGY: recursive
+
+##### PROJECT VARIABLES
+  MP_BRANCH: "develop"
 # We build the projects in the CI clone directory.
-# TODO: add a clean-up mechanism
+# Used in script/gitlab/build_and_test.sh script.
+# TODO: add a clean-up mechanism.
   BUILD_ROOT: ${CI_PROJECT_DIR}
+
+##### SHARED_CI CONFIGURATION
+# Required information about GitHub repository
+  GITHUB_PROJECT_NAME: "RAJA"
+  GITHUB_PROJECT_ORG: "LLNL"
 # Set the build-and-test command.
-  BUILD_AND_TEST_CMD: "./scripts/gitlab/build_and_test.sh"
-# Override the pattern describing branches that will skip the "draft PR test".
-# Add protected branches here. See default value in
+  JOB_CMD: "./scripts/gitlab/build_and_test.sh"
+# Override the pattern describing branches that will skip the "draft PR filter
+# test".  Add protected branches here. See default value in
 # preliminary-ignore-draft-pr.yml.
   ALWAYS_RUN_PATTERN: "^develop$|^main$|^v[0-9.]*-RC$"
 
-# We organize the build-and-test stage in sub-pipelines. Each sub-pipeline
+# We organize the build-and-test stage with sub-pipelines. Each sub-pipeline
 # corresponds to a test batch on a given machine.
 
 # High level stages
 stages:
-  - machine-checks
+  - prerequisites
   - build-and-test
-  - multi_project
+  - multi-project
 
-# Template for jobs triggering a build-and-test sub-pipelines:
+# Template for jobs triggering a build-and-test sub-pipeline:
 .build-and-test:
   stage: build-and-test
   trigger:
     include:
       - local: '.gitlab/custom-jobs-and-variables.yml'
       - project: 'radiuss/radiuss-shared-ci'
-        ref: v2023.08.0
-        file: '${CI_MACHINE}-build-and-test.yml'
-      - local: '.gitlab/${CI_MACHINE}-build-and-test-extra.yml'
+        ref: 'v2023.09.0'
+        file: 'pipelines/${CI_MACHINE}.yml'
+      - artifact: '${CI_MACHINE}-jobs.yml'
+        job: 'generate-job-lists'
     strategy: depend
     forward:
       pipeline_variables: true
@@ -74,7 +85,7 @@ stages:
 #       This will prevent from sticking to a branch (here develop).
 #       MP_BRANCH is short for "Multi-Project Branch" and will usually be develop.
 trigger-rajaperf:
-  stage: multi_project
+  stage: multi-project
   rules:
     - if: '$CI_COMMIT_BRANCH == "${MP_BRANCH}" || $MULTI_PROJECT == "ON"' #run only if ...
   variables:
@@ -85,9 +96,9 @@ trigger-rajaperf:
     strategy: depend
 
 include:
-  # checks preliminary to running the actual CI test (optional)
+  # [Optional] checks preliminary to running the actual CI test
   - project: 'radiuss/radiuss-shared-ci'
-    ref: v2023.08.0
-    file: 'preliminary-ignore-draft-pr.yml'
+    ref: 'v2023.09.0'
+    file: 'utilities/preliminary-ignore-draft-pr.yml'
   # pipelines subscribed by the project
   - local: '.gitlab/subscribed-pipelines.yml'

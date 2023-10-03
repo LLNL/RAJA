@@ -14,9 +14,9 @@ variables:
 
 # Ruby
 # Arguments for top level allocation
-  RUBY_BUILD_AND_TEST_SHARED_ALLOC: "--exclusive --reservation=ci --qos=ci_ruby --time=60 --nodes=2"
+  RUBY_SHARED_ALLOC: "--exclusive --reservation=ci --qos=ci_ruby --time=60 --nodes=2"
 # Arguments for job level allocation
-  RUBY_BUILD_AND_TEST_JOB_ALLOC: "--reservation=ci --qos=ci_ruby --time=45 --nodes=1"
+  RUBY_JOB_ALLOC: "--reservation=ci --qos=ci_ruby --time=45 --nodes=1"
 # Project specific variants for ruby
   PROJECT_RUBY_VARIANTS: "~shared +openmp +tests"
 # Project specific deps for ruby
@@ -24,9 +24,9 @@ variables:
 
 # Corona
 # Arguments for top level allocation
-  CORONA_BUILD_AND_TEST_SHARED_ALLOC: "--exclusive --time-limit=60m --nodes=1"
+  CORONA_SHARED_ALLOC: "--exclusive --time-limit=60m --nodes=1"
 # Arguments for job level allocation
-  CORONA_BUILD_AND_TEST_JOB_ALLOC: "--time-limit=45m --nodes=1 --begin-time=+5s"
+  CORONA_JOB_ALLOC: "--time-limit=45m --nodes=1 --begin-time=+5s"
 # Project specific variants for corona
   PROJECT_CORONA_VARIANTS: "~shared ~openmp +tests"
 # Project specific deps for corona
@@ -34,9 +34,9 @@ variables:
 
 # Tioga
 # Arguments for top level allocation
-  TIOGA_BUILD_AND_TEST_SHARED_ALLOC: "--exclusive --time-limit=60m --nodes=1"
+  TIOGA_SHARED_ALLOC: "--exclusive --time-limit=60m --nodes=1"
 # Arguments for job level allocation
-  TIOGA_BUILD_AND_TEST_JOB_ALLOC: "--time-limit=45m --nodes=1 --begin-time=+5s"
+  TIOGA_JOB_ALLOC: "--time-limit=45m --nodes=1 --begin-time=+5s"
 # Project specific variants for corona
   PROJECT_TIOGA_VARIANTS: "~shared ~openmp +tests"
 # Project specific deps for corona
@@ -45,7 +45,7 @@ variables:
 # Lassen and Butte use a different job scheduler (spectrum lsf) that does not
 # allow pre-allocation the same way slurm does.
 # Arguments for job level allocation
-  LASSEN_BUILD_AND_TEST_JOB_ALLOC: "1 -W 60"
+  LASSEN_JOB_ALLOC: "1 -W 60"
 # Project specific variants for lassen
   PROJECT_LASSEN_VARIANTS: "~shared +openmp +tests cuda_arch=70"
 # Project specific deps for lassen
@@ -55,7 +55,7 @@ variables:
 # Not all configuration can be shared. Here projects can fine tune the
 # CI behavior.
 # See Umpire for an example (export junit test reports).
-.custom_build_and_test:
+.custom_job:
   artifacts:
     reports:
       junit: junit.xml
