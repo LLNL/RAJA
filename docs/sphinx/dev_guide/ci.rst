@@ -131,15 +131,16 @@ collaboratively with other projects. These include
     that helps to simplify the workflow of Spack and other tools for building 
     third-party dependencies. Uberenv is a submodule in RAJA that lives in
     ``RAJA/scripts/uberenv/``.
-  * `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_,
-    a collection of Spack compiler and package configurations used by Spack 
-    to generate build configurations. The build configurations are 
-    specific to LLNL LC platforms. Spack packages for multiple projects are
-    maintained in this project. RADIUSS Spack Configs is a submodule in RAJA 
-    that lives in ``RAJA/scripts/radiuss-spack-configs/``.
+  * `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_, a
+    collection of Spack compiler and package configurations used by Spack to
+    generate build configurations. The build configurations are specific to
+    LLNL LC platforms. Spack packages for multiple projects are maintained in
+    this project. Shared RADIUSS CI jobs are also hosted by this project as
+    they relate to the Spack configuration. RADIUSS Spack Configs is a
+    submodule in RAJA that lives in ``RAJA/scripts/radiuss-spack-configs/``.
 
 The relationships among these dependencies in a project that uses them is 
-described in the `RADIUSS Shared CI User Guide <https://radiuss-shared-ci.readthedocs.io/en/latest/sphinx/user_guide/index.html>`_ along with information about
+described in the `RADIUSS Shared CI User Guide <https://radiuss-shared-ci.readthedocs.io/en/woptim-isolate-jobs/sphinx/user_guide/how_to.html#leverage-spack>`_ along with information about
 how the framework works and how to set up a project to use it.
 
 .. important:: The RAJA Spack package is maintained in the `RADIUSS Spack
@@ -161,20 +162,22 @@ support LC GitLab CI testing.
 
 .. figure:: ./figures/RAJA-Gitlab-Files.png
 
-   The figure shows directories and files in the RAJA repo that support GitLab 
-   CI testing. Files in blue are specific to RAJA and are maintained in the 
-   RAJA repo. Red directories and files correspond to Git submodules that are 
-   shared and maintained with other projects.
+   The figure shows directories and files in the RAJA repo that support GitLab
+   CI testing. Files in blue are specific to the CI while those in red relates
+   to the build (Spack) environment description. The ``build_and_test.sh``
+   scripts stands at the interface between CI and Spack. ``uberenv`` and
+   ``radiuss-spack-configs`` are both Git submodules that are shared and
+   maintained with other projects.
 
 Briefly, these files play the following roles in GitLab CI testing:
 
   * The `RAJA/.gitlab-ci.yml
     <https://github.com/LLNL/RAJA/tree/develop/.gitlab-ci.yml>`_ file is the
-    top-level file for GitLab CI configuration. It defines variables used in
-    all GitLab pipelines such as GitHub project name and organization, service
-    user account name, version information for RADIUSS Shared CI project we are
-    using, and top-level information for triggering build-and-test
-    sub-pipelines.
+    top-level file for GitLab CI configuration. It defines variables used
+    throughout the CI configuration such as GitHub project name and
+    organization, service user account name, version information for RADIUSS
+    Shared CI project we are using, and top-level information for triggering
+    build-and-test sub-pipelines.
   * The `RAJA/.uberenv_config.json
     <https://github.com/LLNL/RAJA/tree/develop/.uberenv_config.json>`_ file
     defines information about Spack such as Spack version we are using,
@@ -218,16 +221,16 @@ configuration variants for those platforms
 
 Each job that is run is defined by a Spack spec in one of two places, depending
 on whether it is *shared* with other projects or it is specific to RAJA. The
-shared jobs are defined in files located in ``gitlab/jobs/<MACHINE>.yml`` in
-the `RADIUSS Spack Configs Project
-<https://github.com/LLNL/radiuss-spack-configs>`_.  Overrides (modifications) of
-those jobs and other RAJA-specific jobs are defined in
-``RAJA/.gitlab/jobs/<MACHINE>.yml`` files. 
+shared jobs are defined in files located in
+``gitlab/radiuss-jobs/<MACHINE>.yml`` in the `RADIUSS Spack Configs Project
+<https://github.com/LLNL/radiuss-spack-configs>`_.  Overrides (modifications)
+of those jobs and other RAJA-specific jobs are defined in
+``RAJA/.gitlab/jobs/<MACHINE>.yml`` files.
 
 **Each shared job will be run as-is unless it is overridden** in the RAJA local
 jobs file for the corresponding machine. For example, a shared job for the LC
 ruby machine may appear in the RADIUSS Spack Configs file 
-``gitlab/jobs/ruby.yml`` as::
+``gitlab/radiuss-jobs/ruby.yml`` as::
 
   gcc_8_1_0:
     variables:
@@ -295,7 +298,7 @@ locations of Spack packages, etc. are located in the
 
 Also, recall that to generate a host-config file, Spack uses packages and 
 specs in the `RADIUSS Spack Configs project <https://github.com/LLNL/radiuss-spack-configs>`_ (a RAJA submodule), 
-plus RAJA-specific specs defined in files in the `RAJA/.gitlab <https://github.com/LLNL/RAJA/tree/develop/.gitlab>`_ directory, as described earlier.
+plus RAJA-specific specs defined in files in the `RAJA/.gitlab/jobs <https://github.com/LLNL/RAJA/tree/develop/.gitlab/jobs>`_ directory, as described earlier.
 
 .. _azure_ci-label:
 

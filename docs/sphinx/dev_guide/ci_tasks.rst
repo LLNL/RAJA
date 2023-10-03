@@ -41,7 +41,7 @@ the ``RAJA/.gitlab/jobs/<MACHINE>.yml`` file where it is defined. Here,
 ``MACHINE`` is the name of an LC platform where GitLab CI is run.
 
 To remove a shared configuration, it must be removed from the appropriate
-``gitlab/jobs/<MACHINE>.yml`` file in the `RADIUSS Spack Configs
+``gitlab/radiuss-jobs/<MACHINE>.yml`` file in the `RADIUSS Spack Configs
 <https://github.com/LLNL/radiuss-spack-configs>`_ project.  Create a branch
 there, remove the job entry, and create a pull request.
 
@@ -76,7 +76,7 @@ Here, we enable OpenMP and CUDA, both of which must be enabled to test those
 RAJA back-ends, and specify the CUDA target architecture 'sm_70'.
 
 To add a shared configuration, it must be added to the appropriate
-``.gitlab/jobs/<MACHINE>.yml`` file in the `RADIUSS Spack Configs
+``gitlab/radiuss-jobs/<MACHINE>.yml`` file in the `RADIUSS Spack Configs
 <https://github.com/LLNL/radiuss-spack-configs>`_ project. Create a branch
 there, add the job entry, and create a pull request.
 
@@ -93,7 +93,7 @@ sure to also modify the job label as needed, so it is descriptive of the
 configuration (and remains unique!!).
 
 To modify a shared configuration, it must be changed in the appropriate
-``gitlab/jobs/<MACHINE>.yml`` file in the `RADIUSS Spack Configs
+``gitlab/radiuss-jobs/<MACHINE>.yml`` file in the `RADIUSS Spack Configs
 <https://github.com/LLNL/radiuss-spack-configs>`_ project. Create a branch
 there, modify the job entry, and create a pull request.
 
@@ -151,7 +151,7 @@ annotate the job for this. For example:
 
 .. important:: When a shared job needs to be modified for RAJA specifically, we
    call that "overriding": The job label must be kept the same as in the
-   ``.gitlab/jobs/<MACHINE>.yml`` file in the `RADIUSS Spack Configs
+   ``gitlab/radiuss-jobs/<MACHINE>.yml`` file in the `RADIUSS Spack Configs
    <https://github.com/LLNL/radiuss-spack-confgs>`_, and the RAJA-specific job
    can be adapted. If you override a shared job, please add a comment to
    describe the change in the ``RAJA/.gitlab/jobs/<MACHINE>.yml`` file where
