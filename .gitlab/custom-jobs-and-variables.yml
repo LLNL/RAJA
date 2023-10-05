@@ -26,7 +26,7 @@ variables:
 # Arguments for top level allocation
   POODLE_SHARED_ALLOC: "--exclusive --partition=pdebug --time=30 --nodes=1"
 # Arguments for job level allocation
-  POODLE_JOB_ALLOC: "--overlab --time=20 --nodes=1"
+  POODLE_JOB_ALLOC: "--overlap --time=20 --nodes=1"
 # Project specific variants for poodle
   PROJECT_POODLE_VARIANTS: "~shared +openmp +tests"
 # Project specific deps for poodle
