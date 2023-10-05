@@ -4,6 +4,10 @@
 ###############################################################################
 
 raja_add_executable(
+  NAME launch_new_reductions
+  SOURCES launch_new_reductions.cpp)
+
+raja_add_executable(
   NAME tut_launch_basic
   SOURCES tut_launch_basic.cpp)
 

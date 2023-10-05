@@ -20,7 +20,7 @@
 
 #include "RAJA/pattern/launch/launch_core.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
-
+#include "RAJA/pattern/params/forall.hpp" 
 
 namespace RAJA
 {
@@ -55,6 +55,25 @@ struct LaunchExecute<RAJA::seq_launch_t> {
     ctx.shared_mem_ptr = nullptr;
 
     return resources::EventProxy<resources::Resource>(res);
+  }
+
+  template<typename ForallParam, typename BODY>
+  /*  Q - do need to handle the case of when it is empty
+  concepts::enable_if_t<void, 
+                        expt::type_traits::is_ForallParamPack<ForallParam>,
+                         concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
+  */  
+  static void 
+  exec(LaunchParams const &params, ForallParam f_params, BODY const &body)
+  {
+
+    std::cout<<"using new reducers sequential policy "<<std::endl;
+    expt::ParamMultiplexer::init<seq_exec>(f_params);
+
+    LaunchContext ctx;
+    expt::invoke_body(f_params, body, ctx);
+
+    expt::ParamMultiplexer::resolve<seq_exec>(f_params);
   }
 
 };
@@ -197,7 +216,7 @@ struct LoopICountExecute<seq_exec, SEGMENT> {
       }
     }
   }
-  
+
 };
 
 //Tile Execute + variants

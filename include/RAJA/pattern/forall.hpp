@@ -159,6 +159,8 @@ RAJA_INLINE concepts::enable_if_t<
     type_traits::is_range<Container>>
 forall(Res r, ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body, ForallParams&& f_params)
 {
+
+  
   RAJA_FORCEINLINE_RECURSIVE
   return forall_impl(r,
                      std::forward<ExecutionPolicy>(p),
@@ -355,6 +357,9 @@ RAJA_INLINE concepts::enable_if_t<
     type_traits::is_indexset_policy<ExecutionPolicy>>
 forall(ExecutionPolicy&& p, Res r, IdxSet&& c, Params&&... params)
 {
+
+  std::cout<<"forall start"<<std::endl;
+  
   static_assert(type_traits::is_index_set<IdxSet>::value,
                 "Expected a TypedIndexSet but did not get one. Are you using "
                 "a TypedIndexSet policy by mistake?");

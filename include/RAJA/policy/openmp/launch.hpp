@@ -21,6 +21,12 @@
 #include "RAJA/pattern/launch/launch_core.hpp"
 #include "RAJA/policy/openmp/policy.hpp"
 
+#define RAJA_OMP_DECLARE_REDUCTION_COMBINE \
+      _Pragma(" omp declare reduction( combine \
+        : typename std::remove_reference<decltype(f_params)>::type \
+        : RAJA::expt::ParamMultiplexer::combine<RAJA::omp_launch_t>(omp_out, omp_in) ) ")\
+        //initializer(omp_priv = omp_in) ")
+
 
 namespace RAJA
 {
@@ -48,6 +54,29 @@ struct LaunchExecute<RAJA::omp_launch_t> {
     });
 
     return resources::EventProxy<resources::Resource>(res);
+  }
+
+  template<typename ForallParam, typename BODY>
+  static void
+  exec(LaunchParams const &params, ForallParam &&f_params, BODY const &body)
+  {
+
+    std::cout<<"using new reducers openmp policy "<<std::endl;
+    expt::ParamMultiplexer::init<RAJA::omp_launch_t>(f_params);
+    RAJA_OMP_DECLARE_REDUCTION_COMBINE;
+
+   #pragma omp parallel reduction(combine : f_params)
+    {
+
+      LaunchContext ctx;
+
+      using RAJA::internal::thread_privatize;
+      auto loop_body = thread_privatize(body);
+
+      expt::invoke_body(f_params, loop_body.get_priv(), ctx);
+    }
+
+    expt::ParamMultiplexer::resolve<RAJA::omp_launch_t>(f_params);
   }
 
 };

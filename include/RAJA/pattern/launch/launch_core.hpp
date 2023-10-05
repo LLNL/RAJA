@@ -214,6 +214,25 @@ public:
 template <typename LAUNCH_POLICY>
 struct LaunchExecute;
 
+//Support for new reduction framework
+template<typename LAUNCH_POLICY, typename ... FORALL_Params>
+void launch_params(LaunchParams const &params, FORALL_Params&&... forall_params)
+{
+
+  //Hard coded to only use host policy for now...
+  //Need to work out details for sequential and openmp launch
+
+  auto f_params = expt::make_forall_param_pack(std::forward<FORALL_Params>(forall_params)...);
+  
+  auto&& loop_body = expt::get_lambda(std::forward<FORALL_Params>(forall_params)...); 
+
+  
+  using launch_t = LaunchExecute<typename LAUNCH_POLICY::host_policy_t>;
+  launch_t::exec(params, f_params, loop_body);
+  
+}
+
+  
 //Policy based launch without name argument
 template <typename LAUNCH_POLICY, typename BODY>
 void launch(LaunchParams const &params, BODY const &body)
