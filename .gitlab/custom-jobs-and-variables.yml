@@ -22,6 +22,16 @@ variables:
 # Project specific deps for ruby
   PROJECT_RUBY_DEPS: ""
 
+# Poodle
+# Arguments for top level allocation
+  POODLE_SHARED_ALLOC: "--exclusive --partition=pdebug --time=60 --nodes=2"
+# Arguments for job level allocation
+  POODLE_JOB_ALLOC: "--time=45 --nodes=1"
+# Project specific variants for poodle
+  PROJECT_POODLE_VARIANTS: "~shared +openmp +tests"
+# Project specific deps for poodle
+  PROJECT_POODLE_DEPS: ""
+
 # Corona
 # Arguments for top level allocation
   CORONA_SHARED_ALLOC: "--exclusive --time-limit=60m --nodes=1"

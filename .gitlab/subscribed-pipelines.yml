@@ -60,6 +60,18 @@ ruby-build-and-test:
   needs: [ruby-up-check, generate-job-lists]
   extends: [.build-and-test]
 
+# POODLE
+poodle-up-check:
+  variables:
+    CI_MACHINE: "poodle"
+  extends: [.machine-check]
+
+poodle-build-and-test:
+  variables:
+    CI_MACHINE: "poodle"
+  needs: [poodle-up-check, generate-job-lists]
+  extends: [.build-and-test]
+
 # CORONA
 corona-up-check:
   variables:
