@@ -193,7 +193,6 @@ are as follows (names are descriptive of what they enable):
       RAJA_ENABLE_CLANG_CUDA       Off
       (RAJA_)ENABLE_HIP            Off
       RAJA_ENABLE_TARGET_OPENMP    Off (when on, ENABLE_OPENMP must also be on)
-      RAJA_ENABLE_TBB              Off
       RAJA_ENABLE_SYCL             Off
       ==========================   ============================================
 

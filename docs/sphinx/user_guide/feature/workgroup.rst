@@ -84,8 +84,6 @@ loop.
                                         optimizations.
  omp_work                               Execute loop iterations in parallel
                                         using OpenMP.
- tbb_work                               Execute loop iterations in parallel
-                                        using TBB.
  cuda_work<BLOCK_SIZE>,                 Execute loop iterations in parallel
  cuda_work_async<BLOCK_SISZE>           using a CUDA kernel launched with given
                                         thread-block size.
