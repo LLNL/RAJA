@@ -69,31 +69,6 @@ using OpenMPKernelExecPols = camp::list<
 >;
 #endif
 
-#if defined(RAJA_ENABLE_TBB)
-using TBBKernelExecPols = camp::list<
-
-  RAJA::KernelPolicy<
-    RAJA::statement::If< RAJA::statement::Equals<RAJA::statement::Param<0>,
-                                                 RAJA::statement::Value<0>>,
-      RAJA::statement::For<0, RAJA::tbb_for_exec,
-        RAJA::statement::Lambda<0, RAJA::Segs<0>>,
-        RAJA::statement::Lambda<1, RAJA::Segs<0>>
-      >
-    >,
-    RAJA::statement::If< RAJA::statement::Equals<RAJA::statement::Param<0>,
-                                                 RAJA::statement::Value<1>>,
-      RAJA::statement::For<0, RAJA::tbb_for_exec,
-        RAJA::statement::Lambda<0, RAJA::Segs<0>>
-      >,
-      RAJA::statement::For<0, RAJA::tbb_for_exec,
-        RAJA::statement::Lambda<1, RAJA::Segs<0>>
-      >
-    >
-  >
-
->;
-#endif
-
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OpenMPTargetKernelExecPols = camp::list<
 

@@ -55,8 +55,7 @@ set(TILETYPES LocalArray2D)
 foreach( TILE_BACKEND ${KERNEL_BACKENDS} )
   foreach( TILE_TYPE ${TILETYPES} )
     # Removing OpenMPTarget because local array capability does not exist
-    # TBB not working for local array
-    if( NOT ((TILE_BACKEND STREQUAL "OpenMPTarget") OR (TILE_BACKEND STREQUAL "TBB") OR (TILE_BACKEND STREQUAL "Sycl")) )
+    if( NOT ((TILE_BACKEND STREQUAL "OpenMPTarget") OR (TILE_BACKEND STREQUAL "Sycl")) )
       configure_file( test-kernel-tilelocal.cpp.in
                       test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.cpp )
       raja_add_test( NAME test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}

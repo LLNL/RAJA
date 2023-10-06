@@ -99,16 +99,6 @@ using OpenMPStableSortSorters =
 
 #endif
 
-#if defined(RAJA_ENABLE_TBB)
-
-using TBBStableSortSorters =
-  camp::list<
-              PolicyStableSort<RAJA::tbb_for_exec>,
-              PolicyStableSortPairs<RAJA::tbb_for_exec>
-            >;
-
-#endif
-
 #if defined(RAJA_ENABLE_CUDA)
 
 using CudaStableSortSorters =
