@@ -44,6 +44,23 @@ __global__ void launch_global_fcn(BODY body_in)
   body(ctx);
 }
 
+#if 1
+template <typename BODY, typename ForallParams>
+__global__ void launch_new_reduce_global_fcn(BODY body_in, ForallParams f_params)
+{
+  LaunchContext ctx;
+
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(body_in);
+  auto& body = privatizer.get_priv();
+
+  RAJA::expt::invoke_body( f_params, body, ctx );
+
+  //Using a flatten global policy as we may use all dimensions
+  RAJA::expt::ParamMultiplexer::combine<RAJA::hip_flatten_global_xyz_direct>(f_params);
+}
+#endif
+
 template <bool async>
 struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>> {
 
@@ -94,6 +111,73 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, named_usage::unspeci
     }
 
     return resources::EventProxy<resources::Resource>(res);
+  }
+
+  //Proof of concept code
+  template<typename ForallParam, typename BODY_IN>
+  static void
+  exec(RAJA::resources::Resource res, const LaunchParams &params, ForallParam &&f_params, BODY_IN && body_in)
+  {
+    std::cout<<"calling RAJA-HIP launch with f_params"<<std::endl;
+
+    using BODY = camp::decay<BODY_IN>;
+
+    auto func = reinterpret_cast<const void*>(&launch_new_reduce_global_fcn<BODY, camp::decay<ForallParam> >);
+
+    resources::Hip hip_res = res.get<RAJA::resources::Hip>();
+
+    //
+    // Compute the number of blocks and threads
+    //
+    hip_dim_t gridSize{ static_cast<hip_dim_member_t>(params.teams.value[0]),
+                        static_cast<hip_dim_member_t>(params.teams.value[1]),
+                        static_cast<hip_dim_member_t>(params.teams.value[2]) };
+
+    hip_dim_t blockSize{ static_cast<hip_dim_member_t>(params.threads.value[0]),
+                         static_cast<hip_dim_member_t>(params.threads.value[1]),
+                         static_cast<hip_dim_member_t>(params.threads.value[2]) };
+
+    // Only launch kernel if we have something to iterate over
+    constexpr hip_dim_member_t zero = 0;
+    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
+         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
+
+      RAJA_FT_BEGIN;
+
+      RAJA::hip::detail::hipInfo launch_info;
+      launch_info.gridDim = gridSize;
+      launch_info.blockDim = blockSize;
+      launch_info.res = hip_res;
+      std::cout<<"HIP grid dim"<<std::endl;
+      std::cout<<launch_info.gridDim.x<<" "<<launch_info.gridDim.y<<" "<<launch_info.gridDim.z<<" "<<std::endl;
+      std::cout<<launch_info.blockDim.x<<" "<<launch_info.blockDim.y<<" "<<launch_info.blockDim.z<<" "<<std::endl;
+      {
+
+        using EXEC_POL = RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>;
+        RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params, launch_info);
+
+        //
+        // Privatize the loop_body, using make_launch_body to setup reductions
+        //
+        BODY body = RAJA::hip::make_launch_body(
+            gridSize, blockSize, params.shared_mem_size, hip_res, std::forward<BODY_IN>(body_in));
+
+        //
+        // Launch the kernel
+        //
+        void *args[] = {(void*)&body, (void*)&f_params};
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, params.shared_mem_size, hip_res, async, nullptr);
+
+
+        RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params, launch_info);
+
+      }
+
+      RAJA_FT_END;
+    }
+
+    //
+
   }
 
 };

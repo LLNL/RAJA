@@ -71,6 +71,9 @@ namespace hip
 template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE>
 struct IndexGlobal;
 
+template<typename ...indexers>
+struct IndexFlatten;
+
 }  // namespace hip
 
 namespace policy
@@ -82,7 +85,13 @@ template <typename _IterationMapping, kernel_sync_requirement sync, typename ...
 struct hip_indexer {};
 
 template <typename _IterationMapping, kernel_sync_requirement sync, typename ... _IterationGetters>
-struct hip_flatten_indexer {};
+struct hip_flatten_indexer : public RAJA::make_policy_pattern_launch_platform_t<
+  RAJA::Policy::hip,
+  RAJA::Pattern::region,
+  detail::get_launch<true /*async */>::value,
+  RAJA::Platform::hip> {
+  using IterationGetter = RAJA::hip::IndexFlatten<_IterationGetters...>;
+};
 
 template <typename _IterationMapping, typename _IterationGetter, bool Async = false>
 struct hip_exec : public RAJA::make_policy_pattern_launch_platform_t<
@@ -743,6 +752,70 @@ struct IndexGlobal<dim, named_usage::ignored, named_usage::ignored>
   }
 };
 
+// useful for flatten global index (includes x)
+template<typename x_index>
+struct IndexFlatten<x_index>
+{
+
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static inline IdxT index()
+  {
+
+    return x_index::template index<IdxT>();
+  }
+
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static inline IdxT size()
+  {
+    return  x_index::template size<IdxT>();
+  }
+
+};
+
+// useful for flatten global index (includes x,y)
+template<typename x_index, typename y_index>
+struct IndexFlatten<x_index, y_index>
+{
+
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static inline IdxT index()
+  {
+
+    return x_index::template index<IdxT>() +
+      x_index::template size<IdxT>() * ( y_index::template index<IdxT>());
+
+  }
+
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static inline IdxT size()
+  {
+    return  x_index::template size<IdxT>() * y_index::template size<IdxT> ();
+  }
+
+};
+
+// useful for flatten global index (includes x,y,z)
+template<typename x_index, typename y_index, typename z_index>
+struct IndexFlatten<x_index, y_index, z_index>
+{
+
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static inline IdxT index()
+  {
+
+    return x_index::template index<IdxT>() +
+      x_index::template size<IdxT>() * ( y_index::template index<IdxT>() +
+                                         y_index::template size<IdxT>() * z_index::template index<IdxT>());
+  }
+
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static inline IdxT size()
+  {
+    return  x_index::template size<IdxT>() * y_index::template size<IdxT> () * z_index::template size<IdxT> ();
+  }
+
+};
+
 // helper to get just the thread indexing part of IndexGlobal
 template < typename index_global >
 struct get_index_thread;
@@ -751,6 +824,14 @@ template < named_dim dim, int BLOCK_SIZE, int GRID_SIZE >
 struct get_index_thread<IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>
 {
   using type = IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>;
+};
+///
+template <typename x_index, typename y_index, typename z_index>
+struct get_index_thread<IndexFlatten<x_index, y_index, z_index>>
+{
+  using type = IndexFlatten<typename get_index_thread<x_index>::type,
+                            typename get_index_thread<y_index>::type,
+                            typename get_index_thread<z_index>::type>;
 };
 
 // helper to get just the block indexing part of IndexGlobal
@@ -761,6 +842,14 @@ template < named_dim dim, int BLOCK_SIZE, int GRID_SIZE >
 struct get_index_block<IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>
 {
   using type = IndexGlobal<dim, named_usage::ignored, GRID_SIZE>;
+};
+///
+template <typename x_index, typename y_index, typename z_index>
+struct get_index_block<IndexFlatten<x_index, y_index, z_index>>
+{
+  using type = IndexFlatten<typename get_index_block<x_index>::type,
+                            typename get_index_block<y_index>::type,
+                            typename get_index_block<z_index>::type>;
 };
 
 

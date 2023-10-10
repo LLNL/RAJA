@@ -41,9 +41,11 @@ template<typename launch_pol, typename loop_pol>
 
   int launch_seq_sum = 0;
 
+  const int no_teams = (N-1)/DEVICE_BLOCK_SIZE + 1;
+
   RAJA::launch_params<launch_pol>
-    (RAJA::LaunchParams(RAJA::Teams(1,1,1),
-                        RAJA::Threads(256)),
+    (RAJA::LaunchParams(RAJA::Teams(no_teams),
+                        RAJA::Threads(DEVICE_BLOCK_SIZE)),
      RAJA::expt::Reduce<RAJA::operators::plus>(&launch_seq_sum),
      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx, int &_seq_sum)
      {
@@ -162,11 +164,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   test_new_launch_code<omp_launch_pol, omp_loop_pol>(arange, a, N);
 #endif
 
+#if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n CUDA | Running new RAJA reductions with launch...\n";
+  using gpu_launch_pol = RAJA::LaunchPolicy<RAJA::cuda_launch_t<false>>;
+  using gpu_loop_pol = RAJA::LoopPolicy<RAJA::cuda_global_thread_x>;
+#endif
 
-  using cuda_launch_pol = RAJA::LaunchPolicy<RAJA::cuda_launch_t<false>>;
-  using cuda_loop_pol = RAJA::LoopPolicy<RAJA::cuda_global_thread_x>;
-  test_new_launch_code<cuda_launch_pol, cuda_loop_pol>(arange, a, N);
+#if defined(RAJA_ENABLE_HIP)
+  std::cout << "\n HIP | Running new RAJA reductions with launch...\n";
+  using gpu_launch_pol = RAJA::LaunchPolicy<RAJA::hip_launch_t<false>>;
+  using gpu_loop_pol = RAJA::LoopPolicy<RAJA::hip_global_thread_x>;
+#endif
+
+  test_new_launch_code<gpu_launch_pol, gpu_loop_pol>(arange, a, N);
 
 
 //

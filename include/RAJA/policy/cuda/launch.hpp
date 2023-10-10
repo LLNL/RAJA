@@ -118,7 +118,6 @@ void launch_global_fcn_fixed(BODY body_in)
 
 template <typename BODY, typename ForallParams>
 __global__ void launch_new_reduce_global_fcn(BODY body_in, ForallParams f_params)
-//__global__ void launch_new_reduce_global_fcn(BODY body_in)// ForallParams f_params)
 {
   LaunchContext ctx;
 
