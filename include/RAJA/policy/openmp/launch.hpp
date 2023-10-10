@@ -54,8 +54,6 @@ struct LaunchExecute<RAJA::omp_launch_t> {
   exec(LaunchParams const &params, ForallParam &&f_params, BODY const &body)
   {
 
-    std::cout<<"using new reducers openmp policy "<<std::endl;
-
     using EXEC_POL = RAJA::omp_launch_t;
 
     expt::ParamMultiplexer::init<EXEC_POL>(f_params);

@@ -226,9 +226,12 @@ void launch_params(LaunchParams const &params, FORALL_Params&&... forall_params)
   
   auto&& loop_body = expt::get_lambda(std::forward<FORALL_Params>(forall_params)...); 
 
-  
+  //Assume a single policy for now, run time support will come later
+
+  using Res = typename resources::get_resource<typename LAUNCH_POLICY::host_policy_t>::type;
+
   using launch_t = LaunchExecute<typename LAUNCH_POLICY::host_policy_t>;
-  launch_t::exec(params, f_params, loop_body);
+  launch_t::exec(Res::get_default(), params, f_params, loop_body);
   
 }
 
