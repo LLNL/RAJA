@@ -31,31 +31,35 @@
 /*
   Specify the number of threads in a GPU thread block
 */
-#if defined(RAJA_ENABLE_CUDA)
-constexpr int CUDA_BLOCK_SIZE = 256;
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)
+constexpr int DEVICE_BLOCK_SIZE = 256;
 #endif
 
 template<typename launch_pol, typename loop_pol>
-void test_new_launch_code(RAJA::TypedRangeSegment<int> arange, int *a, int N)
+ void test_new_launch_code(RAJA::TypedRangeSegment<int> arange, int *a, int N)
 {
 
   int launch_seq_sum = 0;
 
   RAJA::launch_params<launch_pol>
-    (RAJA::LaunchParams(), RAJA::expt::Reduce<RAJA::operators::plus>(&launch_seq_sum),
+    (RAJA::LaunchParams(RAJA::Teams(1,1,1),
+                        RAJA::Threads(256)),
+     RAJA::expt::Reduce<RAJA::operators::plus>(&launch_seq_sum),
      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx, int &_seq_sum)
      {
 
-       RAJA::loop<loop_pol>(ctx, arange, [&] (int i) {
+       RAJA::loop<loop_pol>(ctx, RAJA::TypedRangeSegment<int>(0,N), [&] (int i) {
            _seq_sum += a[i];
-         });
+       });
 
-       RAJA::loop<loop_pol>(ctx, arange, [&] (int i) {
-           _seq_sum += 1.0;
-         });
+        RAJA::loop<loop_pol>(ctx, RAJA::RangeSegment(0,N), [&]  (int i) {
+            _seq_sum += 1.0;
+        });
+
      });
 
-  std::cout << "expected sum N = "<< N <<" | launch tsum = " << launch_seq_sum << std::endl;
+
+  std::cout << "test code: expected sum N = "<< N <<" | launch tsum = " << launch_seq_sum << std::endl;
 
 
 }
@@ -142,7 +146,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
-
+#if 0
   std::cout << "\n Seq | Running new RAJA reductions with launch...\n";
 
   using seq_launch_pol = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
@@ -150,19 +154,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   test_new_launch_code<seq_launch_pol, seq_loop_pol>(arange, a, N);
 
-
   std::cout << "\n OMP | Running new RAJA reductions with launch...\n";
 
   using omp_launch_pol = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
   using omp_loop_pol = RAJA::LoopPolicy<RAJA::omp_for_exec>;
 
   test_new_launch_code<omp_launch_pol, omp_loop_pol>(arange, a, N);
+#endif
 
   std::cout << "\n CUDA | Running new RAJA reductions with launch...\n";
 
-  //using CUDA_launch_pol = RAJA::LaunchPolicy<RAJA::cuda_launch_t>;
-  //using CUDA_loop_pol = RAJA::LoopPolicy<RAJA::cuda_for_exec>;
-  //test_new_launch_code<omp_launch_pol, omp_loop_pol>(arange, a);
+  using cuda_launch_pol = RAJA::LaunchPolicy<RAJA::cuda_launch_t<false>>;
+  using cuda_loop_pol = RAJA::LoopPolicy<RAJA::cuda_global_thread_x>;
+  test_new_launch_code<cuda_launch_pol, cuda_loop_pol>(arange, a, N);
 
 
 //
