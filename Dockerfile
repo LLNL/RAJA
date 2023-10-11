@@ -108,7 +108,7 @@ RUN . /opt/spack/share/spack/setup-env.sh && export LD_LIBRARY_PATH=/opt/view/li
 ##    make -j 6 && \
 ##    cd .. && rm -rf build
 
-FROM ghcr.io/rse-ops/intel-ubuntu-22.04:intel-2022.1.0 AS sycl
+FROM ghcr.io/rse-ops/intel-ubuntu-22.04:intel-2023.2.1 AS sycl
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
