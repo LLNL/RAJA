@@ -49,7 +49,11 @@ variables:
   GITHUB_PROJECT_NAME: "RAJA"
   GITHUB_PROJECT_ORG: "LLNL"
 # Set the build-and-test command.
-  JOB_CMD: "./scripts/gitlab/build_and_test.sh"
+# Nested variables are allowed and useful to customize the job command. We
+# prevent variable expansion so that you can define them at job level.
+  JOB_CMD:
+    value: "./scripts/gitlab/build_and_test.sh"
+    expand: false
 # Override the pattern describing branches that will skip the "draft PR filter
 # test".  Add protected branches here. See default value in
 # preliminary-ignore-draft-pr.yml.
