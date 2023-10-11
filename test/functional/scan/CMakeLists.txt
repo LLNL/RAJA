@@ -11,10 +11,6 @@ if(RAJA_ENABLE_OPENMP)
   list(APPEND SCAN_BACKENDS OpenMP)
 endif()
 
-if(RAJA_ENABLE_TBB)
-  list(APPEND SCAN_BACKENDS TBB)
-endif()
-
 if(RAJA_ENABLE_CUDA)
   list(APPEND SCAN_BACKENDS Cuda)
 endif()

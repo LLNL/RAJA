@@ -17,8 +17,6 @@ fi
 COMP_VER=$1
 shift 1
 
-USE_TBB=Off
-
 BUILD_SUFFIX=lc_toss4-icpx-${COMP_VER}
 
 echo
@@ -44,7 +42,6 @@ cmake \
   -DBLT_CXX_STD=c++14 \
   -C ../host-configs/lc-builds/toss4/icpx_X.cmake \
   -DENABLE_OPENMP=On \
-  -DRAJA_ENABLE_TBB=${USE_TBB} \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

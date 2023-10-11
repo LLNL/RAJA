@@ -15,20 +15,6 @@ if (RAJA_ENABLE_OPENMP)
   endif()
 endif()
 
-if (RAJA_ENABLE_TBB)
-  find_package(TBB)
-  if(TBB_FOUND)
-    blt_register_library(
-      NAME tbb
-      INCLUDES ${TBB_INCLUDE_DIRS}
-      LIBRARIES ${TBB_LIBRARIES})
-    message(STATUS "TBB Enabled")
-  else()
-    message(WARNING "TBB NOT FOUND")
-    set(RAJA_ENABLE_TBB Off CACHE BOOL "" FORCE)
-  endif()
-endif ()
-
 if (RAJA_ENABLE_CUDA)
   if (RAJA_ENABLE_EXTERNAL_CUB STREQUAL "VersionDependent")
     if (CUDA_VERSION_STRING VERSION_GREATER_EQUAL "11.0")

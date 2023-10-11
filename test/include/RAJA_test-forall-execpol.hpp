@@ -93,20 +93,6 @@ using OpenMPForallAtomicExecPols =
 
 #endif  // RAJA_ENABLE_OPENMP
 
-#if defined(RAJA_ENABLE_TBB)
-using TBBForallExecPols = camp::list< RAJA::tbb_for_exec,
-                                      RAJA::tbb_for_static< >,
-                                      RAJA::tbb_for_static< 2 >,
-                                      RAJA::tbb_for_static< 4 >,
-                                      RAJA::tbb_for_static< 8 >,
-                                      RAJA::tbb_for_dynamic >;
-
-using TBBForallReduceExecPols = TBBForallExecPols;
-
-using TBBForallAtomicExecPols = TBBForallExecPols;
-
-#endif
-
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OpenMPTargetForallExecPols =
   camp::list< RAJA::omp_target_parallel_for_exec<8>,

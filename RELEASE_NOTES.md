@@ -20,6 +20,28 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
+Version 2024.MM.PP -- Release date 2024-mm-dd
+============================================
+
+This release contains ...
+
+Notable changes include:
+
+  * New features / API changes:
+     * BREAKING CHANGE: The loop_exec and associated policies such as 
+       loop_atomic, loop_reduce, etc. have been removed. They were deprecated 
+       in the v2023.06.0 release (please see the release notes for that 
+       version for details). Users should replace these with `seq_exec` and 
+       associated policies for sequential CPU execution.
+     * BREAKING CHANGE: RAJA TBB back-end support has been removed. It was 
+       not feature complete and the TBB API has changed so that the code no 
+       longer compiles with newer Intel compilers. 
+
+  * Build changes/improvements:
+
+  * Bug fixes/improvements:
+
+
 Version 2023.06.1 -- Release date 2023-08-16
 ============================================
 

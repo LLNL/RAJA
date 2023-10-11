@@ -19,16 +19,10 @@ shift 1
 
 COMP_MAJOR_VER=${COMP_VER:0:2}
 GCC_HEADER_VER=7
-USE_TBB=Off
 
 if [ ${COMP_MAJOR_VER} -gt 18 ]
 then
   GCC_HEADER_VER=8
-fi
-
-if [ ${COMP_MAJOR_VER} -lt 18 ]
-then
-  USE_TBB=Off
 fi
 
 BUILD_SUFFIX=lc_toss3-icpc-${COMP_VER}
@@ -57,7 +51,6 @@ cmake \
   -C ../host-configs/lc-builds/toss3/icpc_X_gcc${GCC_HEADER_VER}headers.cmake \
   -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off \
   -DENABLE_OPENMP=On \
-  -DRAJA_ENABLE_TBB=${USE_TBB} \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
