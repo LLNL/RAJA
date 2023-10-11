@@ -8,7 +8,7 @@
 # The template job to test whether a machine is up.
 # Expects CI_MACHINE defined to machine name.
 .machine-check:
-  stage: machine-checks
+  stage: prerequisites
   tags: [shell, oslic]
   variables:
     GIT_STRATEGY: none
@@ -29,6 +29,25 @@
 # Comment the jobs for machines you don’t need.
 ###
 
+# One job to generate the job list for all the subpipelines
+generate-job-lists:
+  stage: prerequisites
+  tags: [shell, oslic]
+  variables:
+    RADIUSS_JOBS_PATH: "scripts/radiuss-spack-configs/gitlab/radiuss-jobs"
+    LOCAL_JOBS_PATH: ".gitlab/jobs"
+  script:
+    - cat ${RADIUSS_JOBS_PATH}/ruby.yml ${LOCAL_JOBS_PATH}/ruby.yml > ruby-jobs.yml
+    - cat ${RADIUSS_JOBS_PATH}/lassen.yml ${LOCAL_JOBS_PATH}/lassen.yml > lassen-jobs.yml
+    - cat ${RADIUSS_JOBS_PATH}/corona.yml ${LOCAL_JOBS_PATH}/corona.yml > corona-jobs.yml
+    - cat ${RADIUSS_JOBS_PATH}/tioga.yml ${LOCAL_JOBS_PATH}/tioga.yml > tioga-jobs.yml
+  artifacts:
+    paths:
+      - ruby-jobs.yml
+      - lassen-jobs.yml
+      - corona-jobs.yml
+      - tioga-jobs.yml
+
 # RUBY
 ruby-up-check:
   variables:
@@ -38,7 +57,7 @@ ruby-up-check:
 ruby-build-and-test:
   variables:
     CI_MACHINE: "ruby"
-  needs: [ruby-up-check]
+  needs: [ruby-up-check, generate-job-lists]
   extends: [.build-and-test]
 
 # CORONA
@@ -50,7 +69,7 @@ corona-up-check:
 corona-build-and-test:
   variables:
     CI_MACHINE: "corona"
-  needs: [corona-up-check]
+  needs: [corona-up-check, generate-job-lists]
   extends: [.build-and-test]
 
 # TIOGA
@@ -62,7 +81,7 @@ tioga-up-check:
 tioga-build-and-test:
   variables:
     CI_MACHINE: "tioga"
-  needs: [tioga-up-check]
+  needs: [tioga-up-check, generate-job-lists]
   extends: [.build-and-test]
 
 # LASSEN
@@ -74,7 +93,7 @@ lassen-up-check:
 lassen-build-and-test:
   variables:
     CI_MACHINE: "lassen"
-  needs: [lassen-up-check]
+  needs: [lassen-up-check, generate-job-lists]
   extends: [.build-and-test]
 
 

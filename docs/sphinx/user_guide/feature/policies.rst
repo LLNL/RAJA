@@ -49,21 +49,19 @@ apply during code compilation.
  ====================================== ============= ==========================
  seq_launch_t                           launch        Creates a sequential
                                                       execution space.
- seq_exec                               forall,       Strictly sequential
-                                        kernel (For), execution.
-                                        scan,
-                                        sort
+ seq_exec                               forall,       Sequential execution,
+                                        kernel (For), where the compiler is
+                                        scan,         allowed to apply any
+                                        sort          any optimizations
+                                                      that its heuristics deem
+                                                      beneficial; i.e., no loop
+                                                      decorations (pragmas or 
+                                                      intrinsics) in the RAJA
+                                                      implementation.
  simd_exec                              forall,       Try to force generation of
                                         kernel (For), SIMD instructions via
                                         scan          compiler hints in RAJA's
                                                       internal implementation.
- loop_exec                              forall,       Allow the compiler to
-                                        kernel (For), generate any optimizations
-                                        scan,         that its heuristics deem
-                                        sort          beneficial;
-                                                      i.e., no loop decorations
-                                                      (pragmas or intrinsics) in
-                                                      RAJA implementation.
  ====================================== ============= ==========================
 
 
@@ -230,43 +228,6 @@ a template argument as described above.
           exits. In this example, this is not really needed since there is no
           more code to execute in the parallel region and there is an implicit
           barrier at the end of it.
-
-Threading Building Block (TBB) Parallel CPU Policies
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-RAJA provides a basic set of TBB execution policies for use with the
-RAJA TBB back-end, which supports a subset of RAJA features.
-
- ====================================== ============= ==========================
- Threading Building Blocks Policies     Works with    Brief description
- ====================================== ============= ==========================
- tbb_for_exec                           forall,       Execute loop iterations.
-                                        kernel (For), as tasks in parallel using
-                                        scan          TBB ``parallel_for``
-                                                      method.
- tbb_for_static<CHUNK_SIZE>             forall,       Same as above, but use.
-                                        kernel (For), a static scheduler with
-                                        scan          given chunk size.
- tbb_for_dynamic                        forall,       Same as above, but use
-                                        kernel (For), a dynamic scheduler.
-                                        scan
- ====================================== ============= ==========================
-
-.. note:: To control the number of TBB worker threads used by these policies:
-          set the value of the environment variable 'TBB_NUM_WORKERS' (which is
-          fixed for duration of run), or create a 'task_scheduler_init' object::
-
-            tbb::task_scheduler_init TBBinit( nworkers );
-
-            // do some parallel work
-
-            TBBinit.terminate();
-            TBBinit.initialize( new_nworkers );
-
-            // do some more parallel work
-
-          This allows changing number of workers at run time.
-
 
 GPU Policies for CUDA and HIP
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -668,11 +629,6 @@ omp_parallel_segit                     Create OpenMP parallel region and
                                        iterate over segments in parallel inside                                        it; i.e., apply ``omp parallel for``
                                        pragma on loop over segments.
 omp_parallel_for_segit                 Same as above.
-
-**Intel Threading Building Blocks**
-tbb_segit                              Iterate over index set segments in
-                                       parallel using a TBB 'parallel_for'
-                                       method.
 ====================================== =========================================
 
 -------------------------
@@ -686,11 +642,11 @@ surround code that uses execution back-ends other than OpenMP. For example::
 
   RAJA::region<RAJA::seq_region>([=]() {
 
-     RAJA::forall<RAJA::loop_exec>(segment, [=] (int idx) {
+     RAJA::forall<RAJA::seq_exec>(segment, [=] (int idx) {
          // do something at iterate 'idx'
      } );
 
-     RAJA::forall<RAJA::loop_exec>(segment, [=] (int idx) {
+     RAJA::forall<RAJA::seq_exec>(segment, [=] (int idx) {
          // do something else at iterate 'idx'
      } );
 
@@ -725,15 +681,12 @@ Reduction Policy        Loop Policies Brief description
                         to Use With
 ======================= ============= ==========================================
 seq_reduce              seq_exec,     Non-parallel (sequential) reduction.
-                        loop_exec
 omp_reduce              any OpenMP    OpenMP parallel reduction.
                         policy
 omp_reduce_ordered      any OpenMP    OpenMP parallel reduction with result
                         policy        guaranteed to be reproducible.
 omp_target_reduce       any OpenMP    OpenMP parallel target offload reduction.
                         target policy
-tbb_reduce              any TBB       TBB parallel reduction.
-                        policy
 cuda/hip_reduce         any CUDA/HIP  Parallel reduction in a CUDA/HIP kernel
                         policy        (device synchronization will occur when
                                       reduction value is finalized).
@@ -766,7 +719,7 @@ Atomic Policy                 Loop Policies Brief description
                               to Use With
 ============================= ============= ========================================
 seq_atomic                    seq_exec,     Atomic operation performed in a
-                              loop_exec     non-parallel (sequential) kernel.
+                                            non-parallel (sequential) kernel.
 omp_atomic                    any OpenMP    Atomic operation in OpenM kernel.P
                               policy        multithreading or target kernel;
                                             i.e., apply ``omp atomic`` pragma.
@@ -781,14 +734,12 @@ cuda/hip_atomic_explicit      any CUDA/HIP  Atomic operation performed in a CUDA
                                             argument. See additional explanation
                                             and example below.
 builtin_atomic                seq_exec,     Compiler *builtin* atomic operation.
-                              loop_exec,
                               any OpenMP
                               policy
-auto_atomic                   seq_exec,     Atomic operation *compatible* with loop
-                              loop_exec,    execution policy. See example below.
-                              any OpenMP    Can not be used inside cuda/hip
-                              policy,       explicit atomic policies.
-                              any
+auto_atomic                   seq_exec,     Atomic operation *compatible* with 
+                              any OpenMP    loop execution policy. See example 
+                              policy,       below. Cannot be used inside CUDA or
+                              any           HIP explicit atomic policies. 
                               CUDA/HIP/SYCL
                               policy
 ============================= ============= ========================================
@@ -827,11 +778,8 @@ context and the CUDA atomic operation is applied. Similarly, if an OpenMP
 execution policy was used, the OpenMP version of the atomic operation would
 be used.
 
-.. note:: * There are no RAJA atomic policies for TBB (Intel Threading Building
-            Blocks) execution contexts since reductions are not supported
-            for the RAJA TBB back-end.
-          * The ``builtin_atomic`` policy may be preferable to the
-            ``omp_atomic`` policy in terms of performance.
+.. note:: The ``builtin_atomic`` policy may be preferable to the
+          ``omp_atomic`` policy in terms of performance.
 
 .. _localarraypolicy-label:
 

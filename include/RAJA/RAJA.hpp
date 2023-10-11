@@ -58,20 +58,11 @@
 #include "RAJA/policy/sequential.hpp"
 
 //
-// All platforms must support loop execution.
-//
-#include "RAJA/policy/loop.hpp"
-
-//
 // All platforms should support simd and vector execution.
 //
 #include "RAJA/policy/simd.hpp"
 #if defined(RAJA_ENABLE_VECTORIZATION)
 #include "RAJA/policy/tensor.hpp"
-#endif
-
-#if defined(RAJA_ENABLE_TBB)
-#include "RAJA/policy/tbb.hpp"
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -123,6 +114,7 @@
 #include "RAJA/util/OffsetLayout.hpp"
 #include "RAJA/util/PermutedLayout.hpp"
 #include "RAJA/util/StaticLayout.hpp"
+#include "RAJA/util/IndexLayout.hpp"
 #include "RAJA/util/View.hpp"
 
 

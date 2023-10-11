@@ -22,10 +22,6 @@ using DataTypeList = camp::list< int,
 
 using SequentialReducerPolicyList = camp::list< RAJA::seq_reduce >;
 
-#if defined(RAJA_ENABLE_TBB)
-using TBBReducerPolicyList = camp::list< RAJA::tbb_reduce >;
-#endif
-
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPReducerPolicyList = camp::list< RAJA::omp_reduce,
                                             RAJA::omp_reduce_ordered >;

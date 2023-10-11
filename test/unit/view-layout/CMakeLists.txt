@@ -24,3 +24,7 @@ raja_add_test(
 raja_add_test(
   NAME test-multiview
   SOURCES test-multiview.cpp)
+
+raja_add_test(
+  NAME test-indexlayout
+  SOURCES test-indexlayout.cpp)
