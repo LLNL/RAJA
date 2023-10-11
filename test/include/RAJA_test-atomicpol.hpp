@@ -55,19 +55,6 @@ using OpenMPAtomicPols =
             >;
 #endif  // RAJA_ENABLE_OPENMP
 
-#if defined(RAJA_ENABLE_TBB)
-using TBBAtomicPols =
-  camp::list<
-#if defined(RAJA_ENABLE_CUDA)
-              RAJA::cuda_atomic_explicit<RAJA::builtin_atomic>,
-#endif
-#if defined(RAJA_ENABLE_HIP)
-              RAJA::hip_atomic_explicit<RAJA::builtin_atomic>,
-#endif
-              RAJA::builtin_atomic
-            >;
-#endif  // RAJA_ENABLE_TBB
-
 #if defined(RAJA_ENABLE_CUDA)
 using CudaAtomicPols =
   camp::list<

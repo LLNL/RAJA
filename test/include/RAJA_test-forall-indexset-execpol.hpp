@@ -35,30 +35,6 @@ using OpenMPForallIndexSetReduceExecPols =
               RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> >;
 #endif
 
-#if defined(RAJA_ENABLE_TBB)
-using TBBForallIndexSetExecPols = 
-  camp::list< RAJA::ExecPolicy<RAJA::tbb_for_exec, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::tbb_for_exec, RAJA::simd_exec>,
-              RAJA::ExecPolicy<RAJA::tbb_for_dynamic, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::tbb_for_dynamic, RAJA::simd_exec>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_exec>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< >>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< 2 >>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< 4 >>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< 8 >>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_dynamic> >;
-
-using TBBForallIndexSetReduceExecPols =
-  camp::list< RAJA::ExecPolicy<RAJA::tbb_for_exec, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::tbb_for_dynamic, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_exec>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< >>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< 2 >>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< 4 >>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< 8 >>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_dynamic> >;
-#endif
-
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OpenMPTargetForallIndexSetExecPols =
   camp::list< RAJA::ExecPolicy<RAJA::seq_segit,

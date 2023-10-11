@@ -121,50 +121,6 @@ using OpenMPTargetKernelLocForallPols =
 
 #endif  // RAJA_ENABLE_TARGET_OPENMP
 
-#if defined(RAJA_ENABLE_TBB)
-
-using TBBKernelLocExecPols =
-  camp::list<
-
-    RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::tbb_for_exec,  // row
-        RAJA::statement::For<0, RAJA::tbb_for_exec,  // col
-          RAJA::statement::Lambda<0>
-        >
-      >
-    >,
-
-    RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::tbb_for_exec,  // row
-        RAJA::statement::For<0, RAJA::seq_exec,  // col
-          RAJA::statement::Lambda<0>
-        >
-      >
-    >
-
-    // TODO: This produces inaccurate loc reductions for gcc 6 and 4.9.3.
-    //RAJA::KernelPolicy<
-    //  RAJA::statement::For<1, RAJA::seq_exec,  // row
-    //    RAJA::statement::For<0, RAJA::tbb_for_exec,  // col
-    //      RAJA::statement::Lambda<0>
-    //    >
-    //  >
-    //>
-
-  >;
-
-using TBBKernelLocReducePols =
-  camp::list<
-    RAJA::tbb_reduce
-  >;
-
-using TBBKernelLocForallPols =
-  camp::list<
-    RAJA::tbb_for_exec
-  >;
-
-#endif  // RAJA_ENABLE_TBB
-
 #if defined(RAJA_ENABLE_CUDA)
 
 using CudaKernelLocExecPols =

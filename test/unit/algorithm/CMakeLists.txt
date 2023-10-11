@@ -11,10 +11,6 @@ if(RAJA_ENABLE_OPENMP)
   list(APPEND SORT_BACKENDS OpenMP)
 endif()
 
-if(RAJA_ENABLE_TBB)
-  list(APPEND SORT_BACKENDS TBB)
-endif()
-
 if(RAJA_ENABLE_CUDA)
   list(APPEND SORT_BACKENDS Cuda)
 endif()

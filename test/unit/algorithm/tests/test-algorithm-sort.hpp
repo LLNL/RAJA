@@ -99,16 +99,6 @@ using OpenMPSortSorters =
 
 #endif
 
-#if defined(RAJA_ENABLE_TBB)
-
-using TBBSortSorters =
-  camp::list<
-              PolicySort<RAJA::tbb_for_exec>,
-              PolicySortPairs<RAJA::tbb_for_exec>
-            >;
-
-#endif
-
 #if defined(RAJA_ENABLE_CUDA)
 
 using CudaSortSorters =

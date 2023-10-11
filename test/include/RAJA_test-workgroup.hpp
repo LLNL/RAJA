@@ -342,16 +342,6 @@ using SequentialStoragePolicyList =
                 RAJA::constant_stride_array_of_objects
               >;
 
-#if defined(RAJA_ENABLE_TBB)
-using TBBExecPolicyList =
-    camp::list<
-                RAJA::tbb_work
-              >;
-using TBBOrderedPolicyList = SequentialOrderedPolicyList;
-using TBBOrderPolicyList   = SequentialOrderPolicyList;
-using TBBStoragePolicyList = SequentialStoragePolicyList;
-#endif
-
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPExecPolicyList =
     camp::list<
@@ -426,10 +416,6 @@ using DirectDispatchTyperList = camp::list<detail::direct_dispatch_typer>;
 using HostAllocatorList = camp::list<typename detail::ResourceAllocator<camp::resources::Host>::template std_allocator<char>>;
 
 using SequentialAllocatorList = HostAllocatorList;
-
-#if defined(RAJA_ENABLE_TBB)
-using TBBAllocatorList = HostAllocatorList;
-#endif
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPAllocatorList = HostAllocatorList;

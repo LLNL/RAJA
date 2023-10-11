@@ -93,37 +93,6 @@ using OpenMPKernelTileTCountExecPols = camp::list<
 >;
 #endif  // if defined(RAJA_ENABLE_OPENMP)
 
-#if defined(RAJA_ENABLE_TBB)
-//
-// Num reduction policies must match num exec policies.
-//
-using TBBReducePols = camp::list< RAJA::tbb_reduce >; 
-
-using TBBKernelForICountExecPols = camp::list< 
-
-  RAJA::KernelPolicy<
-    RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::seq_exec,
-      RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::tbb_for_exec,
-        RAJA::statement::Lambda<0>
-      >
-    >
-  >
-
->;
-
-using TBBKernelTileTCountExecPols = camp::list<
-
-  RAJA::KernelPolicy<
-    RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::seq_exec,
-      RAJA::statement::For<0, RAJA::tbb_for_exec,
-        RAJA::statement::Lambda<0>
-      >
-    >
-  >
-   
->;
-#endif  // if defined(RAJA_ENABLE_TBB)
-
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 //
 // Num reduction policies must match num exec policies.
