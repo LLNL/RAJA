@@ -33,10 +33,6 @@ using SequentialPlatformList = HostPlatformList;
 using OpenMPPlatformList = HostPlatformList;
 #endif
 
-#if defined(RAJA_ENABLE_TBB)
-using TBBPlatformList = HostPlatformList;
-#endif
-
 #if defined(RAJA_ENABLE_CUDA)
 using CudaPlatformList = camp::list<PlatformHolder<RAJA::Platform::cuda>>;
 #endif
