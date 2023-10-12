@@ -40,21 +40,19 @@ template<typename launch_pol, typename loop_pol>
 {
 
   int launch_seq_sum = 0;
-
   const int no_teams = (N-1)/DEVICE_BLOCK_SIZE + 1;
 
   RAJA::launch_params<launch_pol>
-    (RAJA::LaunchParams(RAJA::Teams(no_teams),
-                        RAJA::Threads(DEVICE_BLOCK_SIZE)),
+    (RAJA::LaunchParams(RAJA::Teams(no_teams),RAJA::Threads(DEVICE_BLOCK_SIZE)),
      RAJA::expt::Reduce<RAJA::operators::plus>(&launch_seq_sum),
      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx, int &_seq_sum)
-     {
+      {
 
-       RAJA::loop<loop_pol>(ctx, RAJA::TypedRangeSegment<int>(0,N), [&] (int i) {
+       RAJA::loop<loop_pol>(ctx, arange, [&] (int i) {
            _seq_sum += a[i];
        });
 
-        RAJA::loop<loop_pol>(ctx, RAJA::RangeSegment(0,N), [&]  (int i) {
+        RAJA::loop<loop_pol>(ctx, arange, [&]  (int i) {
             _seq_sum += 1.0;
         });
 
