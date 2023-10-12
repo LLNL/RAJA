@@ -79,7 +79,7 @@ loop.
                                         try to force generation of SIMD
                                         instructions via compiler hints in RAJA
                                         internal implementation.
- loop_work                              Execute loop iterations sequentially and
+ seq_work                               Execute loop iterations sequentially and
                                         allow compiler to generate any
                                         optimizations.
  omp_work                               Execute loop iterations in parallel
