@@ -26,6 +26,10 @@
 
 #include <CL/sycl.hpp>
 
+#if !defined(RAJA_ENABLE_DESUL_ATOMICS)
+    #include "RAJA/policy/sycl/atomic.hpp"
+#endif
+
 #include "RAJA/policy/sycl/forall.hpp"
 #include "RAJA/policy/sycl/policy.hpp"
 #include "RAJA/policy/sycl/reduce.hpp"
