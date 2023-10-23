@@ -82,7 +82,8 @@ struct PinnedAllocator {
     return ptr;
   }
 
-  // returns true on success, false on failure
+  // returns true on success
+  // Will throw if ptr is not in q's context
   bool free(void* ptr)
   {
     ::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
@@ -103,7 +104,8 @@ struct DeviceAllocator {
     return ptr;
   }
 
-  // returns true on success, false on failure
+  // returns true on success
+  // Will throw if ptr is not in q's context
   bool free(void* ptr)
   {
     ::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
@@ -126,7 +128,8 @@ struct DeviceZeroedAllocator {
     return ptr;
   }
 
-  // returns true on success, false on failure
+  // Returns true on success
+  // Will throw if ptr is not in q's context
   bool free(void* ptr)
   {
     ::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
