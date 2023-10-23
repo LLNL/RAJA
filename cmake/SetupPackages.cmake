@@ -98,14 +98,8 @@ blt_list_append(TO TPL_DEPS ELEMENTS cub IF RAJA_ENABLE_EXTERNAL_CUB)
 blt_list_append(TO TPL_DEPS ELEMENTS rocPRIM IF RAJA_ENABLE_EXTERNAL_ROCPRIM)
 blt_list_append(TO TPL_DEPS ELEMENTS roctx IF RAJA_ENABLE_ROCTX)
 
-set(RAJA_NEEDS_BLT_TPLS False)
-if (RAJA_ENABLE_CUDA OR RAJA_ENABLE_HIP OR RAJA_ENABLE_OPENMP OR RAJA_ENABLE_MPI)
-  set(RAJA_NEEDS_BLT_TPLS True)
-endif ()
-
-if (RAJA_NEEDS_BLT_TPLS)
-  blt_install_tpl_setups(DESTINATION lib/cmake/raja)
-endif ()
+# Install setup cmake files to allow users to configure TPL targets at configuration time.
+blt_install_tpl_setups(DESTINATION lib/cmake/raja)
 
 foreach(dep ${TPL_DEPS})
     # If the target is EXPORTABLE, add it to the export set
