@@ -38,12 +38,14 @@ generate-job-lists:
     LOCAL_JOBS_PATH: ".gitlab/jobs"
   script:
     - cat ${RADIUSS_JOBS_PATH}/ruby.yml ${LOCAL_JOBS_PATH}/ruby.yml > ruby-jobs.yml
+    - cat ${RADIUSS_JOBS_PATH}/poodle.yml ${LOCAL_JOBS_PATH}/poodle.yml > poodle-jobs.yml
     - cat ${RADIUSS_JOBS_PATH}/lassen.yml ${LOCAL_JOBS_PATH}/lassen.yml > lassen-jobs.yml
     - cat ${RADIUSS_JOBS_PATH}/corona.yml ${LOCAL_JOBS_PATH}/corona.yml > corona-jobs.yml
     - cat ${RADIUSS_JOBS_PATH}/tioga.yml ${LOCAL_JOBS_PATH}/tioga.yml > tioga-jobs.yml
   artifacts:
     paths:
       - ruby-jobs.yml
+      - poodle-jobs.yml
       - lassen-jobs.yml
       - corona-jobs.yml
       - tioga-jobs.yml
@@ -58,6 +60,18 @@ ruby-build-and-test:
   variables:
     CI_MACHINE: "ruby"
   needs: [ruby-up-check, generate-job-lists]
+  extends: [.build-and-test]
+
+# POODLE
+poodle-up-check:
+  variables:
+    CI_MACHINE: "poodle"
+  extends: [.machine-check]
+
+poodle-build-and-test:
+  variables:
+    CI_MACHINE: "poodle"
+  needs: [poodle-up-check, generate-job-lists]
   extends: [.build-and-test]
 
 # CORONA
