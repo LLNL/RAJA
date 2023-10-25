@@ -15,7 +15,7 @@
 # Overriding shared spec: Longer allocation + extra flags
 xl_2022_08_19_gcc_8_3_1_cuda_11_2_0:
   variables:
-    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda cxxflags==\"-qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" %xl@16.1.1.12.gcc.8.3.1 ^cuda@11.2.0+allow-unsupported-compilers ${PROJECT_LASSEN_DEPS}"
+    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda cxxflags==\"-qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" %xl@16.1.1.12.gcc.8.3.1 ^cuda@11.2.0+allow-unsupported-compilers ${PROJECT_LASSEN_DEPS} ^blt@git.a7f0a6ecc4fdfa1724399b1454c3909b9ee02e81=develop"
     MODULE_LIST: "cuda/11.2.0"
     LASSEN_JOB_ALLOC: "1 -W 120"
   extends: .job_on_lassen
@@ -30,13 +30,13 @@ xl_2022_08_19_gcc_8_3_1_cuda_11_2_0:
 
 gcc_8_3_1_omptask:
   variables:
-    SPEC: " ~shared +openmp +omptask +tests %gcc@8.3.1"
+    SPEC: " ~shared +openmp +omptask +tests %gcc@8.3.1 ^blt@git.a7f0a6ecc4fdfa1724399b1454c3909b9ee02e81=develop"
   extends: .job_on_lassen
 
 gcc_8_3_1_cuda_11_5_0_ats_disabled:
   extends: .job_on_lassen
   variables:
-    SPEC: " ~shared +openmp +tests +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0+allow-unsupported-compilers"
+    SPEC: " ~shared +openmp +tests +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0+allow-unsupported-compilers ^blt@git.a7f0a6ecc4fdfa1724399b1454c3909b9ee02e81=develop"
     MODULE_LIST: "cuda/11.5.0"
     LASSEN_JOB_ALLOC: "1 --atsdisable -W 60"
 
@@ -46,7 +46,7 @@ gcc_8_3_1_cuda_11_5_0_ats_disabled:
 
 clang_13_0_1_libcpp:
   variables:
-    SPEC: " ~shared +openmp +tests %clang@13.0.1 cflags==\"-DGTEST_HAS_CXXABI_H_=0\" cxxflags==\"-stdlib=libc++ -DGTEST_HAS_CXXABI_H_=0\""
+    SPEC: " ~shared +openmp +tests %clang@13.0.1 cflags==\"-DGTEST_HAS_CXXABI_H_=0\" cxxflags==\"-stdlib=libc++ -DGTEST_HAS_CXXABI_H_=0\" ^blt@git.a7f0a6ecc4fdfa1724399b1454c3909b9ee02e81=develop"
   extends: .job_on_lassen
 
 #clang_14_0_5_asan:
@@ -58,5 +58,5 @@ clang_13_0_1_libcpp:
 
 gcc_8_3_1_cuda_10_1_243_desul_atomics:
   variables:
-    SPEC: " ~shared +openmp +tests +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.243+allow-unsupported-compilers"
+    SPEC: " ~shared +openmp +tests +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.243+allow-unsupported-compilers ^blt@git.a7f0a6ecc4fdfa1724399b1454c3909b9ee02e81=develop"
   extends: .job_on_lassen
