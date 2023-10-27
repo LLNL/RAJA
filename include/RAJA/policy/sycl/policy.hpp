@@ -68,7 +68,7 @@ namespace sycl
 //
 //////////////////////////////////////////////////////////////////////
 
-template <size_t BLOCK_SIZE, bool Async = true>
+template <size_t BLOCK_SIZE, bool Async = false>
 struct sycl_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Policy::sycl,
                        RAJA::Pattern::forall,

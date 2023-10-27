@@ -36,7 +36,7 @@ cmake \
   -DCMAKE_LINKER=clang++ \
   -DCMAKE_CXX_STANDARD=17 \
   -DBLT_CXX_STD=c++17 \
-  -DENABLE_TESTS=Off \
+  -DENABLE_TESTS=On \
   -DENABLE_EXAMPLES=On \
   "$@" \
   ..
