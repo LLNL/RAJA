@@ -16,8 +16,6 @@ fi
 COMP_VER=$1
 shift 1
 
-USE_TBB=Off
-
 BUILD_SUFFIX=lc_toss3-oneapi-${COMP_VER}
 
 echo
@@ -46,7 +44,6 @@ cmake \
   -C ../host-configs/lc-builds/toss3/oneapi_X.cmake \
   -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off \
   -DENABLE_OPENMP=On \
-  -DRAJA_ENABLE_TBB=${USE_TBB} \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

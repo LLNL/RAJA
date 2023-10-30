@@ -26,10 +26,6 @@ using SequentialResourceList = HostResourceList;
 using OpenMPResourceList = HostResourceList;
 #endif
 
-#if defined(RAJA_ENABLE_TBB)
-using TBBResourceList = HostResourceList;
-#endif
-
 #if defined(RAJA_ENABLE_CUDA)
 using CudaResourceList = camp::list<camp::resources::Cuda>;
 #endif

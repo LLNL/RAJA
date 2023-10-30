@@ -13,16 +13,6 @@ raja_add_test(
   NAME test-reducer-reset-seq
   SOURCES test-reducer-reset-seq.cpp)
 
-if(RAJA_ENABLE_TBB)
-raja_add_test(
-  NAME test-reducer-constructors-tbb
-  SOURCES test-reducer-constructors-tbb.cpp)
-
-raja_add_test(
-  NAME test-reducer-reset-tbb
-  SOURCES test-reducer-reset-tbb.cpp)
-endif()
-
 if(RAJA_ENABLE_OPENMP)
 raja_add_test(
   NAME test-reducer-constructors-openmp

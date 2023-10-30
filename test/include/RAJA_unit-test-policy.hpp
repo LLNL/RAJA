@@ -135,10 +135,6 @@ struct test_policy_info<test_hip>
 //
 using SequentialUnitTestPolicyList = camp::list<test_seq>;
 
-#if defined(RAJA_ENABLE_TBB)
-using TBBUnitTestPolicyList = SequentialUnitTestPolicyList;
-#endif
-
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPUnitTestPolicyList = SequentialUnitTestPolicyList;
 #endif

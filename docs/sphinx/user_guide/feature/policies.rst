@@ -229,43 +229,6 @@ a template argument as described above.
           more code to execute in the parallel region and there is an implicit
           barrier at the end of it.
 
-Threading Building Block (TBB) Parallel CPU Policies
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-RAJA provides a basic set of TBB execution policies for use with the
-RAJA TBB back-end, which supports a subset of RAJA features.
-
- ====================================== ============= ==========================
- Threading Building Blocks Policies     Works with    Brief description
- ====================================== ============= ==========================
- tbb_for_exec                           forall,       Execute loop iterations.
-                                        kernel (For), as tasks in parallel using
-                                        scan          TBB ``parallel_for``
-                                                      method.
- tbb_for_static<CHUNK_SIZE>             forall,       Same as above, but use.
-                                        kernel (For), a static scheduler with
-                                        scan          given chunk size.
- tbb_for_dynamic                        forall,       Same as above, but use
-                                        kernel (For), a dynamic scheduler.
-                                        scan
- ====================================== ============= ==========================
-
-.. note:: To control the number of TBB worker threads used by these policies:
-          set the value of the environment variable 'TBB_NUM_WORKERS' (which is
-          fixed for duration of run), or create a 'task_scheduler_init' object::
-
-            tbb::task_scheduler_init TBBinit( nworkers );
-
-            // do some parallel work
-
-            TBBinit.terminate();
-            TBBinit.initialize( new_nworkers );
-
-            // do some more parallel work
-
-          This allows changing number of workers at run time.
-
-
 GPU Policies for CUDA and HIP
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -666,11 +629,6 @@ omp_parallel_segit                     Create OpenMP parallel region and
                                        iterate over segments in parallel inside                                        it; i.e., apply ``omp parallel for``
                                        pragma on loop over segments.
 omp_parallel_for_segit                 Same as above.
-
-**Intel Threading Building Blocks**
-tbb_segit                              Iterate over index set segments in
-                                       parallel using a TBB 'parallel_for'
-                                       method.
 ====================================== =========================================
 
 -------------------------
@@ -729,8 +687,6 @@ omp_reduce_ordered      any OpenMP    OpenMP parallel reduction with result
                         policy        guaranteed to be reproducible.
 omp_target_reduce       any OpenMP    OpenMP parallel target offload reduction.
                         target policy
-tbb_reduce              any TBB       TBB parallel reduction.
-                        policy
 cuda/hip_reduce         any CUDA/HIP  Parallel reduction in a CUDA/HIP kernel
                         policy        (device synchronization will occur when
                                       reduction value is finalized).
@@ -822,11 +778,8 @@ context and the CUDA atomic operation is applied. Similarly, if an OpenMP
 execution policy was used, the OpenMP version of the atomic operation would
 be used.
 
-.. note:: * There are no RAJA atomic policies for TBB (Intel Threading Building
-            Blocks) execution contexts since reductions are not supported
-            for the RAJA TBB back-end.
-          * The ``builtin_atomic`` policy may be preferable to the
-            ``omp_atomic`` policy in terms of performance.
+.. note:: The ``builtin_atomic`` policy may be preferable to the
+          ``omp_atomic`` policy in terms of performance.
 
 .. _localarraypolicy-label:
 
