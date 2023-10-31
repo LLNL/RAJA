@@ -58,7 +58,8 @@ struct PinnedAllocator {
   void* malloc(size_t nbytes)
   {
     void* ptr;
-    hipErrchk(hipHostMalloc(&ptr, nbytes, hipHostMallocMapped));
+    hipErrchk(hipHostMalloc(&ptr, nbytes,
+        hipHostMallocMapped | hipHostMallocNonCoherent));
     return ptr;
   }
 
