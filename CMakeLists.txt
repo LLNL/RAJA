@@ -219,6 +219,7 @@ endif ()
 
 if (RAJA_ENABLE_SYCL)
   set (RAJA_ENABLE_DESUL_ATOMICS "On")
+  set (ENABLE_SYCL On) # Enable sycl atomics in desul
   set (raja_depends
     ${raja_depends}
     sycl)
