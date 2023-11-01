@@ -622,7 +622,7 @@ Notable changes include:
       * New OpenMP execution policies added to support static, dynamic, and 
         guided scheduling.
       * Added support for const iterators to be used with RAJA scans.
-      * Support for bitwise and or reductions have been added.
+      * Support for bitwise "and" and "or" reductions have been added.
       * The RAJA::kernel interface has been expanded to allow only segment 
         index arguments used in a lambda to be passed to the lambda. In 
         previous versions of RAJA, every lambda invoked in a kernel had to 
