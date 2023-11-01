@@ -226,6 +226,10 @@ endif ()
 
 message(STATUS "Desul Atomics support is ${RAJA_ENABLE_DESUL_ATOMICS}")
 if (RAJA_ENABLE_DESUL_ATOMICS)
+  # NOTE: ENABLE_OPENMP in desul implies OpenMP OFFLOAD
+  if (NOT RAJA_ENABLE_TARGET_OPENMP)
+    set(DESUL_ENABLE_OPENMP Off)
+  endif()
   add_subdirectory(tpl/desul)
   set(raja_depends
     ${raja_depends}
