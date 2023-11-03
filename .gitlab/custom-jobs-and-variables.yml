@@ -59,7 +59,7 @@ variables:
 # Project specific variants for lassen
   PROJECT_LASSEN_VARIANTS: "~shared +openmp +tests cuda_arch=70"
 # Project specific deps for lassen
-  PROJECT_LASSEN_DEPS: "^blt@git.5edb8e8f9033a44750eb85a2e34d7f30971cf19a=develop"
+  PROJECT_LASSEN_DEPS: "^blt@git.6dc747989504adee075bbe2ebf703a230232bea5=develop"
 
 # Configuration shared by build and test jobs specific to this project.
 # Not all configuration can be shared. Here projects can fine tune the
