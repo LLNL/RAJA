@@ -45,7 +45,7 @@ template<typename launch_pol, typename loop_pol>
   using reduce_policy = RAJA::cuda_reduce;
   RAJA::ReduceSum<reduce_policy, int> old_reducer_sum(0);
 
-#if 1
+
   RAJA::launch<launch_pol>
     (RAJA::LaunchParams(RAJA::Teams(no_teams),RAJA::Threads(DEVICE_BLOCK_SIZE)),
      "new_reduce_kernel",
@@ -63,7 +63,10 @@ template<typename launch_pol, typename loop_pol>
             old_reducer_sum += 1.0;
         });
      });
-#else
+
+
+  std::cout << "test code 1: expected sum N = "<< N <<" | launch tsum = "
+            << new_launch_sum << " old reducer sum = "<< old_reducer_sum << std::endl;
 
   RAJA::launch<launch_pol>
     (RAJA::LaunchParams(RAJA::Teams(no_teams),RAJA::Threads(DEVICE_BLOCK_SIZE)),
@@ -81,14 +84,63 @@ template<typename launch_pol, typename loop_pol>
 
 
      });
-#endif
-
-
 
 
   std::cout << "test code: expected sum N = "<< N <<" | launch tsum = "
+            << " old reducer sum = "<< old_reducer_sum << std::endl;
+
+  //----------------------------
+  //Now with resource objects
+  //----------------------------
+
+  //Reset reducers...
+  new_launch_sum = 0.0;
+  old_reducer_sum.reset(0.0);
+
+  RAJA::resources::Host host_res;
+  RAJA::resources::Cuda device_res;
+  RAJA::resources::Resource res = RAJA::Get_Runtime_Resource(host_res, device_res, RAJA::ExecPlace::DEVICE);
+
+  RAJA::launch<launch_pol>
+    (res, RAJA::LaunchParams(RAJA::Teams(no_teams),RAJA::Threads(DEVICE_BLOCK_SIZE)),
+     "new_reduce_kernel",
+     RAJA::expt::Reduce<RAJA::operators::plus>(&new_launch_sum),
+     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx, int &_seq_sum)
+     {
+
+       RAJA::loop<loop_pol>(ctx, arange, [&] (int i) {
+           _seq_sum += a[i];
+           old_reducer_sum += a[i];
+       });
+
+        RAJA::loop<loop_pol>(ctx, arange, [&]  (int i) {
+            _seq_sum += 1.0;
+            old_reducer_sum += 1.0;
+        });
+     });
+
+
+  std::cout << "with resource test code 1: expected sum N = "<< N <<" | launch tsum = "
             << new_launch_sum << " old reducer sum = "<< old_reducer_sum << std::endl;
 
+  RAJA::launch<launch_pol>
+    (res, RAJA::LaunchParams(RAJA::Teams(no_teams),RAJA::Threads(DEVICE_BLOCK_SIZE)),
+     "new_reduce_kernel",
+     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
+     {
+       RAJA::loop<loop_pol>(ctx, arange, [&] (int i) {
+           old_reducer_sum += a[i];
+       });
+
+        RAJA::loop<loop_pol>(ctx, arange, [&]  (int i) {
+            old_reducer_sum += 1.0;
+        });
+
+     });
+
+
+  std::cout << " with resource test code: expected sum N = "<< N <<" | launch tsum = "
+            << " old reducer sum = "<< old_reducer_sum << std::endl;
 
 }
 
