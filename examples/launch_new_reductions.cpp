@@ -39,27 +39,55 @@ template<typename launch_pol, typename loop_pol>
  void test_new_launch_code(RAJA::TypedRangeSegment<int> arange, int *a, int N)
 {
 
-  int launch_seq_sum = 0;
+  int new_launch_sum = 0;
   const int no_teams = (N-1)/DEVICE_BLOCK_SIZE + 1;
 
-  RAJA::launch_params<launch_pol>
+  using reduce_policy = RAJA::cuda_reduce;
+  RAJA::ReduceSum<reduce_policy, int> old_reducer_sum(0);
+
+#if 1
+  RAJA::launch<launch_pol>
     (RAJA::LaunchParams(RAJA::Teams(no_teams),RAJA::Threads(DEVICE_BLOCK_SIZE)),
-     RAJA::expt::Reduce<RAJA::operators::plus>(&launch_seq_sum),
+     "new_reduce_kernel",
+     RAJA::expt::Reduce<RAJA::operators::plus>(&new_launch_sum),
      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx, int &_seq_sum)
-      {
+     {
 
        RAJA::loop<loop_pol>(ctx, arange, [&] (int i) {
            _seq_sum += a[i];
+           old_reducer_sum += a[i];
        });
 
         RAJA::loop<loop_pol>(ctx, arange, [&]  (int i) {
             _seq_sum += 1.0;
+            old_reducer_sum += 1.0;
+        });
+     });
+#else
+
+  RAJA::launch<launch_pol>
+    (RAJA::LaunchParams(RAJA::Teams(no_teams),RAJA::Threads(DEVICE_BLOCK_SIZE)),
+     "new_reduce_kernel",
+     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
+     {
+
+       RAJA::loop<loop_pol>(ctx, arange, [&] (int i) {
+           old_reducer_sum += a[i];
+       });
+
+        RAJA::loop<loop_pol>(ctx, arange, [&]  (int i) {
+            old_reducer_sum += 1.0;
         });
 
+
      });
+#endif
 
 
-  std::cout << "test code: expected sum N = "<< N <<" | launch tsum = " << launch_seq_sum << std::endl;
+
+
+  std::cout << "test code: expected sum N = "<< N <<" | launch tsum = "
+            << new_launch_sum << " old reducer sum = "<< old_reducer_sum << std::endl;
 
 
 }
@@ -143,6 +171,43 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "expected sum N = "<< N <<" | tsum = " << seq_sum << std::endl;
     // _reductions_raja_seq_end
+
+//----------------------------------------------------------------------------//
+
+  std::cout << " \n Forall new reducer "<<std::endl;
+#if 0
+  int new_reduce_t_sum = 0;
+
+  RAJA::resources::Host res;
+
+  //using EXEC_POLICY = RAJA::cuda_exec_async<24>;
+  using EXEC_POLICY = RAJA::seq_exec;
+  RAJA::forall<EXEC_POLICY>
+    (res, RAJA::RangeSegment(0,10),
+     //RAJA::expt::Reduce<RAJA::operators::plus>(&new_reduce_t_sum),
+     RAJA::expt::KernelName("MyFirstRAJAKernel"),
+     //[=] RAJA_HOST_DEVICE (int i, int &_new_reduce_t_sum) {
+     [=] RAJA_HOST_DEVICE (int i) {
+
+       //_new_reduce_t_sum += 1;
+
+     });
+
+  RAJA::forall<EXEC_POLICY> (RAJA::RangeSegment(0,1),
+                             //RAJA::expt::Reduce<RAJA::operators::plus>(&rs),        // --> 1 double added
+                             //RAJA::expt::Reduce<RAJA::operators::minimum>(&rm),     // --> 1 double added
+                             //RAJA::expt::Reduce<RAJA::operators::minimum>(&rm_loc), // --> 1 VL_DOUBLE added
+                             RAJA::expt::KernelName("MyFirstRAJAKernel"),           // --> NO args added
+                             [=] (int i) {
+    //_rs += a[i];
+    //_rm = RAJA_MIN(a[i], _rm);
+    //_rm_loc.min(VL_DOUBLE(a[i], i));
+  }
+);
+
+  std::cout<<"new_reduce_t_sum = "<<new_reduce_t_sum<<std::endl;
+#endif
+
 
 //----------------------------------------------------------------------------//
 

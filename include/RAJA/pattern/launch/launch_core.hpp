@@ -214,6 +214,39 @@ public:
 template <typename LAUNCH_POLICY>
 struct LaunchExecute;
 
+//Policy based launch with support to new reducers...
+template <typename LAUNCH_POLICY, typename ... ReduceParams>
+void launch(LaunchParams const &launch_params, const char *kernel_name, ReduceParams&&... rest_of_launch_args)
+{
+
+  //Get reducers
+  auto reducers = expt::make_forall_param_pack(std::forward<ReduceParams>(rest_of_launch_args)...);
+
+  auto&& launch_body = expt::get_lambda(std::forward<ReduceParams>(rest_of_launch_args)...);
+
+  //Take the first policy as we assume the second policy is not user defined.
+  //We rely on the user to pair launch and loop policies correctly.
+  util::PluginContext context{util::make_context<typename LAUNCH_POLICY::host_policy_t>()};
+  util::callPreCapturePlugins(context);
+
+  using RAJA::util::trigger_updates_before;
+  auto p_body = trigger_updates_before(launch_body);
+
+  util::callPostCapturePlugins(context);
+
+  util::callPreLaunchPlugins(context);
+
+  using launch_t = LaunchExecute<typename LAUNCH_POLICY::host_policy_t>;
+
+  using Res = typename resources::get_resource<typename LAUNCH_POLICY::host_policy_t>::type;
+
+  launch_t::exec(Res::get_default(), launch_params, kernel_name, reducers, p_body);
+
+  util::callPostLaunchPlugins(context);
+}
+
+
+
 //Support for new reduction framework
 template<typename LAUNCH_POLICY, typename ... FORALL_Params>
 void launch_params(LaunchParams const &params, FORALL_Params&&... forall_params)
@@ -223,8 +256,8 @@ void launch_params(LaunchParams const &params, FORALL_Params&&... forall_params)
   //Need to work out details for sequential and openmp launch
 
   auto f_params = expt::make_forall_param_pack(std::forward<FORALL_Params>(forall_params)...);
-  
-  auto&& loop_body = expt::get_lambda(std::forward<FORALL_Params>(forall_params)...); 
+
+  auto&& loop_body = expt::get_lambda(std::forward<FORALL_Params>(forall_params)...);
 
   //Assume a single policy for now, run time support will come later
 
@@ -232,10 +265,10 @@ void launch_params(LaunchParams const &params, FORALL_Params&&... forall_params)
 
   using launch_t = LaunchExecute<typename LAUNCH_POLICY::host_policy_t>;
   launch_t::exec(Res::get_default(), params, f_params, loop_body);
-  
+
 }
 
-  
+
 //Policy based launch without name argument
 template <typename LAUNCH_POLICY, typename BODY>
 void launch(LaunchParams const &params, BODY const &body)
