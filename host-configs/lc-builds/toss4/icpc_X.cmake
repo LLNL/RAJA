@@ -11,6 +11,4 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -ansi-alias -diag-disable cpu-dis
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g -march=native -ansi-alias -diag-disable cpu-dispatch" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g" CACHE STRING "")
 
-set(RAJA_DATA_ALIGN 64 CACHE STRING "")
-
 set(RAJA_HOST_CONFIG_LOADED On CACHE BOOL "")
