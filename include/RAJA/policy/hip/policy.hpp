@@ -217,9 +217,9 @@ struct hip_thread_masked_loop {};
 // Operations in the included files are parametrized using the following
 // values for HIP warp size and max block size.
 //
-#if defined(__HIP_PLATFORM_HCC__)
+#if defined(__HIP_PLATFORM_AMD__)
 constexpr const RAJA::Index_type WARP_SIZE = 64;
-#elif defined(__HIP_PLATFORM_NVCC__)
+#elif defined(__HIP_PLATFORM_NVIDIA__)
 constexpr const RAJA::Index_type WARP_SIZE = 32;
 #endif
 constexpr const RAJA::Index_type MAX_BLOCK_SIZE = 1024;
